@@ -52,7 +52,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: AsyncSlave.java,v 1.1 2004/05/20 20:19:45 zombiewoof64 Exp $
+ * @version $Id: AsyncSlave.java,v 1.2 2004/05/21 18:42:01 zombiewoof64 Exp $
  */
 public class AsyncSlave extends Thread implements Slave, Unreferenced {
     private static final Logger logger =
@@ -272,6 +272,7 @@ public class AsyncSlave extends Thread implements Slave, Unreferenced {
                 AsyncCommand cmd = (AsyncCommand)commands.get(items[0]);
                 msg = msg.substring(3); // strip off channel ID
                 if (cmd._name.equals("ping")) processPing(cmd,msg);
+                else if (cmd._name.equals("xfer")) xferMessage(msg);
                 else if (cmd._name.equals("disk")) processDisk(cmd,msg);
                 else if (cmd._name.equals("conn")) processConnect(cmd,msg);
                 else if (cmd._name.equals("send")) processSend(cmd,msg);
@@ -304,7 +305,7 @@ public class AsyncSlave extends Thread implements Slave, Unreferenced {
     // Control Socket I/O Methods
     //*********************************
     
-    private void sendLine(String line) {
+    public void sendLine(String line) {
         synchronized (_sout) {
             _sout.println(line);
             logger.info(_name + "< " + line);

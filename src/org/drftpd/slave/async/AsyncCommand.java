@@ -28,7 +28,10 @@ public class AsyncCommand {
         _ownr = ownr;
         _stat = -1;
     }
-    
+    public void abort()
+    {
+        _ownr.sendLine(_chan + " abrt");
+    }
     public String getName() {
         return _name;
     }

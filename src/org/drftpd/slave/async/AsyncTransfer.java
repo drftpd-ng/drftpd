@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: AsyncTransfer.java,v 1.1 2004/05/20 20:19:45 zombiewoof64 Exp $
+ * @version $Id: AsyncTransfer.java,v 1.2 2004/05/21 18:42:01 zombiewoof64 Exp $
  */
 public class AsyncTransfer implements Transfer {
     
@@ -49,7 +49,8 @@ public class AsyncTransfer implements Transfer {
     private long        _error = 0;
     private String      _status = "";
     
-    private AsyncSlave  _slave;
+    private AsyncSlave      _slave;
+    private AsyncCommand    _cmd;
     
     /**
      * Start undefined passive transfer.
@@ -132,14 +133,16 @@ public class AsyncTransfer implements Transfer {
     char type,
     long resumePosition
     ) throws IOException {
-        Hashtable args = new Hashtable();
-        
         logger.info("Send: path=" + path);
-        
+      
         _direction = TRANSFER_SENDING_DOWNLOAD;
-        AsyncCommand cmd = _slave.sendCommand("disk", "\"" + path + "\" " + resumePosition + " " + _conn );
-        cmd.waitForComplete();
-        
+        _cmd = _slave.sendCommand(
+        "send", "\"" + path + "\" " + resumePosition + " " + _conn 
+        );
+        _started = System.currentTimeMillis();
+        _slave.addTransfer(this);
+        _cmd.waitForComplete();
+        _slave.removeTransfer(this);
         TransferStatus tmp = getStatus();
         return tmp;
     }
@@ -150,33 +153,65 @@ public class AsyncTransfer implements Transfer {
     String filename,
     long offset
     ) throws IOException {
-        Hashtable args = new Hashtable();
-        
         logger.info("Recv: path=" + dirname + "/" + filename);
         
         _direction = TRANSFER_RECEIVING_UPLOAD;
-        args.put("path", dirname + "/" + filename);
-        args.put("offs", Long.toString(offset));
-        args.put("conn", Long.toString(_conn));
-//        Hashtable data = _slave.doCommand("recv", args);
+        String args = "\"" + dirname + "/" + filename + "\" " + offset + " " + _conn;
+        _cmd = _slave.sendCommand("recv", args);
         _started = System.currentTimeMillis();
-//        if (data != null) {
-//            _status = "I";
-//            _slave.addTransfer(this);
-//            while (!_status.equals("C")) {
-//                try { wait(200); } catch (Exception e) {}
-//            }
-//            _slave.removeTransfer(this);
-//        }
+        _slave.addTransfer(this);
+        _cmd.waitForComplete();
+        _slave.removeTransfer(this);
+        TransferStatus tmp = getStatus();
+        return tmp;
+    }
+    
+    public void startSend(
+    String path,
+    char type,
+    long resumePosition
+    ) throws IOException {
+        logger.info("Send: path=" + path);
+      
+        _direction = TRANSFER_SENDING_DOWNLOAD;
+        _cmd = _slave.sendCommand(
+        "send", "\"" + path + "\" " + resumePosition + " " + _conn 
+        );
+        _started = System.currentTimeMillis();
+        _slave.addTransfer(this);
+    }
+    public TransferStatus finishSend()
+    {
+        _slave.removeTransfer(this);
+        TransferStatus tmp = getStatus();
+        return tmp;
+    }
+    
+    public void startRecv(
+    String dirname,
+    char mode,
+    String filename,
+    long offset
+    ) throws IOException {
+        logger.info("Recv: path=" + dirname + "/" + filename);
+        
+        _direction = TRANSFER_RECEIVING_UPLOAD;
+        String args = "\"" + dirname + "/" + filename + "\" " + offset + " " + _conn;
+        AsyncCommand cmd = _slave.sendCommand("recv", args);
+        _started = System.currentTimeMillis();
+        _slave.addTransfer(this);
+    }
+    
+    public TransferStatus finishRecv()
+    {
+        _slave.removeTransfer(this);
         TransferStatus tmp = getStatus();
         return tmp;
     }
     
     public void abort() throws RemoteException {
-//        _abort = true;
-//        Hashtable args = new Hashtable();
-//        args.put("conn", Long.toString(_conn));
-//        Hashtable data = _slave.doCommand("abrt", args);
+        _abort = true;
+        _cmd.abort();
     }
     
     
