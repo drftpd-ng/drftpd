@@ -70,7 +70,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.89 2004/05/19 19:09:35 zombiewoof64 Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.90 2004/05/19 20:45:04 zombiewoof64 Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -128,6 +128,27 @@ public class SlaveManagerImpl
             return _self.loadSlaves();
         }
         
+        private Properties elementToProps(Element config)
+        {
+            Properties props = new Properties();
+            String masks = "";
+            List maskElements = config.getChildren("mask");
+            for (Iterator i2 = maskElements.iterator(); i2.hasNext();) {
+                if (!masks.equals("")) masks += ",";
+                masks += ((Element) i2.next()).getText();
+            }
+            props.put("masks", masks);
+            for (Iterator i = config.getChildren().iterator(); i.hasNext();) {
+                Element e = (Element) i.next();
+                if (e.getName().equalsIgnoreCase("mask")) continue;
+                try {
+                    props.setProperty(e.getName(), e.getText());
+                } catch (Exception e1) {
+                }
+            }
+            return props;
+        }
+        
 	public List loadSlaves() {
 		ArrayList rslaves;
 		try {
@@ -137,7 +158,8 @@ public class SlaveManagerImpl
 			rslaves = new ArrayList(children.size());
 			for (Iterator i = children.iterator(); i.hasNext();) {
 				//slavemanager is set in the slavemanager constructor
-				rslaves.add(new RemoteSlave((Element) i.next()));
+                            Properties props = elementToProps((Element) i.next());
+				rslaves.add(new RemoteSlave(props));
 			}
 			rslaves.trimToSize();
 		} catch (Exception ex) {
@@ -554,7 +576,7 @@ public class SlaveManagerImpl
 				if (slaveElement
 					.getChildText("name")
 					.equals(rslave.getName())) {
-                                            rslave.updateConfig(slaveElement);
+                                            rslave.updateConfig(elementToProps(slaveElement));
 //					List masks = new ArrayList();
 //					List maskElements = slaveElement.getChildren("mask");
 //					for (Iterator i2 = maskElements.iterator();
@@ -566,7 +588,7 @@ public class SlaveManagerImpl
 					continue nextelement;
 				}
 			} // rslaves.iterator()
-			RemoteSlave rslave = new RemoteSlave(slaveElement);
+			RemoteSlave rslave = new RemoteSlave(elementToProps(slaveElement));
 			rslave.setManager(this);
 			_rslaves.add(rslave);
 			logger.log(Level.INFO, "Added " + rslave.getName() + " to slaves");
