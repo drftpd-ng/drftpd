@@ -32,9 +32,9 @@ import org.drftpd.GlobalContext;
  * @version $Id$
  */
 public class DelegatingArchive extends FtpListener {
-	private ArrayList<FtpListener> _delegates = new ArrayList<FtpListener>();
 	private static final Logger logger = Logger.getLogger(DelegatingArchive.class);
 	private URLClassLoader _cl;
+	private ArrayList<FtpListener> _delegates;
 
 	public DelegatingArchive() {
 	}
@@ -53,17 +53,12 @@ public class DelegatingArchive extends FtpListener {
 			}
 		}
 	}
-
-	public void unload() {
-		for(FtpListener delegate : _delegates) {
-			delegate.unload();
-		}
-	}
 	public void init(GlobalContext gctx) {
 		super.init(gctx);
 		init2(gctx);
 	}
 	public void init2(GlobalContext gctx) {
+		_delegates = new ArrayList<FtpListener>();
 		try {
 			_cl = new URLClassLoader(new URL[] {new File("classes-archive").toURL()});
 			_delegates.add((FtpListener)_cl.loadClass("org.drftpd.plugins.Archive").newInstance());
@@ -77,6 +72,12 @@ public class DelegatingArchive extends FtpListener {
 			} catch(Throwable t) {
 				logger.error("Throwable from init", t);
 			}
+		}
+	}
+
+	public void unload() {
+		for(FtpListener delegate : _delegates) {
+			delegate.unload();
 		}
 	}
 }
