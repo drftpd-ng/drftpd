@@ -6,13 +6,9 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.StringTokenizer;
 
-import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
@@ -20,10 +16,9 @@ import net.sf.drftpd.master.VirtualDirectory;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.remotefile.DirectoryRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.util.ListUtils;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
@@ -138,13 +133,10 @@ public class List implements CommandHandler {
 
 		PrintWriter out = conn.getControlWriter();
 		Socket dataSocket = null;
-		//SocketChannel dataChannel;
 		Writer os;
-		//SocketChannel out2;
+
 		if (request.getCommand().equals("STAT")) {
 			os = out;
-			//dataChannel = controlSocket.getChannel();
-			//out2 = controlSocket.getChannel();
 			out.println("213- Status of " + request.getArgument() + ":");
 		} else {
 			out.print(FtpReply.RESPONSE_150_OK);
@@ -161,37 +153,9 @@ public class List implements CommandHandler {
 			}
 		}
 
-		ArrayList listFiles = new ArrayList(directoryFile.getFiles());
-		for (Iterator iter = listFiles.iterator(); iter.hasNext();) {
-			LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
-			if (!conn.getConfig().checkPrivPath(conn.getUserNull(), element))
-				iter.remove();
-		}
-		FtpReply response =
-			(FtpReply) FtpReply.RESPONSE_226_CLOSING_DATA_CONNECTION.clone();
-		try {
-			SFVFile sfvfile = directoryFile.lookupSFVFile();
-			int good = sfvfile.finishedFiles();
-			if (sfvfile.size() != 0) {
-				String statusDirName =
-					"[" + (good * 100) / sfvfile.size() + "% complete]";
-				listFiles.add(
-					new DirectoryRemoteFile(
-						directoryFile,
-						"drftpd",
-						"drftpd",
-						statusDirName));
-			}
-		} catch (NoAvailableSlaveException e) {
-			logger.log(Level.WARN, "No available slaves for SFV file");
-		} catch (FileNotFoundException e) {
-			// no sfv file in directory - just skip it
-		} catch (IOException e) {
-			logger.log(Level.WARN, "IO error loading SFV file", e);
-		} catch (Throwable e) {
-			response.addComment("zipscript error: " + e.getMessage());
-			logger.log(Level.WARN, "zipscript error", e);
-		}
+////////////////
+		java.util.List listFiles = ListUtils.list(directoryFile, conn);
+//		//////////////
 
 		try {
 			if (request.getCommand().equals("LIST")
@@ -205,6 +169,9 @@ public class List implements CommandHandler {
 			logger.warn("from master", ex);
 			return new FtpReply(450, ex.getMessage());
 		} finally {
+
+			FtpReply response =
+				(FtpReply) FtpReply.RESPONSE_226_CLOSING_DATA_CONNECTION.clone();
 
 			try {
 				if (!request.getCommand().equals("STAT")) {

@@ -306,7 +306,7 @@ public class GlftpdUserManager implements UserManager {
 	 * @see net.sf.drftpd.master.UserManager#getUserByName(String)
 	 * @throws NoSuchUserException, CorruptUserFileException
 	 */
-	public User getUserByName(String username)
+	public User getUserByNameUnchecked(String username)
 		throws IOException, NoSuchUserException {
 		if (!new File(getUserfilepath(username)).exists()) {
 			throw new NoSuchUserException("No userfile for user " + username);
@@ -388,6 +388,12 @@ public class GlftpdUserManager implements UserManager {
 	}
 
 	public void init(ConnectionManager mgr) {
+	}
+
+	public User getUserByName(String username) throws NoSuchUserException, IOException {
+		User user = getUserByNameUnchecked(username);
+		if(user.isDeleted()) throw new NoSuchUserException(user.getUsername()+" is deleted");
+		return user;
 	}
 
 }

@@ -364,7 +364,7 @@ public class Nuke implements CommandHandler {
 					"Error saving userfile for " + nukee.getUsername());
 			}
 
-			response.addComment(nukeeName + ": restored " + amount + "bytes");
+			response.addComment(nukeeName + ": restored " + Bytes.formatBytes(amount.longValue()) + "bytes");
 		}
 		try {
 			getNukeLog().remove(toPath);

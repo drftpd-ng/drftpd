@@ -219,10 +219,9 @@ public class SlaveManagerImpl
 		ConnectionManager cm) throws FileNotFoundException, IOException, CorruptFileListException {
 		/** load XML file database **/
 		/** load MLST file database **/
-		//return MLSTSerialize.unserialize(cm.getConfig(), new BufferedReader(new FileReader("files.mlst")), rslaves);
 		return loadMLSTFileDatabase(rslaves, cm);
-		//System.gc(); done after loading is complete
 	}
+
 	public static LinkedRemoteFile loadJDOMFileDatabase(List rslaves, ConnectionManager cm) throws FileNotFoundException {
 		return JDOMSerialize.unserialize(cm, new FileReader("files.xml"), rslaves);
 	}

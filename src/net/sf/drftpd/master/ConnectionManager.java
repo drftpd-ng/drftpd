@@ -30,6 +30,7 @@ import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
 import net.sf.drftpd.slave.SlaveImpl;
 
 import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.DailyRollingFileAppender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -50,10 +51,11 @@ public class ConnectionManager {
 			new File("ftp-data/logs").mkdirs();
 			try {
 				root.addAppender(
-					new FileAppender(
+					new DailyRollingFileAppender(
 						new PatternLayout(
 							PatternLayout.TTCC_CONVERSION_PATTERN),
-						"ftp-data/logs/drftpd.log"));
+						"ftp-data/logs/drftpd.log",
+						"'.'yyyy-MM-dd"));
 			} catch (IOException e1) {
 				throw new FatalException(e1);
 			}

@@ -150,15 +150,13 @@ public class JSXUserManager implements UserManager {
 		}
 		return users;
 	}
-	public User getUserByName(String username)
-		throws NoSuchUserException, IOException {
-
+	
+	public User getUserByNameUnchecked(String username) throws NoSuchUserException, IOException {
 		JSXUser user = (JSXUser) users.get(username);
 		if (user != null) {
-			user.reset(_connManager);
 			return user;
 		}
-
+		
 		ObjIn in;
 		try {
 			in = new ObjIn(new FileReader(getUserFile(username)));
@@ -174,7 +172,15 @@ public class JSXUserManager implements UserManager {
 			return user;
 		} catch (ClassNotFoundException e) {
 			throw new FatalException(e);
-		}
+		}		
+	}
+	
+	public User getUserByName(String username)
+		throws NoSuchUserException, IOException {
+		JSXUser user = (JSXUser) getUserByNameUnchecked(username);
+		if(user.isDeleted()) throw new NoSuchUserException(user.getUsername()+" is deleted");
+		user.reset(_connManager);
+		return user;
 	}
 
 	public File getUserFile(String username) {

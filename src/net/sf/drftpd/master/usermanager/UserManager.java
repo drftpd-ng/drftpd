@@ -41,6 +41,7 @@ public interface UserManager {
 	//TODO garbage collected Map of users.
 	public abstract User getUserByName(String name)
 		throws NoSuchUserException, IOException;
+	public User getUserByNameUnchecked(String username) throws NoSuchUserException, IOException;
 	public abstract void saveAll() throws UserFileException;
 
 }

@@ -17,7 +17,7 @@ import org.jdom.input.SAXBuilder;
 public class JDOMSerialize {
 	private static Logger logger = Logger.getLogger(JDOMSerialize.class);
 
-	public static LinkedRemoteFile unserialize(ConnectionManager cm, Reader in, List rslaves) {
+	public static LinkedRemoteFile unserialize(ConnectionManager cm, Reader in, List rslaves) throws FileNotFoundException {
 		LinkedRemoteFile root;
 		try {
 			Document doc = new SAXBuilder().build(in);
@@ -29,8 +29,7 @@ public class JDOMSerialize {
 					xmlroot,
 					cm == null ? null : cm.getConfig());
 		} catch (FileNotFoundException ex) {
-			logger.info("files.xml not found, new file will be created.");
-			root = new LinkedRemoteFile(cm == null ? null : cm.getConfig());
+			throw ex;
 		} catch (Exception ex) {
 			logger.log(Level.FATAL, "Error loading \"files.xml\"", ex);
 			throw new FatalException(ex);

@@ -15,6 +15,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
+
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -34,6 +36,8 @@ import net.sf.drftpd.remotefile.RemoteFileInterface;
  */
 public class MLST implements CommandHandler {
 
+	private static Logger logger = Logger.getLogger(MLST.class);
+
 	private CommandManager _cmr;
 
 	private String toMLST(RemoteFileInterface file) {
@@ -50,10 +54,13 @@ public class MLST implements CommandHandler {
 		LinkedRemoteFile dir = conn.getCurrentDirectory();
 		if (conn.getRequest().hasArgument()) {
 			try {
-				dir.lookupFile(conn.getRequest().getArgument());
+				dir = dir.lookupFile(conn.getRequest().getArgument());
 			} catch (FileNotFoundException e) {
 				return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 			}
+		}
+		if(conn.getConfig().checkPrivPath(conn.getUserNull(), dir)) {
+			return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 		}
 		PrintWriter out = conn.getControlWriter();
 		if ("MLST".equals(command)) {
@@ -83,7 +90,7 @@ public class MLST implements CommandHandler {
 				out2.close();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				logger.warn("", e1);
 			}
 			
 			return FtpReply.RESPONSE_226_CLOSING_DATA_CONNECTION;
@@ -102,17 +109,8 @@ public class MLST implements CommandHandler {
 		return new String[] { "MLST", "MLSD" };
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.command.CommandHandler#load(net.sf.drftpd.master.command.CommandManagerFactory)
-	 */
 	public void load(CommandManagerFactory initializer) {}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.command.CommandHandler#unload()
-	 */
-	public void unload() {
-		// TODO Auto-generated method stub
-		
-	}
+	public void unload() {}
 
 }

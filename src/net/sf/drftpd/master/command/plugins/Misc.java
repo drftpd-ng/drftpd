@@ -140,13 +140,6 @@ public class Misc implements CommandHandler {
 	}
 
 	public void load(CommandManagerFactory initializer) {}
-
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.command.CommandHandler#unload()
-	 */
-	public void unload() {
-		// TODO Auto-generated method stub
-		
-	}
+	public void unload() {}
 
 }
