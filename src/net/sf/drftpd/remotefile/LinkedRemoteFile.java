@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.106 2004/01/28 20:41:25 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.107 2004/01/31 05:18:39 zubov Exp $
  */
 public class LinkedRemoteFile
 	implements RemoteFileInterface, Serializable, Comparable {
@@ -345,7 +345,7 @@ public class LinkedRemoteFile
 				}
 			}
 
-			if (_slaves.size() == 0) {
+			if (_slaves.isEmpty()) {
 				//remove slaveless file
 				try {
 					getParentFile().getMap().remove(getName());
@@ -913,12 +913,7 @@ public class LinkedRemoteFile
 									file.getPath(),
 									renameTo.getParent(),
 									renameTo.getName());
-								file._slaves.remove(rslave);
-								if (file._slaves.size() == 0 ) {
-									file.getParentFileNull().getMap().remove(file.getName());
-								}
-								//file.removeSlave(rslave); // calls delete(), file doesn't exist at this point
-								//i.remove(); // dont want it to try to unmerge a removed file
+								file.removeSlave(rslave);
 								renameTo.addSlave(rslave);
 								
 							} catch (RemoteException e1) {
@@ -1039,9 +1034,9 @@ public class LinkedRemoteFile
 
 			if (!mergedir.hasFile(file.getName())) {
 				if (file.isFile()) {
-					file.removeSlave(rslave);
+					file.unmergeFile(rslave);
 				} else {
-					file.unmerge(rslave);
+					file.unmergeDir(rslave);
 				}
 			}
 		}
@@ -1075,8 +1070,7 @@ public class LinkedRemoteFile
 				RemoteSlave rslave = (RemoteSlave) iterator.next();
 				if (rslave.isAvailable()) {
 					toFile.addSlave(rslave);
-					fromFile.removeSlave(rslave); //if it's going to be deleted anyway, why remove it's slave?
-					//iter.remove();
+					fromFile.removeSlave(rslave);
 				} else {
 					fromFile.queueRename(toFile);
 				}
@@ -1336,31 +1330,38 @@ public class LinkedRemoteFile
 		return ret.toString();
 	}
 
-	public void unmerge(RemoteSlave rslave) {
+	public void unmergeDir(RemoteSlave rslave) {
 		if (!isDirectory())
 			return;
-		for (Iterator i = new ArrayList(_files.values()).iterator(); i.hasNext();) {
+		for (Iterator i = getFiles().iterator(); i.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) i.next();
 			if (file.isDirectory()) {
-				file.unmerge(rslave);
+				file.unmergeDir(rslave);
 				//remove empty deleted directories
 				if (file.isDeleted() && file.dirSize() == 0) {
 					i.remove();
 					// size SHOULD be 0, but if it isn't, this will even out the unsynched dirsize 
 					addSize(-file.length());
 				}
-			} else {				
-				if (file.removeSlave(rslave)) {
-					logger.warn(
-						file.getPath() + " deleted from " + rslave.getName());
-				}
-				//it's safe to remove it as it has no slaves.
-				if (file.getSlaves().size() == 0) {
-					getParentFileNull().addSize(-file.length());
-					i.remove();
-				}
+			} else {
+				unmergeFile(rslave);
 			}
 		}
+	}
+
+	public void unmergeFile(RemoteSlave rslave) {
+		if (!isFile())
+			return;
+		if (removeSlave(rslave)) {
+				logger.warn(
+					getPath() + " deleted from " + rslave.getName());
+		}
+		//it's safe to remove it as it has no slaves.
+		// removeSlave() takes care of this
+//		if (file.getSlaves().size() == 0) {
+//			i.remove();
+//			getParentFileNull().addSize(-file.length());
+//		}
 	}
 
 	public LinkedRemoteFile getOldestFile() throws ObjectNotFoundException {

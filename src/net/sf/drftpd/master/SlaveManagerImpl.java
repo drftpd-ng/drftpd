@@ -45,7 +45,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 /**
- * @version $Id: SlaveManagerImpl.java,v 1.61 2004/01/22 21:48:22 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.62 2004/01/31 05:18:38 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -567,7 +567,7 @@ public class SlaveManagerImpl
 					Level.WARN,
 					rslave.getName() + " no longer in slaves.xml, unmerging");
 				rslave.setOffline("Slave removed from slaves.xml");
-				root.unmerge(rslave);
+				root.unmergeDir(rslave);
 				//rslaves.remove(rslave);
 				iter.remove();
 			}
