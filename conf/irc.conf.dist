@@ -31,12 +31,12 @@ irc.enable.announce=true
 #irc.section.2.channel=#drftpd-test2
 
 # Plugins ...
-irc.plugins.1=net.sf.drftpd.event.irc.Invite
-irc.plugins.2=net.sf.drftpd.event.irc.Who
-irc.plugins.3=net.sf.drftpd.event.irc.Slaves
-irc.plugins.4=net.sf.drftpd.event.irc.GenericTextOutput
-irc.plugins.5=net.sf.drftpd.event.irc.Stats
-irc.plugins.6=net.sf.drftpd.event.irc.Bandwidth
-irc.plugins.7=net.sf.drftpd.event.irc.Diskfree
-irc.plugins.8=org.drftpd.plugins.OnConnect
-irc.plugins.9=net.sf.drftpd.event.irc.Kick
+irc.plugins.1=org.drftpd.sitebot.irc.Invite
+irc.plugins.2=org.drftpd.sitebot.irc.Who
+irc.plugins.3=org.drftpd.sitebot.irc.Slaves
+irc.plugins.4=org.drftpd.sitebot.irc.GenericTextOutput
+irc.plugins.5=org.drftpd.sitebot.irc.Stats
+irc.plugins.6=org.drftpd.sitebot.irc.Bandwidth
+irc.plugins.7=org.drftpd.sitebot.irc.Diskfree
+irc.plugins.8=org.drftpd.sitebot.OnConnect
+irc.plugins.9=org.drftpd.sitebot.irc.Kick

@@ -1,3 +1,10 @@
+2004/12/06 Teflon <teflon114@gmail.com>
+* Added IRC !ident command to identify irc users as their ftp users
+* Modified IRC !invite command to automatically identify irc users
+* Set javabeans to be the default usermanager in drftpd.conf
+* Fixed plugin paths to point to the correct class in irc.conf
+
+
 2004/11/30 Morgan Christiansson <drftpd@mog.se>
 * Added SITE DELUSER <user> <reason> at the request of M3ta.
 * Added patch from M3ta. http://www.drftpd.org/phpBB2/viewtopic.php?p=117#117

@@ -26,6 +26,7 @@ import net.sf.drftpd.event.InviteEvent;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.master.ConnectionManager;
 
 import org.drftpd.plugins.*;
@@ -85,6 +86,18 @@ public class Invite extends GenericCommandAutoService
             if (success) {
                 logger.info("Invited \"" + msgc.getSourceString() +
                     "\" as user " + user.getName());
+                
+            	Key key = new Key(this.getClass(),"IRCIdent",String.class);
+            	String ident = msgc.getSource().getNick() + "!" 
+								+ msgc.getSource().getUser() + "@" 
+								+ msgc.getSource().getHost();
+            	user.getKeyedMap().setObject(key,ident);
+            	try {
+					user.commit();
+		           	logger.info("Proactively set IRC ident to '"+ident+"' for "+user.getName());
+				} catch (UserFileException e1) {
+					logger.warn("Error saving userfile for "+user.getName()+" while trying to add IRC ident '"+ident+"'",e1);
+				}
             } else {
                 logger.log(Level.WARN,
                     msgc.getSourceString() +
