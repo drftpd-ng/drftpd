@@ -59,7 +59,7 @@ import java.util.regex.Pattern;
  * print, wipe, delete Multipe options and actions are allowed. If multiple
  * options are given a file must match all options for action to be taken.
  * 
- * @author B
+ * @author pyrrhic
  * @author mog
  * @version $Id$
  */
