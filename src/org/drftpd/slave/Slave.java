@@ -63,6 +63,7 @@ import org.drftpd.slave.async.AsyncResponseRemerge;
 import org.drftpd.slave.async.AsyncResponseSFVFile;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
+import org.tanukisoftware.wrapper.WrapperManager;
 
 import se.mog.io.File;
 import se.mog.io.PermissionDeniedException;
@@ -598,7 +599,7 @@ public class Slave {
 
     private void listenForCommands() throws IOException {
         while (true) {
-            AsyncCommand ac;
+            AsyncCommand ac = null;
 
             try {
                 ac = (AsyncCommand) _sin.readObject();
@@ -609,7 +610,7 @@ public class Slave {
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             } catch (EOFException e) {
-            	logger.debug("Master shutdown or went offline");
+            	logger.debug("Lost connection to the master, may have been kicked offline");
             	return;
             }
 

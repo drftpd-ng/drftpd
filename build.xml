@@ -211,7 +211,6 @@
       Example: ant dist -Dversion=2.0-SVN 
     </fail>
     <chmod dir="." perm="+x" includes="*.sh" />
-    <chmod dir="." perm="+x" includes="bin/wrapper" />
     <patternset id="distfiles">
     	<include name="CHANGELOG.txt"/>
     	<include name="LICENSE.txt"/>

@@ -38,6 +38,7 @@ wrapper.app.parameter.1=org.drftpd.slave.Slave
 #Retry when slave exits
 wrapper.disable_shutdown_hook=TRUE
 wrapper.restart.delay=300
+wrapper.on_exit.default=RESTART
 #********************************************************************
 # Wrapper Logging Properties
 #********************************************************************
