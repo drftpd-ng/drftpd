@@ -24,7 +24,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.36 2004/02/04 00:28:18 zubov Exp $
+ * @version $Id: FtpConfig.java,v 1.37 2004/02/09 21:44:47 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -78,7 +78,7 @@ public class FtpConfig {
 	private ArrayList _hideinwho;
 	private boolean _isLowerDir;
 	private boolean _isLowerFile;
-	private String _loginPrompt = SlaveImpl.VERSION + " http://drftpd.mog.se";
+	private String _loginPrompt = SlaveImpl.VERSION + " http://drftpd.org";
 	private ArrayList _makedir;
 	private int _maxUsersExempt;
 	private int _maxUsersTotal = Integer.MAX_VALUE;
@@ -236,20 +236,12 @@ public class FtpConfig {
 			RatioPathPermission perm = (RatioPathPermission) iter.next();
 
 			if (perm.checkPath(path)) {
-				System.out.println("path matched, path = " + path.getPath());
 				if (perm.check(fromUser)) {
-					System.out.println(
-						"user matched, user = " + fromUser.toString());
 					return perm.getRatio();
-				} //else {
-				//					return fromUser.getRatio() == 0 ? 0 : 1;
-				//				}
-				// if that was true, you couldn't have different settings for
-				// different users in the same directory
+				}
 			}
 		}
 		//default credit loss ratio is 1
-		System.out.println("path did not match anything, path = " + path);
 		return fromUser.getRatio() == 0 ? 0 : 1;
 	}
 

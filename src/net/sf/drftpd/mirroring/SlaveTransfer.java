@@ -108,9 +108,12 @@ public class SlaveTransfer {
 						dstxfer.getLocalPort()),
 					false));
 		dstxfer.start();
-		srcxfer.start();
+		srcxfer.run();
 		while (srcxfer.isAlive() && dstxfer.isAlive()) {
-			Thread.yield();
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+			}
 		}
 		if (srcxfer.e != null) {
 			if (srcxfer.e instanceof IOException)

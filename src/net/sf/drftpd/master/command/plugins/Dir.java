@@ -37,7 +37,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.17 2004/02/04 17:13:12 mog Exp $
+ * @version $Id: Dir.java,v 1.18 2004/02/09 21:44:46 mog Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
 	private final static SimpleDateFormat DATE_FMT =
@@ -295,7 +295,9 @@ public class Dir implements CommandHandler, Cloneable {
 		if (!request.hasArgument()) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
-
+		if(!conn.getSlaveManager().hasAvailableSlaves()) {
+			return FtpReply.RESPONSE_450_SLAVE_UNAVAILABLE;
+		}
 		LinkedRemoteFile.NonExistingFile ret =
 			conn.getCurrentDirectory().lookupNonExistingFile(
 				request.getArgument());

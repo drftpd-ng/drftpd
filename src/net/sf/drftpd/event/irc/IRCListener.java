@@ -69,7 +69,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.81 2004/02/09 14:12:55 mog Exp $
+ * @version $Id: IRCListener.java,v 1.82 2004/02/09 21:44:45 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -405,9 +405,8 @@ public class IRCListener implements FtpListener, Observer {
 			raceformat = ReplacerFormat.createFormat(ret3.getFormat());
 			say(
 				SimplePrintf.jprintf(
-					getPropertyFileSuffix(
-						"store.complete.group.header",
-						dir).getFormat(),
+					getPropertyFileSuffix("store.complete.group.header", dir)
+						.getFormat(),
 					env));
 
 			position = 1;
@@ -1042,88 +1041,85 @@ public class IRCListener implements FtpListener, Observer {
 
 		boolean first = true;
 
-		Collection conns = getConnectionManager().getConnections();
-		synchronized (conns) {
-			for (Iterator iter = conns.iterator(); iter.hasNext();) {
-				BaseFtpConnection conn = (BaseFtpConnection) iter.next();
-				try {
-					User connUser = conn.getUser();
-					if (!first) {
-						status = status + separator;
-					}
-					if (connUser.getUsername().equals(username)) {
+		ArrayList conns =
+			new ArrayList(getConnectionManager().getConnections());
+		for (Iterator iter = conns.iterator(); iter.hasNext();) {
+			BaseFtpConnection conn = (BaseFtpConnection) iter.next();
+			try {
+				User connUser = conn.getUser();
+				if (!first) {
+					status = status + separator;
+				}
+				if (connUser.getUsername().equals(username)) {
 
+					env.add(
+						"idle",
+						(System.currentTimeMillis() - conn.getLastActive())
+							/ 1000
+							+ "s");
+
+					if (_cm
+						.getConfig()
+						.checkHideInWho(connUser, conn.getCurrentDirectory()))
+						continue;
+					first = false;
+					if (!conn.isExecuting()) {
+						status
+							+= ReplacerUtils.jprintf(
+								"speed.idle",
+								env,
+								IRCListener.class);
+
+					} else if (
+						conn.getDataConnectionHandler().isTransfering()) {
+						try {
+							env.add(
+								"speed",
+								Bytes.formatBytes(
+									conn
+										.getDataConnectionHandler()
+										.getTransfer()
+										.getXferSpeed())
+									+ "/s");
+						} catch (RemoteException e2) {
+							logger.warn("", e2);
+						}
 						env.add(
-							"idle",
-							(System.currentTimeMillis() - conn.getLastActive())
-								/ 1000
-								+ "s");
+							"file",
+							conn
+								.getDataConnectionHandler()
+								.getTransferFile()
+								.getName());
+						env.add(
+							"slave",
+							conn
+								.getDataConnectionHandler()
+								.getTranferSlave()
+								.getName());
 
-						if (_cm
-							.getConfig()
-							.checkHideInWho(
-								connUser,
-								conn.getCurrentDirectory()))
-							continue;
-						first = false;
-						if (!conn.isExecuting()) {
+						if (conn.getTransferDirection()
+							== Transfer.TRANSFER_RECEIVING_UPLOAD) {
 							status
 								+= ReplacerUtils.jprintf(
-									"speed.idle",
+									"speed.up",
 									env,
 									IRCListener.class);
 
 						} else if (
-							conn.getDataConnectionHandler().isTransfering()) {
-							try {
-								env.add(
-									"speed",
-									Bytes.formatBytes(
-										conn
-											.getDataConnectionHandler()
-											.getTransfer()
-											.getXferSpeed())
-										+ "/s");
-							} catch (RemoteException e2) {
-								logger.warn("", e2);
-							}
-							env.add(
-								"file",
-								conn
-									.getDataConnectionHandler()
-									.getTransferFile()
-									.getName());
-							env.add(
-								"slave",
-								conn
-									.getDataConnectionHandler()
-									.getTranferSlave()
-									.getName());
-
-							if (conn.getTransferDirection()
-								== Transfer.TRANSFER_RECEIVING_UPLOAD) {
-								status
-									+= ReplacerUtils.jprintf(
-										"speed.up",
-										env,
-										IRCListener.class);
-
-							} else if (
-								conn.getTransferDirection()
-									== Transfer.TRANSFER_SENDING_DOWNLOAD) {
-								status
-									+= ReplacerUtils.jprintf(
-										"speed.down",
-										env,
-										IRCListener.class);
-							}
+							conn.getTransferDirection()
+								== Transfer.TRANSFER_SENDING_DOWNLOAD) {
+							status
+								+= ReplacerUtils.jprintf(
+									"speed.down",
+									env,
+									IRCListener.class);
 						}
 					}
-				} catch (NoSuchUserException e) {
-					//just continue.. we aren't interested in connections without logged-in users
 				}
-			} // for
-		}
+			} catch (NoSuchUserException e) {
+				//just continue.. we aren't interested in connections without logged-in users
+			}
+		} // for
 		status += ReplacerUtils.jprintf("speed.post", env, IRCListener.class);
 		if (first) {
 			status =

@@ -1,6 +1,7 @@
 package net.sf.drftpd.event.irc;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -26,7 +27,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Who.java,v 1.1 2004/01/20 06:59:00 mog Exp $
+ * @version $Id: Who.java,v 1.2 2004/02/09 21:44:46 mog Exp $
  */
 public class Who extends GenericAutoService {
 	private static final Logger logger = Logger.getLogger(Who.class);
@@ -80,72 +81,70 @@ public class Who extends GenericAutoService {
 
 			ReplacerEnvironment env =
 				new ReplacerEnvironment(IRCListener.GLOBAL_ENV);
-			Collection conns = getConnectionManager().getConnections();
+			ArrayList conns =
+				new ArrayList(getConnectionManager().getConnections());
 			int i = 0;
-			synchronized (conns) {
-				for (Iterator iter = conns.iterator(); iter.hasNext();) {
-					BaseFtpConnection conn = (BaseFtpConnection) iter.next();
-					User user;
-					try {
-						user = conn.getUser();
-					} catch (NoSuchUserException e) {
-						continue;
+			for (Iterator iter = conns.iterator(); iter.hasNext();) {
+				BaseFtpConnection conn = (BaseFtpConnection) iter.next();
+				User user;
+				try {
+					user = conn.getUser();
+				} catch (NoSuchUserException e) {
+					continue;
+				}
+				if (getConfig()
+					.checkHideInWho(user, conn.getCurrentDirectory())) {
+					continue;
+				}
+				env.add(
+					"idle",
+					(System.currentTimeMillis() - conn.getLastActive()) / 1000
+						+ "s");
+				env.add("targetuser", user.getUsername());
+
+				if (!conn.getDataConnectionHandler().isTransfering()) {
+					if (idle) {
+						say(SimplePrintf.jprintf(formatidle, env));
 					}
-					if (getConfig()
-						.checkHideInWho(user, conn.getCurrentDirectory())) {
-						continue;
+				} else {
+					try {
+						env.add(
+							"speed",
+							Bytes.formatBytes(
+								conn
+									.getDataConnectionHandler()
+									.getTransfer()
+									.getXferSpeed())
+								+ "/s");
+					} catch (RemoteException e2) {
+						logger.warn("", e2);
 					}
 					env.add(
-						"idle",
-						(System.currentTimeMillis() - conn.getLastActive())
-							/ 1000
-							+ "s");
-					env.add("targetuser", user.getUsername());
+						"file",
+						conn
+							.getDataConnectionHandler()
+							.getTransferFile()
+							.getName());
+					env.add(
+						"slave",
+						conn
+							.getDataConnectionHandler()
+							.getTranferSlave()
+							.getName());
 
-					if (!conn.getDataConnectionHandler().isTransfering()) {
-						if (idle) {
-							say(SimplePrintf.jprintf(formatidle, env));
+					if (conn.getTransferDirection()
+						== Transfer.TRANSFER_RECEIVING_UPLOAD) {
+						if (up) {
+							say(SimplePrintf.jprintf(formatup, env));
+							i++;
 						}
-					} else {
-						try {
-							env.add(
-								"speed",
-								Bytes.formatBytes(
-									conn
-										.getDataConnectionHandler()
-										.getTransfer()
-										.getXferSpeed())
-									+ "/s");
-						} catch (RemoteException e2) {
-							logger.warn("", e2);
-						}
-						env.add(
-							"file",
-							conn
-								.getDataConnectionHandler()
-								.getTransferFile()
-								.getName());
-						env.add(
-							"slave",
-							conn
-								.getDataConnectionHandler()
-								.getTranferSlave()
-								.getName());
 
-						if (conn.getTransferDirection()
-							== Transfer.TRANSFER_RECEIVING_UPLOAD) {
-							if (up) {
-								say(SimplePrintf.jprintf(formatup, env));
-								i++;
-							}
-
-						} else if (
-							conn.getTransferDirection()
-								== Transfer.TRANSFER_SENDING_DOWNLOAD) {
-							if (dn) {
-								say(SimplePrintf.jprintf(formatdown, env));
-								i++;
-							}
+					} else if (
+						conn.getTransferDirection()
+							== Transfer.TRANSFER_SENDING_DOWNLOAD) {
+						if (dn) {
+							say(SimplePrintf.jprintf(formatdown, env));
+							i++;
 						}
 					}
 				}

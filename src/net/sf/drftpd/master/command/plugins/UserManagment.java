@@ -1,6 +1,7 @@
 package net.sf.drftpd.master.command.plugins;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -36,7 +37,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.25 2004/02/05 18:11:54 flowman Exp $
+ * @version $Id: UserManagment.java,v 1.26 2004/02/09 21:44:47 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -216,14 +217,16 @@ public class UserManagment implements CommandHandler {
 				env.add("primgroup", newUser.getGroupName());
 				response.addComment(
 					conn.jprintf(
-							UserManagment.class.getName(),
-							"adduser.primgroup",
-							env));
+						UserManagment.class.getName(),
+						"adduser.primgroup",
+						env));
 			}
 		} catch (NoSuchElementException ex) {
 			return new FtpReply(
 				501,
-				conn.jprintf(UserManagment.class.getName(), "adduser.missingpass"));
+				conn.jprintf(
+					UserManagment.class.getName(),
+					"adduser.missingpass"));
 		} catch (UserFileException ex) {
 			return new FtpReply(200, ex.getMessage());
 		}
@@ -380,8 +383,9 @@ public class UserManagment implements CommandHandler {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		if (!request.hasArgument()) {
-			FtpReply response = (FtpReply) FtpReply.RESPONSE_501_SYNTAX_ERROR.clone();
-			
+			FtpReply response =
+				(FtpReply) FtpReply.RESPONSE_501_SYNTAX_ERROR.clone();
+
 			response.addComment(
 				conn.jprintf(UserManagment.class.getName(), "change.usage0"));
 			response.addComment(" ");
@@ -390,7 +394,7 @@ public class UserManagment implements CommandHandler {
 			response.addComment(
 				conn.jprintf(UserManagment.class.getName(), "change.usage2"));
 			response.addComment(
-				conn.jprintf(UserManagment.class.getName(), "change.usage3"));	
+				conn.jprintf(UserManagment.class.getName(), "change.usage3"));
 			return response;
 		}
 
@@ -402,14 +406,21 @@ public class UserManagment implements CommandHandler {
 			String argument = request.getArgument();
 			int pos1 = argument.indexOf(' ');
 			if (pos1 == -1) {
-				FtpReply response2 = (FtpReply) FtpReply.RESPONSE_501_SYNTAX_ERROR.clone();
-			
+				FtpReply response2 =
+					(FtpReply) FtpReply.RESPONSE_501_SYNTAX_ERROR.clone();
+
 				response2.addComment(
-					conn.jprintf(UserManagment.class.getName(), "change.usage1"));
+					conn.jprintf(
+						UserManagment.class.getName(),
+						"change.usage1"));
 				response2.addComment(
-					conn.jprintf(UserManagment.class.getName(), "change.usage2"));
+					conn.jprintf(
+						UserManagment.class.getName(),
+						"change.usage2"));
 				response2.addComment(
-					conn.jprintf(UserManagment.class.getName(), "change.usage3"));	
+					conn.jprintf(
+						UserManagment.class.getName(),
+						"change.usage3"));
 				return response2;
 			}
 			String username = argument.substring(0, pos1);
@@ -432,7 +443,9 @@ public class UserManagment implements CommandHandler {
 			if (pos2 == -1) {
 				return new FtpReply(
 					501,
-					conn.jprintf(UserManagment.class.getName(), "change.specify"));
+					conn.jprintf(
+						UserManagment.class.getName(),
+						"change.specify"));
 			}
 			command = argument.substring(pos1 + 1, pos2);
 			commandArgument = argument.substring(pos2 + 1);
@@ -483,8 +496,10 @@ public class UserManagment implements CommandHandler {
 
 				env.add("ratio", Float.toString(myUser.getRatio()));
 				response.addComment(
-					conn.jprintf(UserManagment.class.getName(),
-						"changeratio.success", env));
+					conn.jprintf(
+						UserManagment.class.getName(),
+						"changeratio.success",
+						env));
 			}
 		}
 
@@ -496,35 +511,43 @@ public class UserManagment implements CommandHandler {
 
 		if ("credits".equalsIgnoreCase(command)) {
 			myUser.setCredits(Bytes.parseBytes(commandArgument));
-			
+
 			env.add("credits", Bytes.formatBytes(myUser.getCredits()));
 			response.addComment(
-				conn.jprintf(UserManagment.class.getName(),
-					"changecredits.success", env));
-					
+				conn.jprintf(
+					UserManagment.class.getName(),
+					"changecredits.success",
+					env));
+
 		} else if ("ratio".equalsIgnoreCase(command)) {
 			myUser.setRatio(Float.parseFloat(commandArgument));
 
 			env.add("ratio", Float.toString(myUser.getRatio()));
 			response.addComment(
-				conn.jprintf(UserManagment.class.getName(),
-					"changeratio.success", env));
+				conn.jprintf(
+					UserManagment.class.getName(),
+					"changeratio.success",
+					env));
 
 		} else if ("comment".equalsIgnoreCase(command)) {
 			myUser.setComment(commandArgument);
 
 			env.add("comment", myUser.getComment());
 			response.addComment(
-				conn.jprintf(UserManagment.class.getName(),
-					"changecomment.success", env));
+				conn.jprintf(
+					UserManagment.class.getName(),
+					"changecomment.success",
+					env));
 
 		} else if ("idle_time".equalsIgnoreCase(command)) {
 			myUser.setIdleTime(Integer.parseInt(commandArgument));
 
 			env.add("idletime", Long.toString(myUser.getIdleTime()));
 			response.addComment(
-				conn.jprintf(UserManagment.class.getName(),
-					"changeidletime.success", env));
+				conn.jprintf(
+					UserManagment.class.getName(),
+					"changeidletime.success",
+					env));
 
 		} else if ("num_logins".equalsIgnoreCase(command)) {
 			try {
@@ -536,12 +559,16 @@ public class UserManagment implements CommandHandler {
 				if (args.length == 2) {
 					myUser.setMaxLoginsPerIP(Integer.parseInt(args[1]));
 				}
-				
+
 				env.add("numlogins", Long.toString(myUser.getMaxLogins()));
-				env.add("numloginsip", Long.toString(myUser.getMaxLoginsPerIP()));
+				env.add(
+					"numloginsip",
+					Long.toString(myUser.getMaxLoginsPerIP()));
 				response.addComment(
-					conn.jprintf(UserManagment.class.getName(),
-						"changenumlogins.success", env));
+					conn.jprintf(
+						UserManagment.class.getName(),
+						"changenumlogins.success",
+						env));
 			} catch (NumberFormatException ex) {
 				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 			}
@@ -556,8 +583,10 @@ public class UserManagment implements CommandHandler {
 
 			env.add("primgroup", myUser.getGroupName());
 			response.addComment(
-				conn.jprintf(UserManagment.class.getName(),
-					"changeprimgroup.success", env));
+				conn.jprintf(
+					UserManagment.class.getName(),
+					"changeprimgroup.success",
+					env));
 
 			//			group_slots	Number of users a GADMIN is allowed to add.
 			//					If you specify a second argument, it will be the
@@ -573,24 +602,29 @@ public class UserManagment implements CommandHandler {
 				if (args.length >= 2) {
 					myUser.setGroupLeechSlots(Short.parseShort(args[1]));
 				}
-				
+
 				env.add("groupslots", Long.toString(myUser.getGroupSlots()));
-				env.add("groupleechslots", Long.toString(myUser.getGroupLeechSlots()));
+				env.add(
+					"groupleechslots",
+					Long.toString(myUser.getGroupLeechSlots()));
 				response.addComment(
-					conn.jprintf(UserManagment.class.getName(),
-						"changegroupslots.success", env));
+					conn.jprintf(
+						UserManagment.class.getName(),
+						"changegroupslots.success",
+						env));
 			} catch (NumberFormatException ex) {
 				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 			}
 		} else {
-			FtpReply response2 = (FtpReply) FtpReply.RESPONSE_501_SYNTAX_ERROR.clone();
-			
+			FtpReply response2 =
+				(FtpReply) FtpReply.RESPONSE_501_SYNTAX_ERROR.clone();
+
 			response2.addComment(
 				conn.jprintf(UserManagment.class.getName(), "change.usage1"));
 			response2.addComment(
 				conn.jprintf(UserManagment.class.getName(), "change.usage2"));
 			response2.addComment(
-				conn.jprintf(UserManagment.class.getName(), "change.usage3"));	
+				conn.jprintf(UserManagment.class.getName(), "change.usage3"));
 			return response2;
 		}
 		try {
@@ -940,16 +974,15 @@ public class UserManagment implements CommandHandler {
 
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
 
-		Collection conns = conn.getConnectionManager().getConnections();
-		synchronized (conns) {
-			for (Iterator iter = conns.iterator(); iter.hasNext();) {
-				BaseFtpConnection conn2 = (BaseFtpConnection) iter.next();
-				try {
-					if (conn2.getUser().getUsername().equals(username)) {
-						conn2.stop(message);
-					}
-				} catch (NoSuchUserException e) {
+		ArrayList conns =
+			new ArrayList(conn.getConnectionManager().getConnections());
+		for (Iterator iter = conns.iterator(); iter.hasNext();) {
+			BaseFtpConnection conn2 = (BaseFtpConnection) iter.next();
+			try {
+				if (conn2.getUser().getUsername().equals(username)) {
+					conn2.stop(message);
 				}
+			} catch (NoSuchUserException e) {
 			}
 		}
 		return response;
@@ -1196,17 +1229,17 @@ public class UserManagment implements CommandHandler {
 			&& !conn.getUserNull().getGroupName().equals(myUser.getGroupName())) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
-		
+
 		//int i = (int) (myUser.getTimeToday() / 1000);
 		//int hours = i / 60;
 		//int minutes = i - hours * 60;
 		//response.addComment("time on today: " + hours + ":" + minutes);
-		
+
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		env.add("username", myUser.getUsername());
 		env.add("created", new Date(myUser.getCreated()));
 		env.add("comment", myUser.getComment());
-		env.add("lastseen", new Date(myUser.getLastAccessTime()));	
+		env.add("lastseen", new Date(myUser.getLastAccessTime()));
 		env.add("totallogins", Long.toString(myUser.getLogins()));
 		env.add("idletime", Long.toString(myUser.getIdleTime()));
 		env.add("userratio", Float.toString(myUser.getRatio()));
@@ -1218,50 +1251,48 @@ public class UserManagment implements CommandHandler {
 		env.add("groupslots", Long.toString(myUser.getGroupSlots()));
 		env.add("groupleechslots", Long.toString(myUser.getGroupLeechSlots()));
 		env.add("useruploaded", Bytes.formatBytes(myUser.getUploadedBytes()));
-		env.add("userdownloaded", Bytes.formatBytes(myUser.getDownloadedBytes()));
+		env.add(
+			"userdownloaded",
+			Bytes.formatBytes(myUser.getDownloadedBytes()));
 		env.add("timesnuked", Long.toString(myUser.getTimesNuked()));
 		env.add("nukedbytes", Bytes.formatBytes(myUser.getNukedBytes()));
 		env.add("primarygroup", myUser.getGroupName());
 		env.add("extragroups", myUser.getGroups());
 		env.add("ipmasks", myUser.getIpMasks());
-		
-		
+
+		response.addComment(
+			conn.jprintf(UserManagment.class.getName(), "user.username", env));
+		response.addComment(
+			conn.jprintf(UserManagment.class.getName(), "user.comment", env));
+		response.addComment(
+			conn.jprintf(UserManagment.class.getName(), "user.idle", env));
+		response.addComment(
+			conn.jprintf(UserManagment.class.getName(), "user.ratio", env));
+		response.addComment(
+			conn.jprintf(UserManagment.class.getName(), "user.logins", env));
+		response.addComment(
+			conn.jprintf(UserManagment.class.getName(), "user.maxsim", env));
 		response.addComment(
 			conn.jprintf(
-				UserManagment.class.getName(), "user.username",	env));
+				UserManagment.class.getName(),
+				"user.groupslots",
+				env));
+		response.addComment(
+			conn.jprintf(UserManagment.class.getName(), "user.xfer", env));
+		response.addComment(
+			conn.jprintf(UserManagment.class.getName(), "user.nuke", env));
 		response.addComment(
 			conn.jprintf(
-				UserManagment.class.getName(), "user.comment", env));
+				UserManagment.class.getName(),
+				"user.primarygroup",
+				env));
 		response.addComment(
 			conn.jprintf(
-				UserManagment.class.getName(), "user.idle", env));
+				UserManagment.class.getName(),
+				"user.extragroups",
+				env));
 		response.addComment(
-			conn.jprintf(
-				UserManagment.class.getName(), "user.ratio", env));
-		response.addComment(
-			conn.jprintf(
-				UserManagment.class.getName(), "user.logins", env));
-		response.addComment(
-			conn.jprintf(
-				UserManagment.class.getName(), "user.maxsim", env));
-				response.addComment(
-			conn.jprintf(
-				UserManagment.class.getName(), "user.groupslots", env));
-		response.addComment(
-			conn.jprintf(
-				UserManagment.class.getName(), "user.xfer", env));
-		response.addComment(
-			conn.jprintf(
-				UserManagment.class.getName(), "user.nuke", env));
-		response.addComment(
-			conn.jprintf(
-				UserManagment.class.getName(), "user.primarygroup", env));
-		response.addComment(
-			conn.jprintf(
-				UserManagment.class.getName(), "user.extragroups", env));
-		response.addComment(
-			conn.jprintf(
-				UserManagment.class.getName(), "user.ipmasks", env));
+			conn.jprintf(UserManagment.class.getName(), "user.ipmasks", env));
 
 		return response;
 	}
@@ -1308,7 +1339,7 @@ public class UserManagment implements CommandHandler {
 
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
 		long users = 0, speedup = 0, speeddn = 0, speed = 0;
-		
+
 		try {
 			ReplacerFormat formatup =
 				ReplacerUtils.finalFormat(UserManagment.class, "who.up");
@@ -1321,99 +1352,103 @@ public class UserManagment implements CommandHandler {
 
 			ReplacerEnvironment env = new ReplacerEnvironment();
 
-			List conns = conn.getConnectionManager().getConnections();
-			synchronized (conns) {
-				
-				for (Iterator iter = conns.iterator(); iter.hasNext();) {
-					BaseFtpConnection conn2 = (BaseFtpConnection) iter.next();
-					if (conn2.isAuthenticated()) {
-						users ++;
-						User user;
-						try {
-							user = conn2.getUser();
-						} catch (NoSuchUserException e) {
-							continue;
-						}
-						if (conn
-							.getConfig()
-							.checkHideInWho(user, conn2.getCurrentDirectory()))
-							continue;
-						//StringBuffer status = new StringBuffer();
-						env.add(
-							"idle",
-								Time.formatTime(System.currentTimeMillis()
-								- conn2.getLastActive()));
-						env.add("targetuser", user.getUsername());
+			ArrayList conns =
+				new ArrayList(conn.getConnectionManager().getConnections());
 
-						if (!conn2.isExecuting()) {
+			for (Iterator iter = conns.iterator(); iter.hasNext();) {
+				BaseFtpConnection conn2 = (BaseFtpConnection) iter.next();
+				if (conn2.isAuthenticated()) {
+					users++;
+					User user;
+					try {
+						user = conn2.getUser();
+					} catch (NoSuchUserException e) {
+						continue;
+					}
+					if (conn
+						.getConfig()
+						.checkHideInWho(user, conn2.getCurrentDirectory()))
+						continue;
+					//StringBuffer status = new StringBuffer();
+					env.add(
+						"idle",
+						Time.formatTime(
+							System.currentTimeMillis()
+								- conn2.getLastActive()));
+					env.add("targetuser", user.getUsername());
+
+					if (!conn2.isExecuting()) {
+						response.addComment(
+							SimplePrintf.jprintf(formatidle, env));
+
+					} else if (
+						conn2.getDataConnectionHandler().isTransfering()) {
+						if (conn2.getDataConnectionHandler().isTransfering()) {
+							try {
+								speed =
+									conn2
+										.getDataConnectionHandler()
+										.getTransfer()
+										.getXferSpeed();
+								env.add(
+									"speed",
+									Bytes.formatBytes(speed) + "/s");
+							} catch (RemoteException e2) {
+								logger.warn("", e2);
+							}
+							env.add(
+								"file",
+								conn2
+									.getDataConnectionHandler()
+									.getTransferFile()
+									.getName());
+							env.add(
+								"slave",
+								conn2
+									.getDataConnectionHandler()
+									.getTranferSlave()
+									.getName());
+						}
+
+						if (conn2.getTransferDirection()
+							== Transfer.TRANSFER_RECEIVING_UPLOAD) {
 							response.addComment(
-								SimplePrintf.jprintf(formatidle, env));
+								SimplePrintf.jprintf(formatup, env));
+							speedup += speed;
 
 						} else if (
-							conn2.getDataConnectionHandler().isTransfering()) {
-							if (conn2
-								.getDataConnectionHandler()
-								.isTransfering()) {
-								try {
-									speed = 											conn2
-									.getDataConnectionHandler()
-									.getTransfer()
-									.getXferSpeed();
-									env.add(
-										"speed",
-										Bytes.formatBytes(speed)
-											+ "/s");
-								} catch (RemoteException e2) {
-									logger.warn("", e2);
-								}
-								env.add(
-									"file",
-									conn2
-										.getDataConnectionHandler()
-										.getTransferFile()
-										.getName());
-								env.add(
-									"slave",
-									conn2
-										.getDataConnectionHandler()
-										.getTranferSlave()
-										.getName());
-							}
-
-							if (conn2.getTransferDirection()
-								== Transfer.TRANSFER_RECEIVING_UPLOAD) {
-								response.addComment(
-									SimplePrintf.jprintf(formatup, env));
-									speedup += speed;
-
-							} else if (
-								conn2.getTransferDirection()
-									== Transfer.TRANSFER_SENDING_DOWNLOAD) {
-								response.addComment(
-									SimplePrintf.jprintf(formatdown, env));
-									speeddn += speed;
-							}
-						} else {
-							env.add("command", conn2.getRequest().getCommand());
+							conn2.getTransferDirection()
+								== Transfer.TRANSFER_SENDING_DOWNLOAD) {
 							response.addComment(
-								SimplePrintf.jprintf(formatcommand, env));
+								SimplePrintf.jprintf(formatdown, env));
+							speeddn += speed;
 						}
+					} else {
+						env.add("command", conn2.getRequest().getCommand());
+						response.addComment(
+							SimplePrintf.jprintf(formatcommand, env));
 					}
 				}
 			}
 			env.add("currentusers", Long.toString(users));
-			env.add("maxusers", Long.toString(conn.getConfig().getMaxUsersTotal()));
+			env.add(
+				"maxusers",
+				Long.toString(conn.getConfig().getMaxUsersTotal()));
 			env.add("totalupspeed", Bytes.formatBytes(speedup) + "/s");
 			env.add("totaldnspeed", Bytes.formatBytes(speeddn) + "/s");
 
 			response.addComment("");
 			response.addComment(
 				conn.jprintf(
-					UserManagment.class.getName(), "who.statusspeed", env));
+					UserManagment.class.getName(),
+					"who.statusspeed",
+					env));
 			response.addComment(
 				conn.jprintf(
-					UserManagment.class.getName(), "who.statususers", env));
-			
+					UserManagment.class.getName(),
+					"who.statususers",
+					env));
+
 			return response;
 		} catch (FormatterException e) {
 			return new FtpReply(200, e.getMessage());
@@ -1480,7 +1515,7 @@ public class UserManagment implements CommandHandler {
 		CommandManager initializer) {
 		return this;
 	}
-	
+
 	public void load(CommandManagerFactory initializer) {
 	}
 

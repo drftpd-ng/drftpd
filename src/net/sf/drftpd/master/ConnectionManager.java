@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.84 2004/02/03 01:04:06 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.85 2004/02/09 21:44:46 mog Exp $
  */
 public class ConnectionManager {
 	public static final int idleTimeout = 300;
@@ -277,32 +277,29 @@ public class ConnectionManager {
 			throw new RuntimeException("connections.remove() returned false.");
 		}
 		if (isShutdown() && _conns.isEmpty()) {
-//			_slaveManager.saveFilelist();
-//			try {
-//				getUserManager().saveAll();
-//			} catch (UserFileException e) {
-//				logger.log(Level.WARN, "Failed to save all userfiles", e);
-//			}
+			//			_slaveManager.saveFilelist();
+			//			try {
+			//				getUserManager().saveAll();
+			//			} catch (UserFileException e) {
+			//				logger.log(Level.WARN, "Failed to save all userfiles", e);
+			//			}
 			logger.info("Shutdown complete, exiting");
 			System.exit(0);
 		}
 	}
 	public void shutdown(String message) {
 		_shutdownMessage = message;
-		Collection conns = getConnections();
-		synchronized (conns) {
-			for (Iterator iter = getConnections().iterator();
-				iter.hasNext();
-				) {
-				((BaseFtpConnection) iter.next()).stop(message);
-			}
+		ArrayList conns = new ArrayList(getConnections());
+		for (Iterator iter = conns.iterator(); iter.hasNext();) {
+			((BaseFtpConnection) iter.next()).stop(message);
 		}
 		dispatchFtpEvent(new MessageEvent("SHUTDOWN", message));
 	}
 	private CommandManagerFactory _commandManagerFactory;
 	public void start(Socket sock) throws IOException {
-		if(isShutdown()) {
-			new PrintWriter(sock.getOutputStream()).println("421 "+getShutdownMessage());
+		if (isShutdown()) {
+			new PrintWriter(sock.getOutputStream()).println(
+				"421 " + getShutdownMessage());
 			sock.close();
 			return;
 		}
@@ -313,24 +310,23 @@ public class ConnectionManager {
 
 	public void timerLogoutIdle() {
 		long currTime = System.currentTimeMillis();
-		synchronized (_conns) {
-			for (Iterator i = _conns.iterator(); i.hasNext();) {
-				BaseFtpConnection conn = (BaseFtpConnection) i.next();
+		ArrayList conns = new ArrayList(_conns);
+		for (Iterator i = conns.iterator(); i.hasNext();) {
+			BaseFtpConnection conn = (BaseFtpConnection) i.next();
 
-				int idle = (int) ((currTime - conn.getLastActive()) / 1000);
-				int maxIdleTime;
-				try {
-					maxIdleTime = conn.getUser().getIdleTime();
-					if (maxIdleTime == 0)
-						maxIdleTime = idleTimeout;
-				} catch (NoSuchUserException e) {
+			int idle = (int) ((currTime - conn.getLastActive()) / 1000);
+			int maxIdleTime;
+			try {
+				maxIdleTime = conn.getUser().getIdleTime();
+				if (maxIdleTime == 0)
 					maxIdleTime = idleTimeout;
-				}
+			} catch (NoSuchUserException e) {
+				maxIdleTime = idleTimeout;
+			}
 
-				if (!conn.isExecuting() && idle >= maxIdleTime) {
-					// idle time expired, logout user.
-					conn.stop("Idle time expired: " + maxIdleTime + "s");
-				}
+			if (!conn.isExecuting() && idle >= maxIdleTime) {
+				// idle time expired, logout user.
+				conn.stop("Idle time expired: " + maxIdleTime + "s");
 			}
 		}
 	}
@@ -340,7 +336,8 @@ public class ConnectionManager {
 	}
 
 	public JobManager getJobManager() {
-		if(_jm == null) throw new IllegalStateException("JobManager not loaded");
+		if (_jm == null)
+			throw new IllegalStateException("JobManager not loaded");
 		return _jm;
 	}
 
