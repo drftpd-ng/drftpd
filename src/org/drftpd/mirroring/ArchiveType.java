@@ -198,8 +198,8 @@ public abstract class ArchiveType {
                 if (!isArchivedToXSlaves(file, x)) {
                     return false;
                 }
-            } else { // if (file.isFile())
-
+            } else { // file.isFile()
+            	if(!file.isAvailable()) throw new OfflineSlaveException(file.getPath()+" is offline");
                 Collection<RemoteSlave> availableSlaves = file.getSlaves();
 
                 if (slaveSet == null) {

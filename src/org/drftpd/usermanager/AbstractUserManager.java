@@ -30,6 +30,8 @@ import org.apache.log4j.Logger;
 import org.drftpd.commands.UserManagment;
 import org.drftpd.master.ConnectionManager;
 
+import se.mog.io.PermissionDeniedException;
+
 /**
  * This is the base class of all the user manager classes. If we want to add a
  * new user manager, we have to override this class.
@@ -126,7 +128,9 @@ public abstract class AbstractUserManager implements UserManager {
      * final for now to remove duplicate implementations
      */
     public void delete(String username) {
-        getUserFile(username).delete();
+        if(!getUserFile(username).delete())
+        	throw new RuntimeException(new PermissionDeniedException());
+        _users.remove(username);
     }
 
 	protected abstract File getUserFile(String username);

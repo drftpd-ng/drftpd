@@ -17,9 +17,13 @@
  */
 package org.drftpd.slaveselection.filter;
 
+import java.rmi.RemoteException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Properties;
+
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -28,26 +32,15 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 import org.apache.log4j.BasicConfigurator;
-
 import org.drftpd.GlobalContext;
-
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.master.RemoteTransfer;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.sections.def.SectionManager;
 import org.drftpd.slave.Transfer;
-
-
 import org.drftpd.tests.DummyConnectionManager;
 import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.tests.DummySlaveManager;
-
-import java.rmi.RemoteException;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Properties;
 
 
 /**
@@ -55,8 +48,12 @@ import java.util.Properties;
  * @version $Id$
  */
 public class SlavetopFilterTest extends TestCase {
-    private LinkedRemoteFile dir1;
-    private LinkedRemoteFile root;
+    private LinkedRemoteFile _dir1;
+    private LinkedRemoteFile _root;
+	private RemoteSlave[] _rslaves;
+	private ScoreChart _sc;
+	private DummyFilterChain _fc;
+	private LinkedRemoteFile _dir2;
 
     public SlavetopFilterTest(String name) {
         super(name);
@@ -68,71 +65,86 @@ public class SlavetopFilterTest extends TestCase {
 
     protected void setUp() throws Exception {
         BasicConfigurator.configure();
+        _rslaves = new RemoteSlave[] {
+                new DummyRemoteSlave("slave1", null),
+                new DummyRemoteSlave("slave2", null),
+                new DummyRemoteSlave("slave3", null)
+            };
+
+        _sc = new ScoreChart(Arrays.asList(_rslaves));
+
+        _root = new LinkedRemoteFile(null);
+        _dir1 = _root.createDirectory("dir1");
+
+        _dir2 = _dir1.createDirectory("dir2");
+
+        _dir2.addFile(new StaticRemoteFile("file1",
+                Collections.singletonList(_rslaves[0])));
+        _dir2.addFile(new StaticRemoteFile("file2",
+                Collections.singletonList(_rslaves[2])));
+        _dir2.addFile(new StaticRemoteFile("file3",
+                Collections.singletonList(_rslaves[0])));
+        _dir2.addFile(new StaticRemoteFile("file4",
+                Collections.singletonList(_rslaves[1])));
+        _dir2.addFile(new StaticRemoteFile("file5",
+                Collections.singletonList(_rslaves[2])));
+
+        // these 3 shouldn't get included by SlavetopFilter, as they are directly in the section.
+        _dir1.addFile(new StaticRemoteFile("file6",
+                Collections.singletonList(_rslaves[1])));
+
+        _dir1.addFile(new StaticRemoteFile("file7",
+                Collections.singletonList(_rslaves[1])));
+
+        _dir1.addFile(new StaticRemoteFile("file8",
+                Collections.singletonList(_rslaves[1])));
+
+        _fc = new DummyFilterChain();
+        DummyConnectionManager cm = new DummyConnectionManager();
+
+        DummyGlobalContext gctx = new DummyGlobalContext();
+        _fc.setGlobalContext(gctx);
+        gctx.setSectionManager(new SectionManager(cm));
+        gctx.setConnectionManager(cm);
+        gctx.setRoot(_root);
+        cm.setGlobalContext(gctx);
+
+        DummySlaveManager sm = new DummySlaveManager();
+        sm.setGlobalContext(gctx);
+        _fc.setSlaveManager(sm);
     }
 
-    public void testSimple()
+    public void testAssign()
         throws NoAvailableSlaveException, FileExistsException, 
             ObjectNotFoundException, RemoteException, SlaveFileException {
         Properties p = new Properties();
         p.put("1.topslaves", "2");
         p.put("1.assign", "100");
 
-        RemoteSlave[] rslaves = {
-                new DummyRemoteSlave("slave1", null),
-                new DummyRemoteSlave("slave2", null),
-                new DummyRemoteSlave("slave3", null)
-            };
+        SlavetopFilter f = new SlavetopFilter(_fc, 1, p);
+        f.process(_sc, null, null, Transfer.TRANSFER_UNKNOWN, _dir2, null);
+        assertEquals(100, _sc.getSlaveScore(_rslaves[0]).getScore());
+        assertEquals(0, _sc.getSlaveScore(_rslaves[1]).getScore());
+        assertEquals(100, _sc.getSlaveScore(_rslaves[2]).getScore());
+    }
+    
+    public void testRemove() throws NoAvailableSlaveException, ObjectNotFoundException {
+        Properties p = new Properties();
+        p.put("1.topslaves", "2");
+        p.put("1.assign", "0");
 
-        ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
-
-        root = new LinkedRemoteFile(null);
-        dir1 = root.createDirectory("dir1");
-
-        LinkedRemoteFile dir2 = dir1.createDirectory("dir2");
-
-        dir2.addFile(new StaticRemoteFile("file1",
-                Collections.singletonList(rslaves[0])));
-        dir2.addFile(new StaticRemoteFile("file2",
-                Collections.singletonList(rslaves[2])));
-        dir2.addFile(new StaticRemoteFile("file3",
-                Collections.singletonList(rslaves[0])));
-        dir2.addFile(new StaticRemoteFile("file4",
-                Collections.singletonList(rslaves[1])));
-        dir2.addFile(new StaticRemoteFile("file5",
-                Collections.singletonList(rslaves[2])));
-
-        // these 3 shouldn't get included by SlavetopFilter, as they are directly in the section.
-        dir1.addFile(new StaticRemoteFile("file6",
-                Collections.singletonList(rslaves[1])));
-
-        dir1.addFile(new StaticRemoteFile("file7",
-                Collections.singletonList(rslaves[1])));
-
-        dir1.addFile(new StaticRemoteFile("file8",
-                Collections.singletonList(rslaves[1])));
-
-        FC fc = new FC();
-        DummyConnectionManager cm = new DummyConnectionManager();
-
-        DummyGlobalContext gctx = new DummyGlobalContext();
-        fc.setGlobalContext(gctx);
-        gctx.setSectionManager(new SectionManager(cm));
-        gctx.setConnectionManager(cm);
-        gctx.setRoot(root);
-        cm.setGlobalContext(gctx);
-
-        DummySlaveManager sm = new DummySlaveManager();
-        sm.setGlobalContext(gctx);
-        fc.setSlaveManager(sm);
-
-        Filter f = new SlavetopFilter(fc, 1, p);
-        f.process(sc, null, null, Transfer.TRANSFER_UNKNOWN, dir2, null);
-        assertEquals(100, sc.getSlaveScore(rslaves[0]).getScore());
-        assertEquals(0, sc.getSlaveScore(rslaves[1]).getScore());
-        assertEquals(100, sc.getSlaveScore(rslaves[2]).getScore());
+        SlavetopFilter f = new SlavetopFilter(_fc, 1, p);
+        f.process(_sc, null, null, Transfer.TRANSFER_UNKNOWN, _dir2, null);
+        assertEquals(0, _sc.getSlaveScore(_rslaves[0]).getScore());
+        try {
+        	_sc.getSlaveScore(_rslaves[1]).getScore();
+        	fail();
+        }catch(ObjectNotFoundException e) {
+        }
+        assertEquals(0, _sc.getSlaveScore(_rslaves[2]).getScore());
     }
 
-    public class FC extends FilterChain {
+    public class DummyFilterChain extends FilterChain {
         private DummySlaveManager _slavem;
         private DummyGlobalContext _dgctx;
 

@@ -57,10 +57,12 @@ public class SlaveTransfer {
     }
 
     long getTransfered() {
+    	if(_srcTransfer == null || _destTransfer == null) return 0;
         return (_srcTransfer.getTransfered() + _destTransfer.getTransfered()) / 2;
     }
 
     int getXferSpeed() {
+    	if(_srcTransfer == null || _destTransfer == null) return 0;
         return (_srcTransfer.getXferSpeed() + _destTransfer.getXferSpeed()) / 2;
     }
 

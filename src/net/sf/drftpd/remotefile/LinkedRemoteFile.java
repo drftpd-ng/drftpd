@@ -828,16 +828,12 @@ public class LinkedRemoteFile implements Serializable, Comparable,
     }
 
     /**
-     * returns slaves. returns null if a directory.
-     * 
-     * <p>Since this method overrides FileRemoteFile which is part of the classes
-     * that keep 1.4 compatibility for the slaves it cannot use generics.</p>
+     * returns slaves. throws exception if a directory.
      */
-    public Collection getSlaves() {
+    public List<RemoteSlave> getSlaves() {
         if (_slaves == null) {
-            throw new IllegalStateException("getSlaves() called on a directory");
+            throw new IllegalStateException("getSlaves() called on a directory: "+getPath());
         }
-
         return _slaves;
     }
 

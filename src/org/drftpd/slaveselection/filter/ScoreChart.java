@@ -103,7 +103,7 @@ public class ScoreChart {
     /**
      * Returns the Collection holding the {@link SlaveScore} elements.
      */
-    public Collection getSlaveScores() {
+    public ArrayList<SlaveScore> getSlaveScores() {
         return _scoreChart;
     }
 

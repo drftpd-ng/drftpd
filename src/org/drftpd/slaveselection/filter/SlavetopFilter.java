@@ -17,31 +17,26 @@
  */
 package org.drftpd.slaveselection.filter;
 
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Properties;
+
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
-
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.LinkedRemoteFileUtils;
-
 import org.drftpd.sections.SectionInterface;
-
 import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
-
 import org.drftpd.usermanager.User;
-
-import java.net.InetAddress;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Properties;
 
 
 /**
@@ -67,29 +62,19 @@ public class SlavetopFilter extends Filter {
     }
 
     public void process(ScoreChart scorechart, User user, InetAddress peer,
-        char direction, LinkedRemoteFileInterface dir, RemoteSlave sourceSlave)
-        throws NoAvailableSlaveException {
+        char direction, LinkedRemoteFileInterface dir, RemoteSlave sourceSlave) {
+    	process(scorechart, dir);
+    }
+
+    public void process(ScoreChart scorechart, LinkedRemoteFileInterface dir) {
         String path = dir.getPath();
 
         //// find the section part of the path name
         SectionInterface section = _gctx.getSectionManager().lookup(path);
-
         LinkedRemoteFileInterface rls = section.getFirstDirInSection(dir);
 
-        //			// string stuff
-        //		if (section.getPath().endsWith("/")) // section is not the root dir - /
-        //			path = path.substring(section.getPath().length());
-        //		else path = path.substring(section.getPath().length()+1);
-        //		int pos = path.indexOf('/');
-        //		if (pos != -1)
-        //			path = path.substring(0, pos);
-        //		LinkedRemoteFileInterface rls;
-        //		try {
-        //			rls = section.getFile().getFile(path);
-        //		} catch (FileNotFoundException e) {
-        //			throw new RuntimeException(e);
-        //		}
-        Hashtable slavesmap = new Hashtable();
+        Hashtable<RemoteSlave, ScoreChart.SlaveScore> slavesmap =
+        	new Hashtable<RemoteSlave, ScoreChart.SlaveScore>();
 
         for (Iterator iter = scorechart.getSlaveScores().iterator();
                 iter.hasNext();) {
@@ -115,12 +100,19 @@ public class SlavetopFilter extends Filter {
             }
         }
 
-        ArrayList slavescores = new ArrayList(slavesmap.values());
-        Collections.sort(slavescores, Collections.reverseOrder());
+        ArrayList<ScoreChart.SlaveScore> slavescores = 
+        	new ArrayList<ScoreChart.SlaveScore>(slavesmap.values());
+        Collections.sort(slavescores, 
+        		(Comparator<ScoreChart.SlaveScore>)Collections.reverseOrder());
 
         Iterator iter = slavescores.iterator();
 
-        for (int i = 0; (i < _topslaves) && iter.hasNext(); i++) {
+        if(_assign == 0) {
+        	for(ScoreChart.SlaveScore score : slavescores.subList(_topslaves, slavescores.size())) {
+        		scorechart.removeSlaveScore(score.getRSlave());
+        	}
+        }
+        for (int i = 0; i < _topslaves && iter.hasNext(); i++) {
             ScoreChart.SlaveScore score = (SlaveScore) iter.next();
 
             try {

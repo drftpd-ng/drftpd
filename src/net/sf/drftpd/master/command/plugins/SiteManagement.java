@@ -263,7 +263,7 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
 
         try {
             ftpListener = (FtpListener) Class.forName(
-                    "net.sf.drftpd.event.listeners." + arg).newInstance();
+                    "org.drftpd.plugins." + arg).newInstance();
         } catch (InstantiationException e) {
             logger.error("Was not able to create an instance of the class, did not load",
                 e);
@@ -271,7 +271,6 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
             return null;
         } catch (IllegalAccessException e) {
             logger.error("This will not happen, I do not exist", e);
-
             return null;
         } catch (ClassNotFoundException e) {
         }
