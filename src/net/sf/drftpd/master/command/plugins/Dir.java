@@ -55,7 +55,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.20 2004/02/23 01:14:37 mog Exp $
+ * @version $Id: Dir.java,v 1.21 2004/03/05 18:32:23 flowman Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
 	private final static SimpleDateFormat DATE_FMT =
@@ -143,7 +143,7 @@ public class Dir implements CommandHandler, Cloneable {
 			newCurrentDirectory);
 		try {
 			Collection uploaders =
-				IRCListener.topFileUploaders(newCurrentDirectory.getFiles());
+				IRCListener.UserSort(newCurrentDirectory.getFiles(), "bytes", "high");
 
 			ReplacerFormat format = null;
 			try {

@@ -7,9 +7,12 @@ irc.nick=drftpd
 irc.name=drftpd
 irc.user=drftpd
 
+irc.enable.announce=true
+
 irc.plugins.1=net.sf.drftpd.event.irc.Invite
 irc.plugins.2=net.sf.drftpd.event.irc.Who
 irc.plugins.3=net.sf.drftpd.event.irc.Slaves
 irc.plugins.4=net.sf.drftpd.event.irc.Affils
 irc.plugins.5=net.sf.drftpd.event.irc.Bnc
 irc.plugins.6=net.sf.drftpd.event.irc.Stats
+irc.plugins.7=net.sf.drftpd.event.irc.Bandwidth

@@ -38,7 +38,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
- * @version $Id: RaceStatistics.java,v 1.9 2004/02/23 01:14:36 mog Exp $
+ * @version $Id: RaceStatistics.java,v 1.10 2004/03/05 18:32:23 flowman Exp $
  */
 public class RaceStatistics implements FtpListener {
 
@@ -80,7 +80,7 @@ public class RaceStatistics implements FtpListener {
 		//COMPLETE
 		if (sfvfile.getStatus().isFinished())
 			return;
-		Collection racers = IRCListener.topFileUploaders(sfvfile.getFiles());
+		Collection racers = IRCListener.UserSort(sfvfile.getFiles(), "bytes", "high");
 		if (racers.size() <= 1)
 			return; // no race
 		int count = 1;
