@@ -348,9 +348,18 @@ public class GlftpdUserManager extends UserManager {
 	}
 
 	/**
+	 * @see net.sf.drftpd.master.usermanager.UserManager#create(java.lang.String)
+	 */
+	public User create(String username) {
+		return new GlftpdUser(this, username);
+	}
+
+	/**
 	 * @see net.sf.drftpd.master.UserManager#delete(String)
 	 */
 	public void delete(String username) {
+		//TODO implement delete()
+		throw new NoSuchMethodError("not implemented");
 	}
 
 	public void load(User user)

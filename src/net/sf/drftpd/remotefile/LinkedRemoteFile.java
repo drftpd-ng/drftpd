@@ -44,15 +44,19 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 
 		protected String name;
 
-		public DirectoryRemoteFile(User owner, String name) {
+		public DirectoryRemoteFile(String owner, String group, String name) {
 			this.name = name;
 			isDirectory = true;
 			isFile = false;
 			lastModified = System.currentTimeMillis();
 			//canWrite = true;
 			//canRead = true;
-			this.owner = owner.getUsername();
-			group = owner.getGroup();
+			this.owner = owner;
+			this.group = group;			
+		}
+
+		public DirectoryRemoteFile(User owner, String name) {
+			this(owner.getUsername(), owner.getGroup(), name);
 		}
 		/**
 		 * @see net.sf.drftpd.remotefile.RemoteFile#getName()
@@ -207,9 +211,9 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
 			Slave slave;
-			try  {
+			try {
 				slave = rslave.getSlave();
-			} catch(NoAvailableSlaveException ex) {
+			} catch (NoAvailableSlaveException ex) {
 				continue;
 			}
 			try {
@@ -354,11 +358,10 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	}
 
 	public LinkedRemoteFile getRoot() {
-		LinkedRemoteFile root = this; //, candidate;
+		LinkedRemoteFile root = this;
 		try {
 			while (true)
 				root = root.getParentFile();
-			//root = candidate;
 		} catch (FileNotFoundException ex) {
 		}
 		return root;
@@ -402,24 +405,16 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		return (LinkedRemoteFile[]) files.values().toArray(
 			new LinkedRemoteFile[0]);
 	}
-
-	/**
-	 * Looks up the absolute path 'path', with this directory as directory root.
-	 * 
-	 * A leading / is ignored as this is the root, pathname cannot contain ".." or similair entries.
-	 */
-	public LinkedRemoteFile lookupFile(String path)
-		throws FileNotFoundException {
+	private Object[] lookup(String path) {
 		LinkedRemoteFile currFile = this;
 
 		if (path.charAt(0) == '/')
 			currFile = getRoot();
+
 		if (path.length() == 1 && path.equals("~")) {
 			currFile = getRoot();
 			path = "";
-		}
-
-		if (path.length() >= 2 && path.substring(0, 2).equals("~/")) {
+		} else if (path.length() >= 2 && path.substring(0, 2).equals("~/")) {
 			currFile = getRoot();
 			path = path.substring(2);
 		}
@@ -430,25 +425,51 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			if (currFileName.equals("."))
 				continue;
 			if (currFileName.equals("..")) {
-				LinkedRemoteFile parent = currFile.getParentFile();
-				if (parent != null)
-					currFile = parent;
-				continue;
+				try {
+					LinkedRemoteFile parent = currFile.getParentFile();
+				} catch (FileNotFoundException ex) {
+					continue;
+				}
 			}
 			LinkedRemoteFile nextFile =
 				(LinkedRemoteFile) currFile.getMap().get(currFileName);
 			//currFile =
 			if (nextFile == null) {
-				throw new FileNotFoundException(
-					currFile.getPath() + currFileName + ": Not found");
+				StringBuffer remaining =
+					new StringBuffer((String) st.nextElement());
+				while (st.hasMoreElements()) {
+					remaining.append('/').append((String) st.nextElement());
+				}
+				return new Object[] { currFile, remaining.toString()};
+				//				throw new FileNotFoundException(
+				//					currFile.getPath() + currFileName + ": Not found");
 			} // else
 			currFile = nextFile;
 		}
-		return currFile;
-	} /**
-						 * Merges two RemoteFile directories.
-						 * If duplicates exist, the slaves are added to this object and the file-attributes of the oldest file (lastModified) are kept.
-						 */
+		return new Object[] { currFile, null };
+	}
+	/**
+	 * Looks up the absolute path 'path', with this directory as directory root.
+	 * 
+	 * A leading / is ignored as this is the root, pathname cannot contain ".." or similair entries.
+	 */
+	public LinkedRemoteFile lookupFile(String path)
+		throws FileNotFoundException {
+		Object[] ret = lookup(path);
+		if (ret[1] == null)
+			new FileNotFoundException(path + " not found");
+		return (LinkedRemoteFile) ret[0];
+	}
+
+	public String lookupPath(String path) {
+		Object[] ret = lookup(path);
+
+		return ((LinkedRemoteFile) ret[0]).getPath() + "/" + ((String) ret[1]);
+	}
+	/**
+	 * Merges two RemoteFile directories.
+	 * If duplicates exist, the slaves are added to this object and the file-attributes of the oldest file (lastModified) are kept.
+	 */
 	public synchronized void merge(LinkedRemoteFile dir) {
 		System.out.println("merge(): " + this +" and " + dir);
 		if (!isDirectory())
@@ -517,12 +538,13 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		}
 	}
 
-	public void mkdir(User owner, String fileName) throws IOException {
+	public void mkdir(User owner, String fileName) throws FileExistsException {
 		LinkedRemoteFile existingfile = (LinkedRemoteFile) files.get(fileName);
 		if (existingfile != null) {
 			throw new FileExistsException(
 				fileName + " already exists in this directory");
-		} //		for (Iterator i = slaves.iterator(); i.hasNext();) {
+		}
+		//		for (Iterator i = slaves.iterator(); i.hasNext();) {
 		//			RemoteSlave slave = (RemoteSlave) i.next();
 		//			try {
 		//				slave.getSlave().mkdir(owner, getPath() + "/" + fileName);
@@ -538,8 +560,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		file.addSlaves(getSlaves());
 		files.put(file.getName(), file);
 		logger.fine("Created directory " + file.getPath());
-	} //TODO if RemoteSlave is to represent different remote roots,
-	// it cannot be unmerged with Collection.remove()
+	}
+
 	private void recursiveUmerge(RemoteSlave slave) {
 		if (files == null)
 			return;
@@ -562,6 +584,9 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		slaves.remove(slave);
 	}
 
+	public void renameTo(RemoteFile to) throws IOException {
+		renameTo(to.getPath());
+	}
 	/**
 	 * Renames this file
 	 * 
@@ -572,35 +597,48 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 */
 	//TODO rename to relative path
 	//TODO squash bug that reverts the rename in memory for new connection
-	public void renameTo(String to) throws IOException {
-		//		if (!VirtualDirectory.isLegalFileName(to)) {
-		//			throw new IllegalFileNameException("Illegal file name or a directory");
-		//				}
+	public void renameTo(String to) throws FileExistsException {
+		if (to.charAt(0) != '/')
+			throw new IllegalArgumentException("renameTo() must be given an absolute path as argument");
 
 		// throws FileNotFoundException
-		if (getParentFile().getMap().get(to) != null) {
+		/*if (getParentFile().getMap().get(to) != null) {
 			throw new FileExistsException("Target file exists");
-		}
+		}*/
 
-		String from = name;
+		String fromName = name;
 
 		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
-			Slave slave = rslave.getSlave();
+			Slave slave;
 			try {
-				slave.rename(getPath(), getParentFile().getPath() + to);
+				slave = rslave.getSlave();
+			} catch (NoAvailableSlaveException ex) {
+				// slave is offline, continue
+				continue;
+			}
+			try {
+				slave.rename(getPath(), to);
 				// throws RemoteException, IOException
 			} catch (RemoteException ex) {
 				rslave.handleRemoteException(ex);
+			} catch (FileNotFoundException ex) {
+				logger.log(
+					Level.SEVERE,
+					"FileNotFoundException from slave on a file in LinkedRemoteFile",
+					ex);
 			}
 		}
 		//TODO queued renaming
-		System.out.println(
-			"renameTo() remove(from): "
-				+ getParentFile().getMap().remove(from));
-		System.out.println(
-			"renameTo() put(to): "
-				+ getParentFile().getMap().put(to, this));
+
+		getParentFile().getMap().remove(fromName);
+		
+		Object [] ret = lookup(to);
+		
+		LinkedRemoteFile toDir;
+		toDir.mkdir()
+		
+		getParentFile().getMap().put(to, this);
 		name = to;
 	}
 
@@ -622,9 +660,10 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 				//IBM J2SDK 1.4: net.sf.drftpd.slave.SlaveImpl[RemoteStub [ref: [endpoint:[127.0.0.1:32907](local),objID:[1]]]]
 				RemoteSlave slave = (RemoteSlave) i.next();
 				try {
-				System.out.println(
-					"RMI stub class: " + slave.getSlave().getClass().getName());
-				} catch(NoAvailableSlaveException ex)  {
+					System.out.println(
+						"RMI stub class: "
+							+ slave.getSlave().getClass().getName());
+				} catch (NoAvailableSlaveException ex) {
 					ex.printStackTrace();
 					continue;
 				}
@@ -652,10 +691,4 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		}
 		recursiveUmerge(slave);
 	}
-
-	public void unmerge(RemoteSlave slave, Iterator i) {
-		i.remove();
-		recursiveUmerge(slave);
-	}
-
 }

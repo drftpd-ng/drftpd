@@ -1,7 +1,6 @@
 package net.sf.drftpd.master.usermanager;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Vector;
@@ -17,7 +16,8 @@ import org.apache.oro.text.regex.Perl5Matcher;
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  */
 
-public class User implements Serializable {
+// subclasses can add serializable themselves?
+public abstract class User {
 
 	private String username;
 	
@@ -114,9 +114,8 @@ public class User implements Serializable {
 	 * authenticates and logs in the user.
 	 * @param user given password
 	 */
-	public boolean login(String password) {
-		throw new NoSuchMethodError("login() needs to be overridden");
-	}
+	public abstract boolean login(String password);
+	public abstract void setPassword(String password);
 
 	public boolean checkIP(String masks[]) {
 

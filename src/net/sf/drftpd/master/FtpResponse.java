@@ -40,6 +40,10 @@ public class FtpResponse implements Cloneable {
 	public static final FtpResponse RESPONSE_226_CLOSING_DATA_CONNECTION =
 		new FtpResponse(226, "Closing data connection");
 
+	/** 250 Requested file action okay, completed. */
+	public static final FtpResponse RESPONSE_250_ACTION_OKAY =
+		new FtpResponse(250, "Requested file action okay, completed.");
+	
 	/** 230 User logged in, proceed. */
 	public static final FtpResponse RESPONSE_230_USER_LOGGED_IN =
 		new FtpResponse(230, "User logged in, proceed.");

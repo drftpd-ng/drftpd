@@ -41,7 +41,7 @@ import socks.server.Ident;
  * This is the main backbone of the ftp server.
  * <br>
  * The ftp command method signature is: 
- * <code>public void doXYZ(FtpRequest request, PrintWriter out) throws IOException</code>.
+ * <code>public void doXYZ(FtpRequest request, PrintWriter out)</code>.
  * <br>
  * Here <code>XYZ</code> is the capitalized ftp command. 
  *
@@ -58,7 +58,7 @@ public class FtpConnection extends BaseFtpConnection {
 	}
 
 	private boolean mbRenFr = false;
-	private String mstRenFr = null;
+	private LinkedRemoteFile mstRenFr = null;
 
 	// command state specific temporary variables
 
@@ -109,7 +109,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 * transfers are not multi-threaded. 
 	 */
 	/*
-	 public void doABOR(FtpRequest request, PrintWriter out) throws IOException {
+	 public void doABOR(FtpRequest request, PrintWriter out) {
 	     
 	     // reset state variables
 	     resetState();
@@ -129,7 +129,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 * pathname shall be created at the server site.
 	 */
 	/*
-	 public void doAPPE(FtpRequest request, PrintWriter out) throws IOException {
+	 public void doAPPE(FtpRequest request, PrintWriter out) {
 	    
 	     // reset state variables
 	     resetState();
@@ -213,20 +213,17 @@ public class FtpConnection extends BaseFtpConnection {
 		resetState();
 
 		// change directory
-		LinkedRemoteFile newCurrentDirectory;
+		//LinkedRemoteFile newCurrentDirectory;
 		try {
-			newCurrentDirectory = currentDirectory.getParentFile();
+			currentDirectory = currentDirectory.getParentFile();
 		} catch (FileNotFoundException ex) {
-			FtpResponse response = new FtpResponse(431, ex.getMessage());
-			out.print(response.toString());
-			return;
 		}
-		currentDirectory = newCurrentDirectory;
+
 		FtpResponse response =
 			new FtpResponse(
 				200,
 				"Directory changed to " + currentDirectory.getPath());
-		out.print(response.toString());
+		out.print(response);
 	}
 
 	/**
@@ -438,9 +435,13 @@ public class FtpConnection extends BaseFtpConnection {
 	 * to be created as a directory (if the pathname is absolute)
 	 * or as a subdirectory of the current working directory (if
 	 * the pathname is relative).
+	 * 
+	 * 
+	 *                MKD
+	 *                   257
+	 *                   500, 501, 502, 421, 530, 550
 	 */
 	public void doMKD(FtpRequest request, PrintWriter out) {
-
 		// reset state variables
 		resetState();
 
@@ -460,6 +461,7 @@ public class FtpConnection extends BaseFtpConnection {
 
 		LinkedRemoteFile file = currentDirectory;
 		if (file.getMap().containsKey(fileName)) {
+			new FtpResponse(521, "\""+fileName+"\" already exists");
 			out.println(
 				"550 Requested action not taken. "
 					+ fileName
@@ -477,10 +479,6 @@ public class FtpConnection extends BaseFtpConnection {
 					new String[] { fileName }));
 		} catch (FileExistsException ex) {
 			out.println("550 directory " + fileName + " already exists");
-			return;
-		} catch (IOException ex) {
-			out.write(ftpStatus.getResponse(550, request, user, null));
-			ex.printStackTrace();
 			return;
 		}
 		//		String args[] = { fileName };
@@ -537,8 +535,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 * will return a stream of names of files and no other
 	 * information.
 	 */
-	public void doNLST(FtpRequest request, PrintWriter out)
-		throws IOException {
+	public void doNLST(FtpRequest request, PrintWriter out) {
 		out.print(
 			new FtpResponse(
 				500,
@@ -988,17 +985,26 @@ public class FtpConnection extends BaseFtpConnection {
 	 */
 	public void doSITE_ADDUSER(FtpRequest request, PrintWriter out) {
 		resetState();
-		
+
 		String args[] = request.getArgument().split(" ");
-		if(args.length < 2) {
-			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);} 
+		if (args.length < 2) {
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
 		}
-		
-		String newUsername;
-		User newUser = new User(newUsername);
+
+		String newUsername = args[0];
+		String pass = args[1];
+		User newUser;
+		try {
+			newUser = userManager.create(newUsername);
+		} catch (IOException e) {
+			//TODO temporary error code
+			new FtpResponse(450, "Cannot create user: " + e.getMessage());
+			e.printStackTrace();
+			return;
+		}
 	}
-	
+
 	public void doSITE_CHECKSLAVES(FtpRequest request, PrintWriter out) {
 		out.println(
 			"200 Ok, " + slaveManager.verifySlaves() + " stale slaves removed");
@@ -1081,7 +1087,7 @@ public class FtpConnection extends BaseFtpConnection {
 		HashMap nukees2 = new HashMap(nukees.size());
 
 		for (Iterator iter = nukees.keySet().iterator(); iter.hasNext();) {
-			
+
 			String username = (String) iter.next();
 			User user;
 			try {
@@ -1106,18 +1112,32 @@ public class FtpConnection extends BaseFtpConnection {
 				return;
 			}
 			// nukees contains credits as value
-			if(user == null) {
-				Integer add = (Integer)nukees2.get(null);
-				if(add == null) {
+			if (user == null) {
+				Integer add = (Integer) nukees2.get(null);
+				if (add == null) {
 					add = new Integer(0);
 				}
-				nukees2.put(user, new Integer(add.intValue()+((Integer)nukees.get(username)).intValue()));
+				nukees2.put(
+					user,
+					new Integer(
+						add.intValue()
+							+ ((Integer) nukees.get(username)).intValue()));
 			} else {
 				nukees2.put(user, nukees.get(username));
 			}
 		}
 		String preNukeName = nukeDir.getPath();
-		String to = "[NUKED]-" + nukeDir.getName();
+		String to;
+		try {
+			to =
+				nukeDir.getParentFile().getPath()
+					+ "[NUKED]-"
+					+ nukeDir.getName();
+		} catch (FileNotFoundException ex) {
+			ex.printStackTrace();
+			out.print(FtpResponse.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN);
+			return;
+		}
 		try {
 			nukeDir.renameTo(to);
 		} catch (IOException e1) {
@@ -1132,7 +1152,8 @@ public class FtpConnection extends BaseFtpConnection {
 
 		for (Iterator iter = nukees2.keySet().iterator(); iter.hasNext();) {
 			User nukee = (User) iter.next();
-			if(nukee == null) continue;
+			if (nukee == null)
+				continue;
 			Integer size = (Integer) nukees2.get(nukee);
 			Integer debt =
 				new Integer(
@@ -1141,7 +1162,8 @@ public class FtpConnection extends BaseFtpConnection {
 			try {
 				nukee.updateCredits(-debt.intValue());
 			} catch (IOException e1) {
-				String str = "updateCredits() failed for " + nukee.getUsername();
+				String str =
+					"updateCredits() failed for " + nukee.getUsername();
 				response.addComment(str + ": " + e1.getMessage());
 				logger.log(Level.WARNING, str, e1);
 			}
@@ -1157,7 +1179,7 @@ public class FtpConnection extends BaseFtpConnection {
 				nukees2));
 		out.print(response);
 	}
-	
+
 	private static void nukeRemoveCredits(
 		LinkedRemoteFile nukeDir,
 		Hashtable nukees) {
@@ -1274,20 +1296,21 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 		out.println("200 Command ok.");
 	}
-	
+
 	/** Lists all slaves used by the master
 	 * USAGE: SITE SLAVES
 	 * 
 	 * TODO format output
 	 */
 	public void doSITE_SLAVES(FtpRequest request, PrintWriter out) {
-		if(!user.isAdmin()) {
+		if (!user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
-		
-		FtpResponse response = (FtpResponse)FtpResponse.RESPONSE_200_COMMAND_OK.clone();
-		
+
+		FtpResponse response =
+			(FtpResponse) FtpResponse.RESPONSE_200_COMMAND_OK.clone();
+
 		for (Iterator iter = slaveManager.slaves.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
 			response.addComment(rslave.toString());
@@ -1308,7 +1331,7 @@ public class FtpConnection extends BaseFtpConnection {
 		GlftpdUserManager.GlftpdUser gluser = null;
 		if (user instanceof GlftpdUserManager.GlftpdUser)
 			gluser = (GlftpdUserManager.GlftpdUser) user;
-		
+
 		//TODO more fine-grained user permissions
 		if (!user.isAdmin()
 			&& !(gluser != null && gluser.getFlags().indexOf("F") != -1)) {
@@ -1514,7 +1537,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 * the pathname is relative).
 	 */
 	/*
-	 public void doRMD(FtpRequest request, PrintWriter out) throws IOException {
+	 public void doRMD(FtpRequest request, PrintWriter out) {
 	    
 	    // reset state variables
 	    resetState(); 
@@ -1556,30 +1579,38 @@ public class FtpConnection extends BaseFtpConnection {
 	 * a "rename to" command specifying the new file pathname.
 	 */
 	//TODO RNFR
-	public void doRNFR(FtpRequest request, PrintWriter out)
-		throws IOException {
-		out.print(new FtpResponse(500, "Command not implemented").toString());
-		/*     
-		     // reset state variable
-		     resetState();
-		     
-		     // argument check
-		     if(!request.hasArgument()) {
-		        out.write(ftpStatus.getResponse(501, request, user, null));
-		        return;  
-		     }
-		     
-		     // set state variable
-		     mbRenFr = true;
-		     
-		     // get filenames
-		     String fileName = request.getArgument();
-		     fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
-		     mstRenFr = user.getVirtualDirectory().getPhysicalName(fileName);
-		     String args[] = {fileName};
-		     
-		     out.write(ftpStatus.getResponse(350, request, user, args));
-		*/
+	public void doRNFR(FtpRequest request, PrintWriter out) {
+		//out.print(new FtpResponse(500, "Command not implemented").toString());
+
+		// reset state variable
+		resetState();
+
+		// argument check
+		if (!request.hasArgument()) {
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			//out.write(ftpStatus.getResponse(501, request, user, null));
+			return;
+		}
+
+		// set state variable
+
+		// get filenames
+		//String fileName = request.getArgument();
+		//fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
+		//mstRenFr = user.getVirtualDirectory().getPhysicalName(fileName);
+
+		try {
+			mstRenFr = currentDirectory.lookupFile(request.getArgument());
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			out.print(FtpResponse.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN);
+			resetState();
+			return;
+		}
+		mbRenFr = true;
+
+		//out.write(ftpStatus.getResponse(350, request, user, args));
+
 	}
 
 	/**
@@ -1591,49 +1622,57 @@ public class FtpConnection extends BaseFtpConnection {
 	 * renamed.
 	 */
 	//TODO RNTO
-	public void doRNTO(FtpRequest request, PrintWriter out)
-		throws IOException {
-		out.print(new FtpResponse(500, "Command not implemented").toString());
-		/*
+	public void doRNTO(FtpRequest request, PrintWriter out) {
+		//out.print(new FtpResponse(500, "Command not implemented").toString());
+
 		// argument check
-		if(!request.hasArgument()) {
-		   resetState(); 
-		   out.write(ftpStatus.getResponse(501, request, user, null));
-		   return;  
+		if (!request.hasArgument()) {
+			resetState();
+			//out.write(ftpStatus.getResponse(501, request, user, null));
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			return;
 		}
-		
+
 		// set state variables
-		if((!mbRenFr) || (mstRenFr == null)) {
-		     resetState();
-		     out.write(ftpStatus.getResponse(100, request, user, null));
-		     return;
+		if ((!mbRenFr) || (mstRenFr == null)) {
+			resetState();
+			//out.print(FtpResponse.)
+			//TODO Unknown reply code 100, not defined in FtpStauts.properties
+			out.write(ftpStatus.getResponse(100, request, user, null));
+			return;
 		}
-		
+
 		// get filenames
-		String fromFileStr = user.getVirtualDirectory().getVirtualName(mstRenFr);
-		String toFileStr = request.getArgument();
-		toFileStr = user.getVirtualDirectory().getAbsoluteName(toFileStr);
-		String physicalToFileStr = user.getVirtualDirectory().getPhysicalName(toFileStr);
-		File fromFile = new File(mstRenFr);
-		File toFile = new File(physicalToFileStr);
-		String args[] = {fromFileStr, toFileStr};
-		
+		//String fromFileStr = user.getVirtualDirectory().getVirtualName(mstRenFr);
+		//String toFileStr = request.getArgument();
+		//toFileStr = user.getVirtualDirectory().getAbsoluteName(toFileStr);
+		//String physicalToFileStr = user.getVirtualDirectory().getPhysicalName(toFileStr);
+		//File fromFile = new File(mstRenFr);
+		//File toFile = new File(physicalToFileStr);
+		//String args[] = {fromFileStr, toFileStr};
+
+		String to =
+			currentDirectory.lookupPath(request.getArgument());
+		logger.info("argument = "+request.getArgument());
+		logger.info("to = "+to);
+
 		resetState();
-		
+
 		// check permission
-		if(!user.getVirtualDirectory().hasCreatePermission(physicalToFileStr, true)) {
-		   out.write(ftpStatus.getResponse(553, request, user, null));
-		   return;
-		}
-		
+		//if(!user.getVirtualDirectory().hasCreatePermission(physicalToFileStr, true)) {
+		//   out.write(ftpStatus.getResponse(553, request, user, null));
+		//   return;
+		//}
+
 		// now rename
-		if(fromFile.renameTo(toFile)) {
-		    out.write(ftpStatus.getResponse(250, request, user, args));
-		}
-		else {
-		    out.write(ftpStatus.getResponse(553, request, user, args));
-		}
-		*/
+		//if(fromFile.renameTo(toFile)) {
+		//    out.write(ftpStatus.getResponse(250, request, user, args));
+		//}
+		mstRenFr.renameTo(to);
+
+		//else {
+		//    out.write(ftpStatus.getResponse(553, request, user, args));
+		//}
 	}
 
 	/**
@@ -1645,7 +1684,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 * the protocol.
 	 */
 	/*
-	public void doSITE(FtpRequest request, PrintWriter out) throws IOException {
+	public void doSITE(FtpRequest request, PrintWriter out) {
 	     //SiteCommandHandler siteCmd = new SiteCommandHandler( mConfig, user );
 	     SiteCommandHandler siteCmd = new SiteCommandHandler(user);
 	     //out.write( siteCmd.getResponse(request) );
@@ -1692,7 +1731,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 * the control connection in the form of a reply.
 	 */
 	/*
-	 public void doSTAT(FtpRequest request, PrintWriter out) throws IOException {
+	 public void doSTAT(FtpRequest request, PrintWriter out) {
 	     String args[] = {
 	        mConfig.getSelfAddress().getHostAddress(),
 	        mControlSocket.getInetAddress().getHostAddress(),
@@ -1834,7 +1873,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 * must include the name generated.
 	 */
 	/*
-	public void doSTOU(FtpRequest request, PrintWriter out) throws IOException {
+	public void doSTOU(FtpRequest request, PrintWriter out) {
 	    
 	    // reset state variables
 	    resetState();

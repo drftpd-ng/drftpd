@@ -7,6 +7,13 @@ import java.rmi.RemoteException;
 import net.sf.drftpd.master.NoAvailableSlaveException;
 import net.sf.drftpd.master.SlaveManagerImpl;
 
+/**
+ * Class would fit both in net.sf.drftpd.slave and net.sf.drftpd.master.
+ * However, as it is instantiated from the slave (or master with local slave),
+ * and mainly because it is a helper class for Slave, it is located in net.sf.drftpd.slave.
+ * 
+ * @author mog
+ */
 public class RemoteSlave implements Serializable {
 	protected SlaveManagerImpl manager;
 	protected String name;
@@ -18,6 +25,7 @@ public class RemoteSlave implements Serializable {
 	
 
 	public RemoteSlave(Slave slave, String name) {
+		if(name == null) throw new IllegalArgumentException("name cannot be null (did you set slave.name?)");
 		this.slave = slave;
 		this.name = name;
 	}
@@ -32,6 +40,12 @@ public class RemoteSlave implements Serializable {
 		return name;
 	}
 	
+	/**
+	 * 
+	 * Throws NoAvailableSlaveException only if slave is offline
+	 * @return
+	 * @throws NoAvailableSlaveException
+	 */
 	public Slave getSlave() throws NoAvailableSlaveException {
 		if(slave == null) throw new NoAvailableSlaveException("slave is offline");
 		return slave;

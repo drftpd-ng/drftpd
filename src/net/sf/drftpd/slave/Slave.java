@@ -1,10 +1,12 @@
 package net.sf.drftpd.slave;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
@@ -86,7 +88,7 @@ public interface Slave extends Remote {
 	 * Rename files.
 	 */
 	public void rename(String from, String to)
-		throws RemoteException, IOException;
+		throws RemoteException, FileNotFoundException, FileExistsException;
 		
 	/**
 	 * Delete files.
