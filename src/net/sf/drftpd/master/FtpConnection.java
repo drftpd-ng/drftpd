@@ -50,7 +50,7 @@ public class FtpConnection extends BaseFtpConnection {
 
 	// command state specific temporary variables
 
-	//unneeded? mlSkipLen = 0 is about the same
+	//unneeded? "mlSkipLen == 0" is almost the same thing.
 	//private boolean mbReset = false;
 	private long resumePosition = 0;
 
@@ -873,7 +873,7 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		if(request.getArgument().equalsIgnoreCase("S")) {
-			
+			out.write(mFtpStatus.getResponse(200, request, user, null));
 		} else {
 			out.write(mFtpStatus.getResponse(504, request, user, null));
 		}
