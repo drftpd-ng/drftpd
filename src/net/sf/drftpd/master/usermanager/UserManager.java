@@ -1,6 +1,8 @@
 package net.sf.drftpd.master.usermanager;
+import java.io.IOException;
 import java.util.Collection;
-import net.sf.drftpd.LinkedRemoteFile;
+
+import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * This is the base class of all the user manager classes.
@@ -22,19 +24,19 @@ public abstract class UserManager {
 	 * Save the user. If a new user, create it else update the
 	 * existing user.
 	 */
-	public abstract void save(User user);
+	public abstract void save(User user) throws IOException;
 
 	/**
 	 * Delete the user from the system.
 	 *
 	 * @param name name of the user to be deleted. 
 	 */
-	public abstract void delete(String userName);
+	public abstract void delete(String userName) throws IOException;
 
 	/**
 	 * Get user by name.
 	 */
-	public abstract User getUserByName(String name) throws NoSuchUserException;
+	public abstract User getUserByName(String name) throws NoSuchUserException, IOException;
 
 	/**
 	 * Get all user names in the system.

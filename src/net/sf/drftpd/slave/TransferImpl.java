@@ -8,6 +8,9 @@ import java.net.Socket;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Collection;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedOutputStream;
 
 import net.sf.drftpd.AsciiOutputStream;
 
@@ -23,7 +26,8 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	public static final char TRANSFER_RECEIVING='R';// TRANSFER_UPLOAD='R';
 	public static final char TRANSFER_SENDING='S';// TRANSFER_DOWNLOAD='S';
 	
-	private int started;
+	private long started=0, finished=0;
+	
 	private long transfered=0;
 	private char direction;
 	
@@ -32,38 +36,38 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private Connection conn;
 	private Socket sock;
 	private char mode='I';
+	private Collection transfers;
+	private CRC32 checksum;
 	
 	/**
-	 * Read from 'in' and write to 'conn'.
+	 * Send, reading from 'in' and write to 'conn' using transfer type 'mode'.
+	 * 
 	 */
-	public TransferImpl(InputStream in, Connection conn) throws RemoteException {
+	public TransferImpl(Collection transfers, InputStream in, Connection conn, char mode) throws RemoteException {
 		super();
 		direction = TRANSFER_SENDING;
 		this.in = in;
 		this.conn = conn;
-	}
-	
-	/**
-	 * Read from 'in' and write to 'conn' using transfer type 'mode'.
-	 */
-	public TransferImpl(InputStream in, Connection conn, char mode) throws RemoteException {
-		this(in, conn);
 		this.mode = mode;
 	}
 
 	/**
-	 * Read from 'conn' and write to 'out'.
+	 * Receive, read from 'conn' and write to 'out'.
 	 */
-	public TransferImpl(Connection conn, OutputStream out) throws RemoteException {
+	public TransferImpl(Collection transfers, Connection conn, OutputStream out) throws RemoteException {
 		super();
 		direction = TRANSFER_RECEIVING;
-		this.out = out;
+		checksum = new CRC32();
 		this.conn = conn;
+		this.out = new CheckedOutputStream(out, checksum);
 	}
 	
-	
+	/**
+	 * Call sock.connect() and start sending.
+	 */
 	public void transfer() throws IOException {
-		started=(int)System.currentTimeMillis()/1000;
+		transfers.add(this);
+		started=System.currentTimeMillis();
 			sock = conn.connect();
 		if(in == null) {
 			System.out.println("Receiving binary stream from "+sock.getInetAddress()+":"+sock.getPort());
@@ -76,6 +80,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 				out = sock.getOutputStream();
 			}
 		} else {
+			transfers.remove(this);
 			throw new RuntimeException("neither in or out was null");
 		}
 		
@@ -90,6 +95,11 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+		finished=System.currentTimeMillis();
+		transfers.remove(this);
+		in=null;
+		out=null;
+		conn=null;
 	}
 	
 	public boolean isSending() {

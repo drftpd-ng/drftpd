@@ -1,14 +1,11 @@
 package net.sf.drftpd.master.usermanager;
 
+import java.io.IOException;
+
 /**
- * @author mog
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
+ * @author <a href="mailto:mog@linux.nu">Morgan Christiansson</a>
  */
-public class CorruptUserFileException extends Exception {
+public class CorruptUserFileException extends IOException {
 	public CorruptUserFileException(String message) {
 		super(message);
 	}

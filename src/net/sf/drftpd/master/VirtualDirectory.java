@@ -9,8 +9,9 @@ import java.util.Date;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.InvalidDirectoryException;
-import net.sf.drftpd.LinkedRemoteFile;
-import net.sf.drftpd.RemoteFileTree;
+import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.RemoteFile;
+import net.sf.drftpd.remotefile.RemoteFileTree;
 
 /**
  * This class is responsible to handle all virtual directory activities.
@@ -292,7 +293,7 @@ public class VirtualDirectory {
 		}
 
 		// get file list
-		LinkedRemoteFile flLst[];
+		RemoteFile flLst[];
 		//if ( (pattern == null) || pattern.equals("*") || pattern.equals("") ) {
 		//    flLst = lstDirObj.listFiles();
 		//} else {
@@ -370,7 +371,7 @@ public class VirtualDirectory {
 		}
 
 		// get file list
-		LinkedRemoteFile flLst[];
+		RemoteFile flLst[];
 		if ((pattern == null) || pattern.equals("*") || pattern.equals("")) {
 			flLst = lstDirObj.listFiles();
 		} else {
@@ -396,21 +397,21 @@ public class VirtualDirectory {
 	/**
 	 * Get file owner.
 	 */
-	private static String getOwner(LinkedRemoteFile fl) {
+	private static String getOwner(RemoteFile fl) {
 		return fl.getUser();
 	}
 
 	/**
 	 * Get group name
 	 */
-	private static String getGroup(LinkedRemoteFile fl) {
+	private static String getGroup(RemoteFile fl) {
 		return fl.getGroup();
 	}
 
 	/**
 	 * Get link count
 	 */
-	private static String getLinkCount(LinkedRemoteFile fl) {
+	private static String getLinkCount(RemoteFile fl) {
 		if (fl.isDirectory()) {
 			return String.valueOf(3);
 		} else {
@@ -421,7 +422,7 @@ public class VirtualDirectory {
 	/**
 	 * Get size
 	 */
-	private static String getLength(LinkedRemoteFile fl) {
+	private static String getLength(RemoteFile fl) {
 		String initStr = "            ";
 		long sz = 0;
 		if (fl.isFile()) {
@@ -437,7 +438,7 @@ public class VirtualDirectory {
 	/**
 	 * Get last modified date string.
 	 */
-	private static String getLastModified(LinkedRemoteFile fl) {
+	private static String getLastModified(RemoteFile fl) {
 		long modTime = fl.lastModified();
 		Date date = new Date(modTime);
 		return DateUtils.getUnixDate(date);
@@ -446,7 +447,7 @@ public class VirtualDirectory {
 	/**
 	 * Get file name.
 	 */
-	private static String getName(LinkedRemoteFile fl) {
+	private static String getName(RemoteFile fl) {
 		String flName = fl.getName();
 		flName = normalizeSeparateChar(flName);
 
@@ -464,7 +465,7 @@ public class VirtualDirectory {
 	/**
 	 * Get permission string.
 	 */
-	private static String getPermission(LinkedRemoteFile fl) {
+	private static String getPermission(RemoteFile fl) {
 
 		StringBuffer sb = new StringBuffer(13);
 		if (fl.isDirectory()) {
@@ -568,7 +569,7 @@ public class VirtualDirectory {
 	/**
 	 * Get each directory line.
 	 */
-	public void printLine(LinkedRemoteFile fl, Writer out) throws IOException {
+	public void printLine(RemoteFile fl, Writer out) throws IOException {
 		out.write(getPermission(fl));
 		out.write(DELIM);
 		out.write(DELIM);

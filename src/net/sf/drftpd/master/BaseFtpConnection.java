@@ -130,7 +130,7 @@ public class BaseFtpConnection implements Runnable {
 							new OutputStreamWriter(
 								mControlSocket.getOutputStream()))));
 
-			mControlSocket.setSoTimeout(500);
+			mControlSocket.setSoTimeout(1000);
 			// permission check
 			/*
 			    if( !mConfig.getIpRestrictor().hasPermission(mControlSocket.getInetAddress()) ) {

@@ -12,24 +12,23 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import java.rmi.RemoteException;
+
 import java.text.SimpleDateFormat;
 
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.StringTokenizer;
 
-import com.sun.jndi.ldap.ManageReferralControl;
-
-import net.sf.drftpd.*;
-import net.sf.drftpd.LinkedRemoteFile;
-import net.sf.drftpd.RemoteFile;
-import net.sf.drftpd.StaticRemoteFile;
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.master.usermanager.GlftpdUserManager;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserManager;
+
+import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.RemoteFile;
+import net.sf.drftpd.remotefile.StaticRemoteFile;
+
 import net.sf.drftpd.slave.RemoteSlave;
-import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.slave.TransferImpl;
 
@@ -543,12 +542,15 @@ public class FtpConnection extends BaseFtpConnection {
 		User user2;
 		try {
 			user2 = usermanager.getUserByName(args[0]);
+			user2.addIPMask(args[1]);
+			usermanager.save(user2);
 		} catch (NoSuchUserException ex) {
 			out.println("200 No such user: " + args[0]);
 			return;
+		} catch(IOException ex) {
+			out.println("200 Caught IOException: "+ex.getMessage());
+			return;
 		}
-		user2.addIPMask(args[1]);
-		usermanager.save(user2);
 		out.write(mFtpStatus.getResponse(200, request, user, null));
 	}
 
@@ -580,6 +582,41 @@ public class FtpConnection extends BaseFtpConnection {
 		out.write(mFtpStatus.getResponse(200, request, user, null));
 	}
 
+	/**
+	 * USAGE: site take <user> <kbytes> [<message>]
+	 *        Removes credit from user
+	 *
+	 *        ex. site take Archimede 100000 haha
+	 *
+	 *        This will remove 100mb of credits from the user 'Archimede' and 
+	 *        send the message haha to him.
+	 */
+	public void doSITETAKE(FtpRequest request, PrintWriter out) {
+		GlftpdUserManager.GlftpdUser gluser=null;
+		if(user instanceof GlftpdUserManager.GlftpdUser) 
+			gluser = (GlftpdUserManager.GlftpdUser)user;
+
+		if(!user.isAdmin() && !(gluser != null && gluser.getFlags().indexOf("F") != -1) ) {
+			out.println("200 Access denied.");
+			return;
+		}
+		
+		String args[] = request.getArgument().split(" ");
+		User user2;
+		long credits;
+		
+		
+		try {
+			user2 = usermanager.getUserByName(args[0]);
+			credits = Long.parseLong(args[1])*1000; // B, not KiB
+//			String message = args[3];
+			user2.removeCredits(credits);
+		} catch(Exception ex) {
+			out.println("200 "+ex.getMessage());
+			return;
+		}
+		out.println("200 OK, removed "+credits+"b from "+user2.getUsername()+".");
+	}
 	public void doSITEUSER(FtpRequest request, PrintWriter out) {
 		resetState();
 		if (!user.isAdmin()) {
@@ -593,6 +630,8 @@ public class FtpConnection extends BaseFtpConnection {
 			out.println("200- user " + request.getArgument() + " not found");
 			out.write(mFtpStatus.getResponse(200, request, user, null));
 			return;
+		} catch(IOException ex) {
+			out.println("200 "+ex.getMessage());
 		}
 		GlftpdUserManager.GlftpdUser gluser = null;
 		if (user instanceof GlftpdUserManager.GlftpdUser) {
@@ -713,6 +752,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 * or as a subdirectory of the current working directory (if
 	 * the pathname is relative).
 	 */
+	//TODO: security issue: basename
 	public void doMKD(FtpRequest request, PrintWriter out) {
 
 		// reset state variables
@@ -725,14 +765,19 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		// get filenames
-		String fileName = getVirtualDirectory().getAbsoluteName(request.getArgument());
+//		String fileName = getVirtualDirectory().getAbsoluteName(request.getArgument());
+		String fileName = request.getArgument();
 		LinkedRemoteFile file = getVirtualDirectory().getCurrentDirectoryFile();
 		try {
-			file.mkdir(fileName);
-			out.write(mFtpStatus.getResponse(250, request, user, new String[] {fileName})); 			
+			file.mkdir(user, fileName);
+			out.write(mFtpStatus.getResponse(250, request, user, new String[] {fileName}));
+		} catch(FileExistsException ex) {
+			out.println("550 directory "+fileName+" already exists");
+			return;
 		} catch(IOException ex) {
 			out.write(mFtpStatus.getResponse(550, request, user, null));
 			ex.printStackTrace();
+			return;
 		}
 //		String args[] = { fileName };
 
@@ -1069,9 +1114,6 @@ public class FtpConnection extends BaseFtpConnection {
 	 */
 
 	public void doRETR(FtpRequest request, PrintWriter out) {
-				System.out.println("type = "+type);
-		System.out.println("getType() = "+getType());
-
 		// set state variables
 		//		long skipLen = (mbReset) ? mlSkipLen : 0;
 		long resumePosition = this.resumePosition;
@@ -1116,7 +1158,7 @@ public class FtpConnection extends BaseFtpConnection {
 		Transfer transfer;
 		while (true) {
 			RemoteSlave slave = remoteFile.getAnySlave();
-
+			
 			// get socket depending on the selection
 			if (mbPort) {
 				try {
@@ -1149,7 +1191,7 @@ public class FtpConnection extends BaseFtpConnection {
 		} catch(IOException ex) {
 			ex.printStackTrace();
 		}
-
+		
 		out.write(mFtpStatus.getResponse(226, request, user, null));
 		reset();
 	}
@@ -1353,7 +1395,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 * created at the server site if the file specified in the
 	 * pathname does not already exist.
 	 */
-
+	//TODO: security issue: basename
 	public void doSTOR(FtpRequest request, PrintWriter out) {
 		long resumePosition = this.resumePosition;
 		resetState();
@@ -1365,8 +1407,8 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		// get filenames
-		String fileName = request.getArgument();
-		fileName = getVirtualDirectory().getAbsoluteName(fileName);
+//		String fileName = request.getArgument();
+//		fileName = getVirtualDirectory().getAbsoluteName(fileName);
 //		String physicalName = getVirtualDirectory().getPhysicalName(fileName);
 		
 		
@@ -1383,20 +1425,49 @@ public class FtpConnection extends BaseFtpConnection {
 		*/
 
 		// now transfer file data
-
-		out.write(mFtpStatus.getResponse(150, request, user, null));
+		
 		RemoteSlave slave;
-		try {
-			slave =
-				slavemanager.getASlave(TransferImpl.TRANSFER_RECEIVING);
-		} catch (NoAvailableSlaveException ex) {
-			//TODO: send correct error to client
-			out.write(mFtpStatus.getResponse(530, request, user, null));
-			ex.printStackTrace();
-			return;
+		RemoteFile directory = new StaticRemoteFile(getVirtualDirectory().getCurrentDirectoryFile());
+		String fileName = request.getArgument();
+		Transfer transfer;
+		// find a slave that works
+		while(true) {
+			try {
+				slave = slavemanager.getASlave(TransferImpl.TRANSFER_RECEIVING);
+			} catch (NoAvailableSlaveException ex) {
+				out.println("550 No available slaves");
+				return;
+			}
+			try {
+				transfer = slave.getSlave().doConnectReceive(directory, fileName, user, resumePosition, mAddress, miPort);
+				break;
+			} catch(RemoteException ex) {
+				slavemanager.handleRemoteException(ex, slave);
+				continue;
+			} catch(IOException ex) {
+				out.println("451 "+ex.getMessage());
+			}
 		}
 		
+		// say we are ready to start sending
+		out.write(mFtpStatus.getResponse(150, request, user, null));
+		out.flush();
 		
+		// connect and start transfer
+		try {
+			transfer.transfer();
+		} catch(RemoteException ex) {
+			out.println("451 "+ex.getMessage());
+			slavemanager.handleRemoteException(ex, slave);
+			return;
+		} catch(IOException ex) {
+			out.println("451 "+ex.getMessage());
+			return;
+		}
+
+		out.write(mFtpStatus.getResponse(226, request, user, null));
+		
+//		transfer.
 		/*
 				InputStream is = null;
 				OutputStream os = null;
@@ -1623,6 +1694,8 @@ public class FtpConnection extends BaseFtpConnection {
 			// TODO: what error code for "no such user" ???
 			out.write(mFtpStatus.getResponse(530, request, user, null));
 			return;
+		} catch(IOException ex) {
+			out.println("200 "+ex.getMessage());
 		}
 		String masks[] =
 			{

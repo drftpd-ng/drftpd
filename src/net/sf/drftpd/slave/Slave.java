@@ -1,7 +1,9 @@
 package net.sf.drftpd.slave;
 
-import net.sf.drftpd.RemoteFile;
 import net.sf.drftpd.PermissionDeniedException;
+import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.remotefile.RemoteFile;
+
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.net.InetAddress;
@@ -42,7 +44,9 @@ public interface Slave extends Remote {
 	 * Connect to 'addr':'port' and receive file.
 	 */
 	public Transfer doConnectReceive(
-		RemoteFile file,
+		RemoteFile dir,
+		String file,
+		User owner,
 		long offset,
 		InetAddress addr,
 		int port)
@@ -51,7 +55,11 @@ public interface Slave extends Remote {
 	/**
 	 * Listen on any port and receive 'file' when connection is received.
 	 */
-	public Transfer doListenReceive(RemoteFile file, long offset)
+	public Transfer doListenReceive(
+		RemoteFile dir,
+		String file,
+		User owner,
+		long offset)
 		throws RemoteException, IOException;
 
 	/**
@@ -61,7 +69,7 @@ public interface Slave extends Remote {
 	/**
 	 * Attempt to create the directory 'path'.
 	 */
-	public void mkdir(String path)
+	public void mkdir(User user, String path)
 		throws RemoteException, IOException;
 
 	/**

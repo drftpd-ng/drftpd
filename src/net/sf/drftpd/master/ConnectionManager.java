@@ -1,6 +1,7 @@
 package net.sf.drftpd.master;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.RemoteException;
@@ -11,9 +12,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
-import net.sf.drftpd.LinkedRemoteFile;
 import net.sf.drftpd.master.usermanager.GlftpdUserManager;
 import net.sf.drftpd.master.usermanager.UserManager;
+import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.RemoteFileTree;
 import net.sf.drftpd.slave.RemoteSlave;
 import net.sf.drftpd.slave.SlaveImpl;
 
@@ -45,12 +47,16 @@ public class ConnectionManager {
 				return;
 				//the compiler doesn't know that execution stops at System.exit() stops execution
 			}
-			LinkedRemoteFile root =
-				SlaveImpl.getDefaultRoot(cfg.getProperty("slave.root"), slave);
+			
 			try {
+				LinkedRemoteFile root = SlaveImpl.getDefaultRoot(cfg.getProperty("slave.root"), slave);
 				slavemanager.addSlave(slave, root);
 			} catch (RemoteException ex) {
 				ex.printStackTrace();
+				return;
+			} catch(IOException ex) {
+				ex.printStackTrace();
+				return;
 			}
 		}
 
