@@ -91,7 +91,7 @@ import f00f.net.irc.martyr.commands.NickCommand;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.1 2004/03/26 00:16:35 mog Exp $
+ * @version $Id: SiteBot.java,v 1.2 2004/03/26 13:58:22 mog Exp $
  */
 public class SiteBot implements FtpListener, Observer {
 
@@ -194,12 +194,10 @@ public class SiteBot implements FtpListener, Observer {
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
 			LinkedRemoteFileInterface file =
 				(LinkedRemoteFileInterface) iter.next();
-			String username = file.getUsername();
-
 			UploaderPosition stat = null;
 			for (Iterator iter2 = ret.iterator(); iter2.hasNext();) {
 				UploaderPosition stat2 = (UploaderPosition) iter2.next();
-				if (stat2.getUsername().equals(username)) {
+				if (stat2.getUsername().equals(file.getUsername())) {
 					stat = stat2;
 					break;
 				}
@@ -207,7 +205,7 @@ public class SiteBot implements FtpListener, Observer {
 			if (stat == null) {
 				stat =
 					new UploaderPosition(
-						username,
+						file.getUsername(),
 						file.length(),
 						1,
 						file.getXfertime());

@@ -56,7 +56,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.24 2004/03/26 12:15:17 mog Exp $
+ * @version $Id: Dir.java,v 1.25 2004/03/26 13:58:22 mog Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
 	private final static SimpleDateFormat DATE_FMT =
@@ -144,7 +144,7 @@ public class Dir implements CommandHandler, Cloneable {
 			newCurrentDirectory);
 		try {
 			Collection uploaders =
-				SiteBot.userSort(newCurrentDirectory.getFiles(), "bytes", "high");
+				SiteBot.userSort(newCurrentDirectory.lookupSFVFile().getFiles(), "bytes", "high");
 
 			ReplacerFormat format = null;
 			try {
@@ -169,6 +169,7 @@ public class Dir implements CommandHandler, Cloneable {
 					continue;
 				}
 
+				env.add("speed", Bytes.formatBytes(stat.getXferspeed())+"/s");
 				env.add("targetuser", stat.getUsername());
 				env.add("targetgroup", user.getGroupName());
 				env.add("files", "" + stat.getFiles());
@@ -188,6 +189,10 @@ public class Dir implements CommandHandler, Cloneable {
 			}
 		} catch (RuntimeException ex) {
 			logger.error("", ex);
+		} catch (IOException e) {
+			//Error fetching SFV, ignore
+		} catch (NoAvailableSlaveException e) {
+			//Error fetching SFV, ignore
 		}
 		return response;
 	}
