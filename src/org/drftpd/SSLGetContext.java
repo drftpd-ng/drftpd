@@ -29,12 +29,17 @@ import javax.net.ssl.SSLContext;
 
 /**
  * @author mog
- * @version $Id: SSLGetContext.java,v 1.1 2004/11/11 13:09:05 mog Exp $
+ * @version $Id$
  */
-public class SSLGetContext {
+public class SSLGetContext { // Singleton
+	static SSLContext ctx = null;
     public static SSLContext getSSLContext()
         throws GeneralSecurityException, IOException {
-        SSLContext ctx = SSLContext.getInstance("TLS");
+    	
+    	if (ctx != null)
+    		return ctx;
+    	
+        ctx = SSLContext.getInstance("TLSv1");
 
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
 
