@@ -13,15 +13,19 @@ import net.sf.drftpd.ObjectExistsException;
 
 /**
  * @author mog
- * @version $Id: User.java,v 1.28 2003/12/02 20:40:54 mog Exp $
+ * @version $Id: User.java,v 1.29 2003/12/07 22:31:45 mog Exp $
  */
 public interface User {
 
-	public void addGroup(String group)
-		throws DuplicateElementException;
+	public void addGroup(String group) throws DuplicateElementException;
 
-	public void addIPMask(String mask)
-		throws DuplicateElementException;
+	public void addIPMask(String mask) throws DuplicateElementException;
+	public void addRacesLost();
+	public void addRacesParticipated();
+
+	public void addRacesWon();
+	public void addRequests();
+	public void addRequestsFilled();
 	public boolean checkIP(String masks[], boolean useIdent);
 	public boolean checkPassword(String password);
 
@@ -98,17 +102,7 @@ public interface User {
 	 * @return int
 	 */
 	public int getDownloadedSecondsMonth();
-	/**
-	 * Returns the downloadedSecondsWeek.
-	 * @return int
-	 */
-	
-	public int getRacesWon();
-	public int getRacesLost();
-	public int getRacesParticipated();
-	public int getRequests();
-	public int getRequestsFilled();
-	
+
 	public int getDownloadedSecondsWeek();
 	public short getGroupLeechSlots();
 	public String getGroupName();
@@ -126,6 +120,7 @@ public interface User {
 	 */
 	public int getIdleTime();
 	public List getIpMasks();
+	public List getIpMasks2();
 	/**
 	 * Get last access time
 	 */
@@ -171,11 +166,21 @@ public interface User {
 	 * @return long
 	 */
 	public long getNukedBytes();
+	public int getRacesLost();
+	public int getRacesParticipated();
+	/**
+	 * Returns the downloadedSecondsWeek.
+	 * @return int
+	 */
+
+	public int getRacesWon();
 	/**
 	 * Returns the ratio.
 	 * @return float
 	 */
 	public float getRatio();
+	public int getRequests();
+	public int getRequestsFilled();
 	/**
 	 * Returns the tagline.
 	 * @return String
@@ -301,13 +306,7 @@ public interface User {
 	public void removeIpMask(String mask) throws NoSuchFieldException;
 	public void rename(String username)
 		throws ObjectExistsException, UserFileException;
-		
-	public void addRacesWon();
-	public void addRacesParticipated();
-	public void addRacesLost();
-	public void addRequests();
-	public void addRequestsFilled();
-	
+
 	public void setComment(String comment);
 	/**
 	 * Sets the credits.
@@ -406,6 +405,8 @@ public interface User {
 	 */
 	public void setTimeToday(long timeToday);
 	public void setWeeklyAllotment(long weeklyAllotment);
+
+	public void toggleGroup(String string);
 	public void updateCredits(long credits);
 	public void updateDownloadedBytes(long bytes);
 	public void updateDownloadedFiles(int i);
@@ -417,5 +418,4 @@ public interface User {
 	public void updateTimesNuked(int timesNuked);
 	public void updateUploadedBytes(long bytes);
 	public void updateUploadedFiles(int i);
-	public List getIpMasks2();
 }

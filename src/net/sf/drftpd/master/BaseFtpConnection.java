@@ -36,7 +36,7 @@ import org.apache.log4j.PatternLayout;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.59 2003/12/05 23:03:27 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.60 2003/12/07 22:31:44 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -498,12 +498,16 @@ public class BaseFtpConnection implements Runnable {
 		return buf.toString();
 	}
 
-	public void setControlSocket(Socket socket) throws IOException {
-		_controlSocket = socket;
-		in =
-			new BufferedReader(
-				new InputStreamReader(_controlSocket.getInputStream()));
+	public void setControlSocket(Socket socket) {
+		try {
+			_controlSocket = socket;
+			in =
+				new BufferedReader(
+					new InputStreamReader(_controlSocket.getInputStream()));
 
-		out = new PrintWriter(_controlSocket.getOutputStream());
+			out = new PrintWriter(_controlSocket.getOutputStream());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.ObjectNotFoundException;
@@ -187,7 +188,7 @@ public class LIST implements CommandHandler {
 		}
 
 		////////////////
-		java.util.List listFiles = ListUtils.list(directoryFile, conn);
+		List listFiles = ListUtils.list(directoryFile, conn);
 		//		//////////////
 
 		try {
@@ -206,8 +207,6 @@ public class LIST implements CommandHandler {
 
 			try {
 				if (!request.getCommand().equals("STAT")) {
-					os.flush();
-					dataSocket.shutdownOutput();
 					os.close();
 					dataSocket.close();
 					response.addComment(conn.status());
@@ -392,7 +391,7 @@ public class LIST implements CommandHandler {
 		if (fl.isDirectory() && fl instanceof LinkedRemoteFile) {
 			LinkedRemoteFile file = (LinkedRemoteFile) fl;
 			try {
-				int filesleft = file.lookupSFVFile().filesLeft();
+				int filesleft = file.lookupSFVFile().getStatus().getMissing();
 				if (filesleft != 0)
 					out.write(
 						"l--------- 3 "

@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: MLST.java,v 1.6 2003/11/25 19:47:52 mog Exp $
+ * @version $Id: MLST.java,v 1.7 2003/12/07 22:31:45 mog Exp $
  */
 public class MLST implements CommandHandler {
 
@@ -58,7 +58,7 @@ public class MLST implements CommandHandler {
 				return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 			}
 		}
-		if(conn.getConfig().checkPrivPath(conn.getUserNull(), dir)) {
+		if(!conn.getConfig().checkPrivPath(conn.getUserNull(), dir)) {
 			return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 		}
 		PrintWriter out = conn.getControlWriter();

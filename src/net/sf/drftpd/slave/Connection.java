@@ -5,14 +5,11 @@ import java.io.Serializable;
 import java.net.Socket;
 
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
+ * @author mog
+ * @version $Id: Connection.java,v 1.7 2003/12/07 22:31:46 mog Exp $
  */
 public abstract class Connection implements Serializable {
+	public static final int TIMEOUT = 10000;
 
 	public abstract Socket connect() throws IOException;
 	protected void setSockOpts(Socket sock) throws IOException {
@@ -23,6 +20,6 @@ public abstract class Connection implements Serializable {
 		 * IPTOS_LOWDELAY (0x10)
 		 */
 		sock.setTrafficClass(0x08);
-		sock.setSoTimeout(30000); // 30 second timeout
+		sock.setSoTimeout(TIMEOUT); // 30 second timeout
 	}
 }

@@ -3,6 +3,7 @@ package net.sf.drftpd.remotefile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.InetSocketAddress;
 import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.91 2003/12/05 22:27:23 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.92 2003/12/07 22:31:45 mog Exp $
  */
 
 public class LinkedRemoteFile
@@ -589,7 +590,7 @@ public class LinkedRemoteFile
 	}
 
 	public long getXferspeed() {
-		if ( getXfertime() == 0)
+		if (getXfertime() == 0)
 			return 0;
 		return length() / (getXfertime() / 1000);
 	}
@@ -1062,11 +1063,13 @@ public class LinkedRemoteFile
 		throws NoAvailableSlaveException, IOException {
 
 		final RemoteSlave fromslave = getASlaveForDownload();
-		Transfer fromtransfer = fromslave.getSlave().listen();
+		Transfer fromtransfer = fromslave.getSlave().listen(false);
 		final Transfer totransfer =
 			torslave.getSlave().connect(
-				fromslave.getInetAddress(),
-				fromtransfer.getLocalPort());
+				new InetSocketAddress(
+					fromslave.getInetAddress(),
+					fromtransfer.getLocalPort()),
+				false);
 
 		Thread t = new Thread(new Runnable() {
 			private Exception exception = null;

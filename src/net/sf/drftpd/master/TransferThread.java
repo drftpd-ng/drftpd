@@ -7,6 +7,7 @@
 package net.sf.drftpd.master;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -65,12 +66,14 @@ public class TransferThread {
 		srcrslave = file.getASlaveForDownload();
 		//throws NoAvailableSlaveException
 
-		DstXfer dstxfer = new DstXfer(dstrslave.getSlave().listen());
+		DstXfer dstxfer = new DstXfer(dstrslave.getSlave().listen(false));
 		SrcXfer srcxfer =
 			new SrcXfer(
 				srcrslave.getSlave().connect(
-					dstrslave.getInetAddress(),
-					dstxfer.getLocalPort()));
+					new InetSocketAddress(
+						dstrslave.getInetAddress(),
+						dstxfer.getLocalPort()),
+					false));
 
 		//		Thread srcthread = new Thread();
 		//		Thread dstthread = new Thread();

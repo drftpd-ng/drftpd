@@ -23,7 +23,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.30 2003/12/03 04:50:21 zubov Exp $
+ * @version $Id: AbstractUser.java,v 1.31 2003/12/07 22:31:45 mog Exp $
  */
 public abstract class AbstractUser implements User {
 	private static Logger logger = Logger.getLogger(AbstractUser.class);
@@ -459,7 +459,6 @@ public abstract class AbstractUser implements User {
 		Date lastResetDate = new Date(this.lastReset);
 
 		Calendar cal = Calendar.getInstance();
-		
 		CalendarUtils.floorAllLessThanDay(cal);
 
 		//has not been reset since midnight
@@ -714,6 +713,22 @@ public abstract class AbstractUser implements User {
 
 	public boolean equals(Object obj) {
 		return obj instanceof User ? ((User)obj).getUsername().equals(getUsername()) : false;
+	}
+
+	public void toggleGroup(String string) {
+		if(isMemberOf(string)) {
+			try {
+				removeGroup(string);
+			} catch (NoSuchFieldException e) {
+				logger.error("isMemberOf() said we were in the group", e);
+			}
+		} else {
+			try {
+				addGroup(string);
+			} catch (DuplicateElementException e) {
+				logger.error("isMemberOf() said we weren't in the group", e);
+			}
+		}
 	}
 
 }

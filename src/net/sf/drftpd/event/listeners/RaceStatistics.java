@@ -30,20 +30,15 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: RaceStatistics.java,v 1.5 2003/12/07 22:31:44 mog Exp $
  */
 public class RaceStatistics implements FtpListener {
 
 	private ConnectionManager _cm;
 
-	public RaceStatistics(ConnectionManager cm) {
-		init(cm);
+	public RaceStatistics() {
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.event.FtpListener#actionPerformed(net.sf.drftpd.event.Event)
-	 */
+
 	public void actionPerformed(Event event) {
 		if (!(event instanceof DirectoryFtpEvent))
 			return;

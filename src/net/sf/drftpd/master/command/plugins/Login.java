@@ -115,13 +115,6 @@ public class Login implements CommandHandler, Cloneable {
 				if (response != null) {
 					return response;
 				}
-				/**
-				 * <code>PASS &lt;SP&gt; <password> &lt;CRLF&gt;</code><br>
-				*
-				* The argument field is a Telnet string specifying the user's
-				* password.  This command must be immediately preceded by the
-				* user name command.
-				*/
 				return new FtpReply(
 					331,
 					"Password required for " + newUser.getUsername());
@@ -130,6 +123,14 @@ public class Login implements CommandHandler, Cloneable {
 		//fail
 		return FtpReply.RESPONSE_530_ACCESS_DENIED;
 	}
+
+	/**
+	 * <code>PASS &lt;SP&gt; <password> &lt;CRLF&gt;</code><br>
+	*
+	* The argument field is a Telnet string specifying the user's
+	* password.  This command must be immediately preceded by the
+	* user name command.
+	*/
 	private FtpReply doPASS(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
 		// set state variables

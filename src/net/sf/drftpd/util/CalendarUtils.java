@@ -4,7 +4,7 @@ import java.util.Calendar;
 
 /**
  * @author mog
- * @version $Id: CalendarUtils.java,v 1.2 2003/11/17 20:13:11 mog Exp $
+ * @version $Id: CalendarUtils.java,v 1.3 2003/12/07 22:31:46 mog Exp $
  */
 public class CalendarUtils {
 	private CalendarUtils() {
@@ -15,6 +15,17 @@ public class CalendarUtils {
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
+	}
+
+	public static void ceilAllLessThanDay(Calendar cal) {
+		cal.set(
+			Calendar.MILLISECOND,
+			cal.getActualMaximum(Calendar.MILLISECOND));
+		cal.set(Calendar.SECOND, cal.getActualMaximum(Calendar.SECOND));
+		cal.set(Calendar.MINUTE, cal.getActualMaximum(Calendar.MINUTE));
+		cal.set(
+			Calendar.HOUR_OF_DAY,
+			cal.getActualMaximum(Calendar.HOUR_OF_DAY));
 	}
 
 	public static void floorDayOfWeek(Calendar cal) {
@@ -36,19 +47,19 @@ public class CalendarUtils {
 	public static void incrementMonth(Calendar cal) {
 		Calendar cal2 = (Calendar) cal.clone();
 		floorDayOfMonth(cal2);
-		cal2.set(Calendar.MONTH, cal2.get(Calendar.MONTH) + 1);
+		cal2.add(Calendar.MONTH, 1);
 		if (cal.get(Calendar.DAY_OF_MONTH)
 			> cal2.getActualMaximum(Calendar.DAY_OF_MONTH)) {
 			floorDayOfMonth(cal);
-			cal.set(Calendar.MONTH, cal.get(Calendar.MONTH) + 2);
+			cal.add(Calendar.MONTH, 2);
 		}
-		cal.set(Calendar.MONTH, cal.get(Calendar.MONTH) + 1);
+		cal.add(Calendar.MONTH, 1);
 	}
 
 	public static void incrementWeek(Calendar cal) {
-		cal.set(Calendar.WEEK_OF_YEAR, cal.get(Calendar.WEEK_OF_YEAR) + 1);
+		cal.add(Calendar.WEEK_OF_YEAR, 1);
 	}
 	public static void incrementDay(Calendar cal) {
-		cal.set(Calendar.DAY_OF_MONTH, cal.get(Calendar.DAY_OF_MONTH) + 1);
+		cal.add(Calendar.DAY_OF_MONTH, 1);
 	}
 }

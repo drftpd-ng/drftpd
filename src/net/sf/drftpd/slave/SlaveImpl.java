@@ -1,12 +1,13 @@
 package net.sf.drftpd.slave;
 
 import java.io.BufferedReader;
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.rmi.ConnectIOException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -22,12 +23,15 @@ import java.util.Vector;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
+import javax.net.ssl.SSLContext;
+
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.SlaveManager;
+import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
@@ -44,9 +48,11 @@ public class SlaveImpl
 	extends UnicastRemoteObject
 	implements Slave, Unreferenced {
 
+	private SSLContext _ctx;
 	private static final boolean isWin32 =
 		System.getProperty("os.name").startsWith("Windows");
-	private static final Logger logger = Logger.getLogger(SlaveImpl.class.getName());
+	private static final Logger logger =
+		Logger.getLogger(SlaveImpl.class.getName());
 
 	/**
 	 * returns the {LinkedRemoteFile} directory that will be serialized and registered at the master.
@@ -151,7 +157,11 @@ public class SlaveImpl
 
 	public SlaveImpl(Properties cfg) throws RemoteException {
 		super(0);
-
+		try {
+			_ctx = DataConnectionHandler.getSSLContext();
+		} catch (Exception e) {
+			logger.warn("Error loading SSLContext", e);
+		}
 		String slavemanagerurl;
 		slavemanagerurl =
 			"//"
@@ -182,9 +192,10 @@ public class SlaveImpl
 			logger.warn("Error registering with slave", t);
 			System.exit(0);
 		} catch (IOException e) {
-			if (e.getCause() instanceof ConnectIOException) {
+			if (e instanceof ConnectIOException
+				&& e.getCause() instanceof EOFException) {
 				logger.info(
-					"Check slaves.xml on the master if you are allowed to connect.");
+					"Check slaves.xml on the master that you are allowed to connect.");
 			}
 			logger.info("", e);
 			System.exit(0);
@@ -209,9 +220,9 @@ public class SlaveImpl
 		return crc32.getValue();
 	}
 
-	public Transfer connect(InetAddress addr, int port)
+	public Transfer connect(InetSocketAddress addr, boolean encrypted)
 		throws RemoteException {
-		return new TransferImpl(new ActiveConnection(addr, port), this);
+		return new TransferImpl(new ActiveConnection(encrypted ? _ctx : null, addr), this);
 	}
 
 	public void delete(String path) throws IOException {
@@ -226,15 +237,20 @@ public class SlaveImpl
 			if (!file.delete())
 				throw new PermissionDeniedException("delete failed on " + path);
 			File dir = new File(file.getParentFile());
-			
+
 			//TODO don't go above empty root
 			while (dir.list().length == 0) {
 				file.delete();
-				logger.debug(dir.getPath()+" - "+dir.getParent());
+				logger.debug(dir.getPath() + " - " + dir.getParent());
 				java.io.File tmpFile = dir.getParentFile();
-				if(tmpFile == null) break;
-				logger.debug(tmpFile.getPath()+".length() <= "+root.getPath()+".length()");
-				if(tmpFile.getPath().length() <= root.getPath().length()) {
+				if (tmpFile == null)
+					break;
+				logger.debug(
+					tmpFile.getPath()
+						+ ".length() <= "
+						+ root.getPath()
+						+ ".length()");
+				if (tmpFile.getPath().length() <= root.getPath().length()) {
 					break;
 				}
 				dir = new File(tmpFile);
@@ -288,18 +304,18 @@ public class SlaveImpl
 		}
 	}
 
-	public Transfer listen() throws RemoteException, IOException {
-		return new TransferImpl(new PassiveConnection(null), this);
+	public Transfer listen(boolean encrypted)
+		throws RemoteException, IOException {
+		return new TransferImpl(
+			new PassiveConnection(encrypted ? _ctx : null, new InetSocketAddress(0)),
+			this);
 	}
 
-	/**
-	 * @see net.sf.drftpd.slave.Slave#ping()
-	 */
 	public void ping() {
 	}
+
 	public void rename(String from, String toDirPath, String toName)
 		throws IOException {
-		//Collection files = roots.iterator(from);
 		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
 			Root root = (Root) iter.next();
 
@@ -329,24 +345,14 @@ public class SlaveImpl
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see java.rmi.server.Unreferenced#unreferenced()
-	 */
 	public void unreferenced() {
 		logger.info("unreferenced");
-		System.out.println("unreferenced");
 		System.exit(0);
-		//		logger.log(
-		//			Level.WARN,
-		//			"Lost master, trying to re-register with master.");
-		//		register();
-		//		System.gc();
 	}
 
 	public RootBasket getRoots() {
 		return _roots;
 	}
-
 
 	public void addTransfer(TransferImpl transfer) {
 		synchronized (_transfers) {

@@ -1,7 +1,7 @@
 package net.sf.drftpd.slave;
 
 import java.io.IOException;
-import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -16,8 +16,8 @@ public interface Slave extends Remote {
 		String path)
 		throws RemoteException, IOException;
 	
-	public Transfer listen() throws RemoteException, IOException;
-	public Transfer connect(InetAddress addr, int port) throws RemoteException;
+	public Transfer listen(boolean encrypted) throws RemoteException, IOException;
+	public Transfer connect(InetSocketAddress addr, boolean encrypted) throws RemoteException;
 	/**
 	 * Get statistics for this slave, usefull when deciding which slave to use when transferring files.
 	 */
