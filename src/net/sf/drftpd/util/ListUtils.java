@@ -66,7 +66,7 @@ public class ListUtils {
         try {
 			return list(directoryFile, conn, null);
 		} catch (IOException e) {
-			logger.info("IOException while lising directory "+directoryFile.getPath(),e);
+			logger.info("IOException while listing directory "+directoryFile.getPath(),e);
 			return new ArrayList();
 		}
     }
