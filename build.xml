@@ -72,6 +72,7 @@
     	<include name="drftpd.conf.dist"/>
     	<include name="perms.conf.dist"/>
     	<include name="slaves.xml.dist"/>
+        <include name="replacerformats.conf.dist"/>
     	<include name="irc.conf.dist"/>
     	<include name="slaves.dtd"/>
     	<include name="build.xml"/>

@@ -4045,7 +4045,7 @@ public class FtpConnection extends BaseFtpConnection {
 			response.addComment("Error saving userfile: " + e1.getMessage());
 		}
 
-		if (!getConfig().checkHideInWho(_user, _transferFile)) {
+		if (getConfig().checkDirLog(_user, _transferFile)) {
 			_cm.dispatchFtpEvent(
 				new TransferEvent(
 					_user,
