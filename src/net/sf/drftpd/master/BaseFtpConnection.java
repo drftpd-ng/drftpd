@@ -446,11 +446,14 @@ public class BaseFtpConnection implements Runnable {
         } catch (Throwable e) {
         	int replycode = e instanceof ReplyException ? ((ReplyException)e).getReplyCode() : 500;
     		reply = new Reply(replycode, e.getMessage());
-        	if(getUserNull().getObjectBoolean(UserManagment.DEBUG)) {
-        		StringWriter sw = new StringWriter();
-        		e.printStackTrace(new PrintWriter(sw));
-        		reply.addComment(sw.toString());
-        	}
+        	try {
+				if(getUser().getObjectBoolean(UserManagment.DEBUG)) {
+					StringWriter sw = new StringWriter();
+					e.printStackTrace(new PrintWriter(sw));
+					reply.addComment(sw.toString());
+				}
+			} catch (NoSuchUserException e1) {
+			}
             logger.warn("", e);
         }
 
