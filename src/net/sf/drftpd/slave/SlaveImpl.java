@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.rmi.ConnectIOException;
 import java.rmi.Naming;
@@ -62,7 +63,7 @@ import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.87 2004/04/20 04:11:51 mog Exp $
+ * @version $Id: SlaveImpl.java,v 1.88 2004/04/28 16:05:56 zombiewoof64 Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
@@ -235,6 +236,15 @@ public class SlaveImpl
 		}
 		System.gc();
 	}
+        
+        public InetAddress getPeerAddress()
+        {
+            try {
+                return InetAddress.getLocalHost();
+            } catch (Exception e) {
+                return null;
+            }
+        }
 
 	public void addTransfer(TransferImpl transfer) {
 		synchronized (_transfers) {

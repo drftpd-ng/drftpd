@@ -69,7 +69,7 @@ import java.security.MessageDigest;
 
 /**
  * @author mog
- * @version $Id: SocketSlaveImpl.java,v 1.3 2004/04/28 15:43:44 zombiewoof64 Exp $
+ * @version $Id: SocketSlaveImpl.java,v 1.4 2004/04/28 16:05:56 zombiewoof64 Exp $
  */
 public class SocketSlaveImpl
 extends Thread
@@ -110,14 +110,14 @@ implements Slave, Unreferenced {
     public SocketSlaveImpl(ConnectionManager mgr, Hashtable cfg)
         throws RemoteException 
     {
-        Socket sock;
+        Socket sock = null;
+        _name = (String)cfg.get("name");
+        _spsw = (String)cfg.get("slavepass");
+        _mpsw = (String)cfg.get("masterpass");
+        _host = (String)cfg.get("addr");
+        _port = Integer.parseInt((String)cfg.get("port"));
+        logger.info("Starting connect to " + _name + "@" + _host + ":" + _port);
         try {
-            _name = (String)cfg.get("name");
-            _spsw = (String)cfg.get("slavepass");
-            _mpsw = (String)cfg.get("masterpass");
-            _host = (String)cfg.get("addr");
-            _port = Integer.parseInt((String)cfg.get("port"));
-            logger.info("Starting connect to " + _name + "@" + _host + ":" + _port);
             sock = new java.net.Socket(_host,_port);
         } catch (IOException e) {
             if (e instanceof ConnectIOException
@@ -130,7 +130,7 @@ implements Slave, Unreferenced {
             //System.exit(0);
         } catch (Exception e) {
             logger.warn("Exception: " + e.toString());
-            try { sock.close(); } catch (Exception e2) {}
+            try { if (sock!=null) sock.close(); } catch (Exception e2) {}
         }
         init(mgr,cfg,sock);
     }
@@ -223,6 +223,7 @@ implements Slave, Unreferenced {
             if (hex.length() < 2) hex = "0" + hex;
             res += hex;
         }
+        return res;
     }
     
     //*********************************
@@ -230,6 +231,10 @@ implements Slave, Unreferenced {
     //*********************************
 
     public InetAddress getAddress() {
+        return _sock.getInetAddress();
+    }
+    
+    public InetAddress getPeerAddress() {
         return _sock.getInetAddress();
     }
     

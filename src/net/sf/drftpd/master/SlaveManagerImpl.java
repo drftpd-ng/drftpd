@@ -65,7 +65,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.81 2004/04/27 22:06:28 zombiewoof64 Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.82 2004/04/28 16:05:55 zombiewoof64 Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -267,13 +267,7 @@ public class SlaveManagerImpl
 		}
 
 		try {
-                    InetAddress addr = null;
-                    if (slave instanceof net.sf.drftpd.slave.SlaveImpl) {
-                        addr = InetAddress.getByName(RemoteServer.getClientHost());
-                    }
-                    if (slave instanceof net.sf.drftpd.tcpslave.SocketSlaveImpl) {
-                        addr = ((net.sf.drftpd.tcpslave.SocketSlaveImpl)slave).getAddress();
-                    }
+                    InetAddress addr = slave.getPeerAddress();
                     if (addr == null) {
                         throw new IllegalArgumentException(rslave.getName() + " has no slave address");
                     }
