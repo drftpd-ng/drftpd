@@ -1,12 +1,19 @@
 package net.sf.drftpd.master.usermanager;
 
+import net.sf.drftpd.event.listeners.Trial;
+
 /**
  * Contains static user data, used for testing.
  * 
  * @author mog
- * @version $Id: StaticUser.java,v 1.1 2003/12/07 22:31:45 mog Exp $
+ * @version $Id: StaticUser.java,v 1.2 2003/12/22 18:09:42 mog Exp $
  */
 public class StaticUser extends AbstractUser {
+
+	public StaticUser(String username, long time) {
+		this(username);
+		setCreated(time);
+	}
 
 	public StaticUser(String username) {
 		super(username);
@@ -51,5 +58,21 @@ public class StaticUser extends AbstractUser {
 
 	public void setLastReset(long l) {
 		lastReset = l;
+	}
+
+	public void setUploadedBytesPeriod(int period, long l) {
+		switch (period) {
+			case Trial.PERIOD_DAILY :
+				setUploadedBytesDay(l);
+				return;
+			case Trial.PERIOD_MONTHLY :
+				setUploadedBytesMonth(l);
+				return;
+			case Trial.PERIOD_WEEKLY :
+				setUploadedBytesWeek(l);
+				return;
+			default :
+				throw new RuntimeException();
+		}
 	}
 }

@@ -1,9 +1,3 @@
-/*
- * Created on 2003-okt-16
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd.master.command.plugins;
 
 import java.io.IOException;
@@ -44,7 +38,7 @@ public class Login implements CommandHandler, Cloneable {
 
 		// and exit
 		conn.stop();
-		return new FtpReply(221, "Goodbye");
+		return new FtpReply(221, conn.jprintf(Login.class.getName(), "quit.success"));
 	}
 
 	/**
@@ -132,13 +126,13 @@ public class Login implements CommandHandler, Cloneable {
 	* user name command.
 	*/
 	private FtpReply doPASS(BaseFtpConnection conn) {
-		FtpRequest request = conn.getRequest();
-		// set state variables
-
 		if (conn.getUserNull() == null) {
 			conn.resetState();
 			return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 		}
+
+		FtpRequest request = conn.getRequest();
+		
 		conn.resetState();
 		//		mbPass = true;
 
@@ -148,20 +142,22 @@ public class Login implements CommandHandler, Cloneable {
 		// login failure - close connection
 		if (conn.getUserNull().checkPassword(pass)) {
 			conn.getUserNull().login();
-			FtpReply response =
-				(FtpReply) FtpReply.RESPONSE_230_USER_LOGGED_IN.clone();
-			try {
-				Textoutput.addTextToResponse(response, "welcome");
-				//conn.getConfig().welcomeMessage(response);
-			} catch (IOException e) {
-				logger.warn("Error reading welcome", e);
-			}
 			conn.setAuthenticated(true);
 			conn.getConnectionManager().dispatchFtpEvent(
 				new UserEvent(conn.getUserNull(), "LOGIN"));
+
+			FtpReply response =
+				new FtpReply(
+					230,
+					conn.jprintf(Login.class.getName(), "pass.success"));
+			try {
+				Textoutput.addTextToResponse(response, "welcome");
+			} catch (IOException e) {
+				logger.warn("Error reading welcome", e);
+			}
 			return response;
 		} else {
-			return FtpReply.RESPONSE_530_ACCESS_DENIED;
+			return new FtpReply(530, conn.jprintf(Login.class.getName(), "pass.fail"));
 		}
 	}
 

@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
  *
  */
 public class FtpReply implements Cloneable {
-	private static Logger logger =
+	private static final Logger logger =
 		Logger.getLogger(FtpReply.class.getName());
 
 	/** 150 File status okay; about to open data connection. */
@@ -193,6 +193,10 @@ public class FtpReply implements Cloneable {
 		if (message != null)
 			sb.append(code + " " + message + "\r\n");
 		return sb.toString();
+	}
+
+	public int getCode() {
+		return code;
 	}
 
 }

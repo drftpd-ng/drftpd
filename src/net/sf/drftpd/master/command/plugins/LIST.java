@@ -16,7 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
@@ -133,15 +132,7 @@ public class LIST implements CommandHandler {
 
 		DataConnectionHandler dataconn = null;
 		if (!request.getCommand().equals("STAT")) {
-			try {
-				dataconn =
-					(DataConnectionHandler) conn
-						.getCommandManager()
-						.getCommandHandler(
-						DataConnectionHandler.class);
-			} catch (ObjectNotFoundException e2) {
-				throw new RuntimeException(e2);
-			}
+				dataconn = conn.getDataConnectionHandler();
 			if (!dataconn.isPasv() && !dataconn.isPort()) {
 				return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 			}
@@ -176,7 +167,7 @@ public class LIST implements CommandHandler {
 			out.write(FtpReply.RESPONSE_150_OK);
 			out.flush();
 			try {
-				dataSocket = dataconn.getDataSocket();
+				dataSocket = dataconn.getDataSocket(conn.getSocketFactory());
 				os =
 					new PrintWriter(
 						new OutputStreamWriter(dataSocket.getOutputStream()));

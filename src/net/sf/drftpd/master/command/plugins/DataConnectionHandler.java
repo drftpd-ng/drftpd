@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
@@ -43,14 +42,13 @@ import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.slave.TransferStatus;
 import net.sf.drftpd.util.ListUtils;
 import net.sf.drftpd.util.PortRange;
-import net.sf.drftpd.util.SSLGetContext;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.23 2003/12/13 17:20:23 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.24 2003/12/22 18:09:42 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -83,7 +81,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	public DataConnectionHandler() {
 		super();
 		try {
-			_ctx = SSLGetContext.getSSLContext();
+			//_ctx = SSLGetContext.getSSLContext();
 		} catch (Exception e) {
 			throw new FatalException(e);
 		}
@@ -242,6 +240,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				500,
 				"You need to use a client supporting PRET (PRE Transfer) to use PASV");
 		}
+		_preTransfer = false;
 		assert isPort() == false;
 		InetSocketAddress address;
 		if (_preTransferRSlave == null) {
@@ -253,7 +252,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				_serverSocket =
 					(_encryptedDataChannel
 						? _ctx.getServerSocketFactory()
-						: ServerSocketFactory.getDefault())
+						: conn.getServerSocketFactory())
 						.createServerSocket();
 				_serverSocket.bind(address, 1);
 				_serverSocket.setSoTimeout(60000);
@@ -742,7 +741,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 * 
 	 * Used by LIST and NLST and MLST.
 	 */
-	public Socket getDataSocket() throws IOException {
+	public Socket getDataSocket(SocketFactory socketFactory) throws IOException {
 		Socket dataSocket;
 		// get socket depending on the selection
 		if (isPort()) {
@@ -750,7 +749,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				SocketFactory ssf =
 					_encryptedDataChannel
 						? _ctx.getSocketFactory()
-						: SocketFactory.getDefault();
+						: socketFactory;
 
 				dataSocket = ssf.createSocket();
 				//dataSocket.connect(_address, getPort());

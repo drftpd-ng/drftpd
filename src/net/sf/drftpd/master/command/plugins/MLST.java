@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: MLST.java,v 1.7 2003/12/07 22:31:45 mog Exp $
+ * @version $Id: MLST.java,v 1.8 2003/12/22 18:09:42 mog Exp $
  */
 public class MLST implements CommandHandler {
 
@@ -79,7 +79,7 @@ public class MLST implements CommandHandler {
 
 			out.print(FtpReply.RESPONSE_150_OK);
 			try {
-				Socket sock = dataConnHnd.getDataSocket();
+				Socket sock = dataConnHnd.getDataSocket(conn.getSocketFactory());
 				List files = ListUtils.list(dir, conn);
 				Writer out2 = new OutputStreamWriter(sock.getOutputStream());
 				for (Iterator iter = files.iterator(); iter.hasNext();) {

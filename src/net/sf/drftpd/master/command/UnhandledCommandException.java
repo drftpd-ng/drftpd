@@ -12,6 +12,10 @@ import net.sf.drftpd.master.FtpRequest;
  * @author mog
  */
 public class UnhandledCommandException extends Exception {
+	public UnhandledCommandException() {
+		super();
+	}
+
 	public static UnhandledCommandException create(Class clazz, FtpRequest req) {
 		return create(clazz, req.getCommand());
 	}

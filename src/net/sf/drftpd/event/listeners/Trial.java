@@ -11,7 +11,6 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.Bytes;
-import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
@@ -35,95 +34,9 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.6 2003/12/07 22:31:44 mog Exp $
+ * @version $Id: Trial.java,v 1.7 2003/12/22 18:09:41 mog Exp $
  */
 public class Trial implements FtpListener {
-	class Limit {
-		private String _actionFailed;
-		private String _actionPassed;
-		private long _bytes;
-		private String _name;
-		private short _period;
-		private Permission _perm;
-
-		public void doFailed(User user) {
-			doAction(getActionFailed(), user);
-		}
-
-		public void doPassed(User user) {
-			doAction(getActionPassed(), user);
-		}
-
-		public String getActionFailed() {
-			return _actionFailed;
-		}
-
-		public String getActionPassed() {
-			return _actionPassed;
-		}
-
-		public long getBytes() {
-			return _bytes;
-		}
-
-		public short getPeriod() {
-			return _period;
-		}
-
-		public Permission getPerm() {
-			return _perm;
-		}
-
-		public void setActionFailed(String action) {
-			validatePassed(action);
-			_actionFailed = action;
-		}
-
-		public void setActionPassed(String action) {
-			validatePassed(action);
-			_actionPassed = action;
-		}
-
-		public void setBytes(long bytes) {
-			_bytes = bytes;
-		}
-
-		public void setName(String name) {
-			_name = name;
-		}
-
-		public void setPeriod(short period) {
-			_period = period;
-		}
-
-		public void setPerm(Permission perm) {
-			_perm = perm;
-		}
-
-		public String toString() {
-			return "Limit[name="
-				+ _name
-				+ ",bytes="
-				+ Bytes.formatBytes(_bytes)
-				+ ",period="
-				+ getPeriodName(_period)
-				+ "]";
-		}
-
-		private void validatePassed(String action) {
-			if (action == null)
-				return;
-			StringTokenizer st = new StringTokenizer(action);
-			if (!st.hasMoreTokens())
-				return;
-			String cmd = st.nextToken().toLowerCase();
-			if (!("deluser".equals(action)
-				|| "purge".equals(action)
-				|| "chgrp".equals(cmd))) {
-				throw new IllegalArgumentException();
-			}
-		}
-	}
 	class SiteBot extends GenericCommandAutoService {
 
 		private IRCListener _irc;
@@ -160,15 +73,15 @@ public class Trial implements FtpListener {
 									limit.getBytes()
 										- Trial.getUploadedBytesForPeriod(
 											user,
-											limit._period);
+											limit.getPeriod());
 								if (bytesleft <= 0) {
 									_irc.say(
 										"[passed] "
 											+ user.getUsername()
 											+ " has passed this "
-											+ getPeriodName(limit._period)
+											+ getPeriodName(limit.getPeriod())
 											+ " "
-											+ limit._name
+											+ limit.getName()
 											+ " with "
 											+ Bytes.formatBytes(-bytesleft));
 								} else {
@@ -176,13 +89,13 @@ public class Trial implements FtpListener {
 										"[passed] "
 											+ user.getUsername()
 											+ " is on "
-											+ limit._name
+											+ limit.getName()
 											+ " with "
 											+ Bytes.formatBytes(bytesleft)
 											+ " left until "
 											+ Trial
 												.getCalendarForEndOfPeriod(
-													limit._period)
+													limit.getPeriod())
 												.getTime());
 								}
 								if (isInFirstPeriod(user, limit.getPeriod())) {
@@ -210,9 +123,9 @@ public class Trial implements FtpListener {
 	private static final short ACTION_PURGE = 1;
 	private static final Logger logger = Logger.getLogger(Trial.class);
 
-	private static final short PERIOD_DAILY = 0;
-	private static final short PERIOD_MONTHLY = 2;
-	private static final short PERIOD_WEEKLY = 1;
+	public static final int PERIOD_DAILY = Calendar.DAY_OF_MONTH; // = 5
+	public static final short PERIOD_MONTHLY = Calendar.MONTH; // = 2
+	public static final short PERIOD_WEEKLY = Calendar.WEEK_OF_YEAR; // = 3
 	public static void doAction(String action, User user) {
 		if (action == null)
 			return;
@@ -230,7 +143,7 @@ public class Trial implements FtpListener {
 		}
 	}
 
-	public static Calendar getCalendarForEndOfBonus(User user, short period) {
+	public static Calendar getCalendarForEndOfBonus(User user, int period) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTimeInMillis(user.getCreated());
 		moveCalendarToEndOfPeriod(cal, period);
@@ -242,7 +155,7 @@ public class Trial implements FtpListener {
 	 */
 	public static Calendar getCalendarForEndOfFirstPeriod(
 		User user,
-		short period) {
+		int period) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date(user.getCreated()));
 		CalendarUtils.ceilAllLessThanDay(cal);
@@ -270,12 +183,12 @@ public class Trial implements FtpListener {
 					"Don't know how to handle " + period);
 		}
 	}
-	public static Calendar getCalendarForEndOfPeriod(short period) {
+	public static Calendar getCalendarForEndOfPeriod(int period) {
 		Calendar cal = Calendar.getInstance();
 		moveCalendarToEndOfPeriod(cal, period);
 		return cal;
 	}
-	public static String getPeriodName(short s) {
+	public static String getPeriodName(int s) {
 		switch (s) {
 			case PERIOD_DAILY :
 				return "day";
@@ -284,11 +197,11 @@ public class Trial implements FtpListener {
 			case PERIOD_WEEKLY :
 				return "week";
 			default :
-				throw new IllegalArgumentException(Short.toString(s));
+				throw new IllegalArgumentException("" + s);
 		}
 	}
 
-	public static long getUploadedBytesForPeriod(User user, short period) {
+	public static long getUploadedBytesForPeriod(User user, int period) {
 		if (isInFirstPeriod(user, period))
 			return user.getDownloadedBytes();
 		switch (period) {
@@ -303,11 +216,11 @@ public class Trial implements FtpListener {
 		}
 	}
 
-	public static boolean isInFirstPeriod(User user, short period) {
+	public static boolean isInFirstPeriod(User user, int period) {
 		return isInFirstPeriod(user, period, System.currentTimeMillis());
 	}
 
-	public static boolean isInFirstPeriod(User user, short period, long time) {
+	public static boolean isInFirstPeriod(User user, int period, long time) {
 		return time <= getCalendarForEndOfBonus(user, period).getTimeInMillis();
 	}
 
@@ -319,31 +232,38 @@ public class Trial implements FtpListener {
 		StaticUser user = new StaticUser("test");
 		user.setCredits(0L);
 
-		Calendar cal = Calendar.getInstance();
-		long reset = System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 8;
-		cal.setTimeInMillis(reset);
-		CalendarUtils.floorAllLessThanDay(cal);
-		reset = cal.getTimeInMillis();
+		long reset;
+		{
+			Calendar cal = Calendar.getInstance();
+			reset = System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 8;
+			cal.setTimeInMillis(reset);
+			CalendarUtils.floorAllLessThanDay(cal);
+			reset = cal.getTimeInMillis();
+		}
 
 		Calendar calToday = Calendar.getInstance();
-		CalendarUtils.floorAllLessThanDay(calToday);
-
+		calToday.add(Calendar.DAY_OF_MONTH, -1);
+		CalendarUtils.ceilAllLessThanDay(calToday);
 		user.setCreated(reset);
+
 		user.setLastReset(calToday.getTimeInMillis());
 		logger.debug("lastReset\t" + new Date(reset));
 		logger.debug("now\t" + new Date());
+		logger.debug("reset timestamp\t" + calToday.getTime());
+		{
+			user.setUploadedBytes(Bytes.parseBytes("100m"));
+			user.setUploadedBytesDay(Bytes.parseBytes("100m"));
+			user.setUploadedBytesWeek(Bytes.parseBytes("100m"));
+			user.setUploadedBytesMonth(Bytes.parseBytes("100m"));
+		}
 
-		user.setUploadedBytes(Bytes.parseBytes("100m"));
-		user.setUploadedBytesDay(Bytes.parseBytes("100m"));
-		user.setUploadedBytesWeek(Bytes.parseBytes("100m"));
-		user.setUploadedBytesMonth(Bytes.parseBytes("100m"));
 		trial.actionPerformed(
 			new UserEvent(user, "RESETDAY", calToday.getTimeInMillis()));
 	}
 
 	public static Calendar moveCalendarToEndOfPeriod(
 		Calendar cal,
-		short period) {
+		int period) {
 		CalendarUtils.ceilAllLessThanDay(cal);
 		switch (period) {
 			case PERIOD_DAILY :
@@ -374,15 +294,28 @@ public class Trial implements FtpListener {
 			return;
 		UserEvent uevent = (UserEvent) event;
 		String cmd = event.getCommand();
+
 		if ("RELOAD".equals(cmd)) {
 			reload();
+			return;
 		}
+
+		//logger.debug("event.getTime(): " + new Date(event.getTime()));
+		//logger.debug(
+		//	"uevent.getUser().getLastReset(): "
+		//		+ new Date(uevent.getUser().getLastReset()));
+
 		if ("RESETDAY".equals(cmd)) {
-			Calendar cal =
+
+			Calendar cal;
+
+			//MONTH UNIQUE //
+			cal =
 				getCalendarForEndOfFirstPeriod(
 					uevent.getUser(),
 					PERIOD_MONTHLY);
-			logger.debug("end of first, montly, period: " + cal.getTime());
+			//logger.debug("end of first, montly, period: " + cal.getTime());
+			//last reset before unique period and event time equals or bigger than unique period
 			if (uevent.getUser().getLastReset() <= cal.getTimeInMillis()
 				&& uevent.getTime() >= cal.getTimeInMillis()) {
 				checkPassed(
@@ -391,15 +324,15 @@ public class Trial implements FtpListener {
 					PERIOD_MONTHLY);
 			}
 
-			// > 'bigger than' after
-			// < 'smaller than' before
-			// if event before month unique perioid
+			// WEEK UNIQUE //
+			// if less than month unique period
 			if (uevent.getTime() < cal.getTimeInMillis()) {
 				cal =
 					getCalendarForEndOfFirstPeriod(
 						uevent.getUser(),
 						PERIOD_WEEKLY);
-				logger.debug("end of first, weekly, period: " + cal.getTime());
+				//logger.debug("end of first, weekly, period: " + cal.getTime());
+				//last reset before unique period and event time equals or bigger than unique period
 				if (uevent.getUser().getLastReset() <= cal.getTimeInMillis()
 					&& uevent.getTime() >= cal.getTimeInMillis()) {
 					checkPassed(
@@ -409,21 +342,25 @@ public class Trial implements FtpListener {
 				}
 			}
 
-			// if event before month/week unique period and 
-
-			//daily reset if event is after month/week unique period or after day unique period
-
-			//unique period if before month&week unique period 
-			if (uevent.getTime() < cal.getTimeInMillis()) {
+			// DAY UNIQUE //
+			//if event lesss than week unique period (cal)
+			if (uevent.getTime() <= cal.getTimeInMillis()) {
 				cal =
 					getCalendarForEndOfFirstPeriod(
 						uevent.getUser(),
 						PERIOD_DAILY);
-
-				if (cal.getTimeInMillis() == cal.getTimeInMillis()) {
+				//logger.debug("end of first day period: " + cal.getTime());
+				//is day unique period
+				if (uevent.getUser().getLastReset() <= cal.getTimeInMillis() && uevent.getTime() >= cal.getTimeInMillis()) {
 					checkPassed(
 						uevent.getUser(),
 						uevent.getUser().getUploadedBytes(),
+						PERIOD_DAILY);
+						//after day unique period
+				} else if (uevent.getTime() > cal.getTimeInMillis()) {
+					checkPassed(
+						uevent.getUser(),
+						uevent.getUser().getUploadedBytesDay(),
 						PERIOD_DAILY);
 				}
 			} else {
@@ -454,16 +391,16 @@ public class Trial implements FtpListener {
 		}
 	}
 
-	private void checkPassed(User user, long bytes, short period) {
+	private void checkPassed(User user, long bytes, int period) {
 		for (Iterator iter = _limits.iterator(); iter.hasNext();) {
 			Limit limit = (Limit) iter.next();
-			if (limit._period == period) {
-				long bytesleft = limit._bytes - bytes;
+			if (limit.getPeriod() == period) {
+				long bytesleft = limit.getBytes() - bytes;
 				if (bytesleft > 0) {
 					logger.info(
 						user.getUsername()
 							+ " failed "
-							+ limit._name
+							+ limit.getName()
 							+ " by "
 							+ Bytes.formatBytes(bytesleft));
 					limit.doFailed(user);
@@ -471,7 +408,7 @@ public class Trial implements FtpListener {
 					logger.info(
 						user.getUsername()
 							+ " passed "
-							+ limit._name
+							+ limit.getName()
 							+ " with "
 							+ Bytes.formatBytes(-bytesleft)
 							+ " extra");
@@ -501,6 +438,9 @@ public class Trial implements FtpListener {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+		reload(props);
+	}
+	private void reload(Properties props) {
 		ArrayList limits = new ArrayList();
 		for (int i = 1;; i++) {
 			if (props.getProperty(i + ".quota") == null)
@@ -522,15 +462,17 @@ public class Trial implements FtpListener {
 			}
 			String perm = props.getProperty(i + ".perm");
 			if (perm == null)
-				throw new FatalException(
-					i
-						+ ".perm must be set, set to * if all users should be matched");
+				perm = "*";
 			limit.setPerm(
 				new Permission(FtpConfig.makeUsers(new StringTokenizer(perm))));
 			limit.setBytes(Bytes.parseBytes(props.getProperty(i + ".quota")));
 			limits.add(limit);
 			logger.debug("Limit: " + limit);
 		}
+		reload(limits);
+	}
+
+	public void reload(ArrayList limits) {
 		_limits = limits;
 
 		if (_siteBot != null) {

@@ -13,9 +13,7 @@ import net.sf.drftpd.master.usermanager.User;
 
 /**
  * @author mog
- *
- * To change the template for this generated type comment go to
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * @version $Id: Permission.java,v 1.3 2003/12/22 18:09:42 mog Exp $
  */
 public class Permission {
 	private Collection users;

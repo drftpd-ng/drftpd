@@ -7,9 +7,10 @@
 package net.sf.drftpd.master.command.plugins;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -60,11 +61,18 @@ public class Textoutput implements CommandHandler {
 	}
 	public static void addTextToResponse(FtpReply reply, String file) throws FileNotFoundException, IOException {
 		reply.addComment(
-			new BufferedReader(
-				new FileReader(
+		new BufferedReader(
+		new InputStreamReader(
+				new FileInputStream(
 					"ftp-data/text/"
 						+ file
-						+ ".txt")));
+						+ ".txt"), "ISO-8859-1")));
+//		reply.addComment(
+//			new BufferedReader(
+//				new FileReader(
+//					"ftp-data/text/"
+//						+ file
+//						+ ".txt")));
 	}
 	public CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer) {
 		return this;

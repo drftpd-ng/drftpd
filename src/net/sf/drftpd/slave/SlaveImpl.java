@@ -223,6 +223,7 @@ public class SlaveImpl
 
 	public Transfer connect(InetSocketAddress addr, boolean encrypted)
 		throws RemoteException {
+			//TODO connect?
 		return new TransferImpl(new ActiveConnection(encrypted ? _ctx : null, addr), this);
 	}
 

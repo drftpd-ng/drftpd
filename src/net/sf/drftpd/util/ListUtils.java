@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.5 2003/12/12 22:34:34 mog Exp $
+ * @version $Id: ListUtils.java,v 1.6 2003/12/22 18:09:43 mog Exp $
  */
 public class ListUtils {
 
@@ -48,7 +48,7 @@ public class ListUtils {
 		ArrayList listFiles = new ArrayList(directoryFile.getFiles());
 		for (Iterator iter = listFiles.iterator(); iter.hasNext();) {
 			LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
-			if (!conn.getConfig().checkPrivPath(conn.getUserNull(), element))
+			if (conn.getConfig() != null && !conn.getConfig().checkPrivPath(conn.getUserNull(), element))
 				iter.remove();
 		}
 		try {

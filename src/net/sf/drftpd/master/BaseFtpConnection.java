@@ -4,11 +4,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.rmi.RemoteException;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
@@ -29,6 +35,9 @@ import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
+import org.tanesha.replacer.FormatterException;
+import org.tanesha.replacer.ReplacerEnvironment;
+import org.tanesha.replacer.SimplePrintf;
 
 /**
  * This is a generic ftp connection handler. It delegates 
@@ -36,7 +45,7 @@ import org.apache.log4j.PatternLayout;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.61 2003/12/12 22:34:34 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.62 2003/12/22 18:09:41 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -106,7 +115,8 @@ public class BaseFtpConnection implements Runnable {
 		lastActive = System.currentTimeMillis();
 		setCurrentDirectory(connManager.getSlaveManager().getRoot());
 	}
-
+	protected BaseFtpConnection() {}
+	
 	/**
 	 * @deprecated use getConnectionManager().dispatchFtpEvent()
 	 */
@@ -250,6 +260,31 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	public boolean isExecuting() {
 		return executing;
+	}
+
+	public String jprintf(String baseName, String key) {
+		ResourceBundle bundle = ResourceBundle.getBundle(baseName);
+		
+		ReplacerEnvironment env = new ReplacerEnvironment();
+		try {
+			env.add("user", getUser().getUsername());
+		} catch (NoSuchUserException e) {
+			env.add("user", "<"+e.getMessage()+">");
+		}
+
+		try {
+			String str = bundle.getString(key);
+			try {
+				return SimplePrintf.jprintf(str, env);
+			} catch (FormatterException e1) {
+				logger.warn("", e1);
+				return str;
+			} 
+		} catch (Exception e) {
+			logger.warn("", e);
+			return key;
+		}
+		
 	}
 
 	/**
@@ -509,9 +544,16 @@ public class BaseFtpConnection implements Runnable {
 				new BufferedReader(
 					new InputStreamReader(_controlSocket.getInputStream(), "ISO-8859-1"));
 
-			out = new PrintWriter(_controlSocket.getOutputStream());
+			out = new PrintWriter(new OutputStreamWriter(_controlSocket.getOutputStream(), "ISO-8859-1"));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	public ServerSocketFactory getServerSocketFactory() {
+		return ServerSocketFactory.getDefault();
+	}
+
+	public SocketFactory getSocketFactory() {
+		return SocketFactory.getDefault();
 	}
 }

@@ -23,7 +23,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.32 2003/12/12 22:06:19 zubov Exp $
+ * @version $Id: AbstractUser.java,v 1.33 2003/12/22 18:09:42 mog Exp $
  */
 public abstract class AbstractUser implements User {
 	private static Logger logger = Logger.getLogger(AbstractUser.class);
@@ -459,7 +459,8 @@ public abstract class AbstractUser implements User {
 		Date lastResetDate = new Date(this.lastReset);
 
 		Calendar cal = Calendar.getInstance();
-		CalendarUtils.floorAllLessThanDay(cal);
+		cal.add(Calendar.DAY_OF_MONTH, -1);
+		CalendarUtils.ceilAllLessThanDay(cal);
 
 		//has not been reset since midnight
 		if (lastResetDate.before(cal.getTime())) 
