@@ -45,6 +45,7 @@ import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.util.ReplacerUtils;
+import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -58,7 +59,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.74 2004/02/10 00:03:06 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.75 2004/02/27 01:02:19 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -286,7 +287,7 @@ public class BaseFtpConnection implements Runnable {
 		ReplacerEnvironment env,
 		User user) {
 		env = new ReplacerEnvironment(env);
-				
+
 		if (user != null) {
 			env.add("user", user.getUsername());
 			env.add("credits", Bytes.formatBytes(user.getCredits()));
@@ -294,7 +295,11 @@ public class BaseFtpConnection implements Runnable {
 			env.add("tagline", user.getTagline());
 			env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
 			env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
-			env.add("avragespeed", Bytes.formatBytes(user.getUploadedMilliseconds() + user.getDownloadedMilliseconds() / 2));
+			env.add(
+				"avragespeed",
+				Bytes.formatBytes(
+					user.getUploadedMilliseconds()
+						+ user.getDownloadedMilliseconds() / 2));
 		} else {
 			env.add("user", "<unknown>");
 		}
@@ -451,9 +456,7 @@ public class BaseFtpConnection implements Runnable {
 				Level.INFO,
 				ex.getMessage()
 					+ ", closing for user "
-					+ (_user == null
-						? "<not logged in>"
-						: _user.getUsername()),
+					+ (_user == null ? "<not logged in>" : _user.getUsername()),
 				ex);
 		} catch (Exception ex) {
 			logger.log(Level.INFO, "Exception, closing", ex);
@@ -521,11 +524,6 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	public String status() {
 		return jprintf(BaseFtpConnection.class.getName(), "statusline");
-		//		return " [Credits: "
-		//			+ Bytes.formatBytes(_user.getCredits())
-		//			+ "] [Ratio: 1:"
-		//			+ _user.getRatio()
-		//			+ "]";
 	}
 
 	/**
@@ -533,7 +531,7 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	public void stop() {
 		stopRequest = true;
-		//TODO _sock.close() as well?
+		//TODO _conn.close aswell?
 	}
 
 	public void stop(String message) {
@@ -564,8 +562,8 @@ public class BaseFtpConnection implements Runnable {
 		} else {
 			buf.append(
 				"[idle: "
-					+ (System.currentTimeMillis() - getLastActive())
-					+ "ms]");
+					+ Time.formatTime(
+						System.currentTimeMillis() - getLastActive()));
 		}
 		buf.append("]");
 		return buf.toString();

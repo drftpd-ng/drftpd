@@ -31,7 +31,7 @@ import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManagerTest.java,v 1.1 2004/02/26 13:56:53 mog Exp $
+ * @version $Id: SlaveSelectionManagerTest.java,v 1.2 2004/02/27 01:02:21 mog Exp $
  */
 public class SlaveSelectionManagerTest extends TestCase {
 
@@ -46,7 +46,7 @@ public class SlaveSelectionManagerTest extends TestCase {
 	public void testEmptyFail() {
 		Properties p = new Properties();
 		try {
-			new SlaveSelectionManager(null, p);
+			new FilterChain(null, p);
 			fail();
 		} catch (IllegalArgumentException pass) {
 		}
@@ -57,17 +57,16 @@ public class SlaveSelectionManagerTest extends TestCase {
 		p.put("1.filter", "bandwidth");
 		//p.put("1.expr", "*");
 		p.put("1.multiplier", "1");
-		SlaveSelectionManager ssm = new SlaveSelectionManager(null, p);
+		FilterChain ssm = new FilterChain(null, p);
 		RemoteSlave rslaves[] =
 			{
 				new RemoteSlave("slave1", Collections.EMPTY_LIST),
 				new RemoteSlave("slave2", Collections.EMPTY_LIST)};
 
 		try {
-			ssm.getASlave(
-				Arrays.asList(rslaves),
+			ssm.process(
+				new ScoreChart(Arrays.asList(rslaves)), null, null,
 				Transfer.TRANSFER_SENDING_DOWNLOAD,
-				null,
 				new MatchdirFilterTest.LinkedRemoteFilePath(
 					"/blabla/file.txt"));
 			fail(); // no slaves are online

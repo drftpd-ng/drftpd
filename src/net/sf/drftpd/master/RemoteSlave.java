@@ -29,12 +29,13 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
+import net.sf.drftpd.slave.Transfer;
 
 import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.25 2004/02/23 01:14:36 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.26 2004/02/27 01:02:19 mog Exp $
  */
 public class RemoteSlave implements Comparable {
 
@@ -233,4 +234,15 @@ public class RemoteSlave implements Comparable {
 		return map;
 	}
 
+	public long getLastTransferForDirection(char dir) {
+		if(dir == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+			return getLastUploadReceiving();
+		} else if(dir == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+			return getLastDownloadSending();
+		} else if(dir == Transfer.TRANSFER_THROUGHPUT) {
+			return getLastTransfer();
+		} else {
+			throw new IllegalArgumentException();
+		}
+	}
 }

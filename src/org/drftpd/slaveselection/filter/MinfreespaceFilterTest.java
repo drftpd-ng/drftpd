@@ -34,7 +34,7 @@ import net.sf.drftpd.slave.Transfer;
 
 /**
  * @author mog
- * @version $Id: MinfreespaceFilterTest.java,v 1.2 2004/02/26 21:11:08 mog Exp $
+ * @version $Id: MinfreespaceFilterTest.java,v 1.3 2004/02/27 01:02:21 mog Exp $
  */
 public class MinfreespaceFilterTest extends TestCase {
 	public static class RemoteSlaveTesting extends RemoteSlave {
@@ -61,10 +61,10 @@ public class MinfreespaceFilterTest extends TestCase {
 	
 	public void testSimple() throws ObjectNotFoundException, NoAvailableSlaveException {
 		Properties p = new Properties();
-		p.put("1.remove", "1");
-		p.put("1.minfreespace", "100GB");
+		p.put("1.multiplier", "1");
+		p.put("1.minfreespace", "100MB");
 
-		SlaveStatus s = new SlaveStatus(Bytes.parseBytes("50GB"), Bytes.parseBytes("1000GB"), 0, 0, 0, 0, 0,0);
+		SlaveStatus s = new SlaveStatus(Bytes.parseBytes("50MB"), Bytes.parseBytes("100GB"), 0, 0, 0, 0, 0,0);
 		RemoteSlave rslaves[] =
 			{ new RemoteSlaveTesting("slave1", Collections.EMPTY_LIST, s)};
 		ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
@@ -73,6 +73,6 @@ public class MinfreespaceFilterTest extends TestCase {
 		Filter f = new MinfreespaceFilter(null, 1, p);
 		f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null);
 
-		assertEquals(-1, sc.getSlaveScore(rslaves[0]).getScore());
+		assertEquals(Bytes.parseBytes("-50MB"), sc.getSlaveScore(rslaves[0]).getScore());
 	}
 }

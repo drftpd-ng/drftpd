@@ -19,22 +19,16 @@ master.localslave=false
 #User manager to use, just leave it for now.
 master.usermanager=net.sf.drftpd.master.usermanager.jsx.JSXUserManager
 
-# Minimum amount of available diskspace in bytes to have on a slave when
-# sending to it. If all available slaves have less than this amount the
-# slave with most available disk space will get all transfers.
-#100 MiB, 100,000,000
-freespace.min=100MB
-
 #use ident on user lookups
 use.ident=true
 
 #plugin settings
 #JobManager is required for Mirror and/or Archive
 
+#loaded plugins must use in sequential numbering
 #plugins.1=net.sf.drftpd.event.irc.IRCListener
 #plugins.2=net.sf.drftpd.event.listeners.Trial
 #plugins.3=net.sf.drftpd.event.listeners.PreTime
 #plugins.4=net.sf.drftpd.mirroring.JobManager
 #plugins.5=net.sf.drftpd.event.listeners.Mirror
 #plugins.6=net.sf.drftpd.event.listeners.Archive
-

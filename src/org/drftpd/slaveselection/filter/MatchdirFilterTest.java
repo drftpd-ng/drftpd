@@ -34,7 +34,7 @@ import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: MatchdirFilterTest.java,v 1.2 2004/02/26 21:11:08 mog Exp $
+ * @version $Id: MatchdirFilterTest.java,v 1.3 2004/02/27 01:02:21 mog Exp $
  */
 public class MatchdirFilterTest extends TestCase {
 
@@ -55,7 +55,7 @@ public class MatchdirFilterTest extends TestCase {
 		return new TestSuite(MatchdirFilterTest.class);
 	}
 
-	public class SSM extends SlaveSelectionManager {
+	public class SSM extends FilterChain {
 		public SlaveManagerImpl getSlaveManager() {
 			try {
 				return new SM();
@@ -89,8 +89,8 @@ public class MatchdirFilterTest extends TestCase {
 
 	public void testSimple() throws ObjectNotFoundException, NoAvailableSlaveException {
 		Properties p = new Properties();
-		p.put("1.assignslave", "slave1+100,slave2-100");
-		p.put("1.expr", "/path1/*");
+		p.put("1.assign", "slave1+100,slave2-100");
+		p.put("1.match", "/path1/*");
 
 		Filter f = new MatchdirFilter(new SSM(), 1, p);
 		ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
@@ -113,7 +113,7 @@ public class MatchdirFilterTest extends TestCase {
 	public void testAll() throws ObjectNotFoundException, NoAvailableSlaveException {
 		Properties p = new Properties();
 		p.put("1.assign", "ALL+100");
-		p.put("1.expr", "/path2/*");
+		p.put("1.match", "/path2/*");
 
 		Filter f = new MatchdirFilter(new SSM(), 1, p);
 		ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));

@@ -95,7 +95,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.89 2004/02/26 13:56:48 mog Exp $
+ * @version $Id: IRCListener.java,v 1.90 2004/02/27 01:02:18 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -967,9 +967,6 @@ public class IRCListener implements FtpListener, Observer {
 
 	public String strippath(String path) {
 		if (!path.startsWith("/")) {
-			logger.debug(
-				path + " didn't start with /, unneeded call to strippath()",
-				new Throwable());
 			return path;
 		}
 		return path.substring(1);

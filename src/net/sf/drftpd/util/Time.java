@@ -19,7 +19,7 @@ package net.sf.drftpd.util;
 
 /**
  * @author Flowman
- * @version $Id: Time.java,v 1.3 2004/02/10 00:03:32 mog Exp $
+ * @version $Id: Time.java,v 1.4 2004/02/27 01:02:20 mog Exp $
  */
 public class Time {
 	/**
@@ -49,5 +49,18 @@ public class Time {
 		if ( secs > 0 ) time += secs + "s";
 		
 		return time;
+	}
+	public static long parseTime(String s) {
+		s=s.toLowerCase();
+		if(s.endsWith("ms")) {
+			return Long.parseLong(s.substring(0, s.length()-2));
+		}
+		if (s.endsWith("s")) {
+			return Long.parseLong(s.substring(0, s.length()-1))*1000;
+		}
+		if(s.endsWith("m")) {
+			return Long.parseLong(s.substring(0, s.length()-1))*60000;
+		}
+		return Long.parseLong(s);
 	}
 }

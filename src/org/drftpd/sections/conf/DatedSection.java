@@ -23,16 +23,15 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Properties;
 
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.sections.conf.*;
-
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
+import org.drftpd.sections.SectionInterface;
+
 /**
  * @author mog
- * @version $Id: DatedSection.java,v 1.1 2004/02/26 13:56:52 mog Exp $
+ * @version $Id: DatedSection.java,v 1.2 2004/02/27 01:02:20 mog Exp $
  */
 public class DatedSection implements SectionInterface {
 

@@ -17,20 +17,16 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.Properties;
 
-import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManagerImpl;
+import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -41,68 +37,35 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.3 2004/02/26 22:43:44 mog Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.4 2004/02/27 01:02:21 mog Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
+	private FilterChain _ssmiDown;
+	private FilterChain _ssmiUp;
+	private FilterChain _ssmiMaster;
 	private static final Logger logger =
 		Logger.getLogger(SlaveSelectionManager.class);
 	private SlaveManagerImpl _sm;
-	private String _cfgfileName;
-	private ArrayList _filters;
-	protected SlaveSelectionManager() {
-	}
-	public SlaveSelectionManager(SlaveManagerImpl sm, String cfgFileName)
+
+	public SlaveSelectionManager(SlaveManagerImpl sm)
 		throws FileNotFoundException, IOException {
 		_sm = sm;
-		_cfgfileName = cfgFileName;
 		reload();
 	}
 
-	protected SlaveSelectionManager(SlaveManagerImpl sm, Properties p) {
-		_sm = sm;
-		reload(p);
-	}
-
 	public void reload() throws FileNotFoundException, IOException {
-		Properties p = new Properties();
-		p.load(new FileInputStream(_cfgfileName));
-		reload(p);
-	}
-
-	private void reload(Properties p) {
-		ArrayList filters = new ArrayList();
-		int i = 1;
-		for (;; i++) {
-			String type = p.getProperty(i + ".filter");
-			if (type == null)
-				break;
-			if (type.indexOf('.') == -1) {
-				type =
-					"org.drftpd.slaveselection.filter."
-						+ type.substring(0, 1).toUpperCase()
-						+ type.substring(1)
-						+ "Filter";
-			}
-			try {
-				Class[] SIG =
-					new Class[] {
-						SlaveSelectionManager.class,
-						int.class,
-						Properties.class };
-
-				Filter filter =
-					(Filter) Class.forName(type).getConstructor(
-						SIG).newInstance(
-						new Object[] { this, new Integer(i), p });
-				filters.add(filter);
-			} catch (Exception e) {
-				throw new FatalException(i + ".filter = " + type, e);
-			}
-		}
-		if (i == 1)
-			throw new IllegalArgumentException();
-		filters.trimToSize();
-		_filters = filters;
+		_ssmiDown =
+			new FilterChain(
+				this,
+				"conf/slaveselection-down.conf");
+		_ssmiMaster =
+			new FilterChain(
+				this,
+				"conf/slaveselection-master.conf");
+		_ssmiUp =
+			new FilterChain(
+				this,
+				"conf/slaveselection-up.conf");
 	}
 
 	/**
@@ -114,8 +77,17 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 		BaseFtpConnection conn,
 		LinkedRemoteFileInterface file)
 		throws NoAvailableSlaveException {
-		InetAddress source = conn != null ? conn.getClientAddress() : null;
+		InetAddress source = (conn != null ? conn.getClientAddress() : null);
+		String status;
+		if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+			status = "up";
+		} else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+			status = "down";
+		} else {
+			throw new IllegalArgumentException();
+		}
 		return process(
+			status,
 			new ScoreChart(rslaves),
 			conn != null ? conn.getUserNull() : null,
 			source,
@@ -126,9 +98,12 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 	/**
 	 * Get slave for transfer to master.
 	 */
-	public RemoteSlave getASlave(LinkedRemoteFileInterface file)
+	public RemoteSlave getASlaveForMaster(
+		LinkedRemoteFileInterface file,
+		FtpConfig cfg)
 		throws NoAvailableSlaveException {
 		return process(
+			"master",
 			new ScoreChart(file.getAvailableSlaves()),
 			null,
 			null,
@@ -137,25 +112,34 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 	}
 
 	private RemoteSlave process(
+		String filterchain,
 		ScoreChart sc,
 		User user,
 		InetAddress peer,
 		char direction,
 		LinkedRemoteFileInterface file)
 		throws NoAvailableSlaveException {
-		for (Iterator iter = _filters.iterator(); iter.hasNext();) {
-			Filter filter = (Filter) iter.next();
-			filter.process(sc, user, peer, direction, file);
+		FilterChain ssmi;
+		if (filterchain.equals("down")) {
+			ssmi = _ssmiDown;
+		} else if (filterchain.equals("up")) {
+			ssmi = _ssmiUp;
+		} else if (filterchain.equals("master")) {
+			ssmi = _ssmiMaster;
+		} else {
+			throw new IllegalArgumentException();
 		}
-		return sc.getBestSlave();
+		return ssmi.process(sc, user, peer, direction, file);
 	}
+
 	public SlaveManagerImpl getSlaveManager() {
 		return _sm;
 	}
 
-	public RemoteSlave getASlave(Job temp, RemoteSlave destslave)
+	public RemoteSlave getASlaveForJobDownload(Job temp, RemoteSlave destslave)
 		throws NoAvailableSlaveException {
 		return process(
+			"down",
 			new ScoreChart(getSlaveManager().getAvailableSlaves()),
 			null,
 			destslave.getInetAddress(),

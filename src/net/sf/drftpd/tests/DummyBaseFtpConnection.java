@@ -44,7 +44,7 @@ import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 /**
  * @author mog
- * @version $Id: DummyBaseFtpConnection.java,v 1.3 2004/02/10 00:03:31 mog Exp $
+ * @version $Id: DummyBaseFtpConnection.java,v 1.4 2004/02/27 01:02:20 mog Exp $
  */
 public class DummyBaseFtpConnection extends BaseFtpConnection {
 
@@ -152,6 +152,9 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void reset() {
 		throw new UnsupportedOperationException();
 	}

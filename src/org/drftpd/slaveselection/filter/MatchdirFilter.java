@@ -43,15 +43,15 @@ import org.apache.oro.text.regex.Perl5Matcher;
  * </pre>
  * 
  * @author mog
- * @version $Id: MatchdirFilter.java,v 1.1 2004/02/26 13:56:53 mog Exp $
+ * @version $Id: MatchdirFilter.java,v 1.2 2004/02/27 01:02:21 mog Exp $
  */
 public class MatchdirFilter extends Filter {
 	private ArrayList _assigns;
-	private SlaveSelectionManager _ssm;
+	private FilterChain _ssm;
 	private Pattern _p;
 	private Perl5Matcher _m = new Perl5Matcher();
 
-	public MatchdirFilter(SlaveSelectionManager ssm, int i, Properties p) {
+	public MatchdirFilter(FilterChain ssm, int i, Properties p) {
 		_ssm = ssm;
 		try {
 			parseAssign(FtpConfig.getProperty(p, i + ".assign"));

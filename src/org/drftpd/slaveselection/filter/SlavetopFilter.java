@@ -39,17 +39,17 @@ import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilter.java,v 1.1 2004/02/26 13:56:53 mog Exp $
+ * @version $Id: SlavetopFilter.java,v 1.2 2004/02/27 01:02:21 mog Exp $
  */
 public class SlavetopFilter extends Filter {
 
 	private long _assign;
 
-	private SlaveSelectionManager _ssm;
+	private FilterChain _ssm;
 
 	private int _topslaves;
 
-	public SlavetopFilter(SlaveSelectionManager ssm, int i, Properties p) {
+	public SlavetopFilter(FilterChain ssm, int i, Properties p) {
 		_ssm = ssm;
 		_topslaves =
 			Integer.parseInt(FtpConfig.getProperty(p, i + ".topslaves"));

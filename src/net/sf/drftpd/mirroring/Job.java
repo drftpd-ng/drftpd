@@ -22,13 +22,12 @@ import java.util.List;
 
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.9 2004/02/23 01:14:39 mog Exp $
+ * @version $Id: Job.java,v 1.10 2004/02/27 01:02:19 mog Exp $
  */
 public class Job {
 	protected ArrayList _destSlaves;

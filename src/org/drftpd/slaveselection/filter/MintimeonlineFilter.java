@@ -18,67 +18,52 @@
 package org.drftpd.slaveselection.filter;
 
 import java.net.InetAddress;
-import java.rmi.RemoteException;
 import java.util.Iterator;
 import java.util.Properties;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+import net.sf.drftpd.util.Time;
 
 /**
- * Example slaveselection.conf entry:
- * <pre>
- * <n>.filter=minfreespace
- * <n>.remove=10000
- * <n>.minfreespace=1GB
- * </pre>
  * @author mog
- * @version $Id: MinfreespaceFilter.java,v 1.2 2004/02/27 01:02:21 mog Exp $
+ * @version $Id: MintimeonlineFilter.java,v 1.1 2004/02/27 01:02:21 mog Exp $
  */
-public class MinfreespaceFilter extends Filter {
-	private long _minfreespace;
+public class MintimeonlineFilter extends Filter {
 
 	private float _multiplier;
 
-	public MinfreespaceFilter(FilterChain ssm, int i, Properties p) {
-		//_multiplier = -Integer.parseInt(FtpConfig.getProperty(p, i + ".multiplier"));
+	private long _minTime;
+
+	public MintimeonlineFilter(FilterChain fc, int i, Properties p) {
+		_minTime = Time.parseTime(FtpConfig.getProperty(p, i + ".mintime"));
 		_multiplier =
 			BandwidthFilter.parseMultiplier(
 				FtpConfig.getProperty(p, i + ".multiplier"));
-		_minfreespace =
-			Bytes.parseBytes(FtpConfig.getProperty(p, i + ".minfreespace"));
 	}
 
 	public void process(
 		ScoreChart scorechart,
 		User user,
-		InetAddress source,
+		InetAddress peer,
 		char direction,
-		LinkedRemoteFileInterface file) {
+		LinkedRemoteFileInterface dir)
+		throws NoAvailableSlaveException {
+
 		for (Iterator iter = scorechart.getSlaveScores().iterator();
 			iter.hasNext();
 			) {
 			ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
-			long df;
-			try {
-				df = score.getRSlave().getStatus().getDiskSpaceAvailable();
-				if (df < _minfreespace) {
-					if (_multiplier == 0) {
-						iter.remove();
-					} else {
-						score.addScore(
-							- (long) ((_minfreespace - df) * _multiplier));
-					}
-				}
-			} catch (RemoteException e) {
-				score.getRSlave().handleRemoteException(e);
-				iter.remove();
-			} catch (NoAvailableSlaveException e) {
-				iter.remove();
+			long lastTransfer =
+				System.currentTimeMillis()
+					- score.getRSlave().getLastTransferForDirection(direction);
+			if (lastTransfer < _minTime) {
+				score.addScore(- (long) (lastTransfer * _multiplier));
 			}
+
 		}
 	}
+
 }

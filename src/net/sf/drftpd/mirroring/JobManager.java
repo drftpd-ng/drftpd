@@ -39,7 +39,7 @@ import net.sf.drftpd.slave.SlaveStatus;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.30 2004/02/23 01:14:39 mog Exp $
+ * @version $Id: JobManager.java,v 1.31 2004/02/27 01:02:19 mog Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -200,7 +200,7 @@ public class JobManager implements FtpListener {
 		long difference = 0;
 		RemoteSlave sourceSlave = null;
 		try {
-			sourceSlave = _cm.getSlaveManager().getSlaveSelectionManager("down").getASlave(job, slave);
+			sourceSlave = _cm.getSlaveManager().getSlaveSelectionManager("down").getASlaveForJobDownload(job, slave);
 			//sourceSlave = job.getFile().getASlaveForDownload();
 		} catch (NoAvailableSlaveException e) {
 			logger

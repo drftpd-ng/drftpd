@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -54,7 +55,7 @@ import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.drftpd.slaveselection.filter.SlaveSelectionManager;
+import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -62,15 +63,14 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 /**
- * @version $Id: SlaveManagerImpl.java,v 1.69 2004/02/26 13:56:50 mog Exp $
+ * @author mog
+ * @version $Id: SlaveManagerImpl.java,v 1.70 2004/02/27 01:02:19 mog Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
 	implements SlaveManager {
 
-	private SlaveSelectionManager _slaveSelectionManagerUp;
-	private SlaveSelectionManager _slaveSelectionManagerDown;
-	private SlaveSelectionManager _slaveSelectionManagerMaster;
+	private SlaveSelectionManagerInterface _slaveSelectionManager;
 	private static final Logger logger =
 		Logger.getLogger(SlaveManagerImpl.class.getName());
 
@@ -199,16 +199,17 @@ public class SlaveManagerImpl
 		//		return bestslave;
 	}
 
-	public SlaveSelectionManager getSlaveSelectionManager(String dir) {
-		if(dir.equals("up")) {
-			return _slaveSelectionManagerUp;
-		} else if(dir.equals("down")) {
-			return _slaveSelectionManagerDown;
-		} else if(dir.equals("master")) {
-			return _slaveSelectionManagerMaster;
-		} else {
-			throw new IllegalArgumentException(dir);
-		}
+	public SlaveSelectionManagerInterface getSlaveSelectionManager(String dir) {
+		return _slaveSelectionManager;
+		//		if(dir.equals("up")) {
+		//			return _slaveSelectionManagerUp;
+		//		} else if(dir.equals("down")) {
+		//			return _slaveSelectionManagerDown;
+		//		} else if(dir.equals("master")) {
+		//			return _slaveSelectionManagerMaster;
+		//		} else {
+		//			throw new IllegalArgumentException(dir);
+		//		}
 	}
 
 	public static Collection getAvailableSlaves(Collection slaves)
@@ -354,27 +355,27 @@ public class SlaveManagerImpl
 				ssf);
 		// throws RemoteException
 		try {
-			registry.bind(cfg.getProperty("master.bindname", "slavemanager"), this);
+			registry.bind(
+				cfg.getProperty("master.bindname", "slavemanager"),
+				this);
 		} catch (Exception t) {
 			throw new FatalException(t);
 		}
 		try {
-			_slaveSelectionManagerDown =
-				new SlaveSelectionManager(
-					this,
-					"conf/slaveselection-down.conf");
-			_slaveSelectionManagerMaster =
-				new SlaveSelectionManager(
-					this,
-					"conf/slaveselection-master.conf");
-			_slaveSelectionManagerUp =
-				new SlaveSelectionManager(
-					this,
-					"conf/slaveselection-up.conf");
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+			Constructor c =
+				Class
+					.forName(
+						cfg.getProperty(
+							"slaveselection",
+							"org.drftpd.slaveselection.def.SlaveSelectionManager"))
+					.getConstructor(new Class[] { SlaveManagerImpl.class });
+			_slaveSelectionManager =
+				(SlaveSelectionManagerInterface) c.newInstance(new Object[] { this });
+		} catch (Exception e) {
+			if (e instanceof RuntimeException)
+				throw (RuntimeException) e;
+			throw new FatalException(e);
 		}
-
 	}
 
 	protected void addShutdownHook() {
@@ -391,7 +392,7 @@ public class SlaveManagerImpl
 			}
 		});
 	}
-	
+
 	public void addSlave(
 		String slaveName,
 		Slave slave,
@@ -602,9 +603,7 @@ public class SlaveManagerImpl
 	}
 
 	public void reload() throws FileNotFoundException, IOException {
-		_slaveSelectionManagerDown.reload();
-		_slaveSelectionManagerMaster.reload();
-		_slaveSelectionManagerUp.reload();
+		_slaveSelectionManager.reload();
 		reloadRSlaves();
 	}
 	public void reloadRSlaves() throws FileNotFoundException, IOException {

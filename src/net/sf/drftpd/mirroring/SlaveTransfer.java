@@ -21,7 +21,6 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.Transfer;
 
@@ -29,7 +28,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveTransfer.java,v 1.8 2004/02/23 01:14:39 mog Exp $
+ * @version $Id: SlaveTransfer.java,v 1.9 2004/02/27 01:02:19 mog Exp $
  */
 public class SlaveTransfer {
 	class DstXfer extends Thread {
