@@ -96,7 +96,7 @@ public class RootBasket {
 	public List getMultipleRootsForFile(String path)
 		throws FileNotFoundException {
 		ArrayList roots = new ArrayList();
-		for (Iterator iter = roots.iterator(); iter.hasNext();) {
+		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
 			Root root = (Root) iter.next();
 			if (root.getFile(path).exists())
 				roots.add(root);

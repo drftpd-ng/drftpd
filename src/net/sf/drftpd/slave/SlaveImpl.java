@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.rmi.ConnectIOException;
 import java.rmi.Naming;
@@ -222,7 +223,9 @@ public class SlaveImpl
 		Collection files = _roots.getMultipleFiles(path);
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
 			File file = (File) iter.next();
-			assert file.exists();
+			if ( !file.exists() ) {
+				throw new FileNotFoundException(file.getAbsolutePath() + " does not exist.");
+			}
 			if (!file.delete())
 				throw new PermissionDeniedException("delete failed on " + path);
 			File dir = new File(file.getParentFile());

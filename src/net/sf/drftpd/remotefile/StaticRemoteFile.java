@@ -1,6 +1,8 @@
 package net.sf.drftpd.remotefile;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,8 +15,8 @@ import java.util.List;
  */
 public class StaticRemoteFile extends RemoteFile {
 	private boolean _isDeleted;
-	private boolean _isDirectory;
-	private boolean _isFile;
+//	private boolean _isDirectory;
+//	private boolean _isFile;
 	private long _lastModified;
 	private long _length;
 	private String _name;
@@ -37,19 +39,19 @@ public class StaticRemoteFile extends RemoteFile {
 //	}
 	
 	public StaticRemoteFile(List rslaves, String name, String owner, String group, long size, long lastModified) {
-		if(rslaves == null) throw new NullPointerException("rslaves cannot be null");
+		//if(rslaves == null) throw new NullPointerException("rslaves cannot be null");
 		_rslaves = rslaves;
 		_name = name;
-		if(name.indexOf("/") != -1) {
-			throw new IllegalArgumentException("constructor only does files and not paths");
+//		if(name.indexOf("/") != -1) {
+//			throw new IllegalArgumentException("constructor only does files and not paths");
 //			isDirectory = true;
 //			isFile = false;
-		} else {
-			_isDirectory = false;
-			_isFile = true;
-		}
-			this._username = owner;
-			this._groupname = group;
+//		} else {
+//			_isDirectory = false;
+//			_isFile = true;
+//		}
+		this._username = owner;
+		this._groupname = group;
 		_length = size;
 		_lastModified = lastModified;
 	}
@@ -114,14 +116,14 @@ public class StaticRemoteFile extends RemoteFile {
 	}
 
 	public boolean isDirectory() {
-		return _isDirectory;
+		return (_rslaves == null);
 	}
 
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.remotefile.RemoteFile#isFile()
 	 */
 	public boolean isFile() {
-		return _isFile;
+		return (_rslaves != null);
 	}
 
 	/* (non-Javadoc)
@@ -160,13 +162,13 @@ public class StaticRemoteFile extends RemoteFile {
 		_groupname = v;
 	}
 
-	public void setIsDirectory(boolean b) {
-		_isDirectory = b;
-	}
+//	public void setIsDirectory(boolean b) {
+//		_isDirectory = b;
+//	}
 
-	public void setIsFile(boolean b) {
-		_isFile = b;
-	}
+//	public void setIsFile(boolean b) {
+//		_isFile = b;
+//	}
 
 	public void setLastModified(long l) {
 		_lastModified = l;

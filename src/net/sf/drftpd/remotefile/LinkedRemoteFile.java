@@ -257,7 +257,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 						continue;
 					}
 					try {
-						System.out.print(
+						System.out.println(
 							"DELETE: " + rslave.getName() + ": " + getPath());
 						slave.delete(getPath());
 						// throws RemoteException, IOException
