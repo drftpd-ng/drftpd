@@ -76,6 +76,10 @@ public class CommandManager {
             throw new UnhandledCommandException("No command handler for " +
                 command);
         }
+        
+        if (conn.getCurrentDirectory().isDeleted()) {
+        	conn.setCurrentDirectory(conn.getCurrentDirectory().getRoot());
+        }
 
         try {
             command = command.substring("SITE ".length()).toLowerCase();
