@@ -64,7 +64,7 @@ public class Find extends IRCCommand {
             if (dirs && file.isDirectory() || files && file.isFile()) { 
                 for (Iterator iterator = searchstrings.iterator(); iterator.hasNext(); ){ 
                     String searchstring = (String) iterator.next(); 
-                    if (file.getName().toLowerCase().indexOf(searchstring) != -1) 
+                    if (file.getName().toLowerCase().indexOf(searchstring.toLowerCase()) != -1)  
                         isFind = true;
                     else
                         allFind = false;
