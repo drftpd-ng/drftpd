@@ -443,21 +443,30 @@ public class FtpConnection extends BaseFtpConnection {
 				new FtpResponse(550, "File not found: " + ex.getMessage()));
 			return;
 		}
-
+		
 		// check permission
-		if (!_user.getUsername().equals(requestedFile.getUsername())
-			&& !_user.isAdmin()) {
-			out.print(
-				new FtpResponse(
-					550,
-					"Permission denied. You are neither the owner or an admin."));
-			return;
-		}
-
-		if (!getConfig().checkDelete(_user, requestedFile)) {
+		if(requestedFile.getUsername().equals(_user.getUsername())) {
+			if(!getConfig().checkDeleteOwn(_user, requestedFile)) {
+				out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+				return;
+			}
+		} else if(!getConfig().checkDelete(_user, requestedFile)) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
+//		if (!_user.getUsername().equals(requestedFile.getUsername())
+//			&& !_user.isAdmin()) {
+//			out.print(
+//				new FtpResponse(
+//					550,
+//					"Permission denied. You are neither the owner or an admin."));
+//			return;
+//		}
+//
+//		if (!getConfig().checkDelete(_user, requestedFile)) {
+//			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+//			return;
+//		}
 
 		FtpResponse response =
 			(FtpResponse) FtpResponse.RESPONSE_250_ACTION_OKAY.clone();
