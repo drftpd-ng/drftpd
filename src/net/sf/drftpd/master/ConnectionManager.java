@@ -280,7 +280,7 @@ public class ConnectionManager {
 		return _ftpListeners;
 	}
 	public String getShutdownMessage() {
-		return this._shutdownMessage;
+		return _shutdownMessage;
 	}
 
 	public SlaveManagerImpl getSlaveManager() {
@@ -291,7 +291,7 @@ public class ConnectionManager {
 		return _usermanager;
 	}
 	public boolean isShutdown() {
-		return this._shutdownMessage != null;
+		return _shutdownMessage != null;
 	}
 
 	public void remove(BaseFtpConnection conn) {
@@ -305,7 +305,8 @@ public class ConnectionManager {
 			} catch (UserFileException e) {
 				logger.log(Level.WARN, "Failed to save all userfiles", e);
 			}
-			System.out.println("Shutdown complete, exiting");
+			logger.info("Shutdown complete, exiting");
+			System.runFinalization();
 			System.exit(0);
 		}
 	}

@@ -10,17 +10,20 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
 
+import net.sf.drftpd.util.PortRange;
+
 import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: PassiveConnection.java,v 1.6 2003/12/07 22:31:46 mog Exp $
+ * @version $Id: PassiveConnection.java,v 1.7 2003/12/13 17:20:23 mog Exp $
  */
 public class PassiveConnection extends Connection {
+	private PortRange _portRange;
 	private static Logger logger = Logger.getLogger(PassiveConnection.class);
 	ServerSocket server;
 
-	public PassiveConnection(SSLContext ctx, InetSocketAddress bindAddr)
+	public PassiveConnection(SSLContext ctx, PortRange portRange, InetSocketAddress bindAddr)
 		throws IOException {
 		if (ctx != null) {
 			SSLServerSocket sslserver;
@@ -28,18 +31,25 @@ public class PassiveConnection extends Connection {
 				(SSLServerSocket) ctx
 					.getServerSocketFactory()
 					.createServerSocket();
-			sslserver.bind(bindAddr, 1);
+			server = sslserver;
 		} else {
 			server = ServerSocketFactory.getDefault().createServerSocket();
+		}
+		if(bindAddr.getPort() == 0) {
+			_portRange = portRange;
+			server.bind(new InetSocketAddress(bindAddr.getAddress(), portRange.getPort()));
+		} else {
 			server.bind(bindAddr, 1);
 		}
 	}
 
 	public Socket connect() throws IOException {
 		Socket sock = server.accept();
-		setSockOpts(sock);
 		server.close();
-		if(sock instanceof SSLSocket) {
+		_portRange.releasePort(server.getLocalPort());
+
+		setSockOpts(sock);
+		if (sock instanceof SSLSocket) {
 			SSLSocket sslsock = (SSLSocket) sock;
 			sslsock.setUseClientMode(false);
 			sslsock.startHandshake();

@@ -16,9 +16,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: PortRangeServerSocketFactory.java,v 1.2 2003/12/13 17:20:23 mog Exp $
  */
 public class PortRangeServerSocketFactory extends RMISocketFactory {
 	private static Logger logger =

@@ -142,7 +142,7 @@ public class LIST implements CommandHandler {
 			} catch (ObjectNotFoundException e2) {
 				throw new RuntimeException(e2);
 			}
-			if (!dataconn.mbPasv && !dataconn.mbPort) {
+			if (!dataconn.isPasv() && !dataconn.isPort()) {
 				return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 			}
 		}

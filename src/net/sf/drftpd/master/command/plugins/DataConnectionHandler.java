@@ -1,6 +1,5 @@
 package net.sf.drftpd.master.command.plugins;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -10,8 +9,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -20,7 +17,6 @@ import java.util.StringTokenizer;
 
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
@@ -46,57 +42,82 @@ import net.sf.drftpd.remotefile.StaticRemoteFile;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.slave.TransferStatus;
 import net.sf.drftpd.util.ListUtils;
+import net.sf.drftpd.util.PortRange;
+import net.sf.drftpd.util.SSLGetContext;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.22 2003/12/12 22:34:34 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.23 2003/12/13 17:20:23 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
-	private boolean _encryptedDataChannel;
-	private SSLContext ctx;
 	private static Logger logger =
 		Logger.getLogger(DataConnectionHandler.class);
-	private RemoteSlave _rslave;
-	private Transfer _transfer;
-	private LinkedRemoteFile _transferFile;
 
-	public boolean mbPasv = false;
-
-	public boolean mbPort = false;
-	private InetSocketAddress _address2;
-
-	private ServerSocket _serverSocket;
+	private boolean _encryptedDataChannel;
+	/**
+	 * Holds the address that getDataSocket() should connect to in PORT mode.
+	 */
+	private InetSocketAddress _portAddress;
+	private PortRange _portRange = new PortRange();
 	private boolean _preTransfer = false;
 	private RemoteSlave _preTransferRSlave;
 
 	private long _resumePosition = 0;
+	private RemoteSlave _rslave;
+
+	/**
+	 * ServerSocket for PASV mode.
+	 */
+	private ServerSocket _serverSocket;
+	private Transfer _transfer;
+	private LinkedRemoteFile _transferFile;
+	private SSLContext _ctx;
+	private boolean mbPasv = false;
+
+	private boolean mbPort = false;
 	private char type = 'A';
 	private short xdupe = 0;
-
-	public static SSLContext getSSLContext()
-		throws GeneralSecurityException, IOException {
-		SSLContext ctx = SSLContext.getInstance("TLS");
-
-		KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-
-		KeyStore ks = KeyStore.getInstance("JKS");
-		ks.load(new FileInputStream("drftpd.key"), "drftpd".toCharArray());
-
-		kmf.init(ks, "drftpd".toCharArray());
-
-		ctx.init(kmf.getKeyManagers(), null, null);
-		return ctx;
-	}
 	public DataConnectionHandler() {
 		super();
 		try {
-			ctx = getSSLContext();
+			_ctx = SSLGetContext.getSSLContext();
 		} catch (Exception e) {
 			throw new FatalException(e);
 		}
+	}
+	//TODO error handling for AUTH cmd
+	private FtpReply doAUTH(BaseFtpConnection conn) {
+		Socket s = conn.getControlSocket();
+
+		//reply success
+		conn.getControlWriter().write(
+			new FtpReply(
+				234,
+				conn.getRequest().getCommandLine() + " successfull")
+				.toString());
+		conn.getControlWriter().flush();
+
+		try {
+			SSLSocket s2;
+			s2 =
+				(SSLSocket)
+					((SSLSocketFactory) _ctx.getSocketFactory()).createSocket(
+					s,
+					s.getInetAddress().getHostAddress(),
+					s.getPort(),
+					true);
+			s2.setUseClientMode(false);
+			s2.startHandshake();
+			conn.setControlSocket(s2);
+		} catch (IOException e) {
+			logger.warn("", e);
+			conn.stop(e.getMessage());
+			return null;
+		}
+		return null;
 	}
 
 	/**
@@ -221,14 +242,34 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				500,
 				"You need to use a client supporting PRET (PRE Transfer) to use PASV");
 		}
+		assert isPort() == false;
+		InetSocketAddress address;
 		if (_preTransferRSlave == null) {
-			if (!setPasvCommand(conn)) {
+			try {
+				address =
+					new InetSocketAddress(
+						conn.getControlSocket().getLocalAddress(),
+						_portRange.getPort());
+				_serverSocket =
+					(_encryptedDataChannel
+						? _ctx.getServerSocketFactory()
+						: ServerSocketFactory.getDefault())
+						.createServerSocket();
+				_serverSocket.bind(address, 1);
+				_serverSocket.setSoTimeout(60000);
+				//				_address2 =
+				//					new InetSocketAddress(
+				//						_serverSocket.getInetAddress(),
+				//						_serverSocket.getLocalPort());
+				mbPasv = true;
+			} catch (Exception ex) {
+				logger.log(Level.WARN, "", ex);
 				return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 			}
 		} else {
 			try {
 				_transfer = _preTransferRSlave.getSlave().listen(false);
-				_address2 =
+				address =
 					new InetSocketAddress(
 						_preTransferRSlave.getInetAddress(),
 						_transfer.getLocalPort());
@@ -247,12 +288,20 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		//miPort == getPort();
 
 		String addrStr =
-			_address2.getAddress().getHostAddress().replace('.', ',')
+			address.getAddress().getHostAddress().replace('.', ',')
 				+ ','
-				+ (_address2.getPort() >> 8)
+				+ (address.getPort() >> 8)
 				+ ','
-				+ (_address2.getPort() & 0xFF);
+				+ (address.getPort() & 0xFF);
 		return new FtpReply(227, "Entering Passive Mode (" + addrStr + ").");
+	}
+
+	private FtpReply doPBSZ(BaseFtpConnection conn)
+		throws UnhandledCommandException {
+		String cmd = conn.getRequest().getArgument();
+		if (cmd == null || !cmd.equals("0"))
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
 
 	/**
@@ -280,9 +329,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		reset();
 
 		InetAddress clientAddr = null;
-		//int clientPort = 0;
-		_preTransfer = false;
-		_preTransferRSlave = null;
 		// argument check
 		if (!request.hasArgument()) {
 			//Syntax error in parameters or arguments
@@ -342,7 +388,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		}
 
 		mbPort = true;
-		_address2 = new InetSocketAddress(clientAddr, clientPort);
+		_portAddress = new InetSocketAddress(clientAddr, clientPort);
 
 		if (portHostAddress.startsWith("127.")) {
 			return new FtpReply(
@@ -411,6 +457,25 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		}
 	}
 
+	private FtpReply doPROT(BaseFtpConnection conn)
+		throws UnhandledCommandException {
+		FtpRequest req = conn.getRequest();
+		if (!req.hasArgument() || req.getArgument().length() != 1)
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+		switch (Character.toUpperCase(req.getArgument().charAt(0))) {
+			case 'C' : //clear
+				_encryptedDataChannel = false;
+				return FtpReply.RESPONSE_200_COMMAND_OK;
+
+			case 'P' : //private
+				_encryptedDataChannel = true;
+				return FtpReply.RESPONSE_200_COMMAND_OK;
+
+			default :
+				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+		}
+	}
+
 	/**
 	 * <code>REST &lt;SP&gt; <marker> &lt;CRLF&gt;</code><br>
 	 *
@@ -443,6 +508,374 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
 		return FtpReply.RESPONSE_350_PENDING_FURTHER_INFORMATION;
+	}
+
+	private FtpReply doSITE_RESCAN(BaseFtpConnection conn) {
+		FtpRequest request = conn.getRequest();
+		conn.resetState();
+		boolean forceRescan =
+			(request.hasArgument()
+				&& request.getArgument().equalsIgnoreCase("force"));
+		LinkedRemoteFile directory = conn.getCurrentDirectory();
+		SFVFile sfv;
+		try {
+			sfv = conn.getCurrentDirectory().lookupSFVFile();
+		} catch (Exception e) {
+			return new FtpReply(
+				200,
+				"Error getting SFV File: " + e.getMessage());
+		}
+		PrintWriter out = conn.getControlWriter();
+		for (Iterator i = sfv.getEntries().entrySet().iterator();
+			i.hasNext();
+			) {
+			Map.Entry entry = (Map.Entry) i.next();
+			String fileName = (String) entry.getKey();
+			Long checkSum = (Long) entry.getValue();
+			LinkedRemoteFile file;
+			try {
+				file = directory.lookupFile(fileName);
+			} catch (FileNotFoundException ex) {
+				out.write(
+					"200- SFV: "
+						+ Checksum.formatChecksum(checkSum.longValue())
+						+ " SLAVE: "
+						+ fileName
+						+ " MISSING"
+						+ BaseFtpConnection.NEWLINE);
+				continue;
+			}
+			String status;
+			long fileCheckSum;
+			try {
+				if (forceRescan) {
+					fileCheckSum = file.getCheckSumFromSlave();
+				} else {
+					fileCheckSum = file.getCheckSum();
+				}
+			} catch (NoAvailableSlaveException e1) {
+				out.println(
+					"200- "
+						+ fileName
+						+ "SFV: "
+						+ Checksum.formatChecksum(checkSum.longValue())
+						+ " SLAVE: OFFLINE");
+				continue;
+			} catch (IOException ex) {
+				out.print(
+					"200- "
+						+ fileName
+						+ " SFV: "
+						+ Checksum.formatChecksum(checkSum.longValue())
+						+ " SLAVE: IO error: "
+						+ ex.getMessage());
+				continue;
+			}
+
+			if (fileCheckSum == 0L) {
+				status = "FAILED - failed to checksum file";
+			} else if (checkSum.longValue() == fileCheckSum) {
+				status = "OK";
+			} else {
+				status = "FAILED - checksum missmatch";
+			}
+
+			out.println(
+				"200- "
+					+ fileName
+					+ " SFV: "
+					+ Checksum.formatChecksum(checkSum.longValue())
+					+ " SLAVE: "
+					+ Checksum.formatChecksum(checkSum.longValue())
+					+ " "
+					+ status);
+			continue;
+		}
+		return FtpReply.RESPONSE_200_COMMAND_OK;
+	}
+
+	private FtpReply doSITE_XDUPE(BaseFtpConnection conn) {
+		return FtpReply.RESPONSE_502_COMMAND_NOT_IMPLEMENTED;
+		//		resetState();
+		//
+		//		if (!request.hasArgument()) {
+		//			if (this.xdupe == 0) {
+		//				out.println("200 Extended dupe mode is disabled.");
+		//			} else {
+		//				out.println(
+		//					"200 Extended dupe mode " + this.xdupe + " is enabled.");
+		//			}
+		//			return;
+		//		}
+		//
+		//		short myXdupe;
+		//		try {
+		//			myXdupe = Short.parseShort(request.getArgument());
+		//		} catch (NumberFormatException ex) {
+		//			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+		//			return;
+		//		}
+		//
+		//		if (myXdupe > 0 || myXdupe < 4) {
+		//			out.print(
+		//				FtpResponse.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM);
+		//			return;
+		//		}
+		//		this.xdupe = myXdupe;
+		//		out.println("200 Activated extended dupe mode " + myXdupe + ".");
+	}
+	/**
+	 * <code>STRU &lt;SP&gt; &lt;structure-code&gt; &lt;CRLF&gt;</code><br>
+	 *
+	 * The argument is a single Telnet character code specifying
+	 * file structure.
+	 */
+	private FtpReply doSTRU(BaseFtpConnection conn) {
+		FtpRequest request = conn.getRequest();
+		conn.resetState();
+
+		// argument check
+		if (!request.hasArgument()) {
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+		}
+
+		if (request.getArgument().equalsIgnoreCase("F")) {
+			return FtpReply.RESPONSE_200_COMMAND_OK;
+		} else {
+			return FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+		}
+		/*
+				if (setStructure(request.getArgument().charAt(0))) {
+					return FtpResponse.RESPONSE_200_COMMAND_OK);
+				} else {
+					return FtpResponse.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM);
+				}
+		*/
+	}
+
+	/**
+	 * <code>SYST &lt;CRLF&gt;</code><br> 
+	 *
+	 * This command is used to find out the type of operating
+	 * system at the server.
+	 */
+	private FtpReply doSYST(BaseFtpConnection conn) {
+		conn.resetState();
+
+		/*
+		String systemName = System.getProperty("os.name");
+		if(systemName == null) {
+			systemName = "UNKNOWN";
+		}
+		else {
+			systemName = systemName.toUpperCase();
+			systemName = systemName.replace(' ', '-');
+		}
+		String args[] = {systemName};
+		*/
+		return FtpReply.RESPONSE_215_SYSTEM_TYPE;
+		//String args[] = { "UNIX" };
+		//out.write(ftpStatus.getResponse(215, request, user, args));
+	}
+	/**
+	 * <code>TYPE &lt;SP&gt; &lt;type-code&gt; &lt;CRLF&gt;</code><br>
+	 *
+	 * The argument specifies the representation type.
+	 */
+	private FtpReply doTYPE(BaseFtpConnection conn) {
+		FtpRequest request = conn.getRequest();
+		conn.resetState();
+
+		// get type from argument
+		if (!request.hasArgument()) {
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+		}
+
+		// set it
+		if (setType(request.getArgument().charAt(0))) {
+			return FtpReply.RESPONSE_200_COMMAND_OK;
+		} else {
+			return FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+		}
+	}
+
+	public FtpReply execute(BaseFtpConnection conn)
+		throws UnhandledCommandException {
+		String cmd = conn.getRequest().getCommand();
+		if ("MODE".equals(cmd))
+			return doMODE(conn);
+		if ("PASV".equals(cmd))
+			return doPASV(conn);
+		if ("PORT".equals(cmd))
+			return doPORT(conn);
+		if ("PRET".equals(cmd))
+			return doPRET(conn);
+		if ("REST".equals(cmd))
+			return doREST(conn);
+		if ("RETR".equals(cmd) || "STOR".equals(cmd) || "APPE".equals(cmd))
+			return transfer(conn);
+		if ("SITE RESCAN".equals(cmd))
+			return doSITE_RESCAN(conn);
+		if ("SITE XDUPE".equals(cmd))
+			return doSITE_XDUPE(conn);
+		if ("STRU".equals(cmd))
+			return doSTRU(conn);
+		if ("SYST".equals(cmd))
+			return doSYST(conn);
+		if ("TYPE".equals(cmd))
+			return doTYPE(conn);
+
+		if ("AUTH".equals(cmd))
+			return doAUTH(conn);
+		if ("PROT".equals(cmd))
+			return doPROT(conn);
+		if ("PBSZ".equals(cmd))
+			return doPBSZ(conn);
+
+		throw UnhandledCommandException.create(
+			DataConnectionHandler.class,
+			conn.getRequest());
+	}
+
+	/**
+	 * Get the data socket. In case of error returns null.
+	 * 
+	 * Used by LIST and NLST and MLST.
+	 */
+	public Socket getDataSocket() throws IOException {
+		Socket dataSocket;
+		// get socket depending on the selection
+		if (isPort()) {
+			try {
+				SocketFactory ssf =
+					_encryptedDataChannel
+						? _ctx.getSocketFactory()
+						: SocketFactory.getDefault();
+
+				dataSocket = ssf.createSocket();
+				//dataSocket.connect(_address, getPort());
+				dataSocket.connect(_portAddress);
+			} catch (IOException ex) {
+				logger.warn("Error opening data socket", ex);
+				dataSocket = null;
+				throw ex;
+			}
+		} else if (isPasv()) {
+			try {
+				dataSocket = _serverSocket.accept();
+			} finally {
+				_serverSocket.close();
+				_portRange.releasePort(_serverSocket.getLocalPort());
+				_serverSocket = null;
+			}
+		} else {
+			throw new IllegalStateException();
+		}
+		if (_encryptedDataChannel) {
+			SSLSocket ssldatasocket = (SSLSocket) dataSocket;
+			ssldatasocket.setUseClientMode(false);
+			ssldatasocket.startHandshake();
+		}
+		dataSocket.setSoTimeout(15000); // 15 seconds timeout
+		return dataSocket;
+	}
+
+	public String[] getFeatReplies() {
+		if (_ctx != null)
+			return new String[] { "PRET", "AUTH SSL", "PBSZ" };
+		return null;
+	}
+	/**
+	 * Get client address from PORT command.
+	 * @deprecated
+	 */
+	//	private InetAddress getInetAddress() {
+	//		return _address;
+	//	}
+
+	/**
+	 * Get port number.
+	 * return miPort
+	 */
+	//	private int getPort() {
+	//		return _port;
+	//	}
+
+	public RemoteSlave getTranferSlave() {
+		return _rslave;
+	}
+
+	public Transfer getTransfer() {
+		if (_transfer == null)
+			throw new IllegalStateException();
+		return _transfer;
+	}
+
+	public LinkedRemoteFile getTransferFile() {
+		return _transferFile;
+	}
+	/**
+	  * Get the user data type.
+	  */
+	public char getType() {
+		return type;
+	}
+
+	public CommandHandler initialize(
+		BaseFtpConnection conn,
+		CommandManager initializer) {
+		try {
+			return (DataConnectionHandler) clone();
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Guarantes pre transfer is set up correctly.
+	 */
+	public boolean isPasv() {
+		return mbPasv;
+	}
+	public boolean isPort() {
+		return mbPort;
+	}
+	public boolean isPreTransfer() {
+		return _preTransfer || isPasv();
+	}
+
+	public boolean isTransfering() {
+		return _transfer != null;
+	}
+	public void load(CommandManagerFactory initializer) {
+	}
+	private void reset() {
+		_rslave = null;
+		_transfer = null;
+		_transferFile = null;
+		_preTransfer = false;
+		_preTransferRSlave = null;
+
+		mbPasv = false;
+		if (isPasv()) {
+			_portRange.releasePort(_serverSocket.getLocalPort());
+		}
+		_serverSocket = null;
+		mbPort = false;
+		_resumePosition = 0;
+	}
+
+	/**
+	  * Set the data type. Supported types are A (ascii) and I (binary).
+	  * @return true if success
+	  */
+	private boolean setType(char type) {
+		type = Character.toUpperCase(type);
+		if ((type != 'A') && (type != 'I')) {
+			return false;
+		}
+		this.type = type;
+		return true;
 	}
 	/**
 	 * <code>STOU &lt;CRLF&gt;</code><br>
@@ -672,9 +1105,10 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			}
 
 			//setup _rslave
-			if (mbPasv) {
-				if (!_preTransfer || _preTransferRSlave == null)
-					return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
+			if (isPasv()) {
+//				isPasv() means we're setup correctly
+//				if (!_preTransfer || _preTransferRSlave == null)
+//					return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 
 				//check pretransfer
 				if (isRetr
@@ -682,9 +1116,9 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 					return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 				}
 				_rslave = _preTransferRSlave;
-				_preTransferRSlave = null;
-				_preTransfer = false;
-				//TODO redundant code above to be handled by reset()
+				//_preTransferRSlave = null;
+				//_preTransfer = false;
+				//code above to be handled by reset()
 			} else {
 
 				try {
@@ -718,11 +1152,11 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			}
 
 			// setup _transfer
-			if (mbPort) {
+			if (isPort()) {
 				try {
 					_transfer =
 						_rslave.getSlave().connect(
-							_address2,
+							_portAddress,
 							_encryptedDataChannel);
 				} catch (RemoteException ex) {
 					_rslave.handleRemoteException(ex);
@@ -737,7 +1171,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 							+ " from slave: "
 							+ ex.getMessage());
 				}
-			} else if (mbPasv) {
+			} else if (isPasv()) {
 				//_transfer is already set up by doPASV()
 			} else {
 				return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
@@ -1002,446 +1436,11 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			reset();
 		}
 	}
-	private void reset() {
-		_rslave = null;
-		_transfer = null;
-		_transferFile = null;
-		_preTransfer = false;
-		_preTransferRSlave = null;
-		
-		mbPasv = false;
-		mbPort = false;
-		_resumePosition = 0;
-	}
-
-	private FtpReply doSITE_RESCAN(BaseFtpConnection conn) {
-		FtpRequest request = conn.getRequest();
-		conn.resetState();
-		boolean forceRescan =
-			(request.hasArgument()
-				&& request.getArgument().equalsIgnoreCase("force"));
-		LinkedRemoteFile directory = conn.getCurrentDirectory();
-		SFVFile sfv;
-		try {
-			sfv = conn.getCurrentDirectory().lookupSFVFile();
-		} catch (Exception e) {
-			return new FtpReply(
-				200,
-				"Error getting SFV File: " + e.getMessage());
-		}
-		PrintWriter out = conn.getControlWriter();
-		for (Iterator i = sfv.getEntries().entrySet().iterator();
-			i.hasNext();
-			) {
-			Map.Entry entry = (Map.Entry) i.next();
-			String fileName = (String) entry.getKey();
-			Long checkSum = (Long) entry.getValue();
-			LinkedRemoteFile file;
-			try {
-				file = directory.lookupFile(fileName);
-			} catch (FileNotFoundException ex) {
-				out.write(
-					"200- SFV: "
-						+ Checksum.formatChecksum(checkSum.longValue())
-						+ " SLAVE: "
-						+ fileName
-						+ " MISSING"
-						+ BaseFtpConnection.NEWLINE);
-				continue;
-			}
-			String status;
-			long fileCheckSum;
-			try {
-				if (forceRescan) {
-					fileCheckSum = file.getCheckSumFromSlave();
-				} else {
-					fileCheckSum = file.getCheckSum();
-				}
-			} catch (NoAvailableSlaveException e1) {
-				out.println(
-					"200- "
-						+ fileName
-						+ "SFV: "
-						+ Checksum.formatChecksum(checkSum.longValue())
-						+ " SLAVE: OFFLINE");
-				continue;
-			} catch (IOException ex) {
-				out.print(
-					"200- "
-						+ fileName
-						+ " SFV: "
-						+ Checksum.formatChecksum(checkSum.longValue())
-						+ " SLAVE: IO error: "
-						+ ex.getMessage());
-				continue;
-			}
-
-			if (fileCheckSum == 0L) {
-				status = "FAILED - failed to checksum file";
-			} else if (checkSum.longValue() == fileCheckSum) {
-				status = "OK";
-			} else {
-				status = "FAILED - checksum missmatch";
-			}
-
-			out.println(
-				"200- "
-					+ fileName
-					+ " SFV: "
-					+ Checksum.formatChecksum(checkSum.longValue())
-					+ " SLAVE: "
-					+ Checksum.formatChecksum(checkSum.longValue())
-					+ " "
-					+ status);
-			continue;
-		}
-		return FtpReply.RESPONSE_200_COMMAND_OK;
-	}
-
-	private FtpReply doSITE_XDUPE(BaseFtpConnection conn) {
-		return FtpReply.RESPONSE_502_COMMAND_NOT_IMPLEMENTED;
-		//		resetState();
-		//
-		//		if (!request.hasArgument()) {
-		//			if (this.xdupe == 0) {
-		//				out.println("200 Extended dupe mode is disabled.");
-		//			} else {
-		//				out.println(
-		//					"200 Extended dupe mode " + this.xdupe + " is enabled.");
-		//			}
-		//			return;
-		//		}
-		//
-		//		short myXdupe;
-		//		try {
-		//			myXdupe = Short.parseShort(request.getArgument());
-		//		} catch (NumberFormatException ex) {
-		//			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
-		//			return;
-		//		}
-		//
-		//		if (myXdupe > 0 || myXdupe < 4) {
-		//			out.print(
-		//				FtpResponse.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM);
-		//			return;
-		//		}
-		//		this.xdupe = myXdupe;
-		//		out.println("200 Activated extended dupe mode " + myXdupe + ".");
-	}
-	/**
-	 * <code>STRU &lt;SP&gt; &lt;structure-code&gt; &lt;CRLF&gt;</code><br>
-	 *
-	 * The argument is a single Telnet character code specifying
-	 * file structure.
-	 */
-	private FtpReply doSTRU(BaseFtpConnection conn) {
-		FtpRequest request = conn.getRequest();
-		conn.resetState();
-
-		// argument check
-		if (!request.hasArgument()) {
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-		}
-
-		if (request.getArgument().equalsIgnoreCase("F")) {
-			return FtpReply.RESPONSE_200_COMMAND_OK;
-		} else {
-			return FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
-		}
-		/*
-				if (setStructure(request.getArgument().charAt(0))) {
-					return FtpResponse.RESPONSE_200_COMMAND_OK);
-				} else {
-					return FtpResponse.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM);
-				}
-		*/
-	}
-
-	/**
-	 * <code>SYST &lt;CRLF&gt;</code><br> 
-	 *
-	 * This command is used to find out the type of operating
-	 * system at the server.
-	 */
-	private FtpReply doSYST(BaseFtpConnection conn) {
-		conn.resetState();
-
-		/*
-		String systemName = System.getProperty("os.name");
-		if(systemName == null) {
-			systemName = "UNKNOWN";
-		}
-		else {
-			systemName = systemName.toUpperCase();
-			systemName = systemName.replace(' ', '-');
-		}
-		String args[] = {systemName};
-		*/
-		return FtpReply.RESPONSE_215_SYSTEM_TYPE;
-		//String args[] = { "UNIX" };
-		//out.write(ftpStatus.getResponse(215, request, user, args));
-	}
-	/**
-	 * <code>TYPE &lt;SP&gt; &lt;type-code&gt; &lt;CRLF&gt;</code><br>
-	 *
-	 * The argument specifies the representation type.
-	 */
-	private FtpReply doTYPE(BaseFtpConnection conn) {
-		FtpRequest request = conn.getRequest();
-		conn.resetState();
-
-		// get type from argument
-		if (!request.hasArgument()) {
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-		}
-
-		// set it
-		if (setType(request.getArgument().charAt(0))) {
-			return FtpReply.RESPONSE_200_COMMAND_OK;
-		} else {
-			return FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
-		}
-	}
-
-	public FtpReply execute(BaseFtpConnection conn)
-		throws UnhandledCommandException {
-		String cmd = conn.getRequest().getCommand();
-		if ("MODE".equals(cmd))
-			return doMODE(conn);
-		if ("PASV".equals(cmd))
-			return doPASV(conn);
-		if ("PORT".equals(cmd))
-			return doPORT(conn);
-		if ("PRET".equals(cmd))
-			return doPRET(conn);
-		if ("REST".equals(cmd))
-			return doREST(conn);
-		if ("RETR".equals(cmd) || "STOR".equals(cmd) || "APPE".equals(cmd))
-			return transfer(conn);
-		if ("SITE RESCAN".equals(cmd))
-			return doSITE_RESCAN(conn);
-		if ("SITE XDUPE".equals(cmd))
-			return doSITE_XDUPE(conn);
-		if ("STRU".equals(cmd))
-			return doSTRU(conn);
-		if ("SYST".equals(cmd))
-			return doSYST(conn);
-		if ("TYPE".equals(cmd))
-			return doTYPE(conn);
-
-		if ("AUTH".equals(cmd))
-			return doAUTH(conn);
-		if ("PROT".equals(cmd))
-			return doPROT(conn);
-		if ("PBSZ".equals(cmd))
-			return doPBSZ(conn);
-
-		throw UnhandledCommandException.create(
-			DataConnectionHandler.class,
-			conn.getRequest());
-	}
-
-	private FtpReply doPBSZ(BaseFtpConnection conn)
-		throws UnhandledCommandException {
-		String cmd = conn.getRequest().getArgument();
-		if (cmd == null || !cmd.equals("0"))
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-		return FtpReply.RESPONSE_200_COMMAND_OK;
-	}
-
-	private FtpReply doPROT(BaseFtpConnection conn)
-		throws UnhandledCommandException {
-		FtpRequest req = conn.getRequest();
-		if (!req.hasArgument() || req.getArgument().length() != 1)
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-		switch (Character.toUpperCase(req.getArgument().charAt(0))) {
-			case 'C' : //clear
-				_encryptedDataChannel = false;
-				return FtpReply.RESPONSE_200_COMMAND_OK;
-
-			case 'P' : //private
-				_encryptedDataChannel = true;
-				return FtpReply.RESPONSE_200_COMMAND_OK;
-
-			default :
-				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-		}
-	}
-	//TODO error handling for AUTH cmd
-	private FtpReply doAUTH(BaseFtpConnection conn) {
-		Socket s = conn.getControlSocket();
-
-		//reply success
-		conn.getControlWriter().write(
-			new FtpReply(
-				234,
-				conn.getRequest().getCommandLine() + " successfull")
-				.toString());
-		conn.getControlWriter().flush();
-
-		try {
-			SSLSocket s2;
-			s2 =
-				(SSLSocket)
-					((SSLSocketFactory) ctx.getSocketFactory()).createSocket(
-					s,
-					s.getInetAddress().getHostAddress(),
-					s.getPort(),
-					true);
-			s2.setUseClientMode(false);
-			s2.startHandshake();
-			conn.setControlSocket(s2);
-		} catch (IOException e) {
-			logger.warn("", e);
-			conn.stop(e.getMessage());
-			return null;
-		}
-		return null;
-	}
-
-	/**
-	 * Get the data socket. In case of error returns null.
-	 * 
-	 * Used by LIST and NLST and MLST.
-	 */
-	public Socket getDataSocket() throws IOException {
-		Socket dataSocket;
-		// get socket depending on the selection
-		if (mbPort) {
-			try {
-				SocketFactory ssf =
-					_encryptedDataChannel
-						? ctx.getSocketFactory()
-						: SocketFactory.getDefault();
-
-				dataSocket = ssf.createSocket();
-				//dataSocket.connect(_address, getPort());
-				dataSocket.connect(_address2);
-			} catch (IOException ex) {
-				logger.warn("Error opening data socket", ex);
-				dataSocket = null;
-				throw ex;
-			}
-		} else if (mbPasv) {
-			try {
-				dataSocket = _serverSocket.accept();
-			} finally {
-				_serverSocket.close();
-				_serverSocket = null;
-			}
-		} else {
-			throw new IllegalStateException();
-		}
-		if (_encryptedDataChannel) {
-			SSLSocket ssldatasocket = (SSLSocket) dataSocket;
-			ssldatasocket.setUseClientMode(false);
-			ssldatasocket.startHandshake();
-		}
-		dataSocket.setSoTimeout(15000); // 15 seconds timeout
-		return dataSocket;
-	}
-
-	public String[] getFeatReplies() {
-		if (ctx != null)
-			return new String[] { "PRET", "AUTH SSL", "PBSZ" };
-		return null;
-	}
-	/**
-	 * Get client address from PORT command.
-	 * @deprecated
-	 */
-	//	private InetAddress getInetAddress() {
-	//		return _address;
-	//	}
-
-	/**
-	 * Get port number.
-	 * return miPort
-	 */
-	//	private int getPort() {
-	//		return _port;
-	//	}
-
-	public RemoteSlave getTranferSlave() {
-		return _rslave;
-	}
-
-	public Transfer getTransfer() {
-		if (_transfer == null)
-			throw new IllegalStateException();
-		return _transfer;
-	}
-
-	public LinkedRemoteFile getTransferFile() {
-		return _transferFile;
-	}
-	/**
-	  * Get the user data type.
-	  */
-	public char getType() {
-		return type;
-	}
-
-	public CommandHandler initialize(
-		BaseFtpConnection conn,
-		CommandManager initializer) {
-		try {
-			return (DataConnectionHandler) clone();
-		} catch (CloneNotSupportedException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public boolean isTransfering() {
-		return _transfer != null;
-	}
-	public void load(CommandManagerFactory initializer) {
-	}
-
-	/**
-	 * Passive command. It returns the success flag.
-	 */
-	private boolean setPasvCommand(BaseFtpConnection conn) {
-		try {
-			conn.reset();
-			//reset();
-			_address2 =
-				new InetSocketAddress(
-					conn.getControlSocket().getLocalAddress(),
-					0);
-			_serverSocket =
-				(_encryptedDataChannel
-					? ctx.getServerSocketFactory()
-					: ServerSocketFactory.getDefault())
-					.createServerSocket();
-			_serverSocket.bind(_address2, 1);
-			_serverSocket.setSoTimeout(60000);
-			_address2 =
-				new InetSocketAddress(
-					_serverSocket.getInetAddress(),
-					_serverSocket.getLocalPort());
-			mbPasv = true;
-			return true;
-		} catch (Exception ex) {
-			logger.log(Level.WARN, "", ex);
-			return false;
-		}
-	}
-
-	/**
-	  * Set the data type. Supported types are A (ascii) and I (binary).
-	  * @return true if success
-	  */
-	private boolean setType(char type) {
-		type = Character.toUpperCase(type);
-		if ((type != 'A') && (type != 'I')) {
-			return false;
-		}
-		this.type = type;
-		return true;
-	}
 
 	public void unload() {
+		if (isPasv()) {
+			_portRange.releasePort(_serverSocket.getLocalPort());
+		}
 	}
 
 }

@@ -34,6 +34,8 @@ import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.util.PortRange;
+import net.sf.drftpd.util.SSLGetContext;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
@@ -47,7 +49,7 @@ import se.mog.io.File;
 public class SlaveImpl
 	extends UnicastRemoteObject
 	implements Slave, Unreferenced {
-
+	private PortRange _portRange = new PortRange();
 	private SSLContext _ctx;
 	private static final boolean isWin32 =
 		System.getProperty("os.name").startsWith("Windows");
@@ -158,7 +160,7 @@ public class SlaveImpl
 	public SlaveImpl(Properties cfg) throws RemoteException {
 		super(0);
 		try {
-			_ctx = DataConnectionHandler.getSSLContext();
+			_ctx = SSLGetContext.getSSLContext();
 		} catch (Exception e) {
 			logger.warn("Error loading SSLContext", e);
 		}
@@ -307,7 +309,7 @@ public class SlaveImpl
 	public Transfer listen(boolean encrypted)
 		throws RemoteException, IOException {
 		return new TransferImpl(
-			new PassiveConnection(encrypted ? _ctx : null, new InetSocketAddress(0)),
+			new PassiveConnection(encrypted ? _ctx : null, _portRange, new InetSocketAddress(0)),
 			this);
 	}
 
