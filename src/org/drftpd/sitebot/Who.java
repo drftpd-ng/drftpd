@@ -35,9 +35,6 @@ import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
-import f00f.net.irc.martyr.GenericAutoService;
-import f00f.net.irc.martyr.InCommand;
-import f00f.net.irc.martyr.State;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
 

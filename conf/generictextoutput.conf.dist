@@ -1,5 +1,5 @@
 #Usage: !trigger path/to/file.txt text to show for help
 #	Every parameter needs to be accounted for
 
-!bnc text/bnc.txt Shows ftp bouncer info.
-!affils text/affils.txt Shows current site affils.
+!bnc text/bnc.txt
+!affils text/affils.txt

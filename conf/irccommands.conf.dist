@@ -6,3 +6,23 @@
 !leechers org.drftpd.sitebot.Who.doLeechers #drftpd *
 !idlers org.drftpd.sitebot.Who.doIdlers private *
 !uploaders org.drftpd.sitebot.Who.doUploaders public =siteop
+!slave org.drftpd.sitebot.Slaves.doSlave public *
+!slaves org.drftpd.sitebot.Slaves.doSlaves public *
+!bw org.drftpd.sitebot.Bandwidth.doBandwidth public *
+!speed org.drftpd.sitebot.Bandwidth.doSpeed public *
+!df org.drftpd.sitebot.Diskfree.doDiskfree public *
+!invite org.drftpd.sitebot.Invite.doInvite private *
+!ident org.drftpd.sitebot.Ident.doIdent private *
+
+!alup org.drftpd.sitebot.Stats.doALUP public *
+!aldn org.drftpd.sitebot.Stats.doALDN public *
+!monthup org.drftpd.sitebot.Stats.doMONTHUP public *
+!monthdn org.drftpd.sitebot.Stats.doALDN public *
+!wkup org.drftpd.sitebot.Stats.doWKUP public *
+!wkdn org.drftpd.sitebot.Stats.doWKDN public *
+!dayup org.drftpd.sitebot.Stats.doDAYUP public *
+!daydn org.drftpd.sitebot.Stats.doDAYDN public *
+
+!imdb net.drmods.plugins.irc.imdb.IRCListener.doImdb public *
+!credits net.drmods.plugins.irc.Credits.doCredits public *
+!approve net.drmods.plugins.irc.Approve.doApprove public =siteop

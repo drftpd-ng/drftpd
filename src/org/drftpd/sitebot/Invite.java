@@ -17,111 +17,79 @@
  */
 package org.drftpd.sitebot;
 
+import java.util.ArrayList;
+import java.util.StringTokenizer;
+
 import net.sf.drftpd.event.InviteEvent;
-import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
-import f00f.net.irc.martyr.GenericCommandAutoService;
-import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
  * @version $Id$
  */
-public class Invite extends GenericCommandAutoService
-    implements IRCPluginInterface {
+public class Invite extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Invite.class);
-    private SiteBot _listener;
-    private String _trigger;
-	private GlobalContext _gctx;
 
-    public Invite(SiteBot ircListener) {
-        super(ircListener.getIRCConnection());
-        _gctx = ircListener.getGlobalContext();
-        _listener = ircListener;
-        _trigger = _listener.getMessageCommandPrefix();
+    public Invite(GlobalContext gctx) {
+		super(gctx);
     }
 
-    public String getCommands() {
-        return _trigger + "invite(msg)";
-    }
+	public ArrayList<String> doInvite(String args, MessageCommand msgc) {
+	    ArrayList<String> out = new ArrayList<String>();
+	    out.add("");
+		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 
-    public String getCommandsHelp(User user) {
-        String help = "";
-        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "invite", user))
-            help += _listener.getCommandPrefix() + "invite <user> <pass> : Invite yourself to site channel.\n";
-    	return help;
-    }
-    
-    protected void updateCommand(InCommand command) {
-        if (!(command instanceof MessageCommand)) {
-            return;
+		StringTokenizer st = new StringTokenizer(args);
+		if (st.countTokens() < 2)
+		    return out;
+		
+		String username = st.nextToken();
+		String password = st.nextToken();
+		
+		User user;
+        try {
+            user = getGlobalContext().getUserManager().getUserByName(username);
+        } catch (NoSuchUserException e) {
+            logger.log(Level.WARN, username + " " + e.getMessage(), e);
+            return out;
+        } catch (UserFileException e) {
+            logger.log(Level.WARN, "", e);
+            return out;
         }
+        boolean success = user.checkPassword(password);
+        getGlobalContext().dispatchFtpEvent(
+                new InviteEvent(success ? "INVITE" : "BINVITE", msgc.getSource().getNick(), user));
 
-        MessageCommand msgc = (MessageCommand) command;
-        String msg = msgc.getMessage();
-
-        if (msg.startsWith(_trigger + "invite ") &&
-                msgc.isPrivateToUs(this.getConnection().getClientState())) {
-            String[] args = msg.split(" ");
-            User user;
-
-            try {
-                user = getGlobalContext().getUserManager().getUserByName(args[1]);
-            } catch (NoSuchUserException e) {
-                logger.log(Level.WARN, args[1] + " " + e.getMessage(), e);
-
-                return;
-            } catch (UserFileException e) {
-                logger.log(Level.WARN, "", e);
-
-                return;
+       	String ident = msgc.getSource().getNick() + "!" 
+						+ msgc.getSource().getUser() + "@" 
+						+ msgc.getSource().getHost();
+       	    		
+		if (success) {
+		    logger.info("Invited \"" + ident + "\" as user " + user.getName());
+		    user.getKeyedMap().setObject(UserManagement.IRCIDENT,ident);
+			try {
+                user.commit();
+            } catch (UserFileException e1) {
+                logger.warn("Error saving userfile", e1);
             }
-
-            ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-    		env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
-    		env.add("ircnick",msgc.getSource().getNick());	
-    		try {
-                if (!_listener.getIRCConfig().checkIrcPermission(
-                        _listener.getCommandPrefix() + "invite",msgc.getSource())) {
-                	_listener.say(msgc.getDest(), 
-                			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
-                	return;				
-                }
-            } catch (NoSuchUserException e) {
-    			_listener.say(msgc.getDest(), 
-    					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-    			return;
-            }
-
-            boolean success = user.checkPassword(args[2]);
-            getGlobalContext().dispatchFtpEvent(new InviteEvent(success
-                    ? "INVITE" : "BINVITE", msgc.getSource().getNick(), user));
-
-           	String ident = msgc.getSource().getNick() + "!" 
-							+ msgc.getSource().getUser() + "@" 
-							+ msgc.getSource().getHost();
-           	    		
-			if (success) {
-			    logger.info("Invited \"" + ident + "\" as user " + user.getName());
-			} else {
-			    logger.log(Level.WARN,
-			        msgc.getSourceString() +
-			        " attempted invite with bad password: " + msgc);
-			}
-        }
-    }
-
-    private GlobalContext getGlobalContext() {
-        return _gctx;
-    }
+		} else {
+		    logger.log(Level.WARN,
+		        msgc.getSourceString() +
+		        " attempted invite with bad password: " + msgc);
+		}
+		
+		return out;
+	}
+	
 }

@@ -25,129 +25,74 @@ import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
-import org.drftpd.master.ConnectionManager;
+import org.drftpd.GlobalContext;
 import org.drftpd.plugins.SiteBot;
-import org.drftpd.sitebot.IRCPluginInterface;
-import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.sitebot.IRCCommand;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-import org.drftpd.usermanager.UserManager;
 import org.tanesha.replacer.ReplacerEnvironment;
 
-import f00f.net.irc.martyr.GenericCommandAutoService;
-import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
+import f00f.net.irc.martyr.util.FullNick;
 
 /**
  * @author Teflon
  * @version $Id$
  */
-public class Credits extends GenericCommandAutoService implements IRCPluginInterface {
-
+public class Credits extends IRCCommand {
 	private static final Logger logger = Logger.getLogger(Credits.class);
 
-	private SiteBot _listener;
-
-	public Credits(SiteBot listener) {
-		super(listener.getIRCConnection());
-		_listener = listener;
+	public Credits(GlobalContext gctx) {
+		super(gctx);
 	}
 
-	public String getCommands() {
-		return _listener.getCommandPrefix() + "credits";
-	}
-
-    public String getCommandsHelp(User user) {
-        String help = "";
-        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "credits", user))
-            help += _listener.getCommandPrefix() 
-            		+ "credits [\"*\"|username]: Displays the user's credits\n";
-		return help;
-    }
-
-    private ConnectionManager getConnectionManager() {
-		return _listener.getGlobalContext().getConnectionManager();
-	}
-
-	private UserManager getUserManager() {
-		return _listener.getGlobalContext().getUserManager();
-	}
-
-	protected void updateCommand(InCommand command) {
-		if (!(command instanceof MessageCommand)) {
-			return;
-		}
-		MessageCommand msgc = (MessageCommand) command;
-		if (msgc.isPrivateToUs(_listener.getIRCConnection().getClientState())) {
-			return;
-		}
-
-		String msg = msgc.getMessage().trim();
-		if (msg.startsWith(_listener.getCommandPrefix() + "credits")) {
-			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-			env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
-			env.add("ircnick",msgc.getSource().getNick());
-
-			User user;
-			try {
-	            user = _listener.getIRCConfig().lookupUser(msgc.getSource());
-	        } catch (NoSuchUserException e) {
-				_listener.say(msgc.getDest(), 
-						ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-				return;
-	        }
-			env.add("ftpuser",user.getName());
-
-			if (!_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "credits",user)) {
-				_listener.say(msgc.getDest(), 
-						ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
-				return;				
-			}
-
-			User ftpuser = user;
-			String args[] = msg.split(" ");
-			if (args.length > 1) {
-				if (args[1].equals("*")){
-					showAllUserCredits(msgc);
-					return;
-				} else {
-					try {
-						ftpuser = getConnectionManager().getGlobalContext()
-										.getUserManager()
-											.getUserByName(args[1]);
-					} catch (NoSuchUserException e) {
-						env.add("user", args[1]);
-						_listener.say(msgc.getDest(), 
-							ReplacerUtils.jprintf("credits.error", env, Credits.class));
-						return;
-					} catch (UserFileException e) {
-						logger.warn("", e);
-						return;
-					}
-				}
-			}
-													
-			env.add("user", ftpuser.getName());
-			env.add("credits",Bytes.formatBytes(ftpuser.getCredits()));
-			_listener.say(msgc.getDest(), 
-				ReplacerUtils.jprintf("credits.user", env, Credits.class));			
-
-		}
+	public ArrayList<String> doCredits(String args, MessageCommand msgc) {
+	    ArrayList<String> out = new ArrayList<String>();
+        ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		env.add("ircnick", msgc.getSource().getNick());
+		
+		FullNick fn = msgc.getSource();
+		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
+		User user;
+		
+	    if (args.equals("")) {
+	     	try {
+	     	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
+	     	} catch (Exception e) {
+	     	    logger.warn("Could not identify " + ident);
+	     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+	     	    return out;
+	     	}
+	    } else if (args.equals("*")) {
+	        showAllUserCredits(out);
+	        return out;
+	    } else {
+	        try {
+                user = getGlobalContext().getUserManager().getUserByName(args);
+            } catch (Exception e) {
+                env.add("user", args);
+                out.add(ReplacerUtils.jprintf("credits.error", env, Credits.class));
+                return out;
+            } 
+	    }
+		env.add("user", user.getName());
+		env.add("credits",Bytes.formatBytes(user.getCredits()));
+		out.add(ReplacerUtils.jprintf("credits.user", env, Credits.class));			
+	    return out;            
 	}
 	
-	protected void showAllUserCredits(MessageCommand msgc) {
+	protected void showAllUserCredits(ArrayList<String> out) {
 		long totalcredz = 0;
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		try {
-			ArrayList<User> users = new ArrayList<User>(getUserManager().getAllUsers());
+			ArrayList<User> users = new ArrayList<User>(getGlobalContext().getUserManager().getAllUsers());
 			for (Iterator iter = users.iterator(); iter.hasNext();) {
 				User user = (User) iter.next();
 				totalcredz += user.getCredits();
 			}
 			env.add("usercount",Integer.toString(users.size()));
 			env.add("totalcredits",Bytes.formatBytes(totalcredz));
-			_listener.say(msgc.getDest(), 
-				ReplacerUtils.jprintf("credits.total", env, Credits.class));			
+			out.add(ReplacerUtils.jprintf("credits.total", env, Credits.class));			
 		} catch (UserFileException e) {
 			logger.warn(e);
 		}

@@ -230,7 +230,7 @@ public class PreTime extends FtpListener {
                         }
 
                         //TODO send to originating destination channel, must store a cookie either locally or in message
-                        _irc.say(null, time + "ago");
+                        _irc.say("", time + "ago");
                     }
                 }
             }

@@ -17,17 +17,15 @@
  */
 package org.drftpd.sitebot;
 
+import java.util.ArrayList;
+
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.slave.SlaveStatus;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
 import org.tanesha.replacer.ReplacerEnvironment;
 
-import f00f.net.irc.martyr.GenericCommandAutoService;
-import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
 
@@ -35,67 +33,18 @@ import f00f.net.irc.martyr.commands.MessageCommand;
  * @author zubov
  * @version $Id$
  */
-public class Diskfree extends GenericCommandAutoService
-    implements IRCPluginInterface {
-    private SiteBot _listener;
-    private String _trigger;
+public class Diskfree extends IRCCommand {
 
-    public Diskfree(SiteBot listener) {
-        super(listener.getIRCConnection());
-        _listener = listener;
-        _trigger = _listener.getCommandPrefix();
-    }
-
-    private GlobalContext getGlobalContext() {
-        return _listener.getGlobalContext();
-    }
-
-    public String getCommands() {
-        return _trigger + "df";
-    }
-
-    public String getCommandsHelp(User user) {
-        String help = "";
-        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "df", user))
-            help += _listener.getCommandPrefix() + "df : Show total disk usage for all slaves.\n";
-    	return help;
+    public Diskfree(GlobalContext gctx) {
+		super(gctx);
     }
     
-    protected void updateCommand(InCommand command) {
-        if (!(command instanceof MessageCommand)) {
-            return;
-        }
-
-        MessageCommand msgc = (MessageCommand) command;
-        String msg = msgc.getMessage();
-
-        if (msgc.isPrivateToUs(_listener.getIRCConnection().getClientState())) {
-            return;
-        }
-
-        if (msg.equals(_trigger + "df")) {
-            ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-    		env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
-    		env.add("ircnick",msgc.getSource().getNick());	
-    		try {
-                if (!_listener.getIRCConfig().checkIrcPermission(
-                        _listener.getCommandPrefix() + "df",msgc.getSource())) {
-                	_listener.say(msgc.getDest(), 
-                			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
-                	return;				
-                }
-            } catch (NoSuchUserException e) {
-    			_listener.say(msgc.getDest(), 
-    					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-    			return;
-            }
-
-    		SlaveStatus status = getGlobalContext().getSlaveManager()
-					.getAllStatus();
-
-            SiteBot.fillEnvSlaveStatus(env, status, _listener.getSlaveManager());
-            _listener.say(msgc.getDest(),
-                ReplacerUtils.jprintf("diskfree", env, SiteBot.class));
-        }
-    }
+	public ArrayList<String> doDiskfree(String args, MessageCommand msgc) {
+	    ArrayList<String> out = new ArrayList<String>();
+		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		SlaveStatus status = getGlobalContext().getSlaveManager().getAllStatus();
+		SiteBot.fillEnvSlaveStatus(env, status, getGlobalContext().getSlaveManager());
+		out.add(ReplacerUtils.jprintf("diskfree", env, SiteBot.class));
+		return out;
+	}
 }

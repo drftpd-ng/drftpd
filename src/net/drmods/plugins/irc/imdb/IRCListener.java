@@ -17,97 +17,52 @@
  */
 package net.drmods.plugins.irc.imdb;
 
-import org.drftpd.sitebot.IRCPluginInterface;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-import org.drftpd.master.ConnectionManager;
+import java.util.ArrayList;
+
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
+import org.drftpd.sitebot.IRCCommand;
 import org.tanesha.replacer.ReplacerEnvironment;
 
-import f00f.net.irc.martyr.GenericAutoService;
-import f00f.net.irc.martyr.InCommand;
-import f00f.net.irc.martyr.State;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author Teflon
  */
-public class IRCListener extends GenericAutoService implements IRCPluginInterface {
+public class IRCListener extends IRCCommand {
 
     private static final Logger logger = Logger.getLogger(IRCListener.class); 
     private SiteBot _listener; 
     private ConnectionManager _cm;
     
-    public IRCListener(SiteBot listener) {
-        super(listener.getIRCConnection()); 
-        _listener = listener;
+    public IRCListener(GlobalContext gctx) {
+        super(gctx); 
     }
 
-    public String getCommands() {
-        return _listener.getCommandPrefix() + "imdb";
-    }
-
-    public String getCommandsHelp(User user) {
-        String help = "";
-        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "imdb", user))
-                help += _listener.getCommandPrefix() + "imdb <title> - look up the movie <title> in the imdb database.";
-		return help;
-    }
-
-    protected void updateCommand(InCommand inCommand) {
-        if (!(inCommand instanceof MessageCommand)) 
-            return; 
-        MessageCommand msgc = (MessageCommand) inCommand; 
-        if(msgc.isPrivateToUs(_listener.getIRCConnection().getClientState())) 
-            return; 
-        String msg = msgc.getMessage(); 
-        if (msg.startsWith(_listener.getCommandPrefix() + "imdb")) { 
-            ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-    		env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
-    		env.add("ircnick",msgc.getSource().getNick());	
-    		try {
-                if (!_listener.getIRCConfig().checkIrcPermission(
-                        _listener.getCommandPrefix() + "imdb",msgc.getSource())) {
-                	_listener.say(msgc.getDest(), 
-                			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
-                	return;				
-                }
-            } catch (NoSuchUserException e) {
-    			_listener.say(msgc.getDest(), 
-    					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-    			return;
+    public ArrayList<String> doImdb(String command, MessageCommand msgc) {
+        ArrayList<String> out = new ArrayList<String>();
+        ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		env.add("ircnick", msgc.getSource().getNick());	
+        
+       	try { 
+       		String searchStr = command.substring(command.indexOf(" ") + 1);
+       		
+            IMDBParser imdb = new IMDBParser(searchStr);
+            if (!imdb.foundFilm()) {
+                env.add("searchstr", searchStr);
+                out.add(ReplacerUtils.jprintf("imdb.notfound", env, IMDBParser.class));
+            } else {
+                out.add(ReplacerUtils.jprintf("imdb.announce", imdb.getEnv(), IMDBParser.class));
             }
-
-           	try { 
-           		String searchStr = msgc.getMessage().substring(
-           		        			(_listener.getCommandPrefix() + "imdb ").length());
-           		
-                IMDBParser imdb = new IMDBParser(searchStr);
-                if (!imdb.foundFilm()) {
-                    env.add("searchstr", searchStr);
-                    _listener.say(msgc.getDest(),
-                            ReplacerUtils.jprintf("imdb.notfound", env, IMDBParser.class));
-                } else {
-               		_listener.say(msgc.getDest(),
-                  		     ReplacerUtils.jprintf("imdb.announce", imdb.getEnv(), IMDBParser.class));
-                    
-                }
-           	} catch (StringIndexOutOfBoundsException e) { 
-           		logger.warn("", e); 
-           		_listener.say(msgc.getDest(), "!imdb what??"); 
-           		return; 
-           	}          
-        }   
+            return out;
+       	} catch (StringIndexOutOfBoundsException e) { 
+       		logger.warn("", e); 
+       		out.add("what??");
+       		return out; 
+       	}       
     }
-
-    protected void updateState(State arg0) {}
-    public void unload() {}
-    public void init(ConnectionManager connectionManager) {
-        _cm = connectionManager;
-    }
-
-
 }

@@ -16,94 +16,70 @@
  */
 package org.drftpd.sitebot;
 
-import f00f.net.irc.martyr.GenericCommandAutoService;
-import f00f.net.irc.martyr.InCommand;
-import f00f.net.irc.martyr.commands.MessageCommand;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
-import org.drftpd.dynamicdata.Key;
 import org.drftpd.plugins.SiteBot;
-
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
+import org.tanesha.replacer.ReplacerEnvironment;
+
+import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author Teflon
  */
-public class Ident extends GenericCommandAutoService implements
-		IRCPluginInterface {
+public class Ident extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Ident.class);
-	private SiteBot _listener;
-    private String _trigger;
-	public static final Key IDENT = new Key(Ident.class,"IRCIdent",String.class);
 
-	public Ident(SiteBot ircListener) {
-		super(ircListener.getIRCConnection());
-		_listener = ircListener;
-        _trigger = _listener.getMessageCommandPrefix();
+	public Ident(GlobalContext gctx) {
+		super(gctx);
 	}
 
-	public String getCommands() {
-        return _trigger + "ident(msg)";
-    }
+	public ArrayList<String> doIdent(String args, MessageCommand msgc) {
+	    ArrayList<String> out = new ArrayList<String>();
+	    out.add("");
+		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		
+		StringTokenizer st = new StringTokenizer(args);
+		if (st.countTokens() < 2)
+		    return out;
+		
+		String username = st.nextToken();
+		String password = st.nextToken();
 
-    public String getCommandsHelp(User user) {
-        String help = "";
-        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "ident", user))
-            help += _listener.getCommandPrefix() 
-            		+ "ident <user> <pass> : Stores your IRC ident in your userfile giving you access to restricted commands.\n";
-    	return help;
-    }
-    
-	protected void updateCommand(InCommand command) {
-        if (!(command instanceof MessageCommand)) {
-        	//logger.info("not a MessageCommand");
-            return;
+        User user;
+        try {
+            user = getGlobalContext().getUserManager().getUserByName(username);
+        } catch (NoSuchUserException e) {
+            logger.log(Level.WARN, username + " " + e.getMessage(), e);
+            return out;
+        } catch (UserFileException e) {
+            logger.log(Level.WARN, "", e);
+            return out;
         }
 
-        MessageCommand msgc = (MessageCommand) command;
-        String msg = msgc.getMessage();
-        if (msg.startsWith(_trigger + "ident ") &&
-                msgc.isPrivateToUs(this.getConnection().getClientState())) {
+        if (user.checkPassword(password)) {
+         	String ident = msgc.getSource().getNick() + "!" 
+							+ msgc.getSource().getUser() + "@" 
+							+ msgc.getSource().getHost();
+        	user.getKeyedMap().setObject(UserManagement.IRCIDENT,ident);
+        	try {
+				user.commit();
+	           	logger.info("Set IRC ident to '"+ident+"' for "+user.getName());
+            	out.add("Set IRC ident to '"+ident+"' for "+user.getName());
+			} catch (UserFileException e1) {
+				logger.warn("Error saving userfile for "+user.getName(),e1);
+				out.add("Error saving userfile for "+user.getName());
+			}
+         }
 
-        	String[] args = msg.split(" ");
-            if (args.length < 2) {
-             	return;
-            }
-            User user;
-            try {
-                user = getGlobalContext().getUserManager().getUserByName(args[1]);
-            } catch (NoSuchUserException e) {
-                logger.log(Level.WARN, args[1] + " " + e.getMessage(), e);
-                return;
-            } catch (UserFileException e) {
-                logger.log(Level.WARN, "", e);
-                return;
-            }
-
-            if (user.checkPassword(args[2])) {
-             	String ident = msgc.getSource().getNick() + "!" 
-								+ msgc.getSource().getUser() + "@" 
-								+ msgc.getSource().getHost();
-            	user.getKeyedMap().setObject(UserManagement.IRCIDENT,ident);
-            	try {
-					user.commit();
-		           	logger.info("Set IRC ident to '"+ident+"' for "+user.getName());
-	            	_listener.say(msgc.getSource().getNick(),"Set IRC ident to '"+ident+"' for "+user.getName());
-				} catch (UserFileException e1) {
-					logger.warn("Error saving userfile for "+user.getName(),e1);
-					_listener.say(msgc.getSource().getNick(),"Error saving userfile for "+user.getName());
-				}
-             }
-        }
+        return out;
 	}
-
-	private GlobalContext getGlobalContext() {
-		return _listener.getGlobalContext();
-	}
+	
 }

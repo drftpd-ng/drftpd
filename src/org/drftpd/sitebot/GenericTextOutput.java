@@ -17,62 +17,37 @@
  */
 package org.drftpd.sitebot;
 
-import f00f.net.irc.martyr.GenericCommandAutoService;
-import f00f.net.irc.martyr.InCommand;
-import f00f.net.irc.martyr.commands.MessageCommand;
-
-import net.sf.drftpd.master.command.plugins.Textoutput;
-
-import org.drftpd.plugins.SiteBot;
-import org.drftpd.usermanager.User;
-
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
+
+import f00f.net.irc.martyr.commands.MessageCommand;
 
 
 /**
  * @author zubov
  * @version $Id$
  */
-public class GenericTextOutput extends GenericCommandAutoService
-    implements IRCPluginInterface {
-    private HashMap _commands;
-    private HashMap _commandsHelp;
+public class GenericTextOutput extends IRCCommand {
+	private static final Logger logger = Logger.getLogger(GenericTextOutput.class);
+    private HashMap<String,String> _commands;
 
-    public GenericTextOutput(SiteBot ircListener) {
-        super(ircListener.getIRCConnection());
+    public GenericTextOutput(GlobalContext gctx) {
+		super(gctx);
         reload();
     }
-
-    public String getCommands() {
-        String toReturn = new String();
-
-        for (Iterator iter = _commands.keySet().iterator(); iter.hasNext();) {
-            toReturn = toReturn + (String) iter.next() + " ";
-        }
-
-        return toReturn.trim();
-    }
-
-    public String getCommandsHelp(User user) {
-        String toReturn = "";
-        String trigger;
-        for (Iterator iter = _commandsHelp.keySet().iterator(); iter.hasNext();) {
-        	trigger = (String) iter.next();
-            toReturn += trigger + " : " + _commandsHelp.get(trigger) + "\n";
-        }
-        return toReturn;
-    }	
     
     private void reload() {
-        _commands = new HashMap();
-        _commandsHelp = new HashMap();
+        _commands = new HashMap<String,String>();
 
         BufferedReader in;
 
@@ -85,26 +60,20 @@ public class GenericTextOutput extends GenericCommandAutoService
         }
 
         String line;
-        String help;
         try {
             while ((line = in.readLine()) != null) {
-                if (line.startsWith("#")) {
+                if (line.startsWith("#") || line.trim().equals("")) {
                     continue;
                 }
 
                 String[] args = line.split(" ");
 
-                if (args.length < 3) {
+                if (args.length < 2) {
                     continue;
                 }
 
                 _commands.put(args[0], args[1]);
               
-                help = "";
-                for (int i=2; i < args.length; i++) {
-                	help += args[i] + " ";
-                }
-                _commandsHelp.put(args[0],help.trim());
             }
         } catch (IOException e1) {
             throw new RuntimeException(e1);
@@ -116,23 +85,39 @@ public class GenericTextOutput extends GenericCommandAutoService
         }
     }
 
-    protected void updateCommand(InCommand command) {
-        if (command instanceof MessageCommand) {
-            MessageCommand msgc = (MessageCommand) command;
-            String msg = msgc.getMessage();
+	public ArrayList<String> doApprove(String args, MessageCommand msgc) {
+	    ArrayList<String> out = new ArrayList<String>();
+        String msg = msgc.getMessage();
 
-            for (Iterator iter = _commands.keySet().iterator(); iter.hasNext();) {
-                String trigger = (String) iter.next();
+        for (Iterator iter = _commands.keySet().iterator(); iter.hasNext();) {
+            String trigger = (String) iter.next();
 
-                if (msg.startsWith(trigger)) {
-                    if (!msgc.isPrivateToUs(getConnection().getClientState())) {
-                        Textoutput.sendTextToIRC(getConnection(),
-                            msgc.getDest(), (String) _commands.get(trigger));
-                    } else {
-                        return; // already matched a trigger
+            if (msg.startsWith(trigger)) {
+                try {
+                    BufferedReader rd = new BufferedReader(new InputStreamReader(
+                            new FileInputStream((String) _commands.get(trigger)), "ISO-8859-1"));
+                    String line;
+
+                    try {
+                        while ((line = rd.readLine()) != null) {
+                            if (!line.startsWith("#")) {
+                                out.add(line);
+                            }
+                        }
+                    } finally {
+                        rd.close();
                     }
+                    break;
+                } catch (UnsupportedEncodingException e) {
+                    logger.warn(e);
+                } catch (FileNotFoundException e) {
+                    logger.warn(e);
+                    out.add(e.getMessage());
+                } catch (IOException e) {
+                    logger.warn(e);
                 }
             }
         }
-    }
+		return out;
+	}
 }

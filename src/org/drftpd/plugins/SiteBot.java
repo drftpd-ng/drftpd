@@ -1067,19 +1067,19 @@ public class SiteBot extends FtpListener implements Observer {
 				"conf/irccommands.conf"));
 		String line = null;
 		while ((line = lineReader.readLine()) != null) {
-			if (line.startsWith("#")) {
+			if (line.startsWith("#") || line.trim().equals("")) {
 				continue;
 			}
 			StringTokenizer st = new StringTokenizer(line);
 			if (st.countTokens() < 4) {
-				logger.error("Line is invalid -- not enough parameters");
+				logger.error("Line is invalid -- not enough parameters \"" + line + "\"");
 				continue;
 			}
 			String trigger = st.nextToken();
 			String methodString = st.nextToken();
 			String scopeList = st.nextToken();
-			String permissions = st.toString();
-
+			String permissions = st.nextToken("").trim();
+			
 			int index = methodString.lastIndexOf(".");
 			String className = methodString.substring(0, index);
 			methodString = methodString.substring(index + 1);
@@ -1279,7 +1279,7 @@ public class SiteBot extends FtpListener implements Observer {
 			MessageCommand msgc = (MessageCommand) updated;
 
 			// recreate the MessageCommand with the encrypted text
-			if (_fish != null) {
+			if (_fish != null && !msgc.isPrivateToUs(_conn.getClientState())) {
 				try {
 					MessageCommand decmsgc = new MessageCommand(msgc
 							.getSource(), msgc.getDest(), _fish.Decrypt(msgc
@@ -1291,13 +1291,13 @@ public class SiteBot extends FtpListener implements Observer {
 				}
 			}
 			int index = msgc.getMessage().indexOf(" ");
-			String args = null;
+			String args = "";
 			String trigger = null;
 			if (index == -1) {
 				trigger = msgc.getMessage().toLowerCase();
 			} else {
 				trigger = msgc.getMessage().substring(0, index);
-				args = msgc.getMessage().substring(index+1);
+				args = msgc.getMessage().substring(index+1).trim();
 			}
 			if (_methodMap.containsKey(trigger)) { // is a recognized command
 				Object[] objects = _methodMap.get(trigger);
@@ -1309,6 +1309,9 @@ public class SiteBot extends FtpListener implements Observer {
 					return;
 				}
 				if (!perm.checkPermission(msgc.getSource())) {
+				    ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+				    env.add("ircnick", msgc.getSource().getNick());
+				    say(msgc.getDest(), ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
 					logger.warn("Not enough permissions for user to execute " + trigger + " to " + msgc.getDest());
 					return;
 				}
@@ -1363,8 +1366,9 @@ public class SiteBot extends FtpListener implements Observer {
         		return true;
         	}
         	try {
-        	return new Permission(FtpConfig.makeUsers(new StringTokenizer(_permissions))).check(lookupUser(fn));
+        	   	return new Permission(FtpConfig.makeUsers(new StringTokenizer(_permissions))).check(lookupUser(fn));
         	} catch (NoSuchUserException e) {
+        	    logger.warn(e);
         		return false;
         	}
         }

@@ -1,3 +1,7 @@
+2005/02/27 Jamal James <teflon114@gmail.com>
+* All core sitebot plugins converted to work with the new implementation
+* Half of the net.drmods.plugins.* plugins are converted
+
 2005/02/27 Matt Zimmerman <zubov@users.sourceforge.net>
 * New internal SiteBot interface, if you're not a developer, don't bother
 
