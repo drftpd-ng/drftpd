@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.15 2004/01/29 22:19:44 zubov Exp $
+ * @version $Id: ListUtils.java,v 1.16 2004/01/31 01:57:35 zubov Exp $
  */
 public class ListUtils {
 
@@ -56,31 +56,31 @@ public class ListUtils {
 				// don't add it
 				continue;
 			}
-			if (element.isDirectory()) {
-				try {
-					int filesleft =
-						element.lookupSFVFile().getStatus().getMissing();
-					if (filesleft != 0)
-						listFiles.add(
-							new StaticRemoteFile(
-								null,
-								element.getName()
-									+ "-"
-									+ filesleft
-									+ "-FILES-MISSING",
-								"drftpd",
-								"drftpd",
-								0L,
-								dir.lastModified()));
-				} catch (IOException e) {
-				} // errors getting SFV? FINE! We don't care!
-				// is a directory
-				//				numOnline++; // do not want to include directories in the file count
-				//				numTotal++;
-				listFiles.add(element);
-				continue;
-			} else if (
-				!element.isAvailable()) { // directories are always available
+			//			if (element.isDirectory()) { // can slow listing
+			//				try {
+			//					int filesleft =
+			//						element.lookupSFVFile().getStatus().getMissing();
+			//					if (filesleft != 0)
+			//						listFiles.add(
+			//							new StaticRemoteFile(
+			//								null,
+			//								element.getName()
+			//									+ "-"
+			//									+ filesleft
+			//									+ "-FILES-MISSING",
+			//								"drftpd",
+			//								"drftpd",
+			//								0L,
+			//								dir.lastModified()));
+			//				} catch (IOException e) {
+			//				} // errors getting SFV? FINE! We don't care!
+			//				// is a directory
+			//				//				numOnline++; // do not want to include directories in the file count
+			//				//				numTotal++;
+			//				listFiles.add(element);
+			//				continue;
+			//			} else if (
+			if (!element.isAvailable()) { // directories are always available
 				listFiles.add(
 					new StaticRemoteFile(
 						Collections.EMPTY_LIST,
@@ -157,7 +157,8 @@ public class ListUtils {
 				response.addComment("zipscript error: " + e.getMessage());
 			logger.warn("zipscript error", e);
 		}
-		if (statusDirName == null && numTotal != 0) {
+		if (statusDirName == null
+			&& numTotal > 5) { // in future list by user settings for numTotal
 			statusDirName =
 				"[ "
 					+ numOnline
