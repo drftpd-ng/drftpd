@@ -62,7 +62,7 @@ import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.84 2004/02/26 13:56:51 mog Exp $
+ * @version $Id: SlaveImpl.java,v 1.85 2004/03/15 01:55:28 zubov Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
@@ -177,6 +177,10 @@ public class SlaveImpl
 
 	private Vector _transfers = new Vector();
 	private boolean _uploadChecksums;
+	
+	public LinkedRemoteFile getSlaveRoot() throws IOException {
+			return SlaveImpl.getDefaultRoot(_roots);
+	}
 
 	public SlaveImpl(Properties cfg) throws RemoteException {
 		super(0);
@@ -208,8 +212,7 @@ public class SlaveImpl
 				Level.INFO,
 				"Registering with master and sending filelist");
 
-			LinkedRemoteFile slaveroot = SlaveImpl.getDefaultRoot(_roots);
-			manager.addSlave(_name, this, slaveroot);
+			manager.addSlave(_name, this);
 
 			logger.log(
 				Level.INFO,

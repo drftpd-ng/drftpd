@@ -21,12 +21,11 @@ package net.sf.drftpd.master;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.Slave;
 
 /**
- * @version $Id: SlaveManager.java,v 1.12 2004/02/10 00:03:06 mog Exp $
+ * @version $Id: SlaveManager.java,v 1.13 2004/03/15 01:55:25 zubov Exp $
  */
 public interface SlaveManager extends Remote {
-    public void addSlave(String slavename, Slave slave, LinkedRemoteFile slaveroot) throws RemoteException;
+    public void addSlave(String slavename, Slave slave) throws RemoteException;
 }

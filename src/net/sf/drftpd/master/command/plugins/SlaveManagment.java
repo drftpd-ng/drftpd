@@ -17,10 +17,12 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
 import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.RemoteSlave;
@@ -32,7 +34,7 @@ import net.sf.drftpd.master.command.UnhandledCommandException;
 /**
  * @author mog
  *
- * @version $Id: SlaveManagment.java,v 1.4 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: SlaveManagment.java,v 1.5 2004/03/15 01:55:26 zubov Exp $
  */
 public class SlaveManagment implements CommandHandler {
 	public void unload() {}
@@ -91,6 +93,37 @@ public class SlaveManagment implements CommandHandler {
 		}
 		return response;
 	}
+	
+	private FtpReply doSITE_REMERGE(BaseFtpConnection conn) {
+		if (!conn.getUserNull().isAdmin()) {
+			return FtpReply.RESPONSE_530_ACCESS_DENIED;
+		}
+		if (!conn.getRequest().hasArgument()) {
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+		}
+		RemoteSlave rslave;
+		try {
+			rslave =
+				conn.getConnectionManager().getSlaveManager().getSlave(
+					conn.getRequest().getArgument());
+		} catch (ObjectNotFoundException e) {
+			return new FtpReply(200, "No such slave");
+		}
+		if (!rslave.isAvailable()) {
+			return new FtpReply(200, "Slave is offline");
+		}
+		try {
+			conn.getConnectionManager().getSlaveManager().remerge(rslave);
+		} catch (IOException e) {
+			rslave.setOffline("IOException during remerge()");
+			return new FtpReply(200, "IOException during remerge()");			
+		} catch (SlaveUnavailableException e) {
+			rslave.setOffline("Slave Unavailable during remerge()");
+			return new FtpReply(200, "Slave Unavailable during remerge()");
+		}
+		return FtpReply.RESPONSE_200_COMMAND_OK;
+
+	}
 
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {
@@ -101,6 +134,8 @@ public class SlaveManagment implements CommandHandler {
 			return doSITE_KICKSLAVE(conn);
 		if ("SITE SLAVES".equals(cmd))
 			return doSITE_SLAVES(conn);
+		if ("SITE REMERGE".equals(cmd))
+			return doSITE_REMERGE(conn);
 		throw UnhandledCommandException.create(
 			SlaveManagment.class,
 			conn.getRequest());

@@ -23,11 +23,12 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import net.sf.drftpd.SFVFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * Slave interface, this interface is used to initate transfers to and from remote slaves.
  * @author Morgan Christiansson <mog@linux.nu>
- * @version $Id: Slave.java,v 1.27 2004/02/10 00:03:31 mog Exp $
+ * @version $Id: Slave.java,v 1.28 2004/03/15 01:55:28 zubov Exp $
  */
 public interface Slave extends Remote {
 	public long checkSum(
@@ -59,4 +60,8 @@ public interface Slave extends Remote {
 	 * Delete files.
 	 */
 	public void delete(String path) throws RemoteException, IOException;
+	/**
+	 * Builds a new updated slaveroot
+	 */
+	public LinkedRemoteFile getSlaveRoot() throws IOException;
 }

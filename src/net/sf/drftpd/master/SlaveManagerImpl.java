@@ -65,7 +65,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.74 2004/03/11 22:51:10 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.75 2004/03/15 01:55:25 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -303,11 +303,22 @@ public class SlaveManagerImpl
 			}
 		});
 	}
+	
+	public void remerge(RemoteSlave rslave) throws IOException, SlaveUnavailableException {
+		LinkedRemoteFile slaveroot;
+		slaveroot = rslave.getSlaveRoot();
+		try {
+			_root.remerge(slaveroot, rslave);
+		} catch (RuntimeException t) {
+			logger.log(Level.FATAL, "", t);
+			rslave.setOffline(t.getMessage());
+			throw t;
+		}
+	}
 
 	public void addSlave(
 		String slaveName,
-		Slave slave,
-		LinkedRemoteFile slaveroot)
+		Slave slave)
 		throws RemoteException {
 
 		slave.ping();
@@ -337,18 +348,18 @@ public class SlaveManagerImpl
 		}
 		logger.debug("About to remerge(), slave is " + rslave);
 		try {
-			_root.remerge(slaveroot, rslave);
-		} catch (RuntimeException t) {
-			logger.log(Level.FATAL, "", t);
-			rslave.setOffline(t.getMessage());
-			throw t;
+			remerge(rslave);
+		} catch (IOException e) {
+			rslave.setOffline("IOException during remerge()");
+			return;
+		} catch (SlaveUnavailableException e) {
+			rslave.setOffline("Slave Unavailable during remerge()");
+			return;
 		}
 
 		System.out.println(
 			"SlaveManager.addSlave(): "
-				+ rslave.getName()
-				+ " remoteroot: "
-				+ slaveroot);
+				+ rslave.getName());
 
 		try {
 			System.out.println(

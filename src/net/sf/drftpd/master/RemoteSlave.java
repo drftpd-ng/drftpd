@@ -17,6 +17,7 @@
  */
 package net.sf.drftpd.master;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
@@ -27,6 +28,7 @@ import java.util.Iterator;
 
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.SlaveEvent;
+import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.Transfer;
@@ -35,7 +37,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.29 2004/03/05 11:24:09 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.30 2004/03/15 01:55:25 zubov Exp $
  */
 public class RemoteSlave implements Comparable {
 
@@ -258,6 +260,13 @@ public class RemoteSlave implements Comparable {
 		} else {
 			throw new IllegalArgumentException();
 		}
+	}
+	
+	/**
+	 * Returns an updated slaveRoot
+	 */
+	public LinkedRemoteFile getSlaveRoot() throws IOException, SlaveUnavailableException {
+		return getSlave().getSlaveRoot();
 	}
 
 	public void setLastDirection(char direction, long l) {
