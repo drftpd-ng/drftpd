@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.86 2003/11/25 20:43:04 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.87 2003/12/01 04:43:44 mog Exp $
  */
 
 public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comparable {
@@ -1017,8 +1017,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 				try {
 					totransfer.receiveFile(
 						getParentFile().getPath(),
-						getName(),
-						0L);
+						'I',
+						getName(), 0L);
 				} catch (RemoteException e) {
 					torslave.handleRemoteException(e);
 					logger.warn(EMPTY_STRING, e);

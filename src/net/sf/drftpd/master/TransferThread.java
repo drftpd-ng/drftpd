@@ -48,7 +48,7 @@ public class TransferThread {
 		}
 		public void run() {
 			try {
-				dstxfer.receiveFile(file.getParent(), file.getName(), 0L);
+				dstxfer.receiveFile(file.getParent(), 'I', file.getName(), 0L);
 			} catch (Throwable e) {
 				this.e = e;
 			}

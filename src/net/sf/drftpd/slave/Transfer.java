@@ -6,7 +6,7 @@ import java.rmi.RemoteException;
 
 /**
  * @author mog
- * @version $Id: Transfer.java,v 1.19 2003/11/25 20:43:04 mog Exp $
+ * @version $Id: Transfer.java,v 1.20 2003/12/01 04:43:44 mog Exp $
  */
 public interface Transfer extends Remote {
 	public static final char TRANSFER_RECEIVING_UPLOAD='R';
@@ -33,6 +33,6 @@ public interface Transfer extends Remote {
 	 * Returns how fast the transfer is going in bytes per second.
 	 */
 	public int getXferSpeed() throws RemoteException;
-	public TransferStatus receiveFile(String dirname, String filename, long offset) throws RemoteException, IOException;
+	public TransferStatus receiveFile(String dirname, char mode, String filename, long offset) throws RemoteException, IOException;
 	public TransferStatus sendFile(String path, char mode, long resumePosition, boolean checksum) throws RemoteException, IOException;
 }

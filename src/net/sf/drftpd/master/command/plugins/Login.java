@@ -7,6 +7,7 @@
 package net.sf.drftpd.master.command.plugins;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -82,6 +83,7 @@ public class Login implements CommandHandler, Cloneable {
 		//		if(connManager.isShutdown() && !conn.getUser().isAdmin()) {
 		//			out.print(new FtpResponse(421, ))
 		//		}
+		Collection masks = newUser.getIpMasks();
 		String ident;
 		if (conn.getConnectionManager().useIdent()) {
 			Ident id = new Ident(conn.getControlSocket());
@@ -99,10 +101,11 @@ public class Login implements CommandHandler, Cloneable {
 		else {
 			ident = "";
 		}
-		String masks[] =
+		String masks[][] =
 			{
-				ident + "@" + conn.getClientAddress().getHostAddress(),
-				ident + "@" + conn.getClientAddress().getHostName()};
+				new String[] {ident, conn.getClientAddress().getHostAddress()},
+				new String[] {ident, conn.getClientAddress().getHostName()}
+			};
 
 		if (!newUser.checkIP(masks, conn.getConnectionManager().useIdent())) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;

@@ -2,9 +2,9 @@ package net.sf.drftpd.master.usermanager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.event.UserEvent;
@@ -22,7 +22,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.26 2003/11/26 09:53:30 zubov Exp $
+ * @version $Id: AbstractUser.java,v 1.27 2003/12/01 04:43:44 mog Exp $
  */
 public abstract class AbstractUser implements User {
 	private static Logger logger = Logger.getLogger(AbstractUser.class);
@@ -227,7 +227,7 @@ public abstract class AbstractUser implements User {
 		return _group;
 	}
 
-	public Collection getGroups() {
+	public List getGroups() {
 		return groups;
 	}
 
@@ -243,7 +243,7 @@ public abstract class AbstractUser implements User {
 		return idleTime;
 	}
 
-	public Collection getIpMasks() {
+	public List getIpMasks() {
 		return ipMasks;
 	}
 

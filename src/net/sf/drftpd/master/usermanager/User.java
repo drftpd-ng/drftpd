@@ -6,14 +6,14 @@
  */
 package net.sf.drftpd.master.usermanager;
 
-import java.util.Collection;
+import java.util.List;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.ObjectExistsException;
 
 /**
  * @author mog
- * @version $Id: User.java,v 1.25 2003/11/26 09:53:30 zubov Exp $
+ * @version $Id: User.java,v 1.26 2003/12/01 04:43:44 mog Exp $
  */
 public interface User {
 
@@ -112,7 +112,7 @@ public interface User {
 	public int getDownloadedSecondsWeek();
 	public short getGroupLeechSlots();
 	public String getGroupName();
-	public Collection getGroups();
+	public List getGroups();
 
 	public short getGroupSlots();
 	/**
@@ -125,7 +125,7 @@ public interface User {
 	 * @return long
 	 */
 	public int getIdleTime();
-	public Collection getIpMasks();
+	public List getIpMasks();
 	/**
 	 * Get last access time
 	 */

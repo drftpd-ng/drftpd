@@ -303,7 +303,13 @@ public class Nuke implements CommandHandler {
 		}
 
 		String toName = st.nextToken();
-		String toPath = conn.getCurrentDirectory().getPath() + "/" + toName;
+		String toPath;
+		{
+			StringBuffer toPath2 = new StringBuffer(conn.getCurrentDirectory().getPath());
+			if(toPath2.length() != 1) toPath2.append("/"); // isn't /
+			toPath2.append(toName);
+			toPath = toPath2.toString();
+		}
 		String toDir = conn.getCurrentDirectory().getPath();
 		String nukeName = "[NUKED]-" + toName;
 

@@ -13,7 +13,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- * @version $Id: SFVFile.java,v 1.19 2003/11/25 19:47:52 mog Exp $
+ * @version $Id: SFVFile.java,v 1.20 2003/12/01 04:43:43 mog Exp $
  */
 public class SFVFile implements Serializable {
 
@@ -32,6 +32,10 @@ public class SFVFile implements Serializable {
 
 		public int getOffline() {
 			return _offline;
+		}
+
+		public boolean isFinished() {
+			return _missing == 0;
 		}
 	}
 

@@ -8,11 +8,7 @@ import java.util.Collection;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
+ * @version $Id: GlobRMIServerSocketFactory.java,v 1.2 2003/12/01 04:43:44 mog Exp $
  */
 public class GlobRMIServerSocketFactory implements RMIServerSocketFactory {
 	private Collection rslaves;

@@ -198,10 +198,6 @@ public class LIST implements CommandHandler {
 				printNList(listFiles, detailOption, os);
 				//VirtualDirectory.printNList(listFiles, detailOption, dataChannel);
 			}
-		} catch (IOException ex) {
-			logger.warn("from master", ex);
-			return new FtpReply(450, ex.getMessage());
-		} finally {
 
 			FtpReply response =
 				(FtpReply) FtpReply
@@ -221,9 +217,14 @@ public class LIST implements CommandHandler {
 				}
 			} catch (IOException e1) {
 				logger.error("", e1);
-				return null;
+				//return null;
 			}
+
+		} catch (IOException ex) {
+			logger.warn("from master", ex);
+			return new FtpReply(450, ex.getMessage());
 		}
+		
 		//redo connection handling
 		//conn.reset();
 

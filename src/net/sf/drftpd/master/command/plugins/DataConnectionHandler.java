@@ -9,7 +9,6 @@ package net.sf.drftpd.master.command.plugins;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -22,7 +21,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -30,14 +28,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.net.ServerSocketFactory;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
-import net.sf.drftpd.AsciiOutputStream;
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.Checksum;
 import net.sf.drftpd.NoAvailableSlaveException;
@@ -64,7 +60,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.13 2003/11/25 20:43:04 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.14 2003/12/01 04:43:44 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -540,12 +536,14 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 * ''zipscript?? renames bad uploads to .bad, how do we handle this with resumes?
 	 */
 	//TODO add APPE support
-	private FtpReply transfer(BaseFtpConnection conn) {
+	private FtpReply transfer(BaseFtpConnection conn) throws UnhandledCommandException {
 		FtpRequest request = conn.getRequest();
 		char direction = conn.getDirection();
 		boolean isStor = conn.getRequest().getCommand().equals("STOR");
 		boolean isRetr = conn.getRequest().getCommand().equals("RETR");
 		boolean isAppe = conn.getRequest().getCommand().equals("APPE");
+		boolean isStou = conn.getRequest().getCommand().equals("STOU");
+		if(isAppe || isStou) throw UnhandledCommandException.create(DataConnectionHandler.class, conn.getRequest());
 		// set state variables
 		conn.resetState();
 
@@ -733,8 +731,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			} else if (isStor) {
 				_transfer.receiveFile(
 					targetDir.getPath(),
-					targetFileName,
-					_resumePosition);
+					'I',
+					targetFileName, _resumePosition);
 			}
 			status = _transfer.getStatus();
 		} catch (RemoteException ex) {
@@ -1214,28 +1212,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		SSLSocket s2;
 		SSLContext ctx;
 
-		TrustManager[] myTM =
-			(
-				new TrustManager[] {
-					new X509TrustManager() {
-						public X509Certificate[] getAcceptedIssuers() {
-						return null;
-				}
-
-				public void checkServerTrusted(
-					X509Certificate ax509certificate[],
-					String authType) {
-					return;
-				}
-
-				public void checkClientTrusted(
-					X509Certificate ax509certificate[],
-					String authType) {
-					return;
-				}
-			}
-		});
-
 		try {
 
 			ctx = SSLContext.getInstance("TLS");
@@ -1340,18 +1316,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private InetAddress getInetAddress() {
 		return _address;
 	}
-	/**
-	 * Get output stream. Returns <code>ftpserver.util.AsciiOutputStream</code>
-	 * if the transfer type is ASCII.
-	 * @deprecated unused, this is in slave anyways.
-	 */
-	private OutputStream getOutputStream(OutputStream os) {
-		//os = IoUtils.getBufferedOutputStream(os);
-		if (type == 'A') {
-			os = new AsciiOutputStream(os);
-		}
-		return os;
-	}
+
 	/**
 	 * Get port number.
 	 * return miPort
@@ -1403,8 +1368,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		try {
 			conn.reset();
 			_address = conn.getControlSocket().getLocalAddress();
-			_ServSoc = new ServerSocket(0, 1, _address);
-			//mServSoc = new ServerSocket(0, 1);
+			
+			_ServSoc = ServerSocketFactory.getDefault().createServerSocket(0, 1, _address);
 			_ServSoc.setSoTimeout(60000);
 			_port = _ServSoc.getLocalPort();
 			mbPasv = true;

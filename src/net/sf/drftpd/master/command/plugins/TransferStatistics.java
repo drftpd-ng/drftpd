@@ -51,12 +51,13 @@ public class TransferStatistics implements CommandHandler {
 				st = new StringTokenizer(request.getArgument());
 			}
 
-			Permission perm = null;
-			perm = new Permission(FtpConfig.makeUsers(st));
-			for (Iterator iter = users.iterator(); iter.hasNext();) {
-				User user = (User) iter.next();
-				if (!perm.check(user))
-					iter.remove();
+			if (st.hasMoreTokens()) {
+				Permission perm = new Permission(FtpConfig.makeUsers(st));
+				for (Iterator iter = users.iterator(); iter.hasNext();) {
+					User user = (User) iter.next();
+					if (!perm.check(user))
+						iter.remove();
+				}
 			}
 		}
 		final String command = request.getCommand();

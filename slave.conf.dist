@@ -12,7 +12,7 @@ slave.root.1=site
 #slave.root.2=d:/
 
 
-master.host=you_didnt_edit_drftpd.conf
+master.host=ktk.mine.nu
 master.bindname=slavemanager
 #port to connect to the master
 master.bindport=1099

@@ -29,6 +29,7 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.Nukee;
 import net.sf.drftpd.SFVFile;
+import net.sf.drftpd.SFVFile.SFVStatus;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
@@ -70,7 +71,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.65 2003/11/17 20:13:09 mog Exp $
+ * @version $Id: IRCListener.java,v 1.66 2003/12/01 04:43:43 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -260,12 +261,13 @@ public class IRCListener implements FtpListener, Observer {
 		if (!sfvfile.hasFile(direvent.getDirectory().getName()))
 			return;
 
-		int halfway = (int) Math.ceil((double) sfvfile.size() / 2);
+		int halfway = (int) Math.floor((double) sfvfile.size() / 2);
 		///// start ///// start ////
 
 		//check if new racer
 		String username = direvent.getUser().getUsername();
-		if (sfvfile.finishedFiles() != 1) {
+		SFVStatus sfvstatus = sfvfile.getStatus();
+		if (sfvfile.size() - sfvstatus.getMissing() != 1) {
 			for (Iterator iter = sfvfile.getFiles().iterator();
 				iter.hasNext();
 				) {
@@ -293,7 +295,7 @@ public class IRCListener implements FtpListener, Observer {
 					env.add(
 						"filesleft",
 						Integer.toString(
-							sfvfile.size() - sfvfile.finishedFiles()));
+							sfvstatus.getMissing()));
 
 					say(SimplePrintf.jprintf(format, env));
 				}
@@ -301,7 +303,7 @@ public class IRCListener implements FtpListener, Observer {
 		}
 
 		//COMPLETE
-		if (sfvfile.finishedFiles() == sfvfile.size()) {
+		if (sfvstatus.isFinished()) {
 			Collection racers = topFileUploaders(sfvfile.getFiles());
 			Ret ret = getPropertyFileSuffix("store.complete", dir);
 			String format = ret.format;
@@ -361,7 +363,7 @@ public class IRCListener implements FtpListener, Observer {
 				say(SimplePrintf.jprintf(raceformat, raceenv));
 			}
 			//HALFWAY
-		} else if (sfvfile.size() >= 4 && sfvfile.finishedFiles() == halfway) {
+		} else if (sfvfile.size() >= 4 && sfvstatus.getMissing() == halfway) {
 			Collection uploaders = topFileUploaders(sfvfile.getFiles());
 			//			ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
 			UploaderPosition stat =
@@ -373,7 +375,7 @@ public class IRCListener implements FtpListener, Observer {
 			env.add(
 				"leadpercent",
 				Integer.toString(stat.getFiles() * 100 / sfvfile.size()) + "%");
-			env.add("filesleft", Integer.toString(sfvfile.filesLeft()));
+			env.add("filesleft", Integer.toString(sfvstatus.getMissing()));
 			User leaduser;
 			try {
 				leaduser =

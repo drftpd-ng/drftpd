@@ -14,11 +14,11 @@ import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 
-import net.sf.drftpd.AsciiOutputStream;
+import net.sf.drftpd.util.AddAsciiOutputStream;
 
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.32 2003/11/25 20:43:04 mog Exp $
+ * @version $Id: TransferImpl.java,v 1.33 2003/12/01 04:43:44 mog Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private boolean _abort = false;
@@ -151,13 +151,12 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		if (_in == null) {
 			_in = _sock.getInputStream();
 		} else if (_out == null) {
-			if (_mode == 'A') {
-				_out = new AsciiOutputStream(_sock.getOutputStream());
-			} else {
-				_out = _sock.getOutputStream();
-			}
+			_out = _sock.getOutputStream();
 		} else {
 			throw new IllegalStateException("neither in or out was null");
+		}
+		if (_mode == 'A') {
+			_out = new AddAsciiOutputStream(_out);
 		}
 
 		_slave.addTransfer(this);
@@ -181,11 +180,16 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 			_out = null;
 			_conn = null;
 		}
-		if(_abort) throw new IOException("Transfer was aborted");
+		if (_abort)
+			throw new IOException("Transfer was aborted");
 	}
 
 	//TODO char mode for uploads?
-	public TransferStatus receiveFile(String dirname, String filename, long offset)
+	public TransferStatus receiveFile(
+		String dirname,
+		char mode,
+		String filename,
+		long offset)
 		throws IOException {
 		_direction = TRANSFER_RECEIVING_UPLOAD;
 		_checksum = new CRC32();
