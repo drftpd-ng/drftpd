@@ -1435,9 +1435,9 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 				if (file.isEmpty() && !wasEmpty) {
 					file.delete();
 				}
-			} else {
+			} else if (file.isFile()) {
 				file.unmergeFile(rslave);
-			}
+			} // else isLink(), we don't remove links
 		}
 	}
 
