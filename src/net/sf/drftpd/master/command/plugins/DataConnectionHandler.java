@@ -6,6 +6,7 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -15,11 +16,26 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import net.sf.drftpd.AsciiOutputStream;
 import net.sf.drftpd.Bytes;
@@ -48,7 +64,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.11 2003/11/19 00:20:52 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.12 2003/11/25 19:47:52 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -521,7 +537,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 *				  532, 450, 452, 553
 	 *				  500, 501, 421, 530
 	 * 
-	 * ''zipscript´´ renames bad uploads to .bad, how do we handle this with resumes?
+	 * ''zipscript?? renames bad uploads to .bad, how do we handle this with resumes?
 	 */
 
 	private FtpReply transfer(BaseFtpConnection conn) {
@@ -1158,17 +1174,138 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			return doSYST(conn);
 		if ("TYPE".equals(cmd))
 			return doTYPE(conn);
+		if ("AUTH".equals(cmd))
+			return doAUTH(conn);
+		if ("PROT".equals(cmd))
+			return doPROT(conn);
+		if ("PBSZ".equals(cmd))
+			return doPBSZ(conn);
 		throw UnhandledCommandException.create(
 			DataConnectionHandler.class,
 			conn.getRequest());
 	}
 
+	private FtpReply doPBSZ(BaseFtpConnection conn)
+		throws UnhandledCommandException {
+		//TODO implement PBSZ
+		throw UnhandledCommandException.create(
+			DataConnectionHandler.class,
+			conn.getRequest());
+	}
+
+	private FtpReply doPROT(BaseFtpConnection conn)
+		throws UnhandledCommandException {
+		//TODO implement PROT
+		throw UnhandledCommandException.create(
+			DataConnectionHandler.class,
+			conn.getRequest());
+	}
+
+	//TODO error handling for AUTH cmd
+	private FtpReply doAUTH(BaseFtpConnection conn) {
+		Socket s = conn.getControlSocket();
+		//reply success
+		conn.getControlWriter().write(
+			new FtpReply(
+				234,
+				conn.getRequest().getCommandLine() + " successfull")
+				.toString());
+		conn.getControlWriter().flush();
+		SSLSocket s2;
+		SSLContext ctx;
+
+		TrustManager[] myTM =
+			(
+				new TrustManager[] {
+					new X509TrustManager() {
+						public X509Certificate[] getAcceptedIssuers() {
+						return null;
+				}
+
+				public void checkServerTrusted(
+					X509Certificate ax509certificate[],
+					String authType) {
+					return;
+				}
+
+				public void checkClientTrusted(
+					X509Certificate ax509certificate[],
+					String authType) {
+					return;
+				}
+			}
+		});
+
+		try {
+
+			ctx = SSLContext.getInstance("TLS");
+
+			KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+
+			KeyStore ks = KeyStore.getInstance("JKS");
+			ks.load(new FileInputStream("drftpd.key"), "drftpd".toCharArray());
+
+			kmf.init(ks, "drftpd".toCharArray());
+
+			ctx.init(kmf.getKeyManagers(), null, null);
+			//SecureRandom.getInstance("SHA1PRNG"));
+		} catch (KeyStoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} catch (UnrecoverableKeyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} catch (CertificateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} catch (KeyManagementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+
+		try {
+			s2 =
+				(SSLSocket)
+					((SSLSocketFactory) ctx.getSocketFactory()).createSocket(
+					s,
+					s.getInetAddress().getHostAddress(),
+					s.getPort(),
+					true);
+			s2.setUseClientMode(false);
+			logger.debug(Arrays.asList(s2.getEnabledCipherSuites()).toString());
+			s2.startHandshake();
+		} catch (IOException e) {
+			logger.warn("", e);
+			return new FtpReply(550, e.getMessage());
+		}
+
+		try {
+			conn.setControlSocket(s2);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		return null;
+	}
+
 	/**
 	 * Get the data socket. In case of error returns null.
 	 * 
-	 * Used by LIST and NLST.
+	 * Used by LIST and NLST and MLST.
 	 */
-	Socket getDataSocket() throws IOException {
+	public Socket getDataSocket() throws IOException {
 
 		// get socket depending on the selection
 		if (mbPort) {
@@ -1195,7 +1332,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	}
 
 	public String[] getFeatReplies() {
-		return new String[] { "PRET" };
+		return new String[] { "PRET", "AUTH SSL" };
 	}
 	/**
 	 * Get client address from PORT command.

@@ -9,17 +9,17 @@ import java.util.List;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SFVFile;
+import net.sf.drftpd.SFVFile.SFVStatus;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.3 2003/11/19 00:20:54 mog Exp $
+ * @version $Id: ListUtils.java,v 1.4 2003/11/25 19:47:52 mog Exp $
  */
 public class ListUtils {
 
@@ -27,7 +27,6 @@ public class ListUtils {
 
 	public static String PADDING = "          ";
 
-	//TODO MOVE ME
 	public static boolean isLegalFileName(String fileName) {
 		assert fileName != null;
 		return fileName.indexOf("/") == -1
@@ -42,7 +41,6 @@ public class ListUtils {
 		return list(directoryFile, conn, null);
 	}
 
-	//TODO -OFFLINE and -MISSING files
 	public static List list(
 		LinkedRemoteFile directoryFile,
 		BaseFtpConnection conn,
@@ -55,7 +53,10 @@ public class ListUtils {
 		}
 		try {
 			SFVFile sfvfile = directoryFile.lookupSFVFile();
-			int good = sfvfile.finishedFiles();
+			SFVStatus sfvstatus = sfvfile.getStatus();
+			int good = sfvfile.size() - sfvstatus.getMissing();
+			int offline = sfvstatus.getOffline();
+			
 			if (sfvfile.size() != 0) {
 				String statusDirName =
 					"[ "
@@ -64,8 +65,14 @@ public class ListUtils {
 						+ sfvfile.size()
 						+ " = "
 						+ (good * 100) / sfvfile.size()
-						+ "% complete]";
-				//				directoryFile,
+						+ "% complete | "
+						+ sfvstatus.getOffline()
+						+ "/"
+						+ sfvfile.size()
+						+ " = "
+						+ (sfvstatus.getOffline() * 100) / sfvfile.size()
+						+ " ]";
+
 				listFiles.add(
 					new StaticRemoteFile(
 						Collections.EMPTY_LIST,
@@ -76,15 +83,15 @@ public class ListUtils {
 						System.currentTimeMillis()));
 			}
 		} catch (NoAvailableSlaveException e) {
-			logger.log(Level.WARN, "No available slaves for SFV file");
+			logger.warn("No available slaves for SFV file", e);
 		} catch (FileNotFoundException e) {
 			// no sfv file in directory - just skip it
 		} catch (IOException e) {
-			logger.log(Level.WARN, "IO error loading SFV file", e);
+			logger.warn("IO error loading SFV file", e);
 		} catch (Throwable e) {
 			if (response != null)
 				response.addComment("zipscript error: " + e.getMessage());
-			logger.log(Level.WARN, "zipscript error", e);
+			logger.warn("zipscript error", e);
 		}
 		return listFiles;
 	}

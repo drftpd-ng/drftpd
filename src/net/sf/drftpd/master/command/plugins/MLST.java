@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: MLST.java,v 1.5 2003/11/19 00:20:52 mog Exp $
+ * @version $Id: MLST.java,v 1.6 2003/11/25 19:47:52 mog Exp $
  */
 public class MLST implements CommandHandler {
 
@@ -88,8 +88,9 @@ public class MLST implements CommandHandler {
 				}
 				out2.close();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				logger.warn("", e1);
+				//425 Can't open data connection
+				return new FtpReply(425, e1.getMessage());
 			}
 			
 			return FtpReply.RESPONSE_226_CLOSING_DATA_CONNECTION;

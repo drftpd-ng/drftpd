@@ -1,3 +1,4 @@
+AUTH=net.sf.drftpd.master.command.plugins.DataConnectionHandler
 MODE=net.sf.drftpd.master.command.plugins.DataConnectionHandler
 PASV=net.sf.drftpd.master.command.plugins.DataConnectionHandler
 PORT=net.sf.drftpd.master.command.plugins.DataConnectionHandler

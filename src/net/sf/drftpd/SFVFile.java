@@ -13,21 +13,37 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
+ * @version $Id: SFVFile.java,v 1.19 2003/11/25 19:47:52 mog Exp $
  */
 public class SFVFile implements Serializable {
+
+	public class SFVStatus {
+		private int _missing;
+		private int _offline;
+
+		public SFVStatus(int offline, int missing) {
+			_offline = offline;
+			_missing = missing;
+		}
+
+		public int getMissing() {
+			return _missing;
+		}
+
+		public int getOffline() {
+			return _offline;
+		}
+	}
+
 	static final long serialVersionUID = 5381510163578487722L;
 
-	private transient LinkedRemoteFile companion;
+	private transient LinkedRemoteFile _companion;
+	
 	/**
-	 * String fileName as key
-	 * Long checkSum as value
+	 * String fileName as key.
+	 * Long checkSum as value.
 	 */
-	Map entries = new Hashtable();
+	private Map _entries = new Hashtable();
 	/**
 	 * Constructor for SFVFile.
 	 */
@@ -50,44 +66,60 @@ public class SFVFile implements Serializable {
 			} catch (NumberFormatException e) {
 				continue;
 			}
-			entries.put(fileName, checkSum);
+			_entries.put(fileName, checkSum);
 		}
 	}
 
-	public Map getEntries() {
-		return entries;
+	/**
+	 * @deprecated use getStatus().getMissing()
+	 */
+	public int filesLeft() {
+		return getStatus().getMissing();
+	}
+
+	/**
+	 * @return the number of files in the dir that are in the .sfv and aren't 0 bytes
+	 * @deprecated use getStatus()
+	 */
+	public int finishedFiles() {
+		return size() - getStatus().getMissing();
+		//		int good = 0;
+		//		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+		//			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+		//			if (file.length() != 0)
+		//				good++;
+		//		}
+		//		return good;
+	}
+
+	public SFVStatus getStatus() {
+		int good = 0;
+		int offline = 0;
+		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			if (file.length() != 0)
+				good++;
+			if (!file.isAvailable())
+				offline++;
+		}
+		return new SFVStatus(size() - good, offline);
 	}
 
 	public long getChecksum(String fileName) throws ObjectNotFoundException {
-		Long checksum = (Long) entries.get(fileName);
+		Long checksum = (Long) _entries.get(fileName);
 		if (checksum == null)
 			throw new ObjectNotFoundException();
 		return checksum.longValue();
 	}
 
-	public void setCompanion(LinkedRemoteFile companion) {
-		if (this.companion != null)
-			throw new IllegalStateException("Can't overwrite companion");
-		this.companion = companion;
-	}
-
-	/**
-	 * @return the number of files in the dir that are in the .sfv and aren't 0 bytes
-	 */
-	public int finishedFiles() {
-		int good = 0;
-		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			if (file.length() != 0)
-				good++;
-		}
-		return good;
+	public Map getEntries() {
+		return _entries;
 	}
 
 	public Map getEntriesFiles() {
 		LinkedRemoteFile dir;
 		try {
-			dir = companion.getParentFile();
+			dir = _companion.getParentFile();
 		} catch (FileNotFoundException e) {
 			throw new FatalException(e);
 		}
@@ -114,16 +146,6 @@ public class SFVFile implements Serializable {
 	public Collection getFiles() {
 		return getEntriesFiles().keySet();
 	}
-	public boolean hasFile(String name) {
-		return getEntries().containsKey(name);
-	}
-
-	/**
-	 * @return Number of file entries in the .sfv
-	 */
-	public int size() {
-		return entries.size();
-	}
 
 	public long getTotalBytes() {
 		long totalBytes = 0;
@@ -141,14 +163,40 @@ public class SFVFile implements Serializable {
 		return totalXfertime;
 	}
 
-	public int filesLeft() {
-		return size() - finishedFiles();
-	}
-
 	public long getXferspeed() {
 		if (getTotalXfertime() == 0)
 			return 0;
 		return getTotalBytes() / (getTotalXfertime() / 1000);
 	}
+	public boolean hasFile(String name) {
+		return getEntries().containsKey(name);
+	}
 
+	/**
+	 * @deprecated use getStatus().getOffline()
+	 */
+	public int offlineFiles() {
+		return getStatus().getOffline();
+		//		int offlineFiles = 0;
+		//		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+		//			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+		//			if (!file.isAvailable()) {
+		//				offlineFiles++;
+		//			}
+		//		}
+		//		return offlineFiles;
+	}
+
+	public void setCompanion(LinkedRemoteFile companion) {
+		if (_companion != null)
+			throw new IllegalStateException("Can't overwrite companion");
+		_companion = companion;
+	}
+
+	/**
+	 * @return Number of file entries in the .sfv
+	 */
+	public int size() {
+		return _entries.size();
+	}
 }
