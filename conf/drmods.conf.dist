@@ -36,8 +36,13 @@ new.dateformat=MM.dd.yy hh:mma
 # net.drmods.plugins.irc.imdb.IMDBParser
 #Specify what will be filtered from the release names (regex allowed)
 #i.e. Shrek.2.2004.NTSC.COMPLETE.iNTERNAL.DVDR-GRP -> Shrek 2
-imdb.filter=dvdrip;rip;divx;xvid;int;internal;dvd;svcd;vcd;complete;ntsc;pal;dvdr;ita;italian;eng;dvdscr;scr;ts;proper;screener;AC3;19[0-9][0-9];20[0-9][0-9]
+imdb.filter=dvdrip;rip;divx;xvid;int;internal;dvd;svcd;vcd;complete;ntsc;pal;dvdr;ita;italian;eng;dvdscr;scr;ts;proper;screener;fs;ws;AC3;19[0-9][0-9];20[0-9][0-9]
 #specify which sections to fetch imdb data for when a new dir is created (separated by ;)
 imdb.sections=VCD;SVCD;DVDR;XVID
 #specify folder names to exclude from fetching imdb data
 imdb.exclude=cd1;cd2;cd3;cd4;cd5;disk1;disk2;disk3;disk4;disk5;sample;covers;cover
+
+# net.drmods.plugins.irc.Find
+# specify path permissions to use for !find
+find.perms.1=/groups/* !*
+find.perms.2=/pre/* !*

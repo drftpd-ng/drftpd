@@ -17,15 +17,22 @@
  */
 package net.drmods.plugins.irc;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
+import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
+import org.apache.oro.text.GlobCompiler;
 import org.drftpd.GlobalContext;
+import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sitebot.IRCCommand;
@@ -45,13 +52,47 @@ public class Find extends IRCCommand {
     
     public Find(GlobalContext gctx) {
 		super(gctx);
-    }
+		loadConf("conf/drmods.conf");
+	}
+
+	public void loadConf(String confFile) {
+        Properties cfg = new Properties();
+        FileInputStream file = null;
+        try {
+            file = new FileInputStream(confFile);
+            cfg.load(file);
+            String perm;
+            for (int i=1;; i++) {
+                perm  = cfg.getProperty("find.perms." + i);
+                if (perm == null)
+                    break;
+                StringTokenizer st = new StringTokenizer(perm);
+                
+                getGlobalContext().getConfig().addPathPermission("ircfind", 
+                       new GlobPathPermission(new GlobCompiler().compile(st.nextToken()), 
+                               FtpConfig.makeUsers(st)));
+                
+            }
+        } catch (Exception e) {
+            logger.error("Error reading " + confFile,e);
+            throw new RuntimeException(e.getMessage());
+        } finally {
+        	try {
+        		file.close();
+        	} catch (IOException e) {
+        	}
+        }
+	}
     
     private void findFile(LinkedRemoteFileInterface dir, ArrayList<String> results,
             Collection searchstrings, User user, boolean files, boolean dirs) {
             
+        if (!getGlobalContext().getConfig().checkPathPermission("ircfind", user, dir, true))
+            return;
+        
         if (!getGlobalContext().getConfig().checkPathPermission("privpath", user, dir, true))
             return;
+
         for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
             if (results.size() >= 5)
