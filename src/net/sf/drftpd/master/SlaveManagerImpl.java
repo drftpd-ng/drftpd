@@ -216,33 +216,18 @@ public class SlaveManagerImpl
 		List rslaves,
 		ConnectionManager cm) throws FileNotFoundException, IOException, CorruptFileListException {
 		/** load XML file database **/
-//		LinkedRemoteFile root;
-//		try {
-//			Document doc = new SAXBuilder().build(new FileReader("files.xml"));
-//			System.out.flush();
-//			JDOMRemoteFile xmlroot =
-//				new JDOMRemoteFile(doc.getRootElement(), rslaves);
-//			root = new LinkedRemoteFile(xmlroot, cm == null ? null : cm.getConfig());
-//		} catch (FileNotFoundException ex) {
-//			logger.info("files.xml not found, new file will be created.");
-//			root = new LinkedRemoteFile(cm == null ? null : cm.getConfig());
-//		} catch (Exception ex) {
-//			logger.log(Level.FATAL, "Error loading \"files.xml\"", ex);
-//			throw new FatalException(ex);
-//		}
-//		return root;
 		/** load MLST file database **/
-		return MLSTSerialize.unserialize(cm.getConfig(), new BufferedReader(new FileReader("files.mlst")), rslaves);
+		//return MLSTSerialize.unserialize(cm.getConfig(), new BufferedReader(new FileReader("files.mlst")), rslaves);
+		return loadMLSTFileDatabase(rslaves, cm);
 		//System.gc(); done after loading is complete
 	}
-
+	public static LinkedRemoteFile loadJDOMFileDatabase(List rslaves, ConnectionManager cm) throws FileNotFoundException {
+		return JDOMSerialize.unserialize(cm, new FileReader("files.xml"), rslaves);
+	}
+	
 	public static LinkedRemoteFile loadMLSTFileDatabase(
-	List rslaves, ConnectionManager cm) {
-		try {
-			return MLSTSerialize.unserialize(cm.getConfig(), new BufferedReader(new FileReader("files.mlst")), rslaves);
-		} catch (Exception e) {
-			throw new FatalException(e);
-		}
+	List rslaves, ConnectionManager cm) throws IOException {
+		return MLSTSerialize.unserialize(cm.getConfig(), new BufferedReader(new FileReader("files.mlst")), rslaves);
 	}
 	public static void printRSlaves(Collection rslaves) {
 		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
