@@ -359,6 +359,10 @@ public abstract class AbstractUser extends User {
 	public long getLastReset() {
 		return lastReset;
 	}
+	
+	public void setLastReset(long lastReset) {
+		this.lastReset = lastReset;
+	}
 
 	public int getLogins() {
 		return logins;

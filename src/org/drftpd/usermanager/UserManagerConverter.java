@@ -69,6 +69,7 @@ public class UserManagerConverter {
         to.setIdleTime(from.getIdleTime());
 
         to.setLastAccessTime(from.getLastAccessTime());
+        to.setLastReset(from.getLastReset());
 
         //to.setLastNuked(from.getLastNuked());
         //to.putObject(Nuke.LASTNUKED, new Long(from
