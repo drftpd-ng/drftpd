@@ -286,20 +286,6 @@ public class ConnectionManager {
         }
     }
 
-    public void saveFilelist() {
-        try {
-            SafeFileWriter out = new SafeFileWriter("files.mlst");
-
-            try {
-                MLSTSerialize.serialize(getGlobalContext().getRoot(), out);
-            } finally {
-                out.close();
-            }
-        } catch (IOException e) {
-            logger.warn("Error saving files.mlst", e);
-        }
-    }
-
     public void shutdownPrivate(String message) {
         for(BaseFtpConnection conn : new ArrayList<BaseFtpConnection>(getConnections())) {
         	conn.stop(message);
