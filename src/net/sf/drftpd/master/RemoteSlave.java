@@ -36,7 +36,7 @@ import org.jdom.Element;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.45 2004/06/09 10:56:35 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.46 2004/06/11 01:45:01 zubov Exp $
  */
 public class RemoteSlave implements Comparable {
 	/**
@@ -116,6 +116,8 @@ public class RemoteSlave implements Comparable {
 	private SlaveStatus _status;
 	private Properties _config;
 
+	private boolean _available;
+
 	public void processQueue() throws RemoteException, SlaveUnavailableException {
 		for (Iterator iter = _fileQueue.keySet().iterator(); iter.hasNext();) {
 			String sourceFile = (String) iter.next();
@@ -145,6 +147,8 @@ public class RemoteSlave implements Comparable {
 	public RemoteSlave(Properties config) {
 		String name = FtpConfig.getProperty(config, "name");
 		_name = name;
+		_available = false;
+		_slave = null;
 		updateConfig(config);
 	}
 
@@ -238,7 +242,7 @@ public class RemoteSlave implements Comparable {
 	 * Throws NoAvailableSlaveException only if slave is offline
 	 */
 	public Slave getSlave() throws SlaveUnavailableException {
-		if (_slave == null)
+		if (!isAvailable())
 			throw new SlaveUnavailableException("slave is offline");
 		return _slave;
 	}
@@ -282,9 +286,13 @@ public class RemoteSlave implements Comparable {
 	public int hashCode() {
 		return getName().hashCode();
 	}
+	
+	public void setAvailable(boolean available) {
+		_available = available;
+	}
 
 	public boolean isAvailable() {
-		return _slave != null;
+		return _available;
 	}
 
 	public boolean isAvailablePing() {
@@ -340,6 +348,7 @@ public class RemoteSlave implements Comparable {
 		_status = null;
 		_inetAddress = null;
 		_maxPath = 0;
+		setAvailable(false);
 	}
 
 	public void setSlave(
@@ -389,7 +398,9 @@ public class RemoteSlave implements Comparable {
 	 */
 	public LinkedRemoteFile getSlaveRoot()
 		throws IOException, SlaveUnavailableException {
-		return getSlave().getSlaveRoot();
+		if (_slave == null)
+			throw new SlaveUnavailableException("Cannot getSlaveRoot() with Offline Slave");
+		return _slave.getSlaveRoot();
 	}
 
 	public void setLastDirection(char direction, long l) {

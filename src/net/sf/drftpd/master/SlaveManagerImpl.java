@@ -67,7 +67,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.96 2004/06/09 22:49:14 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.97 2004/06/11 01:45:01 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -340,9 +340,8 @@ public class SlaveManagerImpl
 			rslave.setOffline("Slave Unavailable during remerge()");
 			return;
 		}
-
+		rslave.setAvailable(true);
 		logger.info("Slave added: '" + rslave.getName() + "' status: " + status);
-
 		getConnectionManager().dispatchFtpEvent(
 			new SlaveEvent("ADDSLAVE", rslave));
 	}
