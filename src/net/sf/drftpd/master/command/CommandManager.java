@@ -31,11 +31,9 @@ import net.sf.drftpd.master.FtpReply;
 
 /**
  * @author mog
- * @version $Id: CommandManager.java,v 1.8 2004/06/01 15:40:29 mog Exp $
+ * @version $Id: CommandManager.java,v 1.9 2004/06/09 22:49:15 mog Exp $
  */
 public class CommandManager {
-	//TODO reload me
-
 	private CommandManagerFactory _factory;
 	
 	/**

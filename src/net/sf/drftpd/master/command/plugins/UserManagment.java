@@ -57,7 +57,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.39 2004/06/01 15:40:30 mog Exp $
+ * @version $Id: UserManagment.java,v 1.40 2004/06/09 22:49:16 mog Exp $
  */
 public class UserManagment implements CommandHandler, CommandHandlerFactory {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -509,7 +509,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 							"IO error reading userfiles: " + e1.getMessage());
 					}
 					if (usedleechslots
-						>= conn.getUserNull().getGroupLeechSlots() + 1) {
+						>= conn.getUserNull().getGroupLeechSlots()) {
 						return new FtpReply(
 							200,
 							conn.jprintf(

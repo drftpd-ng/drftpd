@@ -31,6 +31,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
+
 import net.sf.drftpd.Checksum;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
@@ -38,9 +40,11 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 
 /**
  * @author mog
- * @version $Id: MLSTSerialize.java,v 1.30 2004/06/06 21:33:47 zubov Exp $
+ * @version $Id: MLSTSerialize.java,v 1.31 2004/06/09 22:49:16 mog Exp $
  */
 public class MLSTSerialize {
+	private static final Logger logger = Logger.getLogger(MLSTSerialize.class);
+
 	public static final SimpleDateFormat timeval =
 		new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
@@ -191,8 +195,12 @@ public class MLSTSerialize {
 			if (isFile != file.isFile() && isDir != file.isDirectory())
 				throw new CorruptFileListException(
 					"entry is a file but had no x.slaves entry: " + line);
-
+			
+			try {
 			dir.putFile(file);
+			} catch(IllegalStateException e) {
+				logger.warn("", e);
+			}
 		}
 	}
 

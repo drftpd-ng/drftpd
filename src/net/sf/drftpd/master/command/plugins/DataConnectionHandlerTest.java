@@ -18,11 +18,15 @@
 package net.sf.drftpd.master.command.plugins;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
+import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.BasicConfigurator;
 import org.drftpd.commands.UnhandledCommandException;
@@ -30,9 +34,20 @@ import org.drftpd.tests.DummyBaseFtpConnection;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandlerTest.java,v 1.6 2004/06/01 15:40:30 mog Exp $
+ * @version $Id: DataConnectionHandlerTest.java,v 1.7 2004/06/09 22:49:16 mog Exp $
  */
 public class DataConnectionHandlerTest extends TestCase {
+
+	private static class FC extends FtpConfig {
+		public FC() {
+			super();
+			try {
+				loadConfig(new Properties(), null);
+			} catch (IOException e) {
+				throw new RuntimeException();
+			}
+		}
+	}
 	public static TestSuite suite() {
 		return new TestSuite(DataConnectionHandlerTest.class);
 	}
@@ -90,7 +105,11 @@ public class DataConnectionHandlerTest extends TestCase {
 			(DataConnectionHandler) new DataConnectionHandler().initialize(
 				null,
 				null);
-		conn = new DummyBaseFtpConnection(dch);
+		conn = new DummyBaseFtpConnection(dch) {
+			public FtpConfig getConfig() {
+				return new FC();
+			}
+		};
 	}
 
 	protected void tearDown() throws Exception {

@@ -17,14 +17,12 @@
  */
 package org.drftpd.tests;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Collections;
-import java.util.Properties;
 
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
@@ -46,7 +44,7 @@ import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 /**
  * @author mog
- * @version $Id: DummyBaseFtpConnection.java,v 1.4 2004/05/31 02:47:21 mog Exp $
+ * @version $Id: DummyBaseFtpConnection.java,v 1.5 2004/06/09 22:49:16 mog Exp $
  */
 public class DummyBaseFtpConnection extends BaseFtpConnection {
 
@@ -55,8 +53,6 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 	private DummyServerSocketFactory _serverSocketFactory;
 	private DummySocketFactory _socketFactory;
 	private StringWriter _out;
-	private FtpConfig config;
-
 	private DataConnectionHandler _dch;
 
 	public DummyBaseFtpConnection(DataConnectionHandler dch) {
@@ -89,23 +85,6 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 	
 	public CommandManager getCommandManager() {
 		throw new UnsupportedOperationException();
-	}
-
-	public FtpConfig getConfig() {
-		if ( config == null ) {
-			Properties p = new Properties();
-			try {
-				p.load(new FileInputStream("drftpd.conf"));
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-			try {
-				config = new FtpConfig(p,"drftpd.conf", null);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-		return config;
 	}
 
 	public ConnectionManager getConnectionManager() {
@@ -155,10 +134,6 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 	}
 
 	protected boolean hasPermission(FtpRequest request) {
-		throw new UnsupportedOperationException();
-	}
-
-	public boolean isAuthenticated() {
 		throw new UnsupportedOperationException();
 	}
 

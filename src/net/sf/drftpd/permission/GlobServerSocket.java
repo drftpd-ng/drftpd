@@ -36,7 +36,7 @@ import socks.server.Ident;
 
 /**
  * @author mog
- * @version $Id: GlobServerSocket.java,v 1.9 2004/04/29 18:32:24 zombiewoof64 Exp $
+ * @version $Id: GlobServerSocket.java,v 1.10 2004/06/09 22:49:16 mog Exp $
  */
 public class GlobServerSocket extends ServerSocket {
 
@@ -83,14 +83,11 @@ public class GlobServerSocket extends ServerSocket {
 			String ipmask =
 				ident + "@" + sock.getInetAddress().getHostAddress();
 			String hostmask = ident + "@" + sock.getInetAddress().getHostName();
-      			logger.warn("Ipmask: " + ipmask + ".");
-      			logger.warn("Hostmask: " + hostmask + ".");
 			for (Iterator i =
 				SlaveManagerImpl.rslavesToMasks(this.rslaves).iterator();
 				i.hasNext();
 				) {
 				String mask = (String) i.next();
-        			logger.warn("Mask: " + mask + ".");
 				Pattern p;
 				try {
 					p = new GlobCompiler().compile(mask);
@@ -102,12 +99,10 @@ public class GlobServerSocket extends ServerSocket {
 
 				// ip
 				if (m.matches(ipmask, p)) {
-                  			logger.warn("Match ipmask !!");
 					return sock;
 				}
 				// host
 				if (m.matches(hostmask, p)) {
-                  			logger.warn("Match hostmask !!");
 					return sock;
 				}
 			} //for
