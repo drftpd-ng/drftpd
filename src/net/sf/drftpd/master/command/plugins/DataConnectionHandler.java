@@ -68,7 +68,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.45 2004/02/23 01:14:37 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.46 2004/02/25 14:26:39 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -1245,39 +1245,14 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				_transferFile.delete();
 				logger.error("RemoteException, deleting file");
 				return new FtpReply(426, "RemoteException, deleting file");
+			//} catch (ObjectExistsException ex) {
+				// slave already has the file, treat as a regular IOException
 			} catch (IOException ex) {
-				logger.log(Level.WARN, "from " + _rslave.getName(), ex);
-				FtpReply response =
-					new FtpReply(426, "IO error: " + ex.getMessage());
-				try {
-					zipscript(
-						isRetr,
-						isStor,
-						_rslave.getSlave().checkSum(
-							targetDir.getPath() + "/" + targetFileName),
-						response,
-						targetFileName,
-						targetDir);
-				} catch (RemoteException e) {
-					_rslave.handleRemoteException(e);
-					response.setMessage("RemoteException, deleting file");
-					_transferFile.delete();
-					logger.error("RemoteException, deleting file");
-				} catch (NoAvailableSlaveException e) {
-					response.setMessage(
-						"Slave went offline, could not check crc, deleting file");
-					_transferFile.delete();
-					logger.error(
-						"Slave went offline, could not check crc, deleting file",
-						e);
-				} catch (IOException e) {
-					response.setMessage(
-						"IOException caused, could not check crc, deleting file");
-					_transferFile.delete();
-					logger.error(
-						"IOException caused, could not check crc, deleting file");
-				}
-				return response;
+				_transferFile.delete();
+				logger.error("IOException, deleting file");
+				FtpReply reply = new FtpReply(426, "IOException, deleting file");
+				reply.addComment(ex.getLocalizedMessage());
+				return reply;
 			}
 			//		TransferThread transferThread = new TransferThread(rslave, transfer);
 			//		System.err.println("Calling interruptibleSleepUntilFinished");

@@ -31,13 +31,14 @@ import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 
+import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.util.AddAsciiOutputStream;
 
 import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.42 2004/02/21 05:28:22 zubov Exp $
+ * @version $Id: TransferImpl.java,v 1.43 2004/02/25 14:26:39 zubov Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private static final Logger logger = Logger.getLogger(TransferImpl.class);
@@ -233,7 +234,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		_direction = TRANSFER_RECEIVING_UPLOAD;
 		try {
 			_slave.getRoots().getFile(dirname + File.separator + filename);
-			throw new IOException("File exists");
+			throw new ObjectExistsException("File exists");
 		} catch (FileNotFoundException ex) {
 		}
 
@@ -246,7 +247,12 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 			_out = new CheckedOutputStream(_out, _checksum);
 		}
 		System.out.println("UL:" + dirname + File.separator + filename);
-		transfer();
+		try {
+			transfer();
+		} catch (IOException e) {
+			_slave.delete(root + File.separator + filename);
+			throw e; // so the Master can still handle the exception
+		}
 		return getStatus();
 	}
 }

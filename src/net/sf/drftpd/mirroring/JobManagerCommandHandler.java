@@ -32,14 +32,13 @@ import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * CommandHandler plugin for viewing and manipulating the JobManager queue.
  * 
  * @author mog
- * @version $Id: JobManagerCommandHandler.java,v 1.8 2004/02/23 01:14:39 mog Exp $
+ * @version $Id: JobManagerCommandHandler.java,v 1.9 2004/02/25 14:26:39 zubov Exp $
  */
 public class JobManagerCommandHandler implements CommandHandler {
 
