@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -38,11 +39,11 @@ import net.sf.drftpd.util.ReplacerUtils;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.master.ConnectionManager;
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
-import org.drftpd.sections.conf.DatedSection;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
@@ -131,6 +132,15 @@ public class AutoFreeSpace extends FtpListener {
             _archiveAfter = archiveAfter;
         }
 
+        public boolean allSlavesOnline() {
+            List<RemoteSlave> slaves = _cm.getGlobalContext().getSlaveManager().getSlaves();
+            for ( RemoteSlave slave : slaves) {
+                if (!slave.isOnline())
+                    return false;
+            }
+            return true;
+        }
+        
         public LinkedRemoteFileInterface getOldestFile(LinkedRemoteFileInterface dir)
         	throws ObjectNotFoundException {
             Iterator iter = dir.getFiles().iterator();
@@ -177,8 +187,8 @@ public class AutoFreeSpace extends FtpListener {
             SectionManagerInterface sm = _cm.getGlobalContext().getSectionManager();
             long freespace = _cm.getGlobalContext().getSlaveManager().getAllStatus().getDiskSpaceAvailable();
             ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-
-            while (freespace < _minFreeSpace) {
+            
+            while (freespace < _minFreeSpace && allSlavesOnline()) {
                 LinkedRemoteFileInterface file = null;
                 try {
                     file = getOldestRelease(sm.getSections());
