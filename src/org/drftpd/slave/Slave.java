@@ -18,6 +18,7 @@
 package org.drftpd.slave;
 
 import java.io.BufferedReader;
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -603,6 +604,9 @@ public class Slave {
                 }
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
+            } catch (EOFException e) {
+            	logger.debug("Master shutdown or went offline");
+            	return;
             }
 
             logger.debug("Slave fetched " + ac);
