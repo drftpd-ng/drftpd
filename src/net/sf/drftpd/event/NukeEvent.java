@@ -6,9 +6,11 @@
  */
 package net.sf.drftpd.event;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
+import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.master.usermanager.User;
 
 import org.jdom.Element;
@@ -54,12 +56,16 @@ public class NukeEvent extends UserEvent {
 	/**
 	 * String username as key
 	 * Integer debt as value
+	 * @deprecated
 	 * @return
 	 */
 	public Map getNukees() {
 		return nukees;
 	}
 
+	public Collection getNukees2() {
+		return IRCListener.map2nukees(nukees);
+	}
 	/**
 	 * @return
 	 */

@@ -2,7 +2,6 @@ package net.sf.drftpd.slave;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -154,7 +153,7 @@ public class SlaveImpl
 
 		try {
 			roots = new RootBasket(rootStrings);
-		} catch (FileNotFoundException e) {
+		} catch (IOException e) {
 			throw new FatalException(e);
 		}
 		// END: RootBasket
@@ -231,6 +230,7 @@ public class SlaveImpl
 		return new SFVFile(
 			new BufferedReader(new FileReader(roots.getFile(path))));
 	}
+	static boolean isWin32 = System.getProperty("os.name").startsWith("Windows");
 	/**
 	 * @see net.sf.drftpd.slave.Slave#rename(String, String)
 	 */
@@ -246,7 +246,9 @@ public class SlaveImpl
 			File toDir = root.getFile(toDirPath);
 			toDir.mkdirs();
 			File tofile = new File(toDir.getPath()+File.separator+toName);
-			if(tofile.exists()) {
+			//!win32 == true on linux
+			//!win32 && equalsignore == true on win32 
+			if(tofile.exists() && !(isWin32 && fromfile.getName().equalsIgnoreCase(toName))) {
 				throw new ObjectExistsException(
 					"cannot rename from "
 						+ fromfile

@@ -32,7 +32,6 @@ public class PatternPathPermission extends PathPermission {
 	public boolean checkPath(LinkedRemoteFile file) {
 		String path = file.getPath();
 		if(file.isDirectory()) path = path.concat("/");
-
 		Perl5Matcher m = new Perl5Matcher();
 		return m.matches(path, _pat); 
 	}

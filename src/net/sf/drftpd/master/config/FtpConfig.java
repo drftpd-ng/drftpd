@@ -50,11 +50,12 @@ public class FtpConfig {
 	private ArrayList _privpath;
 	//private ArrayList _rename;
 	private ArrayList _upload;
+	private ArrayList _dirlog;
 
 	String cfgFileName;
 	private ConnectionManager connManager;
 	private long freespaceMin;
-	
+
 	private String newConf = "perms.conf";
 
 	/**
@@ -76,22 +77,25 @@ public class FtpConfig {
 	 * @return
 	 */
 	public boolean checkDelete(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermssion(path, fromUser, _delete.iterator());
+		return checkPathPermssion(fromUser, path, _delete.iterator());
 	}
 
+	public boolean checkDirLog(User fromUser, LinkedRemoteFile path) {
+		return checkPathPermssion(fromUser, path, _dirlog.iterator());
+	}
 	/**
 	 * Also checks privpath for permission
 	 * @return true if fromUser is allowed to download the file path
 	 */
 	public boolean checkDownload(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermssion(path, fromUser, _download.iterator());
+		return checkPathPermssion(fromUser, path, _download.iterator());
 	}
 
 	/**
 	 * @return true if fromUser should be hidden
 	 */
-	public boolean checkHideInWho(LinkedRemoteFile path, User fromUser) {
-		return checkPathPermssion(path, fromUser, _hideinwho.iterator());
+	public boolean checkHideInWho(User fromUser, LinkedRemoteFile path) {
+		return checkPathPermssion(fromUser, path, _hideinwho.iterator());
 		//		for (Iterator iter = _hideinwhos.iterator(); iter.hasNext();) {
 		//			StringPathPermission perm = (PathPermission) iter.next();
 		//			if (perm.checkPath(path)) {
@@ -103,8 +107,8 @@ public class FtpConfig {
 	/**
 	 * @return true if fromUser is allowed to mkdir in path
 	 */
-	public boolean checkMakeDir(LinkedRemoteFile path, User fromUser) {
-		return checkPathPermssion(path, fromUser, _makedir.iterator());
+	public boolean checkMakeDir(User fromUser, LinkedRemoteFile path) {
+		return checkPathPermssion(fromUser, path, _makedir.iterator());
 		//		for (Iterator iter = _makedir.iterator(); iter.hasNext();) {
 		//			PathPermission perm = (PathPermission) iter.next();
 		//			if(perm.checkPath(path)) {
@@ -115,10 +119,10 @@ public class FtpConfig {
 	}
 
 	private boolean checkPathPermssion(
-		LinkedRemoteFile path,
 		User fromUser,
+		LinkedRemoteFile path,
 		Iterator iter) {
-		while(iter.hasNext()) {
+		while (iter.hasNext()) {
 			PathPermission perm = (PathPermission) iter.next();
 			if (perm.checkPath(path)) {
 				return perm.check(fromUser);
@@ -130,14 +134,14 @@ public class FtpConfig {
 	/**
 	 * @return true if fromUser is allowed to pre in path
 	 */
-	public boolean checkPre(LinkedRemoteFile path, User fromUser) {
-		return checkPathPermssion(path, fromUser, _pre.iterator());
+	public boolean checkPre(User fromUser, LinkedRemoteFile path) {
+		return checkPathPermssion(fromUser, path, _pre.iterator());
 	}
 
 	/**
 	 * @return true if user fromUser is allowed to see path
 	 */
-	public boolean checkPrivPath(LinkedRemoteFile path, User fromUser) {
+	public boolean checkPrivPath(User fromUser, LinkedRemoteFile path) {
 		for (Iterator iter = _privpath.iterator(); iter.hasNext();) {
 			PathPermission perm = (PathPermission) iter.next();
 			if (perm.checkPath(path)) {
@@ -152,8 +156,8 @@ public class FtpConfig {
 	/**
 	 * @return true if fromUser is allowed to upload in directory path
 	 */
-	public boolean checkUpload(LinkedRemoteFile path, User fromUser) {
-		return checkPathPermssion(path, fromUser, _upload.iterator());
+	public boolean checkUpload(User fromUser, LinkedRemoteFile path) {
+		return checkPathPermssion(fromUser, path, _upload.iterator());
 	}
 
 	public void directoryMessage(
@@ -169,11 +173,19 @@ public class FtpConfig {
 				}
 			}
 		}
-		response.addComment("Directory message for " + dir.getPath());
 	}
 
 	public float getCreditLossRatio(LinkedRemoteFile path, User fromUser) {
-
+		for (Iterator iter = _creditloss.iterator(); iter.hasNext();) {
+			RatioPathPermission perm = (RatioPathPermission) iter.next();
+			if(perm.checkPath(path)) {
+				if(perm.check(fromUser)) {
+					return perm.getRatio();
+				} else {
+					return 1;
+				}
+			}
+		}
 		//default credit loss ratio is 1
 		return 1;
 	}
@@ -190,7 +202,7 @@ public class FtpConfig {
 	 * @deprecated
 	 */
 	public boolean hasReadPermission(User user, LinkedRemoteFile directory) {
-		return checkPrivPath(directory, user);
+		return checkPrivPath(user, directory);
 	}
 	public void loadConfig(Properties cfg, ConnectionManager connManager)
 		throws IOException {
@@ -211,9 +223,9 @@ public class FtpConfig {
 		ArrayList makedirs = new ArrayList();
 		ArrayList download = new ArrayList();
 		ArrayList delete = new ArrayList();
+		ArrayList dirlog = new ArrayList();
 		
-		LineNumberReader in =
-			new LineNumberReader(new FileReader(newConf));
+		LineNumberReader in = new LineNumberReader(new FileReader(newConf));
 		int lineno = 0;
 		String line;
 		GlobCompiler globComiler = new GlobCompiler();
@@ -259,6 +271,11 @@ public class FtpConfig {
 					Collection users = makeUsers(st);
 					creditloss.add(
 						new RatioPathPermission(multiplier, path, users));
+				} else if (command.equals("dirlog")) {
+					dirlog.add(
+						new PatternPathPermission(
+							globComiler.compile(st.nextToken()),
+							makeUsers(st)));
 				} else if (command.equals("hideinwho")) {
 					hideinwho.add(
 						new PatternPathPermission(
@@ -315,7 +332,9 @@ public class FtpConfig {
 				}
 			} catch (Exception e) {
 				logger.warn(
-					"Exception when reading "+newConf+" line "
+					"Exception when reading "
+						+ newConf
+						+ " line "
 						+ in.getLineNumber(),
 					e);
 			}
@@ -344,7 +363,7 @@ public class FtpConfig {
 
 		pre.trimToSize();
 		_pre = pre;
-		
+
 		upload.trimToSize();
 		_upload = upload;
 
@@ -353,6 +372,9 @@ public class FtpConfig {
 
 		delete.trimToSize();
 		_delete = delete;
+		
+		dirlog.trimToSize();
+		_dirlog = dirlog;
 	}
 
 	private ArrayList makeUsers(StringTokenizer st) {

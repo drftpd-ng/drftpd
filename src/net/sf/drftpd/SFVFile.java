@@ -114,7 +114,7 @@ public class SFVFile implements Serializable {
 	}
 
 	/**
-	 * @return
+	 * @return Number of file entries in the .sfv
 	 */
 	public int size() {
 		return entries.size();

@@ -26,28 +26,35 @@ public class RemoteSlave implements Serializable, Comparable {
 
 	private static Logger logger =
 		Logger.getLogger(RemoteSlave.class.getName());
-	static {
-		logger.setLevel(Level.ALL);
+
+	public static boolean isFatalRemoteException(RemoteException ex) {
+		return (ex instanceof ConnectException || ex instanceof ConnectIOException);
 	}
+	private InetAddress inetAddress;
+
+	private long lastDownloadSending=0;
+
+	private long lastPing;
+	private long lastUploadReceiving=0;
 
 	private SlaveManagerImpl manager;
+	private Collection masks;
 	private String name;
 	private Slave slave;
 	private SlaveStatus status;
 	private long statusTime;
-	private Collection masks;
 	
 	public RemoteSlave(String name) {
 		this.name = name;
+	}
+	public RemoteSlave(String name, Collection masks) {
+		this.name = name;
+		this.masks = masks;
 	}
 
 	public RemoteSlave(String name, Collection masks, SlaveManagerImpl manager) {
 		this(name, masks);
 		this.manager = manager;
-	}
-	public RemoteSlave(String name, Collection masks) {
-		this.name = name;
-		this.masks = masks;
 	}
 	
 	/**
@@ -59,9 +66,53 @@ public class RemoteSlave implements Serializable, Comparable {
 		this.slave = slave;
 		this.name = name;
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	public int compareTo(Object o) {
+		if(!(o instanceof RemoteSlave)) throw new IllegalArgumentException();
+		return getName().compareTo(((RemoteSlave)o).getName());
+	}
+
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object obj) {
+		if (obj instanceof RemoteSlave) {
+			RemoteSlave rslave = (RemoteSlave) obj;
+			if (rslave.getName().equals(this.getName())) {
+				return true;
+			}
+		}
+		return false;
+	}
+	/**
+	 * @return
+	 */
+	public InetAddress getInetAddress() {
+		return inetAddress;
+	}
+	public long getLastDownloadSending() {
+		return this.lastDownloadSending;
+	}
+	
+	public long getLastTransfer() {
+		return Math.max(getLastDownloadSending(), getLastUploadReceiving());
+	}
+	public long getLastUploadReceiving() {
+		return this.lastUploadReceiving;
+	}
 	
 	public SlaveManagerImpl getManager() {
 		return manager;
+	}
+
+	/**
+	 * @return
+	 */
+	public Collection getMasks() {
+		return masks;
 	}
 
 	/**
@@ -115,25 +166,11 @@ public class RemoteSlave implements Serializable, Comparable {
 	}
 
 	public int hashCode() {
-		return this.getName().hashCode();
+		return getName().hashCode();
 	}
 
-	public static boolean isFatalRemoteException(RemoteException ex) {
-		return (ex instanceof ConnectException || ex instanceof ConnectIOException);
-	}
-	private InetAddress inetAddress;
-	
-	public void setManager(SlaveManagerImpl manager) {
-		if(this.manager != null) throw new IllegalStateException("Can't overwrite manager");
-		this.manager = manager;
-	}
-
-	private long lastPing;
-	public void ping() throws RemoteException, NoAvailableSlaveException {
-		if(slave == null) throw new NoAvailableSlaveException(getName()+" is offline");
-		if(System.currentTimeMillis() > lastPing+1000) {
-			getSlave().ping();
-		}
+	public boolean isAvailable() {
+		return slave != null;
 	}
 	
 	public boolean isAvailablePing() {
@@ -147,39 +184,38 @@ public class RemoteSlave implements Serializable, Comparable {
 		}
 		return isAvailable();
 	}
-	public boolean isAvailable() {
-		return slave != null;
-	}
-
-	public String toString() {
-		String str = this.getName();
-		try {
-			//System.out.println("getRef().remoteToString(): "+
-			str = str + "[slave=" + this.getSlave().toString() + "]";
-		} catch (NoAvailableSlaveException e) {
-			str = str + "[slave=offline]";
+	public void ping() throws RemoteException, NoAvailableSlaveException {
+		if(slave == null) throw new NoAvailableSlaveException(getName()+" is offline");
+		if(System.currentTimeMillis() > lastPing+1000) {
+			getSlave().ping();
 		}
-		return str.toString();
+	}
+	public void setLastDownloadSending(long lastDownloadSending) {
+		this.lastDownloadSending = lastDownloadSending;
+	}
+	public void setLastUploadReceiving(long lastUploadReceiving) {
+		this.lastUploadReceiving = lastUploadReceiving;
+	}
+	
+	public void setManager(SlaveManagerImpl manager) {
+		if(this.manager != null) throw new IllegalStateException("Can't overwrite manager");
+		this.manager = manager;
 	}
 
 	/**
-	 * @see java.lang.Object#equals(java.lang.Object)
+	 * @param collection
 	 */
-	public boolean equals(Object obj) {
-		if (obj instanceof RemoteSlave) {
-			RemoteSlave rslave = (RemoteSlave) obj;
-			if (rslave.getName().equals(this.getName())) {
-				return true;
-			}
-		}
-		return false;
+	public void setMasks(Collection collection) {
+		masks = collection;
 	}
 
 	/**
-	 * @return
+	 * 
 	 */
-	public Collection getMasks() {
-		return masks;
+	public void setOffline(String reason) {
+		manager.getConnectionManager().dispatchFtpEvent(new SlaveEvent("DELSLAVE", reason, this));
+		this.slave = null;
+		this.inetAddress = null;
 	}
 
 	/**
@@ -193,53 +229,15 @@ public class RemoteSlave implements Serializable, Comparable {
 		this.inetAddress = inetAddress;
 	}
 
-	/**
-	 * @param collection
-	 */
-	public void setMasks(Collection collection) {
-		masks = collection;
-	}
-	private long lastUploadReceiving=0;
-	public long getLastUploadReceiving() {
-		return this.lastUploadReceiving;
-	}
-	public void setLastUploadReceiving(long lastUploadReceiving) {
-		this.lastUploadReceiving = lastUploadReceiving;
-	}
-
-	private long lastDownloadSending=0;
-	public long getLastDownloadSending() {
-		return this.lastDownloadSending;
-	}
-	public void setLastDownloadSending(long lastDownloadSending) {
-		this.lastDownloadSending = lastDownloadSending;
-	}
-	
-	public long getLastTransfer() {
-		return Math.max(getLastDownloadSending(), getLastUploadReceiving());
-	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
-	public int compareTo(Object o) {
-		if(!(o instanceof RemoteSlave)) throw new IllegalArgumentException();
-		return getName().compareTo(((RemoteSlave)o).getName());
-	}
-	/**
-	 * @return
-	 */
-	public InetAddress getInetAddress() {
-		return inetAddress;
-	}
-
-	/**
-	 * 
-	 */
-	public void setOffline(String reason) {
-		manager.getConnectionManager().dispatchFtpEvent(new SlaveEvent("DELSLAVE", reason, this));
-		this.slave = null;
-		this.inetAddress = null;
+	public String toString() {
+		String str;
+		try {
+			//System.out.println("getRef().remoteToString(): "+
+			str = getName() + "[slave=" + getSlave().toString() + "]";
+		} catch (NoAvailableSlaveException e) {
+			str = getName() + "[slave=offline]";
+		}
+		return str.toString();
 	}
 
 }

@@ -70,7 +70,7 @@ public class ConnectionManager {
 			try {
 				FtpListener handler = (FtpListener) iter.next();
 				handler.actionPerformed(event);
-			} catch (Throwable t) {
+			} catch (RuntimeException t) {
 				logger.log(Level.WARN, "Exception dispatching event", t);
 			}
 		}
@@ -177,6 +177,17 @@ public class ConnectionManager {
 				ex);
 		}
 		
+		if (cfg.getProperty("irc.enabled", "false").equals("true")) {
+			try {
+				addFtpListener(
+					new IRCListener(this, getConfig(), new String[0]));
+			} catch (Exception e2) {
+				throw new FatalException(e2);
+			}
+		}
+
+		addFtpListener(new XferLogListener());
+
 		timer = new Timer();
 		TimerTask timerLogoutIdle = new TimerTask() {
 			public void run() {
@@ -199,15 +210,6 @@ public class ConnectionManager {
 		//run every hour 
 		timer.schedule(timerSave, 60*60 * 1000, 60*60 * 1000);
 
-		if (cfg.getProperty("irc.enabled", "false").equals("true")) {
-			try {
-				addFtpListener(
-					new IRCListener(this, getConfig(), new String[0]));
-			} catch (Exception e2) {
-				logger.log(Level.WARN, "Error starting IRC bot", e2);
-			}
-		}
-		addFtpListener(new XferLogListener());
 	}
 
 	public void timerLogoutIdle() {

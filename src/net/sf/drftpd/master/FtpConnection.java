@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.StringTokenizer;
 
 import net.sf.drftpd.AsciiOutputStream;
 import net.sf.drftpd.Bytes;
+import net.sf.drftpd.Checksum;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
@@ -118,7 +120,7 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 	}
 
-	private NukeLog nukelog;
+	private NukeLog _nukelog;
 	// just set mstRenFr to null instead of this extra boolean?
 	//private boolean mbRenFr = false;
 	private LinkedRemoteFile renameFrom = null;
@@ -151,7 +153,7 @@ public class FtpConnection extends BaseFtpConnection {
 		this.slaveManager = slaveManager;
 
 		this.setCurrentDirectory(root);
-		this.nukelog = nukelog;
+		this._nukelog = nukelog;
 	}
 
 	////////////////////////////////////////////////////////////
@@ -361,10 +363,10 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(response);
 			return;
 		}
-		if (!getConfig().checkPrivPath(newCurrentDirectory, _user)) {
+		if (!getConfig().checkPrivPath(_user, newCurrentDirectory)) {
 			FtpResponse response =
 				new FtpResponse(550, dirName + ": Not found");
-			// identical to FileNotFoundException.getMessage() above
+			// reply identical to FileNotFoundException.getMessage() above
 			out.print(response);
 			return;
 		}
@@ -375,9 +377,6 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 		currentDirectory = newCurrentDirectory;
 
-		if (connManager
-			.getConfig()
-			.hasReadPermission(_user, newCurrentDirectory));
 		FtpResponse response =
 			new FtpResponse(
 				200,
@@ -388,7 +387,7 @@ public class FtpConnection extends BaseFtpConnection {
 			currentDirectory);
 
 		Collection uploaders =
-			IRCListener.topFileUploaders2(currentDirectory.getFiles());
+			IRCListener.topFileUploaders(currentDirectory.getFiles());
 		for (Iterator iter = uploaders.iterator(); iter.hasNext();) {
 			UploaderPosition stat = (UploaderPosition) iter.next();
 
@@ -450,11 +449,11 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		if(!getConfig().checkDelete(_user, requestedFile)) {
+		if (!getConfig().checkDelete(_user, requestedFile)) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
-		
+
 		FtpResponse response =
 			(FtpResponse) FtpResponse.RESPONSE_250_ACTION_OKAY.clone();
 
@@ -584,7 +583,7 @@ public class FtpConnection extends BaseFtpConnection {
 		//		boolean allOption = options.indexOf('a') != -1;
 		boolean detailOption = options.indexOf('l') != -1;
 		//		boolean directoryOption = options.indexOf("d") != -1;
-		if (!mbPasv && !mbPort) {
+		if (!mbPasv && !mbPort && !request.getCommand().equals("STAT")) {
 			out.print(FtpResponse.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS);
 			return;
 		}
@@ -597,7 +596,7 @@ public class FtpConnection extends BaseFtpConnection {
 				out.print(FtpResponse.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN);
 				return;
 			}
-			if (!getConfig().checkPrivPath(directoryFile, _user)) {
+			if (!getConfig().checkPrivPath(_user, directoryFile)) {
 				out.print(FtpResponse.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN);
 				return;
 			}
@@ -605,22 +604,30 @@ public class FtpConnection extends BaseFtpConnection {
 			directoryFile = currentDirectory;
 		}
 
-		out.print(FtpResponse.RESPONSE_150_OK);
-		Writer os = null;
 
-		Socket dataSocket;
-		try {
-			dataSocket = getDataSocket();
-		} catch (IOException ex) {
-			out.print(new FtpResponse(425, ex.getMessage()));
-			logger.info("", ex);
-			return;
+		Socket dataSocket = null;
+		Writer os;
+		if(request.getCommand().equals("STAT")) {
+			os = out;
+			out.println("213- Status of "+request.getArgument()+":");
+		} else {
+			out.print(FtpResponse.RESPONSE_150_OK);
+			try {
+				dataSocket = getDataSocket();
+				os =
+					new BufferedWriter(
+						new OutputStreamWriter(dataSocket.getOutputStream()));
+			} catch (IOException ex) {
+				logger.warn("from master", ex);
+				out.print(new FtpResponse(425, ex.getMessage()));
+				return;
+			}
 		}
-
+		
 		ArrayList listFiles = new ArrayList(directoryFile.getFiles());
 		for (Iterator iter = listFiles.iterator(); iter.hasNext();) {
 			LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
-			if (!getConfig().checkPrivPath(element, _user))
+			if (!getConfig().checkPrivPath(_user, element))
 				iter.remove();
 		}
 		FtpResponse response =
@@ -653,33 +660,34 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		try {
-			os = new BufferedWriter(new OutputStreamWriter(dataSocket.getOutputStream()));
-			try {
-				if (request.getCommand().equals("LIST")) {
-					VirtualDirectory.printList(listFiles, os);
-				} else if (request.getCommand().equals("NLST")) {
-					VirtualDirectory.printNList(listFiles, detailOption, out);
-				}
-			} catch (IOException ex) {
-				out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
-				return;
+			os.write("total 0\r\n");
+			if (request.getCommand().equals("LIST") || request.getCommand().equals("STAT")) {
+				VirtualDirectory.printList(listFiles, os);
+			} else if (request.getCommand().equals("NLST")) {
+				VirtualDirectory.printNList(listFiles, detailOption, out);
 			}
-			//os.flush();
+			os.flush();
+		} catch (IOException ex) {
+			logger.warn("from master", ex);
+			out.print(new FtpResponse(450, ex.getMessage()));
+			return;
+		} finally {
+			try {
+				if(!request.getCommand().equals("STAT")) {
+					os.close();
+					dataSocket.close();
+				} else {
+					out.println("213 End of Status");
+				}
+			} catch (IOException e1) {
+				logger.error("", e1);
+			}
+		}
+		if(!request.getCommand().equals("STAT")) {
 			response.addComment(status());
 			out.print(response);
-		} catch (IOException ex) {
-			ex.printStackTrace();
-			out.print(FtpResponse.RESPONSE_425_CANT_OPEN_DATA_CONNECTION);
-		} finally {
-			if (os != null) {
-				try {
-					os.close();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
-			reset();
 		}
+		reset();
 	}
 	/**
 	 * <code>MDTM &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
@@ -759,7 +767,7 @@ public class FtpConnection extends BaseFtpConnection {
 		LinkedRemoteFile dir = (LinkedRemoteFile) ret[0];
 		String createdDirName = (String) ret[1];
 
-		if (!getConfig().checkMakeDir(dir, _user)) {
+		if (!getConfig().checkMakeDir(_user, dir)) {
 			out.write(FtpResponse.RESPONSE_530_ACCESS_DENIED.toString());
 			return;
 		}
@@ -790,7 +798,7 @@ public class FtpConnection extends BaseFtpConnection {
 					257,
 					"\"" + createdDir.getPath() + "\" created."));
 
-			if (!getConfig().checkHideInWho(createdDir, _user)) {
+			if (getConfig().checkDirLog(_user, createdDir)) {
 				connManager.dispatchFtpEvent(
 					new DirectoryFtpEvent(_user, "MKD", createdDir));
 			}
@@ -1185,7 +1193,8 @@ public class FtpConnection extends BaseFtpConnection {
 				new FtpResponse(
 					200,
 					"FXP allowed. If you're not FXPing and set your IP to "
-						+ controlSocket.getInetAddress().getHostAddress()+" (usually in firewall settings)"));
+						+ controlSocket.getInetAddress().getHostAddress()
+						+ " (usually in firewall settings)"));
 			return;
 		}
 		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
@@ -1363,7 +1372,7 @@ public class FtpConnection extends BaseFtpConnection {
 			out.println("550 " + fileName + ": No such file");
 			return;
 		}
-		if(!getConfig().checkPrivPath(_transferFile, _user)) {
+		if (!getConfig().checkPrivPath(_user, _transferFile)) {
 			out.println("550 " + fileName + ": No such file");
 			return;
 		}
@@ -1474,7 +1483,7 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		} catch (IOException ex) {
 			out.print(new FtpResponse(426, "IO error: " + ex.getMessage()));
-			logger.log(Level.WARN, "", ex);
+			logger.log(Level.WARN, "from " + _rslave.getName(), ex);
 			return;
 		}
 
@@ -1554,7 +1563,7 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		// now delete
-		if (!getConfig().checkHideInWho(requestedFile, _user)) {
+		if (getConfig().checkDirLog(_user, requestedFile)) {
 			connManager.dispatchFtpEvent(
 				new DirectoryFtpEvent(_user, "RMD", requestedFile));
 		}
@@ -1769,17 +1778,31 @@ public class FtpConnection extends BaseFtpConnection {
 	public void doSITE_ADDUSER(FtpRequest request, PrintWriter out) {
 		resetState();
 
-		if (!_user.isAdmin()) {
+		if (!_user.isAdmin() && !_user.isGroupAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
 
+		if(_user.isGroupAdmin()) {
+			int users;
+			try {
+				users = userManager.getAllUsersByGroup(_user.getGroupName()).size();
+				if(users >= _user.getGroupSlots()) {
+					out.print(new FtpResponse(200, "Sorry, no more open slots available."));
+					return;
+				}
+			} catch (IOException e1) {
+				logger.warn("", e1);
+				out.print(new FtpResponse(200, e1.getMessage()));
+				return;
+			}
+		}
+		
 		String args[] = request.getArgument().split(" ");
 		if (args.length < 2) {
 			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
 		}
-
 		String newUsername = args[0];
 		String pass = args[1];
 		User newUser;
@@ -1789,7 +1812,9 @@ public class FtpConnection extends BaseFtpConnection {
 			newUser = userManager.create(newUsername);
 			newUser.setPassword(pass);
 			newUser.setComment("Added by " + _user.getUsername());
-
+			if(_user.isGroupAdmin()) {
+				newUser.setGroup(_user.getGroupName());
+			}
 			for (int i = 2; i < args.length; i++) {
 				String string = args[i];
 				try {
@@ -2017,10 +2042,10 @@ public class FtpConnection extends BaseFtpConnection {
 		} else if ("group".equals(command)) {
 			myUser.setGroup(commandArgument);
 
-//			group_slots	Number of users a GADMIN is allowed to add.
-//					If you specify a second argument, it will be the
-//					number of leech accounts the gadmin can give (done by
-//					"site change user ratio 0") (2nd arg = leech slots)
+			//			group_slots	Number of users a GADMIN is allowed to add.
+			//					If you specify a second argument, it will be the
+			//					number of leech accounts the gadmin can give (done by
+			//					"site change user ratio 0") (2nd arg = leech slots)
 		} else if ("group_slots".equals(command)) {
 			try {
 				String args[] = commandArgument.split(" ");
@@ -2461,7 +2486,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 *     multiplier is 3, user loses size * ratio + size * 2, etc.
 	 */
 	public void doSITE_NUKE(FtpRequest request, PrintWriter out) {
-		if (!this._user.isNuker()) {
+		if (!_user.isNuker()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2513,13 +2538,14 @@ public class FtpConnection extends BaseFtpConnection {
 		} else {
 			reason = "";
 		}
-
+		//get nukees with string as key
 		Hashtable nukees = new Hashtable();
 		nukeRemoveCredits(nukeDir, nukees);
 
 		FtpResponse response = new FtpResponse(200, "NUKE suceeded");
-		Hashtable nukees2 = new Hashtable(nukees.size());
-
+		
+		//get nukees User with user as key
+		HashMap nukees2 = new HashMap(nukees.size());
 		for (Iterator iter = nukees.keySet().iterator(); iter.hasNext();) {
 
 			String username = (String) iter.next();
@@ -2540,7 +2566,7 @@ public class FtpConnection extends BaseFtpConnection {
 						+ username
 						+ ": "
 						+ e1.getMessage());
-				e1.printStackTrace();
+				logger.warn("", e1);
 				response.setMessage("NUKE failed");
 				out.print(response);
 				return;
@@ -2560,6 +2586,7 @@ public class FtpConnection extends BaseFtpConnection {
 				nukees2.put(user, nukees.get(username));
 			}
 		}
+		//rename
 		String toDir;
 		String toName = "[NUKED]-" + nukeDir.getName();
 		try {
@@ -2585,7 +2612,7 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(response);
 			return;
 		}
-
+		//update credits, nukedbytes, timesNuked, lastNuked
 		for (Iterator iter = nukees2.keySet().iterator(); iter.hasNext();) {
 			AbstractUser nukee = (AbstractUser) iter.next();
 			if (nukee == null)
@@ -2606,7 +2633,7 @@ public class FtpConnection extends BaseFtpConnection {
 					"Error writing userfile: " + e1.getMessage());
 				logger.log(Level.WARN, "Error writing userfile", e1);
 			}
-			response.addComment(nukee.getUsername() + " -" + debt + " bytes");
+			response.addComment(nukee.getUsername() + " -" + Bytes.formatBytes(debt.longValue()));
 		}
 		NukeEvent nuke =
 			new NukeEvent(
@@ -2617,8 +2644,8 @@ public class FtpConnection extends BaseFtpConnection {
 				multiplier,
 				reason,
 				nukees);
-		assert this.nukelog != null : "nukelog";
-		this.nukelog.add(nuke);
+		assert this._nukelog != null : "nukelog";
+		this._nukelog.add(nuke);
 		connManager.dispatchFtpEvent(nuke);
 		out.print(response);
 	}
@@ -2626,7 +2653,7 @@ public class FtpConnection extends BaseFtpConnection {
 	public void doSITE_NUKES(FtpRequest request, PrintWriter out) {
 		FtpResponse response =
 			(FtpResponse) FtpResponse.RESPONSE_200_COMMAND_OK.clone();
-		for (Iterator iter = nukelog.getAll().iterator(); iter.hasNext();) {
+		for (Iterator iter = _nukelog.getAll().iterator(); iter.hasNext();) {
 			response.addComment(iter.next());
 		}
 		out.print(response);
@@ -2676,7 +2703,7 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(FtpResponse.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN);
 			return;
 		}
-		if (!getConfig().checkPre(preDir, _user)) {
+		if (!getConfig().checkPre(_user, preDir)) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2909,6 +2936,7 @@ public class FtpConnection extends BaseFtpConnection {
 
 	public void doSITE_RESCAN(FtpRequest request, PrintWriter out) {
 		resetState();
+		boolean forceRescan = (request.hasArgument() && request.getArgument().equalsIgnoreCase("force"));
 		LinkedRemoteFile directory = currentDirectory;
 		//		LinkedRemoteFile sfvFile = null;
 		//
@@ -2962,7 +2990,17 @@ public class FtpConnection extends BaseFtpConnection {
 				continue;
 			}
 			String status;
-			long fileCheckSum = file.getCheckSum(true);
+			long fileCheckSum;
+			if(forceRescan) {
+				try {
+					fileCheckSum = file.getCheckSumFromSlave();
+				} catch (NoAvailableSlaveException e1) {
+					out.println("200- "+fileName+" NO SLAVE");
+					continue;
+				}
+			} else {
+				fileCheckSum = file.getCheckSum(true);
+			}
 			if (fileCheckSum == 0L) {
 				status = "FAILED - failed to checksum file";
 			} else if (checkSum.longValue() == fileCheckSum) {
@@ -2970,11 +3008,12 @@ public class FtpConnection extends BaseFtpConnection {
 			} else {
 				status = "FAILED - checksum missmatch";
 			}
+
 			out.println(
 				"200- "
 					+ fileName
 					+ " "
-					+ Long.toHexString(checkSum.longValue())
+					+ Checksum.formatChecksum(checkSum.longValue())
 					+ " "
 					+ status);
 			out.flush();
@@ -3113,7 +3152,7 @@ public class FtpConnection extends BaseFtpConnection {
 				+ "f "
 				+ Bytes.formatBytes(user.getDownloadedBytes())
 				+ " "
-				+ Bytes.formatBytes(user.getDownloadedFiles())
+				+ user.getDownloadedFiles()
 				+ "f ");
 		response.addComment(
 			"month: "
@@ -3133,7 +3172,7 @@ public class FtpConnection extends BaseFtpConnection {
 				+ "f "
 				+ Bytes.formatBytes(user.getDownloadedBytesWeek())
 				+ "b "
-				+ Bytes.formatBytes(user.getDownloadedFilesWeek())
+				+ user.getDownloadedFilesWeek()
 				+ "f ");
 		response.addComment(
 			"day: "
@@ -3274,7 +3313,7 @@ public class FtpConnection extends BaseFtpConnection {
 			(FtpResponse) FtpResponse.RESPONSE_200_COMMAND_OK.clone();
 		NukeEvent nuke;
 		try {
-			nuke = nukelog.get(toPath);
+			nuke = _nukelog.get(toPath);
 		} catch (ObjectNotFoundException ex) {
 			response.addComment(ex.getMessage());
 			out.print(response);
@@ -3316,7 +3355,7 @@ public class FtpConnection extends BaseFtpConnection {
 			response.addComment(nukeeName + ": restored " + amount + "bytes");
 		}
 		try {
-			nukelog.remove(toPath);
+			_nukelog.remove(toPath);
 		} catch (ObjectNotFoundException e) {
 			response.addComment("Error removing nukelog entry");
 		}
@@ -3477,7 +3516,7 @@ public class FtpConnection extends BaseFtpConnection {
 			String command = conn.getRequest().getCommand();
 			String username = user.getUsername();
 
-			if (getConfig().checkHideInWho(conn.getCurrentDirectory(), user)) {
+			if (getConfig().checkHideInWho(user, conn.getCurrentDirectory())) {
 				continue;
 			}
 			if (conn.isExecuting()) {
@@ -3571,7 +3610,7 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(new FtpResponse(200, "Can't wipe, directory not empty"));
 			return;
 		}
-		if (!getConfig().checkHideInWho(wipeFile, _user)) {
+		if (!getConfig().checkHideInWho(_user, wipeFile)) {
 			connManager.dispatchFtpEvent(
 				new DirectoryFtpEvent(_user, "WIPE", wipeFile));
 		}
@@ -3645,7 +3684,11 @@ public class FtpConnection extends BaseFtpConnection {
 	 */
 	public void doSTAT(FtpRequest request, PrintWriter out) {
 		reset();
-		out.print(FtpResponse.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
+		if(request.hasArgument()) {
+			doLIST(request, out);
+		} else {
+			out.print(FtpResponse.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM);
+		}
 		return;
 	}
 
@@ -3706,7 +3749,8 @@ public class FtpConnection extends BaseFtpConnection {
 			//			}
 		}
 
-		if (!VirtualDirectory.isLegalFileName(targetFilename) || !getConfig().checkPrivPath(targetDir, _user)) {
+		if (!VirtualDirectory.isLegalFileName(targetFilename)
+			|| !getConfig().checkPrivPath(_user, targetDir)) {
 			out.print(
 				new FtpResponse(
 					553,
@@ -3714,7 +3758,7 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		if (!getConfig().checkUpload(targetDir, _user)) {
+		if (!getConfig().checkUpload(_user, targetDir)) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -3803,7 +3847,7 @@ public class FtpConnection extends BaseFtpConnection {
 						+ _rslave.getName()
 						+ ": "
 						+ ex.getMessage()));
-			logger.log(Level.WARN, "IO Error from " + _rslave.getName(), ex);
+			logger.log(Level.WARN, "from " + _rslave.getName(), ex);
 			return;
 		}
 
@@ -3898,7 +3942,7 @@ public class FtpConnection extends BaseFtpConnection {
 			response.addComment("Error saving userfile: " + e1.getMessage());
 		}
 
-		if (!getConfig().checkHideInWho(_transferFile, _user)) {
+		if (!getConfig().checkHideInWho(_user, _transferFile)) {
 			connManager.dispatchFtpEvent(
 				new TransferEvent(
 					_user,

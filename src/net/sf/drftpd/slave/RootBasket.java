@@ -7,10 +7,16 @@
 package net.sf.drftpd.slave;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
+
+import org.apache.log4j.Logger;
 
 import net.sf.drftpd.FatalException;
 
@@ -19,11 +25,12 @@ import se.mog.io.File;
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
-//TODO SECURITY: check so that we never get a non-absolute path
+//TODO SECURITY: check so that we never get outside of a rootbasket
 public class RootBasket {
+	private static Logger logger = Logger.getLogger(RootBasket.class);
 	private Collection roots;
 
-	public RootBasket(Collection roots) throws FileNotFoundException {
+	public RootBasket(Collection roots) throws IOException {
 		/** sanity checks **/
 		validateRoots(roots);
 		this.roots = new ArrayList(roots);
@@ -85,7 +92,7 @@ public class RootBasket {
 			path + " not found in any root in the RootBasket");
 		
 	}
-	//TODO check if paths are under different or same mount
+
 	public long getTotalDiskSpaceAvailable() {
 		long totalDiskSpaceAvailable = 0;
 
@@ -97,7 +104,6 @@ public class RootBasket {
 		return totalDiskSpaceAvailable;
 	}
 
-	//TODO check if paths are under different or same mount
 	public long getTotalDiskSpaceCapacity() {
 		long totalDiskSpaceCapacity = 0;
 
@@ -113,26 +119,63 @@ public class RootBasket {
 		return roots.iterator();
 	}
 
-	//TODO check that no paths are under same mount or overlap each other.
-	private void validateRoots(Collection roots) throws FileNotFoundException {
+	private static void validateRoots(Collection roots) throws IOException {
+		File mountsArr[] = File.listMounts();
+		ArrayList mounts = new ArrayList(mountsArr.length);
+		for (int i = 0; i < mountsArr.length; i++) {
+			mounts.add(mountsArr[i]);
+		}
+		Collections.sort(mounts, new Comparator() {
+			public boolean equals(Object obj) {
+				return obj.getClass() == this.getClass();
+			}
+
+			public int compare(Object o1, Object o2) {
+				return compare((File)o1, (File)o2);
+			}
+			public int compare(File o1, File o2) {
+				int thisVal = o1.getPath().length();
+				int anotherVal = o2.getPath().length();
+				return (thisVal<anotherVal ? 1 : (thisVal==anotherVal ? 0 : -1));
+			}
+		});
+
+		Hashtable usedMounts = new Hashtable();
 		for (Iterator iter = roots.iterator(); iter.hasNext();) {
 			Object o = iter.next();
-			if (!(o instanceof Root))
-				throw new ClassCastException(
-					o.getClass().getName() + " is not net.sf.drftpd.slave.Root");
+			assert o instanceof Root;
+
 			Root root = (Root) o;
 			File rootFile = root.getFile();
-			if (!rootFile.exists())
-				rootFile.mkdirs();
+			if (!rootFile.exists()) {
+				if(!rootFile.mkdirs()) {
+					throw new IOException("mkdirs() failed on "+rootFile.getPath());
+				}
+			}
 			if (!rootFile.exists())
 				throw new FileNotFoundException("Invalid root: " + rootFile);
+			
+			String fullpath = rootFile.getAbsolutePath();
+			
+			for (Iterator iterator = mounts.iterator(); iterator.hasNext();) {
+				File mount = (File) iterator.next();
+				if(fullpath.startsWith(mount.getPath())) {
+					logger.info(fullpath+" in mount "+mount.getPath());
+					if(usedMounts.get(mount.getPath()) != null) {
+						throw new IOException("Multiple roots in mount "+mount.getPath());
+					}
+					usedMounts.put(mount.getPath(), new Object());
+					break;
+				}
+			}
+
 			for (Iterator iterator = roots.iterator(); iterator.hasNext();) {
 				Root root2 = (Root) iterator.next();
 				if (root == root2)
 					continue;
 				if (root2.getPath().startsWith(root.getPath())) {
 					throw new FatalException(
-						"Overlapping roots: " + root + " and " + root2);
+						"Overlapping roots: " + root.getPath() + " and " + root2.getPath());
 				}
 			}
 		}

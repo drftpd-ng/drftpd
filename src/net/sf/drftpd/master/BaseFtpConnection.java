@@ -406,7 +406,10 @@ public class BaseFtpConnection implements Runnable {
 			if (connManager.isShutdown()) {
 				stop(connManager.getShutdownMessage());
 			} else {
-				out.println("220 Service ready for new user.");
+				FtpResponse response = new FtpResponse(200, "Distributed FTP Daemon ready for new user.");
+				response.addComment("  This program is free software; you can redistribute it and/or");
+				response.addComment("  modify it under the terms of the GNU General Public License");
+				out.print(response);
 			}
 			while (!stopRequest) {
 				out.flush();

@@ -198,9 +198,8 @@ public class SlaveManagerImpl
 			List children = doc.getRootElement().getChildren("slave");
 			rslaves = new ArrayList(children.size());
 			for (Iterator i = children.iterator(); i.hasNext();) {
-				Element slaveElement = (Element) i.next();
-				RemoteSlave rslave = loadRSlave(slaveElement);
-				rslaves.add(rslave);
+				//slavemanager is set in the slavemanager constructor
+				rslaves.add(loadRSlave((Element) i.next()));
 			}
 			rslaves.trimToSize();
 		} catch (Exception ex) {
@@ -222,7 +221,6 @@ public class SlaveManagerImpl
 			JDOMRemoteFile xmlroot =
 				new JDOMRemoteFile(doc.getRootElement(), rslaves);
 			root = new LinkedRemoteFile(xmlroot, cm.getConfig());
-			System.out.println("FINISHED");
 		} catch (FileNotFoundException ex) {
 			logger.info("files.xml not found, new file will be created.");
 			root = new LinkedRemoteFile(cm.getConfig());

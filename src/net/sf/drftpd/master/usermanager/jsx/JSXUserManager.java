@@ -115,6 +115,15 @@ public class JSXUserManager extends UserManager {
 		}
 	}
 
+	public Collection getAllUsersByGroup(String group) throws IOException {
+		Collection users = getAllUsers();
+		for (Iterator iter = users.iterator(); iter.hasNext();) {
+			JSXUser user = (JSXUser) iter.next();
+			if(!user.getGroupName().equals(group)) iter.remove();
+		}
+		return users;
+	}
+
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.usermanager.UserManager#getAllUserNames()
 	 */

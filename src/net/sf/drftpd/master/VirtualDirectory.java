@@ -26,7 +26,8 @@ public class VirtualDirectory {
 	 * </pre>
 	 * @return true if success
 	 */
-	public static void printList(Collection files, Writer out) throws IOException {
+	public static void printList(Collection files, Writer out)
+		throws IOException {
 
 		// print file list
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
@@ -43,49 +44,20 @@ public class VirtualDirectory {
 	 * </pre>
 	 * @return true if success
 	 */
-	public static void printNList(Collection fileList, boolean bDetail, Writer out) throws IOException {
+	public static void printNList(
+		Collection fileList,
+		boolean bDetail,
+		Writer out)
+		throws IOException {
 
-
-		// check pattern
-		//lsDirName = replaceDots(lsDirName);
-//		int slashIndex = lsDirName.lastIndexOf('/');
-//		if ((slashIndex != -1) && (slashIndex != (lsDirName.length() - 1))) {
-//			//pattern = lsDirName.substring(slashIndex + 1);
-//			lsDirName = lsDirName.substring(0, slashIndex + 1);
-//		}
-
-		// check directory
-		//File lstDirObj = new File(lsDirName);
-		//LinkedRemoteFile lstDirObj = dir.lookupFile(lsDirName);
-
-		//if (!lstDirObj.isDirectory()) {
-		//	return false;
-		//}
-
-		// get file list
-		///RemoteFile flLst[];
-		//if ((pattern == null) || pattern.equals("*") || pattern.equals("")) {
-		//	flLst = lstDirObj.listFiles();
-		//} else {
-		//	flLst = lstDirObj.listFiles(); //new FileRegularFilter(pattern));
-		//}
-
-		// print file list
-		//if (flLst != null) {
-			//for (int i = 0; i < flLst.length; i++) {
-			for (Iterator iter = fileList.iterator(); iter.hasNext();) {
-				LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-				
-		//		if ((!bAll) && flLst[i].isHidden()) {
-		//			continue;
-		//		}
-				if (bDetail) {
-					printLine(file, out);
-				} else {
-					out.write(file.getName() + NEWLINE);
-				}
+		for (Iterator iter = fileList.iterator(); iter.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			if (bDetail) {
+				printLine(file, out);
+			} else {
+				out.write(file.getName() + NEWLINE);
 			}
-		//}
+		}
 	}
 
 	/**
@@ -122,11 +94,11 @@ public class VirtualDirectory {
 
 		StringBuffer sb = new StringBuffer(13);
 		sb.append(fl.isDirectory() ? 'd' : '-');
-//		if (fl.isDirectory()) {
-//			sb.append('d');
-//		} else {
-//			sb.append('-');
-//		}
+		//		if (fl.isDirectory()) {
+		//			sb.append('d');
+		//		} else {
+		//			sb.append('-');
+		//		}
 
 		//		if (fl.canRead()) {
 		sb.append('r');
@@ -151,13 +123,17 @@ public class VirtualDirectory {
 
 	public static boolean isLegalFileName(String fileName) {
 		assert fileName != null;
-		return !(fileName.indexOf("/") != -1) && !fileName.equals(".") && !fileName.equals("..");
+		return !(fileName.indexOf("/") != -1)
+			&& !fileName.equals(".")
+			&& !fileName.equals("..");
 	}
 	/**
 	 * Get each directory line.
 	 */
-	public static void printLine(RemoteFileInterface fl, Writer out) throws IOException {
-		if(fl instanceof LinkedRemoteFile && !((LinkedRemoteFile)fl).isAvailable())  {
+	public static void printLine(RemoteFileInterface fl, Writer out)
+		throws IOException {
+		if (fl instanceof LinkedRemoteFile
+			&& !((LinkedRemoteFile) fl).isAvailable()) {
 			out.write("------");
 		} else {
 			out.write(getPermission(fl));
@@ -173,7 +149,8 @@ public class VirtualDirectory {
 		out.write(DELIM);
 		out.write(DateUtils.getUnixDate(fl.lastModified()));
 		out.write(DELIM);
-		if(fl instanceof LinkedRemoteFile && !((LinkedRemoteFile)fl).isAvailable())  {
+		if (fl instanceof LinkedRemoteFile
+			&& !((LinkedRemoteFile) fl).isAvailable()) {
 			out.write(fl.getName() + "-OFFLINE");
 		} else {
 			out.write(fl.getName());

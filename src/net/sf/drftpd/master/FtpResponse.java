@@ -77,6 +77,9 @@ public class FtpResponse implements Cloneable {
 	public static final FtpResponse RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED =
 		new FtpResponse(426, "Connection closed; transfer aborted.");
 		
+	/** 450 Requested file action not taken. */
+	public static final FtpResponse RESPONSE_450_REQUESTED_ACTION_NOT_TAKEN = 
+		new FtpResponse(450, "Requested file action not taken.");
 	/** 450 No transfer-slave(s) available
 	 * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
 	 */

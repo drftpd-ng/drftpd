@@ -687,6 +687,7 @@ public abstract class AbstractUser extends User {
 
 		this.downloadedBytesWeek = 0;
 		this.uploadedBytesWeek = 0;
+		//TODO wkly_allotment
 	}
 
 	/**

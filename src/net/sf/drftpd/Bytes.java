@@ -68,6 +68,7 @@ public class Bytes {
 	 * Make sure argument is in upper case
 	 */
 	public static long parseBytes(String str) throws NumberFormatException {
+		str = str.toUpperCase();
 		if (str.endsWith("B"))
 			str = str.substring(0, str.length() - 1);
 		if (str.endsWith("K"))

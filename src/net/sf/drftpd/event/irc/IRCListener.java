@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
@@ -25,6 +26,7 @@ import java.util.Properties;
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.Nukee;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.event.DirectoryFtpEvent;
@@ -88,7 +90,12 @@ public class IRCListener implements FtpListener, Observer {
 		return user.getUsername() + "/" + user.getGroupName();
 	}
 
-	public static Collection topFileUploaders2(Collection files) {
+	/**
+	 * Used from FtpConnection
+	 * @param files Collection of LinkedRemoteFile objects
+	 * @return
+	 */
+	public static Collection topFileUploaders(Collection files) {
 		ArrayList ret = new ArrayList();
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
@@ -141,7 +148,8 @@ public class IRCListener implements FtpListener, Observer {
 
 		_cm = cm;
 		//Debug.setDebugLevel(Debug.FAULT);
-		Debug.setOutputStream(new PrintStream(new FileOutputStream("martyr.out")));
+		Debug.setOutputStream(
+			new PrintStream(new FileOutputStream("martyr.out")));
 
 		reload();
 
@@ -192,7 +200,7 @@ public class IRCListener implements FtpListener, Observer {
 				env.add("message", mevent.getMessage());
 				say(SimplePrintf.jprintf(_ircCfg.getProperty("shutdown"), env));
 			} else {
-				logger.debug("Unhandled event: "+event);
+				logger.debug("Unhandled event: " + event);
 			}
 		} catch (FormatterException ex) {
 			say(event.getCommand() + " FormatterException: " + ex.getMessage());
@@ -223,216 +231,215 @@ public class IRCListener implements FtpListener, Observer {
 			say(SimplePrintf.jprintf(format, env));
 
 		} else if (direvent.getCommand().equals("STOR")) {
-			LinkedRemoteFile dir;
-			try {
-				dir = direvent.getDirectory().getParentFile();
-			} catch (FileNotFoundException e) {
-				throw new FatalException(e);
-			}
-			SFVFile sfvfile;
-			try {
-				sfvfile = dir.lookupSFVFile();
-				// throws IOException, ObjectNotFoundException, NoAvailableSlaveException
-			} catch (ObjectNotFoundException ex) {
-				logger.info(
-					"No sfv file in "
-						+ direvent.getDirectory().getPath()
-						+ ", can't publish race info",
-					ex);
-				return;
-			} catch (NoAvailableSlaveException e) {
-				logger.info("No available slave with .sfv", e);
-				return;
-			} catch (IOException e) {
-				logger.warn("IO error reading .sfv", e);
-				return;
-			}
+			actionPerformedDirectorySTOR(direvent);
+		} else {
+			logger.debug("Unhandled DirectoryEvent: " + direvent);
+		}
 
-			if (!sfvfile.hasFile(direvent.getDirectory().getName()))
-				return;
+	}
 
-			int halfway = (int) Math.ceil((double) sfvfile.size() / 2);
-			///// start ///// start ////
+	/**
+	 * @param direvent
+	 */
+	private void actionPerformedDirectorySTOR(DirectoryFtpEvent direvent)
+		throws FormatterException {
+		LinkedRemoteFile dir;
+		try {
+			dir = direvent.getDirectory().getParentFile();
+		} catch (FileNotFoundException e) {
+			throw new FatalException(e);
+		}
+		SFVFile sfvfile;
+		try {
+			sfvfile = dir.lookupSFVFile();
+			// throws IOException, ObjectNotFoundException, NoAvailableSlaveException
+		} catch (ObjectNotFoundException ex) {
+			logger.info(
+				"No sfv file in "
+					+ direvent.getDirectory().getPath()
+					+ ", can't publish race info",
+				ex);
+			return;
+		} catch (NoAvailableSlaveException e) {
+			logger.info("No available slave with .sfv", e);
+			return;
+		} catch (IOException e) {
+			logger.warn("IO error reading .sfv", e);
+			return;
+		}
 
-			//check if new racer
-			String username = direvent.getUser().getUsername();
-			if (sfvfile.finishedFiles() != 1) {
-				for (Iterator iter = sfvfile.getFiles().iterator();
-					iter.hasNext();
-					) {
-					LinkedRemoteFile sfvFileEntry =
-						(LinkedRemoteFile) iter.next();
-					if (sfvFileEntry == direvent.getDirectory())
-						continue;
-					if (sfvFileEntry.getUsername().equals(username))
-						break;
-					if (!iter.hasNext()) {
+		if (!sfvfile.hasFile(direvent.getDirectory().getName()))
+			return;
 
-						Ret obj =
-							getPropertyFileSuffix(
-								"store.embraces",
-								direvent.getDirectory());
-						String format = obj.format;
-						;
-						LinkedRemoteFile section = obj.section;
+		int halfway = (int) Math.ceil((double) sfvfile.size() / 2);
+		///// start ///// start ////
 
-						ReplacerEnvironment env =
-							new ReplacerEnvironment(globalEnv);
-						//						env.add("user", direvent.getUser().getUsername());
-						//						env.add("group", direvent.getUser().getGroup());
-						//						env.add("section", section.getPath());
-						//						env.add(
-						//							"path",
-						//							dir.getPath().substring(
-						//								section.getPath().length()));
-						fillEnvSection(env, direvent, section, dir);
-						env.add(
-							"filesleft",
-							Integer.toString(
-								sfvfile.size() - sfvfile.finishedFiles()));
+		//check if new racer
+		String username = direvent.getUser().getUsername();
+		if (sfvfile.finishedFiles() != 1) {
+			for (Iterator iter = sfvfile.getFiles().iterator();
+				iter.hasNext();
+				) {
+				LinkedRemoteFile sfvFileEntry = (LinkedRemoteFile) iter.next();
+				if (sfvFileEntry == direvent.getDirectory())
+					continue;
+				if (sfvFileEntry.getUsername().equals(username))
+					break;
+				if (!iter.hasNext()) {
 
-						say(SimplePrintf.jprintf(format, env));
-					}
-				}
-			}
+					Ret obj =
+						getPropertyFileSuffix(
+							"store.embraces",
+							direvent.getDirectory());
+					String format = obj.format;
+					;
+					LinkedRemoteFile section = obj.section;
 
-			if (sfvfile.finishedFiles() == sfvfile.size()) {
-				Collection racers = topFileUploaders2(sfvfile.getFiles());
-				Ret ret = getPropertyFileSuffix("store.complete", dir);
-
-				String format = ret.format;
-				LinkedRemoteFile section = ret.section;
-
-				ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
-
-				try {
-					fillEnvSection(
-						env,
-						direvent,
-						section,
-						direvent.getDirectory().getParentFile());
-				} catch (FileNotFoundException e6) {
-					logger.log(Level.FATAL, "", e6);
-				}
-				env.add("racers", Integer.toString(racers.size()));
-				env.add("files", Integer.toString(sfvfile.size()));
-				env.add("size", Bytes.formatBytes(sfvfile.getTotalBytes()));
-				env.add(
-					"speed",
-					Bytes.formatBytes(sfvfile.getXferspeed()) + "/s");
-				say(SimplePrintf.jprintf(format, env));
-
-				Ret ret2 = getPropertyFileSuffix("store.complete.racer", dir);
-				ReplacerFormat raceformat;
-				// already have section from ret.section
-				raceformat = ReplacerFormat.createFormat(ret2.format);
-
-				int position = 1;
-				for (Iterator iter = racers.iterator(); iter.hasNext();) {
-					UploaderPosition stat = (UploaderPosition) iter.next();
-
-					User raceuser;
-					try {
-						raceuser =
-							_cm.getUsermanager().getUserByName(
-								stat.getUsername());
-					} catch (NoSuchUserException e2) {
-						continue;
-					} catch (IOException e2) {
-						logger.log(Level.FATAL, "Error reading userfile", e2);
-						continue;
-					}
-					ReplacerEnvironment raceenv =
+					ReplacerEnvironment env =
 						new ReplacerEnvironment(globalEnv);
-
-					raceenv.add("user", raceuser.getUsername());
-					raceenv.add("group", raceuser.getGroupName());
-
-					raceenv.add("position", new Integer(position++));
-					raceenv.add("size", Bytes.formatBytes(stat.getBytes()));
-					raceenv.add("files", Integer.toString(stat.getFiles()));
-					raceenv.add(
-						"percent",
+					//						env.add("user", direvent.getUser().getUsername());
+					//						env.add("group", direvent.getUser().getGroup());
+					//						env.add("section", section.getPath());
+					//						env.add(
+					//							"path",
+					//							dir.getPath().substring(
+					//								section.getPath().length()));
+					fillEnvSection(env, direvent, section, dir);
+					env.add(
+						"filesleft",
 						Integer.toString(
-							stat.getFiles() * 100 / sfvfile.size())
-							+ "%");
-					raceenv.add(
-						"speed",
-						Bytes.formatBytes(stat.getXferspeed()) + "/s");
+							sfvfile.size() - sfvfile.finishedFiles()));
 
-					say(SimplePrintf.jprintf(raceformat, raceenv));
-
+					say(SimplePrintf.jprintf(format, env));
 				}
-				//HALFWAY
-			} else if (
-				sfvfile.size() >= 4 && sfvfile.finishedFiles() == halfway) {
-				Collection uploaders = topFileUploaders2(sfvfile.getFiles());
-				ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
-				UploaderPosition stat =
-					(UploaderPosition) uploaders.iterator().next();
+			}
+		}
 
-				env.add(
-					"leadspeed",
-					Bytes.formatBytes(stat.getXferspeed()) + "/s");
-				env.add("leadfiles", Integer.toString(stat.getFiles()));
-				env.add("leadsize", Bytes.formatBytes(stat.getBytes()));
-				env.add(
-					"leadpercent",
+		//COMPLETE
+		if (sfvfile.finishedFiles() == sfvfile.size()) {
+			Collection racers = topFileUploaders(sfvfile.getFiles());
+			Ret ret = getPropertyFileSuffix("store.complete", dir);
+			String format = ret.format;
+			LinkedRemoteFile section = ret.section;
+
+			ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
+
+			try {
+				fillEnvSection(
+					env,
+					direvent,
+					section,
+					direvent.getDirectory().getParentFile());
+			} catch (FileNotFoundException e6) {
+				logger.log(Level.FATAL, "", e6);
+			}
+			env.add("racers", Integer.toString(racers.size()));
+			env.add("files", Integer.toString(sfvfile.size()));
+			env.add("size", Bytes.formatBytes(sfvfile.getTotalBytes()));
+			env.add("speed", Bytes.formatBytes(sfvfile.getXferspeed()) + "/s");
+			say(SimplePrintf.jprintf(format, env));
+
+			Ret ret2 = getPropertyFileSuffix("store.complete.racer", dir);
+			ReplacerFormat raceformat;
+			// already have section from ret.section
+			raceformat = ReplacerFormat.createFormat(ret2.format);
+
+			int position = 1;
+			for (Iterator iter = racers.iterator(); iter.hasNext();) {
+				UploaderPosition stat = (UploaderPosition) iter.next();
+
+				User raceuser;
+				try {
+					raceuser =
+						_cm.getUsermanager().getUserByName(stat.getUsername());
+				} catch (NoSuchUserException e2) {
+					continue;
+				} catch (IOException e2) {
+					logger.log(Level.FATAL, "Error reading userfile", e2);
+					continue;
+				}
+				ReplacerEnvironment raceenv =
+					new ReplacerEnvironment(globalEnv);
+
+				raceenv.add("user", raceuser.getUsername());
+				raceenv.add("group", raceuser.getGroupName());
+
+				raceenv.add("position", new Integer(position++));
+				raceenv.add("size", Bytes.formatBytes(stat.getBytes()));
+				raceenv.add("files", Integer.toString(stat.getFiles()));
+				raceenv.add(
+					"percent",
 					Integer.toString(stat.getFiles() * 100 / sfvfile.size())
 						+ "%");
-				env.add("filesleft", Integer.toString(sfvfile.filesLeft()));
-				User leaduser;
-				try {
-					leaduser =
-						_cm.getUsermanager().getUserByName(stat.getUsername());
-					env.add("leaduser", leaduser.getUsername());
-					env.add("leadgroup", leaduser.getGroupName());
-				} catch (NoSuchUserException e3) {
-					logger.log(Level.WARN, "", e3);
-				} catch (IOException e3) {
-					logger.log(Level.WARN, "", e3);
-				}
+				raceenv.add(
+					"speed",
+					Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
-				Ret obj = getPropertyFileSuffix("store.halfway", dir);
-				String format = (String) obj.format;
-				LinkedRemoteFile section = obj.section;
+				say(SimplePrintf.jprintf(raceformat, raceenv));
 
-				fillEnvSection(env, direvent, section);
+			}
+			//HALFWAY
+		} else if (sfvfile.size() >= 4 && sfvfile.finishedFiles() == halfway) {
+			Collection uploaders = topFileUploaders(sfvfile.getFiles());
+			ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
+			UploaderPosition stat =
+				(UploaderPosition) uploaders.iterator().next();
 
-				say(SimplePrintf.jprintf(format, env));
-
-				//					for (Iterator iter =
-				//						topFileUploaders2(sfvfile.getFiles()).iterator();
-				//						iter.hasNext();
-				//						) {
-				//						UploaderPosition stat = (UploaderPosition) iter.next();
-				//						String str1;
-				//						try {
-				//							str1 =
-				//								formatUser(
-				//									_cm.getUsermanager().getUserByName(
-				//										stat.getUsername()));
-				//						} catch (NoSuchUserException e2) {
-				//							continue;
-				//						} catch (IOException e2) {
-				//							logger.log(
-				//								Level.FATAL,
-				//								"Error reading userfile",
-				//								e2);
-				//							continue;
-				//						}
-				//						say(
-				//							str1
-				//								+ " ["
-				//								+ stat.getFiles()
-				//								+ "f/"
-				//								+ Bytes.formatBytes(stat.getBytes())
-				//								+ "]");
-				//					}
+			env.add("leadspeed", Bytes.formatBytes(stat.getXferspeed()) + "/s");
+			env.add("leadfiles", Integer.toString(stat.getFiles()));
+			env.add("leadsize", Bytes.formatBytes(stat.getBytes()));
+			env.add(
+				"leadpercent",
+				Integer.toString(stat.getFiles() * 100 / sfvfile.size()) + "%");
+			env.add("filesleft", Integer.toString(sfvfile.filesLeft()));
+			User leaduser;
+			try {
+				leaduser =
+					_cm.getUsermanager().getUserByName(stat.getUsername());
+				env.add("leaduser", leaduser.getUsername());
+				env.add("leadgroup", leaduser.getGroupName());
+			} catch (NoSuchUserException e3) {
+				logger.log(Level.WARN, "", e3);
+			} catch (IOException e3) {
+				logger.log(Level.WARN, "", e3);
 			}
 
-		} else {
-			logger.debug("Unhandled DirectoryEvent: "+direvent);
+			Ret obj = getPropertyFileSuffix("store.halfway", dir);
+			String format = (String) obj.format;
+			LinkedRemoteFile section = obj.section;
+
+			fillEnvSection(env, direvent, section);
+
+			say(SimplePrintf.jprintf(format, env));
+
+			//					for (Iterator iter =
+			//						topFileUploaders2(sfvfile.getFiles()).iterator();
+			//						iter.hasNext();
+			//						) {
+			//						UploaderPosition stat = (UploaderPosition) iter.next();
+			//						String str1;
+			//						try {
+			//							str1 =
+			//								formatUser(
+			//									_cm.getUsermanager().getUserByName(
+			//										stat.getUsername()));
+			//						} catch (NoSuchUserException e2) {
+			//							continue;
+			//						} catch (IOException e2) {
+			//							logger.log(
+			//								Level.FATAL,
+			//								"Error reading userfile",
+			//								e2);
+			//							continue;
+			//						}
+			//						say(
+			//							str1
+			//								+ " ["
+			//								+ stat.getFiles()
+			//								+ "f/"
+			//								+ Bytes.formatBytes(stat.getBytes())
+			//								+ "]");
+			//					}
 		}
 
 	}
@@ -443,6 +450,7 @@ public class IRCListener implements FtpListener, Observer {
 		ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
 		env.add("size", Bytes.formatBytes(event.getSize()));
 		//TODO nuke section, we don't have a LinkedRemoteFile :(
+		//TODO nuke usertop
 		//env.add("section", )
 
 		//Ret ret = getPropertyFileSuffix("nuke", event.getPath());
@@ -453,14 +461,60 @@ public class IRCListener implements FtpListener, Observer {
 		env.add("user", event.getUser().getUsername());
 		env.add("group", event.getUser().getGroupName());
 
-		env.add("nukees", event.getNukees().keySet());
+		//env.add("nukees", event.getNukees().keySet());
+
 		if (cmd.equals("NUKE")) {
 			say(SimplePrintf.jprintf(_ircCfg.getProperty("nuke"), env));
+			
+			ReplacerFormat raceformat= ReplacerFormat.createFormat(_ircCfg.getProperty("nuke.nukees"));
+
+			int position = 1;
+			for (Iterator iter = event.getNukees2().iterator(); iter.hasNext();) {
+				UploaderPosition stat = (UploaderPosition) iter.next();
+
+				User raceuser;
+				try {
+					raceuser =
+						_cm.getUsermanager().getUserByName(stat.getUsername());
+				} catch (NoSuchUserException e2) {
+					continue;
+				} catch (IOException e2) {
+					logger.log(Level.FATAL, "Error reading userfile", e2);
+					continue;
+				}
+				ReplacerEnvironment raceenv =
+					new ReplacerEnvironment(globalEnv);
+
+				raceenv.add("user", raceuser.getUsername());
+				raceenv.add("group", raceuser.getGroupName());
+
+				raceenv.add("position", new Integer(position++));
+				raceenv.add("size", Bytes.formatBytes(stat.getBytes()));
+				raceenv.add("files", Integer.toString(stat.getFiles()));
+				raceenv.add(
+					"speed",
+					Bytes.formatBytes(stat.getXferspeed()) + "/s");
+
+				say(SimplePrintf.jprintf(raceformat, raceenv));
+
+			}
 		} else if (cmd.equals("UNNUKE")) {
 			say(SimplePrintf.jprintf(_ircCfg.getProperty("unnuke"), env));
 		}
 	}
 
+	public static ArrayList map2nukees(Map nukees) {
+		ArrayList ret = new ArrayList();
+		for (Iterator iter = nukees.entrySet().iterator(); iter.hasNext();) {
+			Map.Entry element = (Map.Entry) iter.next();
+			ret.add(
+				new Nukee(
+					(User) element.getKey(),
+					((Long) element.getValue()).longValue()));
+		}
+		Collections.sort(ret);
+		return ret;
+	}
 	/**
 	 * @param event
 	 */
@@ -511,17 +565,17 @@ public class IRCListener implements FtpListener, Observer {
 			SFVFile sfvfile;
 			try {
 				sfvfile = file.lookupSFVFile();
-				env.add("size", Bytes.formatBytes(sfvfile.size()));
-				env.add("files", "" + sfvfile.size());
-				env.add("speed", Bytes.formatBytes(sfvfile.getXferspeed()));
+				//env.add("size", Bytes.formatBytes(sfvfile.getTotalBytes()()));
+				env.add("totalfiles", "" + sfvfile.size());
+				env.add("totalspeed", Bytes.formatBytes(sfvfile.getXferspeed()));
 			} catch (Exception ex) {
 				//COULD BE multi-cd, PRE will have to get it owns fillEnvSection with sub-dir .sfv support!
 				logger.warn("Couldn't get SFV file in announce", ex);
-				env.add("size", Bytes.formatBytes(file.length()));
-				env.add("files", "" + file.getFiles().size());
+				//env.add("size", Bytes.formatBytes(file.length()));
+				env.add("totalfiles", "" + file.getFiles().size());
 			}
 		} else {
-			assert true : "Not a file or directory, what weird shit are we then?";
+			throw new Error("Not a file or directory, what weird shit are we then?");
 		}
 
 		LinkedRemoteFile dir;
@@ -534,8 +588,6 @@ public class IRCListener implements FtpListener, Observer {
 		} else {
 			dir = file;
 		}
-		logger.debug("section => " + section.getPath());
-		logger.debug("dir => " + dir.getPath());
 
 		env.add(
 			"path",
@@ -654,10 +706,12 @@ public class IRCListener implements FtpListener, Observer {
 	}
 
 	public String strippath(String path) {
-		if(!path.startsWith("/")) {
-			logger.debug("Path didn't start with /, unneeded call to strippath()?", new Throwable());
+		if (!path.startsWith("/")) {
+			logger.debug(
+				"Path didn't start with /, unneeded call to strippath()?",
+				new Throwable());
 			return path;
-		} 
+		}
 		return path.substring(1);
 	}
 
@@ -673,7 +727,7 @@ public class IRCListener implements FtpListener, Observer {
 					try {
 						updateBw(observer, msgc);
 					} catch (FormatterException e) {
-						say("[bw] FormatterException: "+e.getMessage());
+						say("[bw] FormatterException: " + e.getMessage());
 					}
 				} else if (message.equals("!slaves")) {
 					updateSlaves(observer, msgc);
@@ -683,11 +737,11 @@ public class IRCListener implements FtpListener, Observer {
 					} catch (FormatterException e) {
 						say("[speed] FormatterException: " + e.getMessage());
 					}
-				} else if(message.equals("!df")) {
+				} else if (message.equals("!df")) {
 					try {
 						updateDF(observer, msgc);
-					} catch(FormatterException e) {
-						say("[df] FormatterException: "+e.getMessage());
+					} catch (FormatterException e) {
+						say("[df] FormatterException: " + e.getMessage());
 					}
 				} else if (message.startsWith("!who")) {
 					try {
@@ -783,8 +837,6 @@ public class IRCListener implements FtpListener, Observer {
 							logger.warn("", e);
 						}
 					}
-				} else {
-					logger.debug("Unhandled IRC message: '"+message+"'");
 				}
 			}
 			// Don't bother martyr with our exceptions.
@@ -794,11 +846,11 @@ public class IRCListener implements FtpListener, Observer {
 		}
 	}
 
-	private void updateBw(Observable observer, MessageCommand command) throws FormatterException {
+	private void updateBw(Observable observer, MessageCommand command)
+		throws FormatterException {
 		SlaveStatus status = _cm.getSlaveManager().getAllStatus();
 
 		ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
-
 
 		fillEnvSpace(env, status);
 
@@ -809,13 +861,14 @@ public class IRCListener implements FtpListener, Observer {
 	 * @param observer
 	 * @param msgc
 	 */
-	private void updateDF(Observable observer, MessageCommand msgc) throws FormatterException {
+	private void updateDF(Observable observer, MessageCommand msgc)
+		throws FormatterException {
 		SlaveStatus status = getSlaveManager().getAllStatus();
 		ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
-		
+
 		fillEnvSpace(env, status);
-		
-		say(SimplePrintf.jprintf(_ircCfg.getProperty("diskfree"), env));		
+
+		say(SimplePrintf.jprintf(_ircCfg.getProperty("diskfree"), env));
 	}
 
 	private void updateSlaves(Observable observer, MessageCommand updated) {
@@ -925,9 +978,9 @@ public class IRCListener implements FtpListener, Observer {
 			BaseFtpConnection conn = (BaseFtpConnection) iter.next();
 			try {
 				User connUser = conn.getUser();
-			if (!first) {
-				status.append(separator);
-			}
+				if (!first) {
+					status.append(separator);
+				}
 				if (conn.isAuthenticated()
 					&& conn.getUser().getUsername().equals(username)) {
 
@@ -938,13 +991,18 @@ public class IRCListener implements FtpListener, Observer {
 							+ "s");
 
 					if (!conn.isExecuting()) {
-						if (!getConfig().checkHideInWho(conn.getTransferFile(), connUser))
+						if (!getConfig()
+							.checkHideInWho(connUser, conn.getTransferFile()))
 							continue;
 						first = false;
 						status.append(SimplePrintf.jprintf(formatidle, env));
 
 					} else if (conn.isTransfering()) {
-						if (_cm.getConfig().checkHideInWho(conn.getCurrentDirectory(), connUser))
+						if (_cm
+							.getConfig()
+							.checkHideInWho(
+								connUser,
+								conn.getCurrentDirectory()))
 							continue;
 						first = false;
 						if (conn.isTransfering()) {
@@ -1011,7 +1069,8 @@ public class IRCListener implements FtpListener, Observer {
 				} catch (NoSuchUserException e) {
 					continue;
 				}
-				if (getConfig().checkHideInWho(conn.getCurrentDirectory(), user))
+				if (getConfig()
+					.checkHideInWho(user, conn.getCurrentDirectory()))
 					continue;
 				StringBuffer status = new StringBuffer();
 				env.add(
