@@ -15,6 +15,8 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.InvalidDirectoryException;
@@ -30,6 +32,11 @@ import net.sf.drftpd.slave.RemoteSlave;
  */
 public class LinkedRemoteFile extends RemoteFile implements Serializable {
 
+	private static Logger logger =
+		Logger.getLogger("net.sf.drftpd.remotefile.LinkedRemoteFile");
+	static {
+		logger.setLevel(Level.ALL);
+	}
 	/**
 	 * @author mog
 	 *

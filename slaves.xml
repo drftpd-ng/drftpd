@@ -1,7 +1,7 @@
 <slaves>
     <slave>
 	<name>mog</name>
-	<mask>drftpd@localhost</mask>
-	<mask>*@*.043-58-73746f31.cust.bredbandsbolaget.se</mask>
+	<mask>mog@*.043-58-73746f31.cust.bredbandsbolaget.se</mask>
+	<mask>*@localhost</mask>
     </slave>
 </slaves>
