@@ -77,7 +77,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  * @author zubov
- * @version $Id: RemoteSlave.java,v 1.64 2004/11/06 06:51:15 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.65 2004/11/06 08:04:33 zubov Exp $
  */
 public class RemoteSlave implements Runnable, Comparable, Serializable {
     private static final long serialVersionUID = -6973935289361817125L;
@@ -352,10 +352,8 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
             return false;
         } catch (IOException e) {
             setOffline(e);
-
             return false;
         }
-
         return isAvailable();
     }
 
@@ -425,7 +423,13 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     public void simpleDelete(String path) {
         try {
             String index = issueDeleteToSlave(path);
-            fetchResponse(index);
+            AsyncResponse ar = fetchResponse(index);
+            if (ar instanceof AsyncResponseException) {
+                Throwable t = ((AsyncResponseException) ar).getThrowable();
+                if (t instanceof IOException) {
+                    throw (IOException) t;
+                }
+            }
         } catch (FileNotFoundException e) {
             return;
         } catch (IOException e) {
@@ -446,7 +450,13 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     public void simpleRename(String from, String toDirPath, String toName) {
         try {
             String index = issueRenameToSlave(from, toDirPath, toName);
-            fetchResponse(index);
+            AsyncResponse ar = fetchResponse(index);
+            if (ar instanceof AsyncResponseException) {
+                Throwable t = ((AsyncResponseException) ar).getThrowable();
+                if (t instanceof IOException) {
+                    throw (IOException) t;
+                }
+            }
         } catch (IOException e) {
             setOffline(e);
             addQueueRename(from, toDirPath + "/" + toName);
@@ -494,6 +504,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         class RemergeThread implements Runnable {
             public void run() {
                 try {
+                    
                     initializeSlaveAfterThreadIsRunning();
                 } catch (IOException e) {
                     setOffline(e);
@@ -502,7 +513,9 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
                 }
             }
         }
-        new Thread(new RemergeThread()).start();
+        Thread t = new Thread(new RemergeThread());
+        t.setName("RemoteSlaveRemerge - " + getName());
+        t.start();
     }
 
     private void start() {
@@ -565,14 +578,15 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     }
 
     
-    public AsyncResponse fetchResponse(String index) throws IOException, SlaveUnavailableException {
+    public AsyncResponse fetchResponse(String index) throws SlaveUnavailableException, IOException {
         return fetchResponse(index,10000);
     }
     /**
      * returns an AsyncResponse for that index and throws any exceptions
+     * @throws IOException
      */
     public AsyncResponse fetchResponse(String index, int wait)
-        throws IOException, SlaveUnavailableException {
+        throws SlaveUnavailableException, IOException {
         AsyncResponse rar = null;
         long total = System.currentTimeMillis();
 
@@ -593,7 +607,6 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
                 } catch (InterruptedException e) {
                 }
             }
-
             rar = (AsyncResponse) _indexWithCommands.remove(index);
         }
 
@@ -603,17 +616,14 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
             throw new SlaveUnavailableException(
                 "Slave went offline while processing command");
         }
-
         if (rar instanceof AsyncResponseException) {
             Throwable t = ((AsyncResponseException) rar).getThrowable();
-
             if (t instanceof IOException) {
                 throw (IOException) t;
             }
-
-            throw new RuntimeException(t);
+            logger.error("Exception in AsyncResponse",t);
+            setOffline("Exception in AsyncResponse");
         }
-
         return rar;
     }
 
@@ -752,17 +762,9 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
             while (isOnline()) {
                 AsyncResponse ar = null;
 
-                try {
-                    ar = readAsyncResponse();
-
-                    if (ar == null) {
-                        continue;
-                    }
-                } catch (IOException e3) {
-                    logger.error("", e3);
-                    setOffline("Error in slave communication");
-
-                    return;
+                ar = readAsyncResponse();
+                if (ar == null) {
+                    continue;
                 }
 
                 logger.debug("Received: " + ar);
@@ -800,19 +802,15 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
                         _transfers.remove(ats.getTransferIndex());
                     }
                 } else {
-                    logger.debug("Into _indexWithCommands: " + ar);
-
                     synchronized (_indexWithCommands) {
                         _indexWithCommands.put(ar.getIndex(), ar);
                         _indexWithCommands.notifyAll();
                     }
-
-                    logger.debug("threads notified");
                 }
             }
         } catch (StreamException e) {
             setOffline("Slave disconnected");
-            logger.error("", e);
+            logger.error("Slave disconnected", e);
         }
     }
 
@@ -848,24 +846,15 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
      * fetches the next AsyncResponse, if IOException is encountered, the slave
      * is setOffline() and the Exception is thrown
      */
-    private AsyncResponse readAsyncResponse() throws IOException {
+    private AsyncResponse readAsyncResponse() {
         try {
-            AsyncResponse ar = (AsyncResponse) _sin.readObject();
-
-            if (ar instanceof AsyncResponseException) {
-                AsyncResponseException asr = (AsyncResponseException) ar;
-                logger.debug("", asr.getThrowable());
-
-                if (asr.getThrowable() instanceof IOException) {
-                    throw (IOException) asr.getThrowable();
-                }
-
-                throw new FatalException(asr.getThrowable());
-            }
-
-            return ar;
+            return (AsyncResponse) _sin.readObject();
         } catch (ClassNotFoundException e) {
             throw new FatalException(e);
+        } catch (IOException e) {
+            logger.error("Error reading AsyncResponse",e);
+            setOffline("Error reading AsyncResponse");
+            return null;
         }
     }
 

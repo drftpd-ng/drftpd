@@ -24,7 +24,7 @@ import java.net.Socket;
 
 /**
  * @author zubov
- * @version $Id: DummyRemoteSlave.java,v 1.3 2004/11/03 16:46:49 mog Exp $
+ * @version $Id: DummyRemoteSlave.java,v 1.4 2004/11/06 08:04:35 zubov Exp $
  */
 public class DummyRemoteSlave extends RemoteSlave {
     public DummyRemoteSlave(String name, GlobalContext gctx) {
@@ -76,7 +76,7 @@ public class DummyRemoteSlave extends RemoteSlave {
     }
 
     public AsyncResponse fetchResponse(String index)
-        throws IOException, SlaveUnavailableException {
+        throws SlaveUnavailableException {
         // TODO Auto-generated method stub
         return null;
     }

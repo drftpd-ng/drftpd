@@ -44,7 +44,7 @@ import java.util.Set;
 
 /**
  * @author mog
- * @version $Id: RemoteSlaveTest.java,v 1.12 2004/11/03 16:46:39 mog Exp $
+ * @version $Id: RemoteSlaveTest.java,v 1.13 2004/11/06 08:04:34 zubov Exp $
  */
 public class RemoteSlaveTest extends TestCase {
     public RemoteSlaveTest(String fName) {
@@ -200,7 +200,7 @@ public class RemoteSlaveTest extends TestCase {
         }
 
         public AsyncResponse fetchResponse(String index)
-            throws IOException, SlaveUnavailableException {
+            throws SlaveUnavailableException {
             return null;
         }
     }
