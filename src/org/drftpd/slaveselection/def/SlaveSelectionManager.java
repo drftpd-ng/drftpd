@@ -41,11 +41,13 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.5 2004/03/01 04:21:04 zubov Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.6 2004/03/01 05:17:21 zubov Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 
 	private long _minfreespace;
+	private int _maxTransfers;
+	private long _maxBandwidth;
 
 	private SlaveManagerImpl _sm;
 
@@ -53,13 +55,24 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 		throws FileNotFoundException, IOException {
 		super();
 		_sm = sm;
-		Properties p = new Properties();
-		p.load(new FileInputStream("conf/slaveselection-old.conf"));
-		_minfreespace = Bytes.parseBytes(FtpConfig.getProperty(p, "minfreespace"));
+
+		
 	}
 
 	public void reload() throws FileNotFoundException, IOException {
-		// nothing to reload
+		Properties p = new Properties();
+		p.load(new FileInputStream("conf/slaveselection-old.conf"));
+		_minfreespace = Bytes.parseBytes(FtpConfig.getProperty(p, "minfreespace"));
+		try {
+			if (_sm.getConnectionManager().getJobManager() != null ) {
+				_maxTransfers = Integer.parseInt(FtpConfig.getProperty(p,
+						"maxTransfers"));
+				_maxBandwidth = Bytes.parseBytes(FtpConfig.getProperty(p,
+						"maxBandwidth"));
+			}
+		} catch (IllegalStateException e) {
+			// jobmanager isn't loaded, don't load it's settings
+		}
 	}
 
 	public RemoteSlave getASlave(
@@ -192,12 +205,39 @@ return getASlaveInternal(file.getAvailableSlaves(), Transfer.TRANSFER_SENDING_DO
 
 	public RemoteSlave getASlaveForJobDownload(LinkedRemoteFileInterface file)
 		throws NoAvailableSlaveException {
-		return null;
+			return getASlaveForJob(file.getAvailableSlaves(),Transfer.TRANSFER_SENDING_DOWNLOAD);
 	}
 
 	public RemoteSlave getASlaveForJobUpload(LinkedRemoteFileInterface file)
 		throws NoAvailableSlaveException {
-		return null;
+			Collection slaves = _sm.getAvailableSlaves();
+			slaves.removeAll(file.getAvailableSlaves());
+			return getASlaveForJob(slaves,Transfer.TRANSFER_RECEIVING_UPLOAD);
+	}
+
+	public RemoteSlave getASlaveForJob(Collection slaves, char direction) throws NoAvailableSlaveException {
+		RemoteSlave rslave = this.getASlaveInternal(slaves,direction);
+		SlaveStatus status = null;
+		try {
+			status = rslave.getStatus();
+		} catch (RemoteException e) {
+			rslave.handleRemoteException(e);
+			throw new NoAvailableSlaveException();
+		} catch (SlaveUnavailableException e) {
+			throw new NoAvailableSlaveException();
+		}
+		if (status.getThroughputDirection(direction) > _maxBandwidth ) {
+			throw new NoAvailableSlaveException();
+		}
+		if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD)
+			if (status.getTransfersReceiving() > _maxTransfers ) {
+				throw new NoAvailableSlaveException();
+			}
+		if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD)
+			if (status.getTransfersSending() > _maxTransfers ) {
+				throw new NoAvailableSlaveException();
+			}
+		return rslave;
 	}
 
 }

@@ -4,6 +4,15 @@
 # sending to it. If all available slaves have less than this amount the
 # slave with most available disk space will get all transfers.
 #100 MiB, 100,000,000
-freespace.min=100MB
 
 minfreespace=100MB
+
+# will only send files if the receiving and sending slave both have the 
+# following : (JobManager specific)
+# less than maxTransfers in their respective directions
+# less than maxBandwidth in their respective directions
+# maxWait overrides these settings
+
+maxTransfers=1
+maxBandwidth=1000kb
+

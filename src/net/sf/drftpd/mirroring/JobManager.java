@@ -35,7 +35,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.33 2004/03/01 04:21:04 zubov Exp $
+ * @version $Id: JobManager.java,v 1.34 2004/03/01 05:17:21 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -429,12 +429,6 @@ public class JobManager implements Runnable {
 		}
 		_useCRC = FtpConfig.getProperty(p, "useCRC").equals("true");
 		_sleepSeconds = 1000*Integer.parseInt(FtpConfig.getProperty(p,"sleepSeconds"));
-		//		_maxWait = 60000 * Long.parseLong(FtpConfig.getProperty(jobManCfg,
-		//				"maxWait"));
-		//		_maxTransfers = Integer.parseInt(FtpConfig.getProperty(jobManCfg,
-		//				"maxTransfers"));
-		//		_maxBandwidth = Bytes.parseBytes(FtpConfig.getProperty(jobManCfg,
-		//				"maxBandwidth"));
 	}
 	public synchronized void removeJob(Job job) {
 		_jobList.remove(job);
