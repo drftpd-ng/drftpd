@@ -39,7 +39,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author mog
  *
- * @version $Id: SlaveManagment.java,v 1.12 2004/06/04 14:18:56 mog Exp $
+ * @version $Id: SlaveManagment.java,v 1.13 2004/07/12 04:27:51 zubov Exp $
  */
 public class SlaveManagment implements CommandHandlerFactory, CommandHandler {
 	public void unload() {
@@ -107,7 +107,7 @@ public class SlaveManagment implements CommandHandlerFactory, CommandHandler {
 				ReplacerEnvironment env = new ReplacerEnvironment();
 				env.add("slave", rslave.getName());
 				try {
-					SlaveStatus status = rslave.getStatus();
+					SlaveStatus status = rslave.getStatusAvailable();
 					SiteBot.fillEnvSlaveStatus(
 						env,
 						status,

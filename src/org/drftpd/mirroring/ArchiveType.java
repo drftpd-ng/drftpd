@@ -41,7 +41,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
- * @version $Id: ArchiveType.java,v 1.13 2004/07/09 17:08:38 zubov Exp $
+ * @version $Id: ArchiveType.java,v 1.14 2004/07/12 04:27:52 zubov Exp $
  */
 public abstract class ArchiveType {
 	private long _archiveAfter;
@@ -134,7 +134,7 @@ public abstract class ArchiveType {
 			if (src.isFile()) {
 				logger.info("Adding " + src.getPath() + " to the job queue");
 				Job job = new Job(src, getRSlaves(), 3, getRSlaves().size());
-				jm.addJobToWaitingQueue(job);
+				jm.addJobToQueue(job);
 				jobQueue.add(job);
 			}
 			else {

@@ -1,5 +1,6 @@
 package org.drftpd.mirroring.archivetypes;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -10,6 +11,8 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.listeners.Archive;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
+import net.sf.drftpd.mirroring.Job;
+import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.mirroring.ArchiveType;
@@ -39,7 +42,8 @@ public class ConstantMirroring extends ArchiveType {
 			if (src.isFile()) {
 				Collection slaves = new ArrayList(src.getSlaves());
 				if (slaves.isEmpty()) {
-					// couldn't mirror file
+					// couldn't mirror file, it's deleted
+					src.delete();
 					continue;
 				}
 				Iterator offlineSlaveIter = slaves.iterator();
@@ -47,6 +51,11 @@ public class ConstantMirroring extends ArchiveType {
 					RemoteSlave slave = (RemoteSlave) offlineSlaveIter.next();
 					if (!slave.isAvailable()) {
 						src.removeSlave(slave);
+						try {
+							slave.delete(src.getPath());
+						} catch (IOException e) {
+							Archive.getLogger().debug("IOException deleting file on slave " + slave.getName(), e);
+						}
 					}
 					offlineSlaveIter.remove();
 				}
@@ -54,6 +63,11 @@ public class ConstantMirroring extends ArchiveType {
 				Iterator onlineSlaveIter = slaves.iterator();
 				while(slaves.size()>_numOfSlaves && onlineSlaveIter.hasNext()) { // remove online slaves until size is okay
 					RemoteSlave slave = (RemoteSlave) onlineSlaveIter.next();
+					try {
+						slave.delete(src.getPath());
+					} catch (IOException e) {
+						Archive.getLogger().debug("IOException deleting file on slave " + slave.getName(), e);
+					}
 					src.removeSlave(slave);
 					onlineSlaveIter.remove();
 				}
@@ -63,12 +77,8 @@ public class ConstantMirroring extends ArchiveType {
 		}
 	}
 	public HashSet findDestinationSlaves() {
-		try {
-			return new HashSet(_parent.getConnectionManager()
-					.getSlaveManager().getAvailableSlaves());
-		} catch (NoAvailableSlaveException e) {
-			return null;
-		}
+		return new HashSet(_parent.getConnectionManager()
+				.getSlaveManager().getSlaves());
 	}
 	protected boolean isArchivedDir(LinkedRemoteFileInterface lrf)
 			throws IncompleteDirectoryException, OfflineSlaveException {
@@ -91,6 +101,33 @@ public class ConstantMirroring extends ArchiveType {
 			}
 		}
 		return true;
+	}
+	/**
+	 * Adds relevant Jobs to the JobManager and returns an ArrayList of those Job's
+	 */
+	public ArrayList send() {
+		return recursiveSend(getDirectory());
+	}
+
+	private ArrayList recursiveSend(LinkedRemoteFileInterface lrf) {
+		ArrayList jobQueue = new ArrayList();
+		JobManager jm = _parent.getConnectionManager().getJobManager();
+		for (Iterator iter = lrf.getFiles().iterator();
+			iter.hasNext();
+			) {
+			LinkedRemoteFileInterface src =
+				(LinkedRemoteFileInterface) iter.next();
+			if (src.isFile()) {
+				Archive.getLogger().info("Adding " + src.getPath() + " to the job queue");
+				Job job = new Job(src, getRSlaves(), 3, _numOfSlaves);
+				jm.addJobToQueue(job);
+				jobQueue.add(job);
+			}
+			else {
+				jobQueue.addAll(recursiveSend(src));
+			}
+		}
+		return jobQueue;
 	}
 
 	public String toString() {

@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveTransfer.java,v 1.18 2004/07/10 04:03:22 zubov Exp $
+ * @version $Id: SlaveTransfer.java,v 1.19 2004/07/12 04:27:52 zubov Exp $
  */
 public class SlaveTransfer {
 	class DstXfer extends Thread {
@@ -91,7 +91,7 @@ public class SlaveTransfer {
 		_sourceSlave = sourceSlave;
 		_destSlave = destSlave;
 	}
-	public int getXferSpeed() {
+	int getXferSpeed() {
 		if (srcxfer == null || srcxfer.srcxfer == null || dstxfer == null || dstxfer.dstxfer == null )
 			return 0;
 		int srcspeed;
@@ -110,7 +110,7 @@ public class SlaveTransfer {
 		}
 		return (srcspeed + dstspeed) / 2;
 	}
-	public long getTransfered() {
+	long getTransfered() {
 		if (srcxfer == null || srcxfer.srcxfer == null || dstxfer == null || dstxfer.dstxfer == null )
 			return 0;
 		long srctransfered;
@@ -147,7 +147,7 @@ public class SlaveTransfer {
 	 * @return @throws
 	 *         IOException
 	 */
-	public boolean transfer(boolean checkCRC) throws DestinationSlaveException,
+	protected boolean transfer(boolean checkCRC) throws DestinationSlaveException,
 			SourceSlaveException, FileNotFoundException, FileExistsException {
 		try {
 			dstxfer = new DstXfer(_destSlave.getSlave().listen(false));

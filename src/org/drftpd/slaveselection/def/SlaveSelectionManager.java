@@ -40,7 +40,7 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.8 2004/03/06 00:39:47 zubov Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.9 2004/07/12 04:27:53 zubov Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 
@@ -112,7 +112,7 @@ return getASlaveInternal(file.getAvailableSlaves(), Transfer.TRANSFER_SENDING_DO
 					throw new NoAvailableSlaveException();
 				bestslave = (RemoteSlave) i.next();
 					try {
-						beststatus = bestslave.getStatus();
+						beststatus = bestslave.getStatusAvailable();
 						// throws SlaveUnavailableException
 					} catch (SlaveUnavailableException ex) {
 						continue;
@@ -125,7 +125,7 @@ return getASlaveInternal(file.getAvailableSlaves(), Transfer.TRANSFER_SENDING_DO
 				SlaveStatus status;
 
 				try {
-					status = slave.getStatus();
+					status = slave.getStatusAvailable();
 				} catch (SlaveUnavailableException ex) {
 					continue;
 				}
@@ -206,7 +206,7 @@ return getASlaveInternal(file.getAvailableSlaves(), Transfer.TRANSFER_SENDING_DO
 		RemoteSlave rslave = this.getASlaveInternal(slaves,direction);
 		SlaveStatus status = null;
 		try {
-			status = rslave.getStatus();
+			status = rslave.getStatusAvailable();
 		} catch (SlaveUnavailableException e) {
 			throw new NoAvailableSlaveException();
 		}

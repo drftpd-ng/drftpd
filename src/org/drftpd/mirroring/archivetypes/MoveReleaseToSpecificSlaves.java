@@ -17,8 +17,6 @@
  */
 package org.drftpd.mirroring.archivetypes;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,7 +34,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
- * @version $Id: MoveReleaseToSpecificSlaves.java,v 1.3 2004/07/04 05:40:57 zubov Exp $
+ * @version $Id: MoveReleaseToSpecificSlaves.java,v 1.4 2004/07/12 04:27:52 zubov Exp $
  */
 public class MoveReleaseToSpecificSlaves extends ArchiveType {
 

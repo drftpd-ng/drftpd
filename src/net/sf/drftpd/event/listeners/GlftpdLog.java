@@ -66,7 +66,7 @@ import org.tanesha.replacer.FormatterException;
 
 /**
  * @author flowman
- * @version $Id: GlftpdLog.java,v 1.7 2004/05/12 00:45:05 mog Exp $
+ * @version $Id: GlftpdLog.java,v 1.8 2004/07/12 04:27:50 zubov Exp $
  */
 public class GlftpdLog implements FtpListener {
 	PrintWriter out;
@@ -404,7 +404,7 @@ public class GlftpdLog implements FtpListener {
 		if (event.getCommand().equals("ADDSLAVE")) {
 			SlaveStatus status;
 			try {
-				status = sevent.getRSlave().getStatus();
+				status = sevent.getRSlave().getStatusAvailable();
 			} catch (SlaveUnavailableException e) {
 				return;
 			}

@@ -40,7 +40,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
  *   addScore(minfreespace - diskfree * multiplier)
  * }
  * @author mog
- * @version $Id: MinfreespaceFilter.java,v 1.5 2004/03/11 22:51:11 mog Exp $
+ * @version $Id: MinfreespaceFilter.java,v 1.6 2004/07/12 04:27:53 zubov Exp $
  */
 public class MinfreespaceFilter extends Filter {
 	private long _minfreespace;
@@ -68,7 +68,7 @@ public class MinfreespaceFilter extends Filter {
 			ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
 			long df;
 			try {
-				df = score.getRSlave().getStatus().getDiskSpaceAvailable();
+				df = score.getRSlave().getStatusAvailable().getDiskSpaceAvailable();
 				if (df < _minfreespace) {
 					if (_multiplier == 0) {
 						iter.remove();

@@ -53,7 +53,7 @@ public class MaxtransfersFilter extends Filter {
 				(ScoreChart.SlaveScore) iter.next();
 			SlaveStatus status;
 			try {
-				status = slavescore.getRSlave().getStatus();
+				status = slavescore.getRSlave().getStatusAvailable();
 			} catch (Exception e) {
 				if (e instanceof RemoteException) {
 					slavescore.getRSlave().handleRemoteException(

@@ -54,7 +54,7 @@ public class ReversebandwidthFilter extends BandwidthFilter {
 			ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
 			SlaveStatus status;
 			try {
-				status = score.getRSlave().getStatus();
+				status = score.getRSlave().getStatusAvailable();
 			} catch (Exception e) {
 				if (e instanceof RemoteException) {
 					score.getRSlave().handleRemoteException(

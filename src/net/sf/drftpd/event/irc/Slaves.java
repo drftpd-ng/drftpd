@@ -38,7 +38,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Slaves.java,v 1.14 2004/06/04 21:34:28 mog Exp $
+ * @version $Id: Slaves.java,v 1.15 2004/07/12 04:27:40 zubov Exp $
  */
 public class Slaves extends GenericAutoService implements IRCPluginInterface {
 
@@ -68,7 +68,7 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 		try {
 			SlaveStatus status;
 			try {
-				status = rslave.getStatus();
+				status = rslave.getStatusAvailable();
 			} catch (SlaveUnavailableException e1) {
 				return ReplacerUtils.jprintf(
 					"slaves.offline",

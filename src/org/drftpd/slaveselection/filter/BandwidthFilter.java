@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
 /**
  * Removes bandwidth * multiplier from the score.
  * @author mog
- * @version $Id: BandwidthFilter.java,v 1.4 2004/05/17 11:27:26 mog Exp $
+ * @version $Id: BandwidthFilter.java,v 1.5 2004/07/12 04:27:53 zubov Exp $
  */
 public class BandwidthFilter extends Filter {
 	private static final Logger logger =
@@ -92,7 +92,7 @@ public class BandwidthFilter extends Filter {
 			ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
 			SlaveStatus status;
 			try {
-				status = score.getRSlave().getStatus();
+				status = score.getRSlave().getStatusAvailable();
 			} catch (Exception e) {
 				if (e instanceof RemoteException) {
 					score.getRSlave().handleRemoteException(

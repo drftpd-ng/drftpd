@@ -36,7 +36,7 @@ import org.jdom.Element;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.49 2004/07/10 04:03:17 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.50 2004/07/12 04:27:51 zubov Exp $
  */
 public class RemoteSlave implements Comparable {
 	/**
@@ -248,9 +248,9 @@ public class RemoteSlave implements Comparable {
 	}
 
 	/**
-	 * Returns the RemoteSlave's stored SlaveStatus
+	 * Returns the RemoteSlave's stored SlaveStatus, can return a status before remerge() is completed
 	 */
-	public SlaveStatus getStatus() throws SlaveUnavailableException {
+	public synchronized SlaveStatus getStatus() throws SlaveUnavailableException {
 		if (_status == null) {
 			throw new SlaveUnavailableException();
 		}
@@ -262,7 +262,6 @@ public class RemoteSlave implements Comparable {
 			_status = getSlave().getSlaveStatus();
 		} catch (RemoteException e) {
 			handleRemoteException(e);
-			_status = null;
 		}
 	}
 
@@ -270,7 +269,7 @@ public class RemoteSlave implements Comparable {
 	 * @param ex RemoteException
 	 * @return true If exception was fatal and the slave was removed
 	 */
-	public void handleRemoteException(RemoteException ex) {
+	public synchronized void handleRemoteException(RemoteException ex) {
 		//		if (!isFatalRemoteException(ex)) {
 		//			logger.log(
 		//				Level.WARN,
@@ -337,7 +336,7 @@ public class RemoteSlave implements Comparable {
 		_masks = masks;
 	}
 
-	public void setOffline(String reason) {
+	public synchronized void setOffline(String reason) {
 		if (!isAvailable()) {
 			return; // already offline
 		}
@@ -419,5 +418,13 @@ public class RemoteSlave implements Comparable {
 			default :
 				throw new IllegalArgumentException();
 		}
+	}
+	/**
+	 * Returns the RemoteSlave's stored SlaveStatus, will not return a status before remerge() is completed
+	 */
+	public synchronized SlaveStatus getStatusAvailable() throws SlaveUnavailableException {
+		if (isAvailable())
+			return getStatus();
+		throw new SlaveUnavailableException("Slave is not online");
 	}
 }

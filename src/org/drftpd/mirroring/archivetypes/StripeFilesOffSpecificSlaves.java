@@ -34,7 +34,7 @@ import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.sections.SectionInterface;
 /**
  * @author zubov
- * @version $Id: StripeFilesOffSpecificSlaves.java,v 1.11 2004/07/09 17:08:38 zubov Exp $
+ * @version $Id: StripeFilesOffSpecificSlaves.java,v 1.12 2004/07/12 04:27:52 zubov Exp $
  */
 public class StripeFilesOffSpecificSlaves extends ArchiveType {
 	private static final Logger logger = Logger
@@ -104,13 +104,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 	public HashSet findDestinationSlaves() {
 		if (_destSlaves != null)
 			return _destSlaves;
-		HashSet availableSlaves;
-		try {
-			availableSlaves = new HashSet(_parent.getConnectionManager()
-					.getSlaveManager().getAvailableSlaves());
-		} catch (NoAvailableSlaveException e) {
-			return null;
-		}
+		HashSet availableSlaves = new HashSet(_parent.getConnectionManager().getSlaveManager().getSlaves());
 		availableSlaves.removeAll(_offOfSlaves);
 		if (availableSlaves.isEmpty())
 			return null;
@@ -158,7 +152,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 			} else {
 				logger.info("Adding " + file.getPath() + " to the job queue with numOfSlaves = " + _numOfSlaves);
 				Job job = new Job(file, getRSlaves(), 3, _numOfSlaves);
-				jm.addJobToWaitingQueue(job);
+				jm.addJobToQueue(job);
 				jobQueue.add(job);
 			}
 		}

@@ -67,7 +67,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.98 2004/06/11 03:45:50 zubov Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.99 2004/07/12 04:27:51 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -380,7 +380,7 @@ public class SlaveManagerImpl
 				continue;
 			Long size;
 			try {
-				size = new Long(rslave.getStatus().getDiskSpaceAvailable());
+				size = new Long(rslave.getStatusAvailable().getDiskSpaceAvailable());
 			} catch (SlaveUnavailableException e) {
 				continue;
 			}
@@ -413,7 +413,7 @@ public class SlaveManagerImpl
 			RemoteSlave rslave = (RemoteSlave) iter.next();
 			long size = Integer.MAX_VALUE;
 			try {
-				size = rslave.getStatus().getDiskSpaceAvailable();
+				size = rslave.getStatusAvailable().getDiskSpaceAvailable();
 			} catch (SlaveUnavailableException e) {
 				continue;
 			}
@@ -433,7 +433,7 @@ public class SlaveManagerImpl
 		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
 			try {
-				allStatus = allStatus.append(rslave.getStatus());
+				allStatus = allStatus.append(rslave.getStatusAvailable());
 			} catch (SlaveUnavailableException e) {
 				//slave is offline, continue
 			}

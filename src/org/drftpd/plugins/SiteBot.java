@@ -91,7 +91,7 @@ import f00f.net.irc.martyr.services.AutoResponder;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.12 2004/07/07 19:34:56 zubov Exp $
+ * @version $Id: SiteBot.java,v 1.13 2004/07/12 04:27:53 zubov Exp $
  */
 public class SiteBot implements FtpListener, Observer {
 
@@ -724,7 +724,7 @@ public class SiteBot implements FtpListener, Observer {
 		if (event.getCommand().equals("ADDSLAVE")) {
 			SlaveStatus status;
 			try {
-				status = sevent.getRSlave().getStatus();
+				status = sevent.getRSlave().getStatusAvailable();
 			} catch (SlaveUnavailableException e) {
 				logger.warn("in ADDSLAVE event handler", e);
 				return;

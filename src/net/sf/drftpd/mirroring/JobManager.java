@@ -22,14 +22,11 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
@@ -37,42 +34,31 @@ import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
-
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.54 2004/07/10 04:03:18 zubov Exp $
+ * @version $Id: JobManager.java,v 1.55 2004/07/12 04:27:52 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
 	private ConnectionManager _cm;
 	private boolean _isStopped = false;
-	private ArrayList _jobWaitList;
+	private ArrayList _jobList;
 	private int _sleepSeconds;
 	private boolean _useCRC;
 	private Thread thread;
-	private HashMap _jobRunningList;
 	/**
 	 * Keeps track of all jobs and controls them
 	 */
 	public JobManager(ConnectionManager cm) throws IOException {
-		this(cm,null);
+		this(cm, null);
 	}
 	public JobManager(ConnectionManager cm, Properties p) {
 		_cm = cm;
-		_jobWaitList = new ArrayList();
-		_jobRunningList = new HashMap();
+		_jobList = new ArrayList();
 		reload(p);
 	}
-	private synchronized void addJobToRunningQueue(Job job, SlaveTransfer st) {
-		_jobRunningList.put(job, st);
-	}
-	
-	private synchronized void removeJobFromRunningQueue(Job job) {
-		_jobRunningList.remove(job);
-	}
-	
-	public synchronized void addJobToWaitingQueue(Job job) {
+	public synchronized void addJobToQueue(Job job) {
 		Collection slaves = job.getFile().getSlaves();
 		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
 			RemoteSlave slave = (RemoteSlave) iter.next();
@@ -82,27 +68,24 @@ public class JobManager implements Runnable {
 		}
 		if (job.isDone())
 			return;
-		_jobWaitList.add(job);
-		Collections.sort(_jobWaitList, new JobComparator());
+		_jobList.add(job);
+		Collections.sort(_jobList, new JobComparator());
 	}
 	/**
 	 * Gets all jobs.
 	 */
-	public synchronized List getAllJobsFromWaitingQueue() {
-		return Collections.unmodifiableList(_jobWaitList);
+	public synchronized List getAllJobsFromQueue() {
+		return Collections.unmodifiableList(_jobList);
 	}
-	
-	public synchronized Map getAllJobsFromRunningQueue() {
-		return Collections.unmodifiableMap(_jobRunningList);
-	}
-
 	public synchronized Job getNextJob(Set busySlaves, Set skipJobs) {
-		for (Iterator iter = _jobWaitList.iterator(); iter.hasNext();) {
+		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
 			Job tempJob = (Job) iter.next();
 			if (tempJob.isDone()) {
 				iter.remove();
 				continue;
 			}
+			if (tempJob.isTransferring())
+				continue;
 			if (skipJobs.contains(tempJob))
 				continue;
 			Collection availableSlaves = null;
@@ -120,10 +103,6 @@ public class JobManager implements Runnable {
 			}
 		}
 		return null;
-	}
-	private void addAndRemove(Job job) {
-		addJobToWaitingQueue(job);
-		removeJobFromRunningQueue(job);
 	}
 	public boolean isStopped() {
 		return _isStopped;
@@ -166,7 +145,8 @@ public class JobManager implements Runnable {
 					continue;
 				}
 				if (sourceSlave == null) {
-					logger.debug("JobManager was unable to find a suitable job for transfer");
+					logger
+							.debug("JobManager was unable to find a suitable job for transfer");
 					return false;
 				}
 				try {
@@ -174,7 +154,7 @@ public class JobManager implements Runnable {
 							.getSlaveSelectionManager().getASlaveForJobUpload(
 									job);
 					break; // we have a source slave and a destination slave,
-						   // transfer!
+					// transfer!
 				} catch (NoAvailableSlaveException e) {
 					// job was ready to be sent, but it had no slave that was
 					// ready to accept it
@@ -183,7 +163,8 @@ public class JobManager implements Runnable {
 				}
 			}
 			if (destSlave == null) {
-				logger.debug("destSlave is null, all destination slaves are busy"
+				logger
+						.debug("destSlave is null, all destination slaves are busy"
 								+ job);
 				return false;
 			}
@@ -191,17 +172,13 @@ public class JobManager implements Runnable {
 					+ sourceSlave.getName() + " to " + destSlave.getName());
 			time = System.currentTimeMillis();
 			difference = 0;
-			removeJobFromWaitingQueue(job);
 		}
 		// job is not deleted and is out of the jobList, we are ready to
 		// process
 		logger.info("Sending " + job.getFile().getName() + " from "
 				+ sourceSlave.getName() + " to " + destSlave.getName());
-		SlaveTransfer slaveTransfer = new SlaveTransfer(job.getFile(),
-				sourceSlave, destSlave);
-		addJobToRunningQueue(job,slaveTransfer);
 		try {
-			if (!slaveTransfer.transfer(useCRC())) { // crc failed
+			if (!job.transfer(useCRC(), sourceSlave, destSlave)) { // crc failed
 				try {
 					destSlave.delete(job.getFile().getPath());
 				} catch (IOException e) {
@@ -210,7 +187,6 @@ public class JobManager implements Runnable {
 				logger.debug("CRC did not match for " + job.getFile()
 						+ " when sending from " + sourceSlave.getName()
 						+ " to " + destSlave.getName());
-				addAndRemove(job);
 				return false;
 			}
 		} catch (FileExistsException e) {
@@ -227,21 +203,16 @@ public class JobManager implements Runnable {
 					} catch (IOException e1) {
 						// queued for deletion
 					}
-					addAndRemove(job);
 					return false;
 				}
 			} catch (RemoteException e1) {
 				destSlave.handleRemoteException(e1);
-				addAndRemove(job);
 				return false;
 			} catch (NoAvailableSlaveException e1) {
-				addAndRemove(job);
 				return false;
 			} catch (SlaveUnavailableException e2) {
-				addAndRemove(job);
 				return false;
 			} catch (IOException e1) {
-				addAndRemove(job);
 				return false;
 			}
 		} catch (FileNotFoundException e) {
@@ -249,18 +220,14 @@ public class JobManager implements Runnable {
 					+ job.getFile().getName() + " from "
 					+ sourceSlave.getName() + " to " + destSlave.getName(), e);
 			job.getFile().removeSlave(sourceSlave);
-			addAndRemove(job);
 			return false;
 		} catch (DestinationSlaveException e) {
 			destSlave.setOffline(e.getMessage());
-			addAndRemove(job);
 			return false;
 		} catch (SourceSlaveException e) {
 			sourceSlave.setOffline(e.getMessage());
-			addAndRemove(job);
 			return false;
 		}
-		removeJobFromRunningQueue(job);
 		difference = System.currentTimeMillis() - time;
 		logger.debug("Sent file " + job.getFile().getName() + " to "
 				+ destSlave.getName() + " from " + sourceSlave.getName());
@@ -268,15 +235,13 @@ public class JobManager implements Runnable {
 		job.sentToSlave(destSlave);
 		if (job.isDone()) {
 			logger.debug("Job is finished, removing job " + job.getFile());
-		} else {
-			addJobToWaitingQueue(job);
+			removeJobFromQueue(job);
 		}
 		return true;
 	}
 	public void reload() {
 		reload(null);
 	}
-	
 	public void reload(Properties p) {
 		if (p == null) {
 			p = new Properties();
@@ -290,9 +255,9 @@ public class JobManager implements Runnable {
 		_sleepSeconds = 1000 * Integer.parseInt(FtpConfig.getProperty(p,
 				"sleepSeconds"));
 	}
-	public synchronized void removeJobFromWaitingQueue(Job job) {
-		_jobWaitList.remove(job);
-		Collections.sort(_jobWaitList, new JobComparator());
+	public synchronized void removeJobFromQueue(Job job) {
+		_jobList.remove(job);
+		Collections.sort(_jobList, new JobComparator());
 	}
 	public void run() {
 		while (true) {
@@ -322,7 +287,7 @@ public class JobManager implements Runnable {
 		thread.start();
 	}
 	public void stopJob(Job job) {
-		removeJobFromWaitingQueue(job);
+		removeJobFromQueue(job);
 		job.setDone();
 	}
 	public void stopJobs() {
