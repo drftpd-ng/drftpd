@@ -33,6 +33,7 @@ public class FileRemoteFile extends RemoteFile {
 	}
 	private boolean isFile;
 	private boolean isDirectory;
+	private long length;
 
 	public FileRemoteFile(RootBasket rootBasket, String path) throws IOException {
 		//if(path.length() != 0) {
@@ -65,9 +66,18 @@ public class FileRemoteFile extends RemoteFile {
 				first=false;
 				isDirectory = file.isDirectory();
 				isFile = file.isFile();
+				if((!isFile() && !isDirectory()) || (isFile() && isDirectory)) {
+					throw new IOException("(!isFile() && !isDirectory()) || (isFile() && isDirectory): "+isFile()+isDirectory()+" "+path);
+				}
+				if(isDirectory()) {
+					length = 0; 
+				} else {
+					length = file.length();
+				} 
 			} else {
-				if(file.isDirectory() != isDirectory) throw new IOException("rootBasket out of sync");
-				if(file.isFile() != isFile) throw new IOException("rootBasket out of sync");
+				if(file.isDirectory() != isDirectory) throw new IOException("roots are out of sync, dir&file mix: "+path);
+				if(file.isFile() != isFile) throw new IOException("roots are out of sync, file&dir mix: "+path);
+				if(isFile() && file.length() != length) throw new IOException("roots are out of sync, different sizes: "+path);
 			}
 					
 			if (!file.getCanonicalPath().equalsIgnoreCase(file.getAbsolutePath())) {

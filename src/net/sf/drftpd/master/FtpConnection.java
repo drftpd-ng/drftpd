@@ -1091,7 +1091,13 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 		setPortCommand(clientAddr, clientPort);
+		//Notify the user that this is not his IP.. Good for NAT users that aren't aware that their IP has changed.
+		if(!clientAddr.equals(controlSocket.getInetAddress())) {
+			out.print(new FtpResponse(200, "Ok. Note that your IP "+controlSocket.getInetAddress().getHostAddress()+" isn't the ip given as argument"));
+			return;
+		}
 		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
+		return;
 	}
 
 	public void doPRET(FtpRequest request, PrintWriter out) {
@@ -3370,11 +3376,13 @@ public class FtpConnection extends BaseFtpConnection {
 	 */
 	public void doSITE_WIPE(FtpRequest request, PrintWriter out) {
 		resetState();
-		if (!_user.isAdmin())
-			out.println("200 You need admin privileges to use SITE WIPE");
-
-		if (!request.hasArgument()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
+		if (!request.hasArgument()) {
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			return;
 		}
 
 		String arg = request.getArgument();
@@ -3472,17 +3480,11 @@ public class FtpConnection extends BaseFtpConnection {
 	 * This command shall cause a status response to be sent over
 	 * the control connection in the form of a reply.
 	 */
-	/*
 	 public void doSTAT(FtpRequest request, PrintWriter out) {
-	     String args[] = {
-	        mConfig.getSelfAddress().getHostAddress(),
-	        mControlSocket.getInetAddress().getHostAddress(),
-	        user.getName()
-	     };
-	   
-	     out.write(ftpStatus.getResponse(211, request, user, args)); 
+	 	reset();
+	 	out.print(FtpResponse.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
+	 	return;
 	 }
-	*/
 
 	/**
 	 * <code>STOR &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
@@ -3551,11 +3553,13 @@ public class FtpConnection extends BaseFtpConnection {
 
 		//SETUP rslave
 		if (preTransfer) {
+			assert preTransferRSlave != null;
 			_rslave = preTransferRSlave;
 		} else {
 			try {
 				_rslave =
 					slaveManager.getASlave(Transfer.TRANSFER_RECEIVING_UPLOAD);
+					assert _rslave != null;
 			} catch (NoAvailableSlaveException ex) {
 				logger.log(Level.FATAL, ex.getMessage());
 				out.print(FtpResponse.RESPONSE_450_SLAVE_UNAVAILABLE);
@@ -3563,7 +3567,7 @@ public class FtpConnection extends BaseFtpConnection {
 			}
 		}
 		assert _rslave != null;
-
+		
 		List rslaves = Collections.singletonList(_rslave);
 		//		ArrayList rslaves = new ArrayList();
 		//		rslaves.add(rslave);
@@ -3593,29 +3597,8 @@ public class FtpConnection extends BaseFtpConnection {
 			}
 		} else {
 			assert mbPasv;
-			// this.transfer is already set up
+			// _transfer is already set up
 		}
-		//		try {
-		//			transfer =
-		//				rslave.getSlave().doConnectReceive(
-		//					targetDir.getPath(),
-		//					targetFilename,
-		//					getType(),
-		//					resumePosition,
-		//					mAddress,
-		//					miPort);
-		//
-		//		} catch (RemoteException ex) {
-		//			rslave.handleRemoteException(ex);
-		//			targetFile.delete();
-		//			out.print(new FtpResponse(451, ex.getMessage()));
-		//			return;
-		//		} catch (IOException ex) {
-		//			logger.log(Level.FATAL, "Error getting transfer", ex);
-		//			targetFile.delete();
-		//			out.println(new FtpResponse(451, "IO error: " + ex.getMessage()));
-		//			return;
-		//		}
 
 		// say we are ready to start sending
 
@@ -3659,7 +3642,7 @@ public class FtpConnection extends BaseFtpConnection {
 			}
 			_transferFile.setLastModified(System.currentTimeMillis());
 			_transferFile.setLength(transferedBytes);
-			_transferFile.setXfertime(_transferFile.getXfertime());
+			_transferFile.setXfertime(_transfer.getTransferTime());
 		} catch (RemoteException ex) {
 			_rslave.handleRemoteException(ex);
 			out.print(

@@ -422,11 +422,7 @@ public class BaseFtpConnection implements Runnable {
 	 * Get client address from PORT command.
 	 */
 	public InetAddress getInetAddress() {
-		if (preTransferRSlave != null) {
-			return preTransferRSlave.getInetAddress();
-		} else {
-			return mAddress;
-		}
+		return mAddress;
 	}
 
 	/**

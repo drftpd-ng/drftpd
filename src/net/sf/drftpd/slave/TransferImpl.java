@@ -173,13 +173,8 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	}
 
 	public int getTransferSpeed() {
-		long elapsed;
-		if(finished == 0) {
-			elapsed = System.currentTimeMillis() - started;
-		} else {
-			elapsed = finished - started;
-		}
-
+		long elapsed = getTransferTime();
+		
 		if (this.transfered == 0) {
 			return 0;
 		}
@@ -207,5 +202,16 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	 */
 	public long getTransfered() {
 		return this.transfered;
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.slave.Transfer#getTransferTime()
+	 */
+	public long getTransferTime() {
+		if(finished == 0) {
+			return System.currentTimeMillis() - started;
+		} else {
+			return finished - started;
+		}
 	}
 }

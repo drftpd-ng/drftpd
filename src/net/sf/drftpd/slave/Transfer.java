@@ -27,4 +27,8 @@ public interface Transfer extends Remote {
 	 * @throws RemoteException
 	 */
 	public InetAddress getEndpoint() throws RemoteException;
+	/**
+	 * @return
+	 */
+	public long getTransferTime() throws RemoteException;
 }

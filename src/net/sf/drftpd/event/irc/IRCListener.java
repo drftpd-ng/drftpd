@@ -184,12 +184,12 @@ public class IRCListener implements FtpListener, Observer {
 
 				env.add("xfersup", Integer.toString(status.getTransfersReceiving()));
 				env.add(
-					"througputup",
+					"throughputup",
 					Bytes.formatBytes(status.getThroughputReceiving()) + "/s");
 
 				env.add("xfersdown", Integer.toString(status.getTransfersSending()));
 				env.add(
-					"througputdown",
+					"throughputdown",
 					Bytes.formatBytes(status.getThroughputSending()));
 
 				env.add(

@@ -973,14 +973,14 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	 * @return
 	 */
 	public long getXfertime() {
-		return xfertime;
+		return this.xfertime;
 	}
 
 	/**
 	 * @param l
 	 */
 	public void setXfertime(long l) {
-		xfertime = l;
+		this.xfertime = l;
 	}
 
 	/* (non-Javadoc)
