@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.96 2004/01/08 03:14:48 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.97 2004/01/10 17:45:12 mog Exp $
  */
 
 public class LinkedRemoteFile
@@ -205,8 +205,8 @@ public class LinkedRemoteFile
 	}
 
 	public void addSlave(RemoteSlave slave) {
-		if (_slaves == null) //!isDirectory()
-			throw new IllegalStateException("Cannot addSlave() on a non-directory");
+		if (_slaves == null) //isDirectory()
+			throw new IllegalStateException("Cannot addSlave() on a directory");
 		assert slave != null;
 
 		// we get lots of duplicate adds when merging and the slave is already in the file database
@@ -218,6 +218,7 @@ public class LinkedRemoteFile
 
 	/**
 	 * @throws ClassCastException if object is not an instance of RemoteFileInterface.
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	public int compareTo(Object o) {
 		return getName().compareTo(((RemoteFileInterface) o).getName());
@@ -258,6 +259,12 @@ public class LinkedRemoteFile
 		return file;
 	}
 
+	/**
+	 * Deletes a file or directory, if slaves are offline, the file cannot be deleted.
+	 * To work around this, the file gets a deleted flag set and when the offline slave is remerge()'d, it is deleted from the slave and delete() is called again.
+	 *
+	 * Trying to lookupFile() or getFile() a deleted file throws FileNotFoundException.
+	 */
 	public void delete() {
 		_isDeleted = true;
 		if (isDirectory()) {
@@ -635,15 +642,15 @@ public class LinkedRemoteFile
 		}
 		return false;
 	}
-	/** return isDeleted;
+
+	/**
+	 * Returns true if this file is queued for deletion.
+	 * @return true if this file is queued for deletion.
 	 */
 	public boolean isDeleted() {
 		return _isDeleted;
 	}
 
-	/**
-	 * @see net.sf.drftpd.remotefile.RemoteFile#isDirectory()
-	 */
 	public boolean isDirectory() {
 		return _files != null;
 	}
