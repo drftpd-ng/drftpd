@@ -23,6 +23,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import org.tanesha.replacer.FormatterException;
+import org.tanesha.replacer.ReplacerEnvironment;
+import org.tanesha.replacer.SimplePrintf;
+
+import f00f.net.irc.martyr.IRCConnection;
+import f00f.net.irc.martyr.commands.MessageCommand;
+
+import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandHandler;
@@ -32,7 +40,7 @@ import net.sf.drftpd.master.command.UnhandledCommandException;
 
 /**
  * @author mog
- * @version $Id: Textoutput.java,v 1.7 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: Textoutput.java,v 1.8 2004/03/01 22:31:38 zubov Exp $
  */
 public class Textoutput implements CommandHandler {
 
@@ -43,6 +51,34 @@ public class Textoutput implements CommandHandler {
 				new InputStreamReader(
 					new FileInputStream("text/" + file + ".txt"),
 					"ISO-8859-1")));
+	}
+
+	public static void sendTextToIRC(
+		IRCConnection conn,
+		String destination,
+		String file) {
+		BufferedReader fileReader = null;
+		try {
+			fileReader =
+				new BufferedReader(
+					new InputStreamReader(
+						new FileInputStream("text/" + file + ".txt")));
+			while (fileReader.ready()) {
+				String line = fileReader.readLine();
+				ReplacerEnvironment env = new ReplacerEnvironment(IRCListener.GLOBAL_ENV);
+				try {
+					conn.sendCommand(new MessageCommand(destination,SimplePrintf.jprintf(line,env)));
+				} catch (FormatterException e1) {
+					conn.sendCommand(new MessageCommand(destination,"Error in formatting of line - " + line));
+				}
+			}
+		} catch (IOException e) {
+			conn.sendCommand(
+				new MessageCommand(
+					destination,
+					"IOException opening text/" + file + ".txt"));
+			return;
+		}
 	}
 
 	public FtpReply execute(BaseFtpConnection conn)
