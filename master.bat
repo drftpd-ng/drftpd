@@ -30,7 +30,6 @@ rem Run the application.
 rem At runtime, the current directory will be that of Wrapper.exe
 rem
 :startup
-del /Q logs\*.*
 "%_APP_HOME%\Wrapper.exe" -c %_WRAPPER_CONF%
 if not errorlevel 1 goto end
 pause
