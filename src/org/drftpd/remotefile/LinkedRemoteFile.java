@@ -820,7 +820,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 	}
 
 	public long getXferspeed() {
-		if (getXfertime() == 0) {
+		if (getXfertime() <= 0) {
 			return 0;
 		}
 

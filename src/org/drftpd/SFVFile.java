@@ -18,6 +18,7 @@
 package org.drftpd;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -71,20 +72,9 @@ public class SFVFile extends AbstractSFVFile {
     public SFVStatus getStatus() {
         int offline = 0;
         int present = 0;
-        long sfvChecksum, fileChecksum;
-
-        for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
-            LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
-            
-            try {
-                sfvChecksum = getChecksum(file.getName());
-                fileChecksum = file.getCheckSumCached();
-            } catch (NoSFVEntryException e) {
-                continue; 	//file name not found in sfv
-            }
-            
-            if (fileChecksum == sfvChecksum || fileChecksum == 0) {
-                present++;
+        for (LinkedRemoteFileInterface file : getFiles()) {
+            if (file.length() != 0) {
+            	present++;
                 if (!file.isAvailable()) {
                     offline++;
                 }
@@ -103,39 +93,35 @@ public class SFVFile extends AbstractSFVFile {
         return checksum.longValue();
     }
 
-    public Map getEntriesFiles() {
-        LinkedRemoteFileInterface dir;
+    public Collection<LinkedRemoteFileInterface> getFiles() {
+		LinkedRemoteFileInterface dir;
 
-        try {
-            dir = _companion.getParentFile();
-        } catch (FileNotFoundException e) {
-            throw new FatalException(e);
-        }
+		try {
+			dir = _companion.getParentFile();
+		} catch (FileNotFoundException e) {
+			throw new FatalException(e);
+		}
 
-        Map sfventries = getEntries();
-        Map ret = new Hashtable();
+		Map sfventries = getEntries();
+		Collection<LinkedRemoteFileInterface> ret = new ArrayList<LinkedRemoteFileInterface>();
 
-        for (Iterator iter = sfventries.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry element = (Map.Entry) iter.next();
-            String fileName = (String) element.getKey();
+		for (Iterator iter = sfventries.entrySet().iterator(); iter.hasNext();) {
+			Map.Entry element = (Map.Entry) iter.next();
+			String fileName = (String) element.getKey();
 
-            LinkedRemoteFile file;
+			LinkedRemoteFile file;
 
-            try {
-                file = (LinkedRemoteFile) dir.getFile(fileName);
-            } catch (FileNotFoundException e1) {
-                continue;
-            }
+			try {
+				file = (LinkedRemoteFile) dir.getFile(fileName);
+			} catch (FileNotFoundException e1) {
+				continue;
+			}
 
-            ret.put(file, element.getValue());
-        }
+			ret.add(file);
+		}
 
-        return ret;
-    }
-
-    public Collection getFiles() {
-        return getEntriesFiles().keySet();
-    }
+		return ret;
+	}
 
     public long getTotalBytes() {
         long totalBytes = 0;

@@ -1108,13 +1108,13 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                 } catch (NoAvailableSlaveException e1) {
                     //sfv not online, do nothing
                 }
-             } else {
+            } else {
             	// reset(); already done in finally block
-                throw UnhandledCommandException.create(DataConnectionHandler.class,
-                    request);
+            	throw UnhandledCommandException.create(
+            			DataConnectionHandler.class, request);
             }
 
-            //check access
+            // check access
             if (!conn.getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), targetDir, true)) {
             	// reset(); already done in finally block
                 return new Reply(550,
@@ -1214,6 +1214,8 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                         conn.getUserNull().getGroup(), 0L,
                         System.currentTimeMillis(), 0L);
                 _transferFile = targetDir.addFile(uploadFile);
+                _transferFile.setXfertime(-1); // used for new files to be
+												// uploaded, see getXfertime()
             }
 
             // setup _transfer
