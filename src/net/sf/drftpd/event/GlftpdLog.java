@@ -1,9 +1,3 @@
-/*
-* Created on 2003-aug-03
-*
-* To change the template for this generated file go to
-* Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
-*/
 package net.sf.drftpd.event;
 
 import java.io.File;
@@ -22,7 +16,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.Map;
 
 import net.sf.drftpd.Time;
 import net.sf.drftpd.FatalException;
@@ -52,7 +45,7 @@ import org.tanesha.replacer.FormatterException;
 
 /**
  * @author mog
- * @version $Id: GlftpdLog.java,v 1.7 2004/01/28 17:25:13 flowman Exp $
+ * @version $Id: GlftpdLog.java,v 1.8 2004/01/28 22:47:16 flowman Exp $
  */
 public class GlftpdLog implements FtpListener {
 	PrintWriter out;
@@ -275,7 +268,7 @@ public class GlftpdLog implements FtpListener {
 			print(
 				"STATS: \""
 					+ dir.getPath()
-					+ "\" \"UserTop:");
+					+ "\" \"UserTop:\"");
 			
 			int position = 1;
 			for (Iterator iter = racers.iterator(); iter.hasNext();) {
@@ -316,7 +309,7 @@ public class GlftpdLog implements FtpListener {
 			print(
 				"STATS: \""
 					+ dir.getPath()
-					+ "\" \"GroupTop:");
+					+ "\" \"GroupTop:\"");
 					
 			position = 1;
 			for (Iterator iter = groups.iterator(); iter.hasNext();) {
