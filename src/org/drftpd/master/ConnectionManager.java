@@ -44,6 +44,7 @@ import org.drftpd.commands.Reply;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.io.SafeFileWriter;
 import org.drftpd.plugins.RaceStatistics;
+import org.drftpd.plugins.Statistics;
 import org.drftpd.remotefile.MLSTSerialize;
 import org.drftpd.slave.Slave;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -84,6 +85,7 @@ public class ConnectionManager {
         _commandManagerFactory = new CommandManagerFactory(this);
 
         getGlobalContext().addFtpListener(new RaceStatistics());
+        getGlobalContext().addFtpListener(new Statistics());
 
         loadTimer();
         getGlobalContext().getSlaveManager().addShutdownHook();

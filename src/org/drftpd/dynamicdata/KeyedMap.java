@@ -103,7 +103,7 @@ public class KeyedMap<K, V> extends Hashtable {
             } catch (KeyNotFoundException e) {
                 i = new Integer(0);
             }
-
+            
             setObject(key, new Integer(i.intValue() + amount));
         }
     }

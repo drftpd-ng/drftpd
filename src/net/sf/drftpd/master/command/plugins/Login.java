@@ -18,6 +18,7 @@
 package net.sf.drftpd.master.command.plugins;
 
 import net.sf.drftpd.event.ConnectionEvent;
+import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
@@ -119,10 +120,9 @@ public class Login implements CommandHandler, CommandHandlerFactory, Cloneable {
 
         // login failure - close connection
         if (conn.getUserNull().checkPassword(pass)) {
-            conn.getUserNull().login();
             conn.setAuthenticated(true);
-            conn.getGlobalContext().dispatchFtpEvent(new ConnectionEvent(
-                    conn.getUserNull(), "LOGIN"));
+            conn.getGlobalContext().dispatchFtpEvent(new UserEvent(
+                    conn.getUserNull(), "LOGIN", System.currentTimeMillis()));
 
             Reply response = new Reply(230,
                     conn.jprintf(Login.class, "pass.success"));

@@ -90,13 +90,6 @@ public abstract class User implements Entity {
      */
     public abstract int getIdleTime();
 
-    /**
-     * Returns the logins.
-     *
-     * @return int
-     */
-    public abstract int getLogins();
-
     //    /**
     //     * Returns the nukedBytes.
     //     *
@@ -219,11 +212,6 @@ public abstract class User implements Entity {
     public abstract boolean isNuker();
 
     /**
-     * User login.
-     */
-    public abstract void login();
-
-    /**
      * User logout
      */
     public abstract void logout();
@@ -297,20 +285,6 @@ public abstract class User implements Entity {
      */
     public abstract void setIdleTime(int idleTime);
 
-    /**
-     * Sets the logins.
-     *
-     * @param logins
-     *            The logins to set
-     */
-    public abstract void setLogins(int logins);
-
-    /**
-     * Sets the maxLogins.
-     *
-     * @param maxLogins
-     *            The maxLogins to set
-     */
     public abstract void setPassword(String password);
 
     //    public abstract void setTimesNuked(int nuked);

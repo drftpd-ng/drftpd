@@ -84,7 +84,6 @@ public class FtpConfig extends Observable implements ConfigInterface {
     private Hashtable<String, Permission> _permissions = new Hashtable<String,Permission>();
     private StringTokenizer _replaceDir = null;
     private StringTokenizer _replaceFile = null;
-    private long _slaveStatusUpdateTime;
     private boolean _useDirNames = false;
     private boolean _useFileNames = false;
     private String newConf = "conf/perms.conf";
@@ -283,10 +282,6 @@ public class FtpConfig extends Observable implements ConfigInterface {
     	return _pasv_addr;
 	}
 
-    public long getSlaveStatusUpdateTime() {
-        return _slaveStatusUpdateTime;
-    }
-
 	public Properties getZsConfig() {
 		assert _zsCfg != null;
 		return _zsCfg;
@@ -306,8 +301,6 @@ public class FtpConfig extends Observable implements ConfigInterface {
     }
 
     protected void loadConfig1(Properties cfg) throws UnknownHostException {
-        _slaveStatusUpdateTime = Long.parseLong(cfg.getProperty(
-                    "slaveStatusUpdateTime", "3000"));
 
         _hideIps = cfg.getProperty("hideips", "").equalsIgnoreCase("true");
 

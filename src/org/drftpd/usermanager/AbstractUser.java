@@ -81,9 +81,6 @@ public abstract class AbstractUser extends User {
      */
     protected long _lastReset;
 
-    //action counters
-    private int _logins;
-
     //private long _nukedBytes;
     //private int _racesLost;
     //private int _racesParticipated;
@@ -334,10 +331,6 @@ public abstract class AbstractUser extends User {
     	_lastReset = lastReset;
     }
 
-    public int getLogins() {
-        return _logins;
-    }
-
     //    public int getRequests() {
     //        return _requests;
     //    }
@@ -477,10 +470,6 @@ public abstract class AbstractUser extends User {
 
     public boolean isNuker() {
         return isMemberOf("nuke");
-    }
-
-    public void login() {
-        _logins += 1;
     }
 
     public void logout() {
@@ -756,10 +745,6 @@ public abstract class AbstractUser extends User {
 
     public void setIdleTime(int idleTime) {
         _idleTime = idleTime;
-    }
-
-    public void setLogins(int logins) {
-        _logins = logins;
     }
 
     public void setUploadedBytes(long bytes) {

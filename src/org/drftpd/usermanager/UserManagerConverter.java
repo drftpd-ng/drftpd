@@ -71,7 +71,6 @@ public class UserManagerConverter {
         //to.setLastNuked(from.getLastNuked());
         //to.putObject(Nuke.LASTNUKED, new Long(from
         //		.getObjectLong(Nuke.LASTNUKED)));
-        to.setLogins(from.getLogins());
         
         to.setLastReset(from.getLastReset());
 
