@@ -47,10 +47,10 @@ import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.LightSFVFile;
 import org.drftpd.id3.ID3Tag;
-import org.drftpd.master.DiskStatus;
 import org.drftpd.master.RemergeMessage;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.ConnectInfo;
+import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
@@ -76,7 +76,7 @@ import com.thoughtworks.xstream.io.StreamException;
 /**
  * @author mog
  * @author zubov
- * @version $Id: RemoteSlave.java,v 1.75 2004/11/09 21:49:56 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.76 2004/11/11 13:31:36 mog Exp $
  */
 public class RemoteSlave implements Runnable, Comparable, Serializable {
     private static final long serialVersionUID = -6973935289361817125L;

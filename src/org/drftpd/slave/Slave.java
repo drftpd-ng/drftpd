@@ -49,7 +49,6 @@ import org.drftpd.PropertyHelper;
 import org.drftpd.SSLGetContext;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.id3.MP3File;
-import org.drftpd.master.DiskStatus;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.remotefile.LightRemoteFile;
 import org.drftpd.remotefile.RemoteFileInterface;
@@ -74,7 +73,7 @@ import com.Ostermiller.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: Slave.java,v 1.12 2004/11/11 13:09:06 mog Exp $
+ * @version $Id: Slave.java,v 1.13 2004/11/11 13:31:38 mog Exp $
  */
 public class Slave {
     public static final boolean isWin32 = System.getProperty("os.name")

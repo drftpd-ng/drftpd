@@ -25,9 +25,9 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.RemoteSlave;
 
 import org.drftpd.Bytes;
-import org.drftpd.master.DiskStatus;
 import org.drftpd.master.RemoteTransfer;
 
+import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyRemoteSlave;
@@ -40,7 +40,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: MinfreespaceFilterTest.java,v 1.12 2004/11/09 21:50:00 zubov Exp $
+ * @version $Id: MinfreespaceFilterTest.java,v 1.13 2004/11/11 13:31:40 mog Exp $
  */
 public class MinfreespaceFilterTest extends TestCase {
     public MinfreespaceFilterTest(String fName) {

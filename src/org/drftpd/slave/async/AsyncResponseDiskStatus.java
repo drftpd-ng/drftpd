@@ -17,13 +17,13 @@
  */
 package org.drftpd.slave.async;
 
-import org.drftpd.master.DiskStatus;
+import org.drftpd.slave.DiskStatus;
 
 
 
 /**
  * @author zubov
- * @version $Id: AsyncResponseDiskStatus.java,v 1.1 2004/11/09 21:49:59 zubov Exp $
+ * @version $Id: AsyncResponseDiskStatus.java,v 1.2 2004/11/11 13:31:39 mog Exp $
  */
 public class AsyncResponseDiskStatus extends AsyncResponse {
     private DiskStatus _status;

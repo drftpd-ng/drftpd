@@ -17,12 +17,11 @@
  */
 package org.drftpd.slave;
 
-import org.drftpd.master.DiskStatus;
 
 
 /**
  * @author mog
- * @version $Id: SlaveStatus.java,v 1.3 2004/11/09 21:49:59 zubov Exp $
+ * @version $Id: SlaveStatus.java,v 1.4 2004/11/11 13:31:39 mog Exp $
  */
 public class SlaveStatus {
     private long _bytesReceived;

@@ -24,10 +24,10 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManager;
 
-import org.drftpd.master.DiskStatus;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
+import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 
