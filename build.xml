@@ -141,12 +141,16 @@
         <pathelement path="${classpath}"/>
         <pathelement location="classes"/>
       </classpath>
+      <patternset refid="excludes"/>
+  	  <patternset refid="slaveclasses"/>
   	</javac>
   	<javac srcdir="${sourceDir}-archive" destdir="${outputDir}" debug="true" source="1.5">
       <classpath>
         <pathelement path="${classpath}"/>
         <pathelement location="classes"/>
       </classpath>
+      <patternset refid="excludes"/>
+  	  <patternset refid="slaveclasses"/>
   	</javac>
     <copy todir="${outputDir}">
       <fileset dir="${sourceDir}">
