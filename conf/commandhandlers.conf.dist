@@ -145,3 +145,7 @@ SITE\ GALUP=org.drftpd.commands.MoreStats
 SITE\ GALDN=org.drftpd.commands.MoreStats
 SITE\ GWKUP=org.drftpd.commands.MoreStats
 SITE\ GWKDN=org.drftpd.commands.MoreStats
+SITE\ GMONTHUP=org.drftpd.commands.MoreStats
+SITE\ GMONTHDN=org.drftpd.commands.MoreStats
+SITE\ GDAYUP=org.drftpd.commands.MoreStats
+SITE\ GDAYDN=org.drftpd.commands.MoreStats
