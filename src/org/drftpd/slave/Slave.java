@@ -17,6 +17,7 @@
  */
 package org.drftpd.slave;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.FileInputStream;
@@ -38,6 +39,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.net.ssl.SSLContext;
 
@@ -59,6 +62,7 @@ import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.slave.async.AsyncResponseChecksum;
 import org.drftpd.slave.async.AsyncResponseDiskStatus;
+import org.drftpd.slave.async.AsyncResponseDIZFile;
 import org.drftpd.slave.async.AsyncResponseException;
 import org.drftpd.slave.async.AsyncResponseID3Tag;
 import org.drftpd.slave.async.AsyncResponseMaxPath;
@@ -75,6 +79,7 @@ import com.Ostermiller.util.StringTokenizer;
 
 /**
  * @author mog
+ * @author zubov
  * @version $Id$
  */
 public class Slave {
@@ -153,14 +158,6 @@ public class Slave {
             _portRange = new PortRange(minport, maxport);
         }
     }
-
-//    public static LinkedRemoteFile getDefaultRoot(RootCollection rootBasket)
-//        throws IOException {
-//        LinkedRemoteFile linkedroot = new LinkedRemoteFile(new FileRemoteFile(
-//                    rootBasket), null);
-//
-//        return linkedroot;
-//    }
 
     public static RootCollection getDefaultRootBasket(Properties cfg)
         throws IOException {
@@ -385,14 +382,47 @@ public class Slave {
         return _roots;
     }
 
-    public LightSFVFile getSFVFile(String path) throws IOException {
+    private LightSFVFile getSFVFile(String path) throws IOException {
         return new LightSFVFile(new BufferedReader(
                 new FileReader(_roots.getFile(path))));
     }
 
-//    public LinkedRemoteFile getSlaveRoot() throws IOException {
-//        return Slave.getDefaultRoot(_roots);
-//    }
+    private String getDIZFile(String path) throws IOException {
+		ZipEntry zipEntry = null;
+		ZipInputStream zipInput = null;
+		byte[] buf = new byte[20 * 1024];
+		int numRd;
+		try {
+
+			zipInput = new ZipInputStream(new BufferedInputStream(
+					new FileInputStream(_roots.getFile(path))));
+
+			// Access a list of all of the files in the zip archive
+			while ((zipEntry = zipInput.getNextEntry()) != null) {
+				// Is this entry a DIZ file?
+				if (zipEntry.getName().toLowerCase().endsWith(".diz")) {
+					// Read 20 KBytes from the DIZ file, hopefully this
+					// will be the entire file.
+					numRd = zipInput.read(buf, 0, 20 * 1024);
+
+					if (numRd > 0) {
+						return new String(buf, 0, numRd);
+					} else {
+						throw new FileNotFoundException(
+								"0 bytes read from .zip file - " + path);
+					}
+
+				}
+			}
+		} finally {
+			zipInput.close();
+		}
+		throw new FileNotFoundException("No diz entry in - " + path);
+	}
+
+// public LinkedRemoteFile getSlaveRoot() throws IOException {
+// return Slave.getDefaultRoot(_roots);
+// }
 
     public DiskStatus getDiskStatus() {
             return new DiskStatus(_roots.getTotalDiskSpaceAvailable(),
@@ -461,6 +491,10 @@ public class Slave {
 
         if (ac.getName().equals("sfvfile")) {
             return handleSfvFile((AsyncCommandArgument) ac);
+        }
+
+        if (ac.getName().equals("dizfile")) {
+            return handleDIZFile((AsyncCommandArgument) ac);
         }
 
         if (ac.getName().equals("send")) {
@@ -694,6 +728,19 @@ public class Slave {
             return new AsyncResponseSFVFile(ac.getIndex(),
                 getSFVFile(mapPathToRenameQueue(ac.getArgs())));
         } catch (IOException e) {
+            return new AsyncResponseException(ac.getIndex(), e);
+        }
+    }
+
+    private AsyncResponse handleDIZFile(AsyncCommandArgument ac)
+    {
+        try
+        {
+            return new AsyncResponseDIZFile(ac.getIndex(),
+                getDIZFile(ac.getArgs()));
+        }
+        catch (IOException e)
+        {
             return new AsyncResponseException(ac.getIndex(), e);
         }
     }

@@ -32,6 +32,8 @@ import org.drftpd.SFVFile;
 import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.Reply;
 import org.drftpd.id3.ID3Tag;
+import org.drftpd.plugins.DIZFile;
+import org.drftpd.plugins.DIZPlugin;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 
@@ -148,6 +150,85 @@ public class ListUtils {
         }
 
         String statusDirName = null;
+		try {
+			if (DIZPlugin.zipFilesOnline(dir) > 0) {
+				DIZFile diz = null;
+				diz = new DIZFile(DIZPlugin.getZipFile(dir));
+				if (diz.getDiz() != null && diz.getTotal() > 0) {
+					ReplacerEnvironment env = new ReplacerEnvironment();
+
+					if ((diz.getTotal() - DIZPlugin.zipFilesPresent(dir)) > 0) {
+						env.add("missing.number", ""
+								+ (diz.getTotal() - DIZPlugin
+										.zipFilesPresent(dir)));
+						env.add("missing.percent", ""
+								+ (((diz.getTotal() - DIZPlugin
+										.zipFilesPresent(dir)) * 100) / diz
+										.getTotal()));
+						env.add("missing", conn.jprintf(ListUtils.class,
+								"statusbar.missing", env));
+					} else {
+						env.add("missing", "");
+					}
+
+					if (DIZPlugin.zipFilesPresent(dir) > 0) {
+						env.add("complete.total", "" + diz.getTotal());
+						env.add("complete.number", ""
+								+ DIZPlugin.zipFilesPresent(dir));
+						env.add("complete.percent", ""
+								+ ((DIZPlugin.zipFilesPresent(dir) * 100) / diz
+										.getTotal()));
+						env.add("complete.totalbytes", Bytes
+								.formatBytes(DIZPlugin.zipDirSize(diz
+										.getParent())));
+					} else {
+						env.add("complete.number", "0");
+						env.add("complete.percent", "0");
+						env.add("complete.totalbytes", "0");
+					}
+
+					env.add("complete", conn.jprintf(ListUtils.class,
+							"statusbar.complete", env));
+
+					if (DIZPlugin.zipFilesOffline(dir) > 0) {
+						env.add("offline.number", ""
+								+ DIZPlugin.zipFilesOffline(dir));
+						env.add("offline.percent", ""
+								+ (DIZPlugin.zipFilesOffline(dir) * 100)
+								/ DIZPlugin.zipFilesPresent(dir));
+						env.add("online.number", ""
+								+ DIZPlugin.zipFilesOnline(dir));
+						env.add("online.percent", ""
+								+ (DIZPlugin.zipFilesOnline(dir) * 100)
+								/ DIZPlugin.zipFilesPresent(dir));
+						env.add("offline", conn.jprintf(ListUtils.class,
+								"statusbar.offline", env));
+					} else {
+						env.add("offline", "");
+					}
+
+					env.add("id3tag", "");
+
+					statusDirName = conn.jprintf(ListUtils.class,
+							"statusbar.format", env);
+
+					if (statusDirName == null) {
+						throw new RuntimeException();
+					}
+
+					if (conn.getGlobalContext().getZsConfig()
+							.statusBarEnabled()) {
+						listFiles.add(new StaticRemoteFile(null, statusDirName,
+								"drftpd", "drftpd", 0L, dir.lastModified()));
+					}
+
+					return listFiles;
+				}
+			}
+		} catch (FileNotFoundException e) {
+		} catch (NoAvailableSlaveException e) {
+			logger.warn("No available slaves for DIZ file", e);
+		}
 
         try {
             SFVFile sfvfile = dir.lookupSFVFile();

@@ -46,6 +46,8 @@ import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.id3.ID3Tag;
+import org.drftpd.plugins.DIZFile;
+import org.drftpd.plugins.DIZPlugin;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -178,8 +180,35 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
                 logger.warn("", e);
             }
         }
+        // diz files
+		if (conn.getGlobalContext().getZsConfig().dizEnabled()) {
+			if (DIZPlugin.zipFilesOnline(newCurrentDirectory) > 0) {
+				try {
+					DIZFile diz = new DIZFile(DIZPlugin
+							.getZipFile(newCurrentDirectory));
 
-        //show race stats
+					ReplacerFormat format = null;
+					ReplacerEnvironment env = BaseFtpConnection
+							.getReplacerEnvironment(null, conn.getUserNull());
+
+					if (diz.getDiz() != null) {
+						try {
+							format = ReplacerFormat.createFormat(diz.getDiz());
+							response.addComment(SimplePrintf.jprintf(format,
+									env));
+						} catch (FormatterException e) {
+							logger.warn(e);
+						}
+					}
+				} catch (FileNotFoundException e) {
+					// do nothing, continue on
+				} catch (NoAvailableSlaveException e) {
+					// do nothing, continue on
+				}
+			}
+		}
+
+        // show race stats
         if (conn.getGlobalContext().getZsConfig().raceStatsEnabled()) {
             try {
                 SFVFile sfvfile = newCurrentDirectory.lookupSFVFile();

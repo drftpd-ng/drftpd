@@ -17,6 +17,7 @@ master.usermanager=org.drftpd.usermanager.javabeans.BeanUserManager
 #plugins.3=org.drftpd.plugins.Archive
 #plugins.4=net.drmods.plugins.irc.imdb.EventListener
 #plugins.5=net.drmods.plugins.ftp.AutoFreeSpace
+#plugins.6=org.drftpd.plugins.DIZPlugin
 
 #leave slaveselection manager as is and use default configs in:
 # 1. slaveselection-up.conf.dist

@@ -1,3 +1,5 @@
+# @version $Id$
+
 #show status bar in dir listings [true/false]
 statusbar.enabled=true
 
@@ -15,6 +17,9 @@ cwd.racestats.enabled=true
 
 #only allow files found in the sfv file [true/false]
 sfv.restrict.files=true
+
+#set the following line to enable/disable file_id.diz info
+cwd.dizinfo.enabled=true
 
 #allow multiple sfv files in one dir [true/false]
 allow.multi.sfv=false

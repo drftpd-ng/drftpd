@@ -68,6 +68,7 @@ import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.slave.async.AsyncResponseChecksum;
 import org.drftpd.slave.async.AsyncResponseDiskStatus;
+import org.drftpd.slave.async.AsyncResponseDIZFile;
 import org.drftpd.slave.async.AsyncResponseException;
 import org.drftpd.slave.async.AsyncResponseID3Tag;
 import org.drftpd.slave.async.AsyncResponseMaxPath;
@@ -727,6 +728,11 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		return rar;
 	}
 
+   	public String fetchDIZFileFromIndex(String index)
+            throws RemoteIOException, SlaveUnavailableException {
+		return ((AsyncResponseDIZFile) fetchResponse(index)).getDIZ();
+	}
+
 	public LightSFVFile fetchSFVFileFromIndex(String index)
 			throws RemoteIOException, SlaveUnavailableException {
 		return ((AsyncResponseSFVFile) fetchResponse(index)).getSFV();
@@ -824,6 +830,16 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 				+ toDirPath + "," + toName));
 
 		return index;
+	}
+
+        public String issueDIZFileToSlave(LinkedRemoteFileInterface file)
+	        throws SlaveUnavailableException {
+	    String index    = fetchIndex();
+	    AsyncCommand ac = new AsyncCommandArgument(index, "dizfile",
+						       file.getPath());
+
+	    sendCommand(ac);
+	    return index;
 	}
 
 	public String issueSFVFileToSlave(String path)
