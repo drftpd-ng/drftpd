@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.16 2004/01/31 01:57:35 zubov Exp $
+ * @version $Id: ListUtils.java,v 1.17 2004/01/31 02:02:21 zubov Exp $
  */
 public class ListUtils {
 
@@ -103,21 +103,31 @@ public class ListUtils {
 			SFVStatus sfvstatus = sfvfile.getStatus();
 			if (sfvfile.size() != 0) {
 				if (sfvstatus.getPresent() != 0) {
-					statusDirName =
-						"[ "
-							+ sfvstatus.getPresent()
-							+ "/"
-							+ sfvfile.size()
-							+ " = "
-							+ (sfvstatus.getPresent() * 100) / sfvfile.size()
-							+ "% complete | "
-							+ sfvstatus.getAvailable()
-							+ "/"
-							+ sfvstatus.getPresent()
-							+ " = "
-							+ (sfvstatus.getAvailable() * 100)
-								/ sfvstatus.getPresent()
-							+ "% online ]";
+					if (numTotal != numOnline) // list by user config
+						statusDirName =
+							"[ "
+								+ sfvstatus.getPresent()
+								+ "/"
+								+ sfvfile.size()
+								+ " = "
+								+ (sfvstatus.getPresent() * 100) / sfvfile.size()
+								+ "% complete | "
+								+ sfvstatus.getAvailable()
+								+ "/"
+								+ sfvstatus.getPresent()
+								+ " = "
+								+ (sfvstatus.getAvailable() * 100)
+									/ sfvstatus.getPresent()
+								+ "% online ]";
+					else // all files online
+						statusDirName =
+							"[ "
+								+ sfvstatus.getPresent()
+								+ "/"
+								+ sfvfile.size()
+								+ " = "
+								+ (sfvstatus.getPresent() * 100) / sfvfile.size()
+								+ "% complete ]";
 				} else {
 					statusDirName =
 						"[ "
@@ -158,7 +168,8 @@ public class ListUtils {
 			logger.warn("zipscript error", e);
 		}
 		if (statusDirName == null
-			&& numTotal > 5) { // in future list by user settings for numTotal
+			&& numTotal > 5
+			&& numOnline != numTotal) { // in future list by user settings
 			statusDirName =
 				"[ "
 					+ numOnline
