@@ -35,7 +35,7 @@ public class VirtualDirectory {
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
 			RemoteFileInterface file = (RemoteFileInterface) iter.next();
 			printLine(file, out);
-			//out.flush();
+			out.flush();
 		}
 	}
 
@@ -104,30 +104,16 @@ public class VirtualDirectory {
 
 		StringBuffer sb = new StringBuffer(13);
 		sb.append(fl.isDirectory() ? 'd' : '-');
-		//		if (fl.isDirectory()) {
-		//			sb.append('d');
-		//		} else {
-		//			sb.append('-');
-		//		}
 
-		//		if (fl.canRead()) {
-		sb.append('r');
-		//		} else {
-		//			sb.append('-');
-		//		}
+		sb.append("rw");
+		sb.append(fl.isDirectory() ? "x" : "-");
 
-		//		if (fl.canWrite()) {
-		sb.append('w');
-		//		} else {
-		//			sb.append('-');
-		//		}
+		sb.append("rw");
+		sb.append(fl.isDirectory() ? "x" : "-");
 
-		if (fl.isDirectory()) {
-			sb.append("x");
-		} else {
-			sb.append("-");
-		}
-		sb.append("------");
+		sb.append("rw");
+		sb.append(fl.isDirectory() ? "x" : "-");
+
 		return sb.toString();
 	}
 

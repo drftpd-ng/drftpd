@@ -4,9 +4,11 @@ download		*	*
 
 makedir			*	*
 
-# this is deleteown for non-siteops
-delete			*	*
+deleteown		*	*
+delete			*	=siteop
 
+renameown		*	*
+rename			*	=siteop
 
 #allows pre in /pre/* to group siteop
 #pre				/pre/*	=siteop

@@ -1547,6 +1547,7 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
+		//check permission
 		if (_renameFrom.getUsername().equals(_user.getUsername())) {
 			if (!getConfig().checkRenameOwn(_user, _renameFrom)) {
 				resetState();
@@ -1596,7 +1597,7 @@ public class FtpConnection extends BaseFtpConnection {
 
 		if (_renameFrom.hasOfflineSlaves()) {
 			out.print(
-				new FtpResponse(450, "Cannot rename, file has offline slaves"));
+				new FtpResponse(450, "Cannot rename, source has offline slaves"));
 			resetState();
 			return;
 		}
@@ -1614,10 +1615,17 @@ public class FtpConnection extends BaseFtpConnection {
 		//String to = toDir.getPath() + "/" + name;
 
 		// check permission
-		//if(!user.getVirtualDirectory().hasCreatePermission(physicalToFileStr, true)) {
-		//   out.write(ftpStatus.getResponse(553, request, user, null));
-		//   return;
-		//}
+		if (_renameFrom.getUsername().equals(_user.getUsername())) {
+			if (!getConfig().checkRenameOwn(_user, toDir)) {
+				resetState();
+				out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+				return;
+			}
+		} else if (!getConfig().checkRename(_user, toDir)) {
+			resetState();
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
 
 		try {
 			fromFile.renameTo(toDir.getPath(), name);
