@@ -12,6 +12,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -227,18 +228,19 @@ public class ConnectionManager {
 				FtpConnection conn = (FtpConnection) i.next();
 
 				int idle = (int) ((currTime - conn.getLastActive()) / 1000);
-				int maxIdleTime = 0;
-				if (conn.getUser() != null) {
-					maxIdleTime = conn.getUser().getMaxIdleTime();
-				}
-				if (maxIdleTime == 0)
-					maxIdleTime = idleTimeout;
+				int maxIdleTime;
+					try {
+						maxIdleTime = conn.getUser().getMaxIdleTime();
+						if(maxIdleTime == 0) maxIdleTime = idleTimeout;
+					} catch (NoSuchObjectException e) {
+						maxIdleTime = idleTimeout;
+					}
 
 				if (!conn.isExecuting() && idle >= maxIdleTime) {
 					// idle time expired, logout user.
 					conn.stop(
 						"Idle time expired: "
-							+ conn.getUser().getMaxIdleTime()
+							+ maxIdleTime
 							+ "s");
 				}
 			}

@@ -192,6 +192,29 @@ public class FtpConfig {
 		}
 		return true;
 	}
+	
+	public boolean checkHideInWho(LinkedRemoteFile path) {
+		
+		for (Iterator iter = _hideinwhos.iterator(); iter.hasNext();) {
+			PathPermission perm = (PathPermission) iter.next();
+			if(perm.checkPath(path)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean checkHideInWho(LinkedRemoteFile path, User fromUser) {
+		
+		for (Iterator iter = _hideinwhos.iterator(); iter.hasNext();) {
+			PathPermission perm = (PathPermission) iter.next();
+			if(perm.checkPath(path)) {
+				return !perm.check(fromUser);
+			}
+		}
+		return false;
+	}
+
 	public SlaveManagerImpl getSlaveManager() {
 		return this.connManager.getSlavemanager();
 	}

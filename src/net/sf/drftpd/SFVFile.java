@@ -118,11 +118,34 @@ public class SFVFile implements Serializable {
 	public boolean hasFile(String name) {
 		return getEntries().containsKey(name);
 	}
+
 	/**
 	 * @return
 	 */
 	public int size() {
 		return entries.size();
+	}
+
+	/**
+	 * @return
+	 */
+	public long getTotalBytes() {
+		long totalBytes=0;
+		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+			totalBytes += ((LinkedRemoteFile) iter.next()).length();
+		}
+		return totalBytes;
+	}
+
+	/**
+	 * @return
+	 */
+	public long getTotalXfertime() {
+		long totalXfertime=0;
+		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+			totalXfertime += ((LinkedRemoteFile) iter.next()).getXfertime();
+		}
+		return totalXfertime;
 	}
 
 }

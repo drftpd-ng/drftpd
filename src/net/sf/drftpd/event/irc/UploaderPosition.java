@@ -15,12 +15,14 @@ package net.sf.drftpd.event.irc;
 public class UploaderPosition implements Comparable {
 	long bytes;
 	int files;
+	long xfertime;
 	String username;
 	
-	public UploaderPosition(String username, long bytes, int files) {
+	public UploaderPosition(String username, long bytes, int files, long xfertime) {
 		this.username = username;
 		this.bytes = bytes;
 		this.files = files;
+		this.xfertime = xfertime;
 	}
 	public void updateBytes(long bytes) {
 		this.bytes += bytes;
@@ -73,6 +75,15 @@ public class UploaderPosition implements Comparable {
 	 */
 	public String getUsername() {
 		return username;
+	}
+	public void updateXfertime(long xfertime) {
+		this.xfertime += xfertime;
+	}
+	/**
+	 * @return
+	 */
+	public long getXfertime() {
+		return xfertime;
 	}
 
 }

@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -317,7 +318,7 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 		if (!connManager
 			.getConfig()
-			.hasReadPermission(getUser(), newCurrentDirectory)) {
+			.hasReadPermission(_user, newCurrentDirectory)) {
 			FtpResponse response =
 				new FtpResponse(550, dirName + ": Not found");
 			out.print(response);
@@ -332,14 +333,14 @@ public class FtpConnection extends BaseFtpConnection {
 
 		if (connManager
 			.getConfig()
-			.hasReadPermission(getUser(), newCurrentDirectory));
+			.hasReadPermission(_user, newCurrentDirectory));
 		FtpResponse response =
 			new FtpResponse(
 				200,
 				"Directory changed to " + currentDirectory.getPath());
 		connManager.getConfig().directoryMessage(
 			response,
-			getUser(),
+			_user,
 			currentDirectory);
 
 		Collection uploaders =
@@ -396,8 +397,8 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		// check permission
-		if (!getUser().getUsername().equals(requestedFile.getUsername())
-			&& !getUser().isAdmin()) {
+		if (!_user.getUsername().equals(requestedFile.getUsername())
+			&& !_user.isAdmin()) {
 			out.print(
 				new FtpResponse(
 					550,
@@ -423,7 +424,7 @@ public class FtpConnection extends BaseFtpConnection {
 		// now delete
 		//try {
 		connManager.dispatchFtpEvent(
-			new DirectoryFtpEvent(getUser(), "DELE", requestedFile));
+			new DirectoryFtpEvent(_user, "DELE", requestedFile));
 		requestedFile.delete();
 		out.print(response);
 		//out.write(ftpStatus.getResponse(250, request, user, args));
@@ -558,7 +559,7 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		ArrayList listFiles = new ArrayList(directoryFile.getFiles());
-		User user = getUser();
+		User user = _user;
 		for (Iterator iter = listFiles.iterator(); iter.hasNext();) {
 			LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
 			if (!connManager.getConfig().isVisible(user, element))
@@ -699,8 +700,8 @@ public class FtpConnection extends BaseFtpConnection {
 				new FtpResponse(
 					550,
 					"Requested action not taken. "
-						+ createdDirName
-						+ " exists"));
+						+ request.getArgument()
+						+ " already exists"));
 			return;
 		}
 
@@ -712,8 +713,8 @@ public class FtpConnection extends BaseFtpConnection {
 		try {
 			LinkedRemoteFile createdDir =
 				dir.createDirectory(
-					getUser().getUsername(),
-					getUser().getGroup(),
+					_user.getUsername(),
+					_user.getGroup(),
 					createdDirName);
 			out.print(
 				new FtpResponse(
@@ -721,7 +722,7 @@ public class FtpConnection extends BaseFtpConnection {
 					"\"" + createdDir.getPath() + "\" created."));
 
 			connManager.dispatchFtpEvent(
-				new DirectoryFtpEvent(getUser(), "MKD", createdDir));
+				new DirectoryFtpEvent(_user, "MKD", createdDir));
 			return;
 		} catch (ObjectExistsException ex) {
 			out.println("550 directory " + createdDirName + " already exists");
@@ -920,7 +921,7 @@ public class FtpConnection extends BaseFtpConnection {
 
 		// set state variables
 
-		if (getUser() == null) {
+		if (_user == null) {
 			out.print(FtpResponse.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS);
 			resetState();
 			return;
@@ -932,7 +933,7 @@ public class FtpConnection extends BaseFtpConnection {
 		String pass = request.hasArgument() ? request.getArgument() : "";
 
 		// login failure - close connection
-		if (getUser().checkPassword(pass)) {
+		if (_user.checkPassword(pass)) {
 			FtpResponse response =
 				(FtpResponse) FtpResponse.RESPONSE_230_USER_LOGGED_IN.clone();
 			try {
@@ -945,7 +946,7 @@ public class FtpConnection extends BaseFtpConnection {
 			}
 			authenticated = true;
 			out.print(response);
-			connManager.dispatchFtpEvent(new UserEvent(getUser(), "LOGIN"));
+			connManager.dispatchFtpEvent(new UserEvent(_user, "LOGIN"));
 		} else {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			/*
@@ -1014,22 +1015,6 @@ public class FtpConnection extends BaseFtpConnection {
 		out.print(
 			new FtpResponse(227, "Entering Passive Mode (" + addrStr + ")."));
 		out.flush();
-		// don't listen here.. it will block until a connection is made.. 
-		//		if (preTransferRSlave == null) {
-		//			try {
-		//				acceptPasvConnection();
-		//			} catch (IOException e) {
-		//				out.print(
-		//					new FtpResponse(
-		//						425,
-		//						"Can't open data connection: " + e.getMessage()));
-		//				return;
-		//				//out.write(ftpStatus.getResponse(425, request, user, args));
-		//			}
-		//		} else {
-		//TODO need to listen on slave
-		//			out.print(new FtpResponse(425, "TODO: Need to listen on slave!"));
-		//		}
 	}
 
 	/**
@@ -1275,21 +1260,20 @@ public class FtpConnection extends BaseFtpConnection {
 			out.println("550 " + _transferFile + ": not a plain file.");
 			return;
 		}
-		if (getUser().getRatio() != 0
-			&& getUser().getCredits() < _transferFile.length()) {
+		if (_user.getRatio() != 0
+			&& _user.getCredits() < _transferFile.length()) {
 			out.println("550 Not enough credits.");
 			return;
 		}
 
 		if (!connManager
 			.getConfig()
-			.hasReadPermission(getUser(), _transferFile)) {
+			.hasReadPermission(_user, _transferFile)) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
 
 		//SETUP rslave
-		RemoteSlave rslave;
 		if (mbPasv) {
 			assert preTransfer == true;
 
@@ -1297,11 +1281,11 @@ public class FtpConnection extends BaseFtpConnection {
 				out.print(FtpResponse.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS);
 				return;
 			}
-			rslave = preTransferRSlave;
+			_rslave = preTransferRSlave;
 		} else {
 
 			try {
-				rslave =
+				_rslave =
 					_transferFile.getASlave(Transfer.TRANSFER_SENDING_DOWNLOAD);
 			} catch (NoAvailableSlaveException ex) {
 				out.print(FtpResponse.RESPONSE_530_SLAVE_UNAVAILABLE);
@@ -1313,9 +1297,9 @@ public class FtpConnection extends BaseFtpConnection {
 		if (mbPort) {
 			try {
 				_transfer =
-					rslave.getSlave().connect(getInetAddress(), getPort());
+					_rslave.getSlave().connect(getInetAddress(), getPort());
 			} catch (RemoteException ex) {
-				rslave.handleRemoteException(ex);
+				_rslave.handleRemoteException(ex);
 				out.print(
 					new FtpResponse(450, "Remote error: " + ex.getMessage()));
 				return;
@@ -1326,7 +1310,7 @@ public class FtpConnection extends BaseFtpConnection {
 						ex.getClass().getName()
 							+ " from slave: "
 							+ ex.getMessage()));
-				logger.log(Level.SEVERE, "rslave=" + rslave, ex);
+				logger.log(Level.SEVERE, "rslave=" + _rslave, ex);
 				return;
 			}
 		} else if (mbPasv) {
@@ -1365,13 +1349,13 @@ public class FtpConnection extends BaseFtpConnection {
 			new FtpResponse(
 				150,
 				"File status okay; about to open data connection from "
-					+ rslave.getName()
+					+ _rslave.getName()
 					+ "."));
 		out.flush();
 		try {
 			_transfer.downloadFile(_transferFile.getPath(), getType(), resumePosition);
 		} catch (RemoteException ex) {
-			rslave.handleRemoteException(ex);
+			_rslave.handleRemoteException(ex);
 			out.print(
 				FtpResponse.RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED);
 			return;
@@ -1406,7 +1390,7 @@ public class FtpConnection extends BaseFtpConnection {
 			user.updateDownloadedBytes(transferedBytes);
 			user.commit();
 		} catch (RemoteException ex) {
-			rslave.handleRemoteException(ex);
+			_rslave.handleRemoteException(ex);
 		} catch (UserFileException e) {}
 		out.print(response);
 		reset();
@@ -1443,7 +1427,7 @@ public class FtpConnection extends BaseFtpConnection {
 
 		if (!connManager
 			.getConfig()
-			.hasReadPermission(getUser(), requestedFile)) {
+			.hasReadPermission(_user, requestedFile)) {
 			out.print(new FtpResponse(550, fileName + ": Not found"));
 			return;
 		}
@@ -1459,7 +1443,7 @@ public class FtpConnection extends BaseFtpConnection {
 
 		// now delete
 		connManager.dispatchFtpEvent(
-			new DirectoryFtpEvent(getUser(), "RMD", requestedFile));
+			new DirectoryFtpEvent(_user, "RMD", requestedFile));
 		requestedFile.delete();
 		out.print(FtpResponse.RESPONSE_250_ACTION_OKAY);
 	}
@@ -1584,7 +1568,7 @@ public class FtpConnection extends BaseFtpConnection {
 	public void doSITE_ADDIP(FtpRequest request, PrintWriter out) {
 		resetState();
 
-		if (!getUser().isAdmin()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -1670,7 +1654,7 @@ public class FtpConnection extends BaseFtpConnection {
 	public void doSITE_ADDUSER(FtpRequest request, PrintWriter out) {
 		resetState();
 
-		if (!getUser().isAdmin()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -1689,7 +1673,7 @@ public class FtpConnection extends BaseFtpConnection {
 		try {
 			newUser = userManager.create(newUsername);
 			newUser.setPassword(pass);
-			newUser.setComment("Added by " + getUser().getUsername());
+			newUser.setComment("Added by " + _user.getUsername());
 
 			for (int i = 2; i < args.length; i++) {
 				String string = args[i];
@@ -1834,7 +1818,7 @@ public class FtpConnection extends BaseFtpConnection {
 		usageResponse.addComment(
 			"              tagline max_sim_down max_sim_up");
 
-		if (!getUser().isAdmin()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -1935,7 +1919,7 @@ public class FtpConnection extends BaseFtpConnection {
 	public void doSITE_CHPASS(FtpRequest request, PrintWriter out) {
 		resetState();
 
-		if (!getUser().isAdmin()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -1991,7 +1975,7 @@ public class FtpConnection extends BaseFtpConnection {
 	public void doSITE_CHGRP(FtpRequest request, PrintWriter out) {
 		resetState();
 
-		if (!getUser().isAdmin()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2054,7 +2038,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 */
 	public void doSITE_DELIP(FtpRequest request, PrintWriter out) {
 		resetState();
-		if (!getUser().isAdmin()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2107,7 +2091,7 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		if (!getUser().isAdmin()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2171,7 +2155,7 @@ public class FtpConnection extends BaseFtpConnection {
 		return;
 	}
 	public void doSITE_KICK(FtpRequest request, PrintWriter out) {
-		if (!getUser().isAdmin()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2184,7 +2168,7 @@ public class FtpConnection extends BaseFtpConnection {
 		int pos = arg.indexOf(' ');
 
 		String username;
-		String message = "Kicked by " + getUser().getUsername();
+		String message = "Kicked by " + _user.getUsername();
 		if (pos == -1) {
 			username = arg;
 		} else {
@@ -2199,9 +2183,11 @@ public class FtpConnection extends BaseFtpConnection {
 			iter.hasNext();
 			) {
 			BaseFtpConnection conn = (BaseFtpConnection) iter.next();
-			if (conn.getUser().getUsername().equals(username)) {
-				conn.stop(message);
-			}
+			try {
+				if (conn.getUser().getUsername().equals(username)) {
+					conn.stop(message);
+				}
+			} catch (NoSuchObjectException e) {}
 		}
 		out.print(response);
 		return;
@@ -2247,7 +2233,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 *     multiplier is 3, user loses size * ratio + size * 2, etc.
 	 */
 	public void doSITE_NUKE(FtpRequest request, PrintWriter out) {
-		if(!this.user.isNuker()) {
+		if(!this._user.isNuker()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2382,7 +2368,7 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 		NukeEvent nuke =
 			new NukeEvent(
-				getUser(),
+				_user,
 				request.getCommand(),
 				preNukePath,
 				multiplier,
@@ -2422,7 +2408,7 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
 		}
-		getUser().setPassword(request.getArgument());
+		_user.setPassword(request.getArgument());
 		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
 		return;
 	}
@@ -2476,7 +2462,7 @@ public class FtpConnection extends BaseFtpConnection {
 
 		//ANNOUNCE
 		connManager.dispatchFtpEvent(
-			new DirectoryFtpEvent(getUser(), "PRE", preDir));
+			new DirectoryFtpEvent(_user, "PRE", preDir));
 
 		//TODO implement SITE PRE
 		out.print(FtpResponse.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
@@ -2490,7 +2476,7 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		if (!getUser().isAdmin()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2515,7 +2501,7 @@ public class FtpConnection extends BaseFtpConnection {
 
 	public void doSITE_RELOAD(FtpRequest request, PrintWriter out) {
 		resetState();
-		if (!getUser().isAdmin()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2528,13 +2514,14 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(new FtpResponse(200, e.getMessage()));
 			logger.log(Level.SEVERE, "Error reloading config", e);
 		}
+		connManager.dispatchFtpEvent(new UserEvent(_user, "RELOAD"));
 		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
 		return;
 	}
 
 	public void doSITE_RENUSER(FtpRequest request, PrintWriter out) {
 		resetState();
-		if (!getUser().isAdmin()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2570,7 +2557,7 @@ public class FtpConnection extends BaseFtpConnection {
 
 	public void doSITE_READD(FtpRequest request, PrintWriter out) {
 		resetState();
-		if (!getUser().isAdmin()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2608,7 +2595,7 @@ public class FtpConnection extends BaseFtpConnection {
 	// won't work due to the non-interactivitiy of ftp, and due to timeouts
 	//	public void doSITE_REPLIC(FtpRequest request, PrintWriter out) {
 	//		resetState();
-	//		if(!getUser().isAdmin()) {
+	//		if(!_user.isAdmin()) {
 	//			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 	//			return;
 	//		}
@@ -2744,13 +2731,13 @@ public class FtpConnection extends BaseFtpConnection {
 
 	public void doSITE_SHUTDOWN(FtpRequest request, PrintWriter out) {
 		resetState();
-		if (!getUser().isAdmin()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
 		String message;
 		if (!request.hasArgument()) {
-			message = "Service shutdown issued by " + getUser().getUsername();
+			message = "Service shutdown issued by " + _user.getUsername();
 		} else {
 			message = request.getArgument();
 		}
@@ -2763,7 +2750,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 * 
 	 */
 	public void doSITE_SLAVES(FtpRequest request, PrintWriter out) {
-		if (!getUser().isAdmin()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2908,7 +2895,7 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 		}
 
-		getUser().setTagline(request.getArgument());
+		_user.setTagline(request.getArgument());
 	}
 
 	/**
@@ -2921,7 +2908,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 *        send the message haha to him.
 	 */
 	public void doSITE_TAKE(FtpRequest request, PrintWriter out) {
-		if (!getUser().isAdmin()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -3081,7 +3068,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 */
 	public void doSITE_USER(FtpRequest request, PrintWriter out) {
 		resetState();
-		if (!getUser().isAdmin()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -3180,7 +3167,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 */
 	public void doSITE_WHO(FtpRequest request, PrintWriter out) {
 		resetState();
-		if (!getUser().isAdmin()) {
+		if (!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -3195,9 +3182,18 @@ public class FtpConnection extends BaseFtpConnection {
 				response.addComment("Not yet authenticated");
 				continue;
 			}
-			String username = conn.getUser().getUsername();
+			User user;
+			try {
+				user = conn.getUser();
+			} catch (NoSuchObjectException e) {
+				throw new RuntimeException(e);
+			}
 			String command = conn.getRequest().getCommand();
+			String username = user.getUsername();
 
+			if(connManager.getConfig().checkHideInWho(conn.getCurrentDirectory(), _user)) {
+				continue;
+			}
 			if (conn.isExecuting()) {
 				if (conn.getRequest().getCommand().equals("RETR")) {
 					response.addComment(username + "    DL");
@@ -3205,13 +3201,13 @@ public class FtpConnection extends BaseFtpConnection {
 					response.addComment(username + "    UL");
 				} else {
 					response.addComment(
-						conn.getUser().getUsername()
+						username
 							+ "    "
 							+ conn.getRequest().getCommand());
 				}
 
 			} else {
-				response.addComment(conn.getUser().getUsername() + "    IDLE");
+				response.addComment(username + "    IDLE");
 			}
 		}
 		out.print(response.toString());
@@ -3255,7 +3251,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 */
 	public void doSITE_WIPE(FtpRequest request, PrintWriter out) {
 		resetState();
-		if (!getUser().isAdmin())
+		if (!_user.isAdmin())
 			out.println("200 You need admin privileges to use SITE WIPE");
 
 		if (!request.hasArgument()) {
@@ -3290,7 +3286,7 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 		connManager.dispatchFtpEvent(
-			new DirectoryFtpEvent(getUser(), "WIPE", wipeFile));
+			new DirectoryFtpEvent(_user, "WIPE", wipeFile));
 		wipeFile.delete();
 		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
 		return;
@@ -3435,14 +3431,12 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		RemoteSlave rslave;
-
 		//SETUP rslave
 		if (preTransfer) {
-			rslave = preTransferRSlave;
+			_rslave = preTransferRSlave;
 		} else {
 			try {
-				rslave =
+				_rslave =
 					slaveManager.getASlave(Transfer.TRANSFER_RECEIVING_UPLOAD);
 			} catch (NoAvailableSlaveException ex) {
 				logger.log(Level.SEVERE, ex.getMessage());
@@ -3450,17 +3444,17 @@ public class FtpConnection extends BaseFtpConnection {
 				return;
 			}
 		}
-		assert rslave != null;
+		assert _rslave != null;
 		
-		List rslaves = Collections.singletonList(rslave);
+		List rslaves = Collections.singletonList(_rslave);
 		//		ArrayList rslaves = new ArrayList();
 		//		rslaves.add(rslave);
 		StaticRemoteFile uploadFile =
 			new StaticRemoteFile(
 				rslaves,
 				targetFilename,
-				getUser().getUsername(),
-				getUser().getGroup(),
+				_user.getUsername(),
+				_user.getGroup(),
 				0L,
 				System.currentTimeMillis(),
 				0L);
@@ -3469,9 +3463,9 @@ public class FtpConnection extends BaseFtpConnection {
 		//SETUP transfer
 		if(mbPort) {
 			try {
-				_transfer = rslave.getSlave().connect(getInetAddress(),getPort());
+				_transfer = _rslave.getSlave().connect(getInetAddress(),getPort());
 			} catch (RemoteException e1) {
-				rslave.handleRemoteException(e1);
+				_rslave.handleRemoteException(e1);
 				out.print(new FtpResponse(451, e1.getMessage()));
 				return;
 			} catch (NoAvailableSlaveException e1) {
@@ -3509,8 +3503,8 @@ public class FtpConnection extends BaseFtpConnection {
 		out.print(
 			new FtpResponse(
 				150,
-				"File status okay, about to open data connection from "
-					+ rslave.getName()
+				"File status okay, about to open data connection to "
+					+ _rslave.getName()
 					+ "."));
 		out.flush();
 
@@ -3519,7 +3513,7 @@ public class FtpConnection extends BaseFtpConnection {
 			_transfer.uploadFile(targetDir.getPath(), targetFilename, resumePosition);
 		} catch (RemoteException ex) {
 			out.print(new FtpResponse(426, ex.getMessage()));
-			rslave.handleRemoteException(ex);
+			_rslave.handleRemoteException(ex);
 			_transferFile.delete();
 			return;
 		} catch (IOException ex) {
@@ -3543,7 +3537,7 @@ public class FtpConnection extends BaseFtpConnection {
 			_transferFile.setLastModified(System.currentTimeMillis());
 			_transferFile.setLength(transferedBytes);
 		} catch (RemoteException ex) {
-			rslave.handleRemoteException(ex);
+			_rslave.handleRemoteException(ex);
 			out.print(
 				new FtpResponse(
 					426,
@@ -3613,11 +3607,11 @@ public class FtpConnection extends BaseFtpConnection {
 
 		connManager.dispatchFtpEvent(
 			new TransferEvent(
-				getUser(),
+				_user,
 				"STOR",
 				_transferFile,
 				getClientAddress(),
-				rslave.getInetAddress(),
+				_rslave.getInetAddress(),
 				getType(),
 				true));
 
@@ -3788,7 +3782,7 @@ public class FtpConnection extends BaseFtpConnection {
 	public void doUSER(FtpRequest request, PrintWriter out) {
 		resetState();
 		this.authenticated = false;
-		this.user = null;
+		this._user = null;
 
 		// argument check
 		if (!request.hasArgument()) {
@@ -3838,12 +3832,10 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		this.user = newUser;
-		FtpResponse response =
-			new FtpResponse(
+		_user = newUser;
+		out.write(new FtpResponse(
 				331,
-				"Password required for " + getUser().getUsername());
-		out.print(response);
+				"Password required for " + _user.getUsername()).toString());
 	}
 
 	/**
@@ -3864,37 +3856,13 @@ public class FtpConnection extends BaseFtpConnection {
 		return type;
 	}
 
-	//private FtpDataConnection mDataConnection;
-	/**
-	 * Set configuration file and the control socket. 
-	 */
-	/*
-	public FtpConnection(FtpConfig cfg, Socket soc) {
-	    super(cfg, soc);
-	}
-	*/
-
-	/**
-	 * prints a few lines of status such as credits, ratio, disk free, to the user
-	 * @deprecated Use status(FtpResponse) instead
-	 */
-	protected void printStatus(PrintWriter out, String prefix) {
-		out.println(
-			prefix
-				+ " [Credits: "
-				+ getUser().getCredits()
-				+ "B] [Ratio: 1:"
-				+ getUser().getRatio()
-				+ "]");
-	}
-
 	/** returns a one-line status line
 	 */
 	protected String status() {
 		return " [Credits: "
-			+ Bytes.formatBytes(getUser().getCredits())
+			+ Bytes.formatBytes(_user.getCredits())
 			+ "B] [Ratio: 1:"
-			+ getUser().getRatio()
+			+ _user.getRatio()
 			+ "]";
 	}
 

@@ -62,7 +62,7 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	protected boolean executing;
 
-	protected User user;
+	protected User _user;
 	/**
 	 * Is the current password authenticated?
 	 */
@@ -179,7 +179,7 @@ public class BaseFtpConnection implements Runnable {
 					"<< "
 						+ request.getCommandLine()
 						+ " [user="
-						+ user
+						+ _user
 						+ ",cwd="
 						+ currentDirectory.getPath()
 						+ ",host="
@@ -202,7 +202,7 @@ public class BaseFtpConnection implements Runnable {
 			}
 			out.flush();
 		} catch (SocketException ex) {
-			logger.log(Level.INFO, ex.getMessage()+", closing for user "+(this.user == null ? "<not logged in>" : this.user.getUsername()), ex);
+			logger.log(Level.INFO, ex.getMessage()+", closing for user "+(this._user == null ? "<not logged in>" : this._user.getUsername()), ex);
 		} catch (Exception ex) {
 			logger.log(Level.INFO, "Exception, closing", ex);
 		} finally {
@@ -213,7 +213,7 @@ public class BaseFtpConnection implements Runnable {
 				logger.log(Level.WARNING, "Exception closing stream", ex2);
 			}
 			if (isAuthenticated())
-				dispatchFtpEvent(new UserEvent(getUser(), "LOGOUT"));
+				dispatchFtpEvent(new UserEvent(_user, "LOGOUT"));
 			connManager.remove(this);
 		}
 	}
@@ -282,11 +282,10 @@ public class BaseFtpConnection implements Runnable {
 	/**
 	 * Get user object
 	 */
-	public User getUser() {
-		if (user == null)
-			throw new RuntimeException(
-				new NoSuchObjectException("no user logged in for connection"));
-		return user;
+	public User getUser() throws NoSuchObjectException {
+		if (_user == null)
+			throw new NoSuchObjectException("no user logged in for connection");
+		return _user;
 	}
 
 	/**
@@ -496,8 +495,8 @@ public class BaseFtpConnection implements Runnable {
 	}
 	public String toString() {
 		StringBuffer buf = new StringBuffer("[BaseFtpConnection");
-		if (user != null) {
-			buf.append("[user: " + user + "]");
+		if (_user != null) {
+			buf.append("[user: " + _user + "]");
 		}
 		if (request != null) {
 			buf.append("[command: " + request.getCommand() + "]");
@@ -554,6 +553,7 @@ public class BaseFtpConnection implements Runnable {
 	}
 	protected Transfer _transfer;
 	protected LinkedRemoteFile _transferFile;
+	protected RemoteSlave _rslave;
 
 	/**
 		 * PRE Transfere
@@ -569,13 +569,17 @@ public class BaseFtpConnection implements Runnable {
 	public LinkedRemoteFile getTransferFile() {
 		return _transferFile;
 	}
+	public RemoteSlave getTranferSlave() {
+		if(!isTransfering()) throw new IllegalStateException("can only call getTransferSlave() during transfer");
+		return _rslave;
+	}
 
 	public char getTransferDirection() {
 		String cmd = getRequest().getCommand();
 		if (cmd.equals("RETR")) {
-			return Transfer.TRANSFER_RECEIVING_UPLOAD;
-		} else if (cmd.equals("STOR")) {
 			return Transfer.TRANSFER_SENDING_DOWNLOAD;
+		} else if (cmd.equals("STOR")) {
+			return Transfer.TRANSFER_RECEIVING_UPLOAD;
 		} else {
 			return Transfer.TRANSFER_UNKNOWN;
 		}
