@@ -17,24 +17,19 @@
  */
 package org.drftpd.sitebot;
 
-import f00f.net.irc.martyr.GenericCommandAutoService;
-import f00f.net.irc.martyr.InCommand;
-import f00f.net.irc.martyr.commands.MessageCommand;
-
 import net.sf.drftpd.event.InviteEvent;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
-import org.drftpd.dynamicdata.Key;
 import org.drftpd.master.ConnectionManager;
-
-import org.drftpd.plugins.*;
-
+import org.drftpd.plugins.SiteBot;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 
+import f00f.net.irc.martyr.GenericCommandAutoService;
+import f00f.net.irc.martyr.InCommand;
+import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
@@ -44,11 +39,12 @@ public class Invite extends GenericCommandAutoService
     implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Invite.class);
     private ConnectionManager _cm;
-	public static final Key IDENT = new Key(Invite.class, "IRCIdent", String.class);
+    private SiteBot _irc;
 
     public Invite(SiteBot ircListener) {
         super(ircListener.getIRCConnection());
         _cm = ircListener.getConnectionManager();
+        _irc = ircListener;
     }
 
     public String getCommands() {
@@ -84,25 +80,17 @@ public class Invite extends GenericCommandAutoService
             getConnectionManager().dispatchFtpEvent(new InviteEvent(success
                     ? "INVITE" : "BINVITE", msgc.getSource().getNick(), user));
 
-            if (success) {
-                logger.info("Invited \"" + msgc.getSourceString() +
-                    "\" as user " + user.getName());
-                
-            	String ident = msgc.getSource().getNick() + "!" 
-								+ msgc.getSource().getUser() + "@" 
-								+ msgc.getSource().getHost();
-            	user.getKeyedMap().setObject(IDENT,ident);
-            	try {
-					user.commit();
-		           	logger.info("Proactively set IRC ident to '"+ident+"' for "+user.getName());
-				} catch (UserFileException e1) {
-					logger.warn("Error saving userfile for "+user.getName()+" while trying to add IRC ident '"+ident+"'",e1);
-				}
-            } else {
-                logger.log(Level.WARN,
-                    msgc.getSourceString() +
-                    " attempted invite with bad password: " + msgc);
-            }
+           	String ident = msgc.getSource().getNick() + "!" 
+							+ msgc.getSource().getUser() + "@" 
+							+ msgc.getSource().getHost();
+           	    		
+			if (success) {
+			    logger.info("Invited \"" + ident + "\" as user " + user.getName());
+			} else {
+			    logger.log(Level.WARN,
+			        msgc.getSourceString() +
+			        " attempted invite with bad password: " + msgc);
+			}
         }
     }
 

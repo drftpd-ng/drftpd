@@ -22,7 +22,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.MissingResourceException;
 import java.util.NoSuchElementException;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.DuplicateElementException;
@@ -68,6 +70,8 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
     public static final Key COMMENT = new Key(UserManagment.class, "comment",
             String.class);
     public static final Key REASON = new Key(UserManagment.class, "reason",
+    		String.class);
+    public static final Key IRCIDENT = new Key(UserManagment.class, "ircident",
     		String.class);
 
     private Reply doSITE_ADDIP(BaseFtpConnection conn) {
@@ -950,55 +954,120 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
     }
 
     private Reply doSITE_GINFO(BaseFtpConnection conn) {
-        FtpRequest request = conn.getRequest();
+		FtpRequest request = conn.getRequest();
+		//security
+		if (!conn.getUserNull().isAdmin() && !conn.getUserNull().isGroupAdmin()) {
+			return Reply.RESPONSE_530_ACCESS_DENIED;
+		}
+		//syntax
+		if (!request.hasArgument()) {
+			return new Reply(501, conn.jprintf(
+				UserManagment.class, "ginfo.usage"));
+		}
+		//gadmin
+		String group = request.getArgument();
+		
+		if (conn.getUserNull().isGroupAdmin()
+				&& !conn.getUserNull().getGroup().equals(group)) {
+			return Reply.RESPONSE_530_ACCESS_DENIED;
+		}
 
-        //security
-        if (!conn.getUserNull().isAdmin() &&
-                !conn.getUserNull().isGroupAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
+		Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
 
-        //syntax
-        if (!request.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(UserManagment.class, "ginfo.usage"));
-        }
+		ResourceBundle bundle = ResourceBundle.getBundle(UserManagment.class.getName());
+		ReplacerEnvironment env = new ReplacerEnvironment();
+		env.add("group", group);
+		env.add("sp", " ");
+		
+		//add header
+		String head = bundle.getString("ginfo.head");
+		try {
+			response.addComment(SimplePrintf.jprintf(head, env));
+		} catch (MissingResourceException e) {
+			logger.warn("",e);
+			response.addComment(e.getMessage());
+		} catch (FormatterException e) {
+			logger.warn("",e);
+			response.addComment(e.getMessage());
+		}
 
-        //gadmin
-        String group = request.getArgument();
+		//vars for total stats
+		int numUsers = 0;
+		int numLeechUsers = 0;
+		int allfup = 0;
+		int allfdn = 0;
+		long allmbup = 0;
+		long allmbdn = 0;
+		
+		Collection users;		
+		try {
+			users = conn.getGlobalContext().getUserManager()
+					.getAllUsers();
+		} catch (UserFileException e) {
+			return new Reply(200, "IO error: " + e.getMessage());
+		}
+		for (Iterator iter = users.iterator(); iter.hasNext();) {
+			User user = (User) iter.next();
+			if (!user.isMemberOf(group))
+				continue;
+				
+			char status = ' ';
+			if (user.isGroupAdmin()) {
+				status = '+';
+			} else if (user.isAdmin()) {
+				status = '*';
+			} else if (user.isDeleted()) {
+				status = '!';
+			}
 
-        if (conn.getUserNull().isGroupAdmin() &&
-                !conn.getUserNull().getGroup().equals(group)) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
+			try {
+				String body = bundle.getString("ginfo.user");
+				env.add("user", status + user.getName());
+				env.add("fup", "" + user.getUploadedFiles());
+				env.add("mbup", Bytes.formatBytes(user.getUploadedBytes()));
+				env.add("fdn", "" + user.getDownloadedFiles());
+				env.add("mbdn", Bytes.formatBytes(user.getDownloadedBytes()));
+				env.add("ratio", "1:" + (int) user.getKeyedMap().getObjectFloat(UserManagment.RATIO));	
+				env.add("wkly", Bytes.formatBytes(user.getWeeklyAllotment()));
+				response.addComment(SimplePrintf.jprintf(body, env));
+			} catch (MissingResourceException e) {
+				response.addComment(e.getMessage());
+			} catch (FormatterException e1) {
+				response.addComment(e1.getMessage());
+			}
+			
+			//update totals
+			numUsers++;
+			if ((int) user.getKeyedMap().getObjectFloat(UserManagment.RATIO) == 0) {
+				numLeechUsers++;
+			}
+			allfup += user.getUploadedFiles();
+			allfdn += user.getDownloadedFiles();
+			allmbup += user.getUploadedBytes();
+			allmbdn += user.getDownloadedBytes();
+		}
 
-        Collection users;
+		//add tail
+		env.add("allfup", "" + allfup);
+		env.add("allmbup", Bytes.formatBytes(allmbup));
+		env.add("allfdn", "" + allfdn);
+		env.add("allmbdn", Bytes.formatBytes(allmbdn));
+		env.add("numusers", "" + numUsers);
+		env.add("numleech", "" + numLeechUsers);
+		
+		String tail = bundle.getString("ginfo.tail");
+		try {
+			response.addComment(SimplePrintf.jprintf(tail, env));
+		} catch (MissingResourceException e) {
+			logger.warn("",e);
+			response.addComment(e.getMessage());
+		} catch (FormatterException e) {
+			logger.warn("",e);
+			response.addComment(e.getMessage());
+		}
 
-        try {
-            users = conn.getGlobalContext().getUserManager().getAllUsersByGroup(group);
-        } catch (UserFileException e) {
-            return new Reply(200, "IO error: " + e.getMessage());
-        }
-
-        Reply response = new Reply(200);
-
-        for (Iterator iter = users.iterator(); iter.hasNext();) {
-            User user = (User) iter.next();
-            char status = ' ';
-
-            if (user.isGroupAdmin()) {
-                status = '+';
-            } else if (user.isAdmin()) {
-                status = '*';
-            }
-
-            response.addComment(status + user.getName());
-        }
-
-        response.addComment(" * = siteop   + = gadmin");
-
-        return response;
-    }
+		return response;
+	}
 
     private Reply doSITE_GIVE(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();

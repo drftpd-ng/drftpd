@@ -13,7 +13,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import org.drftpd.dynamicdata.Key;
+import org.drftpd.commands.UserManagment;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
 
@@ -71,11 +71,10 @@ public class Ident extends GenericCommandAutoService implements
             boolean success = user.checkPassword(args[2]);
             
             if (success) {
-            	Key key = new Key(SiteBot.class,"IRCIdent",String.class);
-            	String ident = msgc.getSource().getNick() + "!" 
+             	String ident = msgc.getSource().getNick() + "!" 
 								+ msgc.getSource().getUser() + "@" 
 								+ msgc.getSource().getHost();
-            	user.getKeyedMap().setObject(key,ident);
+            	user.getKeyedMap().setObject(UserManagment.IRCIDENT,ident);
             	try {
 					user.commit();
 		           	logger.info("Set IRC ident to '"+ident+"' for "+user.getName());

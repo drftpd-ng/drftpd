@@ -59,7 +59,6 @@ import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.Nuke;
 import org.drftpd.commands.TransferStatistics;
 import org.drftpd.commands.UserManagment;
-import org.drftpd.dynamicdata.Key;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
@@ -597,23 +596,37 @@ public class SiteBot implements FtpListener, Observer {
         }
     }
 
-    private void actionPerformedInvite(InviteEvent event) {
-        String user = event.getIrcNick();
-        logger.info("Invited " + user + " through SITE INVITE");
+    private void actionPerformedInvite(InviteEvent event) throws FormatterException {
+        String nick = event.getIrcNick();
 
-        for (Enumeration e = getIRCConnection().getClientState().getChannels();
-                e.hasMoreElements();) {
-            Channel chan = (Channel) e.nextElement();
+        ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
+        env.add("user",event.getUser());
+        env.add("nick",event.getIrcNick());
+        
+        if ("INVITE".equals(event.getCommand()) ||
+        		"SITE INVITE".equals(event.getCommand())) {
 
-            if (chan.findMember(getIRCConnection().getClientState().getNick()
-                                        .getNick()).hasOps()) {
-                _conn.sendCommand(new InviteCommand(user, chan.getName()));
-            }
+            ReplacerFormat format = ReplacerUtils.finalFormat(SiteBot.class,"invite.success");
+            logger.info("Invited " + nick + " through SITE INVITE");
+        	for (Enumeration e = getIRCConnection().getClientState().getChannels();
+            	e.hasMoreElements();) {
+            	Channel chan = (Channel) e.nextElement();
+
+            	if (chan.findMember(getIRCConnection().getClientState().getNick()
+                                    .getNick()).hasOps()) {
+            		_conn.sendCommand(new InviteCommand(nick, chan.getName()));
+            	}
+            } 
+    		sayGlobal(SimplePrintf.jprintf(format, env));
+        	
+            _identWhoisQueue.put(nick,event.getUser());
+            logger.info("Looking up "+ nick + " to set IRCIdent");
+            _conn.sendCommand(new WhoisCommand(nick));        	
+        } else if ("BINVITE".equals(event.getCommand())) {
+            ReplacerFormat format = ReplacerUtils.finalFormat(SiteBot.class,"invite.failed");
+    		sayGlobal(SimplePrintf.jprintf(format, env));       	
         }
         
-        _identWhoisQueue.put(user,event.getUser());
-        logger.info("Looking up "+ user + " to set IRCIdent");
-        _conn.sendCommand(new WhoisCommand(user));
     }
 
     private void actionPerformedNuke(NukeEvent event) throws FormatterException {
@@ -1096,8 +1109,7 @@ public class SiteBot implements FtpListener, Observer {
 				String n = (String) i.next();
 				if (n.toLowerCase().equals(nick.toLowerCase())) {
 	    			User user = (User) _identWhoisQueue.get(n);
-	    			Key key = new Key(SiteBot.class,"IRCIdent",String.class);
-	    			user.getKeyedMap().setObject(key,fullIdent);
+	    			user.getKeyedMap().setObject(UserManagment.IRCIDENT,fullIdent);
 	    			try {
 						user.commit();
 						_identWhoisQueue.remove(nick);
