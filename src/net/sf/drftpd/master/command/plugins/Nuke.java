@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.Bytes;
-import net.sf.drftpd.Nukee;
 import net.sf.drftpd.FileExistsException;
+import net.sf.drftpd.Nukee;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -56,7 +56,7 @@ import org.jdom.input.SAXBuilder;
  * amount -> amount before multiplier
  * 
  * @author mog
- * @version $Id: Nuke.java,v 1.15 2004/04/25 17:46:17 mog Exp $
+ * @version $Id: Nuke.java,v 1.16 2004/04/26 00:30:24 mog Exp $
  */
 public class Nuke implements CommandHandler {
 
@@ -220,7 +220,8 @@ public class Nuke implements CommandHandler {
 			return FtpReply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
 		}
 		try {
-			nukeDir.renameTo(toDirPath, toName);
+			nukeDir = nukeDir.renameTo(toDirPath, toName);
+			nukeDir.createDirectory(conn.getUserNull().getUsername(), conn.getUserNull().getGroupName(), "REASON-"+reason);
 		} catch (IOException ex) {
 			logger.warn("", ex);
 			response.addComment(
@@ -399,7 +400,7 @@ public class Nuke implements CommandHandler {
 			response.addComment("Error removing nukelog entry");
 		}
 		try {
-			nukeDir.renameTo(toDir, toName);
+			nukeDir = nukeDir.renameTo(toDir, toName);
 		} catch (FileExistsException e1) {
 			response.addComment(
 				"Error renaming nuke, target dir already exists");
@@ -410,6 +411,14 @@ public class Nuke implements CommandHandler {
 				"Illegaltargetexception: means parent doesn't exist",
 				e1);
 		}
+		
+		try {
+			LinkedRemoteFileInterface reasonDir = nukeDir.getFile("REASON-" + nuke.getReason());
+			if(reasonDir.isDirectory()) reasonDir.delete();
+		} catch (FileNotFoundException e3) {
+			logger.debug("Failed to delete 'REASON-"+reason+"' dir in UNNUKE", e3);
+		}
+		
 		nuke.setCommand("UNNUKE");
 		nuke.setReason(reason);
 		nuke.setUser(conn.getUserNull());

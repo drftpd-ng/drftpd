@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
 /**
  * Removes bandwidth * multiplier from the score.
  * @author mog
- * @version $Id: BandwidthFilter.java,v 1.2 2004/02/27 01:02:21 mog Exp $
+ * @version $Id: BandwidthFilter.java,v 1.3 2004/04/26 00:30:25 mog Exp $
  */
 public class BandwidthFilter extends Filter {
 	private static final Logger logger =
@@ -101,9 +101,10 @@ public class BandwidthFilter extends Filter {
 				iter.remove();
 				continue;
 			}
+			logger.debug("!"+status.getThroughputDirection(direction));
 			score.addScore(
 				- (long)
-					(status.getThroughputDirection(direction) * _multiplier));
+					(status.getThroughputDirection(direction)*_multiplier));
 		}
 	}
 

@@ -37,10 +37,6 @@ public class ReversebandwidthFilter extends BandwidthFilter {
 		super(ssm, i, p);
 	}
 
-	/**
-	 *
-	 */
-
 	public void process(
 		ScoreChart scorechart,
 		User user,
