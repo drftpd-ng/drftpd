@@ -13,8 +13,6 @@ slave.root.1=site
 
 # Master host/ip
 master.host=localhost
-# Name of Master to register with
-master.bindname=slavemanager
 #port to connect to the master
 master.bindport=1099
 

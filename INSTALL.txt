@@ -44,8 +44,6 @@ USING GLFTPDCONVERTER:
 This utility is provided to ease the migration of glftpd userfiles to drftpd format.
 Please run this utility from drftpd/
 
-Known error: -Dglftpd.passwd=/etc/users should read: /etc/passwd
-
 COMMON INSTALLATION ERRORS:
 
 Slaves running as service will not reconnect to master after crashes and restarts.
