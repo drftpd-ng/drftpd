@@ -125,6 +125,7 @@ public class MLSTSerialize {
 					try {
 						file.setLastModified(
 							timeval.parse(v).getTime());
+							logger.debug(""+new Date(file.lastModified()));
 					} catch (ParseException e) {
 						throw new CorruptFileListException(e);
 					}
@@ -155,7 +156,7 @@ public class MLSTSerialize {
 					file.setXfertime(Long.parseLong(v));
 				}
 			}
-			dir.addFile(file);
+			dir.putFile(file);
 		}
 	}
 	public static LinkedRemoteFile unserialize(

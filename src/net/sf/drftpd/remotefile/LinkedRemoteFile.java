@@ -169,8 +169,16 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		throws IOException {
 		this(null, file, cfg);
 	}
-
+	
+	/**
+	 * Updates lastMofidied() on this directory, use putFile() to avoid it.
+	 */
 	public LinkedRemoteFile addFile(RemoteFile file) {
+		this.lastModified = System.currentTimeMillis();
+		return putFile(file);
+	}
+
+	public LinkedRemoteFile putFile(RemoteFile file) {
 		//validate
 		if (!file.isDirectory()) {
 			assert file.getSlaves() != null : file.toString();
@@ -185,10 +193,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		LinkedRemoteFile linkedfile =
 			new LinkedRemoteFile(this, file, this.ftpConfig);
 		files.put(linkedfile.getName(), linkedfile);
-		this.lastModified = System.currentTimeMillis();
 		return linkedfile;
 	}
-
 	public void addSlave(RemoteSlave slave) {
 		if (slaves == null) //!isDirectory()
 			throw new IllegalStateException("Cannot addSlave() on a non-directory");
