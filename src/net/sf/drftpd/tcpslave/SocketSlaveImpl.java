@@ -69,7 +69,7 @@ import java.security.MessageDigest;
 
 /**
  * @author mog
- * @version $Id: SocketSlaveImpl.java,v 1.5 2004/04/28 18:05:43 zombiewoof64 Exp $
+ * @version $Id: SocketSlaveImpl.java,v 1.6 2004/04/28 18:49:42 zombiewoof64 Exp $
  */
 public class SocketSlaveImpl
 extends Thread
@@ -167,7 +167,7 @@ implements Slave, Unreferenced {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             md5.reset();
             md5.update(pass.getBytes());
-            String hash = hash2hex(md5.digest());
+            String hash = hash2hex(md5.digest()).toLowerCase();
 
             String banner = "INIT " + "servername" + " " + hash + " " + seed;
             
@@ -192,18 +192,18 @@ implements Slave, Unreferenced {
                 throw new IOException("Slave invalid INIT");
             }
             // generate slave hash
-            pass = _spsw + seed + _mpsw;
+            pass = _spsw + sseed + _mpsw;
             md5 = MessageDigest.getInstance("MD5");
             md5.reset();
             md5.update(pass.getBytes());
-            hash = hash2hex(md5.digest());
+            hash = hash2hex(md5.digest()).toLowerCase();
 
             // authenticate
             if (!sname.equals(_name)) {
                 sendLine("INITFAIL Unknown");
                 throw new IOException("Slave name mismatch '" + _name + "'!='" + sname + "'");
             }
-            if (!spass.equals(hash)) {
+            if (!spass.toLowerCase().equals(hash.toLowerCase())) {
                 sendLine("INITFAIL BadKey");
                 throw new IOException("Slave pass mismatch '" + hash + "'!='" + spass + "'");
             }
