@@ -18,6 +18,7 @@
 package org.drftpd.mirroring;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import net.sf.drftpd.event.listeners.Archive;
 
@@ -50,21 +51,23 @@ public class ArchiveHandler extends Thread {
 	}
 
 	public void run() {
-		if (_archiveType.getDirectory() == null) {
-			_archiveType.setDirectory(_archiveType.getOldestNonArchivedDir());
-			if (_archiveType.getDirectory() == null)
-				return; // all done
+		synchronized (_archiveType) {
+			if (_archiveType.getDirectory() == null) {
+				_archiveType.setDirectory(_archiveType.getOldestNonArchivedDir());
+			}
 		}
+		if (_archiveType.getDirectory() == null)
+			return; // all done
 		if (_archiveType.getRSlaves() == null) {
-			_archiveType.setRSlaves(_archiveType.findDestinationSlaves());
+			_archiveType.setRSlaves(Collections.unmodifiableSet(_archiveType.findDestinationSlaves()));
 		}
-		if (_archiveType.getRSlaves() == null)
-			throw new IllegalStateException("getRSlaves() is null");
 		ArrayList jobs = _archiveType.send();
 		_archiveType.waitForSendOfFiles(new ArrayList(jobs));
 		_archiveType.cleanup(jobs);
 		logger.info(
 			"Done archiving " + getArchiveType().getDirectory().getPath());
+		_archiveType.setDirectory(null);
+		_archiveType.setRSlaves(null);
 	}
 
 }

@@ -1,3 +1,9 @@
+2004/05/16 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Refactored ArchiveType(s) to accept multiple destination slaves
+* There are three ArchiveType(s) now available, MoveReleaseToMostFreeSlaves
+  MoveReleaseToSpecificSlaves, and FinishReleaseOnSlaves
+* Settings in archive.conf have changed
+
 2004/05/11 Morgan Christiansson <drftpd@mog.se>
 * Began adding MAX_PATH checking so that PATH_MAX which is 256 on win32 isn't exceeded.
 * Made SITE SLAVES plain available to non-siteops, SITE SLAVES now takes 2 arguments:

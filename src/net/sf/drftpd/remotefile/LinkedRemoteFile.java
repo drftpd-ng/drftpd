@@ -24,10 +24,12 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
@@ -53,7 +55,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.138 2004/05/12 00:45:10 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.139 2004/05/16 05:44:53 zubov Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -509,16 +511,15 @@ public class LinkedRemoteFile
 		}
 	}
 
-	public void deleteOthers(RemoteSlave slave) {
+	public void deleteOthers(Set destSlaves) {
 		synchronized (_slaves) {
 			for (Iterator iter = _slaves.iterator(); iter.hasNext();) {
 				RemoteSlave tempSlave = (RemoteSlave) iter.next();
-				if (tempSlave == slave)
+				if (destSlaves.contains(tempSlave))
 					continue; // do not want to delete the archived file
-				// delete other files
+				// delete files off of slaves not in destSlaves
 				try {
 					tempSlave.getSlave().delete(getPath());
-					//removeSlave(tempSlave);
 					iter.remove();
 				} catch (RemoteException e) {
 					tempSlave.handleRemoteException(e);

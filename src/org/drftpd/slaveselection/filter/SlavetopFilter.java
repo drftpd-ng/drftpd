@@ -32,14 +32,13 @@ import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
-import org.apache.log4j.Logger;
 import org.drftpd.remotefile.LinkedRemoteFileUtils;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilter.java,v 1.7 2004/05/12 00:45:20 mog Exp $
+ * @version $Id: SlavetopFilter.java,v 1.8 2004/05/16 05:44:55 zubov Exp $
  */
 public class SlavetopFilter extends Filter {
 

@@ -16,9 +16,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.drftpd.mirroring;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.drftpd.mirroring.archivetypes.IncompleteDirectoryException;
@@ -26,13 +31,17 @@ import org.drftpd.mirroring.archivetypes.OfflineSlaveException;
 import org.drftpd.sections.SectionInterface;
 
 
+import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.listeners.Archive;
+import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
+import net.sf.drftpd.mirroring.Job;
+import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
- * @version $Id: ArchiveType.java,v 1.3 2004/04/26 21:41:53 zubov Exp $
+ * @version $Id: ArchiveType.java,v 1.4 2004/05/16 05:44:54 zubov Exp $
  */
 public abstract class ArchiveType {
 	private long _archiveAfter;
@@ -40,9 +49,12 @@ public abstract class ArchiveType {
 	private LinkedRemoteFileInterface _lrf;
 	protected Archive _parent;
 	protected SectionInterface _section;
-	private ArrayList _slaveList;
-
-	public ArchiveType() {
+	private Set _slaveList;
+	
+	public ArchiveType(Archive archive, SectionInterface section) {
+		_parent = archive;
+		_section = section;
+		setProperties(_parent.getProperties());
 	}
 	/**
 	 * Once the Jobs in the jobList have been sent, this method is called
@@ -50,7 +62,7 @@ public abstract class ArchiveType {
 	 */
 	
 	public abstract void cleanup(ArrayList jobList);
-	public abstract ArrayList findDestinationSlaves();
+	public abstract HashSet findDestinationSlaves();
 
 	public final LinkedRemoteFileInterface getDirectory() {
 		return _lrf;
@@ -104,8 +116,83 @@ public abstract class ArchiveType {
 	 */
 	protected abstract boolean isArchivedDir(LinkedRemoteFileInterface lrf) throws IncompleteDirectoryException, OfflineSlaveException;
 
-	public final ArrayList getRSlaves() {
+	public final Set getRSlaves() {
 		return _slaveList;
+	}
+	/**
+	 * Adds relevant Jobs to the JobManager and returns an ArrayList of those Job's
+	 */
+	public ArrayList send() {
+		ArrayList jobQueue = new ArrayList();
+		jobQueue.addAll(recursiveSend(getDirectory()));
+		return jobQueue;
+	}
+
+	private ArrayList recursiveSend(LinkedRemoteFileInterface lrf) {
+		ArrayList jobQueue = new ArrayList();
+		JobManager jm = _parent.getConnectionManager().getJobManager();
+		for (Iterator iter = lrf.getFiles().iterator();
+			iter.hasNext();
+			) {
+			LinkedRemoteFileInterface src =
+				(LinkedRemoteFileInterface) iter.next();
+			if (src.isFile()) {
+				Job job = null;
+				logger.info("Adding " + src.getPath() + " to the job queue");
+				job = new Job(src, getRSlaves(), this, null, 3);
+				jm.addJob(job);
+				jobQueue.add(job);
+			}
+			else {
+				jobQueue.addAll(recursiveSend(src));
+			}
+		}
+		return jobQueue;
+	}
+	
+	public final boolean isArchivedToXSlaves(LinkedRemoteFileInterface lrf, int x) throws IncompleteDirectoryException, OfflineSlaveException {
+		HashSet slaveSet = null;
+		if (lrf.getFiles().isEmpty())
+			return true;
+		for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
+			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
+			if (file.isDirectory()) {
+				if (!isArchivedToXSlaves(file,x))
+					return false;
+				try {
+					if (!file.lookupSFVFile().getStatus().isFinished()) {
+						logger.debug(file.getPath() + " is not complete");
+						throw new IncompleteDirectoryException(file.getPath() + " is not complete");
+					}
+				} catch (FileNotFoundException e) {
+				} catch (IOException e) {
+				} catch (NoAvailableSlaveException e) {
+				}
+			}
+			else {// if (file.isFile())
+				Collection availableSlaves = file.getSlaves();
+				if (slaveSet == null) {
+					slaveSet = new HashSet(availableSlaves);
+				}
+				else {
+					if (!(slaveSet.containsAll(availableSlaves) && availableSlaves.containsAll(slaveSet))) {
+						return false;
+					}
+				}
+			}
+		}
+		for (Iterator iter = slaveSet.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
+			if (!rslave.isAvailable()) {
+				throw new OfflineSlaveException(rslave.getName() + " is offline");
+			}
+		}
+		return (slaveSet.size() == x);
+	}
+
+	
+	public final boolean isBusy() {
+		return (getDirectory() != null);
 	}
 	
 	protected final long getArchiveAfter() {
@@ -113,17 +200,9 @@ public abstract class ArchiveType {
 	}
 
 	public final SectionInterface getSection() {
-		if (_section == null)
-			throw new IllegalStateException("setSection() needs to be called before getSection()");
 		return _section;
 	}
 
-	public final void init(Archive archive, SectionInterface section) {
-		_parent = archive;
-		setSection(section);
-		setProperties(_parent.getProperties());
-	}
-	
 	private void setProperties(Properties properties) {
 		try {
 			_archiveAfter =
@@ -133,20 +212,13 @@ public abstract class ArchiveType {
 							60000 * Long.parseLong(FtpConfig.getProperty(properties, "default.archiveAfter"));
 		}
 	}
-	/**
-	 * Adds relevant Jobs to the JobManager and returns an ArrayList of those Job's
-	 */
-	public abstract ArrayList send();
+
 	public final void setDirectory(LinkedRemoteFileInterface lrf) {
 		_lrf = lrf;
 	}
 
-	public final void setRSlaves(ArrayList slaveList) {
+	public final void setRSlaves(Set slaveList) {
 		_slaveList = slaveList;
-	}
-
-	public final void setSection(SectionInterface section) {
-		_section = section;
 	}
 
 	public abstract void waitForSendOfFiles(ArrayList jobQueue);

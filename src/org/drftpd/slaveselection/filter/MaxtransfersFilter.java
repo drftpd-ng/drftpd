@@ -21,8 +21,6 @@ import java.rmi.RemoteException;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
-
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;

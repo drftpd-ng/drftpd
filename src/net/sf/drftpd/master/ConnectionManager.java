@@ -59,7 +59,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.102 2004/05/12 00:45:06 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.103 2004/05/16 05:44:53 zubov Exp $
  */
 public class ConnectionManager {
 
@@ -393,6 +393,10 @@ public class ConnectionManager {
 
 	public List getFtpListeners() {
 		return _ftpListeners;
+	}
+	
+	public boolean isJobManagerLoaded() {
+		return (_jm != null);
 	}
 
 	public JobManager getJobManager() {

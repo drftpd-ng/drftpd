@@ -20,7 +20,9 @@ package net.sf.drftpd.remotefile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.FileExistsException;
@@ -64,7 +66,7 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 	 * Trying to lookupFile() or getFile() a deleted file throws FileNotFoundException.
 	 */
 	public abstract void delete();
-	public abstract void deleteOthers(RemoteSlave slave);
+	public abstract void deleteOthers(Set destSlaves);
 	public abstract long dirSize();
 	public abstract RemoteSlave getASlave(char direction, BaseFtpConnection conn)
 		throws NoAvailableSlaveException;

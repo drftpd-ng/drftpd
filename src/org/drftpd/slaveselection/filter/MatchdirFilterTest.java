@@ -20,7 +20,9 @@ package org.drftpd.slaveselection.filter;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -34,7 +36,7 @@ import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: MatchdirFilterTest.java,v 1.5 2004/03/30 13:59:49 mog Exp $
+ * @version $Id: MatchdirFilterTest.java,v 1.6 2004/05/16 05:44:55 zubov Exp $
  */
 public class MatchdirFilterTest extends TestCase {
 
@@ -45,6 +47,8 @@ public class MatchdirFilterTest extends TestCase {
 		}
 		public String getPath() {
 			return _path;
+		}
+		public void deleteOthers(Set destSlaves) {
 		}
 	}
 	public MatchdirFilterTest(String fName) {

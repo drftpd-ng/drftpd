@@ -19,6 +19,7 @@ package net.sf.drftpd.mirroring;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -39,7 +40,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
  * CommandHandler plugin for viewing and manipulating the JobManager queue.
  * 
  * @author mog
- * @version $Id: JobManagerCommandHandler.java,v 1.12 2004/04/01 05:29:41 zubov Exp $
+ * @version $Id: JobManagerCommandHandler.java,v 1.13 2004/05/16 05:44:53 zubov Exp $
  */
 public class JobManagerCommandHandler implements CommandHandler {
 
@@ -70,7 +71,7 @@ public class JobManagerCommandHandler implements CommandHandler {
 			return new FtpReply(500, "File does not exist");
 		}
 		int priority = Integer.parseInt(st.nextToken());
-		ArrayList destSlaves = new ArrayList();
+		HashSet destSlaves = new HashSet();
 		FtpReply reply = new FtpReply(200);
 		while (st.hasMoreTokens()) {
 			String slaveName = st.nextToken();

@@ -18,7 +18,8 @@
 package org.drftpd.commands;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
+import java.lang.reflect.Constructor;
+import java.util.HashSet;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.ObjectNotFoundException;
@@ -31,6 +32,7 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.apache.log4j.Logger;
 import org.drftpd.mirroring.ArchiveHandler;
 import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.sections.SectionInterface;
@@ -45,7 +47,8 @@ public class Archive implements CommandHandler {
 	public Archive() {
 		super();
 	}
-
+	private static final Logger logger = Logger.getLogger(Archive.class);
+	
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {
 		FtpReply reply = new FtpReply(200);
@@ -85,59 +88,63 @@ public class Archive implements CommandHandler {
 		}
 		String archiveTypeName = null;
 		ArchiveType archiveType = null;
+		SectionInterface section =
+			conn.getConnectionManager().getSectionManager().lookup(
+				lrf.getPath());
 		if (st.hasMoreTokens()) {
 			archiveTypeName = st.nextToken();
+			Class[] classParams = {net.sf.drftpd.event.listeners.Archive.class, SectionInterface.class};
+			Constructor constructor = null;
 			try {
-				archiveType =
-					(ArchiveType) Class
-						.forName(
-							"org.drftpd.mirroring.archivetypes."
-								+ archiveTypeName)
-						.newInstance();
-			} catch (Exception e) {
-				reply.addComment(
-					conn.jprintf(Archive.class, "archive.usage", env));
-				env.add("archivetypename", archiveTypeName);
-				reply.addComment(
-					conn.jprintf(Archive.class, "archive.badarchivetype", env));
+				constructor = Class.forName(
+						"org.drftpd.mirroring.archivetypes." + archiveTypeName).getConstructor(classParams);
+			} catch (Exception e1) {
+				logger.debug("Unable to load ArchiveType for section " + section.getName(), e1);
+				reply.addComment(conn.jprintf(Archive.class, "archive.badarchivetype", env));
 				return reply;
 			}
+			Object[] objectParams = { archive, section };
+			try {
+				archiveType = (ArchiveType) constructor.newInstance(objectParams);
+			} catch (Exception e2) {
+				logger.debug("Unable to load ArchiveType for section " + section.getName(), e2);
+				reply.addComment(conn.jprintf(Archive.class, "archive.badarchivetype", env));
+				return reply;
+			}
+		}
+		if (archiveType == null) {
+			archiveType = archive.getArchiveType(section);
 		}
 		if (archiveTypeName == null) {
-			SectionInterface section =
-				conn.getConnectionManager().getSectionManager().lookup(
-					lrf.getPath());
-			archiveType = archive.getArchiveType(section);
-			if (archiveType == null) {
-				env.add("section", section.getName());
-				reply.addComment(
-					conn.jprintf(Archive.class, "archive.wait1", env));
-				reply.addComment(
-					conn.jprintf(Archive.class, "archive.wait2", env));
-				return reply;
-			}
+			archiveTypeName = archiveType.getClass().getName();
 		}
-		ArrayList slaveList = new ArrayList();
+		HashSet slaveSet = new HashSet();
+		synchronized(archiveType) {
+		if (archiveType.isBusy()) {
+			env.add("section", section.getName());
+			reply.addComment(
+				conn.jprintf(Archive.class, "archive.wait1", env));
+			reply.addComment(
+				conn.jprintf(Archive.class, "archive.wait2", env));
+			return reply;
+		}
 		while (st.hasMoreTokens()) {
 			String slavename = st.nextToken();
 			try {
 				RemoteSlave rslave =
 					conn.getConnectionManager().getSlaveManager().getSlave(
 						slavename);
-				slaveList.add(rslave);
+				slaveSet.add(rslave);
 			} catch (ObjectNotFoundException e2) {
 				env.add("slavename", slavename);
 				reply.addComment(
 					conn.jprintf(Archive.class, "archive.badslave", env));
 			}
 		}
-		SectionInterface section =
-			conn.getConnectionManager().getSectionManager().lookup(
-				lrf.getPath());
-		archiveType.init(archive, section);
 		archiveType.setDirectory(lrf);
-		if (!slaveList.isEmpty())
-			archiveType.setRSlaves(slaveList);
+		}
+		if (!slaveSet.isEmpty())
+			archiveType.setRSlaves(slaveSet);
 		ArchiveHandler archiveHandler = new ArchiveHandler(archiveType);
 		archiveHandler.start();
 		env.add("dirname", lrf.getPath());

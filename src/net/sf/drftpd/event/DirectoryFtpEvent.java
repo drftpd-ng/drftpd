@@ -18,12 +18,12 @@
 package net.sf.drftpd.event;
 
 import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
  *
- * @version $Id: DirectoryFtpEvent.java,v 1.6 2004/04/17 02:24:35 mog Exp $
+ * @version $Id: DirectoryFtpEvent.java,v 1.7 2004/05/16 05:44:52 zubov Exp $
  */
 public class DirectoryFtpEvent extends UserEvent {
 	private LinkedRemoteFileInterface directory;

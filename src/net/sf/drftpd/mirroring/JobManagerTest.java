@@ -21,8 +21,10 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 
@@ -34,7 +36,7 @@ import junit.framework.TestCase;
 
 /**
  * @author zubov
- * @version $Id: JobManagerTest.java,v 1.4 2004/04/01 05:29:41 zubov Exp $
+ * @version $Id: JobManagerTest.java,v 1.5 2004/05/16 05:44:53 zubov Exp $
  */
 public class JobManagerTest extends TestCase {
 
@@ -169,14 +171,17 @@ public class JobManagerTest extends TestCase {
 			return _path;
 		}
 
+		public void deleteOthers(Set destSlaves) {
+			// TODO Auto-generated method stub
+		}
 	}
 
 	public void testAddJob() {
 		int sizebefore = jm.getAllJobs().size();
-		ArrayList slaveList = new ArrayList();
-		slaveList.add(null);
-		slaveList.add(null);
-		Job job = new Job(file, slaveList, null, null, 0);
+		HashSet slaveSet = new HashSet();
+		slaveSet.add(null);
+		slaveSet.add(null);
+		Job job = new Job(file, slaveSet, null, null, 0);
 		jm.addJob(job);
 		assertEquals(sizebefore, jm.getAllJobs().size() - 1);
 		jm.addJob(job);
@@ -187,10 +192,10 @@ public class JobManagerTest extends TestCase {
 	 * Test for Job getNextJob(List)
 	 */
 	public void testGetNextJobList() {
-		ArrayList slaveList = new ArrayList();
-		slaveList.add(null);
-		slaveList.add(null);
-		Job job = new Job(file, slaveList, null, null, 0);
+		HashSet slaveSet = new HashSet();
+		slaveSet.add(null);
+		slaveSet.add(null);
+		Job job = new Job(file, slaveSet, null, null, 0);
 		jm.addJob(job);
 		ArrayList usedSlaveList = new ArrayList();
 		ArrayList skipJobs = new ArrayList();
@@ -198,10 +203,10 @@ public class JobManagerTest extends TestCase {
 		skipJobs.add(job);
 		assertNull(jm.getNextJob(usedSlaveList, skipJobs));
 		skipJobs.clear();
-		slaveList.clear();
-		slaveList.add(rslave2);
+		slaveSet.clear();
+		slaveSet.add(rslave2);
 		jm.removeJob(job);
-		job = new Job(file, slaveList, null, null, 5);
+		job = new Job(file, slaveSet, null, null, 5);
 		jm.addJob(job);
 		assertSame(job, jm.getNextJob(usedSlaveList, skipJobs));
 		skipJobs.add(job);
@@ -212,10 +217,10 @@ public class JobManagerTest extends TestCase {
 	}
 
 	public void testRemoveJob() {
-		ArrayList slaveList = new ArrayList();
-		slaveList.add(null);
-		slaveList.add(null);
-		Job job = new Job(file, slaveList, null, null, 0);
+		HashSet slaveSet = new HashSet();
+		slaveSet.add(null);
+		slaveSet.add(null);
+		Job job = new Job(file, slaveSet, null, null, 0);
 		int sizebefore = jm.getAllJobs().size();
 		jm.addJob(job);
 		assertEquals(sizebefore + 1, jm.getAllJobs().size());

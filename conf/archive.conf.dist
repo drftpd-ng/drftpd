@@ -12,14 +12,22 @@ cycleTime=30
 
 # ArchiveTypes define the definition of "Archived"
 # do not archive releases younger than archiveAfter
-#section1.archiveType=MoveReleaseToMostFreeSlave
-#section2.archiveType=FinishReleaseOnSlave
-#section3.archiveType=MoveReleaseToSpecificSlave
-#section3.slavename=fleegy
+
+# if numOfSlaves is not set for section, it defaults at 1 this only
+# applies to MoveReleaseToMostFreeSlaves and FinishReleaseOnSlaves
+
+#section1.archiveType=MoveReleaseToMostFreeSlaves
+#section1.numOfSlaves=1
+#section2.archiveType=FinishReleaseOnSlaves
+#section2.numOfSlaves=1
+#section3.archiveType=MoveReleaseToSpecificSlaves
+#section3.slavename.1=destslave1
+#section3.slavename.2=destslave2
 #section3.archiveAfter=43200
 #section2.archiveType=OtherNonImplementedArchiveType
 
 # If section.archiveType is not defined for a section the default
 # will be used, the same holds true for section.archiveAfter
-default.archiveType=FinishReleaseOnSlave
+
+default.archiveType=FinishReleaseOnSlaves
 default.archiveAfter=10080

@@ -21,7 +21,9 @@ import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -47,6 +49,8 @@ public class MaxbandwidthFilterTest extends TestCase {
 		}
 		public String getPath() {
 			return _path;
+		}
+		public void deleteOthers(Set destSlaves) {
 		}
 	}
 	/**

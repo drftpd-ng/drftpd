@@ -34,12 +34,11 @@ import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.Transfer;
 
-import org.apache.log4j.Logger;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.11 2004/05/12 00:45:20 mog Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.12 2004/05/16 05:44:55 zubov Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 	private SlaveManagerImpl _sm;
@@ -168,16 +167,11 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 		_ssmiDown = new FilterChain(this, "conf/slaveselection-down.conf");
 		_ssmiMaster = new FilterChain(this, "conf/slaveselection-master.conf");
 		_ssmiUp = new FilterChain(this, "conf/slaveselection-up.conf");
-
-		try {
-			if (_sm.getConnectionManager().getJobManager() != null) {
-				_ssmiJobUp =
-					new FilterChain(this, "conf/slaveselection-jobup.conf");
-				_ssmiJobDown =
-					new FilterChain(this, "conf/slaveselection-jobdown.conf");
-			}
-		} catch (IllegalStateException e) {
+		if (_sm.getConnectionManager().isJobManagerLoaded()) {
+			_ssmiJobUp =
+				new FilterChain(this, "conf/slaveselection-jobup.conf");
+			_ssmiJobDown =
+				new FilterChain(this, "conf/slaveselection-jobdown.conf");			
 		}
 	}
-
 }
