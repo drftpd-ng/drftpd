@@ -720,6 +720,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 					} catch (IndexOutOfBoundsException e) {
 						throw new NoAvailableSlaveException();
 					}
+				}
 				if (rslave == null) {
 					throw new NoAvailableSlaveException();
 				}
