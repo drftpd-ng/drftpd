@@ -23,6 +23,8 @@ import f00f.net.irc.martyr.clientstate.Channel;
 import f00f.net.irc.martyr.commands.InviteCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 import f00f.net.irc.martyr.commands.NickCommand;
+import f00f.net.irc.martyr.commands.WhoisCommand;
+import f00f.net.irc.martyr.replies.WhoisUserReply;
 import f00f.net.irc.martyr.services.AutoJoin;
 import f00f.net.irc.martyr.services.AutoReconnect;
 import f00f.net.irc.martyr.services.AutoRegister;
@@ -57,6 +59,7 @@ import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.Nuke;
 import org.drftpd.commands.TransferStatistics;
 import org.drftpd.commands.UserManagment;
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
@@ -128,6 +131,7 @@ public class SiteBot implements FtpListener, Observer {
     protected int _port;
     private Hashtable<String,SectionSettings> _sections;
     protected String _server;
+    private Hashtable<String,User> _identWhoisQueue;
 
     public SiteBot() throws IOException {
         new File("logs").mkdirs();
@@ -606,6 +610,10 @@ public class SiteBot implements FtpListener, Observer {
                 _conn.sendCommand(new InviteCommand(user, chan.getName()));
             }
         }
+        
+        _identWhoisQueue.put(user,event.getUser());
+        logger.info("Looking up "+ user + " to set IRCIdent");
+        _conn.sendCommand(new WhoisCommand(user));
     }
 
     private void actionPerformedNuke(NukeEvent event) throws FormatterException {
@@ -1020,6 +1028,8 @@ public class SiteBot implements FtpListener, Observer {
             //	_autoJoin = new AutoJoin(_conn, _channelName, _key);
             //}
         }
+        
+        _identWhoisQueue = new Hashtable<String,User>();
     }
 
     public void say(SectionInterface section, String message) {
@@ -1075,6 +1085,32 @@ public class SiteBot implements FtpListener, Observer {
     }
 
     public void update(Observable observer, Object updated) {
+    	//add ident for those who use site invite
+    	if (updated instanceof WhoisUserReply) {
+    		WhoisUserReply whor = (WhoisUserReply) updated;
+    		String reply[] = whor.getParameter(whor.getSourceString(),0).split(" ");
+    		String nick = reply[3];
+    		String fullIdent = reply[3] + "!" + reply[4] + "@" + reply[5];
+ 
+			for (Iterator i = _identWhoisQueue.keySet().iterator(); i.hasNext();) {
+				String n = (String) i.next();
+				if (n.toLowerCase().equals(nick.toLowerCase())) {
+	    			User user = (User) _identWhoisQueue.get(n);
+	    			Key key = new Key(SiteBot.class,"IRCIdent",String.class);
+	    			user.getKeyedMap().setObject(key,fullIdent);
+	    			try {
+						user.commit();
+						_identWhoisQueue.remove(nick);
+	    				logger.info("Set IRCIdent to '"+fullIdent+"' for '"+user.getName()+"'");
+					} catch (UserFileException e) {
+						logger.info("Could not set IRCIdent to '"+fullIdent+"' for '"+user.getName()+"'",e);
+					}
+				}
+			}		
+			//clear the queue to avoid excessive memory usage
+			_identWhoisQueue.clear();
+    	}
+    	
         if (!(updated instanceof MessageCommand)) {
             return;
         }

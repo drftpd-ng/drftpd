@@ -71,7 +71,7 @@ public class Ident extends GenericCommandAutoService implements
             boolean success = user.checkPassword(args[2]);
             
             if (success) {
-            	Key key = new Key(this.getClass(),"IRCIdent",String.class);
+            	Key key = new Key(SiteBot.class,"IRCIdent",String.class);
             	String ident = msgc.getSource().getNick() + "!" 
 								+ msgc.getSource().getUser() + "@" 
 								+ msgc.getSource().getHost();
