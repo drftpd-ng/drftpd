@@ -34,6 +34,7 @@ public class TransferEvent extends DirectoryFtpEvent {
     private InetAddress _peer;
     private char _type;
     private InetAddress _clientHost;
+    private BaseFtpConnection _conn;
 
     /**
      * @param user
@@ -51,7 +52,7 @@ public class TransferEvent extends DirectoryFtpEvent {
         LinkedRemoteFileInterface directory, InetAddress clientHost,
         RemoteSlave rslave, InetAddress peer, char type, boolean complete,
         long time) {
-        super(conn, command, directory, time);
+        super(conn.getUserNull(), command, directory, time);
         _clientHost = clientHost;
 
         if (peer == null) {
@@ -61,6 +62,7 @@ public class TransferEvent extends DirectoryFtpEvent {
         _peer = peer;
         _complete = complete;
         _type = type;
+        _conn = conn;
     }
 
     public char getType() {
@@ -85,4 +87,8 @@ public class TransferEvent extends DirectoryFtpEvent {
     public InetAddress getPeer() {
         return _peer;
     }
+
+	public BaseFtpConnection getConn() {
+		return _conn;
+	}
 }

@@ -382,7 +382,7 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 		}
 
         conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-                conn, "DELE", requestedFile));
+                conn.getUserNull(), "DELE", requestedFile));
         requestedFile.delete();
 
         return reply;
@@ -477,7 +477,7 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
                     conn.getUserNull().getGroup(), createdDirName);
 
             conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-                    conn, "MKD", createdDir));
+                    conn.getUserNull(), "MKD", createdDir));
 
             return new Reply(257, "\"" + createdDir.getPath() +
                 "\" created.");
@@ -544,7 +544,7 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         // now delete
         //if (conn.getConfig().checkDirLog(conn.getUserNull(), requestedFile)) {
         conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-                conn, "RMD", requestedFile));
+                conn.getUserNull(), "RMD", requestedFile));
 
         //}
         requestedFile.delete();
@@ -799,7 +799,7 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 
         //if (conn.getConfig().checkDirLog(conn.getUserNull(), wipeFile)) {
         conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-                conn, "WIPE", wipeFile));
+                conn.getUserNull(), "WIPE", wipeFile));
 
         //}
         wipeFile.delete();

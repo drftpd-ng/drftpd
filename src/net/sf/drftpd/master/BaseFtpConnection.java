@@ -424,7 +424,7 @@ public class BaseFtpConnection implements Runnable {
 
             if (isAuthenticated()) {
                 _user.updateLastAccessTime();
-                getGlobalContext().dispatchFtpEvent(new ConnectionEvent(this, "LOGOUT"));
+                getGlobalContext().dispatchFtpEvent(new ConnectionEvent(getUserNull(), "LOGOUT"));
             }
 
             getGlobalContext().getConnectionManager().remove(this);

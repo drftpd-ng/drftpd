@@ -81,7 +81,7 @@ public class Request implements CommandHandler, CommandHandlerFactory {
 
                 //if (conn.getConfig().checkDirLog(conn.getUserNull(), file)) {
                 conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-                        conn, "REQFILLED", file));
+                        conn.getUserNull(), "REQFILLED", file));
 
                 //}
                 try {
@@ -121,7 +121,7 @@ public class Request implements CommandHandler, CommandHandlerFactory {
 
             //if (conn.getConfig().checkDirLog(conn.getUserNull(), createdDir)) {
             conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-                    conn, "REQUEST", createdDir));
+                    conn.getUserNull(), "REQUEST", createdDir));
 
             conn.getUserNull().getKeyedMap().incrementObjectLong(REQUESTS);
 

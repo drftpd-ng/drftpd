@@ -129,7 +129,7 @@ public class Approve extends GenericCommandAutoService implements IRCPluginInter
 					_listener.sayChannel(msgc.getDest(), 
 										 ReplacerUtils.jprintf("approve.success", env, Approve.class));
 					getGlobalContext().dispatchFtpEvent(
-							new DirectoryFtpEvent(null, "MKD", newdir));
+							new DirectoryFtpEvent(user, "MKD", newdir));
 				} catch (FileExistsException e1) {
 					_listener.sayChannel(msgc.getDest(), 
 										 ReplacerUtils.jprintf("approve.exists", env, Approve.class));

@@ -142,7 +142,7 @@ public class Pre implements CommandHandler, CommandHandlerFactory {
 
         //ANNOUNCE
         conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-                conn, "PRE", preDir));
+                conn.getUserNull(), "PRE", preDir));
 
         return Reply.RESPONSE_200_COMMAND_OK;
     }

@@ -162,7 +162,7 @@ public class SiteManagement implements CommandHandler, CommandHandlerFactory {
 		}
 
 		conn.getGlobalContext().dispatchFtpEvent(
-				new ConnectionEvent(conn, "RELOAD"));
+				new ConnectionEvent(conn.getUserNull(), "RELOAD"));
 
 		// ugly hack to clear resourcebundle cache
 		// see

@@ -18,6 +18,7 @@
 package net.sf.drftpd.event;
 
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.usermanager.User;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 
@@ -30,14 +31,14 @@ import net.sf.drftpd.master.BaseFtpConnection;
 public class DirectoryFtpEvent extends ConnectionEvent {
     private LinkedRemoteFileInterface directory;
 
-    public DirectoryFtpEvent(BaseFtpConnection conn, String command,
+    public DirectoryFtpEvent(User user, String command,
         LinkedRemoteFileInterface directory) {
-        this(conn, command, directory, System.currentTimeMillis());
+        this(user, command, directory, System.currentTimeMillis());
     }
 
-    public DirectoryFtpEvent(BaseFtpConnection conn, String command,
+    public DirectoryFtpEvent(User user, String command,
         LinkedRemoteFileInterface directory, long time) {
-        super(conn, command, time);
+        super(user, command, time);
         this.directory = directory;
     }
 

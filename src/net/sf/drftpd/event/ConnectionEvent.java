@@ -31,27 +31,19 @@ import org.drftpd.usermanager.User;
  * @version $Id$
  */
 public class ConnectionEvent extends Event {
-    private transient BaseFtpConnection _conn;
+    private transient User _user;
 
-    public ConnectionEvent(BaseFtpConnection conn, String command) {
-        this(conn, command, System.currentTimeMillis());
+    public ConnectionEvent(User user, String command) {
+        this(user, command, System.currentTimeMillis());
     }
 
-    public ConnectionEvent(BaseFtpConnection conn, String command, long time) {
+    public ConnectionEvent(User user, String command, long time) {
         super(command, time);
-        _conn = conn;
-    }
-
-    public BaseFtpConnection getConn() {
-        return _conn;
+        _user = user;
     }
 
     public User getUser() {
-        return _conn.getUserNull();
-    }
-
-    public void setConn(BaseFtpConnection conn) {
-        _conn = conn;
+        return _user;
     }
 
     public String toString() {
