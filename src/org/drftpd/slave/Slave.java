@@ -43,7 +43,6 @@ import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.drftpd.Bytes;
 import org.drftpd.LightSFVFile;
 import org.drftpd.PropertyHelper;
 import org.drftpd.SSLGetContext;
@@ -51,7 +50,6 @@ import org.drftpd.id3.ID3Tag;
 import org.drftpd.id3.MP3File;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.remotefile.LightRemoteFile;
-import org.drftpd.remotefile.RemoteFileInterface;
 import org.drftpd.slave.async.AsyncCommand;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
@@ -519,7 +517,7 @@ public class Slave {
         }
     }
 
-    private void handleRemergeRecursive(RemoteFileInterface dir) {
+    private void handleRemergeRecursive(FileRemoteFile dir) {
         //sendResponse(new AsyncResponseRemerge(file.getPath(),
         // file.getFiles()));
         CaseInsensitiveHashtable mergeFiles = new CaseInsensitiveHashtable();
@@ -527,7 +525,7 @@ public class Slave {
         Collection files = dir.getFiles();
 
         for (Iterator iter = files.iterator(); iter.hasNext();) {
-            RemoteFileInterface file = (RemoteFileInterface) iter.next();
+            FileRemoteFile file = (FileRemoteFile) iter.next();
 
             if (file.isFile()) {
                 mergeFiles.put(file.getName(), new LightRemoteFile(file));
@@ -542,7 +540,7 @@ public class Slave {
         sendResponse(new AsyncResponseRemerge(dir.getPath(), mergeFiles));
 
         for (Iterator iter = files.iterator(); iter.hasNext();) {
-            RemoteFileInterface file = (RemoteFileInterface) iter.next();
+            FileRemoteFile file = (FileRemoteFile) iter.next();
             handleRemergeRecursive(file);
         }
     }

@@ -20,8 +20,7 @@ package org.drftpd.slave;
 
 import org.apache.log4j.Logger;
 import org.drftpd.remotefile.AbstractLightRemoteFile;
-import org.drftpd.remotefile.AbstractRemoteFile;
-import org.drftpd.remotefile.RemoteFileInterface;
+import org.drftpd.remotefile.LightRemoteFileInterface;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -328,8 +327,8 @@ public class FileRemoteFile extends AbstractLightRemoteFile {
      * Returns an array of FileRemoteFile:s representing the contents of the
      * directory this FileRemoteFile represents.
      */
-    public RemoteFileInterface[] listFiles() {
-        return (RemoteFileInterface[]) getFiles().toArray(new FileRemoteFile[0]);
+    public LightRemoteFileInterface[] listFiles() {
+        return (LightRemoteFileInterface[]) getFiles().toArray(new FileRemoteFile[0]);
     }
     public static class InvalidDirectoryException extends IOException {
         /**
