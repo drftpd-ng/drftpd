@@ -33,6 +33,9 @@ request         /request/       =request
 
 hideinwho /pre/*	*
 
+#Update credits, files and bytes on transfers
+#nostatsup 	/pre/*	*
+#nostatsdn	/pre/*	*
 
 #creditcheck <path> <ratio> <flag/=group/-user>
 #creditloss <path> <ratio> <flag/=group/-user>

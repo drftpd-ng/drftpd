@@ -385,6 +385,7 @@ public class FtpConfig extends Observable implements ConfigInterface {
                             cmd.equals("pre") || cmd.equals("upload") ||
                             cmd.equals("download") || cmd.equals("delete") ||
                             cmd.equals("deleteown") || cmd.equals("rename") ||
+                            cmd.equals("nostatsup") || cmd.equals("nostatsdn") ||
                             cmd.equals("renameown") || cmd.equals("request")) {
                         addGlobPathPermission(cmd,
                             st);

@@ -1052,7 +1052,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 				env.add("fdn", "" + user.getDownloadedFiles());
 				env.add("mbdn", Bytes.formatBytes(user.getDownloadedBytes()));
 				env.add("ratio", "1:" + (int) user.getKeyedMap().getObjectFloat(UserManagement.RATIO));	
-				env.add("wkly", Bytes.formatBytes(user.getKeyedMap().getObjectInt(UserManagement.WKLY_ALLOTMENT)));
+				env.add("wkly", Bytes.formatBytes(user.getKeyedMap().getObjectLong(UserManagement.WKLY_ALLOTMENT)));
 				response.addComment(SimplePrintf.jprintf(body, env));
 			} catch (MissingResourceException e) {
 				response.addComment(e.getMessage());

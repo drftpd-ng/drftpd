@@ -6,6 +6,8 @@
    even though I close the file. I'm stumped. 
 * Changed every IRC plugin to utilize the new permissions code
 * !help command will now only show commands that the user has permission to use
+* Added nostatsup and nostatsdn to perms.conf to prevent updating stats under a path
+* Fixed site ginfo error "Java.lang.Long"
 
 2005/02/10 Matt Zimmerman <zubov@users.sourceforge.net>
 * site user should display all user information

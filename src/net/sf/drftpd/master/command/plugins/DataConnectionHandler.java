@@ -1344,7 +1344,10 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 
             if (zipscript) {
                 //transferstatistics
-                if (isRetr) {
+                if (isRetr && 
+                        !conn.getGlobalContext().getConfig().checkPathPermission(
+                                "nostatsdn", conn.getUserNull(), conn.getCurrentDirectory())) {
+                    
                     float ratio = conn.getGlobalContext().getConfig()
                                       .getCreditLossRatio(_transferFile,
                             conn.getUserNull());
@@ -1356,7 +1359,10 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                     conn.getUserNull().updateDownloadedBytes(status.getTransfered());
                     conn.getUserNull().updateDownloadedTime(status.getElapsed());
                     conn.getUserNull().updateDownloadedFiles(1);
-                } else {
+                } else if (isStor &&
+                        !conn.getGlobalContext().getConfig().checkPathPermission(
+                                "nostatsup", conn.getUserNull(), conn.getCurrentDirectory())){
+                    
                     conn.getUserNull().updateCredits((long) (status.getTransfered() * conn.getGlobalContext()
                                                                                           .getConfig()
                                                                                           .getCreditCheckRatio(_transferFile,
