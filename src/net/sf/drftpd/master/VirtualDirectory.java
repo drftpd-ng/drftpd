@@ -131,7 +131,7 @@ public class VirtualDirectory {
 		StringBuffer line = new StringBuffer();
 		if (fl instanceof LinkedRemoteFile
 			&& !((LinkedRemoteFile) fl).isAvailable()) {
-			line.append("---------");
+			line.append("----------");
 		} else {
 			line.append(getPermission(fl));
 		}
@@ -146,12 +146,7 @@ public class VirtualDirectory {
 		line.append(DELIM);
 		line.append(DateUtils.getUnixDate(fl.lastModified()));
 		line.append(DELIM);
-		if (fl instanceof LinkedRemoteFile
-			&& !((LinkedRemoteFile) fl).isAvailable()) {
-			line.append(fl.getName() + "-OFFLINE");
-		} else {
 			line.append(fl.getName());
-		}
 		line.append(NEWLINE);
 		out.write(line.toString());
 

@@ -213,7 +213,7 @@ public class IRCListener implements FtpListener, Observer {
 
 		if ("MKD".equals(direvent.getCommand())) {
 			sayDirectorySection(direvent, "mkdir");
-		} else if("REQUEST".equals(direvent.getCommand())) {
+		} else if ("REQUEST".equals(direvent.getCommand())) {
 			sayDirectorySection(direvent, "request");
 		} else if ("RMD".equals(direvent.getCommand())) {
 			sayDirectorySection(direvent, "rmdir");
@@ -298,7 +298,11 @@ public class IRCListener implements FtpListener, Observer {
 
 					ReplacerEnvironment env =
 						new ReplacerEnvironment(globalEnv);
-					fillEnvSection(env, direvent, section, direvent.getDirectory());
+					fillEnvSection(
+						env,
+						direvent,
+						section,
+						direvent.getDirectory());
 					env.add(
 						"filesleft",
 						Integer.toString(
@@ -444,7 +448,6 @@ public class IRCListener implements FtpListener, Observer {
 		ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
 		env.add("size", Bytes.formatBytes(event.getSize()));
 		//TODO nuke section, we don't have a LinkedRemoteFile :(
-		//TODO nuke usertop
 		//env.add("section", )
 
 		//Ret ret = getPropertyFileSuffix("nuke", event.getPath());
@@ -459,12 +462,15 @@ public class IRCListener implements FtpListener, Observer {
 
 		if (cmd.equals("NUKE")) {
 			say(SimplePrintf.jprintf(_ircCfg.getProperty("nuke"), env));
-			
-			ReplacerFormat raceformat= ReplacerFormat.createFormat(_ircCfg.getProperty("nuke.nukees"));
+
+			ReplacerFormat raceformat =
+				ReplacerFormat.createFormat(_ircCfg.getProperty("nuke.nukees"));
 
 			int position = 1;
 			long nobodyAmount = 0;
-			for (Iterator iter = event.getNukees2().iterator(); iter.hasNext();) {
+			for (Iterator iter = event.getNukees2().iterator();
+				iter.hasNext();
+				) {
 				Nukee stat = (Nukee) iter.next();
 
 				User raceuser;
@@ -484,13 +490,13 @@ public class IRCListener implements FtpListener, Observer {
 				raceenv.add("user", raceuser.getUsername());
 				raceenv.add("group", raceuser.getGroupName());
 
-				raceenv.add("position", ""+position++);
+				raceenv.add("position", "" + position++);
 				raceenv.add("size", Bytes.formatBytes(stat.getAmount()));
 
 				say(SimplePrintf.jprintf(raceformat, raceenv));
 
 			}
-			if(nobodyAmount != 0) {
+			if (nobodyAmount != 0) {
 				ReplacerEnvironment raceenv =
 					new ReplacerEnvironment(globalEnv);
 
@@ -501,7 +507,7 @@ public class IRCListener implements FtpListener, Observer {
 				raceenv.add("size", Bytes.formatBytes(nobodyAmount));
 
 				say(SimplePrintf.jprintf(raceformat, raceenv));
-				
+
 			}
 		} else if (cmd.equals("UNNUKE")) {
 			say(SimplePrintf.jprintf(_ircCfg.getProperty("unnuke"), env));
@@ -572,7 +578,9 @@ public class IRCListener implements FtpListener, Observer {
 				sfvfile = file.lookupSFVFile();
 				//env.add("size", Bytes.formatBytes(sfvfile.getTotalBytes()()));
 				env.add("totalfiles", "" + sfvfile.size());
-				env.add("totalspeed", Bytes.formatBytes(sfvfile.getXferspeed()));
+				env.add(
+					"totalspeed",
+					Bytes.formatBytes(sfvfile.getXferspeed()));
 			} catch (Exception ex) {
 				//COULD BE multi-cd, PRE will have to get it owns fillEnvSection with sub-dir .sfv support!
 				logger.warn("Couldn't get SFV file in announce", ex);
@@ -622,7 +630,9 @@ public class IRCListener implements FtpListener, Observer {
 		env.add("diskfree", Bytes.formatBytes(status.getDiskSpaceAvailable()));
 		env.add("diskused", Bytes.formatBytes(status.getDiskSpaceUsed()));
 		try {
-			env.add("slaves", ""+getSlaveManager().getAvailableSlaves().size());
+			env.add(
+				"slaves",
+				"" + getSlaveManager().getAvailableSlaves().size());
 		} catch (NoAvailableSlaveException e) {
 			env.add("slaves", "0");
 		}
@@ -982,72 +992,81 @@ public class IRCListener implements FtpListener, Observer {
 				_ircCfg.getProperty("speed.separator", ""),
 				env);
 		boolean first = true;
-		//TODO synchronized read-only access to conns? or clone?
-		for (Iterator iter = _cm.getConnections().iterator();
-			iter.hasNext();
-			) {
-			BaseFtpConnection conn = (BaseFtpConnection) iter.next();
-			try {
-				User connUser = conn.getUser();
-				if (!first) {
-					status.append(separator);
-				}
-				if (conn.isAuthenticated()
-					&& conn.getUser().getUsername().equals(username)) {
 
-					env.add(
-						"idle",
-						(System.currentTimeMillis() - conn.getLastActive())
-							/ 1000
-							+ "s");
+		Collection conns = getConnectionManager().getConnections();
+		synchronized (conns) {
+			for (Iterator iter = conns.iterator(); iter.hasNext();) {
+				BaseFtpConnection conn = (BaseFtpConnection) iter.next();
+				try {
+					User connUser = conn.getUser();
+					if (!first) {
+						status.append(separator);
+					}
+					if (conn.isAuthenticated()
+						&& conn.getUser().getUsername().equals(username)) {
 
-					if (!conn.isExecuting()) {
-						if (!getConfig()
-							.checkHideInWho(connUser, conn.getTransferFile()))
-							continue;
-						first = false;
-						status.append(SimplePrintf.jprintf(formatidle, env));
+						env.add(
+							"idle",
+							(System.currentTimeMillis() - conn.getLastActive())
+								/ 1000
+								+ "s");
 
-					} else if (conn.isTransfering()) {
-						if (_cm
-							.getConfig()
-							.checkHideInWho(
-								connUser,
-								conn.getCurrentDirectory()))
-							continue;
-						first = false;
-						if (conn.isTransfering()) {
-							try {
-								env.add(
-									"speed",
-									Bytes.formatBytes(
-										conn.getTransfer().getXferSpeed())
-										+ "/s");
-							} catch (RemoteException e2) {
-								logger.warn("", e2);
-							}
-							env.add("file", conn.getTransferFile().getName());
-							env.add("slave", conn.getTranferSlave().getName());
-						}
-
-						if (conn.getTransferDirection()
-							== Transfer.TRANSFER_RECEIVING_UPLOAD) {
-							status.append(SimplePrintf.jprintf(formatup, env));
-
-						} else if (
-							conn.getTransferDirection()
-								== Transfer.TRANSFER_SENDING_DOWNLOAD) {
+						if (!conn.isExecuting()) {
+							if (!getConfig()
+								.checkHideInWho(
+									connUser,
+									conn.getTransferFile()))
+								continue;
+							first = false;
 							status.append(
-								SimplePrintf.jprintf(formatdown, env));
+								SimplePrintf.jprintf(formatidle, env));
+
+						} else if (conn.isTransfering()) {
+							if (_cm
+								.getConfig()
+								.checkHideInWho(
+									connUser,
+									conn.getCurrentDirectory()))
+								continue;
+							first = false;
+							if (conn.isTransfering()) {
+								try {
+									env.add(
+										"speed",
+										Bytes.formatBytes(
+											conn.getTransfer().getXferSpeed())
+											+ "/s");
+								} catch (RemoteException e2) {
+									logger.warn("", e2);
+								}
+								env.add(
+									"file",
+									conn.getTransferFile().getName());
+								env.add(
+									"slave",
+									conn.getTranferSlave().getName());
+							}
+
+							if (conn.getTransferDirection()
+								== Transfer.TRANSFER_RECEIVING_UPLOAD) {
+								status.append(
+									SimplePrintf.jprintf(formatup, env));
+
+							} else if (
+								conn.getTransferDirection()
+									== Transfer.TRANSFER_SENDING_DOWNLOAD) {
+								status.append(
+									SimplePrintf.jprintf(formatdown, env));
+							}
 						}
 					}
+				} catch (FormatterException e) {
+					say("speed: formatterexception: " + e.getMessage());
+				} catch (NoSuchUserException e) {
+					//just continue.. we aren't interested in connections without logged-in users
 				}
-			} catch (FormatterException e) {
-				say("speed: formatterexception: " + e.getMessage());
-			} catch (NoSuchUserException e) {
-				//just continue.. we aren't interested in connections without logged-in users
-			}
-		} // for
+			} // for
+		}
 
 		status.append(
 			SimplePrintf.jprintf(_ircCfg.getProperty("speed.post", ""), env));
