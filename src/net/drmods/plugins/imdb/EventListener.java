@@ -94,9 +94,9 @@ public class EventListener extends FtpListener {
     public void init(ConnectionManager connectionManager) {
         _cm = connectionManager;
 		try {
-			_irc = (SiteBot) _cm.getFtpListener(SiteBot.class);
+			_irc = (SiteBot) _cm.getGlobalContext().getFtpListener(SiteBot.class);
 		} catch (ObjectNotFoundException e) {
-			logger.warn("Error loading AntiLeech sitebot component", e);
+			logger.warn("Error loading IMDB sitebot component", e);
 		}
     }
 
