@@ -9,12 +9,12 @@ irc.ssl=false
 irc.channel.1=#drftpd-test
 irc.channel.1.blowkey=drftpd
 irc.channel.1.perms=*
-#irc.channel.1.key=drftpd
+#irc.channel.1.chankey=drftpd
 
 #irc.channel.2=#drftpd-test2
 #irc.channel.2.blowkey=drftpd2
 #irc.channel.2.perms=!=iND *
-#irc.channel.2.key=drftpd
+#irc.channel.2.chankey=drftpd
 
 # general format:
 # irc.nick!irc.user@ipaddress.would.be.here irc.name
