@@ -63,7 +63,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.98 2004/04/27 22:06:27 zombiewoof64 Exp $
+ * @version $Id: ConnectionManager.java,v 1.99 2004/04/27 22:40:24 zombiewoof64 Exp $
  */
 public class ConnectionManager {
 
@@ -85,10 +85,6 @@ public class ConnectionManager {
 	public static void main(String args[]) {
 		System.out.println(SlaveImpl.VERSION + " master server starting.");
 		System.out.println("http://drftpd.org/");
-             File dir1 = new File (".");
-             try {
-                 System.out.println("cwd=" + dir1.getCanonicalPath());
-             } catch (Exception e) {}
 		try {
 			String cfgFileName;
 			if (args.length >= 1) {
