@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.8 2004/01/04 01:23:38 mog Exp $
+ * @version $Id: ListUtils.java,v 1.9 2004/01/04 03:26:01 mog Exp $
  */
 public class ListUtils {
 
@@ -53,22 +53,21 @@ public class ListUtils {
 		try {
 			SFVFile sfvfile = directoryFile.lookupSFVFile();
 			SFVStatus sfvstatus = sfvfile.getStatus();
-			int good = sfvfile.size() - sfvstatus.getMissing();
 			
 			if (sfvfile.size() != 0) {
 				String statusDirName =
 					"[ "
-						+ good
+						+ sfvstatus.getPresent()
 						+ "/"
 						+ sfvfile.size()
 						+ " = "
-						+ (good * 100) / sfvfile.size()
+						+ (sfvstatus.getPresent() * 100) / sfvfile.size()
 						+ "% complete | "
-						+ (sfvfile.size() - sfvstatus.getOffline())
+						+ sfvstatus.getAvailable()
 						+ "/"
-						+ sfvfile.size()
+						+ sfvstatus.getPresent()
 						+ " = "
-						+ ((sfvfile.size() - sfvstatus.getOffline()) * 100) / sfvfile.size()
+						+ (sfvstatus.getAvailable() * 100) / sfvstatus.getPresent()
 						+ "% online ]";
 
 				listFiles.add(
@@ -78,7 +77,7 @@ public class ListUtils {
 						"drftpd",
 						"drftpd",
 						0L,
-						System.currentTimeMillis()));
+						directoryFile.lastModified()));
 			}
 		} catch (NoAvailableSlaveException e) {
 			logger.warn("No available slaves for SFV file", e);

@@ -33,7 +33,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.13 2004/01/03 23:50:53 mog Exp $
+ * @version $Id: UserManagment.java,v 1.14 2004/01/04 03:26:01 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	private Logger logger = Logger.getLogger(UserManagment.class);
@@ -186,8 +186,12 @@ public class UserManagment implements CommandHandler {
 		String pass = st.nextToken();
 		User newUser;
 		FtpReply response = new FtpReply(200);
+
+		ReplacerEnvironment env = new ReplacerEnvironment();
+		env.add("targetuser", newUsername);
+
 		response.addComment(
-			conn.jprintf(UserManagment.class.getName(), "adduser.success"));
+			conn.jprintf(UserManagment.class.getName(), "adduser.success", env));
 		try {
 			newUser = conn.getUserManager().create(newUsername);
 			newUser.setPassword(pass);

@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.94 2004/01/03 23:50:54 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.95 2004/01/04 03:26:01 mog Exp $
  */
 
 public class LinkedRemoteFile
@@ -135,7 +135,6 @@ public class LinkedRemoteFile
 
 		_ftpConfig = cfg;
 		_lastModified = file.lastModified();
-		_length = file.length();
 		_isDeleted = file.isDeleted();
 		setOwner(file.getUsername());
 		setGroup(file.getGroupname());
@@ -149,6 +148,7 @@ public class LinkedRemoteFile
 		}
 
 		if (file.isFile()) {
+			_length = file.length();
 			_slaves =
 				Collections.synchronizedList(new ArrayList(file.getSlaves()));
 		} else if (file.isDirectory()) {
