@@ -2,22 +2,21 @@
 # 10080 = 1 week
 # 43200 = 1 month
 
-# where to archive releases
-# true = to the slave with the most free space
-# false = to the slave with the most files of the release
-archiveToFreeSlave=true
-
-# amount of time in between cycles checking for releases to archive
+# amount of time between checking site for releases to archive
 cycleTime=30
 
 # do not archive releases younger than
 archiveAfter=10080
 
-# max number of releases to be archiving at any given time
-# under normal circumstances this setting should be close to the
-# number of slaves that are part of the site
-maxArchive=10
-
 # do not archive releases under these directorys
 #exclude.1=/exempt/*
 #exclude.2=/alsoexempt/*
+
+
+# ArchiveTypes define the definition of "Archived"
+#section1.archiveType=MoveReleaseToMostFreeSlave
+#section2.archiveType=OtherNonImplementedArchiveType
+
+# If section.archiveType is not defined for each section
+# the default will be used
+default.archiveType=MoveReleaseToMostFreeSlave

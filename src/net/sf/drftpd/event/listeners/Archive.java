@@ -20,44 +20,43 @@ package net.sf.drftpd.event.listeners;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.config.ExcludePath;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.mirroring.ArchiveHandler;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
-import org.apache.oro.text.regex.MalformedPatternException;
+import org.drftpd.mirroring.ArchiveHandler;
+import org.drftpd.mirroring.ArchiveType;
+import org.drftpd.sections.SectionInterface;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.22 2004/04/07 13:47:50 zubov Exp $
+ * @version $Id: Archive.java,v 1.23 2004/04/18 05:57:35 zubov Exp $
  */
 
 public class Archive implements FtpListener, Runnable {
-
 	private static final Logger logger = Logger.getLogger(Archive.class);
+
+	public static Logger getLogger() {
+		return logger;
+	}
 	private long _archiveAfter;
-	private boolean _archiveToFreeSlave;
-	private ArrayList _archivingList = new ArrayList();
+
+	private HashMap _archiveTypes;
 	private ConnectionManager _cm;
 	private long _cycleTime;
 	private ArrayList _exemptList = new ArrayList();
 	private boolean _isStopped = false;
 	private int _maxArchive;
-	private long _moveFullSlaves;
 	private Thread thread = null;
 
-	/**
-	 * 
-	 */
 	public Archive() {
-		reload();
 		logger.info("Archive plugin loaded successfully");
 	}
 
@@ -66,33 +65,26 @@ public class Archive implements FtpListener, Runnable {
 			reload();
 			return;
 		}
-//		if (!(event instanceof TransferEvent))
-//			return;
-//		if (System.currentTimeMillis() - _lastchecked > _cycleTime) {
-//			_lastchecked = System.currentTimeMillis();
-//			new ArchiveHandler((DirectoryFtpEvent) event, this).start();
-//			logger.debug("Launched the ArchiveHandler");
-//		}
-	}
-
-	/**
-	 * Adds directories to the list
-	 */
-	public synchronized void addToArchivingList(String dir) {
-		_archivingList.add(dir);
 	}
 
 	/**
 	 * @param lrf
 	 * Returns true if lrf.getPath() is excluded
 	 */
-	public boolean checkExclude(LinkedRemoteFileInterface lrf) {
-		for (Iterator iter = _exemptList.iterator(); iter.hasNext();) {
-			ExcludePath ep = (ExcludePath) iter.next();
-			if (ep.checkPath(lrf))
-				return true;
-		}
-		return false;
+	public boolean checkExclude(SectionInterface section) {
+		return _exemptList.contains(section.getName());
+	}
+
+	private ArchiveType getAndResetArchiveType(SectionInterface section) {
+		ArchiveType archiveType = (ArchiveType) _archiveTypes.get(section);
+		if (archiveType == null)
+			throw new IllegalStateException(
+				"Could not find an archive type for "
+					+ section.getName()
+					+ ", check you make sure default.archiveType is defined in archive.conf");
+		archiveType.setRSlaves(null);
+		archiveType.setDirectory(null);
+		return archiveType;
 	}
 	/**
 	 * Returns the archiveAfter setting
@@ -101,12 +93,6 @@ public class Archive implements FtpListener, Runnable {
 		return _archiveAfter;
 	}
 
-	/**
-	 * This list represents path names of directories currently being handled by ArchiveHandlers
-	 */
-	public ArrayList getArchivingList() {
-		return _archivingList;
-	}
 	/**
 	 * Returns the ConnectionManager
 	 */
@@ -121,30 +107,17 @@ public class Archive implements FtpListener, Runnable {
 		return _cycleTime;
 	}
 
-	//	/**
-	//	 * Returns the moveFullSlaves setting
-	//	*/
-	//	public long getMoveFullSlaves() {
-	//		return _moveFullSlaves;
-	//	}
-
 	public void init(ConnectionManager connectionManager) {
 		_cm = connectionManager;
 		_cm.loadJobManager();
+		reload();
 		startArchive();
-	}
-
-	/**
-	 * Returns the archiveToFreeSlave setting
-	 */
-	public boolean isArchiveToFreeSlave() {
-		return _archiveToFreeSlave;
 	}
 
 	private boolean isStopped() {
 		return _isStopped;
 	}
-	
+
 	private void reload() {
 		Properties props = new Properties();
 		try {
@@ -152,62 +125,110 @@ public class Archive implements FtpListener, Runnable {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		_maxArchive = Integer.parseInt(FtpConfig.getProperty(props,"maxArchive"));
 		_cycleTime =
 			60000 * Long.parseLong(FtpConfig.getProperty(props, "cycleTime"));
 		_archiveAfter =
 			60000
 				* Long.parseLong(FtpConfig.getProperty(props, "archiveAfter"));
-		_archiveToFreeSlave =
-			(FtpConfig.getProperty(props, "archiveToFreeSlave").equals("true"));
 		_exemptList = new ArrayList();
 		for (int i = 1;; i++) {
 			String path = props.getProperty("exclude." + i);
 			if (path == null)
 				break;
+			_exemptList.add(path);
+		}
+		_archiveTypes = new HashMap();
+		for (Iterator iter =
+			getConnectionManager().getSectionManager().getSections().iterator();
+			iter.hasNext();
+			) {
+			SectionInterface section = (SectionInterface) iter.next();
+			if (checkExclude(section))
+				// don't have to build an archiveType for sections that won't be archived
+				continue;
+			ArchiveType archiveType = null;
 			try {
-				ExcludePath.makePermission(_exemptList, path);
-			} catch (MalformedPatternException e1) {
-				throw new RuntimeException(e1);
+				archiveType =
+					(ArchiveType) Class
+						.forName(
+							"org.drftpd.mirroring.archivetypes."
+								+ FtpConfig.getProperty(
+									props,
+									section.getName() + ".archiveType"))
+						.newInstance();
+			} catch (NullPointerException e) {
+				try {
+					archiveType =
+						(ArchiveType) Class
+							.forName(
+								"org.drftpd.mirroring.archivetypes."
+									+ FtpConfig.getProperty(
+										props,
+										"default.archiveType"))
+							.newInstance();
+				} catch (Exception e1) {
+					logger.info(
+						"Unable to load ArchiveType for " + section.getName(),
+						e);
+				}
+			} catch (Exception e) {
+				logger.info(
+					"Unable to load ArchiveType for " + section.getName(),
+					e);
 			}
+			archiveType.init(this, section);
+			_archiveTypes.put(section, archiveType);
+			logger.debug("added archiveType for section " + section.getName());
 		}
 	}
 
-	/**
-	 * Removes directories from the list
-	 */
-	public synchronized void removeFromArchivingList(String dir) {
-		_archivingList.remove(dir);
-	}
-
 	public void run() {
-		while(true) {
+		ArrayList archiveHandlers = new ArrayList();
+		ArrayList archiveSections = new ArrayList();
+		while (true) {
 			if (isStopped()) {
 				logger.debug("Stopping ArchiveStarter thread");
 				return;
 			}
-			if (_archivingList.size() < _maxArchive)
-				new ArchiveHandler(this).start();
+			for (Iterator iter = archiveHandlers.iterator(); iter.hasNext();) {
+				ArchiveHandler archiveHandler = (ArchiveHandler) iter.next();
+				if (!archiveHandler.isAlive()) {
+					iter.remove();
+					archiveSections.remove(archiveHandler.getSection());
+				}
+			}
+			Collection sectionsToCheck =
+				getConnectionManager().getSectionManager().getSections();
+			for (Iterator iter = sectionsToCheck.iterator(); iter.hasNext();) {
+				SectionInterface section = (SectionInterface) iter.next();
+				if (archiveSections.contains(section) || checkExclude(section))
+					continue;
+				ArchiveType archiveType = getAndResetArchiveType(section);
+				ArchiveHandler archiveHandler = new ArchiveHandler(archiveType);
+				archiveSections.add(section);
+				archiveHandlers.add(archiveHandler);
+				archiveHandler.start();
+			}
 			try {
 				Thread.sleep(_cycleTime);
 			} catch (InterruptedException e) {
 			}
 		}
 	}
-	
+
 	public void startArchive() {
 		if (thread != null) {
 			stopArchive();
 			thread.interrupt();
-			while(thread.isAlive()) {
+			while (thread.isAlive()) {
 				Thread.yield();
 			}
 		}
 		_isStopped = false;
-		thread = new Thread(this,"ArchiveStarter");
+		thread = new Thread(this, "ArchiveStarter");
 		thread.start();
 	}
-	
+
 	public void stopArchive() {
 		_isStopped = true;
 	}

@@ -27,7 +27,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.12 2004/03/15 13:53:08 zubov Exp $
+ * @version $Id: Job.java,v 1.13 2004/04/18 05:57:35 zubov Exp $
  */
 public class Job {
 	protected ArrayList _destSlaves;
@@ -45,7 +45,7 @@ public class Job {
 		User owner,
 		int priority) {
 		super();
-		_destSlaves = (ArrayList) destSlaves;
+		_destSlaves = new ArrayList(destSlaves);
 		_file = file;
 		_source = source;
 		_owner = owner;
