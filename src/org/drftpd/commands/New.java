@@ -38,7 +38,7 @@ import org.drftpd.sections.SectionInterface;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
- * @version $Id: New.java,v 1.1 2004/03/28 15:50:38 zubov Exp $
+ * @version $Id: New.java,v 1.2 2004/05/21 14:41:52 zubov Exp $
  */
 public class New implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(New.class);
@@ -67,7 +67,7 @@ public class New implements CommandHandler {
 
 			return super.equals(o);
 		}
-	};
+	}
 
 	public New() {
 		super();
@@ -111,7 +111,7 @@ public class New implements CommandHandler {
 				(LinkedRemoteFileInterface) iter.next();
 			env.add("pos", "" + pos);
 			env.add("name", dir.getName());
-			env.add("user", dir.getUsername());
+			env.add("diruser", dir.getUsername());
 			env.add("files", "" + dir.dirSize());
 			env.add("size", Bytes.formatBytes(dir.length()));
 			env.add("age", "" + formatAge(dir.lastModified(), now));
