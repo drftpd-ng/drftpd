@@ -35,7 +35,8 @@ public class TransferStatistics implements CommandHandler {
 			logger.warn("", e);
 			return new FtpReply(200, "IO error: " + e.getMessage());
 		}
-		int count = 10;
+		int count = 10; // default # of users to list
+		request = conn.getRequest();
 		if (request.hasArgument()) {
 			StringTokenizer st = new StringTokenizer(request.getArgument());
 
@@ -123,6 +124,8 @@ public class TransferStatistics implements CommandHandler {
 			command.substring("SITE ".length(), command.length() - 2);
 		// UP DN
 		String updn = command.substring(command.length() - 2);
+		System.out.println("updn = " + updn);
+		System.out.println("period = " + period);
 		if (updn.equals("UP")) {
 			if (period.equals("AL"))
 				return user.getUploadedBytes();
