@@ -51,7 +51,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.119 2004/02/22 15:22:53 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.120 2004/02/23 00:39:46 zubov Exp $
  */
 public class LinkedRemoteFile
 	implements RemoteFileInterface, Serializable, Comparable {
@@ -95,10 +95,82 @@ public class LinkedRemoteFile
 				+ "]";
 		}
 	}
-	private String _link;
 	private static final Logger logger =
 		Logger.getLogger(LinkedRemoteFile.class.getName());
 	static final long serialVersionUID = 3585958839961835107L;
+
+	public static void recursiveRenameLoop(
+		LinkedRemoteFile fromDir,
+		LinkedRemoteFile toDir) {
+		logger.debug(
+			"recursiveRenameLoop("
+				+ fromDir.getPath()
+				+ ", "
+				+ toDir.getPath()
+				+ ")");
+		for (Iterator iter =
+			new ArrayList(fromDir.getMap().values()).iterator();
+			iter.hasNext();
+			) {
+			LinkedRemoteFile fromFile = (LinkedRemoteFile) iter.next();
+
+			LinkedRemoteFile toFile;
+			try {
+				toFile = toDir.getFile(fromFile.getName());
+			} catch (FileNotFoundException e) {
+				toFile = toDir.putFile(fromFile);
+			}
+			if (fromFile.isDirectory()) {
+				recursiveRenameLoop(fromFile, toFile);
+			} else {
+				recursiveRenameLoopFile(fromFile, toFile);
+			}
+		}
+		if (fromDir.isEmpty()) {
+			fromDir.delete();
+		}
+	}
+
+	public static void recursiveRenameLoopFile(
+		LinkedRemoteFile fromFile,
+		LinkedRemoteFile toFile) {
+		logger.debug(
+			"recursiveRenameLoopFile("
+				+ fromFile.getPath()
+				+ ", "
+				+ toFile.getPath());
+
+		Iterator iterator = new ArrayList(fromFile.getSlaves()).iterator();
+		while (iterator.hasNext()) {
+			RemoteSlave rslave = (RemoteSlave) iterator.next();
+			if (rslave.isAvailable()) {
+				toFile.addSlave(rslave);
+				fromFile.removeSlave(rslave);
+			} else {
+				logger.debug(rslave + " is offline");
+				fromFile.queueRename(toFile);
+			}
+		}
+	}
+
+	private static void recursiveSetRSlaveAndConfig(
+		LinkedRemoteFile dir,
+		FtpConfig ftpConfig,
+		RemoteSlave rslave) {
+
+		dir._ftpConfig = ftpConfig;
+		if (dir.isFile()) {
+			dir.addSlave(rslave);
+		}
+		if (dir.isDirectory()) {
+			for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
+				recursiveSetRSlaveAndConfig(
+					(LinkedRemoteFile) iter.next(),
+					ftpConfig,
+					rslave);
+			}
+		}
+	}
 	private long _checkSum;
 
 	private Map _files;
@@ -111,6 +183,7 @@ public class LinkedRemoteFile
 	private long _lastModified;
 
 	private long _length;
+	private String _link;
 	private String _name;
 	private String _owner;
 
@@ -232,12 +305,6 @@ public class LinkedRemoteFile
 		}
 		//parent == null if creating root dir
 	}
-	public TransferStatus receiveFile(Transfer transfer, char type, long offset) throws IOException {
-		return transfer.receiveFile(getParent(),type,getName(),offset);
-	}
-	public TransferStatus sendFile(Transfer transfer, char type, long offset) throws IOException {
-		return transfer.sendFile(getPath(),type,offset);
-	}
 
 	/**
 	 * Creates a root directory (parent == null) that FileRemoteFile or
@@ -289,6 +356,21 @@ public class LinkedRemoteFile
 	 */
 	public int compareTo(Object o) {
 		return getName().compareTo(((RemoteFileInterface) o).getName());
+	}
+
+	public LinkedRemoteFile createDirectories(String path) {
+		NonExistingFile nef = lookupNonExistingFile(path);
+		if(!nef.hasPath()) throw new RuntimeException("createDirectories called on already existing directory");
+		LinkedRemoteFile dir = nef.getFile();
+		StringTokenizer st = new StringTokenizer(nef.getPath(), "/");
+		while(st.hasMoreTokens()) {
+			try {
+				dir.createDirectory(st.nextToken());
+			} catch (ObjectExistsException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return dir;
 	}
 
 	public LinkedRemoteFile createDirectory(String fileName) throws ObjectExistsException {
@@ -607,6 +689,10 @@ public class LinkedRemoteFile
 		return lookupFile(getLinkPath());
 	}
 
+	public String getLinkPath() {
+		return _link;
+	}
+
 	/**
 	 * Returns the underlying Map for this directory.
 	 * 
@@ -622,6 +708,21 @@ public class LinkedRemoteFile
 
 	public String getName() {
 		return _name;
+	}
+
+	public LinkedRemoteFile getOldestFile() throws ObjectNotFoundException {
+		long oldestTime = Long.MAX_VALUE;
+		LinkedRemoteFile oldestFile = null;
+		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			if (oldestTime > file.lastModified()) {
+				oldestFile = file;
+				oldestTime = oldestFile.lastModified();
+			}
+		}
+		if (oldestFile == null)
+			throw new ObjectNotFoundException();
+		return oldestFile;
 	}
 
 	public String getParent() throws FileNotFoundException {
@@ -791,6 +892,15 @@ public class LinkedRemoteFile
 		return !isFile();
 	}
 
+	/**
+	 * @return true if directory is empty.
+	 */
+	private boolean isEmpty() {
+		if (_files == null)
+			throw new IllegalStateException();
+		return _files.isEmpty();
+	}
+
 	public boolean isFile() {
 		return _files == null && _slaves != null;
 	}
@@ -937,6 +1047,77 @@ public class LinkedRemoteFile
 	 */
 	public LinkedRemoteFile putFile(RemoteFileInterface file) {
 		return putFile(file, file.getName());
+	}
+
+	/**
+	 * @param torslave
+	 *            RemoteSlave to replicate to.
+	 */
+	//	public void replicate(final RemoteSlave torslave)
+	//		throws NoAvailableSlaveException, IOException {
+	//
+	//		final RemoteSlave fromslave = getASlaveForDownload();
+	//		Transfer fromtransfer = fromslave.getSlave().listen(false);
+	//		final Transfer totransfer =
+	//			torslave.getSlave().connect(
+	//				new InetSocketAddress(
+	//					fromslave.getInetAddress(),
+	//					fromtransfer.getLocalPort()),
+	//				false);
+	//
+	//		Thread t = new Thread(new Runnable() {
+	//			public void run() {
+	//				try {
+	//					totransfer.receiveFile(
+	//						getParentFile().getPath(),
+	//						'I',
+	//						getName(),
+	//						0L);
+	//				} catch (RemoteException e) {
+	//					torslave.handleRemoteException(e);
+	//					logger.warn(EMPTY_STRING, e);
+	//				} catch (FileNotFoundException e) {
+	//					throw new FatalException(e);
+	//				} catch (IOException e) {
+	//					throw new RuntimeException(e);
+	//				}
+	//			}
+	//		});
+	//		t.start();
+	//		fromtransfer.sendFile(getPath(), 'I', 0, false);
+	//	}
+
+	/**
+	 * @param toName
+	 *            name argument to LinkedRemoteFile constructor
+	 */
+	private LinkedRemoteFile putFile(RemoteFileInterface file, String toName) {
+		if (_files.containsKey(toName))
+			throw new IllegalStateException("Don't overwrite! "+getPath()+" "+toName);
+		//validate
+		if (file.isFile()) {
+			assert file.getSlaves() != null : file.toString();
+			for (Iterator iter = file.getSlaves().iterator();
+				iter.hasNext();
+				) {
+				RemoteSlave element = (RemoteSlave) iter.next();
+				assert element != null;
+			}
+		}
+
+		//the constructor takes care of addSize()
+		LinkedRemoteFile linkedfile =
+			new LinkedRemoteFile(this, file, toName, _ftpConfig);
+		_files.put(linkedfile.getName(), linkedfile);
+		return linkedfile;
+	}
+
+	private void queueRename(LinkedRemoteFile toFile) {
+		_link = toFile.getPath();
+		_isDeleted = true;
+	}
+	public TransferStatus receiveFile(Transfer transfer, char type, long offset) throws IOException {
+		return transfer.receiveFile(getParent(),type,getName(),offset);
 	}
 
 	/**
@@ -1223,15 +1404,14 @@ public class LinkedRemoteFile
 				}
 			} else {
 				if (file.isDirectory()) {
-				try {
+					try {
 						file.remergePass2(mergedir.getFile(file.getName()), rslave);
-						if (file.isEmpty())
-							i.remove();
-				} catch (FileNotFoundException e) {
-					throw new RuntimeException(
-						"inconsistent with hasFile() above",
-						e);
-				}}
+					} catch (FileNotFoundException e) {
+						throw new RuntimeException(
+								"inconsistent with hasFile() above",
+								e);
+					}
+				}
 				// else slave has the file
 			}
 		}
@@ -1244,74 +1424,6 @@ public class LinkedRemoteFile
 		if (_slaves.isEmpty())
 			delete();
 		return ret;
-	}
-
-	public static void recursiveRenameLoop(
-		LinkedRemoteFile fromDir,
-		LinkedRemoteFile toDir) {
-		logger.debug(
-			"recursiveRenameLoop("
-				+ fromDir.getPath()
-				+ ", "
-				+ toDir.getPath()
-				+ ")");
-		for (Iterator iter =
-			new ArrayList(fromDir.getMap().values()).iterator();
-			iter.hasNext();
-			) {
-			LinkedRemoteFile fromFile = (LinkedRemoteFile) iter.next();
-
-			LinkedRemoteFile toFile;
-			try {
-				toFile = toDir.getFile(fromFile.getName());
-			} catch (FileNotFoundException e) {
-				toFile = toDir.putFile(fromFile);
-			}
-			if (fromFile.isDirectory()) {
-				recursiveRenameLoop(fromFile, toFile);
-			} else {
-				recursiveRenameLoopFile(fromFile, toFile);
-			}
-		}
-		if (fromDir.isEmpty()) {
-			fromDir.delete();
-		}
-	}
-
-	/**
-	 * @return true if directory is empty.
-	 */
-	private boolean isEmpty() {
-		if (_files == null)
-			throw new IllegalStateException();
-		return _files.isEmpty();
-	}
-
-	public static void recursiveRenameLoopFile(
-		LinkedRemoteFile fromFile,
-		LinkedRemoteFile toFile) {
-		logger.debug(
-			"recursiveRenameLoopFile("
-				+ fromFile.getPath()
-				+ ", "
-				+ toFile.getPath());
-
-		Iterator iterator = new ArrayList(fromFile.getSlaves()).iterator();
-		while (iterator.hasNext()) {
-			RemoteSlave rslave = (RemoteSlave) iterator.next();
-			if (rslave.isAvailable()) {
-				toFile.addSlave(rslave);
-				fromFile.removeSlave(rslave);
-			} else {
-				logger.debug(rslave + " is offline");
-				fromFile.queueRename(toFile);
-			}
-		}
-	}
-
-	private void queueRename(LinkedRemoteFile toFile) {
-		_link = toFile.getPath();
-		_isDeleted = true;
 	}
 
 	/**
@@ -1413,68 +1525,8 @@ public class LinkedRemoteFile
 		//		_name = toName;
 		return toFile;
 	}
-
-	/**
-	 * @param torslave
-	 *            RemoteSlave to replicate to.
-	 */
-	//	public void replicate(final RemoteSlave torslave)
-	//		throws NoAvailableSlaveException, IOException {
-	//
-	//		final RemoteSlave fromslave = getASlaveForDownload();
-	//		Transfer fromtransfer = fromslave.getSlave().listen(false);
-	//		final Transfer totransfer =
-	//			torslave.getSlave().connect(
-	//				new InetSocketAddress(
-	//					fromslave.getInetAddress(),
-	//					fromtransfer.getLocalPort()),
-	//				false);
-	//
-	//		Thread t = new Thread(new Runnable() {
-	//			public void run() {
-	//				try {
-	//					totransfer.receiveFile(
-	//						getParentFile().getPath(),
-	//						'I',
-	//						getName(),
-	//						0L);
-	//				} catch (RemoteException e) {
-	//					torslave.handleRemoteException(e);
-	//					logger.warn(EMPTY_STRING, e);
-	//				} catch (FileNotFoundException e) {
-	//					throw new FatalException(e);
-	//				} catch (IOException e) {
-	//					throw new RuntimeException(e);
-	//				}
-	//			}
-	//		});
-	//		t.start();
-	//		fromtransfer.sendFile(getPath(), 'I', 0, false);
-	//	}
-
-	/**
-	 * @param toName
-	 *            name argument to LinkedRemoteFile constructor
-	 */
-	private LinkedRemoteFile putFile(RemoteFileInterface file, String toName) {
-		if (_files.containsKey(toName))
-			throw new IllegalStateException("Don't overwrite! "+getPath()+" "+toName);
-		//validate
-		if (file.isFile()) {
-			assert file.getSlaves() != null : file.toString();
-			for (Iterator iter = file.getSlaves().iterator();
-				iter.hasNext();
-				) {
-				RemoteSlave element = (RemoteSlave) iter.next();
-				assert element != null;
-			}
-		}
-
-		//the constructor takes care of addSize()
-		LinkedRemoteFile linkedfile =
-			new LinkedRemoteFile(this, file, toName, _ftpConfig);
-		_files.put(linkedfile.getName(), linkedfile);
-		return linkedfile;
+	public TransferStatus sendFile(Transfer transfer, char type, long offset) throws IOException {
+		return transfer.sendFile(getPath(),type,offset);
 	}
 
 	public void setCheckSum(long checkSum) {
@@ -1494,25 +1546,6 @@ public class LinkedRemoteFile
 	}
 	public void setOwner(String owner) {
 		_owner = owner.intern();
-	}
-
-	private static void recursiveSetRSlaveAndConfig(
-		LinkedRemoteFile dir,
-		FtpConfig ftpConfig,
-		RemoteSlave rslave) {
-
-		dir._ftpConfig = ftpConfig;
-		if (dir.isFile()) {
-			dir.addSlave(rslave);
-		}
-		if (dir.isDirectory()) {
-			for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
-				recursiveSetRSlaveAndConfig(
-					(LinkedRemoteFile) iter.next(),
-					ftpConfig,
-					rslave);
-			}
-		}
 	}
 
 	public void setXfertime(long xfertime) {
@@ -1593,40 +1626,6 @@ public class LinkedRemoteFile
 		//			i.remove();
 		//			getParentFileNull().addSize(-file.length());
 		//		}
-	}
-
-	public LinkedRemoteFile getOldestFile() throws ObjectNotFoundException {
-		long oldestTime = Long.MAX_VALUE;
-		LinkedRemoteFile oldestFile = null;
-		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			if (oldestTime > file.lastModified()) {
-				oldestFile = file;
-				oldestTime = oldestFile.lastModified();
-			}
-		}
-		if (oldestFile == null)
-			throw new ObjectNotFoundException();
-		return oldestFile;
-	}
-
-	public String getLinkPath() {
-		return _link;
-	}
-
-	public LinkedRemoteFile createDirectories(String path) {
-		NonExistingFile nef = lookupNonExistingFile(path);
-		if(!nef.hasPath()) throw new RuntimeException("createDirectories called on already existing directory");
-		LinkedRemoteFile dir = nef.getFile();
-		StringTokenizer st = new StringTokenizer(nef.getPath(), "/");
-		while(st.hasMoreTokens()) {
-			try {
-				dir.createDirectory(st.nextToken());
-			} catch (ObjectExistsException e) {
-				throw new RuntimeException(e);
-			}
-		}
-		return dir;
 	}
 
 }
