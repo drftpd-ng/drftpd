@@ -15,6 +15,9 @@ archiveAfter=10080
 
 # ArchiveTypes define the definition of "Archived"
 #section1.archiveType=MoveReleaseToMostFreeSlave
+#section2.archiveType=FinishReleaseOnSlave
+#section3.archiveType=MoveReleaseToSpecificSlave
+#section3.slavename=fleegy
 #section2.archiveType=OtherNonImplementedArchiveType
 
 # If section.archiveType is not defined for each section
