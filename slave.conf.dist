@@ -1,0 +1,22 @@
+######################
+### Slave settings ###
+######################
+
+#What you set <name>drftpd</name> to in slaves.xml
+slave.name=drftpd
+
+#root to serve contents from, is automatically created
+slave.root.1=site
+#you can use several roots for striping files across
+#several harddrives without using RAID or similair.
+#slave.root.2=d:/
+
+
+master.host=you_didnt_edit_drftpd.conf
+master.bindname=slavemanager
+#port to connect to the master
+master.bindport=1099
+
+#pasv port range
+#slave.portfrom=30000
+#slave.portto=33000
