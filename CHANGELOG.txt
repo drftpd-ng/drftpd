@@ -1,3 +1,6 @@
+2004/10/06  Teflon <teflon114@@users.sourceforge.net>
+* Fixed root cause of "group= iND" bug in files.mlst
+
 2004/10/05 Morgan Christiansson <drftpd@mog.se>
 * Fixed purge with JSXUserManager.
 * Added wkly_allotment to SITE USER environment and rewrote .properties format

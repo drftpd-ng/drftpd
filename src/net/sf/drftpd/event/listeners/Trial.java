@@ -46,7 +46,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.28 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: Trial.java,v 1.29 2004/10/07 01:12:30 teflon114 Exp $
  */
 public class Trial implements FtpListener {
     private static final Logger logger = Logger.getLogger(Trial.class);
@@ -83,7 +83,7 @@ public class Trial implements FtpListener {
                     user.toggleGroup(st.nextToken());
                 }
             } else if ("setgrp".equals(cmd)) {
-                user.setGroup(st.nextToken(""));
+                user.setGroup(st.nextToken());
                 logger.info(user.getUsername() + " primary group set to " +
                     user.getGroupName());
             } else if ("delete".equals(cmd)) {
