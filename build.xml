@@ -233,6 +233,11 @@
     	<include name="src-slaveselection/**"/>
     	<include name="text/**"/>
     	<include name="docs/*"/>
+	<include name="bin/xstream2beans.sh"/>
+	<include name="bin/InstallMaster.bat"/>
+	<include name="bin/UnInstallMaster.bat"/>
+	<include name="bin/InstallSlave.bat"/>
+	<include name="bin/UnInstallSlave.bat"/>
     	<exclude name="*/org/drftpd/friendly/**"/>
     </patternset>
 
