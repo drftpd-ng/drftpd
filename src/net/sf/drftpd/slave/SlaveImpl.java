@@ -366,7 +366,7 @@ public class SlaveImpl
 				default :
 					throw new IllegalArgumentException();
 			}
-			if (_transfers.remove(o))
+			if (!_transfers.remove(o))
 				throw new IllegalStateException();
 		}
 	}
