@@ -61,6 +61,10 @@ public class SlaveStatus implements Serializable {
 		return diskSpaceAvailable;
 	}
 
+	public long getDiskSpaceUsed() {
+		return getDiskSpaceCapacity()-getDiskSpaceAvailable();
+	}
+
 	/**
 	 * Returns the throughputDown.
 	 * @return float

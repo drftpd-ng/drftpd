@@ -41,8 +41,13 @@ public class StaticRemoteFile extends RemoteFile {
 	 * If this file has no owner 'owner' may be null, then "drftpd:drftpd will be used.
 	 * 
 	 * If lastModified is 0 it will be set to the currentTimeMillis.
+	 * @deprecated
 	 */
 	public StaticRemoteFile(Collection rslaves, String path, User owner, long size, long lastModified) {
+		this(rslaves, path, owner.getUsername(), owner.getGroup(), size, lastModified);
+	}
+	
+	public StaticRemoteFile(Collection rslaves, String path, String owner, String group, long size, long lastModified) {
 		this.slaves = rslaves;
 		this.path = path;
 		if(path.endsWith("/")) {
@@ -52,19 +57,28 @@ public class StaticRemoteFile extends RemoteFile {
 			isDirectory = false;
 			isFile = true;
 		}
-		if(owner == null) {
-			this.owner = owner.getUsername();
-			group = owner.getGroup();
-		} else {
-			this.owner = "drftpd";
-			group = "drftpd";
-		}
+			this.owner = owner;
+			this.group = group;
 		this.length = size;
 		this.lastModified = lastModified;
 	}
 	
+	/**
+	 * @deprecated
+	 * @param rslaves
+	 * @param path
+	 * @param owner
+	 * @param size
+	 * @param lastModified
+	 * @param checkSum
+	 */
 	public StaticRemoteFile(Collection rslaves, String path, User owner, long size, long lastModified, long checkSum) {
-		this(rslaves, path, owner, size, lastModified);
+		this(rslaves, path, owner.getUsername(), owner.getGroup(), size, lastModified);
+		this.checkSum = checkSum;
+	}
+
+	public StaticRemoteFile(Collection rslaves, String path, String owner, String group, long size, long lastModified, long checkSum) {
+		this(rslaves, path, owner, group, size, lastModified);
 		this.checkSum = checkSum;
 	}
 	

@@ -94,4 +94,12 @@ public class DirectoryRemoteFile extends RemoteFile {
 	public long lastModified() {
 		return this.lastModified;
 	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFile#hasFile(java.lang.String)
+	 * we never have any files, so always returns false
+	 */
+	public boolean hasFile(String filename) {
+		return false;
+	}
 }

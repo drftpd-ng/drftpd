@@ -15,7 +15,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
  * To change the template for this generated type comment go to
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
-public class DirectoryFtpEvent extends FtpEvent {
+public class DirectoryFtpEvent extends UserEvent {
 	private LinkedRemoteFile directory;
 	
 	public DirectoryFtpEvent(User user, String command, LinkedRemoteFile directory) {
@@ -23,9 +23,7 @@ public class DirectoryFtpEvent extends FtpEvent {
 	}
 	
 	public DirectoryFtpEvent(User user, String command, LinkedRemoteFile directory, long time) {
-		this.user = user;
-		this.request = command;
-		this.time = time;
+		super(user, command, time);
 		this.directory = directory;
 	}
 	

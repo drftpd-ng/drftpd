@@ -1,3 +1,4 @@
 Aug 05 2002 - First file uploaded to a slave running in the same JVM.
 May 2003 - Resumed development of drftpd
 Aug 03 2003 - Started work on racescript using martyr irc framework
+Aug 06 2003 - Ported mogio to win32 so that drftpd can run on windows.

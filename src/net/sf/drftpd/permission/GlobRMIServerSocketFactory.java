@@ -14,13 +14,13 @@ import java.util.Collection;
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-public class GlobRMISocketFactory implements RMIServerSocketFactory {
+public class GlobRMIServerSocketFactory implements RMIServerSocketFactory {
 	private Collection rslaves;
 	
 	/**
 	 * Constructor for GlobRMIServerSocketFactory.
 	 */
-	public GlobRMISocketFactory(Collection rslaves) {
+	public GlobRMIServerSocketFactory(Collection rslaves) {
 		super();
 		this.rslaves = rslaves;
 	}

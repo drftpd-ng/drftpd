@@ -1,6 +1,5 @@
 package net.sf.drftpd.master.usermanager;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -160,18 +159,18 @@ public abstract class AbstractUser extends User {
 		return (String)groups.get(0);
 	}
 
-	public void updateCredits(long credits) throws IOException {
+	public void updateCredits(long credits) {
 		this.credits += credits;
 	}
 	
-	public void updateUploadedBytes(long bytes) throws IOException {
+	public void updateUploadedBytes(long bytes) {
 		this.uploadedBytes += bytes;
 		this.uploadedBytesDay += bytes;
 		this.uploadedBytesWeek += bytes;
 		this.uploadedBytesMonth += bytes;
 	}
 	
-	public void updateDownloadedBytes(long bytes) throws IOException {
+	public void updateDownloadedBytes(long bytes) {
 		this.downloadedBytes += bytes;
 		this.downloadedBytesDay += bytes;
 		this.downloadedBytesWeek += bytes;
@@ -910,6 +909,7 @@ public abstract class AbstractUser extends User {
 	 */
 	public void setUploadedFilesWeek(int uploadedFilesWeek) {
 		this.uploadedFilesWeek = uploadedFilesWeek;
+		update();
 	}
 
 	/**
@@ -918,6 +918,7 @@ public abstract class AbstractUser extends User {
 	 */
 	public void setUploadedSeconds(int uploadedSeconds) {
 		this.uploadedSeconds = uploadedSeconds;
+		update();
 	}
 
 	/**
@@ -926,6 +927,7 @@ public abstract class AbstractUser extends User {
 	 */
 	public void setUploadedSecondsDay(int uploadedSecondsDay) {
 		this.uploadedSecondsDay = uploadedSecondsDay;
+		update();
 	}
 
 	/**
@@ -934,6 +936,7 @@ public abstract class AbstractUser extends User {
 	 */
 	public void setUploadedSecondsMonth(int uploadedSecondsMonth) {
 		this.uploadedSecondsMonth = uploadedSecondsMonth;
+		update();
 	}
 
 	/**
@@ -942,6 +945,7 @@ public abstract class AbstractUser extends User {
 	 */
 	public void setUploadedSecondsWeek(int uploadedSecondsWeek) {
 		this.uploadedSecondsWeek = uploadedSecondsWeek;
+		update();
 	}
 
 	/**
@@ -950,25 +954,30 @@ public abstract class AbstractUser extends User {
 	 */
 	public void setLogins(int logins) {
 		this.logins = logins;
+		update();
 	}
 
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.usermanager.User#setLastNuked(long)
 	 */
 	public void setLastNuked(long lastNuked) {
-		this.lastNuked = lastNuked;		
+		this.lastNuked = lastNuked;
+		update();
 	}
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.usermanager.User#updateTimesNuked(int)
 	 */
+	public abstract void update();
 	public void updateTimesNuked(int timesNuked) {
 		this.timesNuked += timesNuked;
+		update();
 	}
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.usermanager.User#updateNukedBytes(long)
 	 */
 	public void updateNukedBytes(long bytes) {
 		this.nukedBytes += bytes;
+		update();
 	}
 
 }

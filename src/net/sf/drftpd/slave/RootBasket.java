@@ -43,7 +43,7 @@ public class RootBasket {
 			Object o = iter.next();
 			if(!(o instanceof File)) throw new ClassCastException(o.getClass().getName()+" is not java.io.File");
 			File root = (File) o;
-
+			if(!root.exists()) root.mkdirs();
 			if(!root.exists()) throw new FileNotFoundException("Invalid root: "+root);
 			for (Iterator iterator = roots.iterator(); iterator.hasNext();) {
 				File root2 = (File) iterator.next();

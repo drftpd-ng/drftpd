@@ -13,7 +13,7 @@ extern "C" {
  * Signature: ()Lse/mog/io/FileSystem;
  */
 JNIEXPORT jobject JNICALL Java_se_mog_io_FileSystem_getFileSystem
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 #ifdef __cplusplus
 }

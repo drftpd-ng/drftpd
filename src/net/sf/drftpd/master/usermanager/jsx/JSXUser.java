@@ -12,6 +12,7 @@ import java.io.IOException;
 
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.master.usermanager.AbstractUser;
+import net.sf.drftpd.master.usermanager.UserFileException;
 import JSX.ObjOut;
 
 /**
@@ -46,7 +47,7 @@ public class JSXUser extends AbstractUser {
 	 * @see net.sf.drftpd.master.usermanager.AbstractUser#rename(java.lang.String)
 	 */
 	public void rename(String username)
-		throws ObjectExistsException, IOException {
+		throws ObjectExistsException, UserFileException {
 		usermanager.rename(this, username); // throws ObjectExistsException
 		usermanager.getUserFile(this.getUsername()).delete();
 		this.username = username;
@@ -56,15 +57,19 @@ public class JSXUser extends AbstractUser {
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.usermanager.User#commit()
 	 */
-	public void commit() throws IOException {
+	public void commit() throws UserFileException {
 		if (this.purged)
 			return;
 
+		try {
 		ObjOut out =
 			new ObjOut(
 				new FileWriter(usermanager.getUserFile(this.getUsername())));
 		out.writeObject(this);
 		out.close();
+		} catch(IOException ex) {
+			throw new UserFileException("Error writing userfile for "+this.getUsername()+": "+ex.getMessage());
+		}
 	}
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.usermanager.User#purge()
@@ -80,6 +85,13 @@ public class JSXUser extends AbstractUser {
 	 */
 	protected void finalize() throws Throwable {
 		this.commit();
+	}
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.master.usermanager.AbstractUser#update()
+	 */
+	public void update() {
+		//an update was made, but commit() should be called from all places so we don't need to do anything.
+		//if we do, make sure it's implemented in all set and update methods in AbstractUser
 	}
 
 }

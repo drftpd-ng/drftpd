@@ -16,7 +16,7 @@ public abstract class UserManager {
 	 * Constrcutor
 	 */
 
-	public abstract User create(String username) throws IOException;
+	public abstract User create(String username) throws UserFileException;
 	
 	private Hashtable users = new Hashtable();
 	/**
@@ -37,5 +37,6 @@ public abstract class UserManager {
 	 * @param name user name
 	 */
 	public abstract boolean exists(String name);
+	public abstract void saveAll() throws UserFileException;
 
 }

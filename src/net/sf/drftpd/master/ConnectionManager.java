@@ -10,7 +10,6 @@ import java.net.Socket;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -24,24 +23,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.sf.drftpd.FatalException;
+import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.event.GlftpdLog;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.master.queues.NukeLog;
 import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.master.usermanager.UserManager;
-import net.sf.drftpd.permission.GlobRMISocketFactory;
+import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.StaticRemoteFile;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveImpl;
 
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
-
-import se.mog.io.File;
 
 public class ConnectionManager {
 	public static final int idleTimeout = 600;
@@ -51,23 +48,27 @@ public class ConnectionManager {
 	private SlaveManagerImpl slavemanager;
 	private Timer timer;
 
+	private FtpConfig config;
+
 	private static Logger logger =
 		Logger.getLogger(ConnectionManager.class.getName());
 	static {
 		logger.setLevel(Level.FINEST);
 	}
 
+	protected void dispatchFtpEvent(Event event) {
+		for (Iterator iter = ftpListeners.iterator(); iter.hasNext();) {
+			FtpListener handler = (FtpListener) iter.next();
+			handler.actionPerformed(event);
+		}
+	}
+
 	public ConnectionManager(Properties cfg) {
-		
+		this.config = new FtpConfig(cfg);
 		
 		/** END: load XML file database **/
 		
 		nukelog = new NukeLog();
-		try {
-			addFtpListener(new GlftpdLog(new File("glftpd.log")));
-		} catch (IOException e1) {
-			logger.log(Level.SEVERE, "Error writing to glftpd.log", e1);
-		}
 		
 		try {
 			Document doc =
@@ -82,9 +83,7 @@ public class ConnectionManager {
 				long time = Long.parseLong(nukeElement.getChildText("time"));
 				int multiplier = Integer.parseInt(nukeElement.getChildText("multiplier"));
 				String reason = nukeElement.getChildText("reason");
-
-				StaticRemoteFile directoryFile = new StaticRemoteFile(Collections.EMPTY_LIST, directory, null, 0, time);
-
+				
 				Map nukees = new Hashtable();
 				List nukeesElement = nukeElement.getChild("nukees").getChildren("nukee");
 				for (Iterator iterator = nukeesElement.iterator();
@@ -96,7 +95,7 @@ public class ConnectionManager {
 					nukees.put(nukeeUsername, nukeeAmount);
 				}
 				
-				nukelog.add(new NukeEvent(user, command, directoryFile.getPath(), time, multiplier, reason, nukees));
+				nukelog.add(new NukeEvent(user, command, directory, time, multiplier, reason, nukees));
 			}
 		} catch(FileNotFoundException ex) {
 			logger.log(Level.FINE, "Couldn't open nukelog.xml - will create it later", ex);
@@ -106,13 +105,13 @@ public class ConnectionManager {
 				"Error loading nukelog from nukelog.xml",
 				ex);
 		}
-		Collection rslaves = SlaveManagerImpl.loadRSlaves();
-		GlobRMISocketFactory ssf = new GlobRMISocketFactory(rslaves);
+		List rslaves = SlaveManagerImpl.loadRSlaves();
+		GlobRMIServerSocketFactory ssf = new GlobRMIServerSocketFactory(rslaves);
 		/** register slavemanager **/
 		try {
 			slavemanager =
 				new SlaveManagerImpl(
-					cfg, rslaves, ssf);
+					cfg, rslaves, ssf, this);
 		} catch (Throwable e) {
 			throw new FatalException(e);
 		}
@@ -162,6 +161,11 @@ public class ConnectionManager {
 		TimerTask timerSave = new TimerTask() {
 			public void run() {
 				slavemanager.saveFilesXML();
+				try {
+					getUsermanager().saveAll();
+				} catch (UserFileException e) {
+					logger.log(Level.SEVERE, "Error saving all users", e);
+				}
 			}
 		};
 		//run every 5 minutes
@@ -313,4 +317,10 @@ public class ConnectionManager {
 		return usermanager;
 	}
 
+	/**
+	 * @return
+	 */
+	public FtpConfig getConfig() {
+		return config;
+	}
 }

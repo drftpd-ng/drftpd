@@ -13,12 +13,11 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.sf.drftpd.event.FtpEvent;
-import net.sf.drftpd.event.FtpListener;
+import net.sf.drftpd.event.Event;
+import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.Transfer;
@@ -37,11 +36,11 @@ public class BaseFtpConnection implements Runnable {
 
 	java.util.List ftpListeners;
 
-	protected void dispatchFtpEvent(FtpEvent event) {
-		for (Iterator iter = ftpListeners.iterator(); iter.hasNext();) {
-			FtpListener handler = (FtpListener) iter.next();
-			handler.actionPerformed(event);
-		}
+	/**
+	 * @deprecated use getConnectionManager().dispatchFtpEvent()
+	 */
+	protected void dispatchFtpEvent(Event event) {
+		connManager.dispatchFtpEvent(event);
 	}
 
 	protected final static Class[] METHOD_INPUT_SIG =
@@ -218,7 +217,7 @@ public class BaseFtpConnection implements Runnable {
 				logger.log(Level.WARNING, "Exception closing stream", ex2);
 			}
 			if (isAuthenticated())
-				dispatchFtpEvent(new FtpEvent(getUser(), "LOGOUT"));
+				dispatchFtpEvent(new UserEvent(getUser(), "LOGOUT"));
 			connManager.remove(this);
 		}
 	}

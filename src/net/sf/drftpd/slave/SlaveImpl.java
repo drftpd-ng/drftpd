@@ -11,6 +11,7 @@ import java.net.InetAddress;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.rmi.server.Unreferenced;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
@@ -34,7 +35,9 @@ import se.mog.io.File;
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
-public class SlaveImpl extends UnicastRemoteObject implements Slave {
+public class SlaveImpl
+	extends UnicastRemoteObject
+	implements Slave, Unreferenced {
 	private Vector transfers = new Vector();
 	private static Logger logger = Logger.getLogger(SlaveImpl.class.getName());
 	static {
@@ -45,17 +48,13 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	SlaveManager slavemanager;
 	//private String root;
 	private RootBasket roots;
+	private String slavemanagerurl;
+	private String name;
 
 	public SlaveImpl(Properties cfg) throws RemoteException {
 		super();
-		/*
-		StringTokenizer st =
-			new StringTokenizer(cfg.getProperty("slave.roots"), ",;");
-		Vector rootCollection = new Vector();
-		while (st.hasMoreTokens()) {
-			rootCollection.add(st.nextToken());
-		}
-		*/
+		this.slavemanagerurl = cfg.getProperty("slavemanager.url");
+		this.name = cfg.getProperty("slave.name");
 
 		try {
 			roots = new RootBasket(cfg.getProperty("slave.roots"));
@@ -64,8 +63,34 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			System.exit(0);
 			return;
 		}
+		register();
+		System.gc();
 	}
 
+	public void register() {
+		while (true) {
+			try {
+				SlaveManager manager;
+				manager = (SlaveManager) Naming.lookup(slavemanagerurl);
+
+				LinkedRemoteFile slaveroot =
+					SlaveImpl.getDefaultRoot(this.roots);
+
+				manager.addSlave(this.name, this, slaveroot);
+				return;
+			} catch (Throwable t) {
+				
+				t.printStackTrace();
+				System.out.println(
+					"Failed to register slave, will retry in 30 seconds");
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 	public static void main(String args[]) {
 		try {
 
@@ -79,19 +104,6 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 				return;
 			}
 
-			SlaveManager manager;
-			try {
-				manager =
-					(SlaveManager) Naming.lookup(
-						cfg.getProperty("slavemanager.url"));
-			} catch (Throwable ex) {
-				ex.printStackTrace();
-				System.out.println(
-					"Could not lookup slavemanager.url, this is a critical task, exiting.");
-				System.exit(0);
-				return;
-			}
-
 			Slave slave;
 			try {
 				slave = new SlaveImpl(cfg);
@@ -101,30 +113,13 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 				return;
 			}
 
-			try {
-				LinkedRemoteFile slaveroot =
-					SlaveImpl.getDefaultRoot(cfg.getProperty("slave.roots"));
-
-				System.out.println("manager.addSlave() root: " + slaveroot);
-				manager.addSlave(
-					cfg.getProperty("slave.name"),
-					slave,
-					slaveroot);
-			} catch (RemoteException ex) {
-				ex.printStackTrace();
-				System.exit(0);
-				return;
-			} catch (IOException ex) {
-				ex.printStackTrace();
-				return;
-			}
 		} catch (Throwable e) {
 			e.printStackTrace();
 			System.exit(0);
 			return;
 		}
 	}
-	
+
 	public static LinkedRemoteFile getDefaultRoot(String rootString)
 		throws IOException {
 		return getDefaultRoot(new RootBasket(rootString));
@@ -138,7 +133,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		throws IOException {
 
 		LinkedRemoteFile linkedroot =
-			new LinkedRemoteFile(new FileRemoteFile(rootBasket));
+			new LinkedRemoteFile(new FileRemoteFile(rootBasket), null);
 
 		return linkedroot;
 	}
@@ -149,11 +144,13 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 		for (Iterator i = transfers.iterator(); i.hasNext();) {
 			TransferImpl transfer = (TransferImpl) i.next();
-			System.out.println("transfer: "+transfer);
-			if (transfer.getDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+			if (transfer.getDirection()
+				== Transfer.TRANSFER_RECEIVING_UPLOAD) {
 				throughputUp += transfer.getTransferSpeed();
 				transfersUp += 1;
-			} else if(transfer.getDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+			} else if (
+				transfer.getDirection()
+					== Transfer.TRANSFER_SENDING_DOWNLOAD) {
 				throughputDown += transfer.getTransferSpeed();
 				transfersDown += 1;
 			} else {
@@ -345,5 +342,13 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			if (!file.delete())
 				throw new PermissionDeniedException("Cannot delete " + path);
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see java.rmi.server.Unreferenced#unreferenced()
+	 */
+	public void unreferenced() {
+		register();
+		System.gc();
 	}
 }

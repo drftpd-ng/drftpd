@@ -21,4 +21,8 @@
     <name>gud8</name>
     <mask>*@*.016-66-73746f25.cust.bredbandsbolaget.se</mask>
   </slave>
+  <slave>
+    <name>strider</name>
+    <mask>*@213.132.111.191</mask>
+  </slave>
 </slaves>

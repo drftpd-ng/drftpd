@@ -57,6 +57,8 @@
       <include name="net/sf/drftpd/master/RemoteSlave.class" />
       <include name="net/sf/drftpd/master/SlaveManager.class" />
       <include name="net/sf/drftpd/master/SlaveManagerImpl_Stub.class" />
+      <!-- until we have lightweight LinkedRemoteFile -->
+      <include name="net/sf/drftpd/master/*" />
     </jar>
     
     <zip destfile="slave.zip" basedir=".">

@@ -8,6 +8,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.sf.drftpd.*;
+import net.sf.drftpd.event.SlaveEvent;
+import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
 
@@ -105,6 +107,7 @@ public class RemoteSlave implements Serializable {
 			return false;
 		}
 		System.out.println(". Fatal exception, removing");
+		manager.getConnectionManager().dispatchFtpEvent(new UserEvent(null, "DELSLAVE"));
 		//manager.getRoot().unmerge(this);
 		setSlave(null);
 		return true;
@@ -168,6 +171,9 @@ public class RemoteSlave implements Serializable {
 	 * @param slave
 	 */
 	public void setSlave(Slave slave) {
+		if(slave == null) {
+			manager.getConnectionManager().dispatchFtpEvent(new SlaveEvent("DELSLAVE", this));
+		}
 		this.slave = slave;
 	}
 
@@ -177,5 +183,23 @@ public class RemoteSlave implements Serializable {
 	public void setMasks(Collection collection) {
 		masks = collection;
 	}
+	private long lastUploadReceiving=0;
+	public long getLastUploadReceiving() {
+		return this.lastUploadReceiving;
+	}
+	public void setLastUploadReceiving(long lastUploadReceiving) {
+		this.lastUploadReceiving = lastUploadReceiving;
+	}
 
+	private long lastDownloadSending=0;
+	public long getLastDownloadSending() {
+		return this.lastDownloadSending;
+	}
+	public void setLastDownloadSending(long lastDownloadSending) {
+		this.lastDownloadSending = lastDownloadSending;
+	}
+	
+	public long getLastTransfer() {
+		return Math.max(getLastDownloadSending(), getLastUploadReceiving());
+	}
 }

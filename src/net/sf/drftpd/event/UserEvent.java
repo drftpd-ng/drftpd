@@ -14,30 +14,16 @@ import net.sf.drftpd.master.usermanager.User;
  * To change the template for this generated type comment go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-public class FtpEvent {
+public class UserEvent extends Event {
 	User user;
-	String request;
-	long time;
-
-	public FtpEvent(User user, String command) {
+	public UserEvent(User user, String command) {
 		this(user, command, System.currentTimeMillis());
 	}
-	public FtpEvent(User user, String command, long time) {
+	public UserEvent(User user, String command, long time) {
+		super(command, time);
 		this.user = user;
-		this.request = command;
-		this.time = time;
 	}
 
-	/**
-	 * 
-	 */
-	public FtpEvent() {
-		super();
-	}
-
-	public String getCommand() {
-		return request;
-	}
 	/**
 	 * @return
 	 */
@@ -45,13 +31,6 @@ public class FtpEvent {
 		return user;
 	}
 
-	/**
-	 * @return
-	 */
-	public long getTime() {
-		return time;
-	}
-	
 	public String toString() {
 		return getClass().getName()+"[user="+getUser()+",cmd="+getCommand()+"]";
 	}

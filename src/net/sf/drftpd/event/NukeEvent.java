@@ -19,7 +19,7 @@ import org.jdom.Element;
  * To change the template for this generated type comment go to
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
-public class NukeEvent extends FtpEvent {
+public class NukeEvent extends UserEvent {
 
 	public NukeEvent(User user, String command, String directory, int multiplier, String reason, Map nukees) {
 		this(user, command, directory, System.currentTimeMillis(), multiplier, reason, nukees);

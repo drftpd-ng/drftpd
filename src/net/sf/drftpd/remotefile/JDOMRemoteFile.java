@@ -65,9 +65,7 @@ public class JDOMRemoteFile extends RemoteFile {
 		this.group = element.getChild("group").getText();
 		this.lastModified =
 			Long.parseLong(element.getChild("lastModified").getText());
-		//TODO allslaves == null
-		if (allSlaves == null)
-			throw new IllegalArgumentException("allslaves can't be null");
+
 		this.slaves = new ArrayList();
 		for (Iterator iter =
 			element.getChild("slaves").getChildren("slave").iterator();
@@ -171,5 +169,15 @@ public class JDOMRemoteFile extends RemoteFile {
 	 */
 	public long lastModified() {
 		return this.lastModified;
+	}
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFile#hasFile(java.lang.String)
+	 */
+	public boolean hasFile(String filename) {
+		for (Iterator iter = files.iterator(); iter.hasNext();) {
+			JDOMRemoteFile file = (JDOMRemoteFile) iter.next();
+			if(file.getName().equals(filename)) return true;
+		}
+		return false;
 	}
 }

@@ -146,17 +146,12 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 
 	public int getTransferSpeed() {
 		long elapsed = System.currentTimeMillis() - started;
-		System.out.println("transfered: "+this.transfered);
-		System.out.println("elapsed: "+elapsed+"ms");
 		if(this.transfered == 0) {
-			System.out.println("!!! TRANSFERED WAS ZERO");
 			return 0;
 		}
 		if(elapsed == 0) {
-			System.out.println("!!! ELAPSED WAS ZERO");
 			return 0;
 		}
-		System.out.println("transferspeed: "+(this.transfered / ((float)elapsed / (float)1000)));
 		return (int)
 		(this.transfered / ((float)elapsed / (float)1000));
 	}

@@ -93,6 +93,8 @@ public abstract class RemoteFile {
 	public abstract long length();
 			
 	public abstract RemoteFile[] listFiles();
+	//public abstract boolean hasFile(String filename);
+	
 	/**
 	 * Sets the checkSum.
 	 * @param checkSum The checkSum to set

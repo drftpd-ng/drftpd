@@ -1,9 +1,9 @@
 /*
- * Created on 2003-aug-03
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
+* Created on 2003-aug-03
+*
+* To change the template for this generated file go to
+* Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+*/
 package net.sf.drftpd.event.irc;
 
 import java.io.FileNotFoundException;
@@ -22,10 +22,13 @@ import java.util.logging.Logger;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.event.DirectoryFtpEvent;
-import net.sf.drftpd.event.FtpEvent;
+import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
+import net.sf.drftpd.event.SlaveEvent;
+import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
@@ -33,7 +36,6 @@ import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.SlaveStatus;
-
 import f00f.net.irc.martyr.AutoJoin;
 import f00f.net.irc.martyr.AutoReconnect;
 import f00f.net.irc.martyr.AutoRegister;
@@ -75,8 +77,8 @@ public class IRCListener implements FtpListener {
 	 */
 	public IRCListener(ConnectionManager cm, Properties cfg)
 		throws UnknownHostException, IOException {
-		
-		Debug.setDebugLevel(Debug.NORMAL);
+
+		Debug.setDebugLevel(Debug.FAULT);
 		_cm = cm;
 
 		_server = cfg.getProperty("irc.server");
@@ -90,7 +92,11 @@ public class IRCListener implements FtpListener {
 		_ircConnection = new IRCConnection(_clientState);
 
 		_autoReconnect = new AutoReconnect(_ircConnection);
-		new AutoRegister(_ircConnection, cfg.getProperty("irc.nick"), cfg.getProperty("irc.user"), cfg.getProperty("irc.name"));
+		new AutoRegister(
+			_ircConnection,
+			cfg.getProperty("irc.nick"),
+			cfg.getProperty("irc.user"),
+			cfg.getProperty("irc.name"));
 		new AutoJoin(_ircConnection, _channelName, _key);
 		new AutoResponder(_ircConnection);
 		_ircConnection.addCommandObserver(new Observer() {
@@ -126,7 +132,9 @@ public class IRCListener implements FtpListener {
 						_ircConnection.sendCommand(
 							new MessageCommand(
 								_channelName,
-								"[conns total: "+total+" idle: "
+								"[conns total: "
+									+ total
+									+ " idle: "
 									+ idlers
 									+ "] [xfers total: "
 									+ status.getTransfers()
@@ -140,35 +148,50 @@ public class IRCListener implements FtpListener {
 									+ status.getTransfersSending()
 									+ " "
 									+ status.getThroughputSending()
-									+ "b/s]  [space "+status.getDiskSpaceAvailable()+"/"+status.getDiskSpaceCapacity()+"b]"));
-					} else if(message.equals("!slaves")) {
-						for (Iterator iter = _cm.getSlavemanager().getSlaves().iterator();
+									+ "b/s]  [space "
+									+ status.getDiskSpaceAvailable()
+									+ "/"
+									+ status.getDiskSpaceCapacity()
+									+ "b]"));
+					} else if (message.equals("!slaves")) {
+						for (Iterator iter =
+							_cm.getSlavemanager().getSlaves().iterator();
 							iter.hasNext();
 							) {
 							RemoteSlave rslave = (RemoteSlave) iter.next();
 							String statusString;
 							try {
-								SlaveStatus status = rslave.getSlave().getSlaveStatus();
-								statusString = "[xfers total: "
-									+ status.getTransfers()
-									+ " "
-									+ status.getThroughput()
-									+ "b/s] [xfers up "
-									+ status.getTransfersReceiving()
-									+ " "
-									+ status.getThroughputReceiving()
-									+ "b/s] [xfers down "
-									+ status.getTransfersSending()
-									+ " "
-									+ status.getThroughputSending()
-									+ "b/s] [space "+status.getDiskSpaceAvailable()+"/"+status.getDiskSpaceCapacity()+"b]";
+								SlaveStatus status =
+									rslave.getSlave().getSlaveStatus();
+								statusString =
+									"[xfers total: "
+										+ status.getTransfers()
+										+ " "
+										+ status.getThroughput()
+										+ "b/s] [xfers up "
+										+ status.getTransfersReceiving()
+										+ " "
+										+ status.getThroughputReceiving()
+										+ "b/s] [xfers down "
+										+ status.getTransfersSending()
+										+ " "
+										+ status.getThroughputSending()
+										+ "b/s] [space "
+										+ status.getDiskSpaceAvailable()
+										+ "/"
+										+ status.getDiskSpaceCapacity()
+										+ "b]";
 							} catch (RemoteException e) {
 								rslave.handleRemoteException(e);
 								statusString = "offline";
 							} catch (NoAvailableSlaveException e) {
 								statusString = "offline";
 							}
-							say("[slaves] "+rslave.getName()+ " "+statusString);
+							say(
+								"[slaves] "
+									+ rslave.getName()
+									+ " "
+									+ statusString);
 						}
 					}
 				}
@@ -183,25 +206,57 @@ public class IRCListener implements FtpListener {
 	private void say(String message) {
 		_ircConnection.sendCommand(new MessageCommand(_channelName, message));
 	}
-	
+
 	public static String formatUser(User user) {
-		return user.getUsername()+"/"+user.getGroup();
+		return user.getUsername() + "/" + user.getGroup();
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.event.FtpListener#actionPerformed(net.sf.drftpd.event.FtpEvent)
 	 */
-	public void actionPerformed(FtpEvent event) {
-		//_ircConnection.sendCommand(
-		//	new MessageCommand(_channelName, event.toString()));
-		logger.log(Level.INFO, event.getCommand());
-		if(event.getCommand().equals("MKD")) {
-			DirectoryFtpEvent direvent = (DirectoryFtpEvent) event;
-			say("[newdir] "+direvent.getDirectory().getName()+" was created by "+formatUser(direvent.getUser()));
-			
-			
-		} else if(event.getCommand().equals("STOR")) {
-			DirectoryFtpEvent direvent = (DirectoryFtpEvent) event;
+	public void actionPerformed(Event event) {
+		if(event instanceof DirectoryFtpEvent) {
+			actionPerformed((DirectoryFtpEvent)event);
+			return;
+		}
+		if (event instanceof UserEvent) {
+			actionPerformed((UserEvent) event);
+			return;
+		}
+		if (event.getCommand().equals("ADDSLAVE")) {
+			SlaveEvent sevent = (SlaveEvent) event;
+			SlaveStatus status;
+			try {
+				status = sevent.getRSlave().getStatus();
+			} catch (RemoteException e) {
+				sevent.getRSlave().handleRemoteException(e);
+				return;
+			} catch (NoAvailableSlaveException e) {
+				return;
+			}
+			say(
+				"[addslave] "
+					+ sevent.getRSlave().getName()
+					+ " just came online with "
+					+ status.getDiskSpaceAvailable()
+					+ "b of free space and brought "
+					+ status.getDiskSpaceUsed()
+					+ "b of content!");
+		} else if (event.getCommand().equals("DELSLAVE")) {
+			SlaveEvent sevent = (SlaveEvent)event;
+			say("lslave] "+sevent.getRSlave().getName()+" just went offline");
+		}
+	}
+
+	public void actionPerformed(DirectoryFtpEvent direvent) {
+		if (direvent.getCommand().equals("MKD")) {
+			say(
+				"[newdir] "
+					+ direvent.getDirectory().getName()
+					+ " was created by "
+					+ formatUser(direvent.getUser()));
+
+		} else if (direvent.getCommand().equals("STOR")) {
 			LinkedRemoteFile dir;
 			try {
 				dir = direvent.getDirectory().getParentFile();
@@ -210,23 +265,36 @@ public class IRCListener implements FtpListener {
 			}
 			SFVFile sfvfile;
 			try {
-				sfvfile = dir.lookupSFVFile(); // throws IOException, ObjectNotFoundException, NoAvailableSlaveException
+				sfvfile = dir.lookupSFVFile();
+				// throws IOException, ObjectNotFoundException, NoAvailableSlaveException
+			} catch (ObjectNotFoundException ex) {
+				logger.log(
+					Level.INFO,
+					"No sfv file in "
+						+ direvent.getDirectory().getPath()
+						+ ", can't publish race info");
+				return;
 			} catch (Exception e1) {
 				logger.log(Level.SEVERE, "lookupSFVFile failed", e1);
 				return;
 			}
 			int finishedFiles = sfvfile.finishedFiles();
-			
+
 			//TODO ceil halfway
-			int halfway = sfvfile.size()/2;
-			System.out.println("halfway = "+halfway+"/"+sfvfile.size());
-			
-			if(finishedFiles == sfvfile.size()) {
-				say("[complete] "+dir.getName()+" was finished by "+formatUser(direvent.getUser()));
-			} else if(sfvfile.size() >= 4) {
-				if(sfvfile.finishedFiles() == halfway) {
-					say("[halfway] "+dir.getName()+" has reached halfway");
-					for (Iterator iter = topFileUploaders2(sfvfile.getFiles()).iterator();
+			int halfway = sfvfile.size() / 2;
+			System.out.println("halfway = " + halfway + "/" + sfvfile.size());
+
+			if (finishedFiles == sfvfile.size()) {
+				say(
+					"[complete] "
+						+ dir.getName()
+						+ " was finished by "
+						+ formatUser(direvent.getUser()));
+			} else if (sfvfile.size() >= 4) {
+				if (sfvfile.finishedFiles() == halfway) {
+					say("[halfway] " + dir.getName() + " has reached halfway");
+					for (Iterator iter =
+						topFileUploaders2(sfvfile.getFiles()).iterator();
 						iter.hasNext();
 						) {
 						UploaderPosition stat = (UploaderPosition) iter.next();
@@ -239,37 +307,52 @@ public class IRCListener implements FtpListener {
 						} catch (NoSuchUserException e2) {
 							continue;
 						} catch (IOException e2) {
-							logger.log(Level.SEVERE, "Error reading userfile", e2);
+							logger.log(
+								Level.SEVERE,
+								"Error reading userfile",
+								e2);
 							continue;
 						}
-						say(str1+" ["+stat.getFiles()+"f/"+stat.getBytes()+"b]"); 
+						say(
+							str1
+								+ " ["
+								+ stat.getFiles()
+								+ "f/"
+								+ stat.getBytes()
+								+ "b]");
 					}
 				}
 			}
-			
-			
-			
-		} else if(event.getCommand().equals("RMD")) {
-			DirectoryFtpEvent direvent = (DirectoryFtpEvent) event;
-			say("[deldir] "+direvent.getDirectory().getName()+" was deleted by "+formatUser(direvent.getUser()));
+
+		} else if (direvent.getCommand().equals("RMD")) {
+			say(
+				"[deldir] "
+					+ direvent.getDirectory().getName()
+					+ " was deleted by "
+					+ formatUser(direvent.getUser()));
 		}
+
+	}
+	public void actionPerformed(UserEvent event) {
+		//_ircConnection.sendCommand(
+		//	new MessageCommand(_channelName, event.toString()));
 	}
 	public static Collection topFileUploaders2(Collection files) {
 		ArrayList ret = new ArrayList();
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
 			String username = file.getOwner();
-			
+
 			UploaderPosition stat = null;
 			for (Iterator iter2 = ret.iterator(); iter2.hasNext();) {
 				UploaderPosition stat2 = (UploaderPosition) iter2.next();
-				if(stat2.getUsername().equals(username)) {
+				if (stat2.getUsername().equals(username)) {
 					stat = stat2;
 					break;
 				}
 			}
-			if(stat == null) {
-				stat = new UploaderPosition(username, file.length(), 1); 
+			if (stat == null) {
+				stat = new UploaderPosition(username, file.length(), 1);
 			} else {
 				stat.updateBytes(file.length());
 				stat.updateFiles(1);

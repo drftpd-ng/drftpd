@@ -1,6 +1,6 @@
 #!/bin/sh
-#javah -jni -classpath ../../../../classes se.mog.io.FileSystem
-#javah -jni -classpath ../../../../classes se.mog.io.UnixFileSystem
+javah -jni -classpath ../../../../classes se.mog.io.FileSystem
+javah -jni -classpath ../../../../classes se.mog.io.UnixFileSystem
 
 
 gcc -g -fPIC -shared \

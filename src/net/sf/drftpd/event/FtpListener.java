@@ -14,5 +14,5 @@ package net.sf.drftpd.event;
  */
 
 public interface FtpListener {
-	public void actionPerformed(FtpEvent event);
+	public void actionPerformed(Event event);
 }

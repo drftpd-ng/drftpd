@@ -6,7 +6,7 @@
  */
 package net.sf.drftpd.master;
 
-import net.sf.drftpd.master.queues.NukeLog;
+import java.util.Properties;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
@@ -15,6 +15,16 @@ import net.sf.drftpd.master.queues.NukeLog;
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 public class FtpConfig {
-	NukeLog nukelog;
+	public FtpConfig(Properties cfg) {
+		loadConfig(cfg);
+	}
 	
+	private long freespaceMin;
+	public long getFreespaceMin() {
+		return freespaceMin;
+	}
+	
+	public void loadConfig(Properties cfg) {
+		freespaceMin = Long.parseLong(cfg.getProperty("freespace.min"));
+	}
 }
