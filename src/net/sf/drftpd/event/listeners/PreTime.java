@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.ArrayList;
 
-import java.lang.reflect.Array;
+import java.lang.Integer;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
@@ -50,13 +50,15 @@ public class PreTime implements FtpListener {
 		if ( dfe.getCommand().startsWith("MKD") ) {
 			String release[] = dfe.getDirectory().getPath().split("/");
 			String releaseName;
-			if ( isDatedDir(release[1]) )
+			if ( isDatedDir(release[1]) ) {
 				releaseName = release[3];
-			else releaseName = release[2];
+				if ( release.length > 4 ) return;  // CD1 || CD2 type directories
+			}
+			else {
+				releaseName = release[2];
+				if ( release.length > 3 ) return; // CD1 || CD2 type directories
+			}
 			if ( releaseName == null ) return; // DatedDir section created date dir
-//			for ( int j = 0; j<Array.getLength(release); j++) {
-//				System.out.println("release["+j+"] = " + release[j]);
-//			}
 			
 			_irc.getIRCConnection().sendCommand(
 				new MessageCommand(getPreBot(),"!pred " + releaseName));
@@ -147,8 +149,22 @@ public class PreTime implements FtpListener {
 					String msg[] = msgc.getMessage().split(" ");
 					if (msg[0].equals("!preds")) {
 						String releaseName = msg[1];
-						String releaseTime = msg[2];
-						irc.say("-=PRETiME=- " + releaseName + " was pred " + releaseTime + " seconds ago");
+						int releaseTime = Integer.parseInt(msg[2]);
+						int weeks = releaseTime / 604800;
+						releaseTime = releaseTime % 604800;
+						int days = releaseTime / 86400;
+						releaseTime = releaseTime % 86400;
+						int hours = releaseTime / 3600;
+						releaseTime = releaseTime % 3600;
+						int minutes = releaseTime / 60;
+						int seconds = releaseTime % 60;
+						String time = "-=PRETiME=- " + releaseName + " was pred ";
+						if ( weeks != 0 ) time = time + weeks + " weeks ";
+						if ( days != 0 ) time = time + days + " days ";
+						if ( hours != 0 ) time = time + hours + " hours ";
+						if ( minutes != 0 ) time = time + minutes + " minutes ";
+						if ( seconds != 0 ) time = time + seconds + " seconds ";
+						irc.say(time + "ago");
 					}
 				}
 			}
