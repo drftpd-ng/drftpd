@@ -1,3 +1,5 @@
+# this module is only used by the Archive plugin
+
 # use CRC checks after transfers to make sure files arrived correctly
 useCRC=true
 

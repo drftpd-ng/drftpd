@@ -1,4 +1,28 @@
+# Only used if you are using 
+# org.drftpd.slaveselection.filter.SlaveSelectionManager in drftpd.conf
+
+# the slave that is selected will be an available slave and will have more 
+# points(given from the filters) than the other available slaves
+
+# **** Default Config **** (suggested for ultimate bandwidth usage)
+
 1.filter=bandwidth
 1.multiplier=1
 
 2.filter=cycle
+
+# **** Sample Config ****
+
+#Bandwidth (SlaveScore - (multiplier * current bw usage of slave))
+#.filter=bandwidth
+#.multiplier=5
+
+#Cycle (If there is a tie in SlaveScore's, Cycle adds one point to the last used slave(in the tie))
+#.filter=cycle
+
+#MatchDir (Sets appropriate settings from "assign" on transfers inside "path")
+#.filter=matchdir
+#.path=/section/*
+#.assign=slave1+500 slave2-500 slave3+remove
+
+# more to come

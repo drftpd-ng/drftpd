@@ -1,3 +1,6 @@
+# these settings are only used if you use the
+# org.drftpd.sections.conf.SectionManager in drftpd.conf
+
 1.path=/apps
 1.name=APPS
 

@@ -7,7 +7,7 @@ files.offline.enabled=true
 #showing missing files [true/false]
 files.missing.enabled=true
 
-#set the following line to 1 to enable (0 to disable) id3tag info.
+#set the following line to enable/disable id3tag info
 cwd.id3info.enabled=true
 
 #enable race stats [true/false]
