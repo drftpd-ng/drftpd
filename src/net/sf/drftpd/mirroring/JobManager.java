@@ -1,6 +1,5 @@
 package net.sf.drftpd.mirroring;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,15 +18,15 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.6 2004/01/05 00:14:20 mog Exp $
+ * @version $Id: JobManager.java,v 1.7 2004/01/08 02:40:07 zubov Exp $
  */
 public class JobManager implements FtpListener {
+	private static final Logger logger = Logger.getLogger(JobManager.class);
 	private ConnectionManager _cm;
 	private ArrayList _jobList = new ArrayList();
 	private ArrayList _slaveSendingList = new ArrayList();
 	private ArrayList _threadList = new ArrayList();
-	private static final Logger logger = Logger.getLogger(JobManager.class);
-	
+
 	/**
 	 * Keeps track of all jobs and controls them
 	 */
@@ -45,6 +44,9 @@ public class JobManager implements FtpListener {
 				if (tempThread.getRSlave() == slaveEvent.getRSlave()) {
 					tempThread.stopme();
 					_threadList.remove(tempThread);
+					logger.debug(
+						"Stopped slave thread for "
+							+ slaveEvent.getRSlave().getName());
 					break; // only one slave can die at a time
 					// have to break here or else get ConcurrentModificationException
 					// no point in searching for more anyhow
@@ -55,9 +57,11 @@ public class JobManager implements FtpListener {
 			JobManagerThread newThread =
 				new JobManagerThread(slaveEvent.getRSlave(), this);
 			_threadList.add(newThread);
+			logger.debug(
+				"Started slave thread for " + slaveEvent.getRSlave().getName());
 			newThread.start();
 		}
-		logger.info(
+		logger.debug(
 			slaveEvent.getCommand()
 				+ " was issued on "
 				+ slaveEvent.getRSlave().getName());
@@ -71,9 +75,11 @@ public class JobManager implements FtpListener {
 			}
 		}
 		_jobList.add(job);
+		logger.debug(
+			"Added job " + job.getFile().getPath() + " to the jobQueue");
 		Collections.sort(_jobList, new JobComparator());
 	}
-	
+
 	/**
 	 * Gets all jobs.
 	 * @return All jobs.
@@ -97,7 +103,7 @@ public class JobManager implements FtpListener {
 		}
 		return tempList;
 	}
-		
+
 	/**
 	 * Get all jobs where Job#getSource() is source 
 	 * @param source The source of all objects to get.
@@ -127,8 +133,8 @@ public class JobManager implements FtpListener {
 							continue;
 						}
 						if (tempJob.getFile().getAvailableSlaves() == null) {
-							logger.error(
-								"tempJob.getFile().getAvailableSlaves() == null");
+							logger.debug(
+								"tempJob.getFile().getAvailableSlaves() == null, can't transfer the file from nowhere");
 							continue;
 						}
 						if (!tempJob
@@ -141,35 +147,51 @@ public class JobManager implements FtpListener {
 						}
 					}
 				} catch (NoAvailableSlaveException e) {
-					logger.info(
+					logger.debug(
 						"NoAvailableSlaveException for myMirrorJob - "
-							+ slave.getName());
+							+ slave.getName(),
+						e);
 					// can't transfer it, so don't set myMirrorJob
 				}
 				continue;
 			}
 			try {
-				if (tempJob.getDestinationSlaves().contains(slave)
-					&& !tempJob.getFile().getAvailableSlaves().contains(slave)) {
-					logger.info(
-						"tempJob is being returned - " + slave.getName());
-					return tempJob;
-				}
-				else if (tempJob.getFile().getAvailableSlaves().contains(slave)) {
-					tempJob.getFile().getAvailableSlaves().remove(slave);
-					// if it's already there, remove it from the queue
+				if (tempJob.getDestinationSlaves().contains(slave)) {
+					if (!tempJob
+						.getFile()
+						.getAvailableSlaves()
+						.contains(slave)) {
+						logger.debug(
+							"tempJob is being returned - " + slave.getName());
+						return tempJob;
+					}
+					if (tempJob
+						.getFile()
+						.getAvailableSlaves()
+						.contains(slave)) {
+						tempJob.getFile().getAvailableSlaves().remove(slave);
+						logger.debug(
+							"Removing "
+								+ slave.getName()
+								+ " from the job "
+								+ tempJob.getFile().getName());
+						// if it's already there, remove it from the queue
+					}
 				}
 			} catch (NoAvailableSlaveException e) {
 				// continue searching through jobs
-				logger.info(
+				logger.debug(
 					"NoAvailableSlaveException for tempJob - "
-						+ slave.getName());
+						+ slave.getName(),
+					e);
 			}
 		}
-		if (myMirrorJob != null) {
-			myMirrorJob.getDestinationSlaves().add(slave);
-			myMirrorJob.getDestinationSlaves().remove(null);
-		}
+		//if (myMirrorJob != null) {
+		//myMirrorJob.getDestinationSlaves().add(slave);
+		//myMirrorJob.getDestinationSlaves().remove(null);
+		//you can't do this here!, it's not there yet!
+		// what if the transfer fails?
+		//}
 		//logger.info("myMirrorJob is returning - " + slave.getName());
 		return myMirrorJob; // will be null if nothing is found
 	}
@@ -196,7 +218,7 @@ public class JobManager implements FtpListener {
 	public boolean processJob(RemoteSlave slave) {
 		Job temp = getNextJob(slave);
 		if (temp == null) { // nothing to process for this slave
-			//logger.info("Nothing to process for slave " + slave.getName());
+			logger.debug("Nothing to process for slave " + slave.getName());
 			//printJobs();
 			return false;
 		}
@@ -209,22 +231,42 @@ public class JobManager implements FtpListener {
 			try {
 				sourceSlave = temp.getFile().getASlaveForDownload();
 			} catch (NoAvailableSlaveException e) {
+				logger.debug(
+					"Could not send the file "
+						+ temp.getFile()
+						+ " because getASlaveForDownload returned NoAvailableSlaveException",
+					e);
 				return false;
 			}
-			_slaveSendingList.add(sourceSlave);
+			while (true) {
+				synchronized (_slaveSendingList) {
+					if (!_slaveSendingList.contains(sourceSlave))
+						break;
+					_slaveSendingList.add(sourceSlave);
+				}
+				Thread.sleep(20000);
+			}
 			new SlaveTransfer(temp.getFile(), sourceSlave, slave).transfer();
 			_slaveSendingList.remove(sourceSlave);
 			difference = System.currentTimeMillis() - time;
+			logger.debug(
+				"Sent file "
+					+ temp.getFile().getName()
+					+ " to "
+					+ slave.getName()
+					+ " from "
+					+ sourceSlave.getName());
 			temp.addTimeSpent(difference);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			_slaveSendingList.remove(sourceSlave);
-			logger.error(
+			logger.debug(
 				"Error Sending "
 					+ temp.getFile().getName()
 					+ " from "
 					+ sourceSlave.getName()
 					+ " to "
-					+ slave.getName());
+					+ slave.getName(),
+				e);
 			return false;
 		}
 		logger.info(

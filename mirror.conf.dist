@@ -1,5 +1,2 @@
 #total number of each newly stored file that should be on the site
 numberOfMirrors=2
-
-#total number of failed tries before quitting send
-numberOfTries=3

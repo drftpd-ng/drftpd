@@ -9,6 +9,7 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.ConnectionManager;
+import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.AbstractJob;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
@@ -17,15 +18,14 @@ import org.apache.log4j.Logger;
 /**
  * @author zubov
  *
- * @version $Id: Mirror.java,v 1.7 2004/01/03 23:50:53 mog Exp $
+ * @version $Id: Mirror.java,v 1.8 2004/01/08 02:40:07 zubov Exp $
  */
 public class Mirror implements FtpListener {
 
+	private static final Logger logger = Logger.getLogger(Mirror.class);
+
 	private ConnectionManager _cm;
 	private int _numberOfMirrors;
-	private int _numberOfTries;
-
-	private Logger logger = Logger.getLogger(Mirror.class);
 
 	public Mirror() {
 		reload();
@@ -47,17 +47,11 @@ public class Mirror implements FtpListener {
 		ArrayList slaveToMirror = new ArrayList();
 		for (int x = 1; x < _numberOfMirrors; x++) { // already have one copy
 			slaveToMirror.add(null);
-			//			logger.info(
-			//				"Sending file "
-			//					+ dir.getPath()
-			//					+ " to "
-			//					+ destrslave.getName());
 		}
 		//logger.info("Adding " + dir.getPath() + " to the JobList");
 		_cm.getJobManager().addJob(
 			new AbstractJob(dir, slaveToMirror, this, null, 5));
-		//logger.info("Done adding " + dir.getPath() + " to the JobList");
-
+		logger.debug("Done adding " + dir.getPath() + " to the JobList");
 	}
 
 	/* (non-Javadoc)
@@ -74,8 +68,8 @@ public class Mirror implements FtpListener {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+		
 		_numberOfMirrors =
-			Integer.parseInt(props.getProperty("numberOfMirrors"));
-		_numberOfTries = Integer.parseInt(props.getProperty("numberOfTries"));
+			Integer.parseInt(FtpConfig.getProperty(props,"numberOfMirrors"));
 	}
 }

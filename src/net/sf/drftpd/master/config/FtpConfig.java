@@ -29,7 +29,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.28 2004/01/04 01:23:38 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.29 2004/01/08 02:40:07 zubov Exp $
  */
 public class FtpConfig {
 	private static Logger logger = Logger.getLogger(FtpConfig.class);
@@ -41,6 +41,13 @@ public class FtpConfig {
 				new GlobCompiler().compile(st.nextToken()),
 				makeUsers(st)));
 		return arr;
+	}
+	
+	public static String getProperty(Properties p, String name) throws NullPointerException {
+		String result = p.getProperty(name);
+		if ( result == null )
+			throw new NullPointerException("Error getting setting " + name);
+		return result;
 	}
 
 	private static ArrayList makeRatioPermission(

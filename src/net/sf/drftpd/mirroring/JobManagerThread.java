@@ -12,13 +12,14 @@ import net.sf.drftpd.master.RemoteSlave;
 
 /**
  * @author zubov
- * @version $Id: JobManagerThread.java,v 1.4 2004/01/05 00:14:20 mog Exp $
+ * @version $Id: JobManagerThread.java,v 1.5 2004/01/08 02:40:07 zubov Exp $
  */
 public class JobManagerThread extends Thread {
+	private static final Logger logger =
+		Logger.getLogger(JobManagerThread.class);
 	private JobManager _jm;
 
 	private RemoteSlave _rslave;
-	private static final Logger logger = Logger.getLogger(JobManagerThread.class);
 	private boolean stopped = false;
 
 	public JobManagerThread() {
@@ -37,20 +38,20 @@ public class JobManagerThread extends Thread {
 	}
 
 	public void run() {
-		logger.info("JobManagerThread started for " + _rslave.getName());
+		logger.debug("JobManagerThread started for " + _rslave.getName());
 		while (true) {
 			if (stopped) {
-				logger.info(
+				logger.debug(
 					"JobManagerThread stopped for " + _rslave.getName());
 				return;
 			}
 			try {
 				while (_jm.processJob(_rslave));
 			} catch (RuntimeException e1) {
-				logger.info(
+				logger.debug(
 					"Caught RunTimeException in processJob for "
-						+ _rslave.getName());
-				e1.printStackTrace();
+						+ _rslave.getName(),
+					e1);
 			}
 			try {
 				Thread.sleep(60000);
