@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.lang.reflect.Constructor;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.ObjectNotFoundException;
@@ -103,9 +104,9 @@ public class ArchiveCommandHandler implements CommandHandlerFactory, CommandHand
 		SectionInterface section =
 			conn.getConnectionManager().getSectionManager().lookup(
 				lrf.getPath());
-		if (st.hasMoreTokens()) {
+		if (st.hasMoreTokens()) { // load the specific type
 			archiveTypeName = st.nextToken();
-			Class[] classParams = {net.sf.drftpd.event.listeners.Archive.class, SectionInterface.class};
+			Class[] classParams = {net.sf.drftpd.event.listeners.Archive.class, SectionInterface.class, Properties.class};
 			Constructor constructor = null;
 			try {
 				constructor = Class.forName(
@@ -115,7 +116,11 @@ public class ArchiveCommandHandler implements CommandHandlerFactory, CommandHand
 				reply.addComment(conn.jprintf(ArchiveCommandHandler.class, "archive.badarchivetype", env));
 				return reply;
 			}
-			Object[] objectParams = { archive, section };
+			Properties props = new Properties();
+			while(st.hasMoreTokens()) {
+				addConfig(props,st.nextToken(), section);
+			}
+			Object[] objectParams = { archive, section, props };
 			try {
 				archiveType = (ArchiveType) constructor.newInstance(objectParams);
 			} catch (Exception e2) {
@@ -169,6 +174,18 @@ public class ArchiveCommandHandler implements CommandHandlerFactory, CommandHand
 		env.add("archivetypename", archiveTypeName);
 		reply.addComment(conn.jprintf(ArchiveCommandHandler.class, "archive.success", env));
 		return reply;
+	}
+
+	private void addConfig(Properties props, String string, SectionInterface section) {
+		if (string.indexOf('=') == -1)
+			throw new IllegalArgumentException(string + " does not contain an = and is therefore not a property");
+		String[] data = string.split("=");
+		if (data.length != 2) {
+			throw new IllegalArgumentException(string + " is therefore not a property because it has no definite key");
+		}
+		if (props.containsKey(data[0]))
+			throw new IllegalArgumentException(string + " is already contained in the Properties");
+		props.put(section.getName()+ "." + data[0],data[1]);
 	}
 
 	private FtpReply doLISTARCHIVETYPES(BaseFtpConnection conn) {

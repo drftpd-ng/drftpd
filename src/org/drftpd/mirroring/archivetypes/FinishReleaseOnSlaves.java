@@ -40,24 +40,17 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author zubov
- * @version $Id: FinishReleaseOnSlaves.java,v 1.2 2004/05/20 14:09:00 zubov Exp $
+ * @version $Id: FinishReleaseOnSlaves.java,v 1.3 2004/07/04 05:40:57 zubov Exp $
  */
 public class FinishReleaseOnSlaves extends ArchiveType {
 	private static final Logger logger = Logger.getLogger(FinishReleaseOnSlaves.class);
 	private int _numOfSlaves = 1;
 	
-	public FinishReleaseOnSlaves(Archive archive, SectionInterface section) {
-		super(archive,section);
-		Properties props = new Properties();
-		try {
-			props.load(new FileInputStream("conf/archive.conf"));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		try {
-			_numOfSlaves = Integer.parseInt(FtpConfig.getProperty(props,getSection().getName() + ".numOfSlaves"));
-		} catch (NullPointerException e) {
-			_numOfSlaves = 1;
+	public FinishReleaseOnSlaves(Archive archive, SectionInterface section, Properties props) {
+		super(archive, section, props);
+		_numOfSlaves = Integer.parseInt(FtpConfig.getProperty(props,getSection().getName() + ".numOfSlaves"));
+		if (_numOfSlaves < 1) {
+			throw new IllegalArgumentException("numOfSlaves has to be > 0 for section " + section.getName());
 		}
 	}
 
@@ -124,28 +117,6 @@ public class FinishReleaseOnSlaves extends ArchiveType {
 	protected boolean isArchivedDir(LinkedRemoteFileInterface lrf)
 			throws IncompleteDirectoryException, OfflineSlaveException {
 		return isArchivedToXSlaves(lrf,_numOfSlaves);
-	}
-
-	public void waitForSendOfFiles(ArrayList jobQueue) {
-		while (true) {
-			for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
-				Job job = (Job) iter.next();
-				if (job.isDone()) {
-					logger.debug(
-						"File "
-							+ job.getFile().getPath()
-							+ " is done being sent");
-					iter.remove();
-				}
-			}
-			try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-			}
-			if (jobQueue.isEmpty()) {
-				break;
-			}
-		}
 	}
 
 	public String toString() {

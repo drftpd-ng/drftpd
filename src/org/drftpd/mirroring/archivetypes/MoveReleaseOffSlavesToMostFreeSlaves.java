@@ -34,7 +34,7 @@ import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.sections.SectionInterface;
 /**
  * @author zubov
- * @version $Id: MoveReleaseOffSlavesToMostFreeSlaves.java,v 1.1 2004/05/22 15:08:43 zubov Exp $
+ * @version $Id: MoveReleaseOffSlavesToMostFreeSlaves.java,v 1.2 2004/07/04 05:40:57 zubov Exp $
  */
 public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 	private static final Logger logger = Logger
@@ -42,14 +42,8 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 	private HashSet _offOfSlaves;
 	private int _numOfSlaves;
 	public MoveReleaseOffSlavesToMostFreeSlaves(Archive archive,
-			SectionInterface section) {
-		super(archive, section);
-		Properties props = new Properties();
-		try {
-			props.load(new FileInputStream("conf/archive.conf"));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+			SectionInterface section, Properties props) {
+		super(archive, section, props);
 		_offOfSlaves = new HashSet();
 		for (int i = 1;; i++) {
 			String slavename = null;
@@ -72,11 +66,9 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 					"Cannot continue, 0 slaves found to move off MoveReleaseOffSlavesToMostFreeSlaves for for section "
 							+ getSection().getName());
 		}
-		try {
-			_numOfSlaves = Integer.parseInt(FtpConfig.getProperty(props,
-					getSection().getName() + ".numOfSlaves"));
-		} catch (NullPointerException e) {
-			_numOfSlaves = 1;
+		_numOfSlaves = Integer.parseInt(FtpConfig.getProperty(props,getSection().getName() + ".numOfSlaves"));
+		if (_numOfSlaves < 1) {
+			throw new IllegalArgumentException("numOfSlaves has to be > 0 for section " + section.getName());
 		}
 	}
 	public void cleanup(ArrayList jobList) {
@@ -117,27 +109,6 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 			}
 		}
 		return true;
-	}
-	public void waitForSendOfFiles(ArrayList jobQueue) {
-		while (true) {
-			for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
-				Job job = (Job) iter.next();
-				if (job.isDone()) {
-					logger.debug(
-						"File "
-							+ job.getFile().getPath()
-							+ " is done being sent");
-					iter.remove();
-				}
-			}
-			try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-			}
-			if (jobQueue.isEmpty()) {
-				break;
-			}
-		}
 	}
 	public String toString() {
 		return "MoveReleaseOffSlavesToMostFreeSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(getRSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";

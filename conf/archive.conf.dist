@@ -5,16 +5,8 @@
 # amount of time between checking site for releases to archive
 cycleTime=30
 
-# do not archive releases under these sections
-#exclude.1=sectiona
-#exclude.2=sectionb
-
-
 # ArchiveTypes define the definition of "Archived"
 # do not archive releases younger than archiveAfter
-
-# if numOfSlaves is not set for section, it defaults at 1 this only
-# applies to MoveReleaseToMostFreeSlaves and FinishReleaseOnSlaves
 
 #firstsectionname.archiveType=MoveReleaseToMostFreeSlaves
 #firstsectionname.numOfSlaves=1
@@ -34,9 +26,9 @@ cycleTime=30
 #fifthsectionname.numOfSlaves=2
 #fifthsectionname.offOfSlave.1=slave1
 #fifthsectionname.offOfSlave.2=slave2
+#sixthsectionname.archiveType=ConstantMirroring
+#sixthsectionname.numOfSlaves=2
 
-# If section.archiveType is not defined for a section the default
-# will be used, the same holds true for section.archiveAfter
-
-default.archiveType=FinishReleaseOnSlaves
-default.archiveAfter=10080
+# If a section is not defined an archiveType, that section is excluded 
+# from automatic archiving.  You may still manually archive releases 
+# with the "site archive" command

@@ -1,3 +1,10 @@
+2004/7/4 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Slightly refactored ArchiveType's
+* site archive command now takes, Properties parameters
+  try "site archive" for help
+* Implemented ConstantMirroring which will keep X # of copies of files 
+  at all times
+
 2004/7/1 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Implemented SITE GRPREN <oldgroup> <newgroup>
 * Heavily refactored UserManager(s), UserManager is now an abstract class
@@ -11,6 +18,12 @@
 2004/06/29 Morgan Christiansson <drftpd@mog.se>
 * Added ListUtils to "ant slavejar" target.
 
+2004/6/28 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Fixed a minor bug in ArchiveType's where directories without files 
+  could cause a NullPointerException, Thanks to akrog for the report
+* Fixed rename(), it would leave old directories behind, thanks Cy8er
+* Fixed gadmin's being able to give a leech slot when they are not allowed, thanks wikd
+
 2004/06/27 Morgan Christiansson <drftpd@mog.se>
 * Added org.drftpd.plugins.Exec per request of darcangel.
   See http://drftpd.org/modules.php?name=Forums&file=viewtopic&t=49
@@ -21,12 +34,6 @@
 * Added .pass=setgrp iND as example in trial.conf.dist.
 * Actions in trial must now be in lowercase.
 * Made PRE commandhandler set user owner to drftpd on PRE.
-
-2004/6/28 Matthew Zimmerman <zubov@users.sourceforge.net>
-* Fixed a minor bug in ArchiveType's where directories without files 
-  could cause a NullPointerException, Thanks to akrog for the report
-* Fixed rename(), it would leave old directories behind, thanks Cy8er
-* Fixed gadmin's being able to give a leech slot when they are not allowed, thanks wikd
 
 2004/06/09 Morgan Christiansson <drftpd@mog.se>
 * Added hideIps=true setting in drftpd.conf for disabling logging of ips.

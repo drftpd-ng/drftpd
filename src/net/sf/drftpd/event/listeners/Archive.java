@@ -34,7 +34,7 @@ import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.sections.SectionInterface;
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.27 2004/05/20 14:08:59 zubov Exp $
+ * @version $Id: Archive.java,v 1.28 2004/07/04 05:40:56 zubov Exp $
  */
 public class Archive implements FtpListener, Runnable {
 	private Properties _props;
@@ -45,7 +45,6 @@ public class Archive implements FtpListener, Runnable {
 	private HashMap _archiveTypes;
 	private ConnectionManager _cm;
 	private long _cycleTime;
-	private ArrayList _exemptList = new ArrayList();
 	private boolean _isStopped = false;
 	private Thread thread = null;
 	private ArrayList _archiveHandlers;
@@ -62,24 +61,12 @@ public class Archive implements FtpListener, Runnable {
 			return;
 		}
 	}
+
 	/**
-	 * @param lrf
-	 *            Returns true if lrf.getPath() is excluded
-	 */
-	public boolean checkExclude(SectionInterface section) {
-		return _exemptList.contains(section.getName());
-	}
-	/**
-	 * @return the correct ArchiveType for the @section - if the ArchiveType is still being used, it will return null
+	 * @return the correct ArchiveType for the @section - it will return null if that section does not have an archiveType loaded for it
 	 */
 	public ArchiveType getArchiveType(SectionInterface section) {
-		ArchiveType archiveType = (ArchiveType) _archiveTypes.get(section);
-		if (archiveType == null)
-			throw new IllegalStateException(
-					"Could not find an archive type for "
-							+ section.getName()
-							+ ", check you make sure default.archiveType is defined in archive.conf and the section is not excluded");
-		return archiveType;
+		return (ArchiveType) _archiveTypes.get(section);
 	}
 	/**
 	 * Returns the ConnectionManager
@@ -111,29 +98,18 @@ public class Archive implements FtpListener, Runnable {
 		}
 		_cycleTime = 60000 * Long.parseLong(FtpConfig.getProperty(_props,
 				"cycleTime"));
-		_exemptList = new ArrayList();
-		for (int i = 1;; i++) {
-			String path = _props.getProperty("exclude." + i);
-			if (path == null)
-				break;
-			_exemptList.add(path);
-		}
 		_archiveTypes = new HashMap();
-		Class[] classParams = {Archive.class, SectionInterface.class};
+		Class[] classParams = {Archive.class, SectionInterface.class, Properties.class};
 		for (Iterator iter = getConnectionManager().getSectionManager()
 				.getSections().iterator(); iter.hasNext();) {
 			SectionInterface section = (SectionInterface) iter.next();
-			if (checkExclude(section))
-				// don't have to build an archiveType for sections that won't be
-				// archived
-				continue;
 			ArchiveType archiveType = null;
 			String name = null;
 			try {
 				name = FtpConfig.getProperty(_props, section.getName()
 						+ ".archiveType");
 			} catch (NullPointerException e) {
-				name = FtpConfig.getProperty(_props, "default.archiveType");
+				continue;  // excluded, not setup
 			}
 			Constructor constructor = null;
 			try {
@@ -143,7 +119,7 @@ public class Archive implements FtpListener, Runnable {
 			} catch (Exception e1) {
 				throw new RuntimeException("Unable to load ArchiveType for section " + section.getName(), e1);
 			}
-			Object[] objectParams = { this, section };
+			Object[] objectParams = { this, section, _props};
 			try {
 				archiveType = (ArchiveType) constructor.newInstance(objectParams);
 			} catch (Exception e2) {
@@ -169,10 +145,8 @@ public class Archive implements FtpListener, Runnable {
 					.getSectionManager().getSections();
 			for (Iterator iter = sectionsToCheck.iterator(); iter.hasNext();) {
 				SectionInterface section = (SectionInterface) iter.next();
-				if (checkExclude(section))
-					continue;
 				ArchiveType archiveType = getArchiveType(section);
-				if (archiveType.isBusy()) // archiveType was not done with it's
+				if (archiveType == null || archiveType.isBusy()) // archiveType was not done with it's or is not loaded
 					continue;			 // current send, cannot process another
 				ArchiveHandler archiveHandler = new ArchiveHandler(archiveType);
 				archiveHandler.start();

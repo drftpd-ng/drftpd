@@ -34,7 +34,7 @@ import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.sections.SectionInterface;
 /**
  * @author zubov
- * @version $Id: StripeFilesOffSpecificSlaves.java,v 1.7 2004/05/22 15:08:43 zubov Exp $
+ * @version $Id: StripeFilesOffSpecificSlaves.java,v 1.8 2004/07/04 05:40:57 zubov Exp $
  */
 public class StripeFilesOffSpecificSlaves extends ArchiveType {
 	private static final Logger logger = Logger
@@ -42,14 +42,8 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 	private HashSet _destSlaves;
 	private HashSet _offOfSlaves;
 	int _numOfSlaves = 1;
-	public StripeFilesOffSpecificSlaves(Archive archive, SectionInterface section) {
-		super(archive, section);
-		Properties props = new Properties();
-		try {
-			props.load(new FileInputStream("conf/archive.conf"));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+	public StripeFilesOffSpecificSlaves(Archive archive, SectionInterface section, Properties props) {
+		super(archive, section, props);
 		_offOfSlaves = new HashSet();
 		for (int i = 1;; i++) {
 			String slavename = null;
@@ -72,11 +66,9 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 					"Cannot continue, 0 slaves found to move off StripeFilesOffSpecificSlave for for section "
 							+ getSection().getName());
 		}
-		try {
-			_numOfSlaves = Integer.parseInt(FtpConfig.getProperty(props,
-					getSection().getName() + ".numOfSlaves"));
-		} catch (NullPointerException e) {
-			_numOfSlaves = 1;
+		_numOfSlaves = Integer.parseInt(FtpConfig.getProperty(props,getSection().getName() + ".numOfSlaves"));
+		if (_numOfSlaves < 1) {
+			throw new IllegalArgumentException("numOfSlaves has to be > 0 for section " + section.getName());
 		}
 		_destSlaves = new HashSet();
 		for (int i = 1;; i++) {
@@ -151,10 +143,6 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 		return true;
 	}
 	
-	public ArrayList send() {
-		return recursiveSend(getDirectory());
-	}
-
 	private ArrayList recursiveSend(LinkedRemoteFileInterface lrf) {
 		ArrayList jobQueue = new ArrayList();
 		JobManager jm = _parent.getConnectionManager().getJobManager();
@@ -173,25 +161,6 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 		return jobQueue;
 	}
 	
-	public void waitForSendOfFiles(ArrayList jobQueue) {
-		while (true) {
-			for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
-				Job job = (Job) iter.next();
-				if (job.isDone()) {
-					logger.debug("File " + job.getFile().getPath()
-							+ " is done being sent");
-					iter.remove();
-				}
-			}
-			try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-			}
-			if (jobQueue.isEmpty()) {
-				break;
-			}
-		}
-	}
 	public String toString() {
 		return "StripeFilesOffSpecificSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(getRSlaves()) + "]offOfSlaves=[" + outputSlaves(_offOfSlaves) + "]numOfSlaves=[" + _numOfSlaves + "]]";
 	}

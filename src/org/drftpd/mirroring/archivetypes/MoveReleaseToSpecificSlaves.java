@@ -36,7 +36,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
- * @version $Id: MoveReleaseToSpecificSlaves.java,v 1.2 2004/05/20 14:09:00 zubov Exp $
+ * @version $Id: MoveReleaseToSpecificSlaves.java,v 1.3 2004/07/04 05:40:57 zubov Exp $
  */
 public class MoveReleaseToSpecificSlaves extends ArchiveType {
 
@@ -44,21 +44,14 @@ public class MoveReleaseToSpecificSlaves extends ArchiveType {
 	private static final Logger logger = Logger.getLogger(MoveReleaseToSpecificSlaves.class);
 	private int _numOfSlaves;
 	
-	public MoveReleaseToSpecificSlaves(Archive archive, SectionInterface section) {
-		super(archive,section);
-		Properties props = new Properties();
-		try {
-			props.load(new FileInputStream("conf/archive.conf"));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+	public MoveReleaseToSpecificSlaves(Archive archive, SectionInterface section, Properties props) {
+		super(archive,section,props);
 		_destSlaves = new HashSet();
 		for (int i = 1;; i++) {
 			String slavename = null;
 			try {
 				slavename = FtpConfig.getProperty(props, getSection().getName() + ".slavename." + i);
 			} catch (NullPointerException e) {
-				_numOfSlaves = i-1;
 				break; // done
 			}
 			try {
@@ -69,6 +62,10 @@ public class MoveReleaseToSpecificSlaves extends ArchiveType {
 		}
 		if (_destSlaves.isEmpty()) {
 			throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseToSpecificSlave for section " + getSection().getName());
+		}
+		_numOfSlaves = _destSlaves.size();
+		if (_numOfSlaves < 1) {
+			throw new IllegalArgumentException("numOfSlaves has to be > 0 for section " + section.getName());
 		}
 	}
 
@@ -88,27 +85,6 @@ public class MoveReleaseToSpecificSlaves extends ArchiveType {
 		return isArchivedToXSlaves(lrf,_numOfSlaves);
 	}
 	
-	public void waitForSendOfFiles(ArrayList jobQueue) {
-		while (true) {
-			for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
-				Job job = (Job) iter.next();
-				if (job.isDone()) {
-					logger.debug(
-						"File "
-							+ job.getFile().getPath()
-							+ " is done being sent");
-					iter.remove();
-				}
-			}
-			try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-			}
-			if (jobQueue.isEmpty()) {
-				break;
-			}
-		}
-	}
 	public String toString() {
 		return "MoveReleaseToSpecificSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(getRSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
 	}

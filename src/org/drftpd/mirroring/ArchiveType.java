@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -42,7 +41,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
- * @version $Id: ArchiveType.java,v 1.8 2004/06/11 04:03:10 zubov Exp $
+ * @version $Id: ArchiveType.java,v 1.9 2004/07/04 05:40:57 zubov Exp $
  */
 public abstract class ArchiveType {
 	private long _archiveAfter;
@@ -52,10 +51,10 @@ public abstract class ArchiveType {
 	protected SectionInterface _section;
 	private Set _slaveList;
 	
-	public ArchiveType(Archive archive, SectionInterface section) {
+	public ArchiveType(Archive archive, SectionInterface section, Properties p) {
 		_parent = archive;
 		_section = section;
-		setProperties(_parent.getProperties());
+		setProperties(p);
 	}
 	/**
 	 * Once the Jobs in the jobList have been sent, this method is called
@@ -73,9 +72,6 @@ public abstract class ArchiveType {
 	 * If no such directory exists, it returns null
 	 */
 	public final LinkedRemoteFileInterface getOldestNonArchivedDir() {
-		if (_parent.checkExclude(getSection())) {
-			return null;
-		}
 		ArrayList oldDirs = new ArrayList();
 		for (Iterator iter = getSection().getFile().getFiles().iterator();
 			iter.hasNext();
@@ -113,7 +109,7 @@ public abstract class ArchiveType {
 		return oldestDir;
 	}
 	/**
-	 * if the file needs to be archived by this type's definition, this method returns true
+	 * if the directory is archived by this type's definition, this method returns true
 	 */
 	protected abstract boolean isArchivedDir(LinkedRemoteFileInterface lrf) throws IncompleteDirectoryException, OfflineSlaveException;
 
@@ -123,7 +119,7 @@ public abstract class ArchiveType {
 	/**
 	 * Adds relevant Jobs to the JobManager and returns an ArrayList of those Job's
 	 */
-	public ArrayList send() {
+	public final ArrayList send() {
 		return recursiveSend(getDirectory());
 	}
 
@@ -203,13 +199,15 @@ public abstract class ArchiveType {
 		return _section;
 	}
 
+	/**
+	 * Sets standard properties for this ArchiveType
+	 */
 	private void setProperties(Properties properties) {
 		try {
 			_archiveAfter =
 				60000 * Long.parseLong(FtpConfig.getProperty(properties, getSection().getName() + ".archiveAfter"));
 		} catch (NullPointerException e) {
-			_archiveAfter =
-							60000 * Long.parseLong(FtpConfig.getProperty(properties, "default.archiveAfter"));
+			throw new IllegalArgumentException("archiveAfter setting is missing for section " + getSection().getName());
 		}
 	}
 
@@ -221,7 +219,25 @@ public abstract class ArchiveType {
 		_slaveList = slaveList;
 	}
 
-	public abstract void waitForSendOfFiles(ArrayList jobQueue);
+	public final void waitForSendOfFiles(ArrayList jobQueue) {
+		while (true) {
+			for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
+				Job job = (Job) iter.next();
+				if (job.isDone()) {
+					logger.debug("File " + job.getFile().getPath()
+							+ " is done being sent");
+					iter.remove();
+				}
+			}
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+			}
+			if (jobQueue.isEmpty()) {
+				break;
+			}
+		}
+	}
 	
 	public abstract String toString();
 
