@@ -2,7 +2,12 @@
 #include "se_mog_io_FileSystem.h"
 #include "se_mog_io_UnixFileSystem.h"
 
+#ifdef __FreeBSD__
+#include <sys/param.h>
+#include <sys/mount.h>
+#else /* LINUX */
 #include <sys/vfs.h>
+#endif
 
 JNIEXPORT jobject JNICALL Java_se_mog_io_FileSystem_getFileSystem
 (JNIEnv *env, jobject obj) {

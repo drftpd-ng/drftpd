@@ -158,21 +158,7 @@ public class IRCListener implements FtpListener, Observer {
 			new PrintStream(new FileOutputStream("ftp-data/logs/sitebot.log")));
 
 		reload();
-
-		_clientState = new ClientState();
-		_conn = new IRCConnection(_clientState);
-
-		_autoReconnect = new AutoReconnect(_conn);
-		new AutoRegister(
-			_conn,
-			_ircCfg.getProperty("irc.nick"),
-			_ircCfg.getProperty("irc.user"),
-			_ircCfg.getProperty("irc.name"));
-		new AutoJoin(_conn, _channelName, _key);
-		new AutoResponder(_conn);
-		_conn.addCommandObserver(this);
-		logger.info("IRCListener: connecting to " + _server + ":" + _port);
-		_conn.connect(_server, _port);
+		connect();
 	}
 
 	public void actionPerformed(Event event) {
@@ -707,7 +693,36 @@ public class IRCListener implements FtpListener, Observer {
 		_key = _ircCfg.getProperty("irc.key");
 		if (_key.equals(""))
 			_key = null;
+
+		if (_conn != null) {
+			if (!_conn.getClientState().getServer().equals(_server)
+				|| _conn.getClientState().getPort() != _port
+				|| !_conn.getClientState().isOnChannel(_channelName)) {
+				connect();
+			}
+		}
 	}
+	private void connect() throws UnknownHostException, IOException {
+		if (_conn != null) {
+			_autoReconnect.disable();
+			_conn.disconnect();
+		}
+		_clientState = new ClientState();
+		_conn = new IRCConnection(_clientState);
+
+		_autoReconnect = new AutoReconnect(_conn);
+		new AutoRegister(
+			_conn,
+			_ircCfg.getProperty("irc.nick"),
+			_ircCfg.getProperty("irc.user"),
+			_ircCfg.getProperty("irc.name"));
+		new AutoJoin(_conn, _channelName, _key);
+		new AutoResponder(_conn);
+		_conn.addCommandObserver(this);
+		logger.info("IRCListener: connecting to " + _server + ":" + _port);
+		_conn.connect(_server, _port);
+	}
+
 	public void say(String message) {
 		//		if (!_clientState.isOnChannel(_channelName)) {
 		//			logger.warn("Not in "+_channelName+", dropping message");
@@ -784,7 +799,10 @@ public class IRCListener implements FtpListener, Observer {
 								+ user.getUsername());
 						//_conn.sendCommand(
 						//	new InviteCommand(msgc.getSource(), _channelName));
-						getConnectionManager().dispatchFtpEvent(new InviteEvent("INVITE", msgc.getSource().getNick()));
+						getConnectionManager().dispatchFtpEvent(
+							new InviteEvent(
+								"INVITE",
+								msgc.getSource().getNick()));
 					} else {
 						logger.log(
 							Level.WARN,
@@ -828,72 +846,72 @@ public class IRCListener implements FtpListener, Observer {
 					} catch (FormatterException e) {
 						say("[who] FormatterException: " + e.getMessage());
 					}
-//				} else if (msg.startsWith("replic")) {
-//					String args[] =
-//						msg.substring("replic ".length()).split(" ");
-//					// replic <user> <pass> <to-slave> <path>
-//					User user;
-//					try {
-//						user = _cm.getUserManager().getUserByName(args[0]);
-//					} catch (NoSuchUserException e) {
-//						_conn.sendCommand(
-//							new MessageCommand(
-//								msgc.getSource(),
-//								"replic: no such user"));
-//						logger.log(Level.INFO, "No such user", e);
-//						return;
-//					} catch (IOException e) {
-//						_conn.sendCommand(
-//							new MessageCommand(
-//								msgc.getSource(),
-//								"replic: userfile error"));
-//						logger.log(Level.WARN, "", e);
-//						return;
-//					}
-//					if (user.checkPassword(args[1])) {
-//						RemoteSlave rslave;
-//						try {
-//							rslave = _cm.getSlaveManager().getSlave(args[2]);
-//						} catch (ObjectNotFoundException e) {
-//							_conn.sendCommand(
-//								new MessageCommand(
-//									msgc.getSource(),
-//									"replic: No such slave: "
-//										+ e.getMessage()));
-//							return;
-//						}
-//						LinkedRemoteFile path;
-//						try {
-//							path =
-//								_cm.getSlaveManager().getRoot().lookupFile(
-//									args[3]);
-//						} catch (FileNotFoundException e) {
-//							logger.info("", e);
-//							_conn.sendCommand(
-//								new MessageCommand(
-//									msgc.getSource(),
-//									"replic: File not found: "
-//										+ e.getMessage()));
-//							return;
-//						}
-//						try {
-//							path.replicate(rslave);
-//						} catch (NoAvailableSlaveException e) {
-//							_conn.sendCommand(
-//								new MessageCommand(
-//									msgc.getSource(),
-//									"replic: No source slave for "
-//										+ path.getPath()
-//										+ ": "
-//										+ e.getMessage()));
-//						} catch (IOException e) {
-//							_conn.sendCommand(
-//								new MessageCommand(
-//									msgc.getSource(),
-//									"IO Error: " + e.getMessage()));
-//							logger.warn("", e);
-//						}
-//					}
+					//				} else if (msg.startsWith("replic")) {
+					//					String args[] =
+					//						msg.substring("replic ".length()).split(" ");
+					//					// replic <user> <pass> <to-slave> <path>
+					//					User user;
+					//					try {
+					//						user = _cm.getUserManager().getUserByName(args[0]);
+					//					} catch (NoSuchUserException e) {
+					//						_conn.sendCommand(
+					//							new MessageCommand(
+					//								msgc.getSource(),
+					//								"replic: no such user"));
+					//						logger.log(Level.INFO, "No such user", e);
+					//						return;
+					//					} catch (IOException e) {
+					//						_conn.sendCommand(
+					//							new MessageCommand(
+					//								msgc.getSource(),
+					//								"replic: userfile error"));
+					//						logger.log(Level.WARN, "", e);
+					//						return;
+					//					}
+					//					if (user.checkPassword(args[1])) {
+					//						RemoteSlave rslave;
+					//						try {
+					//							rslave = _cm.getSlaveManager().getSlave(args[2]);
+					//						} catch (ObjectNotFoundException e) {
+					//							_conn.sendCommand(
+					//								new MessageCommand(
+					//									msgc.getSource(),
+					//									"replic: No such slave: "
+					//										+ e.getMessage()));
+					//							return;
+					//						}
+					//						LinkedRemoteFile path;
+					//						try {
+					//							path =
+					//								_cm.getSlaveManager().getRoot().lookupFile(
+					//									args[3]);
+					//						} catch (FileNotFoundException e) {
+					//							logger.info("", e);
+					//							_conn.sendCommand(
+					//								new MessageCommand(
+					//									msgc.getSource(),
+					//									"replic: File not found: "
+					//										+ e.getMessage()));
+					//							return;
+					//						}
+					//						try {
+					//							path.replicate(rslave);
+					//						} catch (NoAvailableSlaveException e) {
+					//							_conn.sendCommand(
+					//								new MessageCommand(
+					//									msgc.getSource(),
+					//									"replic: No source slave for "
+					//										+ path.getPath()
+					//										+ ": "
+					//										+ e.getMessage()));
+					//						} catch (IOException e) {
+					//							_conn.sendCommand(
+					//								new MessageCommand(
+					//									msgc.getSource(),
+					//									"IO Error: " + e.getMessage()));
+					//							logger.warn("", e);
+					//						}
+					//					}
 				}
 			}
 			// Don't bother martyr with our exceptions.
