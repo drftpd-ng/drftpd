@@ -4,7 +4,7 @@
  * Created on April 20, 2004, 2:42 PM
  */
 
-package net.sf.drftpd.tcpslave;
+package org.drftpd.slave.socket;
 
 import java.rmi.RemoteException;
 import java.util.Collection;

@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.tcpslave;
+package org.drftpd.slave.socket;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: SocketTransferImpl.java,v 1.2 2004/05/10 02:54:00 mog Exp $
+ * @version $Id: SocketTransferImpl.java,v 1.1 2004/05/20 20:17:24 zombiewoof64 Exp $
  */
 public class SocketTransferImpl implements Transfer {
 

@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.tcpslave;
+package org.drftpd.slave.socket;
 
 import java.io.BufferedReader;
 import java.io.EOFException;
@@ -50,7 +50,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: SocketSlaveImpl.java,v 1.11 2004/05/19 17:06:12 zombiewoof64 Exp $
+ * @version $Id: SocketSlaveImpl.java,v 1.1 2004/05/20 20:17:24 zombiewoof64 Exp $
  */
 public class SocketSlaveImpl extends Thread implements Slave, Unreferenced {
 	private static final Logger logger =

@@ -4,7 +4,7 @@
  * Created on April 28, 2004, 2:03 PM
  */
 
-package net.sf.drftpd.tcpslave;
+package org.drftpd.slave.socket;
 
 import java.io.BufferedReader;
 import java.io.EOFException;

@@ -43,7 +43,7 @@
  * @author rob@iharder.net
  * @version 2.0
  */
-package net.sf.drftpd.tcpslave;
+package org.drftpd.slave.socket;
 
 public class Base64
 {
