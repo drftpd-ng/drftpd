@@ -40,7 +40,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.25 2004/02/11 03:58:37 zubov Exp $
+ * @version $Id: JobManager.java,v 1.26 2004/02/11 22:33:17 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -130,11 +130,11 @@ public class JobManager implements FtpListener {
 		Job jobToReturn = null;
 		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
 			Job tempJob = (Job) iter.next();
+			if (tempJob.getFile().isDeleted() || tempJob.isDone()) {
+				iter.remove();
+				continue;
+			}
 			if (tempJob.getDestinationSlaves().contains(null)) { // mirror job
-				if (tempJob.getFile().isDeleted() || tempJob.isDone()) {
-					iter.remove();
-					continue;
-				}
 				try {
 					if (jobToReturn == null) {
 						if (tempJob.getFile() == null) {
