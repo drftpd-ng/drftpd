@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- $Id: build.xml,v 1.31 2004/02/04 23:52:55 mog Exp $ -->
+<!-- $Id: build.xml,v 1.32 2004/02/05 05:14:36 zubov Exp $ -->
 <project name="drftpd" basedir="." default="compile">
 
   <target name="all" depends="compile"/>
@@ -94,6 +94,7 @@
       <zipfileset  prefix="drftpd-${version}" dir=".">
     	<include name="INSTALL.txt"/>
     	<include name="drftpd.conf.dist"/>
+    	<include name="slave.conf.dist"/>
     	<include name="build.xml"/>
     	<include name="slave.bat"/>
     	<include name="slave.sh"/>
