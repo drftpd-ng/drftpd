@@ -6,7 +6,6 @@ package net.sf.drftpd.mirroring;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,16 +14,14 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
-import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.listeners.Archive;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.slave.Slave;
 
 /**
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.4 2004/01/04 18:53:09 zubov Exp $
+ * @version $Id: ArchiveHandler.java,v 1.5 2004/01/12 03:13:35 zubov Exp $
  */
 public class ArchiveHandler extends Thread {
 
@@ -45,36 +42,36 @@ public class ArchiveHandler extends Thread {
 			job.getFile().deleteOthers(destSlave);
 		}
 	}
-	private void deleteFilesFromSlave(
-		ArrayList jobQueue,
-		RemoteSlave destSlave) {
-		for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
-			Job job = (Job) iter.next();
-			job.getFile().removeSlave(destSlave);
-			Slave slave = null;
-			try {
-				slave = destSlave.getSlave();
-			} catch (NoAvailableSlaveException ex) {
-				logger.info("slave not available for deletion");
-				continue;
-			}
-			try {
-				slave.delete(job.getFile().getName());
-			} catch (RemoteException e1) {
-				logger.info(
-					"Was not able to delete file "
-						+ job.getFile()
-						+ " from slave "
-						+ destSlave.getName());
-			} catch (IOException e1) {
-				logger.fatal(
-					"IOException deleting file on slave " + destSlave.getName(),
-					e1);
-				continue;
-			}
-			iter.remove();
-		}
-	}
+	//	private void deleteFilesFromSlave(
+	//		ArrayList jobQueue,
+	//		RemoteSlave destSlave) {
+	//		for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
+	//			Job job = (Job) iter.next();
+	//			job.getFile().removeSlave(destSlave);
+	//			Slave slave = null;
+	//			try {
+	//				slave = destSlave.getSlave();
+	//			} catch (NoAvailableSlaveException ex) {
+	//				logger.info("slave not available for deletion");
+	//				continue;
+	//			}
+	//			try {
+	//				slave.delete(job.getFile().getName());
+	//			} catch (RemoteException e1) {
+	//				logger.info(
+	//					"Was not able to delete file "
+	//						+ job.getFile()
+	//						+ " from slave "
+	//						+ destSlave.getName());
+	//			} catch (IOException e1) {
+	//				logger.fatal(
+	//					"IOException deleting file on slave " + destSlave.getName(),
+	//					e1);
+	//				continue;
+	//			}
+	//			iter.remove();
+	//		}
+	//	}
 	private RemoteSlave findDestinationSlave(LinkedRemoteFile lrf) {
 		if (_parent.isArchiveToFreeSlave()) {
 			return _parent
@@ -113,7 +110,6 @@ public class ArchiveHandler extends Thread {
 			x++;
 			//System.out.println(x + ": slave = " + rslave.getName() + ", " + slaveCount);
 		}
-
 		return highSlave;
 	}
 	private LinkedRemoteFile getOldestDirectoryOnSlave(
@@ -271,77 +267,79 @@ public class ArchiveHandler extends Thread {
 		LinkedRemoteFile oldDir = _dirEvent.getDirectory();
 		LinkedRemoteFile root = oldDir.getRoot();
 		JobManager jm = _parent.getConnectionManager().getJobManager();
-		if (_parent.getMoveFullSlaves() > 0) {
-			try {
-				while (true) {
-					RemoteSlave smallSlave =
-						_parent
-							.getConnectionManager()
-							.getSlaveManager()
-							.findSmallestFreeSlave();
-					if (smallSlave.getStatus().getDiskSpaceAvailable()
-						> _parent.getMoveFullSlaves()) {
-						break;
-						// all done
-					}
-					LinkedRemoteFile tempDir =
-						getOldestDirectoryOnSlave(root, smallSlave);
-					ArrayList jobQueue = new ArrayList();
-					for (Iterator iter = oldDir.getFiles().iterator();
-						iter.hasNext();
-						) {
-						LinkedRemoteFile src = (LinkedRemoteFile) iter.next();
-						AbstractJob job = null;
-						if (!src.getSlaves().contains(smallSlave)) {
-							ArrayList tempList = new ArrayList();
-							tempList.add(smallSlave);
-							logger.info(
-								"Adding "
-									+ src.getPath()
-									+ " to the job queue");
-							job = new AbstractJob(src, tempList, this, null, 3);
-							jm.addJob(job);
-							jobQueue.add(job);
-						}
-					}
-					ArrayList tempQueue = (ArrayList) jobQueue.clone();
-					sendFiles(tempQueue, smallSlave, jm);
-					deleteFilesFromSlave(jobQueue, smallSlave);
-				}
-			} catch (RemoteException e) {
-				logger.info(
-					"Could not evaluate the size on the slaves, skipping the getMoveFullSlaves setting",
-					e);
-			} catch (NoAvailableSlaveException e) {
-				// done
-			}
-		}
+		//		if (_parent.getMoveFullSlaves() > 0) {
+		//			try {
+		//				while (true) {
+		//					RemoteSlave smallSlave =
+		//						_parent
+		//							.getConnectionManager()
+		//							.getSlaveManager()
+		//							.findSmallestFreeSlave();
+		//					if (smallSlave.getStatus().getDiskSpaceAvailable()
+		//						> _parent.getMoveFullSlaves()) {
+		//						break;
+		//						// all done
+		//					}
+		//					LinkedRemoteFile tempDir =
+		//						getOldestDirectoryOnSlave(root, smallSlave);
+		//					ArrayList jobQueue = new ArrayList();
+		//					for (Iterator iter = oldDir.getFiles().iterator();
+		//						iter.hasNext();
+		//						) {
+		//						LinkedRemoteFile src = (LinkedRemoteFile) iter.next();
+		//						AbstractJob job = null;
+		//						if (!src.getSlaves().contains(smallSlave)) {
+		//							ArrayList tempList = new ArrayList();
+		//							tempList.add(smallSlave);
+		//							logger.info(
+		//								"Adding "
+		//									+ src.getPath()
+		//									+ " to the job queue");
+		//							job = new AbstractJob(src, tempList, this, null, 3);
+		//							jm.addJob(job);
+		//							jobQueue.add(job);
+		//						}
+		//					}
+		//					ArrayList tempQueue = (ArrayList) jobQueue.clone();
+		//					sendFiles(tempQueue, smallSlave, jm);
+		//					deleteFilesFromSlave(jobQueue, smallSlave);
+		//				}
+		//			} catch (RemoteException e) {
+		//				logger.info(
+		//					"Could not evaluate the size on the slaves, skipping the getMoveFullSlaves setting",
+		//					e);
+		//			} catch (NoAvailableSlaveException e) {
+		//				// done
+		//			}
+		//		}
 		synchronized (_parent) {
 			oldDir = getOldestNonArchivedDir(root);
 			if (oldDir == null)
 				return; //everything is archived
 			_parent.addToArchivingList(oldDir.getPath());
 		}
-		logger.info("The oldest Directory is " + oldDir.getPath());
+		logger.debug("The oldest Directory is " + oldDir.getPath());
 		RemoteSlave slave = findDestinationSlave(oldDir);
-		logger.info("The slave to archive to is " + slave.getName());
+		logger.debug("findDestinationSlave() returned " + slave.getName());
+		logger.debug("The slave to archive to is " + slave.getName());
 		ArrayList jobQueue = new ArrayList();
 		for (Iterator iter = oldDir.getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile src = (LinkedRemoteFile) iter.next();
 			AbstractJob job = null;
-			if (!src.getSlaves().contains(slave)) {
-				ArrayList tempList = new ArrayList();
-				tempList.add(slave);
-				logger.info("Adding " + src.getPath() + " to the job queue");
-				job = new AbstractJob(src, tempList, this, null, 3);
-				jm.addJob(job);
-				jobQueue.add(job);
-			}
+			//if (!src.getSlaves().contains(slave)) {
+			// I don't care if it's already on that slave, the JobManager will take care of it
+			ArrayList tempList = new ArrayList();
+			tempList.add(slave);
+			logger.info("Adding " + src.getPath() + " to the job queue");
+			job = new AbstractJob(src, tempList, this, null, 3);
+			jm.addJob(job);
+			jobQueue.add(job);
+			//}
 		}
 		sendFiles(jobQueue, slave, jm);
 		deleteFilesFromOtherSlaves(jobQueue, slave);
 		_parent.removeFromArchivingList(oldDir.getPath());
-		logger.info("Done archiving " + oldDir.getPath());
+		logger.debug("Done archiving " + oldDir.getPath());
 	}
 	/**
 	 * makes sure the LinkedRemoteFiles in the ArrayList jobQueue are sent to the
@@ -355,8 +353,11 @@ public class ArchiveHandler extends Thread {
 			for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
 				Job job = (Job) iter.next();
 				if (jm.isDone(job)) {
+					logger.debug(
+						"File "
+							+ job.getFile().getPath()
+							+ " is done being sent");
 					iter.remove();
-					job.getFile().addSlave(destSlave);
 				}
 				try {
 					sleep(10000);

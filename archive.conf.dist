@@ -7,10 +7,6 @@
 # false = to the slave with the most files of the release
 archiveToFreeSlave=true
 
-# move files off of slaves that are almost full to slaves with
-# the most free space? (set to 0 to disable) (sizes are in MB)
-moveFullSlaves=100
-
 # smallest number of time in between cycles
 cycleTime=30
 

@@ -18,11 +18,12 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.ConnectionManager;
+import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.ArchiveHandler;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.8 2004/01/04 18:53:08 zubov Exp $
+ * @version $Id: Archive.java,v 1.9 2004/01/12 03:13:35 zubov Exp $
  */
 
 public class Archive implements FtpListener {
@@ -48,25 +49,27 @@ public class Archive implements FtpListener {
 	 * @see net.sf.drftpd.event.FtpListener#actionPerformed(net.sf.drftpd.event.Event)
 	 */
 	public void actionPerformed(Event event) {
-		if (event.getCommand().equals("RELOAD"))
+		if (event.getCommand().equals("RELOAD")) {
 			reload();
+			return;
+		}
 		if (!(event instanceof TransferEvent))
 			return;
 		if (System.currentTimeMillis() - _lastchecked > _cycleTime) {
 			_lastchecked = System.currentTimeMillis();
 			new ArchiveHandler((DirectoryFtpEvent) event, this).start();
-			System.out.println("Launched the ArchiveHandler");
+			logger.debug("Launched the ArchiveHandler");
 		}
 	}
 
 	/**
 	 * Adds directories to the list
 	 */
-	public void addToArchivingList(String dir) {
+	public synchronized void addToArchivingList(String dir) {
 		archivingList.add(dir);
 	}
 	/**
-	 * @return
+	 * Returns the archiveAfter setting
 	 */
 	public long getArchiveAfter() {
 		return _archiveAfter;
@@ -86,28 +89,25 @@ public class Archive implements FtpListener {
 	}
 
 	/**
-	 * @return
+	 * Returns the getCycleTime setting
 	 */
 	public long getCycleTime() {
 		return _cycleTime;
 	}
 
 	/**
-	 * @return
+	 * Returns the moveFullSlaves setting
 	 */
-	public long getMoveFullSlaves() {
-		return _moveFullSlaves;
-	}
+	//	public long getMoveFullSlaves() {
+	//		return _moveFullSlaves;
+	//	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.Initializeable#init(net.sf.drftpd.master.ConnectionManager)
-	 */
 	public void init(ConnectionManager connectionManager) {
 		_cm = connectionManager;
 	}
 
 	/**
-	 * @return
+	 * Returns the archiveToFreeSlave setting
 	 */
 	public boolean isArchiveToFreeSlave() {
 		return _archiveToFreeSlave;
@@ -119,16 +119,20 @@ public class Archive implements FtpListener {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		_cycleTime = 60000 * Long.parseLong(props.getProperty("cycleTime"));
-		_archiveAfter = 60000 * Long.parseLong(props.getProperty("archiveAfter"));
-		_archiveToFreeSlave = (props.getProperty("archiveTo") == "true");
-		_moveFullSlaves = 1048576*Long.parseLong(props.getProperty("moveFullSlaves"));
+		_cycleTime =
+			60000 * Long.parseLong(FtpConfig.getProperty(props, "cycleTime"));
+		_archiveAfter =
+			60000
+				* Long.parseLong(FtpConfig.getProperty(props, "archiveAfter"));
+		_archiveToFreeSlave =
+			(FtpConfig.getProperty(props, "archiveToFreeSlave") == "true");
+		//_moveFullSlaves = 1048576*Long.parseLong(FtpConfig.getProperty(props,"moveFullSlaves"));
 		_lastchecked = System.currentTimeMillis();
 	}
 	/**
 	 * Removes directories from the list
 	 */
-	public void removeFromArchivingList(String dir) {
+	public synchronized void removeFromArchivingList(String dir) {
 		archivingList.remove(dir);
 	}
 }
