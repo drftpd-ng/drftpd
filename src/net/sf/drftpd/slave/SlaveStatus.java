@@ -2,8 +2,12 @@ package net.sf.drftpd.slave;
 
 import java.io.Serializable;
 
+/**
+ * @author mog
+ * @version $Id: SlaveStatus.java,v 1.9 2003/11/17 21:57:08 mog Exp $
+ */
 public class SlaveStatus implements Serializable {
-	
+	static final long serialVersionUID = -5171512270937436414L;
 	private long _bytesReceived;
 	private long _bytesSent;
 	private long _diskSpaceAvailable;
