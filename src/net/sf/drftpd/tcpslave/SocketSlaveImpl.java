@@ -65,9 +65,11 @@ import net.sf.drftpd.tcpslave.Base64;
 
 import java.util.Hashtable;
 
+import java.security.MessageDigest;
+
 /**
  * @author mog
- * @version $Id: SocketSlaveImpl.java,v 1.2 2004/04/28 13:00:56 zombiewoof64 Exp $
+ * @version $Id: SocketSlaveImpl.java,v 1.3 2004/04/28 15:43:44 zombiewoof64 Exp $
  */
 public class SocketSlaveImpl
 extends Thread
@@ -85,7 +87,8 @@ implements Slave, Unreferenced {
     private boolean _downloadChecksums;
     
     private String  _name;
-    private String  _pass;
+    private String  _spsw;
+    private String  _mpsw;
     private String  _host;
     private int     _port;
 
@@ -96,9 +99,9 @@ implements Slave, Unreferenced {
     
     private Vector _transfers = new Vector();
     
-    private Socket          sock = null;
-    private BufferedReader  sinp = null;
-    private PrintWriter     sout = null;
+    private Socket          _sock = null;
+    private BufferedReader  _sinp = null;
+    private PrintWriter     _sout = null;
     
     private Vector          _que = new Vector();
 
@@ -107,20 +110,68 @@ implements Slave, Unreferenced {
     public SocketSlaveImpl(ConnectionManager mgr, Hashtable cfg)
         throws RemoteException 
     {
-        _cman = mgr;
+        Socket sock;
         try {
             _name = (String)cfg.get("name");
-            _pass = (String)cfg.get("pkey");
+            _spsw = (String)cfg.get("slavepass");
+            _mpsw = (String)cfg.get("masterpass");
             _host = (String)cfg.get("addr");
             _port = Integer.parseInt((String)cfg.get("port"));
-            logger.info("Starting connect");
-            logger.info("name = " + _name);
-            logger.info("host = " + _host);
-            logger.info("port = " + _port);
+            logger.info("Starting connect to " + _name + "@" + _host + ":" + _port);
             sock = new java.net.Socket(_host,_port);
-            sout = new PrintWriter(sock.getOutputStream(), true);
-            sinp = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+        } catch (IOException e) {
+            if (e instanceof ConnectIOException
+            && e.getCause() instanceof EOFException) {
+                logger.info(
+                "Check slaves.xml on the master that you are allowed to connect.");
+            }
+            logger.info("IOException: " + e.toString());
+            try { sock.close(); } catch (Exception e1) {}
+            //System.exit(0);
+        } catch (Exception e) {
+            logger.warn("Exception: " + e.toString());
+            try { sock.close(); } catch (Exception e2) {}
+        }
+        init(mgr,cfg,sock);
+    }
+    
+    public SocketSlaveImpl(ConnectionManager mgr, Hashtable cfg, Socket sock)
+        throws RemoteException 
+    {
+        _name = (String)cfg.get("name");
+        _spsw = (String)cfg.get("slavepass");
+        _mpsw = (String)cfg.get("masterpass");
+        _host = (String)cfg.get("addr");
+        _port = Integer.parseInt((String)cfg.get("port"));
+        init(mgr,cfg,sock);
+    }
+    
+    public void init(ConnectionManager mgr, Hashtable cfg, Socket sock)
+        throws RemoteException 
+    {
+        _cman = mgr;
+        _sock = sock;
+        try {
+            _sout = new PrintWriter(_sock.getOutputStream(), true);
+            _sinp = new BufferedReader(new InputStreamReader(_sock.getInputStream()));
             
+            // generate master hash
+            String seed = "";
+            Random rand = new Random();
+            for (int i=0; i<16; i++){
+                seed += (char)rand.nextInt(27)+64;
+            }
+            String pass = _mpsw + seed + _spsw;
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            md5.reset();
+            md5.update(pass.getBytes());
+            String hash = hash2hex(md5.digest());
+
+            String banner = "INIT " + "servername" + " " + hash + " " + seed;
+            
+            sendLine(banner);
+            
+            // get slave banner
             String txt = readLine(5);
             if (txt == null) {
                 throw new IOException("Slave did not send banner !!");
@@ -128,17 +179,27 @@ implements Slave, Unreferenced {
             String[] items = txt.split(" ");
             String sname = items[1].trim();
             String spass = items[2].trim();
-            String cname = _name.trim();
-            String cpass = _pass.trim();
-            if (!sname.equals(cname)) {
-                throw new IOException("Slave name mismatch '" + sname + "'!='" + cname + "'");
+            String sseed = items[3].trim();
+
+            // generate slave hash
+            pass = _spsw + seed + _mpsw;
+            md5 = MessageDigest.getInstance("MD5");
+            md5.reset();
+            md5.update(pass.getBytes());
+            hash = hash2hex(md5.digest());
+
+            // authenticate
+            if (!sname.equals(_name)) {
+                sendLine("INITFAIL Unknown");
+                throw new IOException("Slave name mismatch '" + _name + "'!='" + sname + "'");
             }
-            if (!spass.equals(cpass)) {
-                throw new IOException("Slave pass mismatch '" + spass + "'!='" + cpass + "'");
+            if (!spass.equals(hash)) {
+                sendLine("INITFAIL BadKey");
+                throw new IOException("Slave pass mismatch '" + hash + "'!='" + spass + "'");
             }
             
             start();
-            _cman.getSlaveManager().addSlave(cname, this, getSlaveStatus());
+            _cman.getSlaveManager().addSlave(_name, this, getSlaveStatus());
         } catch (IOException e) {
             if (e instanceof ConnectIOException
             && e.getCause() instanceof EOFException) {
@@ -155,12 +216,21 @@ implements Slave, Unreferenced {
         System.gc();
     }
     
+    private String hash2hex(byte[] bytes) {
+        String res = "";
+        for (int i=0; i<16; i++) {
+            String hex = Integer.toHexString((int)bytes[i]);
+            if (hex.length() < 2) hex = "0" + hex;
+            res += hex;
+        }
+    }
+    
     //*********************************
     // General property accessors
     //*********************************
 
     public InetAddress getAddress() {
-        return sock.getInetAddress();
+        return _sock.getInetAddress();
     }
     
     public boolean getDownloadChecksums() {
@@ -222,7 +292,7 @@ implements Slave, Unreferenced {
                 tick++;
                 if (tick < 300) continue;
                 tick = 0;
-                sout.println("ping");
+                _sout.println("ping");
                 logger.info(_name + "< ping");
                 if (readLine(5) == null) {
                     // do something to indicate the connection died
@@ -288,7 +358,7 @@ implements Slave, Unreferenced {
 
     private void sendLine(String line)
     {
-        sout.println(line);
+        _sout.println(line);
         logger.info(_name + "< " + line);
     }
     
@@ -301,13 +371,13 @@ implements Slave, Unreferenced {
         int cnt = secs * 10;
         try {
             while (true) {
-                while (!sinp.ready()) {
+                while (!_sinp.ready()) {
                     if (cnt < 1) return null;
                     sleep(100);
                     cnt--;
                     if (cnt == 0) return null;
                 }
-                String txt = sinp.readLine();
+                String txt = _sinp.readLine();
                 logger.info(_name + "> " + txt);
                 if (txt.startsWith("XFER")) {
                     xferMessage(txt);
