@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -26,7 +27,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
  * CommandHandler plugin for viewing and manipulating the JobManager queue.
  * 
  * @author mog
- * @version $Id: JobManagerCommandHandler.java,v 1.3 2004/01/21 07:52:46 zubov Exp $
+ * @version $Id: JobManagerCommandHandler.java,v 1.4 2004/01/21 20:34:29 zubov Exp $
  */
 public class JobManagerCommandHandler implements CommandHandler {
 
@@ -37,6 +38,11 @@ public class JobManagerCommandHandler implements CommandHandler {
 	private FtpReply doADDJOB(BaseFtpConnection conn) {
 		if (!conn.getUserNull().isAdmin())
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
+		if (!conn.getRequest().hasArgument()) {
+			return new FtpReply(
+				501,
+				conn.jprintf(JobManager.class.getName(), "addjob.usage"));
+		}
 		StringTokenizer st =
 			new StringTokenizer(conn.getRequest().getArgument());
 		LinkedRemoteFile lrf;
@@ -93,6 +99,26 @@ public class JobManagerCommandHandler implements CommandHandler {
 		return FtpReply.RESPONSE_502_COMMAND_NOT_IMPLEMENTED;
 	}
 
+	private FtpReply doSTARTJOBS(BaseFtpConnection conn) {
+		if (!conn.getUserNull().isAdmin())
+			return FtpReply.RESPONSE_530_ACCESS_DENIED;
+		try {
+			conn.getConnectionManager().getJobManager().startAllSlaves();
+		} catch (NoAvailableSlaveException e) {
+			return new FtpReply(500, "There were no slaves online to start");
+		}
+		return new FtpReply(200, "All slaves have been started");
+	}
+
+	private FtpReply doSTOPJOBS(BaseFtpConnection conn) {
+		if (!conn.getUserNull().isAdmin())
+			return FtpReply.RESPONSE_530_ACCESS_DENIED;
+		conn.getConnectionManager().getJobManager().stopAllSlaves();
+		return new FtpReply(
+			200,
+			"All slaves will stop after their current transfer");
+	}
+
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {
 		String cmd = conn.getRequest().getCommand();
@@ -104,6 +130,12 @@ public class JobManagerCommandHandler implements CommandHandler {
 		}
 		if ("SITE ADDJOB".equals(cmd)) {
 			return doADDJOB(conn);
+		}
+		if ("SITE STOPJOBS".equals(cmd)) {
+			return doSTOPJOBS(conn);
+		}
+		if ("SITE STARTJOBS".equals(cmd)) {
+			return doSTARTJOBS(conn);
 		}
 
 		throw UnhandledCommandException.create(

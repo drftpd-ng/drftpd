@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.15 2004/01/13 06:36:59 zubov Exp $
+ * @version $Id: JobManager.java,v 1.16 2004/01/21 20:34:29 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -38,33 +38,10 @@ public class JobManager implements FtpListener {
 			return;
 		SlaveEvent slaveEvent = (SlaveEvent) event;
 		if (slaveEvent.getCommand().equals("DELSLAVE")) {
-			//synchronized (_threadList) { // does not need to be synchronized if only one thread handles events 
-			for (Iterator iter = _threadList.iterator(); iter.hasNext();) {
-				JobManagerThread tempThread = (JobManagerThread) iter.next();
-				if (tempThread.getRSlave() == slaveEvent.getRSlave()) {
-					tempThread.stopme();
-					_threadList.remove(tempThread);
-					logger.debug(
-						"Stopped slave thread for "
-							+ slaveEvent.getRSlave().getName());
-					break; // only one slave can die at a time
-					// have to break here or else get ConcurrentModificationException
-					// no point in searching for more anyhow
-				}
-			}
-			//}
+			stopSlave(slaveEvent.getRSlave());
 		} else if (slaveEvent.getCommand().equals("ADDSLAVE")) {
-			JobManagerThread newThread =
-				new JobManagerThread(slaveEvent.getRSlave(), this);
-			_threadList.add(newThread);
-			logger.debug(
-				"Started slave thread for " + slaveEvent.getRSlave().getName());
-			newThread.start();
+			startSlave(slaveEvent.getRSlave());
 		}
-		logger.debug(
-			slaveEvent.getCommand()
-				+ " was issued on "
-				+ slaveEvent.getRSlave().getName());
 	}
 	public synchronized void addJob(Job job) {
 		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
@@ -315,5 +292,46 @@ public class JobManager implements FtpListener {
 	public synchronized void removeJob(Job job) {
 		_jobList.remove(job);
 		Collections.sort(_jobList, new JobComparator());
+	}
+	public void startAllSlaves() throws NoAvailableSlaveException {
+		stopAllSlaves();
+		for (Iterator iter =
+			_cm.getSlaveManager().getAvailableSlaves().iterator();
+			iter.hasNext();
+			) {
+			startSlave((RemoteSlave) iter.next());
+		}
+	}
+
+	public void startSlave(RemoteSlave rslave) {
+		JobManagerThread newThread = new JobManagerThread(rslave, this);
+		_threadList.add(newThread);
+		newThread.start();
+		logger.debug("Started slave thread for " + rslave.getName());
+	}
+	public void stopAllSlaves() {
+		//synchronized (_threadList) { // does not need to be synchronized if only one thread handles SlaveEvents 
+		for (Iterator iter = _threadList.iterator(); iter.hasNext();) {
+			JobManagerThread tempThread = (JobManagerThread) iter.next();
+			tempThread.stopme();
+			iter.remove();
+			logger.debug(
+				"Stopped slave thread for " + tempThread.getRSlave().getName());
+		}
+	}
+
+	public void stopSlave(RemoteSlave rslave) {
+		//synchronized (_threadList) { // does not need to be synchronized if only one thread handles SlaveEvents 
+		for (Iterator iter = _threadList.iterator(); iter.hasNext();) {
+			JobManagerThread tempThread = (JobManagerThread) iter.next();
+			if (tempThread.getRSlave() == rslave) {
+				tempThread.stopme();
+				iter.remove();
+				logger.debug(
+					"Stopped slave thread for "
+						+ tempThread.getRSlave().getName());
+				return;
+			}
+		}
 	}
 }
