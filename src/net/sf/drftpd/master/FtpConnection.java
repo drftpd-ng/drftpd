@@ -119,7 +119,7 @@ public class FtpConnection extends BaseFtpConnection {
 		if ((type != 'A') && (type != 'I')) {
 			return false;
 		}
-		type = type;
+		this.type = type;
 		return true;
 	}
 

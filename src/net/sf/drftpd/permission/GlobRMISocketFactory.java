@@ -2,9 +2,7 @@ package net.sf.drftpd.permission;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
-import java.rmi.server.RMISocketFactory;
 import java.util.List;
 
 

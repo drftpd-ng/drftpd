@@ -1,4 +1,4 @@
-upackage net.sf.drftpd.remotefile;
+package net.sf.drftpd.remotefile;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,7 +22,6 @@ import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.NoAvailableSlaveException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.slave.RemoteSlave;
-import org.apache.log4j.Category;
 
 /**
  * Represents the file attributes of a remote file.

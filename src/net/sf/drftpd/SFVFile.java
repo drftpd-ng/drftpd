@@ -1,17 +1,10 @@
 package net.sf.drftpd;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.BufferedReader;
-import java.io.Reader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.zip.CRC32;
-import java.util.zip.CheckedInputStream;
 
 /**
  * @author mog

@@ -1,11 +1,9 @@
 package net.sf.drftpd.slave;
 
-import java.net.InetAddress;
-import java.rmi.RemoteException;
 import java.io.Serializable;
+import java.rmi.RemoteException;
 
-import net.sf.drftpd.master.*;
-import net.sf.drftpd.master.SlaveManager;
+import net.sf.drftpd.master.SlaveManagerImpl;
 
 /**
  * 

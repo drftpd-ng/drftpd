@@ -3,7 +3,6 @@ package net.sf.drftpd.remotefile;
 import java.util.Iterator;
 import java.util.List;
 
-import net.sf.drftpd.InvalidDirectoryException;
 import org.jdom.Element;
 
 /**

@@ -1,16 +1,13 @@
 package net.sf.drftpd.slave;
 
-import net.sf.drftpd.PermissionDeniedException;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.RemoteFile;
-
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-import java.net.InetAddress;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.ConnectException;
 
 /**
  * Slave interface, this interface is used to initate transfers to and from remote slaves.

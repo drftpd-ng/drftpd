@@ -1,6 +1,5 @@
 package net.sf.drftpd.master;
 
-import java.io.*;
 import java.io.IOException;
 import java.io.OutputStream;
 

@@ -23,16 +23,10 @@ import net.sf.drftpd.InvalidDirectoryException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.SlaveManager;
-import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.RemoteFile;
-
-import com.jconfig.DiskFile;
-import com.jconfig.DiskObject;
-import com.jconfig.DiskVolume;
-import com.jconfig.FileRegistry;
 
 /**
  * @author <a href="mailto:mog@linux.nu">Morgan Christiansson</a>
@@ -143,7 +137,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 		for (Iterator i = transfers.iterator(); i.hasNext();) {
 			TransferImpl transfer = (TransferImpl) i.next();
-			if (transfer.getDirection() == transfer.TRANSFER_RECEIVING) {
+			if (transfer.getDirection() == Transfer.TRANSFER_RECEIVING) {
 				throughputDown += transfer.getTransferSpeed();
 				transfersDown += 1;
 			} else {

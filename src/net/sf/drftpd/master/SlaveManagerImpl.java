@@ -3,7 +3,6 @@ package net.sf.drftpd.master;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.rmi.AlreadyBoundException;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;

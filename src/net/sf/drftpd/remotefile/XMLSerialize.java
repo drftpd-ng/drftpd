@@ -1,5 +1,4 @@
 package net.sf.drftpd.remotefile;
-import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -7,7 +6,6 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.output.XMLOutputter;
 
-import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.RemoteSlave;
 

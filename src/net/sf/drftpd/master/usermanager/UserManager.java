@@ -2,8 +2,6 @@ package net.sf.drftpd.master.usermanager;
 import java.io.IOException;
 import java.util.Collection;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
-
 /**
  * This is the base class of all the user manager classes.
  * If we want to add a new user manager, we have to override

@@ -179,7 +179,7 @@ public class GlftpdUserManager extends UserManager {
 	 */
 	public GlftpdUserManager(Properties cfg) {
 		//		super();
-		this.root = root;
+		//this.root = root;
 		userdirpath = cfg.getProperty("glftpd.root") + "/ftp-data/users/";
 		passwdfile = new File(cfg.getProperty("glftpd.root") + "/etc/passwd");
 	}

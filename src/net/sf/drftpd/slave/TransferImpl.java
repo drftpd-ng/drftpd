@@ -23,8 +23,6 @@ import net.sf.drftpd.AsciiOutputStream;
  * Window>Preferences>Java>Code Generation.
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
-	public static final char TRANSFER_RECEIVING='R';// TRANSFER_UPLOAD='R';
-	public static final char TRANSFER_SENDING='S';// TRANSFER_DOWNLOAD='S';
 	
 	private long started=0, finished=0;
 	

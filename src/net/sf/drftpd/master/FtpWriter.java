@@ -2,9 +2,6 @@ package net.sf.drftpd.master;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.io.OutputStreamWriter;
-import java.io.OutputStream;
-import java.net.Socket;
 
 //import ranab.util.Message;
 
