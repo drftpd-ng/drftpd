@@ -15,9 +15,9 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins;
+package org.drftpd.sitebot;
 
-import org.drftpd.sitebot.IRCPluginInterface;
+import org.drftpd.plugins.SiteBot;
 
 import f00f.net.irc.martyr.GenericAutoService;
 import f00f.net.irc.martyr.IRCConnection;
@@ -35,7 +35,7 @@ import f00f.net.irc.martyr.errors.ChannelWrongKeyError;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: OnConnect.java 847 2004-12-02 03:32:41Z mog $
  */
 public class OnConnect extends GenericAutoService implements IRCPluginInterface {
     private State _state;

@@ -17,32 +17,24 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
+import java.io.ByteArrayOutputStream;
+
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
+
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
 import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.BasicConfigurator;
-
 import org.drftpd.commands.Reply;
-import org.drftpd.commands.UnhandledCommandException;
-
+import org.drftpd.commands.ReplyException;
 import org.drftpd.tests.DummyBaseFtpConnection;
 import org.drftpd.tests.DummyConnectionManager;
 import org.drftpd.tests.DummyFtpConfig;
 import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyServerSocketFactory;
 import org.drftpd.tests.DummySocketFactory;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.StringReader;
-
-import java.util.Properties;
-
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
 
 
 /**
@@ -87,7 +79,7 @@ public class DataConnectionHandlerTest extends TestCase {
         return ret;
     }
 
-    private String pasvList() throws UnhandledCommandException {
+    private String pasvList() throws ReplyException {
         conn.setRequest(new FtpRequest("PRET LIST"));
 
         Reply reply;
@@ -101,7 +93,7 @@ public class DataConnectionHandlerTest extends TestCase {
         return list();
     }
 
-    private String portList() throws UnhandledCommandException {
+    private String portList() throws ReplyException {
         conn.setRequest(new FtpRequest("PORT 127,0,0,1,0,0"));
         dch.execute(conn);
 
@@ -126,7 +118,7 @@ public class DataConnectionHandlerTest extends TestCase {
         dch = null;
     }
 
-    public void testMixedListEqual() throws UnhandledCommandException {
+    public void testMixedListEqual() throws ReplyException {
         String list = portList();
         assertEquals(list, pasvList());
         assertEquals(list, portList());
@@ -137,18 +129,18 @@ public class DataConnectionHandlerTest extends TestCase {
         assertEquals(list, portList());
     }
 
-    public void testPasvList() throws UnhandledCommandException {
+    public void testPasvList() throws ReplyException {
         pasvList();
     }
 
-    public void testPASVWithoutPRET() throws UnhandledCommandException {
+    public void testPASVWithoutPRET() throws ReplyException {
         conn.setRequest(new FtpRequest("PASV"));
 
         Reply reply = dch.execute(conn);
         assertBetween(reply.getCode(), 500, 599);
     }
 
-    public void testPortList() throws UnhandledCommandException {
+    public void testPortList() throws ReplyException {
         portList();
     }
 

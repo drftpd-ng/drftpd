@@ -120,7 +120,8 @@ public class Reply implements Cloneable {
     public static final Reply RESPONSE_530_SLAVE_UNAVAILABLE = new Reply(530,
             "No transfer-slave(s) available");
 
-    /** 550 Requested action not taken. File unavailable.
+    /**
+     * 550 Requested action not taken. File unavailable.
      * File unavailable (e.g., file not found, no access).
      */
     public static final Reply RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN = new Reply(550,

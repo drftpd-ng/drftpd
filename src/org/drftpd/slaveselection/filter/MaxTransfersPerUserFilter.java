@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;
@@ -39,6 +40,7 @@ public class MaxTransfersPerUserFilter extends Filter {
 
 	private static final Logger logger = Logger
 			.getLogger(MaxTransfersPerUserFilter.class);
+
 	private GlobalContext _gctx;
 
 	public MaxTransfersPerUserFilter(FilterChain ssm, int i, Properties p) {
@@ -49,7 +51,7 @@ public class MaxTransfersPerUserFilter extends Filter {
 		_gctx = gctx;
 	}
 
-	public void process(ScoreChart scorechart, char direction)
+	public void process(ScoreChart scorechart, char direction, User user)
 			throws NoAvailableSlaveException {
 
 		for (BaseFtpConnection conn : _gctx.getConnectionManager()
@@ -57,6 +59,12 @@ public class MaxTransfersPerUserFilter extends Filter {
 
 			if (!conn.isTransfering())
 				continue;
+			try {
+				if (!conn.getUser().equals(user))
+					continue;
+			} catch (NoSuchUserException e) {
+				continue;
+			}
 
 			for (Iterator<ScoreChart.SlaveScore> iter2 = scorechart
 					.getSlaveScores().iterator(); iter2.hasNext();) {
@@ -71,11 +79,14 @@ public class MaxTransfersPerUserFilter extends Filter {
 				}
 			}
 		}
+		if (scorechart.isEmpty())
+			throw new NoAvailableSlaveException(
+					"All slaves were unavailable cause you already had open transfers to the available slaves");
 	}
 
 	public void process(ScoreChart scorechart, User user, InetAddress peer,
 			char direction, LinkedRemoteFileInterface dir,
 			RemoteSlave sourceSlave) throws NoAvailableSlaveException {
-		process(scorechart,direction);
+		process(scorechart, direction, user);
 	}
 }

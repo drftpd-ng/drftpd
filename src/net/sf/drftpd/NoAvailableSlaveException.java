@@ -17,6 +17,8 @@
  */
 package net.sf.drftpd;
 
+import org.drftpd.commands.Reply;
+
 
 /**
  * @author mog
@@ -28,6 +30,6 @@ public class NoAvailableSlaveException extends Exception {
     }
 
     public NoAvailableSlaveException() {
-        super();
+        super(Reply.RESPONSE_530_SLAVE_UNAVAILABLE.getMessage());
     }
 }

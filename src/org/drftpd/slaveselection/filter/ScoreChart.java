@@ -153,4 +153,8 @@ public class ScoreChart {
             getScore() + "]";
         }
     }
+
+	public boolean isEmpty() {
+		return getSlaveScores().isEmpty();
+	}
 }
