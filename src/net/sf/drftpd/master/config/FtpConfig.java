@@ -79,6 +79,7 @@ public class FtpConfig extends Observable implements ConfigInterface {
     private int _maxUsersExempt;
     private int _maxUsersTotal = Integer.MAX_VALUE;
     private ArrayList<MessagePathPermission> _msgpath = new ArrayList<MessagePathPermission>();
+    private String _pasv_addr;
     private Hashtable<String, ArrayList<PathPermission>> _pathsPerms = new Hashtable<String, ArrayList<PathPermission>>();
     private Hashtable<String, Permission> _permissions = new Hashtable<String,Permission>();
     private StringTokenizer _replaceDir = null;
@@ -277,6 +278,11 @@ public class FtpConfig extends Observable implements ConfigInterface {
         return _maxUsersTotal;
     }
 
+    public String getPasvAddress() throws NullPointerException {
+    	if (_pasv_addr == null) throw new NullPointerException();
+    	return _pasv_addr;
+	}
+
     public long getSlaveStatusUpdateTime() {
         return _slaveStatusUpdateTime;
     }
@@ -341,6 +347,8 @@ public class FtpConfig extends Observable implements ConfigInterface {
                     else if (cmd.equals("max_users")) {
                         _maxUsersTotal = Integer.parseInt(st.nextToken());
                         _maxUsersExempt = Integer.parseInt(st.nextToken());
+                    } else if (cmd.equals("pasv_addr")) {
+                    	_pasv_addr = st.nextToken();
                     } else if (cmd.equals("pasv_ports")) {
                         String[] temp = st.nextToken().split("-");
                         _portRange = new PortRange(Integer.parseInt(temp[0]),Integer.parseInt(temp[1]));
@@ -493,5 +501,4 @@ public class FtpConfig extends Observable implements ConfigInterface {
     public PortRange getPortRange() {
         return _portRange;
     }
-
 }

@@ -216,9 +216,14 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             try {
                 _serverSocket = conn.getGlobalContext().getPortRange().getPort(getServerSocketFactory(
                             _encryptedDataChannel));
-                address = new InetSocketAddress(conn.getControlSocket()
-                                                    .getLocalAddress(),
-                        _serverSocket.getLocalPort());
+                try {
+					address = new InetSocketAddress(conn.getGlobalContext()
+							.getConfig().getPasvAddress(), _serverSocket
+							.getLocalPort());
+				} catch (NullPointerException e) {
+					address = new InetSocketAddress(conn.getControlSocket()
+							.getLocalAddress(), _serverSocket.getLocalPort());
+				}
                 _isPasv = true;
             } catch (Exception ex) {
                 logger.warn("", ex);
@@ -230,8 +235,10 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                 String index = _preTransferRSlave.issueListenToSlave(_encryptedDataChannel);
                 ConnectInfo ci = _preTransferRSlave.fetchTransferResponseFromIndex(index);
                 _transfer = _preTransferRSlave.getTransfer(ci.getTransferIndex());
-                address = new InetSocketAddress(_preTransferRSlave.getProperty("outsideip", _preTransferRSlave.getInetAddress().getHostAddress()),
-                        _transfer.getAddress().getPort());
+                address = new InetSocketAddress(_preTransferRSlave.getProperty(
+						"pasv_addr", _preTransferRSlave.getInetAddress()
+								.getHostAddress()), _transfer.getAddress()
+						.getPort());
                 _isPasv = true;
             } catch (SlaveUnavailableException e) {
                 return Reply.RESPONSE_530_SLAVE_UNAVAILABLE;

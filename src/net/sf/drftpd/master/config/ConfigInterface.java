@@ -79,4 +79,6 @@ public interface ConfigInterface {
 	public abstract PortRange getPortRange();
 
 	public abstract void addObserver(Observer observer);
+
+	public abstract String getPasvAddress() throws NullPointerException;
 }

@@ -1,3 +1,8 @@
+2005/02/07 Matt Zimmerman <zubov@users.sourceforge.net>
+* pasv_addr now a setting in perms.conf for PASV connections to the master (LIST)
+* pasv_addr now a setting for slave configurations, site slave slavename set pasv_addr 1.1.1.1
+* Both are for use when your master/slave do not report the correct ip for PASV connections
+
 2005/02/06 Matt Zimmerman <zubov@users.sourceforge.net>
 * I dare you to get "the SSL bug" again, http://sourceforge.net/tracker/index.php?func=detail&aid=997540&group_id=56385&atid=480372
 

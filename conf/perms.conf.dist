@@ -60,3 +60,8 @@ shutdown *
 #excepts only one range of ports, if you want more...
 # contribute and request :)
 #pasv_ports 50000-60000
+
+#to be used if your master does not report the correct outside ip for
+#PASV commands
+#pasv_addr 1.1.1.1
+
