@@ -34,7 +34,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.7 2003/12/22 18:09:41 mog Exp $
+ * @version $Id: Trial.java,v 1.8 2003/12/22 21:31:23 mog Exp $
  */
 public class Trial implements FtpListener {
 	class SiteBot extends GenericCommandAutoService {
@@ -434,7 +434,7 @@ public class Trial implements FtpListener {
 	private void reload() {
 		Properties props = new Properties();
 		try {
-			props.load(new FileInputStream("passed.conf"));
+			props.load(new FileInputStream("trial.conf"));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

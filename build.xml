@@ -26,10 +26,8 @@
    </target>
 
    <target name="compile" depends="init, prepare">
-    <javac destdir="${outputDir}" debug="true" source="1.4">
-    <exclude name="**/*Test.java"/>
-	<src path="${sourceDir}"/>
-	<classpath refid="classpath"/>
+    <javac srcdir="${sourceDir}" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.4">
+        <exclude name="**/*Test.java"/>
     </javac>
     <rmic base="${outputDir}" debug="true" stubversion="1.2">
 	<include name="**/*Impl.class"/>
@@ -37,6 +35,12 @@
     </rmic>
   </target>
   
+  <target name="tests">
+  	<javac destdir="${outputDir}" debug="true" source="1.4">
+  	    <include name="**/*Test.java"/>
+  	</javac>
+  </target>
+ 
   <target name="slavejar">
     <jar destfile="slave.jar" basedir="classes">
       <manifest>
@@ -49,8 +53,6 @@
       <include name="net/sf/drftpd/master/RemoteSlave.class" />
       <include name="net/sf/drftpd/master/SlaveManager.class" />
       <include name="net/sf/drftpd/master/SlaveManagerImpl_Stub.class" />
-      <include name="net/sf/drftpd/permission/InetAddrRMIServerSocketFactory.class" />
-      <include name="net/sf/drftpd/permission/InetAddrServerSocket.class" />
       <!-- until we have lightweight LinkedRemoteFile -->
       <include name="net/sf/drftpd/master/*" />
       <include name="net/sf/drftpd/master/config/FtpConfig.class" />
