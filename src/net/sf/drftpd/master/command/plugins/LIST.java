@@ -187,6 +187,9 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
         line.append(getUnixDate(fl.lastModified(), fulldate));
         line.append(DELIM);
         line.append(fl.getName());
+        if (fl.isLink()) {
+        	line.append(DELIM + "->" + DELIM + fl.getLinkPath());
+        }
         line.append(NEWLINE);
         out.write(line.toString());
     }
