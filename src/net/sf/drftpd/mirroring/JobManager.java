@@ -46,7 +46,7 @@ import java.util.Set;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.59 2004/08/03 20:14:01 zubov Exp $
+ * @version $Id: JobManager.java,v 1.60 2004/09/17 13:40:15 zubov Exp $
  */
 public class JobManager implements Runnable {
     private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -261,9 +261,10 @@ public class JobManager implements Runnable {
                 SocketException se = (SocketException) e.getCause();
                 destSlave.addNetworkError(se);
             } else {
-                destSlave.setOffline(
-                    "Error on slave during slave2slave transfer, check logs");
-                logger.error(e);
+                //destSlave.setOffline(
+                //    "Error on slave during slave2slave transfer, check logs");
+                logger.error("Error on slave during slave2slave transfer - " +
+                    e);
             }
 
             return;
@@ -279,9 +280,10 @@ public class JobManager implements Runnable {
                 SocketException se = (SocketException) e.getCause();
                 sourceSlave.addNetworkError(se);
             } else {
-                sourceSlave.setOffline(
-                    "Error on slave during slave2slave transfer, check logs");
-                logger.error(e);
+                //sourceSlave.setOffline(
+                //    "Error on slave during slave2slave transfer, check logs");
+                logger.error("Error on slave during slave2slave transfer - " +
+                    e);
             }
 
             return;
