@@ -4,18 +4,22 @@ import java.io.Serializable;
 import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 
+import net.sf.drftpd.master.NoAvailableSlaveException;
 import net.sf.drftpd.master.SlaveManagerImpl;
 
 public class RemoteSlave implements Serializable {
 	protected SlaveManagerImpl manager;
-	protected String name="mog";
+	protected String name;
 
 	protected Slave slave;
+	
 	protected SlaveStatus status;
 	protected long statusTime;
 	
-	public RemoteSlave(Slave slave) {
+
+	public RemoteSlave(Slave slave, String name) {
 		this.slave = slave;
+		this.name = name;
 	}
 	public SlaveManagerImpl getManager() {
 		return manager;
@@ -27,11 +31,19 @@ public class RemoteSlave implements Serializable {
 	public String getName() {
 		return name;
 	}
-	public Slave getSlave() {
+	
+	public Slave getSlave() throws NoAvailableSlaveException {
+		if(slave == null) throw new NoAvailableSlaveException("slave is offline");
 		return slave;
 	}
 	
-	public SlaveStatus getStatus() throws RemoteException {
+	/**
+	 * Get's slave status, caches the status for 10 seconds.
+	 * @return
+	 * @throws RemoteException
+	 * @throws NoAvailableSlaveException
+	 */
+	public SlaveStatus getStatus() throws RemoteException, NoAvailableSlaveException {
 		if(statusTime < System.currentTimeMillis()-10000) {
 			status=getSlave().getSlaveStatus();
 			statusTime = System.currentTimeMillis();
@@ -59,6 +71,10 @@ public class RemoteSlave implements Serializable {
 		this.manager = manager;
 	}
 
+	public boolean isAvailable() {
+		return slave != null;
+	}
+	
 	public String toString() {
 		return slave.toString();
 	}

@@ -26,7 +26,7 @@ import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.remotefile.JDOMRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.slave.RemoteSlave;
+import net.sf.drftpd.slave.*;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveImpl;
 
@@ -113,7 +113,7 @@ public class ConnectionManager {
 				System.exit(0);
 				return;	//the compiler doesn't know that execution stops at System.exit(),
 			}
-			RemoteSlave remoteSlave = new RemoteSlave(slave);
+			RemoteSlave remoteSlave = new RemoteSlave(slave, cfg.getProperty("slave.name"));
 
 			try {
 				LinkedRemoteFile slaveroot =

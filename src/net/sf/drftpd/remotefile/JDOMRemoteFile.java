@@ -17,33 +17,37 @@ import org.jdom.output.XMLOutputter;
 public class JDOMRemoteFile extends RemoteFile {
 
 	protected List files = null;
-	
+
 	/**
 	 * Constructor for JDOMRemoteFileTree.
 	 */
 	public JDOMRemoteFile(String path, Element element) {
 		name = element.getAttributeValue("name");
 		//System.out.println("JDOMRemoteFileTree("+path+", "+name+")");
-		if(element.getName().equals("directory")) {
+		if (element.getName().equals("directory")) {
 			isDirectory = true;
 			isFile = false;
 			files = element.getChild("contents").getChildren();
 		}
-		if(element.getName().equals("file")) {
+		if (element.getName().equals("file")) {
 			isDirectory = false;
 			isFile = true;
-			checkSum = Long.parseLong(element.getChild("checksum").getText(), 16);
+			checkSum =
+				Long.parseLong(element.getChild("checksum").getText(), 16);
 			try {
 				length = Long.parseLong(element.getChild("size").getText());
-			} catch(NullPointerException ex) {
-				System.out.println(new XMLOutputter().outputString(element)+" has no size");
-				
+			} catch (NullPointerException ex) {
+				System.out.println(
+					new XMLOutputter().outputString(element) + " has no size");
+
 			}
 		}
-//		this.path = path;
+		//		this.path = path;
 		owner = element.getChild("user").getText();
 		group = element.getChild("group").getText();
-		lastModified = Long.parseLong(element.getChild("lastModified").getText());
+		lastModified =
+			Long.parseLong(element.getChild("lastModified").getText());
+		System.out.println("JDOM lastModified: " + lastModified);
 	}
 
 	/**
@@ -51,15 +55,15 @@ public class JDOMRemoteFile extends RemoteFile {
 	 */
 	public RemoteFile[] listFiles() {
 		JDOMRemoteFile listFiles[] = new JDOMRemoteFile[files.size()];
-		int i2=0;
-		for(Iterator i = files.iterator(); i.hasNext(); ) {
-//			listFiles[i2++] = new JDOMRemoteFile(path+name+"/", (Element)i.next());
-			listFiles[i2++] = new JDOMRemoteFile(null, (Element)i.next());
+		int i2 = 0;
+		for (Iterator i = files.iterator(); i.hasNext();) {
+			//			listFiles[i2++] = new JDOMRemoteFile(path+name+"/", (Element)i.next());
+			listFiles[i2++] = new JDOMRemoteFile(null, (Element) i.next());
 		}
 		return listFiles;
 	}
 
-//	protected String path;
+	//	protected String path;
 	protected String name;
 	/**
 	 * @see net.sf.drftpd.remotefile.RemoteFile#getName()
@@ -79,7 +83,20 @@ public class JDOMRemoteFile extends RemoteFile {
 	 * @see net.sf.drftpd.remotefile.RemoteFile#getPath()
 	 */
 	public String getPath() {
-		return name;
-		//throw new NoSuchMethodError("JDOMRemoteFile.getPath() not implemented");
+		//return name;
+		throw new NoSuchMethodError("JDOMRemoteFile.getPath() not implemented");
+	}
+
+	public String toString() {
+		StringBuffer ret = new StringBuffer();
+		ret.append("[" + getClass().getName() + "[");
+		//ret.append(slaves);
+		if (isDirectory())
+			ret.append("[directory: " + listFiles().length + "]");
+		if (isFile())
+			ret.append("[file: true]");
+		//ret.append("isFile(): " + isFile() + " ");
+		ret.append(getName());
+		return ret.toString();
 	}
 }

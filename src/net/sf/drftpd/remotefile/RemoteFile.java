@@ -30,7 +30,7 @@ public abstract class RemoteFile {
 
 	protected long lastModified = -1;
 	public long lastModified() {
-		if(length == -1) throw new IllegalStateException("lastModified not set for "+this);
+		if(lastModified == -1) throw new IllegalStateException("lastModified not set for "+this);
 		return lastModified;
 	}
 

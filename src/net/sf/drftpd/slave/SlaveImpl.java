@@ -99,7 +99,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			return;
 			//the compiler doesn't know that execution stops at System.exit()
 		}
-		RemoteSlave rslave = new RemoteSlave(slave);
+		RemoteSlave rslave = new RemoteSlave(slave, cfg.getProperty("slave.name"));
 		try {
 			LinkedRemoteFile slaveroot =
 				SlaveImpl.getDefaultRoot(rslave, cfg.getProperty("slave.roots"));

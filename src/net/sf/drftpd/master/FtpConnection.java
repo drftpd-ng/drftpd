@@ -30,7 +30,7 @@ import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.RemoteFile;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
-import net.sf.drftpd.slave.RemoteSlave;
+import net.sf.drftpd.slave.*;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.slave.TransferImpl;
 import socks.server.Ident;
@@ -952,6 +952,53 @@ public class FtpConnection extends BaseFtpConnection {
 		out.write(ftpStatus.getResponse(200, request, user, null));
 	}
 
+	/**
+	 * USAGE: site adduser <user> <password> [<ident@ip#1> ... <ident@ip#5>]
+	 *	Adds a user. You can have wild cards for users that have dynamic ips
+	 *	Examples: *@192.168.1.* , frank@192.168.*.* , bob@192.*.*.*
+	 *	(*@192.168.1.1[5-9] will allow only 192.168.1.15-19 to connect but no one else)
+	 *
+	 *	If a user is added by a groupadmin, that user will have the GLOCK
+	 *	flag enabled and will inherit the groupadmin's home directory.
+	 *	
+	 *	All default values for the user are read from file default.user in
+	 *	/glftpd/ftp-data/users. Comments inside describe what is what.
+	 *	Gadmins can be assigned their own default.<group> userfiles
+	 *	as templates to be used when they add a user, if one is not found,
+	 *	default.user will be used.
+	 *	default.groupname files will also be used for "site gadduser".
+	 *
+	 *	ex. site ADDUSER Archimede mypassword 
+	 *
+	 *	This would add the user 'Archimede' with the password 'mypassword'.
+	 *
+	 *	ex. site ADDUSER Archimede mypassword *@127.0.0.1
+	 *	
+	 *	This would do the same as above + add the ip '*@127.0.0.1' at the
+	 *	same time.
+	 *
+	 *	HOMEDIRS:
+	 *	After login, the user will automatically be transferred into his/her
+	 *	homedir. As of 1.16.x this dir is now "kinda" chroot'ed and they are
+	 *	now unable to "cd ..".
+	 *
+	 *
+	 * @param request
+	 * @param out
+	 */
+	public void doSITE_ADDUSER(FtpRequest request, PrintWriter out) {
+		resetState();
+		
+		String args[] = request.getArgument().split(" ");
+		if(args.length < 2) {
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);} 
+			return;
+		}
+		
+		String newUsername;
+		User newUser = new User(newUsername);
+	}
+	
 	public void doSITE_CHECKSLAVES(FtpRequest request, PrintWriter out) {
 		out.println(
 			"200 Ok, " + slaveManager.verifySlaves() + " stale slaves removed");
@@ -1227,6 +1274,26 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 		out.println("200 Command ok.");
 	}
+	
+	/** Lists all slaves used by the master
+	 * USAGE: SITE SLAVES
+	 * 
+	 * TODO format output
+	 */
+	public void doSITE_SLAVES(FtpRequest request, PrintWriter out) {
+		if(!user.isAdmin()) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
+		
+		FtpResponse response = (FtpResponse)FtpResponse.RESPONSE_200_COMMAND_OK.clone();
+		
+		for (Iterator iter = slaveManager.slaves.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
+			response.addComment(rslave.toString());
+		}
+		out.print(response);
+	}
 
 	/**
 	 * USAGE: site take <user> <kbytes> [<message>]
@@ -1241,7 +1308,8 @@ public class FtpConnection extends BaseFtpConnection {
 		GlftpdUserManager.GlftpdUser gluser = null;
 		if (user instanceof GlftpdUserManager.GlftpdUser)
 			gluser = (GlftpdUserManager.GlftpdUser) user;
-
+		
+		//TODO more fine-grained user permissions
 		if (!user.isAdmin()
 			&& !(gluser != null && gluser.getFlags().indexOf("F") != -1)) {
 			out.println("200 Access denied.");

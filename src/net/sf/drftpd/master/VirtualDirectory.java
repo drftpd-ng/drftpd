@@ -153,6 +153,7 @@ public class VirtualDirectory {
 	 * </pre>
 	 * @return true if success
 	 */
+	//TODO integrate printList and printNList, throw away VirtualDirectory (the instance at least)
 	public static boolean printList(LinkedRemoteFile currentDirectory, String argument, Writer out) throws IOException {
 		String directoryName = null;
 		String options = "";
@@ -161,7 +162,7 @@ public class VirtualDirectory {
 		// get options, directory name and pattern
 		//TODO files with spaces ?
 		if (argument != null) {
-			argument = argument.trim();
+			//argument = argument.trim();
 			StringBuffer optionsSb = new StringBuffer(4);
 			StringTokenizer st = new StringTokenizer(argument, " ");
 			while (st.hasMoreTokens()) {

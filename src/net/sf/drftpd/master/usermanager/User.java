@@ -17,12 +17,9 @@ import org.apache.oro.text.regex.Perl5Matcher;
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  */
 
-public abstract class User implements Serializable {
+public class User implements Serializable {
 
 	private String username;
-	// hmmm, perhaps a callback class for password authentication?
-	// if we are to support many different ways of authentication the password verification method
-	// must support any number of ways of authenticating
 	
 	private String comment;
 	private String root;
@@ -106,7 +103,6 @@ public abstract class User implements Serializable {
 	private int uploadedFilesDay;
 	private int uploadedSecondsDay;
 		
-	private String sessionId = null;
 	/**
 	 * Constructor, set session id and default virtual directory object.
 	 */
@@ -118,7 +114,9 @@ public abstract class User implements Serializable {
 	 * authenticates and logs in the user.
 	 * @param user given password
 	 */
-	public abstract boolean login(String password);
+	public boolean login(String password) {
+		throw new NoSuchMethodError("login() needs to be overridden");
+	}
 
 	public boolean checkIP(String masks[]) {
 

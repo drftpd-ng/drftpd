@@ -24,9 +24,9 @@ public class XMLSerialize {
 		
 		fileElement.addContent(new Element("user").setText(file.getOwner()));
 		fileElement.addContent(new Element("group").setText(file.getGroup()));
-		if(file.isFile()) {
+		//if(file.isFile()) {
 			fileElement.addContent(new Element("size").setText(Long.toString(file.length())));
-		}
+		//} 
 		fileElement.addContent(new Element("lastModified").setText(Long.toString(file.lastModified())));
 		
 		if(file.isDirectory()) {
@@ -44,8 +44,8 @@ public class XMLSerialize {
 		
 		Element slaves = new Element("slaves");
 		for(Iterator i = file.getSlaves().iterator(); i.hasNext(); ) {
-			RemoteSlave slave = (RemoteSlave)i.next();
-			slaves.addContent(new Element("slave").setAttribute("name", slave.getName()));
+			RemoteSlave rslave = (RemoteSlave)i.next();
+			slaves.addContent(new Element("slave").setAttribute("name", rslave.getName()));
 		}
 		fileElement.addContent(slaves);
 		

@@ -30,8 +30,8 @@ public class NukeEvent extends FtpEvent {
 		this.nukees = nukees;
 		this.directory = directory;
 		this.reason = reason;
-		// TODO Auto-generated constructor stub
 	}
+	
 	String reason;
 	String directory;
 	int multiplier;

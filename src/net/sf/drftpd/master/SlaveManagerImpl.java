@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 import net.sf.drftpd.permission.GlobRMISocketFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.XMLSerialize;
-import net.sf.drftpd.slave.RemoteSlave;
+import net.sf.drftpd.slave.*;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.TransferImpl;
 import org.jdom.Document;
@@ -102,7 +102,7 @@ public class SlaveManagerImpl
 	}
 
 	/**
-	 * TODO: support hot swapping slaves
+	 * TODO: support hot swapping slaves (offline slaves)
 	 */
 	public void addSlave(RemoteSlave slave, LinkedRemoteFile remoteroot)
 		throws RemoteException {
@@ -114,7 +114,11 @@ public class SlaveManagerImpl
 		root.merge(remoteroot);
 		System.out.println(
 			"merge() took " + (System.currentTimeMillis() - millis) + "ms");
-		System.out.println("SlaveStatus: " + slave.getSlave().getSlaveStatus());
+		try {
+			System.out.println("SlaveStatus: " + slave.getSlave().getSlaveStatus()); // throws RemoteException
+		} catch (NoAvailableSlaveException e) {
+			e.printStackTrace();
+		}
 		
 		Document doc = new Document(XMLSerialize.serialize(root));
 		try {
@@ -206,6 +210,8 @@ public class SlaveManagerImpl
 					slave.getSlave().ping();
 				} catch (RemoteException ex) {
 					if(slave.handleRemoteException(ex)) removed++;
+				} catch (NoAvailableSlaveException ex) {
+					continue;
 				}
 			}
 		}

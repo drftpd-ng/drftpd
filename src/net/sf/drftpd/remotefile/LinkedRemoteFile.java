@@ -206,7 +206,12 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		Vector removed = new Vector(slaves.size());
 		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
-			Slave slave = rslave.getSlave();
+			Slave slave;
+			try  {
+				slave = rslave.getSlave();
+			} catch(NoAvailableSlaveException ex) {
+				continue;
+			}
 			try {
 				slave.delete(getPath());
 			} catch (RemoteException ex) {
@@ -616,8 +621,13 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 				//SUN J2SDK 1.4: [endpoint:[213.114.146.44:2012](remote),objID:[2b6651:ef0b3c7162:-8000, 0]]]]]
 				//IBM J2SDK 1.4: net.sf.drftpd.slave.SlaveImpl[RemoteStub [ref: [endpoint:[127.0.0.1:32907](local),objID:[1]]]]
 				RemoteSlave slave = (RemoteSlave) i.next();
+				try {
 				System.out.println(
 					"RMI stub class: " + slave.getSlave().getClass().getName());
+				} catch(NoAvailableSlaveException ex)  {
+					ex.printStackTrace();
+					continue;
+				}
 				Matcher m = p.matcher(slave.toString());
 				if (!m.find()) {
 					new RuntimeException("RMI regexp didn't match");

@@ -11,13 +11,13 @@ import java.util.Collection;
  */
 public abstract class UserManager {
 
-	//    protected FtpConfig mConfig;
-//	protected String mstAdminName;
 
 	/**
 	 * Constrcutor
 	 */
 
+	public abstract User create(String username) throws IOException;
+	
 	/**
 	 * Save the user. If a new user, create it else update the
 	 * existing user.
