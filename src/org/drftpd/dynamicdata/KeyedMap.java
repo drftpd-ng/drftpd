@@ -148,9 +148,4 @@ public class KeyedMap<K, V> extends Hashtable {
 	public void setObject(Key k, long v) {
 		setObject(k, new Long(v));
 	}
-
-	public Object put(K key, V value) {
-		logger.debug("put() "+key+" "+value+" remove: "+remove(key));
-		return super.put(key, value);
-	}
 }
