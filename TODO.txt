@@ -18,7 +18,7 @@
 	Issue:
 		Needs to get multiplier.
 	Possible solution:
-		nukelog
+		nukelog:
 		keep the value in LinkedRemoteFile and save to files.xml
 
 * sitebot
@@ -26,11 +26,11 @@
 		Needs to communicate with drftpd
 	Possible solution:
 		java based irc bot.
-		eggdrop communicating over irc.
+		eggdrop communicating over tcp.
 
 * PASV - passive transfer mode
 
-* Native user storage
+* Native user storage, not some glftpd hack...
 
 * recheck content on slaves to automatically add new files/remove
   deleted files.
@@ -47,3 +47,12 @@
 * Automatically delete/move files when diskspace is getting low.
 
 * redundant masters
+
+* Queued deletes/renames:
+	Issues:
+		Remove files from LinkedRemoteFile tree?
+		Or implememnt isDeleted() or exists()?
+		Make lookupFile() throw NoSuchFileExistsException on deleted files?
+	needed fields:
+		deletes:	path
+		renames:	from, to

@@ -21,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.sf.drftpd.FileExistsException;
+import net.sf.drftpd.IllegalTargetException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.master.usermanager.GlftpdUserManager;
@@ -57,6 +58,7 @@ public class FtpConnection extends BaseFtpConnection {
 		logger.setLevel(Level.FINEST);
 	}
 
+	// just set mstRenFr to null instead of this extra boolean?
 	private boolean mbRenFr = false;
 	private LinkedRemoteFile mstRenFr = null;
 
@@ -1668,8 +1670,20 @@ public class FtpConnection extends BaseFtpConnection {
 		//if(fromFile.renameTo(toFile)) {
 		//    out.write(ftpStatus.getResponse(250, request, user, args));
 		//}
-		mstRenFr.renameTo(to);
-
+		try {
+			mstRenFr.renameTo(to);
+		} catch (FileExistsException e) {
+			out.print(FtpResponse.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN);
+			e.printStackTrace();
+			return;
+		} catch (IllegalTargetException e) {
+			out.print(FtpResponse.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN);
+			e.printStackTrace();
+			return;
+		}
+		out.print(FtpResponse.RESPONSE_250_ACTION_OKAY);
+		
+		//out.write(ftpStatus.getResponse(250, request, user, args));
 		//else {
 		//    out.write(ftpStatus.getResponse(553, request, user, args));
 		//}

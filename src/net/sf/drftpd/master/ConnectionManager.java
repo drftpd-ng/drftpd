@@ -37,7 +37,7 @@ import org.jdom.input.SAXBuilder;
 import se.mog.io.File;
 
 public class ConnectionManager {
-	int idleTimeout = 600;
+	public static final int idleTimeout = 600;
 	private Vector connections = new Vector();
 	private UserManager usermanager;
 	private SlaveManagerImpl slavemanager;
@@ -58,9 +58,9 @@ public class ConnectionManager {
 
 			logger.info("Loading files.xml:2");
 				root = new LinkedRemoteFile(null, // slaves = null
-				null, // parent = null
-				new JDOMRemoteFile("", doc.getRootElement()) // entry
-			);
+		null, // parent = null
+		new JDOMRemoteFile("", doc.getRootElement()) // entry
+	);
 		} catch (FileNotFoundException ex) {
 			logger.info("files.xml not found, new file will be created.");
 			root = new LinkedRemoteFile();
@@ -83,8 +83,7 @@ public class ConnectionManager {
 				}
 			}
 		} catch (Exception ex) {
-			logger.info("Error reading masks from slaves.xml");
-			ex.printStackTrace();
+			logger.log(Level.INFO, "Error reading masks from slaves.xml", ex);
 		}
 		/** END: load XML file database **/
 
@@ -111,13 +110,17 @@ public class ConnectionManager {
 			} catch (RemoteException ex) {
 				ex.printStackTrace();
 				System.exit(0);
-				return;	//the compiler doesn't know that execution stops at System.exit(),
+				return;
+				//the compiler doesn't know that execution stops at System.exit(),
 			}
-			RemoteSlave remoteSlave = new RemoteSlave(slave, cfg.getProperty("slave.name"));
+			RemoteSlave remoteSlave =
+				new RemoteSlave(slave, cfg.getProperty("slave.name"));
 
 			try {
 				LinkedRemoteFile slaveroot =
-					SlaveImpl.getDefaultRoot(remoteSlave, cfg.getProperty("slave.roots"));
+					SlaveImpl.getDefaultRoot(
+						remoteSlave,
+						cfg.getProperty("slave.roots"));
 				slavemanager.addSlave(remoteSlave, slaveroot);
 			} catch (RemoteException ex) {
 				ex.printStackTrace();
@@ -154,7 +157,8 @@ public class ConnectionManager {
 					continue;
 				}
 				int maxIdleTime = conn.getUser().getMaxIdleTime();
-				if(maxIdleTime == 0) maxIdleTime = idleTimeout;
+				if (maxIdleTime == 0)
+					maxIdleTime = idleTimeout;
 				User user = conn.getUser();
 				logger.finer(
 					"User has been idle for "
@@ -162,8 +166,8 @@ public class ConnectionManager {
 						+ "s, max "
 						+ maxIdleTime
 						+ "s");
-				
-				if (idle >=maxIdleTime) {
+
+				if (idle >= maxIdleTime) {
 					// idle time expired, logout user.
 					conn.stop(
 						"Idle time expired: "
@@ -182,7 +186,7 @@ public class ConnectionManager {
 				slavemanager,
 				slavemanager.getRoot(),
 				this);
-				
+
 		conn.addFtpListener(new GlftpdLog(new File("glftpd.log")));
 		connections.add(conn);
 		conn.start();
@@ -217,9 +221,9 @@ public class ConnectionManager {
 		Properties cfg = new Properties();
 		try {
 			cfg.load(new FileInputStream("drftpd.conf"));
-		} catch (Exception ex) {
-			//logger.error("Error loading drftpd.conf", ex);
-			logger.log(Level.SEVERE, "Error loading drftpd.conf", ex);
+		} catch (IOException e1) {
+			logger.severe("Error reading drftpd.conf: " + e1.getMessage());
+			return;
 		}
 
 		logger.info("Starting ConnectionManager");

@@ -18,6 +18,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.sf.drftpd.IllegalTargetException;
+
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.NoAvailableSlaveException;
@@ -52,7 +54,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			//canWrite = true;
 			//canRead = true;
 			this.owner = owner;
-			this.group = group;			
+			this.group = group;
 		}
 
 		public DirectoryRemoteFile(User owner, String name) {
@@ -252,6 +254,9 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		}
 		return false;
 	}
+
+	//TODO check for offline slaves
+	//TODO proper load-balancing
 	public RemoteSlave getASlave() throws NoAvailableSlaveException {
 		if (slaves.size() == 0)
 			throw new NoAvailableSlaveException(
@@ -273,8 +278,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	/**
 	 * @throws net.sf.drftpd.master.NoAvailableSlaveException
 	 */
-	public long getCheckSum(boolean scan) {
-		if (scan == false)
+	public long getCheckSum(boolean rescan) {
+		if (rescan == false)
 			return checkSum;
 		if (checkSum != 0)
 			return checkSum;
@@ -316,6 +321,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	public Map getMap() {
 		return files;
 	}
+
 	public String getName() {
 		return name;
 	}
@@ -405,12 +411,14 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		return (LinkedRemoteFile[]) files.values().toArray(
 			new LinkedRemoteFile[0]);
 	}
+
 	private Object[] lookup(String path) {
 		LinkedRemoteFile currFile = this;
 
 		if (path.charAt(0) == '/')
 			currFile = getRoot();
 
+		//check for leading ~
 		if (path.length() == 1 && path.equals("~")) {
 			currFile = getRoot();
 			path = "";
@@ -433,7 +441,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			}
 			LinkedRemoteFile nextFile =
 				(LinkedRemoteFile) currFile.getMap().get(currFileName);
-			//currFile =
+
 			if (nextFile == null) {
 				StringBuffer remaining =
 					new StringBuffer((String) st.nextElement());
@@ -441,20 +449,15 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 					remaining.append('/').append((String) st.nextElement());
 				}
 				return new Object[] { currFile, remaining.toString()};
-				//				throw new FileNotFoundException(
-				//					currFile.getPath() + currFileName + ": Not found");
-			} // else
+			}
 			currFile = nextFile;
 		}
 		return new Object[] { currFile, null };
 	}
-	/**
-	 * Looks up the absolute path 'path', with this directory as directory root.
-	 * 
-	 * A leading / is ignored as this is the root, pathname cannot contain ".." or similair entries.
-	 */
+
 	public LinkedRemoteFile lookupFile(String path)
 		throws FileNotFoundException {
+		
 		Object[] ret = lookup(path);
 		if (ret[1] == null)
 			new FileNotFoundException(path + " not found");
@@ -466,6 +469,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 
 		return ((LinkedRemoteFile) ret[0]).getPath() + "/" + ((String) ret[1]);
 	}
+
 	/**
 	 * Merges two RemoteFile directories.
 	 * If duplicates exist, the slaves are added to this object and the file-attributes of the oldest file (lastModified) are kept.
@@ -584,9 +588,11 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		slaves.remove(slave);
 	}
 
-	public void renameTo(RemoteFile to) throws IOException {
-		renameTo(to.getPath());
-	}
+	// cannot rename to existing file
+	//	public void renameTo(RemoteFile to) throws IOException {
+	//		renameTo(to.getPath());
+	//	}
+
 	/**
 	 * Renames this file
 	 * 
@@ -597,7 +603,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 */
 	//TODO rename to relative path
 	//TODO squash bug that reverts the rename in memory for new connection
-	public void renameTo(String to) throws FileExistsException {
+	public void renameTo(String to)
+		throws FileExistsException, IllegalTargetException {
 		if (to.charAt(0) != '/')
 			throw new IllegalArgumentException("renameTo() must be given an absolute path as argument");
 
@@ -629,16 +636,28 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 					ex);
 			}
 		}
-		//TODO queued renaming
 
-		getParentFile().getMap().remove(fromName);
-		
-		Object [] ret = lookup(to);
-		
-		LinkedRemoteFile toDir;
-		toDir.mkdir()
-		
-		getParentFile().getMap().put(to, this);
+		//TODO queued renaming
+		try {
+			getParentFile().getMap().remove(fromName);
+		} catch (FileNotFoundException ex) {
+			logger.log(
+				Level.SEVERE,
+				"FileNotFoundException removing self in rename",
+				ex);
+		}
+
+		Object[] ret = lookup(to);
+
+		LinkedRemoteFile toDir = (LinkedRemoteFile) ret[0];
+		String toName = (String) ret[1];
+		if (toName == null)
+			throw new FileExistsException("Target already exists");
+		if (toName.indexOf('/') != -1)
+			throw new IllegalTargetException("Cannot rename to non-existing directory");
+		//toDir.mkdir()
+
+		toDir.getMap().put(to, this);
 		name = to;
 	}
 
