@@ -2,6 +2,7 @@
 * Blowfish has own settings for each channel
 * User/Group Permissions on a channel can be used to restrict access per argument:
  - SITE BLOWFISH #channel
+* 2.0 RC3 released
 
 2005/03/02 Matt Zimmerman <zubov@users.sourceforge.net>
 * Hell has frozen over, Dark finally submitted his .diz patch
@@ -39,6 +40,11 @@
 * Added AutoFreeSpace plugin. Thx P
   See http://www.drftpd.org/phpBB2/viewtopic.php?t=57
 * Fixed !{al,wk,month,day}{up,dn} irc plugin to output using blowfish
+
+2005/02/24 Matt Zimmerman <zubov@users.sourceforge.net>
+* Added better support for Win32 FileLocking issues
+* Slaves will now continually retry file operations that were locked
+* Win32 Slaves emulate how Linux Slaves operate
 
 2005/02/23 Jamal James <teflon114@gmail.com>
 * Fixed OnConnect

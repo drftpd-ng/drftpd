@@ -1,6 +1,18 @@
-# triggers have to be unique but can map to a method as many times as they want!
-# they are not one-to-one for you math majors
-# trigger Method private/public/#channel(seperated by commas) permissions
+# FORMAT: trigger method where users
+#   TRIGGER: Text that will trigger the command on irc (i.e. !who)
+#    -- triggers have to be unique but can map to a method as many
+#       times as they want! they are not one-to-one for you math majors
+#   METHOD: path of Method to execute when trigger is seen
+#   WHERE: flags representing where the trigger is allowed
+#        Valid Flags: channel (any channel the sitebot is in)
+#                     private (allowed in /query)
+#                     #drftpd (allowed in #drftpd)
+#   USERS: userlist, same format as perms.conf (i.e. !=user =group !*)
+#
+# Example: !who org.drftpd.sitebot.Who.doWho public,private *
+# Means: !who in any channel, or in a privmsg to the bot
+#        will execute org.drftpd.sitebot.Who.doWho
+
 
 !who org.drftpd.sitebot.Who.doWho public *
 !leechers org.drftpd.sitebot.Who.doLeechers public *
