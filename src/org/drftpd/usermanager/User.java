@@ -91,32 +91,11 @@ public abstract class User implements Entity {
     public abstract int getIdleTime();
 
     /**
-     * Get last access time
-     */
-    public abstract long getLastAccessTime();
-
-    public abstract long getLastReset();
-
-    /**
      * Returns the logins.
      *
      * @return int
      */
     public abstract int getLogins();
-
-    /**
-     * Returns the maxLogins.
-     *
-     * @return int
-     */
-    public abstract int getMaxLogins();
-
-    /**
-     * Returns the maxLoginsPerIP.
-     *
-     * @return int
-     */
-    public abstract int getMaxLoginsPerIP();
 
     //    /**
     //     * Returns the nukedBytes.
@@ -216,8 +195,6 @@ public abstract class User implements Entity {
     public abstract long getUploadedTimeForTrialPeriod(int i);
 
     public abstract String getName();
-
-    public abstract long getWeeklyAllotment();
 
     public abstract boolean isAdmin();
 
@@ -321,14 +298,6 @@ public abstract class User implements Entity {
     public abstract void setIdleTime(int idleTime);
 
     /**
-     * Sets the lastAccessTime.
-     *
-     * @param lastAccessTime
-     *            The lastAccessTime to set
-     */
-    public abstract void setLastAccessTime(long lastAccessTime);
-
-    /**
      * Sets the logins.
      *
      * @param logins
@@ -342,23 +311,6 @@ public abstract class User implements Entity {
      * @param maxLogins
      *            The maxLogins to set
      */
-    public abstract void setMaxLogins(int maxLogins);
-
-    /**
-     * Sets the maxLoginsPerIP.
-     *
-     * @param maxLoginsPerIP
-     *            The maxLoginsPerIP to set
-     */
-    public abstract void setMaxLoginsPerIP(int maxLoginsPerIP);
-
-    //    /**
-    //     * Sets the nukedBytes.
-    //     *
-    //     * @param nukedBytes
-    //     *            The nukedBytes to set
-    //     */
-    //    public abstract void setNukedBytes(long nukedBytes);
     public abstract void setPassword(String password);
 
     //    public abstract void setTimesNuked(int nuked);
@@ -399,8 +351,6 @@ public abstract class User implements Entity {
     public abstract void setUploadedTimeMonth(int millis);
 
     public abstract void setUploadedTimeWeek(int millis);
-
-    public abstract void setWeeklyAllotment(long weeklyAllotment);
 
     public abstract void toggleGroup(String string);
 

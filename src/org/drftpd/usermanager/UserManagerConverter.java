@@ -68,17 +68,10 @@ public class UserManagerConverter {
 
         to.setIdleTime(from.getIdleTime());
 
-        to.setLastAccessTime(from.getLastAccessTime());
-        to.setLastReset(from.getLastReset());
-
         //to.setLastNuked(from.getLastNuked());
         //to.putObject(Nuke.LASTNUKED, new Long(from
         //		.getObjectLong(Nuke.LASTNUKED)));
         to.setLogins(from.getLogins());
-
-        to.setMaxLogins(from.getMaxLogins());
-
-        to.setMaxLoginsPerIP(from.getMaxLoginsPerIP());
 
         //to.setMaxSimDownloads(from.getMaxSimDownloads());
         //to.setMaxSimUploads(from.getMaxSimUploads());

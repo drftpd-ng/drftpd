@@ -41,6 +41,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commands.Reply;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.io.SafeFileWriter;
 import org.drftpd.plugins.RaceStatistics;
 import org.drftpd.remotefile.MLSTSerialize;
@@ -184,16 +185,16 @@ public class ConnectionManager {
             }
         }
 
-        if ((user.getMaxLoginsPerIP() > 0) && 
-                (ipCount >= user.getMaxLoginsPerIP())) {
+        if ((user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINS) > 0) && 
+                (ipCount >= user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINSIP))) {
             return new Reply(530,
                 "Sorry, your maximum number of connections from this IP (" +
-                user.getMaxLoginsPerIP() + ") has been reached.");
+                user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINSIP) + ") has been reached.");
         }
 
-        if ((user.getMaxLogins() > 0) && (userCount >= user.getMaxLogins())) {
+        if ((user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINS) > 0) && (userCount >= user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINS))) {
             return new Reply(530,
-                "Sorry, your account is restricted to " + user.getMaxLogins() +
+                "Sorry, your account is restricted to " + user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINSIP) +
                 " simultaneous logins.");
         }
 

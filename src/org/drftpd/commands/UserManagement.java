@@ -605,18 +605,18 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                 if (commandArguments.length == 2) {
                     numLoginsIP = Integer.parseInt(commandArguments[1]);
                 } else {
-                    numLoginsIP = userToChange.getMaxLoginsPerIP();
+                    numLoginsIP = userToChange.getKeyedMap().getObjectInt(UserManagement.MAXLOGINSIP);
                 }
 
                 logger.info("'" + conn.getUserNull().getName() +
                     "' changed num_logins for '" + userToChange.getName() +
-                    "' from '" + userToChange.getMaxLogins() + "' '" +
-                    userToChange.getMaxLoginsPerIP() + "' to '" + numLogins +
+                    "' from '" + userToChange.getKeyedMap().getObjectInt(UserManagement.MAXLOGINS) + "' '" +
+                    userToChange.getKeyedMap().getObjectInt(UserManagement.MAXLOGINSIP) + "' to '" + numLogins +
                     "' '" + numLoginsIP + "'");
-                userToChange.setMaxLogins(numLogins);
-                userToChange.setMaxLoginsPerIP(numLoginsIP);
-                env.add("numlogins", "" + userToChange.getMaxLogins());
-				env.add("numloginsip", "" + userToChange.getMaxLoginsPerIP());
+                userToChange.getKeyedMap().setObject(UserManagement.MAXLOGINS,numLogins);
+                userToChange.getKeyedMap().setObject(UserManagement.MAXLOGINSIP,numLoginsIP);
+                env.add("numlogins", "" + numLogins);
+				env.add("numloginsip", "" + numLoginsIP);
                 response.addComment(conn.jprintf(UserManagement.class,
                         "changenumlogins.success", env));
             } catch (NumberFormatException ex) {
@@ -710,9 +710,9 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             long weeklyAllotment = Bytes.parseBytes(commandArguments[0]);
             logger.info("'" + conn.getUserNull().getName() +
                 "' changed wkly_allotment for '" + userToChange.getName() +
-                "' from '" + userToChange.getWeeklyAllotment() + "' to " +
+                "' from '" + userToChange.getKeyedMap().getObjectInt(UserManagement.WKLY_ALLOTMENT) + "' to " +
                 weeklyAllotment + "'");
-            userToChange.setWeeklyAllotment(weeklyAllotment);
+            userToChange.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT,weeklyAllotment);
 
             response = Reply.RESPONSE_200_COMMAND_OK;
         } else if ("tagline".equals(command)) {
@@ -1052,7 +1052,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 				env.add("fdn", "" + user.getDownloadedFiles());
 				env.add("mbdn", Bytes.formatBytes(user.getDownloadedBytes()));
 				env.add("ratio", "1:" + (int) user.getKeyedMap().getObjectFloat(UserManagement.RATIO));	
-				env.add("wkly", Bytes.formatBytes(user.getWeeklyAllotment()));
+				env.add("wkly", Bytes.formatBytes(user.getKeyedMap().getObjectInt(UserManagement.WKLY_ALLOTMENT)));
 				response.addComment(SimplePrintf.jprintf(body, env));
 			} catch (MissingResourceException e) {
 				response.addComment(e.getMessage());
@@ -1444,7 +1444,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
 
         return new Reply(200,
-            "User was last seen: " + new Date(user.getLastAccessTime()));
+            "User was last seen: " + user.getKeyedMap().getObjectDate(UserManagement.LASTSEEN));
     }
 
     private Reply doSITE_TAGLINE(BaseFtpConnection conn) throws ReplyException, ImproperUsageException {

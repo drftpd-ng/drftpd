@@ -203,12 +203,13 @@ public class XStreamUserManager implements UserManager {
                 //throws RuntimeException
                 user.setUserManager(this);
                 users.put(user.getName(), user);
-                user.reset(_connManager.getGlobalContext());
-                in.close();
+                //user.reset(_connManager.getGlobalContext());
 
                 return user;
             } catch (Exception e) {
                 throw new FatalException(e);
+            } finally {
+                in.close();
             }
         } catch (Throwable ex) {
             if (ex instanceof NoSuchUserException) {

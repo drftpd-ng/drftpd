@@ -302,7 +302,7 @@ public class Trial extends FtpListener {
 
             //logger.debug("end of first, montly, period: " + cal.getTime());
             //last reset before unique period and event time equals or bigger than unique period
-            if ((uevent.getUser().getLastReset() <= cal.getTimeInMillis()) &&
+            if ((uevent.getUser().getKeyedMap().getObjectDate(UserManagement.LASTSEEN).getTime() <= cal.getTimeInMillis()) &&
                     (uevent.getTime() >= cal.getTimeInMillis())) {
                 checkPassed(uevent.getUser(),
                     uevent.getUser().getUploadedBytes(), PERIOD_MONTHLY);
@@ -316,7 +316,7 @@ public class Trial extends FtpListener {
 
                 //logger.debug("end of first, weekly, period: " + cal.getTime());
                 //last reset before unique period and event time equals or bigger than unique period
-                if ((uevent.getUser().getLastReset() <= cal.getTimeInMillis()) &&
+                if ((uevent.getUser().getKeyedMap().getObjectDate(UserManagement.LASTSEEN).getTime() <= cal.getTimeInMillis()) &&
                         (uevent.getTime() >= cal.getTimeInMillis())) {
                     checkPassed(uevent.getUser(),
                         uevent.getUser().getUploadedBytes(), PERIOD_WEEKLY);
@@ -331,7 +331,7 @@ public class Trial extends FtpListener {
 
                 //logger.debug("end of first day period: " + cal.getTime());
                 //is day unique period
-                if ((uevent.getUser().getLastReset() <= cal.getTimeInMillis()) &&
+                if ((uevent.getUser().getKeyedMap().getObjectDate(UserManagement.LASTSEEN).getTime() <= cal.getTimeInMillis()) &&
                         (uevent.getTime() >= cal.getTimeInMillis())) {
                     checkPassed(uevent.getUser(),
                         uevent.getUser().getUploadedBytes(), PERIOD_DAILY);

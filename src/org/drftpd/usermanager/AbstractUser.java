@@ -29,6 +29,7 @@ import net.sf.drftpd.util.CalendarUtils;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.plugins.Trial;
@@ -56,8 +57,6 @@ public abstract class AbstractUser extends User {
                 "Groups cannot contain space or other illegal characters");
         }
     }
-    private String _comment;
-    protected long _created;
     private long _credits;
     protected KeyedMap<Key, Object> _data = new KeyedMap<Key, Object>();
    
@@ -74,7 +73,6 @@ public abstract class AbstractUser extends User {
     private ArrayList<String> _groups = new ArrayList<String>();
     private HostMaskCollection _hostMasks = new HostMaskCollection();
     private int _idleTime = 0; // no limit
-    private long _lastAccessTime = 0;
 
     //private long _lastNuked;
 
@@ -85,12 +83,6 @@ public abstract class AbstractUser extends User {
 
     //action counters
     private int _logins;
-
-    //login limits
-    private int _maxLogins;
-
-    //login limits
-    private int _maxLoginsPerIP;
 
     //private long _nukedBytes;
     //private int _racesLost;
@@ -122,11 +114,11 @@ public abstract class AbstractUser extends User {
     //    private int _uploadedFiles[P_MONTH];
     //    private int _uploadedFiles[P_WEEK];
     private String _username;
-    private long _weeklyAllotment;
 
     public AbstractUser(String username) {
         _username = username;
-        _created = System.currentTimeMillis();
+        _data.setObject(UserManagement.CREATED,new Date(System.currentTimeMillis()));
+        _data.setObject(UserManagement.TAGLINE,"no tagline");
     }
 
 	public void addAllMasks(HostMaskCollection hostMaskCollection) {
@@ -333,9 +325,6 @@ public abstract class AbstractUser extends User {
     public void setKeyedMap(KeyedMap<Key, Object> data) {
     	_data = data;
     }
-    public long getLastAccessTime() {
-        return _lastAccessTime;
-    }
 
     public long getLastReset() {
         return _lastReset;
@@ -348,15 +337,6 @@ public abstract class AbstractUser extends User {
     public int getLogins() {
         return _logins;
     }
-
-    public int getMaxLogins() {
-        return _maxLogins;
-    }
-
-    public int getMaxLoginsPerIP() {
-        return _maxLoginsPerIP;
-    }
-
 
     //    public int getRequests() {
     //        return _requests;
@@ -459,10 +439,6 @@ public abstract class AbstractUser extends User {
 
     public String getName() {
         return _username;
-    }
-
-    public long getWeeklyAllotment() {
-        return _weeklyAllotment;
     }
 
     public int hashCode() {
@@ -608,8 +584,8 @@ public abstract class AbstractUser extends User {
         _downloadedBytes[P_WEEK] = 0;
         _uploadedBytes[P_WEEK] = 0;
 
-        if (getWeeklyAllotment() > 0) {
-            setCredits(getWeeklyAllotment());
+        if (getKeyedMap().getObjectLong(UserManagement.WKLY_ALLOTMENT) > 0) {
+            setCredits(getKeyedMap().getObjectLong(UserManagement.WKLY_ALLOTMENT));
         }
     }
 
@@ -782,23 +758,8 @@ public abstract class AbstractUser extends User {
         _idleTime = idleTime;
     }
 
-    public void setLastAccessTime(long lastAccessTime) {
-        _lastAccessTime = lastAccessTime;
-    }
-
-    public void setLastNuked(long lastNuked) {
-    }
-
     public void setLogins(int logins) {
         _logins = logins;
-    }
-
-    public void setMaxLogins(int maxLogins) {
-        _maxLogins = maxLogins;
-    }
-
-    public void setMaxLoginsPerIP(int maxLoginsPerIP) {
-        _maxLoginsPerIP = maxLoginsPerIP;
     }
 
     public void setUploadedBytes(long bytes) {
@@ -943,10 +904,6 @@ public abstract class AbstractUser extends User {
         _uploadedMilliSeconds[P_WEEK] = millis;
     }
 
-    public void setWeeklyAllotment(long weeklyAllotment) {
-        _weeklyAllotment = weeklyAllotment;
-    }
-
     public void toggleGroup(String string) {
         if (isMemberOf(string)) {
             try {
@@ -996,7 +953,7 @@ public abstract class AbstractUser extends User {
      * Hit user - update last access time
      */
     public void updateLastAccessTime() {
-        _lastAccessTime = System.currentTimeMillis();
+        _data.setObject(UserManagement.LASTSEEN, new Date(System.currentTimeMillis()));
     }
 
     //    public void updateNukedBytes(long bytes) {
