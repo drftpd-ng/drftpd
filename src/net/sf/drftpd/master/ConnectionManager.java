@@ -19,6 +19,7 @@ package net.sf.drftpd.master;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -53,12 +54,16 @@ import net.sf.drftpd.remotefile.MLSTSerialize;
 import net.sf.drftpd.slave.SlaveImpl;
 import net.sf.drftpd.util.SafeFileWriter;
 
+import net.sf.drftpd.tcpslave.SocketSlaveImpl;
+import net.sf.drftpd.tcpslave.SocketSlaveManager;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.97 2004/04/27 19:57:18 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.98 2004/04/27 22:06:27 zombiewoof64 Exp $
  */
 public class ConnectionManager {
 
@@ -80,7 +85,10 @@ public class ConnectionManager {
 	public static void main(String args[]) {
 		System.out.println(SlaveImpl.VERSION + " master server starting.");
 		System.out.println("http://drftpd.org/");
-
+             File dir1 = new File (".");
+             try {
+                 System.out.println("cwd=" + dir1.getCanonicalPath());
+             } catch (Exception e) {}
 		try {
 			String cfgFileName;
 			if (args.length >= 1) {
@@ -187,6 +195,9 @@ public class ConnectionManager {
 		} catch (RemoteException e) {
 			throw new FatalException(e);
 		}
+
+            // start socket slave manager
+            SocketSlaveManager smgr = new SocketSlaveManager(this);
 
 		if (slaveCfg != null) {
 			try {

@@ -52,6 +52,8 @@ import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.util.SafeFileWriter;
 
+import net.sf.drftpd.tcpslave.SocketSlaveImpl;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
@@ -63,7 +65,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.80 2004/04/20 04:11:47 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.81 2004/04/27 22:06:28 zombiewoof64 Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -111,7 +113,7 @@ public class SlaveManagerImpl
 		}
 		return new RemoteSlave(
 			slaveElement.getChildText("name").toString(),
-			masks);
+			masks, slaveElement);
 	}
 
 	public static List loadRSlaves() {
@@ -265,13 +267,20 @@ public class SlaveManagerImpl
 		}
 
 		try {
-			rslave.setSlave(
-				slave,
-				InetAddress.getByName(RemoteServer.getClientHost()), status);
+                    InetAddress addr = null;
+                    if (slave instanceof net.sf.drftpd.slave.SlaveImpl) {
+                        addr = InetAddress.getByName(RemoteServer.getClientHost());
+                    }
+                    if (slave instanceof net.sf.drftpd.tcpslave.SocketSlaveImpl) {
+                        addr = ((net.sf.drftpd.tcpslave.SocketSlaveImpl)slave).getAddress();
+                    }
+                    if (addr == null) {
+                        throw new IllegalArgumentException(rslave.getName() + " has no slave address");
+                    }
+                    rslave.setSlave(slave,addr,slave.getSlaveStatus());
 		} catch (Throwable e1) {
 			throw new FatalException(e1);
-		}
-		logger.debug("About to remerge(), slave is " + rslave);
+		}		logger.debug("About to remerge(), slave is " + rslave);
 		try {
 			remerge(rslave);
 		} catch (IOException e) {
@@ -288,6 +297,25 @@ public class SlaveManagerImpl
 		getConnectionManager().dispatchFtpEvent(
 			new SlaveEvent("ADDSLAVE", rslave));
 	}
+
+	public void delSlave(String slaveName, String reason)
+		throws RemoteException {
+
+		RemoteSlave rslave = null;
+		for (Iterator iter = _rslaves.iterator(); iter.hasNext();) {
+			RemoteSlave rslave2 = (RemoteSlave) iter.next();
+			if (rslave2.getName().equals(slaveName)) {
+				rslave = rslave2;
+				break;
+			}
+		}
+		if (rslave == null)
+			throw new IllegalArgumentException("Slave not found in slaves.xml (" + slaveName + ")");
+                
+                rslave.setOffline(reason);
+        }
+
+
 	public RemoteSlave findLargestFreeSlave() {
 		Collection slaveList =
 			getConnectionManager().getSlaveManager().getSlaveList();

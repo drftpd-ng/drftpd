@@ -35,9 +35,11 @@ import net.sf.drftpd.slave.Transfer;
 
 import org.apache.log4j.Logger;
 
+import org.jdom.Element;
+
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.32 2004/04/20 04:11:47 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.33 2004/04/27 22:06:28 zombiewoof64 Exp $
  */
 public class RemoteSlave implements Comparable {
 
@@ -58,6 +60,7 @@ public class RemoteSlave implements Comparable {
 	private String _name;
 	private Slave _slave;
 	private SlaveStatus _status;
+	private Element _config;
 
 	public RemoteSlave(String name, Collection masks) {
 		if (name.equalsIgnoreCase("all"))
@@ -66,6 +69,16 @@ public class RemoteSlave implements Comparable {
 					+ " is a reserved keyword, it can't be used as a slave name");
 		_name = name;
 		_masks = masks;
+	}
+
+	public RemoteSlave(String name, Collection masks, Element config) {
+		if (name.equalsIgnoreCase("all"))
+			throw new IllegalArgumentException(
+				name
+					+ " is a reserved keyword, it can't be used as a slave name");
+		_name = name;
+		_masks = masks;
+            _config = config;
 	}
 
 	public int compareTo(Object o) {
@@ -106,6 +119,10 @@ public class RemoteSlave implements Comparable {
 
 	public Collection getMasks() {
 		return _masks;
+	}
+
+	public Element getConfig() {
+		return _config;
 	}
 
 	/**
