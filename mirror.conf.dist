@@ -1,2 +1,6 @@
 #total number of each newly stored file that should be on the site
 numberOfMirrors=2
+
+# do not mirror releases under these directorys
+#exclude.1=/exempt/*
+#exclude.2=/alsoexempt/*
