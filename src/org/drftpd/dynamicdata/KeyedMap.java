@@ -137,7 +137,7 @@ public class KeyedMap extends HashMap {
 
         put(key, obj);
 	}
-	public void putObject(Key k, int v) {
+	public void setObject(Key k, int v) {
 		setObject(k, new Integer(v));
 	}
 

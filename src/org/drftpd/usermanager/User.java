@@ -484,6 +484,6 @@ public abstract class User implements Entity {
 		return getKeyedMap().getObjectBoolean(key);
 	}
 	private final void putObject(Key k, int v) {
-		getKeyedMap().putObject(k, v);
+		getKeyedMap().setObject(k, v);
 	}
 }

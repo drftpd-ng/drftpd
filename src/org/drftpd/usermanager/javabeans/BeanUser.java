@@ -62,13 +62,11 @@ public class BeanUser extends AbstractUser implements Serializable {
 	}
 
 	public void commit() throws UserFileException {
-		logger.debug("commit "+getName());
 		if(_purged) return;
 		XMLEncoder out = null;
 		try {
 			out = _um.getXMLEncoder(new SafeFileOutputStream(_um.getUserFile(getName())));
 			out.writeObject(this);
-			logger.debug("wroteObject()");
 		} catch (IOException ex) {
 			throw new UserFileException(ex);
 		} finally {

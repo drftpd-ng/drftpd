@@ -325,22 +325,22 @@ public abstract class AbstractUser extends User {
 		_data = new KeyedMap();
 
 		_data.putObject(Nuke.LASTNUKED, lastNuked);
-		_data.putObject(Nuke.NUKED, timesNuked);
+		_data.setObject(Nuke.NUKED, timesNuked);
 		_data.putObject(Nuke.NUKEDBYTES, nukedBytes);
 
-		_data.putObject(Request.REQUESTS, requests);
-		_data.putObject(Request.REQUESTSFILLED, requestsFilled);
+		_data.setObject(Request.REQUESTS, requests);
+		_data.setObject(Request.REQUESTSFILLED, requestsFilled);
 
 		_data.setObject(UserManagment.COMMENT, comment);
-		_data.putObject(UserManagment.CREATED, created);
+		_data.setObject(UserManagment.CREATED, new Date(created));
 		_data.setObject(UserManagment.RATIO, new Float(ratio));
 		_data.setObject(UserManagment.TAGLINE, tagline);
 
-		_data.putObject(RaceStatistics.RACES, racesParticipated);
-		_data.putObject(RaceStatistics.RACESLOST, racesLost);
-		_data.putObject(RaceStatistics.RACESWON, racesWon);
+		_data.setObject(RaceStatistics.RACES, racesParticipated);
+		_data.setObject(RaceStatistics.RACESLOST, racesLost);
+		_data.setObject(RaceStatistics.RACESWON, racesWon);
 
-		_data.putObject(Statistics.LOGINS, logins);
+		_data.setObject(Statistics.LOGINS, logins);
 		return _data;
 	}
 
