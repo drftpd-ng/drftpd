@@ -487,7 +487,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	public SFVFile getSFVFile() throws IOException, NoAvailableSlaveException {
 		if (sfvFile != null)
 			return sfvFile;
-		synchronized (sfvFile) {
+		synchronized (this) {
 			if (sfvFile == null) {
 				while (true) {
 					RemoteSlave slave = getASlaveForDownload();

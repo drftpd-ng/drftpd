@@ -3450,6 +3450,7 @@ public class FtpConnection extends BaseFtpConnection {
 				return;
 			}
 		}
+		assert rslave != null;
 		
 		List rslaves = Collections.singletonList(rslave);
 		//		ArrayList rslaves = new ArrayList();
