@@ -43,7 +43,7 @@ public class CooperativeSlaveTransfer extends Thread {
 		boolean completed = false;
 		for(int x = 0; x<_numoftries; x++) {
 			if (completed) {
-				logger.info("Successfully mirrored " + _lrf.getName() + " to " + _rs.getName());
+				logger.info("Successfully sent " + _lrf.getName() + " to " + _rs.getName());
 				break;
 			} 
 			//logger.info("About to send " + _lrf.getName() + " to " + _rs.getName());
@@ -54,7 +54,7 @@ public class CooperativeSlaveTransfer extends Thread {
 				if (!e.getMessage().equals("File exists"))
 					completed = true;
 			} catch (Exception e) {
-				logger.error("Error mirroring " + _lrf.getName() + " to " + _rs.getName(), e);
+				logger.error("Error sending " + _lrf.getName() + " to " + _rs.getName(), e);
 				completed = true;
 			}
 		}

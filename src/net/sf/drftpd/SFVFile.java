@@ -13,7 +13,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- * @version $Id: SFVFile.java,v 1.20 2003/12/01 04:43:43 mog Exp $
+ * @version $Id: SFVFile.java,v 1.21 2003/12/04 04:48:25 zubov Exp $
  */
 public class SFVFile implements Serializable {
 
@@ -106,7 +106,7 @@ public class SFVFile implements Serializable {
 			if (!file.isAvailable())
 				offline++;
 		}
-		return new SFVStatus(size() - good, offline);
+		return new SFVStatus(offline, size()-good);
 	}
 
 	public long getChecksum(String fileName) throws ObjectNotFoundException {

@@ -75,14 +75,15 @@ public class RaceStatistics implements FtpListener {
 			return;
 
 		//COMPLETE
-		if (sfvfile.finishedFiles() != sfvfile.size())
+		if (sfvfile.getStatus().isFinished())
 			return;
 		Collection racers = IRCListener.topFileUploaders(sfvfile.getFiles());
 		if ( racers.size() <= 1 )
 			return; // no race
 		int count = 1;
 		for ( Iterator iter = racers.iterator(); iter.hasNext(); count++) {
-			UploaderPosition racer = (UploaderPosition) iter;
+			UploaderPosition racer = (UploaderPosition) iter.next();
+			System.out.println("racer = " + racer.getUsername());
 			User user;
 			try {
 				user = _cm.getUserManager().getUserByName(racer.getUsername());

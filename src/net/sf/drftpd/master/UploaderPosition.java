@@ -62,7 +62,7 @@ public class UploaderPosition implements Comparable {
 	public long getXferspeed() {
 		if (getXfertime() == 0)
 			return 0;
-		return getBytes() / (getXfertime() / 1000);
+		return (long) ((long) getBytes() / ((long) getXfertime() / 1000.0));
 	}
 
 	public long getXfertime() {

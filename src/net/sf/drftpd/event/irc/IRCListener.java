@@ -71,7 +71,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.66 2003/12/01 04:43:43 mog Exp $
+ * @version $Id: IRCListener.java,v 1.67 2003/12/04 04:48:26 zubov Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -237,11 +237,10 @@ public class IRCListener implements FtpListener, Observer {
 			logger.info(
 				"No sfv file in "
 					+ direvent.getDirectory().getPath()
-					+ ", can't publish race info",
-				ex);
+					+ ", can't publish race info");
 			return;
 		} catch (NoAvailableSlaveException e) {
-			logger.info("No available slave with .sfv", e);
+			logger.info("No available slave with .sfv");
 			return;
 		} catch (IOException e) {
 			logger.warn("IO error reading .sfv", e);

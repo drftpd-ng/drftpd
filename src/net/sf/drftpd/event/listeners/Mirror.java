@@ -9,6 +9,9 @@ package net.sf.drftpd.event.listeners;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 import net.sf.drftpd.FatalException;
@@ -64,9 +67,28 @@ public class Mirror implements FtpListener {
 		LinkedRemoteFile dir;
 		dir = transevent.getDirectory();
 		RemoteSlave destrslave = null;
-		for (int x = 1; x<_numberOfMirrors; x++){ // already have one copy sent
+		ArrayList mirrorSlaves = new ArrayList();
+		int maxSize;
+		try {
+			maxSize = _cm.getSlaveManager().getAvailableSlaves().size();
+		} catch (NoAvailableSlaveException e) {
+			maxSize = 0;
+		}
+		for (int x = 1; x<Math.min(_numberOfMirrors,maxSize); x++){ // already have one copy sent
 			try {
-				destrslave = _cm.getSlaveManager().getASlave(Transfer.TRANSFER_RECEIVING_UPLOAD);
+				while(true){
+					destrslave = _cm.getSlaveManager().getASlave(Transfer.TRANSFER_RECEIVING_UPLOAD);
+					if (mirrorSlaves.contains(destrslave)) {
+						try {
+							Thread.sleep(5);
+						} catch (InterruptedException e2) {
+							// just sleeping till the slaves are in a new state
+						}
+						continue;
+					}
+					mirrorSlaves.add(destrslave);
+					break;
+				}
 			} catch (NoAvailableSlaveException e1) {
 				logger.error("Failed on getting a slave to mirror " + dir.getPath());
 				// what should i do if there's no slave to transfer to?
