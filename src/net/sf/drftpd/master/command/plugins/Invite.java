@@ -1,6 +1,5 @@
 package net.sf.drftpd.master.command.plugins;
 
-import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.InviteEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;

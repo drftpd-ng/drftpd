@@ -22,7 +22,6 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.UploaderPosition;
-import net.sf.drftpd.master.VirtualDirectory;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
@@ -199,7 +198,7 @@ public class Dir implements CommandHandler, Cloneable {
 					+ " already exists");
 		}
 
-		if (!VirtualDirectory.isLegalFileName(createdDirName)) {
+		if (!LIST.isLegalFileName(createdDirName)) {
 			return FtpReply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
 		}
 

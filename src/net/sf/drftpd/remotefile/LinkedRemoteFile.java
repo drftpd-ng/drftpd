@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -58,7 +59,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 
 	protected SFVFile sfvFile;
 	/////////////////////// SLAVES
-	protected Collection _slaves;
+	protected List _slaves;
 	private long _xfertime = 0;
 	private static final String EMPTY_STRING = "".intern();
 	/**
@@ -75,7 +76,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		_parent = null;
 		_name = EMPTY_STRING;
 		_files = Collections.synchronizedMap(new Hashtable());
-		_slaves = Collections.synchronizedCollection(new ArrayList());
+		_slaves = Collections.synchronizedList(new ArrayList(1));
 	}
 	/**
 	 * Creates a RemoteFile from file or creates a directory tree representation.

@@ -21,6 +21,7 @@ import java.util.Vector;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
+import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.PermissionDeniedException;
@@ -62,6 +63,7 @@ public class SlaveImpl
 	public static RootBasket getDefaultRootBasket(Properties cfg) {
 		RootBasket roots;
 		// START: RootBasket
+		long defaultMinSpaceFree = Bytes.parseBytes(cfg.getProperty("slave.minspacefree", "50mb"));
 		ArrayList rootStrings = new ArrayList();
 		for (int i = 1; true; i++) {
 			String rootString = cfg.getProperty("slave.root." + i);
@@ -75,7 +77,7 @@ public class SlaveImpl
 					Long.parseLong(
 						cfg.getProperty("slave.root." + i + ".minspacefree"));
 			} catch (NumberFormatException ex) {
-				minSpaceFree = 0;
+				minSpaceFree = defaultMinSpaceFree;
 			}
 
 			int priority;

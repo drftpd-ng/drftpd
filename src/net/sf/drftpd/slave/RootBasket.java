@@ -14,11 +14,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Vector;
-
-import org.apache.log4j.Logger;
+import java.util.List;
 
 import net.sf.drftpd.FatalException;
+
+import org.apache.log4j.Logger;
 
 import se.mog.io.File;
 
@@ -28,18 +28,18 @@ import se.mog.io.File;
 //TODO SECURITY: verify so that we never get outside of a rootbasket root
 public class RootBasket {
 	private static Logger logger = Logger.getLogger(RootBasket.class);
-	private Collection roots;
+	private Collection _roots;
 
 	public RootBasket(Collection roots) throws IOException {
 		/** sanity checks **/
 		validateRoots(roots);
-		this.roots = new ArrayList(roots);
+		this._roots = new ArrayList(roots);
 	}
 
 	public Root getARoot() {
 		long mostFree = 0;
 		Root mostFreeRoot = null;
-		for (Iterator iter = roots.iterator(); iter.hasNext();) {
+		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
 			Root root = (Root) iter.next();
 			long diskSpaceAvailable = root.getDiskSpaceAvailable();
 			if (diskSpaceAvailable > mostFree) {
@@ -53,36 +53,61 @@ public class RootBasket {
 	}
 
 	/**
-	 * Get a root for storing dir specified by dir
-	 * @param dir DIRECTOTY to store file in
+	 * Get a directory specified by dir under an approperiate root for storing storing files in.
+	 * @param directory to store file in
 	 * @return
 	 */
-	public File getARootFile(String dir) {
-		File file = new File(getARoot().getPath()+File.separator+dir);
+	public File getARootFileDir(String dir) {
+		Iterator iter = _roots.iterator();
+		Root bestRoot = (Root) iter.next();
+		while (iter.hasNext()) {
+			Root root = (Root) iter.next();
+			if(bestRoot.isFull()) {
+				bestRoot = root;
+				continue;
+			}
+			if(root.lastModified() > bestRoot.lastModified()) {
+				if(root.isFull() && !bestRoot.isFull()) continue;
+				bestRoot = root;
+			}
+		}
+		bestRoot.touch();
+		File file = bestRoot.getFile(dir);
 		file.mkdirs();
 		return file;
 	}
 	//Get root which has most of the tree structure that we have.
 	public File getFile(String path) throws FileNotFoundException {
-		return new File(getRootForFile(path).getPath()+File.separatorChar+path);
+		return new File(
+			getRootForFile(path).getPath() + File.separatorChar + path);
 	}
 
-	public Collection getMultipleFiles(String path)
-		throws FileNotFoundException {
-		Vector files = new Vector();
-		for (Iterator iter = roots.iterator(); iter.hasNext();) {
-			Root root = (Root) iter.next();
-			File file = new File(root.getPath() + File.separatorChar + path);
-			if (file.exists())
-				files.add(file);
+	/**
+	 * Returns an ArrayList containing se.mog.io.File objects
+	 */
+	public List getMultipleFiles(String path) throws FileNotFoundException {
+		ArrayList files = new ArrayList();
+		for (Iterator iter = getMultipleRootsForFile(path).iterator(); iter.hasNext();) {
+			files.add(((Root) iter.next()).getFile(path));
 		}
-		if (files.size() == 0)
-			throw new FileNotFoundException("No files found");
 		return files;
 	}
 
-	public Root getRootForFile(String path) throws FileNotFoundException {
+	public List getMultipleRootsForFile(String path)
+		throws FileNotFoundException {
+		ArrayList roots = new ArrayList();
 		for (Iterator iter = roots.iterator(); iter.hasNext();) {
+			Root root = (Root) iter.next();
+			if (root.getFile(path).exists())
+				roots.add(root);
+		}
+		if (roots.size() == 0)
+			throw new FileNotFoundException("No files found");
+		return roots;
+	}
+
+	public Root getRootForFile(String path) throws FileNotFoundException {
+		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
 			Root root = (Root) iter.next();
 			File file = new File(root.getPath() + File.separatorChar + path);
 			if (file.exists())
@@ -90,13 +115,13 @@ public class RootBasket {
 		}
 		throw new FileNotFoundException(
 			path + " not found in any root in the RootBasket");
-		
+
 	}
 
 	public long getTotalDiskSpaceAvailable() {
 		long totalDiskSpaceAvailable = 0;
 
-		for (Iterator iter = roots.iterator(); iter.hasNext();) {
+		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
 			Root root = (Root) iter.next();
 			File rootFile = root.getFile();
 			totalDiskSpaceAvailable += rootFile.getDiskSpaceAvailable();
@@ -107,16 +132,16 @@ public class RootBasket {
 	public long getTotalDiskSpaceCapacity() {
 		long totalDiskSpaceCapacity = 0;
 
-		for (Iterator iter = roots.iterator(); iter.hasNext();) {
+		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
 			Root root = (Root) iter.next();
 			File rootFile = root.getFile();
 			totalDiskSpaceCapacity += rootFile.getDiskSpaceCapacity();
 		}
 		return totalDiskSpaceCapacity;
 	}
-	
+
 	public Iterator iterator() {
-		return roots.iterator();
+		return _roots.iterator();
 	}
 
 	private static void validateRoots(Collection roots) throws IOException {
@@ -131,12 +156,15 @@ public class RootBasket {
 			}
 
 			public int compare(Object o1, Object o2) {
-				return compare((File)o1, (File)o2);
+				return compare((File) o1, (File) o2);
 			}
 			public int compare(File o1, File o2) {
 				int thisVal = o1.getPath().length();
 				int anotherVal = o2.getPath().length();
-				return (thisVal<anotherVal ? 1 : (thisVal==anotherVal ? 0 : -1));
+				return (
+					thisVal < anotherVal
+						? 1
+						: (thisVal == anotherVal ? 0 : -1));
 			}
 		});
 
@@ -148,21 +176,23 @@ public class RootBasket {
 			Root root = (Root) o;
 			File rootFile = root.getFile();
 			if (!rootFile.exists()) {
-				if(!rootFile.mkdirs()) {
-					throw new IOException("mkdirs() failed on "+rootFile.getPath());
+				if (!rootFile.mkdirs()) {
+					throw new IOException(
+						"mkdirs() failed on " + rootFile.getPath());
 				}
 			}
 			if (!rootFile.exists())
 				throw new FileNotFoundException("Invalid root: " + rootFile);
-			
+
 			String fullpath = rootFile.getAbsolutePath();
-			
+
 			for (Iterator iterator = mounts.iterator(); iterator.hasNext();) {
 				File mount = (File) iterator.next();
-				if(fullpath.startsWith(mount.getPath())) {
-					logger.info(fullpath+" in mount "+mount.getPath());
-					if(usedMounts.get(mount.getPath()) != null) {
-						throw new IOException("Multiple roots in mount "+mount.getPath());
+				if (fullpath.startsWith(mount.getPath())) {
+					logger.info(fullpath + " in mount " + mount.getPath());
+					if (usedMounts.get(mount.getPath()) != null) {
+						throw new IOException(
+							"Multiple roots in mount " + mount.getPath());
 					}
 					usedMounts.put(mount.getPath(), new Object());
 					break;
@@ -175,7 +205,10 @@ public class RootBasket {
 					continue;
 				if (root2.getPath().startsWith(root.getPath())) {
 					throw new FatalException(
-						"Overlapping roots: " + root.getPath() + " and " + root2.getPath());
+						"Overlapping roots: "
+							+ root.getPath()
+							+ " and "
+							+ root2.getPath());
 				}
 			}
 		}

@@ -32,7 +32,6 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.VirtualDirectory;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
@@ -796,7 +795,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			//			}
 		}
 
-		if (!VirtualDirectory.isLegalFileName(targetFilename)
+		if (!LIST.isLegalFileName(targetFilename)
 			|| !conn.getConfig().checkPrivPath(conn.getUserNull(), targetDir)) {
 			return new FtpReply(
 				553,

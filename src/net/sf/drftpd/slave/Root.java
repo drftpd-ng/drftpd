@@ -15,29 +15,36 @@ import se.mog.io.File;
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 public class Root {
+	private File _rootFile;
 	private String _root;
 	private long _minSpaceFree = 0;
 	private int _priority = 0;
+	private long _lastModified;
 
 	public Root(String root, long minSpaceFree, int priority) {
 		_root = root;
+		_rootFile = new File(_root);
+		_lastModified = getFile().lastModified();
 	}
 	public File getFile() {
-		return new File(_root);
+		return _rootFile;
 	}
 	public String getPath() {
 		return _root;
 	}
-
+	public long lastModified() {
+		return _lastModified;
+	}
+	public void touch() {
+		getFile().setLastModified(_lastModified = System.currentTimeMillis());
+	}
 	public long getMinSpaceFree() {
 		return _minSpaceFree;
 	}
 	public int getPriority() {
 		return _priority;
 	}
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
+
 	public String toString() {
 		return "[root=" + getPath() + "]";
 	}
@@ -48,12 +55,12 @@ public class Root {
 	public long getDiskSpaceCapacity() {
 		return getFile().getDiskSpaceCapacity();
 	}
-	/**
-	 * @param fromfile
-	 * @return
-	 */
+
 	public File getFile(String path) {
-		return new File(_root+File.separator+path);
+		return new File(_root + File.separator + path);
 	}
 
+	public boolean isFull() {
+		return getFile().getDiskSpaceAvailable() > getMinSpaceFree();
+	}
 }

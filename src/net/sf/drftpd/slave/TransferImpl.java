@@ -197,7 +197,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		_direction = TRANSFER_RECEIVING_UPLOAD;
 		_checksum = new CRC32();
 
-		String root = _slave.getRoots().getARootFile(dirname).getPath();
+		String root = _slave.getRoots().getARootFileDir(dirname).getPath();
 
 		_out = new FileOutputStream(root + File.separator + filename);
 

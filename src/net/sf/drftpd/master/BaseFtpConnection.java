@@ -210,7 +210,7 @@ public class BaseFtpConnection implements Runnable {
 	 * Get user object
 	 */
 	public User getUser() throws NoSuchUserException {
-		if (_user == null)
+		if (_user == null || !_authenticated)
 			throw new NoSuchUserException("no user logged in for connection");
 		return _user;
 	}

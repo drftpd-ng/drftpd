@@ -715,7 +715,7 @@ public class IRCListener implements FtpListener, Observer {
 				_conn.sendCommand(
 					new NickCommand(_ircCfg.getProperty("irc.nick")));
 			}
-			if(!_conn.getClientState().isOnChannel(_channelName)) {
+			if (!_conn.getClientState().isOnChannel(_channelName)) {
 				_conn.removeCommandObserver(_autoJoin);
 				_conn.sendCommand(new PartCommand(oldchannel));
 			}
@@ -826,7 +826,7 @@ public class IRCListener implements FtpListener, Observer {
 					}
 				} else if (msg.equals("!slaves")) {
 					updateSlaves(observer, msgc);
-				} else if (msg.startsWith("!speed")) {
+				} else if (msg.startsWith("!speed ")) {
 					try {
 						updateSpeed(observer, msgc);
 					} catch (FormatterException e) {
@@ -1063,8 +1063,7 @@ public class IRCListener implements FtpListener, Observer {
 					if (!first) {
 						status.append(separator);
 					}
-					if (conn.isAuthenticated()
-						&& conn.getUser().getUsername().equals(username)) {
+					if (connUser.getUsername().equals(username)) {
 
 						env.add(
 							"idle",

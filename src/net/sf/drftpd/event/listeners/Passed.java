@@ -1,0 +1,327 @@
+package net.sf.drftpd.event.listeners;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
+import net.sf.drftpd.Bytes;
+import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.event.Event;
+import net.sf.drftpd.event.FtpListener;
+import net.sf.drftpd.event.UserEvent;
+import net.sf.drftpd.event.irc.IRCListener;
+import net.sf.drftpd.master.ConnectionManager;
+import net.sf.drftpd.master.config.FtpConfig;
+import net.sf.drftpd.master.config.Permission;
+import net.sf.drftpd.master.usermanager.NoSuchUserException;
+import net.sf.drftpd.master.usermanager.User;
+
+import org.apache.log4j.Logger;
+
+import f00f.net.irc.martyr.GenericCommandAutoService;
+import f00f.net.irc.martyr.InCommand;
+import f00f.net.irc.martyr.commands.MessageCommand;
+
+public class Passed implements FtpListener {
+	class Limit {
+		String action;
+		String name;
+		short period;
+		Permission perm;
+		long bytes;
+	}
+
+	class SiteBot extends GenericCommandAutoService {
+
+		//private static final Logger logger = Logger.getLogger(SiteBot.class);
+
+		private IRCListener _irc;
+
+		private Passed _parent;
+
+		/**
+		 * @param connection
+		 */
+		protected SiteBot(IRCListener irc, Passed parent) {
+			super(irc.getIRCConnection());
+			_irc = irc;
+			_parent = parent;
+		}
+
+		/* (non-Javadoc)
+		 * @see f00f.net.irc.martyr.GenericCommandAutoService#updateCommand(f00f.net.irc.martyr.InCommand)
+		 */
+		protected void updateCommand(InCommand command) {
+			try {
+				if (!(command instanceof MessageCommand))
+					return;
+				MessageCommand msgc = (MessageCommand) command;
+				String msg = msgc.getMessage();
+				if (msg.startsWith("!passed ")) {
+					String username = msg.substring("!passed ".length());
+					try {
+						User user =
+							_parent
+								.getConnectionManager()
+								.getUserManager()
+								.getUserByName(
+								username);
+						for (Iterator iter = _parent.getLimits().iterator();
+							iter.hasNext();
+							) {
+							Limit limit = (Limit) iter.next();
+							if (limit.perm.check(user)) {
+								long bytesleft =
+									limit.bytes
+										- Passed.getUploadedBytesForPeriod(
+											user,
+											limit.period);
+								if (bytesleft <= 0) {
+									_irc.say(
+										"[passed] "
+											+ user.getUsername()
+											+ " has passed this "
+											+ getPeriodName(limit.period)
+											+ " "
+											+ limit.name
+											+ " with "
+											+ Bytes.formatBytes(-bytesleft));
+								} else {
+									_irc.say(
+										"[passed] "
+											+ user.getUsername()
+											+ " is on "
+											+ limit.name
+											+ " with "
+											+ Bytes.formatBytes(bytesleft)
+											+ " left until "
+											+ Passed
+												.getCalendarForEndOfPeriod(
+													limit.period)
+												.getTime());
+								}
+							}
+						}
+						//_irc.say()
+					} catch (NoSuchUserException e) {
+						_irc.say("No such user: " + username);
+						logger.info("", e);
+					} catch (IOException e) {
+						logger.warn("", e);
+					}
+				}
+			} catch (RuntimeException e) {
+				logger.error("", e);
+			}
+
+		}
+
+		/**
+		 * @param s
+		 * @return
+		 */
+		private String getPeriodName(short s) {
+			switch (s) {
+				case PERIOD_DAILY :
+					return "days";
+				case PERIOD_MONTHLY :
+					return "months";
+				case PERIOD_WEEKLY :
+					return "weeks";
+				default :
+					throw new IllegalArgumentException("" + s);
+			}
+		}
+	}
+	private static final short ACTION_DISABLE = 0;
+	private static final short ACTION_PURGE = 1;
+	private static final Logger logger = Logger.getLogger(Passed.class);
+
+	private static final short PERIOD_DAILY = 0;
+	private static final short PERIOD_MONTHLY = 2;
+	private static final short PERIOD_WEEKLY = 1;
+
+	public static Calendar getCalendarForEndOfPeriod(short period) {
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		if (period == PERIOD_DAILY) {
+			cal.set(Calendar.DAY_OF_MONTH, cal.get(Calendar.DAY_OF_MONTH) + 1);
+			return cal;
+		}
+		if (period == PERIOD_WEEKLY) {
+			cal.set(Calendar.WEEK_OF_YEAR, cal.get(Calendar.WEEK_OF_YEAR) + 1);
+			return cal;
+		}
+		if (period == PERIOD_MONTHLY) {
+			cal.set(Calendar.MONTH, cal.get(Calendar.MONTH) + 1);
+			cal.set(
+				Calendar.DAY_OF_MONTH,
+				cal.getActualMinimum(Calendar.DAY_OF_MONTH));
+			return cal;
+		}
+
+		throw new IllegalArgumentException("" + period);
+	}
+
+	public static long getUploadedBytesForPeriod(User user, short period) {
+		switch (period) {
+			case PERIOD_DAILY :
+				return user.getDownloadedBytesDay();
+			case PERIOD_WEEKLY :
+				return user.getDownloadedBytesWeek();
+			case PERIOD_MONTHLY :
+				return user.getDownloadedBytesMonth();
+			default :
+				throw new IllegalArgumentException();
+		}
+	}
+	private ConnectionManager _cm;
+
+	ArrayList _limits;
+	private SiteBot _siteBot;
+
+	/**
+	 * 
+	 */
+	public Passed() throws FileNotFoundException, IOException {
+		super();
+	}
+
+	public void actionPerformed(Event event) {
+		if (!(event instanceof UserEvent))
+			return;
+		UserEvent uevent = (UserEvent) event;
+		String cmd = event.getCommand();
+		if ("RELOAD".equals(cmd)) {
+			reload();
+		}
+		if ("RESETMONTH".equals(cmd)) {
+			checkPassed(uevent.getUser(), PERIOD_MONTHLY);
+		}
+		if ("RESETWEEK".equals(cmd)) {
+			checkPassed(uevent.getUser(), PERIOD_WEEKLY);
+		}
+		if ("RESETDAY".equals(cmd)) {
+			checkPassed(uevent.getUser(), PERIOD_DAILY);
+		}
+	}
+
+	/**
+		 * @param user
+		 * @param PERIOD_MONTHLY
+		 */
+	private void checkPassed(User user, short period) {
+		for (Iterator iter = _limits.iterator(); iter.hasNext();) {
+			Limit limit = (Limit) iter.next();
+			if (limit.period == period) {
+				long bytesleft =
+					limit.bytes - getUploadedBytesForPeriod(user, period);
+				if (bytesleft > 0) {
+					logger.info(
+						user.getUsername()
+							+ " failed passed by "
+							+ bytesleft
+							+ " bytes ("
+							+ Bytes.formatBytes(bytesleft)
+							+ ")");
+					//TODO take action: disable, delete
+				} else {
+					logger.info(
+						user.getUsername()
+							+ " passed passed with "
+							+ (-bytesleft)
+							+ " extra ("
+							+ Bytes.formatBytes(-bytesleft)
+							+ ")");
+				}
+			}
+		}
+	}
+
+	//	private boolean isExempt(User user) {
+	//		if (!perm.check(user))
+	//			return true;
+	//
+	//		Calendar cal = Calendar.getInstance();
+	//		cal.setTime(new Date(user.getCreated()));
+	//		if (cal.getTime().after(new Date())) {
+	//			//user was created after the first day of this month
+	//			return true;
+	//		}
+	//
+	//		return false;
+	//	}
+	//	private long checkPassedBytesLeft(User user) {
+	//		return limit - user.getUploadedBytesMonth();
+	//	}
+	ConnectionManager getConnectionManager() {
+		return _cm;
+	}
+
+	/**
+	 * 
+	 */
+	public ArrayList getLimits() {
+		return _limits;
+	}
+	public void init(ConnectionManager mgr) {
+		_cm = mgr;
+		reload();
+		//schedule to reset users statistics at end of each day
+	}
+
+	private void reload() {
+		Properties props = new Properties();
+		try {
+			props.load(new FileInputStream("passed.conf"));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		ArrayList limits = new ArrayList();
+		for (int i = 1;; i++) {
+			if (props.getProperty(i + ".limit") == null)
+				break;
+
+			Limit limit = new Limit();
+			limit.action = props.getProperty(i + ".action");
+			limit.name = props.getProperty(i + ".name");
+			String period = props.getProperty(i + ".period").toLowerCase();
+			if ("monthly".equals(period)) {
+				limit.period = PERIOD_MONTHLY;
+			} else if ("weekly".equals(period)) {
+				limit.period = PERIOD_WEEKLY;
+			} else if ("daily".equals(period)) {
+				limit.period = PERIOD_DAILY;
+			} else {
+				throw new RuntimeException(
+					new IOException(period + " is not a recognized period"));
+			}
+			String perm = props.getProperty(i + ".perm");
+			assert perm != null : i;
+			limit.perm =
+				new Permission(FtpConfig.makeUsers(new StringTokenizer(perm)));
+			limit.bytes = Bytes.parseBytes(props.getProperty(i + ".limit"));
+			limits.add(limit);
+		}
+		_limits = limits;
+
+		if (_siteBot != null) {
+			_siteBot.disable();
+		}
+		try {
+			IRCListener _irc =
+				(IRCListener) _cm.getFtpListener(IRCListener.class);
+			_siteBot = new SiteBot(_irc, this);
+		} catch (ObjectNotFoundException e1) {
+			logger.warn("Error loading sitebot component", e1);
+		}
+	}
+}

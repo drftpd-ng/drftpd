@@ -24,9 +24,9 @@ RNFR=net.sf.drftpd.master.command.plugins.Dir
 RNTO=net.sf.drftpd.master.command.plugins.Dir
 SITE\ WIPE=net.sf.drftpd.master.command.plugins.Dir
 
-LIST=net.sf.drftpd.master.command.plugins.List
-NLST=net.sf.drftpd.master.command.plugins.List
-STAT=net.sf.drftpd.master.command.plugins.List
+LIST=net.sf.drftpd.master.command.plugins.LIST
+NLST=net.sf.drftpd.master.command.plugins.LIST
+STAT=net.sf.drftpd.master.command.plugins.LIST
 
 SITE\ NUKE=net.sf.drftpd.master.command.plugins.Nuke
 SITE\ NUKES=net.sf.drftpd.master.command.plugins.Nuke

@@ -200,6 +200,9 @@ public class ConnectionManager {
 		_timer.schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
 
 	}
+	public Timer getTimer() {
+		return _timer;
+	}
 
 	/**
 	 * Calls init(this) on the argument

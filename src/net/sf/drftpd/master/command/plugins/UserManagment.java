@@ -44,7 +44,8 @@ import org.tanesha.replacer.SimplePrintf;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class UserManagment implements CommandHandler {
-	public void load(CommandManagerFactory initializer) {}
+	public void load(CommandManagerFactory initializer) {
+	}
 	private FtpReply doSITE_TAGLINE(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
 		conn.resetState();
@@ -56,7 +57,7 @@ public class UserManagment implements CommandHandler {
 		conn.getUserNull().setTagline(request.getArgument());
 		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
-	
+
 	private FtpReply doSITE_PASSWD(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
 		conn.resetState();
@@ -115,7 +116,9 @@ public class UserManagment implements CommandHandler {
 
 		User myUser;
 		try {
-			myUser = conn.getUserManager().getUserByNameUnchecked(request.getArgument());
+			myUser =
+				conn.getUserManager().getUserByNameUnchecked(
+					request.getArgument());
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, e.getMessage());
 		} catch (IOException e) {
@@ -224,11 +227,8 @@ public class UserManagment implements CommandHandler {
 			return new FtpReply(200, ex.getMessage());
 		}
 		return new FtpReply(
-			200, "OK, removed "
-				+ credits
-				+ "b from "
-				+ user2.getUsername()
-				+ ".");
+			200,
+			"OK, removed " + credits + "b from " + user2.getUsername() + ".");
 	}
 	private Logger logger = Logger.getLogger(UserManagment.class);
 	/**
@@ -257,7 +257,9 @@ public class UserManagment implements CommandHandler {
 
 		User myUser;
 		try {
-			myUser = conn.getUserManager().getUserByNameUnchecked(request.getArgument());
+			myUser =
+				conn.getUserManager().getUserByNameUnchecked(
+					request.getArgument());
 		} catch (NoSuchUserException ex) {
 			response.setMessage("User " + request.getArgument() + " not found");
 			return response;
@@ -329,7 +331,8 @@ public class UserManagment implements CommandHandler {
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
 
 		try {
-			ReplacerFormat formatup = conn.getConfig().getReplacerFormat("who.up");
+			ReplacerFormat formatup =
+				conn.getConfig().getReplacerFormat("who.up");
 			ReplacerFormat formatdown =
 				conn.getConfig().getReplacerFormat("who.down");
 			ReplacerFormat formatidle =
@@ -350,13 +353,15 @@ public class UserManagment implements CommandHandler {
 						} catch (NoSuchUserException e) {
 							continue;
 						}
-						if (conn.getConfig()
+						if (conn
+							.getConfig()
 							.checkHideInWho(user, conn2.getCurrentDirectory()))
 							continue;
 						//StringBuffer status = new StringBuffer();
 						env.add(
 							"idle",
-							(System.currentTimeMillis() - conn2.getLastActive())
+							(System.currentTimeMillis()
+								- conn2.getLastActive())
 								/ 1000
 								+ "s");
 						env.add("user", user.getUsername());
@@ -415,7 +420,8 @@ public class UserManagment implements CommandHandler {
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {
 		String cmd = conn.getRequest().getCommand();
-		if("SITE ADDIP".equals(cmd)) return doSITE_ADDIP(conn);
+		if ("SITE ADDIP".equals(cmd))
+			return doSITE_ADDIP(conn);
 		if ("SITE CHANGE".equals(cmd))
 			return doSITE_CHANGE(conn);
 		if ("SITE CHGRP".equals(cmd))
@@ -432,6 +438,8 @@ public class UserManagment implements CommandHandler {
 			return doSITE_GADDUSER(conn);
 		if ("SITE GINFO".equals(cmd))
 			return doSITE_GINFO(conn);
+		if ("SITE GIVE".equals(cmd))
+			return doSITE_GIVE(conn);
 		if ("SITE GROUPS".equals(cmd))
 			return doSITE_GROUPS(conn);
 		if ("SITE KICK".equals(cmd))
@@ -454,7 +462,9 @@ public class UserManagment implements CommandHandler {
 			return doSITE_USERS(conn);
 		if ("SITE WHO".equals(cmd))
 			return doSITE_WHO(conn);
-		throw UnhandledCommandException.create(UserManagment.class, conn.getRequest());
+		throw UnhandledCommandException.create(
+			UserManagment.class,
+			conn.getRequest());
 	}
 
 	private FtpReply doSITE_ADDIP(BaseFtpConnection conn) {
@@ -841,15 +851,14 @@ public class UserManagment implements CommandHandler {
 		} else if ("num_logins".equalsIgnoreCase(command)) {
 			try {
 				String args[] = commandArgument.split(" ");
-				if ( args.length < 1 || args.length > 2 ) {
+				if (args.length < 1 || args.length > 2) {
 					return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 				}
 				myUser.setMaxLogins(Integer.parseInt(args[0]));
-				if ( args.length == 2 ) {
+				if (args.length == 2) {
 					myUser.setMaxLoginsPerIP(Integer.parseInt(args[1]));
 				}
-			}
-			catch (NumberFormatException ex) {
+			} catch (NumberFormatException ex) {
 				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 			}
 		} else if ("num_logins".equalsIgnoreCase(command)) {
@@ -1223,33 +1232,35 @@ public class UserManagment implements CommandHandler {
 		}
 		return response;
 	}
-//	private static final ArrayList handledCommands = new ArrayList();
-//	static {
-//		handledCommands.add("SITE ADDIP");
-//		handledCommands.add("SITE ADDUSER");
-//		handledCommands.add("SITE CHANGE");
-//		handledCommands.add("SITE CHGRP");
-//		handledCommands.add("SITE CHPASS");
-//		handledCommands.add("SITE DELIP");
-//		handledCommands.add("SITE DELUSER");
-//		handledCommands.add("SITE GADDUSER");
-//		handledCommands.add("SITE GINFO");
-//		handledCommands.add("SITE GIVE");
-//		handledCommands.add("SITE GROUPS");
-//		handledCommands.add("SITE KICK");
-//		handledCommands.add("SITE PASSWD");
-//		handledCommands.add("SITE PURGE");
-//		handledCommands.add("SITE READD");
-//		handledCommands.add("SITE RENUSER");
-//		handledCommands.add("SITE SEEN");
-//		handledCommands.add("SITE TAGLINE");
-//		handledCommands.add("SITE TAKE");
-//		handledCommands.add("SITE USER");
-//		handledCommands.add("SITE USERS");
-//		handledCommands.add("SITE WHO");
-//	}
+	//	private static final ArrayList handledCommands = new ArrayList();
+	//	static {
+	//		handledCommands.add("SITE ADDIP");
+	//		handledCommands.add("SITE ADDUSER");
+	//		handledCommands.add("SITE CHANGE");
+	//		handledCommands.add("SITE CHGRP");
+	//		handledCommands.add("SITE CHPASS");
+	//		handledCommands.add("SITE DELIP");
+	//		handledCommands.add("SITE DELUSER");
+	//		handledCommands.add("SITE GADDUSER");
+	//		handledCommands.add("SITE GINFO");
+	//		handledCommands.add("SITE GIVE");
+	//		handledCommands.add("SITE GROUPS");
+	//		handledCommands.add("SITE KICK");
+	//		handledCommands.add("SITE PASSWD");
+	//		handledCommands.add("SITE PURGE");
+	//		handledCommands.add("SITE READD");
+	//		handledCommands.add("SITE RENUSER");
+	//		handledCommands.add("SITE SEEN");
+	//		handledCommands.add("SITE TAGLINE");
+	//		handledCommands.add("SITE TAKE");
+	//		handledCommands.add("SITE USER");
+	//		handledCommands.add("SITE USERS");
+	//		handledCommands.add("SITE WHO");
+	//	}
 
-	public CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer) {
+	public CommandHandler initialize(
+		BaseFtpConnection conn,
+		CommandManager initializer) {
 		return this;
 	}
 
@@ -1257,6 +1268,7 @@ public class UserManagment implements CommandHandler {
 		return null;
 	}
 
-	public void unload() {}
+	public void unload() {
+	}
 
 }

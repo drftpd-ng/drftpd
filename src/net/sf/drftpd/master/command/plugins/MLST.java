@@ -12,10 +12,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Iterator;
-
-import org.apache.log4j.Logger;
+import java.util.List;
 
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -27,6 +25,9 @@ import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.MLSTSerialize;
 import net.sf.drftpd.remotefile.RemoteFileInterface;
+import net.sf.drftpd.util.ListUtils;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author mog
@@ -81,7 +82,7 @@ public class MLST implements CommandHandler {
 			out.print(FtpReply.RESPONSE_150_OK);
 			try {
 				Socket sock = dataConnHnd.getDataSocket();
-				ArrayList files = new ArrayList(dir.getFiles());
+				List files = ListUtils.list(dir, conn);
 				Writer out2 = new OutputStreamWriter(sock.getOutputStream());
 				for (Iterator iter = files.iterator(); iter.hasNext();) {
 					RemoteFileInterface file = (RemoteFileInterface) iter.next();

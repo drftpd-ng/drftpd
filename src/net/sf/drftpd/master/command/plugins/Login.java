@@ -7,7 +7,6 @@
 package net.sf.drftpd.master.command.plugins;
 
 import java.io.IOException;
-import java.util.Collection;
 
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
