@@ -25,6 +25,9 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
+import java.security.GeneralSecurityException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +37,10 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
 import java.util.ResourceBundle;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
@@ -51,9 +58,9 @@ import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
+import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.UploaderPosition;
-import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.command.plugins.Nuke;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -86,7 +93,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.83 2004/02/10 00:03:05 mog Exp $
+ * @version $Id: IRCListener.java,v 1.84 2004/02/15 01:39:26 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -190,6 +197,7 @@ public class IRCListener implements FtpListener, Observer {
 	private int _port;
 
 	private String _server;
+	private boolean _useSSL;
 	public static final ReplacerEnvironment GLOBAL_ENV =
 		new ReplacerEnvironment();
 	static {
@@ -766,6 +774,7 @@ public class IRCListener implements FtpListener, Observer {
 		_port = Integer.parseInt(FtpConfig.getProperty(ircCfg, "irc.port"));
 		String oldchannel = _channelName;
 		_channelName = FtpConfig.getProperty(ircCfg, "irc.channel");
+		_useSSL = ircCfg.getProperty("irc.ssl", "false").equals("true");
 		_key = ircCfg.getProperty("irc.key");
 		if (_key.equals(""))
 			_key = null;
@@ -846,6 +855,41 @@ public class IRCListener implements FtpListener, Observer {
 
 	public void connect() throws UnknownHostException, IOException {
 		logger.info("IRCListener: connecting to " + _server + ":" + _port);
+		if (_useSSL) {
+			try {
+				SSLContext ctx = SSLContext.getInstance("TLS");
+				//KeyManagerFactory kmf = KeyManagerFactory.getInstance("JSSE");
+				//ctx.init(kmf.getKeyManagers(), null, null);
+				TrustManager tms[] =
+					{
+						new X509TrustManager() {
+							public X509Certificate[] getAcceptedIssuers() {
+							return null;
+						}
+
+						public void checkClientTrusted(
+							X509Certificate[] arg0,
+							String arg1)
+							throws CertificateException {
+						}
+
+						public void checkServerTrusted(
+							X509Certificate[] arg0,
+							String arg1)
+							throws CertificateException {
+						}
+					}
+				};
+
+				ctx.init(null, tms, null);
+				_conn.connect(
+					ctx.getSocketFactory().createSocket(_server, _port),
+					_server);
+				return;
+			} catch (GeneralSecurityException e) {
+				throw new FatalException(e);
+			}
+		}
 		_conn.connect(_server, _port);
 	}
 	public void say(String message) {

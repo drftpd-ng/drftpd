@@ -1,5 +1,6 @@
 irc.server=irc.csbnet.se
 irc.port=6667
+irc.ssl=false
 irc.channel=#drftpd-test
 irc.key=
 irc.nick=drftpd

@@ -50,7 +50,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.114 2004/02/10 00:03:15 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.115 2004/02/15 01:39:27 mog Exp $
  */
 public class LinkedRemoteFile
 	implements RemoteFileInterface, Serializable, Comparable {
@@ -631,9 +631,10 @@ public class LinkedRemoteFile
 			while (true)
 				root = root.getParentFile();
 		} catch (FileNotFoundException ex) {
+			return root;
 		}
-		return root;
 	}
+	
 	public synchronized SFVFile getSFVFile()
 		throws IOException, FileNotFoundException, NoAvailableSlaveException {
 

@@ -45,6 +45,7 @@ import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
+import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.SlaveImpl;
 
 import org.apache.log4j.Level;
@@ -52,7 +53,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.86 2004/02/10 00:03:06 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.87 2004/02/15 01:39:27 mog Exp $
  */
 public class ConnectionManager {
 	public static final int idleTimeout = 300;
@@ -402,5 +403,9 @@ public class ConnectionManager {
 					+ user.getMaxLogins()
 					+ " simultaneous logins.");
 		return null; // everything passed
+	}
+
+	public LinkedRemoteFile getRoot() {
+		return getSlaveManager().getRoot();
 	}
 }
