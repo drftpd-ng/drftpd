@@ -34,10 +34,37 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.88 2003/12/03 04:50:21 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.89 2003/12/05 04:02:25 zubov Exp $
  */
 
 public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comparable {
+	public class NonExistingFile {
+		private LinkedRemoteFile _file;
+		private String _path;
+		public NonExistingFile(LinkedRemoteFile file, String path) {
+			_file = file;
+			_path = path;
+		}
+		/**
+		 * Return true if getPath() returns a null value, i.e.<!-- --> returns true if the file exists.
+		 */
+		public boolean exists() {
+			return _path == null;
+		}
+		public LinkedRemoteFile getFile() {
+			return _file;
+		}
+
+		public String getPath() {
+			return _path;
+		}
+		/**
+		 * Returns true if getPath() returns a non-null value, i.e.<!-- --> returns false if the file exists.
+		 */
+		public boolean hasPath() {
+			return _path != null;
+		}
+	}
 	private static final String EMPTY_STRING = "".intern();
 	private static Logger logger =
 		Logger.getLogger(LinkedRemoteFile.class.getName());
@@ -194,6 +221,13 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 			return;
 		}
 		_slaves.add(slave);
+	}
+
+	/**
+	 * @throws ClassCastException if object is not an instance of RemoteFileInterface.
+	 */
+	public int compareTo(Object o) {
+		return getName().compareTo(((RemoteFileInterface)o).getName());
 	}
 
 	public LinkedRemoteFile createDirectory(
@@ -383,6 +417,15 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 		}
 
 	}
+	
+	public Collection getDirectories() {
+		Collection temp = getFiles();
+		for ( Iterator iter = temp.iterator(); iter.hasNext();) {
+			if ( ((LinkedRemoteFile) iter.next()).isFile())
+				iter.remove();
+		}
+		return temp;
+	}
 
 	/**
 	 * Returns fileName contained in this directory.
@@ -420,6 +463,10 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 		if (_group == null || _group.equals(EMPTY_STRING))
 			return "drftpd";
 		return _group;
+	}
+
+	public RemoteFileInterface getLink() {
+		throw new UnsupportedOperationException();
 	}
 
 	public Map getMap() {
@@ -501,9 +548,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 	/** returns slaves. returns null if a directory.
 	 */
 	public Collection getSlaves() {
-		// what about files that do not have a slave yet? (new files created with STOR)
-//		if (_slaves == null)
-//			throw new IllegalStateException("getSlaves() on non-directory");
+		if (_slaves == null)
+			throw new IllegalStateException("getSlaves() on non-directory");
 		return _slaves;
 	}
 
@@ -581,6 +627,10 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 		return _files == null;
 	}
 
+	public boolean isLink() {
+		return false;
+	}
+
 	public long lastModified() {
 		return _lastModified;
 	}
@@ -612,33 +662,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 		if (ret.hasPath())
 			throw new FileNotFoundException(path + ": File not found");
 		return (LinkedRemoteFile) ret.getFile();
-	}
-	public class NonExistingFile {
-		public NonExistingFile(LinkedRemoteFile file, String path) {
-			_file = file;
-			_path = path;
-		}
-		private LinkedRemoteFile _file;
-		private String _path;
-		public LinkedRemoteFile getFile() {
-			return _file;
-		}
-
-		public String getPath() {
-			return _path;
-		}
-		/**
-		 * Returns true if getPath() returns a non-null value, i.e.<!-- --> returns false if the file exists.
-		 */
-		public boolean hasPath() {
-			return _path != null;
-		}
-		/**
-		 * Return true if getPath() returns a null value, i.e.<!-- --> returns true if the file exists.
-		 */
-		public boolean exists() {
-			return _path == null;
-		}
 	}
 	
 	/**
@@ -1137,21 +1160,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 		//		if (isFile() && getSlaves().size() == 0) {
 		//			delete();
 		//		}
-	}
-
-	public boolean isLink() {
-		return false;
-	}
-
-	public RemoteFileInterface getLink() {
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * @throws ClassCastException if object is not an instance of RemoteFileInterface.
-	 */
-	public int compareTo(Object o) {
-		return getName().compareTo(((RemoteFileInterface)o).getName());
 	}
 
 }

@@ -30,6 +30,11 @@ public class UserEvent extends Event {
 	}
 
 	public String toString() {
-		return getClass().getName()+"[user="+getUser()+",cmd="+getCommand()+"]";
+		return getClass().getName()
+			+ "[user="
+			+ getUser()
+			+ ",cmd="
+			+ getCommand()
+			+ "]";
 	}
 }

@@ -82,5 +82,4 @@ public class TransferEvent extends DirectoryFtpEvent {
 	public InetAddress getXferHost() {
 		return _xferHost;
 	}
-
 }

@@ -60,7 +60,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.15 2003/12/03 04:50:21 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.16 2003/12/05 04:02:25 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -536,14 +536,18 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 * ''zipscript?? renames bad uploads to .bad, how do we handle this with resumes?
 	 */
 	//TODO add APPE support
-	private FtpReply transfer(BaseFtpConnection conn) throws UnhandledCommandException {
+	private FtpReply transfer(BaseFtpConnection conn)
+		throws UnhandledCommandException {
 		FtpRequest request = conn.getRequest();
 		char direction = conn.getDirection();
 		boolean isStor = conn.getRequest().getCommand().equals("STOR");
 		boolean isRetr = conn.getRequest().getCommand().equals("RETR");
 		boolean isAppe = conn.getRequest().getCommand().equals("APPE");
 		boolean isStou = conn.getRequest().getCommand().equals("STOU");
-		if(isAppe || isStou) throw UnhandledCommandException.create(DataConnectionHandler.class, conn.getRequest());
+		if (isAppe || isStou)
+			throw UnhandledCommandException.create(
+				DataConnectionHandler.class,
+				conn.getRequest());
 		// set state variables
 		conn.resetState();
 
@@ -574,11 +578,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 					request.getArgument());
 			targetDir = ret.getFile();
 			targetFileName = ret.getPath();
-			try {
-				_transferFile = new LinkedRemoteFile(new StaticRemoteFile(targetFileName),conn.getConfig());
-			} catch (IOException e1) {
-				return new FtpReply(550, e1.getMessage());
-			}
+
 			if (ret.exists()) {
 				// target exists, this could be overwrite or resume
 				// if(resumePosition != 0) {} // resume
@@ -646,9 +646,12 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		//setup _rslave
 		if (mbPasv) {
 			assert _preTransfer == true;
-			if ( _transferFile.getSlaves() != null  // new file
-				&&	!_transferFile.getSlaves().contains(_preTransferRSlave)) {
-				return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
+			if (_transferFile != null) {
+				// if _transferFile == null, there's no
+				//way that it can exist on _preTransferRSlave
+				if (!_transferFile.getSlaves().contains(_preTransferRSlave)) {
+					return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
+				}
 			}
 			_rslave = _preTransferRSlave;
 			_preTransferRSlave = null;
@@ -670,6 +673,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				return FtpReply.RESPONSE_530_SLAVE_UNAVAILABLE;
 			}
 		}
+
 		if (isStor) {
 			//setup upload
 			List rslaves = Collections.singletonList(_rslave);
@@ -736,7 +740,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				_transfer.receiveFile(
 					targetDir.getPath(),
 					'I',
-					targetFileName, _resumePosition);
+					targetFileName,
+					_resumePosition);
 			}
 			status = _transfer.getStatus();
 		} catch (RemoteException ex) {
@@ -1372,8 +1377,12 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		try {
 			conn.reset();
 			_address = conn.getControlSocket().getLocalAddress();
-			
-			_ServSoc = ServerSocketFactory.getDefault().createServerSocket(0, 1, _address);
+
+			_ServSoc =
+				ServerSocketFactory.getDefault().createServerSocket(
+					0,
+					1,
+					_address);
 			_ServSoc.setSoTimeout(60000);
 			_port = _ServSoc.getLocalPort();
 			mbPasv = true;

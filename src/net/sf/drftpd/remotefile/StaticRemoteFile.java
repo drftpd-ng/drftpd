@@ -18,33 +18,46 @@ public class StaticRemoteFile extends RemoteFile {
 	private String _name;
 	private List _rslaves;
 	private long _xfertime;
-	
-//	//no longer used
-//	public StaticRemoteFile(RemoteFile file) {
-//		this.lastModified = file.lastModified();
-//		this.length = file.length();
-//		//isHidden = file.isHidden();
-//		this.isDirectory = file.isDirectory();
-//		this.isFile = file.isFile();
-//		this.path = file.getPath();
-//		this.slaves = new ArrayList(0);
-//		/* serialize directory*/
-//		//slaves = file.getSlaves();
-//	}
-	
-	public StaticRemoteFile(List rslaves, String name, String owner, String group, long size, long lastModified) {
+
+	//	//no longer used
+	//	public StaticRemoteFile(RemoteFile file) {
+	//		this.lastModified = file.lastModified();
+	//		this.length = file.length();
+	//		//isHidden = file.isHidden();
+	//		this.isDirectory = file.isDirectory();
+	//		this.isFile = file.isFile();
+	//		this.path = file.getPath();
+	//		this.slaves = new ArrayList(0);
+	//		/* serialize directory*/
+	//		//slaves = file.getSlaves();
+	//	}
+
+	public StaticRemoteFile(
+		List rslaves,
+		String name,
+		String owner,
+		String group,
+		long size,
+		long lastModified) {
 		_rslaves = rslaves;
 		_name = name;
-//		if(name.indexOf("/") != -1) {
-//			throw new IllegalArgumentException("constructor only does files and not paths");
-//		}
+		//		if(name.indexOf("/") != -1) {
+		//			throw new IllegalArgumentException("constructor only does files and not paths");
+		//		}
 		_username = owner;
 		_groupname = group;
 		_length = size;
 		_lastModified = lastModified;
 	}
-	
-	public StaticRemoteFile(List rslaves, String name, String owner, String group, long size, long lastModified, long checkSum) {
+
+	public StaticRemoteFile(
+		List rslaves,
+		String name,
+		String owner,
+		String group,
+		long size,
+		long lastModified,
+		long checkSum) {
 		this(rslaves, name, owner, group, size, lastModified);
 		this._checkSum = checkSum;
 	}
@@ -52,10 +65,11 @@ public class StaticRemoteFile extends RemoteFile {
 	public StaticRemoteFile(String name) {
 		_name = name;
 	}
-	
+
 	public boolean equals(Object file) {
-		if(!(file instanceof RemoteFile)) return false;
-		return getPath().equals(((RemoteFile)file).getPath());
+		if (!(file instanceof RemoteFile))
+			return false;
+		return getPath().equals(((RemoteFile) file).getPath());
 	}
 
 	public Collection getFiles() {
@@ -69,7 +83,7 @@ public class StaticRemoteFile extends RemoteFile {
 	public String getParent() {
 		throw new UnsupportedOperationException("getParent() does not exist in StaticRemoteFile");
 	}
-	
+
 	public String getPath() {
 		throw new UnsupportedOperationException();
 	}
@@ -101,7 +115,7 @@ public class StaticRemoteFile extends RemoteFile {
 	public long length() {
 		return _length;
 	}
-	
+
 	/**
 	 * StaticRemoteFile cannot be linked
 	 * @return new RemoteFileInterface[0] 
@@ -121,7 +135,6 @@ public class StaticRemoteFile extends RemoteFile {
 	public void setGroupname(String v) {
 		_groupname = v;
 	}
-
 
 	public void setLastModified(long l) {
 		_lastModified = l;
@@ -144,17 +157,17 @@ public class StaticRemoteFile extends RemoteFile {
 	}
 
 	public String toString() {
-		
+
 		StringBuffer ret = new StringBuffer();
-		ret.append(getClass().getName()+"[");
+		ret.append(getClass().getName() + "[");
 		if (isDirectory())
 			ret.append("[isDirectory(): true]");
-		if(isFile())
+		if (isFile())
 			ret.append("[isFile(): true]");
-		ret.append("[length(): "+length()+"]");
+		ret.append("[length(): " + length() + "]");
 		ret.append(getName());
 		ret.append("]");
-		ret.append("[rslaves:"+_rslaves+"]");
+		ret.append("[rslaves:" + _rslaves + "]");
 		return ret.toString();
 	}
 }

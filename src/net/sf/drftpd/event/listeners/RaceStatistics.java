@@ -37,18 +37,18 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 public class RaceStatistics implements FtpListener {
 
 	private ConnectionManager _cm;
-	
-	public RaceStatistics(ConnectionManager cm){
+
+	public RaceStatistics(ConnectionManager cm) {
 		init(cm);
 	}
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.event.FtpListener#actionPerformed(net.sf.drftpd.event.Event)
 	 */
 	public void actionPerformed(Event event) {
-		if ( !(event instanceof DirectoryFtpEvent))
+		if (!(event instanceof DirectoryFtpEvent))
 			return;
 		DirectoryFtpEvent direvent = (DirectoryFtpEvent) event;
-		if ( !direvent.getCommand().equals("STOR"))
+		if (!direvent.getCommand().equals("STOR"))
 			return;
 		LinkedRemoteFile dir;
 		try {
@@ -78,10 +78,10 @@ public class RaceStatistics implements FtpListener {
 		if (sfvfile.getStatus().isFinished())
 			return;
 		Collection racers = IRCListener.topFileUploaders(sfvfile.getFiles());
-		if ( racers.size() <= 1 )
+		if (racers.size() <= 1)
 			return; // no race
 		int count = 1;
-		for ( Iterator iter = racers.iterator(); iter.hasNext(); count++) {
+		for (Iterator iter = racers.iterator(); iter.hasNext(); count++) {
 			UploaderPosition racer = (UploaderPosition) iter.next();
 			System.out.println("racer = " + racer.getUsername());
 			User user;
@@ -96,11 +96,12 @@ public class RaceStatistics implements FtpListener {
 				// don't add stats to badd users
 				continue;
 			}
-			if ( count == 1 )
+			if (count == 1)
 				user.addRacesWon();
-			else if ( count == racers.size())
+			else if (count == racers.size())
 				user.addRacesLost();
-			else user.addRacesParticipated();
+			else
+				user.addRacesParticipated();
 		}
 	}
 

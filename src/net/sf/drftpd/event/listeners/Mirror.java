@@ -35,35 +35,25 @@ import org.apache.log4j.Logger;
  */
 public class Mirror implements FtpListener {
 
-	private Logger logger = Logger.getLogger(Mirror.class);
-	
 	private ConnectionManager _cm;
 	private int _numberOfMirrors;
 	private int _numberOfTries;
 
+	private Logger logger = Logger.getLogger(Mirror.class);
+
 	public Mirror() {
-		reload();		
+		reload();
 		logger.info("Mirror plugin loaded successfully");
-	}
-	
-	private void reload() {
-		Properties props = new Properties();
-		try {
-			props.load(new FileInputStream("mirror.conf"));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		_numberOfMirrors = Integer.parseInt(props.getProperty("numberOfMirrors"));
-		_numberOfTries = Integer.parseInt(props.getProperty("numberOfTries"));
 	}
 
 	public void actionPerformed(Event event) {
-		if ( !(event instanceof TransferEvent))
-				return;
-		TransferEvent transevent = (TransferEvent) event;
-		if ( !transevent.getCommand().equals("STOR"))
+		if (!(event instanceof TransferEvent))
 			return;
-		if ( _numberOfMirrors < 2 ) return;
+		TransferEvent transevent = (TransferEvent) event;
+		if (!transevent.getCommand().equals("STOR"))
+			return;
+		if (_numberOfMirrors < 2)
+			return;
 		LinkedRemoteFile dir;
 		dir = transevent.getDirectory();
 		RemoteSlave destrslave = null;
@@ -74,10 +64,15 @@ public class Mirror implements FtpListener {
 		} catch (NoAvailableSlaveException e) {
 			maxSize = 0;
 		}
-		for (int x = 1; x<Math.min(_numberOfMirrors,maxSize); x++){ // already have one copy sent
+		mirrorSlaves.addAll(dir.getSlaves()); // already mirrored files
+		for (int x = 1;
+			x < Math.min(_numberOfMirrors, maxSize);
+			x++) { // already have one copy sent
 			try {
-				while(true){
-					destrslave = _cm.getSlaveManager().getASlave(Transfer.TRANSFER_RECEIVING_UPLOAD);
+				while (true) {
+					destrslave =
+						_cm.getSlaveManager().getASlave(
+							Transfer.TRANSFER_RECEIVING_UPLOAD);
 					if (mirrorSlaves.contains(destrslave)) {
 						try {
 							Thread.sleep(5);
@@ -90,13 +85,19 @@ public class Mirror implements FtpListener {
 					break;
 				}
 			} catch (NoAvailableSlaveException e1) {
-				logger.error("Failed on getting a slave to mirror " + dir.getPath());
+				logger.error(
+					"Failed on getting a slave to mirror " + dir.getPath());
 				// what should i do if there's no slave to transfer to?
 				e1.printStackTrace();
 				return;
 			}
-			logger.info("Sending file " + dir.getPath() + " to " + destrslave.getName());
-			new CooperativeSlaveTransfer(dir,destrslave,_numberOfTries).start();
+			logger.info(
+				"Sending file "
+					+ dir.getPath()
+					+ " to "
+					+ destrslave.getName());
+			new CooperativeSlaveTransfer(dir, destrslave, _numberOfTries)
+				.start();
 		}
 	}
 
@@ -105,5 +106,17 @@ public class Mirror implements FtpListener {
 	 */
 	public void init(ConnectionManager connectionManager) {
 		_cm = connectionManager;
+	}
+
+	private void reload() {
+		Properties props = new Properties();
+		try {
+			props.load(new FileInputStream("mirror.conf"));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		_numberOfMirrors =
+			Integer.parseInt(props.getProperty("numberOfMirrors"));
+		_numberOfTries = Integer.parseInt(props.getProperty("numberOfTries"));
 	}
 }

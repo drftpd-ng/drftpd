@@ -71,7 +71,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.67 2003/12/04 04:48:26 zubov Exp $
+ * @version $Id: IRCListener.java,v 1.68 2003/12/05 04:02:24 zubov Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -572,7 +572,7 @@ public class IRCListener implements FtpListener, Observer {
 					Bytes.formatBytes(sfvfile.getXferspeed()));
 			} catch (Exception ex) {
 				//COULD BE multi-cd, PRE will have to get it owns fillEnvSection with sub-dir .sfv support!
-				logger.warn("Couldn't get SFV file in announce", ex);
+				logger.warn("Couldn't get SFV file in announce");
 				//env.add("size", Bytes.formatBytes(file.length()));
 				env.add("totalfiles", "" + file.getFiles().size());
 			}
