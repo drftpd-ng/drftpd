@@ -4,7 +4,7 @@
  * To change the template for this generated file go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-package net.sf.drftpd.event.irc;
+package net.sf.drftpd.master;
 
 /**
  * @author mog
@@ -14,8 +14,12 @@ public class UploaderPosition implements Comparable {
 	int files;
 	String username;
 	long xfertime;
-	
-	public UploaderPosition(String username, long bytes, int files, long xfertime) {
+
+	public UploaderPosition(
+		String username,
+		long bytes,
+		int files,
+		long xfertime) {
 		this.username = username;
 		this.bytes = bytes;
 		this.files = files;
@@ -23,25 +27,26 @@ public class UploaderPosition implements Comparable {
 	}
 
 	public int compareTo(Object o) {
-		return compareTo((UploaderPosition)o);
+		return compareTo((UploaderPosition) o);
 	}
-	
+
 	/** Sorts in reverse order so that the biggest shows up first.
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	public int compareTo(UploaderPosition o) {
 		long thisVal = getBytes();
 		long anotherVal = o.getBytes();
-		return (thisVal<anotherVal ? 1 : (thisVal==anotherVal ? 0 : -1));
+		return (thisVal < anotherVal ? 1 : (thisVal == anotherVal ? 0 : -1));
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	public boolean equals(Object obj) {
 		//if(obj instanceof String && obj.equals(getUsername())) return true;
-		if(!(obj instanceof UploaderPosition)) return false;
-		UploaderPosition other = (UploaderPosition)obj;
+		if (!(obj instanceof UploaderPosition))
+			return false;
+		UploaderPosition other = (UploaderPosition) obj;
 		return getUsername().equals(other.getUsername());
 	}
 	public long getBytes() {
@@ -58,8 +63,9 @@ public class UploaderPosition implements Comparable {
 		return username;
 	}
 	public long getXferspeed() {
-		if(getXfertime() == 0) return 0;
-		return getBytes()/(getXfertime()/1000);
+		if (getXfertime() == 0)
+			return 0;
+		return getBytes() / (getXfertime() / 1000);
 	}
 	/**
 	 * @return

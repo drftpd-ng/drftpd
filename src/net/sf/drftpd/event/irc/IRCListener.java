@@ -25,6 +25,7 @@ import java.util.Properties;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
+import net.sf.drftpd.Initializeable;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.Nukee;
 import net.sf.drftpd.SFVFile;
@@ -35,6 +36,7 @@ import net.sf.drftpd.event.InviteEvent;
 import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.SlaveEvent;
+import net.sf.drftpd.master.*;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
@@ -718,7 +720,23 @@ public class IRCListener implements FtpListener, Observer {
 			_ircCfg.getProperty("irc.name"));
 		new AutoJoin(_conn, _channelName, _key);
 		new AutoResponder(_conn);
+		//TODO more command observers
 		_conn.addCommandObserver(this);
+		
+		for(int i=1;;) {
+			String classname = _ircCfg.getProperty("irc.plugins."+i);
+			if(classname == null) break;
+			Observer obs;
+			try {
+				obs = (Observer) Class.forName(classname).newInstance();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+			if(obs instanceof Initializeable) {
+				((Initializeable)obs).init(getConnectionManager());
+			}
+			_conn.addCommandObserver(obs);
+		}
 		logger.info("IRCListener: connecting to " + _server + ":" + _port);
 		_conn.connect(_server, _port);
 	}
@@ -744,7 +762,6 @@ public class IRCListener implements FtpListener, Observer {
 			}
 			_conn.sendCommand(new MessageCommand(chan, line));
 		}
-
 	}
 
 	private void sayDirectorySection(DirectoryFtpEvent direvent, String string)
@@ -775,42 +792,6 @@ public class IRCListener implements FtpListener, Observer {
 			if (updated instanceof MessageCommand) {
 				MessageCommand msgc = (MessageCommand) updated;
 				String msg = msgc.getMessage();
-				if (msg.startsWith("!invite ")
-					&& msgc.isPrivateToUs(_clientState)) {
-					String args[] = msg.split(" ");
-					User user;
-					try {
-						user = _cm.getUserManager().getUserByName(args[1]);
-					} catch (NoSuchUserException e) {
-						logger.log(
-							Level.WARN,
-							args[1] + " " + e.getMessage(),
-							e);
-						return;
-					} catch (IOException e) {
-						logger.log(Level.WARN, "", e);
-						return;
-					}
-					if (user.checkPassword(args[2])) {
-						logger.info(
-							"Invited "
-								+ msgc.getSourceString()
-								+ " as user "
-								+ user.getUsername());
-						//_conn.sendCommand(
-						//	new InviteCommand(msgc.getSource(), _channelName));
-						getConnectionManager().dispatchFtpEvent(
-							new InviteEvent(
-								"INVITE",
-								msgc.getSource().getNick()));
-					} else {
-						logger.log(
-							Level.WARN,
-							msgc.getSourceString()
-								+ " attempted invite with bad password: "
-								+ msgc);
-					}
-				}
 				//only accept messages from _channelName
 				if (!msgc.getDest().equalsIgnoreCase(_channelName))
 					return;

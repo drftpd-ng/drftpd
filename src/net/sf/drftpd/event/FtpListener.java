@@ -6,7 +6,7 @@
  */
 package net.sf.drftpd.event;
 
-import net.sf.drftpd.master.ConnectionManager;
+import net.sf.drftpd.Initializeable;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
@@ -15,7 +15,7 @@ import net.sf.drftpd.master.ConnectionManager;
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 
-public interface FtpListener {
+public interface FtpListener extends Initializeable {
 	public void actionPerformed(Event event);
-	public void init(ConnectionManager mgr);
+	//public void init(ConnectionManager mgr);
 }
