@@ -20,7 +20,7 @@ package net.sf.drftpd;
 
 /**
  * @author mog
- * @version $Id: FatalException.java,v 1.5 2004/11/05 13:27:17 mog Exp $
+ * @version $Id$
  */
 public class FatalException extends RuntimeException {
     public FatalException() {

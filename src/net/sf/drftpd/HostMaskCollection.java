@@ -36,7 +36,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: HostMaskCollection.java,v 1.4 2004/11/03 16:46:37 mog Exp $
+ * @version $Id$
  */
 public class HostMaskCollection implements Serializable {
     private static final Logger logger = Logger.getLogger(HostMaskCollection.class);

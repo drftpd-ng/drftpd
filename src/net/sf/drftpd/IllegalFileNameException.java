@@ -22,7 +22,7 @@ import java.io.IOException;
 
 /**
  * @author mog
- * @version $Id: IllegalFileNameException.java,v 1.5 2004/08/03 20:13:54 zubov Exp $
+ * @version $Id$
  */
 public class IllegalFileNameException extends IOException {
     public IllegalFileNameException() {

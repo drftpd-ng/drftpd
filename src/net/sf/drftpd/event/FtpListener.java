@@ -25,7 +25,7 @@ import net.sf.drftpd.Initializeable;
  *
  */
 /**
- * @version $Id: FtpListener.java,v 1.9 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id$
  */
 public interface FtpListener extends Initializeable {
     public void actionPerformed(Event event);

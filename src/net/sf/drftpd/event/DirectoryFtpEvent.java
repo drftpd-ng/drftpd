@@ -24,7 +24,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author mog
  *
- * @version $Id: DirectoryFtpEvent.java,v 1.9 2004/08/03 20:13:54 zubov Exp $
+ * @version $Id$
  */
 public class DirectoryFtpEvent extends ConnectionEvent {
     private LinkedRemoteFileInterface directory;

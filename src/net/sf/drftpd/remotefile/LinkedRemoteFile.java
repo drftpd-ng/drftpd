@@ -863,9 +863,6 @@ public class LinkedRemoteFile implements Serializable, Comparable,
      *         case sensitive.
      */
     public boolean hasFile(String filename) {
-        logger.debug(getPath() + " contains " + filename + "? " +
-            _files.containsKey(filename));
-
         return _files.containsKey(filename);
     }
 

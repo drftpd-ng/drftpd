@@ -39,7 +39,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: RootCollection.java,v 1.2 2004/11/15 01:12:17 mog Exp $
+ * @version $Id$
  */
 public class RootCollection {
     private static final Logger logger = Logger.getLogger(RootCollection.class);

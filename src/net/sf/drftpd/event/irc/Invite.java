@@ -27,6 +27,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.drftpd.master.ConnectionManager;
+
 import org.drftpd.plugins.*;
 
 import org.drftpd.usermanager.NoSuchUserException;

@@ -20,7 +20,7 @@ package net.sf.drftpd.event.irc;
 
 /**
  * @author zubov
- * @version $Id: IRCPluginInterface.java,v 1.3 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id$
  */
 public interface IRCPluginInterface {
     public String getCommands();

@@ -20,7 +20,7 @@ package net.sf.drftpd;
 
 /**
  * @author mog
- * @version $Id: NoSFVEntryException.java,v 1.2 2004/08/03 20:13:54 zubov Exp $
+ * @version $Id$
  */
 public class NoSFVEntryException extends Exception {
     public NoSFVEntryException() {

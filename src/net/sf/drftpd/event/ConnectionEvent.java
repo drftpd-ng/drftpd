@@ -28,7 +28,7 @@ import org.drftpd.usermanager.User;
  * Subclassed for events that are paired with a user object.
  *
  * @author mog
- * @version $Id: ConnectionEvent.java,v 1.3 2004/11/03 16:46:37 mog Exp $
+ * @version $Id$
  */
 public class ConnectionEvent extends Event {
     private transient BaseFtpConnection _conn;

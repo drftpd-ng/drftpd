@@ -23,7 +23,7 @@ import org.drftpd.usermanager.User;
 /**
  * @author mog
  *
- * @version $Id: InviteEvent.java,v 1.7 2004/11/09 15:20:11 mog Exp $
+ * @version $Id$
  */
 public class InviteEvent extends Event {
     private String _ircNick;

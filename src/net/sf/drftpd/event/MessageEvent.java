@@ -21,7 +21,7 @@ package net.sf.drftpd.event;
 /**
  * @author mog
  *
- * @version $Id: MessageEvent.java,v 1.4 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id$
  */
 public class MessageEvent extends Event {
     private String message;

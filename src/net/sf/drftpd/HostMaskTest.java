@@ -27,7 +27,7 @@ import java.net.UnknownHostException;
 
 /**
  * @author zubov
- * @version $Id: HostMaskTest.java,v 1.3 2004/11/03 16:46:37 mog Exp $
+ * @version $Id$
  */
 public class HostMaskTest extends TestCase {
     public static void main(String[] args) {

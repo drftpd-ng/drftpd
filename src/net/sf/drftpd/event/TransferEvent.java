@@ -20,9 +20,9 @@ package net.sf.drftpd.event;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
-import java.net.InetAddress;
-
 import org.drftpd.master.RemoteSlave;
+
+import java.net.InetAddress;
 
 
 /**

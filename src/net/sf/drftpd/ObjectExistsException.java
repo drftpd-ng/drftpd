@@ -22,7 +22,7 @@ import java.io.IOException;
 
 /**
  * @author mog
- * @version $Id: ObjectExistsException.java,v 1.4 2004/08/03 20:13:54 zubov Exp $
+ * @version $Id$
  */
 public class ObjectExistsException extends IOException {
     public ObjectExistsException() {

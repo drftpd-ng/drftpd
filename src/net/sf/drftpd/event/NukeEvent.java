@@ -31,7 +31,7 @@ import java.util.Map;
 /**
  * @author mog
  *
- * @version $Id: NukeEvent.java,v 1.23 2004/11/03 16:46:37 mog Exp $
+ * @version $Id$
  */
 public class NukeEvent extends UserEvent {
     private int multiplier;

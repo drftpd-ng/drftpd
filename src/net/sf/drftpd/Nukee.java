@@ -20,7 +20,7 @@ package net.sf.drftpd;
 
 /**
  * @author mog
- * @version $Id: Nukee.java,v 1.7 2004/08/03 20:13:54 zubov Exp $
+ * @version $Id$
  */
 public class Nukee implements Comparable {
     private String _username;

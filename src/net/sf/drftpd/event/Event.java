@@ -20,7 +20,7 @@ package net.sf.drftpd.event;
 
 /**
  * @author mog
- * @version $Id: Event.java,v 1.7 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id$
  */
 public class Event {
     private String _command;

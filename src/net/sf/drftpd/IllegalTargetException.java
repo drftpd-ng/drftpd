@@ -23,7 +23,7 @@ import java.io.IOException;
 /**
  * @author mog
  *
- * @version $Id: IllegalTargetException.java,v 1.5 2004/08/03 20:13:54 zubov Exp $
+ * @version $Id$
  */
 public class IllegalTargetException extends IOException {
     /**
