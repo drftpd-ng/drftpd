@@ -17,6 +17,19 @@
  */
 package net.sf.drftpd.remotefile;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.StringTokenizer;
+
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
@@ -28,30 +41,13 @@ import net.sf.drftpd.util.ListUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.SFVFile;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.remotefile.AbstractRemoteFile;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.remotefile.LightRemoteFile;
 import org.drftpd.remotefile.RemoteFileInterface;
-
 import org.drftpd.slave.RemoteIOException;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.StringTokenizer;
 
 
 /**
@@ -601,7 +597,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
      * @return a Collection of all the LinkedRemoteFile objects in this
      *         directory.
      */
-    public Collection<LinkedRemoteFileInterface> getFiles() {
+    public Collection getFiles() {
         if (_files == null) {
             throw new IllegalStateException("Isn't a directory");
         }
@@ -823,7 +819,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
      * <p>Since this method overrides FileRemoteFile which is part of the classes
      * that keep 1.4 compatibility for the slaves it cannot use generics.</p>
      */
-    public Collection<RemoteSlave> getSlaves() {
+    public Collection getSlaves() {
         if (_slaves == null) {
             throw new IllegalStateException("getSlaves() called on a directory");
         }
