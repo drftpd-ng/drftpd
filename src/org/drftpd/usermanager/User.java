@@ -374,4 +374,6 @@ public abstract class User implements Entity {
     public abstract void updateUploadedTime(long millis);
 
 	public abstract void setLastReset(long lastReset);
+
+	public abstract long getLastReset();
 }

@@ -72,6 +72,8 @@ public class UserManagerConverter {
         //to.putObject(Nuke.LASTNUKED, new Long(from
         //		.getObjectLong(Nuke.LASTNUKED)));
         to.setLogins(from.getLogins());
+        
+        to.setLastReset(from.getLastReset());
 
         //to.setMaxSimDownloads(from.getMaxSimDownloads());
         //to.setMaxSimUploads(from.getMaxSimUploads());
