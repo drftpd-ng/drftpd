@@ -67,7 +67,7 @@ public class CommandManagerFactory {
         //		handlers.add(new List());
         //		handlers.add(new DataConnectionHandler());
         //		handlers.add(new Search());
-        //		handlers.add(new UserManagment());
+        //		handlers.add(new UserManagement());
         //_conn = conn;
         //login.init(conn);
         //Hashtable handlers = new Hashtable();

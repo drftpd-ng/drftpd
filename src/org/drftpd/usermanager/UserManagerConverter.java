@@ -91,10 +91,10 @@ public class UserManagerConverter {
                 from.getName());
         }
 
-        //to.putObject(UserManagment.RATIO, new
-        // Float(from.getObjectFloat(UserManagment.RATIO)));
-        //to.putObject(UserManagment.TAGLINE,
-        // from.getObjectString(UserManagment.TAGLINE));
+        //to.putObject(UserManagement.RATIO, new
+        // Float(from.getObjectFloat(UserManagement.RATIO)));
+        //to.putObject(UserManagement.TAGLINE,
+        // from.getObjectString(UserManagement.TAGLINE));
         //to.putObject(Nuke.NUKED, new Integer(from.getObjectInt(Nuke.NUKED)));
         int[] periods = new int[] {
                 Trial.PERIOD_ALL, Trial.PERIOD_DAILY, Trial.PERIOD_MONTHLY,

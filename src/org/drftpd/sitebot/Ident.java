@@ -23,7 +23,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import org.drftpd.commands.UserManagment;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
@@ -82,7 +82,7 @@ public class Ident extends GenericCommandAutoService implements
              	String ident = msgc.getSource().getNick() + "!" 
 								+ msgc.getSource().getUser() + "@" 
 								+ msgc.getSource().getHost();
-            	user.getKeyedMap().setObject(UserManagment.IRCIDENT,ident);
+            	user.getKeyedMap().setObject(UserManagement.IRCIDENT,ident);
             	try {
 					user.commit();
 		           	logger.info("Set IRC ident to '"+ident+"' for "+user.getName());

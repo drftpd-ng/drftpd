@@ -207,7 +207,7 @@ public class TransferStatistics implements CommandHandlerFactory,
         Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
         UserManager userman = conn.getGlobalContext().getUserManager();
         response.addComment("created: " +
-            new Date(user.getKeyedMap().getObjectLong(UserManagment.CREATED)));
+            new Date(user.getKeyedMap().getObjectLong(UserManagement.CREATED)));
         response.addComment("rank alup: " +
             getStatsPlace("ALUP", user, userman));
         response.addComment("rank aldn: " +

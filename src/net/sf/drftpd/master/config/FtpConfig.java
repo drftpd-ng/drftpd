@@ -26,7 +26,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.Reply;
-import org.drftpd.commands.UserManagment;
+import org.drftpd.commands.UserManagement;
 
 import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.permissions.MessagePathPermission;
@@ -191,11 +191,11 @@ public class FtpConfig extends Observable implements ConfigInterface {
                     return perm.getRatio();
                 }
 
-                return fromUser.getKeyedMap().getObjectFloat(UserManagment.RATIO);
+                return fromUser.getKeyedMap().getObjectFloat(UserManagement.RATIO);
             }
         }
 
-        return fromUser.getKeyedMap().getObjectFloat(UserManagment.RATIO);
+        return fromUser.getKeyedMap().getObjectFloat(UserManagement.RATIO);
     }
 
     public float getCreditLossRatio(LinkedRemoteFileInterface path,
@@ -211,7 +211,7 @@ public class FtpConfig extends Observable implements ConfigInterface {
         }
 
         //default credit loss ratio is 1
-        return (fromUser.getKeyedMap().getObjectFloat(UserManagment.RATIO) == 0) ? 0 : 1;
+        return (fromUser.getKeyedMap().getObjectFloat(UserManagement.RATIO) == 0) ? 0 : 1;
     }
 
     public String getDirName(String name) {

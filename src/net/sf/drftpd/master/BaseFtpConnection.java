@@ -34,7 +34,7 @@ import org.drftpd.GlobalContext;
 
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyException;
-import org.drftpd.commands.UserManagment;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.io.AddAsciiOutputStream;
 
@@ -137,8 +137,8 @@ public class BaseFtpConnection implements Runnable {
             env.add("username", user.getName());
             env.add("idletime",""+user.getIdleTime());
             env.add("credits", Bytes.formatBytes(user.getCredits()));
-//            env.add("ratio", "" + user.getObjectFloat(UserManagment.RATIO));
-//            env.add("tagline", user.getObjectString(UserManagment.TAGLINE));
+//            env.add("ratio", "" + user.getObjectFloat(UserManagement.RATIO));
+//            env.add("tagline", user.getObjectString(UserManagement.TAGLINE));
             env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
             env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
             env.add("group", user.getGroup());
@@ -451,7 +451,7 @@ public class BaseFtpConnection implements Runnable {
         	int replycode = e instanceof ReplyException ? ((ReplyException)e).getReplyCode() : 500;
     		reply = new Reply(replycode, e.getMessage());
         	try {
-				if(getUser().getKeyedMap().getObjectBoolean(UserManagment.DEBUG)) {
+				if(getUser().getKeyedMap().getObjectBoolean(UserManagement.DEBUG)) {
 					StringWriter sw = new StringWriter();
 					e.printStackTrace(new PrintWriter(sw));
 					reply.addComment(sw.toString());

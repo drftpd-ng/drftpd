@@ -22,7 +22,7 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 
-import org.drftpd.commands.UserManagment;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.master.ConnectionManager;
 
 import java.io.FileNotFoundException;
@@ -69,10 +69,10 @@ public class Exec extends FtpListener {
         String[] env = {
                 "USER=" + uevent.getUser().getName(),
                 "TAGLINE=" +
-                uevent.getUser().getKeyedMap().getObjectString(UserManagment.TAGLINE),
+                uevent.getUser().getKeyedMap().getObjectString(UserManagement.TAGLINE),
                 "GROUP=" + uevent.getUser().getGroup(),
                 "RATIO=" +
-                uevent.getUser().getKeyedMap().getObjectFloat(UserManagment.RATIO),
+                uevent.getUser().getKeyedMap().getObjectFloat(UserManagement.RATIO),
                 "SPEED=" + (uevent.getDirectory().getXferspeed() / 1000),
                 "SPEEDBPS=" + (uevent.getDirectory().getXferspeed()),
                 "HOST=@" + uevent.getConn().getClientAddress(),

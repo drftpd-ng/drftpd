@@ -25,7 +25,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.PortRange;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.UserManagment;
+import org.drftpd.commands.UserManagement;
 
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
@@ -52,7 +52,7 @@ public class DummyFtpConfig extends FtpConfig {
 
     public float getCreditCheckRatio(LinkedRemoteFileInterface path,
         User fromUser) {
-        return fromUser.getKeyedMap().getObjectFloat(UserManagment.RATIO);
+        return fromUser.getKeyedMap().getObjectFloat(UserManagement.RATIO);
     }
 
     public void setGlobalContext(GlobalContext gctx) {

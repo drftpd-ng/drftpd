@@ -26,7 +26,7 @@ import net.sf.drftpd.FileExistsException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import org.drftpd.commands.UserManagment;
+import org.drftpd.commands.UserManagement;
 
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -78,7 +78,7 @@ public class JSXUserManager implements UserManager {
             User user = create("drftpd");
             user.setGroup("drftpd");
             user.setPassword("drftpd");
-            user.getKeyedMap().setObject(UserManagment.RATIO, new Float(0));
+            user.getKeyedMap().setObject(UserManagement.RATIO, new Float(0));
 
             try {
                 user.addIPMask("*@127.0.0.1");

@@ -32,7 +32,7 @@ import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UnhandledCommandException;
-import org.drftpd.commands.UserManagment;
+import org.drftpd.commands.UserManagement;
 
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -188,7 +188,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
         if (newUser.isDeleted()) {
         	return new Reply(530,
         			(String)newUser.getKeyedMap().getObject(
-        					UserManagment.REASON,
+        					UserManagement.REASON,
 							Reply.RESPONSE_530_ACCESS_DENIED.getMessage()));
         }
         if(!conn.getGlobalContext().getConfig().isLoginAllowed(newUser)) {

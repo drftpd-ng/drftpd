@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.commands.Nuke;
 import org.drftpd.commands.Request;
-import org.drftpd.commands.UserManagment;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.RaceStatistics;
@@ -331,10 +331,10 @@ public abstract class AbstractUser extends User {
 		_data.setObject(Request.REQUESTS, requests);
 		_data.setObject(Request.REQUESTSFILLED, requestsFilled);
 
-		_data.setObject(UserManagment.COMMENT, comment);
-		_data.setObject(UserManagment.CREATED, new Date(created));
-		_data.setObject(UserManagment.RATIO, new Float(ratio));
-		_data.setObject(UserManagment.TAGLINE, tagline);
+		_data.setObject(UserManagement.COMMENT, comment);
+		_data.setObject(UserManagement.CREATED, new Date(created));
+		_data.setObject(UserManagement.RATIO, new Float(ratio));
+		_data.setObject(UserManagement.TAGLINE, tagline);
 
 		_data.setObject(RaceStatistics.RACES, racesParticipated);
 		_data.setObject(RaceStatistics.RACESLOST, racesLost);

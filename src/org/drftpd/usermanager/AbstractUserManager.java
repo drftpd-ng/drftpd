@@ -29,7 +29,7 @@ import net.sf.drftpd.FileExistsException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.commands.Nuke;
-import org.drftpd.commands.UserManagment;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.master.ConnectionManager;
 
 import se.mog.io.PermissionDeniedException;
@@ -87,19 +87,19 @@ public abstract class AbstractUserManager implements UserManager {
         User user = createUser("drftpd");
         user.setGroup("drftpd");
         user.setPassword("drftpd");
-        user.getKeyedMap().setObject(UserManagment.RATIO, new Float(0));
-        user.getKeyedMap().setObject(UserManagment.GROUPSLOTS,0);
-        user.getKeyedMap().setObject(UserManagment.LEECHSLOTS,0);
-        user.getKeyedMap().setObject(UserManagment.MAXLOGINS,0);
-        user.getKeyedMap().setObject(UserManagment.MAXLOGINSIP,0);
-        user.getKeyedMap().setObject(UserManagment.MAXSIMUP,0);
-        user.getKeyedMap().setObject(UserManagment.MAXSIMDN,0);
-        user.getKeyedMap().setObject(UserManagment.TOTALLOGINS,0);
-        user.getKeyedMap().setObject(UserManagment.CREATED, new Date());
-        user.getKeyedMap().setObject(UserManagment.LASTSEEN, new Date());
-        user.getKeyedMap().setObject(UserManagment.WKLY_ALLOTMENT, new Long(0));
-        user.getKeyedMap().setObject(UserManagment.COMMENT, "Auto-Generated");
-        user.getKeyedMap().setObject(UserManagment.IRCIDENT, "N/A");
+        user.getKeyedMap().setObject(UserManagement.RATIO, new Float(0));
+        user.getKeyedMap().setObject(UserManagement.GROUPSLOTS,0);
+        user.getKeyedMap().setObject(UserManagement.LEECHSLOTS,0);
+        user.getKeyedMap().setObject(UserManagement.MAXLOGINS,0);
+        user.getKeyedMap().setObject(UserManagement.MAXLOGINSIP,0);
+        user.getKeyedMap().setObject(UserManagement.MAXSIMUP,0);
+        user.getKeyedMap().setObject(UserManagement.MAXSIMDN,0);
+        user.getKeyedMap().setObject(UserManagement.TOTALLOGINS,0);
+        user.getKeyedMap().setObject(UserManagement.CREATED, new Date());
+        user.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
+        user.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT, new Long(0));
+        user.getKeyedMap().setObject(UserManagement.COMMENT, "Auto-Generated");
+        user.getKeyedMap().setObject(UserManagement.IRCIDENT, "N/A");
         user.getKeyedMap().setObject(Nuke.NUKED,0);
         user.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
 

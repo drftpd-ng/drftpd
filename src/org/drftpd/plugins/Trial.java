@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
-import org.drftpd.commands.UserManagment;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.User;
@@ -102,7 +102,7 @@ public class Trial extends FtpListener {
     public static Calendar getCalendarForEndOfBonus(User user, int period) {
         Calendar cal = Calendar.getInstance();
         try {
-			cal.setTime((Date) user.getKeyedMap().getObject(UserManagment.CREATED));
+			cal.setTime((Date) user.getKeyedMap().getObject(UserManagement.CREATED));
 		} catch (KeyNotFoundException e) {
 			throw new IllegalArgumentException("User has no created");
 		}
@@ -117,7 +117,7 @@ public class Trial extends FtpListener {
     public static Calendar getCalendarForEndOfFirstPeriod(User user, int period) {
         Calendar cal = Calendar.getInstance();
         try {
-			cal.setTime((Date) user.getKeyedMap().getObject(UserManagment.CREATED));
+			cal.setTime((Date) user.getKeyedMap().getObject(UserManagement.CREATED));
 		} catch (KeyNotFoundException e) {
 			throw new IllegalArgumentException("User has no created info");
 		}

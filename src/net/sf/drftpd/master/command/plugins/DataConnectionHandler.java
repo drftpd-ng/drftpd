@@ -37,7 +37,7 @@ import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.ReplySlaveUnavailableException;
 import org.drftpd.commands.UnhandledCommandException;
-import org.drftpd.commands.UserManagment;
+import org.drftpd.commands.UserManagement;
 
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
@@ -1057,7 +1057,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
             //check credits
             if (isRetr) {
-                if ((conn.getUserNull().getKeyedMap().getObjectFloat(UserManagment.RATIO) != 0) &&
+                if ((conn.getUserNull().getKeyedMap().getObjectFloat(UserManagement.RATIO) != 0) &&
                         (conn.getUserNull().getCredits() < _transferFile.length())) {
                     return new Reply(550, "Not enough credits.");
                 }

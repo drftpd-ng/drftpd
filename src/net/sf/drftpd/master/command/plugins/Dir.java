@@ -39,7 +39,7 @@ import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
-import org.drftpd.commands.UserManagment;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.id3.ID3Tag;
 
 import org.drftpd.plugins.SiteBot;
@@ -377,7 +377,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 
         try {
             uploader = conn.getGlobalContext().getUserManager().getUserByName(requestedFile.getUsername());
-            uploader.updateCredits((long) -(requestedFile.length() * uploader.getKeyedMap().getObjectFloat(UserManagment.RATIO)));
+            uploader.updateCredits((long) -(requestedFile.length() * uploader.getKeyedMap().getObjectFloat(UserManagement.RATIO)));
             uploader.updateUploadedBytes(-requestedFile.length());
         } catch (UserFileException e) {
             reply.addComment("Error removing credits & stats: " + e.getMessage());

@@ -4,7 +4,7 @@
  * To change the template for this generated file go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-package net.sf.drftpd.master.command.plugins;
+package org.drftpd.commands;
 
 import junit.framework.TestCase;
 
@@ -12,10 +12,6 @@ import net.sf.drftpd.master.FtpRequest;
 
 import org.apache.log4j.BasicConfigurator;
 
-import org.drftpd.commands.Reply;
-import org.drftpd.commands.ReplyException;
-import org.drftpd.commands.UnhandledCommandException;
-import org.drftpd.commands.UserManagment;
 
 import org.drftpd.tests.DummyBaseFtpConnection;
 import org.drftpd.tests.DummyGlobalContext;
@@ -28,9 +24,9 @@ import java.util.ArrayList;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: UserManagmentTest.java 851 2004-12-04 13:29:14Z zubov $
  */
-public class UserManagmentTest extends TestCase {
+public class UserManagementTest extends TestCase {
     public void testGAdmin() throws ReplyException {
         DummyUserManager um = new DummyUserManager();
         DummyUser u = new DummyUser("dummy", um);
@@ -48,7 +44,7 @@ public class UserManagmentTest extends TestCase {
         u.setGroupSlots((short) 1);
         u.setGroup("group");
 
-        UserManagment cmdmgr = (UserManagment) new UserManagment().initialize(conn,
+        UserManagement cmdmgr = (UserManagement) new UserManagement().initialize(conn,
                 null);
 
         {

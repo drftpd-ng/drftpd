@@ -186,7 +186,7 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
             }
 
             total = new Long(total.longValue() +
-                    (long) (file.length() * owner.getKeyedMap().getObjectFloat(UserManagment.RATIO)));
+                    (long) (file.length() * owner.getKeyedMap().getObjectFloat(UserManagement.RATIO)));
             awards.put(owner, total);
         }
     }

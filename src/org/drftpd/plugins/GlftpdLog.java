@@ -51,7 +51,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.SFVFile;
 import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.Nuke;
-import org.drftpd.commands.UserManagment;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -137,7 +137,7 @@ public class GlftpdLog extends FtpListener {
         print("" + string + ": \"" + dir.getPath() + "\" \"" +
             direvent.getUser().getName() + "\" \"" +
             direvent.getUser().getGroup() + "\" \"" +
-            direvent.getUser().getKeyedMap().getObjectString(UserManagment.TAGLINE) + "\"");
+            direvent.getUser().getKeyedMap().getObjectString(UserManagement.TAGLINE) + "\"");
     }
 
     private void actionPerformedDirectorySTOR(TransferEvent direvent)
@@ -402,7 +402,7 @@ public class GlftpdLog extends FtpListener {
                 }
 
                 long nukedamount = Nuke.calculateNukedAmount(stat.getAmount(),
-                        raceuser.getKeyedMap().getObjectFloat(UserManagment.RATIO),
+                        raceuser.getKeyedMap().getObjectFloat(UserManagement.RATIO),
                         event.getMultiplier());
 
                 print("NUKEE: \"" + raceuser.getName() + "\" \"" +

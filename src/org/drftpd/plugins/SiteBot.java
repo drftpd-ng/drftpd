@@ -65,7 +65,7 @@ import org.drftpd.SFVFile;
 import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.Nuke;
 import org.drftpd.commands.TransferStatistics;
-import org.drftpd.commands.UserManagment;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
@@ -676,7 +676,7 @@ public class SiteBot extends FtpListener implements Observer {
                 raceenv.add("size", Bytes.formatBytes(stat.getAmount()));
 
                 long nukedamount = Nuke.calculateNukedAmount(stat.getAmount(),
-                        raceuser.getKeyedMap().getObjectFloat(UserManagment.RATIO),
+                        raceuser.getKeyedMap().getObjectFloat(UserManagement.RATIO),
                         event.getMultiplier());
                 raceenv.add("nukedamount", Bytes.formatBytes(nukedamount));
                 say(section, SimplePrintf.jprintf(raceformat, raceenv));
@@ -1102,7 +1102,7 @@ public class SiteBot extends FtpListener implements Observer {
 				String n = (String) i.next();
 				if (n.toLowerCase().equals(nick.toLowerCase())) {
 	    			User user = (User) _identWhoisQueue.get(n);
-	    			user.getKeyedMap().setObject(UserManagment.IRCIDENT,fullIdent);
+	    			user.getKeyedMap().setObject(UserManagement.IRCIDENT,fullIdent);
 	    			try {
 						user.commit();
 						_identWhoisQueue.remove(nick);
