@@ -214,7 +214,7 @@ public class FtpConnection extends BaseFtpConnection {
 		// change directory
 		if (mUser.getVirtualDirectory().changeDirectory("..")) {
 			String args[] =
-				{ mUser.getVirtualDirectory().getCurrentDirectory()};
+				{ mUser.getVirtualDirectory().getCurrentDirectoryName()};
 			out.write(mFtpStatus.getResponse(200, request, mUser, args));
 		} else {
 			out.write(mFtpStatus.getResponse(431, request, mUser, null));
@@ -244,7 +244,7 @@ public class FtpConnection extends BaseFtpConnection {
 		// change directory
 		if (mUser.getVirtualDirectory().changeDirectory(dirName)) {
 			String args[] =
-				{ mUser.getVirtualDirectory().getCurrentDirectory()};
+				{ mUser.getVirtualDirectory().getCurrentDirectoryName()};
 			out.write(mFtpStatus.getResponse(200, request, mUser, args));
 		} else {
 			out.write(mFtpStatus.getResponse(431, request, mUser, null));
@@ -367,6 +367,18 @@ public class FtpConnection extends BaseFtpConnection {
 				ex.printStackTrace();
 			}
 			reset();
+		}
+	}
+	public void doSITELIST(FtpRequest request, Writer out) {
+		RemoteFile files[] = mUser.getVirtualDirectory().getCurrentDirectory().listFiles();
+		try {
+			for (int i=0; i<files.length; i++) {
+				RemoteFile file = files[i];
+				out.write("200- "+file.toString()+"\r\n");
+			}
+			out.write(mFtpStatus.getResponse(200, request, mUser, null));
+		} catch(IOException ex) {
+			ex.printStackTrace();
 		}
 	}
 
@@ -688,7 +700,7 @@ public class FtpConnection extends BaseFtpConnection {
 
 		// reset state variables
 		resetState();
-		String args[] = { mUser.getVirtualDirectory().getCurrentDirectory()};
+		String args[] = { mUser.getVirtualDirectory().getCurrentDirectoryName()};
 		out.write(mFtpStatus.getResponse(257, request, mUser, args));
 	}
 
@@ -1007,10 +1019,12 @@ public class FtpConnection extends BaseFtpConnection {
 	 * the protocol.
 	 */
 	/*
-	 public void doSITE(FtpRequest request, Writer out) throws IOException {
-	     SiteCommandHandler siteCmd = new SiteCommandHandler( mConfig, mUser );
-	     out.write( siteCmd.getResponse(request) );
-	 }
+	public void doSITE(FtpRequest request, Writer out) throws IOException {
+	     //SiteCommandHandler siteCmd = new SiteCommandHandler( mConfig, mUser );
+	     SiteCommandHandler siteCmd = new SiteCommandHandler(mUser);
+	     //out.write( siteCmd.getResponse(request) );
+	     //siteCmd.do(request, out);
+	}
 	*/
 
 	/**

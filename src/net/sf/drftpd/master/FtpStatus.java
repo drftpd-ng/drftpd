@@ -28,10 +28,14 @@ class FtpStatus extends Properties {
     /**
      * Load status propeties file from the classpath.
      */
-    public FtpStatus() throws IOException {
+    public FtpStatus() {
         InputStream pis = getClass().getClassLoader().getResourceAsStream(RESOURCE);
-        load(pis);
-        pis.close();
+        try {
+        	load(pis);
+        	pis.close();
+        } catch(IOException ex) {
+			throw new RuntimeException("Could not open "+RESOURCE+"\n"+ex.toString());
+        }
     }
 
 

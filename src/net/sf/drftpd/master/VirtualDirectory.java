@@ -82,8 +82,16 @@ public class VirtualDirectory {
 	/**
 	 * Get current working directory.
 	 */
-	public String getCurrentDirectory() {
+	public String getCurrentDirectoryName() {
 		return mstCurrDir;
+	}
+
+	public RemoteFile getCurrentDirectory() {
+		try {
+			return root.lookupFile(mstCurrDir);
+		} catch(FileNotFoundException ex) {
+			throw new RuntimeException(ex.toString());
+		}
 	}
 
 	/**

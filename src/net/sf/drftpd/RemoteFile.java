@@ -17,6 +17,8 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.Collection;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 /**
  * Represents the file attributes of a remote file.
  * 
@@ -37,6 +39,7 @@ public class RemoteFile implements Serializable {
 		isFile = false;
 		path = "/";
 		files = new Hashtable();
+		slaves = new Vector(1); // there will always be at least 1 RemoteSlave.
 	}
 
 	/**
@@ -157,24 +160,26 @@ public class RemoteFile implements Serializable {
 	public void addSlave(RemoteSlave slave) {
 		slaves.add(slave);
 	}
-	public void addSlaves(Collection slaves) {
-		this.slaves.addAll(slaves);
+	public void addSlaves(Collection addslaves) {
+		if(addslaves == null) throw new IllegalArgumentException("addslaves cannot be null");
+		System.out.println("Adding "+addslaves+" to "+slaves);
+		slaves.addAll(addslaves);
+		System.out.println("slaves.size() is now "+slaves.size());
 	}
 	public Collection getSlaves() {
 		return slaves;
 	}
 	private Random rand = new Random();
 	public RemoteSlave getAnySlave() {
-		/*if(slaves.size() == 1) {
-			return (RemoteSlave)slaves.get(0);
-		}
-		*/
-		return (RemoteSlave)slaves.get(rand.nextInt(slaves.size()));
-		
+		int num = rand.nextInt(slaves.size());
+		System.out.println("Returning slave "+num+" out of "+slaves.size()+" possible slaves");
+		return (RemoteSlave)slaves.get(num);
 	}
+/*
 	public void removeSlave(RemoteSlave slave) {
 		slaves.remove(slave);
 	}
+*/
 
 	private String user;
 	public String getUser() {
@@ -267,8 +272,9 @@ public class RemoteFile implements Serializable {
 			throw new IllegalArgumentException(
 				"argument is not a directory (" + dir + ")");
 
-		//Hashtable map = getHashtable();
+		Hashtable map = getHashtable();
 		Hashtable mergemap = dir.getHashtable();
+
 		System.out.println(
 			"Adding " + dir.getPath() + " with " + mergemap.size() + " files");
 
@@ -280,19 +286,20 @@ public class RemoteFile implements Serializable {
 			RemoteFile file = (RemoteFile) files.get(filename);
 			RemoteFile mergefile = (RemoteFile) entry.getValue();
 			//RemoteFile mergefile = (RemoteFile) mergemap.get(getName());
-
-			System.out.println("Adding " + mergefile.getPath());
-
+			
 			// two scenarios:, local file [does not] exists
 			if (file == null) {
 				// local file does not exist, just put it in the hashtable
-				files.put(mergefile.getName(), mergefile);
+				map.put(mergefile.getName(), mergefile);
 			} else {
 				
 				if (lastModified() > mergefile.lastModified()) {
+					System.out.println("Last modified changed from "+lastModified()+" to "+mergefile.lastModified());
 					lastModified = mergefile.lastModified();
+				} else {
+					System.out.println("Last modified NOT changed from "+lastModified()+" to "+mergefile.lastModified());
 				}
-
+				
 				// 4 scenarios: new/existing file/directory
 				if (mergefile.isDirectory()) {
 					if (!file.isDirectory())
@@ -303,8 +310,17 @@ public class RemoteFile implements Serializable {
 					if (file.isDirectory())
 						System.out.println(
 							"!!! WARNING: File/Directory conflict!!");
-					addSlaves(mergefile.getSlaves());
+					System.out.println("merge "+mergefile+" to "+file);
+					Collection slaves2 = mergefile.getSlaves();
+					//System.out.println("adding slaves: "+slaves2);
+					System.out.println(slaves2.size()+" slaves to add");
+					file.addSlaves(slaves2);
 				}
+				System.out.println("Result file: "+file);
+				/*
+				System.out.println("Old file: "+map.get(filename));
+				map.put(filename, file);
+				*/
 			}
 		}
 
@@ -319,13 +335,26 @@ public class RemoteFile implements Serializable {
 	 */
 	public String toString() {
 		StringBuffer ret = new StringBuffer();
-		ret.append("net.sf.drftpd.RemoteFile[");
-		ret.append("isDirectory(): " + isDirectory() + " ");
-		if (isDirectory())
-			ret.append("[directory contains " + files.size() + " files] ");
-		ret.append("isFile(): " + isFile() + " ");
-		ret.append(getPath());
+		ret.append("[net.sf.drftpd.RemoteFile[");
+		//ret.append(slaves);
+		Enumeration e = slaves.elements();
+		ret.append("slaves:[");
+		while(e.hasMoreElements()) {
+			//[endpoint:[213.114.146.44:2012](remote),objID:[2b6651:ef0b3c7162:-8000, 0]]]]]
+			Pattern p = Pattern.compile("endpoint:\\[(.*?):.*?\\]");
+			Matcher m = p.matcher(e.nextElement().toString());
+			m.find();
+			ret.append(m.group(1));
+			//ret.append(e.nextElement());
+			if(e.hasMoreElements()) ret.append(",");
+		}
 		ret.append("]");
+		//ret.append("isDirectory(): " + isDirectory() + " ");
+		//if (isDirectory())
+		//	ret.append("[directory contains " + files.size() + " files] ");
+		//ret.append("isFile(): " + isFile() + " ");
+		ret.append(getPath());
+		ret.append("]]");
 		return ret.toString();
 	}
 }
