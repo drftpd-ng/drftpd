@@ -4,7 +4,8 @@ import java.io.FileNotFoundException;
 import java.util.Collection;
 
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
+ * @author mog
+ * @version $Id: RemoteFile.java,v 1.21 2003/11/19 00:20:53 mog Exp $
  */
 public abstract class RemoteFile implements RemoteFileInterface {
 	
@@ -13,17 +14,14 @@ public abstract class RemoteFile implements RemoteFileInterface {
 	 */
 	public static final char separatorChar = '/';
 
-	protected long checkSum = 0;
+	protected long _checkSum = 0;
 
 	protected String _groupname;
 
-	protected long lastModified = -1;
+	protected long _lastModified = -1;
 	
 	protected String _username;
 
-	/**
-	 * @see java.lang.Object#equals(Object)
-	 */
 	public boolean equals(Object obj) {
 		if(!(obj instanceof RemoteFile)) return false;
 		RemoteFile remotefile = (RemoteFile) obj;
@@ -36,7 +34,7 @@ public abstract class RemoteFile implements RemoteFileInterface {
 	 * Gets the checkSum
 	 */
 	public long getCheckSumCached() {
-		return checkSum;	
+		return _checkSum;	
 	}
 	
 //	public abstract Collection getFiles();
@@ -77,21 +75,13 @@ public abstract class RemoteFile implements RemoteFileInterface {
 	public int hashCode() {
 		return getName().hashCode();
 	}
-
-//	public abstract boolean isFile();
-//	public abstract boolean isDirectory();
-	
-//	public abstract long lastModified();
-//	public abstract long length();
-			
-//	public abstract RemoteFileInterface[] listFiles();
 	
 	/**
 	 * Sets the checkSum.
 	 * @param checkSum The checkSum to set
 	 */
 	public void setCheckSum(long checkSum) {
-		this.checkSum = checkSum;
+		this._checkSum = checkSum;
 	}
 
 	/**
@@ -108,6 +98,14 @@ public abstract class RemoteFile implements RemoteFileInterface {
 		ret.append(getPath());
 		ret.append("]");
 		return ret.toString();
+	}
+
+	public RemoteFileInterface getLink() {
+		throw new UnsupportedOperationException();
+	}
+
+	public boolean isLink() {
+		return false;
 	}
 
 }

@@ -33,6 +33,7 @@ import java.util.StringTokenizer;
 import net.sf.drftpd.Checksum;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
+import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 
 import org.apache.log4j.Logger;
 
@@ -175,10 +176,10 @@ public class MLSTSerialize {
 					"expecting path, not " + line);
 
 			String path = line.substring(0, line.length() - 1);
-			Object ret[] = root.lookupNonExistingFile(path);
+			NonExistingFile ret = root.lookupNonExistingFile(path);
 			LinkedRemoteFile dir;
-			dir = (LinkedRemoteFile) ret[0];
-			if (ret[1] != null) {
+			dir = ret.getFile();
+			if (ret.hasPath()) {
 				throw new CorruptFileListException(path + " doesn't exist");
 				//				 StringTokenizer st = new StringTokenizer((String)ret[1], "/");
 				//				 while(st.hasMoreTokens()) {

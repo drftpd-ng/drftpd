@@ -106,7 +106,8 @@ public class LIST implements CommandHandler {
 		if (request.hasArgument()) {
 			//argument = argument.trim();
 			StringBuffer optionsSb = new StringBuffer(4);
-			StringTokenizer st = new StringTokenizer(request.getArgument(), " ");
+			StringTokenizer st =
+				new StringTokenizer(request.getArgument(), " ");
 			while (st.hasMoreTokens()) {
 				String token = st.nextToken();
 				if (token.charAt(0) == '-') {
@@ -267,7 +268,10 @@ public class LIST implements CommandHandler {
 	 * </pre>
 	 * @return true if success
 	 */
-	public static void printList(Collection files, Writer os, boolean fulldate)
+	private static void printList(
+		Collection files,
+		Writer os,
+		boolean fulldate)
 		throws IOException {
 		//out = new BufferedWriter(out);
 		os.write("total 0" + NEWLINE);
@@ -354,26 +358,10 @@ public class LIST implements CommandHandler {
 		return sb.toString();
 	}
 
-	//TODO MOVE ME
-	public static boolean isLegalFileName(String fileName) {
-		assert fileName != null;
-		return !(fileName.indexOf("/") != -1)
-			&& !fileName.equals(".")
-			&& !fileName.equals("..");
-	}
-
-	public static String PADDING = "          ";
-	private static String padToLength(String value, int length) {
-		if (value.length() >= length)
-			return value;
-		assert PADDING.length() > length : "padding must be longer than length";
-		return PADDING.substring(0, length - value.length()) + value;
-	}
-
 	/**
 	 * Get each directory line.
 	 */
-	public static void printLine(
+	private static void printLine(
 		RemoteFileInterface fl,
 		Writer out,
 		boolean fulldate)
@@ -388,9 +376,9 @@ public class LIST implements CommandHandler {
 		line.append(DELIM);
 		line.append((fl.isDirectory() ? "3" : "1"));
 		line.append(DELIM);
-		line.append(padToLength(fl.getUsername(), 8));
+		line.append(ListUtils.padToLength(fl.getUsername(), 8));
 		line.append(DELIM);
-		line.append(padToLength(fl.getGroupname(), 8));
+		line.append(ListUtils.padToLength(fl.getGroupname(), 8));
 		line.append(DELIM);
 		line.append(getLength(fl));
 		line.append(DELIM);
@@ -407,9 +395,9 @@ public class LIST implements CommandHandler {
 				if (filesleft != 0)
 					out.write(
 						"l--------- 3 "
-							+ padToLength(fl.getUsername(), 8)
+							+ ListUtils.padToLength(fl.getUsername(), 8)
 							+ DELIM
-							+ padToLength(fl.getGroupname(), 8)
+							+ ListUtils.padToLength(fl.getGroupname(), 8)
 							+ "             0 "
 							+ getUnixDate(fl.lastModified(), fulldate)
 							+ DELIM
@@ -427,15 +415,16 @@ public class LIST implements CommandHandler {
 			if (!file.isAvailable())
 				out.write(
 					"l--------- 3 "
-						+ padToLength(fl.getUsername(), 8)
+						+ ListUtils.padToLength(fl.getUsername(), 8)
 						+ DELIM
-						+ padToLength(fl.getGroupname(), 8)
+						+ ListUtils.padToLength(fl.getGroupname(), 8)
 						+ "             0 "
 						+ getUnixDate(fl.lastModified(), fulldate)
 						+ DELIM
 						+ fl.getName()
 						+ "-OFFLINE"
-						+ " -> "+fl.getName()
+						+ " -> "
+						+ fl.getName()
 						+ NEWLINE);
 		}
 	}
@@ -448,7 +437,7 @@ public class LIST implements CommandHandler {
 	 * </pre>
 	 * @return true if success
 	 */
-	public static void printNList(
+	private static void printNList(
 		Collection fileList,
 		boolean bDetail,
 		Writer out)

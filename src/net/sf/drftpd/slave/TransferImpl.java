@@ -18,7 +18,7 @@ import net.sf.drftpd.AsciiOutputStream;
 
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.30 2003/11/18 00:13:24 mog Exp $
+ * @version $Id: TransferImpl.java,v 1.31 2003/11/19 00:20:54 mog Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private boolean _abort = false;
@@ -132,7 +132,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		return (int) (_transfered / ((float) elapsed / (float) 1000));
 	}
 	public TransferStatus getStatus() {
-		return new TransferStatus(getElapsed(), getTransfered());
+		return new TransferStatus(getElapsed(), getTransfered(), getChecksum());
 	}
 	public boolean isReceivingUploading() {
 		return _direction == TRANSFER_RECEIVING_UPLOAD;
@@ -180,6 +180,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 			_out = null;
 			_conn = null;
 		}
+		if(_abort) throw new IOException("Transfer was aborted");
 	}
 
 	//TODO char mode for uploads?

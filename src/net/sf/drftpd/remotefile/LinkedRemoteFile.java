@@ -34,10 +34,10 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.84 2003/11/18 00:13:24 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.85 2003/11/19 00:20:53 mog Exp $
  */
 
-public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
+public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comparable {
 	private static final String EMPTY_STRING = "".intern();
 	private static Logger logger =
 		Logger.getLogger(LinkedRemoteFile.class.getName());
@@ -342,6 +342,9 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		return availableSlaves;
 	}
 
+	/**
+	 * Uses cached checksum if the cached checksum is not 0
+	 */
 	public long getCheckSum() throws IOException {
 		if (_checkSum == 0 && _length != 0) {
 			try {
@@ -351,7 +354,12 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		}
 		return _checkSum;
 	}
-	
+
+	/**
+	 * Returns the cached checksum or 0 if no checksum was cached.
+	 * <p>
+	 * Use {getCheckSum()} to automatically calculate checksum if no cached checksum is available.
+	 */	
 	public long getCheckSumCached() {
 		return _checkSum;
 	}
@@ -598,21 +606,37 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	public LinkedRemoteFile lookupFile(String path)
 		throws FileNotFoundException {
 
-		Object[] ret = lookupNonExistingFile(path);
+		NonExistingFile ret = lookupNonExistingFile(path);
 
-		//logger.info("ret[0] = " + ret[0] + " ret[1] = " + ret[1]);
-		if (ret[1] != null)
+		if (ret.hasPath())
 			throw new FileNotFoundException(path + ": File not found");
-		return (LinkedRemoteFile) ret[0];
+		return (LinkedRemoteFile) ret.getFile();
 	}
+	public class NonExistingFile {
+		public NonExistingFile(LinkedRemoteFile file, String path) {
+			_file = file;
+			_path = path;
+		}
+		private LinkedRemoteFile _file;
+		private String _path;
+		public LinkedRemoteFile getFile() {
+			return _file;
+		}
 
+		public String getPath() {
+			return _path;
+		}
+		public boolean hasPath() {
+			return _path == null;
+		}
+	}
+	
 	/**
 	 * 
-	 * @param path
 	 * @return new Object[] {LinkedRemoteFile file, String path};
 	 * path is null if path exists
 	 */
-	public Object[] lookupNonExistingFile(String path) {
+	public NonExistingFile lookupNonExistingFile(String path) {
 		if (path == null)
 			throw new IllegalArgumentException("null path not allowed");
 		LinkedRemoteFile currFile = this;
@@ -649,23 +673,24 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				if (st.hasMoreElements()) {
 					remaining.append('/').append(st.nextToken(EMPTY_STRING));
 				}
-				return new Object[] { currFile, remaining.toString()};
+				return new NonExistingFile( currFile, remaining.toString());
 			}
 			currFile = nextFile;
 		}
-		return new Object[] { currFile, null };
+		return new NonExistingFile( currFile, null );
 	}
 
 	/**
 	 * Returns path for a non-existing file. Performs path normalization and returns an absolute path
 	 */
 	public String lookupPath(String path) {
-		Object[] ret = lookupNonExistingFile(path);
-		if (ret[1] == null) {
-			return ((LinkedRemoteFile) ret[0]).getPath();
+		NonExistingFile ret = lookupNonExistingFile(path);
+		if (!ret.hasPath()) {
+			return ret.getFile().getPath();
 		}
-		return ((LinkedRemoteFile) ret[0]).getPath() + "/" + ((String) ret[1]);
+		return ret.getFile().getPath() + RemoteFile.separatorChar + ret.getPath();
 	}
+	
 	public SFVFile lookupSFVFile()
 		throws IOException, FileNotFoundException, NoAvailableSlaveException {
 		if (!isDirectory())
@@ -679,7 +704,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 			}
 		}
 		throw new FileNotFoundException("no sfv file in directory");
-
 	}
 
 	public LinkedRemoteFile putFile(RemoteFile file) {
@@ -1103,6 +1127,21 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		//		if (isFile() && getSlaves().size() == 0) {
 		//			delete();
 		//		}
+	}
+
+	public boolean isLink() {
+		return false;
+	}
+
+	public RemoteFileInterface getLink() {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @throws ClassCastException if object is not an instance of RemoteFileInterface.
+	 */
+	public int compareTo(Object o) {
+		return getName().compareTo(((RemoteFileInterface)o).getName());
 	}
 
 }

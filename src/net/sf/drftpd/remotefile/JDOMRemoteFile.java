@@ -16,7 +16,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: JDOMRemoteFile.java,v 1.23 2003/11/17 20:13:11 mog Exp $
+ * @version $Id: JDOMRemoteFile.java,v 1.24 2003/11/19 00:20:53 mog Exp $
  */
 public class JDOMRemoteFile implements RemoteFileInterface {
 
@@ -112,6 +112,10 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 		return this.group;
 	}
 
+	public RemoteFileInterface getLink() {
+		throw new UnsupportedOperationException();
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -136,11 +140,19 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 		return xfertime;
 	}
 
+	public boolean isDeleted() {
+		return false;
+	}
+
 	public boolean isDirectory() {
 		return files != null;
 	}
 	public boolean isFile() {
 		return files == null;
+	}
+
+	public boolean isLink() {
+		return false;
 	}
 
 	public long lastModified() {
@@ -176,10 +188,6 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 		//ret.append("isFile(): " + isFile() + " ");
 		ret.append(getName());
 		return ret.toString();
-	}
-
-	public boolean isDeleted() {
-		return false;
 	}
 
 }

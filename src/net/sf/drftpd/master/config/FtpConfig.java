@@ -34,19 +34,17 @@ import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerFormat;
 
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- *
- * To change the template for this generated type comment go to
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * @author mog
+ * @version $Id: FtpConfig.java,v 1.24 2003/11/19 00:20:52 mog Exp $
  */
 public class FtpConfig {
 	private int _maxUsersExempt;
 	private int _maxUsersTotal = Integer.MAX_VALUE;
-	private String loginPrompt = 
-		"This program is free software; you can redistribute it and/or" +
-		" modify it under the terms of the GNU General Public License.  " +
-		"Distributed FTP Daemon http://drftpd.mog.se" +
-		" : Service ready for new user.";
+	private String loginPrompt =
+		"This program is free software; you can redistribute it and/or"
+			+ " modify it under the terms of the GNU General Public License.  "
+			+ "Distributed FTP Daemon http://drftpd.mog.se"
+			+ " : Service ready for new user.";
 	private static Logger logger = Logger.getLogger(FtpConfig.class);
 	private ArrayList _creditcheck;
 
@@ -55,7 +53,7 @@ public class FtpConfig {
 	private ArrayList _deleteown;
 	private ArrayList _dirlog;
 	private ArrayList _download;
-//	private ArrayList _eventplugin;
+	//	private ArrayList _eventplugin;
 	private ArrayList _hideinwho;
 	private ArrayList _makedir;
 	private ArrayList _msgpath;
@@ -214,12 +212,12 @@ public class FtpConfig {
 				if (perm.check(fromUser)) {
 					return perm.getRatio();
 				} else {
-					return fromUser.getRatio() == 0.0 ? 0 : 1;
+					return fromUser.getRatio() == 0 ? 0 : 1;
 				}
 			}
 		}
 		//default credit loss ratio is 1
-		return fromUser.getRatio() == 0.0 ? 0 : 1;
+		return fromUser.getRatio() == 0 ? 0 : 1;
 	}
 	public long getFreespaceMin() {
 		return freespaceMin;
@@ -236,13 +234,6 @@ public class FtpConfig {
 		return this.connManager.getSlaveManager();
 	}
 
-	/**
-	 * return true if file is visible + is readable by user
-	 * @deprecated
-	 */
-	public boolean hasReadPermission(User user, LinkedRemoteFile directory) {
-		return checkPrivPath(user, directory);
-	}
 	public void loadConfig(Properties cfg, ConnectionManager connManager)
 		throws IOException {
 		loadConfig2();
@@ -296,7 +287,7 @@ public class FtpConfig {
 				//max_users <maxUsersTotal> <maxUsersExempt>
 				else if (command.equals("max_users")) {
 					_maxUsersTotal = Integer.parseInt(st.nextToken());
-					_maxUsersExempt = Integer.parseInt(st.nextToken());					
+					_maxUsersExempt = Integer.parseInt(st.nextToken());
 				}
 				//msgpath <path> <filename> <flag/=group/-user>
 				else if (command.equals("msgpath")) {
@@ -346,29 +337,29 @@ public class FtpConfig {
 					makePermission(renameown, st);
 				} else if (command.equals("request")) {
 					makePermission(request, st);
-//				} else if (command.equals("plugin")) {
-//					String clazz = st.nextToken();
-//					ArrayList argsCollection = new ArrayList();
-//					while (st.hasMoreTokens()) {
-//						argsCollection.add(st.nextToken());
-//					}
-//					String args[] =
-//						(String[]) argsCollection.toArray(new String[0]);
-//					try {
-//						Class SIG[] =
-//							{
-//								FtpConfig.class,
-//								ConnectionManager.class,
-//								String[].class };
-//						Constructor met =
-//							Class.forName(clazz).getConstructor(SIG);
-//						Object obj =
-//							met.newInstance(
-//								new Object[] { this, connManager, args });
-//						eventplugin.add(obj);
-//					} catch (Throwable e) {
-//						logger.log(Level.FATAL, "Error loading " + clazz, e);
-//					}
+					//				} else if (command.equals("plugin")) {
+					//					String clazz = st.nextToken();
+					//					ArrayList argsCollection = new ArrayList();
+					//					while (st.hasMoreTokens()) {
+					//						argsCollection.add(st.nextToken());
+					//					}
+					//					String args[] =
+					//						(String[]) argsCollection.toArray(new String[0]);
+					//					try {
+					//						Class SIG[] =
+					//							{
+					//								FtpConfig.class,
+					//								ConnectionManager.class,
+					//								String[].class };
+					//						Constructor met =
+					//							Class.forName(clazz).getConstructor(SIG);
+					//						Object obj =
+					//							met.newInstance(
+					//								new Object[] { this, connManager, args });
+					//						eventplugin.add(obj);
+					//					} catch (Throwable e) {
+					//						logger.log(Level.FATAL, "Error loading " + clazz, e);
+					//					}
 				}
 			} catch (Exception e) {
 				logger.warn(
@@ -413,8 +404,8 @@ public class FtpConfig {
 		privpath.trimToSize();
 		_privpath = privpath;
 
-//		eventplugin.trimToSize();
-//		_eventplugin = eventplugin;
+		//		eventplugin.trimToSize();
+		//		_eventplugin = eventplugin;
 
 		rename.trimToSize();
 		_rename = rename;

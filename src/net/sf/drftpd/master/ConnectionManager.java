@@ -8,12 +8,12 @@ import java.net.Socket;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Vector;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -24,9 +24,9 @@ import net.sf.drftpd.event.XferLogListener;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
+import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.master.usermanager.UserManager;
-import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
 import net.sf.drftpd.slave.SlaveImpl;
 
@@ -101,7 +101,7 @@ public class ConnectionManager {
 	}
 	private FtpConfig _config;
 
-	private Vector _conns = new Vector();
+	private List _conns = Collections.synchronizedList(new ArrayList());
 
 	private ArrayList _ftpListeners = new ArrayList();
 	private String _shutdownMessage = null;
@@ -238,7 +238,7 @@ public class ConnectionManager {
 	/**
 	 * returns a <code>Collection</code> of current connections
 	 */
-	public Collection getConnections() {
+	public List getConnections() {
 		return _conns;
 	}
 

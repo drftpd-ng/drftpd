@@ -23,37 +23,35 @@ import org.apache.log4j.Logger;
  * and mainly because it is a helper class for Slave, it is located in net.sf.drftpd.slave.
  * 
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.19 2003/11/18 00:13:23 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.20 2003/11/19 00:20:51 mog Exp $
  */
 public class RemoteSlave implements Serializable, Comparable {
 
-	private static Logger logger =
+	private static final Logger logger =
 		Logger.getLogger(RemoteSlave.class.getName());
 
 	public static boolean isFatalRemoteException(RemoteException ex) {
 		return (
 			ex instanceof ConnectException || ex instanceof ConnectIOException);
 	}
-	private InetAddress inetAddress;
 
-	private long lastDownloadSending = 0;
-
-	private long lastPing;
-	private long lastUploadReceiving = 0;
-
-	private SlaveManagerImpl manager;
-	private Collection masks;
-	private String name;
-	private Slave slave;
-	private SlaveStatus status;
-	private long statusTime;
+	private InetAddress _inetAddress;
+	private long _lastDownloadSending = 0;
+	private long _lastPing;
+	private long _lastUploadReceiving = 0;
+	private SlaveManagerImpl _manager;
+	private Collection _masks;
+	private String _name;
+	private Slave _slave;
+	private SlaveStatus _status;
+	private long _statusTime;
 
 	public RemoteSlave(String name) {
-		this.name = new String(name);
+		_name = new String(name);
 	}
 	public RemoteSlave(String name, Collection masks) {
 		this(name);
-		this.masks = masks;
+		_masks = masks;
 	}
 
 	public RemoteSlave(
@@ -61,7 +59,7 @@ public class RemoteSlave implements Serializable, Comparable {
 		Collection masks,
 		SlaveManagerImpl manager) {
 		this(name, masks);
-		this.manager = manager;
+		_manager = manager;
 	}
 
 	public int compareTo(Object o) {
@@ -81,11 +79,11 @@ public class RemoteSlave implements Serializable, Comparable {
 	}
 
 	public InetAddress getInetAddress() {
-		return inetAddress;
+		return _inetAddress;
 	}
 
 	public long getLastDownloadSending() {
-		return this.lastDownloadSending;
+		return _lastDownloadSending;
 	}
 
 	public long getLastTransfer() {
@@ -93,31 +91,31 @@ public class RemoteSlave implements Serializable, Comparable {
 	}
 
 	public long getLastUploadReceiving() {
-		return this.lastUploadReceiving;
+		return _lastUploadReceiving;
 	}
 
 	public SlaveManagerImpl getManager() {
-		return manager;
+		return _manager;
 	}
 
 	public Collection getMasks() {
-		return masks;
+		return _masks;
 	}
 
 	/**
 	 * Returns the name.
 	 */
 	public String getName() {
-		return name;
+		return _name;
 	}
 
 	/**
 	 * Throws NoAvailableSlaveException only if slave is offline
 	 */
 	public Slave getSlave() throws NoAvailableSlaveException {
-		if (slave == null)
+		if (_slave == null)
 			throw new NoAvailableSlaveException("slave is offline");
-		return slave;
+		return _slave;
 	}
 
 	/**
@@ -158,7 +156,7 @@ public class RemoteSlave implements Serializable, Comparable {
 	}
 
 	public boolean isAvailable() {
-		return slave != null;
+		return _slave != null;
 	}
 
 	public boolean isAvailablePing() {
@@ -172,62 +170,54 @@ public class RemoteSlave implements Serializable, Comparable {
 		}
 		return isAvailable();
 	}
+
 	public void ping() throws RemoteException, NoAvailableSlaveException {
-		if (slave == null)
+		if (_slave == null)
 			throw new NoAvailableSlaveException(getName() + " is offline");
-		if (System.currentTimeMillis() > lastPing + 1000) {
+		if (System.currentTimeMillis() > _lastPing + 1000) {
 			getSlave().ping();
 		}
 	}
 	public void setLastDownloadSending(long lastDownloadSending) {
-		this.lastDownloadSending = lastDownloadSending;
+		_lastDownloadSending = lastDownloadSending;
 	}
 	public void setLastUploadReceiving(long lastUploadReceiving) {
-		this.lastUploadReceiving = lastUploadReceiving;
+		_lastUploadReceiving = lastUploadReceiving;
 	}
 
 	public void setManager(SlaveManagerImpl manager) {
-		if (this.manager != null)
+		if (_manager != null)
 			throw new IllegalStateException("Can't overwrite manager");
-		this.manager = manager;
+		_manager = manager;
 	}
 
-	/**
-	 * @param collection
-	 */
-	public void setMasks(Collection collection) {
-		masks = collection;
+	public void setMasks(Collection masks) {
+		_masks = masks;
 	}
 
 	public void setOffline(String reason) {
-		assert manager != null;
-		manager.getConnectionManager().dispatchFtpEvent(
-			new SlaveEvent("DELSLAVE", reason, this));
-		this.slave = null;
-		this.inetAddress = null;
+		assert _manager != null;
+		if (_slave != null) {
+			_manager.getConnectionManager().dispatchFtpEvent(
+				new SlaveEvent("DELSLAVE", reason, this));
+		}
+		_slave = null;
+		_inetAddress = null;
 	}
 
-	/**
-	 * @param slave
-	 */
 	public void setSlave(Slave slave, InetAddress inetAddress) {
-		if (slave == null && this.slave != null) {
-			manager.getConnectionManager().dispatchFtpEvent(
-				new SlaveEvent("DELSLAVE", this));
-		}
-		this.slave = slave;
-		this.inetAddress = inetAddress;
+		if (slave == null)
+			throw new IllegalArgumentException();
+		_slave = slave;
+		_inetAddress = inetAddress;
 	}
 
 	public String toString() {
-		String str;
 		try {
-			//System.out.println("getRef().remoteToString(): "+
-			str = getName() + "[slave=" + getSlave().toString() + "]";
+			return getName() + "[slave=" + getSlave().toString() + "]";
 		} catch (NoAvailableSlaveException e) {
-			str = getName() + "[slave=offline]";
+			return getName() + "[slave=offline]";
 		}
-		return str.toString();
 	}
 
 	public static Hashtable rslavesToHashtable(Collection rslaves) {

@@ -37,12 +37,13 @@ import org.apache.log4j.PatternLayout;
  * the request to appropriate methods in subclasses.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- * @version $Id: BaseFtpConnection.java,v 1.55 2003/11/17 20:13:10 mog Exp $
+ * @author mog
+ * @version $Id: BaseFtpConnection.java,v 1.56 2003/11/19 00:20:50 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static Logger debuglogger =
 		Logger.getLogger(BaseFtpConnection.class.getName() + ".service");
+
 	static {
 		try {
 			debuglogger.addAppender(
@@ -56,6 +57,7 @@ public class BaseFtpConnection implements Runnable {
 	}
 
 	private static Logger logger = Logger.getLogger(BaseFtpConnection.class);
+	public static String NEWLINE = "\r\n";
 
 	/**
 	 * Is the current password authenticated?
@@ -162,6 +164,14 @@ public class BaseFtpConnection implements Runnable {
 				e);
 		}
 	}
+	public char getDirection() {
+		String cmd = getRequest().getCommand();
+		if ("RETR".equals(cmd))
+			return Transfer.TRANSFER_SENDING_DOWNLOAD;
+		if ("STOR".equals(cmd) || "APPE".equals(cmd))
+			return Transfer.TRANSFER_RECEIVING_UPLOAD;
+		return Transfer.TRANSFER_UNKNOWN;
+	}
 
 	/**
 	 * Returns the "currentTimeMillis" when last command finished executing.
@@ -181,6 +191,11 @@ public class BaseFtpConnection implements Runnable {
 		return getConnectionManager().getSlaveManager();
 	}
 
+	/**
+	 * Returns Transfer.TRANSFER_SENDING_DOWNLOAD if this connection is processing a RETR command
+	 * or Transfer.TRANSFER_RECEIVING_UPLOAD if this connection is processing a STOR command.
+	 * @throws IllegalStateException if the connection isn't processing a STOR or RETR command.
+	 */
 	public char getTransferDirection() {
 		String cmd = getRequest().getCommand();
 		if (cmd.equals("RETR")) {
@@ -188,7 +203,7 @@ public class BaseFtpConnection implements Runnable {
 		} else if (cmd.equals("STOR")) {
 			return Transfer.TRANSFER_RECEIVING_UPLOAD;
 		} else {
-			return Transfer.TRANSFER_UNKNOWN;
+			throw new IllegalStateException("Not transfering");
 		}
 	}
 
@@ -404,29 +419,6 @@ public class BaseFtpConnection implements Runnable {
 		}
 		if (reply != null)
 			out.print(reply);
-		//		try {
-		//			String metName;
-		//			metName = "do" + request.getCommand().replaceAll(" ", "_");
-		//			Method actionMet =
-		//				getClass().getDeclaredMethod(metName, METHOD_INPUT_SIG);
-		//			actionMet.invoke(this, new Object[] { request, out });
-		//		} catch (NoSuchMethodException ex) {
-		//			out.print(FtpReply.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
-		//			//out.write(ftpStatus.getResponse(502, request, user, null));
-		//		} catch (InvocationTargetException ex) {
-		//			logger.log(Level.ERROR, "Error", ex);
-		//			out.print(
-		//				new FtpReply(
-		//					500,
-		//					"Uncaught exception: " + ex.getCause().toString()));
-		//			Throwable th = ex.getTargetException();
-		//			th.printStackTrace();
-		//		} catch (Exception ex) {
-		//			out.print(FtpReply.RESPONSE_500_SYNTAX_ERROR);
-		//			if (ex instanceof java.io.IOException) {
-		//				throw (IOException) ex;
-		//			}
-		//		}
 	}
 
 	public void setAuthenticated(boolean authenticated) {
@@ -455,16 +447,13 @@ public class BaseFtpConnection implements Runnable {
 	}
 
 	/**
-	 *  returns a one-line status line
+	 *  returns a one-line status
 	 */
 	public String status() {
 		return " [Credits: "
 			+ Bytes.formatBytes(_user.getCredits())
 			+ "] [Ratio: 1:"
 			+ _user.getRatio()
-			+ "] [Disk free: "
-			+ Bytes.formatBytes(
-				getSlaveManager().getAllStatus().getDiskSpaceAvailable())
 			+ "]";
 	}
 

@@ -46,7 +46,7 @@ public class StaticRemoteFile extends RemoteFile {
 	
 	public StaticRemoteFile(List rslaves, String name, String owner, String group, long size, long lastModified, long checkSum) {
 		this(rslaves, name, owner, group, size, lastModified);
-		this.checkSum = checkSum;
+		this._checkSum = checkSum;
 	}
 
 	public StaticRemoteFile(String name) {
@@ -111,7 +111,7 @@ public class StaticRemoteFile extends RemoteFile {
 	}
 
 	public void setChecksum(long l) {
-		checkSum = l;
+		_checkSum = l;
 	}
 
 	public void setDeleted(boolean b) {
@@ -157,5 +157,4 @@ public class StaticRemoteFile extends RemoteFile {
 		ret.append("[rslaves:"+_rslaves+"]");
 		return ret.toString();
 	}
-
 }

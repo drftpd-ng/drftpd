@@ -41,13 +41,14 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.slave.TransferStatus;
+import net.sf.drftpd.util.ListUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.10 2003/11/17 20:33:10 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.11 2003/11/19 00:20:52 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -56,16 +57,16 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private RemoteSlave _rslave;
 	private Transfer _transfer;
 	private LinkedRemoteFile _transferFile;
-	private InetAddress mAddress;
+	private InetAddress _address;
 	public boolean mbPasv = false;
 
 	public boolean mbPort = false;
-	private int miPort = 0;
-	private ServerSocket mServSoc;
-	private boolean preTransfer = false;
-	private RemoteSlave preTransferRSlave;
+	private int _port = 0;
+	private ServerSocket _ServSoc;
+	private boolean _preTransfer = false;
+	private RemoteSlave _preTransferRSlave;
 
-	private long resumePosition = 0;
+	private long _resumePosition = 0;
 	private char type = 'A';
 	private short xdupe = 0;
 
@@ -83,7 +84,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 * appended to that file; otherwise the file specified in the
 	 * pathname shall be created at the server site.
 	 */
-	//TODO implement APPE
+	//TODO implement APPE with transfer()
 	/*
 	 public void doAPPE(FtpRequest request, PrintWriter out) {
 	    
@@ -189,24 +190,24 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 */
 	private FtpReply doPASV(BaseFtpConnection conn) {
 		conn.resetState();
-		if (!preTransfer) {
+		if (!_preTransfer) {
 			return new FtpReply(
 				500,
 				"You need to use a client supporting PRET (PRE Transfer) to use PASV");
 		}
 
-		if (preTransferRSlave == null) {
+		if (_preTransferRSlave == null) {
 			if (!setPasvCommand(conn)) {
 				return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 			}
 		} else {
 			try {
-				_transfer = preTransferRSlave.getSlave().listen();
-				mAddress = preTransferRSlave.getInetAddress();
-				miPort = _transfer.getLocalPort();
+				_transfer = _preTransferRSlave.getSlave().listen();
+				_address = _preTransferRSlave.getInetAddress();
+				_port = _transfer.getLocalPort();
 				mbPasv = true;
 			} catch (RemoteException e) {
-				preTransferRSlave.handleRemoteException(e);
+				_preTransferRSlave.handleRemoteException(e);
 				return new FtpReply(450, "Remote error: " + e.getMessage());
 			} catch (NoAvailableSlaveException e) {
 				return FtpReply.RESPONSE_530_SLAVE_UNAVAILABLE;
@@ -219,11 +220,11 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		//miPort == getPort();
 
 		String addrStr =
-			mAddress.getHostAddress().replace('.', ',')
+			_address.getHostAddress().replace('.', ',')
 				+ ','
-				+ (miPort >> 8)
+				+ (_port >> 8)
 				+ ','
-				+ (miPort & 0xFF);
+				+ (_port & 0xFF);
 		return new FtpReply(227, "Entering Passive Mode (" + addrStr + ").");
 	}
 
@@ -252,8 +253,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 
 		InetAddress clientAddr = null;
 		int clientPort = 0;
-		preTransfer = false;
-		preTransferRSlave = null;
+		_preTransfer = false;
+		_preTransferRSlave = null;
 		// argument check
 		if (!request.hasArgument()) {
 			//Syntax error in parameters or arguments
@@ -336,23 +337,23 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		FtpRequest ghostRequest = new FtpRequest(request.getArgument());
 		String cmd = ghostRequest.getCommand();
 		if (cmd.equals("LIST") || cmd.equals("NLST")) {
-			preTransferRSlave = null;
-			preTransfer = true;
+			_preTransferRSlave = null;
+			_preTransfer = true;
 			return new FtpReply(
 				200,
 				"OK, will use master for upcoming transfer");
 		} else if (cmd.equals("RETR")) {
 			try {
-				preTransferRSlave =
+				_preTransferRSlave =
 					conn
 						.getCurrentDirectory()
 						.lookupFile(ghostRequest.getArgument())
 						.getASlaveForDownload();
-				preTransfer = true;
+				_preTransfer = true;
 				return new FtpReply(
 					200,
 					"OK, will use "
-						+ preTransferRSlave.getName()
+						+ _preTransferRSlave.getName()
 						+ " for upcoming transfer");
 			} catch (NoAvailableSlaveException e) {
 				conn.reset();
@@ -363,14 +364,14 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			}
 		} else if (cmd.equals("STOR")) {
 			try {
-				preTransferRSlave =
+				_preTransferRSlave =
 					conn.getSlaveManager().getASlave(
 						Transfer.TRANSFER_RECEIVING_UPLOAD);
-				preTransfer = true;
+				_preTransfer = true;
 				return new FtpReply(
 					200,
 					"OK, will use "
-						+ preTransferRSlave.getName()
+						+ _preTransferRSlave.getName()
 						+ " for upcoming transfer");
 			} catch (NoAvailableSlaveException e) {
 				conn.reset();
@@ -403,13 +404,13 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 
 		String skipNum = request.getArgument();
 		try {
-			resumePosition = Long.parseLong(skipNum);
+			_resumePosition = Long.parseLong(skipNum);
 		} catch (NumberFormatException ex) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
 
-		if (resumePosition < 0) {
-			resumePosition = 0;
+		if (_resumePosition < 0) {
+			_resumePosition = 0;
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
 		return FtpReply.RESPONSE_350_PENDING_FURTHER_INFORMATION;
@@ -501,12 +502,35 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 *                      425, 426, 451
 	 *                   450, 550
 	 *                   500, 501, 421, 530
+	 * <p>
+	 * <code>STOR &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+	 *
+	 * This command causes the server-DTP to accept the data
+	 * transferred via the data connection and to store the data as
+	 * a file at the server site.  If the file specified in the
+	 * pathname exists at the server site, then its contents shall
+	 * be replaced by the data being transferred.  A new file is
+	 * created at the server site if the file specified in the
+	 * pathname does not already exist.
+	 * 
+	 *                STOR
+	 *				  125, 150
+	 *					 (110)
+	 *					 226, 250
+	 *					 425, 426, 451, 551, 552
+	 *				  532, 450, 452, 553
+	 *				  500, 501, 421, 530
+	 * 
+	 * ''zipscript´´ renames bad uploads to .bad, how do we handle this with resumes?
 	 */
 
-	private FtpReply doRETR(BaseFtpConnection conn) {
+	private FtpReply transfer(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
+		char direction = conn.getDirection();
+		boolean isStor = conn.getRequest().getCommand().equals("STOR");
+		boolean isRetr = conn.getRequest().getCommand().equals("RETR");
+		boolean isAppe = conn.getRequest().getCommand().equals("APPE");
 		// set state variables
-		long resumePosition = this.resumePosition;
 		conn.resetState();
 
 		// argument check
@@ -515,53 +539,135 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		}
 
 		// get filenames
-		String fileName = request.getArgument();
-		try {
-			_transferFile = conn.getCurrentDirectory().lookupFile(fileName);
-		} catch (FileNotFoundException ex) {
-			return new FtpReply(550, fileName + ": No such file");
-		}
-		if (!conn
-			.getConfig()
-			.checkPrivPath(conn.getUserNull(), _transferFile)) {
-			return new FtpReply(550, fileName + ": No such file");
-		}
-		if (!_transferFile.isFile()) {
-			return new FtpReply(550, _transferFile + ": not a plain file.");
-		}
-		if (conn.getUserNull().getRatio() != 0
-			&& conn.getUserNull().getCredits() < _transferFile.length()) {
-			return new FtpReply(550, "Not enough credits.");
+		LinkedRemoteFile targetDir;
+		String targetFileName;
+		if (isRetr) {
+			try {
+				_transferFile =
+					conn.getCurrentDirectory().lookupFile(
+						request.getArgument());
+				if (!_transferFile.isFile()) {
+					return new FtpReply(550, "Not a plain file");
+				}
+				targetDir = _transferFile.getParentFileNull();
+				targetFileName = _transferFile.getName();
+			} catch (FileNotFoundException ex) {
+				return new FtpReply(550, ex.getMessage());
+			}
+		} else if (isStor) {
+			LinkedRemoteFile.NonExistingFile ret =
+				conn.getCurrentDirectory().lookupNonExistingFile(
+					request.getArgument());
+			targetDir = ret.getFile();
+			targetFileName = ret.getPath();
+
+			if (ret.hasPath()) {
+				// target exists, this could be overwrite or resume
+				// if(resumePosition != 0) {} // resume
+				//TODO overwrite & resume files.
+
+				return new FtpReply(
+					550,
+					"Requested action not taken. File exists");
+				//_transferFile = targetDir;
+				//targetDir = _transferFile.getParent();
+				//if(_transfereFile.getOwner().equals(getUser().getUsername())) {
+				//	// allow overwrite/resume
+				//}
+				//if(directory.isDirectory()) {
+				//	return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+				//}
+			}
+
+			if (!ListUtils.isLegalFileName(targetFileName)
+				|| !conn.getConfig().checkPrivPath(
+					conn.getUserNull(),
+					targetDir)) {
+				return new FtpReply(
+					553,
+					"Requested action not taken. File name not allowed.");
+			}
+		} else {
+			throw new AssertionError();
 		}
 
-		if (!conn
-			.getConnectionManager()
-			.getConfig()
-			.checkDownload(conn.getUserNull(), _transferFile)) {
-			return FtpReply.RESPONSE_530_ACCESS_DENIED;
+		//check access
+		if (!conn.getConfig().checkPrivPath(conn.getUserNull(), targetDir)) {
+			return new FtpReply(550, request.getArgument() + ": No such file");
 		}
 
-		//SETUP rslave
+		switch (direction) {
+			case Transfer.TRANSFER_SENDING_DOWNLOAD :
+				if (!conn
+					.getConnectionManager()
+					.getConfig()
+					.checkDownload(conn.getUserNull(), targetDir)) {
+					return FtpReply.RESPONSE_530_ACCESS_DENIED;
+				}
+				break;
+			case Transfer.TRANSFER_RECEIVING_UPLOAD :
+				if (!conn
+					.getConnectionManager()
+					.getConfig()
+					.checkUpload(conn.getUserNull(), targetDir)) {
+					return FtpReply.RESPONSE_530_ACCESS_DENIED;
+				}
+				break;
+			default :
+				throw new AssertionError();
+		}
+
+		//check credits
+		if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+			if (conn.getUserNull().getRatio() != 0
+				&& conn.getUserNull().getCredits() < _transferFile.length()) {
+				return new FtpReply(550, "Not enough credits.");
+			}
+		}
+
+		//setup _rslave
 		if (mbPasv) {
-			assert preTransfer == true;
+			assert _preTransfer == true;
 
-			if (!_transferFile.getSlaves().contains(preTransferRSlave)) {
+			if (!_transferFile.getSlaves().contains(_preTransferRSlave)) {
 				return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 			}
-			_rslave = preTransferRSlave;
-			preTransferRSlave = null;
-			//preTransfer = false;
+			_rslave = _preTransferRSlave;
+			_preTransferRSlave = null;
+			_preTransfer = false;
+			//TODO redundant code above to be handled by reset()
 		} else {
 
 			try {
-				_rslave =
-					_transferFile.getASlave(Transfer.TRANSFER_SENDING_DOWNLOAD);
+				if (isRetr) {
+					_rslave =
+						_transferFile.getASlave(
+							Transfer.TRANSFER_SENDING_DOWNLOAD);
+				} else if (isStor) {
+					_rslave =
+						conn.getSlaveManager().getASlave(
+							Transfer.TRANSFER_RECEIVING_UPLOAD);
+				}
 			} catch (NoAvailableSlaveException ex) {
 				return FtpReply.RESPONSE_530_SLAVE_UNAVAILABLE;
 			}
 		}
+		if (isStor) {
+			//setup upload
+			List rslaves = Collections.singletonList(_rslave);
+			StaticRemoteFile uploadFile =
+				new StaticRemoteFile(
+					rslaves,
+					targetFileName,
+					conn.getUserNull().getUsername(),
+					conn.getUserNull().getGroupName(),
+					0L,
+					System.currentTimeMillis(),
+					0L);
+			_transferFile = targetDir.addFile(uploadFile);
+		}
 
-		// SETUP this.transfer
+		// setup _transfer
 		if (mbPort) {
 			try {
 				_transfer =
@@ -578,53 +684,43 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 						+ ex.getMessage());
 			}
 		} else if (mbPasv) {
-
-			// transfere was already set up in doPASV(..., ...)
-			//			try {
-			//				rslave.getSlave().doListenSend(
-			//					remoteFile.getPath(),
-			//					getType(),
-			//					resumePosition);
-			//			} catch (RemoteException ex) {
-			//				preTransferRSlave.handleRemoteException(ex);
-			//				out.print(
-			//					new FtpResponse(450, "Remote error: " + ex.getMessage()));
-			//				return;
-			//			} catch (NoAvailableSlaveException e1) {
-			//				out.print(FtpResponse.RESPONSE_450_SLAVE_UNAVAILABLE);
-			//				return;
-			//			} catch (IOException ex) {
-			//				out.print(
-			//					new FtpResponse(
-			//						450,
-			//						ex.getClass().getName()
-			//							+ " from slave: "
-			//							+ ex.getMessage()));
-			//				logger.log(Level.FATAL, "rslave=" + rslave, ex);
-			//				return;
-			//			}
+			//_transfer is already set up by doPASV()
 		} else {
 			return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 		}
 		assert _transfer != null;
+
 		{
 			PrintWriter out = conn.getControlWriter();
-			out.print(
+			out.write(
 				new FtpReply(
 					150,
-					"File status okay; about to open data connection from "
+					"File status okay; about to open data connection "
+						+ (isRetr ? "from " : "to ")
 						+ _rslave.getName()
-						+ "."));
+						+ ".")
+					.toString());
 			out.flush();
 		}
 		TransferStatus status;
+
+		//transfer
+
 		try {
-			_transfer.sendFile(
-				_transferFile.getPath(),
-				getType(),
-				resumePosition,
-				true);
-				status = _transfer.getStatus();
+			//TODO ABORtable transfers
+			if (isRetr) {
+				_transfer.sendFile(
+					_transferFile.getPath(),
+					getType(),
+					_resumePosition,
+					true);
+			} else if (isStor) {
+				_transfer.receiveFile(
+					targetDir.getPath(),
+					targetFileName,
+					_resumePosition);
+			}
+			status = _transfer.getStatus();
 		} catch (RemoteException ex) {
 			_rslave.handleRemoteException(ex);
 			return new FtpReply(426, "Remote error: " + ex.getMessage());
@@ -640,6 +736,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		//			e1.printStackTrace();
 		//		}
 		//		System.err.println("Finished");
+
 		FtpReply response =
 			new FtpReply(
 				226,
@@ -650,32 +747,70 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 					+ " seconds ("
 					+ Bytes.formatBytes(status.getXferSpeed())
 					+ "/s)");
-		//	(FtpReply) FtpReply.RESPONSE_226_CLOSING_DATA_CONNECTION.clone();
 
-		try {
-			long checksum = _transfer.getChecksum();
-			response.addComment(
-				"Checksum: " + Checksum.formatChecksum(checksum));
-			long cachedChecksum;
-
-			cachedChecksum = _transferFile.getCheckSumCached();
-			if (cachedChecksum == 0) {
-				_transferFile.setCheckSum(_transfer.getChecksum());
-			} else if (cachedChecksum != checksum) {
-				response.addComment(
-					"WARNING: checksum from transfer didn't match cached checksum");
-				logger.info(
-					"checksum from transfer "
-						+ Checksum.formatChecksum(checksum)
-						+ "didn't match cached checksum"
-						+ Checksum.formatChecksum(cachedChecksum)
-						+ " for "
-						+ _transferFile.toString()
-						+ " from slave "
-						+ _rslave.getName(),
-					new Throwable());
+		if (isStor) {
+			long transferedBytes;
+			try {
+				transferedBytes = _transfer.getTransfered();
+				// throws RemoteException
+				if (_resumePosition == 0) {
+					_transferFile.setCheckSum(status.getChecksum());
+				} else {
+					//						try {
+					//							checksum = _transferFile.getCheckSumFromSlave();
+					//						} catch (NoAvailableSlaveException e) {
+					//							response.addComment(
+					//								"No available slaves when getting checksum from slave: "
+					//									+ e.getMessage());
+					//							logger.warn("", e);
+					//							checksum = 0;
+					//						} catch (IOException e) {
+					//							response.addComment(
+					//								"IO error getting checksum from slave: "
+					//									+ e.getMessage());
+					//							logger.warn("", e);
+					//							checksum = 0;
+					//						}
+				}
+				_transferFile.setLastModified(System.currentTimeMillis());
+				_transferFile.setLength(transferedBytes);
+				_transferFile.setXfertime(status.getElapsed());
+			} catch (RemoteException ex) {
+				_rslave.handleRemoteException(ex);
+				return new FtpReply(
+					426,
+					"Error communicationg with slave: " + ex.getMessage());
 			}
+		}
 
+		//zipscript
+		if (isRetr) {
+			//compare checksum from transfer to cached checksum
+			{
+				response.addComment(
+					"Checksum from transfer: "
+						+ Checksum.formatChecksum(status.getChecksum()));
+				long cachedChecksum;
+
+				cachedChecksum = _transferFile.getCheckSumCached();
+				if (cachedChecksum == 0) {
+					_transferFile.setCheckSum(status.getChecksum());
+				} else if (cachedChecksum != status.getChecksum()) {
+					response.addComment(
+						"WARNING: checksum from transfer didn't match cached checksum");
+					logger.info(
+						"checksum from transfer "
+							+ Checksum.formatChecksum(status.getChecksum())
+							+ "didn't match cached checksum"
+							+ Checksum.formatChecksum(cachedChecksum)
+							+ " for "
+							+ _transferFile.toString()
+							+ " from slave "
+							+ _rslave.getName(),
+						new Throwable());
+				}
+			}
+			//compare checksum from transfer to checksum from sfv
 			try {
 				long sfvChecksum =
 					_transferFile
@@ -683,7 +818,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 						.lookupSFVFile()
 						.getChecksum(
 						_transferFile.getName());
-				if (sfvChecksum == checksum) {
+				if (sfvChecksum == status.getChecksum()) {
 					response.addComment(
 						"checksum from transfer matched checksum in .sfv");
 				} else {
@@ -702,25 +837,111 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				response.addComment(
 					"IO Error reading sfv file: " + e1.getMessage());
 			}
+		} else if (isStor) {
+			if (!targetFileName.toLowerCase().endsWith(".sfv")) {
+				try {
+					long sfvChecksum =
+						targetDir.lookupSFVFile().getChecksum(targetFileName);
+					if (status.getChecksum() == sfvChecksum) {
+						response.addComment(
+							"checksum match: SLAVE/SFV:"
+								+ Long.toHexString(status.getChecksum()));
+					} else {
+						response.addComment(
+							"checksum mismatch: SLAVE: "
+								+ Long.toHexString(status.getChecksum())
+								+ " SFV: "
+								+ Long.toHexString(sfvChecksum));
+						response.addComment(" deleting file");
+						response.setMessage("Checksum mismatch, deleting file");
+						_transferFile.delete();
 
-			long transferedBytes = _transfer.getTransfered();
+						//				getUser().updateCredits(
+						//					- ((long) getUser().getRatio() * transferedBytes));
+						//				getUser().updateUploadedBytes(-transferedBytes);
+						response.addComment(conn.status());
+						return response;
+						//				String badtargetFilename = targetFilename + ".bad";
+						//
+						//				try {
+						//					LinkedRemoteFile badtargetFile =
+						//						targetDir.getFile(badtargetFilename);
+						//					badtargetFile.delete();
+						//					response.addComment(
+						//						"zipscript - removing "
+						//							+ badtargetFilename
+						//							+ " to be replaced with new file");
+						//				} catch (FileNotFoundException e2) {
+						//					//good, continue...
+						//					response.addComment(
+						//						"zipscript - checksum mismatch, renaming to "
+						//							+ badtargetFilename);
+						//				}
+						//				targetFile.renameTo(targetDir.getPath() + badtargetFilename);
+					}
+				} catch (NoAvailableSlaveException e) {
+					response.addComment(
+						"zipscript - SFV unavailable, slave with .sfv file is offline");
+				} catch (ObjectNotFoundException e) {
+					response.addComment(
+						"zipscript - SFV unavailable, no .sfv file in directory");
+				} catch (IOException e) {
+					response.addComment(
+						"zipscript - SFV unavailable, IO error: "
+							+ e.getMessage());
+				}
+			}
 
-			float ratio =
-				conn.getConfig().getCreditLossRatio(
-					_transferFile,
-					conn.getUserNull());
+		}
+		//transferstatistics
+		long transferedBytes = status.getTransfered();
+
+		float ratio =
+			conn.getConfig().getCreditLossRatio(
+				_transferFile,
+				conn.getUserNull());
+		if (isRetr) {
 			if (ratio != 0) {
 				conn.getUserNull().updateCredits(
 					(long) (-transferedBytes * ratio));
 			}
 			conn.getUserNull().updateDownloadedBytes(transferedBytes);
-			conn.getUserNull().commit();
-		} catch (RemoteException ex) {
-			_rslave.handleRemoteException(ex);
-		} catch (UserFileException e) {
+			conn.getUserNull().updateDownloadedFiles(1);
+		} else {
+			conn.getUserNull().updateCredits((long) (transferedBytes * ratio));
+			conn.getUserNull().updateUploadedBytes(transferedBytes);
+			conn.getUserNull().updateUploadedFiles(1);
 		}
+		try {
+			conn.getUserNull().commit();
+		} catch (UserFileException e) {
+			logger.warn("", e);
+		}
+
+		if (isStor) {
+			if (conn
+				.getConfig()
+				.checkDirLog(conn.getUserNull(), _transferFile)) {
+				conn.getConnectionManager().dispatchFtpEvent(
+					new TransferEvent(
+						conn.getUserNull(),
+						"STOR",
+						_transferFile,
+						conn.getClientAddress(),
+						_rslave.getInetAddress(),
+						getType(),
+						true));
+			}
+		}
+
 		conn.reset();
+
 		return response;
+	}
+	private void reset() {
+		_rslave = null;
+		_transfer = null;
+		_transferFile = null;
 	}
 
 	private FtpReply doSITE_RESCAN(BaseFtpConnection conn) {
@@ -749,12 +970,13 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			try {
 				file = directory.lookupFile(fileName);
 			} catch (FileNotFoundException ex) {
-				out.println(
+				out.write(
 					"200- SFV: "
 						+ Checksum.formatChecksum(checkSum.longValue())
 						+ " SLAVE: "
 						+ fileName
-						+ " MISSING");
+						+ " MISSING"
+						+ BaseFtpConnection.NEWLINE);
 				continue;
 			}
 			String status;
@@ -801,7 +1023,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 					+ Checksum.formatChecksum(checkSum.longValue())
 					+ " "
 					+ status);
-			return null;
+			continue;
 		}
 		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
@@ -835,267 +1057,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		//		}
 		//		this.xdupe = myXdupe;
 		//		out.println("200 Activated extended dupe mode " + myXdupe + ".");
-	}
-	/**
-	 * <code>STOR &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
-	 *
-	 * This command causes the server-DTP to accept the data
-	 * transferred via the data connection and to store the data as
-	 * a file at the server site.  If the file specified in the
-	 * pathname exists at the server site, then its contents shall
-	 * be replaced by the data being transferred.  A new file is
-	 * created at the server site if the file specified in the
-	 * pathname does not already exist.
-	 * 
-	 *                STOR
-				  125, 150
-					 (110)
-					 226, 250
-					 425, 426, 451, 551, 552
-				  532, 450, 452, 553
-				  500, 501, 421, 530
-	 * 
-	 * ''zipscript´´ renames bad uploads to .bad, how do we handle this with resumes?
-	 */
-	private FtpReply doSTOR(BaseFtpConnection conn) {
-		FtpRequest request = conn.getRequest();
-		long resumePosition = this.resumePosition;
-		conn.resetState();
-
-		// argument check
-		if (!request.hasArgument()) {
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-		}
-
-		//SETUP targetDir and targetFilename
-		Object ret[] =
-			conn.getCurrentDirectory().lookupNonExistingFile(
-				request.getArgument());
-		LinkedRemoteFile targetDir = (LinkedRemoteFile) ret[0];
-		String targetFilename = (String) ret[1];
-
-		if (targetFilename == null) {
-			// target exists, this could be overwrite or resume
-			// if(resumePosition != 0) {} // resume
-			//TODO overwrite & resume files.
-
-			return new FtpReply(550, "Requested action not taken. File exists");
-			//_transferFile = targetDir;
-			//targetDir = _transferFile.getParent();
-			//			if(_transfereFile.getOwner().equals(getUser().getUsername())) {
-			//				// allow overwrite/resume
-			//			}
-			//			if(directory.isDirectory()) {
-			//				out.print(FtpResponse.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN);
-			//			}
-		}
-
-		if (!LIST.isLegalFileName(targetFilename)
-			|| !conn.getConfig().checkPrivPath(conn.getUserNull(), targetDir)) {
-			return new FtpReply(
-				553,
-				"Requested action not taken. File name not allowed.");
-		}
-
-		if (!conn.getConfig().checkUpload(conn.getUserNull(), targetDir)) {
-			return FtpReply.RESPONSE_530_ACCESS_DENIED;
-		}
-
-		//SETUP rslave
-		if (preTransfer) {
-			assert preTransferRSlave != null : "preTransferRSlave";
-			_rslave = preTransferRSlave;
-			preTransferRSlave = null;
-			preTransfer = false;
-		} else {
-			try {
-				_rslave =
-					conn.getSlaveManager().getASlave(
-						Transfer.TRANSFER_RECEIVING_UPLOAD);
-				assert _rslave != null : "_rslave";
-			} catch (NoAvailableSlaveException ex) {
-				logger.log(Level.FATAL, ex.getMessage());
-				return FtpReply.RESPONSE_450_SLAVE_UNAVAILABLE;
-			}
-		}
-		assert _rslave != null : "_rslave2";
-		List rslaves = Collections.singletonList(_rslave);
-		//		ArrayList rslaves = new ArrayList();
-		//		rslaves.add(rslave);
-		StaticRemoteFile uploadFile =
-			new StaticRemoteFile(
-				rslaves,
-				targetFilename,
-				conn.getUserNull().getUsername(),
-				conn.getUserNull().getGroupName(),
-				0L,
-				System.currentTimeMillis(),
-				0L);
-		_transferFile = targetDir.addFile(uploadFile);
-
-		//SETUP transfer
-		if (mbPort) {
-			try {
-				_transfer =
-					_rslave.getSlave().connect(getInetAddress(), getPort());
-			} catch (RemoteException e1) {
-				_rslave.handleRemoteException(e1);
-				return new FtpReply(451, "Remote error: " + e1.getMessage());
-			} catch (NoAvailableSlaveException e1) {
-				return FtpReply.RESPONSE_450_SLAVE_UNAVAILABLE;
-			}
-		} else {
-			assert mbPasv : "mbPasv";
-			// _transfer is already set up
-		}
-		{
-			PrintWriter out = conn.getControlWriter();
-			// say we are ready to start sending
-			out.print(
-				new FtpReply(
-					150,
-					"File status okay, about to open data connection to "
-						+ _rslave.getName()
-						+ "."));
-			out.flush();
-		}
-		// connect and start transfer
-		try {
-			_transfer.receiveFile(
-				targetDir.getPath(),
-				targetFilename,
-				resumePosition);
-		} catch (RemoteException ex) {
-			_rslave.handleRemoteException(ex);
-			_transferFile.delete();
-			return new FtpReply(
-				426,
-				"Remote error from " + _rslave + ": " + ex.getMessage());
-		} catch (IOException ex) {
-			//TODO let user resume
-			_transferFile.delete();
-			logger.log(Level.WARN, "from " + _rslave.getName(), ex);
-			return new FtpReply(
-				426,
-				"IO Error from " + _rslave.getName() + ": " + ex.getMessage());
-		}
-
-		FtpReply response =
-			(FtpReply) FtpReply.RESPONSE_226_CLOSING_DATA_CONNECTION.clone();
-
-		long transferedBytes;
-		long checksum;
-		try {
-			transferedBytes = _transfer.getTransfered();
-			// throws RemoteException
-			if (resumePosition == 0) {
-				checksum = _transfer.getChecksum();
-				_transferFile.setCheckSum(checksum);
-			} else {
-				try {
-					checksum = _transferFile.getCheckSumFromSlave();
-				} catch (NoAvailableSlaveException e) {
-					response.addComment(
-						"No available slaves when getting checksum from slave: "
-							+ e.getMessage());
-					logger.warn("", e);
-					checksum = 0;
-				} catch (IOException e) {
-					response.addComment(
-						"IO error getting checksum from slave: "
-							+ e.getMessage());
-					logger.warn("", e);
-					checksum = 0;
-				}
-			}
-			_transferFile.setLastModified(System.currentTimeMillis());
-			_transferFile.setLength(transferedBytes);
-			_transferFile.setXfertime(_transfer.getElapsed());
-		} catch (RemoteException ex) {
-			_rslave.handleRemoteException(ex);
-			return new FtpReply(
-				426,
-				"Error communicationg with slave: " + ex.getMessage());
-		}
-
-		response.addComment(Bytes.formatBytes(transferedBytes) + " transfered");
-		if (!targetFilename.toLowerCase().endsWith(".sfv")) {
-			try {
-				long sfvChecksum =
-					targetDir.lookupSFVFile().getChecksum(targetFilename);
-				if (checksum == sfvChecksum) {
-					response.addComment(
-						"checksum match: SLAVE/SFV:"
-							+ Long.toHexString(checksum));
-				} else {
-					response.addComment(
-						"checksum mismatch: SLAVE: "
-							+ Long.toHexString(checksum)
-							+ " SFV: "
-							+ Long.toHexString(sfvChecksum));
-					response.addComment(" deleting file");
-					response.setMessage("Checksum mismatch, deleting file");
-					_transferFile.delete();
-
-					//				getUser().updateCredits(
-					//					- ((long) getUser().getRatio() * transferedBytes));
-					//				getUser().updateUploadedBytes(-transferedBytes);
-					response.addComment(conn.status());
-					return response;
-					//				String badtargetFilename = targetFilename + ".bad";
-					//
-					//				try {
-					//					LinkedRemoteFile badtargetFile =
-					//						targetDir.getFile(badtargetFilename);
-					//					badtargetFile.delete();
-					//					response.addComment(
-					//						"zipscript - removing "
-					//							+ badtargetFilename
-					//							+ " to be replaced with new file");
-					//				} catch (FileNotFoundException e2) {
-					//					//good, continue...
-					//					response.addComment(
-					//						"zipscript - checksum mismatch, renaming to "
-					//							+ badtargetFilename);
-					//				}
-					//				targetFile.renameTo(targetDir.getPath() + badtargetFilename);
-				}
-			} catch (NoAvailableSlaveException e) {
-				response.addComment(
-					"zipscript - SFV unavailable, slave with .sfv file is offline");
-			} catch (ObjectNotFoundException e) {
-				response.addComment(
-					"zipscript - SFV unavailable, no .sfv file in directory");
-			} catch (IOException e) {
-				response.addComment(
-					"zipscript - SFV unavailable, IO error: " + e.getMessage());
-			}
-		}
-		//TODO creditcheck
-		conn.getUserNull().updateCredits(
-			(long) (conn.getUserNull().getRatio() * transferedBytes));
-		conn.getUserNull().updateUploadedBytes(transferedBytes);
-		conn.getUserNull().updateUploadedFiles(1);
-		try {
-			conn.getUserNull().commit();
-		} catch (UserFileException e1) {
-			response.addComment("Error saving userfile: " + e1.getMessage());
-		}
-
-		if (conn.getConfig().checkDirLog(conn.getUserNull(), _transferFile)) {
-			conn.getConnectionManager().dispatchFtpEvent(
-				new TransferEvent(
-					conn.getUserNull(),
-					"STOR",
-					_transferFile,
-					conn.getClientAddress(),
-					_rslave.getInetAddress(),
-					getType(),
-					true));
-		}
-
-		response.addComment(conn.status());
-		return response;
 	}
 	/**
 	 * <code>STRU &lt;SP&gt; &lt;structure-code&gt; &lt;CRLF&gt;</code><br>
@@ -1185,14 +1146,12 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			return doPRET(conn);
 		if ("REST".equals(cmd))
 			return doREST(conn);
-		if ("RETR".equals(cmd))
-			return doRETR(conn);
+		if ("RETR".equals(cmd) || "STOR".equals(cmd) || "APPE".equals(cmd))
+			return transfer(conn);
 		if ("SITE RESCAN".equals(cmd))
 			return doSITE_RESCAN(conn);
 		if ("SITE XDUPE".equals(cmd))
 			return doSITE_XDUPE(conn);
-		if ("STOR".equals(cmd))
-			return doSTOR(conn);
 		if ("STRU".equals(cmd))
 			return doSTRU(conn);
 		if ("SYST".equals(cmd))
@@ -1214,23 +1173,18 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		// get socket depending on the selection
 		if (mbPort) {
 			try {
-				_dataSocket = new Socket(mAddress, getPort());
+				_dataSocket = new Socket(_address, getPort());
 			} catch (IOException ex) {
-				//mConfig.getLogger().warn(ex);
-				logger.log(Level.WARN, "Error opening data socket", ex);
+				logger.warn("Error opening data socket", ex);
 				_dataSocket = null;
 				throw ex;
 			}
 		} else if (mbPasv) {
 			try {
-				_dataSocket = mServSoc.accept();
-			} catch (IOException ex) {
-				throw ex;
-			} catch (Exception ex) {
-				throw new RuntimeException(ex);
+				_dataSocket = _ServSoc.accept();
 			} finally {
-				mServSoc.close();
-				mServSoc = null;
+				_ServSoc.close();
+				_ServSoc = null;
 			}
 		}
 		_dataSocket.setSoTimeout(15000); // 15 seconds timeout
@@ -1247,7 +1201,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 * Get client address from PORT command.
 	 */
 	private InetAddress getInetAddress() {
-		return mAddress;
+		return _address;
 	}
 	/**
 	 * Get output stream. Returns <code>ftpserver.util.AsciiOutputStream</code>
@@ -1266,7 +1220,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 * return miPort
 	 */
 	private int getPort() {
-		return miPort;
+		return _port;
 	}
 
 	public RemoteSlave getTranferSlave() {
@@ -1311,11 +1265,11 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private boolean setPasvCommand(BaseFtpConnection conn) {
 		try {
 			conn.reset();
-			mAddress = conn.getControlSocket().getLocalAddress();
-			mServSoc = new ServerSocket(0, 1, mAddress);
+			_address = conn.getControlSocket().getLocalAddress();
+			_ServSoc = new ServerSocket(0, 1, _address);
 			//mServSoc = new ServerSocket(0, 1);
-			mServSoc.setSoTimeout(60000);
-			miPort = mServSoc.getLocalPort();
+			_ServSoc.setSoTimeout(60000);
+			_port = _ServSoc.getLocalPort();
 			mbPasv = true;
 			return true;
 		} catch (Exception ex) {
@@ -1333,8 +1287,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		int port) {
 		conn.reset();
 		mbPort = true;
-		mAddress = addr;
-		miPort = port;
+		_address = addr;
+		_port = port;
 	}
 
 	/**

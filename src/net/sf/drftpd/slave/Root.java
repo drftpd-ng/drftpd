@@ -1,23 +1,15 @@
-/*
- * Created on 2003-aug-10
- *
- * To change the template for this generated file go to
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
 package net.sf.drftpd.slave;
 
 import se.mog.io.File;
 
 /**
  * @author mog
- *
- * To change the template for this generated type comment go to
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * @version $Id: Root.java,v 1.6 2003/11/19 00:20:54 mog Exp $
  */
 public class Root {
 	private File _rootFile;
 	private String _root;
-	private long _minSpaceFree = 0;
+	private long _minSpaceFree = 50000000; //50,000,000 = 50mb
 	private int _priority = 0;
 	private long _lastModified;
 
@@ -59,8 +51,12 @@ public class Root {
 	public File getFile(String path) {
 		return new File(_root + File.separator + path);
 	}
-
+	
+	/**
+	 * Returns true if File.getDiskSpaceAvailable() is less than getMinSpaceFree()
+	 * @return true if File.getDiskSpaceAvailable() is less than getMinSpaceFree()
+	 */
 	public boolean isFull() {
-		return getFile().getDiskSpaceAvailable() > getMinSpaceFree();
+		return getFile().getDiskSpaceAvailable() < getMinSpaceFree();
 	}
 }

@@ -1,14 +1,9 @@
-/*
- * Created on 2003-okt-24
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd.util;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,15 +19,21 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: ListUtils.java,v 1.3 2003/11/19 00:20:54 mog Exp $
  */
 public class ListUtils {
 
 	private static Logger logger = Logger.getLogger(ListUtils.class);
 
-	private ListUtils() {
+	public static String PADDING = "          ";
+
+	//TODO MOVE ME
+	public static boolean isLegalFileName(String fileName) {
+		assert fileName != null;
+		return fileName.indexOf("/") == -1
+			&& fileName.indexOf('*') == -1
+			&& !fileName.equals(".")
+			&& !fileName.equals("..");
 	}
 
 	public static List list(
@@ -41,6 +42,7 @@ public class ListUtils {
 		return list(directoryFile, conn, null);
 	}
 
+	//TODO -OFFLINE and -MISSING files
 	public static List list(
 		LinkedRemoteFile directoryFile,
 		BaseFtpConnection conn,
@@ -56,11 +58,17 @@ public class ListUtils {
 			int good = sfvfile.finishedFiles();
 			if (sfvfile.size() != 0) {
 				String statusDirName =
-					"[" + (good * 100) / sfvfile.size() + "% complete]";
+					"[ "
+						+ good
+						+ "/"
+						+ sfvfile.size()
+						+ " = "
+						+ (good * 100) / sfvfile.size()
+						+ "% complete]";
 				//				directoryFile,
 				listFiles.add(
 					new StaticRemoteFile(
-						null,
+						Collections.EMPTY_LIST,
 						statusDirName,
 						"drftpd",
 						"drftpd",
@@ -79,5 +87,15 @@ public class ListUtils {
 			logger.log(Level.WARN, "zipscript error", e);
 		}
 		return listFiles;
+	}
+
+	public static String padToLength(String value, int length) {
+		if (value.length() >= length)
+			return value;
+		assert PADDING.length() > length : "padding must be longer than length";
+		return PADDING.substring(0, length - value.length()) + value;
+	}
+
+	private ListUtils() {
 	}
 }

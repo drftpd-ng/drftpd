@@ -30,13 +30,15 @@ import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
+import net.sf.drftpd.util.ListUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.8 2003/11/17 20:13:10 mog Exp $
+ * @version $Id: Dir.java,v 1.9 2003/11/19 00:20:52 mog Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
 	protected LinkedRemoteFile _renameFrom = null;
@@ -219,11 +221,11 @@ public class Dir implements CommandHandler, Cloneable {
 		//	return;
 		//}
 
-		Object ret[] =
+		LinkedRemoteFile.NonExistingFile ret =
 			conn.getCurrentDirectory().lookupNonExistingFile(
 				request.getArgument());
-		LinkedRemoteFile dir = (LinkedRemoteFile) ret[0];
-		String createdDirName = (String) ret[1];
+		LinkedRemoteFile dir = ret.getFile();
+		String createdDirName = ret.getPath();
 		if (!conn.getConfig().checkMakeDir(conn.getUserNull(), dir)) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
@@ -236,7 +238,7 @@ public class Dir implements CommandHandler, Cloneable {
 					+ " already exists");
 		}
 
-		if (!LIST.isLegalFileName(createdDirName)) {
+		if (!ListUtils.isLegalFileName(createdDirName)) {
 			return FtpReply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
 		}
 
@@ -438,11 +440,11 @@ public class Dir implements CommandHandler, Cloneable {
 				"Cannot rename, source has offline slaves");
 		}
 
-		Object ret[] =
+		NonExistingFile ret =
 			conn.getCurrentDirectory().lookupNonExistingFile(
 				request.getArgument());
-		LinkedRemoteFile toDir = (LinkedRemoteFile) ret[0];
-		String name = (String) ret[1];
+		LinkedRemoteFile toDir = ret.getFile();
+		String name = ret.getPath();
 
 		LinkedRemoteFile fromFile = _renameFrom;
 		conn.resetState();

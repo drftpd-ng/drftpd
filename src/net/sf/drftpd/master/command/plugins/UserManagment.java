@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.Bytes;
@@ -32,7 +33,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.9 2003/11/17 20:13:10 mog Exp $
+ * @version $Id: UserManagment.java,v 1.10 2003/11/19 00:20:52 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	public void load(CommandManagerFactory initializer) {
@@ -332,7 +333,7 @@ public class UserManagment implements CommandHandler {
 
 			ReplacerEnvironment env = new ReplacerEnvironment();
 
-			Collection conns = conn.getConnectionManager().getConnections();
+			List conns = conn.getConnectionManager().getConnections();
 			synchronized (conns) {
 				for (Iterator iter = conns.iterator(); iter.hasNext();) {
 					BaseFtpConnection conn2 = (BaseFtpConnection) iter.next();

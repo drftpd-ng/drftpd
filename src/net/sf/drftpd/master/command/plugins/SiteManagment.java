@@ -25,9 +25,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: SiteManagment.java,v 1.5 2003/11/19 00:20:52 mog Exp $
  */
 public class SiteManagment implements CommandHandler {
 	public void unload() {}
