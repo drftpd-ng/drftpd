@@ -56,7 +56,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.27 2004/04/20 04:11:48 mog Exp $
+ * @version $Id: Dir.java,v 1.28 2004/05/31 02:47:16 mog Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
 	private final static SimpleDateFormat DATE_FMT =
@@ -156,7 +156,7 @@ public class Dir implements CommandHandler, Cloneable {
 				User user;
 				try {
 					user =
-						conn.getUserManager().getUserByName(stat.getUsername());
+						conn.getConnectionManager().getUserManager().getUserByName(stat.getUsername());
 				} catch (NoSuchUserException e2) {
 					continue;
 				} catch (UserFileException e2) {
@@ -235,7 +235,7 @@ public class Dir implements CommandHandler, Cloneable {
 		User uploader;
 		try {
 			uploader =
-				conn.getUserManager().getUserByName(
+				conn.getConnectionManager().getUserManager().getUserByName(
 					requestedFile.getUsername());
 			uploader.updateCredits(
 				(long) - (requestedFile.length() * uploader.getRatio()));

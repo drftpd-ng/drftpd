@@ -25,7 +25,6 @@ import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -53,14 +52,13 @@ import net.sf.drftpd.remotefile.MLSTSerialize;
 import net.sf.drftpd.slave.SlaveImpl;
 import net.sf.drftpd.util.SafeFileWriter;
 
-import org.drftpd.slave.socket.*;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.sections.SectionManagerInterface;
+import org.drftpd.slave.socket.SocketSlaveManager;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.107 2004/05/20 20:26:33 zombiewoof64 Exp $
+ * @version $Id: ConnectionManager.java,v 1.108 2004/05/31 02:47:15 mog Exp $
  */
 public class ConnectionManager {
 

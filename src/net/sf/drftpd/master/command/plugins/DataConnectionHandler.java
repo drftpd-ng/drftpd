@@ -66,7 +66,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.55 2004/05/21 18:36:51 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.56 2004/05/31 02:47:15 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger = Logger
@@ -201,7 +201,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		}
 		//reset();
 		_preTransfer = false;
-		assert isPort() == false;
+		if(isPort() == true) throw new RuntimeException();
 		InetSocketAddress address;
 		if (_preTransferRSlave == null) {
 			try {
@@ -968,7 +968,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			}
 			if (isStor) {
 				//setup upload
-				assert _rslave != null;
+				if(_rslave == null) throw new NullPointerException();
 				List rslaves = Collections.singletonList(_rslave);
 				StaticRemoteFile uploadFile = new StaticRemoteFile(rslaves,
 						targetFileName, conn.getUserNull().getUsername(), conn
@@ -994,7 +994,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			} else {
 				return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 			}
-			assert _transfer != null;
+			if( _transfer == null)throw new NullPointerException();
 			{
 				PrintWriter out = conn.getControlWriter();
 				out.write(new FtpReply(150,

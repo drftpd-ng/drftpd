@@ -26,11 +26,10 @@ import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.Transfer;
 
-import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveTransfer.java,v 1.14 2004/05/13 12:25:44 zubov Exp $
+ * @version $Id: SlaveTransfer.java,v 1.15 2004/05/31 02:47:18 mog Exp $
  */
 public class SlaveTransfer {
 	class DstXfer extends Thread {

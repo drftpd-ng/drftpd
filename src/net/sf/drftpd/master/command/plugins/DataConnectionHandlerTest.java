@@ -30,7 +30,7 @@ import org.drftpd.tests.DummyBaseFtpConnection;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandlerTest.java,v 1.4 2004/05/16 18:07:30 mog Exp $
+ * @version $Id: DataConnectionHandlerTest.java,v 1.5 2004/05/31 02:47:16 mog Exp $
  */
 public class DataConnectionHandlerTest extends TestCase {
 	public static TestSuite suite() {
@@ -57,7 +57,7 @@ public class DataConnectionHandlerTest extends TestCase {
 		String replystr = conn.getDummyOut().getBuffer().toString();
 		assertEquals(150, Integer.parseInt(replystr.substring(0, 3)));
 		assertEquals(226, reply.getCode());
-		//TODO verify LIST data
+
 		String ret = out.toString();
 		out.reset();
 		return ret;

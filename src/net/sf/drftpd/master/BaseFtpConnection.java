@@ -42,7 +42,6 @@ import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.util.ReplacerUtils;
@@ -60,7 +59,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.86 2004/05/17 12:00:59 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.87 2004/05/31 02:47:14 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -269,13 +268,6 @@ public class BaseFtpConnection implements Runnable {
 		if (_user == null || !isAuthenticated())
 			throw new NoSuchUserException("no user logged in for connection");
 		return _user;
-	}
-
-	/**
-	 * @deprecated inline me
-	 */
-	public UserManager getUserManager() {
-		return getConnectionManager().getUserManager();
 	}
 
 	public User getUserNull() {

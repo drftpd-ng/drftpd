@@ -18,7 +18,6 @@
 package org.drftpd.tests;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -47,7 +46,7 @@ import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 /**
  * @author mog
- * @version $Id: DummyBaseFtpConnection.java,v 1.3 2004/05/21 18:36:52 zubov Exp $
+ * @version $Id: DummyBaseFtpConnection.java,v 1.4 2004/05/31 02:47:21 mog Exp $
  */
 public class DummyBaseFtpConnection extends BaseFtpConnection {
 
@@ -97,15 +96,13 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 			Properties p = new Properties();
 			try {
 				p.load(new FileInputStream("drftpd.conf"));
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
+			} catch (Exception e) {
+				throw new RuntimeException(e);
 			}
 			try {
 				config = new FtpConfig(p,"drftpd.conf", null);
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
+			} catch (IOException e) {
+				throw new RuntimeException(e);
 			}
 		}
 		return config;
@@ -146,9 +143,6 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 		throw new UnsupportedOperationException();
 	}
 
-	public UserManager getUserManager() {
-		return _userManager;
-	}
 	public void setUserManager(UserManager um) {
 		_userManager = um;
 	}

@@ -25,8 +25,6 @@ import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
-
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.InvalidDirectoryException;
 import net.sf.drftpd.slave.Root;
@@ -36,7 +34,7 @@ import net.sf.drftpd.slave.RootBasket;
  * A wrapper for java.io.File to the net.sf.drftpd.RemoteFile structure.
  * 
  * @author mog
- * @version $Id: FileRemoteFile.java,v 1.36 2004/05/12 00:45:10 mog Exp $
+ * @version $Id: FileRemoteFile.java,v 1.37 2004/05/31 02:47:19 mog Exp $
  */
 public class FileRemoteFile extends AbstractRemoteFile {
 	RootBasket rootBasket;
@@ -213,7 +211,7 @@ public class FileRemoteFile extends AbstractRemoteFile {
 				}
 			}
 		}
-		assert !(!getName().equals("") && filefiles.isEmpty()) : this;
+		if(!getName().equals("") && filefiles.isEmpty()) throw new RuntimeException();
 	}
 	/**
 	 * @see net.sf.drftpd.remotefile.AbstractRemoteFile#getFiles()

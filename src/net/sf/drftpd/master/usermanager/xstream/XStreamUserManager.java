@@ -43,10 +43,9 @@ import net.sf.drftpd.master.usermanager.UserManager;
 
 import com.thoughtworks.xstream.XStream;
 
-
 /**
  * @author mog
- * @version $Id: XStreamUserManager.java,v 1.1 2004/04/27 21:53:13 zombiewoof64 Exp $
+ * @version $Id: XStreamUserManager.java,v 1.2 2004/05/31 02:47:18 mog Exp $
  */
 public class XStreamUserManager implements UserManager {
 	private ConnectionManager _connManager;
@@ -166,14 +165,14 @@ public class XStreamUserManager implements UserManager {
 			}
 
 			XStream inp = new XStream();
-                        FileReader in;
+			FileReader in;
 			try {
 				in = new FileReader(getUserFile(username));
 			} catch (FileNotFoundException ex) {
 				throw new NoSuchUserException("No such user");
 			}
 			try {
-				user = (XStreamUser)inp.fromXML(in);
+				user = (XStreamUser) inp.fromXML(in);
 				//throws RuntimeException
 				user.usermanager = this;
 				users.put(user.getUsername(), user);
@@ -218,7 +217,8 @@ public class XStreamUserManager implements UserManager {
 		logger.log(Level.INFO, "Saving userfiles: " + users);
 		for (Iterator iter = users.values().iterator(); iter.hasNext();) {
 			Object obj = iter.next();
-			assert obj instanceof XStreamUser;
+			if (!(obj instanceof XStreamUser))
+				throw new ClassCastException("not instanceof XStreamUser");
 			XStreamUser user = (XStreamUser) obj;
 			user.commit();
 		}

@@ -41,7 +41,7 @@ import org.apache.log4j.Logger;
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.24 2004/05/17 12:54:27 mog Exp $
+ * @version $Id: Login.java,v 1.25 2004/05/31 02:47:16 mog Exp $
  */
 public class Login implements CommandHandler, Cloneable {
 
@@ -161,7 +161,7 @@ public class Login implements CommandHandler, Cloneable {
 		User newUser;
 		try {
 			newUser =
-				conn.getUserManager().getUserByName(request.getArgument());
+				conn.getConnectionManager().getUserManager().getUserByName(request.getArgument());
 		} catch (NoSuchUserException ex) {
 			return new FtpReply(530, ex.getMessage());
 		} catch (UserFileException ex) {

@@ -39,9 +39,7 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.Transfer;
@@ -54,7 +52,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.143 2004/05/21 18:36:52 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.144 2004/05/31 02:47:19 mog Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -349,7 +347,7 @@ public class LinkedRemoteFile
 	public void addSlave(RemoteSlave slave) {
 		if (_slaves == null) //isDirectory()
 			throw new IllegalStateException("Cannot addSlave() on a directory");
-		assert slave != null;
+		if( slave == null) throw new NullPointerException();
 
 		// we get lots of duplicate adds when merging and the slave is already
 		// in the file database
@@ -441,7 +439,7 @@ public class LinkedRemoteFile
 			try {
 				if (dirSize() == 0) { //remove empty dir
 					Object ret = getParentFile().getMap().remove(getName());
-					assert ret != null;
+					if( ret == null) throw new NullPointerException();
 				}
 			} catch (FileNotFoundException ex) {
 				logger.log(
@@ -862,7 +860,8 @@ public class LinkedRemoteFile
 		if (isFile()) {
 			for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
 				RemoteSlave rslave = (RemoteSlave) iter.next();
-				assert rslave != null;
+				if (rslave == null)
+					throw new NullPointerException();
 				if (!rslave.isAvailable())
 					return true;
 			}
@@ -890,7 +889,7 @@ public class LinkedRemoteFile
 			return true;
 		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
-			assert rslave != null;
+			if(rslave == null) throw new RuntimeException();
 			if (rslave.isAvailable())
 				return true;
 		}
@@ -1013,11 +1012,14 @@ public class LinkedRemoteFile
 			}
 			LinkedRemoteFile nextFile;
 			try {
-				if(includeDeleted) {
-				nextFile =
-					(LinkedRemoteFile) currFile.getFileDeleted(currFileName);
+				if (includeDeleted) {
+					nextFile =
+						(LinkedRemoteFile) currFile.getFileDeleted(
+							currFileName);
 				} else {
-					nextFile = (LinkedRemoteFile)currFile.getFileDeleted(currFileName);
+					nextFile =
+						(LinkedRemoteFile) currFile.getFileDeleted(
+							currFileName);
 				}
 			} catch (FileNotFoundException ex) {
 				StringBuffer remaining = new StringBuffer(currFileName);
@@ -1040,9 +1042,7 @@ public class LinkedRemoteFile
 		if (!ret.hasPath()) {
 			return ret.getFile().getPath();
 		}
-		return ret.getFile().getPath()
-			+ '/'
-			+ ret.getPath();
+		return ret.getFile().getPath() + '/' + ret.getPath();
 	}
 
 	public SFVFile lookupSFVFile()
@@ -1125,11 +1125,13 @@ public class LinkedRemoteFile
 		}
 		//validate
 		if (file.isFile()) {
-			if(file.getSlaves() == null) throw new RuntimeException(file.toString());
+			if (file.getSlaves() == null)
+				throw new RuntimeException(file.toString());
 			for (Iterator iter = file.getSlaves().iterator();
 				iter.hasNext();
 				) {
-				if(iter.next() == null) throw new RuntimeException();
+				if (iter.next() == null)
+					throw new RuntimeException();
 			}
 		}
 
@@ -1144,7 +1146,7 @@ public class LinkedRemoteFile
 		_link = toFile.getPath();
 		_isDeleted = true;
 	}
-	
+
 	public TransferStatus receiveFile(
 		Transfer transfer,
 		char type,
@@ -1469,10 +1471,10 @@ public class LinkedRemoteFile
 		{
 			LinkedRemoteFile tmpDir = toDir;
 			do {
-				if(tmpDir == this) {
+				if (tmpDir == this) {
 					throw new IOException("Cannot rename into a subdirectory of self");
 				}
-			} while((tmpDir = tmpDir.getParentFileNull()) != null);
+			} while ((tmpDir = tmpDir.getParentFileNull()) != null);
 		}
 
 		//slaves are copied here too...

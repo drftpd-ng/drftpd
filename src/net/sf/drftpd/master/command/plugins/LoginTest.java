@@ -34,6 +34,7 @@ import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.master.usermanager.UserManager;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
@@ -43,7 +44,7 @@ import org.drftpd.tests.DummyUserManager;
 
 /**
  * @author mog
- * @version $Id: LoginTest.java,v 1.1 2004/05/17 11:27:24 mog Exp $
+ * @version $Id: LoginTest.java,v 1.2 2004/05/31 02:47:16 mog Exp $
  */
 public class LoginTest extends TestCase {
 	private DummyUserManager _userManager;
@@ -84,6 +85,9 @@ public class LoginTest extends TestCase {
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
+			}
+			public UserManager getUserManager() {
+				return _userManager;
 			}
 		});
 		_userManager = new DummyUserManager();

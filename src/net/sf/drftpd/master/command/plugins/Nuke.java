@@ -56,7 +56,7 @@ import org.jdom.input.SAXBuilder;
  * amount -> amount before multiplier
  * 
  * @author mog
- * @version $Id: Nuke.java,v 1.16 2004/04/26 00:30:24 mog Exp $
+ * @version $Id: Nuke.java,v 1.17 2004/05/31 02:47:16 mog Exp $
  */
 public class Nuke implements CommandHandler {
 
@@ -176,7 +176,7 @@ public class Nuke implements CommandHandler {
 			String username = (String) iter.next();
 			User user;
 			try {
-				user = conn.getUserManager().getUserByName(username);
+				user = conn.getConnectionManager().getUserManager().getUserByName(username);
 			} catch (NoSuchUserException e1) {
 				response.addComment(
 					"Cannot remove credits from "
@@ -361,7 +361,7 @@ public class Nuke implements CommandHandler {
 			String nukeeName = nukeeObj.getUsername();
 			User nukee;
 			try {
-				nukee = conn.getUserManager().getUserByName(nukeeName);
+				nukee = conn.getConnectionManager().getUserManager().getUserByName(nukeeName);
 			} catch (NoSuchUserException e) {
 				response.addComment(nukeeName + ": no such user");
 				continue;

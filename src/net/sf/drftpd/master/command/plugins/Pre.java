@@ -45,7 +45,7 @@ import org.drftpd.sections.SectionInterface;
 /**
  * @author mog
  *
- * @version $Id: Pre.java,v 1.13 2004/04/20 04:11:48 mog Exp $
+ * @version $Id: Pre.java,v 1.14 2004/05/31 02:47:16 mog Exp $
  */
 public class Pre implements CommandHandler {
 
@@ -143,7 +143,7 @@ public class Pre implements CommandHandler {
 				(LinkedRemoteFileInterface) iter.next();
 			User owner;
 			try {
-				owner = conn.getUserManager().getUserByName(file.getUsername());
+				owner = conn.getConnectionManager().getUserManager().getUserByName(file.getUsername());
 			} catch (NoSuchUserException e) {
 				logger.log(
 					Level.INFO,

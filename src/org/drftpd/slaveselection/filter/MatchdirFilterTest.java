@@ -20,7 +20,6 @@ package org.drftpd.slaveselection.filter;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
@@ -36,7 +35,7 @@ import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: MatchdirFilterTest.java,v 1.6 2004/05/16 05:44:55 zubov Exp $
+ * @version $Id: MatchdirFilterTest.java,v 1.7 2004/05/31 02:47:20 mog Exp $
  */
 public class MatchdirFilterTest extends TestCase {
 
@@ -74,8 +73,8 @@ public class MatchdirFilterTest extends TestCase {
 			super();
 		}
 		public RemoteSlave getSlave(String s) throws ObjectNotFoundException {
-			assert s != null;
-			assert rslaves[0] != null;
+			if(s == null) throw new NullPointerException("s");
+			if(rslaves[0] == null) throw new NullPointerException("rslaves[0] == null");
 			if (s.equals(rslaves[0].getName()))
 				return rslaves[0];
 			if (s.equals(rslaves[1].getName()))

@@ -24,7 +24,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author mog
  *
- * @version $Id: StringPathPermission.java,v 1.6 2004/02/23 01:14:38 mog Exp $
+ * @version $Id: StringPathPermission.java,v 1.7 2004/05/31 02:47:17 mog Exp $
  */
 public class StringPathPermission extends PathPermission {
 	private String path;
@@ -35,7 +35,7 @@ public class StringPathPermission extends PathPermission {
 	}
 
 	public boolean checkPath(LinkedRemoteFileInterface path) {
-		assert path.isDirectory() : "Should be a directory";
+		if(!path.isDirectory()) throw new RuntimeException( "Should be a directory");
 		return (path.getPath()+"/").startsWith(this.path);
 	}
 }

@@ -46,7 +46,7 @@ import org.apache.log4j.Logger;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
- * @version $Id: TransferStatistics.java,v 1.19 2004/04/23 00:47:24 mog Exp $
+ * @version $Id: TransferStatistics.java,v 1.20 2004/05/31 02:47:16 mog Exp $
  */
 public class TransferStatistics implements CommandHandler {
 
@@ -153,7 +153,7 @@ public class TransferStatistics implements CommandHandler {
 		} else {
 			try {
 				user =
-					conn.getUserManager().getUserByName(request.getArgument());
+					conn.getConnectionManager().getUserManager().getUserByName(request.getArgument());
 			} catch (NoSuchUserException e) {
 				return new FtpReply(200, "No such user: " + e.getMessage());
 			} catch (UserFileException e) {
@@ -171,7 +171,7 @@ public class TransferStatistics implements CommandHandler {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
-		UserManager userman = conn.getUserManager();
+		UserManager userman = conn.getConnectionManager().getUserManager();
 		response.addComment("created: " + new Date(user.getCreated()));
 		response.addComment("rank alup: " + getStatsPlace("ALUP", user, userman));
 		response.addComment("rank aldn: " + getStatsPlace("ALDN", user, userman));
@@ -233,7 +233,7 @@ public class TransferStatistics implements CommandHandler {
 		}
 		List users;
 		try {
-			users = conn.getUserManager().getAllUsers();
+			users = conn.getConnectionManager().getUserManager().getAllUsers();
 		} catch (UserFileException e) {
 			logger.warn("", e);
 			return new FtpReply(200, "IO error: " + e.getMessage());
