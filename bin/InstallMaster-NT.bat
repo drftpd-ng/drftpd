@@ -37,4 +37,3 @@ pause
 :end
 set _APP_HOME=
 set _WRAPPER_CONF=
-
