@@ -50,5 +50,6 @@
 !unnuke net.drmods.plugins.irc.IRCNuke.doUnnuke public =nuke
 !nukes net.drmods.plugins.irc.IRCNuke.doNukes public =nuke
 !rank net.drmods.plugins.irc.Rank.doRank public *
+!toprank net.drmods.plugins.irc.Rank.doTopRank public =siteop
 !find net.drmods.plugins.irc.Find.doFind public *
 !new net.drmods.plugins.irc.New.doNew public *

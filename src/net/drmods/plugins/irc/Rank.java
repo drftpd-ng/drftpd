@@ -48,7 +48,7 @@ import f00f.net.irc.martyr.util.FullNick;
  * @version $Id$
  */
 public class Rank extends IRCCommand {
-    private static final Logger logger = Logger.getLogger(Approve.class);
+    private static final Logger logger = Logger.getLogger(Rank.class);
     private String _exemptGroups;
 
     public Rank(GlobalContext gctx) {
@@ -97,6 +97,7 @@ public class Rank extends IRCCommand {
 	        try {
                 user = getGlobalContext().getUserManager().getUserByName(args);
             } catch (Exception e) {
+                logger.error(args + " is not a vlid username", e);
                 env.add("user", args);
                 out.add(ReplacerUtils.jprintf("rank.error", env, Rank.class));
                 return out;
@@ -131,7 +132,7 @@ public class Rank extends IRCCommand {
                 if (fuser.isMemberOf(exempt[i]))
                     allow = false;
             }
-            if (allow)
+            if (allow && !fuser.isDeleted())
                 filteredusers.add(fuser);
         }
         
@@ -156,5 +157,68 @@ public class Rank extends IRCCommand {
             out.add(ReplacerUtils.jprintf("rank.losing", env, Rank.class));            
         }
         return out;
+	}
+	
+	public ArrayList<String> doTopRank(String args, MessageCommand msgc) {
+	    ArrayList<String> out = new ArrayList<String>();
+		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		env.add("ircnick", msgc.getSource().getNick());
+
+		int count = 10;
+        try {
+            count = Integer.parseInt(args);
+        } catch (NumberFormatException e1) {
+        }
+        
+        Collection<User> users;
+        try {
+            users = getGlobalContext().getUserManager().getAllUsers();
+        } catch (UserFileException e) {
+            out.add("Error processing userfiles");
+            return out;
+        }
+        
+        String type = "MONTHUP";
+        boolean allow = false;
+        String exempt[] = _exemptGroups.split(" ");
+        ArrayList<User> filteredusers = new ArrayList<User>();
+        for (User fuser : users) {
+            allow = true;
+            for (int i = 0; i < exempt.length; i++) {
+                if (fuser.isMemberOf(exempt[i]))
+                    allow = false;
+            }
+            if (allow && !fuser.isDeleted())
+                filteredusers.add(fuser);
+        }
+        
+        Collections.sort(filteredusers, new UserComparator(type));
+        
+        for (int pos = 0; pos < filteredusers.size(); pos++) {
+            if (pos >= count) break;
+            User user = filteredusers.get(pos);
+            env.add("user", user.getName());
+            env.add("group", user.getGroup());
+            env.add("mnup", Bytes.formatBytes(user.getUploadedBytesMonth()));
+            env.add("upfilesmonth", "" + user.getUploadedFilesMonth());
+            env.add("mnrateup", TransferStatistics.getUpRate(user,Trial.PERIOD_MONTHLY));
+            if (pos == 0) {
+                out.add(ReplacerUtils.jprintf("rank.ontop", env, Rank.class));
+            } else if (pos > 0) {
+                User prevUser = filteredusers.get(pos-1);
+                env.add("pos", ""+(pos+1));
+                env.add("toup", Bytes.formatBytes(
+                        	prevUser.getUploadedBytesMonth() 
+                        		- user.getUploadedBytesMonth()));
+                env.add("puser", prevUser.getName());
+                env.add("pgroup", prevUser.getGroup());
+                out.add(ReplacerUtils.jprintf("rank.losing", env, Rank.class));            
+            } else {
+                env.add("user", args);
+                out.add(ReplacerUtils.jprintf("rank.error", env, Rank.class));
+                return out;                
+            }
+        }
+		return out;
 	}
 }
