@@ -80,7 +80,7 @@ public class HostMaskCollection extends ArrayList {
             }
         }
 
-        add(new HostMask(mask));
+        add(newMask);
     }
 
     public boolean check(Socket s) throws MalformedPatternException {

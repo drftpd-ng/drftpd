@@ -17,6 +17,9 @@
  */
 package org.drftpd.master;
 
+import java.beans.DefaultPersistenceDelegate;
+import java.beans.ExceptionListener;
+import java.beans.XMLEncoder;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -44,8 +47,9 @@ import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.LightSFVFile;
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.id3.ID3Tag;
-import org.drftpd.io.SafeFileWriter;
+import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.RemoteIOException;
@@ -66,10 +70,8 @@ import org.drftpd.slave.async.AsyncResponseSFVFile;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
 import org.drftpd.usermanager.Entity;
+import org.drftpd.usermanager.HostMask;
 import org.drftpd.usermanager.HostMaskCollection;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.StreamException;
 
 /**
  * @author mog
@@ -80,8 +82,6 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	private static final long serialVersionUID = -6973935289361817125L;
 
 	private static final Logger logger = Logger.getLogger(RemoteSlave.class);
-
-	private static XStream _xst = new XStream();
 
 	private transient boolean _available;
 
@@ -123,14 +123,19 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 
 	private long _receivedBytes;
 
+	public RemoteSlave(String name) {
+		_name = name;
+		_keysAndValues = new Properties();
+		_ipMasks = new HostMaskCollection();
+		_renameQueue = new HashMap<String, String>();
+	}
+
 	/**
 	 * Used by everything including tests
 	 */
 	public RemoteSlave(String name, GlobalContext gctx) {
-		init(name, gctx);
-		_keysAndValues = new Properties();
-		_ipMasks = new HostMaskCollection();
-		_renameQueue = new HashMap<String, String>();
+		this(name);
+		_gctx = gctx;
 		commit();
 	}
 
@@ -160,7 +165,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		// set slave offline if too many network errors
 		long errortimeout = Long
 				.parseLong(getProperty("errortimeout", "60000")); // one
-																											   // minute
+		// minute
 
 		if (errortimeout <= 0) {
 			errortimeout = 60000;
@@ -220,12 +225,24 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 
 	public void commit() {
 		try {
-			SafeFileWriter out = new SafeFileWriter((getGlobalContext()
-					.getSlaveManager().getSlaveFile(this.getName())));
 
+			XMLEncoder out = new XMLEncoder(new SafeFileOutputStream(
+					(getGlobalContext().getSlaveManager().getSlaveFile(this
+							.getName()))));
+			out.setExceptionListener(new ExceptionListener() {
+				public void exceptionThrown(Exception e) {
+					logger.warn("", e);
+				}
+			});
+			out.setPersistenceDelegate(Key.class,
+					new DefaultPersistenceDelegate(new String[] { "owner",
+							"key", "type" }));
+			out.setPersistenceDelegate(HostMask.class,
+					new DefaultPersistenceDelegate(new String[] { "mask" }));
+			out.setPersistenceDelegate(RemoteSlave.class,
+					new DefaultPersistenceDelegate(new String[] { "name" }));
 			try {
-				//_xst = new XStream();
-				out.write(_xst.toXML(this));
+				out.writeObject(this);
 			} finally {
 				out.close();
 			}
@@ -246,7 +263,11 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	}
 
 	public final boolean equals(Object obj) {
-		return ((RemoteSlave) obj).getName().equals(getName());
+		try {
+			return ((RemoteSlave) obj).getName().equals(getName());
+		} catch (NullPointerException e) {
+			return false;
+		}
 	}
 
 	public GlobalContext getGlobalContext() {
@@ -279,6 +300,10 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 
 	public HostMaskCollection getMasks() {
 		return _ipMasks;
+	}
+
+	public void setMasks(HostMaskCollection masks) {
+		_ipMasks = masks;
 	}
 
 	/**
@@ -332,7 +357,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 
 				default:
 					throw new FatalException("unrecognized direction - "
-							+ transfer.getState()+" for "+transfer);
+							+ transfer.getState() + " for " + transfer);
 				}
 			}
 		}
@@ -364,15 +389,6 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 
 	public final int hashCode() {
 		return getName().hashCode();
-	}
-
-	/**
-	 * Used to initialize the RemoteSlave, used in the constructor and after
-	 * serialization
-	 */
-	protected final void init(String name, GlobalContext gctx) {
-		_name = name;
-		_gctx = gctx;
 	}
 
 	/**
@@ -878,9 +894,6 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 					}
 				}
 			}
-		} catch (StreamException e) {
-			setOffline("Slave disconnected");
-			logger.error("Slave disconnected", e);
 		} catch (Throwable e) {
 			setOffline("error: " + e.getMessage());
 			logger.error("", e);
@@ -1059,8 +1072,8 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 
 		synchronized (_transfers) {
 			RemoteTransfer ret = _transfers.get(transferIndex);
-			if(ret == null)
-				throw new FatalException("there is a bug somewhere in code");				
+			if (ret == null)
+				throw new FatalException("there is a bug somewhere in code");
 			return ret;
 		}
 	}
@@ -1076,5 +1089,9 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		}
 
 		return false;
+	}
+
+	public void init(GlobalContext globalContext) {
+		_gctx = globalContext;
 	}
 }
