@@ -45,6 +45,7 @@ import java.util.zip.ZipInputStream;
 import javax.net.ssl.SSLContext;
 
 import net.sf.drftpd.FileExistsException;
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.BasicConfigurator;
@@ -419,7 +420,10 @@ public class Slave {
 		} catch (Throwable t) {
 			logger.error("Error extracting .diz from zipfile",t);
 		} finally {
-			zipInput.close();
+			try {
+				zipInput.close();
+			} catch (IOException e) {
+			}
 		}
 		throw new FileNotFoundException("No diz entry in - " + path);
 	}
