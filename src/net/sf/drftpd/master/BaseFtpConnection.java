@@ -16,7 +16,6 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.nio.channels.SocketChannel;
 import java.rmi.RemoteException;
-import java.util.List;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.event.Event;
@@ -76,8 +75,6 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	protected boolean executing;
 
-	List ftpListeners;
-
 	BufferedReader in;
 	/**
 	 * time when last command from the client finished execution
@@ -106,7 +103,6 @@ public class BaseFtpConnection implements Runnable {
 		 */
 	protected RemoteSlave preTransferRSlave;
 	protected FtpRequest request;
-	protected SlaveManagerImpl slaveManager;
 	/**
 	 * Should this thread stop insted of continue looping?
 	 */
@@ -116,8 +112,10 @@ public class BaseFtpConnection implements Runnable {
 	public BaseFtpConnection(
 		ConnectionManager connManager,
 		Socket soc) {
-		this.controlSocket = soc;
-		this._cm = connManager;
+		
+		controlSocket = soc;
+		_cm = connManager;
+		lastActive = System.currentTimeMillis();
 	}
 
 	/**

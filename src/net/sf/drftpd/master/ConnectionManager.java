@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -52,36 +50,29 @@ public class ConnectionManager {
 	private static Logger logger =
 		Logger.getLogger(ConnectionManager.class.getName());
 
-	public static final String VERSION = "drftpd 0.7.0-CVS";
 	public static void main(String args[]) {
 		//BasicConfigurator.configure();
 		Logger root = Logger.getRootLogger();
+		new File("ftp-data/logs").mkdirs();
 		try {
-			root.addAppender(new FileAppender(new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN), "ftp-data/logs/drftpd.log"));
+			root.addAppender(
+				new FileAppender(
+					new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN),
+					"ftp-data/logs/drftpd.log"));
 		} catch (IOException e1) {
 			throw new FatalException(e1);
 		}
-		System.out.println(VERSION + " master server starting.");
+		System.out.println(SlaveImpl.VERSION + " master server starting.");
 		System.out.println("http://drftpd.sourceforge.net");
 
 		try {
-//			Handler handlers[] = Logger.getLogger("").getHandlers();
-//			if (handlers.length == 1) {
-//				handlers[0].setLevel(Level.ALL);
-//			} else {
-//				logger.WARN(
-//					"handlers.length != 1, can't setLevel() on root element");
-//			}
-
 			String cfgFileName;
 			if (args.length >= 1) {
 				cfgFileName = args[0];
 			} else {
 				cfgFileName = "drftpd.conf";
 			}
-			if (new File(cfgFileName).exists()) {
-				System.out.println(cfgFileName + " does not exist.");
-			}
+
 			/** load config **/
 			Properties cfg = new Properties();
 			try {
@@ -119,32 +110,23 @@ public class ConnectionManager {
 		System.gc();
 	}
 	private Vector _conns = new Vector();
-	private Writer commandDebug;
+	private FtpConfig _config;
 
-	private FtpConfig config;
-
-	private ArrayList ftpListeners = new ArrayList();
-	private NukeLog nukelog;
-	private Properties propertiesConfig;
+	private ArrayList _ftpListeners = new ArrayList();
+	private NukeLog _nukelog;
 	private String shutdownMessage = null;
 	//allow package classes for inner classes without use of synthetic methods
 	private SlaveManagerImpl slaveManager;
 	private Timer timer;
 	private UserManager usermanager;
 	public ConnectionManager(Properties cfg, String cfgFileName) {
-		this.propertiesConfig = cfg;
 		try {
-			this.config = new FtpConfig(cfg, cfgFileName, this);
+			this._config = new FtpConfig(cfg, cfgFileName, this);
 		} catch (Throwable ex) {
 			throw new FatalException(ex);
 		}
 		new File("ftp-data/logs").mkdirs();
 
-		try {
-			this.commandDebug = new FileWriter("ftp-data/logs/debug.log");
-		} catch (IOException e1) {
-			throw new FatalException(e1);
-		}
 		/** END: load XML file database **/
 
 		List rslaves = SlaveManagerImpl.loadRSlaves();
@@ -181,7 +163,7 @@ public class ConnectionManager {
 				e);
 		}
 
-		nukelog = new NukeLog();
+		_nukelog = new NukeLog();
 		try {
 			Document doc =
 				new SAXBuilder().build(new FileReader("nukelog.xml"));
@@ -198,7 +180,8 @@ public class ConnectionManager {
 				String reason = nukeElement.getChildText("reason");
 
 				long size = Long.parseLong(nukeElement.getChildText("size"));
-				long nukedAmount = Long.parseLong(nukeElement.getChildText("nukedAmount"));
+				long nukedAmount =
+					Long.parseLong(nukeElement.getChildText("nukedAmount"));
 
 				Map nukees = new Hashtable();
 				List nukeesElement =
@@ -211,10 +194,10 @@ public class ConnectionManager {
 						nukeeElement.getChildText("username");
 					Long nukeeAmount =
 						new Long(nukeeElement.getChildText("amount"));
-					
+
 					nukees.put(nukeeUsername, nukeeAmount);
 				}
-				nukelog.add(
+				_nukelog.add(
 					new NukeEvent(
 						user,
 						"NUKE",
@@ -223,7 +206,8 @@ public class ConnectionManager {
 						size,
 						nukedAmount,
 						multiplier,
-						reason, nukees));
+						reason,
+						nukees));
 			}
 		} catch (FileNotFoundException ex) {
 			logger.log(
@@ -235,7 +219,7 @@ public class ConnectionManager {
 				"Error loading nukelog from nukelog.xml",
 				ex);
 		}
-		
+
 		if (cfg.getProperty("irc.enabled", "false").equals("true")) {
 			try {
 				addFtpListener(
@@ -254,7 +238,7 @@ public class ConnectionManager {
 			}
 		};
 		//run every 10 seconds
-		timer.schedule(timerLogoutIdle, 10*1000, 10 * 1000);
+		timer.schedule(timerLogoutIdle, 10 * 1000, 10 * 1000);
 
 		TimerTask timerSave = new TimerTask() {
 			public void run() {
@@ -267,15 +251,14 @@ public class ConnectionManager {
 			}
 		};
 		//run every hour 
-		timer.schedule(timerSave, 60*60 * 1000, 60*60 * 1000);
+		timer.schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
 
 	}
 	public void addFtpListener(FtpListener listener) {
-		ftpListeners.add(listener);
+		_ftpListeners.add(listener);
 	}
 	protected void dispatchFtpEvent(Event event) {
-		System.out.println("Dispatching "+event.getCommand()+" to "+ftpListeners);
-		for (Iterator iter = ftpListeners.iterator(); iter.hasNext();) {
+		for (Iterator iter = _ftpListeners.iterator(); iter.hasNext();) {
 			try {
 				FtpListener handler = (FtpListener) iter.next();
 				handler.actionPerformed(event);
@@ -284,24 +267,16 @@ public class ConnectionManager {
 			}
 		}
 	}
-	/**
-	 * @return
-	 */
+
 	public FtpConfig getConfig() {
-		return config;
+		return _config;
 	}
 
 	/**
 	 * returns a <code>Collection</code> of current connections
 	 */
 	public Collection getConnections() {
-		return this._conns;
-	}
-	/**
-	 * @return
-	 */
-	public Properties getPropertiesConfig() {
-		return propertiesConfig;
+		return _conns;
 	}
 	public String getShutdownMessage() {
 		return this.shutdownMessage;
@@ -342,7 +317,9 @@ public class ConnectionManager {
 		this.shutdownMessage = message;
 		Collection conns = getConnections();
 		synchronized (conns) {
-			for (Iterator iter = getConnections().iterator(); iter.hasNext();) {
+			for (Iterator iter = getConnections().iterator();
+				iter.hasNext();
+				) {
 				((FtpConnection) iter.next()).stop(message);
 			}
 		}
@@ -350,16 +327,7 @@ public class ConnectionManager {
 	}
 
 	public void start(Socket sock) throws IOException {
-		FtpConnection conn =
-			new FtpConnection(
-				sock,
-				usermanager,
-				slaveManager,
-				slaveManager.getRoot(),
-				this,
-				this.nukelog,
-				this.commandDebug);
-		conn.ftpListeners = this.ftpListeners;
+		FtpConnection conn = new FtpConnection(sock, this);
 		_conns.add(conn);
 		conn.start();
 	}
@@ -372,22 +340,32 @@ public class ConnectionManager {
 
 				int idle = (int) ((currTime - conn.getLastActive()) / 1000);
 				int maxIdleTime;
-					try {
-						maxIdleTime = conn.getUser().getMaxIdleTime();
-						if(maxIdleTime == 0) maxIdleTime = idleTimeout;
-					} catch (NoSuchUserException e) {
+				try {
+					maxIdleTime = conn.getUser().getMaxIdleTime();
+					if (maxIdleTime == 0)
 						maxIdleTime = idleTimeout;
-					}
+				} catch (NoSuchUserException e) {
+					maxIdleTime = idleTimeout;
+				}
 
 				if (!conn.isExecuting() && idle >= maxIdleTime) {
 					// idle time expired, logout user.
-					conn.stop(
-						"Idle time expired: "
-							+ maxIdleTime
-							+ "s");
+					conn.stop("Idle time expired: " + maxIdleTime + "s");
 				}
 			}
 		}
+	}
+	/**
+	 * @return
+	 */
+	public NukeLog getNukeLog() {
+		return _nukelog;
+	}
+	/**
+	 * @return
+	 */
+	public List getFtpListeners() {
+		return _ftpListeners;
 	}
 
 }

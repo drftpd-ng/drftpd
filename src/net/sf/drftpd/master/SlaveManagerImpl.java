@@ -370,7 +370,7 @@ public class SlaveManagerImpl
 		//saveFilesXML();
 	}
 
-	//TODO cache!
+	//TODO cache! called by FtpConnection.status()
 	public SlaveStatus getAllStatus() {
 		SlaveStatus ret = new SlaveStatus();
 		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {

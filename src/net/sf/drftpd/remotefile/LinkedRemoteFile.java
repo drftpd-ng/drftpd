@@ -266,7 +266,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 					} catch (IOException ex) {
 						logger.log(
 							Level.FATAL,
-							"IOException deleting file on slave " + rslave,
+							"IOException deleting file on slave " + rslave.getName(),
 							ex);
 						continue;
 					}
@@ -929,7 +929,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				} catch (IOException ex) {
 					logger.log(
 						Level.FATAL,
-						"IOException in renameTo() for dir",
+						"IOException in renameTo() for dir for "+rslave.getName(),
 						ex);
 				}
 			}
@@ -953,7 +953,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				} catch (IOException ex) {
 					logger.log(
 						Level.FATAL,
-						"IO error from slave on a file in LinkedRemoteFile",
+						"IO error from "+rslave.getName()+" on a file in LinkedRemoteFile",
 						ex);
 				}
 			}

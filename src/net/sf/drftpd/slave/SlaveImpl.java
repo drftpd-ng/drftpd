@@ -25,7 +25,6 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -66,9 +65,9 @@ public class SlaveImpl
 		ArrayList rootStrings = new ArrayList();
 		for (int i = 1; true; i++) {
 			String rootString = cfg.getProperty("slave.root." + i);
-			System.out.println("slave.root." + i + ": " + rootString);
 			if (rootString == null)
 				break;
+			System.out.println("slave.root." + i + ": " + rootString);
 
 			long minSpaceFree;
 			try {
@@ -103,7 +102,7 @@ public class SlaveImpl
 	public static void main(String args[]) {
 		BasicConfigurator.configure();
 		System.out.println(
-			ConnectionManager.VERSION + " slave server starting");
+			SlaveImpl.VERSION + " slave server starting");
 		String drftpdconf;
 		if (args.length >= 1) {
 			drftpdconf = args[0];
@@ -143,7 +142,8 @@ public class SlaveImpl
 
 	private Vector _transfers = new Vector();
 
-	//private PortRangeServerSocketFactory _factory;
+	public static final String VERSION = "DrFTPD 0.9.0";
+
 	public SlaveImpl(Properties cfg) throws RemoteException {
 		super(0);
 

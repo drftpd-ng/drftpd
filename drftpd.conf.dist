@@ -5,8 +5,8 @@
 ### Slave settings ###
 ######################
 
-#What you set <name> to in slaves.xml
-slave.name=test
+#What you set <name>drftpd</name> to in slaves.xml
+slave.name=drftpd
 
 #root to serve contents from, is automatically created
 slave.root.1=site
