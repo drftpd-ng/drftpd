@@ -46,7 +46,7 @@ import java.util.Set;
 
 /**
  * @author zubov
- * @version $Id: JobManagerTest.java,v 1.17 2004/11/09 18:59:50 mog Exp $
+ * @version $Id: JobManagerTest.java,v 1.18 2004/11/15 01:12:11 mog Exp $
  */
 public class JobManagerTest extends TestCase {
     private Properties p;
@@ -57,9 +57,9 @@ public class JobManagerTest extends TestCase {
      * Constructor for JobManagerTest.
      * @param arg0
      */
-    ConnectionManager cm;
-    JobManager jm;
-    private ArrayList slaveList;
+    ConnectionManager _cm;
+    JobManager _jm;
+    private ArrayList<RemoteSlave> _slaveList;
 
     public JobManagerTest(String arg0) throws IOException {
         super(arg0);
@@ -67,37 +67,31 @@ public class JobManagerTest extends TestCase {
 
     public void setUp() throws RemoteException, SlaveFileException {
         DummyGlobalContext dgc = new DummyGlobalContext();
-        dgc.setSlaveManager(new DummySlaveManager());
+        //dgc.setSlaveManager(new DummySlaveManager(dgc));
 
         DummyRemoteSlave rslave1 = new DummyRemoteSlave("slave1", dgc);
         DummyRemoteSlave rslave2 = new DummyRemoteSlave("slave2", dgc);
         DummyRemoteSlave rslave3 = new DummyRemoteSlave("slave3", dgc);
-        slaveList = new ArrayList();
-        slaveList.add(rslave1);
-        slaveList.add(rslave2);
-        slaveList.add(rslave3);
+        _slaveList = new ArrayList<RemoteSlave>();
+        _slaveList.add(rslave1);
+        _slaveList.add(rslave2);
+        _slaveList.add(rslave3);
         p = new Properties();
-        cm = new CM(p);
+        _cm = new CM(p);
 
-        cm.setGlobalContext(dgc);
-        dgc.setConnectionManager(cm);
+        _cm.setGlobalContext(dgc);
+        dgc.setConnectionManager(_cm);
 
         DummySlaveManager dsm = null;
 
-        try {
-            dsm = new DSM();
-        } catch (RemoteException e) {
-            // TODO Auto-generated catch block
-        } catch (SlaveFileException e) {
-            // TODO Auto-generated catch block
-        }
+        dsm = new DummySlaveManager(dgc);
 
         dgc.setSlaveManager(dsm);
 
         DummySlaveSelectionManager dssm = new DummySlaveSelectionManager();
         dgc.setSlaveSelectionManager(dssm);
-        cm.getGlobalContext().loadJobManager();
-        jm = cm.getGlobalContext().getJobManager();
+        _cm.getGlobalContext().loadJobManager();
+        _jm = _cm.getGlobalContext().getJobManager();
         file = new LinkedRemoteFilePath("/path/file1.txt");
         file.addSlave(rslave1);
         file2 = new LinkedRemoteFilePath("/path/file2.txt");
@@ -112,34 +106,24 @@ public class JobManagerTest extends TestCase {
      * Test for Job getNextJob(List)
      */
     public void testGetNextJobList() {
-        HashSet slaveSet = new HashSet(slaveList);
+        HashSet slaveSet = new HashSet(_slaveList);
         Job job = new Job(file, slaveSet, 0, slaveSet.size());
-        jm.addJobToQueue(job);
+        _jm.addJobToQueue(job);
 
         Set usedSlaveList = new HashSet();
         Set skipJobs = new HashSet();
-        assertSame(job, jm.getNextJob(usedSlaveList, skipJobs));
+        assertSame(job, _jm.getNextJob(usedSlaveList, skipJobs));
         skipJobs.add(job);
-        assertNull(jm.getNextJob(usedSlaveList, skipJobs));
+        assertNull(_jm.getNextJob(usedSlaveList, skipJobs));
 
         Job job2 = new Job(file2, slaveSet, 5, 2);
-        jm.addJobToQueue(job2);
-        assertSame(job2, jm.getNextJob(usedSlaveList, skipJobs));
+        _jm.addJobToQueue(job2);
+        assertSame(job2, _jm.getNextJob(usedSlaveList, skipJobs));
         skipJobs.add(job2);
-        assertNull(jm.getNextJob(usedSlaveList, skipJobs));
+        assertNull(_jm.getNextJob(usedSlaveList, skipJobs));
         skipJobs.clear();
-        usedSlaveList.addAll(slaveList);
-        assertNull(jm.getNextJob(usedSlaveList, skipJobs));
-    }
-
-    public class DSM extends DummySlaveManager {
-        public DSM() throws RemoteException, SlaveFileException {
-            super();
-        }
-
-        public Collection getAvailableSlaves() throws NoAvailableSlaveException {
-            return slaveList;
-        }
+        usedSlaveList.addAll(_slaveList);
+        assertNull(_jm.getNextJob(usedSlaveList, skipJobs));
     }
 
     class CM extends ConnectionManager {

@@ -24,7 +24,7 @@ import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: SectionInterface.java,v 1.5 2004/10/03 16:13:56 mog Exp $
+ * @version $Id: SectionInterface.java,v 1.6 2004/11/15 01:12:15 mog Exp $
  */
 public interface SectionInterface {
     /**
@@ -36,6 +36,8 @@ public interface SectionInterface {
      * @return the (current) directory for this section.
      */
     public LinkedRemoteFileInterface getFile();
+
+    public String getBasePath();
 
     /**
      * @return all directories for this section. For example if this is a dated-dir section, it would return all dated dirs, including current dir.

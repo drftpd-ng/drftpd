@@ -17,28 +17,38 @@
  */
 package org.drftpd.tests;
 
+import java.util.Collection;
+import java.util.List;
+
+import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveFileException;
 import net.sf.drftpd.master.SlaveManager;
 
 import org.drftpd.GlobalContext;
 
-import java.util.List;
-
 
 /**
  * @author mog
- * @version $Id: DummySlaveManager.java,v 1.6 2004/11/08 18:39:31 mog Exp $
+ * @version $Id: DummySlaveManager.java,v 1.7 2004/11/15 01:12:17 mog Exp $
  */
 public class DummySlaveManager extends SlaveManager {
     public DummySlaveManager() throws SlaveFileException {
         super();
     }
 
-    public void setSlaves(List rslaves) {
+	public DummySlaveManager(GlobalContext gctx) {
+		setGlobalContext(gctx);
+	}
+
+	public void setSlaves(List<RemoteSlave> rslaves) {
         _rslaves = rslaves;
     }
 
     public void setGlobalContext(GlobalContext gctx) {
         _gctx = gctx;
+    }
+    public Collection<RemoteSlave> getAvailableSlaves() throws NoAvailableSlaveException {
+        return getSlaves();
     }
 }

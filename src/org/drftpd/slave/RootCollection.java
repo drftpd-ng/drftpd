@@ -39,7 +39,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: RootCollection.java,v 1.1 2004/11/09 18:59:58 mog Exp $
+ * @version $Id: RootCollection.java,v 1.2 2004/11/15 01:12:17 mog Exp $
  */
 public class RootCollection {
     private static final Logger logger = Logger.getLogger(RootCollection.class);
@@ -152,12 +152,11 @@ public class RootCollection {
         for (Iterator iter = _roots.iterator(); iter.hasNext();) {
             Root root = (Root) iter.next();
             File file = new File(root.getPath() + File.separatorChar + path);
-
+            System.out.println(file.getPath());
             if (file.exists()) {
                 return root;
             }
         }
-
         throw new FileNotFoundException(path + " wasn't found in any root");
     }
 

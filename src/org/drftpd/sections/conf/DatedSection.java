@@ -17,24 +17,8 @@
  */
 package org.drftpd.sections.conf;
 
-import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.remotefile.StaticRemoteFile;
-
-import org.apache.log4j.Logger;
-
-import org.drftpd.GlobalContext;
-import org.drftpd.PropertyHelper;
-
-import org.drftpd.remotefile.FileUtils;
-
-import org.drftpd.sections.SectionInterface;
-
 import java.io.FileNotFoundException;
-
 import java.text.SimpleDateFormat;
-
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -44,10 +28,20 @@ import java.util.Properties;
 import java.util.TimeZone;
 import java.util.TimerTask;
 
+import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+import net.sf.drftpd.remotefile.StaticRemoteFile;
+
+import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
+import org.drftpd.PropertyHelper;
+import org.drftpd.remotefile.FileUtils;
+import org.drftpd.sections.SectionInterface;
+
 
 /**
  * @author mog
- * @version $Id: DatedSection.java,v 1.12 2004/11/09 18:59:57 mog Exp $
+ * @version $Id: DatedSection.java,v 1.13 2004/11/15 01:12:16 mog Exp $
  */
 public class DatedSection implements SectionInterface {
     // The code assumes that the following constants are in a increasing
@@ -243,6 +237,10 @@ public class DatedSection implements SectionInterface {
                 "].");
         }
     }
+
+	public String getBasePath() {
+		return _basePath;
+	}
 }
 
 
@@ -252,7 +250,7 @@ public class DatedSection implements SectionInterface {
  *  start of the next interval.
  * */
 class RollingCalendar extends GregorianCalendar {
-    int type = DatedSection.TOP_OF_TROUBLE;
+    int _type = DatedSection.TOP_OF_TROUBLE;
 
     RollingCalendar() {
         super();
@@ -263,7 +261,7 @@ class RollingCalendar extends GregorianCalendar {
     }
 
     void setType(int type) {
-        this.type = type;
+        this._type = type;
     }
 
     public long getNextCheckMillis(Date now) {
@@ -273,7 +271,7 @@ class RollingCalendar extends GregorianCalendar {
     public Date getNextCheckDate(Date now) {
         this.setTime(now);
 
-        switch (type) {
+        switch (_type) {
         case DatedSection.TOP_OF_MINUTE:
             this.set(Calendar.SECOND, 0);
             this.set(Calendar.MILLISECOND, 0);

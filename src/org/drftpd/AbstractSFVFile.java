@@ -17,20 +17,21 @@
  */
 package org.drftpd;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * @author mog
- * @version $Id: AbstractSFVFile.java,v 1.1 2004/11/09 18:59:53 mog Exp $
+ * @version $Id: AbstractSFVFile.java,v 1.2 2004/11/15 01:12:13 mog Exp $
  */
-public class AbstractSFVFile {
+public class AbstractSFVFile implements Serializable {
     /**
      * String fileName as key.
      * Long checkSum as value.
      */
-    protected HashMap _entries = new HashMap();
+    protected HashMap _entries;
 
     /**
      * Returns a map having <code>String filename</code> as key and <code>Long checksum</code> as value.
@@ -55,5 +56,8 @@ public class AbstractSFVFile {
      */
     public int size() {
         return _entries.size();
+    }
+    public String toString() {
+    	return getClass().getName()+"[size="+size()+"]";
     }
 }

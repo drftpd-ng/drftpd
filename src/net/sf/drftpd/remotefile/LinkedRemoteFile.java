@@ -58,7 +58,7 @@ import java.util.StringTokenizer;
  * Represents the file attributes of a remote file.
  *
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.176 2004/11/09 18:59:51 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.177 2004/11/15 01:12:12 mog Exp $
  */
 public class LinkedRemoteFile implements Serializable, Comparable,
     LinkedRemoteFileInterface {
@@ -79,7 +79,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
     private LinkedRemoteFile _parent;
 
     /////////////////////// SLAVES
-    protected List _slaves;
+    protected List<RemoteSlave> _slaves;
     private long _xfertime = 0;
     protected SFVFile sfvFile;
     protected ID3Tag mp3tag;
@@ -156,7 +156,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
         if (file.isFile()) {
             _length = file.length();
             _xfertime = file.getXfertime();
-            _slaves = Collections.synchronizedList(new ArrayList(
+            _slaves = Collections.synchronizedList(new ArrayList<RemoteSlave>(
                         file.getSlaves()));
 
             try {
@@ -171,7 +171,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
             //					"Constructor called with empty dir: " + file);
             _files = new CaseInsensitiveHashtable(file.getFiles().size());
 
-            Stack dirstack = new Stack();
+            Stack<RemoteFileInterface> dirstack = new Stack<RemoteFileInterface>();
 
             //for (int i = 0; i < dir.length; i++) {
             for (Iterator iter = file.getFiles().iterator(); iter.hasNext();) {
@@ -258,7 +258,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
         logger.debug("recursiveRenameLoopFile(" + fromFile.getPath() + ", " +
             toFile.getPath());
 
-        Iterator iterator = new ArrayList(fromFile.getSlaves()).iterator();
+        Iterator iterator = new ArrayList<RemoteSlave>(fromFile.getSlaves()).iterator();
 
         while (iterator.hasNext()) {
             RemoteSlave rslave = (RemoteSlave) iterator.next();
@@ -382,7 +382,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
         if (isDirectory()) {
             // need to use a copy of getFiles() for recursive delete to avoid ConcurrentModificationErrors
-            for (Iterator iter = new ArrayList(getFiles()).iterator();
+            for (Iterator iter = new ArrayList<LinkedRemoteFileInterface>(getFiles()).iterator();
                     iter.hasNext();) {
                 LinkedRemoteFileInterface myFile = (LinkedRemoteFileInterface) iter.next();
                 myFile.delete();
@@ -439,7 +439,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
     /*
      * This method should only be called by Archive and ArchiveType's as it has no usage anywhere else
      */
-    public void deleteOthers(Set destSlaves) {
+    public void deleteOthers(Set<RemoteSlave> destSlaves) {
         if (destSlaves.containsAll(_slaves)) {
             // Do not want to remove the file completely, just delete extraneous slaves
             // this is a safety catch
@@ -447,8 +447,8 @@ public class LinkedRemoteFile implements Serializable, Comparable,
         }
 
         synchronized (_slaves) {
-            for (Iterator iter = _slaves.iterator(); iter.hasNext();) {
-                RemoteSlave tempSlave = (RemoteSlave) iter.next();
+            for (Iterator<RemoteSlave> iter = _slaves.iterator(); iter.hasNext();) {
+                RemoteSlave tempSlave = iter.next();
 
                 if (destSlaves.contains(tempSlave)) {
                     continue; // do not want to delete the archived file
@@ -479,8 +479,8 @@ public class LinkedRemoteFile implements Serializable, Comparable,
         return false;
     }
 
-    public Collection getAvailableSlaves() throws NoAvailableSlaveException {
-        ArrayList availableSlaves = new ArrayList();
+    public Collection<RemoteSlave> getAvailableSlaves() throws NoAvailableSlaveException {
+        ArrayList<RemoteSlave> availableSlaves = new ArrayList<RemoteSlave>();
 
         for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
             RemoteSlave rslave = (RemoteSlave) iter.next();
@@ -554,9 +554,9 @@ public class LinkedRemoteFile implements Serializable, Comparable,
         return 0;
     }
 
-    public Collection getDirectories() {
+    public Collection<LinkedRemoteFileInterface> getDirectories() {
         Collection temp = getFiles();
-        ArrayList retlist = new ArrayList();
+        ArrayList<LinkedRemoteFileInterface> retlist = new ArrayList<LinkedRemoteFileInterface>();
 
         for (Iterator iter = temp.iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
@@ -598,7 +598,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
      * @return a Collection of all the LinkedRemoteFile objects in this
      *         directory.
      */
-    public Collection getFiles() {
+    public Collection<LinkedRemoteFileInterface> getFiles() {
         if (_files == null) {
             throw new IllegalStateException("Isn't a directory");
         }
@@ -743,12 +743,6 @@ public class LinkedRemoteFile implements Serializable, Comparable,
                                                .getASlaveForMaster(this,
                         _ftpConfig);
 
-                if (rslave == null) {
-                    throw new NoAvailableSlaveException(
-                        "There are no slaves online with this SFV - " +
-                        getPath());
-                }
-
                 try {
                     String index = rslave.issueSFVFileToSlave(getPath());
                     sfvFile = new SFVFile(rslave.fetchSFVFileFromIndex(index));
@@ -823,7 +817,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
     /**
      * returns slaves. returns null if a directory.
      */
-    public Collection getSlaves() {
+    public Collection<RemoteSlave> getSlaves() {
         if (_slaves == null) {
             throw new IllegalStateException("getSlaves() called on a directory");
         }
@@ -1386,9 +1380,9 @@ public class LinkedRemoteFile implements Serializable, Comparable,
             // need to remove the now moved directory
             delete();
         } else { // isFile()
-            toFile._slaves = Collections.synchronizedList(new ArrayList());
+            toFile._slaves = Collections.synchronizedList(new ArrayList<RemoteSlave>());
 
-            for (Iterator iter = new ArrayList(getSlaves()).iterator();
+            for (Iterator iter = new ArrayList<RemoteSlave>(getSlaves()).iterator();
                     iter.hasNext();) {
                 RemoteSlave rslave = (RemoteSlave) iter.next();
                 rslave.simpleRename(getPath(), toDirPath, toName);
@@ -1535,7 +1529,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
         boolean shouldDelete = !_files.isEmpty();
 
-        for (Iterator iter = new ArrayList(getFiles()).iterator();
+        for (Iterator iter = new ArrayList<LinkedRemoteFileInterface>(getFiles()).iterator();
                 iter.hasNext();) {
             LinkedRemoteFile lrf = (LinkedRemoteFile) iter.next();
 
@@ -1573,7 +1567,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
         for (Iterator iter = lightRemoteFiles.values().iterator();
                 iter.hasNext();) {
             LightRemoteFile light = (LightRemoteFile) iter.next();
-            ArrayList list = new ArrayList();
+            ArrayList<RemoteSlave> list = new ArrayList<RemoteSlave>();
             list.add(rslave);
             logger.debug("adding file " + light.getName());
             addFile(new StaticRemoteFile(list, light.getName(), "drftpd",

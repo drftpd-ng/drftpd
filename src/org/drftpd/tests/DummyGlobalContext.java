@@ -17,20 +17,20 @@
  */
 package org.drftpd.tests;
 
+import java.util.Properties;
+
 import net.sf.drftpd.master.ConnectionManager;
+import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 import org.drftpd.GlobalContext;
-
 import org.drftpd.sections.SectionManagerInterface;
-
-import java.util.Properties;
 
 
 /**
  * @author mog
- * @version $Id: DummyGlobalContext.java,v 1.4 2004/11/03 16:46:49 mog Exp $
+ * @version $Id: DummyGlobalContext.java,v 1.5 2004/11/15 01:12:17 mog Exp $
  */
 public class DummyGlobalContext extends GlobalContext {
     public DummyGlobalContext() {
@@ -56,7 +56,7 @@ public class DummyGlobalContext extends GlobalContext {
         _sections = manager;
     }
 
-    public void setSlaveManager(DummySlaveManager slavem) {
+    public void setSlaveManager(SlaveManager slavem) {
         _slaveManager = slavem;
     }
 

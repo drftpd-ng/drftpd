@@ -21,10 +21,13 @@ import java.io.FileNotFoundException;
 
 import java.util.Collection;
 
+import net.sf.drftpd.master.RemoteSlave;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+
 
 /**
  * @author mog
- * @version $Id: RemoteFileInterface.java,v 1.1 2004/11/09 18:59:57 mog Exp $
+ * @version $Id: RemoteFileInterface.java,v 1.2 2004/11/15 01:12:15 mog Exp $
  */
 public interface RemoteFileInterface {
     /**
@@ -37,7 +40,7 @@ public interface RemoteFileInterface {
     /**
      * Returns a Collection of RemoteFileInterface objects.
      */
-    public Collection getFiles();
+    public Collection<LinkedRemoteFileInterface> getFiles();
 
     /**
      * Get the group owner of the file as a String.
@@ -64,7 +67,7 @@ public interface RemoteFileInterface {
 
     public abstract String getPath();
 
-    public Collection getSlaves();
+    public Collection<RemoteSlave> getSlaves();
 
     /**
      * Returns string representation of the owner of this file.

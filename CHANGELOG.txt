@@ -1,3 +1,8 @@
+2004/11/14 Morgan Christiansson <drftpd@mog.se>
+* Changed DELE to update stats aswell as credits.
+* Changed SiteBot to use correct section when dated section was used but
+  the current dir wasn't used for the upload.
+
 2004/11/12 Morgan Christiansson <drftpd@mog.se>
 * Made empty filterchains valid.
 

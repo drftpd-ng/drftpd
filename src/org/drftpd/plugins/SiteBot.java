@@ -101,7 +101,7 @@ import java.util.ResourceBundle;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.28 2004/11/09 21:49:58 zubov Exp $
+ * @version $Id: SiteBot.java,v 1.29 2004/11/15 01:12:14 mog Exp $
  */
 public class SiteBot implements FtpListener, Observer {
     public static final ReplacerEnvironment GLOBAL_ENV = new ReplacerEnvironment();
@@ -125,7 +125,7 @@ public class SiteBot implements FtpListener, Observer {
 
     //private String _key;
     protected int _port;
-    private Hashtable _sections;
+    private Hashtable<String,SectionSettings> _sections;
     protected String _server;
 
     public SiteBot() throws IOException {
@@ -136,8 +136,8 @@ public class SiteBot implements FtpListener, Observer {
         Debug.setDebugLevel(Debug.VERBOSE);
     }
 
-    public static ArrayList map2nukees(Map nukees) {
-        ArrayList ret = new ArrayList();
+    public static ArrayList<Nukee> map2nukees(Map nukees) {
+        ArrayList<Nukee> ret = new ArrayList<Nukee>();
 
         for (Iterator iter = nukees.entrySet().iterator(); iter.hasNext();) {
             Map.Entry element = (Map.Entry) iter.next();
@@ -150,8 +150,8 @@ public class SiteBot implements FtpListener, Observer {
         return ret;
     }
 
-    public static Collection topFileGroup(Collection files) {
-        ArrayList ret = new ArrayList();
+    public static Collection<GroupPosition> topFileGroup(Collection files) {
+        ArrayList<GroupPosition> ret = new ArrayList<GroupPosition>();
 
         for (Iterator iter = files.iterator(); iter.hasNext();) {
             LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
@@ -186,7 +186,7 @@ public class SiteBot implements FtpListener, Observer {
     }
 
     public static Collection userSort(Collection files, String type, String sort) {
-        ArrayList ret = new ArrayList();
+        ArrayList<UploaderPosition> ret = new ArrayList<UploaderPosition>();
 
         for (Iterator iter = files.iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
@@ -979,7 +979,7 @@ public class SiteBot implements FtpListener, Observer {
 
         //if (_key.equals(""))
         //	_key = null;
-        Hashtable sections = new Hashtable();
+        Hashtable<String,SectionSettings> sections = new Hashtable<String,SectionSettings>();
 
         for (int i = 1;; i++) {
             String name = ircCfg.getProperty("irc.section." + i);
@@ -1067,7 +1067,6 @@ public class SiteBot implements FtpListener, Observer {
         if (!path.startsWith("/")) {
             return path;
         }
-
         return path.substring(1);
     }
 

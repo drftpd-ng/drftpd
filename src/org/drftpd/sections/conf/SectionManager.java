@@ -38,7 +38,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: SectionManager.java,v 1.7 2004/10/03 16:13:57 mog Exp $
+ * @version $Id: SectionManager.java,v 1.8 2004/11/15 01:12:16 mog Exp $
  */
 public class SectionManager implements SectionManagerInterface {
     private static final Class[] CONSTRUCTOR_SIG = new Class[] {
@@ -46,7 +46,7 @@ public class SectionManager implements SectionManagerInterface {
         };
     private PlainSection _emptySection = new PlainSection(this, "", "/");
     private ConnectionManager _mgr;
-    private Hashtable _sections = new Hashtable();
+    private Hashtable<String,SectionInterface> _sections;
 
     public SectionManager(ConnectionManager mgr) {
         _mgr = mgr;
@@ -78,7 +78,7 @@ public class SectionManager implements SectionManagerInterface {
         for (Iterator iter = _sections.values().iterator(); iter.hasNext();) {
             SectionInterface section = (SectionInterface) iter.next();
 
-            if (string.startsWith(section.getPath()) &&
+            if (string.startsWith(section.getBasePath()) &&
                     (matchlen < section.getPath().length())) {
                 match = section;
                 matchlen = section.getPath().length();
@@ -97,14 +97,12 @@ public class SectionManager implements SectionManagerInterface {
             throw new FatalException(e);
         }
 
-        Hashtable sections = new Hashtable();
+        Hashtable<String,SectionInterface> sections = new Hashtable<String,SectionInterface>();
 
         for (int i = 1;; i++) {
             String name = p.getProperty(i + ".name");
-
-            if (name == null) {
+            if (name == null)
                 break;
-            }
 
             String type = p.getProperty(i + ".type", "plain");
 

@@ -20,10 +20,11 @@ package org.drftpd;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
 
 /**
  * @author mog
- * @version $Id: LightSFVFile.java,v 1.2 2004/11/11 13:09:05 mog Exp $
+ * @version $Id: LightSFVFile.java,v 1.3 2004/11/15 01:12:13 mog Exp $
  */
 public class LightSFVFile extends AbstractSFVFile implements Serializable {
     /**
@@ -31,7 +32,7 @@ public class LightSFVFile extends AbstractSFVFile implements Serializable {
      */
     public LightSFVFile(BufferedReader in) throws IOException {
         String line;
-
+        _entries = new HashMap();
         try {
             while ((line = in.readLine()) != null) {
                 if (line.length() == 0) {
@@ -57,11 +58,11 @@ public class LightSFVFile extends AbstractSFVFile implements Serializable {
                 } catch (NumberFormatException e) {
                     continue;
                 }
-
                 _entries.put(fileName, checkSum);
             }
         } finally {
             in.close();
         }
+        System.out.println("Parsed "+getClass().getName()+"[size="+size()+"]");
     }
 }

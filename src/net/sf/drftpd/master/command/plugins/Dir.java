@@ -70,7 +70,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.45 2004/11/09 18:59:48 mog Exp $
+ * @version $Id: Dir.java,v 1.46 2004/11/15 01:12:11 mog Exp $
  */
 public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
     private final static SimpleDateFormat DATE_FMT = new SimpleDateFormat(
@@ -399,10 +399,11 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
             uploader = conn.getGlobalContext().getUserManager().getUserByName(requestedFile.getUsername());
             uploader.updateCredits((long) -(requestedFile.length() * uploader.getObjectFloat(
                     UserManagment.RATIO)));
+            uploader.updateUploadedBytes(-requestedFile.length());
         } catch (UserFileException e) {
-            reply.addComment("Error removing credits: " + e.getMessage());
+            reply.addComment("Error removing credits & stats: " + e.getMessage());
         } catch (NoSuchUserException e) {
-            reply.addComment("Error removing credits: " + e.getMessage());
+            reply.addComment("Error removing credits & stats: " + e.getMessage());
         }
 
         conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(

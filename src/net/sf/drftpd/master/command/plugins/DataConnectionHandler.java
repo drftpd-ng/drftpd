@@ -79,7 +79,7 @@ import javax.net.ssl.SSLSocket;
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.76 2004/11/11 13:09:03 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.77 2004/11/15 01:11:51 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandlerFactory,
     CommandHandler, Cloneable {
@@ -105,7 +105,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
     private ServerSocket _serverSocket;
     private RemoteTransfer _transfer;
     private LinkedRemoteFileInterface _transferFile;
-    private char type = 'A';
+    private char _type = 'A';
 
     public DataConnectionHandler() {
         super();
@@ -845,7 +845,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
      * Get the user data type.
      */
     public char getType() {
-        return type;
+        return _type;
     }
 
     public CommandHandler initialize(BaseFtpConnection conn,
@@ -916,7 +916,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             return false;
         }
 
-        this.type = type;
+        this._type = type;
 
         return true;
     }
@@ -1245,7 +1245,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                     conn.getGlobalContext().getConnectionManager()
                         .dispatchFtpEvent(new TransferEvent(conn, eventType,
                             _transferFile, conn.getClientAddress(), _rslave,
-                            _transfer.getAddress().getAddress(), type, false));
+                            _transfer.getAddress().getAddress(), _type, false));
 
                     if (isRetr) {
                         conn.getUserNull().updateCredits(-status.getTransfered());

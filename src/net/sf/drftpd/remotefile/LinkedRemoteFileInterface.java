@@ -38,7 +38,7 @@ import org.drftpd.remotefile.RemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: LinkedRemoteFileInterface.java,v 1.17 2004/11/12 14:22:18 mog Exp $
+ * @version $Id: LinkedRemoteFileInterface.java,v 1.18 2004/11/15 01:12:13 mog Exp $
  *
  */
 public interface LinkedRemoteFileInterface extends RemoteFileInterface {
@@ -74,7 +74,7 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
     /**
      * This method will delete files off of slaves not contained in the destSlaves Set
      */
-    public abstract void deleteOthers(Set destSlaves);
+    public abstract void deleteOthers(Set<RemoteSlave> destSlaves);
 
     public abstract long dirSize();
 
@@ -92,7 +92,7 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
     public abstract long getCheckSumFromSlave()
         throws NoAvailableSlaveException, IOException;
 
-    public abstract Collection getDirectories();
+    public abstract Collection<LinkedRemoteFileInterface> getDirectories();
 
     /**
      * Returns fLinkedRemoteFileInterfaced in this directory.

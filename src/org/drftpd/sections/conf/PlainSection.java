@@ -17,24 +17,21 @@
  */
 package org.drftpd.sections.conf;
 
-import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-
-import org.drftpd.PropertyHelper;
-import org.drftpd.remotefile.FileUtils;
-
-import org.drftpd.sections.SectionInterface;
-
 import java.io.FileNotFoundException;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
 
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+
+import org.drftpd.PropertyHelper;
+import org.drftpd.remotefile.FileUtils;
+import org.drftpd.sections.SectionInterface;
+
 
 /**
  * @author mog
- * @version $Id: PlainSection.java,v 1.10 2004/11/09 18:59:57 mog Exp $
+ * @version $Id: PlainSection.java,v 1.11 2004/11/15 01:12:16 mog Exp $
  */
 public class PlainSection implements SectionInterface {
     private String _dir;
@@ -92,4 +89,8 @@ public class PlainSection implements SectionInterface {
     public LinkedRemoteFileInterface getBaseFile() {
         return getFile();
     }
+
+	public String getBasePath() {
+		return getPath();
+	}
 }
