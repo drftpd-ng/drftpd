@@ -1,14 +1,15 @@
 <?xml version="1.0"?>
-<!-- $Id: build.xml,v 1.50 2004/11/09 19:15:47 mog Exp $ -->
+<!-- $Id: build.xml,v 1.51 2004/11/11 13:09:02 mog Exp $ -->
 <project name="drftpd" basedir="." default="compile">
 
   <patternset id="slaveclasses">
-    <include name="net/sf/drftpd/*" />
+<!--    <include name="net/sf/drftpd/*" />-->
     <include name="net/sf/drftpd/slave/*" />
   	<include name="com/Ostermiller/util/StringTokenizer.*"/>
     <include name="net/sf/drftpd/util/PortRange.class" />
     <include name="net/sf/drftpd/util/AddAsciiOutputStream.class" />
     <include name="org/drftpd/Bytes*" />
+    <include name="org/drftpd/SSLGetContext*" />
     <include name="org/drftpd/PropertyHelper*" />
     <include name="org/drftpd/LightSFVFile*" />
     <include name="org/drftpd/AbstractSFVFile*" />
@@ -63,7 +64,7 @@
       <include name="org/drftpd/friendly/**"/>
     </javac>
   </target>
-  <target name="compile-jsx" depends="compile">
+  <target name="compile-jsx">
     <javac srcdir="${sourceDir}" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.4">
       <include  name="net/sf/drftpd/master/usermanager/jsx/**"/>
     </javac>
@@ -73,6 +74,7 @@
     <exclude name="**/*Test.java"/>
     <exclude name="org/drftpd/friendly/**"/>
     <exclude name="net/sf/drftpd/master/usermanager/jsx/**"/>
+    <exclude name="org/drftpd/usermanager/jsx2/**"/>
   </patternset>
 
   <target name="compile" depends="prepare">
@@ -92,7 +94,7 @@
   </target>
 
   <target name="compile-junit" depends="prepare">
-    <javac srcdir="${sourceDir}" destdir="${outputDir}" debug="true" source="1.4">
+    <javac srcdir="${sourceDir}" destdir="${outputDir}" debug="true" source="1.5">
       <classpath refid="classpath"/>
       <include name="**/*Test.java"/>
   	</javac>

@@ -40,13 +40,13 @@ import javax.net.ssl.SSLContext;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.util.PortRange;
-import net.sf.drftpd.util.SSLGetContext;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.LightSFVFile;
 import org.drftpd.PropertyHelper;
+import org.drftpd.SSLGetContext;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.id3.MP3File;
 import org.drftpd.master.DiskStatus;
@@ -74,7 +74,7 @@ import com.Ostermiller.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: Slave.java,v 1.11 2004/11/09 21:49:59 zubov Exp $
+ * @version $Id: Slave.java,v 1.12 2004/11/11 13:09:06 mog Exp $
  */
 public class Slave {
     public static final boolean isWin32 = System.getProperty("os.name")

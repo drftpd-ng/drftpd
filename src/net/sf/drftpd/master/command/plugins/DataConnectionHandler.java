@@ -32,12 +32,12 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 import net.sf.drftpd.util.ListUtils;
 import net.sf.drftpd.util.PortRange;
-import net.sf.drftpd.util.SSLGetContext;
 
 import org.apache.log4j.Logger;
 
 import org.drftpd.Bytes;
 import org.drftpd.SFVFile;
+import org.drftpd.SSLGetContext;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
@@ -79,7 +79,7 @@ import javax.net.ssl.SSLSocket;
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.75 2004/11/09 18:59:47 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.76 2004/11/11 13:09:03 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandlerFactory,
     CommandHandler, Cloneable {
@@ -1299,7 +1299,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             ReplacerEnvironment env = new ReplacerEnvironment();
             env.add("bytes", Bytes.formatBytes(status.getTransfered()));
             env.add("speed", Bytes.formatBytes(status.getXferSpeed()) + "/s");
-            env.add("seconds", "" + (status.getElapsed() / 1000));
+            env.add("seconds", "" + ((float)status.getElapsed() / 1000F));
             env.add("checksum", Checksum.formatChecksum(status.getChecksum()));
 
             FtpReply response = new FtpReply(226,

@@ -19,12 +19,13 @@ package org.drftpd;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * @author mog
- * @version $Id: LightSFVFile.java,v 1.1 2004/11/09 18:59:53 mog Exp $
+ * @version $Id: LightSFVFile.java,v 1.2 2004/11/11 13:09:05 mog Exp $
  */
-public class LightSFVFile extends AbstractSFVFile {
+public class LightSFVFile extends AbstractSFVFile implements Serializable {
     /**
      * Constructor for SFVFile.
      */

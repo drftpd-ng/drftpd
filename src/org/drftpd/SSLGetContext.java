@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.util;
+package org.drftpd;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -29,7 +29,7 @@ import javax.net.ssl.SSLContext;
 
 /**
  * @author mog
- * @version $Id: SSLGetContext.java,v 1.4 2004/08/03 20:14:03 zubov Exp $
+ * @version $Id: SSLGetContext.java,v 1.1 2004/11/11 13:09:05 mog Exp $
  */
 public class SSLGetContext {
     public static SSLContext getSSLContext()
