@@ -266,7 +266,6 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             newUser.getKeyedMap().setObject(UserManagement.CREATED, new Date());
             newUser.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
             newUser.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT, new Long(0));
-            newUser.getKeyedMap().setObject(UserManagement.COMMENT, "Auto-Generated");
             newUser.getKeyedMap().setObject(UserManagement.IRCIDENT, "N/A");
             newUser.getKeyedMap().setObject(Nuke.NUKED,0);
             newUser.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
