@@ -18,6 +18,7 @@
 package net.sf.drftpd.event.irc;
 
 import org.apache.log4j.Logger;
+import org.drftpd.plugins.*;
 
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.command.plugins.Textoutput;
@@ -27,13 +28,14 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author zubov
+ * @version $Id: Bnc.java,v 1.3 2004/03/26 00:16:32 mog Exp $
  */
 public class Bnc extends GenericCommandAutoService implements IRCPluginInterface {
 
 	private ConnectionManager _cm;
 	private static final Logger logger = Logger.getLogger(Bnc.class);
 
-	public Bnc(IRCListener ircListener) {
+	public Bnc(SiteBot ircListener) {
 		super(ircListener.getIRCConnection());
 		_cm = ircListener.getConnectionManager();
 	}
@@ -46,10 +48,10 @@ public class Bnc extends GenericCommandAutoService implements IRCPluginInterface
 			try {
 				if (msg.startsWith("!bnc")) {
 					if (msgc.isPrivateToUs(getConnection().getClientState())) {
-						Textoutput.sendTextToIRC(
-							getConnection(),
-							msgc.getSource().getNick(),
-							"bnc");
+//						Textoutput.sendTextToIRC(
+//							getConnection(),
+//							msgc.getSource().getNick(),
+//							"bnc");
 					} else
 						Textoutput.sendTextToIRC(
 							getConnection(),

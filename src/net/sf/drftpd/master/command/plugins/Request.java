@@ -36,7 +36,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Request.java,v 1.11 2004/02/23 01:14:37 mog Exp $
+ * @version $Id: Request.java,v 1.12 2004/03/26 00:16:33 mog Exp $
  */
 public class Request implements CommandHandler {
 	private static final String FILLEDPREFIX = "FILLED-for.";
@@ -64,7 +64,10 @@ public class Request implements CommandHandler {
 				String filledname = FILLEDPREFIX + username + "-" + myreqname;
 				LinkedRemoteFile filledfile;
 				try {
-					filledfile = file.renameTo(file.getParentFile().getPath(), filledname);
+					filledfile =
+						file.renameTo(
+							file.getParentFile().getPath(),
+							filledname);
 				} catch (IOException e) {
 					logger.warn("", e);
 					return new FtpReply(200, e.getMessage());
@@ -93,7 +96,10 @@ public class Request implements CommandHandler {
 
 		if (!conn
 			.getConfig()
-			.checkRequest(conn.getUserNull(), conn.getCurrentDirectory())) {
+			.checkPathPermission(
+				"request",
+				conn.getUserNull(),
+				conn.getCurrentDirectory())) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 

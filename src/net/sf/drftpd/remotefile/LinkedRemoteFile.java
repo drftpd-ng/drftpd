@@ -53,7 +53,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.126 2004/03/15 01:55:26 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.127 2004/03/26 00:16:35 mog Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -119,6 +119,9 @@ public class LinkedRemoteFile
 			LinkedRemoteFile toFile;
 			try {
 				toFile = (LinkedRemoteFile) toDir.getFile(fromFile.getName());
+			} catch(QueuedDeletionException e) {
+				fromFile.delete();
+				continue;
 			} catch (FileNotFoundException e) {
 				toFile = toDir.putFile(fromFile);
 			}
@@ -275,14 +278,16 @@ public class LinkedRemoteFile
 				//thrown if this is the root dir
 			}
 		} else if (file.isDirectory()) {
-			RemoteFileInterface dir[] = file.listFiles();
+			//RemoteFileInterface dir[] = file.listFiles();
 			//			if (name != "" && dir.length == 0)
 			//				throw new FatalException(
 			//					"Constructor called with empty dir: " + file);
-			_files = Collections.synchronizedMap(new Hashtable(dir.length));
+			_files = Collections.synchronizedMap(new Hashtable(file.getFiles().size()));
 			Stack dirstack = new Stack();
-			for (int i = 0; i < dir.length; i++) {
-				RemoteFileInterface file2 = dir[i];
+			//for (int i = 0; i < dir.length; i++) {
+			for (Iterator iter = file.getFiles().iterator(); iter.hasNext();) {
+				LinkedRemoteFileInterface file2 = (LinkedRemoteFileInterface) iter.next();
+				//RemoteFileInterface file2 = dir[i];
 				if (file2.isDirectory()) {
 					dirstack.push(file2);
 					continue;
@@ -587,8 +592,10 @@ public class LinkedRemoteFile
 	 */
 	public long getCheckSum() throws NoAvailableSlaveException {
 		if (_checkSum == 0 && _length != 0) {
-				_checkSum = getCheckSumFromSlave();
-				if (_checkSum == 0) throw new NoAvailableSlaveException("Could not find a slave to check crc of " + getPath());
+			_checkSum = getCheckSumFromSlave();
+			if (_checkSum == 0)
+				throw new NoAvailableSlaveException(
+					"Could not find a slave to check crc of " + getPath());
 		}
 		return _checkSum;
 	}
@@ -608,7 +615,9 @@ public class LinkedRemoteFile
 	 */
 	public long getCheckSumFromSlave() {
 		try {
-			for (Iterator iter = getAvailableSlaves().iterator(); iter.hasNext();) {
+			for (Iterator iter = getAvailableSlaves().iterator();
+				iter.hasNext();
+				) {
 				RemoteSlave slave = (RemoteSlave) iter.next();
 				try {
 					_checkSum = slave.getSlave().checkSum(getPath());
@@ -645,19 +654,20 @@ public class LinkedRemoteFile
 	 */
 	public LinkedRemoteFileInterface getFile(String fileName)
 		throws FileNotFoundException {
-		return getFile(fileName, false);
+		LinkedRemoteFileInterface file = getFileDeleted(fileName);
+		if (file.isDeleted())
+			throw new QueuedDeletionException("File is queued for deletion");
+		return file;
 	}
 
-	public LinkedRemoteFileInterface getFile(
-		String fileName,
-		boolean includeDeleted)
+	public LinkedRemoteFileInterface getFileDeleted(
+		String fileName)
 		throws FileNotFoundException {
 		LinkedRemoteFileInterface file =
 			(LinkedRemoteFileInterface) _files.get(fileName);
 		if (file == null)
-			throw new FileNotFoundException("No such file or directory: "+fileName);
-		if (!includeDeleted && file.isDeleted())
-			throw new FileNotFoundException("File is queued for deletion");
+			throw new FileNotFoundException(
+				"No such file or directory: " + fileName);
 		return file;
 	}
 
@@ -735,7 +745,7 @@ public class LinkedRemoteFile
 		LinkedRemoteFile oldestFile = null;
 		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			if (oldestTime > file.lastModified()) {
+			if (oldestTime < file.lastModified()) {
 				oldestFile = file;
 				oldestTime = oldestFile.lastModified();
 			}
@@ -798,7 +808,9 @@ public class LinkedRemoteFile
 					_ftpConfig
 						.getSlaveManager()
 						.getSlaveSelectionManager()
-						.getASlaveForMaster(this, _ftpConfig);
+						.getASlaveForMaster(
+						this,
+						_ftpConfig);
 				try {
 					sfvFile = rslave.getSlave().getSFVFile(getPath());
 					sfvFile.setCompanion(this);
@@ -1026,9 +1038,8 @@ public class LinkedRemoteFile
 			LinkedRemoteFile nextFile;
 			try {
 				nextFile =
-					(LinkedRemoteFile) currFile.getFile(
-						currFileName,
-						includeDeleted);
+					(LinkedRemoteFile) currFile.getFileDeleted(
+						currFileName);
 			} catch (FileNotFoundException ex) {
 				StringBuffer remaining = new StringBuffer(currFileName);
 				if (st.hasMoreElements()) {
@@ -1120,9 +1131,19 @@ public class LinkedRemoteFile
 	 *            name argument to LinkedRemoteFile constructor
 	 */
 	private LinkedRemoteFile putFile(RemoteFileInterface file, String toName) {
-		if (_files.containsKey(toName))
-			throw new IllegalStateException(
-				"Don't overwrite! " + getPath() + " " + toName);
+		if (_files.containsKey(toName)) {
+			if (((LinkedRemoteFileInterface) _files.get(toName)).isDeleted()) {
+				throw new IllegalStateException(
+					"Don't overwrite! "
+						+ getPath()
+						+ " "
+						+ toName
+						+ " (is queued for deletion)");
+			} else {
+				throw new IllegalStateException(
+					"Don't overwrite! " + getPath() + " " + toName);
+			}
+		}
 		//validate
 		if (file.isFile()) {
 			assert file.getSlaves() != null : file.toString();
@@ -1595,7 +1616,7 @@ public class LinkedRemoteFile
 		if (isFile()) {
 			ret.append("xfertime:" + _xfertime + ",");
 		}
-		if (this.isDeleted())
+		if (isDeleted())
 			ret.append("deleted,");
 		if (isLink())
 			ret.append("link:" + getLinkPath() + ",");

@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import org.drftpd.plugins.SiteBot;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
@@ -30,7 +31,6 @@ import org.tanesha.replacer.SimplePrintf;
 import f00f.net.irc.martyr.IRCConnection;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
-import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandHandler;
@@ -40,7 +40,7 @@ import net.sf.drftpd.master.command.UnhandledCommandException;
 
 /**
  * @author mog
- * @version $Id: Textoutput.java,v 1.8 2004/03/01 22:31:38 zubov Exp $
+ * @version $Id: Textoutput.java,v 1.9 2004/03/26 00:16:33 mog Exp $
  */
 public class Textoutput implements CommandHandler {
 
@@ -65,7 +65,7 @@ public class Textoutput implements CommandHandler {
 						new FileInputStream("text/" + file + ".txt")));
 			while (fileReader.ready()) {
 				String line = fileReader.readLine();
-				ReplacerEnvironment env = new ReplacerEnvironment(IRCListener.GLOBAL_ENV);
+				ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 				try {
 					conn.sendCommand(new MessageCommand(destination,SimplePrintf.jprintf(line,env)));
 				} catch (FormatterException e1) {

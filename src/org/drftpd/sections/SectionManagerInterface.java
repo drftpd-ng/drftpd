@@ -24,10 +24,20 @@ import net.sf.drftpd.master.ConnectionManager;
 
 /**
  * @author mog
- * @version $Id: SectionManagerInterface.java,v 1.2 2004/03/01 00:21:09 mog Exp $
+ * @version $Id: SectionManagerInterface.java,v 1.3 2004/03/26 00:16:54 mog Exp $
  */
 public interface SectionManagerInterface {
 	public ConnectionManager getConnectionManager();
-	public SectionInterface lookup(String string);
-	public Collection getSections(); 
+
+	/**
+	 * Return the section that path is in.
+	 * @param path the path to look up the section for.
+	 */
+	public SectionInterface lookup(String path);
+	public Collection getSections();
+	
+	/**
+	 * getSectionByName()
+	 */
+	public SectionInterface getSection(String string); 
 }

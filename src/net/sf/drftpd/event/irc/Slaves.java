@@ -29,6 +29,7 @@ import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.plugins.SiteBot;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import f00f.net.irc.martyr.GenericAutoService;
@@ -38,39 +39,36 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Slaves.java,v 1.4 2004/03/21 06:20:54 zubov Exp $
+ * @version $Id: Slaves.java,v 1.5 2004/03/26 00:16:32 mog Exp $
  */
 public class Slaves extends GenericAutoService implements IRCPluginInterface {
 
 	private static final Logger logger = Logger.getLogger(Slaves.class);
 
-	private IRCListener _listener;
-	
-	public String getCommands() {
-		return "!slaves";
-	}
+	private SiteBot _listener;
 
-	public Slaves(IRCListener listener) {
+	public Slaves(SiteBot listener) {
 		super(listener.getIRCConnection());
 		_listener = listener;
 	}
 
-	private void fillEnvSpace(ReplacerEnvironment env, SlaveStatus status) {
-		_listener.fillEnvSpace(env, status);
+	public String getCommands() {
+		return "!slaves";
 	}
 
 	private ConnectionManager getConnectionManager() {
 		return _listener.getConnectionManager();
 	}
 
-	private void say(String string) {
-		_listener.say(string);
-	}
-
 	protected void updateCommand(InCommand inCommand) {
-		if (!(inCommand instanceof MessageCommand)
-			|| !((MessageCommand) inCommand).getMessage().equals("!slaves"))
+		if (!(inCommand instanceof MessageCommand))
 			return;
+		MessageCommand msgc = (MessageCommand) inCommand;
+		if (!((MessageCommand) inCommand).getMessage().equals("!slaves"))
+			return;
+		if (msgc.isPrivateToUs(_listener.getClientState()))
+			return;
+		String chan = msgc.getDest();
 
 		for (Iterator iter =
 			getConnectionManager().getSlaveManager().getSlaves().iterator();
@@ -80,7 +78,7 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 			String statusString;
 
 			ReplacerEnvironment env =
-				new ReplacerEnvironment(IRCListener.GLOBAL_ENV);
+				new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			env.add("slave", rslave.getName());
 
 			try {
@@ -88,7 +86,9 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 				try {
 					status = rslave.getSlave().getSlaveStatus();
 				} catch (SlaveUnavailableException e1) {
-					say(
+					String chan1 = chan;
+					_listener.sayChannel(
+						chan1,
 						ReplacerUtils.jprintf(
 							"slaves.offline",
 							env,
@@ -114,8 +114,10 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 				env.add(
 					"throughputdown",
 					Bytes.formatBytes(status.getThroughputSending()));
+				ReplacerEnvironment env1 = env;
+				SlaveStatus status1 = status;
 
-				fillEnvSpace(env, status);
+				_listener.fillEnvSpace(env1, status1);
 
 				statusString =
 					ReplacerUtils.jprintf("slaves", env, Slaves.class);
@@ -129,7 +131,9 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 				rslave.handleRemoteException(e);
 				statusString = "offline";
 			}
-			say(statusString);
+			String chan1 = chan;
+			String string = statusString;
+			_listener.sayChannel(chan1, string);
 		}
 
 	}

@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import net.sf.drftpd.Bytes;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMask;
 import net.sf.drftpd.event.UserEvent;
@@ -41,7 +42,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.42 2004/03/14 13:11:16 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.43 2004/03/26 00:16:33 mog Exp $
  */
 public abstract class AbstractUser implements User {
 	private static final Logger logger = Logger.getLogger(AbstractUser.class);
@@ -104,7 +105,7 @@ public abstract class AbstractUser implements User {
 	protected float ratio = 3.0F;
 	protected int requests;
 	protected int requestsFilled;
-	protected String tagline;
+	protected String tagline = "";
 	protected int timesNuked;
 
 	protected long uploadedBytes;
@@ -611,6 +612,15 @@ public abstract class AbstractUser implements User {
 	}
 
 	private void resetWeek(ConnectionManager cm, Date resetDate) {
+		logger.info(
+			"Reset weekly stats for "
+				+ getUsername()
+				+ "(was "
+				+ Bytes.formatBytes(uploadedBytesWeek)
+				+ " UP and "
+				+ Bytes.formatBytes(downloadedBytesWeek)
+				+ " DOWN");
+
 		cm.dispatchFtpEvent(
 			new UserEvent(this, "RESETWEEK", resetDate.getTime()));
 
@@ -625,7 +635,6 @@ public abstract class AbstractUser implements User {
 		if (getWeeklyAllotment() > 0) {
 			setCredits(getWeeklyAllotment());
 		}
-		logger.info("Reset weekly stats for " + getUsername());
 	}
 
 	public void setComment(String comment) {

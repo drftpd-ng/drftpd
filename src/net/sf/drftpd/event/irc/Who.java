@@ -31,6 +31,7 @@ import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
+import org.drftpd.plugins.SiteBot;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
@@ -43,14 +44,14 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Who.java,v 1.5 2004/03/21 06:20:54 zubov Exp $
+ * @version $Id: Who.java,v 1.6 2004/03/26 00:16:32 mog Exp $
  */
 public class Who extends GenericAutoService implements IRCPluginInterface {
 	private static final Logger logger = Logger.getLogger(Who.class);
 
-	private IRCListener _listener;
+	private SiteBot _listener;
 
-	public Who(IRCListener listener) {
+	public Who(SiteBot listener) {
 		super(listener.getIRCConnection());
 		_listener = listener;
 	}
@@ -67,16 +68,13 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
 		return _listener.getConnectionManager();
 	}
 
-	private void say(String string) {
-		_listener.say(string);
-	}
-
 	protected void updateCommand(InCommand inCommand) {
 		if (!(inCommand instanceof MessageCommand))
 			return;
 		MessageCommand msgc = (MessageCommand) inCommand;
-
+		if(msgc.isPrivateToUs(_listener.getClientState())) return;
 		String cmd = msgc.getMessage();
+		
 		boolean up, dn, idle;
 		if (cmd.equals("!who")) {
 			up = dn = idle = true;
@@ -100,7 +98,7 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
 				ReplacerUtils.finalFormat(Who.class, "who.idle");
 
 			ReplacerEnvironment env =
-				new ReplacerEnvironment(IRCListener.GLOBAL_ENV);
+				new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			ArrayList conns =
 				new ArrayList(getConnectionManager().getConnections());
 			int i = 0;
@@ -124,7 +122,7 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
 
 				if (!conn.getDataConnectionHandler().isTransfering()) {
 					if (idle) {
-						say(SimplePrintf.jprintf(formatidle, env));
+						_listener.sayChannel(msgc.getDest(), SimplePrintf.jprintf(formatidle, env));
 					}
 				} else {
 					try {
@@ -155,7 +153,7 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
 					if (conn.getTransferDirection()
 						== Transfer.TRANSFER_RECEIVING_UPLOAD) {
 						if (up) {
-							say(SimplePrintf.jprintf(formatup, env));
+							_listener.sayChannel(msgc.getDest(), SimplePrintf.jprintf(formatup, env));
 							i++;
 						}
 
@@ -163,7 +161,7 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
 						conn.getTransferDirection()
 							== Transfer.TRANSFER_SENDING_DOWNLOAD) {
 						if (dn) {
-							say(SimplePrintf.jprintf(formatdown, env));
+							_listener.sayChannel(msgc.getDest(), SimplePrintf.jprintf(formatdown, env));
 							i++;
 						}
 					}

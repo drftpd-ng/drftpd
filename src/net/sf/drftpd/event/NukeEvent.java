@@ -21,15 +21,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.master.usermanager.User;
 
+import org.drftpd.plugins.SiteBot;
 import org.jdom.Element;
 
 /**
  * @author mog
  *
- * @version $Id: NukeEvent.java,v 1.19 2004/02/10 00:03:05 mog Exp $
+ * @version $Id: NukeEvent.java,v 1.20 2004/03/26 00:16:32 mog Exp $
  */
 public class NukeEvent extends UserEvent {
 	private int multiplier;
@@ -108,7 +108,7 @@ public class NukeEvent extends UserEvent {
 	 * @see net.sf.drftpd.Nukee
 	 */
 	public List getNukees2() {
-		return IRCListener.map2nukees(nukees);
+		return SiteBot.map2nukees(nukees);
 	}
 
 	public String getPath() {

@@ -30,12 +30,11 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManagerImpl;
-import net.sf.drftpd.master.config.FtpConfig;
 import junit.framework.TestCase;
 
-/*
+/**
  * @author zubov
- * @version $Id
+ * @version $Id: JobManagerTest.java,v 1.3 2004/03/26 00:16:35 mog Exp $
  */
 public class JobManagerTest extends TestCase {
 
@@ -103,7 +102,6 @@ public class JobManagerTest extends TestCase {
 		cm = new CM(p);
 		cm.loadJobManager();
 		jm = cm.getJobManager();
-		FtpConfig cfg = new FtpConfig(p,"drftpd.conf",cm);
 		file = new LinkedRemoteFilePath("/path/file1.txt");
 		file.addSlave(rslave1);
 		root = new LinkedRemoteFilePath("/path/file2.txt");

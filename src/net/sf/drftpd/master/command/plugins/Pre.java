@@ -40,11 +40,12 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.sections.SectionInterface;
 
 /**
  * @author mog
  *
- * @version $Id: Pre.java,v 1.11 2004/02/23 01:14:37 mog Exp $
+ * @version $Id: Pre.java,v 1.12 2004/03/26 00:16:33 mog Exp $
  */
 public class Pre implements CommandHandler {
 
@@ -60,30 +61,33 @@ public class Pre implements CommandHandler {
 		FtpRequest request = conn.getRequest();
 		if (!"SITE PRE".equals(request.getCommand()))
 			throw UnhandledCommandException.create(Pre.class, request);
-		if (!request.hasArgument()) {
+		if (!request.hasArgument())
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-		}
+
 		String args[] = request.getArgument().split(" ");
 		if (args.length != 2) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
-		LinkedRemoteFileInterface section;
-		try {
-			section = conn.getCurrentDirectory().getRoot().lookupFile(args[1]);
-		} catch (FileNotFoundException ex) {
-			return new FtpReply(
-				200,
-				"Release dir not found: " + ex.getMessage());
-		}
-
-		LinkedRemoteFile preDir;
+//		LinkedRemoteFileInterface section;
+//		try {
+//			section = conn.getCurrentDirectory().getRoot().lookupFile(args[1]);
+//		} catch (FileNotFoundException ex) {
+//			return new FtpReply(
+//				200,
+//				"Release dir not found: " + ex.getMessage());
+//		}
+		SectionInterface section = conn.getConnectionManager().getSectionManager().getSection(args[1]);
+		
+		
+		LinkedRemoteFileInterface preDir;
 		try {
 			preDir = conn.getCurrentDirectory().lookupFile(args[0]);
 		} catch (FileNotFoundException e) {
 			return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 		}
-		LinkedRemoteFileInterface path = preDir;
-		if (!conn.getConfig().checkPathPermission("pre", conn.getUserNull(), path)) {
+		if (!conn
+			.getConfig()
+			.checkPathPermission("pre", conn.getUserNull(), preDir)) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 
@@ -139,7 +143,8 @@ public class Pre implements CommandHandler {
 		LinkedRemoteFileInterface preDir,
 		Hashtable awards) {
 		for (Iterator iter = preDir.getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
+			LinkedRemoteFileInterface file =
+				(LinkedRemoteFileInterface) iter.next();
 			User owner;
 			try {
 				owner = conn.getUserManager().getUserByName(file.getUsername());

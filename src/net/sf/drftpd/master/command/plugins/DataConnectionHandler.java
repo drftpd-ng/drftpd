@@ -69,7 +69,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.48 2004/03/01 00:21:08 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.49 2004/03/26 00:16:33 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -94,9 +94,9 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private ServerSocket _serverSocket;
 	private Transfer _transfer;
 	private LinkedRemoteFile _transferFile;
-	protected boolean isPasv = false;
+	protected boolean _isPasv = false;
+	protected boolean _isPort = false;
 
-	protected boolean isPort = false;
 	private char type = 'A';
 	public DataConnectionHandler() {
 		super();
@@ -283,7 +283,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				//					new InetSocketAddress(
 				//						_serverSocket.getInetAddress(),
 				//						_serverSocket.getLocalPort());
-				isPasv = true;
+				_isPasv = true;
 			} catch (BindException ex) {
 				_serverSocket = null;
 				logger.warn("", ex);
@@ -299,7 +299,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 					new InetSocketAddress(
 						_preTransferRSlave.getInetAddress(),
 						_transfer.getLocalPort());
-				isPasv = true;
+				_isPasv = true;
 			} catch (RemoteException e) {
 				_preTransferRSlave.handleRemoteException(e);
 				return new FtpReply(450, "Remote error: " + e.getMessage());
@@ -413,7 +413,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			//out.write(ftpStatus.getResponse(552, request, user, null));
 		}
 
-		isPort = true;
+		_isPort = true;
 		_portAddress = new InetSocketAddress(clientAddr, clientPort);
 
 		if (portHostAddress.startsWith("127.")) {
@@ -806,7 +806,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				_serverSocket = null;
 			}
 		} else {
-			throw new IllegalStateException();
+			throw new IllegalStateException("Neither PASV nor PORT");
 		}
 		if (_encryptedDataChannel) {
 			SSLSocket ssldatasocket = (SSLSocket) dataSocket;
@@ -872,10 +872,10 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 * Guarantes pre transfer is set up correctly.
 	 */
 	public boolean isPasv() {
-		return isPasv;
+		return _isPasv;
 	}
 	public boolean isPort() {
-		return isPort;
+		return _isPort;
 	}
 	public boolean isPreTransfer() {
 		return _preTransfer || isPasv();
@@ -896,9 +896,9 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		if (_serverSocket != null) { //isPasv() && _preTransferRSlave == null
 			_portRange.releasePort(_serverSocket.getLocalPort());
 		}
-		isPasv = false;
+		_isPasv = false;
 		_serverSocket = null;
-		isPort = false;
+		_isPort = false;
 		_resumePosition = 0;
 	}
 

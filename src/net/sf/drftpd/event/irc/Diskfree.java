@@ -22,8 +22,8 @@ import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
+import org.drftpd.plugins.*;
 
-import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import f00f.net.irc.martyr.GenericCommandAutoService;
@@ -32,14 +32,14 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author zubov
- * @version $Id
+ * @version $Id: Diskfree.java,v 1.2 2004/03/26 00:16:32 mog Exp $
  */
 
 public class Diskfree
 	extends GenericCommandAutoService
 	implements IRCPluginInterface {
 
-	private IRCListener _listener;
+	private SiteBot _listener;
 
 	private static final Logger logger = Logger.getLogger(Diskfree.class);
 
@@ -47,27 +47,9 @@ public class Diskfree
 		return _listener.getConnectionManager();
 	}
 
-	private void say(String string) {
-		_listener.say(string);
-	}
-
-	private void fillEnvSpace(ReplacerEnvironment env, SlaveStatus status) {
-		_listener.fillEnvSpace(env, status);
-	}
-
-	public Diskfree(IRCListener listener) {
+	public Diskfree(SiteBot listener) {
 		super(listener.getIRCConnection());
 		_listener = listener;
-	}
-
-	private void updateDF(MessageCommand msgc) throws FormatterException {
-		SlaveStatus status =
-			getConnectionManager().getSlaveManager().getAllStatus();
-		ReplacerEnvironment env =
-			new ReplacerEnvironment(IRCListener.GLOBAL_ENV);
-
-		fillEnvSpace(env, status);
-		say(ReplacerUtils.jprintf("diskfree", env, IRCListener.class));
 	}
 
 	public String getCommands() {
@@ -75,22 +57,21 @@ public class Diskfree
 	}
 
 	protected void updateCommand(InCommand command) {
-		try {
-			if (command instanceof MessageCommand) {
-				MessageCommand msgc = (MessageCommand) command;
-				String msg = msgc.getMessage();
-				//only accept messages from _channelName
-				if (msg.equals("!df")) {
-					try {
-						updateDF(msgc);
-					} catch (FormatterException e) {
-						say("[df] FormatterException: " + e.getMessage());
-					}
-				}
-			}
-		} catch (Exception e) {
-			logger.debug("", e);
-		}
+		if (!(command instanceof MessageCommand))
+			return;
+		MessageCommand msgc = (MessageCommand) command;
+		String msg = msgc.getMessage();
+		if (msgc.isPrivateToUs(_listener.getClientState()))
+			return;
+		if (msg.equals("!df")) {
+			SlaveStatus status =
+				getConnectionManager().getSlaveManager().getAllStatus();
+			ReplacerEnvironment env =
+				new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+			ReplacerEnvironment env1 = env;
 
+			_listener.fillEnvSpace(env1, status);
+			_listener.sayChannel(msgc.getDest(), ReplacerUtils.jprintf("diskfree", env, SiteBot.class));
+		}
 	}
 }

@@ -42,7 +42,7 @@ import JSX.ObjIn;
 
 /**
  * @author mog
- * @version $Id: JSXUserManager.java,v 1.28 2004/03/14 13:11:16 mog Exp $
+ * @version $Id: JSXUserManager.java,v 1.29 2004/03/26 00:16:34 mog Exp $
  */
 public class JSXUserManager implements UserManager {
 	private ConnectionManager _connManager;
@@ -212,7 +212,7 @@ public class JSXUserManager implements UserManager {
 	}
 
 	public void saveAll() throws UserFileException {
-		logger.log(Level.INFO, "Saving userfiles: " + users);
+		logger.log(Level.INFO, "Saving userfiles");
 		for (Iterator iter = users.values().iterator(); iter.hasNext();) {
 			Object obj = iter.next();
 			assert obj instanceof JSXUser;

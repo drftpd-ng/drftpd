@@ -127,9 +127,8 @@ public abstract class AbstractLinkedRemoteFile
 		throw new UnsupportedOperationException();
 	}
 
-	public LinkedRemoteFileInterface getFile(
-		String fileName,
-		boolean includeDeleted)
+	public LinkedRemoteFileInterface getFileDeleted(
+		String fileName)
 		throws FileNotFoundException {
 		throw new UnsupportedOperationException();
 	}

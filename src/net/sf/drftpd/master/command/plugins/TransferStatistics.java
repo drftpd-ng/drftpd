@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.Bytes;
-import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.event.listeners.Trial;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -44,10 +43,11 @@ import net.sf.drftpd.util.UserComparator;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.plugins.SiteBot;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
- * @version $Id: TransferStatistics.java,v 1.17 2004/03/15 02:50:25 zubov Exp $
+ * @version $Id: TransferStatistics.java,v 1.18 2004/03/26 00:16:33 mog Exp $
  */
 public class TransferStatistics implements CommandHandler {
 
@@ -275,7 +275,7 @@ public class TransferStatistics implements CommandHandler {
 			if (++i > count)
 				break;
 			User user = (User) iter.next();
-			ReplacerEnvironment env = new ReplacerEnvironment(IRCListener.GLOBAL_ENV);
+			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			env.add("pos", "" + i);
 
 			env.add(

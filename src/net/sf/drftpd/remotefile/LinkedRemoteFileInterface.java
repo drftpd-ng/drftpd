@@ -88,9 +88,8 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 	 */
 	public abstract LinkedRemoteFileInterface getFile(String fileName)
 		throws FileNotFoundException;
-	public abstract LinkedRemoteFileInterface getFile(
-		String fileName,
-		boolean includeDeleted)
+	public abstract LinkedRemoteFileInterface getFileDeleted(
+		String fileName)
 		throws FileNotFoundException;
 
 	/**

@@ -42,7 +42,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.43 2004/03/01 04:21:04 zubov Exp $
+ * @version $Id: FtpConfig.java,v 1.44 2004/03/26 00:16:33 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -162,14 +162,15 @@ public class FtpConfig {
 		User fromUser,
 		LinkedRemoteFileInterface path,
 		boolean defaults) {
-		Iterator iter = ((Collection) _patternPaths.get(key)).iterator();
+		Collection coll = ((Collection) _patternPaths.get(key));
+		if(coll == null) return defaults;
+		Iterator iter = coll.iterator();
 		while (iter.hasNext()) {
 			PathPermission perm = (PathPermission) iter.next();
 			if (perm.checkPath(path)) {
 				return perm.check(fromUser);
 			}
 		}
-		//return false;
 		return defaults;
 	}
 
@@ -187,12 +188,7 @@ public class FtpConfig {
 	public boolean checkRenameOwn(User fromUser, LinkedRemoteFileInterface path) {
 		return checkPathPermission("renameown", fromUser, path);
 	}
-	/**
-	 * @deprecated non-core
-	 */
-	public boolean checkRequest(User fromUser, LinkedRemoteFileInterface path) {
-		return checkPathPermission("request", fromUser, path);
-	}
+
 	/**
 	 * @return true if fromUser is allowed to upload in directory path
 	 */

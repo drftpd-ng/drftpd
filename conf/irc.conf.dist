@@ -1,13 +1,20 @@
 irc.server=irc.csbnet.se
 irc.port=6667
 irc.ssl=false
-irc.channel=#drftpd-test
-irc.key=
+irc.channel.1=#drftpd-test
+#irc.channel.2=#drftpd-test2
+#irc.channel.2.key=
 irc.nick=drftpd
 irc.name=drftpd
 irc.user=drftpd
 
 irc.enable.announce=true
+
+##Send different sections to different channels.
+#irc.section.1=CHAN1
+#irc.section.1.channel=#drftpd-test
+#irc.section.2=CHAN2
+#irc.section.2.channel=#drftpd-test2
 
 irc.plugins.1=net.sf.drftpd.event.irc.Invite
 irc.plugins.2=net.sf.drftpd.event.irc.Who

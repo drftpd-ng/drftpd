@@ -21,7 +21,6 @@ import java.util.Calendar;
 import java.util.Iterator;
 
 import net.sf.drftpd.Bytes;
-import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.event.listeners.Trial.Limit;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -29,6 +28,7 @@ import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 
 import org.apache.log4j.Logger;
+import org.drftpd.plugins.SiteBot;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import f00f.net.irc.martyr.GenericCommandAutoService;
@@ -39,9 +39,9 @@ class TrialSiteBot extends GenericCommandAutoService {
 	private static final Logger logger = Logger.getLogger(TrialSiteBot.class);
 	private final Trial _trial;
 
-	private IRCListener _irc;
+	private SiteBot _irc;
 
-	protected TrialSiteBot(Trial trial, IRCListener irc) {
+	protected TrialSiteBot(Trial trial, SiteBot irc) {
 		super(irc.getIRCConnection());
 		_trial = trial;
 		_irc = irc;
@@ -54,7 +54,7 @@ class TrialSiteBot extends GenericCommandAutoService {
 		long bytesleft,
 		boolean unique) {
 
-		ReplacerEnvironment env = new ReplacerEnvironment(IRCListener.GLOBAL_ENV);
+		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		env.add("user", user.getUsername());
 		if (limit != null) {
 			env.add("period", Trial.getPeriodName(limit.getPeriod()));
@@ -85,101 +85,86 @@ class TrialSiteBot extends GenericCommandAutoService {
 			user);
 	}
 	protected void updateCommand(InCommand command) {
+		if (!(command instanceof MessageCommand))
+			return;
+		MessageCommand msgc = (MessageCommand) command;
+		if (msgc.isPrivateToUs(_irc.getClientState()))
+			return;
+		String msg = msgc.getMessage();
+		if (!msg.startsWith("!passed "))
+			return;
+
+		String username = msg.substring("!passed ".length());
+		User user;
 		try {
-			if (!(command instanceof MessageCommand))
-				return;
-			MessageCommand msgc = (MessageCommand) command;
-			String msg = msgc.getMessage();
-			if (!msg.startsWith("!passed ")) {
-				return;
-			}
-			String username = msg.substring("!passed ".length());
-			User user;
-			try {
-				user =
-					_trial
-						.getConnectionManager()
-						.getUserManager()
-						.getUserByName(
-						username);
-			} catch (NoSuchUserException e) {
-				_irc.say("[passed] No such user: " + username);
-				logger.info("", e);
-				return;
-			} catch (UserFileException e) {
-				logger.warn("", e);
-				return;
-			}
-			int i = 0;
-			for (Iterator iter = _trial.getLimits().iterator();
-				iter.hasNext();
-				) {
-				Limit limit = (Limit) iter.next();
-				if (limit.getPerm().check(user)) {
-					i++;
+			user =
+				_trial.getConnectionManager().getUserManager().getUserByName(
+					username);
+		} catch (NoSuchUserException e) {
+			_irc.say(null, "[passed] No such user: " + username);
+			logger.info("", e);
+			return;
+		} catch (UserFileException e) {
+			logger.warn("", e);
+			return;
+		}
+		int i = 0;
+		for (Iterator iter = _trial.getLimits().iterator(); iter.hasNext();) {
+			Limit limit = (Limit) iter.next();
+			if (limit.getPerm().check(user)) {
+				i++;
 
-					Calendar endofbonus =
-						Trial.getCalendarForEndOfBonus(user, limit.getPeriod());
-					if (System.currentTimeMillis()
-						<= endofbonus.getTimeInMillis()) {
-						//in bonus or unique period
-						long bytesleft =
-							limit.getBytes() - user.getUploadedBytes();
+				Calendar endofbonus =
+					Trial.getCalendarForEndOfBonus(user, limit.getPeriod());
+				if (System.currentTimeMillis()
+					<= endofbonus.getTimeInMillis()) {
+					//in bonus or unique period
+					long bytesleft = limit.getBytes() - user.getUploadedBytes();
 
-						if (bytesleft <= 0) {
-							//in bonus or passed
-							_irc.say(
-								jprintf(
-									"passedunique",
-									user,
-									limit,
-									bytesleft,
-									true));
-						} else {
-							//in unique period
-							_irc.say(
-								jprintf(
-									"trialunique",
-									user,
-									limit,
-									bytesleft,
-									true));
-						}
+					if (bytesleft <= 0) {
+						//in bonus or passed
+						_irc.sayChannel(
+							msgc.getDest(),
+							jprintf(
+								"passedunique",
+								user,
+								limit,
+								bytesleft,
+								true));
 					} else {
-						//plain trial
-						long bytesleft =
-							limit.getBytes()
-								- Trial.getUploadedBytesForPeriod(
-									user,
-									limit.getPeriod());
-
-						if (bytesleft <= 0) {
-							_irc.say(
-								jprintf(
-									"passed",
-									user,
-									limit,
-									bytesleft,
-									false));
-						} else {
-							_irc.say(
-								jprintf(
-									"trial",
-									user,
-									limit,
-									bytesleft,
-									false));
-						}
-
+						//in unique period
+						_irc.sayChannel(
+							msgc.getDest(),
+							jprintf(
+								"trialunique",
+								user,
+								limit,
+								bytesleft,
+								true));
 					}
+				} else {
+					//plain trial
+					long bytesleft =
+						limit.getBytes()
+							- Trial.getUploadedBytesForPeriod(
+								user,
+								limit.getPeriod());
+
+					if (bytesleft <= 0) {
+						_irc.sayChannel(
+							msgc.getDest(),
+							jprintf("passed", user, limit, bytesleft, false));
+					} else {
+						_irc.sayChannel(
+							msgc.getDest(),
+							jprintf("trial", user, limit, bytesleft, false));
+					}
+
 				}
 			}
-			if (i == 0) {
-				_irc.say(jprintf("exempt", user, null, 0, false));
-			}
-		} catch (RuntimeException e) {
-			logger.error("", e);
 		}
-
+		if (i == 0) {
+			_irc.sayChannel(msgc.getDest(), jprintf("exempt", user, null, 0, false));
+		}
 	}
 }

@@ -23,7 +23,7 @@ master.usermanager=net.sf.drftpd.master.usermanager.jsx.JSXUserManager
 use.ident=true
 
 #loaded plugins must use in sequential numbering
-#plugins.1=net.sf.drftpd.event.irc.IRCListener
+#plugins.1=org.drftpd.plugins.SiteBot
 #plugins.2=net.sf.drftpd.event.listeners.Trial
 #plugins.3=net.sf.drftpd.event.listeners.PreTime
 #plugins.4=net.sf.drftpd.event.listeners.Mirror

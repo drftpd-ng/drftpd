@@ -30,7 +30,6 @@ import net.sf.drftpd.Checksum;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
-import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
@@ -50,13 +49,14 @@ import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.plugins.SiteBot;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.22 2004/03/06 00:39:46 zubov Exp $
+ * @version $Id: Dir.java,v 1.23 2004/03/26 00:16:33 mog Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
 	private final static SimpleDateFormat DATE_FMT =
@@ -144,7 +144,7 @@ public class Dir implements CommandHandler, Cloneable {
 			newCurrentDirectory);
 		try {
 			Collection uploaders =
-				IRCListener.UserSort(newCurrentDirectory.getFiles(), "bytes", "high");
+				SiteBot.userSort(newCurrentDirectory.getFiles(), "bytes", "high");
 
 			ReplacerFormat format = null;
 			try {
@@ -520,9 +520,12 @@ public class Dir implements CommandHandler, Cloneable {
 
 		NonExistingFile ret =
 			conn.getCurrentDirectory().lookupNonExistingFile(
-				request.getArgument());
+				request.getArgument(), true);
 		LinkedRemoteFileInterface toDir = ret.getFile();
 		String name = ret.getPath();
+		if(toDir.isDeleted()) {
+			return new FtpReply(530, "Target file has been queued for deletion, can't overwrite");
+		}
 
 		LinkedRemoteFileInterface fromFile = _renameFrom;
 		conn.resetState();

@@ -33,7 +33,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: JDOMRemoteFile.java,v 1.27 2004/02/10 00:03:15 mog Exp $
+ * @version $Id: JDOMRemoteFile.java,v 1.28 2004/03/26 00:16:35 mog Exp $
  */
 public class JDOMRemoteFile implements RemoteFileInterface {
 
@@ -203,7 +203,7 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 		ret.append("[" + getClass().getName() + "[");
 		//ret.append(slaves);
 		if (isDirectory())
-			ret.append("[directory: " + listFiles().length + "]");
+			ret.append("[directory: " + getFiles().size()+ "]");
 		if (isFile())
 			ret.append("[file: true]");
 		//ret.append("isFile(): " + isFile() + " ");

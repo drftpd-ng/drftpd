@@ -36,7 +36,7 @@ import JSX.ObjOut;
 
 /**
  * @author mog
- * @version $Id: JSXUser.java,v 1.11 2004/02/10 00:03:09 mog Exp $
+ * @version $Id: JSXUser.java,v 1.12 2004/03/26 00:16:34 mog Exp $
  */
 public class JSXUser
 	extends AbstractUser
@@ -138,6 +138,7 @@ public class JSXUser
 		stream.defaultReadObject();
 		if(groups == null) groups = new ArrayList();
 		if(ipMasks == null) ipMasks = new ArrayList();
+		if(tagline == null) tagline = "";
 	}
 
 }

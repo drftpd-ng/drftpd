@@ -29,42 +29,40 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.Logger;
+import org.drftpd.plugins.SiteBot;
 
 import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
- * @version $Id: PreTime.java,v 1.15 2004/02/10 00:03:06 mog Exp $
+ * @version $Id: PreTime.java,v 1.16 2004/03/26 00:16:33 mog Exp $
  */
 public class PreTime implements FtpListener {
 
-	public static class SiteBot extends GenericCommandAutoService {
+	public static class PreSiteBot extends GenericCommandAutoService {
 
-		//private static final Logger logger = Logger.getLogger(SiteBot.class);
+		private SiteBot _irc;
 
-		private IRCListener irc;
+		private PreTime _parent;
 
-		private PreTime parent;
-
-		protected SiteBot(IRCListener irc, PreTime parent) {
+		protected PreSiteBot(SiteBot irc, PreTime parent) {
 			super(irc.getIRCConnection());
-			this.irc = irc;
-			this.parent = parent;
+			_irc = irc;
+			_parent = parent;
 		}
 
 		protected void updateCommand(InCommand command) {
 			if (!(command instanceof MessageCommand))
 				return;
 			MessageCommand msgc = (MessageCommand) command;
-			if (msgc.getSource().getNick().equals(parent.getPreBot())) {
+			if (msgc.getSource().getNick().equals(_parent.getPreBot())) {
 				if (msgc
-					.isPrivateToUs(irc.getIRCConnection().getClientState())) {
+					.isPrivateToUs(_irc.getIRCConnection().getClientState())) {
 					String msg[] = msgc.getMessage().split(" ");
 					if (msg[0].equals("!preds")) {
 						String releaseName = msg[1];
@@ -89,7 +87,8 @@ public class PreTime implements FtpListener {
 							time = time + minutes + " minutes ";
 						if (seconds != 0)
 							time = time + seconds + " seconds ";
-						irc.say(time + "ago");
+						//TODO send to originating destination channel, must store a cookie either locally or in message
+						_irc.say(null, time + "ago");
 					}
 				}
 			}
@@ -97,8 +96,8 @@ public class PreTime implements FtpListener {
 	}
 	private static final Logger logger = Logger.getLogger(PreTime.class);
 	private ConnectionManager _cm;
-	private IRCListener _irc;
-	private SiteBot _siteBot;
+	private SiteBot _irc;
+	private PreSiteBot _siteBot;
 	private ArrayList datedDirs;
 	private String prebot;
 
@@ -190,8 +189,8 @@ public class PreTime implements FtpListener {
 			_siteBot.disable();
 		}
 		try {
-			_irc = (IRCListener) _cm.getFtpListener(IRCListener.class);
-			_siteBot = new SiteBot(_irc, this);
+			_irc = (SiteBot) _cm.getFtpListener(PreSiteBot.class);
+			_siteBot = new PreSiteBot(_irc, this);
 		} catch (ObjectNotFoundException e1) {
 			logger.warn("Error loading sitebot component", e1);
 		}

@@ -32,9 +32,33 @@ import org.drftpd.sections.SectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SectionManager.java,v 1.3 2004/03/11 22:51:10 mog Exp $
+ * @version $Id: SectionManager.java,v 1.4 2004/03/26 00:16:55 mog Exp $
  */
 public class SectionManager implements SectionManagerInterface {
+
+	public class Section implements SectionInterface {
+		private LinkedRemoteFileInterface _lrf;
+
+		public Section(LinkedRemoteFileInterface lrf) {
+			_lrf = lrf;
+		}
+
+		public LinkedRemoteFileInterface getFile() {
+			return _lrf;
+		}
+
+		public Collection getFiles() {
+			return Collections.singletonList(_lrf);
+		}
+
+		public String getName() {
+			return _lrf.getName();
+		}
+
+		public String getPath() {
+			return _lrf.getPath();
+		}
+	}
 
 	private ConnectionManager _cm;
 
@@ -46,10 +70,9 @@ public class SectionManager implements SectionManagerInterface {
 		return _cm;
 	}
 
-	public SectionInterface lookup(String string) {
-		StringTokenizer st = new StringTokenizer(string, "/");
+	public SectionInterface getSection(String string) {
 		try {
-			return new Section(_cm.getSlaveManager().getRoot().getFile(st.nextToken()));
+			return new Section(_cm.getSlaveManager().getRoot().getFile(string));
 		} catch (FileNotFoundException e) {
 			return new Section(_cm.getSlaveManager().getRoot());
 		}
@@ -68,27 +91,12 @@ public class SectionManager implements SectionManagerInterface {
 		return sections;
 	}
 
-	public class Section implements SectionInterface {
-		private LinkedRemoteFileInterface _lrf;
-
-		public Section(LinkedRemoteFileInterface lrf) {
-			_lrf = lrf;
-		}
-
-		public String getName() {
-			return _lrf.getName();
-		}
-
-		public LinkedRemoteFileInterface getFile() {
-			return _lrf;
-		}
-
-		public String getPath() {
-			return _lrf.getPath();
-		}
-
-		public Collection getFiles() {
-			return Collections.singletonList(_lrf);
+	public SectionInterface lookup(String string) {
+		StringTokenizer st = new StringTokenizer(string, "/");
+		try {
+			return new Section(_cm.getSlaveManager().getRoot().getFile(st.nextToken()));
+		} catch (FileNotFoundException e) {
+			return new Section(_cm.getSlaveManager().getRoot());
 		}
 	}
 }

@@ -17,9 +17,9 @@
  */
 package net.sf.drftpd.event.irc;
 
-/*
+/**
  * @author zubov
- * @version $Id
+ * @version $Id: IRCPluginInterface.java,v 1.2 2004/03/26 00:16:32 mog Exp $
  */
 public interface IRCPluginInterface {
 	public String getCommands();

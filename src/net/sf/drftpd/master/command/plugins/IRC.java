@@ -18,7 +18,6 @@
 package net.sf.drftpd.master.command.plugins;
 
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
@@ -29,10 +28,11 @@ import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 
 import org.apache.log4j.Logger;
+import org.drftpd.plugins.SiteBot;
 
 /**
  * @author mog
- * @version $Id: IRC.java,v 1.2 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: IRC.java,v 1.3 2004/03/26 00:16:33 mog Exp $
  */
 public class IRC implements CommandHandler {
 
@@ -51,11 +51,11 @@ public class IRC implements CommandHandler {
 		} catch (NoSuchUserException e1) {
 			throw new RuntimeException(e1);
 		}
-		IRCListener irc;
+		SiteBot irc;
 		try {
 			irc =
-				(IRCListener) conn.getConnectionManager().getFtpListener(
-					IRCListener.class);
+				(SiteBot) conn.getConnectionManager().getFtpListener(
+					SiteBot.class);
 		} catch (ObjectNotFoundException e) {
 			return new FtpReply(500, "IRCListener not loaded");
 		}
@@ -80,7 +80,7 @@ public class IRC implements CommandHandler {
 				return new FtpReply(500, e.getMessage());
 			}
 		} else if (req2.getCommand().equals("SAY")) {
-			irc.say(req2.getArgument());
+			irc.sayGlobal(req2.getArgument());
 			return new FtpReply(200, "Said: " + req2.getArgument());
 		}
 		return new FtpReply(501, conn.jprintf(IRC.class, "irc.usage"));

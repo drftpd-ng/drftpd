@@ -42,7 +42,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: MLST.java,v 1.10 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: MLST.java,v 1.11 2004/03/26 00:16:33 mog Exp $
  */
 public class MLST implements CommandHandler {
 
@@ -89,15 +89,16 @@ public class MLST implements CommandHandler {
 			}
 
 			out.print(FtpReply.RESPONSE_150_OK);
+			out.flush();
 			try {
 				Socket sock = dataConnHnd.getDataSocket(conn.getSocketFactory());
 				List files = ListUtils.list(dir, conn);
-				Writer out2 = new OutputStreamWriter(sock.getOutputStream());
+				Writer os = new OutputStreamWriter(sock.getOutputStream());
 				for (Iterator iter = files.iterator(); iter.hasNext();) {
 					RemoteFileInterface file = (RemoteFileInterface) iter.next();
-					out2.write(toMLST(file)+"\r\n");					
+					os.write(toMLST(file)+"\r\n");					
 				}
-				out2.close();
+				os.close();
 			} catch (IOException e1) {
 				logger.warn("", e1);
 				//425 Can't open data connection

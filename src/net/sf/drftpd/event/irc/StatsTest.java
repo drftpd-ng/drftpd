@@ -27,9 +27,9 @@ import net.sf.drftpd.master.usermanager.UserFileException;
 
 import junit.framework.TestCase;
 
-/*
+/**
  * @author zubov
- * @version $Id
+ * @version $Id: StatsTest.java,v 1.3 2004/03/26 00:16:32 mog Exp $
  */
 public class StatsTest extends TestCase {
 

@@ -17,23 +17,26 @@
  */
 package net.sf.drftpd.event.irc;
 
-import org.apache.log4j.Logger;
-
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.command.plugins.Textoutput;
+
+import org.apache.log4j.Logger;
+import org.drftpd.plugins.SiteBot;
+
 import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author zubov
+ * @version $Id: Affils.java,v 1.4 2004/03/26 00:16:32 mog Exp $
  */
 public class Affils extends GenericCommandAutoService implements IRCPluginInterface {
 
 	private ConnectionManager _cm;
 	private static final Logger logger = Logger.getLogger(Affils.class);
 
-	public Affils(IRCListener ircListener) {
+	public Affils(SiteBot ircListener) {
 		super(ircListener.getIRCConnection());
 		_cm = ircListener.getConnectionManager();
 	}
@@ -44,10 +47,10 @@ public class Affils extends GenericCommandAutoService implements IRCPluginInterf
 			String msg = msgc.getMessage();
 			if (msg.startsWith("!affils")) {
 				if (msgc.isPrivateToUs(getConnection().getClientState())) {
-					Textoutput.sendTextToIRC(
-						getConnection(),
-						msgc.getSource().getNick(),
-						"affils");
+//					Textoutput.sendTextToIRC(
+//						getConnection(),
+//						msgc.getSource().getNick(),
+//						"affils");
 				} else
 					Textoutput.sendTextToIRC(
 						getConnection(),

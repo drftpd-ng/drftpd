@@ -25,20 +25,20 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.drftpd.sections.*;
-import org.drftpd.sections.SectionInterface;
-
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.master.ConnectionManager;
 
+import org.drftpd.sections.SectionInterface;
+import org.drftpd.sections.SectionManagerInterface;
+
 /**
  * @author mog
- * @version $Id: SectionManager.java,v 1.2 2004/03/01 00:21:09 mog Exp $
+ * @version $Id: SectionManager.java,v 1.3 2004/03/26 00:16:55 mog Exp $
  */
 public class SectionManager implements SectionManagerInterface {
 	private static final Class[] CONSTRUCTOR_SIG =
 		new Class[] { SectionManager.class, int.class, Properties.class };
-	private PlainSection _emptySection;
+	private PlainSection _emptySection = new PlainSection(this, "", "/");
 	private ConnectionManager _mgr;
 	private Hashtable _sections = new Hashtable();
 	
@@ -49,6 +49,12 @@ public class SectionManager implements SectionManagerInterface {
 
 	public ConnectionManager getConnectionManager() {
 		return _mgr;
+	}
+
+	public SectionInterface getSection(String string) {
+		SectionInterface s = (SectionInterface) _sections.get(string);
+		if(s != null) return s;
+		return _emptySection;
 	}
 
 	public Collection getSections() {
@@ -71,7 +77,6 @@ public class SectionManager implements SectionManagerInterface {
 	}
 
 	private void reload() {
-		_emptySection = new PlainSection(this, "", "/");
 		Properties p = new Properties();
 		try {
 			p.load(new FileInputStream("conf/sections.conf"));

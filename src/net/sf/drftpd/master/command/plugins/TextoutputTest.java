@@ -20,8 +20,9 @@ package net.sf.drftpd.master.command.plugins;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
+import org.drftpd.plugins.SiteBot;
+
 import net.sf.drftpd.event.Event;
-import net.sf.drftpd.event.irc.IRCListener;
 import junit.framework.TestCase;
 
 /*
@@ -43,7 +44,7 @@ public class TextoutputTest extends TestCase {
 	}
 
 	public void testSendTextToIRC() throws UnknownHostException, IOException {
-		IRCListener irc = new IRCListener();
+		SiteBot irc = new SiteBot();
 		irc.actionPerformed(new Event("RELOAD"));
 		irc.connect();
 		Textoutput.sendTextToIRC(irc.getIRCConnection(),"zubov","affils");

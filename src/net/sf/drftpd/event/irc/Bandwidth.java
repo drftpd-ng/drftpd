@@ -32,171 +32,171 @@ import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Logger;
-
+import org.drftpd.plugins.SiteBot;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
- 
+
 /**
  * @author flowman
- * @version $Id: Bandwidth.java,v 1.2 2004/03/21 06:20:54 zubov Exp $
+ * @version $Id: Bandwidth.java,v 1.3 2004/03/26 00:16:32 mog Exp $
  */
 
-public class Bandwidth extends GenericCommandAutoService implements IRCPluginInterface {
-	
-	private IRCListener _listener;
-	
+public class Bandwidth
+	extends GenericCommandAutoService
+	implements IRCPluginInterface {
+
 	private static final Logger logger = Logger.getLogger(Bandwidth.class);
 
-	private ConnectionManager getConnectionManager() {
-		return _listener.getConnectionManager();
-	}
+	private SiteBot _listener;
 
-	private void say(String string) {
-		_listener.say(string);
+	public Bandwidth(SiteBot listener) {
+		super(listener.getIRCConnection());
+		_listener = listener;
 	}
 
 	private void fillEnvSpace(ReplacerEnvironment env, SlaveStatus status) {
 		_listener.fillEnvSpace(env, status);
 	}
-
-	public Bandwidth(IRCListener listener) {
-		super(listener.getIRCConnection());
-		_listener = listener;
-	}
-	
-	protected void updateCommand(InCommand command) {
-		try {
-			if (command instanceof MessageCommand) {
-				MessageCommand msgc = (MessageCommand) command;
-				String msg = msgc.getMessage();
-				try {
-					if (msg.startsWith("!bw")) {
-						SlaveStatus status = getConnectionManager().getSlaveManager().getAllStatus();
-	
-						ReplacerEnvironment env =
-							new ReplacerEnvironment(IRCListener.GLOBAL_ENV);
-	
-						fillEnvSpace(env, status);
-	
-						say(ReplacerUtils.jprintf("bw", env, IRCListener.class));
-					} else if (msg.startsWith("!speed")) {
-						String username;
-						try {
-							username = msgc.getMessage().substring("!speed ".length());
-						} catch (ArrayIndexOutOfBoundsException e) {
-							logger.warn("", e);
-							return;
-						} catch (StringIndexOutOfBoundsException e) {
-							logger.warn("", e);
-							return;
-						}
-						ReplacerEnvironment env = new ReplacerEnvironment(IRCListener.GLOBAL_ENV);
-						env.add("user", username);
-						String status =
-							ReplacerUtils.jprintf("speed.pre", env, IRCListener.class);
-
-						String separator =
-							ReplacerUtils.jprintf("speed.separator", env, IRCListener.class);
-
-						boolean first = true;
-
-						ArrayList conns =
-							new ArrayList(getConnectionManager().getConnections());
-						for (Iterator iter = conns.iterator(); iter.hasNext();) {
-							BaseFtpConnection conn = (BaseFtpConnection) iter.next();
-							try {
-								User connUser = conn.getUser();
-								if (!first) {
-									status = status + separator;
-								}
-								if (connUser.getUsername().equals(username)) {
-
-									env.add(
-										"idle",
-										Time.formatTime(
-											System.currentTimeMillis() - conn.getLastActive()));
-
-									if (getConnectionManager()
-										.getConfig()
-										.checkHideInWho(connUser, conn.getCurrentDirectory()))
-										continue;
-									first = false;
-									if (!conn.isExecuting()) {
-										status
-											+= ReplacerUtils.jprintf(
-												"speed.idle",
-												env,
-												IRCListener.class);
-
-									} else if (
-										conn.getDataConnectionHandler().isTransfering()) {
-										try {
-											env.add(
-												"speed",
-												Bytes.formatBytes(
-													conn
-														.getDataConnectionHandler()
-														.getTransfer()
-														.getXferSpeed())
-													+ "/s");
-										} catch (RemoteException e2) {
-											logger.warn("", e2);
-										}
-										env.add(
-											"file",
-											conn
-												.getDataConnectionHandler()
-												.getTransferFile()
-												.getName());
-										env.add(
-											"slave",
-											conn
-												.getDataConnectionHandler()
-												.getTranferSlave()
-												.getName());
-
-										if (conn.getTransferDirection()
-											== Transfer.TRANSFER_RECEIVING_UPLOAD) {
-											status
-												+= ReplacerUtils.jprintf(
-													"speed.up",
-													env,
-													IRCListener.class);
-
-										} else if (
-											conn.getTransferDirection()
-												== Transfer.TRANSFER_SENDING_DOWNLOAD) {
-											status
-												+= ReplacerUtils.jprintf(
-													"speed.down",
-													env,
-													IRCListener.class);
-										}
-									}
-								}
-							} catch (NoSuchUserException e) {
-								//just continue.. we aren't interested in connections without logged-in users
-							}
-						} // for
-						status += ReplacerUtils.jprintf("speed.post", env, IRCListener.class);
-						if (first) {
-							status =
-								ReplacerUtils.jprintf("speed.error", env, IRCListener.class);
-						}
-						say(status);	
-					}
-				} catch (Exception e) {
-					logger.debug("", e);
-				}
-			}
-		}catch (Exception e) {
-			logger.debug("",e);
-		}
-	}
 	public String getCommands() {
 		return "!bw !speed";
+	}
+
+	private ConnectionManager getConnectionManager() {
+		return _listener.getConnectionManager();
+	}
+
+	protected void updateCommand(InCommand command) {
+		if (!(command instanceof MessageCommand)) {
+			return;
+		}
+		MessageCommand msgc = (MessageCommand) command;
+		if (msgc.isPrivateToUs(_listener.getClientState())) {
+			return;
+		}
+
+		String msg = msgc.getMessage();
+		if (msg.startsWith("!bw")) {
+			SlaveStatus status =
+				getConnectionManager().getSlaveManager().getAllStatus();
+
+			ReplacerEnvironment env =
+				new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+
+			fillEnvSpace(env, status);
+
+			_listener.sayChannel(msgc.getDest(), ReplacerUtils.jprintf("bw", env, SiteBot.class));
+		} else if (msg.startsWith("!speed")) {
+			String username;
+			try {
+				username = msgc.getMessage().substring("!speed ".length());
+			} catch (ArrayIndexOutOfBoundsException e) {
+				logger.warn("", e);
+				return;
+			} catch (StringIndexOutOfBoundsException e) {
+				logger.warn("", e);
+				return;
+			}
+			ReplacerEnvironment env =
+				new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+			env.add("user", username);
+			String status =
+				ReplacerUtils.jprintf("speed.pre", env, SiteBot.class);
+
+			String separator =
+				ReplacerUtils.jprintf("speed.separator", env, SiteBot.class);
+
+			boolean first = true;
+
+			ArrayList conns =
+				new ArrayList(getConnectionManager().getConnections());
+			for (Iterator iter = conns.iterator(); iter.hasNext();) {
+				BaseFtpConnection conn = (BaseFtpConnection) iter.next();
+				try {
+					User connUser = conn.getUser();
+					if (!first) {
+						status = status + separator;
+					}
+					if (connUser.getUsername().equals(username)) {
+
+						env.add(
+							"idle",
+							Time.formatTime(
+								System.currentTimeMillis()
+									- conn.getLastActive()));
+
+						if (getConnectionManager()
+							.getConfig()
+							.checkHideInWho(
+								connUser,
+								conn.getCurrentDirectory()))
+							continue;
+						first = false;
+						if (!conn.isExecuting()) {
+							status
+								+= ReplacerUtils.jprintf(
+									"speed.idle",
+									env,
+									SiteBot.class);
+
+						} else if (
+							conn.getDataConnectionHandler().isTransfering()) {
+							try {
+								env.add(
+									"speed",
+									Bytes.formatBytes(
+										conn
+											.getDataConnectionHandler()
+											.getTransfer()
+											.getXferSpeed())
+										+ "/s");
+							} catch (RemoteException e2) {
+								logger.warn("", e2);
+							}
+							env.add(
+								"file",
+								conn
+									.getDataConnectionHandler()
+									.getTransferFile()
+									.getName());
+							env.add(
+								"slave",
+								conn
+									.getDataConnectionHandler()
+									.getTranferSlave()
+									.getName());
+
+							if (conn.getTransferDirection()
+								== Transfer.TRANSFER_RECEIVING_UPLOAD) {
+								status
+									+= ReplacerUtils.jprintf(
+										"speed.up",
+										env,
+										SiteBot.class);
+
+							} else if (
+								conn.getTransferDirection()
+									== Transfer.TRANSFER_SENDING_DOWNLOAD) {
+								status
+									+= ReplacerUtils.jprintf(
+										"speed.down",
+										env,
+										SiteBot.class);
+							}
+						}
+					}
+				} catch (NoSuchUserException e) {
+					//just continue.. we aren't interested in connections without logged-in users
+				}
+			} // for
+			status += ReplacerUtils.jprintf("speed.post", env, SiteBot.class);
+			if (first) {
+				status =
+					ReplacerUtils.jprintf("speed.error", env, SiteBot.class);
+			}
+			_listener.sayChannel(msgc.getDest(), status);
+		}
 	}
 }

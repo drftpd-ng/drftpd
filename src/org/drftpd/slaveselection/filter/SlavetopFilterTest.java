@@ -42,7 +42,7 @@ import net.sf.drftpd.slave.Transfer;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilterTest.java,v 1.2 2004/03/01 00:21:10 mog Exp $
+ * @version $Id: SlavetopFilterTest.java,v 1.3 2004/03/26 00:16:55 mog Exp $
  */
 public class SlavetopFilterTest extends TestCase {
 
@@ -76,6 +76,9 @@ public class SlavetopFilterTest extends TestCase {
 						}
 
 					};
+				}
+				public SectionInterface getSection(String string) {
+					throw new UnsupportedOperationException();
 				}
 			};
 		}

@@ -32,7 +32,6 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.UserEvent;
-import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.Permission;
@@ -42,10 +41,11 @@ import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+import org.drftpd.plugins.SiteBot;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.21 2004/02/10 00:03:06 mog Exp $
+ * @version $Id: Trial.java,v 1.22 2004/03/26 00:16:33 mog Exp $
  */
 public class Trial implements FtpListener {
 	public static class Limit {
@@ -518,8 +518,8 @@ public class Trial implements FtpListener {
 		}
 		if (_cm != null) {
 			try {
-				IRCListener _irc =
-					(IRCListener) _cm.getFtpListener(IRCListener.class);
+				SiteBot _irc =
+					(SiteBot) _cm.getFtpListener(SiteBot.class);
 				_siteBot = new TrialSiteBot(this, _irc);
 			} catch (ObjectNotFoundException e1) {
 				logger.warn("Error loading sitebot component", e1);
