@@ -53,7 +53,7 @@ import java.util.StringTokenizer;
  * Represents the file attributes of a remote file.
  *
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.171 2004/11/03 16:46:43 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.172 2004/11/05 19:16:18 zubov Exp $
  */
 public class LinkedRemoteFile implements Serializable, Comparable,
     LinkedRemoteFileInterface {
@@ -101,7 +101,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
      * representation.
      *
      * Used by DirectoryRemoteFile. Called by other constructor,
-     * ConnectionManager is null if called from SlaveImpl.
+     * ConnectionManager is null if called from Slave.
      *
      * They all end up here.
      *
@@ -1579,10 +1579,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
         if (!isDirectory()) {
             throw new RuntimeException(this + " is not a directory");
         }
-
-        logger.debug("Setting " + rslave.getName() + " for merging on " +
-            getPath());
-
+        
         for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface lrf = (LinkedRemoteFileInterface) iter.next();
 

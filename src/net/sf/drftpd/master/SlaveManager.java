@@ -63,7 +63,7 @@ import java.util.Set;
 
 /**
  * @author mog
- * @version $Id: SlaveManager.java,v 1.20 2004/11/03 16:46:39 mog Exp $
+ * @version $Id: SlaveManager.java,v 1.21 2004/11/05 19:16:16 zubov Exp $
  */
 public class SlaveManager implements Runnable {
     private static final Logger logger = Logger.getLogger(SlaveManager.class.getName());
@@ -439,6 +439,7 @@ public class SlaveManager implements Runnable {
 
             try {
                 socket = _serverSocket.accept();
+                socket.setSoTimeout(0);
                 logger.debug("Slave connected from " +
                     socket.getRemoteSocketAddress());
 

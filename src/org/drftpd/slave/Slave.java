@@ -85,7 +85,7 @@ import javax.net.ssl.SSLContext;
 
 /**
  * @author mog
- * @version $Id: Slave.java,v 1.4 2004/11/05 04:06:35 zubov Exp $
+ * @version $Id: Slave.java,v 1.5 2004/11/05 19:16:19 zubov Exp $
  */
 public class Slave {
     public static final boolean isWin32 = System.getProperty("os.name")
@@ -118,7 +118,7 @@ public class Slave {
         _externalAddress = InetAddress.getByName(FtpConfig.getProperty(p,
                     "slave.interface"));
         _s = new Socket();
-        _s.connect(addr, TIMEOUT);
+        _s.connect(addr);
 
         _sout = new ObjectOutputStream(_s.getOutputStream());
         _sin = new ObjectInputStream(_s.getInputStream());

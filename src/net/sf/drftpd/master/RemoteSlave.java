@@ -77,7 +77,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  * @author zubov
- * @version $Id: RemoteSlave.java,v 1.60 2004/11/03 16:46:39 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.61 2004/11/05 19:16:16 zubov Exp $
  */
 public class RemoteSlave implements Runnable, Comparable, Serializable {
     private static final long serialVersionUID = -6973935289361817125L;
@@ -304,8 +304,6 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     protected final void init(String name, GlobalContext gctx) {
         _name = name;
         _gctx = gctx;
-
-        //_xst = new XStream();
     }
 
     /**
@@ -326,10 +324,10 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         String remergeIndex = issueRemergeToSlave("/");
         fetchRemergeResponseFromIndex(remergeIndex);
         getGlobalContext().getRoot().cleanSlaveFromMerging(this);
+        setAvailable(true);
         logger.info("Slave added: '" + getName() + "' status: " + _status);
         getGlobalContext().getConnectionManager().dispatchFtpEvent(new SlaveEvent(
                 "ADDSLAVE", this));
-        setAvailable(true);
     }
 
     /**
