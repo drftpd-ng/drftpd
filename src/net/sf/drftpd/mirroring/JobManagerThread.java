@@ -12,7 +12,7 @@ import net.sf.drftpd.master.RemoteSlave;
 
 /**
  * @author zubov
- * @version $Id: JobManagerThread.java,v 1.5 2004/01/08 02:40:07 zubov Exp $
+ * @version $Id: JobManagerThread.java,v 1.6 2004/01/08 05:32:16 zubov Exp $
  */
 public class JobManagerThread extends Thread {
 	private static final Logger logger =
@@ -46,7 +46,19 @@ public class JobManagerThread extends Thread {
 				return;
 			}
 			try {
-				while (_jm.processJob(_rslave));
+				while (true){
+					Job job = _jm.getNextJob(_rslave);
+					if ( job == null )
+						break;
+					_jm.removeJob(job);
+					if (_jm.processJob(_rslave,job)) {
+						synchronized (job.getDestinationSlaves()) {
+							job.getDestinationSlaves().remove(_rslave);
+							if (job.getDestinationSlaves().size() > 0)
+								_jm.addJob(job); // job still has more places to transfer
+						}
+					}
+				}
 			} catch (RuntimeException e1) {
 				logger.debug(
 					"Caught RunTimeException in processJob for "

@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.7 2004/01/08 02:40:07 zubov Exp $
+ * @version $Id: JobManager.java,v 1.8 2004/01/08 05:32:16 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -121,7 +121,7 @@ public class JobManager implements FtpListener {
 	/**
 	 * Gets the next job suitable for the slave, returns null if none is found
 	 */
-	private synchronized Job getNextJob(RemoteSlave slave) {
+	public synchronized Job getNextJob(RemoteSlave slave) {
 		Job myMirrorJob = null;
 		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
 			Job tempJob = (Job) iter.next();
@@ -215,11 +215,10 @@ public class JobManager implements FtpListener {
 	public synchronized boolean isDone(Job job) {
 		return !_jobList.contains(job);
 	}
-	public boolean processJob(RemoteSlave slave) {
-		Job temp = getNextJob(slave);
+	public boolean processJob(RemoteSlave slave, Job temp) {
+		//Job temp = getNextJob(slave);
 		if (temp == null) { // nothing to process for this slave
 			logger.debug("Nothing to process for slave " + slave.getName());
-			//printJobs();
 			return false;
 		}
 		logger.info(
@@ -247,6 +246,7 @@ public class JobManager implements FtpListener {
 				Thread.sleep(20000);
 			}
 			new SlaveTransfer(temp.getFile(), sourceSlave, slave).transfer();
+			//if ( slave.getSlave().)
 			_slaveSendingList.remove(sourceSlave);
 			difference = System.currentTimeMillis() - time;
 			logger.debug(
@@ -279,14 +279,9 @@ public class JobManager implements FtpListener {
 				+ " in "
 				+ difference / 1000
 				+ " seconds");
-		synchronized (temp.getDestinationSlaves()) {
-			temp.getDestinationSlaves().remove(slave);
-			if (temp.getDestinationSlaves().size() == 0)
-				remove(temp); // job is finished
-		}
 		return true;
 	}
-	public synchronized void remove(Job job) {
+	public synchronized void removeJob(Job job) {
 		_jobList.remove(job);
 		Collections.sort(_jobList, new JobComparator());
 	}
