@@ -6,11 +6,21 @@
 
 package net.sf.drftpd.tcpslave;
 
+import java.io.BufferedReader;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringReader;
+
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+
 import java.util.Collection;
 import java.util.Iterator;
+
+import java.security.MessageDigest;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.master.ConnectionManager;
@@ -33,13 +43,90 @@ public class SocketSlaveListener extends Thread {
     private static final Logger logger = Logger.getLogger(SocketSlaveListener.class.getName());
 
     private int _port;
-    private ConnectionManager _conman;
     private ServerSocket sock;
+    static ConnectionManager _conman;
+    static String _pass = "";
     
+        static void invalidSlave(String msg, Socket sock) throws IOException
+        {
+        	BufferedReader _sinp = null;
+                PrintWriter _sout = null;
+                try {
+        		_sout = new PrintWriter(sock.getOutputStream(), true);
+                	_sinp =	new BufferedReader(
+                        	new InputStreamReader(sock.getInputStream())
+                                );
+        		_sout.println(msg);
+                	logger.info("NEW< " + msg);
+                        String txt = SocketSlaveListener.readLine(_sinp, 30);
+			String sname = "";
+			String spass = "";
+			String shash = "";
+			try {
+				String[] items = txt.split(" ");
+				sname = items[1].trim();
+				spass = items[2].trim();
+				shash = items[3].trim();
+			} catch (Exception e) {
+                                throw new IOException("Slave Inititalization Faailed");
+			}
+			// generate slave hash
+			String pass = sname + spass + _pass;
+			MessageDigest md5 = MessageDigest.getInstance("MD5");
+			md5.reset();
+			md5.update(pass.getBytes());
+			String hash = SocketSlaveListener.hash2hex(md5.digest()).toLowerCase();
+                        if (!hash.equals(shash))
+                        {
+                                throw new IOException("Slave Inititalization Faailed");
+                        }
+                        
+                        // check the passkey and create the slave
+
+                } catch (Exception e) {
+                    
+                }
+                throw new IOException("Slave Inititalization Faailed");
+	}
+
+	static String hash2hex(byte[] bytes) {
+		String res = "";
+		for (int i = 0; i < 16; i++) {
+			String hex = Integer.toHexString((int) bytes[i]);
+			if (hex.length() < 2)
+				hex = "0" + hex;
+			res += hex.substring(hex.length() - 2);
+		}
+		return res;
+	}
+
+        
+	static String readLine(BufferedReader _sinp, int secs) {
+		int cnt = secs * 10;
+		try {
+			while (true) {
+				while (!_sinp.ready()) {
+					if (cnt < 1)
+						return null;
+					sleep(100);
+					cnt--;
+					if (cnt == 0)
+						return null;
+				}
+				String txt = _sinp.readLine();
+				logger.info("NEW> " + txt);
+				return txt;
+			}
+		} catch (Exception e) {
+			return null;
+		}
+	}
+        
     /** Creates a new instance of SocketSlaveListener */
-    public SocketSlaveListener(ConnectionManager conman, int port) {
+    public SocketSlaveListener(ConnectionManager conman, int port, String pass) {
         _conman = conman;
         _port = port;
+        _pass = pass;
         start();
     }
     
@@ -113,10 +200,18 @@ public class SocketSlaveListener extends Thread {
                 } //for
                 if (match) break;
             } //for
-            if (!match) continue; // no matching masks
-            try {
-                SocketSlaveImpl tmp = new SocketSlaveImpl(_conman, thisone.getConfig(), slave);
-            } catch (Exception e) {
+            if (match) {
+                // turn control over to the slave code
+                try {
+                    SocketSlaveImpl tmp = new SocketSlaveImpl(_conman, thisone.getConfig(), slave);
+                } catch (Exception e) {
+                }
+            } else {
+                // allow the slave to auto-register
+                try {
+                    SocketSlaveListener.invalidSlave("INITFAIL Unregistered", slave);
+                } catch (Exception e) {
+                }
             }
         }
     }

@@ -50,7 +50,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: SocketSlaveImpl.java,v 1.10 2004/05/12 00:45:12 mog Exp $
+ * @version $Id: SocketSlaveImpl.java,v 1.11 2004/05/19 17:06:12 zombiewoof64 Exp $
  */
 public class SocketSlaveImpl extends Thread implements Slave, Unreferenced {
 	private static final Logger logger =
@@ -84,8 +84,8 @@ public class SocketSlaveImpl extends Thread implements Slave, Unreferenced {
 	private Vector _que = new Vector();
 
 	private LinkedRemoteFile _root;
-
-	public SocketSlaveImpl(ConnectionManager mgr, Hashtable cfg)
+        
+        public SocketSlaveImpl(ConnectionManager mgr, Hashtable cfg)
 		throws RemoteException {
 		Socket sock = null;
 		_name = (String) cfg.get("name");
@@ -164,17 +164,16 @@ public class SocketSlaveImpl extends Thread implements Slave, Unreferenced {
 				throw new IOException("Slave did not send banner !!");
 			}
 
-			String sname;
-			String spass;
-			String sseed;
+			String sname = "";
+			String spass = "";
+			String sseed = "";
 			try {
 				String[] items = txt.split(" ");
 				sname = items[1].trim();
 				spass = items[2].trim();
 				sseed = items[3].trim();
 			} catch (Exception e) {
-				sendLine("INITFAIL BadKey");
-				throw new IOException("Slave invalid INIT");
+				SocketSlaveListener.invalidSlave("INITFAIL BadKey", _sock);
 			}
 			// generate slave hash
 			pass = _spsw + sseed + _mpsw;
@@ -185,16 +184,11 @@ public class SocketSlaveImpl extends Thread implements Slave, Unreferenced {
 
 			// authenticate
 			if (!sname.equals(_name)) {
-				sendLine("INITFAIL Unknown");
-				throw new IOException(
-					"Slave name mismatch '" + _name + "'!='" + sname + "'");
+				SocketSlaveListener.invalidSlave("INITFAIL Unknown", _sock);
 			}
 			if (!spass.toLowerCase().equals(hash.toLowerCase())) {
-				sendLine("INITFAIL BadKey");
-				throw new IOException(
-					"Slave pass mismatch '" + hash + "'!='" + spass + "'");
+				SocketSlaveListener.invalidSlave("INITFAIL BadKey", _sock);
 			}
-
 			start();
 			_cman.getSlaveManager().addSlave(_name, this, getSlaveStatus(), -1);
 		} catch (IOException e) {
