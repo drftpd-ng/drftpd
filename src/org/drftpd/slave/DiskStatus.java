@@ -19,9 +19,11 @@ package org.drftpd.slave;
 
 import java.io.Serializable;
 
+import org.drftpd.Bytes;
+
 /**
  * @author zubov
- * @version $Id: DiskStatus.java,v 1.2 2004/11/11 14:58:34 mog Exp $
+ * @version $Id$
  */
 public class DiskStatus implements Serializable {
 	private static final long serialVersionUID = 3573098662042584609L;
@@ -38,5 +40,8 @@ public class DiskStatus implements Serializable {
     }
     public long getBytesCapacity() {
         return _total;
+    }
+    public String toString() {
+    	return getClass().getName()+"[free="+Bytes.formatBytes(getBytesAvailable())+",total="+Bytes.formatBytes(getBytesCapacity())+"]";
     }
 }
