@@ -282,8 +282,16 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		NonExistingFile nef = lookupNonExistingFile(path);
 
 		if (nef.exists()) {
-			throw new RuntimeException(
-					"createDirectories called on already existing directory");
+			try {
+				LinkedRemoteFile temp = lookupFile(path);
+				if (temp.isDirectory()) {
+					return temp;
+				}
+				throw new RuntimeException("Destination directory is already a file");
+			} catch (FileNotFoundException e) {
+				throw new RuntimeException(
+						"createDirectories called on already existing directory that cannot be found");
+			}
 		}
 
 		LinkedRemoteFile dir = nef.getFile();

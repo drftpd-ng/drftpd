@@ -118,8 +118,8 @@ public class DatedSection implements SectionInterface {
         try {
             return getBaseFile().lookupFile(dateDirPath);
         } catch (FileNotFoundException e) {
-            LinkedRemoteFile dateDir = getBaseFile().createDirectories(dateDirPath);
             LinkedRemoteFileInterface base = getBaseFile();
+            LinkedRemoteFile dateDir = base.createDirectories(dateDirPath);
 
             try {
                 base = base.getParentFile();
