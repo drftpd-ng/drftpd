@@ -516,14 +516,19 @@ public class BaseFtpConnection implements Runnable {
 
     public void stop(String message) {
         _stopRequestMessage = message;
-
-        if (getDataConnectionHandler().isTransfering()) {
-            try {
-                getDataConnectionHandler().getTransfer().abort("Control connection dropped");
-            } catch (SlaveUnavailableException e) {
-                logger.warn("Unable to stop transfer, slave is unavailable", e);
-            }
-        }
+        synchronized (getDataConnectionHandler()) {
+			if (getDataConnectionHandler().isTransfering()) {
+				try {
+					getDataConnectionHandler().getTransfer().abort(
+							"Control connection dropped");
+				} catch (SlaveUnavailableException e) {
+					logger.warn(
+							"Unable to stop transfer, slave is unavailable", e);
+				} catch (ObjectNotFoundException e) {
+					logger.debug("This is a bug, please report it", e);
+				}
+			}
+		}
 
         stop();
     }

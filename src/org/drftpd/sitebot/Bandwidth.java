@@ -19,6 +19,7 @@ package org.drftpd.sitebot;
 
 import java.util.ArrayList;
 
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.util.ReplacerUtils;
 
@@ -98,11 +99,15 @@ public class Bandwidth extends IRCCommand {
 									Bandwidth.class));
 						} else if (conn.getDataConnectionHandler()
 								.isTransfering()) {
-							env.add("speed", Bytes.formatBytes(conn
-									.getDataConnectionHandler().getTransfer()
-									.getXferSpeed())
-									+ "/s");
-
+							try {
+								env.add("speed", Bytes.formatBytes(conn
+										.getDataConnectionHandler()
+										.getTransfer().getXferSpeed())
+										+ "/s");
+							} catch (ObjectNotFoundException e) {
+								logger.debug("This is a bug, please report it",
+										e);
+							}
 							env.add("file", conn.getDataConnectionHandler()
 									.getTransferFile().getName());
 							env.add("slave", conn.getDataConnectionHandler()

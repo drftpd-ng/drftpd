@@ -40,6 +40,7 @@ import javax.net.ssl.SSLSocket;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.NoSFVEntryException;
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -817,9 +818,9 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         return _rslave;
     }
 
-    public synchronized RemoteTransfer getTransfer() {
+    public synchronized RemoteTransfer getTransfer() throws ObjectNotFoundException {
         if (_transfer == null) {
-            throw new IllegalStateException();
+            throw new ObjectNotFoundException();
         }
 
         return _transfer;

@@ -237,7 +237,7 @@ public class SiteBot extends FtpListener implements Observer {
         return ret;
     }
 
-    public synchronized void actionPerformed(Event event) {
+    public void actionPerformed(Event event) {
     	try {
 			if (event.getCommand().equals("RELOAD")) {
 				try {
@@ -1121,9 +1121,11 @@ public class SiteBot extends FtpListener implements Observer {
     }
 
     protected void reload() throws FileNotFoundException, IOException {
-        Properties ircCfg = new Properties();
-        ircCfg.load(new FileInputStream("conf/irc.conf"));
-        reloadIRCCommands();
+    	Properties ircCfg = new Properties();
+    	synchronized(this) {
+    		ircCfg.load(new FileInputStream("conf/irc.conf"));
+    		reloadIRCCommands();
+    	}
         reload(ircCfg);
     }
 
@@ -1320,7 +1322,7 @@ public class SiteBot extends FtpListener implements Observer {
     	say(_primaryChannelName,message);
     }
 
-    public void say(String dest, String message) {
+    public synchronized void say(String dest, String message) {
         if (message == null || message.equals("")) {
         	return;
         }
@@ -1340,7 +1342,7 @@ public class SiteBot extends FtpListener implements Observer {
 		}
     }
     
-    public void notice(String dest, String message) {
+    public synchronized void notice(String dest, String message) {
         if (message == null || message.equals("")) {
         	return;
         }
@@ -1591,7 +1593,7 @@ public class SiteBot extends FtpListener implements Observer {
 	/**
 	 * Returns the blowfish key for the channel specified
 	 */
-	public String getBlowfishKey(String channel, User user) throws ObjectNotFoundException {
+	public synchronized String getBlowfishKey(String channel, User user) throws ObjectNotFoundException {
 		ChannelConfig cc = _channelMap.get(channel);
 		if (cc != null) {
 			return cc.getBlowfishKey(user);

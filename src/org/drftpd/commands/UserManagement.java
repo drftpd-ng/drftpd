@@ -28,6 +28,7 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.DuplicateElementException;
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
@@ -1697,8 +1698,13 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 									formatidle, env));
 						} else if (conn2.getDataConnectionHandler()
 								.isTransfering()) {
-							speed = conn2.getDataConnectionHandler()
-									.getTransfer().getXferSpeed();
+							try {
+								speed = conn2.getDataConnectionHandler()
+										.getTransfer().getXferSpeed();
+							} catch (ObjectNotFoundException e) {
+								logger.debug("This is a bug, please report it",
+										e);
+							}
 							env.add("speed", Bytes.formatBytes(speed) + "/s");
 							env.add("file", conn2.getDataConnectionHandler()
 									.getTransferFile().getName());

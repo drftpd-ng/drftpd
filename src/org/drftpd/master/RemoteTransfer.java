@@ -173,10 +173,13 @@ public class RemoteTransfer {
         }
     }
     public String toString() {
-    	try {
-			return getClass().getName()+"[file="+_path+",status="+getTransferStatus()+"]";
-		} catch (Exception e) {
-			return getClass().getName()+"[file="+_path+",status=failed]";
-		}
+			try {
+				return getClass().getName()+"[file="+_path+",status="+getTransferStatus()+"]";
+			} catch (TransferFailedException e) {
+				return getClass().getName()+"[file="+_path+",status=failed]";
+			} catch (SlaveUnavailableException e) {
+				return getClass().getName()+"[file="+_path+",status=failed]";
+			}
+
     }
 }
