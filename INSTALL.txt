@@ -5,7 +5,7 @@ http://drftpd.mog.se/ (mirror)
 INSTALL FOR DRFTPD 1.0
 
 1 Download and install JAVA Runtime Environment (JRE) on all master and all salves -- http://java.sun.com/j2se/downloads.html
-	:: NOTE: LINUX: *nix If you encounter problems like "master.sh: line 11: exec: java: not found", you need to add the java binary to your PATH environment variable. Edit your /etc/profile and add PATH=$PATH:/path/to/java/bin at the bottom.
+	:: NOTE: LINUX: If you encounter problems like "master.sh: line 11: exec: java: not found", you need to add the java binary to your PATH environment variable. Edit your /etc/profile and add PATH=$PATH:/path/to/java/bin at the bottom.
 	:: NOTE: WINDOWS: If you encounter problems like "'JAVA' is not recognized as an internal or external command, operable program or batch file." You also need to add the java binary to your PATH environment variable. You can do this in WindowsXP in your System Properties under the Advanced Tab, there is a button Environment Variables, edit your PATH variable accordingly.
 
 2 Download DrFTPD -- http://sourceforge.net/project/showfiles.php?group_id=56385
