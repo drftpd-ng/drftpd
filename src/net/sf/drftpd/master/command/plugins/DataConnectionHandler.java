@@ -49,7 +49,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.25 2003/12/23 00:36:01 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.26 2003/12/26 18:14:58 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -1397,13 +1397,13 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			if (isRetr) {
 				if (ratio != 0) {
 					conn.getUserNull().updateCredits(
-						(long) (-transferedBytes * ratio));
+						(long) (-transferedBytes * conn.getUserNull().getRatio()));
 				}
 				conn.getUserNull().updateDownloadedBytes(transferedBytes);
 				conn.getUserNull().updateDownloadedFiles(1);
 			} else {
 				conn.getUserNull().updateCredits(
-					(long) (transferedBytes * ratio));
+					(long) (transferedBytes * conn.getUserNull().getRatio()));
 				conn.getUserNull().updateUploadedBytes(transferedBytes);
 				conn.getUserNull().updateUploadedFiles(1);
 			}
