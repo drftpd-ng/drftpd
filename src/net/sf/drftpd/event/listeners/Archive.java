@@ -1,29 +1,27 @@
-/*
- * Created on Dec 3, 2003
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd.event.listeners;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.apache.oro.text.regex.MalformedPatternException;
 
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.ConnectionManager;
+import net.sf.drftpd.master.config.ExcludePath;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.ArchiveHandler;
+import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.11 2004/01/13 20:30:53 mog Exp $
+ * @version $Id: Archive.java,v 1.12 2004/01/15 20:37:08 zubov Exp $
  */
 
 public class Archive implements FtpListener {
@@ -33,7 +31,8 @@ public class Archive implements FtpListener {
 	private long _cycleTime;
 	private long _lastchecked;
 	private long _moveFullSlaves;
-	private ArrayList archivingList = new ArrayList();
+	private ArrayList _archivingList = new ArrayList();
+	private ArrayList _exemptList = new ArrayList();
 
 	private static final Logger logger = Logger.getLogger(Archive.class);
 
@@ -45,9 +44,6 @@ public class Archive implements FtpListener {
 		logger.info("Archive plugin loaded successfully");
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.event.FtpListener#actionPerformed(net.sf.drftpd.event.Event)
-	 */
 	public void actionPerformed(Event event) {
 		if (event.getCommand().equals("RELOAD")) {
 			reload();
@@ -66,7 +62,7 @@ public class Archive implements FtpListener {
 	 * Adds directories to the list
 	 */
 	public synchronized void addToArchivingList(String dir) {
-		archivingList.add(dir);
+		_archivingList.add(dir);
 	}
 	/**
 	 * Returns the archiveAfter setting
@@ -79,7 +75,7 @@ public class Archive implements FtpListener {
 	 * This list represents path names of directories currently being handled by ArchiveHandlers
 	 */
 	public ArrayList getArchivingList() {
-		return archivingList;
+		return _archivingList;
 	}
 	/**
 	 * Returns the ConnectionManager
@@ -95,9 +91,9 @@ public class Archive implements FtpListener {
 		return _cycleTime;
 	}
 
-	/**
-	 * Returns the moveFullSlaves setting
-	 */
+	//	/**
+	//	 * Returns the moveFullSlaves setting
+	//	*/
 	//	public long getMoveFullSlaves() {
 	//		return _moveFullSlaves;
 	//	}
@@ -128,11 +124,36 @@ public class Archive implements FtpListener {
 			(FtpConfig.getProperty(props, "archiveToFreeSlave").equals("true"));
 		//_moveFullSlaves = 1048576*Long.parseLong(FtpConfig.getProperty(props,"moveFullSlaves"));
 		_lastchecked = System.currentTimeMillis();
+		_exemptList = new ArrayList();
+		for (int i = 1;; i++) {
+			String path = FtpConfig.getProperty(props, "exclude." + i);
+			if ( path == null )
+				break;
+			try {
+				ExcludePath.makePermission(_exemptList, path);
+			} catch (MalformedPatternException e1) {
+				throw new RuntimeException(e1);
+			}
+		}
 	}
+	
+	/**
+	 * @param lrf
+	 * Returns true if lrf.getPath() is excluded
+	 */
+	public boolean checkExclude(LinkedRemoteFile lrf) {
+		for ( Iterator iter = _exemptList.iterator(); iter.hasNext(); ) {
+			ExcludePath ep = (ExcludePath) iter.next();
+			if ( ep.checkPath(lrf) )
+				return true;
+		}
+		return false;
+	}
+	
 	/**
 	 * Removes directories from the list
 	 */
 	public synchronized void removeFromArchivingList(String dir) {
-		archivingList.remove(dir);
+		_archivingList.remove(dir);
 	}
 }
