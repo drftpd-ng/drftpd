@@ -627,6 +627,16 @@ public class FtpConnection extends BaseFtpConnection {
 		out.write(mFtpStatus.getResponse(200, request, user, null));
 	}
 
+	public void doSITEWIPE(FtpRequest request, PrintWriter out) {
+		resetState();
+		if (!user.isAdmin()) out.write("200 You need admin privileges to use SITE WIPE");
+		String arg = request.getArgument();
+		
+		if(arg.charAt(0) == '-') {
+			int pos = arg.indexOf(' ');
+		}
+		
+	}
 	public void doSITELIST(FtpRequest request, PrintWriter out) {
 		resetState();
 		RemoteFile files[] =

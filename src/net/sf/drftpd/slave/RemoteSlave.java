@@ -10,7 +10,7 @@ import net.sf.drftpd.master.SlaveManager;
 /**
  * 
  */
-public class RemoteSlave {
+public class RemoteSlave implements Serializable {
 	protected long statusTime;
 	protected SlaveStatus status;
 	protected SlaveManagerImpl manager;

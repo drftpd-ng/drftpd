@@ -3,12 +3,12 @@ package net.sf.drftpd.remotefile;
 import net.sf.drftpd.master.usermanager.User;
 
 /**
+ * Creates a single RemoteFile object that is not linked to any other objects.
+ * 
+ * Useful when doing RMI call and you do not want to send the entire
+ * linked directory structure to the remote VM.
+ * 
  * @author mog
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
  */
 public class StaticRemoteFile extends RemoteFile {
 	private String path;

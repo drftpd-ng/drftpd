@@ -1,27 +1,28 @@
 package net.sf.drftpd.master;
 
-import java.rmi.server.UnicastRemoteObject;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.rmi.ConnectException;
-import java.rmi.ConnectIOException;
-import java.rmi.Naming;
+import java.rmi.AlreadyBoundException;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Vector;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
+import java.rmi.server.RMISocketFactory;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
-import org.jdom.Document;
-import org.jdom.output.XMLOutputter;
-
+import net.sf.drftpd.permission.GlobRMISocketFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.XMLSerialize;
 import net.sf.drftpd.slave.RemoteSlave;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.TransferImpl;
+import org.jdom.Document;
+import org.jdom.output.XMLOutputter;
 
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -36,39 +37,66 @@ public class SlaveManagerImpl
 		return root;
 	}
 
-	public SlaveManagerImpl(String url) throws RemoteException {
-		this(url,  new LinkedRemoteFile());
+	public SlaveManagerImpl(String url, List masks) throws RemoteException {
+		this(url, new LinkedRemoteFile(), masks);
 	}
-	
-	public SlaveManagerImpl(String url, LinkedRemoteFile root) throws RemoteException {
-		super();
+
+	public SlaveManagerImpl(String url, LinkedRemoteFile root, List masks)
+		throws RemoteException {
+		super(0, (RMIClientSocketFactory) RMISocketFactory.getSocketFactory(),
+					(RMIServerSocketFactory)new GlobRMISocketFactory(masks));
+//		 (RMIServerSocketFactory) RMISocketFactory.getSocketFactory());
+
+		//		super();
+		//		super(0, new GlobRMISocketFactory(masks), new GlobRMISocketFactory(masks));
 		this.root = root;
 		slaves = root.getSlaves();
+		/*
+				RMIClientSocketFactory csf = RMISocketFactory.getSocketFactory();
+				RMIServerSocketFactory ssf = new GlobRMISocketFactory(masks);
+		*/
+		//RMIServerSocketFactory ssf = RMISocketFactory.getSocketFactory();
+
+		//SlaveManager stub = this;
+		/*
+				SlaveManager stub =
+					(SlaveManager) exportObject(
+						this,
+						0,
+						csf,
+						ssf);
+		*/
+		//SlaveManager stub = (SlaveManager)
+		//		UnicastRemoteObject.exportObject((Remote)this, 6666);
 		try {
-			Naming.rebind(url, this);
-			
-		} catch (java.rmi.ConnectException ex) {
-			System.out.println("Naming.rebind(): " + ex.getMessage());
-			System.out.println("Is rmiregistry running?");
-			System.out.println("This is a critical task, exiting.");
-			System.exit(-1);
-			return;
-		//java.rmi.ConnectIOException: Exception creating connection to: 213.114.146.61; nested exception is: 
-		//	java.net.SocketException: errno: 101, error: Network is unreachable for fd: 7
-		} catch(java.rmi.ConnectIOException ex) {
-			System.out.println(ex.getMessage());
-			System.out.println("Error binding slave, check the slavemanager.url property");
-			System.exit(-1);
-			return;			
-		} catch (java.net.MalformedURLException ex) {
+			Registry registry = LocateRegistry.createRegistry(1099);
+			registry.bind("slavemanager", this);
+		} catch (AlreadyBoundException ex) {
 			ex.printStackTrace();
-			System.out.println("The property slavemanager.url has an invalid URL.");
-			System.exit(-1);
 			return;
-			//} catch(ClassNotFoundException ex) {
-			//	System.out.println("ClassNotFoundException: "+ex.getMessage());
-			//	System.out.println("rmiregistry was problably started with wrong parameters.");
 		}
+
+		/*		} catch (java.rmi.ConnectException ex) {
+					ex.printStackTrace();
+					System.exit(-1);
+					return;
+				//java.rmi.ConnectIOException: Exception creating connection to: 213.114.146.61; nested exception is: 
+				//	java.net.SocketException: errno: 101, error: Network is unreachable for fd: 7
+				} catch(java.rmi.ConnectIOException ex) {
+					System.out.println(ex.getMessage());
+					System.out.println("Error binding slave, check the slavemanager.url property");
+					System.exit(-1);
+					return;			
+				} catch (java.net.MalformedURLException ex) {
+					ex.printStackTrace();
+					System.out.println("The property slavemanager.url has an invalid URL.");
+					System.exit(-1);
+					return;
+					//} catch(ClassNotFoundException ex) {
+					//	System.out.println("ClassNotFoundException: "+ex.getMessage());
+					//	System.out.println("rmiregistry was problably started with wrong parameters.");
+				}
+				*/
 	}
 
 	/**
@@ -76,7 +104,8 @@ public class SlaveManagerImpl
 	 */
 	public void addSlave(RemoteSlave slave, LinkedRemoteFile remoteroot)
 		throws RemoteException {
-		System.out.println("SlaveManager.addSlave(): " + slave);
+		System.out.println(
+			"SlaveManager.addSlave(): " + slave + " remoteroot: " + remoteroot);
 		slave.setManager(this);
 		slaves.add(slave);
 		long millis = System.currentTimeMillis();
@@ -87,9 +116,12 @@ public class SlaveManagerImpl
 		//TODO: write XML representation of "LinkedRemoteFile root"
 		Document doc = new Document(XMLSerialize.serialize(root));
 		try {
-			new XMLOutputter("    ", true).output(doc, new FileWriter("files.xml"));
-		} catch(IOException ex) {
-			System.err.println("Warning, error saving database to \"files.xml\"");
+			new XMLOutputter("    ", true).output(
+				doc,
+				new FileWriter("files.xml"));
+		} catch (IOException ex) {
+			System.err.println(
+				"Warning, error saving database to \"files.xml\"");
 			ex.printStackTrace();
 		}
 	}
@@ -157,31 +189,31 @@ public class SlaveManagerImpl
 	}
 
 	public void handleRemoteException(RemoteException ex, RemoteSlave slave) {
-		System.out.println(
+		System.out.print(
 			"Caught exception when trying to communicate with " + slave);
-		if(!isFatalRemoteException(ex)) {
-			System.out.println("Non-fatal exception, not removing");
+		if (!isFatalRemoteException(ex)) {
+			System.out.println(". Non-fatal exception, not removing");
 			return;
 		}
-		System.out.println("This slave should be removed");
+		System.out.println(". Fatal exception, removing");
 		ex.printStackTrace();
-		System.out.println("Attempting to unmerge()");
 		root.unmerge(slave);
 	}
 
 	public boolean isFatalRemoteException(RemoteException ex) {
 		return (ex instanceof java.rmi.ConnectException);
-	}	
-	
+	}
+
 	public int verifySlaves() {
 		int removed = 0;
-		synchronized(slaves) {
+		synchronized (slaves) {
 			for (Iterator i = slaves.iterator(); i.hasNext();) {
 				RemoteSlave slave = (RemoteSlave) i.next();
 				try {
 					slave.getSlave().ping();
 				} catch (RemoteException ex) {
-					if(isFatalRemoteException(ex)) i.remove();
+					if (isFatalRemoteException(ex))
+						i.remove();
 					handleRemoteException(ex, slave);
 					removed++;
 				}

@@ -64,7 +64,7 @@ public abstract class RemoteFile {
 	 */
 	public String toString() {
 		StringBuffer ret = new StringBuffer();
-		ret.append("[net.sf.drftpd.RemoteFile[");
+		ret.append("["+getClass().getName()+"[");
 		//ret.append(slaves);
 		if (isDirectory())
 			ret.append("[directory: "+listFiles().length+"]");

@@ -23,6 +23,7 @@ import net.sf.drftpd.InvalidDirectoryException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.SlaveManager;
+import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -40,7 +41,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	private Vector transfers = new Vector();
 	//Properties cfg;
 
-	SlaveManager manager;
+	SlaveManager slavemanager;
 	private String root;
 
 	public SlaveImpl(Properties cfg) throws RemoteException {
@@ -53,7 +54,8 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		RemoteSlave slave;
 		Properties cfg = new Properties();
 		SlaveManager manager;
-
+		String root;
+		
 		try {
 			cfg.load(new FileInputStream("drftpd.conf"));
 		} catch (IOException ex) {
@@ -62,7 +64,8 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			System.exit(-1);
 			return;
 		}
-
+		root = cfg.getProperty("slave.root");
+		
 		try {
 			manager =
 				(SlaveManager) Naming.lookup(
@@ -84,10 +87,10 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		}
 
 		try {
-			LinkedRemoteFile root = getDefaultRoot(cfg.getProperty("slave.root"), slave);
+			LinkedRemoteFile slaveroot = SlaveImpl.getDefaultRoot(root, slave);
 
-			System.out.println("manager.addSlave() root: " + root);
-			manager.addSlave(slave, root);
+			System.out.println("manager.addSlave() root: " + slaveroot);
+			manager.addSlave(slave, slaveroot);
 		} catch (RemoteException ex) {
 			ex.printStackTrace();
 			System.exit(-1);
@@ -127,7 +130,10 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			throw new InvalidDirectoryException(
 				"slave.root = " + rootfile.getPath() + " is not a directory!");
 		}
-		return new LinkedRemoteFile(slave, new FileRemoteFile(root, rootfile));
+		LinkedRemoteFile linkedroot = new LinkedRemoteFile(slave, new FileRemoteFile(root, rootfile));
+		/* DEBUG */
+		if(!linkedroot.isDirectory()) throw new RuntimeException("LinkedRemoteFile root is not a directory while FileRemoteRoot was.");
+		return linkedroot;
 	}
 
 	public SlaveStatus getSlaveStatus() {
@@ -284,6 +290,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	 * @see net.sf.drftpd.slave.Slave#checkSum(String)
 	 */
 	public long checkSum(String path) throws IOException {
+		System.out.println("Checksumming: "+path);
 		CRC32 crc32 = new CRC32();
 		InputStream in = new CheckedInputStream(new FileInputStream(root+path), crc32);
 		byte buf[] = new byte[1024];

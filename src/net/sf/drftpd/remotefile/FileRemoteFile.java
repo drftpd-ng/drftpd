@@ -21,8 +21,8 @@ public class FileRemoteFile extends RemoteFile {
 		if (!file.getCanonicalPath().equals(file.getAbsolutePath())) {
 			isDirectory = false;
 			isFile = false;
-//			System.out.println(
-//				"NOT following possible symlink: " + file.getAbsolutePath());
+			System.out.println(
+				"FileRemoteFile: warning: not serializing possible symlink: " + file.getAbsolutePath());
 			throw new InvalidDirectoryException("Not following symlink: "+file.getAbsolutePath());
 		}
 	}

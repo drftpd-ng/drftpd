@@ -38,6 +38,7 @@ public class JDOMRemoteFile extends RemoteFile {
 //		this.path = path;
 		user = element.getChild("user").getText();
 		group = element.getChild("group").getText();
+		lastModified = Long.parseLong(element.getChild("lastModified").getText());
 	}
 
 	/**

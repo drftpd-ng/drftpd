@@ -12,12 +12,13 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.RemoteSlave;
 
 public class XMLSerialize {
+	/*
 	public static void main(String args[]) throws Exception {
 		LinkedRemoteFile dir = new LinkedRemoteFile(null, new FileRemoteFile("/home/mog/dc", new File("/home/mog/dc")));
 		Document doc = new Document(serialize(dir));
 		new XMLOutputter("    ", true).output(doc, System.out);
 	}
-	
+	*/
 	public static Element serialize(LinkedRemoteFile file) {
 		Element fileElement;
 		if(file.isDirectory()) {
