@@ -44,7 +44,7 @@ import org.drftpd.tests.DummyUserManager;
 
 /**
  * @author mog
- * @version $Id: LoginTest.java,v 1.3 2004/05/31 12:14:36 mog Exp $
+ * @version $Id: LoginTest.java,v 1.4 2004/05/31 12:36:31 mog Exp $
  */
 public class LoginTest extends TestCase {
 	private DummyUser _user;
@@ -118,6 +118,7 @@ public class LoginTest extends TestCase {
 		assertEquals(331, reply.getCode());
 		assertNotNull(_conn.getUserNull());
 	}
+
 	public void testIDNT()
 		throws
 			UnhandledCommandException,

@@ -27,7 +27,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
 
 /**
  * @author mog
- * @version $Id: HostMask.java,v 1.8 2004/05/17 11:27:23 mog Exp $
+ * @version $Id: HostMask.java,v 1.9 2004/05/31 12:36:31 mog Exp $
  */
 public class HostMask {
 	private static final Logger logger = Logger.getLogger(HostMask.class);
@@ -62,6 +62,7 @@ public class HostMask {
 	}
 
 	public boolean matches(String ident, InetAddress address) {
+		if(ident == null) ident = "";
 		Perl5Matcher m = new Perl5Matcher();
 
 		GlobCompiler c = new GlobCompiler();
