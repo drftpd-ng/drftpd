@@ -137,8 +137,8 @@ public class BaseFtpConnection implements Runnable {
             env.add("username", user.getName());
             env.add("idletime",""+user.getIdleTime());
             env.add("credits", Bytes.formatBytes(user.getCredits()));
-//            env.add("ratio", "" + user.getObjectFloat(UserManagement.RATIO));
-//            env.add("tagline", user.getObjectString(UserManagement.TAGLINE));
+            env.add("ratio", "" + user.getKeyedMap().get((UserManagement.RATIO)));
+            env.add("tagline", user.getKeyedMap().get((UserManagement.TAGLINE)));
             env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
             env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
             env.add("group", user.getGroup());

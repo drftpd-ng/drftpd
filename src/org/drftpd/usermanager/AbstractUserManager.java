@@ -102,6 +102,7 @@ public abstract class AbstractUserManager implements UserManager {
         user.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT, new Long(0));
         user.getKeyedMap().setObject(UserManagement.COMMENT, "Auto-Generated");
         user.getKeyedMap().setObject(UserManagement.IRCIDENT, "N/A");
+        user.getKeyedMap().setObject(UserManagement.TAGLINE,"drftpd");
         user.getKeyedMap().setObject(Nuke.NUKED,0);
         user.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
 

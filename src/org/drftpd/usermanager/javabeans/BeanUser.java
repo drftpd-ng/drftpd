@@ -76,7 +76,7 @@ public class BeanUser extends AbstractUser implements Serializable {
 
 	public void purge() {
 		_purged = true;
-		_um.getUserFile(getName()).delete();
+		_um.delete(getName());
 	}
 
 	public String getPassword() {

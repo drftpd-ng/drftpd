@@ -21,6 +21,7 @@ import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
+import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.ReplacerUtils;
@@ -30,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.TransferStatistics;
+import org.drftpd.commands.UserManagement;
 
 import org.drftpd.permissions.Permission;
 import org.drftpd.plugins.SiteBot;
@@ -143,6 +145,7 @@ public class Stats extends GenericCommandAutoService
             //TODO .jprintf() has most of this afaik
             User user = (User) iter.next();
             ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+            env = BaseFtpConnection.getReplacerEnvironment(env,user);
             env.add("pos", "" + i);
             env.add("user", user.getName());
             env.add("upbytesday", Bytes.formatBytes(user.getUploadedBytesDay()));
