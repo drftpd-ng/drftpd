@@ -69,7 +69,7 @@ import java.security.MessageDigest;
 
 /**
  * @author mog
- * @version $Id: SocketSlaveImpl.java,v 1.4 2004/04/28 16:05:56 zombiewoof64 Exp $
+ * @version $Id: SocketSlaveImpl.java,v 1.5 2004/04/28 18:05:43 zombiewoof64 Exp $
  */
 public class SocketSlaveImpl
 extends Thread
@@ -158,8 +158,10 @@ implements Slave, Unreferenced {
             // generate master hash
             String seed = "";
             Random rand = new Random();
-            for (int i=0; i<16; i++){
-                seed += (char)rand.nextInt(27)+64;
+            for (int i=0; i<16; i++) {
+                String hex = Integer.toHexString(rand.nextInt(256));
+                if (hex.length() < 2) hex = "0" + hex;
+                seed += hex.substring(hex.length()-2);
             }
             String pass = _mpsw + seed + _spsw;
             MessageDigest md5 = MessageDigest.getInstance("MD5");
@@ -176,11 +178,19 @@ implements Slave, Unreferenced {
             if (txt == null) {
                 throw new IOException("Slave did not send banner !!");
             }
-            String[] items = txt.split(" ");
-            String sname = items[1].trim();
-            String spass = items[2].trim();
-            String sseed = items[3].trim();
 
+            String sname;
+            String spass;
+            String sseed;
+            try {
+                String[] items = txt.split(" ");
+                sname = items[1].trim();
+                spass = items[2].trim();
+                sseed = items[3].trim();
+            } catch (Exception e) {
+                sendLine("INITFAIL BadKey");
+                throw new IOException("Slave invalid INIT");
+            }
             // generate slave hash
             pass = _spsw + seed + _mpsw;
             md5 = MessageDigest.getInstance("MD5");
@@ -221,7 +231,7 @@ implements Slave, Unreferenced {
         for (int i=0; i<16; i++) {
             String hex = Integer.toHexString((int)bytes[i]);
             if (hex.length() < 2) hex = "0" + hex;
-            res += hex;
+            res += hex.substring(hex.length()-2);
         }
         return res;
     }
