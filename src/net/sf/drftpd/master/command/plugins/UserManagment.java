@@ -56,7 +56,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.36 2004/05/12 00:45:07 mog Exp $
+ * @version $Id: UserManagment.java,v 1.37 2004/05/12 02:44:55 zubov Exp $
  */
 public class UserManagment implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -535,8 +535,7 @@ public class UserManagment implements CommandHandler {
 						+ ratio
 						+ "'");
 				myUser.setRatio(ratio);
-
-				env.add("ratio", Float.toString(myUser.getRatio()));
+				env.add("newratio", Float.toString(myUser.getRatio()));
 				response.addComment(
 					conn.jprintf(
 						UserManagment.class.getName(),
@@ -585,8 +584,7 @@ public class UserManagment implements CommandHandler {
 					+ ratio
 					+ "'");
 			myUser.setRatio(ratio);
-
-			env.add("ratio", Float.toString(myUser.getRatio()));
+			env.add("newratio", Float.toString(myUser.getRatio()));
 			response.addComment(
 				conn.jprintf(
 					UserManagment.class.getName(),
