@@ -57,6 +57,7 @@ SITE\ WHO=net.sf.drftpd.master.command.plugins.UserManagment
 
 SITE\ RELOAD=net.sf.drftpd.master.command.plugins.SiteManagment
 SITE\ SHUTDOWN=net.sf.drftpd.master.command.plugins.SiteManagment
+SITE\ LIST=net.sf.drftpd.master.command.plugins.SiteManagment
 
 XCRC=net.sf.drftpd.master.command.plugins.Dir
 DELE=net.sf.drftpd.master.command.plugins.Dir
@@ -83,3 +84,12 @@ MLSD=net.sf.drftpd.master.command.plugins.MLST
 
 SITE\ REQUEST=net.sf.drftpd.master.command.plugins.Request
 SITE\ REQFILLED=net.sf.drftpd.master.command.plugins.Request
+
+SITE\ ALUP=net.sf.drftpd.master.command.plugins.TransferStatistics
+SITE\ ALDN=net.sf.drftpd.master.command.plugins.TransferStatistics
+SITE\ MONTHUP=net.sf.drftpd.master.command.plugins.TransferStatistics
+SITE\ MONTHDN=net.sf.drftpd.master.command.plugins.TransferStatistics
+SITE\ WKUP=net.sf.drftpd.master.command.plugins.TransferStatistics
+SITE\ WKDN=net.sf.drftpd.master.command.plugins.TransferStatistics
+SITE\ DAYUP=net.sf.drftpd.master.command.plugins.TransferStatistics
+SITE\ DAYDN=net.sf.drftpd.master.command.plugins.TransferStatistics

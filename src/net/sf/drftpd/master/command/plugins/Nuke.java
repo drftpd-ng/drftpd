@@ -105,6 +105,7 @@ public class Nuke implements CommandHandler {
 	 *     so the additional penalty in this case is the size of nuked files. If the
 	 *     multiplier is 3, user loses size * ratio + size * 2, etc.
 	 */
+	//TODO remove upload statistics
 	public FtpReply doSITE_NUKE(BaseFtpConnection conn) {
 		if (!conn.getUserNull().isNuker()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;

@@ -139,14 +139,20 @@ public class IRCListener implements FtpListener, Observer {
 	private int _port;
 
 	private String _server;
-	private ReplacerEnvironment globalEnv;
+	private static final ReplacerEnvironment globalEnv = new ReplacerEnvironment();
+	static {
+		globalEnv.add("bold", "\u0002");
+		globalEnv.add("coloroff", "\u000f");
+		globalEnv.add("color", "\u0003");
+	}
+
 	/**
 	 * 
 	 */
-	public IRCListener(ConnectionManager cm, FtpConfig config, String args[])
+	public IRCListener()
 		throws UnknownHostException, IOException {
 
-		_cm = cm;
+		//_cm = cm;
 		//Debug.setDebugLevel(Debug.FAULT);
 		Debug.setOutputStream(
 			new PrintStream(new FileOutputStream("ftp-data/logs/sitebot.log")));
@@ -165,19 +171,11 @@ public class IRCListener implements FtpListener, Observer {
 		new AutoJoin(_conn, _channelName, _key);
 		new AutoResponder(_conn);
 		_conn.addCommandObserver(this);
-		System.out.println(
+		logger.info(
 			"IRCListener: connecting to " + _server + ":" + _port);
 		_conn.connect(_server, _port);
-
-		globalEnv = new ReplacerEnvironment();
-		globalEnv.add("bold", "\u0002");
-		globalEnv.add("coloroff", "\u000f");
-		globalEnv.add("color", "\u0003");
-
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.event.FtpListener#actionPerformed(net.sf.drftpd.event.FtpEvent)
-	 */
+
 	public void actionPerformed(Event event) {
 		try {
 			if (event instanceof DirectoryFtpEvent) {
@@ -754,7 +752,8 @@ public class IRCListener implements FtpListener, Observer {
 		try {
 			if (updated instanceof MessageCommand) {
 				MessageCommand msgc = (MessageCommand) updated;
-				if(msgc.getDest().equalsIgnoreCase(_channelName)) return;
+				//only accept messages from _channelName
+				if(!msgc.getDest().equalsIgnoreCase(_channelName)) return;
 				String message = msgc.getMessage();
 
 				if (message.equals("!help")) {
@@ -1183,5 +1182,12 @@ public class IRCListener implements FtpListener, Observer {
 				}
 			}
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.event.FtpListener#init(net.sf.drftpd.master.command.CommandManager)
+	 */
+	public void init(ConnectionManager mgr) {
+		_cm = mgr;
 	}
 }

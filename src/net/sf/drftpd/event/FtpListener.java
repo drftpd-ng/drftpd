@@ -6,6 +6,8 @@
  */
 package net.sf.drftpd.event;
 
+import net.sf.drftpd.master.ConnectionManager;
+
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  *
@@ -15,4 +17,5 @@ package net.sf.drftpd.event;
 
 public interface FtpListener {
 	public void actionPerformed(Event event);
+	public void init(ConnectionManager mgr);
 }

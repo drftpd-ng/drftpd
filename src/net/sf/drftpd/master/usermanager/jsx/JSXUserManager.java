@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectExistsException;
+import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
@@ -34,7 +35,8 @@ import JSX.ObjIn;
  * To change the template for this generated type comment go to
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
-public class JSXUserManager extends UserManager {
+public class JSXUserManager implements UserManager {
+	private ConnectionManager _connManager;
 	private static Logger logger =
 		Logger.getLogger(JSXUserManager.class.getName());
 	String userpath =
@@ -47,6 +49,7 @@ public class JSXUserManager extends UserManager {
 	Hashtable users = new Hashtable();
 
 	public JSXUserManager() throws UserFileException {
+		
 		if (!userpathFile.exists() && !userpathFile.mkdirs()) {
 			throw new UserFileException(new IOException("Error creating folders: " + userpathFile));
 		}
@@ -152,7 +155,7 @@ public class JSXUserManager extends UserManager {
 
 		JSXUser user = (JSXUser) users.get(username);
 		if (user != null) {
-			user.reset();
+			user.reset(_connManager);
 			return user;
 		}
 
@@ -167,7 +170,7 @@ public class JSXUserManager extends UserManager {
 			//throws RuntimeException
 			user.usermanager = this;
 			users.put(user.getUsername(), user);
-			user.reset();
+			user.reset(_connManager);
 			return user;
 		} catch (ClassNotFoundException e) {
 			throw new FatalException(e);
@@ -198,5 +201,12 @@ public class JSXUserManager extends UserManager {
 			JSXUser user = (JSXUser)obj;
 			user.commit();
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.master.usermanager.UserManager#init(net.sf.drftpd.master.ConnectionManager)
+	 */
+	public void init(ConnectionManager mgr) {
+		_connManager = mgr;
 	}
 }

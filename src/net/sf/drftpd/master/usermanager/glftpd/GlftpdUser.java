@@ -101,14 +101,18 @@ public class GlftpdUser extends AbstractUser implements UnixPassword {
 	public void rename(String name) {
 		throw new UnsupportedOperationException();
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.UnixPassword#getUnixPassword()
-	 */
+
 	public String getUnixPassword() {
 		return password;
 	}
 
 	public void setUnixPassword(String password) {
 		this.password = password;
+	}
+	/* 
+	 * no such thing in glftpd userfiles
+	 */
+	public long getCreated() {
+		return 0;
 	}
 }

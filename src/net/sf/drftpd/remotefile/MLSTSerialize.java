@@ -138,9 +138,8 @@ public class MLSTSerialize {
 				} else if ("x.slaves".equals(k)) {
 
 					ArrayList rslaves = new ArrayList();
-					for (StringTokenizer st2 = new StringTokenizer(v, ",");
-						st.hasMoreTokens();
-						) {
+					StringTokenizer st2 = new StringTokenizer(v, ",");
+					while(st2.hasMoreTokens()) {
 						RemoteSlave rslave =
 							(RemoteSlave) allRslaves.get(st2.nextToken());
 						if (rslave == null)

@@ -177,7 +177,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 				_transfered += count;
 				_out.write(buff, 0, count);
 			}
-			_out.close();
+			_out.flush();
 		} finally {
 			_finished = System.currentTimeMillis();
 			_slave.getTransfers().remove(this);

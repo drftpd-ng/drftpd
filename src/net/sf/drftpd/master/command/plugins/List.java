@@ -1,10 +1,3 @@
-
-/*
- * Created on 2003-okt-16
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd.master.command.plugins;
 
 import java.io.FileNotFoundException;
@@ -108,21 +101,22 @@ public class List implements CommandHandler {
 				|| request.getCommand().equals("STAT")
 				|| options.indexOf('l') != -1;
 		//		boolean directoryOption = options.indexOf("d") != -1;
-		
+
 		DataConnectionHandler dataconn = null;
-		if(!request.getCommand().equals("STAT")) {
-		try {
-			dataconn =
-				(DataConnectionHandler) conn.getCommandManager().getCommandHandler(
-					DataConnectionHandler.class);
-		} catch (ObjectNotFoundException e2) {
-			throw new RuntimeException(e2);
-		}
-		if (!dataconn.mbPasv
-			&& !dataconn.mbPort
-			&& !request.getCommand().equals("STAT")) {
-			return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
-		}
+		if (!request.getCommand().equals("STAT")) {
+			try {
+				dataconn =
+					(DataConnectionHandler) conn
+						.getCommandManager()
+						.getCommandHandler(
+						DataConnectionHandler.class);
+			} catch (ObjectNotFoundException e2) {
+				throw new RuntimeException(e2);
+			}
+			if (!dataconn.mbPasv
+				&& !dataconn.mbPort) {
+				return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
+			}
 		}
 
 		LinkedRemoteFile directoryFile;
@@ -157,8 +151,6 @@ public class List implements CommandHandler {
 			out.flush();
 			try {
 				dataSocket = dataconn.getDataSocket();
-				//dataChannel = getDataChannel();
-				//OutputStreamWriter uses sun.nio.cs.StreamEncoder which has a 8192 byte ByteBuffer
 				os =
 					new PrintWriter(
 						new OutputStreamWriter(dataSocket.getOutputStream()));
@@ -177,7 +169,6 @@ public class List implements CommandHandler {
 		}
 		FtpReply response =
 			(FtpReply) FtpReply.RESPONSE_226_CLOSING_DATA_CONNECTION.clone();
-		response.addComment("fulldate = "+fulldate);
 		try {
 			SFVFile sfvfile = directoryFile.lookupSFVFile();
 			int good = sfvfile.finishedFiles();
@@ -255,13 +246,17 @@ public class List implements CommandHandler {
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.command.CommandHandler#initialize(net.sf.drftpd.master.BaseFtpConnection)
 	 */
-	public CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer) {
+	public CommandHandler initialize(
+		BaseFtpConnection conn,
+		CommandManager initializer) {
 		return this;
 	}
 	public String[] getFeatReplies() {
 		return null;
 	}
 
-	public void load(CommandManagerFactory initializer) {}
-	public void unload() {}
+	public void load(CommandManagerFactory initializer) {
+	}
+	public void unload() {
+	}
 }

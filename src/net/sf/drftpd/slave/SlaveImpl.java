@@ -325,6 +325,7 @@ public class SlaveImpl
 	 */
 	public void unreferenced() {
 		logger.info("unreferenced");
+		System.out.println("unreferenced");
 		System.exit(0);
 		//		logger.log(
 		//			Level.WARN,

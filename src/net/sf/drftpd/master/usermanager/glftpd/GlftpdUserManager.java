@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.usermanager.CorruptUserFileException;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
@@ -30,7 +31,7 @@ import org.apache.log4j.Logger;
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-public class GlftpdUserManager extends UserManager {
+public class GlftpdUserManager implements UserManager {
 	private static Logger logger =
 		Logger.getLogger(GlftpdUserManager.class.getName());
 
@@ -381,6 +382,9 @@ public class GlftpdUserManager extends UserManager {
 		
 		return ret;
 		*/
+	}
+
+	public void init(ConnectionManager mgr) {
 	}
 
 }

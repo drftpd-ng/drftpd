@@ -18,26 +18,13 @@ import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
 
-/**
- * @author mog
- *
- * To change the template for this generated type comment go to
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
 public class UpdateHosts implements FtpListener {
-
-	/**
-	 * 
-	 */
 	private ConnectionManager connManager;
 	public UpdateHosts(FtpConfig config, ConnectionManager connManager, String args[]) {
 		super();
 		this.connManager = connManager;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.event.FtpListener#actionPerformed(net.sf.drftpd.event.Event)
-	 */
 	public void actionPerformed(Event event) {
 		if(event instanceof SlaveEvent) actionPerformed((SlaveEvent)event);
 	}
@@ -61,4 +48,6 @@ public class UpdateHosts implements FtpListener {
 				out.println(rslave.getName() + " " + rslave.getInetAddress());
 			}
 	}
+
+	public void init(ConnectionManager mgr) {}
 }

@@ -204,12 +204,11 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
 
-		if (!conn
-			.getControlSocket()
-			.getInetAddress()
-			.getHostAddress()
-			.startsWith("192.168.")
-			&& clientAddr.getHostAddress().startsWith("192.168.")) {
+		String portHostAddress = clientAddr.getHostAddress();
+		String clientHostAddress =
+			conn.getControlSocket().getInetAddress().getHostAddress();
+		if ((portHostAddress.startsWith("192.168.")
+			&& !clientHostAddress.startsWith("192.168.")) || (portHostAddress.startsWith("10.") && !clientHostAddress.startsWith("10."))) {
 			FtpReply response = new FtpReply(501);
 			response.addComment("==YOU'RE BEHIND A NAT ROUTER==");
 			response.addComment(
@@ -617,7 +616,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 					_transferFile,
 					conn.getUserNull());
 			if (ratio != 0) {
-				conn.getUserNull().updateCredits((long)(-transferedBytes*ratio));
+				conn.getUserNull().updateCredits(
+					(long) (-transferedBytes * ratio));
 			}
 			conn.getUserNull().updateDownloadedBytes(transferedBytes);
 			conn.getUserNull().commit();
@@ -1131,24 +1131,22 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				throw ex;
 			}
 		} else if (mbPasv) {
-			if (_dataSocket == null)
-				{
-					_dataSocket = null;
-					try {
-						_dataSocket = mServSoc.accept();
-					} catch (IOException ex) {
-						throw ex;
-					} catch (Exception ex) {
-						throw new RuntimeException(ex);
-					} finally {
-						mServSoc.close();
-						mServSoc = null;
-					}
-				}
+			try {
+				_dataSocket = mServSoc.accept();
+			} catch (IOException ex) {
+				throw ex;
+			} catch (Exception ex) {
+				throw new RuntimeException(ex);
+			} finally {
+				mServSoc.close();
+				mServSoc = null;
+			}
 		}
-		_dataSocket.setSoTimeout(30000); // 30 seconds timeout
-		//_dataSocket.setSendBufferSize(8192);
-		return _dataSocket;
+		_dataSocket.setSoTimeout(15000); // 15 seconds timeout
+		//make sure it's available for garbage collection
+		Socket sock = _dataSocket;
+		_dataSocket = null;
+		return sock;
 	}
 	/**
 	 * Get client address from PORT command.
@@ -1182,7 +1180,9 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		return type;
 	}
 
-	public CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer) {
+	public CommandHandler initialize(
+		BaseFtpConnection conn,
+		CommandManager initializer) {
 		try {
 			return (DataConnectionHandler) clone();
 		} catch (CloneNotSupportedException e) {
@@ -1235,9 +1235,11 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	}
 
 	public String[] getFeatReplies() {
-		return new String[] {"PRET"};
+		return new String[] { "PRET" };
 	}
-	public void load(CommandManagerFactory initializer) {}
-	public void unload() {}
+	public void load(CommandManagerFactory initializer) {
+	}
+	public void unload() {
+	}
 
 }

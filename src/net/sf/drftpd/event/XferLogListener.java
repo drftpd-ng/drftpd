@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import net.sf.drftpd.FatalException;
+import net.sf.drftpd.master.ConnectionManager;
 
 /**
  * @author mog
@@ -111,6 +112,14 @@ public class XferLogListener implements FtpListener {
 				+ event.getUser().getGroupName()
 				+ " 0 * "
 				+ completed);
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.event.FtpListener#init(net.sf.drftpd.master.ConnectionManager)
+	 */
+	public void init(ConnectionManager mgr) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

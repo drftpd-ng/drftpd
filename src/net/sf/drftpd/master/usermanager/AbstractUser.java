@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.Iterator;
 
 import net.sf.drftpd.DuplicateElementException;
+import net.sf.drftpd.event.UserEvent;
+import net.sf.drftpd.master.ConnectionManager;
 
 import org.apache.log4j.Logger;
 import org.apache.oro.text.GlobCompiler;
@@ -19,10 +21,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  */
-
 public abstract class AbstractUser implements User {
-
-	private long weeklyAllotment;
 	private static Logger logger = Logger.getLogger(AbstractUser.class);
 	/**
 	 * Should problably be named group for consistency,
@@ -32,30 +31,29 @@ public abstract class AbstractUser implements User {
 
 	protected boolean anonymous;
 	protected String comment;
-	protected long credits;
-	public int hashCode() {
-		return getUsername().hashCode();
-	}
 
+	protected long created;
+	protected long credits;
 	protected long downloadedBytes;
 	protected long downloadedBytesDay;
 	protected long downloadedBytesMonth;
 	protected long downloadedBytesWeek;
-	
+
 	protected int downloadedFiles;
 	protected int downloadedFilesDay;
 	protected int downloadedFilesMonth;
 	protected int downloadedFilesWeek;
-	
+
 	protected int downloadedSeconds;
 	protected int downloadedSecondsDay;
 	protected int downloadedSecondsMonth;
 	protected int downloadedSecondsWeek;
 	protected short groupLeechSlots;
-	
+
 	protected ArrayList groups = new ArrayList();
 
 	protected short groupSlots;
+	protected String home;
 
 	protected int idleTime = 0; // no limit
 	protected ArrayList ipMasks = new ArrayList();
@@ -69,7 +67,6 @@ public abstract class AbstractUser implements User {
 
 	//action counters
 	protected int logins;
-	protected int loginTime = 0;
 	protected int maxDownloadRate;
 
 	//login limits
@@ -84,7 +81,6 @@ public abstract class AbstractUser implements User {
 
 	protected float ratio = 3.0F;
 	protected String tagline;
-	protected String home;
 	protected int timelimit;
 	protected int timesNuked;
 
@@ -94,18 +90,20 @@ public abstract class AbstractUser implements User {
 	protected long uploadedBytesDay;
 	protected long uploadedBytesMonth;
 	protected long uploadedBytesWeek;
-	
+
 	protected int uploadedFiles;
 	protected int uploadedFilesDay;
 	protected int uploadedFilesMonth;
 	protected int uploadedFilesWeek;
-	
+
 	protected int uploadedSeconds;
 	protected int uploadedSecondsDay;
 	protected int uploadedSecondsMonth;
 	protected int uploadedSecondsWeek;
 
 	protected String username;
+
+	private long weeklyAllotment;
 
 	public AbstractUser(String username) {
 		this.username = username;
@@ -155,6 +153,10 @@ public abstract class AbstractUser implements User {
 
 	public String getComment() {
 		return comment;
+	}
+
+	public long getCreated() {
+		return created;
 	}
 
 	/**
@@ -269,7 +271,8 @@ public abstract class AbstractUser implements User {
 	}
 
 	public String getGroupName() {
-		if(_group == null) return "nogroup";
+		if (_group == null)
+			return "nogroup";
 		return _group;
 	}
 
@@ -286,6 +289,14 @@ public abstract class AbstractUser implements User {
 	 */
 	public short getGroupSlots() {
 		return groupSlots;
+	}
+
+	/**
+	 * Returns the homedir(chroot).
+	 * @return String
+	 */
+	public String getHomeDirectory() {
+		return home;
 	}
 
 	/**
@@ -325,13 +336,6 @@ public abstract class AbstractUser implements User {
 	 */
 	public int getLogins() {
 		return logins;
-	}
-
-	/**
-	 * Get user loglin time.
-	 */
-	public int getLoginTime() {
-		return loginTime;
 	}
 
 	/**
@@ -398,14 +402,6 @@ public abstract class AbstractUser implements User {
 	 */
 	public String getTagline() {
 		return tagline;
-	}
-
-	/**
-	 * Returns the homedir(chroot).
-	 * @return String
-	 */
-	public String getHomeDirectory() {
-		return home;
 	}
 
 	/**
@@ -536,11 +532,11 @@ public abstract class AbstractUser implements User {
 		return username;
 	}
 
-	/**
-	 * Hit user - update last access time
-	 */
-	public void updateLastAccessTime() {
-		lastAccessTime = System.currentTimeMillis();
+	public long getWeeklyAllotment() {
+		return this.weeklyAllotment;
+	}
+	public int hashCode() {
+		return getUsername().hashCode();
 	}
 
 	public boolean isAdmin() {
@@ -571,9 +567,11 @@ public abstract class AbstractUser implements User {
 	 * @see net.sf.drftpd.master.usermanager.User#isMemberOf(java.lang.String)
 	 */
 	public boolean isMemberOf(String group) {
-		if(getGroupName().equals(group)) return true;
+		if (getGroupName().equals(group))
+			return true;
 		for (Iterator iter = getGroups().iterator(); iter.hasNext();) {
-			if(group.equals((String)iter.next())) return true;
+			if (group.equals((String) iter.next()))
+				return true;
 		}
 		return false;
 	}
@@ -583,21 +581,15 @@ public abstract class AbstractUser implements User {
 
 	/**
 	 * User login.
-	 * TODO use me
 	 */
 	public void login() {
-		logins += 1;
-		loginTime = (int) System.currentTimeMillis() / 1000;
-		lastAccessTime = loginTime;
-		//		loggedIn = true;
+		updateLogins(1);
 	}
 
 	/**
 	 * User logout
 	 */
 	public void logout() {
-		loginTime = 0;
-		//		loggedIn = false;
 	}
 
 	/* (non-Javadoc)
@@ -614,32 +606,32 @@ public abstract class AbstractUser implements User {
 		if (!ipMasks.remove(mask))
 			throw new NoSuchFieldException("User has no such ip mask");
 	}
-	
-	public void reset() {
+
+	public void reset(ConnectionManager cmgr) {
 		Calendar now = Calendar.getInstance();
 		Calendar lastResetCalendar = Calendar.getInstance();
 		lastResetCalendar.setTime(new Date(lastReset));
-		if (now.get(Calendar.MONTH)
-			!= lastResetCalendar.get(Calendar.MONTH)) {
-			resetMonth();
-			logger.info("Reset mothly stats for "+getUsername());
-		}
+		
+		if (now.get(Calendar.MONTH) != lastResetCalendar.get(Calendar.MONTH))
+			resetMonth(cmgr);
+
 		if (now.get(Calendar.WEEK_OF_YEAR)
-			!= lastResetCalendar.get(Calendar.WEEK_OF_YEAR)) {
-			resetWeek();
-			logger.info("Reset weekly stats for "+getUsername());
-		}
+			!= lastResetCalendar.get(Calendar.WEEK_OF_YEAR))
+			resetWeek(cmgr);
+
 		if (now.get(Calendar.DAY_OF_YEAR)
-			!= lastResetCalendar.get(Calendar.DAY_OF_YEAR)) {
-			resetDay();
-			logger.info("Reset daily stats for "+getUsername());
-		}
+			!= lastResetCalendar.get(Calendar.DAY_OF_YEAR))
+			resetDay(cmgr);
+
 		lastReset = System.currentTimeMillis();
 	}
 	/**
 	 * 
 	 */
-	private void resetDay() {
+	private void resetDay(ConnectionManager cm) {
+		logger.info("Reset daily stats for " + getUsername());
+		cm.dispatchFtpEvent(new UserEvent(this, "RESETDAY"));
+
 		this.downloadedFilesDay = 0;
 		this.uploadedBytesDay = 0;
 
@@ -653,7 +645,10 @@ public abstract class AbstractUser implements User {
 	/**
 	 * 
 	 */
-	private void resetMonth() {
+	private void resetMonth(ConnectionManager cm) {
+		cm.dispatchFtpEvent(new UserEvent(this, "RESETMONTH"));
+		logger.info("Reset mothly stats for " + getUsername());
+
 		this.downloadedFilesMonth = 0;
 		this.uploadedBytesMonth = 0;
 
@@ -666,7 +661,10 @@ public abstract class AbstractUser implements User {
 	/**
 	 * 
 	 */
-	private void resetWeek() {
+	private void resetWeek(ConnectionManager cm) {
+		cm.dispatchFtpEvent(new UserEvent(this, "RESETWEEK"));
+		logger.info("Reset weekly stats for " + getUsername());
+
 		this.downloadedFilesWeek = 0;
 		this.uploadedBytesWeek = 0;
 
@@ -675,9 +673,10 @@ public abstract class AbstractUser implements User {
 
 		this.downloadedBytesWeek = 0;
 		this.uploadedBytesWeek = 0;
-		if(getWeeklyAllotment() > 0) {
+		if (getWeeklyAllotment() > 0) {
 			setCredits(getWeeklyAllotment());
 		}
+
 	}
 
 	public void setComment(String comment) {
@@ -728,6 +727,14 @@ public abstract class AbstractUser implements User {
 	 */
 	public void setGroupSlots(short s) {
 		groupSlots = s;
+	}
+
+	/**
+	 * Sets the homedir(chroot).
+	 * @param home The homedir to set
+	 */
+	public void setHomeDirectory(String home) {
+		this.home = home;
 	}
 
 	/**
@@ -829,14 +836,6 @@ public abstract class AbstractUser implements User {
 	}
 
 	/**
-	 * Sets the homedir(chroot).
-	 * @param home The homedir to set
-	 */
-	public void setHomeDirectory(String home) {
-		this.home = home;
-	}
-
-	/**
 	 * Sets the timelimit.
 	 * @param timelimit The timelimit to set
 	 */
@@ -858,6 +857,10 @@ public abstract class AbstractUser implements User {
 	 */
 	public void setTimeToday(long timeToday) {
 		this.timeToday = timeToday;
+	}
+
+	public void setWeeklyAllotment(long weeklyAllotment) {
+		this.weeklyAllotment = weeklyAllotment;
 	}
 
 	/** 
@@ -886,6 +889,20 @@ public abstract class AbstractUser implements User {
 		this.downloadedFilesWeek += i;
 		this.downloadedFilesMonth += i;
 	}
+
+	/**
+	 * Hit user - update last access time
+	 */
+	public void updateLastAccessTime() {
+		lastAccessTime = System.currentTimeMillis();
+	}
+
+	/**
+	 * @param i
+	 */
+	private void updateLogins(int i) {
+		logins += 1;
+	}
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.usermanager.User#updateNukedBytes(long)
 	 */
@@ -911,13 +928,5 @@ public abstract class AbstractUser implements User {
 		this.uploadedFilesDay += i;
 		this.uploadedFilesWeek += i;
 		this.uploadedFilesMonth += i;
-	}
-
-	public void setWeeklyAllotment(long weeklyAllotment) {
-		this.weeklyAllotment = weeklyAllotment;
-	}
-
-	public long getWeeklyAllotment() {
-		return this.weeklyAllotment;
 	}
 }

@@ -20,7 +20,6 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.event.XferLogListener;
-import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -43,6 +42,7 @@ public class ConnectionManager {
 
 	public static void main(String args[]) {
 		if (args.length >= 1 && args[0].equals("-nolog")) {
+			args = scrubArgs(args);
 			BasicConfigurator.configure();
 		} else {
 			Logger root = Logger.getRootLogger();
@@ -57,7 +57,7 @@ public class ConnectionManager {
 				throw new FatalException(e1);
 			}
 		}
-			System.out.println(SlaveImpl.VERSION + " master server starting.");
+		System.out.println(SlaveImpl.VERSION + " master server starting.");
 		System.out.println("http://drftpd.sourceforge.net");
 
 		System.setProperty("line.separator", "\r\n");
@@ -88,6 +88,15 @@ public class ConnectionManager {
 			System.exit(0);
 			return;
 		}
+	}
+	/**
+	 * @param args
+	 * @return
+	 */
+	private static String[] scrubArgs(String[] args) {
+		String ret[] = new String[args.length - 1];
+		System.arraycopy(args, 1, ret, 0, ret.length);
+		return ret;
 	}
 	private FtpConfig _config;
 
@@ -138,16 +147,28 @@ public class ConnectionManager {
 				e);
 		}
 
-		_commandManagerFactory = new CommandManagerFactory(this);
-
-		if (cfg.getProperty("irc.enabled", "false").equals("true")) {
+		for (int i = 1;; i++) {
+			String classname = cfg.getProperty("plugin." + i);
+			if (classname == null)
+				break;
 			try {
 				addFtpListener(
-					new IRCListener(this, getConfig(), new String[0]));
-			} catch (Exception e2) {
-				throw new FatalException(e2);
+					(FtpListener) Class.forName(classname).newInstance());
+			} catch (Exception e) {
+				throw new FatalException("Error loading plugins", e);
 			}
 		}
+
+		_commandManagerFactory = new CommandManagerFactory(this);
+
+		//		if (cfg.getProperty("irc.enabled", "false").equals("true")) {
+		//			try {
+		//				addFtpListener(
+		//					new IRCListener(this, getConfig(), new String[0]));
+		//			} catch (Exception e2) {
+		//				throw new FatalException(e2);
+		//			}
+		//		}
 
 		addFtpListener(new XferLogListener());
 
@@ -236,6 +257,7 @@ public class ConnectionManager {
 			} catch (UserFileException e) {
 				logger.log(Level.WARN, "Failed to save all userfiles", e);
 			}
+			System.out.println("Shutdown complete, exiting");
 			System.exit(0);
 		}
 	}

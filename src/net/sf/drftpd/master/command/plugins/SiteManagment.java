@@ -7,6 +7,9 @@
 package net.sf.drftpd.master.command.plugins;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -15,6 +18,7 @@ import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
+import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -30,6 +34,23 @@ public class SiteManagment implements CommandHandler {
 	public void load(CommandManagerFactory initializer) {}
 
 	private Logger logger = Logger.getLogger(SiteManagment.class);
+
+	public FtpReply doSITE_LIST(BaseFtpConnection conn) {
+		conn.resetState();
+		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+		//Map files = currentDirectory.getMap();
+		ArrayList files = new ArrayList(conn.getCurrentDirectory().getFiles());
+		Collections.sort(files);
+		for (Iterator iter = files.iterator(); iter.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			//if (!key.equals(file.getName()))
+			//	response.addComment(
+			//		"WARN: " + key + " not equals to " + file.getName());
+			//response.addComment(key);
+			response.addComment(file.toString());
+		}
+		return response;
+	}
 
 	private FtpReply doSITE_SHUTDOWN(BaseFtpConnection conn) {
 		conn.resetState();
@@ -69,6 +90,7 @@ public class SiteManagment implements CommandHandler {
 		String cmd = conn.getRequest().getCommand();
 		if("SITE RELOAD".equals(cmd)) return doSITE_RELOAD(conn);
 		if("SITE SHUTDOWN".equals(cmd)) return doSITE_SHUTDOWN(conn);
+		if("SITE LIST".equals(cmd)) return doSITE_LIST(conn);
 		throw UnhandledCommandException.create(SiteManagment.class, conn.getRequest());
 	}
 	public CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer) {

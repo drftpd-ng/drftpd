@@ -141,14 +141,14 @@ public class Login implements CommandHandler, Cloneable {
 
 		// login failure - close connection
 		if (conn.getUserNull().checkPassword(pass)) {
-			conn.getUserNull().updateLastAccessTime();
+			conn.getUserNull().login();
 			FtpReply response =
 				(FtpReply) FtpReply.RESPONSE_230_USER_LOGGED_IN.clone();
 			try {
 				Textoutput.addTextToResponse(response, "welcome");
 				//conn.getConfig().welcomeMessage(response);
 			} catch (IOException e) {
-				logger.warn("Error reading ftp-data/text/welcome.txt", e);
+				logger.warn("Error reading welcome", e);
 			}
 			conn.setAuthenticated(true);
 			conn.getConnectionManager().dispatchFtpEvent(
