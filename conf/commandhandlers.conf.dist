@@ -84,7 +84,6 @@ SITE\ WELCOME=net.sf.drftpd.master.command.plugins.Textoutput
 
 CLNT=net.sf.drftpd.master.command.plugins.Dummy
 NOOP=net.sf.drftpd.master.command.plugins.Dummy
-SITE\ FOO=net.sf.drftpd.master.command.plugins.Dummy
 
 ABOR=net.sf.drftpd.master.command.plugins.Misc
 FEAT=net.sf.drftpd.master.command.plugins.Misc

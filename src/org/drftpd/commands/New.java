@@ -113,10 +113,6 @@ public class New implements CommandHandler, CommandHandlerFactory {
         return this;
     }
 
-//    public String getHelp(String cmd) {
-//        return this.toString()+"\n";
-//    }
-    
     public String[] getFeatReplies() {
         return null;
     }
