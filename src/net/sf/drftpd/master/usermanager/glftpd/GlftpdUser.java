@@ -12,9 +12,13 @@ import net.sf.drftpd.util.Crypt;
  * 
  * @author mog
  * @author zubov
- * @version $Id: GlftpdUser.java,v 1.5 2004/01/13 20:30:54 mog Exp $
+ * @version $Id: GlftpdUser.java,v 1.6 2004/01/14 18:20:01 mog Exp $
  */
 public class GlftpdUser extends AbstractUser implements UnixPassword {
+	private String password;
+	//private String flags;
+	private Vector privateGroups = new Vector();
+	//private long weeklyAllotment;
 	//private GlftpdUserManager usermanager;
 	/**
 	 * Constructor for GlftpdUser.
@@ -23,20 +27,10 @@ public class GlftpdUser extends AbstractUser implements UnixPassword {
 		super(username);
 		//this.usermanager = usermanager;
 	}
-	private long weeklyAllotment;
-	//private String flags;
-	private Vector privateGroups = new Vector();
-	private String password;
 	public void addPrivateGroup(String group)
 		throws DuplicateElementException {
 		addGroup(group);
 		privateGroups.add(group);
-	}
-	public long getWeeklyAllotment() {
-		return weeklyAllotment;
-	}
-	public void setWeeklyAllotment(long weeklyAllotment) {
-		this.weeklyAllotment = weeklyAllotment;
 	}
 	public boolean checkPassword(String userPassword) {
 		String userhash =
@@ -48,6 +42,19 @@ public class GlftpdUser extends AbstractUser implements UnixPassword {
 			System.out.println(password + " != " + userhash);
 		}
 		return false;
+	}
+	public void commit() {
+		throw new UnsupportedOperationException();
+	}
+	/* 
+	 * no such thing in glftpd userfiles
+	 */
+	public long getCreated() {
+		return 0;
+	}
+
+	public long getLastReset() {
+		return System.currentTimeMillis();
 	}
 	/**
 	* Sets the flags.
@@ -63,6 +70,19 @@ public class GlftpdUser extends AbstractUser implements UnixPassword {
 	public Collection getPrivateGroups() {
 		return privateGroups;
 	}
+
+	public String getUnixPassword() {
+		return password;
+	}
+	public long getWeeklyAllotment() {
+		return weeklyAllotment;
+	}
+	public void purge() {
+		throw new UnsupportedOperationException();
+	}
+	public void rename(String name) {
+		throw new UnsupportedOperationException();
+	}
 	/**
 	* Sets the password.
 	* @param password The password to set
@@ -71,6 +91,16 @@ public class GlftpdUser extends AbstractUser implements UnixPassword {
 		throw new UnsupportedOperationException();
 		//must be encrypted...
 		//this.password = password;
+	}
+
+	public void setUnixPassword(String password) {
+		this.password = password;
+	}
+	public void setWeeklyAllotment(long weeklyAllotment) {
+		this.weeklyAllotment = weeklyAllotment;
+	}
+	public void update() {
+		throw new UnsupportedOperationException();
 	}
 
 	public void updateCredits(long credits) {
@@ -88,30 +118,5 @@ public class GlftpdUser extends AbstractUser implements UnixPassword {
 	public void updateUploadedBytes(long bytes) {
 		throw new UnsupportedOperationException();
 	}
-	public void update() {
-		throw new UnsupportedOperationException();
-	}
-	public void purge() {
-		throw new UnsupportedOperationException();
-	}
-	public void commit() {
-		throw new UnsupportedOperationException();
-	}
-	public void rename(String name) {
-		throw new UnsupportedOperationException();
-	}
 
-	public String getUnixPassword() {
-		return password;
-	}
-
-	public void setUnixPassword(String password) {
-		this.password = password;
-	}
-	/* 
-	 * no such thing in glftpd userfiles
-	 */
-	public long getCreated() {
-		return 0;
-	}
 }
