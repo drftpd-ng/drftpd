@@ -17,8 +17,8 @@ import java.util.zip.CheckedOutputStream;
 import net.sf.drftpd.AsciiOutputStream;
 
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- * @version $Id: TransferImpl.java,v 1.28 2003/11/17 20:13:11 mog Exp $
+ * @author mog
+ * @version $Id: TransferImpl.java,v 1.29 2003/11/17 20:33:10 mog Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private boolean _abort = false;

@@ -40,13 +40,14 @@ import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 import net.sf.drftpd.slave.Transfer;
+import net.sf.drftpd.slave.TransferStatus;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.9 2003/11/17 20:13:10 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.10 2003/11/17 20:33:10 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -616,12 +617,14 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 						+ "."));
 			out.flush();
 		}
+		TransferStatus status;
 		try {
 			_transfer.sendFile(
 				_transferFile.getPath(),
 				getType(),
 				resumePosition,
 				true);
+				status = _transfer.getStatus();
 		} catch (RemoteException ex) {
 			_rslave.handleRemoteException(ex);
 			return new FtpReply(426, "Remote error: " + ex.getMessage());
@@ -637,16 +640,15 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		//			e1.printStackTrace();
 		//		}
 		//		System.err.println("Finished");
-		TransferSt
 		FtpReply response =
 			new FtpReply(
 				226,
 				"Transfer complete, "
-					+ Bytes.formatBytes(_transfer.getTransfered())
+					+ Bytes.formatBytes(status.getTransfered())
 					+ " in "
-					+ _transfer.getTransferTime() / 1000
+					+ status.getElapsed() / 1000
 					+ " seconds ("
-					+ Bytes.formatBytes(_transfer.getXferSpeed())
+					+ Bytes.formatBytes(status.getXferSpeed())
 					+ "/s)");
 		//	(FtpReply) FtpReply.RESPONSE_226_CLOSING_DATA_CONNECTION.clone();
 
