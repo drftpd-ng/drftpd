@@ -499,8 +499,10 @@ public class IRCListener implements FtpListener, Observer {
 		LinkedRemoteFile tmp = dir, tmp2 = dir;
 		try {
 			while (true) {
-				tmp = dir.getParentFile();
+				tmp = tmp.getParentFile();
 				tmp2 = tmp;
+				//dir = /
+				//tmp = /<dir>/
 			}
 		} catch (FileNotFoundException e1) {
 			return new Object[] { _ircCfg.getProperty(prefix), tmp2 };
