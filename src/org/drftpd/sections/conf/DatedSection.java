@@ -61,12 +61,14 @@ public class DatedSection implements SectionInterface {
     private SimpleDateFormat _dateFormat;
     private SectionManager _mgr;
     private String _name;
+    private String _now;
     private RollingCalendar rc = new RollingCalendar();
 
     public DatedSection(SectionManager mgr, int i, Properties p) {
         _mgr = mgr;
         _name = PropertyHelper.getProperty(p, i + ".name");
         _basePath = PropertyHelper.getProperty(p, i + ".path");
+        _now = PropertyHelper.getProperty(p, i + ".now");
 
         if (!_basePath.endsWith("/")) {
             _basePath += "/";
@@ -106,12 +108,12 @@ public class DatedSection implements SectionInterface {
 
     public LinkedRemoteFileInterface getFile() {
         String dateDirPath = _dateFormat.format(new Date());
-        System.out.println(new Date());
-        System.out.println(dateDirPath);
-        System.out.println(_dateFormat.getCalendar());
-        System.out.println(_dateFormat.getTimeZone());
+        //System.out.println(new Date());
+        //System.out.println(dateDirPath);
+        //System.out.println(_dateFormat.getCalendar());
+        //System.out.println(_dateFormat.getTimeZone());
         _dateFormat.setTimeZone(TimeZone.getDefault());
-        System.out.println(_dateFormat.getTimeZone());
+        //System.out.println(_dateFormat.getTimeZone());
 
         try {
             return getBaseFile().lookupFile(dateDirPath);
@@ -125,11 +127,11 @@ public class DatedSection implements SectionInterface {
             }
 
             try {
-                base.getFile(getName() + "-NOW").delete();
+                base.getFile(getName() + _now).delete();
             } catch (FileNotFoundException e2) {
             }
 
-            base.addFile(new StaticRemoteFile(getName() + "-NOW", null,
+            base.addFile(new StaticRemoteFile(getName() + _now, null,
                     dateDir.getPath()));
             logger.info("Created " + dateDir.getPath() +
                 " and created symlink");

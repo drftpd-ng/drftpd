@@ -146,18 +146,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         conn.getGlobalContext().getConfig().directoryMessage(response,
             conn.getUserNull(), newCurrentDirectory);
 
-		Properties zsCfg = new Properties();
-        try {
-			FileInputStream zsFile = new FileInputStream("conf/zipscript.conf");
-			zsCfg.load(zsFile);
-			zsFile.close();
-		} catch (FileNotFoundException e4) {
-			response.setMessage("Missing file conf/zipscript.conf");
-			response.addComment(e4);
-		} catch (IOException e4) {
-			response.setMessage("IOException opening conf/zipscript.conf");
-			response.addComment(e4);
-		}
+        Properties zsCfg = conn.getGlobalContext().getConfig().getZsConfig();
 
         // show cwd_mp3.txt if this is an mp3 release
         boolean id3Enabled = zsCfg.getProperty("cwd.id3info.enabled").equalsIgnoreCase("true");;
