@@ -24,8 +24,9 @@ master.socketport=1100
 # Default: "", comment out if you dont want to allow autoregister
 master.autoregister=autopass
 
-#User manager to use, just leave it for now.
-master.usermanager=net.sf.drftpd.master.usermanager.jsx.JSXUserManager
+#User manager to use.
+#XStream is default for 1.1, but JSX is still supported for <1.1 users
+master.usermanager=net.sf.drftpd.master.usermanager.xstream.XStreamUserManager
 
 #Slave manager to use, just leave it for now.
 master.slavemanager=net.sf.drftpd.master.SlaveManagerImpl
@@ -36,12 +37,12 @@ master.slavemanager=net.sf.drftpd.master.SlaveManagerImpl
 #plugins.3=net.sf.drftpd.event.listeners.PreTime
 #plugins.4=net.sf.drftpd.event.listeners.Archive
 
-slaveselection=org.drftpd.slaveselection.def.SlaveSelectionManager
+slaveselection=org.drftpd.slaveselection.filter.SlaveSelectionManager
 sectionmanager=org.drftpd.sections.def.SectionManager
 
 # the interval at which the slave's status are recached on the master
 # value is in milliseconds
 # the lower it is, the more accurate it will be
-# 300 milliseconds works well for LAN conditions
+# 300 milliseconds works well for low latency conditions
 # Reloadable by SITE RELOAD
 slaveStatusUpdateTime=3000
