@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.87 2003/12/01 04:43:44 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.88 2003/12/03 04:50:21 zubov Exp $
  */
 
 public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comparable {
@@ -501,8 +501,9 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 	/** returns slaves. returns null if a directory.
 	 */
 	public Collection getSlaves() {
-		if (_slaves == null)
-			throw new IllegalStateException("getSlaves() on non-directory");
+		// what about files that do not have a slave yet? (new files created with STOR)
+//		if (_slaves == null)
+//			throw new IllegalStateException("getSlaves() on non-directory");
 		return _slaves;
 	}
 

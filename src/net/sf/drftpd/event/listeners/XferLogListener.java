@@ -4,7 +4,7 @@
  * To change the template for this generated file go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-package net.sf.drftpd.event;
+package net.sf.drftpd.event.listeners;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,6 +15,9 @@ import java.util.Date;
 import java.util.Locale;
 
 import net.sf.drftpd.FatalException;
+import net.sf.drftpd.event.Event;
+import net.sf.drftpd.event.FtpListener;
+import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.ConnectionManager;
 
 /**

@@ -91,67 +91,45 @@ public class Login implements CommandHandler, Cloneable {
 
 		List masks = newUser.getIpMasks2();
 		String ident = null;
-		if (conn.getConnectionManager().useIdent()) {
-			for (Iterator iter = masks.iterator(); iter.hasNext();) {
-				HostMask mask = (HostMask) iter.next();
-				if (mask.isIdentMaskSignificant() && ident == null) {
-					Ident id = new Ident(conn.getControlSocket());
-					if (id.successful) {
-						ident = id.userName;
-						if (ident.indexOf('@') != -1) {
-							return new FtpReply(530, "Invalid ident response");
-						}
-					} else {
-						logger.warn("Failed to get ident response: " + id.errorMessage);
-						ident = "";
+		for (Iterator iter = masks.iterator(); iter.hasNext();) {
+			HostMask mask = (HostMask) iter.next();
+			if (ident == null
+				&& mask.isIdentMaskSignificant()
+				&& conn.getConnectionManager().useIdent()) {
+				Ident id = new Ident(conn.getControlSocket());
+				if (id.successful) {
+					ident = id.userName;
+					if (ident.indexOf('@') != -1) {
+						return new FtpReply(530, "Invalid ident response");
 					}
-				}
-				if(mask.matches((ident == null ? "" : ident), conn.getClientAddress())) {
-					//success
-					// max_users and num_logins restriction
-					FtpReply response = conn.getConnectionManager().canLogin(conn);
-					if (response != null) {
-						return response;
-					}
-
-					conn.setUser(newUser);
-
+				} else {
+					logger.warn("Failed to get ident response: " + id.errorMessage);
+					ident = "";
 				}
 			}
-		} else {
-			ident = "";
+			if(mask.matches((ident == null ? "" : ident), conn.getClientAddress())) {
+				//success
+				// max_users and num_logins restriction
+				conn.setUser(newUser);
+				FtpReply response = conn.getConnectionManager().canLogin(conn);
+				if (response != null) {
+					return response;
+				}
+				/**
+				 * <code>PASS &lt;SP&gt; <password> &lt;CRLF&gt;</code><br>
+				*
+				* The argument field is a Telnet string specifying the user's
+				* password.  This command must be immediately preceded by the
+				* user name command.
+				*/
+				return new FtpReply(
+					331,
+					"Password required for " + newUser.getUsername());
+			}
 		}
 		//fail
 		return FtpReply.RESPONSE_530_ACCESS_DENIED;
-//		String masks[][] =
-//			{
-//				new String[] { ident, conn.getClientAddress().getHostAddress()},
-//				new String[] { ident, conn.getClientAddress().getHostName()}
-//		};
-//
-//		if (!newUser.checkIP(masks, conn.getConnectionManager().useIdent())) {
-//			return FtpReply.RESPONSE_530_ACCESS_DENIED;
-//		}
-
-
-		if (!conn.getSlaveManager().hasAvailableSlaves()
-			&& !newUser.isAdmin()) {
-			return new FtpReply(
-				530,
-				"No transfer slave(s) available, try again later.");
-		}
-
-		return new FtpReply(
-			331,
-			"Password required for " + newUser.getUsername());
 	}
-	/**
-	 * <code>PASS &lt;SP&gt; <password> &lt;CRLF&gt;</code><br>
-	 *
-	 * The argument field is a Telnet string specifying the user's
-	 * password.  This command must be immediately preceded by the
-	 * user name command.
-	 */
 	private FtpReply doPASS(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
 		// set state variables

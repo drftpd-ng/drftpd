@@ -36,7 +36,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
  */
 public class RaceStatistics implements FtpListener {
 
-	ConnectionManager _cm;
+	private ConnectionManager _cm;
 	
 	public RaceStatistics(ConnectionManager cm){
 		init(cm);

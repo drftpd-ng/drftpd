@@ -60,7 +60,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.14 2003/12/01 04:43:44 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.15 2003/12/03 04:50:21 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -574,7 +574,11 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 					request.getArgument());
 			targetDir = ret.getFile();
 			targetFileName = ret.getPath();
-
+			try {
+				_transferFile = new LinkedRemoteFile(new StaticRemoteFile(targetFileName),conn.getConfig());
+			} catch (IOException e1) {
+				return new FtpReply(550, e1.getMessage());
+			}
 			if (ret.exists()) {
 				// target exists, this could be overwrite or resume
 				// if(resumePosition != 0) {} // resume
@@ -642,8 +646,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		//setup _rslave
 		if (mbPasv) {
 			assert _preTransfer == true;
-
-			if (!_transferFile.getSlaves().contains(_preTransferRSlave)) {
+			if ( _transferFile.getSlaves() != null  // new file
+				&&	!_transferFile.getSlaves().contains(_preTransferRSlave)) {
 				return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 			}
 			_rslave = _preTransferRSlave;

@@ -23,7 +23,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.29 2003/12/02 20:40:54 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.30 2003/12/03 04:50:21 zubov Exp $
  */
 public abstract class AbstractUser implements User {
 	private static Logger logger = Logger.getLogger(AbstractUser.class);
@@ -251,7 +251,7 @@ public abstract class AbstractUser implements User {
 	public List getIpMasks2() {
 		//return ipMasks;
 		ArrayList ret = new ArrayList();
-		for (Iterator iter = ret.iterator(); iter.hasNext();) {
+		for (Iterator iter = ipMasks.iterator(); iter.hasNext();) {
 			ret.add(new HostMask((String)iter.next()));
 		}
 		return ret;

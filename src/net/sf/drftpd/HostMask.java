@@ -16,7 +16,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
 
 /**
  * @author mog
- * @version $Id: HostMask.java,v 1.1 2003/12/02 20:40:50 mog Exp $
+ * @version $Id: HostMask.java,v 1.2 2003/12/03 04:50:20 zubov Exp $
  */
 public class HostMask {
 	private static final Logger logger = Logger.getLogger(HostMask.class);
@@ -49,18 +49,19 @@ public class HostMask {
 		Perl5Matcher m = new Perl5Matcher();
 
 		GlobCompiler c = new GlobCompiler();
+		System.out.println("comparing " + ident + "@" + address.getHostAddress() + " and " + getIdentMask());
 		try {
-			if (!m.matches(ident, c.compile(getIdentMask()))) {
-				return false;
+			if (m.matches(ident, c.compile(getIdentMask()))) {
+				return true;
 			}
 			Pattern p = c.compile(getHostMask());
-			if (!m.matches(address.getHostAddress(), p)) {
-				return false;
+			if (m.matches(address.getHostAddress(), p)) {
+				return true;
 			}
-			if (!m.matches(address.getHostName(), p)) {
-				return false;
+			if (m.matches(address.getHostName(), p)) {
+				return true;
 			}
-			return true;
+			return false;
 		} catch (MalformedPatternException ex) {
 			logger.warn("", ex);
 			return false;
