@@ -2247,7 +2247,7 @@ public class FtpConnection extends BaseFtpConnection {
 		out.print(response);
 		return;
 	}
-	public void doSITE_KICKSLAVES(FtpRequest request, PrintWriter out) {
+	public void doSITE_KICKSLAVE(FtpRequest request, PrintWriter out) {
 		reset();
 		if(!_user.isAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
@@ -2264,7 +2264,7 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(new FtpResponse(200, "No such slave"));
 			return;
 		}
-		if(rslave.isAvailable()) {
+		if(!rslave.isAvailable()) {
 			out.print(new FtpResponse(200, "Slave is already offline"));
 			return;
 		}
@@ -2322,12 +2322,24 @@ public class FtpConnection extends BaseFtpConnection {
 
 		StringTokenizer st = new StringTokenizer(request.getArgument(), " ");
 
+		if(!st.hasMoreTokens()) {
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			return;
+		}
+
 		LinkedRemoteFile nukeDir;
+		String nukeDirPath;
 		try {
-			nukeDir = currentDirectory.getFile(st.nextToken());
+			nukeDirPath = st.nextToken();
+			nukeDir = currentDirectory.getFile(nukeDirPath);
 		} catch (FileNotFoundException e) {
 			FtpResponse response = new FtpResponse(550, e.getMessage());
 			out.print(response.toString());
+			return;
+		}
+
+		if(!st.hasMoreTokens()) {
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
 		}
 
@@ -2341,15 +2353,15 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		String reason;
-		if (!st.hasMoreTokens()) {
-			reason = "";
-		} else {
+		if (st.hasMoreTokens()) {
 			reason = st.nextToken("");
+		} else {
+			reason = "";
 		}
 
 		if (!nukeDir.isDirectory()) {
 			FtpResponse response =
-				new FtpResponse(550, nukeDir.getName() + " is not a directory");
+				new FtpResponse(550, nukeDirPath + ": not a directory");
 			out.print(response.toString());
 			return;
 		}

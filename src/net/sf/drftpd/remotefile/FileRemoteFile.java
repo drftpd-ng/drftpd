@@ -192,7 +192,7 @@ public class FileRemoteFile extends RemoteFile {
 			if(tmpFiles == null) throw new NullPointerException("list() on "+file+" returned null");
 			for (int i = 0; i < tmpFiles.length; i++) {
 				try {
-					if(tmpFiles[i].isDirectory() && isEmptyDeleted(tmpFiles[i])) {
+					if(tmpFiles[i].isDirectory() && isEmpty(tmpFiles[i])) {
 						continue;
 					}
 					FileRemoteFile listfile = new FileRemoteFile(rootBasket, path+File.separatorChar+tmpFiles[i].getName());
@@ -215,7 +215,7 @@ public class FileRemoteFile extends RemoteFile {
 	/**
 	 * @return true if directory contained no files and is now deleted, false otherwise.
 	 */
-	private static boolean isEmptyDeleted(File dir) {
+	private static boolean isEmpty(File dir) {
 		File listfiles[] = dir.listFiles();
 		if(listfiles == null) throw new FatalException("Not a directory or IO error: "+dir);
 		for (int i = 0; i < listfiles.length; i++) {
@@ -226,7 +226,7 @@ public class FileRemoteFile extends RemoteFile {
 		for (int i = 0; i < listfiles.length; i++) {
 			File file = listfiles[i];
 			// parent directory not empty
-			if(!isEmptyDeleted(file)) return false;
+			if(!isEmpty(file)) return false;
 		}
 		dir.delete();
 		return true;
