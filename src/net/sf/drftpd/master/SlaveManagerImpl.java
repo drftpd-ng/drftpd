@@ -1,16 +1,16 @@
 /*
  * This file is part of DrFTPD, Distributed FTP Daemon.
- * 
+ *
  * DrFTPD is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * DrFTPD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Hashtable;
 import java.util.ListIterator;
 import java.util.Properties;
 
@@ -68,7 +69,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.86 2004/05/16 05:44:53 zubov Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.87 2004/05/19 17:06:04 zombiewoof64 Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -109,15 +110,15 @@ public class SlaveManagerImpl
 	}
 
 	public static RemoteSlave loadRSlave(Element slaveElement) {
-		List masks = new ArrayList();
-		List maskElements = slaveElement.getChildren("mask");
-		for (Iterator i2 = maskElements.iterator(); i2.hasNext();) {
-			masks.add(((Element) i2.next()).getText());
-		}
-		return new RemoteSlave(
-			slaveElement.getChildText("name").toString(),
-			masks,
-			slaveElement);
+//		List masks = new ArrayList();
+//		List maskElements = slaveElement.getChildren("mask");
+//		for (Iterator i2 = maskElements.iterator(); i2.hasNext();) {
+//			masks.add(((Element) i2.next()).getText());
+//		}
+		return new RemoteSlave(slaveElement);
+//			slaveElement.getChildText("name").toString(),
+//			masks,
+//			slaveElement);
 	}
 
 	public static List loadRSlaves() {
@@ -129,7 +130,7 @@ public class SlaveManagerImpl
 			rslaves = new ArrayList(children.size());
 			for (Iterator i = children.iterator(); i.hasNext();) {
 				//slavemanager is set in the slavemanager constructor
-				rslaves.add(loadRSlave((Element) i.next()));
+				rslaves.add(new RemoteSlave((Element) i.next()));
 			}
 			rslaves.trimToSize();
 		} catch (Exception ex) {
@@ -522,18 +523,19 @@ public class SlaveManagerImpl
 				if (slaveElement
 					.getChildText("name")
 					.equals(rslave.getName())) {
-					List masks = new ArrayList();
-					List maskElements = slaveElement.getChildren("mask");
-					for (Iterator i2 = maskElements.iterator();
-						i2.hasNext();
-						) {
-						masks.add(((Element) i2.next()).getText());
-					}
-					rslave.setMasks(masks);
+                                            rslave.updateConfig(slaveElement);
+//					List masks = new ArrayList();
+//					List maskElements = slaveElement.getChildren("mask");
+//					for (Iterator i2 = maskElements.iterator();
+//						i2.hasNext();
+//						) {
+//						masks.add(((Element) i2.next()).getText());
+//					}
+//					rslave.setMasks(masks);
 					continue nextelement;
 				}
 			} // rslaves.iterator()
-			RemoteSlave rslave = loadRSlave(slaveElement);
+			RemoteSlave rslave = new RemoteSlave(slaveElement);
 			rslave.setManager(this);
 			_rslaves.add(rslave);
 			logger.log(Level.INFO, "Added " + rslave.getName() + " to slaves");
@@ -625,4 +627,95 @@ public class SlaveManagerImpl
 		}
 		return removed;
 	}
+
+         public void updateSlave(String name, Hashtable args) throws IOException {
+        Element tmp;
+        
+        String mask = (String)args.get("mask");
+        String skey = (String)args.get("skey");
+        String mkey = (String)args.get("mkey");
+        String port = (String)args.get("port");
+        String addr = (String)args.get("addr");
+        
+        // create new slaves.xml entry
+        Element slave = new Element("slave");
+        
+        tmp = new Element("name");
+        tmp.setText(name);
+        slave.addContent(tmp);
+        
+        tmp = new Element("addr");
+        if (addr == null) {
+            tmp.setText("Dynamic");
+        } else {
+            tmp.setText(addr);
+        }
+        slave.addContent(tmp);
+        
+        if (mask != null) {
+            String[] masks = mask.split(",");
+            for (int i=0; i<masks.length; i++) {
+                tmp = new Element("mask");
+                tmp.setText(masks[i]);
+                slave.addContent(tmp);
+            }
+        }
+        
+        if (port != null) {
+            tmp = new Element("port");
+            tmp.setText(port);
+            slave.addContent(tmp);
+        }
+        
+        if (skey != null) {
+            tmp = new Element("slavepass");
+            tmp.setText(skey);
+            slave.addContent(tmp);
+        }
+        
+        if (mkey != null) {
+            tmp = new Element("masterpass");
+            tmp.setText(mkey);
+            slave.addContent(tmp);
+        }
+        
+        // get the current slaves.xml file
+        Document doc;
+        try {
+            doc = new SAXBuilder().build(new FileReader("conf/slaves.xml"));
+        } catch (JDOMException e) {
+            throw (IOException) new IOException().initCause(e);
+        }
+        
+        // get the current list of slaves
+        List slaveElements = doc.getRootElement().getChildren("slave");
+        
+        // try to find an existing slave
+        Element conf = null;
+        for (Iterator iterator = slaveElements.iterator(); iterator.hasNext(); ) {
+            Element slaveElement = (Element) iterator.next();
+            if (name.equals(slaveElement.getChildText("name"))) {
+                conf = slaveElement;
+            }
+        }
+        
+        if (conf == null) {
+            // create new slave entry
+            doc.getRootElement().addContent(slave);
+        } else {
+            // update existing entry
+            slaveElements.remove(conf);
+            slaveElements.add(slave);
+            doc.setContent(slaveElements);
+        }
+        
+        // write slaves.xml
+        XMLOutputter out = new XMLOutputter("  ", true);
+        out.output(doc, new FileWriter("conf/slaves.xml"));
+        out = null;
+        
+        // trigger the normal slave reload process
+        reloadRSlaves();
+        
+    }
 }
