@@ -23,10 +23,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
-import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.ExcludePath;
 import net.sf.drftpd.master.config.FtpConfig;
@@ -38,10 +36,10 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.18 2004/03/01 04:21:03 zubov Exp $
+ * @version $Id: Archive.java,v 1.19 2004/03/15 13:53:04 zubov Exp $
  */
 
-public class Archive implements FtpListener {
+public class Archive implements FtpListener, Runnable {
 
 	private static final Logger logger = Logger.getLogger(Archive.class);
 	private long _archiveAfter;
@@ -50,8 +48,9 @@ public class Archive implements FtpListener {
 	private ConnectionManager _cm;
 	private long _cycleTime;
 	private ArrayList _exemptList = new ArrayList();
-	private long _lastchecked;
 	private long _moveFullSlaves;
+	private boolean _isStopped = false;
+	private Thread thread = null;
 
 	/**
 	 * 
@@ -66,13 +65,13 @@ public class Archive implements FtpListener {
 			reload();
 			return;
 		}
-		if (!(event instanceof TransferEvent))
-			return;
-		if (System.currentTimeMillis() - _lastchecked > _cycleTime) {
-			_lastchecked = System.currentTimeMillis();
-			new ArchiveHandler((DirectoryFtpEvent) event, this).start();
-			logger.debug("Launched the ArchiveHandler");
-		}
+//		if (!(event instanceof TransferEvent))
+//			return;
+//		if (System.currentTimeMillis() - _lastchecked > _cycleTime) {
+//			_lastchecked = System.currentTimeMillis();
+//			new ArchiveHandler((DirectoryFtpEvent) event, this).start();
+//			logger.debug("Launched the ArchiveHandler");
+//		}
 	}
 
 	/**
@@ -131,6 +130,7 @@ public class Archive implements FtpListener {
 	public void init(ConnectionManager connectionManager) {
 		_cm = connectionManager;
 		_cm.loadJobManager();
+		startArchive();
 	}
 
 	/**
@@ -139,6 +139,25 @@ public class Archive implements FtpListener {
 	public boolean isArchiveToFreeSlave() {
 		return _archiveToFreeSlave;
 	}
+	
+	public void startArchive() {
+		if (thread != null) {
+			stopArchive();
+			thread.interrupt();
+			while(thread.isAlive()) {
+				logger.debug("thread is still alive");
+				Thread.yield();
+			}
+		}
+		_isStopped = false;
+		thread = new Thread(this,"ArchiveStarter");
+		thread.start();
+	}
+	
+	public void stopArchive() {
+		_isStopped = true;
+	}
+	
 	private void reload() {
 		Properties props = new Properties();
 		try {
@@ -153,8 +172,6 @@ public class Archive implements FtpListener {
 				* Long.parseLong(FtpConfig.getProperty(props, "archiveAfter"));
 		_archiveToFreeSlave =
 			(FtpConfig.getProperty(props, "archiveToFreeSlave").equals("true"));
-		//_moveFullSlaves = 1048576*Long.parseLong(FtpConfig.getProperty(props,"moveFullSlaves"));
-		_lastchecked = System.currentTimeMillis();
 		_exemptList = new ArrayList();
 		for (int i = 1;; i++) {
 			String path = props.getProperty("exclude." + i);
@@ -176,7 +193,25 @@ public class Archive implements FtpListener {
 	}
 
 	public void unload() {
+		stopArchive();
+	}
 
+	private boolean isStopped() {
+		return _isStopped;
+	}
+
+	public void run() {
+		while(true) {
+			if (isStopped()) {
+				logger.debug("Stopping ArchiveStarter thread");
+				return;
+			}
+			new ArchiveHandler(this).start();
+			try {
+				Thread.sleep(_cycleTime);
+			} catch (InterruptedException e) {
+			}
+		}
 	}
 
 }

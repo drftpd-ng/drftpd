@@ -32,14 +32,13 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.17 2004/03/06 00:39:46 zubov Exp $
+ * @version $Id: ArchiveHandler.java,v 1.18 2004/03/15 13:53:05 zubov Exp $
  */
 public class ArchiveHandler extends Thread {
 	private static final Logger logger = Logger.getLogger(ArchiveHandler.class);
 	private DirectoryFtpEvent _dirEvent;
 	private Archive _parent;
-	public ArchiveHandler(DirectoryFtpEvent dirEvent, Archive archive) {
-		_dirEvent = dirEvent;
+	public ArchiveHandler(Archive archive) {
 		_parent = archive;
 		setName("ArchiveHandler for unknown");
 	}
@@ -224,8 +223,8 @@ public class ArchiveHandler extends Thread {
 		}
 	}
 	public void run() {
-		LinkedRemoteFile oldDir = _dirEvent.getDirectory();
-		LinkedRemoteFile root = oldDir.getRoot();
+		LinkedRemoteFile root = _parent.getConnectionManager().getRoot();
+		LinkedRemoteFile oldDir;
 		JobManager jm = _parent.getConnectionManager().getJobManager();
 		synchronized (_parent) {
 			oldDir = getOldestNonArchivedDir(root);

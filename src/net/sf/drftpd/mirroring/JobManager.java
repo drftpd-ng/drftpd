@@ -36,7 +36,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.37 2004/03/06 00:39:46 zubov Exp $
+ * @version $Id: JobManager.java,v 1.38 2004/03/15 13:53:09 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -195,13 +195,13 @@ public class JobManager implements Runnable {
 				iter2.hasNext();
 				) {
 				RemoteSlave slave = (RemoteSlave) iter2.next();
-				if (availableSlaves.contains(slave)) {
-					if(tempJob.removeDestinationSlave(slave) && tempJob.isDone()) {
+				if(tempJob.removeDestinationSlave(slave)) {
+					if (tempJob.isDone()) {
 						iter.remove();
 						break;
 					}
 				}
-				if (!busySlaves.contains(slave)) {
+				else	if (!busySlaves.contains(slave)) {
 					return tempJob;
 				}
 			}

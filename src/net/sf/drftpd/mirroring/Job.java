@@ -27,11 +27,10 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.11 2004/03/06 00:39:46 zubov Exp $
+ * @version $Id: Job.java,v 1.12 2004/03/15 13:53:08 zubov Exp $
  */
 public class Job {
 	protected ArrayList _destSlaves;
-	protected boolean _done;
 	protected LinkedRemoteFileInterface _file;
 	protected User _owner;
 	protected int _priority;
@@ -53,7 +52,6 @@ public class Job {
 		_priority = priority;
 		_timeCreated = System.currentTimeMillis();
 		_timeSpent = 0;
-		_done = false;
 	}
 	/**
 	 * Add destination slaves to this job

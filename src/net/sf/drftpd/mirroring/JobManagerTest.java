@@ -18,8 +18,10 @@
 package net.sf.drftpd.mirroring;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Properties;
 
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
@@ -27,6 +29,7 @@ import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
+import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.config.FtpConfig;
 import junit.framework.TestCase;
 
@@ -39,6 +42,15 @@ public class JobManagerTest extends TestCase {
 	private Properties p;
 	LinkedRemoteFilePath root;
 	LinkedRemoteFilePath file;
+	static RemoteSlave rslave1 = new RemoteSlave("slave1", new ArrayList());
+	static RemoteSlave rslave2 = new RemoteSlave("slave2", new ArrayList());
+	static RemoteSlave rslave3 = new RemoteSlave("slave3", new ArrayList());
+	static ArrayList slaveList = new ArrayList();
+	static {
+		slaveList.add(rslave1);
+		slaveList.add(rslave2);
+		slaveList.add(rslave3);
+	}
 	/**
 	 * Constructor for JobManagerTest.
 	 * @param arg0
@@ -59,7 +71,31 @@ public class JobManagerTest extends TestCase {
 				"org.drftpd.slaveselection.def.SlaveSelectionManager");
 			p.put("sectionmanager", "org.drftpd.sections.conf.SectionManager");
 			p.put("use.ident", "true");
+			try {
+				sm = new SM();
+			} catch (RemoteException e) {
+			}
 		}
+		SM sm;
+		public SlaveManagerImpl getSlaveManager() {
+			return sm;
+		}
+
+	}
+	
+	class SM extends SlaveManagerImpl {
+		protected SM() throws RemoteException {
+		}
+		
+		public Collection getAvailableSlaves()
+			throws NoAvailableSlaveException {
+			return slaveList;
+		}
+
+		public Collection getSlaves() {
+			return slaveList;
+		}
+
 	}
 	public JobManagerTest(String arg0) throws IOException {
 		super(arg0);
@@ -69,7 +105,7 @@ public class JobManagerTest extends TestCase {
 		jm = cm.getJobManager();
 		FtpConfig cfg = new FtpConfig(p,"drftpd.conf",cm);
 		file = new LinkedRemoteFilePath("/path/file1.txt");
-		file.addSlave(new RemoteSlave("slave1",new ArrayList()));
+		file.addSlave(rslave1);
 		root = new LinkedRemoteFilePath("/path/file2.txt");
 
 	}
@@ -89,25 +125,13 @@ public class JobManagerTest extends TestCase {
 			return _path;
 		}
 		
-		/**
-		 *
-		 */
-
 		public void addSlave(RemoteSlave slave) {
 			slaves.add(slave);
 		}
 
-		/**
-		 *
-		 */
-
 		public void delete() {
 			isDeleted = true;
 		}
-
-		/**
-		 *
-		 */
 
 		public Collection getAvailableSlaves()
 			throws NoAvailableSlaveException {
@@ -115,36 +139,33 @@ public class JobManagerTest extends TestCase {
 			return getSlaves();
 		}
 
-		/**
-		 *
-		 */
-
 		public Collection getSlaves() {
 			return slaves;
 		}
-
-		/**
-		 *
-		 */
 
 		public boolean isAvailable() {
 			return true;
 		}
 
-		/**
-		 *
-		 */
-
 		public boolean isDeleted() {
 			return isDeleted;
 		}
 
-		/**
-		 *
-		 */
-
 		public boolean removeSlave(RemoteSlave slave) {
 			return slaves.remove(slave);
+		}
+
+		public String toString() {
+			String string = "[file=" + getPath() + "][availableSlaves[";
+			for (Iterator iter = this.getSlaves().iterator(); iter.hasNext();) {
+				RemoteSlave rslave = (RemoteSlave) iter.next();
+				string = string + rslave + ",";
+			}
+			return string + "]]";
+		}
+
+		public String getName() {
+			return _path;
 		}
 
 	}
@@ -172,6 +193,14 @@ public class JobManagerTest extends TestCase {
 		jm.addJob(job);
 		ArrayList usedSlaveList = new ArrayList();
 		assertSame(job,jm.getNextJob(usedSlaveList));
+		slaveList.clear();
+		slaveList.add(rslave1);
+		file.getSlaves().clear();
+		file.addSlave(rslave1);
+		job = new Job(file,slaveList,null,null,5);
+		Job returnedJob = jm.getNextJob(usedSlaveList);
+		assertSame(null,returnedJob);
+		assertTrue(job.isDone());
 	}
 
 	public void testRemoveJob() {
