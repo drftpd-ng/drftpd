@@ -43,7 +43,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.39 2004/02/15 13:42:24 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.40 2004/02/16 23:27:24 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -168,12 +168,13 @@ public class FtpConfig {
 		return checkPathPermission("makedir", fromUser, path);
 	}
 
-	private boolean checkPathPermission(
+	public boolean checkPathPermission(
 		String key,
 		User fromUser,
 		LinkedRemoteFile path) {
 		return checkPathPermission(key, fromUser, path, false);
 	}
+	
 	private boolean checkPathPermission(
 		String key,
 		User fromUser,
