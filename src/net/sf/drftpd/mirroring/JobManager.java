@@ -36,7 +36,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.40 2004/04/01 05:29:41 zubov Exp $
+ * @version $Id: JobManager.java,v 1.41 2004/04/01 05:32:42 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -124,8 +124,6 @@ public class JobManager implements Runnable {
 	}
 	
 	public synchronized Job getNextJob(List busySlaves, List skipJobs) {
-		logger.debug("getNextJob ran with busyslavesdown - " + busySlaves);
-		logger.debug("getNextJob ran with skipjobs - " + skipJobs);
 		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
 			Job tempJob = (Job) iter.next();
 			if (tempJob.getFile().isDeleted() || tempJob.isDone()) {
@@ -169,9 +167,6 @@ public class JobManager implements Runnable {
 			while (!busySlavesDown.containsAll(availableSlaves)) {
 				job = getNextJob(busySlavesDown, skipJobs);
 				if (job == null) {
-					logger.debug(
-						"There are no jobs to process for non busy slaves - "
-							+ busySlavesDown);
 					return false;
 				}
 				if (job.getFile().getSlaves().containsAll(_cm.getSlaveManager().getSlaves())) {
@@ -207,7 +202,6 @@ public class JobManager implements Runnable {
 				} catch (NoAvailableSlaveException e) {
 					// job was ready to be sent, but it had no slave that was ready to accept it
 					skipJobs.add(job);
-					logger.debug("added job to skipJobs - " + job);
 					continue;
 				}
 			}
