@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.40 2004/02/10 00:03:31 mog Exp $
+ * @version $Id: TransferImpl.java,v 1.41 2004/02/18 14:24:05 zubov Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private static final Logger logger = Logger.getLogger(TransferImpl.class);
@@ -71,6 +71,9 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		_abort = true;
 		if (_conn != null)
 			_conn.abort();
+		if (_sock == null )
+			// already closed
+			return;
 		try {
 			_sock.close();
 		} catch (IOException e) {
