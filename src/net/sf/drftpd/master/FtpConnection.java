@@ -31,7 +31,6 @@ import net.sf.drftpd.IllegalTargetException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.NukeEvent;
@@ -3529,11 +3528,7 @@ public class FtpConnection extends BaseFtpConnection {
 				"Transfer aborted, credits were not removed",
 				ex);
 			//TODO let user resume
-			try {
-				_transferFile.delete();
-			} catch(PermissionDeniedException ex2) {
-				logger.log(Level.SEVERE, "Error deleting after failed transfer on "+rslave, ex2);
-			}
+			_transferFile.delete();
 			out.print(new FtpResponse(426, ex.getMessage()));
 			return;
 		}
