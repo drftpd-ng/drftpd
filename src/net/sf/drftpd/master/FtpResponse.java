@@ -153,6 +153,7 @@ public class FtpResponse implements Cloneable {
 		return this;
 	}
 	public void setMessage(String response) {
+		assert response != null;
 		if (response.indexOf('\n') != -1) {
 			response = response.substring(0, response.indexOf('\n'));
 			logger.log(Level.DEBUG, "Truncated response message with multiple lines: "+response);

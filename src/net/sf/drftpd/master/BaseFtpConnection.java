@@ -35,59 +35,25 @@ import org.apache.log4j.Logger;
  */
 public class BaseFtpConnection implements Runnable {
 
-	List ftpListeners;
-
-	/**
-	 * @deprecated use getConnectionManager().dispatchFtpEvent()
-	 */
-	protected void dispatchFtpEvent(Event event) {
-		connManager.dispatchFtpEvent(event);
-	}
+	private static Logger logger =
+		Logger.getLogger(BaseFtpConnection.class);
 
 	protected final static Class[] METHOD_INPUT_SIG =
 		new Class[] { FtpRequest.class, PrintWriter.class };
-	private static Logger logger =
-		Logger.getLogger(BaseFtpConnection.class.getName());
-	static {
-		logger.setLevel(Level.ALL);
-	}
-	/**
-	 * time when last command from the client finished execution
-	 */
-	protected long lastActive;
-	/**
-	 * Is the client running a command?
-	 */
-	protected boolean executing;
+	protected RemoteSlave _rslave;
+	protected Transfer _transfer;
+	protected LinkedRemoteFile _transferFile;
 
 	protected User _user;
 	/**
 	 * Is the current password authenticated?
 	 */
 	protected boolean authenticated = false;
-	protected Socket controlSocket;
-	protected PrintWriter out;
-	/**
-	 * Should this thread stop insted of continue looping?
-	 */
-	protected boolean stopRequest = false;
-	protected String stopRequestMessage;
-	protected SlaveManagerImpl slaveManager;
 	protected InetAddress clientAddress = null;
-	protected Thread thread;
 	protected ConnectionManager connManager;
-	protected FtpRequest request;
-	public void start() {
-		thread = new Thread(this);
-		thread.start();
-		// start() calls run() and execution will start in the background.
-	}
-	/**
-	 * Get client address
-	 */
-	public InetAddress getClientAddress() {
-		return clientAddress;
-	}
+	protected Socket controlSocket;
+
+	protected LinkedRemoteFile currentDirectory;
 
 	/**
 	 * Set client address
@@ -111,6 +77,83 @@ public class BaseFtpConnection implements Runnable {
 	}
 	*/
 	private Writer debugLog;
+	/**
+	 * Is the client running a command?
+	 */
+	protected boolean executing;
+
+	List ftpListeners;
+
+	BufferedReader in;
+	/**
+	 * time when last command from the client finished execution
+	 */
+	protected long lastActive;
+	/**
+	 * Set by setPasvCommand to controlSocket.getLocalAddress()
+	 * Set by setPortCommand to whatever the argument said.
+	 */
+	protected InetAddress mAddress;
+	protected boolean mbPasv = false;
+
+	protected boolean mbPort = false;
+
+	/**
+	 * Get connection spy object
+	 */
+	/*
+	public SpyConnectionInterface getSpyObject() {
+	    return mSpy;
+	}
+	*/
+
+	/**
+	 * Set spy object
+	 */
+	/*
+	public void setSpyObject(SpyConnectionInterface spy) {
+	    mWriter.setSpyObject(spy);
+	    mSpy = spy;
+	}
+	*/
+
+	/**
+	 * Get observer
+	 */
+	/*
+	public FtpConnectionObserver getObserver() {
+	    return mObserver;
+	}
+	*/
+	/**
+	 * Set observer
+	 */
+	/*
+	public void setObserver(FtpConnectionObserver obsr) {
+	    mObserver = obsr;
+	}
+	*/
+
+	/////////// DATA CONNECTION ///////////
+	protected Socket mDataSoc;
+	protected int miPort = 0;
+	protected ServerSocket mServSoc;
+	protected PrintWriter out;
+	protected boolean preTransfer;
+
+	/**
+		 * PRE Transfere
+		 *
+		 */
+	protected RemoteSlave preTransferRSlave;
+	protected FtpRequest request;
+	protected SlaveManagerImpl slaveManager;
+	/**
+	 * Should this thread stop insted of continue looping?
+	 */
+	protected boolean stopRequest = false;
+	protected String stopRequestMessage;
+	protected Thread thread;
 	public BaseFtpConnection(
 		ConnectionManager connManager,
 		Socket soc,
@@ -120,7 +163,223 @@ public class BaseFtpConnection implements Runnable {
 		this.debugLog = debugLog;
 	}
 
-	BufferedReader in;
+	/**
+	 * Listen for passive socket connection. It returns the success flag.
+	 */
+	public boolean acceptPasvConnection() throws IOException {
+		boolean bRet = false;
+		mDataSoc = null;
+		try {
+			mDataSoc = mServSoc.accept();
+			mDataSoc.setSoTimeout(60000);
+			bRet = true;
+		} catch (IOException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		} finally {
+			if (mServSoc != null)
+				mServSoc.close();
+			mServSoc = null;
+		}
+		return bRet;
+	}
+
+	/**
+	 * @deprecated use getConnectionManager().dispatchFtpEvent()
+	 */
+	protected void dispatchFtpEvent(Event event) {
+		connManager.dispatchFtpEvent(event);
+	}
+
+	/**
+	 * Last defense - close connections.
+	 */
+	protected void finalize() throws Throwable {
+		reset();
+		super.finalize();
+	}
+	/**
+	 * Get client address
+	 */
+	public InetAddress getClientAddress() {
+		return clientAddress;
+	}
+
+	/**
+	 * @return
+	 */
+	public LinkedRemoteFile getCurrentDirectory() {
+		return currentDirectory;
+	}
+
+	/**
+	 * Get the data socket. In case of error returns null.
+	 * 
+	 * Used by LIST and NLST.
+	 */
+	public Socket getDataSocket() throws IOException {
+
+		// get socket depending on the selection
+		if (mbPort) {
+			try {
+				mDataSoc = new Socket(mAddress, miPort);
+				mDataSoc.setSoTimeout(30000); // 30 seconds timeout
+			} catch (IOException ex) {
+				//mConfig.getLogger().warn(ex);
+				logger.log(Level.WARN, "Error opening data socket", ex);
+				mDataSoc = null;
+				throw ex;
+			}
+		} else if (mbPasv) {
+			if (mDataSoc == null)
+				acceptPasvConnection();
+		}
+
+		/* else if (!mbPasv) {
+			if (mDataSoc != null) {
+				try {
+					mDataSoc.close();
+				} catch (Exception ex) {
+					//mConfig.getLogger().warn(ex);
+					ex.printStackTrace();
+				}
+				mDataSoc = null;
+			}
+		}*/
+
+		// result check
+		return mDataSoc;
+	}
+
+	/**
+	 * Get client address from PORT command.
+	 */
+	public InetAddress getInetAddress() {
+		return mAddress;
+	}
+	/**
+	 * Returns the "currentTimeMillis" when last command finished executing.
+	 */
+	public long getLastActive() {
+		return lastActive;
+	}
+
+	/**
+	 * Get port number.
+	 * return miPort
+	 */
+	public int getPort() {
+		return miPort;
+	}
+
+	/**
+	 * Returns the FtpRequest of current or last command executed.
+	 */
+	public FtpRequest getRequest() {
+		return request;
+	}
+	public RemoteSlave getTranferSlave() {
+		if(!isTransfering()) throw new IllegalStateException("can only call getTransferSlave() during transfer");
+		return _rslave;
+	}
+
+	public Transfer getTransfer() {
+		return _transfer;
+	}
+
+	public char getTransferDirection() {
+		String cmd = getRequest().getCommand();
+		if (cmd.equals("RETR")) {
+			return Transfer.TRANSFER_SENDING_DOWNLOAD;
+		} else if (cmd.equals("STOR")) {
+			return Transfer.TRANSFER_RECEIVING_UPLOAD;
+		} else {
+			return Transfer.TRANSFER_UNKNOWN;
+		}
+	}
+
+	public LinkedRemoteFile getTransferFile() {
+		return _transferFile;
+	}
+	/**
+	 * Monitor the user request.
+	 */
+	/**
+	 * Get user object
+	 */
+	public User getUser() throws NoSuchUserException {
+		if (_user == null)
+			throw new NoSuchUserException("no user logged in for connection");
+		return _user;
+	}
+
+	/**
+	 * Check permission - default implementation - does nothing.
+	 */
+	protected boolean hasPermission(FtpRequest request) {
+		if (isAuthenticated())
+			return true;
+
+		String command = request.getCommand();
+		if ("USER".equals(command)
+			|| "PASS".equals(command)
+			|| "QUIT".equals(command)
+			|| "HELP".equals(command))
+			return true;
+
+		return false;
+	}
+
+	/**
+	 * Returns the authenticated.
+	 * @return boolean
+	 */
+	public boolean isAuthenticated() {
+		return authenticated;
+	}
+
+	/**
+	 * Returns true if client is executing a command.
+	 */
+	public boolean isExecuting() {
+		return executing;
+	}
+	public boolean isTransfering() {
+		return _transfer != null;
+	}
+	/**
+	 * Reset all the member variables. Close all sockets.
+	 */
+	public void reset() {
+
+		// close data socket
+		if (mDataSoc != null) {
+			try {
+				mDataSoc.close();
+			} catch (Exception ex) {
+				logger.log(Level.WARN, "Error closing data socket", ex);
+			}
+			mDataSoc = null;
+		}
+
+		// close server socket
+		//		if (mServSoc != null) {
+		//			try {
+		//				mServSoc.close();
+		//			} catch (Exception ex) {
+		//				logger.log(Level.WARNING, "Error closing server socket", ex);
+		//			}
+		//			mServSoc = null;
+		//		}
+
+		// reset other variables
+		mAddress = null;
+		miPort = 0;
+
+		mbPort = false;
+		mbPasv = false;
+	}
 
 	/**
 	 * Server one FTP connection.
@@ -130,11 +389,8 @@ public class BaseFtpConnection implements Runnable {
 		logger.info(
 			"Handling new request from " + clientAddress.getHostAddress());
 		thread.setName(
-			"FtpConnection from "
-				+ clientAddress.getHostName()
-				+ "["
-				+ clientAddress.getHostAddress()
-				+ "]");
+			"FtpConn from "
+				+ clientAddress.getHostAddress());
 
 		try {
 			in =
@@ -247,134 +503,10 @@ public class BaseFtpConnection implements Runnable {
 	}
 
 	/**
-	 * Check permission - default implementation - does nothing.
+	 * @param file
 	 */
-	protected boolean hasPermission(FtpRequest request) {
-		if (isAuthenticated())
-			return true;
-
-		String command = request.getCommand();
-		if ("USER".equals(command)
-			|| "PASS".equals(command)
-			|| "QUIT".equals(command)
-			|| "HELP".equals(command))
-			return true;
-
-		return false;
-	}
-
-	/**
-	 * User logout and stop this thread.
-	 */
-	public void stop() {
-		stopRequest = true;
-	}
-
-	public void stop(String message) {
-		stopRequestMessage = message;
-		stop();
-	}
-	/**
-	 * Monitor the user request.
-	 */
-	/**
-	 * Get user object
-	 */
-	public User getUser() throws NoSuchUserException {
-		if (_user == null)
-			throw new NoSuchUserException("no user logged in for connection");
-		return _user;
-	}
-
-	/**
-	 * Get connection spy object
-	 */
-	/*
-	public SpyConnectionInterface getSpyObject() {
-	    return mSpy;
-	}
-	*/
-
-	/**
-	 * Set spy object
-	 */
-	/*
-	public void setSpyObject(SpyConnectionInterface spy) {
-	    mWriter.setSpyObject(spy);
-	    mSpy = spy;
-	}
-	*/
-
-	/**
-	 * Get observer
-	 */
-	/*
-	public FtpConnectionObserver getObserver() {
-	    return mObserver;
-	}
-	*/
-	/**
-	 * Set observer
-	 */
-	/*
-	public void setObserver(FtpConnectionObserver obsr) {
-	    mObserver = obsr;
-	}
-	*/
-
-	/////////// DATA CONNECTION ///////////
-	protected Socket mDataSoc;
-	protected ServerSocket mServSoc;
-	/**
-	 * Set by setPasvCommand to controlSocket.getLocalAddress()
-	 * Set by setPortCommand to whatever the argument said.
-	 */
-	protected InetAddress mAddress;
-	protected int miPort = 0;
-
-	protected boolean mbPort = false;
-	protected boolean mbPasv = false;
-	/**
-	 * Reset all the member variables. Close all sockets.
-	 */
-	public void reset() {
-
-		// close data socket
-		if (mDataSoc != null) {
-			try {
-				mDataSoc.close();
-			} catch (Exception ex) {
-				logger.log(Level.WARN, "Error closing data socket", ex);
-			}
-			mDataSoc = null;
-		}
-
-		// close server socket
-		//		if (mServSoc != null) {
-		//			try {
-		//				mServSoc.close();
-		//			} catch (Exception ex) {
-		//				logger.log(Level.WARNING, "Error closing server socket", ex);
-		//			}
-		//			mServSoc = null;
-		//		}
-
-		// reset other variables
-		mAddress = null;
-		miPort = 0;
-
-		mbPort = false;
-		mbPasv = false;
-	}
-
-	/**
-	 * Port command.
-	 */
-	public void setPortCommand(InetAddress addr, int port) {
-		reset();
-		mbPort = true;
-		mAddress = addr;
-		miPort = port;
+	public void setCurrentDirectory(LinkedRemoteFile file) {
+		currentDirectory = file;
 	}
 
 	/**
@@ -397,95 +529,30 @@ public class BaseFtpConnection implements Runnable {
 	}
 
 	/**
-	 * Listen for passive socket connection. It returns the success flag.
+	 * Port command.
 	 */
-	public boolean acceptPasvConnection() throws IOException {
-		boolean bRet = false;
-		mDataSoc = null;
-		try {
-			mDataSoc = mServSoc.accept();
-			mDataSoc.setSoTimeout(60000);
-			bRet = true;
-		} catch (IOException ex) {
-			throw ex;
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
-		} finally {
-			if (mServSoc != null)
-				mServSoc.close();
-			mServSoc = null;
-		}
-		return bRet;
-	}
-
-	/**
-	 * Get client address from PORT command.
-	 */
-	public InetAddress getInetAddress() {
-		return mAddress;
-	}
-
-	/**
-	 * Get port number.
-	 * return miPort
-	 */
-	public int getPort() {
-		return miPort;
-	}
-
-	/**
-	 * Get the data socket. In case of error returns null.
-	 * 
-	 * Used by LIST and NLST.
-	 */
-	public Socket getDataSocket() throws IOException {
-
-		// get socket depending on the selection
-		if (mbPort) {
-			try {
-				mDataSoc = new Socket(mAddress, miPort);
-				mDataSoc.setSoTimeout(30000); // 30 seconds timeout
-			} catch (IOException ex) {
-				//mConfig.getLogger().warn(ex);
-				logger.log(Level.WARN, "Error opening data socket", ex);
-				mDataSoc = null;
-				throw ex;
-			}
-		} else if (mbPasv) {
-			if (mDataSoc == null)
-				acceptPasvConnection();
-		}
-
-		/* else if (!mbPasv) {
-			if (mDataSoc != null) {
-				try {
-					mDataSoc.close();
-				} catch (Exception ex) {
-					//mConfig.getLogger().warn(ex);
-					ex.printStackTrace();
-				}
-				mDataSoc = null;
-			}
-		}*/
-
-		// result check
-		return mDataSoc;
-	}
-
-	/**
-	 * Last defense - close connections.
-	 */
-	protected void finalize() throws Throwable {
+	public void setPortCommand(InetAddress addr, int port) {
 		reset();
-		super.finalize();
+		mbPort = true;
+		mAddress = addr;
+		miPort = port;
+	}
+	public void start() {
+		thread = new Thread(this);
+		thread.start();
+		// start() calls run() and execution will start in the background.
 	}
 
 	/**
-	 * Returns the authenticated.
-	 * @return boolean
+	 * User logout and stop this thread.
 	 */
-	public boolean isAuthenticated() {
-		return authenticated;
+	public void stop() {
+		stopRequest = true;
+	}
+
+	public void stop(String message) {
+		stopRequestMessage = message;
+		stop();
 	}
 	public String toString() {
 		StringBuffer buf = new StringBuffer("[BaseFtpConnection");
@@ -505,77 +572,5 @@ public class BaseFtpConnection implements Runnable {
 		}
 		buf.append("]");
 		return buf.toString();
-	}
-
-	/**
-	 * Returns true if client is executing a command.
-	 */
-	public boolean isExecuting() {
-		return executing;
-	}
-	public boolean isTransfering() {
-		return _transfer != null;
-	}
-	/**
-	 * Returns the "currentTimeMillis" when last command finished executing.
-	 */
-	public long getLastActive() {
-		return lastActive;
-	}
-
-	/**
-	 * Returns the FtpRequest of current or last command executed.
-	 */
-	public FtpRequest getRequest() {
-		return request;
-	}
-
-	protected LinkedRemoteFile currentDirectory;
-
-	/**
-	 * @return
-	 */
-	public LinkedRemoteFile getCurrentDirectory() {
-		return currentDirectory;
-	}
-
-	/**
-	 * @param file
-	 */
-	public void setCurrentDirectory(LinkedRemoteFile file) {
-		currentDirectory = file;
-	}
-	protected Transfer _transfer;
-	protected LinkedRemoteFile _transferFile;
-	protected RemoteSlave _rslave;
-
-	/**
-		 * PRE Transfere
-		 *
-		 */
-	protected RemoteSlave preTransferRSlave;
-	protected boolean preTransfer;
-
-	public Transfer getTransfer() {
-		return _transfer;
-	}
-
-	public LinkedRemoteFile getTransferFile() {
-		return _transferFile;
-	}
-	public RemoteSlave getTranferSlave() {
-		if(!isTransfering()) throw new IllegalStateException("can only call getTransferSlave() during transfer");
-		return _rslave;
-	}
-
-	public char getTransferDirection() {
-		String cmd = getRequest().getCommand();
-		if (cmd.equals("RETR")) {
-			return Transfer.TRANSFER_SENDING_DOWNLOAD;
-		} else if (cmd.equals("STOR")) {
-			return Transfer.TRANSFER_RECEIVING_UPLOAD;
-		} else {
-			return Transfer.TRANSFER_UNKNOWN;
-		}
 	}
 }

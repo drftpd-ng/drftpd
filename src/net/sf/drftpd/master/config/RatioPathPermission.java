@@ -14,7 +14,7 @@ import java.util.Collection;
  * To change the template for this generated type comment go to
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
-public class RatioPathPermission extends PathPermission {
+public class RatioPathPermission extends StringPathPermission {
 	private float ratio;
 	/**
 	 * @param path

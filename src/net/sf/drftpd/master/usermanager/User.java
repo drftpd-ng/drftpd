@@ -222,36 +222,6 @@ public abstract class User {
 	 */
 	public abstract long getUploadedBytesWeek();
 	/**
-	 * Sets the downloadedBytes.
-	 * @param downloadedBytes The downloadedBytes to set
-	 */
-	public abstract void setDownloadedBytes(long downloadedBytes);
-	/**
-	 * Sets the downloadedBytesMonth.
-	 * @param downloadedBytesMonth The downloadedBytesMonth to set
-	 */
-	public abstract void setDownloadedBytesMonth(long downloadedBytesMonth);
-	/**
-	 * Sets the downloadedBytesWeek.
-	 * @param downloadedBytesWeek The downloadedBytesWeek to set
-	 */
-	public abstract void setDownloadedBytesWeek(long downloadedBytesWeek);
-	/**
-	 * Sets the uploadedBytes.
-	 * @param uploadedBytes The uploadedBytes to set
-	 */
-	public abstract void setUploadedBytes(long uploadedBytes);
-	/**
-	 * Sets the uploadedBytesMonth.
-	 * @param uploadedBytesMonth The uploadedBytesMonth to set
-	 */
-	public abstract void setUploadedBytesMonth(long uploadedBytesMonth);
-	/**
-	 * Sets the uploadedBytesWeek.
-	 * @param uploadedBytesWeek The uploadedBytesWeek to set
-	 */
-	public abstract void setUploadedBytesWeek(long uploadedBytesWeek);
-	/**
 	 * Returns the downloadedBytesDay.
 	 * @return long
 	 */
@@ -261,16 +231,6 @@ public abstract class User {
 	 * @return long
 	 */
 	public abstract long getUploadedBytesDay();
-	/**
-	 * Sets the downloadedBytesDay.
-	 * @param downloadedBytesDay The downloadedBytesDay to set
-	 */
-	public abstract void setDownloadedBytesDay(long downloadedBytesDay);
-	/**
-	 * Sets the uploadedBytesDay.
-	 * @param uploadedBytesDay The uploadedBytesDay to set
-	 */
-	public abstract void setUploadedBytesDay(long uploadedBytesDay);
 	/**
 	 * Returns the deleted.
 	 * @return boolean
@@ -446,86 +406,6 @@ public abstract class User {
 	 */
 	public abstract int getUploadedSecondsWeek();
 	/**
-	 * Sets the downloadedFiles.
-	 * @param downloadedFiles The downloadedFiles to set
-	 */
-	public abstract void setDownloadedFiles(int downloadedFiles);
-	/**
-	 * Sets the downloadedFilesDay.
-	 * @param downloadedFilesDay The downloadedFilesDay to set
-	 */
-	public abstract void setDownloadedFilesDay(int downloadedFilesDay);
-	/**
-	 * Sets the downloadedFilesMonth.
-	 * @param downloadedFilesMonth The downloadedFilesMonth to set
-	 */
-	public abstract void setDownloadedFilesMonth(int downloadedFilesMonth);
-	/**
-	 * Sets the downloadedFilesWeek.
-	 * @param downloadedFilesWeek The downloadedFilesWeek to set
-	 */
-	public abstract void setDownloadedFilesWeek(int downloadedFilesWeek);
-	/**
-	 * Sets the downloadedSeconds.
-	 * @param downloadedSeconds The downloadedSeconds to set
-	 */
-	public abstract void setDownloadedSeconds(int downloadedSeconds);
-	/**
-	 * Sets the downloadedSecondsDay.
-	 * @param downloadedSecondsDay The downloadedSecondsDay to set
-	 */
-	public abstract void setDownloadedSecondsDay(int downloadedSecondsDay);
-	/**
-	 * Sets the downloadedSecondsMonth.
-	 * @param downloadedSecondsMonth The downloadedSecondsMonth to set
-	 */
-	public abstract void setDownloadedSecondsMonth(int downloadedSecondsMonth);
-	/**
-	 * Sets the downloadedSecondsWeek.
-	 * @param downloadedSecondsWeek The downloadedSecondsWeek to set
-	 */
-	public abstract void setDownloadedSecondsWeek(int downloadedSecondsWeek);
-	/**
-	 * Sets the uploadedFiles.
-	 * @param uploadedFiles The uploadedFiles to set
-	 */
-	public abstract void setUploadedFiles(int uploadedFiles);
-	/**
-	 * Sets the uploadedFilesDay.
-	 * @param uploadedFilesDay The uploadedFilesDay to set
-	 */
-	public abstract void setUploadedFilesDay(int uploadedFilesDay);
-	/**
-	 * Sets the uploadedFilesMonth.
-	 * @param uploadedFilesMonth The uploadedFilesMonth to set
-	 */
-	public abstract void setUploadedFilesMonth(int uploadedFilesMonth);
-	/**
-	 * Sets the uploadedFilesWeek.
-	 * @param uploadedFilesWeek The uploadedFilesWeek to set
-	 */
-	public abstract void setUploadedFilesWeek(int uploadedFilesWeek);
-	/**
-	 * Sets the uploadedSeconds.
-	 * @param uploadedSeconds The uploadedSeconds to set
-	 */
-	public abstract void setUploadedSeconds(int uploadedSeconds);
-	/**
-	 * Sets the uploadedSecondsDay.
-	 * @param uploadedSecondsDay The uploadedSecondsDay to set
-	 */
-	public abstract void setUploadedSecondsDay(int uploadedSecondsDay);
-	/**
-	 * Sets the uploadedSecondsMonth.
-	 * @param uploadedSecondsMonth The uploadedSecondsMonth to set
-	 */
-	public abstract void setUploadedSecondsMonth(int uploadedSecondsMonth);
-	/**
-	 * Sets the uploadedSecondsWeek.
-	 * @param uploadedSecondsWeek The uploadedSecondsWeek to set
-	 */
-	public abstract void setUploadedSecondsWeek(int uploadedSecondsWeek);
-	/**
 	 * Sets the logins.
 	 * @param logins The logins to set
 	 */
@@ -551,4 +431,6 @@ public abstract class User {
 	public int hashCode() {
 		return getUsername().hashCode();
 	}
+	public abstract void updateUploadedFiles(int i);
+	public abstract void updateDownloadedFiles(int i);
 }

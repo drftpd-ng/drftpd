@@ -19,6 +19,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import net.sf.drftpd.DuplicateElementException;
+import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
@@ -91,8 +92,10 @@ public class JSXUserManager extends UserManager {
 		throws NoSuchUserException, IOException {
 
 		JSXUser user = (JSXUser) users.get(username);
-		if (user != null)
+		if (user != null) {
+			user.reset();
 			return user;
+		}
 
 		ObjIn in;
 		try {
@@ -102,11 +105,13 @@ public class JSXUserManager extends UserManager {
 		}
 		try {
 			user = (JSXUser) in.readObject();
+			//throws RuntimeException
 			user.usermanager = this;
 			users.put(user.getUsername(), user);
+			user.reset();
 			return user;
 		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
+			throw new FatalException(e);
 		}
 	}
 

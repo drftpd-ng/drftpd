@@ -8,15 +8,12 @@ package net.sf.drftpd.event.irc;
 
 /**
  * @author mog
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class UploaderPosition implements Comparable {
 	long bytes;
 	int files;
-	long xfertime;
 	String username;
+	long xfertime;
 	
 	public UploaderPosition(String username, long bytes, int files, long xfertime) {
 		this.username = username;
@@ -24,19 +21,10 @@ public class UploaderPosition implements Comparable {
 		this.files = files;
 		this.xfertime = xfertime;
 	}
-	public void updateBytes(long bytes) {
-		this.bytes += bytes;
+
+	public int compareTo(Object o) {
+		return compareTo((UploaderPosition)o);
 	}
-	public void updateFiles(int files) {
-		this.files += files;
-	}
-	public long getBytes() {
-		return this.bytes;
-	}
-	public int getFiles() {
-		return this.files;
-	}
-	
 	
 	/** Sorts in reverse order so that the biggest shows up first.
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
@@ -45,12 +33,6 @@ public class UploaderPosition implements Comparable {
 		long thisVal = getBytes();
 		long anotherVal = o.getBytes();
 		return (thisVal<anotherVal ? 1 : (thisVal==anotherVal ? 0 : -1));
-	}
-	/* (non-Javadoc)
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
-	public int compareTo(Object o) {
-		return compareTo((UploaderPosition)o);
 	}
 	
 	/* (non-Javadoc)
@@ -62,12 +44,11 @@ public class UploaderPosition implements Comparable {
 		UploaderPosition other = (UploaderPosition)obj;
 		return getUsername().equals(other.getUsername());
 	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	public int hashCode() {
-		return getUsername().hashCode();
+	public long getBytes() {
+		return this.bytes;
+	}
+	public int getFiles() {
+		return this.files;
 	}
 
 	/**
@@ -76,8 +57,8 @@ public class UploaderPosition implements Comparable {
 	public String getUsername() {
 		return username;
 	}
-	public void updateXfertime(long xfertime) {
-		this.xfertime += xfertime;
+	public long getXferspeed() {
+		return getBytes()/getXfertime();
 	}
 	/**
 	 * @return
@@ -86,4 +67,19 @@ public class UploaderPosition implements Comparable {
 		return xfertime;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	public int hashCode() {
+		return getUsername().hashCode();
+	}
+	public void updateBytes(long bytes) {
+		this.bytes += bytes;
+	}
+	public void updateFiles(int files) {
+		this.files += files;
+	}
+	public void updateXfertime(long xfertime) {
+		this.xfertime += xfertime;
+	}
 }

@@ -174,6 +174,10 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	}
 
 	public LinkedRemoteFile addFile(RemoteFile file) {
+		for (Iterator iter = file.getSlaves().iterator(); iter.hasNext();) {
+			RemoteSlave element = (RemoteSlave) iter.next();
+			assert element != null;
+		}
 		LinkedRemoteFile linkedfile =
 			new LinkedRemoteFile(this, file, this.ftpConfig);
 		files.put(linkedfile.getName(), linkedfile);
@@ -182,8 +186,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	public void addSlave(RemoteSlave slave) {
 		if (slaves == null)
 			throw new IllegalStateException("Cannot addSlave() on a directory");
-		if (slave == null)
-			throw new IllegalArgumentException("slave can't be null");
+		assert slave != null;
+		
 		// we get lots of duplicate adds when merging and the slave is already in the file database
 		if (slaves.contains(slave)) {
 			return;

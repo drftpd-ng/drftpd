@@ -21,7 +21,7 @@ import net.sf.drftpd.master.FtpResponse;
  * To change the template for this generated type comment go to
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
-public class MessagePathPermission extends PathPermission {
+public class MessagePathPermission extends StringPathPermission {
 	private ArrayList message;
 	public MessagePathPermission(
 		String path,

@@ -511,33 +511,33 @@ public class FtpConnection extends BaseFtpConnection {
 		// reset state variables
 		resetState();
 
-		//String argument = request.getArgument();
+		String argument = request.getArgument();
 		String directoryName = null;
-		//String options = "";
+		String options = "";
 		//String pattern = "*";
 
 		// get options, directory name and pattern
 		//argument == null if there was no argument for LIST
-		//		if (argument != null) {
-		//			//argument = argument.trim();
-		//			StringBuffer optionsSb = new StringBuffer(4);
-		//			StringTokenizer st = new StringTokenizer(argument, " ");
-		//			while (st.hasMoreTokens()) {
-		//				String token = st.nextToken();
-		//				if (token.charAt(0) == '-') {
-		//					if (token.length() > 1) {
-		//						optionsSb.append(token.substring(1));
-		//					}
-		//				} else {
-		//					directoryName = token;
-		//				}
-		//			}
-		//			options = optionsSb.toString();
-		//		}
+				if (argument != null) {
+					//argument = argument.trim();
+					StringBuffer optionsSb = new StringBuffer(4);
+					StringTokenizer st = new StringTokenizer(argument, " ");
+					while (st.hasMoreTokens()) {
+						String token = st.nextToken();
+						if (token.charAt(0) == '-') {
+							if (token.length() > 1) {
+								optionsSb.append(token.substring(1));
+							}
+						} else {
+							directoryName = token;
+						}
+					}
+					options = optionsSb.toString();
+				}
 
 		// check options
 		//		boolean allOption = options.indexOf('a') != -1;
-		//		boolean detailOption = options.indexOf('l') != -1;
+				boolean detailOption = options.indexOf('l') != -1;
 		//		boolean directoryOption = options.indexOf("d") != -1;
 		if (!mbPasv && !mbPort) {
 			out.print(FtpResponse.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS);
@@ -606,6 +606,8 @@ public class FtpConnection extends BaseFtpConnection {
 			try {
 				if(request.getCommand().equals("LIST")) {
 					VirtualDirectory.printList(listFiles, os);
+				} else if(request.getCommand().equals("NLST")) {
+					VirtualDirectory.printNList(listFiles, detailOption, out);
 				}
 			} catch (IOException ex) {
 				out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
@@ -705,7 +707,12 @@ public class FtpConnection extends BaseFtpConnection {
 			currentDirectory.lookupNonExistingFile(request.getArgument());
 		LinkedRemoteFile dir = (LinkedRemoteFile) ret[0];
 		String createdDirName = (String) ret[1];
-
+		
+		if(!getConfig().checkMakeDir(dir, _user)) {
+			out.write(FtpResponse.RESPONSE_530_ACCESS_DENIED.toString());
+			return;
+		}
+		
 		if (createdDirName == null) {
 			out.print(
 				new FtpResponse(
@@ -784,126 +791,127 @@ public class FtpConnection extends BaseFtpConnection {
 	 * information.
 	 */
 	public void doNLST(FtpRequest request, PrintWriter out) {
-		// reset state variables
-		resetState();
-
-		String directoryName = "./";
-		String options = "";
-		//String pattern = "*";
-		String argument = request.getArgument();
-
-		// get options, directory name and pattern
-		if (argument != null) {
-			argument = argument.trim();
-			StringBuffer optionsSb = new StringBuffer(4);
-			StringTokenizer st = new StringTokenizer(argument, " ");
-			while (st.hasMoreTokens()) {
-				String token = st.nextToken();
-				if (token.charAt(0) == '-') {
-					if (token.length() > 1) {
-						optionsSb.append(token.substring(1));
-					}
-				} else {
-					directoryName = token;
-				}
-			}
-			options = optionsSb.toString();
-		}
-
-		// check options
-		//boolean bAll = options.indexOf('a') != -1;
-		boolean bDetail = options.indexOf('l') != -1;
-
-		LinkedRemoteFile directoryFile;
-		if (directoryName != null) {
-			try {
-				directoryFile = currentDirectory.lookupFile(directoryName);
-			} catch (IOException ex) {
-				out.print(new FtpResponse(450, ex.getMessage()));
-				return;
-			}
-		} else {
-			directoryFile = currentDirectory;
-		}
-
-		out.print(FtpResponse.RESPONSE_150_OK);
-		Writer os = null;
-		try {
-			Socket dataSocket;
-			try {
-				dataSocket = getDataSocket();
-			} catch (IOException ex) {
-				out.print(FtpResponse.RESPONSE_425_CANT_OPEN_DATA_CONNECTION);
-				return;
-			}
-
-			if (mbPort) {
-				os = new OutputStreamWriter(dataSocket.getOutputStream());
-
-				try {
-					VirtualDirectory.printNList(
-						directoryFile.getFiles(),
-						bDetail,
-						os);
-				} catch (IOException ex) {
-					out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
-					return;
-				}
-				os.flush();
-				FtpResponse response =
-					(FtpResponse) (FtpResponse
-						.RESPONSE_226_CLOSING_DATA_CONNECTION)
-						.clone();
-				response.addComment(status());
-				out.print(response);
-			} else { //mbPasv
-				//TODO passive transfer mode
-			}
-		} catch (IOException ex) {
-			ex.printStackTrace();
-			out.print(FtpResponse.RESPONSE_425_CANT_OPEN_DATA_CONNECTION);
-		} finally {
-			if (os != null) {
-				try {
-					os.close();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
-			reset();
-		}
-		//
-		//		 
-		//		 out.print(FtpResponse.RESPONSE_150_OK);
-		//		 Writer os = null;
-		//		 try {
-		//		     Socket dataSoc = mDataConnection.getDataSocket();
-		//		     if (dataSoc == null) {
-		//		          out.write(ftpStatus.getResponse(550, request, user, null));
-		//		          return;
-		//		     }
-		//		     
-		//		     os = new OutputStreamWriter(dataSoc.getOutputStream());
-		//		     
-		//		     if (!VirtualDirectory.printNList(request.getArgument(), os)) {
-		//		         out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
-		//		     }
-		//		     else {
-		//		        os.flush();
-		//		        out.write(ftpStatus.getResponse(226, request, user, null));
-		//		     }
-		//		 }
-		//		 catch(IOException ex) {
-		//		     out.write(ftpStatus.getResponse(425, request, user, null));
-		//		 }
-		//		 finally {
-		//		 try {
-		//		 os.close();
-		//		 } catch(Exception ex) {
-		//		 e.printStackTrace();
-		//		 }
-		//		     mDataConnection.reset();
-		//		 }
+		doLIST(request, out);
+//		// reset state variables
+//		resetState();
+//
+//		String directoryName = "./";
+//		String options = "";
+//		//String pattern = "*";
+//		String argument = request.getArgument();
+//
+//		// get options, directory name and pattern
+//		if (argument != null) {
+//			argument = argument.trim();
+//			StringBuffer optionsSb = new StringBuffer(4);
+//			StringTokenizer st = new StringTokenizer(argument, " ");
+//			while (st.hasMoreTokens()) {
+//				String token = st.nextToken();
+//				if (token.charAt(0) == '-') {
+//					if (token.length() > 1) {
+//						optionsSb.append(token.substring(1));
+//					}
+//				} else {
+//					directoryName = token;
+//				}
+//			}
+//			options = optionsSb.toString();
+//		}
+//
+//		// check options
+//		//boolean bAll = options.indexOf('a') != -1;
+//		boolean bDetail = options.indexOf('l') != -1;
+//
+//		LinkedRemoteFile directoryFile;
+//		if (directoryName != null) {
+//			try {
+//				directoryFile = currentDirectory.lookupFile(directoryName);
+//			} catch (IOException ex) {
+//				out.print(new FtpResponse(450, ex.getMessage()));
+//				return;
+//			}
+//		} else {
+//			directoryFile = currentDirectory;
+//		}
+//
+//		out.print(FtpResponse.RESPONSE_150_OK);
+//		Writer os = null;
+//		try {
+//			Socket dataSocket;
+//			try {
+//				dataSocket = getDataSocket();
+//			} catch (IOException ex) {
+//				out.print(FtpResponse.RESPONSE_425_CANT_OPEN_DATA_CONNECTION);
+//				return;
+//			}
+//
+//			if (mbPort) {
+//				os = new OutputStreamWriter(dataSocket.getOutputStream());
+//
+//				try {
+//					VirtualDirectory.printNList(
+//						directoryFile.getFiles(),
+//						bDetail,
+//						os);
+//				} catch (IOException ex) {
+//					out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+//					return;
+//				}
+//				os.flush();
+//				FtpResponse response =
+//					(FtpResponse) (FtpResponse
+//						.RESPONSE_226_CLOSING_DATA_CONNECTION)
+//						.clone();
+//				response.addComment(status());
+//				out.print(response);
+//			} else { //mbPasv
+//				//TODO passive transfer mode
+//			}
+//		} catch (IOException ex) {
+//			ex.printStackTrace();
+//			out.print(FtpResponse.RESPONSE_425_CANT_OPEN_DATA_CONNECTION);
+//		} finally {
+//			if (os != null) {
+//				try {
+//					os.close();
+//				} catch (Exception ex) {
+//					ex.printStackTrace();
+//				}
+//			}
+//			reset();
+//		}
+//		//
+//		//		 
+//		//		 out.print(FtpResponse.RESPONSE_150_OK);
+//		//		 Writer os = null;
+//		//		 try {
+//		//		     Socket dataSoc = mDataConnection.getDataSocket();
+//		//		     if (dataSoc == null) {
+//		//		          out.write(ftpStatus.getResponse(550, request, user, null));
+//		//		          return;
+//		//		     }
+//		//		     
+//		//		     os = new OutputStreamWriter(dataSoc.getOutputStream());
+//		//		     
+//		//		     if (!VirtualDirectory.printNList(request.getArgument(), os)) {
+//		//		         out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+//		//		     }
+//		//		     else {
+//		//		        os.flush();
+//		//		        out.write(ftpStatus.getResponse(226, request, user, null));
+//		//		     }
+//		//		 }
+//		//		 catch(IOException ex) {
+//		//		     out.write(ftpStatus.getResponse(425, request, user, null));
+//		//		 }
+//		//		 finally {
+//		//		 try {
+//		//		 os.close();
+//		//		 } catch(Exception ex) {
+//		//		 e.printStackTrace();
+//		//		 }
+//		//		     mDataConnection.reset();
+//		//		 }
 	}
 
 	/**
@@ -1402,7 +1410,8 @@ public class FtpConnection extends BaseFtpConnection {
 			long transferedBytes = _transfer.getTransfered();
 
 			//TODO creditloss
-			if (_user.getRatio() != 0) {
+			float ratio = getConfig().getCreditLossRatio(_transferFile, _user);
+			if (ratio != 0) {
 				_user.updateCredits(-transferedBytes);
 			}
 			_user.updateDownloadedBytes(transferedBytes);
@@ -2138,6 +2147,9 @@ public class FtpConnection extends BaseFtpConnection {
 		return;
 	}
 	
+	/**
+	 * Used by doSITE_DUPE()
+	 */
 	public static void findFile(FtpResponse response, LinkedRemoteFile dir, Collection searchstrings) {
 		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
@@ -3017,7 +3029,7 @@ public class FtpConnection extends BaseFtpConnection {
 				+ user.getDownloadedFilesWeek()
 				+ "f ");
 		response.addComment(
-			"today: "
+			"day: "
 				+ user.getUploadedBytesDay()
 				+ "b "
 				+ user.getUploadedFilesDay()
@@ -3586,7 +3598,6 @@ public class FtpConnection extends BaseFtpConnection {
 			}
 		}
 		assert _rslave != null;
-		
 		List rslaves = Collections.singletonList(_rslave);
 		//		ArrayList rslaves = new ArrayList();
 		//		rslaves.add(rslave);
@@ -3730,6 +3741,7 @@ public class FtpConnection extends BaseFtpConnection {
 		_user.updateCredits(
 			(long) (_user.getRatio() * transferedBytes));
 		_user.updateUploadedBytes(transferedBytes);
+		_user.updateUploadedFiles(1);
 		try {
 			_user.commit();
 		} catch (UserFileException e1) {
@@ -3937,8 +3949,12 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(new FtpResponse(530, ex.getMessage()));
 			return;
 		} catch (IOException ex) {
-			ex.printStackTrace();
+			logger.warn("", ex);
 			out.print(new FtpResponse(530, "IOException: " + ex.getMessage()));
+			return;
+		} catch(RuntimeException ex) {
+			logger.error("", ex);
+			out.print(new  FtpResponse(530, ex.getMessage()));
 			return;
 		}
 
@@ -3998,7 +4014,7 @@ public class FtpConnection extends BaseFtpConnection {
 			+ Bytes.formatBytes(_user.getCredits())
 			+ "] [Ratio: 1:"
 			+ _user.getRatio()
-			+ "]";
+			+ "] [Disk free: "+slaveManager.getAllStatus().getDiskSpaceAvailable()+"]";
 	}
 
 	/**

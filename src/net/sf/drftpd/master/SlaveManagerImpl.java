@@ -499,6 +499,7 @@ public class SlaveManagerImpl
 		return bestslave;
 	}
 
+	//TODO cache!
 	public SlaveStatus getAllStatus() {
 		SlaveStatus ret = new SlaveStatus();
 		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
