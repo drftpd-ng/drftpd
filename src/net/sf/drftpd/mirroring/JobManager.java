@@ -49,7 +49,7 @@ public class JobManager implements Runnable {
     private static final Logger logger = Logger.getLogger(JobManager.class);
     private ConnectionManager _cm;
     private boolean _isStopped = false;
-    private ArrayList _jobList;
+    private ArrayList<Job> _jobList;
     private int _sleepSeconds;
     private boolean _useCRC;
     private Thread thread;
@@ -63,7 +63,7 @@ public class JobManager implements Runnable {
 
     public JobManager(ConnectionManager cm, Properties p) {
         _cm = cm;
-        _jobList = new ArrayList();
+        _jobList = new ArrayList<Job>();
         reload(p);
     }
 

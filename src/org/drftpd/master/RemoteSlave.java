@@ -331,7 +331,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
 
 				default:
 					throw new FatalException("unrecognized direction - "
-							+ transfer.getState());
+							+ transfer.getState()+" for "+transfer);
 				}
 			}
 		}
@@ -836,8 +836,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
 				}
 
 				synchronized (this) {
-					if (!(ar instanceof AsyncResponseRemerge)
-							|| (ar instanceof AsyncResponseTransferStatus)) {
+					if (!(ar instanceof AsyncResponseRemerge)) {
 						logger.debug("Received: " + ar);
 					}
 

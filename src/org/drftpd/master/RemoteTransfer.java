@@ -30,6 +30,8 @@ import org.drftpd.slave.TransferFailedException;
 import org.drftpd.slave.TransferIndex;
 import org.drftpd.slave.TransferStatus;
 
+import com.sun.org.apache.bcel.internal.generic.GETFIELD;
+
 
 /**
  * @author zubov
@@ -42,6 +44,7 @@ public class RemoteTransfer {
     private RemoteSlave _rslave;
     private TransferStatus _status;
     private char _state;
+	private String _path;
 
     public RemoteTransfer(ConnectInfo ci, RemoteSlave rslave) {
         _transferIndex = ci.getTransferIndex();
@@ -142,6 +145,7 @@ public class RemoteTransfer {
 
     public void receiveFile(String path, char type, long position)
         throws IOException, SlaveUnavailableException {
+    	_path = path;
         String index = _rslave.issueReceiveToSlave(path, type, position,
                 getTransferIndex());
         _state = Transfer.TRANSFER_RECEIVING_UPLOAD;
@@ -154,6 +158,7 @@ public class RemoteTransfer {
 
     public void sendFile(String path, char type, long position)
         throws IOException, SlaveUnavailableException {
+    	_path = path;
         String index = _rslave.issueSendToSlave(path, type, position,
                 getTransferIndex());
         _state = Transfer.TRANSFER_SENDING_DOWNLOAD;
@@ -162,5 +167,12 @@ public class RemoteTransfer {
         } catch (RemoteIOException e) {
             throw (IOException) e.getCause();
         }
+    }
+    public String toString() {
+    	try {
+			return getClass().getName()+"[file="+_path+",status="+getTransferStatus()+"]";
+		} catch (Exception e) {
+			return getClass().getName()+"[file="+_path+",status=failed]";
+		}
     }
 }

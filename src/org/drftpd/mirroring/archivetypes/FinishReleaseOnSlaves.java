@@ -65,18 +65,14 @@ public class FinishReleaseOnSlaves extends ArchiveType {
 
             if (file.isDirectory()) {
                 findDestinationSlavesRecursive(file, slaveMap);
-
                 continue;
             }
 
-            Collection tempSlaveList = file.getSlaves();
-
-            for (Iterator iter2 = tempSlaveList.iterator(); iter2.hasNext();) {
+            for (Iterator iter2 = file.getSlaves().iterator(); iter2.hasNext();) {
                 RemoteSlave rslave = (RemoteSlave) iter2.next();
 
                 if (rslave.isAvailable()) {
                     SlaveCount i = (SlaveCount) slaveMap.get(rslave);
-
                     if (i == null) {
                         slaveMap.put(rslave, new SlaveCount());
                     } else {
@@ -113,7 +109,7 @@ public class FinishReleaseOnSlaves extends ArchiveType {
         	entry = iter.next();
         	// has higher value, replace
         	if(mincount < entry.getValue().getValue()) {
-        		returnMe.remove(minslave);
+        		if(!returnMe.remove(minslave)) throw new RuntimeException();
         		minslave = entry.getKey();
         		mincount = Integer.MAX_VALUE;
 
@@ -127,6 +123,7 @@ public class FinishReleaseOnSlaves extends ArchiveType {
 						minslave = rslave;
 					}
 				}
+        		returnMe.add(entry.getKey());
         	}
         }
         return returnMe;

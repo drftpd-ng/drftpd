@@ -190,10 +190,9 @@ public class Job {
     }
 
     public String toString() {
-        String toReturn = "Job[file=" + getFile().getName() + ",dest=[" +
-            outputDestinationSlaves() + "],transferNum=" + _transferNum + "]";
-
-        return toReturn;
+        return "Job[file=" + getFile().getName() + ",dest=[" +
+            outputDestinationSlaves() + "],transferNum=" + _transferNum +
+			",priority="+getPriority()+"]";
     }
 
     public boolean transfer(boolean checkCRC, RemoteSlave sourceSlave,

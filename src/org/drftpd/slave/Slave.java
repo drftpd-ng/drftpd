@@ -683,7 +683,9 @@ public class Slave {
         try {
             _sout.writeObject(response);
             _sout.flush();
-            logger.debug("Slave wrote response - " + response);
+            if(!(response instanceof AsyncResponseTransferStatus)) {
+            	logger.debug("Slave wrote response - " + response);
+            }
 
             if (response instanceof AsyncResponseException) {
                 logger.debug("",
