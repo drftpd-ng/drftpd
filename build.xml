@@ -28,9 +28,14 @@
       <exclude name="**/*Test.java"/>
     </javac>
     <rmic base="${outputDir}" debug="true" stubversion="1.2">
-	<include name="**/*Impl.class"/>
-	<classpath refid="classpath"/>
+	  <include name="**/*Impl.class"/>
+	  <classpath refid="classpath"/>
     </rmic>
+    <copy todir="${outputDir}">
+      <fileset dir="${sourceDir}">
+        <include name="**/*.properties"/>
+      </fileset>
+    </copy>
   </target>
   
   <target name="tests" depends="init, prepare">

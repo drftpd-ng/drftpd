@@ -45,7 +45,7 @@ import org.tanesha.replacer.SimplePrintf;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.62 2003/12/22 18:09:41 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.63 2003/12/23 00:09:48 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -280,7 +280,7 @@ public class BaseFtpConnection implements Runnable {
 				logger.warn("", e1);
 				return str;
 			} 
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.warn("", e);
 			return key;
 		}

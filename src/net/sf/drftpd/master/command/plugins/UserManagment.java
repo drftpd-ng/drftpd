@@ -33,7 +33,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.11 2003/11/26 09:53:30 zubov Exp $
+ * @version $Id: UserManagment.java,v 1.12 2003/12/23 00:09:48 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	public void load(CommandManagerFactory initializer) {
@@ -221,7 +221,7 @@ public class UserManagment implements CommandHandler {
 			"OK, removed " + credits + "b from " + user2.getUsername() + ".");
 	}
 	private Logger logger = Logger.getLogger(UserManagment.class);
-	
+
 	/**
 	 * USAGE: site user [<user>]
 	 * 	Lists users / Shows detailed info about a user.
@@ -365,23 +365,35 @@ public class UserManagment implements CommandHandler {
 							response.addComment(
 								SimplePrintf.jprintf(formatidle, env));
 
-						} else if (conn2.getDataConnectionHandler().isTransfering()) {
-							if (conn2.getDataConnectionHandler().isTransfering()) {
+						} else if (
+							conn2.getDataConnectionHandler().isTransfering()) {
+							if (conn2
+								.getDataConnectionHandler()
+								.isTransfering()) {
 								try {
 									env.add(
 										"speed",
 										Bytes.formatBytes(
-											conn2.getDataConnectionHandler().getTransfer().getXferSpeed())
+											conn2
+												.getDataConnectionHandler()
+												.getTransfer()
+												.getXferSpeed())
 											+ "/s");
 								} catch (RemoteException e2) {
 									logger.warn("", e2);
 								}
 								env.add(
 									"file",
-									conn2.getDataConnectionHandler().getTransferFile().getName());
+									conn2
+										.getDataConnectionHandler()
+										.getTransferFile()
+										.getName());
 								env.add(
 									"slave",
-									conn2.getDataConnectionHandler().getTranferSlave().getName());
+									conn2
+										.getDataConnectionHandler()
+										.getTranferSlave()
+										.getName());
 							}
 
 							if (conn2.getTransferDirection()
@@ -882,6 +894,8 @@ public class UserManagment implements CommandHandler {
 			} catch (NumberFormatException ex) {
 				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 			}
+		} else {
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
 		try {
 			myUser.commit();
