@@ -106,21 +106,21 @@ public class SlaveImpl
 	public static void main(String args[]) {
 		BasicConfigurator.configure();
 		System.out.println(SlaveImpl.VERSION + " slave server starting");
-		String drftpdconf;
+		String slaveconf;
 		if (args.length >= 1) {
-			drftpdconf = args[0];
+			slaveconf = args[0];
 		} else {
-			drftpdconf = "drftpd.conf";
+			slaveconf = "slave.conf";
 		}
 		try {
 
 			Properties cfg = new Properties();
 			try {
-				cfg.load(new FileInputStream(drftpdconf));
+				cfg.load(new FileInputStream(slaveconf));
 			} catch (Throwable ex) {
 				ex.printStackTrace();
 				System.err.println(
-					"Could not open " + drftpdconf + ", exiting.");
+					"Could not open " + slaveconf + ", exiting.");
 				System.exit(0);
 				return;
 			}

@@ -71,13 +71,30 @@ public class ConnectionManager {
 			} else {
 				cfgFileName = "drftpd.conf";
 			}
-
-			/** load config **/
+			String slaveCfgFileName;
+			if (args.length >= 2) {
+				slaveCfgFileName = args[1];
+			} else {
+				slaveCfgFileName = "slave.conf";
+			}
+			
+			/** load master config **/
 			Properties cfg = new Properties();
 			cfg.load(new FileInputStream(cfgFileName));
-
+			
+			/** load slave config **/
+			Properties slaveCfg; //used as a flag for if localslave=true
+			if (cfg
+			.getProperty("master.localslave", "false")
+			.equalsIgnoreCase("true")) {
+				slaveCfg = new Properties();
+				slaveCfg.load(new FileInputStream(slaveCfgFileName));
+			} else {
+				slaveCfg = null;
+			}
+			
 			logger.info("Starting ConnectionManager");
-			ConnectionManager mgr = new ConnectionManager(cfg, cfgFileName);
+			ConnectionManager mgr = new ConnectionManager(cfg, slaveCfg, cfgFileName, slaveCfgFileName);
 			/** listen for connections **/
 			ServerSocket server =
 				new ServerSocket(
@@ -109,7 +126,8 @@ public class ConnectionManager {
 	private SlaveManagerImpl _slaveManager;
 	private Timer _timer;
 	private UserManager _usermanager;
-	public ConnectionManager(Properties cfg, String cfgFileName) {
+	public ConnectionManager(Properties cfg, Properties slaveCfg, String cfgFileName, String slaveCfgFileName) {
+
 		try {
 			_config = new FtpConfig(cfg, cfgFileName, this);
 		} catch (Throwable ex) {
@@ -127,11 +145,9 @@ public class ConnectionManager {
 			throw new FatalException(e);
 		}
 
-		if (cfg
-			.getProperty("master.localslave", "false")
-			.equalsIgnoreCase("true")) {
+		if (slaveCfg != null ) {
 			try {
-				new SlaveImpl(cfg);
+				new SlaveImpl(slaveCfg);
 			} catch (RemoteException ex) {
 				throw new FatalException(ex);
 			}
