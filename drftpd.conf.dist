@@ -14,12 +14,14 @@ master.bindport=1099
 master.port=2121
 
 #Run a slave in the same process as the master?
+# [ true | false ]
 master.localslave=false
 
 #User manager to use, just leave it for now.
 master.usermanager=net.sf.drftpd.master.usermanager.jsx.JSXUserManager
 
 #use ident on user lookups
+# [ true | false ]
 use.ident=true
 
 #loaded plugins must use in sequential numbering

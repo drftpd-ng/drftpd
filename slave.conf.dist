@@ -2,7 +2,7 @@
 ### Slave settings ###
 ######################
 
-#What you set <name>drftpd</name> to in slaves.xml
+#What you set <name>drftpd</name> to in conf/slaves.xml.dist
 slave.name=drftpd
 
 #root to serve contents from, is automatically created
@@ -11,8 +11,9 @@ slave.root.1=site
 #several harddrives without using RAID or similair.
 #slave.root.2=d:/
 
-
+# Master host/ip
 master.host=localhost
+# Name of Master to register with
 master.bindname=slavemanager
 #port to connect to the master
 master.bindport=1099
@@ -21,7 +22,12 @@ master.bindport=1099
 #slave.portfrom=30000
 #slave.portto=33000
 
+# Enable checksums for uploads
+# [ true | false ]
 enableuploadchecksums=true
+
+# Enable checksums for downloads
+# [ true | false ]
 enabledownloadchecksums=true
 
 bufferSize=65536

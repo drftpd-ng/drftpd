@@ -1,3 +1,11 @@
+# user accounts that require certain amount of uploads to remain
+#
+# quota can be specified in GB, MB, KB
+# period= daily, weekly, monthly
+# fail= groupname 
+# perm= 
+
+
 1.name=trial
 1.quota=1gb
 1.period=weekly

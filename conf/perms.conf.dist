@@ -1,6 +1,15 @@
 #allow 10 conections per slave if you have 10 slaves
 max_users	100	0
 
+# FUNCTION       | PATH     | GROUP
+# * = only wildcard recognized
+# = denotes group, - denotes user
+
+# EXAMPLES
+# upload * =siteop
+# download * -user1
+# makedir /usercanmakedir/* -user1 -user2 =group1
+
 upload			*	*
 download		*	*
 
