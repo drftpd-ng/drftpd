@@ -43,11 +43,14 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.40 2004/02/16 23:27:24 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.41 2004/02/16 23:46:11 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
-	private Hashtable _patternPaths;
+
+	private static Collection getCollection(Hashtable tbl, String key) {
+		return (Collection) tbl.get(key);
+	}
 
 	public static String getProperty(Properties p, String name)
 		throws NullPointerException {
@@ -55,22 +58,6 @@ public class FtpConfig {
 		if (result == null)
 			throw new NullPointerException("Error getting setting " + name);
 		return result;
-	}
-
-	//	private static ArrayList makePatternPermission(ArrayList arr, StringTokenizer st)
-	//		throws MalformedPatternException {
-	//		arr.add(
-	//			new PatternPathPermission(
-	//				new GlobCompiler().compile(st.nextToken()),
-	//				makeUsers(st)));
-	//		return arr;
-	//	}
-
-	private PatternPathPermission makePatternPathPermission(StringTokenizer st)
-		throws MalformedPatternException {
-		return new PatternPathPermission(
-			new GlobCompiler().compile(st.nextToken()),
-			makeUsers((st)));
 	}
 	private static ArrayList makeRatioPermission(
 		ArrayList arr,
@@ -93,6 +80,8 @@ public class FtpConfig {
 	}
 	private boolean _capFirstDir;
 	private boolean _capFirstFile;
+
+	String _cfgFileName;
 	private ConnectionManager _connManager;
 	private ArrayList _creditcheck;
 	private ArrayList _creditloss;
@@ -103,14 +92,13 @@ public class FtpConfig {
 	private int _maxUsersExempt;
 	private int _maxUsersTotal = Integer.MAX_VALUE;
 	private ArrayList _msgpath;
+	private Hashtable _patternPaths;
 	private StringTokenizer _replaceDir;
 	private StringTokenizer _replaceFile;
 	private boolean _useDirNames;
 	private boolean _useFileNames;
 
 	private boolean _useIdent;
-
-	String _cfgFileName;
 	private String newConf = "conf/perms.conf";
 
 	/**
@@ -127,10 +115,6 @@ public class FtpConfig {
 
 	public boolean checkDelete(User fromUser, LinkedRemoteFile path) {
 		return checkPathPermission("delete", fromUser, path);
-	}
-
-	private static Collection getCollection(Hashtable tbl, String key) {
-		return (Collection) tbl.get(key);
 	}
 	public boolean checkDeleteOwn(User fromUser, LinkedRemoteFile path) {
 		return checkPathPermission("deleteown", fromUser, path);
@@ -174,7 +158,7 @@ public class FtpConfig {
 		LinkedRemoteFile path) {
 		return checkPathPermission(key, fromUser, path, false);
 	}
-	
+
 	private boolean checkPathPermission(
 		String key,
 		User fromUser,
@@ -375,9 +359,13 @@ public class FtpConfig {
 					else if (cmd.equals("creditcheck")) {
 						makeRatioPermission(creditcheck, st);
 					} else if (cmd.equals("pathperm")) {
-						patternPathPermission.put(
+						makePatternPathPermission(
+							patternPathPermission,
 							st.nextToken(),
-							makePatternPathPermission(st));
+							st);
+						//						patternPathPermission.put(
+						//							st.nextToken(),
+						//							makePatternPathPermission(st));
 					} else if (
 						cmd.equals("privpath")
 							|| cmd.equals("dirlog")
@@ -391,9 +379,13 @@ public class FtpConfig {
 							|| cmd.equals("rename")
 							|| cmd.equals("renameown")
 							|| cmd.equals("request")) {
-						patternPathPermission.put(
+						makePatternPathPermission(
+							patternPathPermission,
 							cmd,
-							makePatternPathPermission(st));
+							st);
+						//						patternPathPermission.put(
+						//							cmd,
+						//							makePatternPathPermission(st));
 					}
 				} catch (Exception e) {
 					logger.warn(
@@ -414,10 +406,37 @@ public class FtpConfig {
 			msgpath.trimToSize();
 			_msgpath = msgpath;
 
+			_patternPaths = patternPathPermission;
 		} finally {
 			in.close();
 		}
 	}
+
+	private void makePatternPathPermission(
+		Hashtable patternPathPermission,
+		String string,
+		StringTokenizer st)
+		throws MalformedPatternException {
+		ArrayList perms;
+		perms = (ArrayList) patternPathPermission.get(string);
+		if (perms == null) {
+			perms = new ArrayList();
+			patternPathPermission.put(string, perms);
+		}
+		perms.add(
+			new PatternPathPermission(
+				new GlobCompiler().compile(st.nextToken()),
+				makeUsers((st))));
+	}
+
+	//	private static ArrayList makePatternPermission(ArrayList arr, StringTokenizer st)
+	//		throws MalformedPatternException {
+	//		arr.add(
+	//			new PatternPathPermission(
+	//				new GlobCompiler().compile(st.nextToken()),
+	//				makeUsers(st)));
+	//		return arr;
+	//	}
 
 	/**
 	 * 
