@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.RemoteException;
@@ -65,6 +64,7 @@ public class ConnectionManager {
 		System.out.println(SlaveImpl.VERSION + " master server starting.");
 		System.out.println("http://drftpd.sourceforge.net");
 
+		System.setProperty("line.separator", "\r\n");
 		try {
 			String cfgFileName;
 			if (args.length >= 1) {
@@ -83,9 +83,7 @@ public class ConnectionManager {
 
 			logger.info("Starting ConnectionManager");
 			ConnectionManager mgr = new ConnectionManager(cfg, cfgFileName);
-			System.setProperty("line.separator", "\r\n");
 			/** listen for connections **/
-			try {
 				ServerSocket server =
 					new ServerSocket(
 						Integer.parseInt(cfg.getProperty("master.port")));
@@ -93,20 +91,11 @@ public class ConnectionManager {
 				while (true) {
 					mgr.start(server.accept());
 				}
-			} catch (BindException e) {
-				throw new FatalException(
-					"Couldn't bind on port " + cfg.getProperty("master.port"),
-					e);
-			} catch (Exception e) {
-				logger.log(Level.FATAL, "", e);
-			}
-		} catch (Throwable th) {
-			logger.log(Level.FATAL, "", th);
-			System.exit(0);
-			return;
+		} catch (Exception th) {
+			throw new FatalException(th);
 		}
-		System.gc();
 	}
+	
 	private Vector _conns = new Vector();
 	private FtpConfig _config;
 
@@ -143,10 +132,7 @@ public class ConnectionManager {
 			try {
 				new SlaveImpl(cfg);
 			} catch (RemoteException ex) {
-				ex.printStackTrace();
-				System.exit(0);
-				return;
-				//the compiler doesn't know that execution stops at System.exit(),
+				throw new FatalException(ex);
 			}
 		}
 
