@@ -23,6 +23,7 @@ import java.io.ObjectInputStream;
 import java.util.ArrayList;
 
 import net.sf.drftpd.master.usermanager.UserExistsException;
+import net.sf.drftpd.master.usermanager.jsx.*;
 
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.master.usermanager.AbstractUser;
@@ -38,7 +39,7 @@ import com.thoughtworks.xstream.XStream;
 
 /**
  * @author mog
- * @version $Id: XStreamUser.java,v 1.1 2004/04/27 21:53:13 zombiewoof64 Exp $
+ * @version $Id: XStreamUser.java,v 1.2 2004/04/28 15:43:38 zombiewoof64 Exp $
  */
 public class XStreamUser
 	extends AbstractUser
