@@ -3643,6 +3643,7 @@ public class FtpConnection extends BaseFtpConnection {
 			(FtpResponse) FtpResponse
 				.RESPONSE_226_CLOSING_DATA_CONNECTION
 				.clone();
+		response.addComment(Bytes.formatBytes(transferedBytes)+" transfered");
 		try {
 			long sfvChecksum =
 				targetDir.lookupSFVFile().getChecksum(targetFilename);
@@ -3650,7 +3651,6 @@ public class FtpConnection extends BaseFtpConnection {
 				response.addComment(
 					"zipscript - checksum match: "
 						+ Long.toHexString(checksum));
-
 			} else {
 				response.addComment(
 					"zipscript - checksum mismatch: "
@@ -3686,7 +3686,7 @@ public class FtpConnection extends BaseFtpConnection {
 				//				targetFile.renameTo(targetDir.getPath() + badtargetFilename);
 			}
 		} catch (NoAvailableSlaveException e) {
-			response.addComment("zipscript - slave with .sfv file is offline");
+			response.addComment("zipscript - slave with .sfv file is offline, no checksum matching performed");
 		} catch (ObjectNotFoundException e) {
 			response.addComment("zipscript - no .sfv file in directory");
 		} catch (IOException e) {

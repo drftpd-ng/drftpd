@@ -164,26 +164,30 @@ public class IRCListener implements FtpListener, Observer {
 			) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
 			String statusString;
+
+			ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
+			env.add("name", rslave.getName());
+
 			try {
-				SlaveStatus status = rslave.getSlave().getSlaveStatus();
+				SlaveStatus status;
+				try {
+					status = rslave.getSlave().getSlaveStatus();
+				} catch (NoAvailableSlaveException e1) {
+					say(SimplePrintf.jprintf(_ircCfg.getProperty("slaves.offline"), env));
+					continue;
+				}
 
-				ReplacerFormat format =
-					ReplacerFormat.createFormat(_ircCfg.getProperty("slaves"));
-				ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
-				
-				env.add("name", rslave.getName());
-
-				env.add("totalxfers", new Integer(status.getTransfers()));
+				env.add("xfers", Integer.toString(status.getTransfers()));
 				env.add(
-					"totalthroughput",
+					"throughput",
 					Bytes.formatBytes(status.getThroughput()) + "/s");
 
-				env.add("upxfers", new Integer(status.getTransfersReceiving()));
+				env.add("xfersup", Integer.toString(status.getTransfersReceiving()));
 				env.add(
 					"througputup",
 					Bytes.formatBytes(status.getThroughputReceiving()) + "/s");
 
-				env.add("xfersdown", new Integer(status.getTransfersSending()));
+				env.add("xfersdown", Integer.toString(status.getTransfersSending()));
 				env.add(
 					"througputdown",
 					Bytes.formatBytes(status.getThroughputSending()));
@@ -198,11 +202,9 @@ public class IRCListener implements FtpListener, Observer {
 					"diskused",
 					Bytes.formatBytes(status.getDiskSpaceUsed()));
 
-				statusString = SimplePrintf.jprintf(format, env);
+				statusString = SimplePrintf.jprintf(_ircCfg.getProperty("slaves"), env);
 			} catch (ConnectException e) {
 				rslave.handleRemoteException(e);
-				statusString = "offline";
-			} catch (NoAvailableSlaveException e) {
 				statusString = "offline";
 			} catch (FormatterException e) {
 				say("[slaves] formatterexception: "+e.getMessage());
@@ -214,7 +216,7 @@ public class IRCListener implements FtpListener, Observer {
 				rslave.handleRemoteException(e);
 				statusString ="offline";
 			}
-			say("[slaves] " + rslave.getName() + " " + statusString);
+			say(statusString);
 		}
 	}
 
