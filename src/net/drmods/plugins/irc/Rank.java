@@ -222,9 +222,9 @@ public class Rank extends GenericCommandAutoService implements
                         "msg1", env, Rank.class));
             else if (msgtype == 2) {
                 if (!user1.equals(null) && !user2.equals(null))
-                    env.add("toup", Bytes.formatBytes(user1
+                    env.add("toup", Bytes.formatBytes(user2
                             .getUploadedBytesMonth()
-                            - user2.getUploadedBytesMonth()));
+                            - user1.getUploadedBytesMonth()));
                 _listener.sayChannel(msgc.getDest(), ReplacerUtils.jprintf(
                         "msg2", env, Rank.class));
             } else if (msgtype == 3) {
