@@ -42,13 +42,13 @@ import JSX.ObjIn;
 
 /**
  * @author mog
- * @version $Id: JSXUserManager.java,v 1.25 2004/02/10 00:03:14 mog Exp $
+ * @version $Id: JSXUserManager.java,v 1.26 2004/02/10 01:06:40 mog Exp $
  */
 public class JSXUserManager implements UserManager {
 	private ConnectionManager _connManager;
 	private static final Logger logger =
 		Logger.getLogger(JSXUserManager.class.getName());
-	String userpath = "ftp-data/users/";
+	String userpath = "users/";
 	File userpathFile = new File(userpath);
 
 	Hashtable users = new Hashtable();
