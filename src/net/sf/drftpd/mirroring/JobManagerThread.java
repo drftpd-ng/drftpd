@@ -12,18 +12,15 @@ import net.sf.drftpd.master.RemoteSlave;
 
 /**
  * @author zubov
- * @version $Id: JobManagerThread.java,v 1.3 2003/12/23 13:38:21 mog Exp $
+ * @version $Id: JobManagerThread.java,v 1.4 2004/01/05 00:14:20 mog Exp $
  */
 public class JobManagerThread extends Thread {
 	private JobManager _jm;
 
 	private RemoteSlave _rslave;
-	private Logger logger = Logger.getLogger(JobManagerThread.class);
+	private static final Logger logger = Logger.getLogger(JobManagerThread.class);
 	private boolean stopped = false;
 
-	/**
-	 * 
-	 */
 	public JobManagerThread() {
 	}
 

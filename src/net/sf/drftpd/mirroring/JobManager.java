@@ -1,9 +1,3 @@
-/*
- * Created on Dec 9, 2003
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd.mirroring;
 
 import java.io.IOException;
@@ -13,8 +7,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
@@ -23,16 +15,19 @@ import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
+import org.apache.log4j.Logger;
+
 /**
- * @author matt
- * @version $Id: JobManager.java,v 1.5 2004/01/04 18:53:09 zubov Exp $
+ * @author zubov
+ * @version $Id: JobManager.java,v 1.6 2004/01/05 00:14:20 mog Exp $
  */
 public class JobManager implements FtpListener {
 	private ConnectionManager _cm;
 	private ArrayList _jobList = new ArrayList();
 	private ArrayList _slaveSendingList = new ArrayList();
 	private ArrayList _threadList = new ArrayList();
-	private Logger logger = Logger.getLogger(JobManager.class);
+	private static final Logger logger = Logger.getLogger(JobManager.class);
+	
 	/**
 	 * Keeps track of all jobs and controls them
 	 */
@@ -78,6 +73,20 @@ public class JobManager implements FtpListener {
 		_jobList.add(job);
 		Collections.sort(_jobList, new JobComparator());
 	}
+	
+	/**
+	 * Gets all jobs.
+	 * @return All jobs.
+	 */
+	public List getAllJobs() {
+		return Collections.unmodifiableList(_jobList);
+	}
+
+	/**
+	 * Get all jobs for a specific LinkedRemoteFile.
+	 * @param lrf The LinkedRemoteFile to return all jobs for.
+	 * @return A <code>java.util.List</code> of all jobs for the specific LinkedRemoteFile
+	 */
 	public synchronized List getAllJobs(LinkedRemoteFile lrf) {
 		ArrayList tempList = new ArrayList();
 		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
@@ -88,11 +97,17 @@ public class JobManager implements FtpListener {
 		}
 		return tempList;
 	}
-	public synchronized List getAllJobs(Object o) {
+		
+	/**
+	 * Get all jobs where Job#getSource() is source 
+	 * @param source The source of all objects to get.
+	 * @return List of all <code>Job</code>s
+	 */
+	public synchronized List getAllJobs(Object source) {
 		ArrayList tempList = new ArrayList();
 		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
 			Job tempJob = (Job) iter.next();
-			if (tempJob.getSource().equals(o))
+			if (tempJob.getSource().equals(source))
 				tempList.add(tempJob);
 		}
 		return tempList;
@@ -165,10 +180,9 @@ public class JobManager implements FtpListener {
 		try {
 			slaveList = _cm.getSlaveManager().getAvailableSlaves();
 		} catch (NoAvailableSlaveException e) {
-			slaveList = null;
-		}
-		if (slaveList == null)
 			return;
+		}
+
 		for (Iterator iter = slaveList.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
 			JobManagerThread newThread = new JobManagerThread(rslave, this);

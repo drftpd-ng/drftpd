@@ -3,7 +3,7 @@ package net.sf.drftpd;
 
 /**
  * @author mog
- * @version $Id: Nukee.java,v 1.4 2003/12/23 13:38:18 mog Exp $
+ * @version $Id: Nukee.java,v 1.5 2004/01/05 00:14:19 mog Exp $
  */
 public class Nukee implements Comparable {
 	private String _username;
@@ -24,15 +24,19 @@ public class Nukee implements Comparable {
 			thisVal < anotherVal ? 1 : (thisVal == anotherVal ? 0 : -1));
 	}
 
-	public Nukee(String user, long l) {
+	public Nukee(String user, long amount) {
 		_username = user;
-		_amount = l;
+		_amount = amount;
 	}
 
 	public String getUsername() {
 		return _username;
 	}
 
+	/**
+	 * Returns the amount nuked without multiplier.
+	 * @return the amount nuked without multiplier.
+	 */
 	public long getAmount() {
 		return _amount;
 	}

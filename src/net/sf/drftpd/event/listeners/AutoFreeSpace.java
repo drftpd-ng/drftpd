@@ -24,9 +24,7 @@ import net.sf.drftpd.slave.SlaveStatus;
 
 /**
  * @author zubov
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: AutoFreeSpace.java,v 1.2 2004/01/05 00:14:19 mog Exp $
  */
 public class AutoFreeSpace implements FtpListener {
 

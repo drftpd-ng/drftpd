@@ -1,7 +1,7 @@
 package net.sf.drftpd.event;
 
-import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.drftpd.event.irc.IRCListener;
@@ -12,7 +12,7 @@ import org.jdom.Element;
 /**
  * @author mog
  *
- * @version $Id: NukeEvent.java,v 1.16 2003/12/23 13:38:18 mog Exp $
+ * @version $Id: NukeEvent.java,v 1.17 2004/01/05 00:14:19 mog Exp $
  */
 public class NukeEvent extends UserEvent {
 	private long nukedAmount;
@@ -55,7 +55,12 @@ public class NukeEvent extends UserEvent {
 		return nukees;
 	}
 
-	public Collection getNukees2() {
+	/**
+	 * Returns a list of <code>net.sf.drftpd.Nukee</code> objects.
+	 * @return a list of <code>net.sf.drftpd.Nukee</code> objects.
+	 * @see net.sf.drftpd.Nukee
+	 */
+	public List getNukees2() {
 		return IRCListener.map2nukees(nukees);
 	}
 

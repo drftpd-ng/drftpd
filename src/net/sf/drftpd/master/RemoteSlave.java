@@ -14,7 +14,6 @@ import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
@@ -23,7 +22,7 @@ import org.apache.log4j.Logger;
  * and mainly because it is a helper class for Slave, it is located in net.sf.drftpd.slave.
  * 
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.20 2003/11/19 00:20:51 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.21 2004/01/05 00:14:19 mog Exp $
  */
 public class RemoteSlave implements Serializable, Comparable {
 
@@ -137,16 +136,16 @@ public class RemoteSlave implements Serializable, Comparable {
 	 * @return true If exception was fatal and the slave was removed 
 	 */
 	public boolean handleRemoteException(RemoteException ex) {
-		if (!isFatalRemoteException(ex)) {
-			logger.log(
-				Level.WARN,
-				"Caught non-fatal exception from "
-					+ getName()
-					+ ", not removing",
-				ex);
-			return false;
-		}
-		logger.warn("Fatal exception from " + getName() + ", removing", ex);
+//		if (!isFatalRemoteException(ex)) {
+//			logger.log(
+//				Level.WARN,
+//				"Caught non-fatal exception from "
+//					+ getName()
+//					+ ", not removing",
+//				ex);
+//			return false;
+//		}
+		logger.warn("Exception from " + getName() + ", removing", ex);
 		setOffline(ex.getCause().getMessage());
 		return true;
 	}

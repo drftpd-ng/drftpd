@@ -9,9 +9,8 @@ import net.sf.drftpd.master.TransferThread;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
- * @author matt
- *
- * @version $Id: CooperativeSlaveTransfer.java,v 1.4 2003/12/23 13:38:22 mog Exp $
+ * @author zubov
+ * @version $Id: CooperativeSlaveTransfer.java,v 1.5 2004/01/05 00:14:20 mog Exp $
  */
 public class CooperativeSlaveTransfer extends Thread {
 
@@ -20,18 +19,12 @@ public class CooperativeSlaveTransfer extends Thread {
 	private Logger logger = Logger.getLogger(CooperativeSlaveTransfer.class);
 	private int _numoftries;
 	
-	/**
-	 * 
-	 */
 	public CooperativeSlaveTransfer(LinkedRemoteFile lrf, RemoteSlave rs, int numoftries) {
 		_lrf = lrf;
 		_rs = rs;
 		_numoftries = numoftries;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Runnable#run()
-	 */
 	public void run() {
 		boolean completed = false;
 		for(int x = 0; x<_numoftries; x++) {
@@ -52,5 +45,4 @@ public class CooperativeSlaveTransfer extends Thread {
 			}
 		}
 	}
-
 }

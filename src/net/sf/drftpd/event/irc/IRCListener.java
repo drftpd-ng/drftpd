@@ -42,6 +42,7 @@ import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.UploaderPosition;
+import net.sf.drftpd.master.command.plugins.Nuke;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
@@ -71,7 +72,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.69 2004/01/03 23:50:53 mog Exp $
+ * @version $Id: IRCListener.java,v 1.70 2004/01/05 00:14:19 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -293,8 +294,7 @@ public class IRCListener implements FtpListener, Observer {
 						direvent.getDirectory());
 					env.add(
 						"filesleft",
-						Integer.toString(
-							sfvstatus.getMissing()));
+						Integer.toString(sfvstatus.getMissing()));
 
 					say(SimplePrintf.jprintf(format, env));
 				}
@@ -477,7 +477,13 @@ public class IRCListener implements FtpListener, Observer {
 
 				raceenv.add("position", "" + position++);
 				raceenv.add("size", Bytes.formatBytes(stat.getAmount()));
-				raceenv.add("nukedamount", Bytes.formatBytes(stat.getAmount()));
+				
+				long nukedamount =
+					Nuke.calculateNukedAmount(
+						stat.getAmount(),
+						raceuser.getRatio(),
+						event.getMultiplier());
+				raceenv.add("nukedamount", Bytes.formatBytes(nukedamount));
 				say(SimplePrintf.jprintf(raceformat, raceenv));
 
 			}
@@ -730,7 +736,7 @@ public class IRCListener implements FtpListener, Observer {
 					(Observer) Class
 						.forName(classname)
 						.getConstructor(new Class[] { IRCListener.class })
-						.newInstance(new Object[] { this});
+						.newInstance(new Object[] { this });
 				_conn.addCommandObserver(obs);
 			} catch (Exception e) {
 				logger.warn("", e);
@@ -1008,7 +1014,8 @@ public class IRCListener implements FtpListener, Observer {
 		env.add("user", username);
 		String status = new String();
 		status =
-			new String(SimplePrintf.jprintf(
+			new String(
+				SimplePrintf.jprintf(
 					_ircCfg.getProperty("speed.pre", ""),
 					env));
 
@@ -1018,7 +1025,7 @@ public class IRCListener implements FtpListener, Observer {
 				env);
 
 		boolean first = true;
-		
+
 		Collection conns = getConnectionManager().getConnections();
 		synchronized (conns) {
 			for (Iterator iter = conns.iterator(); iter.hasNext();) {
@@ -1044,36 +1051,55 @@ public class IRCListener implements FtpListener, Observer {
 							continue;
 						first = false;
 						if (!conn.isExecuting()) {
-							status = status +
-								SimplePrintf.jprintf(_ircCfg.getProperty("speed.idle"), env);
+							status =
+								status
+									+ SimplePrintf.jprintf(
+										_ircCfg.getProperty("speed.idle"),
+										env);
 
-						} else if (conn.getDataConnectionHandler().isTransfering()) {
+						} else if (
+							conn.getDataConnectionHandler().isTransfering()) {
 							try {
 								env.add(
 									"speed",
 									Bytes.formatBytes(
-										conn.getDataConnectionHandler().getTransfer().getXferSpeed())
+										conn
+											.getDataConnectionHandler()
+											.getTransfer()
+											.getXferSpeed())
 										+ "/s");
 							} catch (RemoteException e2) {
 								logger.warn("", e2);
 							}
 							env.add(
 								"file",
-								conn.getDataConnectionHandler().getTransferFile().getName());
+								conn
+									.getDataConnectionHandler()
+									.getTransferFile()
+									.getName());
 							env.add(
 								"slave",
-								conn.getDataConnectionHandler().getTranferSlave().getName());
+								conn
+									.getDataConnectionHandler()
+									.getTranferSlave()
+									.getName());
 
 							if (conn.getTransferDirection()
 								== Transfer.TRANSFER_RECEIVING_UPLOAD) {
-								status = status +
-									SimplePrintf.jprintf(_ircCfg.getProperty("speed.up"), env);
+								status =
+									status
+										+ SimplePrintf.jprintf(
+											_ircCfg.getProperty("speed.up"),
+											env);
 
 							} else if (
 								conn.getTransferDirection()
 									== Transfer.TRANSFER_SENDING_DOWNLOAD) {
-								status = status +
-									SimplePrintf.jprintf(_ircCfg.getProperty("speed.down"), env);
+								status =
+									status
+										+ SimplePrintf.jprintf(
+											_ircCfg.getProperty("speed.down"),
+											env);
 							}
 						}
 					}
@@ -1084,11 +1110,17 @@ public class IRCListener implements FtpListener, Observer {
 				}
 			} // for
 		}
-		status = status +
-			SimplePrintf.jprintf(_ircCfg.getProperty("speed.post", ""), env);
-		if ( first ) {
+		status =
+			status
+				+ SimplePrintf.jprintf(
+					_ircCfg.getProperty("speed.post", ""),
+					env);
+		if (first) {
 			try {
-				status = SimplePrintf.jprintf(_ircCfg.getProperty("speed.error"), env);
+				status =
+					SimplePrintf.jprintf(
+						_ircCfg.getProperty("speed.error"),
+						env);
 			} catch (FormatterException e) {
 				say("speed: formatterexception: " + e.getMessage());
 			}
@@ -1142,18 +1174,32 @@ public class IRCListener implements FtpListener, Observer {
 							status.append(
 								SimplePrintf.jprintf(formatidle, env));
 
-					} else if (conn.getDataConnectionHandler().isTransfering()) {
+					} else if (
+						conn.getDataConnectionHandler().isTransfering()) {
 						try {
 							env.add(
 								"speed",
 								Bytes.formatBytes(
-									conn.getDataConnectionHandler().getTransfer().getXferSpeed())
+									conn
+										.getDataConnectionHandler()
+										.getTransfer()
+										.getXferSpeed())
 									+ "/s");
 						} catch (RemoteException e2) {
 							logger.warn("", e2);
 						}
-						env.add("file", conn.getDataConnectionHandler().getTransferFile().getName());
-						env.add("slave", conn.getDataConnectionHandler().getTranferSlave().getName());
+						env.add(
+							"file",
+							conn
+								.getDataConnectionHandler()
+								.getTransferFile()
+								.getName());
+						env.add(
+							"slave",
+							conn
+								.getDataConnectionHandler()
+								.getTranferSlave()
+								.getName());
 
 						if (conn.getTransferDirection()
 							== Transfer.TRANSFER_RECEIVING_UPLOAD) {

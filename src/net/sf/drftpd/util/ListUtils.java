@@ -3,6 +3,7 @@ package net.sf.drftpd.util;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -18,7 +19,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.9 2004/01/04 03:26:01 mog Exp $
+ * @version $Id: ListUtils.java,v 1.10 2004/01/05 00:14:20 mog Exp $
  */
 public class ListUtils {
 
@@ -41,19 +42,21 @@ public class ListUtils {
 	}
 
 	public static List list(
-		LinkedRemoteFile directoryFile,
+		LinkedRemoteFile dir,
 		BaseFtpConnection conn,
 		FtpReply response) {
-		ArrayList listFiles = new ArrayList(directoryFile.getFiles());
+
+		ArrayList listFiles = new ArrayList(dir.getFiles());
 		for (Iterator iter = listFiles.iterator(); iter.hasNext();) {
 			LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
-			if (conn.getConfig() != null && !conn.getConfig().checkPrivPath(conn.getUserNull(), element))
+			if (conn.getConfig() != null
+				&& !conn.getConfig().checkPrivPath(conn.getUserNull(), element))
 				iter.remove();
 		}
 		try {
-			SFVFile sfvfile = directoryFile.lookupSFVFile();
+			SFVFile sfvfile = dir.lookupSFVFile();
 			SFVStatus sfvstatus = sfvfile.getStatus();
-			
+
 			if (sfvfile.size() != 0) {
 				String statusDirName =
 					"[ "
@@ -67,7 +70,8 @@ public class ListUtils {
 						+ "/"
 						+ sfvstatus.getPresent()
 						+ " = "
-						+ (sfvstatus.getAvailable() * 100) / sfvstatus.getPresent()
+						+ (sfvstatus.getAvailable() * 100)
+							/ sfvstatus.getPresent()
 						+ "% online ]";
 
 				listFiles.add(
@@ -77,7 +81,22 @@ public class ListUtils {
 						"drftpd",
 						"drftpd",
 						0L,
-						directoryFile.lastModified()));
+						dir.lastModified()));
+				for (Iterator iter = sfvfile.getNames().iterator();
+					iter.hasNext();
+					) {
+					String filename = (String) iter.next();
+					if (!dir.hasFile(filename)) {
+						listFiles.add(
+							new StaticRemoteFile(
+								Collections.EMPTY_LIST,
+								filename + "-MISSING",
+								"drftpd",
+								"drftpd",
+								0L,
+								dir.lastModified()));
+					}
+				}
 			}
 		} catch (NoAvailableSlaveException e) {
 			logger.warn("No available slaves for SFV file", e);

@@ -41,7 +41,7 @@ import org.tanesha.replacer.SimplePrintf;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.67 2004/01/04 01:40:05 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.68 2004/01/05 00:14:19 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -259,15 +259,19 @@ public class BaseFtpConnection implements Runnable {
 		String key,
 		ReplacerEnvironment env) {
 
+		return jprintf(baseName, key, env, getUserNull());
+	}
+
+	public static String jprintf(String baseName, String key, ReplacerEnvironment env, User user) {
 		env = new ReplacerEnvironment(env);
 
-		try {
-			env.add("user", getUser().getUsername());
-			env.add("credits", Bytes.formatBytes(getUserNull().getCredits()));
-			env.add("ratio", ""+getUserNull().getRatio());
-			env.add("tagline", getUserNull().getTagline());
-		} catch (NoSuchUserException e) {
-			env.add("user", "<" + e.getMessage() + ">");
+		if(user != null) {
+			env.add("user", user.getUsername());
+			env.add("credits", Bytes.formatBytes(user.getCredits()));
+			env.add("ratio", ""+user.getRatio());
+			env.add("tagline", user.getTagline());
+		} else {
+			env.add("user", "<unknown>");
 		}
 		try {
 			ResourceBundle bundle = ResourceBundle.getBundle(baseName);
@@ -279,12 +283,10 @@ public class BaseFtpConnection implements Runnable {
 				return str;
 			}
 		} catch (Throwable e) {
-			logger.warn("", e);
+			logger.warn("baseName: "+baseName, e);
 			return key;
-		}
-
+		}		
 	}
-
 	/**
 	 * Reset all the member variables. Close all sockets.
 	 */

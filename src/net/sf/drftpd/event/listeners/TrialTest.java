@@ -16,7 +16,7 @@ import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author mog
- * @version $Id: TrialTest.java,v 1.1 2003/12/22 18:09:41 mog Exp $
+ * @version $Id: TrialTest.java,v 1.2 2004/01/05 00:14:19 mog Exp $
  */
 public class TrialTest extends TestCase {
 	private static final long RESETTIME = 1071519356421L;
@@ -80,6 +80,10 @@ public class TrialTest extends TestCase {
 		return trial;
 	}
 
+	/**
+	 * Returns a fresh user object.
+	 * @return a fresh user object.
+	 */
 	private StaticUser getJUnitUser() {
 		StaticUser user = new StaticUser("junit", RESETTIME);
 		user.setLastReset(cal.getTimeInMillis());

@@ -25,7 +25,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
- * @version $Id: TransferStatistics.java,v 1.10 2003/12/23 13:38:20 mog Exp $
+ * @version $Id: TransferStatistics.java,v 1.11 2004/01/05 00:14:19 mog Exp $
  */
 public class TransferStatistics implements CommandHandler {
 
@@ -178,12 +178,12 @@ public class TransferStatistics implements CommandHandler {
 		response.addComment("nuked " + user.getTimesNuked() + " times for " +
 							user.getNukedBytes() + " bytes");
 		response.addComment("        FILES		BYTES");
-		response.addComment("ALUP   " + user.getUploadedFiles() + "	" + user.getUploadedBytes());
-		response.addComment("ALDN   " + user.getDownloadedFiles() + "	" + user.getDownloadedBytes());
-		response.addComment("MNUP   " + user.getUploadedFilesMonth() + "	" + user.getUploadedBytesMonth());
-		response.addComment("MNDN   " + user.getDownloadedFilesMonth() + "	" + user.getDownloadedBytesMonth());
-		response.addComment("WKUP   " + user.getUploadedFilesWeek() + "	" + user.getUploadedBytesWeek());
-		response.addComment("WKDN   " + user.getDownloadedFilesWeek() + "	" + user.getDownloadedBytesWeek());
+		response.addComment("ALUP   " + user.getUploadedFiles() + "	" + Bytes.formatBytes(user.getUploadedBytes()));
+		response.addComment("ALDN   " + user.getDownloadedFiles() + "	" + Bytes.formatBytes(user.getDownloadedBytes()));
+		response.addComment("MNUP   " + user.getUploadedFilesMonth() + "	" + Bytes.formatBytes(user.getUploadedBytesMonth()));
+		response.addComment("MNDN   " + user.getDownloadedFilesMonth() + "	" + Bytes.formatBytes(user.getDownloadedBytesMonth()));
+		response.addComment("WKUP   " + user.getUploadedFilesWeek() + "	" + Bytes.formatBytes(user.getUploadedBytesWeek()));
+		response.addComment("WKDN   " + user.getDownloadedFilesWeek() + "	" + Bytes.formatBytes(user.getDownloadedBytesWeek()));
 		return response;
 	}
 

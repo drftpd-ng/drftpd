@@ -6,9 +6,8 @@ import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
- * 
  * @author mog
- * @version $Id: Job.java,v 1.2 2003/12/11 23:12:51 zubov Exp $
+ * @version $Id: Job.java,v 1.3 2004/01/05 00:14:20 mog Exp $
  */
 public abstract class Job {
 

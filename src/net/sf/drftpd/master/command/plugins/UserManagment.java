@@ -33,7 +33,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.14 2004/01/04 03:26:01 mog Exp $
+ * @version $Id: UserManagment.java,v 1.15 2004/01/05 00:14:19 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	private Logger logger = Logger.getLogger(UserManagment.class);
@@ -1071,8 +1071,8 @@ public class UserManagment implements CommandHandler {
 		response.addComment("group: " + myUser.getGroupName());
 		response.addComment("groups: " + myUser.getGroups());
 		response.addComment("ip masks: " + myUser.getIpMasks());
-		response.addComment("total bytes up: " + myUser.getUploadedBytes());
-		response.addComment("total bytes dn: " + myUser.getDownloadedBytes());
+		response.addComment("total bytes up: " + Bytes.formatBytes(myUser.getUploadedBytes()));
+		response.addComment("total bytes dn: " + Bytes.formatBytes(myUser.getDownloadedBytes()));
 		return response;
 	}
 

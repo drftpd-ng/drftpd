@@ -19,114 +19,18 @@ import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.Permission;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.StaticUser;
 import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
-import f00f.net.irc.martyr.GenericCommandAutoService;
-import f00f.net.irc.martyr.InCommand;
-import f00f.net.irc.martyr.commands.MessageCommand;
-
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.9 2004/01/03 23:50:53 mog Exp $
+ * @version $Id: Trial.java,v 1.10 2004/01/05 00:14:19 mog Exp $
  */
 public class Trial implements FtpListener {
-	class SiteBot extends GenericCommandAutoService {
-
-		private IRCListener _irc;
-
-		private Trial _parent;
-
-		protected SiteBot(IRCListener irc, Trial parent) {
-			super(irc.getIRCConnection());
-			_irc = irc;
-			_parent = parent;
-		}
-
-		protected void updateCommand(InCommand command) {
-			try {
-				if (!(command instanceof MessageCommand))
-					return;
-				MessageCommand msgc = (MessageCommand) command;
-				String msg = msgc.getMessage();
-				if (msg.startsWith("!passed ")) {
-					String username = msg.substring("!passed ".length());
-					try {
-						User user =
-							_parent
-								.getConnectionManager()
-								.getUserManager()
-								.getUserByName(
-								username);
-						int i = 0;
-						for (Iterator iter = _parent.getLimits().iterator();
-							iter.hasNext();
-							) {
-							Limit limit = (Limit) iter.next();
-							if (limit.getPerm().check(user)) {
-								i++;
-								long bytesleft =
-									limit.getBytes()
-										- Trial.getUploadedBytesForPeriod(
-											user,
-											limit.getPeriod());
-								if (bytesleft <= 0) {
-									_irc.say(
-										"[passed] "
-											+ user.getUsername()
-											+ " has passed this "
-											+ getPeriodName(limit.getPeriod())
-											+ " "
-											+ limit.getName()
-											+ " with "
-											+ Bytes.formatBytes(-bytesleft));
-								} else {
-									_irc.say(
-										"[passed] "
-											+ user.getUsername()
-											+ " is on "
-											+ limit.getName()
-											+ " with "
-											+ Bytes.formatBytes(bytesleft)
-											+ " left until "
-											+ Trial
-												.getCalendarForEndOfPeriod(
-													limit.getPeriod())
-												.getTime());
-								}
-								if (isInFirstPeriod(user, limit.getPeriod())) {
-									_irc.say(
-										user.getUsername()
-											+ " is still in unique period/bonus period");
-								}
-							}
-						}
-						if (i == 0) {
-							_irc.say(
-								"[passed] "
-									+ user.getUsername()
-									+ " is not on trial/quota");
-						}
-						//_irc.say()
-					} catch (NoSuchUserException e) {
-						_irc.say("No such user: " + username);
-						logger.info("", e);
-					} catch (UserFileException e) {
-						logger.warn("", e);
-					}
-				}
-			} catch (RuntimeException e) {
-				logger.error("", e);
-			}
-
-		}
-	}
 	private static final short ACTION_DISABLE = 0;
 	private static final short ACTION_PURGE = 1;
 	private static final Logger logger = Logger.getLogger(Trial.class);
@@ -291,7 +195,7 @@ public class Trial implements FtpListener {
 	private ConnectionManager _cm;
 
 	private ArrayList _limits;
-	private SiteBot _siteBot;
+	private TrialSiteBot _siteBot;
 
 	public Trial() throws FileNotFoundException, IOException {
 		super();
@@ -334,6 +238,7 @@ public class Trial implements FtpListener {
 
 			// WEEK UNIQUE //
 			// if less than month unique period
+			//TODO should be <= ?
 			if (uevent.getTime() < cal.getTimeInMillis()) {
 				cal =
 					getCalendarForEndOfFirstPeriod(
@@ -427,7 +332,7 @@ public class Trial implements FtpListener {
 		}
 	}
 
-	private ConnectionManager getConnectionManager() {
+	ConnectionManager getConnectionManager() {
 		return _cm;
 	}
 
@@ -492,7 +397,7 @@ public class Trial implements FtpListener {
 			try {
 				IRCListener _irc =
 					(IRCListener) _cm.getFtpListener(IRCListener.class);
-				_siteBot = new SiteBot(_irc, this);
+				_siteBot = new TrialSiteBot(this, _irc, this);
 			} catch (ObjectNotFoundException e1) {
 				logger.warn("Error loading sitebot component", e1);
 			}

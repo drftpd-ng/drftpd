@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.Bytes;
+import net.sf.drftpd.Nukee;
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.NukeEvent;
@@ -36,7 +37,7 @@ import org.jdom.input.SAXBuilder;
 /**
  * @author mog
  *
- * @version $Id: Nuke.java,v 1.7 2003/12/23 13:38:19 mog Exp $
+ * @version $Id: Nuke.java,v 1.8 2004/01/05 00:14:19 mog Exp $
  */
 public class Nuke implements CommandHandler {
 	public Nuke() {
@@ -46,7 +47,12 @@ public class Nuke implements CommandHandler {
 	}
 	private NukeLog _nukelog;
 
-	private Logger logger = Logger.getLogger(Nuke.class);
+	private static final Logger logger = Logger.getLogger(Nuke.class);
+	
+	public static long calculateNukedAmount(long size, float ratio, int multiplier) {
+		return (long) (size * ratio + size * (multiplier - 1));
+	}
+			
 
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {
@@ -104,8 +110,7 @@ public class Nuke implements CommandHandler {
 	 *     so the additional penalty in this case is the size of nuked files. If the
 	 *     multiplier is 3, user loses size * ratio + size * 2, etc.
 	 */
-	//TODO remove upload statistics
-	public FtpReply doSITE_NUKE(BaseFtpConnection conn) {
+	private FtpReply doSITE_NUKE(BaseFtpConnection conn) {
 		if (!conn.getUserNull().isNuker()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
@@ -157,7 +162,7 @@ public class Nuke implements CommandHandler {
 
 		FtpReply response = new FtpReply(200, "NUKE suceeded");
 
-		//get nukees User with user as key
+		//// convert key from String to User ////
 		HashMap nukees2 = new HashMap(nukees.size());
 		for (Iterator iter = nukees.keySet().iterator(); iter.hasNext();) {
 
@@ -231,15 +236,16 @@ public class Nuke implements CommandHandler {
 			AbstractUser nukee = (AbstractUser) iter.next();
 			if (nukee == null)
 				continue;
-			Long size = (Long) nukees2.get(nukee);
-			Long debt =
-				new Long(
-					(long) (size.longValue() * nukee.getRatio()
-						+ size.longValue() * (multiplier - 1)));
-			nukedAmount += debt.longValue();
-			nukeDirSize += size.longValue();
-			nukee.updateCredits(-debt.longValue());
-			nukee.updateNukedBytes(debt.longValue());
+			long size = ((Long) nukees2.get(nukee)).longValue();
+			
+			long debt = calculateNukedAmount(size, nukee.getRatio(), multiplier);
+				
+
+			nukedAmount += debt;
+			nukeDirSize += size;
+			nukee.updateCredits(-debt);
+			nukee.updateUploadedBytes(-size);
+			nukee.updateNukedBytes(debt);
 			nukee.updateTimesNuked(1);
 			nukee.setLastNuked(System.currentTimeMillis());
 			try {
@@ -250,9 +256,7 @@ public class Nuke implements CommandHandler {
 				logger.log(Level.WARN, "Error writing userfile", e1);
 			}
 			response.addComment(
-				nukee.getUsername()
-					+ " -"
-					+ Bytes.formatBytes(debt.longValue()));
+				nukee.getUsername() + " -" + Bytes.formatBytes(debt));
 		}
 		NukeEvent nuke =
 			new NukeEvent(
@@ -268,7 +272,8 @@ public class Nuke implements CommandHandler {
 		conn.getConnectionManager().dispatchFtpEvent(nuke);
 		return response;
 	}
-	public FtpReply doSITE_NUKES(BaseFtpConnection conn) {
+
+	private FtpReply doSITE_NUKES(BaseFtpConnection conn) {
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
 		for (Iterator iter = getNukeLog().getAll().iterator();
 			iter.hasNext();
@@ -292,7 +297,7 @@ public class Nuke implements CommandHandler {
 	 * 	You need to configure glftpd to keep nuked files if you want to unnuke.
 	 * 	See the section about glftpd.conf.
 	 */
-	public FtpReply doSITE_UNNUKE(BaseFtpConnection conn) {
+	private FtpReply doSITE_UNNUKE(BaseFtpConnection conn) {
 		conn.resetState();
 
 		StringTokenizer st =
@@ -304,8 +309,10 @@ public class Nuke implements CommandHandler {
 		String toName = st.nextToken();
 		String toPath;
 		{
-			StringBuffer toPath2 = new StringBuffer(conn.getCurrentDirectory().getPath());
-			if(toPath2.length() != 1) toPath2.append("/"); // isn't /
+			StringBuffer toPath2 =
+				new StringBuffer(conn.getCurrentDirectory().getPath());
+			if (toPath2.length() != 1)
+				toPath2.append("/"); // isn't /
 			toPath2.append(toName);
 			toPath = toPath2.toString();
 		}
@@ -338,12 +345,14 @@ public class Nuke implements CommandHandler {
 		}
 
 		//Map nukees2 = new Hashtable();
-		for (Iterator iter = nuke.getNukees().entrySet().iterator();
-			iter.hasNext();
-			) {
-			Map.Entry entry = (Map.Entry) iter.next();
-			String nukeeName = (String) entry.getKey();
-			Long amount = (Long) entry.getValue();
+		//		for (Iterator iter = nuke.getNukees().entrySet().iterator();
+		//			iter.hasNext();
+		//			) {
+		for (Iterator iter = nuke.getNukees2().iterator(); iter.hasNext();) {
+			//Map.Entry entry = (Map.Entry) iter.next();
+			Nukee nukeeObj = (Nukee) iter.next();
+			//String nukeeName = (String) entry.getKey();
+			String nukeeName = nukeeObj.getUsername();
 			User nukee;
 			try {
 				nukee = conn.getUserManager().getUserByName(nukeeName);
@@ -352,12 +361,15 @@ public class Nuke implements CommandHandler {
 				continue;
 			} catch (UserFileException e) {
 				response.addComment(nukeeName + ": error reading userfile");
-				logger.log(Level.FATAL, "error reading userfile", e);
+				logger.fatal("error reading userfile", e);
 				continue;
 			}
+			long nukedAmount = calculateNukedAmount(nukeeObj.getAmount(), nukee.getRatio(), nuke.getMultiplier());
 
-			nukee.updateCredits(amount.longValue());
-			nukee.updateTimesNuked(1);
+			nukee.updateCredits(nukedAmount);
+			nukee.updateUploadedBytes(nukeeObj.getAmount());
+			nukee.updateTimesNuked(-1);
+
 			try {
 				nukee.commit();
 			} catch (UserFileException e3) {
@@ -369,7 +381,11 @@ public class Nuke implements CommandHandler {
 					"Error saving userfile for " + nukee.getUsername());
 			}
 
-			response.addComment(nukeeName + ": restored " + Bytes.formatBytes(amount.longValue()) + "bytes");
+			response.addComment(
+				nukeeName
+					+ ": restored "
+					+ Bytes.formatBytes(nukedAmount)
+					+ "bytes");
 		}
 		try {
 			getNukeLog().remove(toPath);
@@ -394,19 +410,10 @@ public class Nuke implements CommandHandler {
 		return response;
 	}
 
-	/**
-	 * 
-	 */
 	private NukeLog getNukeLog() {
 		return _nukelog;
 	}
 
-//	private static final ArrayList handledCommands = new ArrayList();
-//	static {
-//		handledCommands.add("SITE NUKE");
-//		handledCommands.add("SITE NUKES");
-//		handledCommands.add("SITE UNNUKE");
-//	}
 	public CommandHandler initialize(
 		BaseFtpConnection conn,
 		CommandManager initializer) {
@@ -416,7 +423,6 @@ public class Nuke implements CommandHandler {
 	public String[] getFeatReplies() {
 		return null;
 	}
-
 
 	public void load(CommandManagerFactory initializer) {
 		_nukelog = new NukeLog();
@@ -428,7 +434,11 @@ public class Nuke implements CommandHandler {
 				Element nukeElement = (Element) iter.next();
 
 				User user =
-					initializer.getConnectionManager().getUserManager().getUserByName(nukeElement.getChildText("user"));
+					initializer
+						.getConnectionManager()
+						.getUserManager()
+						.getUserByName(
+						nukeElement.getChildText("user"));
 				String directory = nukeElement.getChildText("path");
 				long time = Long.parseLong(nukeElement.getChildText("time"));
 				int multiplier =

@@ -13,7 +13,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: SFVFile.java,v 1.23 2004/01/04 01:23:37 mog Exp $
+ * @version $Id: SFVFile.java,v 1.24 2004/01/05 00:14:19 mog Exp $
  */
 public class SFVFile implements Serializable {
 
@@ -147,6 +147,10 @@ public class SFVFile implements Serializable {
 		return checksum.longValue();
 	}
 
+	/**
+	 * Returns a map having <code>String filename</code> as key and <code>Long checksum</code> as value.
+	 * @return a map having <code>String filename</code> as key and <code>Long checksum</code> as value.
+	 */
 	public Map getEntries() {
 		return _entries;
 	}
@@ -182,6 +186,9 @@ public class SFVFile implements Serializable {
 		return getEntriesFiles().keySet();
 	}
 
+	public Collection getNames() {
+		return getEntries().values();
+	}
 	public long getTotalBytes() {
 		long totalBytes = 0;
 		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
