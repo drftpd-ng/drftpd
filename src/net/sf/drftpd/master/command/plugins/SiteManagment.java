@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagment.java,v 1.8 2004/01/13 20:30:54 mog Exp $
+ * @version $Id: SiteManagment.java,v 1.9 2004/01/31 02:32:07 zubov Exp $
  */
 public class SiteManagment implements CommandHandler {
 
@@ -137,6 +137,7 @@ public class SiteManagment implements CommandHandler {
 						+ conn.getRequest().getArgument())
 				|| ftpListener.getClass().getName().equals(
 					conn.getRequest().getArgument())) {
+				ftpListener.unload();
 				iter.remove();
 				return new FtpReply(200, "Successfully unloaded your plugin");
 			}

@@ -8,9 +8,10 @@ import net.sf.drftpd.Initializeable;
  */
 
 /**
- * @version $Id: FtpListener.java,v 1.6 2003/12/23 13:38:18 mog Exp $
+ * @version $Id: FtpListener.java,v 1.7 2004/01/31 02:32:06 zubov Exp $
  */
 public interface FtpListener extends Initializeable {
 	public void actionPerformed(Event event);
 	//public void init(ConnectionManager mgr);
+	public void unload();
 }

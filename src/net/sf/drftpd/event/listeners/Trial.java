@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.18 2004/01/22 21:48:22 mog Exp $
+ * @version $Id: Trial.java,v 1.19 2004/01/31 02:32:07 zubov Exp $
  */
 public class Trial implements FtpListener {
 	public static final int PERIOD_ALL = 0;
@@ -450,4 +450,9 @@ public class Trial implements FtpListener {
 			}
 		}
 	}
+
+	public void unload() {
+		_siteBot.disable();
+	}
+
 }

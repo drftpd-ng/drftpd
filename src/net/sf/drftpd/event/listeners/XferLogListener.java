@@ -17,7 +17,7 @@ import net.sf.drftpd.master.ConnectionManager;
 /**
  * @author mog
  *
- * @version $Id: XferLogListener.java,v 1.2 2003/12/23 13:38:19 mog Exp $
+ * @version $Id: XferLogListener.java,v 1.3 2004/01/31 02:32:07 zubov Exp $
  */
 public class XferLogListener implements FtpListener {
 
@@ -54,7 +54,7 @@ public class XferLogListener implements FtpListener {
 	
 	              current-time   transfer-time   remote-host    file-
 	          size    filename    transfer-type   special-action-
-	          flag   direction    access-mode    username    ser­
+	          flag   direction    access-mode    username    ser?
 	          vice-name    authentication-method   authenticated-
 	          user-id   completion-status
 	
@@ -114,6 +114,10 @@ public class XferLogListener implements FtpListener {
 	 * @see net.sf.drftpd.event.FtpListener#init(net.sf.drftpd.master.ConnectionManager)
 	 */
 	public void init(ConnectionManager mgr) {
+	}
+
+	public void unload() {
+
 	}
 
 }

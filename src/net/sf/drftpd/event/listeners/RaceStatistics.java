@@ -27,7 +27,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: RaceStatistics.java,v 1.6 2003/12/13 12:42:47 zubov Exp $
+ * @version $Id: RaceStatistics.java,v 1.7 2004/01/31 02:32:07 zubov Exp $
  */
 public class RaceStatistics implements FtpListener {
 
@@ -103,4 +103,9 @@ public class RaceStatistics implements FtpListener {
 	public void init(ConnectionManager connectionManager) {
 		_cm = connectionManager;
 	}
+
+	public void unload() {
+
+	}
+
 }

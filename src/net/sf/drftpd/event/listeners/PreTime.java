@@ -23,7 +23,7 @@ import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
- * @version $Id: PreTime.java,v 1.13 2004/01/29 22:47:40 zubov Exp $
+ * @version $Id: PreTime.java,v 1.14 2004/01/31 02:32:07 zubov Exp $
  */
 public class PreTime implements FtpListener {
 
@@ -179,4 +179,9 @@ public class PreTime implements FtpListener {
 			logger.warn("Error loading sitebot component", e1);
 		}
 	}
+
+	public void unload() {
+
+	}
+
 }

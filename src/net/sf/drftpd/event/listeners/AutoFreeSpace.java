@@ -33,7 +33,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author zubov
- * @version $Id: AutoFreeSpace.java,v 1.6 2004/01/20 04:18:41 zubov Exp $
+ * @version $Id: AutoFreeSpace.java,v 1.7 2004/01/31 02:32:07 zubov Exp $
  */
 public class AutoFreeSpace implements FtpListener {
 	private static final Logger logger = Logger.getLogger(AutoFreeSpace.class);
@@ -186,4 +186,9 @@ public class AutoFreeSpace implements FtpListener {
 		}
 
 	}
+
+	public void unload() {
+
+	}
+
 }

@@ -68,7 +68,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.75 2004/01/20 21:29:45 zubov Exp $
+ * @version $Id: IRCListener.java,v 1.76 2004/01/31 02:32:06 zubov Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -1118,4 +1118,9 @@ public class IRCListener implements FtpListener, Observer {
 	public String getChannelName() {
 		return _channelName;
 	}
+
+	public void unload() {
+
+	}
+
 }

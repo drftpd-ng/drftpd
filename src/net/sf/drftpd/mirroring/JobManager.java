@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.18 2004/01/23 01:41:34 zubov Exp $
+ * @version $Id: JobManager.java,v 1.19 2004/01/31 02:32:07 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -352,4 +352,9 @@ public class JobManager implements FtpListener {
 			}
 		}
 	}
+
+	public void unload() {
+
+	}
+
 }

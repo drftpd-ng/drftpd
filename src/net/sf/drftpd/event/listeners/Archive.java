@@ -21,7 +21,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.14 2004/01/20 16:07:17 zubov Exp $
+ * @version $Id: Archive.java,v 1.15 2004/01/31 02:32:07 zubov Exp $
  */
 
 public class Archive implements FtpListener {
@@ -156,4 +156,9 @@ public class Archive implements FtpListener {
 	public synchronized void removeFromArchivingList(String dir) {
 		_archivingList.remove(dir);
 	}
+
+	public void unload() {
+
+	}
+
 }
