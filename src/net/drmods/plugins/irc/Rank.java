@@ -54,8 +54,7 @@ public class Rank extends GenericCommandAutoService implements
     private SiteBot _listener;
 
     public String getCommands() {
-        return _listener.getCommandPrefix() + "rank [user] " +
-        		_listener.getCommandPrefix() + "failed";
+        return _listener.getCommandPrefix() + "rank [user]";
     }
 
     private ConnectionManager getConnectionManager() {
@@ -68,10 +67,6 @@ public class Rank extends GenericCommandAutoService implements
                 _listener.getCommandPrefix() + "rank", user))
             help += _listener.getCommandPrefix()
                     + "rank [user] : Displays the rank of the identified user or the user specified\n";
-        if (_listener.getIRCConfig().checkIrcPermission(
-                _listener.getCommandPrefix() + "failed", user))
-            help += _listener.getCommandPrefix()
-                    + "failed : Displays the rank of the identified user or the user specified\n";
         return help;
     }
 
