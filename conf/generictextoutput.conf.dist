@@ -1,0 +1,4 @@
+#Usage: !trigger path/to/file.txt
+
+!bnc text/bnc.txt
+!affils text/affils.txt
