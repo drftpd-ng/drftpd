@@ -15,7 +15,7 @@ master.usermanager=org.drftpd.usermanager.javabeans.BeanUserManager
 #plugins.1=org.drftpd.plugins.SiteBotSSL
 #plugins.2=org.drftpd.plugins.Trial
 #plugins.3=org.drftpd.plugins.Archive
-#plugins.4=net.drmods.plugins.imdb.EventListener
+#plugins.4=net.drmods.plugins.irc.imdb.EventListener
 
 
 #leave slaveselection manager as is and use default configs in:
