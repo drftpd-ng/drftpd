@@ -10,7 +10,7 @@ import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.usermanager.User;
 
 /**
- * @author mog
+ * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  *
  * To change the template for this generated type comment go to
  * Window>Preferences>Java>Code Generation>Code and Comments
@@ -18,11 +18,17 @@ import net.sf.drftpd.master.usermanager.User;
 public class FtpEvent {
 	User user;
 	FtpRequest request;
+	long time;
 	
-	FtpEvent(User user, FtpRequest request) {
+	FtpEvent(User user, FtpRequest request, String directory) {
+		this(user, request, directory, System.currentTimeMillis());
+	}
+	FtpEvent(User user, FtpRequest request, String directory, long time) {
 		this.user = user;
 		this.request = request;
+		this.time = time;
 	}
+
 	public String getCommand() {
 		return request.getCommand();
 	}
@@ -31,6 +37,27 @@ public class FtpEvent {
 	 */
 	public User getUser() {
 		return user;
+	}
+
+	/**
+	 * @return
+	 */
+	public FtpRequest getRequest() {
+		return request;
+	}
+
+	/**
+	 * @return
+	 */
+	public long getTime() {
+		return time;
+	}
+	protected String directory;
+	/**
+		 * @return
+		 */
+	public String getDirectory() {
+		return directory;
 	}
 
 }

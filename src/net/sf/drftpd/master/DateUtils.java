@@ -38,7 +38,7 @@ public class DateUtils {
         if (dateTime < 0) {
             return "------------";
         }
-    
+    	
         Calendar cal = new GregorianCalendar();
         cal.setTime(date);
         String firstPart = MONTHS[cal.get(Calendar.MONTH)] + ' ';

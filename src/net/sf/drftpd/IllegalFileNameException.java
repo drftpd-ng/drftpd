@@ -9,7 +9,7 @@ package net.sf.drftpd;
 import java.io.IOException;
 
 /**
- * @author mog
+ * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
 public class IllegalFileNameException extends IOException {
 

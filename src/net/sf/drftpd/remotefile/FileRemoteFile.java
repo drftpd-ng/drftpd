@@ -3,6 +3,8 @@ package net.sf.drftpd.remotefile;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -12,7 +14,7 @@ import net.sf.drftpd.slave.RootBasket;
 /**
  * A wrapper for java.io.File to the net.sf.drftpd.RemoteFile structure.
  * 
- * @author <a href="mailto:mog@linux.nu">Morgan Christiansson</a>
+ * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
 //TODO import owner/group using se.mog.io.File
 public class FileRemoteFile extends RemoteFile {
@@ -38,19 +40,21 @@ public class FileRemoteFile extends RemoteFile {
 //				"Not following symlink: " + file.getAbsolutePath());
 //		}
 //	}
-	
+	//List slaves;
 	RootBasket rootBasket;
 	String path;
+
 	public FileRemoteFile(RootBasket rootBasket) throws IOException {
 		this(rootBasket, "");
 	}
 	
 	public FileRemoteFile(RootBasket rootBasket, String path) throws IOException {
-		if(path.length() != 0) {
-			if(path.charAt(path.length()-1) == File.separatorChar) path = path.substring(0, path.length()-1);
-		}
+		//if(path.length() != 0) {
+		//	if(path.charAt(path.length()-1) == File.separatorChar) path = path.substring(0, path.length()-1);
+		//}
 		this.path = path;
 		this.rootBasket = rootBasket;
+		//this.slaves = slaves;
 
 		//check that the roots in the rootBasket are in sync
 		boolean first = true;
@@ -141,15 +145,14 @@ public class FileRemoteFile extends RemoteFile {
 	 * @see net.sf.drftpd.RemoteFile#lastModified()
 	 */
 	public long lastModified() {
-		return getFile().lastModified();
+		return this.getFile().lastModified();
 	}
 
 	/**
 	 * @see net.sf.drftpd.RemoteFile#length()
 	 */
 	public long length() {
-		//return file.length();
-		return getFile().length();
+		return this.getFile().length();
 	}
 
 	/**
@@ -157,6 +160,13 @@ public class FileRemoteFile extends RemoteFile {
 	 * @see net.sf.drftpd.RemoteFileTree#listFiles()
 	 */
 	public RemoteFile[] listFiles() {
+		return (RemoteFile[]) getFiles().toArray(new FileRemoteFile[0]);
+	}
+	
+	/**
+	 * @see net.sf.drftpd.remotefile.RemoteFile#getFiles()
+	 */
+	public Collection getFiles() {
 		if (!isDirectory()) {
 			throw new IllegalArgumentException("listFiles() called on !isDirectory()");
 		}
@@ -175,16 +185,14 @@ public class FileRemoteFile extends RemoteFile {
 				}
 			}
 		}
-		
-//		File filefiles[] = file.listFiles();
-//		RemoteFile files[] = new RemoteFile[filefiles.length];
-//		for (int i = 0; i < filefiles.length; i++) {
-//			try {
-//				files[i] = new FileRemoteFile(root, filefiles[i]);
-//			} catch (IOException ex) {
-//				ex.printStackTrace();
-//			}
-//		}
-		return (RemoteFile[]) filefiles.toArray(new FileRemoteFile[filefiles.size()]);
+		return filefiles;
 	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFile#getSlaves()
+	 */
+	public Collection getSlaves() {
+		return new ArrayList();
+	}
+
 }

@@ -31,7 +31,7 @@ import net.sf.drftpd.remotefile.StaticRemoteFile;
 import se.mog.io.File;
 
 /**
- * @author <a href="mailto:mog@linux.nu">Morgan Christiansson</a>
+ * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
 public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	private Vector transfers = new Vector();
@@ -100,7 +100,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			return;
 			//the compiler doesn't know that execution stops at System.exit()
 		}
-		RemoteSlave rslave = new RemoteSlave(slave, cfg.getProperty("slave.name"));
+		RemoteSlave rslave = new RemoteSlave(cfg.getProperty("slave.name"), slave);
 		try {
 			LinkedRemoteFile slaveroot =
 				SlaveImpl.getDefaultRoot(rslave, cfg.getProperty("slave.roots"));
@@ -118,19 +118,8 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	}
 	public static LinkedRemoteFile getDefaultRoot(RemoteSlave rslave, String rootString)
 		throws IOException {
-		/*
-		RootBasket rootBasket;
-
-		Vector roots = new Vector();
-		StringTokenizer st =
-			new StringTokenizer(rootString, ",;:");
-		while (st.hasMoreTokens()) {
-			roots.add(st.nextToken());
-		}
-		rootBasket = new RootBasket(roots);
-		*/
-		RootBasket rootBasket = new RootBasket(rootString); // throws FileNotFoundException
-		return getDefaultRoot(rootBasket, rslave);
+		//RootBasket  throws FileNotFoundException
+		return getDefaultRoot(new RootBasket(rootString), rslave);
 	}
 
 	/**
@@ -140,41 +129,20 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		RootBasket rootBasket, RemoteSlave rslave)
 		throws IOException {
 
-		//		//File rootfile = new File(root);
-		//		if (!rootfile.isDirectory()) {
-		//			throw new InvalidDirectoryException(
-		//				"slave.root = " + rootfile.getPath() + " is not a directory!");
-		//		}
-			//File root = (File) iter.next();
-			//RemoteSlave rslave = new RemoteSlave(slave, root.getPath());
+//			ArrayList rslaves = new ArrayList(1);
+//			rslaves.add(rslave);
+			
 			LinkedRemoteFile linkedroot =
 				new LinkedRemoteFile(
-					rslave,
 					new FileRemoteFile(rootBasket));
 
-		//		/* DEBUG */
-		//		if (!linkedroot.isDirectory())
-		//			throw new RuntimeException("LinkedRemoteFile root is not a directory while FileRemoteRoot was.");
-
-//		for (Iterator iter = roots.iterator(); iter.hasNext();) {
-//			File root = (File) iter.next();
-//			RemoteSlave rslave = new RemoteSlave(slave, root.getPath());
-//			LinkedRemoteFile linkedroot =
-//				new LinkedRemoteFile(
-//					rslave,
-//					new FileRemoteFile(root, rootfile));
-//
-//		}
-//		//		/* DEBUG */
-//		//		if (!linkedroot.isDirectory())
-//		//			throw new RuntimeException("LinkedRemoteFile root is not a directory while FileRemoteRoot was.");
 		return linkedroot;
 	}
 
 	public SlaveStatus getSlaveStatus() {
-		float throughputUp = 0, throughputDown = 0;
+		int throughputUp = 0, throughputDown = 0;
 		int transfersUp = 0, transfersDown = 0;
-
+		
 		for (Iterator i = transfers.iterator(); i.hasNext();) {
 			TransferImpl transfer = (TransferImpl) i.next();
 			if (transfer.getDirection() == Transfer.TRANSFER_RECEIVING) {
@@ -184,7 +152,6 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 				throughputUp += transfer.getTransferSpeed();
 				transfersUp += 1;
 			}
-			//			throughput += transfer.getTransferSpeed();
 		}
 		try {
 			return new SlaveStatus(

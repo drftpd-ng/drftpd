@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 import net.sf.drftpd.master.usermanager.User;
 
 /**
- * @author mog
+ * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  *
  * To change the template for this generated type comment go to
  * Window>Preferences>Java>Code Generation>Code and Comments
@@ -46,13 +46,13 @@ public class GlftpdLog implements FtpListener {
 			Map nukees = nevent.getNukees();
 			logger.fine("nukees"+nukees.size()+": "+nukees);
 			for (Iterator iter = nukees.keySet().iterator(); iter.hasNext();) {
-				User nukee = (User) iter.next();
-				//Integer amount = (Integer)nukees.get(nukee);
-				String nukeeUsername;
-				if(nukee == null) { 
-					nukeeUsername = "UNKNOWN";
+				//User nukee = (User) iter.next();
+				String nukeeUsername = (String)iter.next();
+				Integer amount = (Integer)nukees.get(nukeeUsername);
+				if(nukeeUsername == null) {
+					nukeeUsername = "<unknown>";
 				} else {
-					nukeeUsername = nukee.getUsername();
+					//nukeeUsername = nukee.getUsername();
 				}
 				print(
 					"NUKE: \""
@@ -64,7 +64,7 @@ public class GlftpdLog implements FtpListener {
 						+ "\" \""
 						+ nevent.getMultiplier()
 						+ " "
-						+ nukees.get(nukee)
+						+ amount
 						+ "\" \""
 						+ nevent.getReason()
 						+ "\"");
@@ -72,7 +72,35 @@ public class GlftpdLog implements FtpListener {
 			}
 
 		} else if(event.getCommand().equals("SITE UNNUKE")) {
-			// TODO get nuke multiplier for calculation
+			NukeEvent nevent = (NukeEvent) event;
+			Map nukees = nevent.getNukees();
+			logger.fine("nukees"+nukees.size()+": "+nukees);
+			for (Iterator iter = nukees.keySet().iterator(); iter.hasNext();) {
+				//User nukee = (User) iter.next();
+				String nukeeUsername = (String)iter.next();
+				Integer amount = (Integer)nukees.get(nukeeUsername);
+				if(nukeeUsername == null) {
+					nukeeUsername = "<unknown>";
+				} else {
+					//nukeeUsername = nukee.getUsername();
+				}
+				print(
+					"UNNUKE: \""
+						+ nevent.getDirectory()
+						+ "\" \""
+						+ user.getUsername()
+						+ "\" \""
+						+ nukeeUsername
+						+ "\" \""
+						+ nevent.getMultiplier()
+						+ " "
+						+ amount
+						+ "\" \""
+						+ nevent.getReason()
+						+ "\"");
+
+			}
+			
 			//Tue Feb 25 03:30:33 2003 UNNUKE: "/site/tv/7th.Heaven.7x17.PDTV.SVCD.SD-6" "void0" "AZToR" "3 320.5" "None"
 			//Tue Feb 25 03:30:33 2003 UNNUKE: "/site/tv/7th.Heaven.7x17.PDTV.SVCD.SD-6" "void0" "blademaster" "3 484.1" "None"
 			
@@ -80,10 +108,12 @@ public class GlftpdLog implements FtpListener {
 	}
 	DateFormat DATE_FMT = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy ", Locale.ENGLISH);
 	public void print(String line) {
+		print(new Date(), line);
+	}
+	public void print(Date date, String line) {
 		String str;
-		out.println(str = DATE_FMT.format(new Date()) + line);
+		out.println(str = DATE_FMT.format(date) + line);
 		out.flush();
-		System.out.println(str);
-		
+		System.out.println(str);		
 	}
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -14,7 +15,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
 import socks.server.Ident;
 
 /**
- * @author mog
+ * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  *
  * To change this generated comment edit the template variable "typecomment":
  * Window>Preferences>Java>Templates.
@@ -27,7 +28,7 @@ public class GlobServerSocket extends ServerSocket {
 	 * Constructor for ServerSocket2.
 	 * @throws IOException
 	 */
-	public GlobServerSocket(List masks) throws IOException {
+	public GlobServerSocket(Collection masks) throws IOException {
 		super();
 		this.masks = masks;
 	}
@@ -37,7 +38,7 @@ public class GlobServerSocket extends ServerSocket {
 	 * @param arg0
 	 * @throws IOException
 	 */
-	public GlobServerSocket(int port, List masks) throws IOException {
+	public GlobServerSocket(int port, Collection masks) throws IOException {
 		super(port);
 		this.masks = masks;
 	}
@@ -66,11 +67,13 @@ public class GlobServerSocket extends ServerSocket {
 		super(arg0, arg1, arg2);
 	}
 
-	private Perl5Matcher m = new Perl5Matcher();
+	
+	private Collection masks;
 	/**
 	 * @see java.net.ServerSocket#accept()
 	 */
 	public Socket accept() throws IOException {
+		Perl5Matcher m = new Perl5Matcher();
 		// Try until a valid peer tries to connect.
 		while (true) {
 			Socket sock = super.accept();
@@ -110,5 +113,4 @@ public class GlobServerSocket extends ServerSocket {
 			sock.close();
 		}
 	}
-	private List masks;
 }

@@ -3,11 +3,11 @@ package net.sf.drftpd.permission;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.rmi.server.RMIServerSocketFactory;
-import java.util.List;
+import java.util.Collection;
 
 
 /**
- * @author mog
+ * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  *
  * To change this generated comment edit the template variable "typecomment":
  * Window>Preferences>Java>Templates.
@@ -15,12 +15,12 @@ import java.util.List;
  * Window>Preferences>Java>Code Generation.
  */
 public class GlobRMISocketFactory implements RMIServerSocketFactory {
-	private List masks;
+	private Collection masks;
 	
 	/**
 	 * Constructor for GlobRMIServerSocketFactory.
 	 */
-	public GlobRMISocketFactory(List masks) {
+	public GlobRMISocketFactory(Collection masks) {
 		super();
 		this.masks = masks;
 	}

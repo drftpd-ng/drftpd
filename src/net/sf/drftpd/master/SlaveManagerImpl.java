@@ -1,5 +1,6 @@
 package net.sf.drftpd.master;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.rmi.AlreadyBoundException;
@@ -10,6 +11,8 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.RMISocketFactory;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -18,44 +21,60 @@ import java.util.logging.Logger;
 
 import net.sf.drftpd.permission.GlobRMISocketFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.XMLSerialize;
-import net.sf.drftpd.slave.*;
+import net.sf.drftpd.slave.RemoteSlave;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.TransferImpl;
-import org.jdom.Document;
+
+import org.jdom.Element;
 import org.jdom.output.XMLOutputter;
 
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
 	implements SlaveManager {
 
-	private static Logger logger = Logger.getLogger(SlaveManagerImpl.class.getName());
+	private static Logger logger =
+		Logger.getLogger(SlaveManagerImpl.class.getName());
 	static {
 		logger.setLevel(Level.FINEST);
 	}
 
 	protected LinkedRemoteFile root;
-	protected List slaves;
+	protected Collection slaves;
 
-	public LinkedRemoteFile getRoot() {
-		return root;
-	}
-
-	public SlaveManagerImpl(String url, List masks) throws RemoteException, AlreadyBoundException {
-		this(url, new LinkedRemoteFile(), masks);
-	}
-
-	public SlaveManagerImpl(String url, LinkedRemoteFile root, List masks)
+	/**
+	 * @deprecated
+	 */
+	public SlaveManagerImpl(String url, List rslaves)
 		throws RemoteException, AlreadyBoundException {
-		
-		super(0, (RMIClientSocketFactory) RMISocketFactory.getSocketFactory(),
-					(RMIServerSocketFactory)new GlobRMISocketFactory(masks));
-//		 (RMIServerSocketFactory) RMISocketFactory.getSocketFactory());
+		this(url, new LinkedRemoteFile(), rslaves);
+	}
+
+	private static Collection rslavesToMasks(Collection rslaves) {
+		ArrayList masks = new ArrayList();
+		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
+			RemoteSlave rslave2 = (RemoteSlave) iter.next();
+			masks.addAll(rslave2.getMasks());
+		}
+		return masks;
+	}
+
+	public SlaveManagerImpl(
+		String url,
+		LinkedRemoteFile root,
+		Collection rslaves)
+		throws RemoteException, AlreadyBoundException {
+		super(
+			0,
+			(RMIClientSocketFactory) RMISocketFactory.getSocketFactory(),
+			(RMIServerSocketFactory) new GlobRMISocketFactory(
+				rslavesToMasks(rslaves)));
+		//		 (RMIServerSocketFactory) RMISocketFactory.getSocketFactory());
 
 		//		super();
 		//		super(0, new GlobRMISocketFactory(masks), new GlobRMISocketFactory(masks));
 		this.root = root;
-		slaves = root.getSlaves();
+		//slaves = new ArrayList(root.getSlaves());
+		this.slaves = rslaves;
 		/*
 				RMIClientSocketFactory csf = RMISocketFactory.getSocketFactory();
 				RMIServerSocketFactory ssf = new GlobRMISocketFactory(masks);
@@ -74,9 +93,8 @@ public class SlaveManagerImpl
 		//SlaveManager stub = (SlaveManager)
 		//		UnicastRemoteObject.exportObject((Remote)this, 6666);
 
-			Registry registry = LocateRegistry.createRegistry(1099);
-			registry.bind("slavemanager", this);
-
+		Registry registry = LocateRegistry.createRegistry(1099);
+		registry.bind("slavemanager", this);
 
 		/*		} catch (java.rmi.ConnectException ex) {
 					ex.printStackTrace();
@@ -101,50 +119,111 @@ public class SlaveManagerImpl
 				*/
 	}
 
-	/**
-	 * TODO: support hot swapping slaves (offline slaves)
-	 */
-	public void addSlave(RemoteSlave slave, LinkedRemoteFile remoteroot)
+	public void addSlave(RemoteSlave rslave, LinkedRemoteFile remoteroot)
 		throws RemoteException {
-		System.out.println(
-			"SlaveManager.addSlave(): " + slave + " remoteroot: " + remoteroot);
-		slave.setManager(this);
-		slaves.add(slave);
-		long millis = System.currentTimeMillis();
-		root.merge(remoteroot);
-		System.out.println(
-			"merge() took " + (System.currentTimeMillis() - millis) + "ms");
+
+		rslave.setManager(this);
+		RemoteSlave realRSlave = null;
+		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
+			RemoteSlave rslave2 = (RemoteSlave) iter.next();
+			if (rslave2.equals(rslave)) {
+				realRSlave = rslave2;
+			}
+			logger.log(Level.FINE, rslave2+" not equals() "+rslave);
+		}
+		logger.log(Level.SEVERE, "Rejected slave "+rslave+", not a valid slave");
+		if (realRSlave == null) {
+			throw new IllegalArgumentException("rejected");
+		}
+
+		realRSlave.setManager(this);
 		try {
-			System.out.println("SlaveStatus: " + slave.getSlave().getSlaveStatus()); // throws RemoteException
+			realRSlave.setSlave(rslave.getSlave());
+		} catch (NoAvailableSlaveException e1) {
+			logger.log(
+				Level.SEVERE,
+				"NoAvailableSlaveException in addSlave()",
+				e1);
+			throw new IllegalArgumentException("rejected");
+		}
+
+		System.out.println(
+			"SlaveManager.addSlave(): "
+				+ rslave
+				+ " remoteroot: "
+				+ remoteroot);
+
+		//this.slaves.add(rslave);
+		long millis = System.currentTimeMillis();
+		//remerge
+		root.unmerge(realRSlave);
+		root.merge(remoteroot, realRSlave);
+		System.out.println(
+			"unmerge()+merge() took " + (System.currentTimeMillis() - millis) + "ms");
+		try {
+			System.out.println(
+				"SlaveStatus: " + rslave.getSlave().getSlaveStatus());
+			// throws RemoteException
 		} catch (NoAvailableSlaveException e) {
 			e.printStackTrace();
 		}
-		
-		Document doc = new Document(XMLSerialize.serialize(root));
+		saveFilesXML();
+	}
+
+	public void saveFilesXML() {
+		saveFilesXML(this.getRoot().toXML());
+	}
+
+	public static void saveFilesXML(Element root) {
+		File filesDotXml = new File("files.xml");
+		if (filesDotXml.exists()
+			|| !filesDotXml.renameTo(new File("files.xml.bak"))) {
+			logger.log(
+				Level.WARNING,
+				"Error renaming "
+					+ filesDotXml.getPath()
+					+ " to files.xml.bak");
+		}
 		try {
 			new XMLOutputter("    ", true).output(
-				doc,
-				new FileWriter("files.xml"));
+				root,
+				new FileWriter(filesDotXml));
 		} catch (IOException ex) {
-			System.err.println(
-				"Warning, error saving database to \"files.xml\"");
-			ex.printStackTrace();
+			logger.log(
+				Level.WARNING,
+				"Error saving to " + filesDotXml.getPath(),
+				ex);
 		}
+	}
+
+	public Collection getSlaves() {
+		return slaves;
 	}
 
 	private Random rand = new Random();
 	public RemoteSlave getASlave() {
-		int num = rand.nextInt(slaves.size());
+		ArrayList retSlaves = new ArrayList();
+		for (Iterator iter = this.slaves.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
+			if (!rslave.isAvailable())
+				continue;
+			retSlaves.add(rslave);
+		}
+
+		int num = rand.nextInt(retSlaves.size());
 		logger.fine(
 			"Slave "
 				+ num
 				+ " selected out of "
-				+ slaves.size()
+				+ retSlaves.size()
 				+ " available slaves");
-		return (RemoteSlave) slaves.get(num);
+		return (RemoteSlave) retSlaves.get(num);
 	}
 
-	public RemoteSlave getASlave(char direction)
+	public RemoteSlave getASlave(char direction) throws NoAvailableSlaveException {
+		return getASlave(this.getSlaves(), direction);
+	}
+	public static RemoteSlave getASlave(Collection slaves, char direction)
 		throws NoAvailableSlaveException {
 		RemoteSlave bestslave;
 		SlaveStatus beststatus;
@@ -159,7 +238,7 @@ public class SlaveManagerImpl
 					beststatus = bestslave.getStatus();
 					break;
 				} catch (RemoteException ex) {
-					handleRemoteException(ex, bestslave);
+					bestslave.handleRemoteException(ex);
 					continue;
 				}
 			}
@@ -171,7 +250,7 @@ public class SlaveManagerImpl
 				try {
 					status = slave.getStatus();
 				} catch (RemoteException ex) {
-					handleRemoteException(ex, slave);
+					bestslave.handleRemoteException(ex);
 					continue;
 				}
 				float throughput, bestthroughput;
@@ -181,9 +260,11 @@ public class SlaveManagerImpl
 				} else if (direction == TransferImpl.TRANSFER_SENDING) {
 					throughput = status.getThroughputSending();
 					bestthroughput = beststatus.getThroughputSending();
-				} else {
+				} else if (direction == TransferImpl.TRANSFER_THROUGHPUT) {
 					throughput = status.getThroughput();
 					bestthroughput = beststatus.getThroughput();
+				} else {
+					throw new IllegalArgumentException("Invalid direction");
 				}
 
 				if (throughput < bestthroughput) {
@@ -193,10 +274,35 @@ public class SlaveManagerImpl
 		}
 		return bestslave;
 	}
+
+	public LinkedRemoteFile getRoot() {
+		return root;
+	}
+
+	public static Collection getAvailableSlaves(Collection slaves)
+		throws NoAvailableSlaveException {
+		ArrayList availableSlaves = new ArrayList();
+		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
+			if (!rslave.isAvailable())
+				continue;
+			availableSlaves.add(rslave);
+		}
+		if (availableSlaves.isEmpty()) {
+			throw new NoAvailableSlaveException("No slaves online");
+		}
+		return availableSlaves;
+	}
+
+	public Collection getAvailableSlaves() throws NoAvailableSlaveException {
+		return getAvailableSlaves(getSlaves());
+	}
 	/**
 	 * @deprecated Use RemoteSlave.handleRemoteException instead
 	 */
-	public boolean handleRemoteException(RemoteException ex, RemoteSlave rslave) {
+	public boolean handleRemoteException(
+		RemoteException ex,
+		RemoteSlave rslave) {
 		return rslave.handleRemoteException(ex);
 	}
 
@@ -209,7 +315,8 @@ public class SlaveManagerImpl
 				try {
 					slave.getSlave().ping();
 				} catch (RemoteException ex) {
-					if(slave.handleRemoteException(ex)) removed++;
+					if (slave.handleRemoteException(ex))
+						removed++;
 				} catch (NoAvailableSlaveException ex) {
 					continue;
 				}

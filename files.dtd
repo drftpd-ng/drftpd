@@ -18,6 +18,4 @@
 <!-- SLAVES -->
 <!ELEMENT slaves (slave*)?>
 
-<!ELEMENT slave EMPTY>
-<!ATTLIST slave
-	name CDATA #REQUIRED>
+<!ELEMENT slave (#PCDATA)>

@@ -15,7 +15,7 @@ import java.util.Vector;
 import se.mog.io.File;
 
 /**
- * @author mog
+ * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
 public class RootBasket {
 	private Vector roots;

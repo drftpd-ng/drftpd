@@ -157,7 +157,8 @@ public abstract class User {
 
 	//
 	public String getGroup() {
-		return (String)groups.get(0);
+		return "<unknown>";
+		//return (String)groups.get(0);
 	}
 
 	public void updateCredits(long credits) throws IOException {

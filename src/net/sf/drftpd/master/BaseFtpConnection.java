@@ -30,7 +30,7 @@ import net.sf.drftpd.master.usermanager.User;
  * the request to appropriate methods in subclasses.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
- * @author mog
+ * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
 public class BaseFtpConnection implements Runnable {
 	
@@ -132,6 +132,7 @@ public class BaseFtpConnection implements Runnable {
 		clientAddress = controlSocket.getInetAddress();
 		//mConfig.getLogger().info("Handling new request from " + clientAddress.getHostAddress());
 		logger.info("Handling new request from " + clientAddress.getHostAddress());
+		thread.setName("FtpConnection from "+clientAddress.getHostName()+"["+clientAddress.getHostAddress()+"]");
 		//mDataConnection = new FtpDataConnection(mConfig);
 		//setClientAddress(clientAddress);
 		//mConfig.getConnectionService().newConnection(this);
@@ -156,7 +157,7 @@ public class BaseFtpConnection implements Runnable {
 			        return;
 			    }
 			*/
-			out.write(ftpStatus.getResponse(220, null, user, null));
+			out.println("220 Service ready for new user.");
 			while(!stopRequest) {
 				out.flush();
 				//notifyObserver();
@@ -174,11 +175,10 @@ public class BaseFtpConnection implements Runnable {
 				if (commandLine.equals("")) continue;
 
 				request = new FtpRequest(commandLine);
-				logger.fine("<< " + request.getCommandLine());
+				logger.fine("<< " + request.getCommandLine()+" [user="+user+",host="+clientAddress+"]");
 
 				if (!hasPermission(request)) {
-					out.write(
-						ftpStatus.getResponse(530, request, user, null));
+					out.print(FtpResponse.RESPONSE_530_NOT_LOGGED_IN);
 					continue;
 				}
 				// execute command
@@ -188,7 +188,7 @@ public class BaseFtpConnection implements Runnable {
 				lastActive = System.currentTimeMillis();
 			}
 			if(stopRequestMessage != null) {
-				out.println("421 "+stopRequestMessage);
+				out.print(new FtpResponse(421, stopRequestMessage));
 			} else {
 				out.println("421 Connection closing");
 			}
@@ -225,23 +225,18 @@ public class BaseFtpConnection implements Runnable {
 				getClass().getDeclaredMethod(metName, METHOD_INPUT_SIG);
 			actionMet.invoke(this, new Object[] { request, out });
 		} catch (NoSuchMethodException ex) {
-			out.write(ftpStatus.getResponse(502, request, user, null));
+			out.print(FtpResponse.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
+			//out.write(ftpStatus.getResponse(502, request, user, null));
 		} catch (InvocationTargetException ex) {
-			ex.printStackTrace();
-			out.println("500 Server error. "+ex.getCause().toString());
+			logger.log(Level.SEVERE, "", ex);
+			out.print(new FtpResponse(500, "Server error. "+ex.getCause().toString()));
 			Throwable th = ex.getTargetException();
 			th.printStackTrace();
 		} catch (Exception ex) {
-			out.write(ftpStatus.getResponse(500, request, user, null));
-			ex.printStackTrace();
+			out.print(FtpResponse.RESPONSE_500_SYNTAX_ERROR);
 			if (ex instanceof java.io.IOException) {
 				throw (IOException) ex;
 			}
-			/*
-			    else {
-			       mConfig.getLogger().warn(ex);
-			    }
-			*/
 		}
 	}
 
@@ -255,7 +250,8 @@ public class BaseFtpConnection implements Runnable {
 		String command = request.getCommand();
 		if ("USER".equals(command)
 			|| "PASS".equals(command)
-			|| "QUIT".equals(command))
+			|| "QUIT".equals(command)
+			|| "HELP".equals(command))
 			return true;
 
 		return false;

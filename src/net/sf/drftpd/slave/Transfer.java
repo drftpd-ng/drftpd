@@ -5,11 +5,12 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 /**
- * @author mog
+ * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
 public interface Transfer extends Remote {
 	public static final char TRANSFER_RECEIVING='R';// TRANSFER_UPLOAD='R';
 	public static final char TRANSFER_SENDING='S';// TRANSFER_DOWNLOAD='S';
+	public static final char TRANSFER_THROUGHPUT='A';
 
 	public int getLocalPort() throws RemoteException;
 	public long getTransfered() throws RemoteException;

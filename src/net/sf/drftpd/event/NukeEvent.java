@@ -6,13 +6,16 @@
  */
 package net.sf.drftpd.event;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.usermanager.User;
 
+import org.jdom.Element;
+
 /**
- * @author mog
+ * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  *
  * To change the template for this generated type comment go to
  * Window>Preferences>Java>Code Generation>Code and Comments
@@ -25,7 +28,7 @@ public class NukeEvent extends FtpEvent {
 	 * @param nukees2
 	 */
 	public NukeEvent(User user, FtpRequest request, String directory, int multiplier, String reason, Map nukees) {
-		super(user, request);
+		super(user, request, directory);
 		this.multiplier = multiplier;
 		this.nukees = nukees;
 		this.directory = directory;
@@ -33,16 +36,8 @@ public class NukeEvent extends FtpEvent {
 	}
 	
 	String reason;
-	String directory;
 	int multiplier;
 	Map nukees;
-	/**
-	 * @return
-	 */
-	public String getDirectory() {
-		return directory;
-	}
-
 	/**
 	 * @return
 	 */
@@ -51,6 +46,8 @@ public class NukeEvent extends FtpEvent {
 	}
 
 	/**
+	 * String username as key
+	 * Integer debt as value
 	 * @return
 	 */
 	public Map getNukees() {
@@ -71,4 +68,30 @@ public class NukeEvent extends FtpEvent {
 		reason = string;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		return "["+getDirectory()+",multiplier="+getMultiplier()+"]";
+	}
+
+	public Element toXML() {
+		Element element = new Element("nuke");
+		element.addContent(new Element("path").setText(this.getDirectory()));
+		element.addContent(new Element("multiplier").setText(Integer.toString(this.getMultiplier())));
+		element.addContent(new Element("reason").setText(this.getReason()));
+		element.addContent(new Element("time").setText(Long.toString(this.getTime())));
+		
+		Element nukees = new Element("nukees");
+		for (Iterator iter = this.getNukees().entrySet().iterator(); iter.hasNext();) {
+			Map.Entry entry = (Map.Entry) iter.next();
+			String username = (String)entry.getKey();
+			Long amount = (Long)entry.getValue();
+			Element nukee = new Element("nukee");
+			nukee.addContent(new Element("username").setText(username));
+			nukee.addContent(new Element("amount").setText(amount.toString()));
+			nukees.addContent(nukee);
+		}
+		return element;
+	}
 }

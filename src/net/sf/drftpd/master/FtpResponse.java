@@ -6,18 +6,19 @@
  */
 package net.sf.drftpd.master;
 
-import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Vector;
 
 /**
- * @author mog
+ * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  *
- * To change the template for this generated type comment go to
- * Window>Preferences>Java>Code Generation>Code and Comments
  */
 public class FtpResponse implements Cloneable {
 
+	/** 150 File status okay; about to open data connection. */
+	public static final String RESPONSE_150_OK =
+		"150 File status okay; about to open data connection.\r\n";
+	
 	/** 200 Command okay */
 	public static final FtpResponse RESPONSE_200_COMMAND_OK =
 		new FtpResponse(200, "Command okay");
@@ -40,20 +41,28 @@ public class FtpResponse implements Cloneable {
 	public static final FtpResponse RESPONSE_226_CLOSING_DATA_CONNECTION =
 		new FtpResponse(226, "Closing data connection");
 
-	/** 250 Requested file action okay, completed. */
-	public static final FtpResponse RESPONSE_250_ACTION_OKAY =
-		new FtpResponse(250, "Requested file action okay, completed.");
-	
 	/** 230 User logged in, proceed. */
 	public static final FtpResponse RESPONSE_230_USER_LOGGED_IN =
 		new FtpResponse(230, "User logged in, proceed.");
 
+	/** 250 Requested file action okay, completed. */
+	public static final FtpResponse RESPONSE_250_ACTION_OKAY =
+		new FtpResponse(250, "Requested file action okay, completed.");
+	
 	/** 331 User name okay, need password. */
 	public static final FtpResponse RESPONSE_331_USERNAME_OK_NEED_PASS =
 		new FtpResponse(331, "User name okay, need password.");
-		
+	
+	/** 350 Requested file action pending further information. */
+	public static final FtpResponse RESPONSE_350_PENDING_FURTHER_INFORMATION =
+		new FtpResponse(350, "Requested file action pending further information.");
+	
+	/** 425 Can't open data connection. */
+	public static final String RESPONSE_425_CANT_OPEN_DATA_CONNECTION = 
+		"425 Can't open data connection.\r\n";
+	
 	/** 450 No transfer-slave(s) available
-	 * @author mog
+	 * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
 	 */
 	public static final FtpResponse RESPONSE_450_SLAVE_UNAVAILABLE =
 		new FtpResponse(450, "No transfer-slave(s) available");
@@ -65,11 +74,19 @@ public class FtpResponse implements Cloneable {
 	/** 501 Syntax error in parameters or arguments */
 	public static final FtpResponse RESPONSE_501_SYNTAX_ERROR =
 		new FtpResponse(501, "Syntax error in parameters or arguments");
-
+	
 	/** 502 Command not implemented. */
 	public static final FtpResponse RESPONSE_502_COMMAND_NOT_IMPLEMENTED =
 		new FtpResponse(502, "Command not implemented.");
-
+	
+	/** 503 Bad sequence of commands. */
+	public static final FtpResponse RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS =
+		new FtpResponse(503, "Bad sequence of commands.");
+	
+	/** 504 Command not implemented for that parameter. */
+	public static final FtpResponse RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM =
+		new FtpResponse(504, "Command not implemented for that parameter.");
+	
 	/** 530 Access denied */
 	public static final FtpResponse RESPONSE_530_ACCESS_DENIED =
 		new FtpResponse(530, "Access denied");
@@ -78,7 +95,7 @@ public class FtpResponse implements Cloneable {
 	public static final FtpResponse RESPONSE_530_NOT_LOGGED_IN =
 		new FtpResponse(530, "Not logged in.");
 
-	/** 550 Requested action not taken.
+	/** 550 Requested action not taken. File unavailable.
 	 * File unavailable (e.g., file not found, no access).
 	 */
 	public static final FtpResponse RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN =
@@ -92,7 +109,7 @@ public class FtpResponse implements Cloneable {
 
 	protected Vector lines = new Vector();
 	protected int code;
-	protected String response;
+	protected String message;
 
 	public FtpResponse() {
 	}
@@ -101,17 +118,17 @@ public class FtpResponse implements Cloneable {
 	}
 	public FtpResponse(int code, String response) {
 		setCode(code);
-		setResponse(response);
+		setMessage(response);
 	}
 
-	public void addComment(String response) {
-		lines.add(response);
+	public void addComment(Object response) {
+		lines.add(String.valueOf(response));
 	}
 
-	public void setResponse(String response) {
+	public void setMessage(String response) {
 		if (response.indexOf('\n') != -1)
 			throw new IllegalArgumentException("newlines not allowed in the response");
-		this.response = response;
+		this.message = response;
 	}
 	public void setCode(int code) {
 		this.code = code;
@@ -121,17 +138,15 @@ public class FtpResponse implements Cloneable {
 		StringBuffer sb = new StringBuffer();
 		//sb.append(code + "-");
 		for (Iterator iter = lines.iterator(); iter.hasNext();) {
-			sb.append(code + "- " + (String) iter.next() + "\r\n");
+			String comment = (String)iter.next();
+			if(!iter.hasNext() && message == null) {
+				sb.append(code + "  "+ comment+ "\r\n");
+			} else {
+				sb.append(code + "- " + comment + "\r\n");
+			}
 		}
-		sb.append(code + " " + response + "\r\n");
+		if(message != null) sb.append(code + " " + message + "\r\n");
 		return sb.toString();
-	}
-	/**
-	 * 
-	 * @deprecated
-	 */
-	public void print(PrintWriter out) {
-		out.print(toString());
 	}
 
 	/* (non-Javadoc)
@@ -139,7 +154,9 @@ public class FtpResponse implements Cloneable {
 	 */
 	protected Object clone() {
 		try {
-			return super.clone();
+			FtpResponse r = (FtpResponse) super.clone();
+			r.lines = (Vector)this.lines.clone();
+			return r;
 		} catch (CloneNotSupportedException ex) {
 			throw new RuntimeException(ex);
 		}

@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @author mog
+ * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  *
  * To change this generated comment edit the template variable "typecomment":
  * Window>Preferences>Java>Templates.

@@ -6,13 +6,13 @@ public class SlaveStatus implements Serializable {
 	private long diskSpaceAvailable;
 	private long diskSpaceCapacity;
 	
-	private float throughputReceiving;
-	private float throughputSending;
+	private int throughputReceiving;
+	private int throughputSending;
 	
 	private int transfersSending;
 	private int transfersReceiving;
 	
-	public SlaveStatus(long diskFree, long diskTotal, float throughputReceiving, int transfersReceiving, float throughputSending, int transfersSending) {
+	public SlaveStatus(long diskFree, long diskTotal, int throughputReceiving, int transfersReceiving, int throughputSending, int transfersSending) {
 		this.diskSpaceAvailable = diskFree;
 		this.diskSpaceCapacity = diskTotal;
 		

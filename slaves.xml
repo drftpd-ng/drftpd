@@ -1,7 +1,6 @@
 <slaves>
     <slave>
-	<name>mog</name>
-	<mask>mog@*.043-58-73746f31.cust.bredbandsbolaget.se</mask>
+	<name>moogle</name>
 	<mask>*@localhost</mask>
     </slave>
 </slaves>

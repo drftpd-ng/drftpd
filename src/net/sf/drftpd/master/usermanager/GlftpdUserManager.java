@@ -20,7 +20,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.util.Crypt;
 
 /**
- * @author mog
+ * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  *
  * To change this generated comment edit the template variable "typecomment":
  * Window>Preferences>Java>Templates.
@@ -173,7 +173,7 @@ public class GlftpdUserManager extends UserManager {
 		}
 	}
 	/**
-	 * @author mog
+	 * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
 	 *
 	 * To change this generated comment edit the template variable "typecomment":
 	 * Window>Preferences>Java>Templates.

@@ -1,5 +1,7 @@
 package net.sf.drftpd.remotefile;
 
+import java.util.Collection;
+
 import net.sf.drftpd.master.usermanager.User;
 
 /**
@@ -8,20 +10,22 @@ import net.sf.drftpd.master.usermanager.User;
  * Useful when doing RMI call and you do not want to send the entire
  * linked directory structure to the remote VM.
  * 
- * @author mog
+ * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
 public class StaticRemoteFile extends RemoteFile {
 	private String path;
-
+	private long length;
+	private long lastModified;
+	
 	public StaticRemoteFile(RemoteFile file) {
 //		canRead = file.canRead();
 //		canWrite = file.canWrite();
-		lastModified = file.lastModified();
-		length = file.length();
+		this.lastModified = file.lastModified();
+		this.length = file.length();
 		//isHidden = file.isHidden();
-		isDirectory = file.isDirectory();
-		isFile = file.isFile();
-		path = file.getPath();
+		this.isDirectory = file.isDirectory();
+		this.isFile = file.isFile();
+		this.path = file.getPath();
 		/* serialize directory*/
 		//slaves = file.getSlaves();
 	}
@@ -67,7 +71,7 @@ public class StaticRemoteFile extends RemoteFile {
 	 * @see net.sf.drftpd.RemoteFile#getName()
 	 */
 	public String getName() {
-		int index = path.lastIndexOf(separatorChar);
+		int index = path.lastIndexOf(RemoteFile.separatorChar);
 		return path.substring(index + 1);
 	}
 
@@ -75,7 +79,7 @@ public class StaticRemoteFile extends RemoteFile {
 	 * @see net.sf.drftpd.RemoteFile#getParent()
 	 */
 	public String getParent() {
-		return null;
+		throw new NoSuchMethodError("getParent() does not exist in StaticRemoteFile");
 	}
 
 	/**
@@ -90,6 +94,34 @@ public class StaticRemoteFile extends RemoteFile {
 	 */
 	public RemoteFile[] listFiles() {
 		throw new NoSuchMethodError("listFiles() does not exist in StaticRemoteFile");
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFile#getFiles()
+	 */
+	public Collection getFiles() {
+		throw new NoSuchMethodError("getFiles() does not exist in StaticRemoteFile");
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFile#getSlaves()
+	 */
+	public Collection getSlaves() {
+		throw new NoSuchMethodError("getSlaves() does not exist in StaticRemoteFile");
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFile#length()
+	 */
+	public long length() {
+		return this.length;
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFile#lastModified()
+	 */
+	public long lastModified() {
+		return this.lastModified;
 	}
 
 }

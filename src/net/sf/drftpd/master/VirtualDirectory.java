@@ -1,10 +1,10 @@
 package net.sf.drftpd.master;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -14,7 +14,7 @@ import net.sf.drftpd.remotefile.RemoteFile;
  * This class is responsible to handle all virtual directory activities.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
- * @author <a href="mailto:mog@linux.nu">Morgan Christiansson</a>
+ * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
 public class VirtualDirectory {
 
@@ -33,118 +33,31 @@ public class VirtualDirectory {
 		this.root = root;
 	}
 
-	/**
-	 * Set root directory.
-	 */
-	//	public void setRootDirectory(String root) throws IOException {
-	//		//File rootFile = new File(root).getCanonicalFile();
-	//		//setRootDirectory(rootFile);
-	//
-	//		//mstRoot = normalizeSeparateChar(root);
-	//
-	//		// if not ends with '/' - add one
-	//		if (mstRoot.charAt(mstRoot.length() - 1) != '/') {
-	//			mstRoot = mstRoot + '/';
-	//		}
-	//		mstCurrDir = "/";
-	//	}
 
-	/**
-	 * Get current working directory.
-	 * @deprecated
-	 */
-	public String getCurrentDirectory() {
-		return mstCurrDir;
-	}
-
-	/**
-	 * @deprecated
-	 */
-	public LinkedRemoteFile getCurrentDirectoryFile() {
-		try {
-			return root.lookupFile(mstCurrDir);
-		} catch (FileNotFoundException ex) {
-			throw new RuntimeException(ex.toString());
-		}
-	}
-
-	/**
-	 * Get root directory.
-	 */
-	//	public String getRootDirectory() {
-	//		return mstRoot;
-	//	}
-	/**
-	 * Looks up a file in the current directory
-	 * @see LinkedRemoteFile#lookupFile(String)
-	 * @deprecated Use LinkedRemoteFile.lookupFile instead
-	 */
-	public LinkedRemoteFile lookupFile(String virtualName)
-		throws FileNotFoundException {
-		return root.lookupFile(virtualName);
-	}
-
-	/**
-	 * Get virtual name (wrt the virtual root). The virtual
-	 * name will never end with '/' unless it is '/'. 
-	 * @deprecated everything is virtual
-	 */
-	//	public String getVirtualName(String physicalName) {
-	//		physicalName = normalizeSeparateChar(physicalName);
-	//		if (!physicalName.startsWith(mstRoot)) {
-	//			return null;
-	//		}
-	//
-	//		String virtualName =
-	//			physicalName.substring(mstRoot.length() - 1).trim();
-	//		return removeLastSlash(virtualName);
-	//	}
-
-	/**
-	 * Change directory. The current directory will never have '/'
-	 * at the end unless it is '/'.
-	 * @param dirName change the current working directory.
-	 * @return true if success
-	 * @deprecated
-	 */
-	public void changeDirectory(String virtualDir)
-		throws FileNotFoundException {
-
-		String path = replaceDots(virtualDir);
-
-		LinkedRemoteFile directory = root.lookupFile(path);
-
-		if (!directory.isDirectory()) {
-			throw new FileNotFoundException("Not a directory");
-		}
-		this.currentDirectory = directory;
-		mstCurrDir = path;
-		mstCurrDir = removeLastSlash(mstCurrDir);
-	}
-
-	/**
-	 * Check read permission.
-	 * @deprecated Unusable, user information must be supplied
-	 */
-	public boolean hasReadPermission(LinkedRemoteFile fileName) {
-		return true;
-	}
-
-	/**
-	 * Check file write/delete permission.
-	 * @deprecated Unusable, user information must be supplied
-	 */
-	public boolean hasWritePermission(LinkedRemoteFile fileName) {
-		return true;
-	}
-
-	/**
-	 * Check file create permission.
-	 * @deprecated use RemoteFile methods instead.
-	 */
-	public boolean hasCreatePermission(LinkedRemoteFile fileName) {
-		return true;
-	}
+	
+//	/**
+//	 * Check read permission.
+//	 * @deprecated Unusable, user information must be supplied
+//	 */
+//	public boolean hasReadPermission(LinkedRemoteFile fileName) {
+//		return true;
+//	}
+//
+//	/**
+//	 * Check file write/delete permission.
+//	 * @deprecated Unusable, user information must be supplied
+//	 */
+//	public boolean hasWritePermission(LinkedRemoteFile fileName) {
+//		return true;
+//	}
+//
+//	/**
+//	 * Check file create permission.
+//	 * @deprecated use RemoteFile methods instead.
+//	 */
+//	public boolean hasCreatePermission(LinkedRemoteFile fileName) {
+//		return true;
+//	}
 
 	/**
 	 * Print file list. Detail listing.
@@ -153,32 +66,7 @@ public class VirtualDirectory {
 	 * </pre>
 	 * @return true if success
 	 */
-	//TODO integrate printList and printNList, throw away VirtualDirectory (the instance at least)
-	public static boolean printList(LinkedRemoteFile currentDirectory, String argument, Writer out) throws IOException {
-		String directoryName = null;
-		String options = "";
-		//String pattern = "*";
-		
-		// get options, directory name and pattern
-			//argument = argument.trim();
-			StringBuffer optionsSb = new StringBuffer(4);
-			StringTokenizer st = new StringTokenizer(argument, " ");
-			while (st.hasMoreTokens()) {
-				String token = st.nextToken();
-				if (token.charAt(0) == '-') {
-					if (token.length() > 1) {
-						optionsSb.append(token.substring(1));
-					}
-				} else {
-					directoryName = token;
-				}
-			}
-			options = optionsSb.toString();
-
-		// check options
-		boolean allOption = options.indexOf('a') != -1;
-		boolean detailOption = options.indexOf('l') != -1;
-		boolean directoryOption = options.indexOf("d") != -1;
+	public static void printList(Collection files, Writer out) throws IOException {
 
 		// check pattern
 		//directoryName = replaceDots(directoryName);
@@ -200,45 +88,20 @@ public class VirtualDirectory {
 		if(!(lstDirObj instanceof Map)) return false;
 		lstDirObj = (Map)obj;
 		}*/
-		LinkedRemoteFile directoryFile;
-		if(directoryName == null)  {
-			directoryFile = currentDirectory;
-		} else {
-			directoryFile = currentDirectory.lookupFile(directoryName); //throws FileNotFoundException
-		}
-		/*
-		    // check directory
-		    File lstDirObj = new File(lsDirName);
-		    if(!lstDirObj.exists()) {
-		        return false;
-		    }
-		*/
 
-		// get file list
-		RemoteFile fileList[];
-		//if ( (pattern == null) || pattern.equals("*") || pattern.equals("") ) {
-		//    flLst = lstDirObj.listFiles();
-		//} else {
 		
-		if (!directoryFile.isDirectory()) {
-			fileList = new LinkedRemoteFile[] { directoryFile };
-		} else {
-			RemoteFile directoryFileTree = (RemoteFile) directoryFile;
-			fileList = directoryFileTree.listFiles();
-			//new FileRegularFilter(pattern));
-		}
 		//}
-		//Iterator i = lstDirObj.entrySet().iterator();
+
 		// print file list
-		if (fileList != null) {
-			for (int i = 0; i < fileList.length; i++) {
-				if ((!allOption) && fileList[i].isHidden()) {
-					continue;
-				}
-				printLine(fileList[i], out);
-			}
+		for (Iterator iter = files.iterator(); iter.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			printLine(file, out);
 		}
-		return true;
+//		if (fileList != null) {
+//			for (int i = 0; i < fileList.length; i++) {
+//				printLine(fileList[i], out);
+//			}
+//		}
 	}
 
 	/**
@@ -249,72 +112,49 @@ public class VirtualDirectory {
 	 * </pre>
 	 * @return true if success
 	 */
-	public static boolean printNList(LinkedRemoteFile dir, String argument, Writer out) throws IOException {
+	public static void printNList(Collection fileList, boolean bDetail, Writer out) throws IOException {
 
-		String lsDirName = "./";
-		String options = "";
-		//String pattern = "*";
-
-		// get options, directory name and pattern
-		if (argument != null) {
-			argument = argument.trim();
-			StringBuffer optionsSb = new StringBuffer(4);
-			StringTokenizer st = new StringTokenizer(argument, " ");
-			while (st.hasMoreTokens()) {
-				String token = st.nextToken();
-				if (token.charAt(0) == '-') {
-					if (token.length() > 1) {
-						optionsSb.append(token.substring(1));
-					}
-				} else {
-					lsDirName = token;
-				}
-			}
-			options = optionsSb.toString();
-		}
-
-		// check options
-		boolean bAll = options.indexOf('a') != -1;
-		boolean bDetail = options.indexOf('l') != -1;
 
 		// check pattern
 		//lsDirName = replaceDots(lsDirName);
-		int slashIndex = lsDirName.lastIndexOf('/');
-		if ((slashIndex != -1) && (slashIndex != (lsDirName.length() - 1))) {
-			//pattern = lsDirName.substring(slashIndex + 1);
-			lsDirName = lsDirName.substring(0, slashIndex + 1);
-		}
+//		int slashIndex = lsDirName.lastIndexOf('/');
+//		if ((slashIndex != -1) && (slashIndex != (lsDirName.length() - 1))) {
+//			//pattern = lsDirName.substring(slashIndex + 1);
+//			lsDirName = lsDirName.substring(0, slashIndex + 1);
+//		}
 
 		// check directory
 		//File lstDirObj = new File(lsDirName);
-		LinkedRemoteFile lstDirObj = dir.lookupFile(lsDirName);
+		//LinkedRemoteFile lstDirObj = dir.lookupFile(lsDirName);
 
-		if (!lstDirObj.isDirectory()) {
-			return false;
-		}
+		//if (!lstDirObj.isDirectory()) {
+		//	return false;
+		//}
 
 		// get file list
-		RemoteFile flLst[];
+		///RemoteFile flLst[];
 		//if ((pattern == null) || pattern.equals("*") || pattern.equals("")) {
-			flLst = lstDirObj.listFiles();
+		//	flLst = lstDirObj.listFiles();
 		//} else {
 		//	flLst = lstDirObj.listFiles(); //new FileRegularFilter(pattern));
 		//}
 
 		// print file list
-		if (flLst != null) {
-			for (int i = 0; i < flLst.length; i++) {
-				if ((!bAll) && flLst[i].isHidden()) {
-					continue;
-				}
+		//if (flLst != null) {
+			//for (int i = 0; i < flLst.length; i++) {
+			for (Iterator iter = fileList.iterator(); iter.hasNext();) {
+				LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+				
+		//		if ((!bAll) && flLst[i].isHidden()) {
+		//			continue;
+		//		}
 				if (bDetail) {
-					printLine(flLst[i], out);
+					printLine(file, out);
 				} else {
-					out.write(getName(flLst[i]) + NEWLINE);
+					out.write(file.getName() + NEWLINE);
 				}
 			}
-		}
-		return true;
+		//}
 	}
 
 	/**
@@ -381,12 +221,6 @@ public class VirtualDirectory {
 			return flName.substring(lastIndex + 1);
 		}
 	}
-	/**
-	 * @deprecated
-	 */
-	private String getName(File file) {
-		throw new RuntimeException("File is deprecated!");
-	}
 
 	/**
 	 * Get permission string.
@@ -433,6 +267,7 @@ public class VirtualDirectory {
 	/**
 	 * Replace dots.
 	 * @param inArg the virtaul name
+	 * @deprecated VirtualDirectory instance methods are deprecated
 	 */
 	private String replaceDots(String inArg) {
 
@@ -544,6 +379,7 @@ public class VirtualDirectory {
 
 	/**
 	 * If the string is not '/', remove last slash.
+	 * @deprecated VirtualDirectory instance methods are deprecated
 	 */
 	private String removeLastSlash(String str) {
 		if ((str.length() > 1) && (str.charAt(str.length() - 1) == '/')) {

@@ -15,7 +15,7 @@ import java.util.zip.CheckedOutputStream;
 import net.sf.drftpd.AsciiOutputStream;
 
 /**
- * @author mog
+ * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  *
  * To change this generated comment edit the template variable "typecomment":
  * Window>Preferences>Java>Templates.
@@ -70,7 +70,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		started=System.currentTimeMillis();
 			sock = conn.connect();
 		if(in == null) {
-			System.out.println("Receiving binary stream from "+sock.getInetAddress()+":"+sock.getPort());
+			System.out.println("Receiving "+mode+" stream from "+sock.getInetAddress()+":"+sock.getPort());
 			in = sock.getInputStream();
 		} else if(out == null) {
 			System.out.println("Sending "+mode+" stream to "+sock.getInetAddress()+":"+sock.getPort());
@@ -114,8 +114,8 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		return direction == TRANSFER_RECEIVING;
 	}
 	
-	public float getTransferSpeed() {
-		return transfered/(System.currentTimeMillis()/1000);
+	public int getTransferSpeed() {
+		return (int) (transfered/((System.currentTimeMillis()-started)/1000));
 	}
 	
 	/**

@@ -53,15 +53,29 @@ public class ConnectionManager {
 	public ConnectionManager(Properties cfg) {
 		LinkedRemoteFile root = null;
 
+		List rslaves = new ArrayList();
+		try {
+			Document doc = new SAXBuilder().build(new FileReader("slaves.xml"));
+			List children = doc.getRootElement().getChildren("slave");
+			for (Iterator i = children.iterator(); i.hasNext();) {
+				List masks = new ArrayList();
+				Element slaveElement = (Element) i.next();
+				List maskElements = slaveElement.getChildren("mask");
+				for (Iterator i2 = maskElements.iterator(); i2.hasNext();) {
+					masks.add(((Element) i2.next()).getText());
+				}
+				rslaves.add(new RemoteSlave(slaveElement.getChildText("name"), masks));
+			}
+		} catch (Exception ex) {
+			logger.log(Level.INFO, "Error reading masks from slaves.xml", ex);
+		}
+		/** END: load XML file database **/
+
 		/** load XML file database **/
 		try {
 			Document doc = new SAXBuilder().build(new FileReader("files.xml"));
-
-			logger.info("Loading files.xml:2");
-				root = new LinkedRemoteFile(null, // slaves = null
-		null, // parent = null
-		new JDOMRemoteFile("", doc.getRootElement()) // entry
-	);
+			root =
+				new LinkedRemoteFile(new JDOMRemoteFile(doc.getRootElement(), rslaves));
 		} catch (FileNotFoundException ex) {
 			logger.info("files.xml not found, new file will be created.");
 			root = new LinkedRemoteFile();
@@ -70,43 +84,28 @@ public class ConnectionManager {
 			ex.printStackTrace();
 			root = new LinkedRemoteFile();
 		}
-
-		List masks = new ArrayList();
-		try {
-			Document doc = new SAXBuilder().build(new FileReader("slaves.xml"));
-			List children = doc.getRootElement().getChildren("slave");
-			for (Iterator i = children.iterator(); i.hasNext();) {
-				Element slaveElement = (Element) i.next();
-				List maskElements = slaveElement.getChildren("mask");
-				for (Iterator i2 = maskElements.iterator(); i2.hasNext();) {
-					Element maskElement = (Element) i2.next();
-					masks.add(maskElement.getText());
-				}
-			}
-		} catch (Exception ex) {
-			logger.log(Level.INFO, "Error reading masks from slaves.xml", ex);
-		}
-		/** END: load XML file database **/
-
+		
 		/** register slavemanager **/
 		try {
 			slavemanager =
 				new SlaveManagerImpl(
 					cfg.getProperty("slavemanager.url"),
 					root,
-					masks);
-		} catch(StubNotFoundException ex) {
-			throw new RuntimeException("StubNotFoundException, try running rmic", ex);
+					rslaves);
+		} catch (StubNotFoundException ex) {
+			throw new RuntimeException(
+				"StubNotFoundException, try running rmic",
+				ex);
 		} catch (RemoteException ex) {
 			logger.log(Level.SEVERE, "RemoteException", ex);
 			return;
 		} catch (AlreadyBoundException ex) {
-			ex.printStackTrace();
+			logger.log(Level.SEVERE, "AlreadyBoundException", ex);
 			return;
 		}
 
-		String localslave = cfg.getProperty("master.localslave");
-		if (localslave != null && localslave.equalsIgnoreCase("true")) {
+		String localslave = cfg.getProperty("master.localslave", "false");
+		if (localslave.equalsIgnoreCase("true")) {
 			Slave slave;
 			try {
 				slave = new SlaveImpl(cfg);
@@ -117,8 +116,8 @@ public class ConnectionManager {
 				//the compiler doesn't know that execution stops at System.exit(),
 			}
 			RemoteSlave remoteSlave =
-				new RemoteSlave(slave, cfg.getProperty("slave.name"));
-
+				new RemoteSlave(cfg.getProperty("slave.name"), slave);
+			
 			try {
 				LinkedRemoteFile slaveroot =
 					SlaveImpl.getDefaultRoot(
@@ -138,16 +137,24 @@ public class ConnectionManager {
 		usermanager = new GlftpdUserManager(cfg);
 
 		timer = new Timer();
-		TimerTask timerTask = new TimerTask() {
+		TimerTask timerLogoutIdle = new TimerTask() {
 			public void run() {
-				timerTask();
+				timerLogoutIdle();
 			}
 		};
 		//run every 10 seconds
-		timer.schedule(timerTask, 0, 10000);
+		timer.schedule(timerLogoutIdle, 0, 10 * 1000);
+
+		TimerTask timerSave = new TimerTask() {
+			public void run() {
+				slavemanager.saveFilesXML();
+			}
+		};
+		//run every 5 minutes
+		timer.schedule(timerSave, 0, 600 * 1000);
 	}
 
-	public void timerTask() {
+	public void timerLogoutIdle() {
 		long currTime = System.currentTimeMillis();
 		synchronized (connections) {
 			//for(Iterator i = ((Vector)connections.clone()).iterator(); i.hasNext(); ) {
@@ -163,12 +170,12 @@ public class ConnectionManager {
 				if (maxIdleTime == 0)
 					maxIdleTime = idleTimeout;
 				User user = conn.getUser();
-				logger.finer(
-					"User has been idle for "
-						+ idle
-						+ "s, max "
-						+ maxIdleTime
-						+ "s");
+				//				logger.finest(
+				//					"User has been idle for "
+				//						+ idle
+				//						+ "s, max "
+				//						+ maxIdleTime
+				//						+ "s");
 
 				if (idle >= maxIdleTime) {
 					// idle time expired, logout user.
@@ -209,40 +216,46 @@ public class ConnectionManager {
 	}
 
 	public static void main(String args[]) {
-		Handler handlers[] = Logger.getLogger("").getHandlers();
-
-		if (handlers.length == 1) {
-			handlers[0].setLevel(Level.FINEST);
-		} else {
-			logger.warning(
-				"handlers.length != 1, can't setLevel() on root element");
-		}
-
-		System.out.println("drftpd-alpha. master server starting.");
-		/** load config **/
-		logger.info("loading drftpd.conf");
-		Properties cfg = new Properties();
+		System.out.println("drftpd alpha master server starting.");
+		System.out.println("http://drftpd.sourceforge.net");
 		try {
-			cfg.load(new FileInputStream("drftpd.conf"));
-		} catch (IOException e1) {
-			logger.severe("Error reading drftpd.conf: " + e1.getMessage());
-			return;
-		}
-
-		logger.info("Starting ConnectionManager");
-		ConnectionManager mgr = new ConnectionManager(cfg);
-		System.setProperty("line.separator", "\r\n");
-		/** listen for connections **/
-		try {
-			ServerSocket server =
-				new ServerSocket(
-					Integer.parseInt(cfg.getProperty("master.port")));
-			logger.info("Listening on port " + server.getLocalPort());
-			while (true) {
-				mgr.start(server.accept());
+			Handler handlers[] = Logger.getLogger("").getHandlers();
+			if (handlers.length == 1) {
+				handlers[0].setLevel(Level.FINEST);
+			} else {
+				logger.warning(
+					"handlers.length != 1, can't setLevel() on root element");
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+
+			/** load config **/
+			logger.info("loading drftpd.conf");
+			Properties cfg = new Properties();
+			try {
+				cfg.load(new FileInputStream("drftpd.conf"));
+			} catch (IOException e) {
+				logger.severe("Error reading drftpd.conf: " + e.getMessage());
+				return;
+			}
+
+			logger.info("Starting ConnectionManager");
+			ConnectionManager mgr = new ConnectionManager(cfg);
+			System.setProperty("line.separator", "\r\n");
+			/** listen for connections **/
+			try {
+				ServerSocket server =
+					new ServerSocket(
+						Integer.parseInt(cfg.getProperty("master.port")));
+				logger.info("Listening on port " + server.getLocalPort());
+				while (true) {
+					mgr.start(server.accept());
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} catch (Throwable th) {
+			logger.log(Level.SEVERE, "", th);
+			System.exit(0);
+			return;
 		}
 	}
 }
