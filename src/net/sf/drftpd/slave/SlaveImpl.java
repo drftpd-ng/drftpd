@@ -17,13 +17,13 @@
  */
 package net.sf.drftpd.slave;
 
-import de.hampelratte.id3.ID3v1Tag;
 import de.hampelratte.id3.MP3File;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.PermissionDeniedException;
+import net.sf.drftpd.ID3Tag;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.config.FtpConfig;
@@ -69,7 +69,7 @@ import javax.net.ssl.SSLContext;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.100 2004/08/03 20:14:03 zubov Exp $
+ * @version $Id: SlaveImpl.java,v 1.101 2004/08/03 23:39:43 teflon114 Exp $
  */
 public class SlaveImpl extends UnicastRemoteObject implements Slave,
     Unreferenced {
@@ -339,14 +339,14 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave,
                 new FileReader(_roots.getFile(path))));
     }
 
-    public ID3v1Tag getID3v1Tag(String path) throws IOException {
+    public ID3Tag getID3v1Tag(String path) throws IOException {
         logger.warn("Extracting ID3Tag info from: " +
             _roots.getFile(path).getAbsolutePath());
 
         try {
             MP3File mp3 = new MP3File(_roots.getFile(path).getAbsolutePath(),
                     "r");
-            ID3v1Tag id3tag = mp3.readID3v1Tag();
+			ID3Tag id3tag = mp3.readID3v1Tag();
             mp3.close();
 
             return id3tag;

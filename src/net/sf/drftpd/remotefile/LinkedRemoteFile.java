@@ -17,12 +17,11 @@
  */
 package net.sf.drftpd.remotefile;
 
-import de.hampelratte.id3.ID3v1Tag;
-
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.ID3Tag;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.RemoteSlave;
@@ -56,7 +55,7 @@ import java.util.StringTokenizer;
  * Represents the file attributes of a remote file.
  *
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.162 2004/08/03 20:14:02 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.163 2004/08/03 23:39:42 teflon114 Exp $
  */
 public class LinkedRemoteFile implements Serializable, Comparable,
     LinkedRemoteFileInterface {
@@ -80,7 +79,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
     protected List _slaves;
     private long _xfertime = 0;
     protected SFVFile sfvFile;
-    protected ID3v1Tag mp3tag;
+    protected ID3Tag mp3tag;
 
     /**
      * Creates an empty RemoteFile directory, usually used as an empty root
@@ -776,7 +775,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
         return sfvFile;
     }
 
-    public synchronized ID3v1Tag getID3v1Tag()
+    public synchronized ID3Tag getID3v1Tag()
         throws IOException, FileNotFoundException, NoAvailableSlaveException {
         if (mp3tag == null) {
             logger.warn("getID3v1Tag() : (file) " + getPath());

@@ -17,7 +17,6 @@
  */
 package org.drftpd.plugins;
 
-import de.hampelratte.id3.ID3v1Tag;
 
 import f00f.net.irc.martyr.Debug;
 import f00f.net.irc.martyr.IRCConnection;
@@ -35,6 +34,7 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.Nukee;
 import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.ID3Tag;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.SFVFile.SFVStatus;
 import net.sf.drftpd.SlaveUnavailableException;
@@ -98,7 +98,7 @@ import java.util.ResourceBundle;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.18 2004/08/03 20:14:05 zubov Exp $
+ * @version $Id: SiteBot.java,v 1.19 2004/08/03 23:39:43 teflon114 Exp $
  */
 public class SiteBot implements FtpListener, Observer {
     public static final ReplacerEnvironment GLOBAL_ENV = new ReplacerEnvironment();
@@ -285,7 +285,7 @@ public class SiteBot implements FtpListener, Observer {
             throw new FatalException(e);
         }
 
-        ID3v1Tag id3tag;
+		ID3Tag id3tag;
 
         try {
             id3tag = dir.lookupFile(dir.lookupMP3File()).getID3v1Tag();
@@ -1172,11 +1172,11 @@ class UserComparator implements Comparator {
         long anotherVal = getType(_type, u2);
 
         if (_sort.equals("low")) {
-            return ((thisVal < anotherVal) ? (-1) : ((thisVal == anotherVal)
-            ? 0 : 1));
+            return ((thisVal < anotherVal) ? (-1)
+                                           : ((thisVal == anotherVal) ? 0 : 1));
         } else {
-            return ((thisVal > anotherVal) ? (-1) : ((thisVal == anotherVal)
-            ? 0 : 1));
+            return ((thisVal > anotherVal) ? (-1)
+                                           : ((thisVal == anotherVal) ? 0 : 1));
         }
     }
 }

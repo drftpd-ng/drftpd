@@ -17,9 +17,9 @@
  */
 package net.sf.drftpd.util;
 
-import de.hampelratte.id3.ID3v1Tag;
 
 import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.ID3Tag;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.SFVFile.SFVStatus;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -41,7 +41,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.27 2004/08/03 20:14:03 zubov Exp $
+ * @version $Id: ListUtils.java,v 1.28 2004/08/03 23:39:43 teflon114 Exp $
  */
 public class ListUtils {
     private static final Logger logger = Logger.getLogger(ListUtils.class);
@@ -71,7 +71,7 @@ public class ListUtils {
         int numOnline = 0;
         int numTotal = 0;
         boolean id3found = false;
-        ID3v1Tag mp3tag = null;
+		ID3Tag mp3tag = null;
 
         for (Iterator iter = tempFileList.iterator(); iter.hasNext();) {
             LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
