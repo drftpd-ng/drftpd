@@ -1,3 +1,7 @@
+2005/02/26 Jamal James <teflon114@gmail.com>
+* Applied creditloss fix. Thx TDSoul
+  See http://www.drftpd.org/phpBB2/viewtopic.php?t=142&p=789#789
+
 2005/02/26 Morgan Christiansson <drftpd@mog.se>
 * Critical bug in ID3 gave errors on CWD into directories containing
   MP3 files that have genre ID's that aren't in the ID3GenreList.java

@@ -1148,9 +1148,14 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 
             //check credits
             if (isRetr) {
-                if ((conn.getUserNull().getKeyedMap().getObjectFloat(UserManagement.RATIO) != 0) &&
-                        (conn.getUserNull().getCredits() < _transferFile.length())) {
-                	reset();
+                if ((conn.getUserNull().getKeyedMap().getObjectFloat(
+                        UserManagement.RATIO) != 0)
+                        && (conn.getGlobalContext().getConfig()
+                                .getCreditLossRatio(_transferFile,
+                                        conn.getUserNull()) != 0)
+                        && (conn.getUserNull().getCredits() < _transferFile
+                                .length())) {
+                    reset();
                     return new Reply(550, "Not enough credits.");
                 }
             }
