@@ -16,6 +16,8 @@ rename			*	=siteop
 #pre				/pre/*	=siteop
 privpath /pre/*	=siteop
 
+#allows request in /request/ to group request
+request         /request/       =request
 
 hideinwho /pre/*	*
 
