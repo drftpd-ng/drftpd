@@ -485,9 +485,10 @@ public class IRCListener implements FtpListener, Observer {
 		String prefix,
 		LinkedRemoteFile dir) {
 		String format = null;
+		LinkedRemoteFile tmp = dir;
 		try {
 			while (true) {
-				dir = dir.getParentFile();
+				tmp = tmp.getParentFile();
 				format = _ircCfg.getProperty(prefix + "." + dir.getPath());
 				if (format != null) {
 					return new Object[] { format, dir };
@@ -496,16 +497,16 @@ public class IRCListener implements FtpListener, Observer {
 		} catch (FileNotFoundException e) {
 		}
 
-		LinkedRemoteFile tmp = dir, tmp2 = dir;
+		LinkedRemoteFile tmp2 = dir, tmp3 = dir;
+		tmp=dir;
 		try {
 			while (true) {
 				tmp = tmp.getParentFile();
+				tmp3 = tmp2;
 				tmp2 = tmp;
-				//dir = /
-				//tmp = /<dir>/
 			}
 		} catch (FileNotFoundException e1) {
-			return new Object[] { _ircCfg.getProperty(prefix), tmp2 };
+			return new Object[] { _ircCfg.getProperty(prefix), tmp3 };
 		}
 	}
 
