@@ -3,12 +3,13 @@ package net.sf.drftpd.mirroring;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: AbstractJob.java,v 1.4 2004/01/05 00:14:20 mog Exp $
+ * @version $Id: AbstractJob.java,v 1.5 2004/01/12 08:24:24 zubov Exp $
  */
 public class AbstractJob extends Job {
 	private ArrayList _destSlaves;
@@ -18,6 +19,7 @@ public class AbstractJob extends Job {
 	private Object _source;
 	private long _timeCreated;
 	private long _timeSpent;
+	private boolean _done;
 
 	public AbstractJob(
 		LinkedRemoteFile file,
@@ -33,6 +35,7 @@ public class AbstractJob extends Job {
 		_priority = priority;
 		_timeCreated = System.currentTimeMillis();
 		_timeSpent = 0;
+		_done = false;
 	}
 	
 	public synchronized void addSlaves(List list) {
@@ -68,9 +71,29 @@ public class AbstractJob extends Job {
 	public long getTimeSpent() {
 		return _timeSpent;
 	}
+	
+	public boolean isDone() {
+		return _done;
+	}
+	
+	public void setDone() {
+		_done = true;
+	}
 
 	public String toString() {
-		return "Job[file=" + getFile().getPath() + ",dest="+getDestinationSlaves()+",owner="+getOwner().getUsername()+"]";
+		String toReturn = "Job[file=" + getFile().getPath() + ",dest="+getDestinationSlaves()+",owner=";
+		if ( getOwner() != null ) {
+			toReturn += getOwner().getUsername();
+		}
+		else {
+			toReturn += "null";
+		}
+		toReturn += "]";
+		return toReturn;
+	}
+
+	public boolean removeDestinationSlave(RemoteSlave slave) {
+		return _destSlaves.remove(slave);
 	}
 
 }

@@ -2,12 +2,13 @@ package net.sf.drftpd.mirroring;
 
 import java.util.List;
 
+import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: Job.java,v 1.3 2004/01/05 00:14:20 mog Exp $
+ * @version $Id: Job.java,v 1.4 2004/01/12 08:24:24 zubov Exp $
  */
 public abstract class Job {
 
@@ -58,4 +59,16 @@ public abstract class Job {
 	 * This is the amount of time spent processing this job
 	 */
 	public abstract long getTimeSpent();
+	
+	/**
+	 * returns true if this job has nothing more to send
+	 */
+	public abstract boolean isDone();
+	
+	/**
+	 * sets the job to being finished
+	 */
+	public abstract void setDone();
+	
+	public abstract boolean removeDestinationSlave(RemoteSlave slave);
 }

@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.12 2004/01/08 21:00:34 zubov Exp $
+ * @version $Id: JobManager.java,v 1.13 2004/01/12 08:24:24 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -121,8 +121,7 @@ public class JobManager implements FtpListener {
 	/**
 	 * Gets the next job suitable for the slave, returns true if it is a mirror job
 	 */
-	public synchronized Job getNextJob(
-		RemoteSlave slave) {
+	public synchronized Job getNextJob(RemoteSlave slave) {
 		Job jobToReturn = null;
 		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
 			Job tempJob = (Job) iter.next();
@@ -156,43 +155,19 @@ public class JobManager implements FtpListener {
 				}
 				continue;
 			}
-			try {
-				if (tempJob.getDestinationSlaves().contains(slave)) {
-					if (!tempJob
-						.getFile()
-						.getAvailableSlaves()
-						.contains(slave)) {
-						logger.debug(
-							"an Archive job is being returned - "
-								+ slave.getName());
-						removeJob(tempJob);
-						return tempJob; // not a mirror job
-					}
-					if (tempJob
-						.getFile()
-						.getAvailableSlaves()
-						.contains(slave)) {
-						tempJob.getFile().getAvailableSlaves().remove(slave);
-						logger.debug(
-							"Removing "
-								+ slave.getName()
-								+ " from the job "
-								+ tempJob.getFile().getName());
-						// if it's already there, remove it from the queue
-					}
-				}
-			} catch (NoAvailableSlaveException e) {
-				// continue searching through jobs
+			if (tempJob.getDestinationSlaves().contains(slave)) {
 				logger.debug(
-					"NoAvailableSlaveException for tempJob - "
-						+ slave.getName(),
-					e);
+					"an Archive job is being returned - " + slave.getName());
+				removeJob(tempJob);
+				return tempJob;
 			}
 		}
-		logger.info(
-			"jobToReturn is returning a mirror job for - " + slave.getName());
-		if (jobToReturn != null)
+		if (jobToReturn != null) {
 			removeJob(jobToReturn);
+			logger.info(
+				"jobToReturn is returning a mirror job for - "
+					+ slave.getName());
+		}
 		return jobToReturn;
 	}
 
@@ -212,15 +187,54 @@ public class JobManager implements FtpListener {
 			newThread.start();
 		}
 	}
-	public synchronized boolean isDone(Job job) {
-		return !_jobList.contains(job);
-	}
+	/**
+	 * Returns true if the slave could possibly have another file to immediately transfer
+	 */
 	public boolean processJob(RemoteSlave slave) {
 		Job temp = getNextJob(slave);
-		
+
 		if (temp == null) { // nothing to process for this slave
 			logger.debug("Nothing to process for slave " + slave.getName());
 			return false;
+		}
+		if (temp.getFile().getSlaves().contains(slave)) {
+			if (temp.removeDestinationSlave(slave)) {
+				logger.debug(
+					"Removed "
+						+ slave.getName()
+						+ " from the destination list ("
+						+ temp.getDestinationSlaves().size()
+						+ " left) of the job "
+						+ temp);
+				// if it's already there, remove it from the destinationList
+				if (temp.getDestinationSlaves().size() > 0) {
+					addJob(temp);
+				} else {
+					temp.setDone();
+				}
+				return true;
+			}
+			if (temp.removeDestinationSlave(null)) {
+				logger.debug(
+					"Removed "
+						+ slave.getName()
+						+ " from the destination list ("
+						+ temp.getDestinationSlaves().size()
+						+ " left) of the job "
+						+ temp);
+				if (temp.getDestinationSlaves().size() > 0) {
+					addJob(temp);
+				} else {
+					temp.setDone();
+				}
+				return true;
+			}
+			logger.debug(
+				"Unable to remove "
+					+ slave.getName()
+					+ " from the destination list of the job "
+					+ temp);
+			return false; // should not get here
 		}
 		logger.info(
 			"Sending " + temp.getFile().getName() + " to " + slave.getName());
@@ -281,15 +295,20 @@ public class JobManager implements FtpListener {
 				+ " in "
 				+ difference / 1000
 				+ " seconds");
-		synchronized (temp.getDestinationSlaves()) {
-			if (temp.getDestinationSlaves().contains(slave)) {
-				temp.getDestinationSlaves().remove(slave);
-			}
-			else {
-				temp.getDestinationSlaves().remove(null);
-			}
-			if (temp.getDestinationSlaves().size() > 0)
-				addJob(temp); // job still has more places to transfer
+		if (!temp.removeDestinationSlave(slave)) {
+			if (!temp.removeDestinationSlave(null))
+				logger.debug(
+					"Not able to remove slave "
+						+ slave.getName()
+						+ " or a null reference from job "
+						+ temp);
+		}
+		if (temp.getDestinationSlaves().size() > 0) {
+			logger.debug("Adding job " + temp + " back into the jobList");
+			addJob(temp); // job still has more places to transfer
+		} else {
+			temp.setDone();
+			logger.debug("Setting job " + temp + " to be done");
 		}
 		return true;
 	}

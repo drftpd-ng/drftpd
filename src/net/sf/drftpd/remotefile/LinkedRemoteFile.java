@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.99 2004/01/12 03:16:31 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.100 2004/01/12 08:24:25 zubov Exp $
  */
 
 public class LinkedRemoteFile
@@ -370,6 +370,7 @@ public class LinkedRemoteFile
 			// delete other files
 			try {
 				tempSlave.getSlave().delete(getPath());
+				removeSlave(tempSlave);
 			} catch (RemoteException e) {
 				tempSlave.handleRemoteException(e);
 			} catch (FileNotFoundException ex) {

@@ -21,7 +21,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.5 2004/01/12 03:13:35 zubov Exp $
+ * @version $Id: ArchiveHandler.java,v 1.6 2004/01/12 08:24:24 zubov Exp $
  */
 public class ArchiveHandler extends Thread {
 
@@ -33,14 +33,6 @@ public class ArchiveHandler extends Thread {
 		reload();
 		_dirEvent = dirEvent;
 		_parent = archive;
-	}
-	private void deleteFilesFromOtherSlaves(
-		ArrayList jobQueue,
-		RemoteSlave destSlave) {
-		for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
-			Job job = (Job) iter.next();
-			job.getFile().deleteOthers(destSlave);
-		}
 	}
 	//	private void deleteFilesFromSlave(
 	//		ArrayList jobQueue,
@@ -177,7 +169,7 @@ public class ArchiveHandler extends Thread {
 		if (lrf.getDirectories().size() == 0) {
 			if (System.currentTimeMillis() - lrf.lastModified()
 				< _parent.getArchiveAfter()) {
-				logger.info(lrf.getPath() + " is too young to archive");
+				logger.debug(lrf.getPath() + " is too young to archive");
 				return null;
 			}
 			Collection files = lrf.getFiles();
@@ -336,36 +328,40 @@ public class ArchiveHandler extends Thread {
 			jobQueue.add(job);
 			//}
 		}
-		sendFiles(jobQueue, slave, jm);
-		deleteFilesFromOtherSlaves(jobQueue, slave);
+		waitForSendOfFiles(jobQueue, slave);
 		_parent.removeFromArchivingList(oldDir.getPath());
 		logger.debug("Done archiving " + oldDir.getPath());
 	}
 	/**
-	 * makes sure the LinkedRemoteFiles in the ArrayList jobQueue are sent to the
-	 * RemoteSlave destSlave, requires the JobManager
+	 * waits until the LinkedRemoteFiles in the ArrayList jobQueue are sent and deletes them from the non-archived slave
 	 */
-	private void sendFiles(
-		ArrayList jobQueue,
-		RemoteSlave destSlave,
-		JobManager jm) {
+	private void waitForSendOfFiles(
+		ArrayList jobQueue, RemoteSlave destSlave) {
 		while (true) {
+			logger.debug("About to check jobQueue again");
 			for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
 				Job job = (Job) iter.next();
-				if (jm.isDone(job)) {
+				logger.debug("Checking job " + job);
+				if (job.isDone()) {
 					logger.debug(
 						"File "
 							+ job.getFile().getPath()
 							+ " is done being sent");
+					job.getFile().deleteOthers(destSlave);
 					iter.remove();
-				}
-				try {
-					sleep(10000);
-				} catch (InterruptedException e) {
+				} else {
+					logger.debug("Going to sleep now");
+					try {
+						sleep(10000);
+					} catch (InterruptedException e) {
+					}
+					logger.debug("Waking up now");
 				}
 			}
-			if (jobQueue.isEmpty())
+			if (jobQueue.isEmpty()) {
+				logger.debug("jobQueue is empty, exiting");
 				break;
+			}
 		}
 	}
 }
