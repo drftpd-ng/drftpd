@@ -50,7 +50,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.116 2004/02/15 13:00:05 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.117 2004/02/18 01:27:30 zubov Exp $
  */
 public class LinkedRemoteFile
 	implements RemoteFileInterface, Serializable, Comparable {
@@ -920,12 +920,12 @@ public class LinkedRemoteFile
 
 		// add/merge all files from mergedir
 		for (Iterator i = mergedir.getFiles().iterator(); i.hasNext();) {
-			LinkedRemoteFile mergefile = (LinkedRemoteFile) i.next();
+			LinkedRemoteFile slavefile = (LinkedRemoteFile) i.next();
 
-			if (mergefile.isDirectory() && mergefile.length() == 0)
+			if (slavefile.isDirectory() && slavefile.length() == 0)
 				logger.fatal(
 					"Attempt to add empty directory: "
-						+ mergefile
+						+ slavefile
 						+ " from "
 						+ rslave.getName());
 
@@ -934,15 +934,15 @@ public class LinkedRemoteFile
 			//mergedir is mergedir argument to remerge()
 			//mergefile is file to be merged
 			LinkedRemoteFile localfile =
-				(LinkedRemoteFile) _files.get(mergefile.getName());
+				(LinkedRemoteFile) _files.get(slavefile.getName());
 			// two scenarios: localfile does/doesn't exist.
 			if (localfile == null) {
 				// local file does not exist, just put it in the hashtable
-				recursiveSetRSlaveAndConfig(mergefile, _ftpConfig, rslave);
-				mergefile._parent = this;
-				_files.put(mergefile.getName(), mergefile);
+				recursiveSetRSlaveAndConfig(slavefile, _ftpConfig, rslave);
+				slavefile._parent = this;
+				_files.put(slavefile.getName(), slavefile);
 				logger.info(
-					mergefile.getPath() + " added from " + rslave.getName());
+					slavefile.getPath() + " added from " + rslave.getName());
 			} else { //file exists
 				if (localfile.isDeleted()) {
 					//// queued delete or rename ////
@@ -975,7 +975,7 @@ public class LinkedRemoteFile
 								//simple ugly move of the lrf object so that remergePass2() won't delete it
 								{
 									NonExistingFile ret =
-										mergefile.lookupNonExistingFile(
+										slavefile.lookupNonExistingFile(
 											linktarget);
 									LinkedRemoteFile destDir = ret.getFile();
 									if (!ret.hasPath())
@@ -1000,13 +1000,13 @@ public class LinkedRemoteFile
 												"Created " + destDir.getPath());
 										}
 									}
-									mergedir._files.remove(mergefile.getName());
-									mergefile._name = desttok;
-									destDir.putFile(mergefile);
-									mergefile._parent = destDir;
+									mergedir._files.remove(slavefile.getName());
+									slavefile._name = desttok;
+									destDir.putFile(slavefile);
+									slavefile._parent = destDir;
 									logger.debug(
 										"Renamed "
-											+ mergefile.getName()
+											+ slavefile.getName()
 											+ " to "
 											+ destDir.getPath());
 									//remove source
@@ -1039,33 +1039,34 @@ public class LinkedRemoteFile
 							"Queued delete on "
 								+ rslave
 								+ " for file "
-								+ mergefile);
-						if (!mergefile.isDirectory())
-							mergefile.addSlave(rslave);
-						mergefile.delete();
+								+ slavefile);
+						if (!slavefile.isDirectory())
+							slavefile.addSlave(rslave);
+						slavefile.delete();
+						localfile.delete();
 						continue;
 						//TODO subdir contains queued for rename files.
 					}
 				} // end queued del/ren
 
-				if (mergefile.isFile()
-					&& localfile.length() != mergefile.length()) {
+				if (slavefile.isFile()
+					&& localfile.length() != slavefile.length()) {
 					//// conflict ////
-					Collection filerslaves = mergefile.getSlaves();
+					Collection filerslaves = slavefile.getSlaves();
 
 					if ((filerslaves.size() == 1
 						&& filerslaves.contains(rslave))
 						|| localfile.length() == 0) {
 						//we're the only slave with the file.
-						localfile.setLength(mergefile.length());
+						localfile.setLength(slavefile.length());
 						localfile.setCheckSum(0L);
-						localfile.setLastModified(mergefile.lastModified());
-					} else if (mergefile.length() == 0) {
+						localfile.setLastModified(slavefile.lastModified());
+					} else if (slavefile.length() == 0) {
 						logger.log(
 							Level.INFO,
-							"Deleting conflicting 0byte " + mergefile + " on " + rslave);
+							"Deleting conflicting 0byte " + slavefile + " on " + rslave);
 						try {
-							rslave.getSlave().delete(mergefile.getPath());
+							rslave.getSlave().delete(slavefile.getPath());
 						} catch (PermissionDeniedException ex) {
 							logger.log(
 								Level.FATAL,
@@ -1079,23 +1080,23 @@ public class LinkedRemoteFile
 						//// conflict, rename file... ////
 						try {
 							rslave.getSlave().rename(
-								getPath() + "/" + mergefile.getName(),
+								getPath() + "/" + slavefile.getName(),
 								getPath(),
-								mergefile.getName()
+								slavefile.getName()
 									+ "."
 									+ rslave.getName()
 									+ ".conflict");
-							mergefile._name =
-								mergefile.getName()
+							slavefile._name =
+								slavefile.getName()
 									+ "."
 									+ rslave.getName()
 									+ ".conflict";
-							mergefile.addSlave(rslave);
-							_files.put(mergefile.getName(), mergefile);
+							slavefile.addSlave(rslave);
+							_files.put(slavefile.getName(), slavefile);
 							logger.log(
 								Level.WARN,
 								"2 or more slaves contained same file with different sizes, renamed to "
-									+ mergefile.getName());
+									+ slavefile.getName());
 							continue;
 						} catch (Exception e) {
 							throw new FatalException(e);
@@ -1104,24 +1105,24 @@ public class LinkedRemoteFile
 				}
 
 				// 4 scenarios: new/existing file/directory
-				if (mergefile.isDirectory()) {
+				if (slavefile.isDirectory()) {
 					if (!localfile.isDirectory())
 						throw new RuntimeException(
 							"!!! ERROR: Directory/File conflict: "
-								+ mergefile
+								+ slavefile
 								+ " and "
 								+ localfile
 								+ " from "
 								+ rslave.getName());
 					// is a directory -- dive into directory and start merging
-					localfile.remergePass1(mergefile, rslave);
+					localfile.remergePass1(slavefile, rslave);
 				} else {
-					if (!mergefile.isFile())
+					if (!slavefile.isFile())
 						throw new RuntimeException();
 					if (localfile.isDirectory())
 						throw new RuntimeException(
 							"!!! ERROR: File/Directory conflict: "
-								+ mergefile
+								+ slavefile
 								+ " and "
 								+ localfile
 								+ " from "
