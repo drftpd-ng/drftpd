@@ -7,6 +7,12 @@
 * Fixed bug with MLST/MLSD that caused it to work only for the last logged in user.
   Refactored net.sf.drftpd.master.command.MLST to org.drftpd.command.MLST,
   deprecated stub for backward compatibility is in place for now.
+* Changed XStream usermanager to use DomDriver() instead of the default XPP3
+  which is an optional download.
+* Location which JSX and XStream changed from users/
+  to users/jsx/ and users/xstream/ respectively.
+* Added org.drftpd.usermanager.ResetMonthlyStats for resetting monthly stats
+  and dispatching events to any plugins (such as Trial)
 
 2004/05/31 Morgan Christiansson <drftpd@mog.se>
 * Users hostmask wasn't checked when user wasn't running an

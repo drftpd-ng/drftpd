@@ -42,7 +42,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.44 2004/06/01 15:40:31 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.45 2004/06/01 17:16:49 mog Exp $
  */
 public abstract class AbstractUser implements User {
 	private static final Logger logger = Logger.getLogger(AbstractUser.class);
@@ -569,8 +569,6 @@ public abstract class AbstractUser implements User {
 		CalendarUtils.ceilAllLessThanDay(calTmp);
 
 		//has not been reset since midnight
-		logger.debug("day1 "+calTmp.getTime());
-		logger.debug("day2 "+lastResetDate);
 		if (lastResetDate.before(calTmp.getTime())) {
 			resetDay(cmgr, cal.getTime());
 
@@ -578,8 +576,6 @@ public abstract class AbstractUser implements User {
 			calTmp = (Calendar) cal.clone();
 			//calTmp.add(Calendar.WEEK_OF_YEAR, 1);
 			CalendarUtils.floorDayOfWeek(calTmp);
-			logger.debug("week1 "+calTmp.getTime());
-			logger.debug("week2 "+lastResetDate);
 			if (lastResetDate.before(calTmp.getTime()))
 				resetWeek(cmgr, calTmp.getTime());
 

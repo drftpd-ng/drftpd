@@ -43,13 +43,13 @@ import JSX.ObjIn;
 
 /**
  * @author mog
- * @version $Id: JSXUserManager.java,v 1.30 2004/04/20 04:11:49 mog Exp $
+ * @version $Id: JSXUserManager.java,v 1.31 2004/06/01 17:16:49 mog Exp $
  */
 public class JSXUserManager implements UserManager {
 	private ConnectionManager _connManager;
 	private static final Logger logger =
 		Logger.getLogger(JSXUserManager.class.getName());
-	String userpath = "users/";
+	String userpath = "users/jsx/";
 	File userpathFile = new File(userpath);
 
 	Hashtable users = new Hashtable();
@@ -216,7 +216,7 @@ public class JSXUserManager implements UserManager {
 		logger.log(Level.INFO, "Saving userfiles");
 		for (Iterator iter = users.values().iterator(); iter.hasNext();) {
 			Object obj = iter.next();
-			assert obj instanceof JSXUser;
+			if(!(obj instanceof JSXUser)) throw new ClassCastException("Only accepts JSXUser objects");
 			JSXUser user = (JSXUser) obj;
 			user.commit();
 		}

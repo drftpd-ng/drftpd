@@ -43,7 +43,7 @@ import org.drftpd.plugins.SiteBot;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.25 2004/06/01 15:40:26 mog Exp $
+ * @version $Id: Trial.java,v 1.26 2004/06/01 17:16:42 mog Exp $
  */
 public class Trial implements FtpListener {
 	public static class Limit {
@@ -161,6 +161,7 @@ public class Trial implements FtpListener {
 			StringTokenizer st = new StringTokenizer(action);
 			if (!st.hasMoreTokens()) {
 				logger.info(user.getUsername() + " no action specified");
+				return;
 			}
 			String cmd = st.nextToken().toLowerCase();
 			if ("chgrp".equals(cmd)) {
@@ -481,7 +482,7 @@ public class Trial implements FtpListener {
 					(SiteBot) _cm.getFtpListener(SiteBot.class);
 				_siteBot = new TrialSiteBot(this, _irc);
 			} catch (ObjectNotFoundException e1) {
-				logger.warn("Error loading sitebot component", e1);
+				logger.warn("Error loading sitebot component, sitebot announcements disabled.", e1);
 			}
 		}
 	}

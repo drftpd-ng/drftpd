@@ -42,10 +42,11 @@ import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.master.usermanager.UserManager;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 
 /**
  * @author mog
- * @version $Id: XStreamUserManager.java,v 1.3 2004/06/01 15:40:31 mog Exp $
+ * @version $Id: XStreamUserManager.java,v 1.4 2004/06/01 17:16:50 mog Exp $
  */
 public class XStreamUserManager implements UserManager {
 	private ConnectionManager _connManager;
@@ -164,7 +165,7 @@ public class XStreamUserManager implements UserManager {
 				return user;
 			}
 
-			XStream inp = new XStream();
+			XStream inp = new XStream(new DomDriver());
 			FileReader in;
 			try {
 				in = new FileReader(getUserFile(username));

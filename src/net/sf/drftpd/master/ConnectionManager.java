@@ -58,7 +58,7 @@ import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.slave.socket.SocketSlaveManager;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.109 2004/06/01 15:40:27 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.110 2004/06/01 17:16:49 mog Exp $
  */
 public class ConnectionManager {
 
@@ -167,29 +167,45 @@ public class ConnectionManager {
 			throw new FatalException(ex);
 		}
 		_timer = new Timer();
-                
-                
-		/** register slavemanager **/
-                try {
-                        String smclass = null;
-                        try {
-                            smclass = FtpConfig.getProperty(cfg, "master.slavemanager");
-                        } catch (Exception ex) {}
-                        if (smclass == null) smclass = "net.sf.drftpd.master.SlaveManagerImpl";
-                        _slaveManager = (SlaveManagerImpl) Class.forName(smclass).newInstance();
-        		List rslaves = _slaveManager.loadSlaves();
-                	GlobRMIServerSocketFactory ssf =
-                        	new GlobRMIServerSocketFactory(rslaves);
-                        _slaveManager.init(cfg, rslaves, ssf, this);
-		} catch (Exception e) {
-			logger.log(Level.WARN, "Exception instancing SlaveManager", e);
-			throw new FatalException(
-				"Cannot create instance of slavemanager, check master.slavemanager in "
-					+ cfgFileName,
-				e);
+
+		loadSlaveManager(cfg, cfgFileName);
+
+		loadRSlaves();
+
+		// start socket slave manager
+		if (!cfg.getProperty("master.socketport", "").equals("")) {
+			new SocketSlaveManager(this, cfg);
 		}
 
+		if (slaveCfg != null) {
+			try {
+				new SlaveImpl(slaveCfg);
+			} catch (IOException ex) { // RemoteException extends IOException
+				throw new FatalException(ex);
+			}
+		}
 
+		loadUserManager(cfg, cfgFileName);
+
+		_commandManagerFactory = new CommandManagerFactory(this);
+
+		addFtpListener(new RaceStatistics());
+
+		loadSectionManager(cfg);
+
+		loadPlugins(cfg);
+
+		try { // only need to reload for SlaveSelection using JobManager settings
+			getSlaveManager().getSlaveSelectionManager().reload();
+		} catch (IOException e1) {
+			throw new FatalException(e1);
+		}
+
+		loadTimer();
+		getSlaveManager().addShutdownHook();
+	}
+
+	private void loadRSlaves() {
 		try {
 			List rslaves1 = _slaveManager.getSlaveList();
 			_root = ConnectionManager.loadMLSTFileDatabase(rslaves1, this);
@@ -200,101 +216,34 @@ public class ConnectionManager {
 		} catch (IOException e) {
 			throw new FatalException(e);
 		}
+	}
 
-		// start socket slave manager
-		if(!cfg.getProperty("master.socketport","").equals("")) {
-			new SocketSlaveManager(this, cfg);
-		}
-
-		if (slaveCfg != null) {
-			try {
-				new SlaveImpl(slaveCfg);
-			} catch (IOException ex) { //and RemoteException
-				throw new FatalException(ex);
-			}
-		}
-
+	/**
+	 * @param cfg
+	 */
+	private void loadSlaveManager(Properties cfg, String cfgFileName) {
+		/** register slavemanager **/
 		try {
-			_usermanager =
-				(UserManager) Class
-					.forName(FtpConfig.getProperty(cfg, "master.usermanager"))
-					.newInstance();
-			// if the below method is not run, JSXUserManager fails when trying to do a reset() on the user logging in
-			_usermanager.init(this);
+			String smclass = null;
+			try {
+				smclass = FtpConfig.getProperty(cfg, "master.slavemanager");
+			} catch (Exception ex) {
+			}
+			if (smclass == null)
+				smclass = "net.sf.drftpd.master.SlaveManagerImpl";
+			_slaveManager =
+				(SlaveManagerImpl) Class.forName(smclass).newInstance();
+			List rslaves = _slaveManager.loadSlaves();
+			GlobRMIServerSocketFactory ssf =
+				new GlobRMIServerSocketFactory(rslaves);
+			_slaveManager.init(cfg, rslaves, ssf, this);
 		} catch (Exception e) {
+			logger.log(Level.WARN, "Exception instancing SlaveManager", e);
 			throw new FatalException(
-				"Cannot create instance of usermanager, check master.usermanager in "
+				"Cannot create instance of slavemanager, check master.slavemanager in "
 					+ cfgFileName,
 				e);
 		}
-
-		_commandManagerFactory = new CommandManagerFactory(this);
-
-		//		if (cfg.getProperty("irc.enabled", "false").equals("true")) {
-		//			try {
-		//				addFtpListener(
-		//					new IRCListener(this, getConfig(), new String[0]));
-		//			} catch (Exception e2) {
-		//				throw new FatalException(e2);
-		//			}
-		//		}
-
-		addFtpListener(new RaceStatistics());
-
-		try {
-			Class cl =
-				Class.forName(
-					cfg.getProperty(
-						"sectionmanager",
-						"org.drftpd.sections.def.SectionManager"));
-			Constructor c =
-				cl.getConstructor(new Class[] { ConnectionManager.class });
-			_sections =
-				(SectionManagerInterface) c.newInstance(new Object[] { this });
-		} catch (Exception e) {
-			throw new FatalException(e);
-		}
-
-		for (int i = 1;; i++) {
-			String classname = cfg.getProperty("plugins." + i);
-			if (classname == null)
-				break;
-			try {
-				FtpListener ftpListener =
-					(FtpListener) Class.forName(classname).newInstance();
-				addFtpListener(ftpListener);
-			} catch (Exception e) {
-				throw new FatalException("Error loading plugins", e);
-			}
-		}
-
-		try { // only need to reload for SlaveSelection using JobManager settings
-			getSlaveManager().getSlaveSelectionManager().reload();
-		} catch (IOException e1) {
-			throw new FatalException(e1);
-		}
-
-		TimerTask timerLogoutIdle = new TimerTask() {
-			public void run() {
-				timerLogoutIdle();
-			}
-		};
-		//run every 10 seconds
-		_timer.schedule(timerLogoutIdle, 10 * 1000, 10 * 1000);
-
-		TimerTask timerSave = new TimerTask() {
-			public void run() {
-				getSlaveManager().saveFilelist();
-				try {
-					getUserManager().saveAll();
-				} catch (UserFileException e) {
-					logger.log(Level.FATAL, "Error saving all users", e);
-				}
-			}
-		};
-		//run every hour 
-		_timer.schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
-		getSlaveManager().addShutdownHook();
 	}
 
 	/**
@@ -303,15 +252,6 @@ public class ConnectionManager {
 	public void addFtpListener(FtpListener listener) {
 		listener.init(this);
 		_ftpListeners.add(listener);
-	}
-
-	public void reload() {
-		//		String url = System.getProperty(LogManager.DEFAULT_CONFIGURATION_KEY);
-		//		if(url != null) {
-		//			LogManager.resetConfiguration();
-		//			OptionConverter.selectAndConfigure(url, null, LogManager.getLoggerRepository());
-		//		}
-		getSectionManager().reload();
 	}
 
 	public FtpReply canLogin(BaseFtpConnection baseconn, User user) {
@@ -367,7 +307,7 @@ public class ConnectionManager {
 	}
 
 	public void dispatchFtpEvent(Event event) {
-		logger.debug("Dispatching " + event);
+		logger.debug("Dispatching " + event+" to "+getFtpListeners());
 		for (Iterator iter = getFtpListeners().iterator(); iter.hasNext();) {
 			try {
 				FtpListener handler = (FtpListener) iter.next();
@@ -405,10 +345,6 @@ public class ConnectionManager {
 	public List getFtpListeners() {
 		return _ftpListeners;
 	}
-	
-	public boolean isJobManagerLoaded() {
-		return (_jm != null);
-	}
 
 	public JobManager getJobManager() {
 		if (_jm == null)
@@ -438,6 +374,10 @@ public class ConnectionManager {
 	public UserManager getUserManager() {
 		return _usermanager;
 	}
+
+	public boolean isJobManagerLoaded() {
+		return (_jm != null);
+	}
 	public boolean isShutdown() {
 		return _shutdownMessage != null;
 	}
@@ -451,6 +391,89 @@ public class ConnectionManager {
 		} catch (IOException e) {
 			throw new FatalException("Error loading JobManager", e);
 		}
+	}
+
+	protected void loadPlugins(Properties cfg) {
+		for (int i = 1;; i++) {
+			String classname = cfg.getProperty("plugins." + i);
+			if (classname == null)
+				break;
+			try {
+				FtpListener ftpListener =
+					(FtpListener) Class.forName(classname).newInstance();
+				addFtpListener(ftpListener);
+			} catch (Exception e) {
+				throw new FatalException("Error loading plugins", e);
+			}
+		}
+	}
+
+	private void loadSectionManager(Properties cfg) {
+		try {
+			Class cl =
+				Class.forName(
+					cfg.getProperty(
+						"sectionmanager",
+						"org.drftpd.sections.def.SectionManager"));
+			Constructor c =
+				cl.getConstructor(new Class[] { ConnectionManager.class });
+			_sections =
+				(SectionManagerInterface) c.newInstance(new Object[] { this });
+		} catch (Exception e) {
+			throw new FatalException(e);
+		}
+	}
+
+	private void loadTimer() {
+		TimerTask timerLogoutIdle = new TimerTask() {
+			public void run() {
+				timerLogoutIdle();
+			}
+		};
+		//run every 10 seconds
+		_timer.schedule(timerLogoutIdle, 10 * 1000, 10 * 1000);
+
+		TimerTask timerSave = new TimerTask() {
+			public void run() {
+				getSlaveManager().saveFilelist();
+				try {
+					getUserManager().saveAll();
+				} catch (UserFileException e) {
+					logger.log(Level.FATAL, "Error saving all users", e);
+				}
+			}
+		};
+		//run every hour 
+		_timer.schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
+	}
+
+	/**
+	 * @param cfg
+	 * @param cfgFileName Can be null, Used in error message
+	 */
+	protected void loadUserManager(Properties cfg, String cfgFileName) {
+		try {
+			_usermanager =
+				(UserManager) Class
+					.forName(FtpConfig.getProperty(cfg, "master.usermanager"))
+					.newInstance();
+			// if the below method is not run, JSXUserManager fails when trying to do a reset() on the user logging in
+			_usermanager.init(this);
+		} catch (Exception e) {
+			throw new FatalException(
+				"Cannot create instance of usermanager, check master.usermanager in "
+					+ cfgFileName,
+				e);
+		}
+	}
+
+	public void reload() {
+		//		String url = System.getProperty(LogManager.DEFAULT_CONFIGURATION_KEY);
+		//		if(url != null) {
+		//			LogManager.resetConfiguration();
+		//			OptionConverter.selectAndConfigure(url, null, LogManager.getLoggerRepository());
+		//		}
+		getSectionManager().reload();
 	}
 
 	public void remove(BaseFtpConnection conn) {
