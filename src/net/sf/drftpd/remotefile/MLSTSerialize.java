@@ -179,7 +179,7 @@ public class MLSTSerialize {
 			NonExistingFile ret = root.lookupNonExistingFile(path);
 			LinkedRemoteFile dir;
 			dir = ret.getFile();
-			if (!ret.hasPath()) {
+			if (!ret.exists()) {
 				throw new CorruptFileListException(path + " doesn't exist");
 				//				 StringTokenizer st = new StringTokenizer((String)ret[1], "/");
 				//				 while(st.hasMoreTokens()) {
