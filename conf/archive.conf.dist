@@ -28,6 +28,8 @@ cycleTime=30
 #section4.offOfSlave.1=sourceslave1
 #section4.offOfSlave.2=sourceslave2
 #section4.numOfSlaves=2
+#section4.slavename.1=destslave1
+#section4.slavename.2=destslave2
 # If section.archiveType is not defined for a section the default
 # will be used, the same holds true for section.archiveAfter
 
