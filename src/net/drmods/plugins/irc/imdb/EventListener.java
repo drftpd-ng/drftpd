@@ -48,11 +48,10 @@ public class EventListener extends FtpListener {
 
 	public void loadConf(String confFile) {
         Properties cfg = new Properties();
-        FileInputStream file;
+        FileInputStream file = null;
         try {
             file = new FileInputStream(confFile);
             cfg.load(file);
-            file.close();
             _sections = cfg.getProperty("imdb.sections");
             _excludeDirs = cfg.getProperty("imdb.exclude");
             _filters = cfg.getProperty("imdb.filter");
@@ -71,6 +70,11 @@ public class EventListener extends FtpListener {
         } catch (IOException e) {
             logger.error("Error reading " + confFile,e);
             throw new RuntimeException(e.getMessage());
+        } finally {
+        	try {
+        		file.close();
+        	} catch (IOException e) {
+        	}
         }
 	}
 	

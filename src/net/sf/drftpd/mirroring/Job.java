@@ -156,7 +156,7 @@ public class Job {
     }
 
     private String outputDestinationSlaves() {
-        String toReturn = new String();
+        String toReturn = "";
 
         for (Iterator iter = getDestinationSlaves().iterator(); iter.hasNext();) {
             RemoteSlave rslave = (RemoteSlave) iter.next();

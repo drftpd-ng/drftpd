@@ -17,19 +17,25 @@
  */
 package net.sf.drftpd.master.command;
 
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.master.BaseFtpConnection;
-
-import org.drftpd.commands.*;
-import org.drftpd.usermanager.NoSuchUserException;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+
+import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.master.BaseFtpConnection;
+
+import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.ImproperUsageException;
+import org.drftpd.commands.Reply;
+import org.drftpd.commands.ReplyException;
+import org.drftpd.commands.UnhandledCommandException;
+import org.drftpd.usermanager.NoSuchUserException;
 
 
 /**
@@ -145,6 +151,6 @@ public class CommandManager {
      * Class => CommandHandler
      */
     public Map getCommandHandlersMap() {
-        return hnds;
+        return Collections.unmodifiableMap(hnds);
     }
 }

@@ -17,8 +17,6 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import java.util.ResourceBundle;
-
 import net.sf.drftpd.event.InviteEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;

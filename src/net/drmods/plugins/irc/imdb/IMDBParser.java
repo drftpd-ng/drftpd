@@ -78,12 +78,18 @@ public class IMDBParser {
             
             boolean redirect = false;
             String data = "";
+            BufferedReader in = null;
             String line;
-            BufferedReader in = new BufferedReader(new InputStreamReader(urlConn.getInputStream()));
-            while ((line = in.readLine()) != null) {
-                data += line + "\n";
-            }
-            in.close();
+            try {
+				in = new BufferedReader(new InputStreamReader(urlConn
+						.getInputStream()));
+				while ((line = in.readLine()) != null) {
+					data += line + "\n";
+				}
+			} finally {
+				in.close();
+			}
+            
             
             if (data.indexOf("<b>No Matches.</b>") > 0)
                 return false;
@@ -107,13 +113,15 @@ public class IMDBParser {
             urlConn = url.openConnection();
             if (!(urlConn.getContent() instanceof InputStream))
                 return false;
-            in = new BufferedReader(
-                    new InputStreamReader(urlConn.getInputStream()));
-           
-            while( ( line = in.readLine( ) ) != null )
-            	data = data + line + "\n";
-            
-            in.close();
+            try {
+				in = new BufferedReader(new InputStreamReader(urlConn
+						.getInputStream()));
+
+				while ((line = in.readLine()) != null)
+					data = data + line + "\n";
+			} finally {
+				in.close();
+			}
             
            _title = parseData(data, "<h1><strong class=\"title\">", "<small>");
            _genre = parseData(data, "<b class=\"ch\">Genre:</b>", "<br><br>");

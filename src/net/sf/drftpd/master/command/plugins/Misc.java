@@ -39,7 +39,6 @@ import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.slave.Slave;
-import org.tanesha.replacer.ReplacerFormat;
 
 
 /**

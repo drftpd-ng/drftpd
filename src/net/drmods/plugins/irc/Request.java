@@ -165,7 +165,7 @@ public class Request extends IRCCommand {
                 if (file.isDirectory()) {
                     if (file.getName().endsWith(dirName)) {
                         nodir = false;
-                        String fdirname = file.getName().toString();
+                        String fdirname = file.getName();
                         fdirname = fdirname.replaceAll("REQUEST-by.","FILLED-for.");
                         user.getKeyedMap().setObject(Request.REQFILLED, 
                                 user.getKeyedMap().getObjectInt(Request.REQFILLED)+1);;

@@ -20,7 +20,6 @@ package org.drftpd;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
 
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
 

@@ -47,11 +47,10 @@ public class IRCListener extends IRCCommand {
 
 	public void loadConf(String confFile) {
         Properties cfg = new Properties();
-        FileInputStream file;
+        FileInputStream file = null;
         try {
             file = new FileInputStream(confFile);
             cfg.load(file);
-            file.close();
             _filters = cfg.getProperty("imdb.filter");
             if (_filters == null) {
                 throw new RuntimeException("Unspecified value 'imdb.filter' in " + confFile);        
@@ -62,6 +61,11 @@ public class IRCListener extends IRCCommand {
         } catch (IOException e) {
             logger.error("Error reading " + confFile,e);
             throw new RuntimeException(e.getMessage());
+        } finally {
+        	try {
+				file.close();
+			} catch (IOException e) {
+			}
         }
 	}
 

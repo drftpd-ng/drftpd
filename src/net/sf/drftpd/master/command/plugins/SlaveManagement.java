@@ -17,7 +17,10 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import com.Ostermiller.util.StringTokenizer;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -33,19 +36,12 @@ import org.drftpd.commands.ImproperUsageException;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyPermissionDeniedException;
 import org.drftpd.commands.UnhandledCommandException;
-
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.slave.SlaveStatus;
-
 import org.tanesha.replacer.ReplacerEnvironment;
 
-import java.io.IOException;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ResourceBundle;
+import com.Ostermiller.util.StringTokenizer;
 
 
 /**

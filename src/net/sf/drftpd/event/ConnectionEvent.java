@@ -17,8 +17,6 @@
  */
 package net.sf.drftpd.event;
 
-import net.sf.drftpd.master.BaseFtpConnection;
-
 import org.drftpd.usermanager.User;
 
 

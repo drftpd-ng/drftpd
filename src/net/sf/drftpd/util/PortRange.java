@@ -46,7 +46,7 @@ public class PortRange {
     }
 
     public PortRange(int minPort, int maxPort) {
-        if (_minPort > _maxPort) {
+        if (minPort > maxPort) {
             throw new RuntimeException("maxPort must be > minPort");
         }
 

@@ -17,9 +17,15 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Properties;
+
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
@@ -27,27 +33,14 @@ import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyException;
-import org.drftpd.commands.UnhandledCommandException;
-
 import org.drftpd.tests.DummyBaseFtpConnection;
 import org.drftpd.tests.DummyConnectionManager;
 import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyUser;
 import org.drftpd.tests.DummyUserManager;
-
 import org.drftpd.usermanager.User;
-
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
-import java.util.Properties;
 
 
 /**

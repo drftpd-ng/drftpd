@@ -37,7 +37,7 @@ public interface SectionManagerInterface {
      */
     public SectionInterface lookup(String path);
 
-    public Collection getSections();
+    public Collection<SectionInterface> getSections();
 
     /**
      * getSectionByName()

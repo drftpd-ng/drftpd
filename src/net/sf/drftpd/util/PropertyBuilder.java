@@ -25,7 +25,7 @@ import java.io.IOException;
 
 /**
  * @author mog
- * @version $Id: PropertyBuilder.java,v 1.2 2004/11/08 18:39:29 mog Exp $
+ * @version $Id$
  */
 public class PropertyBuilder {
     private File _baseFile;
@@ -58,19 +58,24 @@ public class PropertyBuilder {
                 classname = classname.replaceAll("\\.properties$", "");
                 classname = classname.replace(File.separatorChar, '.');
 
-                BufferedReader in = new BufferedReader(new FileReader(file2));
-                System.out.println("## START: " + classname);
-
-                String line;
-
-                while ((line = in.readLine()) != null) {
-                    if (line.trim().equals("") || line.startsWith("#")) {
-                        System.out.println(line);
-
-                        continue;
-                    }
-
-                    System.out.println(classname + "." + line);
+                BufferedReader in = null;
+                try {
+                	in = new BufferedReader(new FileReader(file2));
+                	System.out.println("## START: " + classname);
+                	
+                	String line;
+                	
+                	while ((line = in.readLine()) != null) {
+                		if (line.trim().equals("") || line.startsWith("#")) {
+                			System.out.println(line);
+                			
+                			continue;
+                		}
+                		
+                		System.out.println(classname + "." + line);
+                	}
+                } finally {
+                	in.close();
                 }
             }
         }

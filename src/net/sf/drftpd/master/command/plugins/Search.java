@@ -17,22 +17,20 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Logger;
-
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.ResourceBundle;
 
 
 /**

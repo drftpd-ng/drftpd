@@ -17,7 +17,10 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import net.sf.drftpd.event.ConnectionEvent;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
@@ -25,24 +28,16 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Logger;
-
 import org.apache.oro.text.regex.MalformedPatternException;
-
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.commands.UserManagement;
-
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-
-import java.io.IOException;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 /**
  * @author mog

@@ -20,8 +20,6 @@ package net.sf.drftpd.event;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
 
-import net.sf.drftpd.master.BaseFtpConnection;
-
 
 /**
  * @author mog

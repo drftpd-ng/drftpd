@@ -69,7 +69,6 @@ public class FtpConfig extends Observable implements ConfigInterface {
     private ArrayList<InetAddress> _bouncerIps;
     private boolean _capFirstDir;
     private boolean _capFirstFile;
-    private String _cfgFileName;
     private ArrayList<RatioPathPermission> _creditcheck = new ArrayList<RatioPathPermission>();
     private ArrayList<RatioPathPermission> _creditloss = new ArrayList<RatioPathPermission>();
     private boolean _hideIps;
@@ -99,7 +98,6 @@ public class FtpConfig extends Observable implements ConfigInterface {
      */
     public FtpConfig(Properties cfg, String cfgFileName,
         GlobalContext gctx) throws IOException {
-        _cfgFileName = cfgFileName;
         loadConfig(cfg, gctx);
     }
     
@@ -218,7 +216,7 @@ public class FtpConfig extends Observable implements ConfigInterface {
             return name;
         }
 
-        String temp = new String(name);
+        String temp = null;
 
         if (_isLowerDir) {
             temp = temp.toLowerCase();

@@ -34,8 +34,8 @@ import org.drftpd.GlobalContext;
 import org.drftpd.commands.Nuke;
 import org.drftpd.commands.Request;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.RaceStatistics;
 import org.drftpd.plugins.Statistics;
 import org.drftpd.plugins.Trial;
@@ -314,8 +314,8 @@ public abstract class AbstractUser extends User {
 		return idleTime;
 	}
 
-	public KeyedMap getKeyedMap() {
-		_data = new KeyedMap();
+	public KeyedMap<Key,Object> getKeyedMap() {
+		_data = new KeyedMap<Key, Object>();
 
 		_data.setObject(Nuke.LASTNUKED, lastNuked);
 		_data.setObject(Nuke.NUKED, timesNuked);

@@ -18,6 +18,7 @@
 package net.drmods.plugins.irc;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,11 +60,10 @@ public class New extends IRCCommand {
 
 	public void loadConf(String confFile) {
         Properties cfg = new Properties();
-        FileInputStream file;
+        FileInputStream file = null;
         try {
             file = new FileInputStream(confFile);
             cfg.load(file);
-            file.close();
             String defaultCount = cfg.getProperty("new.default");
             String maxCount = cfg.getProperty("new.max");
             _dateFormat = cfg.getProperty("new.dateformat");
@@ -89,6 +89,11 @@ public class New extends IRCCommand {
         } catch (Exception e) {
             logger.error("Error reading " + confFile,e);
             throw new RuntimeException(e.getMessage());
+        } finally {
+        	try {
+        		file.close();
+        	} catch (IOException e) {
+        	}
         }
 	}
     
@@ -116,11 +121,11 @@ public class New extends IRCCommand {
         if (count > _maxCount)
             count = _maxCount;
         
-        Collection sections;
+        Collection<SectionInterface> sections;
         if (secname.equals("*")) {
             sections = getGlobalContext().getSectionManager().getSections();
         } else {
-            sections = new ArrayList();
+            sections = new ArrayList<SectionInterface>();
             SectionInterface si = getGlobalContext().getSectionManager().getSection(secname);
             if (si.getName().equals("")) {
                 env.add("input", secname);

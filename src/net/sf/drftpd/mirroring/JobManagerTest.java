@@ -17,8 +17,16 @@
  */
 package net.sf.drftpd.mirroring;
 
-import junit.framework.TestCase;
+import java.io.IOException;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
 
+import junit.framework.TestCase;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.SlaveFileException;
 
@@ -26,25 +34,10 @@ import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-
 import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.tests.DummySlaveManager;
 import org.drftpd.tests.DummySlaveSelectionManager;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.rmi.RemoteException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 
 /**
