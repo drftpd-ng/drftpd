@@ -202,7 +202,7 @@ public class FtpConnection extends BaseFtpConnection {
 	     // reset state variables
 	     resetState();
 	     mDataConnection.reset();
-	     out.write(mFtpStatus.getResponse(226, request, mUser, null));
+	     out.write(ftpStatus.getResponse(226, request, user, null));
 	 }
 	 */
 
@@ -224,55 +224,55 @@ public class FtpConnection extends BaseFtpConnection {
 	     
 	     // argument check
 	     if(!request.hasArgument()) {
-	        out.write(mFtpStatus.getResponse(501, request, mUser, null));
+	        out.write(ftpStatus.getResponse(501, request, user, null));
 	        return;  
 	     }
 	     
 	     // get filenames
 	     String fileName = request.getArgument();
-	     fileName = mUser.getVirtualDirectory().getAbsoluteName(fileName);
-	     String physicalName = mUser.getVirtualDirectory().getPhysicalName(fileName);
+	     fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
+	     String physicalName = user.getVirtualDirectory().getPhysicalName(fileName);
 	     File requestedFile = new File(physicalName);
 	     String args[] = {fileName};
 	     
 	     // check permission
-	     if(!mUser.getVirtualDirectory().hasWritePermission(physicalName, true)) {
-	         out.write(mFtpStatus.getResponse(450, request, mUser, args));
+	     if(!user.getVirtualDirectory().hasWritePermission(physicalName, true)) {
+	         out.write(ftpStatus.getResponse(450, request, user, args));
 	         return;
 	     }
 	     
 	     // now transfer file data
-	     out.write(mFtpStatus.getResponse(150, request, mUser, args));
+	     out.write(ftpStatus.getResponse(150, request, user, args));
 	     InputStream is = null;
 	     OutputStream os = null;
 	     try {
 	         Socket dataSoc = mDataConnection.getDataSocket();
 	         if (dataSoc == null) {
-	              out.write(mFtpStatus.getResponse(550, request, mUser, args));
+	              out.write(ftpStatus.getResponse(550, request, user, args));
 	              return;
 	         }
 	         
 	         is = dataSoc.getInputStream();
 	         RandomAccessFile raf = new RandomAccessFile(requestedFile, "rw");
 	         raf.seek(raf.length());
-	         os = mUser.getOutputStream( new FileOutputStream(raf.getFD()) );
+	         os = user.getOutputStream( new FileOutputStream(raf.getFD()) );
 	         
 	         StreamConnector msc = new StreamConnector(is, os);
-	         msc.setMaxTransferRate(mUser.getMaxUploadRate());
+	         msc.setMaxTransferRate(user.getMaxUploadRate());
 	         msc.setObserver(this);
 	         msc.connect();
 	         
 	         if(msc.hasException()) {
-	             out.write(mFtpStatus.getResponse(451, request, mUser, args));
+	             out.write(ftpStatus.getResponse(451, request, user, args));
 	         }
 	         else {
-	             mConfig.getStatistics().setUpload(requestedFile, mUser, msc.getTransferredSize());
+	             mConfig.getStatistics().setUpload(requestedFile, user, msc.getTransferredSize());
 	         }
 	         
-	         out.write(mFtpStatus.getResponse(226, request, mUser, args));
+	         out.write(ftpStatus.getResponse(226, request, user, args));
 	     }
 	     catch(IOException ex) {
-	         out.write(mFtpStatus.getResponse(425, request, mUser, args));
+	         out.write(ftpStatus.getResponse(425, request, user, args));
 	     }
 	     finally {
 	     try {
@@ -347,41 +347,42 @@ public class FtpConnection extends BaseFtpConnection {
 	 * This command causes the file specified in the pathname to be
 	 * deleted at the server site.
 	 */
-	/*
-	 public void doDELE(FtpRequest request, PrintWriter out) throws IOException {
-	    
-	    // reset state variables
-	    resetState();  
-	     
-	    // argument check
-	    if(!request.hasArgument()) {
-	       out.write(mFtpStatus.getResponse(501, request, mUser, null));
-	       return;  
-	    }    
-	    
-	    // get filenames
-	    String fileName = request.getArgument();
-	    fileName = mUser.getVirtualDirectory().getAbsoluteName(fileName);
-	    String physicalName = mUser.getVirtualDirectory().getPhysicalName(fileName);
-	    File requestedFile = new File(physicalName);
-	    String[] args = {fileName};
-	    
-	    // check permission
-	    if(!mUser.getVirtualDirectory().hasWritePermission(physicalName, true)) {
-	        out.write(mFtpStatus.getResponse(450, request, mUser, args));
-	        return;
-	    }
-	    
-	    // now delete
-	    if(requestedFile.delete()) {
-	       out.write(mFtpStatus.getResponse(250, request, mUser, args)); 
-	       //mConfig.getStatistics().setDelete(requestedFile, mUser); 
-	    }
-	    else {
-	       out.write(mFtpStatus.getResponse(450, request, mUser, args));
-	    }
-	 }
-	*/
+	public void doDELE(FtpRequest request, PrintWriter out) {
+		// reset state variables
+		resetState();
+
+		// argument check
+		if (!request.hasArgument()) {
+			out.write(ftpStatus.getResponse(501, request, user, null));
+			return;
+		}
+
+		// get filenames
+		String fileName = request.getArgument();
+		LinkedRemoteFile requestedFile;
+		try {
+			requestedFile = getVirtualDirectory().lookupFile(fileName);
+		} catch(FileNotFoundException ex) {
+			out.println("500 Requested action not taken. "+ex.getMessage());
+			return;
+		}
+		String[] args = { fileName };
+
+		// check permission
+		if (!getVirtualDirectory().hasWritePermission(requestedFile)) {
+			out.write(ftpStatus.getResponse(450, request, user, args));
+			return;
+		}
+
+		// now delete
+		//try {
+			requestedFile.delete();
+			out.write(ftpStatus.getResponse(250, request, user, args));
+		//}
+		// catch{
+		//	out.write(ftpStatus.getResponse(450, request, user, args));
+		//}
+	}
 
 	/**
 	 * <code>HELP [&lt;SP&gt; <string>] &lt;CRLF&gt;</code><br>
@@ -502,7 +503,7 @@ public class FtpConnection extends BaseFtpConnection {
 	/*
 		public void doSITECHANGE(FtpRequest request, PrintWriter out) {
 			if (!request.hasArgument() || !user.isAdmin()) {
-				out.write(mFtpStatus.getResponse(530, request, user, null));
+				out.write(ftpStatus.getResponse(530, request, user, null));
 				return;
 			}
 	
@@ -519,7 +520,7 @@ public class FtpConnection extends BaseFtpConnection {
 	
 				user2 = usermanager.getUserByName(argument.substring(0, l1));
 				if (user2 == null) {
-					out.write(mFtpStatus.getResponse(200, request, user, null));
+					out.write(ftpStatus.getResponse(200, request, user, null));
 					return;
 				}
 				
@@ -551,7 +552,7 @@ public class FtpConnection extends BaseFtpConnection {
 			}
 		}
 	*/
-	public void doSITERESCAN(FtpRequest request, PrintWriter out) {
+	public void doSITE_RESCAN(FtpRequest request, PrintWriter out) {
 		LinkedRemoteFile directory =
 			getVirtualDirectory().getCurrentDirectoryFile();
 		LinkedRemoteFile sfvFile = null;
@@ -603,7 +604,7 @@ public class FtpConnection extends BaseFtpConnection {
 		out.println("200 Command ok.");
 	}
 
-	public void doSITEADDIP(FtpRequest request, PrintWriter out) {
+	public void doSITE_ADDIP(FtpRequest request, PrintWriter out) {
 		resetState();
 		String args[] = request.getArgument().split(" ");
 		if (args.length < 2) {
@@ -628,7 +629,7 @@ public class FtpConnection extends BaseFtpConnection {
 	/**
 	 * Lists currently connected users.
 	 */
-	public void doSITEWHO(FtpRequest request, PrintWriter out) {
+	public void doSITE_WHO(FtpRequest request, PrintWriter out) {
 		resetState();
 		if (!user.isAdmin()) {
 			out.write(ftpStatus.getResponse(530, request, user, null));
@@ -642,7 +643,7 @@ public class FtpConnection extends BaseFtpConnection {
 		out.write(ftpStatus.getResponse(200, request, user, null));
 	}
 
-	public void doSITEWIPE(FtpRequest request, PrintWriter out) {
+	public void doSITE_WIPE(FtpRequest request, PrintWriter out) {
 		resetState();
 		if (!user.isAdmin())
 			out.write("200 You need admin privileges to use SITE WIPE");
@@ -653,7 +654,7 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 	}
-	public void doSITELIST(FtpRequest request, PrintWriter out) {
+	public void doSITE_LIST(FtpRequest request, PrintWriter out) {
 		resetState();
 		RemoteFile files[] =
 			getVirtualDirectory().getCurrentDirectoryFile().listFiles();
@@ -669,11 +670,6 @@ public class FtpConnection extends BaseFtpConnection {
 				+ " entries listed");
 	}
 
-	public void doSITETEST(FtpRequest request, PrintWriter out) {
-		resetState();
-		out.println("200 " + getVirtualDirectory().getCurrentDirectoryFile());
-	}
-
 	/**
 	 * USAGE: site take <user> <kbytes> [<message>]
 	 *        Removes credit from user
@@ -683,7 +679,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 *        This will remove 100mb of credits from the user 'Archimede' and 
 	 *        send the message haha to him.
 	 */
-	public void doSITETAKE(FtpRequest request, PrintWriter out) {
+	public void doSITE_TAKE(FtpRequest request, PrintWriter out) {
 		GlftpdUserManager.GlftpdUser gluser = null;
 		if (user instanceof GlftpdUserManager.GlftpdUser)
 			gluser = (GlftpdUserManager.GlftpdUser) user;
@@ -714,7 +710,7 @@ public class FtpConnection extends BaseFtpConnection {
 				+ user2.getUsername()
 				+ ".");
 	}
-	public void doSITEUSER(FtpRequest request, PrintWriter out) {
+	public void doSITE_USER(FtpRequest request, PrintWriter out) {
 		resetState();
 		if (!user.isAdmin()) {
 			out.write(ftpStatus.getResponse(530, request, user, null));
@@ -804,7 +800,7 @@ public class FtpConnection extends BaseFtpConnection {
 		out.write(ftpStatus.getResponse(200, request, user, null));
 	}
 
-	public void doSITECHECKSLAVES(FtpRequest request, PrintWriter out) {
+	public void doSITE_CHECKSLAVES(FtpRequest request, PrintWriter out) {
 		out.println(
 			"200 Ok, " + slaveManager.verifySlaves() + " stale slaves removed");
 	}
@@ -818,7 +814,7 @@ public class FtpConnection extends BaseFtpConnection {
 	     
 	     // argument check
 	     if(!request.hasArgument()) {
-	        out.write(mFtpStatus.getResponse(501, request, mUser, null));
+	        out.write(ftpStatus.getResponse(501, request, user, null));
 	        return;  
 	     }
 	    
@@ -827,17 +823,17 @@ public class FtpConnection extends BaseFtpConnection {
 	    
 	     // get filenames
 	     String fileName = request.getArgument();
-	     fileName = mUser.getVirtualDirectory().getAbsoluteName(fileName);
-	     String physicalName = mUser.getVirtualDirectory().getPhysicalName(fileName);
+	     fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
+	     String physicalName = user.getVirtualDirectory().getPhysicalName(fileName);
 	     File reqFile = new File(physicalName);
 	
 	     // now print date
 	     if(reqFile.exists()) {
 	         String args[] = {DATE_FMT.format(new Date(reqFile.lastModified()))};
-	         out.write(mFtpStatus.getResponse(213, request, mUser, args));
+	         out.write(ftpStatus.getResponse(213, request, user, args));
 	     }
 	     else {
-	         out.write(mFtpStatus.getResponse(550, request, mUser, null));
+	         out.write(ftpStatus.getResponse(550, request, user, null));
 	     }
 	 }
 	*/
@@ -863,14 +859,18 @@ public class FtpConnection extends BaseFtpConnection {
 
 		// get filenames
 		String fileName = request.getArgument();
-		if(VirtualDirectory.isLegalFileName(fileName)) {
-			out.println("553 Requested action not taken. File name not allowed.");
+		if (VirtualDirectory.isLegalFileName(fileName)) {
+			out.println(
+				"553 Requested action not taken. File name not allowed.");
 			return;
 		}
-		
+
 		LinkedRemoteFile file = getVirtualDirectory().getCurrentDirectoryFile();
-		if(file.getHashtable().containsKey(fileName)) {
-			out.println("550 Requested action not taken. " + fileName + " already exists");
+		if (file.getHashtable().containsKey(fileName)) {
+			out.println(
+				"550 Requested action not taken. "
+					+ fileName
+					+ " already exists");
 			return;
 		}
 
@@ -894,7 +894,7 @@ public class FtpConnection extends BaseFtpConnection {
 
 		// check permission
 		//		if (!getVirtualDirectory().hasCreatePermission(physicalName, true)) {
-		//			out.write(mFtpStatus.getResponse(450, request, user, args));
+		//			out.write(ftpStatus.getResponse(450, request, user, args));
 		//			return;
 		//		}
 
@@ -950,27 +950,27 @@ public class FtpConnection extends BaseFtpConnection {
 	     // reset state variables
 	     resetState();
 	     
-	     out.write(mFtpStatus.getResponse(150, request, mUser, null));
+	     out.write(ftpStatus.getResponse(150, request, user, null));
 	     Writer os = null;
 	     try {
 	         Socket dataSoc = mDataConnection.getDataSocket();
 	         if (dataSoc == null) {
-	              out.write(mFtpStatus.getResponse(550, request, mUser, null));
+	              out.write(ftpStatus.getResponse(550, request, user, null));
 	              return;
 	         }
 	         
 	         os = new OutputStreamWriter(dataSoc.getOutputStream());
 	         
-	         if (!mUser.getVirtualDirectory().printNList(request.getArgument(), os)) {
-	             out.write(mFtpStatus.getResponse(501, request, mUser, null));
+	         if (!user.getVirtualDirectory().printNList(request.getArgument(), os)) {
+	             out.write(ftpStatus.getResponse(501, request, user, null));
 	         }
 	         else {
 	            os.flush();
-	            out.write(mFtpStatus.getResponse(226, request, mUser, null));
+	            out.write(ftpStatus.getResponse(226, request, user, null));
 	         }
 	     }
 	     catch(IOException ex) {
-	         out.write(mFtpStatus.getResponse(425, request, mUser, null));
+	         out.write(ftpStatus.getResponse(425, request, user, null));
 	     }
 	     finally {
 	     try {
@@ -1010,7 +1010,7 @@ public class FtpConnection extends BaseFtpConnection {
 		// set state variables
 		/*
 		    if(!mbUser) {
-		        out.write(mFtpStatus.getResponse(500, request, mUser, null));
+		        out.write(ftpStatus.getResponse(500, request, user, null));
 		        resetState();
 		        return;
 		    }
@@ -1032,7 +1032,7 @@ public class FtpConnection extends BaseFtpConnection {
 			/*
 			ConnectionService conService = mConfig.getConnectionService();
 			if (conService != null) {
-			    conService.closeConnection(mUser.getSessionId());
+			    conService.closeConnection(user.getSessionId());
 			}
 			*/
 		}
@@ -1050,7 +1050,7 @@ public class FtpConnection extends BaseFtpConnection {
 	/*
 	 public void doPASV(FtpRequest request, PrintWriter out) throws IOException {
 	     if (!setPasvCommand()) {
-	         out.write(mFtpStatus.getResponse(550, request, mUser, null));
+	         out.write(ftpStatus.getResponse(550, request, user, null));
 	         return;   
 	     }
 	     
@@ -1067,9 +1067,9 @@ public class FtpConnection extends BaseFtpConnection {
 	     String addrStr = servAddr.getHostAddress().replace( '.', ',' ) + ',' + (servPort>>8) + ',' + (servPort&0xFF);
 	     String[] args = {addrStr};
 	     
-	     out.write(mFtpStatus.getResponse(227, request, mUser, args));
+	     out.write(ftpStatus.getResponse(227, request, user, args));
 	     if (!listenPasvConnection()) {
-	        out.write(mFtpStatus.getResponse(425, request, mUser, args));
+	        out.write(ftpStatus.getResponse(425, request, user, args));
 	     }
 	 }
 	*/
@@ -1173,7 +1173,7 @@ public class FtpConnection extends BaseFtpConnection {
 		/*
 		    ConnectionService conService = mConfig.getConnectionService();
 		    if (conService != null) {
-		        conService.closeConnection(mUser.getSessionId());
+		        conService.closeConnection(user.getSessionId());
 		    }
 		*/
 	}
@@ -1238,13 +1238,13 @@ public class FtpConnection extends BaseFtpConnection {
 
 		// get filenames
 		String fileName = request.getArgument();
-		//fileName = mUser.getVirtualDirectory().getAbsoluteName(fileName);
+		//fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
 		LinkedRemoteFile remoteFile;
 		RemoteFile staticRemoteFile;
 		try {
 			remoteFile = getVirtualDirectory().lookupFile(fileName);
 		} catch (FileNotFoundException ex) {
-			//out.write(mFtpStatus.getResponse(550, request, user, null));
+			//out.write(ftpStatus.getResponse(550, request, user, null));
 			out.println("550 " + fileName + ": No such file");
 			return;
 		}
@@ -1259,8 +1259,8 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 		/*
 		// check permission
-		if(!mUser.getVirtualDirectory().hasReadPermission(physicalName, true)) {
-		    out.write(mFtpStatus.getResponse(550, request, mUser, args));
+		if(!user.getVirtualDirectory().hasReadPermission(physicalName, true)) {
+		    out.write(ftpStatus.getResponse(550, request, user, args));
 		    return;
 		}
 		*/
@@ -1338,29 +1338,29 @@ public class FtpConnection extends BaseFtpConnection {
 	     
 	    // argument check
 	    if(!request.hasArgument()) {
-	        out.write(mFtpStatus.getResponse(501, request, mUser, null));
+	        out.write(ftpStatus.getResponse(501, request, user, null));
 	        return;  
 	    }
 	    
 	    // get file names
 	    String fileName = request.getArgument();
-	    fileName = mUser.getVirtualDirectory().getAbsoluteName(fileName);
-	    String physicalName = mUser.getVirtualDirectory().getPhysicalName(fileName);
+	    fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
+	    String physicalName = user.getVirtualDirectory().getPhysicalName(fileName);
 	    File requestedFile = new File(physicalName);
 	    String args[] = {fileName};
 	    
 	    // check permission
-	    if(!mUser.getVirtualDirectory().hasWritePermission(physicalName, true)) {
-	        out.write(mFtpStatus.getResponse(450, request, mUser, args));
+	    if(!user.getVirtualDirectory().hasWritePermission(physicalName, true)) {
+	        out.write(ftpStatus.getResponse(450, request, user, args));
 	        return;
 	    }
 	    
 	    // now delete
 	    if(requestedFile.delete()) {
-	       out.write(mFtpStatus.getResponse(250, request, mUser, args)); 
+	       out.write(ftpStatus.getResponse(250, request, user, args)); 
 	    }
 	    else {
-	       out.write(mFtpStatus.getResponse(450, request, mUser, args));
+	       out.write(ftpStatus.getResponse(450, request, user, args));
 	    }
 	 }
 	*/
@@ -1380,7 +1380,7 @@ public class FtpConnection extends BaseFtpConnection {
 	     
 	     // argument check
 	     if(!request.hasArgument()) {
-	        out.write(mFtpStatus.getResponse(501, request, mUser, null));
+	        out.write(ftpStatus.getResponse(501, request, user, null));
 	        return;  
 	     }
 	     
@@ -1389,11 +1389,11 @@ public class FtpConnection extends BaseFtpConnection {
 	     
 	     // get filenames
 	     String fileName = request.getArgument();
-	     fileName = mUser.getVirtualDirectory().getAbsoluteName(fileName);
-	     mstRenFr = mUser.getVirtualDirectory().getPhysicalName(fileName);
+	     fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
+	     mstRenFr = user.getVirtualDirectory().getPhysicalName(fileName);
 	     String args[] = {fileName};
 	     
-	     out.write(mFtpStatus.getResponse(350, request, mUser, args));
+	     out.write(ftpStatus.getResponse(350, request, user, args));
 	 }
 	*/
 
@@ -1411,22 +1411,22 @@ public class FtpConnection extends BaseFtpConnection {
 	     // argument check
 	     if(!request.hasArgument()) {
 	        resetState(); 
-	        out.write(mFtpStatus.getResponse(501, request, mUser, null));
+	        out.write(ftpStatus.getResponse(501, request, user, null));
 	        return;  
 	     }
 	     
 	     // set state variables
 	     if((!mbRenFr) || (mstRenFr == null)) {
 	          resetState();
-	          out.write(mFtpStatus.getResponse(100, request, mUser, null));
+	          out.write(ftpStatus.getResponse(100, request, user, null));
 	          return;
 	     }
 	     
 	     // get filenames
-	     String fromFileStr = mUser.getVirtualDirectory().getVirtualName(mstRenFr);
+	     String fromFileStr = user.getVirtualDirectory().getVirtualName(mstRenFr);
 	     String toFileStr = request.getArgument();
-	     toFileStr = mUser.getVirtualDirectory().getAbsoluteName(toFileStr);
-	     String physicalToFileStr = mUser.getVirtualDirectory().getPhysicalName(toFileStr);
+	     toFileStr = user.getVirtualDirectory().getAbsoluteName(toFileStr);
+	     String physicalToFileStr = user.getVirtualDirectory().getPhysicalName(toFileStr);
 	     File fromFile = new File(mstRenFr);
 	     File toFile = new File(physicalToFileStr);
 	     String args[] = {fromFileStr, toFileStr};
@@ -1434,17 +1434,17 @@ public class FtpConnection extends BaseFtpConnection {
 	     resetState();
 	     
 	     // check permission
-	     if(!mUser.getVirtualDirectory().hasCreatePermission(physicalToFileStr, true)) {
-	        out.write(mFtpStatus.getResponse(553, request, mUser, null));
+	     if(!user.getVirtualDirectory().hasCreatePermission(physicalToFileStr, true)) {
+	        out.write(ftpStatus.getResponse(553, request, user, null));
 	        return;
 	     }
 	     
 	     // now rename
 	     if(fromFile.renameTo(toFile)) {
-	         out.write(mFtpStatus.getResponse(250, request, mUser, args));
+	         out.write(ftpStatus.getResponse(250, request, user, args));
 	     }
 	     else {
-	         out.write(mFtpStatus.getResponse(553, request, mUser, args));
+	         out.write(ftpStatus.getResponse(553, request, user, args));
 	     }
 	 } 
 	*/
@@ -1459,8 +1459,8 @@ public class FtpConnection extends BaseFtpConnection {
 	 */
 	/*
 	public void doSITE(FtpRequest request, PrintWriter out) throws IOException {
-	     //SiteCommandHandler siteCmd = new SiteCommandHandler( mConfig, mUser );
-	     SiteCommandHandler siteCmd = new SiteCommandHandler(mUser);
+	     //SiteCommandHandler siteCmd = new SiteCommandHandler( mConfig, user );
+	     SiteCommandHandler siteCmd = new SiteCommandHandler(user);
 	     //out.write( siteCmd.getResponse(request) );
 	     //siteCmd.do(request, out);
 	}
@@ -1503,10 +1503,10 @@ public class FtpConnection extends BaseFtpConnection {
 	     String args[] = {
 	        mConfig.getSelfAddress().getHostAddress(),
 	        mControlSocket.getInetAddress().getHostAddress(),
-	        mUser.getName()
+	        user.getName()
 	     };
 	   
-	     out.write(mFtpStatus.getResponse(211, request, mUser, args)); 
+	     out.write(ftpStatus.getResponse(211, request, user, args)); 
 	 }
 	*/
 
@@ -1533,10 +1533,10 @@ public class FtpConnection extends BaseFtpConnection {
 
 		// get permission
 		/*
-				if (!mUser
+				if (!user
 					.getVirtualDirectory()
 					.hasCreatePermission(physicalName, true)) {
-					out.write(mFtpStatus.getResponse(550, request, mUser, null));
+					out.write(ftpStatus.getResponse(550, request, user, null));
 					return;
 				}
 		*/
@@ -1645,53 +1645,53 @@ public class FtpConnection extends BaseFtpConnection {
 	    resetState();
 	    
 	    // get filenames
-	    String fileName = mUser.getVirtualDirectory().getAbsoluteName("ftp.dat");
-	    String physicalName = mUser.getVirtualDirectory().getPhysicalName(fileName);
+	    String fileName = user.getVirtualDirectory().getAbsoluteName("ftp.dat");
+	    String physicalName = user.getVirtualDirectory().getPhysicalName(fileName);
 	    File requestedFile = new File(physicalName);
 	    requestedFile = IoUtils.getUniqueFile(requestedFile);
-	    fileName = mUser.getVirtualDirectory().getVirtualName(requestedFile.getAbsolutePath());
+	    fileName = user.getVirtualDirectory().getVirtualName(requestedFile.getAbsolutePath());
 	    String args[] = {fileName};
 	    
 	    // check permission
-	    if(!mUser.getVirtualDirectory().hasCreatePermission(fileName, false)) {
-	        out.write(mFtpStatus.getResponse(550, request, mUser, null));
+	    if(!user.getVirtualDirectory().hasCreatePermission(fileName, false)) {
+	        out.write(ftpStatus.getResponse(550, request, user, null));
 	        return;
 	    }
 	    
 	    // now transfer file data
-	    out.write(mFtpStatus.getResponse(150, request, mUser, null));
+	    out.write(ftpStatus.getResponse(150, request, user, null));
 	    InputStream is = null;
 	    OutputStream os = null;
 	    try {
 	        Socket dataSoc = mDataConnection.getDataSocket();
 	        if (dataSoc == null) {
-	             out.write(mFtpStatus.getResponse(550, request, mUser, args));
+	             out.write(ftpStatus.getResponse(550, request, user, args));
 	             return;
 	        }
 	
 	        
 	        is = dataSoc.getInputStream();
-	        os = mUser.getOutputStream( new FileOutputStream(requestedFile) );
+	        os = user.getOutputStream( new FileOutputStream(requestedFile) );
 	        
 	        StreamConnector msc = new StreamConnector(is, os);
-	        msc.setMaxTransferRate(mUser.getMaxUploadRate());
+	        msc.setMaxTransferRate(user.getMaxUploadRate());
 	        msc.setObserver(this);
 	        msc.connect();
 	        
 	        if(msc.hasException()) {
-	            out.write(mFtpStatus.getResponse(451, request, mUser, null));
+	            out.write(ftpStatus.getResponse(451, request, user, null));
 	            return;
 	        }
 	        else {
-	            mConfig.getStatistics().setUpload(requestedFile, mUser, msc.getTransferredSize());
+	            mConfig.getStatistics().setUpload(requestedFile, user, msc.getTransferredSize());
 	        }
 	        
-	        out.write(mFtpStatus.getResponse(226, request, mUser, null));
+	        out.write(ftpStatus.getResponse(226, request, user, null));
 	        mDataConnection.reset();
-	        out.write(mFtpStatus.getResponse(250, request, mUser, args));
+	        out.write(ftpStatus.getResponse(250, request, user, args));
 	    }
 	    catch(IOException ex) {
-	        out.write(mFtpStatus.getResponse(425, request, mUser, null));
+	        out.write(ftpStatus.getResponse(425, request, user, null));
 	    }
 	    finally {
 	       IoUtils.close(is);
@@ -1723,9 +1723,9 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 		/*
 				if (setStructure(request.getArgument().charAt(0))) {
-					out.write(mFtpStatus.getResponse(200, request, user, null));
+					out.write(ftpStatus.getResponse(200, request, user, null));
 				} else {
-					out.write(mFtpStatus.getResponse(504, request, user, null));
+					out.write(ftpStatus.getResponse(504, request, user, null));
 				}
 		*/
 	}
@@ -1809,7 +1809,7 @@ public class FtpConnection extends BaseFtpConnection {
 		} catch (NoSuchUserException ex) {
 			// TODO: what error code for "no such user" ???
 			out.println("530 " + ex.getMessage());
-			//out.write(mFtpStatus.getResponse(530, request, user, null));
+			//out.write(ftpStatus.getResponse(530, request, user, null));
 			return;
 		} catch (IOException ex) {
 			out.println("530 " + ex.getMessage());
@@ -1824,11 +1824,11 @@ public class FtpConnection extends BaseFtpConnection {
 		//		mbUser = true;
 		/*		if (user.hasLoggedIn()) {
 					if (user.getUsername().equals(request.getArgument())) {
-						out.write(mFtpStatus.getResponse(230, request, user, null));
+						out.write(ftpStatus.getResponse(230, request, user, null));
 						return;
 					}
 					    else {
-					        mConfig.getConnectionService().closeConnection(mUser.getSessionId());
+					        mConfig.getConnectionService().closeConnection(user.getSessionId());
 					    }
 				}
 				*/
@@ -1844,14 +1844,14 @@ public class FtpConnection extends BaseFtpConnection {
 		if (user.isAnonymous()) {
 			//if(mConfig.isAnonymousLoginAllowed()) { 
 			FtpRequest anoRequest = new FtpRequest(user.getUsername());
-			out.write(mFtpStatus.getResponse(331, anoRequest, user, null));
+			out.write(ftpStatus.getResponse(331, anoRequest, user, null));
 			/*
 			    }
 			    else {
-			        out.write(mFtpStatus.getResponse(530, request, mUser, null));
+			        out.write(ftpStatus.getResponse(530, request, user, null));
 			        ConnectionService conService = mConfig.getConnectionService();
 			        if (conService != null) {
-			           conService.closeConnection(mUser.getSessionId());
+			           conService.closeConnection(user.getSessionId());
 			        }
 			    }
 			*/

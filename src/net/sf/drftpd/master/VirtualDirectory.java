@@ -121,17 +121,15 @@ public class VirtualDirectory {
 
 	/**
 	 * Check read permission.
-	 * @deprecated use RemoteFile methods instead.
 	 */
-	public boolean hasReadPermission(String fileName) {
+	public boolean hasReadPermission(LinkedRemoteFile fileName) {
 		return true;
 	}
 
 	/**
 	 * Check file write/delete permission.
-	 * @deprecated use RemoteFile methods instead.
 	 */
-	public boolean hasWritePermission(String fileName) {
+	public boolean hasWritePermission(LinkedRemoteFile fileName) {
 		return true;
 	}
 
@@ -139,7 +137,7 @@ public class VirtualDirectory {
 	 * Check file create permission.
 	 * @deprecated use RemoteFile methods instead.
 	 */
-	public boolean hasCreatePermission(String fileName, boolean bPhysical) {
+	public boolean hasCreatePermission(LinkedRemoteFile fileName) {
 		return true;
 	}
 

@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -205,27 +204,23 @@ public class BaseFtpConnection implements Runnable {
 	/**
 	 * Execute the ftp command.
 	 */
-	public void service(FtpRequest request, Writer writer) throws IOException {
+	public void service(FtpRequest request, PrintWriter out) throws IOException {
 		try {
 			String metName;
-			metName = "do" + request.getCommand().replaceAll(" ", "");
+			metName = "do" + request.getCommand().replaceAll(" ", "_");
 			Method actionMet =
 				getClass().getDeclaredMethod(metName, METHOD_INPUT_SIG);
-			actionMet.invoke(this, new Object[] { request, writer });
+			actionMet.invoke(this, new Object[] { request, out });
 		} catch (NoSuchMethodException ex) {
-			writer.write(ftpStatus.getResponse(502, request, user, null));
+			out.write(ftpStatus.getResponse(502, request, user, null));
 		} catch (InvocationTargetException ex) {
 			ex.printStackTrace();
-			writer.write(ftpStatus.getResponse(500, request, user, null));
+			out.println("500 Server error. "+ex.getCause().toString());
+			//out.write(ftpStatus.getResponse(500, request, user, null));
 			Throwable th = ex.getTargetException();
 			th.printStackTrace();
-/*
- 			if (th instanceof java.io.IOException) {
-				throw (IOException) th;
-			}
-*/
 		} catch (Exception ex) {
-			writer.write(ftpStatus.getResponse(500, request, user, null));
+			out.write(ftpStatus.getResponse(500, request, user, null));
 			ex.printStackTrace();
 			if (ex instanceof java.io.IOException) {
 				throw (IOException) ex;

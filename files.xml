@@ -4,10 +4,38 @@
     <group>drftpd</group>
     <lastModified>1052521096000</lastModified>
     <contents>
+        <file name="te3.bmp">
+            <user>drftpd</user>
+            <group>drftpd</group>
+            <size>0</size>
+            <lastModified>1052521102000</lastModified>
+            <checksum>acd3b062</checksum>
+            <slaves />
+        </file>
+        <file name="Legendia - Mechanic Orgasm [DJ Pee Remix].mp3">
+            <user>drftpd</user>
+            <group>drftpd</group>
+            <size>0</size>
+            <lastModified>1052750038000</lastModified>
+            <checksum>0</checksum>
+            <slaves>
+                <slave name="mog" />
+            </slaves>
+        </file>
+        <file name="te3.png-">
+            <user>drftpd</user>
+            <group>drftpd</group>
+            <size>0</size>
+            <lastModified>1053367647000</lastModified>
+            <checksum>0</checksum>
+            <slaves>
+                <slave name="mog" />
+            </slaves>
+        </file>
         <directory name="SIMCITY_4_1.0.272.0_UPDATE_NORDIC-VIGOR">
             <user>drftpd</user>
             <group>drftpd</group>
-            <lastModified>1052746571000</lastModified>
+            <lastModified>1049824406000</lastModified>
             <contents>
                 <directory name="[COMPLETE - 4F - 17M]">
                     <user>drftpd</user>
@@ -83,26 +111,6 @@
                 <slave name="mog" />
             </slaves>
         </directory>
-        <file name="Legendia - Mechanic Orgasm [DJ Pee Remix].mp3">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1052750038000</lastModified>
-            <checksum>0</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="te3.png">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1052521102000</lastModified>
-            <checksum>450a5d21</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
         <directory name="CrossOver.Office.2.0.0.Linux-ECN">
             <user>drftpd</user>
             <group>drftpd</group>
@@ -173,15 +181,13 @@
                 <slave name="mog" />
             </slaves>
         </directory>
-        <file name="te3.bmp">
+        <file name="te3.png">
             <user>drftpd</user>
             <group>drftpd</group>
             <size>0</size>
             <lastModified>1052521102000</lastModified>
-            <checksum>acd3b062</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
+            <checksum>450a5d21</checksum>
+            <slaves />
         </file>
     </contents>
     <slaves>

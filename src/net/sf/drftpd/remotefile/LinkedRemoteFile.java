@@ -24,6 +24,7 @@ import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.NoAvailableSlaveException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.slave.RemoteSlave;
+import net.sf.drftpd.slave.Slave;
 
 /**
  * Represents the file attributes of a remote file.
@@ -517,7 +518,20 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		throw new NoSuchMethodError("renameTo() not implemented");
 	}
 	public void delete() {
-		throw new NoSuchMethodError("delete() not implemented");
+		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
+			Slave slave = rslave.getSlave();
+			try {
+				slave.delete(getPath());
+			} catch(RemoteException ex) {
+				rslave.getManager().handleRemoteException(ex, rslave);
+				continue;
+			} catch(IOException ex) {
+				logger.log(Level.WARNING, "IOException deleting file on slave.", ex);
+				continue;
+			}
+			slaves.remove(rslave);
+		}
 	}
 	/**
 	 * @see net.sf.drftpd.remotefile.RemoteFile#isDirectory()

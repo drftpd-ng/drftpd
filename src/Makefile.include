@@ -1,4 +1,3 @@
 CLASSPATH=
 %.o: %.java
-	gcj -c -g --classpath ../../.. $<
-
+	gcj -c -g --classpath $(SRCROOT) $<

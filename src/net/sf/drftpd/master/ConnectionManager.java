@@ -196,7 +196,12 @@ public class ConnectionManager {
 
 	public static void main(String args[]) {
 		Handler handlers[] = Logger.getLogger("").getHandlers();
-		handlers[0].setLevel(Level.FINEST);
+		
+		if(handlers.length == 1) {
+			handlers[0].setLevel(Level.FINEST);			 
+		} else {
+			logger.warning("handlers.length != 1, can't setLevel() on root element");
+		}
 
 		logger.info("drftpd-alpha. master server starting.");
 		/** load config **/
