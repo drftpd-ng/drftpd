@@ -17,19 +17,19 @@
 package net.sf.drftpd.mirroring;
 /**
  * @author zubov
- * @version $Id: SourceSlaveException.java,v 1.2 2004/07/29 17:39:06 zubov Exp $
+ * @version $Id: SlaveException.java,v 1.1 2004/07/29 17:39:06 zubov Exp $
  */
-public class SourceSlaveException extends SlaveException {
-	public SourceSlaveException() {
+public class SlaveException extends Exception {
+	public SlaveException() {
 		super();
 	}
-	public SourceSlaveException(Exception e) {
+	public SlaveException(Exception e) {
 		super(e);
 	}
-	public SourceSlaveException(String s) {
+	public SlaveException(String s) {
 		super(s);
 	}
-	public SourceSlaveException(Throwable throwable) {
+	public SlaveException(Throwable throwable) {
 		super(throwable);
 	}
 }

@@ -43,11 +43,11 @@ import org.drftpd.commands.UnhandledCommandException;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagment.java,v 1.22 2004/07/12 20:37:26 mog Exp $
+ * @version $Id: SiteManagement.java,v 1.1 2004/07/29 17:39:05 zubov Exp $
  */
-public class SiteManagment implements CommandHandlerFactory, CommandHandler {
+public class SiteManagement implements CommandHandlerFactory, CommandHandler {
 
-	private static final Logger logger = Logger.getLogger(SiteManagment.class);
+	private static final Logger logger = Logger.getLogger(SiteManagement.class);
 
 	private FtpReply doSITE_LIST(BaseFtpConnection conn) {
 		if (!conn.getUserNull().isAdmin())
@@ -208,7 +208,7 @@ public class SiteManagment implements CommandHandlerFactory, CommandHandler {
 		if ("SITE PLUGINS".equals(cmd))
 			return doSITE_PLUGINS(conn);
 		throw UnhandledCommandException.create(
-			SiteManagment.class,
+			SiteManagement.class,
 			conn.getRequest());
 	}
 

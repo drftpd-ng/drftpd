@@ -48,10 +48,9 @@ import net.sf.drftpd.util.SafeFileWriter;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
-import org.drftpd.slave.socket.SocketSlaveManager;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.114 2004/07/13 06:41:57 zubov Exp $
+ * @version $Id: ConnectionManager.java,v 1.115 2004/07/29 17:39:04 zubov Exp $
  */
 public class ConnectionManager {
 
@@ -146,9 +145,9 @@ public class ConnectionManager {
 		_timer = new Timer();
 
 		// start socket slave manager
-		if (!cfg.getProperty("master.socketport", "").equals("")) {
+/*		if (!cfg.getProperty("master.socketport", "").equals("")) {
 			new SocketSlaveManager(this, cfg);
-		}
+		}*/
 
 		if (slaveCfg != null) {
 			try {

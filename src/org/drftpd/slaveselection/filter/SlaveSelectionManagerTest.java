@@ -30,7 +30,7 @@ import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManagerTest.java,v 1.4 2004/07/12 20:37:40 mog Exp $
+ * @version $Id: SlaveSelectionManagerTest.java,v 1.5 2004/07/29 17:39:08 zubov Exp $
  */
 public class SlaveSelectionManagerTest extends TestCase {
 
@@ -59,9 +59,8 @@ public class SlaveSelectionManagerTest extends TestCase {
 		FilterChain ssm = new FilterChain(null, p);
 		RemoteSlave rslaves[] =
 			{
-				new RemoteSlave("slave1"),
-				new RemoteSlave("slave2")};
-
+				new RemoteSlave("slave1",null),
+				new RemoteSlave("slave2",null)};
 		try {
 			ssm.getBestSlave(
 				new ScoreChart(Arrays.asList(rslaves)), null, null,

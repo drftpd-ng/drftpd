@@ -17,6 +17,7 @@
 package net.sf.drftpd.mirroring;
 
 import java.io.FileNotFoundException;
+import java.net.SocketException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,7 +29,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.30 2004/07/12 20:37:28 mog Exp $
+ * @version $Id: Job.java,v 1.31 2004/07/29 17:39:05 zubov Exp $
  */
 public class Job {
 	private RemoteSlave _destSlave;
@@ -162,8 +163,7 @@ public class Job {
 		return toReturn;
 	}
 	public boolean transfer(boolean checkCRC, RemoteSlave sourceSlave,
-			RemoteSlave destSlave) throws DestinationSlaveException,
-			SourceSlaveException, FileNotFoundException, FileExistsException {
+			RemoteSlave destSlave) throws SlaveException {
 		synchronized (this) {
 			if (_slaveTransfer != null) {
 				throw new IllegalStateException("Job is already transferring");
@@ -176,20 +176,9 @@ public class Job {
 		boolean result = false;
 		try {
 			result = _slaveTransfer.transfer(checkCRC);
-		} catch (DestinationSlaveException e) {
+		} finally {
 			reset();
-			throw e;
-		} catch (SourceSlaveException e) {
-			reset();
-			throw e;
-		} catch (FileNotFoundException e) {
-			reset();
-			throw e;
-		} catch (FileExistsException e) {
-			reset();
-			throw e;
 		}
-		reset();
 		return result;
 	}
 }

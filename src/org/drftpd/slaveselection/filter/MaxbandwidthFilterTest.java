@@ -87,7 +87,7 @@ public class MaxbandwidthFilterTest extends TestCase {
 	
 	public class RS extends RemoteSlave {
 		public RS(String name,Collection duh) {
-			super(name);
+			super(name,null);
 		}
 
 		public SlaveStatus getStatusAvailable() {

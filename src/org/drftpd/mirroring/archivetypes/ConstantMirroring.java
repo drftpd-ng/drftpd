@@ -51,11 +51,7 @@ public class ConstantMirroring extends ArchiveType {
 					RemoteSlave slave = (RemoteSlave) offlineSlaveIter.next();
 					if (!slave.isAvailable()) {
 						src.removeSlave(slave);
-						try {
-							slave.delete(src.getPath());
-						} catch (IOException e) {
-							Archive.getLogger().debug("IOException deleting file on slave " + slave.getName(), e);
-						}
+						slave.deleteFile(src.getPath());
 					}
 					offlineSlaveIter.remove();
 				}
@@ -63,11 +59,7 @@ public class ConstantMirroring extends ArchiveType {
 				Iterator onlineSlaveIter = slaves.iterator();
 				while(slaves.size()>_numOfSlaves && onlineSlaveIter.hasNext()) { // remove online slaves until size is okay
 					RemoteSlave slave = (RemoteSlave) onlineSlaveIter.next();
-					try {
-						slave.delete(src.getPath());
-					} catch (IOException e) {
-						Archive.getLogger().debug("IOException deleting file on slave " + slave.getName(), e);
-					}
+					slave.deleteFile(src.getPath());
 					src.removeSlave(slave);
 					onlineSlaveIter.remove();
 				}

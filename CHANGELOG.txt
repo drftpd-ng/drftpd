@@ -1,3 +1,11 @@
+2004/07/29 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Removed slaves.xml in favor of storing seperate slave config files in slaves/
+* You can no longer add/remove slaves through editing slaves.xml and issuing
+  "site reload"  This now has to be done through "site addslave" and "site delslave"
+* Issue "site slave" for more help on slave management
+* Fixed a bug that could cause slave2slave transfers to stall
+* Changed ArchiveType's so more than one could execute in a given section at a time
+
 2004/07/13 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Fixed JUnit tests again as they were broken when slaves were
   set to only be available after remerge()

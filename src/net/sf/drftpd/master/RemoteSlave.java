@@ -19,43 +19,75 @@ package net.sf.drftpd.master;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.SlaveEvent;
-import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.Transfer;
+import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Logger;
-import org.jdom.Element;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.51 2004/07/12 20:37:25 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.52 2004/07/29 17:39:04 zubov Exp $
  */
-public class RemoteSlave implements Comparable {
+public class RemoteSlave implements Comparable, Serializable {
+	private transient int _errors;
+	private transient long _lasterror;
+
 	/**
-	 * Used by JUnit tests
+	 * Used by everything including tests
 	 */
-	public RemoteSlave(String name) {
-		Properties p = new Properties();
-		p.setProperty("name", name);
-		_name = name;
-		updateConfig(p);
+	public RemoteSlave(String name, SlaveManagerImpl manager) {
+		init(name,manager);
+		keysAndValues = new Properties();
+		ipMasks = new ArrayList();
+		renameQueue = new HashMap();
+		commit();
 	}
 
 	private void addQueueRename(String fileName, String destName) {
 		if (isAvailable())
 			throw new IllegalStateException("Slave is available, you cannot queue an operation");
-		if (_fileQueue.containsKey(fileName))
+		if (renameQueue.containsKey(fileName))
 			throw new IllegalArgumentException(
 				fileName + " is already in the queue for processing");
-		_fileQueue.put(fileName, destName);
+		renameQueue.put(fileName, destName);
+		commit();
+	}
+	
+	/**
+	 * If X # of errors occur in Y amount of time, kick slave offline
+	 */
+	public void addNetworkError(SocketException e) {
+		// set slave offline if too many network errors
+		long timeout = Long.parseLong(getProperty("errortimeout","60000")); // one minute
+		int errors = Integer.parseInt(getProperty("maxerrors","5"));
+		_errors -= (System.currentTimeMillis()-_lasterror)/timeout;
+		if (_errors < 0) {
+			_errors = 0;
+		}
+		_lasterror = System.currentTimeMillis();
+		if (_errors > errors)
+			setOffline("Too many network errors");
 	}
 
 	private void addQueueDelete(String fileName) {
@@ -84,7 +116,7 @@ public class RemoteSlave implements Comparable {
 	/**
 	 * Delete files.
 	 */
-	public void delete(String path) throws IOException {
+	public void deleteFile(String path) {
 		try {
 			getSlave().delete(path);
 		} catch (RemoteException e) {
@@ -93,37 +125,37 @@ public class RemoteSlave implements Comparable {
 		} catch (FileNotFoundException e) {
 			return;
 		} catch (IOException e) {
-			setOffline(e.getMessage());
+			setOffline("IOException deleting file, check logs for specific error");
 			addQueueDelete(path);
-			throw e;
+			logger.error(e);
 		} catch (SlaveUnavailableException e) {
 			addQueueDelete(path);
 		}
 	}
 
-	private HashMap _fileQueue;
+	private HashMap renameQueue;
 
-	private int _maxPath;
+	private transient int _maxPath;
 
 	private static final Logger logger = Logger.getLogger(RemoteSlave.class);
 
-	private InetAddress _inetAddress;
-	private long _lastDownloadSending = 0;
-	private long _lastPing;
-	private long _lastUploadReceiving = 0;
-	private SlaveManagerImpl _manager;
-	private Collection _masks;
-	private String _name;
-	private Slave _slave;
-	private SlaveStatus _status;
-	private Properties _config;
+	private transient InetAddress _inetAddress;
+	private transient long _lastDownloadSending = 0;
+	private transient long _lastPing;
+	private transient long _lastUploadReceiving = 0;
+	private transient SlaveManagerImpl _manager;
+	private Collection ipMasks;
+	private transient String _name;
+	private transient Slave _slave;
+	private transient SlaveStatus _status;
+	private Properties keysAndValues;
 
-	private boolean _available;
+	private transient boolean _available;
 
 	public void processQueue() throws RemoteException {
-		for (Iterator iter = _fileQueue.keySet().iterator(); iter.hasNext();) {
+		for (Iterator iter = renameQueue.keySet().iterator(); iter.hasNext();) {
 			String sourceFile = (String) iter.next();
-			String destFile = (String) _fileQueue.get(sourceFile);
+			String destFile = (String) renameQueue.get(sourceFile);
 			if (destFile == null) {
 				try {
 					_slave.delete(sourceFile);
@@ -139,45 +171,62 @@ public class RemoteSlave implements Comparable {
 				try {
 					_slave.rename(sourceFile, destDir, fileName);
 				} catch (IOException e) {
-					// just remove and continue, we can't do much
+					// just remove and continue, we can't do much except keep it in the queue
 					// if the OS has the file locked
+					continue;
 				}
 			}
 			iter.remove();
 		}
 	}
-
-	public RemoteSlave(Properties config) {
-		String name = FtpConfig.getProperty(config, "name");
-		_name = name;
-		_available = false;
-		_slave = null;
-		updateConfig(config);
+	
+	public void setProperty(String name, String value) {
+		keysAndValues.put(name,value);
+		commit();
+	}
+	
+	public String getProperty(String name,String def) {
+		String value = keysAndValues.getProperty(name);
+		if (value == null)
+			return def;
+		return keysAndValues.getProperty(name);
+	}
+	
+	public Map getProperties() {
+		return Collections.unmodifiableMap(keysAndValues);
 	}
 
-	public void updateConfig(Properties config) {
-		String name = FtpConfig.getProperty(config, "name");
+	public void commit() {
+		if (_manager == null) {
+			return; // for testing
+		}
+		try {
+			XStream xst = new XStream(new DomDriver());
+			SafeFileWriter out = new SafeFileWriter(
+					(_manager.getSlaveFile(this.getName())));
+			try {
+				out.write(xst.toXML(this));
+			} finally {
+				out.close();
+			}
+			Logger.getLogger(RemoteSlave.class).debug("wrote " + getName());
+		} catch (IOException ex) {
+			throw new RuntimeException("Error writing slavefile for "
+					+ this.getName() + ": " + ex.getMessage(), ex);
+		}
+	}
+
+/*	public void updateConfig(Properties config) {
 		if (name.equalsIgnoreCase("all")) {
 			throw new IllegalArgumentException(
 				name
 					+ " is a reserved keyword, it can't be used as a slave name");
 		}
-		if (!name.equalsIgnoreCase(_name)) {
-			throw new IllegalArgumentException(
-				name
-					+ " is not the same name as currently set for this RemoteSlave");
-		}
-		List masks = new ArrayList();
-		String[] maskitems = config.getProperty("masks", "").split(",");
-		for (int i = 0; i < maskitems.length; i++) {
-			masks.add(maskitems[i]);
-		}
-		_masks = masks;
 		_config = config;
-		_fileQueue = new HashMap();
+		renameQueue = new HashMap();
 	}
-
-	public Element getConfigXML() {
+*/
+/*	public Element getConfigXML() {
 		Element root = new org.jdom.Element("slave");
 		Enumeration e = _config.keys();
 		while (e.hasMoreElements()) {
@@ -194,7 +243,7 @@ public class RemoteSlave implements Comparable {
 			root.addContent(tmp);
 		}
 		return root;
-	}
+	}*/
 
 	public int compareTo(Object o) {
 		if (!(o instanceof RemoteSlave))
@@ -221,17 +270,13 @@ public class RemoteSlave implements Comparable {
 	public long getLastUploadReceiving() {
 		return _lastUploadReceiving;
 	}
-
+	
 	public SlaveManagerImpl getManager() {
 		return _manager;
 	}
 
 	public Collection getMasks() {
-		return _masks;
-	}
-
-	public Hashtable getConfig() {
-		return _config;
+		return ipMasks;
 	}
 
 	/**
@@ -270,18 +315,8 @@ public class RemoteSlave implements Comparable {
 
 	/**
 	 * @param ex RemoteException
-	 * @return true If exception was fatal and the slave was removed
 	 */
 	public synchronized void handleRemoteException(RemoteException ex) {
-		//		if (!isFatalRemoteException(ex)) {
-		//			logger.log(
-		//				Level.WARN,
-		//				"Caught non-fatal exception from "
-		//					+ getName()
-		//					+ ", not removing",
-		//				ex);
-		//			return false;
-		//		}
 		logger.warn("Exception from " + getName() + ", removing", ex);
 		setOffline(ex.getCause().getMessage());
 	}
@@ -310,33 +345,11 @@ public class RemoteSlave implements Comparable {
 		return isAvailable();
 	}
 
-	/**
-	 * @deprecated use isAvailablePing() instead
-	 * @throws RemoteException
-	 * @throws SlaveUnavailableException
-	 */
-	public void ping() throws RemoteException, SlaveUnavailableException {
-		if (_slave == null)
-			throw new SlaveUnavailableException(getName() + " is offline");
-		if (System.currentTimeMillis() > _lastPing + 1000) {
-			getSlave().ping();
-		}
-	}
 	public void setLastDownloadSending(long lastDownloadSending) {
 		_lastDownloadSending = lastDownloadSending;
 	}
 	public void setLastUploadReceiving(long lastUploadReceiving) {
 		_lastUploadReceiving = lastUploadReceiving;
-	}
-
-	public void setManager(SlaveManagerImpl manager) {
-		if (_manager != null)
-			throw new IllegalStateException("Can't overwrite manager");
-		_manager = manager;
-	}
-
-	public void setMasks(Collection masks) {
-		_masks = masks;
 	}
 
 	public synchronized void setOffline(String reason) {
@@ -370,6 +383,8 @@ public class RemoteSlave implements Comparable {
 		_status = status;
 		_maxPath = maxPath;
 		processQueue();
+		_errors = 0;
+		_lasterror = System.currentTimeMillis();
 	}
 
 	public String toString() {
@@ -430,5 +445,33 @@ public class RemoteSlave implements Comparable {
 		if (isAvailable())
 			return getStatus();
 		throw new SlaveUnavailableException("Slave is not online");
+	}
+
+	/**
+	 * @return true if the mask is a valid mask
+	 */
+	public boolean addMask(String mask) {
+		if (mask.indexOf("@") == -1  || mask.endsWith("@") || mask.startsWith("@")){
+			// @ has to exist as well as not being the first/last character
+			return false;
+		}
+		ipMasks.add(mask);
+		commit();
+		return true;
+	}
+
+	/**
+	 * @return true if the mask was removed successfully
+	 */
+	public boolean removeMask(String mask) {
+		boolean value = ipMasks.remove(mask);
+		if (value)
+			commit();
+		return value;
+	}
+
+	protected void init(String name,SlaveManagerImpl impl) {
+		_name = name;
+		_manager = impl;
 	}
 }

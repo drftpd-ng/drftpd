@@ -34,7 +34,7 @@ import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: MatchdirFilterTest.java,v 1.8 2004/07/12 20:37:40 mog Exp $
+ * @version $Id: MatchdirFilterTest.java,v 1.9 2004/07/29 17:39:08 zubov Exp $
  */
 public class MatchdirFilterTest extends TestCase {
 
@@ -85,9 +85,9 @@ public class MatchdirFilterTest extends TestCase {
 
 	RemoteSlave rslaves[] =
 		{
-			new RemoteSlave("slave1"),
-			new RemoteSlave("slave2"),
-			new RemoteSlave("slave3")};
+			new RemoteSlave("slave1",null),
+			new RemoteSlave("slave2",null),
+			new RemoteSlave("slave3",null)};
 
 	public void testSimple() throws ObjectNotFoundException, NoAvailableSlaveException {
 		Properties p = new Properties();

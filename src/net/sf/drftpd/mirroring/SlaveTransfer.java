@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveTransfer.java,v 1.20 2004/07/12 14:05:37 zubov Exp $
+ * @version $Id: SlaveTransfer.java,v 1.21 2004/07/29 17:39:06 zubov Exp $
  */
 public class SlaveTransfer {
 	class DstXfer extends Thread {
@@ -169,8 +169,7 @@ public class SlaveTransfer {
 	 * @return @throws
 	 *         IOException
 	 */
-	protected boolean transfer(boolean checkCRC) throws DestinationSlaveException,
-			SourceSlaveException, FileNotFoundException, FileExistsException {
+	protected boolean transfer(boolean checkCRC) throws SlaveException {
 		try {
 			dstxfer = new DstXfer(_destSlave.getSlave().listen(false));
 		} catch (SlaveUnavailableException e) {
@@ -201,7 +200,7 @@ public class SlaveTransfer {
 		}
 		dstxfer.start();
 		srcxfer.start();
-		while (srcxfer.isAlive() || dstxfer.isAlive()) {
+		while ((srcxfer.isAlive() || dstxfer.isAlive()) && (dstxfer.e == null && srcxfer.e == null) ) {
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
@@ -210,17 +209,12 @@ public class SlaveTransfer {
 		if (srcxfer.e != null) {
 			logger.info("Problem with " + _sourceSlave.getName(), srcxfer.e);
 			abort();
-			if (srcxfer.e instanceof FileNotFoundException) {
-				throw (FileNotFoundException) srcxfer.e;
-			}
-			throw new SourceSlaveException(srcxfer.e.getMessage());
+			throw new SourceSlaveException(srcxfer.e);
 		}
 		if (dstxfer.e != null) {
 			logger.info("Problem with " + _destSlave.getName(), dstxfer.e);
 			abort();
-			if (dstxfer.e instanceof FileExistsException)
-				throw (FileExistsException) dstxfer.e;
-			throw new DestinationSlaveException(dstxfer.e.getMessage());
+			throw new DestinationSlaveException(dstxfer.e);
 		}
 		if (!checkCRC) {
 			// crc passes if we're not using it

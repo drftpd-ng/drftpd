@@ -24,7 +24,7 @@ import net.sf.drftpd.master.RemoteSlave;
 
 /**
  * @author zubov
- * @version $Id: JobTest.java,v 1.8 2004/07/13 06:41:57 zubov Exp $
+ * @version $Id: JobTest.java,v 1.9 2004/07/29 17:39:06 zubov Exp $
  */
 public class JobTest extends TestCase {
 	public JobTest(String arg0) {
@@ -33,7 +33,7 @@ public class JobTest extends TestCase {
 
 	public void testRemoveDestinationSlave() {
 		HashSet slaveSet = new HashSet();
-		RemoteSlave rslave = new RemoteSlave("name");
+		RemoteSlave rslave = new RemoteSlave("name",null);
 		slaveSet.add(rslave);
 		Job job = new Job(null, slaveSet, 0, 1);
 		job.sentToSlave(rslave);

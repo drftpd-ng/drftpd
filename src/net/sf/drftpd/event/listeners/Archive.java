@@ -34,7 +34,7 @@ import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.sections.SectionInterface;
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.29 2004/07/12 20:37:24 mog Exp $
+ * @version $Id: Archive.java,v 1.30 2004/07/29 17:39:04 zubov Exp $
  */
 public class Archive implements FtpListener, Runnable {
 	private Properties _props;
@@ -42,7 +42,6 @@ public class Archive implements FtpListener, Runnable {
 	public static Logger getLogger() {
 		return logger;
 	}
-	private HashMap _archiveTypes;
 	private ConnectionManager _cm;
 	private long _cycleTime;
 	private boolean _isStopped = false;
@@ -66,7 +65,30 @@ public class Archive implements FtpListener, Runnable {
 	 * @return the correct ArchiveType for the @section - it will return null if that section does not have an archiveType loaded for it
 	 */
 	public ArchiveType getArchiveType(SectionInterface section) {
-		return (ArchiveType) _archiveTypes.get(section);
+		Class[] classParams = {Archive.class, SectionInterface.class, Properties.class};
+		ArchiveType archiveType = null;
+		String name = null;
+		try {
+			name = FtpConfig.getProperty(_props, section.getName()
+					+ ".archiveType");
+		} catch (NullPointerException e) {
+			return null; // excluded, not setup
+		}
+		Constructor constructor = null;
+		try {
+			constructor = Class.forName(
+					"org.drftpd.mirroring.archivetypes."
+							+ name).getConstructor(classParams);
+		} catch (Exception e1) {
+			throw new RuntimeException("Unable to load ArchiveType for section " + section.getName(), e1);
+		}
+		Object[] objectParams = { this, section, _props};
+		try {
+			archiveType = (ArchiveType) constructor.newInstance(objectParams);
+		} catch (Exception e2) {
+			throw new RuntimeException("Unable to load ArchiveType for section " + section.getName(), e2);
+		}
+		return archiveType;
 	}
 	/**
 	 * Returns the ConnectionManager
@@ -98,36 +120,6 @@ public class Archive implements FtpListener, Runnable {
 		}
 		_cycleTime = 60000 * Long.parseLong(FtpConfig.getProperty(_props,
 				"cycleTime"));
-		_archiveTypes = new HashMap();
-		Class[] classParams = {Archive.class, SectionInterface.class, Properties.class};
-		for (Iterator iter = getConnectionManager().getGlobalContext().getSectionManager()
-				.getSections().iterator(); iter.hasNext();) {
-			SectionInterface section = (SectionInterface) iter.next();
-			ArchiveType archiveType = null;
-			String name = null;
-			try {
-				name = FtpConfig.getProperty(_props, section.getName()
-						+ ".archiveType");
-			} catch (NullPointerException e) {
-				continue;  // excluded, not setup
-			}
-			Constructor constructor = null;
-			try {
-				constructor = Class.forName(
-						"org.drftpd.mirroring.archivetypes."
-								+ name).getConstructor(classParams);
-			} catch (Exception e1) {
-				throw new RuntimeException("Unable to load ArchiveType for section " + section.getName(), e1);
-			}
-			Object[] objectParams = { this, section, _props};
-			try {
-				archiveType = (ArchiveType) constructor.newInstance(objectParams);
-			} catch (Exception e2) {
-				throw new RuntimeException("Unable to load ArchiveType for section " + section.getName(), e2);
-			}
-			_archiveTypes.put(section, archiveType);
-			logger.debug("added archiveType for section " + section.getName());
-		}
 	}
 	public void run() {
 		while (true) {

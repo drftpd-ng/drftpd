@@ -65,12 +65,12 @@ SITE\ USER=net.sf.drftpd.master.command.plugins.UserManagment
 SITE\ USERS=net.sf.drftpd.master.command.plugins.UserManagment
 SITE\ WHO=net.sf.drftpd.master.command.plugins.UserManagment
 
-SITE\ RELOAD=net.sf.drftpd.master.command.plugins.SiteManagment
-SITE\ SHUTDOWN=net.sf.drftpd.master.command.plugins.SiteManagment
-SITE\ LIST=net.sf.drftpd.master.command.plugins.SiteManagment
-SITE\ LOADPLUGIN=net.sf.drftpd.master.command.plugins.SiteManagment
-SITE\ UNLOADPLUGIN=net.sf.drftpd.master.command.plugins.SiteManagment
-SITE\ PLUGINS=net.sf.drftpd.master.command.plugins.SiteManagment
+SITE\ RELOAD=net.sf.drftpd.master.command.plugins.SiteManagement
+SITE\ SHUTDOWN=net.sf.drftpd.master.command.plugins.SiteManagement
+SITE\ LIST=net.sf.drftpd.master.command.plugins.SiteManagement
+SITE\ LOADPLUGIN=net.sf.drftpd.master.command.plugins.SiteManagement
+SITE\ UNLOADPLUGIN=net.sf.drftpd.master.command.plugins.SiteManagement
+SITE\ PLUGINS=net.sf.drftpd.master.command.plugins.SiteManagement
 
 XCRC=net.sf.drftpd.master.command.plugins.Dir
 DELE=net.sf.drftpd.master.command.plugins.Dir
@@ -110,10 +110,13 @@ SITE\ STATS=net.sf.drftpd.master.command.plugins.TransferStatistics
 
 SITE\ PRE=net.sf.drftpd.master.command.plugins.Pre
 
-SITE\ SLAVES=net.sf.drftpd.master.command.plugins.SlaveManagment
-SITE\ REMERGE=net.sf.drftpd.master.command.plugins.SlaveManagment
-SITE\ CHECKSLAVES=net.sf.drftpd.master.command.plugins.SlaveManagment
-SITE\ KICKSLAVE=net.sf.drftpd.master.command.plugins.SlaveManagment
+SITE\ SLAVES=net.sf.drftpd.master.command.plugins.SlaveManagement
+SITE\ REMERGE=net.sf.drftpd.master.command.plugins.SlaveManagement
+SITE\ CHECKSLAVES=net.sf.drftpd.master.command.plugins.SlaveManagement
+SITE\ KICKSLAVE=net.sf.drftpd.master.command.plugins.SlaveManagement
+SITE\ SLAVE=net.sf.drftpd.master.command.plugins.SlaveManagement
+SITE\ ADDSLAVE=net.sf.drftpd.master.command.plugins.SlaveManagement
+SITE\ DELSLAVE=net.sf.drftpd.master.command.plugins.SlaveManagement
 
 SITE\ INVITE=net.sf.drftpd.master.command.plugins.Invite
 

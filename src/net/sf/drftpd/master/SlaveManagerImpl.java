@@ -17,9 +17,9 @@
  */
 package net.sf.drftpd.master;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.InetAddress;
@@ -36,7 +36,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -58,21 +57,20 @@ import net.sf.drftpd.util.SafeFileWriter;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
-import org.drftpd.slave.socket.SocketSlaveImpl;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.XMLOutputter;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.101 2004/07/13 06:41:57 zubov Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.102 2004/07/29 17:39:04 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
 	implements SlaveManager {
+	private String slavePath = "slaves/";
+	private File slavePathFile = new File(slavePath);
 	private static final Logger logger =
 		Logger.getLogger(SlaveManagerImpl.class.getName());
 
@@ -120,7 +118,7 @@ public class SlaveManagerImpl
 	//			slaveElement);
 	//	}
 
-	private Properties elementToProps(Element config) {
+/*	private Properties elementToProps(Element config) {
 		Properties props = new Properties();
 		String masks = "";
 		List maskElements = config.getChildren("mask");
@@ -141,26 +139,53 @@ public class SlaveManagerImpl
 		}
 		return props;
 	}
-
-	public List loadSlaves() {
-		ArrayList rslaves;
-		try {
-			Document doc =
-				new SAXBuilder().build(new FileReader("conf/slaves.xml"));
-			List children = doc.getRootElement().getChildren("slave");
-			rslaves = new ArrayList(children.size());
-			for (Iterator i = children.iterator(); i.hasNext();) {
-				//slavemanager is set in the slavemanager constructor
-				Properties props = elementToProps((Element) i.next());
-				rslaves.add(new RemoteSlave(props));
-			}
-			rslaves.trimToSize();
-		} catch (Exception ex) {
-			//logger.log(Level.INFO, "Error reading masks from slaves.xml", ex);
-			throw new FatalException(ex);
+*/
+	public void loadSlaves() throws SlaveFileException {
+		_rslaves = new ArrayList();
+		if (!slavePathFile.exists() && !slavePathFile.mkdirs()) {
+			throw new SlaveFileException(new IOException(
+					"Error creating folders: " + slavePathFile));
 		}
-		Collections.sort(rslaves);
-		return rslaves;
+		String slavepaths[] = slavePathFile.list();
+		for (int i = 0; i < slavepaths.length; i++) {
+			String slavepath = slavepaths[i];
+			if (!slavepath.endsWith(".xml"))
+				continue;
+			String slavename = slavepath.substring(0, slavepath.length()
+					- ".xml".length());
+			getSlaveByNameUnchecked(slavename);
+			// throws IOException
+		}
+		Collections.sort(_rslaves);
+	}
+	
+	public void addSlave(RemoteSlave rslave) {
+		_rslaves.add(rslave);
+		Collections.sort(_rslaves);
+	}
+	
+	private RemoteSlave getSlaveByNameUnchecked(String slavename) {
+		try {
+			RemoteSlave rslave = null;
+			XStream inp = new XStream(new DomDriver());
+			FileReader in;
+			in = new FileReader(getSlaveFile(slavename));
+			try {
+				rslave = (RemoteSlave) inp.fromXML(in);
+				rslave.init(slavename,this);
+				//throws RuntimeException
+				_rslaves.add(rslave);
+				return rslave;
+			} catch (Exception e) {
+				throw new FatalException(e);
+			}
+		} catch (Throwable ex) {
+			throw new RuntimeException("Could not load slave " + slavename,ex);
+		}
+	}
+
+	protected File getSlaveFile(String slavename) {
+			return new File(slavePath + slavename + ".xml");
 	}
 
 	public Collection getMasks() {
@@ -172,9 +197,9 @@ public class SlaveManagerImpl
 		return masks;
 	}
 
-	/**
-	 * @deprecated
-	 */
+	///**
+	// * @deprecated
+	// */
 	//	public static void saveFilesXML(Element root) {
 	//		File filesDotXml = new File("files.xml");
 	//		File filesxmlbak = new File("files.xml.bak");
@@ -192,13 +217,6 @@ public class SlaveManagerImpl
 	//		}
 	//	}
 
-	public void setRSlavesManager() {
-		for (Iterator iter = _rslaves.iterator(); iter.hasNext();) {
-			RemoteSlave rslave = (RemoteSlave) iter.next();
-			rslave.setManager(this);
-		}
-	}
-
 	//protected ConnectionManager _cm;
 
 	protected GlobalContext _gctx;
@@ -213,16 +231,12 @@ public class SlaveManagerImpl
 
 	public void init(
 		Properties cfg,
-		List rslaves,
 		RMIServerSocketFactory ssf,
 		GlobalContext gctx)
 		throws RemoteException {
 		_csf = RMISocketFactory.getSocketFactory();
 		_ssf = ssf;
 		_gctx = gctx;
-		_rslaves = rslaves;
-
-		setRSlavesManager();
 
 		Registry registry =
 			LocateRegistry.createRegistry(
@@ -273,7 +287,7 @@ public class SlaveManagerImpl
 		});
 	}
 
-	public void addSlave(
+	public void mergeSlaveAndSetOnline(
 		String slaveName,
 		Slave slave,
 		SlaveStatus status,
@@ -290,8 +304,16 @@ public class SlaveManagerImpl
 				break;
 			}
 		}
-		if (rslave == null)
-			throw new IllegalArgumentException("Slave not found in slaves.xml");
+		if (rslave == null) {
+			try {
+				rslave = getSlaveByNameUnchecked(slaveName);
+			} catch (Exception e2) {
+				// do nothing since we want to throw IllegalArgumentException
+			}
+			if (rslave == null) {
+				throw new IllegalArgumentException("Slave not found in slaves.xml");
+			}
+		}
 
 		if (rslave.isAvailablePing()) {
 			throw new IllegalArgumentException(
@@ -300,9 +322,10 @@ public class SlaveManagerImpl
 
 		try {
 			InetAddress addr = null;
-			if (slave instanceof SocketSlaveImpl) {
+/*			if (slave instanceof SocketSlaveImpl) {
 				addr = ((SocketSlaveImpl) slave).getPeerAddress();
 			}
+*/
 			if (addr == null) {
 				addr = InetAddress.getByName(RemoteServer.getClientHost());
 			}
@@ -341,22 +364,18 @@ public class SlaveManagerImpl
 			new SlaveEvent("ADDSLAVE", rslave));
 	}
 
-	public void delSlave(String slaveName, String reason)
-		throws RemoteException {
-
+	public void delSlave(String slaveName) {
 		RemoteSlave rslave = null;
-		for (Iterator iter = _rslaves.iterator(); iter.hasNext();) {
-			RemoteSlave rslave2 = (RemoteSlave) iter.next();
-			if (rslave2.getName().equals(slaveName)) {
-				rslave = rslave2;
-				break;
-			}
+		try {
+			rslave = getSlave(slaveName);
+		} catch (ObjectNotFoundException e) {
+			throw new IllegalArgumentException("Slave not found");
+		} finally {
+			getSlaveFile(rslave.getName()).delete();
+			rslave.setOffline("Slave has been deleted");
+			_rslaves.remove(rslave);
+			getGlobalContext().getRoot().unmergeDir(rslave);
 		}
-		if (rslave == null)
-			throw new IllegalArgumentException(
-				"Slave not found in slaves.xml (" + slaveName + ")");
-
-		rslave.setOffline(reason);
 	}
 
 	public HashSet findSlavesBySpace(
@@ -364,7 +383,7 @@ public class SlaveManagerImpl
 		Set exemptSlaves,
 		boolean ascending) {
 		Collection slaveList =
-			getGlobalContext().getConnectionManager().getGlobalContext().getSlaveManager().getSlaves();
+			getGlobalContext().getSlaveManager().getSlaves();
 		HashMap map = new HashMap();
 		for (Iterator iter = slaveList.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
@@ -523,9 +542,9 @@ public class SlaveManagerImpl
 
 	public void reload() throws FileNotFoundException, IOException {
 		_slaveSelectionManager.reload();
-		reloadRSlaves();
+		// removed with slaves.xml - reloadRSlaves();
 	}
-	public void reloadRSlaves() throws FileNotFoundException, IOException {
+/*	public void reloadRSlaves() throws FileNotFoundException, IOException {
 		Document doc;
 		try {
 			doc = new SAXBuilder().build(new FileReader("conf/slaves.xml"));
@@ -595,7 +614,7 @@ public class SlaveManagerImpl
 		}
 		Collections.sort(_rslaves);
 	}
-
+*/
 	public void remerge(RemoteSlave rslave)
 		throws IOException, SlaveUnavailableException {
 		LinkedRemoteFile slaveroot;
@@ -681,7 +700,7 @@ public class SlaveManagerImpl
 		return removed;
 	}
 
-	public void updateSlave(String name, Hashtable args) throws IOException {
+/*	public void updateSlave(String name, Hashtable args) throws IOException {
 		Element tmp;
 
 		String mask = (String) args.get("mask");
@@ -772,5 +791,5 @@ public class SlaveManagerImpl
 		// trigger the normal slave reload process
 		reloadRSlaves();
 
-	}
+	}*/
 }

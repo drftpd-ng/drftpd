@@ -27,7 +27,7 @@ import net.sf.drftpd.slave.Transfer;
 
 /**
  * @author zubov
- * @version $Id: CycleFilterTest.java,v 1.2 2004/07/12 20:37:40 mog Exp $
+ * @version $Id: CycleFilterTest.java,v 1.3 2004/07/29 17:39:08 zubov Exp $
  */
 public class CycleFilterTest extends TestCase {
 
@@ -46,9 +46,9 @@ public class CycleFilterTest extends TestCase {
 	public void testProcess() throws NoAvailableSlaveException, ObjectNotFoundException {
 		RemoteSlave rslaves[] =
 			{
-				new RemoteSlave("slave1"),
-				new RemoteSlave("slave2"),
-				new RemoteSlave("slave3")};
+				new RemoteSlave("slave1",null),
+				new RemoteSlave("slave2",null),
+				new RemoteSlave("slave3",null)};
 		ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 		Filter f = new CycleFilter(null,0,null);
 		f.process(sc, null, null,Transfer.TRANSFER_SENDING_DOWNLOAD, null);

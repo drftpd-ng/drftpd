@@ -32,7 +32,7 @@ import org.drftpd.tests.DummyFtpConfig;
 
 /**
  * @author mog
- * @version $Id: LinkedRemoteFileTest.java,v 1.8 2004/07/18 15:22:33 zubov Exp $
+ * @version $Id: LinkedRemoteFileTest.java,v 1.9 2004/07/29 17:39:06 zubov Exp $
  */
 public class LinkedRemoteFileTest extends TestCase {
 
@@ -99,8 +99,8 @@ public class LinkedRemoteFileTest extends TestCase {
 		super(fName);
 	}
 	private void internalSetUp() {
-		_slave1 = new RemoteSlave("slave1");
-		_slave2 = new RemoteSlave("slave2");
+		_slave1 = new RemoteSlave("slave1",null);
+		_slave2 = new RemoteSlave("slave2",null);
 		DummyFtpConfig cfg = new DummyFtpConfig();
 		_root = new LinkedRemoteFile(cfg);
 	}

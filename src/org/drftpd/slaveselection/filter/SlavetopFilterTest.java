@@ -41,7 +41,7 @@ import org.drftpd.tests.DummySlaveManager;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilterTest.java,v 1.6 2004/07/12 20:37:40 mog Exp $
+ * @version $Id: SlavetopFilterTest.java,v 1.7 2004/07/29 17:39:08 zubov Exp $
  */
 public class SlavetopFilterTest extends TestCase {
 	public class FC extends FilterChain {
@@ -89,9 +89,9 @@ public class SlavetopFilterTest extends TestCase {
 
 		RemoteSlave rslaves[] =
 			{
-				new RemoteSlave("slave1"),
-				new RemoteSlave("slave2"),
-				new RemoteSlave("slave3")};
+				new RemoteSlave("slave1",null),
+				new RemoteSlave("slave2",null),
+				new RemoteSlave("slave3",null)};
 
 		ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 

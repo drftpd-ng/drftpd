@@ -15,11 +15,12 @@
  * Suite 330, Boston, MA 02111-1307 USA
  */
 package net.sf.drftpd.mirroring;
+
 /**
  * @author zubov
- * @version $Id: DestinationSlaveException.java,v 1.1 2004/07/07 23:34:31 zubov Exp $
+ * @version $Id: DestinationSlaveException.java,v 1.2 2004/07/29 17:39:05 zubov Exp $
  */
-public class DestinationSlaveException extends Exception {
+public class DestinationSlaveException extends SlaveException {
 	public DestinationSlaveException() {
 		super();
 	}
@@ -28,5 +29,8 @@ public class DestinationSlaveException extends Exception {
 	}
 	public DestinationSlaveException(String s) {
 		super(s);
+	}
+	public DestinationSlaveException(Throwable throwable) {
+		super(throwable);
 	}
 }

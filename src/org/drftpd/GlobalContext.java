@@ -45,7 +45,7 @@ import org.drftpd.sections.SectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: GlobalContext.java,v 1.1 2004/07/12 20:37:29 mog Exp $
+ * @version $Id: GlobalContext.java,v 1.2 2004/07/29 17:39:07 zubov Exp $
  */
 public class GlobalContext {
 
@@ -222,10 +222,10 @@ public class GlobalContext {
 				smclass = "net.sf.drftpd.master.SlaveManagerImpl";
 			_slaveManager =
 				(SlaveManagerImpl) Class.forName(smclass).newInstance();
-			List rslaves = _slaveManager.loadSlaves();
+			_slaveManager.loadSlaves();
 			GlobRMIServerSocketFactory ssf =
 				new GlobRMIServerSocketFactory(getSlaveManager());
-			_slaveManager.init(cfg, rslaves, ssf, this);
+			_slaveManager.init(cfg, ssf, this);
 		} catch (Exception e) {
 			logger.log(Level.WARN, "Exception instancing SlaveManager", e);
 			throw new FatalException(

@@ -53,7 +53,7 @@ import de.hampelratte.id3.ID3v1Tag;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.159 2004/07/24 01:39:10 teflon114 Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.160 2004/07/29 17:39:06 zubov Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -451,10 +451,7 @@ public class LinkedRemoteFile
 	}
 
 	/**
-	 * Deletes a file or directory, if slaves are offline, the file cannot be
-	 * deleted. To work around this, the file gets a deleted flag set and when
-	 * the offline slave is remerge()'d, it is deleted from the slave and
-	 * delete() is called again.
+	 * Deletes a file or directory, RemoteSlave handles issues with slaves being offline and queued deletes
 	 * 
 	 * Trying to lookupFile() or getFile() a deleted file throws
 	 * FileNotFoundException.
@@ -489,17 +486,9 @@ public class LinkedRemoteFile
 			synchronized (_slaves) {
 				for (Iterator iter = _slaves.iterator(); iter.hasNext();) {
 					RemoteSlave rslave = (RemoteSlave) iter.next();
-					try {
-						logger.info(
-							"DELETE: " + rslave.getName() + ": " + getPath());
-						rslave.delete(getPath());
-					} catch (IOException ex) {
-						logger.log(
-							Level.FATAL,
-							"IOException deleting file on slave "
-								+ rslave.getName(),
-							ex);
-					}
+					logger.info(
+						"DELETE: " + rslave.getName() + ": " + getPath());
+					rslave.deleteFile(getPath());
 					iter.remove();
 				}
 			}
@@ -522,18 +511,22 @@ public class LinkedRemoteFile
 		}
 	}
 
+	/* 
+	 * This method should only be called by Archive and ArchiveType's as it has no usage anywhere else
+	 */
 	public void deleteOthers(Set destSlaves) {
+		if (destSlaves.containsAll(_slaves)) {
+			// Do not want to remove the file completely, just delete extraneous slaves
+			// this is a safety catch
+			return;
+		}
 		synchronized (_slaves) {
 			for (Iterator iter = _slaves.iterator(); iter.hasNext();) {
 				RemoteSlave tempSlave = (RemoteSlave) iter.next();
 				if (destSlaves.contains(tempSlave))
 					continue; // do not want to delete the archived file
 				// delete files off of slaves not in destSlaves
-				try {
-					tempSlave.delete(getPath());
-				} catch (IOException e) {
-					logger.debug("IOException deleting file from slave", e);
-				}
+				tempSlave.deleteFile(getPath());
 				iter.remove();
 			}
 		}
@@ -1191,7 +1184,7 @@ public class LinkedRemoteFile
 											+ mergefile
 											+ " on "
 											+ rslave);
-									rslave.delete(mergefile.getPath());
+									rslave.deleteFile(mergefile.getPath());
 									file.unmergeFile(rslave);
 								} else if (
 									file.getSlaves().size() == 1
@@ -1206,7 +1199,7 @@ public class LinkedRemoteFile
 											.getSlaves()
 											.iterator()
 											.next();
-									rslave2.delete(file.getPath());
+									rslave2.deleteFile(file.getPath());
 								} else {
 									if ((file.getSlaves().size() == 1
 										&& file.hasSlave(rslave))) {

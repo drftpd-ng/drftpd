@@ -36,7 +36,7 @@ import de.hampelratte.id3.ID3v1Tag;
 
 /**
  * @author mog
- * @version $Id: RemoteSlaveTest.java,v 1.5 2004/07/24 01:39:32 teflon114 Exp $
+ * @version $Id: RemoteSlaveTest.java,v 1.6 2004/07/29 17:39:04 zubov Exp $
  */
 public class RemoteSlaveTest extends TestCase {
 	public static TestSuite suite() {
@@ -48,8 +48,8 @@ public class RemoteSlaveTest extends TestCase {
 	}
 
 	public void testEquals() {
-		RemoteSlave rslave1 = new RemoteSlave("test1");
-		RemoteSlave rslave2 = new RemoteSlave("test1");
+		RemoteSlave rslave1 = new RemoteSlave("test1",null);
+		RemoteSlave rslave2 = new RemoteSlave("test1",null);
 		assertTrue(rslave1.equals(rslave1));
 		assertTrue(rslave1.equals(rslave2));
 	}
@@ -107,8 +107,8 @@ public class RemoteSlaveTest extends TestCase {
 	}
 
 	public void testSetSlave() throws IOException {
-		RemoteSlave rslave = new RemoteSlave("test");
-		rslave.delete("/deleteme");
+		RemoteSlave rslave = new RemoteSlave("test",null);
+		rslave.deleteFile("/deleteme");
 		rslave.rename("/renameme", "/indir", "tofile");
 		List list = new ArrayList();
 		list.add(rslave);

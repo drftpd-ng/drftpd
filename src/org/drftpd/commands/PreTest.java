@@ -44,7 +44,7 @@ import org.drftpd.tests.DummyUserManager;
 
 /**
  * @author mog
- * @version $Id: PreTest.java,v 1.2 2004/07/12 20:37:30 mog Exp $
+ * @version $Id: PreTest.java,v 1.3 2004/07/29 17:39:07 zubov Exp $
  */
 public class PreTest extends TestCase {
 	private DummyConnectionManager _cm;
@@ -59,7 +59,7 @@ public class PreTest extends TestCase {
 
 	private void buildRoot() throws FileNotFoundException {
 		assertNotNull(_config);
-		_rslave = Collections.singletonList(new RemoteSlave("test"));
+		_rslave = Collections.singletonList(new RemoteSlave("test",null));
 		_root = new LinkedRemoteFile(_config);
 
 		_root.addFile(

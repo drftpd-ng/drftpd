@@ -65,7 +65,7 @@ import de.hampelratte.id3.ID3v1Tag;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.98 2004/07/24 01:38:24 teflon114 Exp $
+ * @version $Id: SlaveImpl.java,v 1.99 2004/07/29 17:39:06 zubov Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
@@ -217,7 +217,7 @@ public class SlaveImpl
 				Level.INFO,
 				"Registering with master and sending filelist");
 
-			manager.addSlave(_name, this, getSlaveStatus(), _roots.getMaxPath());
+			manager.mergeSlaveAndSetOnline(_name, this, getSlaveStatus(), _roots.getMaxPath());
 
 			logger.log(
 				Level.INFO,

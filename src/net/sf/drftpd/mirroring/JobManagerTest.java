@@ -38,19 +38,15 @@ import org.drftpd.tests.DummySlaveSelectionManager;
 
 /**
  * @author zubov
- * @version $Id: JobManagerTest.java,v 1.12 2004/07/13 06:41:57 zubov Exp $
+ * @version $Id: JobManagerTest.java,v 1.13 2004/07/29 17:39:06 zubov Exp $
  */
 public class JobManagerTest extends TestCase {
 
 	public class RS extends RemoteSlave {
 		public RS(String name) {
-			super(name);
+			super(name,null);
 		}
-		public RS(Properties config) {
-			super(config);
-			// TODO Auto-generated constructor stub
-		}
-		
+
 		public boolean isAvailable() {
 			return true;
 		}

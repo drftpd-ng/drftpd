@@ -25,8 +25,8 @@ import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
 
 /**
- * @version $Id: SlaveManager.java,v 1.15 2004/05/12 00:45:06 mog Exp $
+ * @version $Id: SlaveManager.java,v 1.16 2004/07/29 17:39:04 zubov Exp $
  */
 public interface SlaveManager extends Remote {
-    public void addSlave(String slavename, Slave slave, SlaveStatus status, int maxPath) throws RemoteException;
+    public void mergeSlaveAndSetOnline(String slavename, Slave slave, SlaveStatus status, int maxPath) throws RemoteException;
 }

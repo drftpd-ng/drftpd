@@ -18,6 +18,7 @@ package net.sf.drftpd.mirroring;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.SocketException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,7 +38,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.57 2004/07/13 06:41:57 zubov Exp $
+ * @version $Id: JobManager.java,v 1.58 2004/07/29 17:39:06 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -107,9 +108,6 @@ public class JobManager implements Runnable {
 	public boolean isStopped() {
 		return _isStopped;
 	}
-	/**
-	 * Returns true if the file was sent okay
-	 */
 	public void processJob() {
 		Job job = null;
 		RemoteSlave sourceSlave = null;
@@ -119,7 +117,8 @@ public class JobManager implements Runnable {
 		synchronized (this) {
 			Collection availableSlaves;
 			try {
-				availableSlaves = _cm.getGlobalContext().getSlaveManager().getAvailableSlaves();
+				availableSlaves = _cm.getGlobalContext().getSlaveManager()
+						.getAvailableSlaves();
 			} catch (NoAvailableSlaveException e1) {
 				return;
 				// can't transfer with no slaves
@@ -177,54 +176,65 @@ public class JobManager implements Runnable {
 				+ sourceSlave.getName() + " to " + destSlave.getName());
 		try {
 			if (!job.transfer(useCRC(), sourceSlave, destSlave)) { // crc failed
-				try {
-					destSlave.delete(job.getFile().getPath());
-				} catch (IOException e) {
-					// queued for deletion
-				}
+				destSlave.deleteFile(job.getFile().getPath());
 				logger.debug("CRC did not match for " + job.getFile()
 						+ " when sending from " + sourceSlave.getName()
 						+ " to " + destSlave.getName());
 				return;
 			}
-		} catch (FileExistsException e) {
-			logger.debug("Caught FileExistsException in sending "
-					+ job.getFile().getName() + " from "
-					+ sourceSlave.getName() + " to " + destSlave.getName(), e);
-			try {
-				if (destSlave.getSlave().checkSum(job.getFile().getPath()) == job
-						.getFile().getCheckSum()) {
-					logger.debug("Accepting file because the crc's match");
-				} else {
-					try {
-						destSlave.delete(job.getFile().getPath());
-					} catch (IOException e1) {
-						// queued for deletion
+		} catch (DestinationSlaveException e) {
+			if (e.getCause() instanceof FileExistsException) {
+				logger.debug("Caught FileExistsException in sending "
+						+ job.getFile().getName() + " from "
+						+ sourceSlave.getName() + " to " + destSlave.getName(),
+						e);
+				try {
+					if (destSlave.getSlave().checkSum(job.getFile().getPath()) == job
+							.getFile().getCheckSum()) {
+						logger.debug("Accepting file because the crc's match");
+					} else {
+						destSlave.deleteFile(job.getFile().getPath());
+						return;
 					}
+				} catch (RemoteException e1) {
+					destSlave.handleRemoteException(e1);
+					return;
+				} catch (NoAvailableSlaveException e1) {
+					return;
+				} catch (SlaveUnavailableException e2) {
+					return;
+				} catch (IOException e1) {
 					return;
 				}
-			} catch (RemoteException e1) {
-				destSlave.handleRemoteException(e1);
-				return;
-			} catch (NoAvailableSlaveException e1) {
-				return;
-			} catch (SlaveUnavailableException e2) {
-				return;
-			} catch (IOException e1) {
-				return;
+			} else if (e.getCause() instanceof SocketException) {
+				SocketException se = (SocketException) e.getCause();
+				destSlave.addNetworkError(se);
+			} else {
+				destSlave
+						.setOffline("Error on slave during slave2slave transfer, check logs");
+				logger.error(e);
 			}
-		} catch (FileNotFoundException e) {
-			logger.debug("Caught FileNotFoundException in sending "
-					+ job.getFile().getName() + " from "
-					+ sourceSlave.getName() + " to " + destSlave.getName(), e);
-			job.getFile().removeSlave(sourceSlave);
-			return;
-		} catch (DestinationSlaveException e) {
-			destSlave.setOffline(e.getMessage());
 			return;
 		} catch (SourceSlaveException e) {
-			sourceSlave.setOffline(e.getMessage());
+			if (e.getCause() instanceof FileNotFoundException) {
+				logger.debug("Caught FileNotFoundException in sending "
+						+ job.getFile().getName() + " from "
+						+ sourceSlave.getName() + " to " + destSlave.getName(),
+						e);
+				job.getFile().removeSlave(sourceSlave);
+				return;
+			} else if (e.getCause() instanceof SocketException) {
+				SocketException se = (SocketException) e.getCause();
+				sourceSlave.addNetworkError(se);
+			} else {
+				sourceSlave
+						.setOffline("Error on slave during slave2slave transfer, check logs");
+				logger.error(e);
+			}
 			return;
+		} catch (SlaveException e) {
+			throw new RuntimeException(
+					"SlaveException was not of type DestinationSlaveException or SourceSlaveException");
 		}
 		difference = System.currentTimeMillis() - time;
 		logger.info("Sent file " + job.getFile().getName() + " to "
