@@ -57,6 +57,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -65,6 +66,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
 
@@ -145,22 +147,27 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         conn.getGlobalContext().getConfig().directoryMessage(response,
             conn.getUserNull(), newCurrentDirectory);
 
-        // show cwd_mp3.txt if this is an mp3 release
-        boolean id3Enabled = false;
-
+		Properties zsCfg = new Properties();
         try {
-            id3Enabled = Integer.parseInt(ReplacerUtils.jprintf(
-                        "cwd.id3info.enabled", null, Dir.class)) == 1;
-        } catch (NumberFormatException e3) {
-            logger.warn("cwd.id3info.enabled in Dir.properties is not set to an Integer value",
-                e3);
-        }
+			FileInputStream zsFile = new FileInputStream("conf/zipscript.conf");
+			zsCfg.load(zsFile);
+			zsFile.close();
+		} catch (FileNotFoundException e4) {
+			response.setMessage("Missing file conf/zipscript.conf");
+			response.addComment(e4);
+		} catch (IOException e4) {
+			response.setMessage("IOException opening conf/zipscript.conf");
+			response.addComment(e4);
+		}
+
+        // show cwd_mp3.txt if this is an mp3 release
+        boolean id3Enabled = zsCfg.getProperty("cwd.id3info.enabled").equalsIgnoreCase("true");;
 
         if (id3Enabled) {
             try {
                 ID3Tag id3tag = newCurrentDirectory.lookupFile(newCurrentDirectory.lookupMP3File())
                                                    .getID3v1Tag();
-                String mp3text = Textoutput.getText("cwd_mp3");
+                String mp3text = zsCfg.getProperty("cwd.id3info.text");
                 ReplacerEnvironment env = BaseFtpConnection.getReplacerEnvironment(null,
                         conn.getUserNull());
                 ReplacerFormat id3format = null;
@@ -197,15 +204,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         }
 
         //show race stats
-        boolean racestatsEnabled = false;
-
-        try {
-            racestatsEnabled = Integer.parseInt(ReplacerUtils.jprintf(
-                        "cwd.racestats.enabled", null, Dir.class)) == 1;
-        } catch (NumberFormatException e3) {
-            logger.warn("cwd.racestats.enabled in Dir.properties is not set to an Integer value",
-                e3);
-        }
+        boolean racestatsEnabled = zsCfg.getProperty("cwd.racestats.enabled").equalsIgnoreCase("true");
 
         if (racestatsEnabled) {
             try {
@@ -214,26 +213,15 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
                         "bytes", "high");
                 Collection groups = SiteBot.topFileGroup(sfvfile.getFiles());
 
-                ReplacerFormat racerlineformat = null;
-                ReplacerFormat grouplineformat = null;
-
-                try {
-                    racerlineformat = ReplacerUtils.finalFormat(Dir.class,
-                            "cwd.racers.body");
-                    grouplineformat = ReplacerUtils.finalFormat(Dir.class,
-                            "cwd.groups.body");
-                } catch (FormatterException e1) {
-                    logger.warn(e1);
-                }
+                String racerline = zsCfg.getProperty("cwd.racers.body");
+                String groupline = zsCfg.getProperty("cwd.groups.body");
 
                 ReplacerEnvironment env = BaseFtpConnection.getReplacerEnvironment(null,
                         conn.getUserNull());
 
                 //Start building race message
-                String racetext = ReplacerUtils.jprintf("cwd.racestats.header",
-                        env, Dir.class) + "\n";
-                racetext += (ReplacerUtils.jprintf("cwd.racers.header", env,
-                    Dir.class) + "\n");
+                String racetext = zsCfg.getProperty("cwd.racestats.header") + "\n";
+                racetext += zsCfg.getProperty("cwd.racers.header") + "\n";
 
                 ReplacerFormat raceformat = null;
 
@@ -269,7 +257,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
                             (stat.getFiles() * 100) / sfvfile.size()) + "%");
 
                     try {
-                        racetext += (SimplePrintf.jprintf(racerlineformat,
+                        racetext += (SimplePrintf.jprintf(racerline,
                             raceenv) + "\n");
                         position++;
                     } catch (FormatterException e) {
@@ -277,10 +265,8 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
                     }
                 }
 
-                racetext += (ReplacerUtils.jprintf("cwd.racers.footer", env,
-                    Dir.class) + "\n");
-                racetext += (ReplacerUtils.jprintf("cwd.groups.header", env,
-                    Dir.class) + "\n");
+                racetext += (zsCfg.getProperty("cwd.racers.footer") + "\n");
+                racetext += (zsCfg.getProperty("cwd.groups.header") + "\n");
 
                 //add groups stats
                 position = 1;
@@ -301,7 +287,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
                         Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
                     try {
-                        racetext += (SimplePrintf.jprintf(grouplineformat,
+                        racetext += (SimplePrintf.jprintf(groupline,
                             raceenv) + "\n");
                         position++;
                     } catch (FormatterException e) {
@@ -321,10 +307,8 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
                         (sfvfile.getStatus().getPresent() * 100) / sfvfile.size()) +
                     "%");
 
-                racetext += (ReplacerUtils.jprintf("cwd.totals.body", env,
-                    Dir.class) + "\n");
-                racetext += (ReplacerUtils.jprintf("cwd.racestats.footer", env,
-                    Dir.class) + "\n");
+                racetext += (zsCfg.getProperty("cwd.totals.body") + "\n");
+                racetext += (zsCfg.getProperty("cwd.racestats.footer") + "\n");
 
                 try {
                     raceformat = ReplacerFormat.createFormat(racetext);

@@ -1,3 +1,8 @@
+2004/12/09 Teflon <teflon114@gmail.com>
+* Created conf/zipscript.conf
+* Moved CWD config from Dir.properties to zipscript.conf
+* Made the sfv status folder completely configurable via zipscript.conf
+
 2004/12/07 Teflon <teflon114@gmail.com>
 * Modified SITE GINFO to have more informative output
 * Modified SITE INVITE to automatically identify the irc user
