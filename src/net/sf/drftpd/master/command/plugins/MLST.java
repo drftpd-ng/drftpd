@@ -31,11 +31,11 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: MLST.java,v 1.8 2003/12/22 18:09:42 mog Exp $
+ * @version $Id: MLST.java,v 1.9 2004/01/13 20:30:54 mog Exp $
  */
 public class MLST implements CommandHandler {
 
-	private static Logger logger = Logger.getLogger(MLST.class);
+	private static final Logger logger = Logger.getLogger(MLST.class);
 
 	private CommandManager _cmr;
 

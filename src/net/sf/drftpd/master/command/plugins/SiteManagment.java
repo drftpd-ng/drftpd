@@ -27,11 +27,11 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagment.java,v 1.7 2004/01/11 23:11:54 mog Exp $
+ * @version $Id: SiteManagment.java,v 1.8 2004/01/13 20:30:54 mog Exp $
  */
 public class SiteManagment implements CommandHandler {
 
-	private Logger logger = Logger.getLogger(SiteManagment.class);
+	private static final Logger logger = Logger.getLogger(SiteManagment.class);
 
 	private FtpReply doSITE_LIST(BaseFtpConnection conn) {
 		conn.resetState();

@@ -10,7 +10,7 @@ import java.util.List;
  * linked directory structure to the remote VM.
  * 
  * @author mog
- * @version $Id: StaticRemoteFile.java,v 1.22 2004/01/04 01:23:38 mog Exp $
+ * @version $Id: StaticRemoteFile.java,v 1.23 2004/01/13 20:30:55 mog Exp $
  */
 public class StaticRemoteFile extends RemoteFile {
 	private boolean _isDeleted;
@@ -71,12 +71,6 @@ public class StaticRemoteFile extends RemoteFile {
 		_name = name;
 	}
 
-	public boolean equals(Object file) {
-		if (!(file instanceof RemoteFile))
-			return false;
-		return getPath().equals(((RemoteFile) file).getPath());
-	}
-
 	public Collection getFiles() {
 		throw new UnsupportedOperationException("getFiles() does not exist in StaticRemoteFile");
 	}
@@ -129,10 +123,6 @@ public class StaticRemoteFile extends RemoteFile {
 		return new RemoteFileInterface[0];
 	}
 
-	public void setChecksum(long l) {
-		_checkSum = l;
-	}
-
 	public void setDeleted(boolean b) {
 		_isDeleted = b;
 	}
@@ -175,4 +165,5 @@ public class StaticRemoteFile extends RemoteFile {
 		ret.append("[rslaves:" + _rslaves + "]");
 		return ret.toString();
 	}
+
 }

@@ -3,8 +3,6 @@ package net.sf.drftpd.remotefile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.InetSocketAddress;
-import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,11 +32,11 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.102 2004/01/13 05:06:27 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.103 2004/01/13 20:30:55 mog Exp $
  */
 public class LinkedRemoteFile
 	implements RemoteFileInterface, Serializable, Comparable {
-	public class NonExistingFile {
+	public static class NonExistingFile {
 		private LinkedRemoteFile _file;
 		private String _path;
 		public NonExistingFile(LinkedRemoteFile file, String path) {
@@ -68,8 +66,7 @@ public class LinkedRemoteFile
 			return _path != null;
 		}
 	}
-	private static final String EMPTY_STRING = "";
-	private static Logger logger =
+	private static final Logger logger =
 		Logger.getLogger(LinkedRemoteFile.class.getName());
 	static final long serialVersionUID = 3585958839961835107L;
 	private long _checkSum;
@@ -105,7 +102,7 @@ public class LinkedRemoteFile
 		_lastModified = System.currentTimeMillis();
 		_length = 0;
 		_parent = null;
-		_name = EMPTY_STRING;
+		_name = "";
 		_files = Collections.synchronizedMap(new Hashtable());
 		_slaves = Collections.synchronizedList(new ArrayList(1));
 	}
@@ -144,9 +141,10 @@ public class LinkedRemoteFile
 		_parent = parent;
 
 		if (parent == null) {
-			_name = EMPTY_STRING;
+			_name = "";
 		} else {
-			_name = new String(file.getName());
+			//TODO possibly unneeded .toString()
+			_name = file.getName().toString();
 		}
 
 		if (file.isFile()) {
@@ -529,7 +527,7 @@ public class LinkedRemoteFile
 	}
 
 	public String getGroupname() {
-		if (_group == null || _group.equals(EMPTY_STRING))
+		if (_group == null || _group.equals(""))
 			return "drftpd";
 		return _group;
 	}
@@ -596,29 +594,25 @@ public class LinkedRemoteFile
 		}
 		return root;
 	}
-	public SFVFile getSFVFile()
+	public synchronized SFVFile getSFVFile()
 		throws IOException, FileNotFoundException, NoAvailableSlaveException {
-		if (sfvFile != null)
-			return sfvFile;
-		synchronized (this) {
-			if (sfvFile == null) {
-				while (true) {
-					RemoteSlave slave = getASlaveForDownload();
-					try {
-						sfvFile = slave.getSlave().getSFVFile(getPath());
-						//throws RemoteException
-						sfvFile.setCompanion(this);
-						break;
-					} catch (ConnectException ex) {
-						slave.handleRemoteException(ex);
-					}
+
+		if (sfvFile == null) {
+			while (true) {
+				RemoteSlave rslave = getASlaveForDownload();
+				try {
+					sfvFile = rslave.getSlave().getSFVFile(getPath());
+					sfvFile.setCompanion(this);
+					break;
+				} catch (RemoteException ex) {
+					rslave.handleRemoteException(ex);
 				}
-				throw new NoAvailableSlaveException("No available slaves");
 			}
-			if (sfvFile.size() == 0)
-				throw new FileNotFoundException("sfv file contains no checksum entries");
-			return sfvFile;
 		}
+		if (sfvFile.size() == 0) {
+			throw new FileNotFoundException("sfv file contains no checksum entries");
+		}
+		return sfvFile;
 	}
 
 	/** returns slaves. returns null if a directory.
@@ -630,7 +624,7 @@ public class LinkedRemoteFile
 	}
 
 	public String getUsername() {
-		if (_owner == null || _owner.equals(EMPTY_STRING))
+		if (_owner == null || _owner.equals(""))
 			return "nobody";
 		return _owner;
 	}
@@ -654,6 +648,10 @@ public class LinkedRemoteFile
 	 */
 	public boolean hasFile(String filename) {
 		return _files.containsKey(filename);
+	}
+
+	public int hashCode() {
+		return getName().hashCode();
 	}
 
 	/**
@@ -774,7 +772,7 @@ public class LinkedRemoteFile
 		//check for leading ~
 		if (path.length() == 1 && path.equals("~")) {
 			currFile = getRoot();
-			path = EMPTY_STRING;
+			path = "";
 		} else if (path.length() >= 2 && path.substring(0, 2).equals("~/")) {
 			currFile = getRoot();
 			path = path.substring(2);
@@ -798,7 +796,7 @@ public class LinkedRemoteFile
 			} catch (FileNotFoundException ex) {
 				StringBuffer remaining = new StringBuffer(currFileName);
 				if (st.hasMoreElements()) {
-					remaining.append('/').append(st.nextToken(EMPTY_STRING));
+					remaining.append('/').append(st.nextToken(""));
 				}
 				return new NonExistingFile(currFile, remaining.toString());
 			}
@@ -829,7 +827,6 @@ public class LinkedRemoteFile
 			LinkedRemoteFile myFile = (LinkedRemoteFile) iter.next();
 			if (myFile.getName().toLowerCase().endsWith(".sfv")) {
 				return myFile.getSFVFile();
-				// throws IOException, NoAvailableSlaveException
 			}
 		}
 		throw new FileNotFoundException("no sfv file in directory");
@@ -1123,40 +1120,39 @@ public class LinkedRemoteFile
 	/**
 	 * @param torslave RemoteSlave to replicate to.
 	 */
-	public void replicate(final RemoteSlave torslave)
-		throws NoAvailableSlaveException, IOException {
-
-		final RemoteSlave fromslave = getASlaveForDownload();
-		Transfer fromtransfer = fromslave.getSlave().listen(false);
-		final Transfer totransfer =
-			torslave.getSlave().connect(
-				new InetSocketAddress(
-					fromslave.getInetAddress(),
-					fromtransfer.getLocalPort()),
-				false);
-
-		Thread t = new Thread(new Runnable() {
-			private Exception exception = null;
-			public void run() {
-				try {
-					totransfer.receiveFile(
-						getParentFile().getPath(),
-						'I',
-						getName(),
-						0L);
-				} catch (RemoteException e) {
-					torslave.handleRemoteException(e);
-					logger.warn(EMPTY_STRING, e);
-				} catch (FileNotFoundException e) {
-					throw new FatalException(e);
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		});
-		t.run();
-		fromtransfer.sendFile(getPath(), 'I', 0, false);
-	}
+//	public void replicate(final RemoteSlave torslave)
+//		throws NoAvailableSlaveException, IOException {
+//
+//		final RemoteSlave fromslave = getASlaveForDownload();
+//		Transfer fromtransfer = fromslave.getSlave().listen(false);
+//		final Transfer totransfer =
+//			torslave.getSlave().connect(
+//				new InetSocketAddress(
+//					fromslave.getInetAddress(),
+//					fromtransfer.getLocalPort()),
+//				false);
+//
+//		Thread t = new Thread(new Runnable() {
+//			public void run() {
+//				try {
+//					totransfer.receiveFile(
+//						getParentFile().getPath(),
+//						'I',
+//						getName(),
+//						0L);
+//				} catch (RemoteException e) {
+//					torslave.handleRemoteException(e);
+//					logger.warn(EMPTY_STRING, e);
+//				} catch (FileNotFoundException e) {
+//					throw new FatalException(e);
+//				} catch (IOException e) {
+//					throw new RuntimeException(e);
+//				}
+//			}
+//		});
+//		t.start();
+//		fromtransfer.sendFile(getPath(), 'I', 0, false);
+//	}
 
 	/**
 	 * @param l

@@ -3,7 +3,6 @@ package se.mog.io;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -16,25 +15,27 @@ import java.util.Vector;
  */
 class UnixFileSystem extends FileSystem {
 
-	public File[] listMounts() {
+	public File[] listMounts() throws IOException {
+
+		BufferedReader reader = new BufferedReader(new FileReader("/etc/mtab"));
 		try {
-			BufferedReader reader =
-				new BufferedReader(new FileReader("/etc/mtab"));
 			Vector mountPoints = new Vector();
 			String line;
 			while ((line = reader.readLine()) != null) {
 				if (line.charAt(0) == '#')
 					continue;
 				Enumeration st = new StringTokenizer(line, " \t");
-				if(!st.hasMoreElements()) continue;
+				if (!st.hasMoreElements())
+					continue;
 				/*String fs_spec = */
 				st.nextElement();
-				if(!st.hasMoreElements()) {
-					System.err.println("WARN: /etc/mtab is corrupt, skipping line");
+				if (!st.hasMoreElements()) {
+					System.err.println(
+						"WARN: /etc/mtab is corrupt, skipping line");
 					continue;
-				} 
+				}
 				//String fs_file = st.nextToken();
-				mountPoints.add(new File((String)st.nextElement()));
+				mountPoints.add(new File((String) st.nextElement()));
 				/*
 				String fs_vfstype = st.nextToken();
 				String fs_mntops = st.nextToken()
@@ -43,30 +44,17 @@ class UnixFileSystem extends FileSystem {
 				*/
 			}
 			return (File[]) mountPoints.toArray(new File[mountPoints.size()]);
-		} catch (IOException ex) {
-			ex.printStackTrace();
-			return new File[0];
+		} finally {
+			reader.close();
 		}
-
 	}
 
-	public static void main(String args[]) {
+	public static void main(String args[]) throws IOException {
 		File mounts[] = new UnixFileSystem().listMounts();
 		for (int i = 0; i < mounts.length; i++) {
 			System.out.println(mounts[i]);
 		}
 	}
-	/* (non-Javadoc)
-	 * @see se.mog.io.FileSystem#getDiskFreeSpace()
-	 */
 
 	public native DiskFreeSpace getDiskFreeSpace(File file);
-	/* (non-Javadoc)
-	 * @see se.mog.io.FileSystem#getDiskFreeSpace()
-	public DiskFreeSpace getDiskFreeSpace() {
-		DiskFreeSpace diskFreeSpace = new DiskFreeSpace();
-		diskFreeSpace(diskFreeSpace);
-		return diskFreeSpace;
-	}
-	 */
 }

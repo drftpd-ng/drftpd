@@ -10,7 +10,7 @@ import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.mirroring.AbstractJob;
+import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 import org.apache.log4j.Logger;
@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 /**
  * @author zubov
  *
- * @version $Id: Mirror.java,v 1.8 2004/01/08 02:40:07 zubov Exp $
+ * @version $Id: Mirror.java,v 1.9 2004/01/13 20:30:53 mog Exp $
  */
 public class Mirror implements FtpListener {
 
@@ -50,13 +50,10 @@ public class Mirror implements FtpListener {
 		}
 		//logger.info("Adding " + dir.getPath() + " to the JobList");
 		_cm.getJobManager().addJob(
-			new AbstractJob(dir, slaveToMirror, this, null, 5));
+			new Job(dir, slaveToMirror, this, null, 5));
 		logger.debug("Done adding " + dir.getPath() + " to the JobList");
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.Initializeable#init(net.sf.drftpd.master.ConnectionManager)
-	 */
 	public void init(ConnectionManager connectionManager) {
 		_cm = connectionManager;
 	}

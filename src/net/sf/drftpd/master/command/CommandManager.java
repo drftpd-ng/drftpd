@@ -15,14 +15,12 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * @version $Id: CommandManager.java,v 1.3 2003/12/23 13:38:19 mog Exp $
+ * @version $Id: CommandManager.java,v 1.4 2004/01/13 20:30:54 mog Exp $
  */
 public class CommandManager {
 	//TODO reload me
 
-	private static Logger logger = Logger.getLogger(CommandManager.class);
-
-	private BaseFtpConnection _conn;
+	private static final Logger logger = Logger.getLogger(CommandManager.class);
 
 	private CommandManagerFactory _factory;
 	/**
@@ -37,7 +35,6 @@ public class CommandManager {
 	public CommandManager(
 		BaseFtpConnection conn,
 		CommandManagerFactory initializer) {
-		_conn = conn;
 		_factory = initializer;
 		for (Iterator iter = _factory.getHandlersMap().entrySet().iterator();
 			iter.hasNext();

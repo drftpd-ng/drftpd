@@ -25,14 +25,13 @@ import JSX.ObjIn;
 
 /**
  * @author mog
- * @version $Id: JSXUserManager.java,v 1.23 2004/01/05 02:20:08 mog Exp $
+ * @version $Id: JSXUserManager.java,v 1.24 2004/01/13 20:30:54 mog Exp $
  */
 public class JSXUserManager implements UserManager {
 	private ConnectionManager _connManager;
-	private static Logger logger =
+	private static final Logger logger =
 		Logger.getLogger(JSXUserManager.class.getName());
-	String userpath =
-		"ftp-data/users/";
+	String userpath = "ftp-data/users/";
 	File userpathFile = new File(userpath);
 
 	Hashtable users = new Hashtable();
@@ -126,7 +125,8 @@ public class JSXUserManager implements UserManager {
 		return users;
 	}
 
-	public Collection getAllUsersByGroup(String group) throws UserFileException {
+	public Collection getAllUsersByGroup(String group)
+		throws UserFileException {
 		Collection users = getAllUsers();
 		for (Iterator iter = users.iterator(); iter.hasNext();) {
 			JSXUser user = (JSXUser) iter.next();

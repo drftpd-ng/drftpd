@@ -1,6 +1,5 @@
 package net.sf.drftpd.master;
 
-import java.io.Serializable;
 import java.net.InetAddress;
 import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
@@ -17,14 +16,10 @@ import net.sf.drftpd.slave.SlaveStatus;
 import org.apache.log4j.Logger;
 
 /**
- * Class would fit both in net.sf.drftpd.slave and net.sf.drftpd.master.
- * However, as it is instantiated from the slave (or master with local slave),
- * and mainly because it is a helper class for Slave, it is located in net.sf.drftpd.slave.
- * 
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.21 2004/01/05 00:14:19 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.22 2004/01/13 20:30:53 mog Exp $
  */
-public class RemoteSlave implements Serializable, Comparable {
+public class RemoteSlave implements Comparable {
 
 	private static final Logger logger =
 		Logger.getLogger(RemoteSlave.class.getName());
@@ -42,11 +37,11 @@ public class RemoteSlave implements Serializable, Comparable {
 	private Collection _masks;
 	private String _name;
 	private Slave _slave;
-	private SlaveStatus _status;
-	private long _statusTime;
+	//private SlaveStatus _status;
+	//private long _statusTime;
 
 	public RemoteSlave(String name) {
-		_name = new String(name);
+		_name = name;
 	}
 	public RemoteSlave(String name, Collection masks) {
 		this(name);

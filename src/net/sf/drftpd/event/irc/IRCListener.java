@@ -72,11 +72,11 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.71 2004/01/13 00:38:55 mog Exp $
+ * @version $Id: IRCListener.java,v 1.72 2004/01/13 20:30:53 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
-	public class Ret {
+	public static class Ret {
 		public String format;
 		public LinkedRemoteFile section;
 		public Ret(String format, LinkedRemoteFile dir) {
@@ -86,7 +86,7 @@ public class IRCListener implements FtpListener, Observer {
 	}
 	private AutoJoin _autoJoin;
 	private AutoRegister _autoRegister;
-	private static Logger logger = Logger.getLogger(IRCListener.class);
+	private static final Logger logger = Logger.getLogger(IRCListener.class);
 
 	/**
 	 * Used from FtpConnection
@@ -173,7 +173,10 @@ public class IRCListener implements FtpListener, Observer {
 				MessageEvent mevent = (MessageEvent) event;
 				ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
 				env.add("message", mevent.getMessage());
-				say(SimplePrintf.jprintf(_ircCfg.getProperty("shutdown"), env));
+				say(
+					SimplePrintf.jprintf(
+						FtpConfig.getProperty(_ircCfg, "shutdown"),
+						env));
 			}
 		} catch (FormatterException ex) {
 			say(event.getCommand() + " FormatterException: " + ex.getMessage());
@@ -440,10 +443,14 @@ public class IRCListener implements FtpListener, Observer {
 		//env.add("nukees", event.getNukees().keySet());
 
 		if (cmd.equals("NUKE")) {
-			say(SimplePrintf.jprintf(_ircCfg.getProperty("nuke"), env));
+			say(
+				SimplePrintf.jprintf(
+					FtpConfig.getProperty(_ircCfg, "nuke"),
+					env));
 
 			ReplacerFormat raceformat =
-				ReplacerFormat.createFormat(_ircCfg.getProperty("nuke.nukees"));
+				ReplacerFormat.createFormat(
+					FtpConfig.getProperty(_ircCfg, "nuke.nukees"));
 
 			int position = 1;
 			long nobodyAmount = 0;
@@ -495,7 +502,10 @@ public class IRCListener implements FtpListener, Observer {
 
 			}
 		} else if (cmd.equals("UNNUKE")) {
-			say(SimplePrintf.jprintf(_ircCfg.getProperty("unnuke"), env));
+			say(
+				SimplePrintf.jprintf(
+					FtpConfig.getProperty(_ircCfg, "unnuke"),
+					env));
 		}
 	}
 
@@ -530,9 +540,15 @@ public class IRCListener implements FtpListener, Observer {
 			}
 			fillEnvSpace(env, status);
 
-			say(SimplePrintf.jprintf(_ircCfg.getProperty("addslave"), env));
+			say(
+				SimplePrintf.jprintf(
+					FtpConfig.getProperty(_ircCfg, "addslave"),
+					env));
 		} else if (event.getCommand().equals("DELSLAVE")) {
-			say(SimplePrintf.jprintf(_ircCfg.getProperty("delslave"), env));
+			say(
+				SimplePrintf.jprintf(
+					FtpConfig.getProperty(_ircCfg, "delslave"),
+					env));
 		}
 	}
 
@@ -656,7 +672,7 @@ public class IRCListener implements FtpListener, Observer {
 				tmp2 = tmp;
 			}
 		} catch (FileNotFoundException e1) {
-			return new Ret(_ircCfg.getProperty(prefix), tmp3);
+			return new Ret(FtpConfig.getProperty(_ircCfg, prefix), tmp3);
 		}
 	}
 	public SlaveManagerImpl getSlaveManager() {
@@ -666,10 +682,10 @@ public class IRCListener implements FtpListener, Observer {
 	private void reload() throws FileNotFoundException, IOException {
 		_ircCfg = new Properties();
 		_ircCfg.load(new FileInputStream("irc.conf"));
-		_server = _ircCfg.getProperty("irc.server");
-		_port = Integer.parseInt(_ircCfg.getProperty("irc.port"));
+		_server = FtpConfig.getProperty(_ircCfg, "irc.server");
+		_port = Integer.parseInt(FtpConfig.getProperty(_ircCfg, "irc.port"));
 		String oldchannel = _channelName;
-		_channelName = _ircCfg.getProperty("irc.channel");
+		_channelName = FtpConfig.getProperty(_ircCfg, "irc.channel");
 		_key = _ircCfg.getProperty("irc.key");
 		if (_key.equals(""))
 			_key = null;
@@ -683,7 +699,7 @@ public class IRCListener implements FtpListener, Observer {
 				.getClientState()
 				.getNick()
 				.getNick()
-				.equals(_ircCfg.getProperty("irc.nick"))) {
+				.equals(FtpConfig.getProperty(_ircCfg, "irc.nick"))) {
 				logger.info("Switching to new nick");
 				_autoRegister.disable();
 				_autoRegister = addAutoRegister();
@@ -701,9 +717,9 @@ public class IRCListener implements FtpListener, Observer {
 	private AutoRegister addAutoRegister() {
 		return new AutoRegister(
 			_conn,
-			_ircCfg.getProperty("irc.nick"),
-			_ircCfg.getProperty("irc.user"),
-			_ircCfg.getProperty("irc.name"));
+			FtpConfig.getProperty(_ircCfg, "irc.nick"),
+			FtpConfig.getProperty(_ircCfg, "irc.user"),
+			FtpConfig.getProperty(_ircCfg, "irc.name"));
 	}
 	private void connect() throws UnknownHostException, IOException {
 		if (_conn != null) {
@@ -914,7 +930,7 @@ public class IRCListener implements FtpListener, Observer {
 
 		fillEnvSpace(env, status);
 
-		say(SimplePrintf.jprintf(_ircCfg.getProperty("bw"), env));
+		say(SimplePrintf.jprintf(FtpConfig.getProperty(_ircCfg, "bw"), env));
 	}
 
 	private void updateDF(Observable observer, MessageCommand msgc)
@@ -924,7 +940,10 @@ public class IRCListener implements FtpListener, Observer {
 
 		fillEnvSpace(env, status);
 
-		say(SimplePrintf.jprintf(_ircCfg.getProperty("diskfree"), env));
+		say(
+			SimplePrintf.jprintf(
+				FtpConfig.getProperty(_ircCfg, "diskfree"),
+				env));
 	}
 
 	private void updateSlaves(Observable observer, MessageCommand updated) {
@@ -944,7 +963,7 @@ public class IRCListener implements FtpListener, Observer {
 				} catch (NoAvailableSlaveException e1) {
 					say(
 						SimplePrintf.jprintf(
-							_ircCfg.getProperty("slaves.offline"),
+							FtpConfig.getProperty(_ircCfg, "slaves.offline"),
 							env));
 					continue;
 				}
@@ -1006,12 +1025,8 @@ public class IRCListener implements FtpListener, Observer {
 		}
 		ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
 		env.add("user", username);
-		String status = new String();
-		status =
-			new String(
-				SimplePrintf.jprintf(
-					_ircCfg.getProperty("speed.pre", ""),
-					env));
+		String status =
+			SimplePrintf.jprintf(_ircCfg.getProperty("speed.pre", ""), env);
 
 		String separator =
 			SimplePrintf.jprintf(

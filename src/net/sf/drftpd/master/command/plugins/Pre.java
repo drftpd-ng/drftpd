@@ -26,40 +26,11 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * @version $Id: Pre.java,v 1.4 2003/12/23 13:38:19 mog Exp $
+ * @version $Id: Pre.java,v 1.5 2004/01/13 20:30:54 mog Exp $
  */
 public class Pre implements CommandHandler {
-	public void unload() {}
-	public void load(CommandManagerFactory initializer) {}
 
-	private Logger logger = Logger.getLogger(Pre.class);
-
-	private void preAwardCredits(BaseFtpConnection conn, LinkedRemoteFile preDir, Hashtable awards) {
-		for (Iterator iter = preDir.getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			User owner;
-			try {
-				owner = conn.getUserManager().getUserByName(file.getUsername());
-			} catch (NoSuchUserException e) {
-				logger.log(
-					Level.INFO,
-					"PRE: Cannot award credits to non-existing user",
-					e);
-				continue;
-			} catch (UserFileException e) {
-				logger.log(Level.WARN, "", e);
-				continue;
-			}
-			Long total = (Long) awards.get(owner);
-			if (total == null)
-				total = new Long(0);
-			total =
-				new Long(
-					total.longValue()
-						+ (long) (file.length() * owner.getRatio()));
-			awards.put(owner, total);
-		}
-	}
+	private static final Logger logger = Logger.getLogger(Pre.class);
 
 	/**
 	 * Syntax: SITE PRE <RELEASEDIR> [SECTION]
@@ -69,7 +40,8 @@ public class Pre implements CommandHandler {
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {
 		FtpRequest request = conn.getRequest();
-		if(!"SITE PRE".equals(request.getCommand())) throw UnhandledCommandException.create(Pre.class, request);
+		if (!"SITE PRE".equals(request.getCommand()))
+			throw UnhandledCommandException.create(Pre.class, request);
 		if (!request.hasArgument()) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
@@ -81,7 +53,9 @@ public class Pre implements CommandHandler {
 		try {
 			section = conn.getCurrentDirectory().getRoot().lookupFile(args[1]);
 		} catch (FileNotFoundException ex) {
-return new FtpReply(200, "Release dir not found: " + ex.getMessage());
+			return new FtpReply(
+				200,
+				"Release dir not found: " + ex.getMessage());
 		}
 
 		LinkedRemoteFile preDir;
@@ -127,17 +101,54 @@ return new FtpReply(200, "Release dir not found: " + ex.getMessage());
 
 		//ANNOUNCE
 		logger.debug("preDir after rename: " + preDir);
-		conn.getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(conn.getUserNull(), "PRE", preDir));
+		conn.getConnectionManager().dispatchFtpEvent(
+			new DirectoryFtpEvent(conn.getUserNull(), "PRE", preDir));
 
 		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
 
-	public CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer) {
-		return this;
-	}
-
 	public String[] getFeatReplies() {
 		return null;
+	}
+
+	public CommandHandler initialize(
+		BaseFtpConnection conn,
+		CommandManager initializer) {
+		return this;
+	}
+	public void load(CommandManagerFactory initializer) {
+	}
+
+	private void preAwardCredits(
+		BaseFtpConnection conn,
+		LinkedRemoteFile preDir,
+		Hashtable awards) {
+		for (Iterator iter = preDir.getFiles().iterator(); iter.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			User owner;
+			try {
+				owner = conn.getUserManager().getUserByName(file.getUsername());
+			} catch (NoSuchUserException e) {
+				logger.log(
+					Level.INFO,
+					"PRE: Cannot award credits to non-existing user",
+					e);
+				continue;
+			} catch (UserFileException e) {
+				logger.log(Level.WARN, "", e);
+				continue;
+			}
+			Long total = (Long) awards.get(owner);
+			if (total == null)
+				total = new Long(0);
+			total =
+				new Long(
+					total.longValue()
+						+ (long) (file.length() * owner.getRatio()));
+			awards.put(owner, total);
+		}
+	}
+	public void unload() {
 	}
 
 }

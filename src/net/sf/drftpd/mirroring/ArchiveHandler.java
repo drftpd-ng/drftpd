@@ -21,7 +21,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.7 2004/01/13 05:06:27 zubov Exp $
+ * @version $Id: ArchiveHandler.java,v 1.8 2004/01/13 20:30:54 mog Exp $
  */
 public class ArchiveHandler extends Thread {
 
@@ -317,13 +317,13 @@ public class ArchiveHandler extends Thread {
 		ArrayList jobQueue = new ArrayList();
 		for (Iterator iter = oldDir.getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile src = (LinkedRemoteFile) iter.next();
-			AbstractJob job = null;
+			Job job = null;
 			//if (!src.getSlaves().contains(slave)) {
 			// I don't care if it's already on that slave, the JobManager will take care of it
 			ArrayList tempList = new ArrayList();
 			tempList.add(slave);
 			logger.info("Adding " + src.getPath() + " to the job queue");
-			job = new AbstractJob(src, tempList, this, null, 3);
+			job = new Job(src, tempList, this, null, 3);
 			jm.addJob(job);
 			jobQueue.add(job);
 			//}

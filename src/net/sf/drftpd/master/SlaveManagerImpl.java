@@ -46,13 +46,13 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 /**
- * @version $Id: SlaveManagerImpl.java,v 1.55 2004/01/04 18:53:08 zubov Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.56 2004/01/13 20:30:53 mog Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
 	implements SlaveManager {
 
-	private static Logger logger =
+	private static final Logger logger =
 		Logger.getLogger(SlaveManagerImpl.class.getName());
 
 	public static RemoteSlave getASlave(
@@ -60,7 +60,7 @@ public class SlaveManagerImpl
 		char direction,
 		FtpConfig config)
 		throws NoAvailableSlaveException {
-		RemoteSlave bestslave = null;
+		RemoteSlave bestslave;
 		SlaveStatus beststatus;
 		{
 			Iterator i = slaves.iterator();
@@ -158,8 +158,6 @@ public class SlaveManagerImpl
 			bestslave.setLastUploadReceiving(System.currentTimeMillis());
 			bestslave.setLastDownloadSending(System.currentTimeMillis());
 		}
-		if (bestslave == null)
-			throw new NoAvailableSlaveException("Object had no slaves!");
 		return bestslave;
 	}
 
@@ -224,7 +222,9 @@ public class SlaveManagerImpl
 		for (Iterator i2 = maskElements.iterator(); i2.hasNext();) {
 			masks.add(((Element) i2.next()).getText());
 		}
-		return new RemoteSlave(slaveElement.getChildText("name"), masks);
+		return new RemoteSlave(
+			slaveElement.getChildText("name").toString(),
+			masks);
 
 	}
 	public static List loadRSlaves() {
@@ -325,7 +325,7 @@ public class SlaveManagerImpl
 				ssf);
 		// throws RemoteException
 		try {
-			registry.bind(cfg.getProperty("master.bindname"), this);
+			registry.bind(FtpConfig.getProperty(cfg, "master.bindname"), this);
 		} catch (Exception t) {
 			throw new FatalException(t);
 		}
@@ -413,6 +413,7 @@ public class SlaveManagerImpl
 		}
 		return bigSlave;
 	}
+
 	public RemoteSlave findSmallestFreeSlave() {
 		Collection slaveList =
 			getConnectionManager().getSlaveManager().getSlaveList();
@@ -437,6 +438,7 @@ public class SlaveManagerImpl
 		}
 		return smallSlave;
 	}
+
 	/**
 	 * Cached for 1 second.
 	 */
@@ -610,9 +612,7 @@ public class SlaveManagerImpl
 		new File("files.mlst").renameTo(bak);
 		try {
 			FileOutputStream out = new FileOutputStream("files.mlst");
-			MLSTSerialize.serialize(
-				getRoot(),
-				new PrintStream(out));
+			MLSTSerialize.serialize(getRoot(), new PrintStream(out));
 			out.close();
 		} catch (IOException e) {
 			logger.warn("Error saving files.mlst", e);

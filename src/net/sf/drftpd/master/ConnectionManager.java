@@ -34,37 +34,18 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.81 2004/01/03 23:50:53 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.82 2004/01/13 20:30:53 mog Exp $
  */
 public class ConnectionManager {
 	public static final int idleTimeout = 300;
 
-	private static Logger logger =
+	private static final Logger logger =
 		Logger.getLogger(ConnectionManager.class.getName());
 
 	public static void main(String args[]) {
-//		PropertyConfigurator.configure("")
-//		if (args.length >= 1 && args[0].equals("-nolog")) {
-//			args = scrubArgs(args);
-//			BasicConfigurator.configure();
-//		} else {
-//			Logger root = Logger.getRootLogger();
-//			new File("ftp-data/logs").mkdirs();
-//			try {
-//				root.addAppender(
-//					new DailyRollingFileAppender(
-//						new PatternLayout(
-//							PatternLayout.TTCC_CONVERSION_PATTERN),
-//						"ftp-data/logs/drftpd.log",
-//						"'.'yyyy-MM-dd"));
-//			} catch (IOException e1) {
-//				throw new FatalException(e1);
-//			}
-//		}
 		System.out.println(SlaveImpl.VERSION + " master server starting.");
 		System.out.println("http://drftpd.sourceforge.net");
 
-//		System.setProperty("line.separator", "\r\n");
 		try {
 			String cfgFileName;
 			if (args.length >= 1) {
@@ -106,7 +87,8 @@ public class ConnectionManager {
 			/** listen for connections **/
 			ServerSocket server =
 				new ServerSocket(
-					Integer.parseInt(cfg.getProperty("master.port")));
+					Integer.parseInt(
+						FtpConfig.getProperty(cfg, "master.port")));
 			logger.info("Listening on port " + server.getLocalPort());
 			while (true) {
 				mgr.start(server.accept());
@@ -167,7 +149,7 @@ public class ConnectionManager {
 		try {
 			_usermanager =
 				(UserManager) Class
-					.forName(cfg.getProperty("master.usermanager"))
+					.forName(FtpConfig.getProperty(cfg, "master.usermanager"))
 					.newInstance();
 			// if the below method is not run, JSXUserManager fails when trying to do a reset() on the user logging in
 			_usermanager.init(this);
@@ -226,7 +208,7 @@ public class ConnectionManager {
 		//run every hour 
 		_timer.schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
 	}
-	
+
 	public Timer getTimer() {
 		return _timer;
 	}

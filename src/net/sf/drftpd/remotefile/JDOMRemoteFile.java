@@ -16,11 +16,11 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: JDOMRemoteFile.java,v 1.24 2003/11/19 00:20:53 mog Exp $
+ * @version $Id: JDOMRemoteFile.java,v 1.25 2004/01/13 20:30:55 mog Exp $
  */
 public class JDOMRemoteFile implements RemoteFileInterface {
 
-	private static Logger logger =
+	private static final Logger logger =
 		Logger.getLogger(JDOMRemoteFile.class.getName());
 
 	Hashtable allSlaves;

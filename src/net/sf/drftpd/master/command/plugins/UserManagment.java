@@ -34,10 +34,10 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.18 2004/01/13 00:38:55 mog Exp $
+ * @version $Id: UserManagment.java,v 1.19 2004/01/13 20:30:54 mog Exp $
  */
 public class UserManagment implements CommandHandler {
-	private Logger logger = Logger.getLogger(UserManagment.class);
+	private static final Logger logger = Logger.getLogger(UserManagment.class);
 
 	private FtpReply doSITE_ADDIP(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();

@@ -1,10 +1,11 @@
 package net.sf.drftpd.remotefile;
 
+import java.io.FileNotFoundException;
 import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: RemoteFileInterface.java,v 1.5 2003/11/19 00:20:53 mog Exp $
+ * @version $Id: RemoteFileInterface.java,v 1.6 2004/01/13 20:30:55 mog Exp $
  */
 public interface RemoteFileInterface {
 	public long getCheckSumCached();
@@ -20,11 +21,22 @@ public interface RemoteFileInterface {
 	 * @return primary group of the owner of this file
 	 */
 	public String getGroupname();
+	
+	/**
+	 * Returns the target of the link.
+	 * @return target of the link.
+	 * @see #isLink()
+	 */
+	public RemoteFileInterface getLink();
 
 	/**
 	 * @see java.io.File#getName()
 	 */
 	public String getName();
+	
+	public abstract String getParent() throws FileNotFoundException;
+
+	public abstract String getPath();
 
 	public Collection getSlaves();
 	/**
@@ -62,13 +74,6 @@ public interface RemoteFileInterface {
 	public boolean isLink();
 	
 	/**
-	 * Returns the target of the link.
-	 * @return target of the link.
-	 * @see #isLink()
-	 */
-	public RemoteFileInterface getLink();
-	
-	/**
 	 * @see java.io.File#lastModified()
 	 */
 	public long lastModified();
@@ -82,4 +87,5 @@ public interface RemoteFileInterface {
 	 * @see java.io.File#listFiles()
 	 */
 	public RemoteFileInterface[] listFiles();
+
 }

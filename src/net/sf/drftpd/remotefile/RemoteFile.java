@@ -1,14 +1,10 @@
 package net.sf.drftpd.remotefile;
 
-import java.io.FileNotFoundException;
-import java.util.Collection;
-
 /**
  * @author mog
- * @version $Id: RemoteFile.java,v 1.21 2003/11/19 00:20:53 mog Exp $
+ * @version $Id: RemoteFile.java,v 1.22 2004/01/13 20:30:55 mog Exp $
  */
 public abstract class RemoteFile implements RemoteFileInterface {
-	
 	/**
 	 * separatorChar is always "/" as "/" is always used in (SYST type UNIX) FTP.
 	 */
@@ -22,13 +18,10 @@ public abstract class RemoteFile implements RemoteFileInterface {
 	
 	protected String _username;
 
-	public boolean equals(Object obj) {
-		if(!(obj instanceof RemoteFile)) return false;
-		RemoteFile remotefile = (RemoteFile) obj;
-		
-		if(getPath().equals(remotefile.getPath())) return true;
-		
-		return false;
+	public boolean equals(Object file) {
+		if (!(file instanceof RemoteFileInterface))
+			return false;
+		return getPath().equals(((RemoteFile) file).getPath());
 	}
 	/**
 	 * Gets the checkSum
@@ -37,43 +30,32 @@ public abstract class RemoteFile implements RemoteFileInterface {
 		return _checkSum;	
 	}
 	
-//	public abstract Collection getFiles();
-	
 	public String getGroupname() {
 		if (_groupname == null)
 			return "drftpd";
 		return _groupname;
 	}
 
-	/**
-	 * @see java.io.File#getName()
-	 */
-//	public abstract String getName();
+	public RemoteFileInterface getLink() {
+		throw new UnsupportedOperationException();
+	}
 	
 	public String getUsername() {
 		if (_username == null)
 			return "drftpd";
 		return _username;
 	}
-	/**
-	 * @see java.io.File#getParent()
-	 */
-	public abstract String getParent() throws FileNotFoundException;
-	/**
-	 * @see java.io.File#getPath()
-	 */
-	public abstract String getPath();
-
-	public abstract Collection getSlaves();
 	
 	public long getXfertime() {
 		throw new UnsupportedOperationException();
 	}
-	/**
-	 * @see java.lang.Object#hashCode()
-	 */
+
 	public int hashCode() {
 		return getName().hashCode();
+	}
+
+	public boolean isLink() {
+		return false;
 	}
 	
 	/**
@@ -81,12 +63,9 @@ public abstract class RemoteFile implements RemoteFileInterface {
 	 * @param checkSum The checkSum to set
 	 */
 	public void setCheckSum(long checkSum) {
-		this._checkSum = checkSum;
+		_checkSum = checkSum;
 	}
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
 	public String toString() {
 		StringBuffer ret = new StringBuffer();
 		ret.append(getClass().getName()+"[");
@@ -98,14 +77,6 @@ public abstract class RemoteFile implements RemoteFileInterface {
 		ret.append(getPath());
 		ret.append("]");
 		return ret.toString();
-	}
-
-	public RemoteFileInterface getLink() {
-		throw new UnsupportedOperationException();
-	}
-
-	public boolean isLink() {
-		return false;
 	}
 
 }

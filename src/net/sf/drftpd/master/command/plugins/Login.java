@@ -22,11 +22,11 @@ import org.apache.log4j.Logger;
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.16 2004/01/08 03:14:48 mog Exp $
+ * @version $Id: Login.java,v 1.17 2004/01/13 20:30:54 mog Exp $
  */
 public class Login implements CommandHandler, Cloneable {
 
-	private static Logger logger = Logger.getLogger(CommandHandler.class);
+	private static final Logger logger = Logger.getLogger(CommandHandler.class);
 
 	/**
 	 * <code>QUIT &lt;CRLF&gt;</code><br>

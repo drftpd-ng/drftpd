@@ -13,18 +13,16 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
 
-import org.apache.log4j.Logger;
-
 /**
  * @author mog
  *
  * Istantiates the CommandManager instances that holds per-connection CommandHandlers.
- * @version $Id: CommandManagerFactory.java,v 1.3 2003/12/23 13:38:19 mog Exp $
+ * @version $Id: CommandManagerFactory.java,v 1.4 2004/01/13 20:30:54 mog Exp $
  */
 public class CommandManagerFactory {
 
 	private ConnectionManager _connMgr;
-	private Logger logger = Logger.getLogger(CommandManagerFactory.class);
+	//private static final Logger logger = Logger.getLogger(CommandManagerFactory.class);
 	/**
 	 * Class => CommandHandler
 	 */

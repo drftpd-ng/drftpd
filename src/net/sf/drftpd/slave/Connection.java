@@ -1,14 +1,13 @@
 package net.sf.drftpd.slave;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.Socket;
 
 /**
  * @author mog
- * @version $Id: Connection.java,v 1.8 2004/01/11 23:11:54 mog Exp $
+ * @version $Id: Connection.java,v 1.9 2004/01/13 20:30:55 mog Exp $
  */
-public abstract class Connection implements Serializable {
+public abstract class Connection {
 	public static final int TIMEOUT = 10000;
 
 	public abstract Socket connect() throws IOException;

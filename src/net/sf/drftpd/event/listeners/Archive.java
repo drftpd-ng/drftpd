@@ -23,7 +23,7 @@ import net.sf.drftpd.mirroring.ArchiveHandler;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.10 2004/01/13 05:56:14 zubov Exp $
+ * @version $Id: Archive.java,v 1.11 2004/01/13 20:30:53 mog Exp $
  */
 
 public class Archive implements FtpListener {
@@ -35,7 +35,7 @@ public class Archive implements FtpListener {
 	private long _moveFullSlaves;
 	private ArrayList archivingList = new ArrayList();
 
-	private Logger logger = Logger.getLogger(Archive.class);
+	private static final Logger logger = Logger.getLogger(Archive.class);
 
 	/**
 	 * 

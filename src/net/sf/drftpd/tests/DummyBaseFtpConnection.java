@@ -27,7 +27,7 @@ import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 /**
  * @author mog
- * @version $Id: DummyBaseFtpConnection.java,v 1.1 2003/12/22 18:09:43 mog Exp $
+ * @version $Id: DummyBaseFtpConnection.java,v 1.2 2004/01/13 20:30:55 mog Exp $
  */
 public class DummyBaseFtpConnection extends BaseFtpConnection {
 
@@ -36,8 +36,6 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 	private StringWriter _out;
 
 	private DataConnectionHandler _dch;
-
-	private FtpRequest _req;
 
 	/**
 	 * @param connManager

@@ -18,19 +18,57 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- *
- * @version $Id: Request.java,v 1.7 2004/01/13 00:38:55 mog Exp $
+ * @version $Id: Request.java,v 1.8 2004/01/13 20:30:54 mog Exp $
  */
 public class Request implements CommandHandler {
-	public void unload() {
-	}
-	public void load(CommandManagerFactory initializer) {
-	}
+	private static final String FILLEDPREFIX = "FILLED-for.";
 
-	private static Logger logger = Logger.getLogger(Request.class);
+	private static final Logger logger = Logger.getLogger(Request.class);
 
 	private static final String REQPREFIX = "REQUEST-by.";
-	private static final String FILLEDPREFIX = "FILLED-for.";
+
+	private FtpReply doSITE_REQFILLED(BaseFtpConnection conn) {
+		if (!conn.getRequest().hasArgument())
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+
+		LinkedRemoteFile currdir = conn.getCurrentDirectory();
+		String reqname = conn.getRequest().getArgument();
+
+		for (Iterator iter = currdir.getFiles().iterator(); iter.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+
+			if (!file.getName().startsWith(REQPREFIX))
+				continue;
+			String username = file.getName().substring(REQPREFIX.length());
+			String myreqname = username.substring(username.indexOf('-') + 1);
+			username = username.substring(0, username.indexOf('-'));
+			if (myreqname.equals(reqname)) {
+				String filledname = FILLEDPREFIX + username + "-" + myreqname;
+				try {
+					file.renameTo(file.getParentFile().getPath(), filledname);
+				} catch (IOException e) {
+					logger.warn("", e);
+					return new FtpReply(200, e.getMessage());
+				}
+				//if (conn.getConfig().checkDirLog(conn.getUserNull(), file)) {
+				conn.getConnectionManager().dispatchFtpEvent(
+					new DirectoryFtpEvent(
+						conn.getUserNull(),
+						"REQFILLED",
+						file));
+				//}
+				try {
+					conn.getUser().addRequestsFilled();
+				} catch (NoSuchUserException e) {
+					e.printStackTrace();
+				}
+				return new FtpReply(
+					200,
+					"OK, renamed " + myreqname + " to " + filledname);
+			}
+		}
+		return new FtpReply(200, "Couldn't find a request named " + reqname);
+	}
 	private FtpReply doSITE_REQUEST(BaseFtpConnection conn) {
 		conn.resetState();
 
@@ -90,51 +128,8 @@ public class Request implements CommandHandler {
 			conn.getRequest());
 	}
 
-	/**
-	 * @param conn
-	 * @return
-	 */
-	private FtpReply doSITE_REQFILLED(BaseFtpConnection conn) {
-		if (!conn.getRequest().hasArgument())
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-
-		LinkedRemoteFile currdir = conn.getCurrentDirectory();
-		String reqname = conn.getRequest().getArgument();
-
-		for (Iterator iter = currdir.getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-
-			if (!file.getName().startsWith(REQPREFIX))
-				continue;
-			String username = file.getName().substring(REQPREFIX.length());
-			String myreqname = username.substring(username.indexOf('-') + 1);
-			username = username.substring(0, username.indexOf('-'));
-			if (myreqname.equals(reqname)) {
-				String filledname = FILLEDPREFIX + username + "-" + myreqname;
-				try {
-					file.renameTo(file.getParentFile().getPath(), filledname);
-				} catch (IOException e) {
-					logger.warn("", e);
-					return new FtpReply(200, e.getMessage());
-				}
-				//if (conn.getConfig().checkDirLog(conn.getUserNull(), file)) {
-				conn.getConnectionManager().dispatchFtpEvent(
-					new DirectoryFtpEvent(
-						conn.getUserNull(),
-						"REQFILLED",
-						file));
-				//}
-				try {
-					conn.getUser().addRequestsFilled();
-				} catch (NoSuchUserException e) {
-					e.printStackTrace();
-				}
-				return new FtpReply(
-					200,
-					"OK, renamed " + myreqname + " to " + filledname);
-			}
-		}
-		return new FtpReply(200, "Couldn't find a request named " + reqname);
+	public String[] getFeatReplies() {
+		return null;
 	}
 
 	public CommandHandler initialize(
@@ -142,8 +137,8 @@ public class Request implements CommandHandler {
 		CommandManager initializer) {
 		return this;
 	}
-
-	public String[] getFeatReplies() {
-		return null;
+	public void load(CommandManagerFactory initializer) {
+	}
+	public void unload() {
 	}
 }

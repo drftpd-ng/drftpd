@@ -40,14 +40,14 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.11 2004/01/13 00:38:55 mog Exp $
+ * @version $Id: Dir.java,v 1.12 2004/01/13 20:30:54 mog Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
 	protected LinkedRemoteFile _renameFrom = null;
 	private final static SimpleDateFormat DATE_FMT =
 		new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
-	private Logger logger = Logger.getLogger(Dir.class);
+	private static final Logger logger = Logger.getLogger(Dir.class);
 
 	public Dir() {
 		super();
@@ -629,13 +629,8 @@ public class Dir implements CommandHandler, Cloneable {
 		LinkedRemoteFile file;
 		try {
 			file = conn.getCurrentDirectory().lookupFile(request.getArgument());
-			//file = getVirtualDirectory().lookupFile(request.getArgument());
 		} catch (FileNotFoundException ex) {
 			return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
-		}
-		if (file == null) {
-			System.out.println(
-				"got null file instead of FileNotFoundException");
 		}
 		return new FtpReply(213, Long.toString(file.length()));
 	}

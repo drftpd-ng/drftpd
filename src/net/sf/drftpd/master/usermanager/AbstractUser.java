@@ -23,10 +23,10 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.33 2003/12/22 18:09:42 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.34 2004/01/13 20:30:54 mog Exp $
  */
 public abstract class AbstractUser implements User {
-	private static Logger logger = Logger.getLogger(AbstractUser.class);
+	private static final Logger logger = Logger.getLogger(AbstractUser.class);
 	/**
 	 * Should problably be named group for consistency,
 	 * this would reset group for JSXUser though. 
@@ -53,7 +53,7 @@ public abstract class AbstractUser implements User {
 	protected int downloadedSecondsMonth;
 	protected int downloadedSecondsWeek;
 	protected short groupLeechSlots;
-	
+
 	protected int racesWon;
 	protected int racesLost;
 	protected int racesParticipated;
@@ -135,10 +135,10 @@ public abstract class AbstractUser implements User {
 
 		for (Iterator e2 = ipMasks.iterator(); e2.hasNext();) {
 			String mask = (String) e2.next();
-			if (!useIdent){
-				mask = mask.substring(mask.indexOf('@')+1);
+			if (!useIdent) {
+				mask = mask.substring(mask.indexOf('@') + 1);
 				for (int i = 0; i < masks.length; i++) {
-					masks[i] = masks[i].substring(masks[i].indexOf('@')+1);
+					masks[i] = masks[i].substring(masks[i].indexOf('@') + 1);
 				}
 			}
 			Pattern p;
@@ -243,16 +243,16 @@ public abstract class AbstractUser implements User {
 	public int getIdleTime() {
 		return idleTime;
 	}
-	
+
 	public List getIpMasks() {
 		return ipMasks;
 	}
-	
+
 	public List getIpMasks2() {
 		//return ipMasks;
 		ArrayList ret = new ArrayList();
 		for (Iterator iter = ipMasks.iterator(); iter.hasNext();) {
-			ret.add(new HostMask((String)iter.next()));
+			ret.add(new HostMask((String) iter.next()));
 		}
 		return ret;
 	}
@@ -376,27 +376,27 @@ public abstract class AbstractUser implements User {
 	public long getWeeklyAllotment() {
 		return this.weeklyAllotment;
 	}
-	
+
 	public int getRacesWon() {
 		return racesWon;
 	}
-	
+
 	public int getRacesLost() {
 		return racesLost;
 	}
-	
+
 	public int getRacesParticipated() {
 		return racesParticipated;
 	}
-	
+
 	public int getRequests() {
 		return requests;
 	}
-	
+
 	public int getRequestsFilled() {
 		return requestsFilled;
 	}
-	
+
 	public int hashCode() {
 		return getUsername().hashCode();
 	}
@@ -404,11 +404,10 @@ public abstract class AbstractUser implements User {
 	public boolean isAdmin() {
 		return isMemberOf("siteop");
 	}
-	
+
 	public boolean isAnonymous() {
 		return anonymous;
 	}
-
 
 	public boolean isDeleted() {
 		return isMemberOf("deleted");
@@ -417,7 +416,7 @@ public abstract class AbstractUser implements User {
 	public boolean isExempt() {
 		return isMemberOf("exempt");
 	}
-	
+
 	public boolean isGroupAdmin() {
 		return isMemberOf("gadmin");
 	}
@@ -454,8 +453,9 @@ public abstract class AbstractUser implements User {
 
 	public void reset(ConnectionManager cmgr) throws UserFileException {
 		//handle if we are called from userfileconverter or the like
-		if (cmgr == null ) return;
-		
+		if (cmgr == null)
+			return;
+
 		Date lastResetDate = new Date(this.lastReset);
 
 		Calendar cal = Calendar.getInstance();
@@ -463,15 +463,15 @@ public abstract class AbstractUser implements User {
 		CalendarUtils.ceilAllLessThanDay(cal);
 
 		//has not been reset since midnight
-		if (lastResetDate.before(cal.getTime())) 
+		if (lastResetDate.before(cal.getTime()))
 			resetDay(cmgr, cal.getTime());
 
 		//floorDayOfWeek could go into the previous month
-		Calendar cal2 = (Calendar)cal.clone();
+		Calendar cal2 = (Calendar) cal.clone();
 		CalendarUtils.floorDayOfWeek(cal2);
 		if (lastResetDate.before(cal2.getTime()))
 			resetWeek(cmgr, cal.getTime());
-			
+
 		CalendarUtils.floorDayOfMonth(cal);
 		if (lastResetDate.before(cal.getTime()))
 			resetMonth(cmgr, cal.getTime());
@@ -481,7 +481,8 @@ public abstract class AbstractUser implements User {
 	}
 
 	private void resetDay(ConnectionManager cm, Date resetDate) {
-		cm.dispatchFtpEvent(new UserEvent(this, "RESETDAY", resetDate.getTime()));
+		cm.dispatchFtpEvent(
+			new UserEvent(this, "RESETDAY", resetDate.getTime()));
 
 		this.downloadedFilesDay = 0;
 		this.uploadedBytesDay = 0;
@@ -496,7 +497,8 @@ public abstract class AbstractUser implements User {
 	}
 
 	private void resetMonth(ConnectionManager cm, Date resetDate) {
-		cm.dispatchFtpEvent(new UserEvent(this, "RESETMONTH", resetDate.getTime()));
+		cm.dispatchFtpEvent(
+			new UserEvent(this, "RESETMONTH", resetDate.getTime()));
 
 		this.downloadedFilesMonth = 0;
 		this.uploadedBytesMonth = 0;
@@ -510,7 +512,8 @@ public abstract class AbstractUser implements User {
 	}
 
 	private void resetWeek(ConnectionManager cm, Date resetDate) {
-		cm.dispatchFtpEvent(new UserEvent(this, "RESETWEEK", resetDate.getTime()));
+		cm.dispatchFtpEvent(
+			new UserEvent(this, "RESETWEEK", resetDate.getTime()));
 
 		this.downloadedFilesWeek = 0;
 		this.uploadedBytesWeek = 0;
@@ -596,7 +599,7 @@ public abstract class AbstractUser implements User {
 	public void setMaxLoginsPerIP(int maxLoginsPerIP) {
 		this.maxLoginsPerIP = maxLoginsPerIP;
 	}
-	
+
 	public void setMaxSimDownloads(int maxSimDownloads) {
 		this.maxSimDownloads = maxSimDownloads;
 	}
@@ -673,7 +676,7 @@ public abstract class AbstractUser implements User {
 	public void updateNukedBytes(long bytes) {
 		this.nukedBytes += bytes;
 	}
-	
+
 	public void updateTimesNuked(int timesNuked) {
 		this.timesNuked += timesNuked;
 	}
@@ -691,7 +694,7 @@ public abstract class AbstractUser implements User {
 		this.uploadedFilesWeek += i;
 		this.uploadedFilesMonth += i;
 	}
-	
+
 	public void addRacesWon() {
 		racesWon++;
 	}
@@ -703,7 +706,7 @@ public abstract class AbstractUser implements User {
 	public void addRacesLost() {
 		racesLost++;
 	}
-	
+
 	public void addRequests() {
 		requests++;
 	}
@@ -713,11 +716,13 @@ public abstract class AbstractUser implements User {
 	}
 
 	public boolean equals(Object obj) {
-		return obj instanceof User ? ((User)obj).getUsername().equals(getUsername()) : false;
+		return obj instanceof User
+			? ((User) obj).getUsername().equals(getUsername())
+			: false;
 	}
 
 	public void toggleGroup(String string) {
-		if(isMemberOf(string)) {
+		if (isMemberOf(string)) {
 			try {
 				removeGroup(string);
 			} catch (NoSuchFieldException e) {

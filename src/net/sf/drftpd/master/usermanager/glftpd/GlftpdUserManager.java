@@ -7,37 +7,33 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.master.usermanager.UserManager;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 import org.apache.log4j.Logger;
 
 /**
  * @author mog
  * @author zubov
- * @version $Id: GlftpdUserManager.java,v 1.8 2003/12/12 22:33:28 mog Exp $
+ * @version $Id: GlftpdUserManager.java,v 1.9 2004/01/13 20:30:54 mog Exp $
  */
 public class GlftpdUserManager implements UserManager {
-	private static Logger logger =
+	private static final Logger logger =
 		Logger.getLogger(GlftpdUserManager.class.getName());
 
-	File userpathFile;
-
-	Hashtable users = new Hashtable();
+	private File userpathFile;
 
 	private String userdirpath;
 	private File passwdfile;
-	LinkedRemoteFile root;
 	/**
 	 * Constructor for GlftpdUserManager.
 	 * 
@@ -53,15 +49,11 @@ public class GlftpdUserManager implements UserManager {
 		//this.root = root;
 		String glftpdRoot = cfg.getProperty("glftpd.root", ".");
 		userdirpath =
-			cfg.getProperty(
-				"glftpd.users",
-				glftpdRoot + "/ftp-data/users/");
+			cfg.getProperty("glftpd.users", glftpdRoot + "/ftp-data/users/");
 		userpathFile = new File(userdirpath);
 		passwdfile =
 			new File(
-				cfg.getProperty(
-					"glftpd.passwd",
-					glftpdRoot + "/etc/passwd"));
+				cfg.getProperty("glftpd.passwd", glftpdRoot + "/etc/passwd"));
 	}
 
 	/**
@@ -78,7 +70,7 @@ public class GlftpdUserManager implements UserManager {
 		throw new UnsupportedOperationException();
 	}
 
-	void load(User user) throws NoSuchUserException {
+	void load(User user) throws NoSuchUserException, IOException {
 
 		GlftpdUser gluser = null;
 		if (user instanceof GlftpdUser)
@@ -124,7 +116,7 @@ public class GlftpdUserManager implements UserManager {
 						user.setMaxUploadRate(Integer.parseInt(param[4]));
 					} else if ("LOGINS".equals(param[0])) {
 						// max logins per account, max logins from the same IP,
-						
+
 						// max simult. downloads, max simult. uploads -1 is unlimited
 						user.setMaxLogins(Integer.parseInt(param[1]));
 						user.setMaxLoginsPerIP(Integer.parseInt(param[2]));
@@ -256,11 +248,13 @@ public class GlftpdUserManager implements UserManager {
 					} else if (param[0].startsWith("#")) {
 						//ignore comments
 					} else {
-						logger.info("Unrecognized userfile entry: "+line);
+						logger.info("Unrecognized userfile entry: " + line);
 					}
 				}
-			} catch (Exception ex) {
-				logger.warn("", ex);
+			} catch (DuplicateElementException e) {
+				logger.warn("", e);
+			} finally {
+				in.close();
 			}
 		}
 		{
@@ -282,8 +276,8 @@ public class GlftpdUserManager implements UserManager {
 						break;
 					}
 				}
-			} catch (IOException ex) {
-				ex.printStackTrace();
+			} finally {
+				in.close();
 			}
 			if (!foundpassword) {
 				logger.warn("couldn't find a password in " + passwdfile);
@@ -298,8 +292,13 @@ public class GlftpdUserManager implements UserManager {
 		if (!new File(getUserfilepath(username)).exists()) {
 			throw new NoSuchUserException("No userfile for user " + username);
 		}
-		GlftpdUser user = new GlftpdUser(this, username);
-		load(user); //throws CorruptUserFileException, NoSuchUserException
+		GlftpdUser user = new GlftpdUser(username);
+		try {
+			load(user);
+			//throws CorruptUserFileException, NoSuchUserException
+		} catch (IOException e) {
+			throw new UserFileException(e);
+		}
 		return user;
 	}
 
@@ -314,7 +313,8 @@ public class GlftpdUserManager implements UserManager {
 	public void saveAll() throws UserFileException {
 		throw new UnsupportedOperationException();
 	}
-	public Collection getAllUsersByGroup(String group) throws UserFileException {
+	public Collection getAllUsersByGroup(String group)
+		throws UserFileException {
 		Collection users = getAllUsers();
 		for (Iterator iter = users.iterator(); iter.hasNext();) {
 			GlftpdUser user = (GlftpdUser) iter.next();
@@ -337,7 +337,7 @@ public class GlftpdUserManager implements UserManager {
 				continue;
 			if (!new File(getUserfilepath(userpath)).isFile())
 				continue;
-			if (userpath.endsWith(".user"))  //default.user
+			if (userpath.endsWith(".user")) //default.user
 				continue;
 			logger.debug("add " + userpath);
 			try {
@@ -374,9 +374,11 @@ public class GlftpdUserManager implements UserManager {
 	public void init(ConnectionManager mgr) {
 	}
 
-	public User getUserByName(String username) throws NoSuchUserException, UserFileException {
+	public User getUserByName(String username)
+		throws NoSuchUserException, UserFileException {
 		User user = getUserByNameUnchecked(username);
-		if(user.isDeleted()) throw new NoSuchUserException(user.getUsername()+" is deleted");
+		if (user.isDeleted())
+			throw new NoSuchUserException(user.getUsername() + " is deleted");
 		return user;
 	}
 

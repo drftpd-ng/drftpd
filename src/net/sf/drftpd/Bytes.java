@@ -5,7 +5,7 @@ import java.text.DecimalFormatSymbols;
 
 /**
  * @author mog
- * @version $Id: Bytes.java,v 1.10 2004/01/13 01:40:55 mog Exp $
+ * @version $Id: Bytes.java,v 1.11 2004/01/13 20:30:53 mog Exp $
  */
 public class Bytes {
 	//yotta
@@ -13,27 +13,27 @@ public class Bytes {
 	/**
 	 * 1,000,000,000,000,000,000 = exa
 	 */
-	public static long EXA = 1000000000000000000L;
+	public static final long EXA = 1000000000000000000L;
 	/**
 	 * 1,000,000,000,000,000 = peta
 	 */
-	public static long PETA = 1000000000000000L;
+	public static final long PETA = 1000000000000000L;
 	/**
 	 * 1,000,000,000,000 = terra
 	 */
-	public static long TERRA = 1000000000000L;
+	public static final long TERRA = 1000000000000L;
 	/**
 	 * 1,000,000,000 GB
 	 */
-	public static long GIGA = 1000000000L;
+	public static final long GIGA = 1000000000L;
 	/**
 	 * 1,000,000 MB
 	 */
-	public static long MEGA = 1000000L;
+	public static final long MEGA = 1000000L;
 	/**
 	 * 1,000 KB
 	 */
-	public static long KILO = 1000L;
+	public static final long KILO = 1000L;
 
 	/**
 	 * @return human readable string representation of a number of bytes.

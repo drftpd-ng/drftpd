@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.14 2004/01/13 00:38:55 mog Exp $
+ * @version $Id: Trial.java,v 1.15 2004/01/13 20:30:53 mog Exp $
  */
 public class Trial implements FtpListener {
 	private static final short ACTION_DISABLE = 0;
@@ -384,8 +384,9 @@ public class Trial implements FtpListener {
 				props.getProperty(i + ".actionpassed", "").toLowerCase());
 			limit.setActionFailed(
 				props.getProperty(i + ".actionfail", "").toLowerCase());
-			limit.setName(props.getProperty(i + ".name"));
-			String period = props.getProperty(i + ".period").toLowerCase();
+			limit.setName(FtpConfig.getProperty(props, i + ".name"));
+			String period =
+				FtpConfig.getProperty(props, i + ".period").toLowerCase();
 			if ("monthly".equals(period)) {
 				limit.setPeriod(PERIOD_MONTHLY);
 			} else if ("weekly".equals(period)) {
@@ -401,7 +402,8 @@ public class Trial implements FtpListener {
 				perm = "*";
 			limit.setPerm(
 				new Permission(FtpConfig.makeUsers(new StringTokenizer(perm))));
-			limit.setBytes(Bytes.parseBytes(props.getProperty(i + ".quota")));
+			limit.setBytes(
+				Bytes.parseBytes(FtpConfig.getProperty(props, i + ".quota")));
 			limits.add(limit);
 			logger.debug("Limit: " + limit);
 		}

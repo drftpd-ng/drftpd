@@ -54,7 +54,7 @@ public class File extends java.io.File {
 	 * 
 	 * @see java.io.File#listRoots()
 	 */
-	public static File[] listMounts() {
+	public static File[] listMounts() throws IOException {
 		return fs.listMounts();
 	}
 	

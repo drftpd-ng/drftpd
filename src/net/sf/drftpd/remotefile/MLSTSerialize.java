@@ -38,10 +38,11 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 import org.apache.log4j.Logger;
 
 /**
- * @version $Id: MLSTSerialize.java,v 1.17 2003/12/23 13:38:21 mog Exp $
+ * @author mog
+ * @version $Id: MLSTSerialize.java,v 1.18 2004/01/13 20:30:55 mog Exp $
  */
 public class MLSTSerialize {
-	private static Logger logger = Logger.getLogger(MLSTSerialize.class);
+	private static final Logger logger = Logger.getLogger(MLSTSerialize.class);
 
 	public static final SimpleDateFormat timeval =
 		new SimpleDateFormat("yyyyMMddHHmmss.SSS");
@@ -133,7 +134,7 @@ public class MLSTSerialize {
 						throw new CorruptFileListException(e);
 					}
 				} else if ("x.crc32".equals(k)) {
-					file.setChecksum(Long.parseLong(v, 16));
+					file.setCheckSum(Long.parseLong(v, 16));
 				} else if ("unix.owner".equals(k)) {
 					file.setUsername(v);
 				} else if ("unix.group".equals(k)) {

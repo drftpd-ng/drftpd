@@ -29,10 +29,10 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.30 2004/01/13 00:38:55 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.31 2004/01/13 20:30:54 mog Exp $
  */
 public class FtpConfig {
-	private static Logger logger = Logger.getLogger(FtpConfig.class);
+	private static final Logger logger = Logger.getLogger(FtpConfig.class);
 
 	private static ArrayList makePermission(ArrayList arr, StringTokenizer st)
 		throws MalformedPatternException {
@@ -42,10 +42,11 @@ public class FtpConfig {
 				makeUsers(st)));
 		return arr;
 	}
-	
-	public static String getProperty(Properties p, String name) throws NullPointerException {
+
+	public static String getProperty(Properties p, String name)
+		throws NullPointerException {
 		String result = p.getProperty(name);
-		if ( result == null )
+		if (result == null)
 			throw new NullPointerException("Error getting setting " + name);
 		return result;
 	}
@@ -126,6 +127,7 @@ public class FtpConfig {
 	public boolean checkDirLog(User fromUser, LinkedRemoteFile path) {
 		return checkPathPermssion(fromUser, path, _dirlog.iterator());
 	}
+
 	/**
 	 * Also checks privpath for permission
 	 * @return true if fromUser is allowed to download the file path
@@ -139,27 +141,15 @@ public class FtpConfig {
 	 */
 	public boolean checkHideInWho(User fromUser, LinkedRemoteFile path) {
 		return checkPathPermssion(fromUser, path, _hideinwho.iterator());
-		//		for (Iterator iter = _hideinwhos.iterator(); iter.hasNext();) {
-		//			StringPathPermission perm = (PathPermission) iter.next();
-		//			if (perm.checkPath(path)) {
-		//				return !perm.check(fromUser);
-		//			}
-		//		}
-		//		return false;
 	}
+
 	/**
 	 * @return true if fromUser is allowed to mkdir in path
 	 */
 	public boolean checkMakeDir(User fromUser, LinkedRemoteFile path) {
 		return checkPathPermssion(fromUser, path, _makedir.iterator());
-		//		for (Iterator iter = _makedir.iterator(); iter.hasNext();) {
-		//			PathPermission perm = (PathPermission) iter.next();
-		//			if(perm.checkPath(path)) {
-		//				return perm.check(fromUser);
-		//			}
-		//		}
-		//		return true;
 	}
+
 	private boolean checkPathPermssion(
 		User fromUser,
 		LinkedRemoteFile path,
@@ -187,6 +177,7 @@ public class FtpConfig {
 		for (Iterator iter = _privpath.iterator(); iter.hasNext();) {
 			PathPermission perm = (PathPermission) iter.next();
 			if (perm.checkPath(path)) {
+				logger.debug(perm);
 				// path matched, if user is in ACL he's allowed access
 				return perm.check(fromUser);
 			}
@@ -200,7 +191,7 @@ public class FtpConfig {
 	}
 
 	public boolean checkRenameOwn(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermssion(fromUser, path, _rename.iterator());
+		return checkPathPermssion(fromUser, path, _renameown.iterator());
 	}
 	public boolean checkRequest(User fromUser, LinkedRemoteFile path) {
 		return checkPathPermssion(fromUser, path, _request.iterator());
@@ -296,11 +287,12 @@ public class FtpConfig {
 			throw (IOException) new IOException().initCause(e);
 		}
 		_connManager = connManager;
-		_freespaceMin = Bytes.parseBytes(cfg.getProperty("freespace.min"));
+		_freespaceMin =
+			Bytes.parseBytes(FtpConfig.getProperty(cfg, "freespace.min"));
 
 		_useIdent = cfg.getProperty("use.ident", "true").equals("true");
-
 	}
+
 	private void loadConfig2() throws IOException {
 		ArrayList creditcheck = new ArrayList();
 		ArrayList creditloss = new ArrayList();
@@ -320,128 +312,132 @@ public class FtpConfig {
 		ArrayList upload = new ArrayList();
 
 		LineNumberReader in = new LineNumberReader(new FileReader(newConf));
-		String line;
-		GlobCompiler globComiler = new GlobCompiler();
-		while ((line = in.readLine()) != null) {
-			StringTokenizer st = new StringTokenizer(line);
-			if (!st.hasMoreTokens())
-				continue;
-			String command = st.nextToken();
+		try {
+			String line;
+			GlobCompiler globComiler = new GlobCompiler();
+			while ((line = in.readLine()) != null) {
+				StringTokenizer st = new StringTokenizer(line);
+				if (!st.hasMoreTokens())
+					continue;
+				String command = st.nextToken();
 
-			try {
-				if (command.equals("privpath")) {
-					privpath.add(
-						new PatternPathPermission(
-							globComiler.compile(st.nextToken()),
-							makeUsers(st)));
+				try {
+					if (command.equals("privpath")) {
+						privpath.add(
+							new PatternPathPermission(
+								globComiler.compile(st.nextToken()),
+								makeUsers(st)));
+					}
+					// login_prompt <string>
+					else if (command.equals("login_prompt")) {
+						loginPrompt = line.substring(13);
+					}
+					//max_users <maxUsersTotal> <maxUsersExempt>
+					else if (command.equals("max_users")) {
+						_maxUsersTotal = Integer.parseInt(st.nextToken());
+						_maxUsersExempt = Integer.parseInt(st.nextToken());
+					}
+					//msgpath <path> <filename> <flag/=group/-user>
+					else if (command.equals("msgpath")) {
+						String path = st.nextToken();
+						String messageFile = st.nextToken();
+						msgpath.add(
+							new MessagePathPermission(
+								path,
+								messageFile,
+								makeUsers(st)));
+					}
+					//creditloss <path> <multiplier> [<-user|=group|flag> ...]
+					else if (command.equals("creditloss")) {
+						makeRatioPermission(creditloss, st);
+					}
+					//creditcheck <path> <ratio> [<-user|=group|flag> ...]
+					else if (command.equals("creditcheck")) {
+						makeRatioPermission(creditcheck, st);
+					} else if (command.equals("dirlog")) {
+						makePermission(dirlog, st);
+					} else if (command.equals("hideinwho")) {
+						makePermission(hideinwho, st);
+					} else if (command.equals("makedir")) {
+						makePermission(makedirs, st);
+					} else if (command.equals("pre")) {
+						makePermission(pre, st);
+					} else if (command.equals("upload")) {
+						makePermission(upload, st);
+					} else if (command.equals("download")) {
+						makePermission(download, st);
+					} else if (command.equals("delete")) {
+						makePermission(delete, st);
+					} else if (command.equals("deleteown")) {
+						makePermission(deleteown, st);
+					} else if (command.equals("rename")) {
+						makePermission(rename, st);
+					} else if (command.equals("renameown")) {
+						makePermission(renameown, st);
+					} else if (command.equals("request")) {
+						makePermission(request, st);
+					}
+				} catch (Exception e) {
+					logger.warn(
+						"Exception when reading "
+							+ newConf
+							+ " line "
+							+ in.getLineNumber(),
+						e);
 				}
-				// login_prompt <string>
-				else if (command.equals("login_prompt")) {
-					loginPrompt = line.substring(13);
-				}
-				//max_users <maxUsersTotal> <maxUsersExempt>
-				else if (command.equals("max_users")) {
-					_maxUsersTotal = Integer.parseInt(st.nextToken());
-					_maxUsersExempt = Integer.parseInt(st.nextToken());
-				}
-				//msgpath <path> <filename> <flag/=group/-user>
-				else if (command.equals("msgpath")) {
-					String path = st.nextToken();
-					String messageFile = st.nextToken();
-					msgpath.add(
-						new MessagePathPermission(
-							path,
-							messageFile,
-							makeUsers(st)));
-				}
-				//creditloss <path> <multiplier> [<-user|=group|flag> ...]
-				else if (command.equals("creditloss")) {
-					makeRatioPermission(creditloss, st);
-				}
-				//creditcheck <path> <ratio> [<-user|=group|flag> ...]
-				else if (command.equals("creditcheck")) {
-					makeRatioPermission(creditcheck, st);
-				} else if (command.equals("dirlog")) {
-					makePermission(dirlog, st);
-				} else if (command.equals("hideinwho")) {
-					makePermission(hideinwho, st);
-				} else if (command.equals("makedir")) {
-					makePermission(makedirs, st);
-				} else if (command.equals("pre")) {
-					makePermission(pre, st);
-				} else if (command.equals("upload")) {
-					makePermission(upload, st);
-				} else if (command.equals("download")) {
-					makePermission(download, st);
-				} else if (command.equals("delete")) {
-					makePermission(delete, st);
-				} else if (command.equals("deleteown")) {
-					makePermission(deleteown, st);
-				} else if (command.equals("rename")) {
-					makePermission(rename, st);
-				} else if (command.equals("renameown")) {
-					makePermission(renameown, st);
-				} else if (command.equals("request")) {
-					makePermission(request, st);
-				}
-			} catch (Exception e) {
-				logger.warn(
-					"Exception when reading "
-						+ newConf
-						+ " line "
-						+ in.getLineNumber(),
-					e);
 			}
+
+			creditcheck.trimToSize();
+			_creditcheck = creditcheck;
+
+			creditloss.trimToSize();
+			_creditloss = creditloss;
+
+			delete.trimToSize();
+			_delete = delete;
+
+			deleteown.trimToSize();
+			_deleteown = deleteown;
+
+			dirlog.trimToSize();
+			_dirlog = dirlog;
+
+			download.trimToSize();
+			_download = download;
+
+			hideinwho.trimToSize();
+			_hideinwho = hideinwho;
+
+			makedirs.trimToSize();
+			_makedir = makedirs;
+
+			msgpath.trimToSize();
+			_msgpath = msgpath;
+
+			pre.trimToSize();
+			_pre = pre;
+
+			privpath.trimToSize();
+			_privpath = privpath;
+
+			//		eventplugin.trimToSize();
+			//		_eventplugin = eventplugin;
+
+			rename.trimToSize();
+			_rename = rename;
+
+			renameown.trimToSize();
+			_renameown = renameown;
+
+			request.trimToSize();
+			_request = request;
+
+			upload.trimToSize();
+			_upload = upload;
+
+		} finally {
+			in.close();
 		}
-
-		creditcheck.trimToSize();
-		_creditcheck = creditcheck;
-
-		creditloss.trimToSize();
-		_creditloss = creditloss;
-
-		delete.trimToSize();
-		_delete = delete;
-
-		deleteown.trimToSize();
-		_deleteown = deleteown;
-
-		dirlog.trimToSize();
-		_dirlog = dirlog;
-
-		download.trimToSize();
-		_download = download;
-
-		hideinwho.trimToSize();
-		_hideinwho = hideinwho;
-
-		makedirs.trimToSize();
-		_makedir = makedirs;
-
-		msgpath.trimToSize();
-		_msgpath = msgpath;
-
-		pre.trimToSize();
-		_pre = pre;
-
-		privpath.trimToSize();
-		_privpath = privpath;
-
-		//		eventplugin.trimToSize();
-		//		_eventplugin = eventplugin;
-
-		rename.trimToSize();
-		_rename = rename;
-
-		renameown.trimToSize();
-		_renameown = renameown;
-
-		request.trimToSize();
-		_request = request;
-
-		upload.trimToSize();
-		_upload = upload;
-
 	}
 
 	private Map loadFormats(InputStream in)

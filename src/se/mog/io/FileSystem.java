@@ -6,6 +6,8 @@
  */
 package se.mog.io;
 
+import java.io.IOException;
+
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  *
@@ -24,6 +26,6 @@ abstract class FileSystem {
 	 * To make listMountsbehave like df omit volumes with 0 bytes using se.mog.io.File#getAvailableDiskSpace() 
 	 * @return
 	 */
-	public abstract File[] listMounts();
+	public abstract File[] listMounts() throws IOException;
 	public abstract DiskFreeSpace getDiskFreeSpace(File file);
 }

@@ -31,6 +31,7 @@ import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.SlaveManager;
+import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.util.PortRange;
@@ -44,7 +45,7 @@ import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.76 2003/12/23 13:38:21 mog Exp $
+ * @version $Id: SlaveImpl.java,v 1.77 2004/01/13 20:30:55 mog Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
@@ -136,7 +137,8 @@ public class SlaveImpl
 				RMISocketFactory.setSocketFactory(
 					new PortRangeServerSocketFactory(
 						Integer.parseInt(cfg.getProperty("slave.portfrom")),
-						Integer.parseInt(cfg.getProperty("slave.portto"))));
+						Integer.parseInt(
+							FtpConfig.getProperty(cfg, "slave.portto"))));
 			}
 
 			new SlaveImpl(cfg);
@@ -167,12 +169,12 @@ public class SlaveImpl
 		String slavemanagerurl;
 		slavemanagerurl =
 			"//"
-				+ cfg.getProperty("master.host")
+				+ FtpConfig.getProperty(cfg, "master.host")
 				+ ":"
 				+ cfg.getProperty("master.bindport", "1099")
 				+ "/"
-				+ cfg.getProperty("master.bindname");
-		_name = cfg.getProperty("slave.name");
+				+ FtpConfig.getProperty(cfg, "master.bindname");
+		_name = FtpConfig.getProperty(cfg, "slave.name");
 
 		_roots = getDefaultRootBasket(cfg);
 		try {
@@ -213,19 +215,23 @@ public class SlaveImpl
 	public long checkSum(String path) throws IOException {
 		logger.debug("Checksumming: " + path);
 		CRC32 crc32 = new CRC32();
-		InputStream in =
-			new CheckedInputStream(
-				new FileInputStream(_roots.getFile(path)),
-				crc32);
-		byte buf[] = new byte[4096];
-		while (in.read(buf) != -1);
+		FileInputStream fis = new FileInputStream(_roots.getFile(path));
+		try {
+			InputStream in = new CheckedInputStream(fis, crc32);
+			byte buf[] = new byte[4096];
+			while (in.read(buf) != -1);
+		} finally {
+			fis.close();
+		}
 		return crc32.getValue();
 	}
 
 	public Transfer connect(InetSocketAddress addr, boolean encrypted)
 		throws RemoteException {
-			//TODO connect?
-		return new TransferImpl(new ActiveConnection(encrypted ? _ctx : null, addr), this);
+		//TODO connect?
+		return new TransferImpl(
+			new ActiveConnection(encrypted ? _ctx : null, addr),
+			this);
 	}
 
 	public void delete(String path) throws IOException {
@@ -310,7 +316,10 @@ public class SlaveImpl
 	public Transfer listen(boolean encrypted)
 		throws RemoteException, IOException {
 		return new TransferImpl(
-			new PassiveConnection(encrypted ? _ctx : null, _portRange, new InetSocketAddress(0)),
+			new PassiveConnection(
+				encrypted ? _ctx : null,
+				_portRange,
+				new InetSocketAddress(0)),
 			this);
 	}
 

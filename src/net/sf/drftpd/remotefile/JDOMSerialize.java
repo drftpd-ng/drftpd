@@ -15,10 +15,11 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 
 /**
- * @version $Id: JDOMSerialize.java,v 1.4 2003/12/23 13:38:21 mog Exp $
+ * @author mog
+ * @version $Id: JDOMSerialize.java,v 1.5 2004/01/13 20:30:55 mog Exp $
  */
 public class JDOMSerialize {
-	private static Logger logger = Logger.getLogger(JDOMSerialize.class);
+	private static final Logger logger = Logger.getLogger(JDOMSerialize.class);
 
 	public static LinkedRemoteFile unserialize(ConnectionManager cm, Reader in, List rslaves) throws FileNotFoundException {
 		LinkedRemoteFile root;

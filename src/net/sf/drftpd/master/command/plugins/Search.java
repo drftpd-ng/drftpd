@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
+
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
@@ -14,7 +16,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: Search.java,v 1.6 2004/01/13 01:40:56 mog Exp $
+ * @version $Id: Search.java,v 1.7 2004/01/13 20:30:54 mog Exp $
  */
 public class Search implements CommandHandler {
 	public void unload() {}
@@ -28,8 +30,10 @@ public class Search implements CommandHandler {
 		boolean files,
 		boolean dirs) {
 		//TODO optimize me, checking using regexp for all dirs is possibly slow 
-		if (conn.getConfig().checkPrivPath(conn.getUserNull(), dir))
+		if (!conn.getConfig().checkPrivPath(conn.getUserNull(), dir)) {
+			Logger.getLogger(Search.class).debug("privpath: "+dir.getPath());
 			return;
+		}
 		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
 			if (file.isDirectory()) {

@@ -16,11 +16,10 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 /**
  * @author mog
  *
- * @version $Id: Invite.java,v 1.5 2003/12/23 13:38:18 mog Exp $
+ * @version $Id: Invite.java,v 1.6 2004/01/13 20:30:53 mog Exp $
  */
 public class Invite extends GenericCommandAutoService {
-
-	private Logger logger = Logger.getLogger(Invite.class);
+	private static final Logger logger = Logger.getLogger(Invite.class);
 
 	private ConnectionManager _cm;
 

@@ -19,13 +19,13 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.11 2004/01/05 02:20:08 mog Exp $
+ * @version $Id: ListUtils.java,v 1.12 2004/01/13 20:30:55 mog Exp $
  */
 public class ListUtils {
 
-	private static Logger logger = Logger.getLogger(ListUtils.class);
+	private static final Logger logger = Logger.getLogger(ListUtils.class);
 
-	public static String PADDING = "          ";
+	public static final String PADDING = "          ";
 
 	public static boolean isLegalFileName(String fileName) {
 		assert fileName != null;

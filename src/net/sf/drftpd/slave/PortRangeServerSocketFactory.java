@@ -16,10 +16,11 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: PortRangeServerSocketFactory.java,v 1.2 2003/12/13 17:20:23 mog Exp $
+ * @version $Id: PortRangeServerSocketFactory.java,v 1.3 2004/01/13 20:30:55 mog Exp $
+ * @deprecated
  */
 public class PortRangeServerSocketFactory extends RMISocketFactory {
-	private static Logger logger =
+	private static final Logger logger =
 		Logger.getLogger(PortRangeServerSocketFactory.class);
 
 	int _portfrom;

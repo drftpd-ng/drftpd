@@ -19,10 +19,10 @@ import se.mog.io.File;
 //TODO SECURITY: verify so that we never get outside of a rootbasket root
 /**
  * @author mog
- * @version $Id: RootBasket.java,v 1.20 2004/01/03 23:50:54 mog Exp $
+ * @version $Id: RootBasket.java,v 1.21 2004/01/13 20:30:55 mog Exp $
  */
 public class RootBasket {
-	private static Logger logger = Logger.getLogger(RootBasket.class);
+	private static final Logger logger = Logger.getLogger(RootBasket.class);
 	private Collection _roots;
 
 	public RootBasket(Collection roots) throws IOException {
@@ -145,8 +145,13 @@ public class RootBasket {
 		}
 		Collections.sort(mounts, new Comparator() {
 			public boolean equals(Object obj) {
-				return obj.getClass() == this.getClass();
+				return obj.getClass() == getClass();
 			}
+
+			public int hashCode() {
+				return getClass().hashCode();
+			}
+
 
 			public int compare(Object o1, Object o2) {
 				return compare((File) o1, (File) o2);

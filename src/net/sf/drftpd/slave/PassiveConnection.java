@@ -16,11 +16,11 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: PassiveConnection.java,v 1.7 2003/12/13 17:20:23 mog Exp $
+ * @version $Id: PassiveConnection.java,v 1.8 2004/01/13 20:30:55 mog Exp $
  */
 public class PassiveConnection extends Connection {
 	private PortRange _portRange;
-	private static Logger logger = Logger.getLogger(PassiveConnection.class);
+	private static final Logger logger = Logger.getLogger(PassiveConnection.class);
 	ServerSocket server;
 
 	public PassiveConnection(SSLContext ctx, PortRange portRange, InetSocketAddress bindAddr)

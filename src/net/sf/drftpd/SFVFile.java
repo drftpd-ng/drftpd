@@ -13,11 +13,11 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: SFVFile.java,v 1.25 2004/01/08 03:14:48 mog Exp $
+ * @version $Id: SFVFile.java,v 1.26 2004/01/13 20:30:53 mog Exp $
  */
 public class SFVFile implements Serializable {
 
-	public class SFVStatus {
+	public static class SFVStatus {
 		private int _present;
 		private int _offline;
 		private int _total;
@@ -75,7 +75,7 @@ public class SFVFile implements Serializable {
 	 * String fileName as key.
 	 * Long checkSum as value.
 	 */
-	private Map _entries = new Hashtable();
+	private Hashtable _entries = new Hashtable();
 	/**
 	 * Constructor for SFVFile.
 	 */

@@ -50,10 +50,10 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.30 2004/01/13 01:40:56 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.31 2004/01/13 20:30:54 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
-	private static Logger logger =
+	private static final Logger logger =
 		Logger.getLogger(DataConnectionHandler.class);
 
 	private boolean _encryptedDataChannel;
@@ -858,7 +858,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		_preTransfer = false;
 		_preTransferRSlave = null;
 
-		if (_serverSocket != null) {//isPasv() && _preTransferRSlave == null
+		if (_serverSocket != null) { //isPasv() && _preTransferRSlave == null
 			_portRange.releasePort(_serverSocket.getLocalPort());
 		}
 		isPasv = false;

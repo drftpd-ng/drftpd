@@ -2,7 +2,6 @@ package net.sf.drftpd.master.queues;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -17,10 +16,10 @@ import org.jdom.output.XMLOutputter;
 /**
  * @author mog
  *
- * @version $Id: NukeLog.java,v 1.8 2003/12/23 13:38:20 mog Exp $
+ * @version $Id: NukeLog.java,v 1.9 2004/01/13 20:30:54 mog Exp $
  */
-public class NukeLog implements Serializable {
-	private static Logger logger = Logger.getLogger(NukeLog.class);
+public class NukeLog {
+	private static final Logger logger = Logger.getLogger(NukeLog.class);
 
 	ArrayList nukes = new ArrayList();
 	public NukeLog() {

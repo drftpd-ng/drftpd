@@ -12,7 +12,7 @@ import net.sf.drftpd.master.FtpReply;
 /**
  * @author mog
  *
- * @version $Id: MessagePathPermission.java,v 1.4 2003/12/23 13:38:20 mog Exp $
+ * @version $Id: MessagePathPermission.java,v 1.5 2004/01/13 20:30:54 mog Exp $
  */
 public class MessagePathPermission extends StringPathPermission {
 	private ArrayList message;
@@ -25,8 +25,12 @@ public class MessagePathPermission extends StringPathPermission {
 		message = new ArrayList();
 		BufferedReader in = new BufferedReader(new FileReader(messageFile));
 		String line;
-		while ((line = in.readLine()) != null) {
-			message.add(line);
+		try {
+			while ((line = in.readLine()) != null) {
+				message.add(line);
+			}
+		} finally {
+			in.close();
 		}
 		message.trimToSize();
 	}

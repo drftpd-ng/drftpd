@@ -31,10 +31,10 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * @version $Id: LIST.java,v 1.11 2004/01/05 02:20:08 mog Exp $
+ * @version $Id: LIST.java,v 1.12 2004/01/13 20:30:54 mog Exp $
  */
 public class LIST implements CommandHandler {
-	private Logger logger = Logger.getLogger(LIST.class);
+	private static final Logger logger = Logger.getLogger(LIST.class);
 
 	private final static String DELIM = " ";
 

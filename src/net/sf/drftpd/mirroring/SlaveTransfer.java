@@ -55,7 +55,7 @@ public class SlaveTransfer {
 	private RemoteSlave _destSlave;
 	private LinkedRemoteFile _file;
 	private RemoteSlave _sourceSlave;
-	private boolean failed = false;
+	//private boolean failed = false;
 	private boolean finished = false;
 	private Throwable stackTrace;
 	/**

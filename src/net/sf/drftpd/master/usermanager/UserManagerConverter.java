@@ -9,14 +9,14 @@ import org.apache.log4j.Logger;
 import net.sf.drftpd.DuplicateElementException;
 
 /**
- * @author mog
- * @version $Id: UserManagerConverter.java,v 1.3 2003/12/12 22:34:34 mog Exp $
- * 
  * Usage: java net.sf.drftpd.master.usermanager.UserManagerConverter net.sf.drftpd.master.usermanager.glftpd.GlftpdUserManager net.sf.drftpd.master.usermanager.JSXUserManager
+ * 
+ * @author mog
+ * @version $Id: UserManagerConverter.java,v 1.4 2004/01/13 20:30:54 mog Exp $
  */
 public class UserManagerConverter {
-
-	private static Logger logger = Logger.getLogger(UserManagerConverter.class);
+	private static final Logger logger =
+		Logger.getLogger(UserManagerConverter.class);
 
 	public static void main(String[] args)
 		throws
