@@ -4,62 +4,104 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 
 /**
+ * See http://physics.nist.gov/cuu/Units/binary.html for an explanation of binary multiples.
+ * 
  * @author mog
- * @version $Id: Bytes.java,v 1.11 2004/01/13 20:30:53 mog Exp $
+ * @version $Id: Bytes.java,v 1.12 2004/01/30 14:56:08 mog Exp $
  */
 public class Bytes {
-	//yotta
-	//zetta
-	/**
-	 * 1,000,000,000,000,000,000 = exa
-	 */
-	public static final long EXA = 1000000000000000000L;
-	/**
-	 * 1,000,000,000,000,000 = peta
-	 */
-	public static final long PETA = 1000000000000000L;
-	/**
-	 * 1,000,000,000,000 = terra
-	 */
-	public static final long TERRA = 1000000000000L;
+	private static class Multiple {
+		private long _binaryMultiple;
+		private long _multiple;
+
+		private char _suffix;
+		public Multiple(char suffix, long multiple, long binarymultiple) {
+			_suffix = suffix;
+			_multiple = multiple;
+			_binaryMultiple = binarymultiple;
+		}
+
+		public long getBinaryMultiple() {
+			return _binaryMultiple;
+		}
+
+		public long getMultiple() {
+			return _multiple;
+		}
+
+		public char getSuffix() {
+			return _suffix;
+		}
+
+	}
+	private static final DecimalFormat FORMAT = new DecimalFormat();
+	static {
+		DecimalFormatSymbols formatsymbols = new DecimalFormatSymbols();
+		formatsymbols.setDecimalSeparator('.');
+		DecimalFormat format = new DecimalFormat("0.0", formatsymbols);
+		format.setDecimalSeparatorAlwaysShown(true);
+	}
+
+
+	public static final long GIBI = 1073741824L;
+
 	/**
 	 * 1,000,000,000 GB
 	 */
 	public static final long GIGA = 1000000000L;
-	/**
-	 * 1,000,000 MB
-	 */
-	public static final long MEGA = 1000000L;
+	public static final long KIBI = 1024L;
+
 	/**
 	 * 1,000 KB
 	 */
 	public static final long KILO = 1000L;
 
+	public static final long MEBI = 1048576L;
+
 	/**
-	 * @return human readable string representation of a number of bytes.
+	 * 1,000,000 MB
 	 */
+	public static final long MEGA = 1000000L;
+
+	public static final Multiple[] multiples =
+		new Multiple[] {
+			new Multiple('E', 1000000000000000000L, 1152921504606846976L),
+			new Multiple('P', 1000000000000000L, 1125899906842624L),
+			new Multiple('T', 1000000000000L, 1099511627776L),
+			new Multiple('G', 1000000000L, 1073741824L),
+			new Multiple('M', 1000000L, 1048576L),
+			new Multiple('K', 1000L, 1024L)};
+
+	/**
+	 * 1,000,000,000,000,000 = peta
+	 */
+	public static final long PETA = 1000000000000000L;
+	public static final long TEBI = 1099511627776L;
+
+	/**
+	 * 1,000,000,000,000 = terra
+	 */
+	public static final long TERRA = 1000000000000L;
+
 	public static String formatBytes(long bytes) {
-		long absbytes = Math.abs(bytes);
-		DecimalFormatSymbols formatsymbols = new DecimalFormatSymbols();
-		formatsymbols.setDecimalSeparator('.');
-		DecimalFormat format = new DecimalFormat("0.0", formatsymbols);
-		format.setDecimalSeparatorAlwaysShown(true);
-		if (absbytes >= TERRA) {
-			return format.format((float) bytes / TERRA) + "TB";
-
-		} else if (absbytes >= GIGA) {
-			return format.format((float) bytes / GIGA) + "GB";
-
-		} else if (absbytes >= MEGA) {
-			return format.format((float) bytes / MEGA) + "MB";
-
-		} else if (absbytes >= KILO) {
-			return format.format((float) bytes / KILO) + "KB";
-		}
-		return Long.toString(bytes) + "B";
+		return formatBytes(bytes, Boolean.getBoolean(System.getProperty("bytes.binary", "false")));
 	}
 
-
+	public static String formatBytes(long bytes, boolean binary) {
+		long absbytes = Math.abs(bytes);
+		for (int i = 0; i < multiples.length; i++) {
+			Multiple multiple = multiples[i];
+			long multipleVal =
+				binary ? multiple.getBinaryMultiple() : multiple.getMultiple();
+			if (absbytes >= multipleVal) {
+				return Bytes.FORMAT.format((float) bytes / multipleVal)
+						+ multiple.getSuffix()
+						+ (binary ? "i" : "")
+						+ "B";
+			}
+		}
+		return bytes+"B";
+	}
 	/**
 	 * Parse a string representation of an amount of bytes. The suffix b is optional and makes no different, this method is case insensitive.
 	 * <p>
@@ -70,23 +112,35 @@ public class Bytes {
 	 * 1k = 1000 bytes
 	 * 1kb = 1000 bytes
 	 * 1t = 1 terrabyte
+	 * 1tib = 1 tebibyte
 	 */
 	public static long parseBytes(String str) throws NumberFormatException {
 		str = str.toUpperCase();
 		if (str.endsWith("B"))
 			str = str.substring(0, str.length() - 1);
-		if (str.endsWith("K"))
-			return (long)(Double.parseDouble(str.substring(0, str.length() - 1)) * KILO);
 
-		if (str.endsWith("M"))
-			return (long)(Double.parseDouble(str.substring(0, str.length() - 1)) * MEGA);
+		boolean binary = false;
+		if (str.endsWith("I")) {
+			str = str.substring(0, str.length() - 1);
+			binary = true;
+		}
 
-		if (str.endsWith("G"))
-			return (long)(Double.parseDouble(str.substring(0, str.length() - 1)) * GIGA);
+		char suffix = Character.toUpperCase(str.charAt(str.length() - 1));
+		if (Character.isDigit(suffix)) {
+			return Long.parseLong(str);
+		}
+		str = str.substring(0, str.length() - 1);
 
-		if (str.endsWith("T"))
-			return (long)(Double.parseDouble(str.substring(0, str.length() - 1)) * TERRA);
-
-		return Long.parseLong(str);
+		for (int i = 0; i < multiples.length; i++) {
+			Multiple multiple = multiples[i];
+			//long multiple = ;
+			if (suffix == multiple.getSuffix()) {
+				return Long.parseLong(str)
+					* (binary
+						? multiple.getBinaryMultiple()
+						: multiple.getMultiple());
+			}
+		}
+		throw new IllegalArgumentException("Unknown suffix " + suffix);
 	}
 }

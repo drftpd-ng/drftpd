@@ -20,3 +20,6 @@ master.bindport=1099
 #pasv port range
 #slave.portfrom=30000
 #slave.portto=33000
+
+enableuploadchecksums=true
+enabledownloadchecksums=true

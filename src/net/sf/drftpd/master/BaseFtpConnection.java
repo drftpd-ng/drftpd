@@ -41,7 +41,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.69 2004/01/20 06:59:00 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.70 2004/01/30 14:56:08 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -577,7 +577,10 @@ public class BaseFtpConnection implements Runnable {
 		return SocketFactory.getDefault();
 	}
 
-	public String jprintf(Class class1, String string, ReplacerEnvironment env) {
+	public String jprintf(
+		Class class1,
+		String string,
+		ReplacerEnvironment env) {
 		return jprintf(class1.getName(), string, env);
 	}
 }

@@ -24,7 +24,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.34 2004/01/20 16:07:17 zubov Exp $
+ * @version $Id: FtpConfig.java,v 1.35 2004/01/30 14:56:10 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -170,7 +170,6 @@ public class FtpConfig {
 		for (Iterator iter = _privpath.iterator(); iter.hasNext();) {
 			PathPermission perm = (PathPermission) iter.next();
 			if (perm.checkPath(path)) {
-				logger.debug(perm);
 				// path matched, if user is in ACL he's allowed access
 				return perm.check(fromUser);
 			}

@@ -45,7 +45,7 @@ import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.79 2004/01/28 08:15:21 zubov Exp $
+ * @version $Id: SlaveImpl.java,v 1.80 2004/01/30 14:56:10 mog Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
@@ -170,6 +170,7 @@ public class SlaveImpl
 		}
 		_uploadChecksums = cfg.getProperty("enableuploadchecksums", "true").equals("true");
 		_downloadChecksums = cfg.getProperty("enabledownloadchecksums", "false").equals("true");
+
 		String slavemanagerurl;
 		slavemanagerurl =
 			"//"

@@ -10,7 +10,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: ReplacerUtils.java,v 1.1 2004/01/20 06:59:01 mog Exp $
+ * @version $Id: ReplacerUtils.java,v 1.2 2004/01/30 14:56:12 mog Exp $
  */
 public class ReplacerUtils {
 	private static final Logger logger = Logger.getLogger(ReplacerUtils.class);
@@ -49,7 +49,7 @@ public class ReplacerUtils {
 			str = finalFormat(baseName, key);
 			return finalJprintf(str, env);
 		} catch (FormatterException e) {
-			logger.warn("", e);
+			logger.warn("basename: "+baseName, e);
 			return key;
 		}
 	}
