@@ -35,12 +35,34 @@
 	<src path="${sourceDir}"/>
 	<classpath refid="classpath"/>
     </javac>
-    <!--sourcebase="src"-->
-    <rmic base="${outputDir}" stubversion="1.2">
+    <rmic base="${outputDir}" sourcebase="${sourceDir}" stubversion="1.2">
 	<include name="**/*Impl.class"/>
 	<classpath refid="classpath"/>
     </rmic>
-    <copy file="${sourceDir}/net/sf/drftpd/master/FtpStatus.properties" todir="${outputDir}/net/sf/hutedftpd/master"/>
   </target>
-
+  
+  <target name="slavejar" depends="compile">
+    <jar destfile="slave.jar" basedir="classes">
+      <manifest>
+        <attribute name="Main-Class" value="net.sf.drftpd.slave.SlaveImpl" />
+      </manifest>
+      <include name="se/mog/io/**/*.class" />
+      <include name="net/sf/drftpd/*" />
+      <include name="net/sf/drftpd/slave/*" />
+      <include name="net/sf/drftpd/remotefile/RemoteFile.class" />
+      <include name="net/sf/drftpd/remotefile/LinkedRemoteFile.class" />
+      <include name="net/sf/drftpd/remotefile/FileRemoteFile.class" />
+      <include name="net/sf/drftpd/remotefile/DirectoryRemoteFile.class" />
+      <include name="net/sf/drftpd/remotefile/StaticRemoteFile.class" />
+      <include name="net/sf/drftpd/master/RemoteSlave.class" />
+      <include name="net/sf/drftpd/master/SlaveManager.class" />
+      <include name="net/sf/drftpd/master/SlaveManagerImpl_Stub.class" />
+    </jar>
+    
+    <zip destfile="slave.zip" basedir=".">
+      <include name="slave.jar"/>
+      <include name="drftpd.conf.dist"/>
+      <include name="libFileSystem.so"/>
+    </zip>
+  </target>
 </project>

@@ -1,6 +1,24 @@
 <slaves>
-    <slave>
-	<name>moogle</name>
-	<mask>*@localhost</mask>
-    </slave>
+<!--
+  <slave>
+    <name>gud1</name>
+    <mask>*@*.012-16-67766c2.cust.bredbandsbolaget.se</mask>
+  </slave>
+-->
+  <slave>
+    <name>gud3</name>
+    <mask>*@*.016-243-76786a11.cust.bredbandsbolaget.se</mask>
+  </slave>
+  <slave>
+    <name>gud4</name>
+    <mask>*@*.043-58-73746f31.cust.bredbandsbolaget.se</mask>
+  </slave>
+  <slave>
+    <name>gud7</name>
+    <mask>*@*.013-1-67626715.cust.bredbandsbolaget.se</mask>
+  </slave>
+  <slave>
+    <name>gud8</name>
+    <mask>*@*.016-66-73746f25.cust.bredbandsbolaget.se</mask>
+  </slave>
 </slaves>

@@ -24,7 +24,9 @@ public class File extends java.io.File {
 	public File(String pathname) {
 		super(pathname);
 	}
-
+	public File(java.io.File file) {
+		super(file.getPath());
+	}
 	/**
 	 * @param parent
 	 * @param child
@@ -67,4 +69,19 @@ public class File extends java.io.File {
 	public boolean isSymbolicLink() throws IOException {
 		return !getCanonicalPath().equals(getAbsolutePath());
 	}
+	/**
+	 * Works exactly like <code>{@link java.io.File#delete()}</code> but has the added funcionality of working recursively.
+	 * @see java.io.File#delete()
+	 */
+	public boolean deleteRecursive() {
+		if(isDirectory()) {
+			java.io.File files[] = listFiles();
+			for (int i = 0; i < files.length; i++) {
+				File file = new File(files[i]);
+				file.deleteRecursive();
+			}
+		}
+		return super.delete();
+	}
+
 }

@@ -16,7 +16,6 @@ import net.sf.drftpd.slave.RootBasket;
  * 
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
-//TODO import owner/group using se.mog.io.File
 public class FileRemoteFile extends RemoteFile {
 //	private File file;
 //	private String root;

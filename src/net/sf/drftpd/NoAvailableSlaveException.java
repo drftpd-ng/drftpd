@@ -1,4 +1,4 @@
-package net.sf.drftpd.master;
+package net.sf.drftpd;
 
 import java.io.IOException;
 

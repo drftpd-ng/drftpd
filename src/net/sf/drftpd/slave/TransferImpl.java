@@ -48,7 +48,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		char mode)
 		throws RemoteException {
 		super();
-		direction = TRANSFER_SENDING;
+		direction = TRANSFER_SENDING_DOWNLOAD;
 		this.in = in;
 		this.conn = conn;
 		this.mode = mode;
@@ -64,7 +64,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		OutputStream out)
 		throws RemoteException {
 		super();
-		this.direction = Transfer.TRANSFER_RECEIVING;
+		this.direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
 		this.checksum = new CRC32();
 		this.conn = conn;
 		this.out = new CheckedOutputStream(out, this.checksum);
@@ -117,15 +117,19 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 			ex.printStackTrace();
 		}
 		finished = System.currentTimeMillis();
-		System.out.println("transfered "+transfered);
 		transfers.remove(this);
+
+		out.close();
+		in.close();
+		sock.close();
+
 		in = null;
 		out = null;
 		conn = null;
 	}
 
-	public boolean isSending() {
-		return direction == Transfer.TRANSFER_SENDING;
+	public boolean isSendingUploading() {
+		return direction == Transfer.TRANSFER_SENDING_DOWNLOAD;
 	}
 
 	public char getDirection() {
@@ -136,13 +140,25 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		return this.checksum.getValue();
 	}
 	
-	public boolean isReceiving() {
-		return direction == TRANSFER_RECEIVING;
+	public boolean isReceivingUploading() {
+		return direction == TRANSFER_RECEIVING_UPLOAD;
 	}
 
 	public int getTransferSpeed() {
+		long elapsed = System.currentTimeMillis() - started;
+		System.out.println("transfered: "+this.transfered);
+		System.out.println("elapsed: "+elapsed+"ms");
+		if(this.transfered == 0) {
+			System.out.println("!!! TRANSFERED WAS ZERO");
+			return 0;
+		}
+		if(elapsed == 0) {
+			System.out.println("!!! ELAPSED WAS ZERO");
+			return 0;
+		}
+		System.out.println("transferspeed: "+(this.transfered / ((float)elapsed / (float)1000)));
 		return (int)
-			(transfered / ((System.currentTimeMillis() - started) / 1000));
+		(this.transfered / ((float)elapsed / (float)1000));
 	}
 
 	/**
@@ -161,6 +177,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	 * @return long
 	 */
 	public long getTransfered() {
-		return transfered;
+		System.out.println("ret transfered: "+this.transfered);
+		return this.transfered;
 	}
 }

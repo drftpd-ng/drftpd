@@ -1,3 +1,4 @@
 #!/bin/sh
-source env.sh
-exec java net.sf.drftpd.slave.SlaveImpl
+#source env.sh
+export CLASSPATH=classes
+exec java -Djava.library.path=. net.sf.drftpd.slave.SlaveImpl

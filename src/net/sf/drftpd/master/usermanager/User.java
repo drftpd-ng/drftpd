@@ -541,7 +541,10 @@ public abstract class User {
 		 */
 	public boolean equals(Object obj) {
 		if (obj instanceof User) {
-			return ((User) obj).getUsername().equals(this.getUsername());
+			return this.getUsername().equals(((User) obj).getUsername());
+		}
+		if (obj instanceof String) {
+			return this.getUsername().equals((String)obj);
 		}
 		return false;
 	}

@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import net.sf.drftpd.master.SlaveManagerImpl;
+
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.apache.oro.text.regex.Pattern;
@@ -28,9 +30,9 @@ public class GlobServerSocket extends ServerSocket {
 	 * Constructor for ServerSocket2.
 	 * @throws IOException
 	 */
-	public GlobServerSocket(Collection masks) throws IOException {
+	public GlobServerSocket(Collection rslaves) throws IOException {
 		super();
-		this.masks = masks;
+		this.rslaves = rslaves;
 	}
 
 	/**
@@ -38,9 +40,9 @@ public class GlobServerSocket extends ServerSocket {
 	 * @param arg0
 	 * @throws IOException
 	 */
-	public GlobServerSocket(int port, Collection masks) throws IOException {
+	public GlobServerSocket(int port, Collection rslaves) throws IOException {
 		super(port);
-		this.masks = masks;
+		this.rslaves = rslaves;
 	}
 
 	/**
@@ -49,10 +51,10 @@ public class GlobServerSocket extends ServerSocket {
 	 * @param arg1
 	 * @throws IOException
 	 */
-	public GlobServerSocket(int arg0, int arg1, List masks)
+	public GlobServerSocket(int arg0, int arg1, List rslaves)
 		throws IOException {
 		super(arg0, arg1);
-		this.masks = masks;
+		this.rslaves = rslaves;
 	}
 
 	/**
@@ -68,7 +70,7 @@ public class GlobServerSocket extends ServerSocket {
 	}
 
 	
-	private Collection masks;
+	private Collection rslaves;
 	/**
 	 * @see java.net.ServerSocket#accept()
 	 */
@@ -87,7 +89,7 @@ public class GlobServerSocket extends ServerSocket {
 			
 			String ipmask = ident + "@" + sock.getInetAddress().getHostAddress();
 			String hostmask = ident + "@" + sock.getInetAddress().getHostName();
-			for (Iterator i = masks.iterator(); i.hasNext();) {
+			for (Iterator i = SlaveManagerImpl.rslavesToMasks(this.rslaves).iterator(); i.hasNext();) {
 				String mask = (String) i.next();
 				Pattern p;
 				try {

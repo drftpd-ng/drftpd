@@ -21,6 +21,7 @@ import net.sf.drftpd.event.FtpEvent;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.slave.Transfer;
 
 //import ranab.util.Message;
 /*import ranab.io.StreamConnectorObserver;*/
@@ -36,7 +37,7 @@ public class BaseFtpConnection implements Runnable {
 
 	java.util.List ftpListeners;
 
-	protected void dispatchFtpListenerEvent(FtpEvent event) {
+	protected void dispatchFtpEvent(FtpEvent event) {
 		for (Iterator iter = ftpListeners.iterator(); iter.hasNext();) {
 			FtpListener handler = (FtpListener) iter.next();
 			handler.actionPerformed(event);
@@ -216,6 +217,8 @@ public class BaseFtpConnection implements Runnable {
 			} catch (Exception ex2) {
 				logger.log(Level.WARNING, "Exception closing stream", ex2);
 			}
+			if (isAuthenticated())
+				dispatchFtpEvent(new FtpEvent(getUser(), "LOGOUT"));
 			connManager.remove(this);
 		}
 	}
@@ -569,7 +572,9 @@ public class BaseFtpConnection implements Runnable {
 	public boolean isExecuting() {
 		return executing;
 	}
-
+	public boolean isTransfering() {
+		return transfer != null;
+	}
 	/**
 	 * Returns the "currentTimeMillis" when last command finished executing.
 	 */
@@ -599,5 +604,6 @@ public class BaseFtpConnection implements Runnable {
 	public void setCurrentDirectory(LinkedRemoteFile file) {
 		currentDirectory = file;
 	}
+	protected Transfer transfer;
 
 }

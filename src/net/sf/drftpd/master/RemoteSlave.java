@@ -1,4 +1,4 @@
-package net.sf.drftpd.slave;
+package net.sf.drftpd.master;
 
 import java.io.Serializable;
 import java.rmi.ConnectException;
@@ -7,8 +7,9 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.sf.drftpd.master.NoAvailableSlaveException;
-import net.sf.drftpd.master.SlaveManagerImpl;
+import net.sf.drftpd.*;
+import net.sf.drftpd.slave.Slave;
+import net.sf.drftpd.slave.SlaveStatus;
 
 /**
  * Class would fit both in net.sf.drftpd.slave and net.sf.drftpd.master.
@@ -31,9 +32,8 @@ public class RemoteSlave implements Serializable {
 	private SlaveStatus status;
 	private long statusTime;
 	private Collection masks;
-
+	
 	public RemoteSlave(String name) {
-		//this(name, null);
 		this.name = name;
 	}
 
@@ -41,7 +41,10 @@ public class RemoteSlave implements Serializable {
 		this.name = name;
 		this.masks = masks;
 	}
-
+	
+	/**
+	 * @deprecated
+	 */
 	public RemoteSlave(String name, Slave slave) {
 		if (name == null)
 			throw new IllegalArgumentException("name cannot be null (did you set slave.name?)");
@@ -80,11 +83,13 @@ public class RemoteSlave implements Serializable {
 	 */
 	public SlaveStatus getStatus()
 		throws RemoteException, NoAvailableSlaveException {
-		if (statusTime < System.currentTimeMillis() - 10000) {
-			status = getSlave().getSlaveStatus();
-			statusTime = System.currentTimeMillis();
-		}
-		return status;
+		return getSlave().getSlaveStatus();
+			
+//		if (statusTime < System.currentTimeMillis() - 10000) {
+//			status = getSlave().getSlaveStatus();
+//			statusTime = System.currentTimeMillis();
+//		}
+//		return status;
 	}
 	
 	/**
@@ -112,12 +117,19 @@ public class RemoteSlave implements Serializable {
 	public static boolean isFatalRemoteException(RemoteException ex) {
 		return (ex instanceof ConnectException);
 	}
-
+	
 	public void setManager(SlaveManagerImpl manager) {
+		if(this.manager != null) throw new IllegalStateException("Can't overwrite manager");
 		this.manager = manager;
 	}
 
 	public boolean isAvailable() {
+		try {
+			getSlave().ping();
+		} catch (RemoteException e) {
+			handleRemoteException(e);
+		} catch (NoAvailableSlaveException e) {
+		}
 		return slave != null;
 	}
 
@@ -157,6 +169,13 @@ public class RemoteSlave implements Serializable {
 	 */
 	public void setSlave(Slave slave) {
 		this.slave = slave;
+	}
+
+	/**
+	 * @param collection
+	 */
+	public void setMasks(Collection collection) {
+		masks = collection;
 	}
 
 }

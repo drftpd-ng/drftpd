@@ -122,6 +122,7 @@ public abstract class AbstractUser extends User {
 				if (m.matches(subject, p)) {
 					return true;
 				}
+				System.out.println("AbstractUser.checkIP(): \""+mask+"\" doesn't match \""+subject+"\"");
 			}
 		}
 		System.out.println(getClass().getName()+".checkIP(): no match");

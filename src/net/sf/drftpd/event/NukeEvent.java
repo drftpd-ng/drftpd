@@ -31,13 +31,14 @@ public class NukeEvent extends FtpEvent {
 	 * @param nukees
 	 */
 	public NukeEvent(User user, String command, String directory, long time, int multiplier, String reason, Map nukees) {
-		super(user, command, directory, time);
+		super(user, command, time);
 		this.multiplier = multiplier;
-		this.nukees = nukees;
-		this.directory = directory;
 		this.reason = reason;
+		this.directory = directory;
+		this.nukees = nukees;
 	}
 	
+	String directory;
 	String reason;
 	int multiplier;
 	Map nukees;
@@ -99,4 +100,11 @@ public class NukeEvent extends FtpEvent {
 		}
 		return element;
 	}
+	/**
+	 * @return
+	 */
+	public String getDirectory() {
+		return directory;
+	}
+
 }

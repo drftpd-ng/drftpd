@@ -1,31 +1,38 @@
 /*
- * Created on 2003-jun-29
+ * Created on 2003-aug-03
  *
  * To change the template for this generated file go to
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 package net.sf.drftpd.event;
 
 import net.sf.drftpd.master.usermanager.User;
 
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
+ * @author mog
  *
  * To change the template for this generated type comment go to
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class FtpEvent {
 	User user;
 	String request;
 	long time;
-	
-	FtpEvent(User user, String command, String directory) {
-		this(user, command, directory, System.currentTimeMillis());
+
+	public FtpEvent(User user, String command) {
+		this(user, command, System.currentTimeMillis());
 	}
-	FtpEvent(User user, String command, String directory, long time) {
+	public FtpEvent(User user, String command, long time) {
 		this.user = user;
 		this.request = command;
 		this.time = time;
+	}
+
+	/**
+	 * 
+	 */
+	public FtpEvent() {
+		super();
 	}
 
 	public String getCommand() {
@@ -44,12 +51,8 @@ public class FtpEvent {
 	public long getTime() {
 		return time;
 	}
-	protected String directory;
-	/**
-		 * @return
-		 */
-	public String getDirectory() {
-		return directory;
+	
+	public String toString() {
+		return getClass().getName()+"[user="+getUser()+",cmd="+getCommand()+"]";
 	}
-
 }

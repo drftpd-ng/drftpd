@@ -123,7 +123,7 @@ public class Ident{
       if(command.equals("USERID") && st.countTokens() >= 2){
         successful = true;
         hostType = st.nextToken().trim();
-        userName = st.nextToken("").substring(1);//Get all that is left
+        userName = st.nextToken().trim();//Get all that is left
       }else if(command.equals("ERROR")){
         errorCode = ERR_PROTOCOL;
         errorMessage = st.nextToken();

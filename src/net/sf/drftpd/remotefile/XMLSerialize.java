@@ -1,19 +1,53 @@
 package net.sf.drftpd.remotefile;
+import java.util.Iterator;
+
+import net.sf.drftpd.master.RemoteSlave;
+
 import org.jdom.Element;
 
 public class XMLSerialize {
-	/*
-	public static void main(String args[]) throws Exception {
-		LinkedRemoteFile dir = new LinkedRemoteFile(null, new FileRemoteFile("/home/mog/dc", new File("/home/mog/dc")));
-		Document doc = new Document(serialize(dir));
-		new XMLOutputter("    ", true).output(doc, System.out);
-	}
-	*/
-	/**
-	 * @deprecated call file.toXML() instead
-	 */
+
 	public static Element serialize(LinkedRemoteFile file) {
-		return file.toXML();
+		Element element =
+			new Element(file.isDirectory() ? "directory" : "file");
+		//		if (file.isDirectory()) {
+		//			element = new Element("directory");
+		//		} else {
+		//			element = new Element("file");
+		//		}
+		element.setAttribute("name", file.getName());
+
+		element.addContent(new Element("user").setText(file.getOwner()));
+		element.addContent(new Element("group").setText(file.getGroup()));
+
+		element.addContent(
+			new Element("size").setText(Long.toString(file.length())));
+
+		element.addContent(
+			new Element("lastModified").setText(
+				Long.toString(file.lastModified())));
+
+		if (file.isDirectory()) {
+			Element contents = new Element("contents");
+			for (Iterator i = file.getFiles().iterator(); i.hasNext();) {
+				contents.addContent(serialize((LinkedRemoteFile) i.next()));
+			}
+			element.addContent(contents);
+		} else {
+			String checksum = "";
+			checksum = Long.toHexString(file.getCheckSum(false));
+
+			element.addContent(new Element("checksum").setText(checksum));
+		}
+
+		Element slaves = new Element("slaves");
+		for (Iterator i = file.getSlaves().iterator(); i.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) i.next();
+			slaves.addContent(new Element("slave").setText(rslave.getName()));
+		}
+		element.addContent(slaves);
+
+		return element;
 	}
 //	public static Element serialize(LinkedRemoteFile file) {
 //		Element fileElement;

@@ -9,8 +9,6 @@ package net.sf.drftpd.remotefile;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import net.sf.drftpd.master.usermanager.User;
-
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
@@ -38,10 +36,7 @@ public class DirectoryRemoteFile extends RemoteFile {
 		this.owner = owner;
 		this.group = group;
 	}
-
-	public DirectoryRemoteFile(LinkedRemoteFile file, User owner, String name) {
-		this(file, owner.getUsername(), owner.getGroup(), name);
-	}
+	
 	/**
 	 * @see net.sf.drftpd.remotefile.RemoteFile#getName()
 	 */

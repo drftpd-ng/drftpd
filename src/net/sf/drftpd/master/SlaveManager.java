@@ -5,8 +5,8 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.slave.*;
+import net.sf.drftpd.slave.Slave;
 
 public interface SlaveManager extends Remote {
-    public void addSlave(RemoteSlave slave, LinkedRemoteFile root) throws RemoteException;
+    public void addSlave(String slavename, Slave slave, LinkedRemoteFile slaveroot) throws RemoteException;
 }

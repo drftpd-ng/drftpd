@@ -1,9 +1,15 @@
 package net.sf.drftpd;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Map;
+
+import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
@@ -13,7 +19,8 @@ import java.util.Map;
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-public class SFVFile {
+public class SFVFile implements Serializable {
+	private transient LinkedRemoteFile companion; 
 	/**
 	 * String fileName as key
 	 * Long checkSum as value
@@ -41,11 +48,71 @@ public class SFVFile {
 	public Map getEntries() {
 		return entries;
 	}
-	
+		
 	public long get(String fileName) throws ObjectNotFoundException {
 		Long checksum = (Long)entries.get(fileName);
 		if(checksum == null) throw new ObjectNotFoundException();
 		return checksum.longValue();
+	}
+	
+	public void setCompanion(LinkedRemoteFile companion) {
+		if(this.companion != null) throw new IllegalStateException("Can't overwrite companion");
+		this.companion = companion;
+	}
+	
+	public int finishedFiles() {
+		int good = 0;
+		
+		Map sfventries = getEntriesFiles();
+		for (Iterator iter = sfventries.entrySet().iterator();
+			iter.hasNext();
+			) {
+			Map.Entry element = (Map.Entry) iter.next();
+			LinkedRemoteFile file = (LinkedRemoteFile) element.getKey();
+			Long checksum = (Long) element.getValue();
+
+			if (file.getCheckSum() == checksum.longValue()) {
+				good++;
+			}
+		}
+		return good;
+	}
+	
+	public Map getEntriesFiles() {
+		LinkedRemoteFile dir;
+		try {
+			dir = companion.getParentFile();
+		} catch (FileNotFoundException e) {
+			throw new FatalException(e);
+		}
+
+		Map sfventries = getEntries();
+		Map ret = new Hashtable();
+		
+		for (Iterator iter = sfventries.entrySet().iterator();
+			iter.hasNext();
+			) {
+			Map.Entry element = (Map.Entry) iter.next();
+			String fileName = (String) element.getKey();
+
+			LinkedRemoteFile file;
+			try {
+				file = (LinkedRemoteFile) dir.getFile(fileName);
+			} catch (FileNotFoundException e1) {
+				continue;
+			}
+			ret.put(file, (Long) element.getValue());
+		}
+		return ret;
+	}
+	public Collection getFiles() {
+		return getEntriesFiles().keySet();
+	}
+	/**
+	 * @return
+	 */
+	public int size() {
+		return entries.size();
 	}
 
 }

@@ -7,11 +7,10 @@ import java.io.IOException;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
-import java.rmi.StubNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -28,12 +27,13 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.GlftpdLog;
 import net.sf.drftpd.event.NukeEvent;
+import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.master.queues.NukeLog;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserManager;
-import net.sf.drftpd.remotefile.JDOMRemoteFile;
+import net.sf.drftpd.permission.GlobRMISocketFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.slave.RemoteSlave;
+import net.sf.drftpd.remotefile.StaticRemoteFile;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveImpl;
 
@@ -57,32 +57,9 @@ public class ConnectionManager {
 		logger.setLevel(Level.FINEST);
 	}
 
-	public List loadRemoteSlaves() {
-		List rslaves = new ArrayList();
-		try {
-			Document doc = new SAXBuilder().build(new FileReader("slaves.xml"));
-			List children = doc.getRootElement().getChildren("slave");
-			for (Iterator i = children.iterator(); i.hasNext();) {
-				List masks = new ArrayList();
-				Element slaveElement = (Element) i.next();
-				List maskElements = slaveElement.getChildren("mask");
-				for (Iterator i2 = maskElements.iterator(); i2.hasNext();) {
-					masks.add(((Element) i2.next()).getText());
-				}
-				rslaves.add(
-					new RemoteSlave(slaveElement.getChildText("name"), masks));
-			}
-		} catch (Exception ex) {
-			//logger.log(Level.INFO, "Error reading masks from slaves.xml", ex);
-			throw new FatalException(ex);
-		}
-		return rslaves;
-	}
-	
 	public ConnectionManager(Properties cfg) {
-		LinkedRemoteFile root = null;
 		
-		List rslaves = loadRemoteSlaves();
+		
 		/** END: load XML file database **/
 		
 		nukelog = new NukeLog();
@@ -106,6 +83,8 @@ public class ConnectionManager {
 				int multiplier = Integer.parseInt(nukeElement.getChildText("multiplier"));
 				String reason = nukeElement.getChildText("reason");
 
+				StaticRemoteFile directoryFile = new StaticRemoteFile(Collections.EMPTY_LIST, directory, null, 0, time);
+
 				Map nukees = new Hashtable();
 				List nukeesElement = nukeElement.getChild("nukees").getChildren("nukee");
 				for (Iterator iterator = nukeesElement.iterator();
@@ -117,7 +96,7 @@ public class ConnectionManager {
 					nukees.put(nukeeUsername, nukeeAmount);
 				}
 				
-				nukelog.add(new NukeEvent(user, command, directory, time, multiplier, reason, nukees));
+				nukelog.add(new NukeEvent(user, command, directoryFile.getPath(), time, multiplier, reason, nukees));
 			}
 		} catch(FileNotFoundException ex) {
 			logger.log(Level.FINE, "Couldn't open nukelog.xml - will create it later", ex);
@@ -127,39 +106,15 @@ public class ConnectionManager {
 				"Error loading nukelog from nukelog.xml",
 				ex);
 		}
-
-		/** load XML file database **/
-		try {
-			Document doc = new SAXBuilder().build(new FileReader("files.xml"));
-			root =
-				new LinkedRemoteFile(
-					new JDOMRemoteFile(doc.getRootElement(), rslaves));
-		} catch (FileNotFoundException ex) {
-			logger.info("files.xml not found, new file will be created.");
-			root = new LinkedRemoteFile();
-		} catch (Exception ex) {
-			logger.info("Error loading \"files.xml\"");
-			ex.printStackTrace();
-			root = new LinkedRemoteFile();
-		}
-
+		Collection rslaves = SlaveManagerImpl.loadRSlaves();
+		GlobRMISocketFactory ssf = new GlobRMISocketFactory(rslaves);
 		/** register slavemanager **/
 		try {
 			slavemanager =
 				new SlaveManagerImpl(
-					cfg.getProperty("slavemanager.url"),
-					root,
-					rslaves);
-		} catch (StubNotFoundException ex) {
-			throw new RuntimeException(
-				"StubNotFoundException, try running rmic",
-				ex);
-		} catch (RemoteException ex) {
-			logger.log(Level.SEVERE, "RemoteException", ex);
-			return;
-		} catch (AlreadyBoundException ex) {
-			logger.log(Level.SEVERE, "AlreadyBoundException", ex);
-			return;
+					cfg, rslaves, ssf);
+		} catch (Throwable e) {
+			throw new FatalException(e);
 		}
 
 		String localslave = cfg.getProperty("master.localslave", "false");
@@ -173,15 +128,12 @@ public class ConnectionManager {
 				return;
 				//the compiler doesn't know that execution stops at System.exit(),
 			}
-			RemoteSlave remoteSlave =
-				new RemoteSlave(cfg.getProperty("slave.name"), slave);
-
+			
 			try {
 				LinkedRemoteFile slaveroot =
 					SlaveImpl.getDefaultRoot(
-						remoteSlave,
 						cfg.getProperty("slave.roots"));
-				slavemanager.addSlave(remoteSlave, slaveroot);
+				slavemanager.addSlave(cfg.getProperty("slave.name"), slave, slaveroot);
 			} catch (RemoteException ex) {
 				ex.printStackTrace();
 				return;
@@ -214,6 +166,13 @@ public class ConnectionManager {
 		};
 		//run every 5 minutes
 		timer.schedule(timerSave, 0, 600 * 1000);
+		
+
+		try {
+			addFtpListener(new IRCListener(this, cfg));
+		} catch (Exception e2) {
+			logger.log(Level.WARNING, "Error starting IRC bot", e2);
+		}
 	}
 
 	public void timerLogoutIdle() {
@@ -249,7 +208,7 @@ public class ConnectionManager {
 			}
 		}
 	}
-	//TODO Fix FtpListener so that it doesn't need to be init:ed for each conn
+
 	public void start(Socket sock) throws IOException {
 		FtpConnection conn =
 			new FtpConnection(
@@ -281,7 +240,11 @@ public class ConnectionManager {
 	public Collection getConnections() {
 		return connections;
 	}
-
+	/**
+	 * @deprecated use {@link net.sf.drftpd.master.BaseFtpConnection#stop}
+	 * @param conn
+	 * @param message
+	 */
 	public void killConnection(BaseFtpConnection conn, String message) {
 		conn.stop(message);
 	}
@@ -332,4 +295,22 @@ public class ConnectionManager {
 			return;
 		}
 	}
+	
+	public void reload() {
+		
+	}
+	/**
+	 * @return
+	 */
+	public SlaveManagerImpl getSlavemanager() {
+		return slavemanager;
+	}
+
+	/**
+	 * @return
+	 */
+	public UserManager getUsermanager() {
+		return usermanager;
+	}
+
 }

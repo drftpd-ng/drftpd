@@ -71,7 +71,11 @@ public class FtpResponse implements Cloneable {
 	/** 425 Can't open data connection. */
 	public static final String RESPONSE_425_CANT_OPEN_DATA_CONNECTION =
 		"425 Can't open data connection.\r\n";
-
+	
+	/** 426 Connection closed; transfer aborted. */
+	public static final FtpResponse RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED =
+		new FtpResponse(426, "Connection closed; transfer aborted.");
+		
 	/** 450 No transfer-slave(s) available
 	 * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
 	 */

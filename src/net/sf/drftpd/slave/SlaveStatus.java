@@ -11,7 +11,16 @@ public class SlaveStatus implements Serializable {
 	
 	private int transfersSending;
 	private int transfersReceiving;
-	
+	public SlaveStatus() {
+		this.diskSpaceAvailable = 0;
+		this.diskSpaceCapacity = 0;
+		
+		this.throughputReceiving = 0;
+		this.throughputSending = 0;
+
+		this.transfersSending = 0;
+		this.transfersReceiving = 0;		
+	}
 	public SlaveStatus(long diskFree, long diskTotal, int throughputReceiving, int transfersReceiving, int throughputSending, int transfersSending) {
 		this.diskSpaceAvailable = diskFree;
 		this.diskSpaceCapacity = diskTotal;
@@ -23,7 +32,16 @@ public class SlaveStatus implements Serializable {
 		this.transfersReceiving = transfersReceiving;
 	}
 	
-	public float getThroughput() {
+	public SlaveStatus append(SlaveStatus arg) {
+		return new SlaveStatus(getDiskSpaceAvailable()+arg.getDiskSpaceAvailable(),
+		getDiskSpaceCapacity()+arg.getDiskSpaceCapacity(),
+		getThroughputReceiving()+arg.getThroughputReceiving(),
+		getTransfersReceiving()+arg.getTransfersReceiving(),
+		getThroughputSending()+arg.getThroughputSending(),
+		getTransfersSending()+arg.getTransfersSending()
+		);
+	}
+	public int getThroughput() {
 		return throughputReceiving+throughputSending;
 	}
 	
@@ -47,7 +65,7 @@ public class SlaveStatus implements Serializable {
 	 * Returns the throughputDown.
 	 * @return float
 	 */
-	public float getThroughputSending() {
+	public int getThroughputSending() {
 		return throughputSending;
 	}
 
@@ -55,7 +73,7 @@ public class SlaveStatus implements Serializable {
 	 * Returns the throughputUp.
 	 * @return float
 	 */
-	public float getThroughputReceiving() {
+	public int getThroughputReceiving() {
 		return throughputReceiving;
 	}
 

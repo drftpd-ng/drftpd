@@ -76,24 +76,23 @@ public class RootBasket {
 		return mostFreeRoot;
 	}
 	
+	//TODO check if paths are under different or same mount
 	public long getTotalDiskSpaceAvailable() {
 		long totalDiskSpaceAvailable = 0;
-		//		long totalDiskSpaceCapacity=0;
 
 		for (Iterator iter = roots.iterator(); iter.hasNext();) {
 			File root = (File) iter.next();
 			totalDiskSpaceAvailable += root.getDiskSpaceAvailable();
-			//			totalDiskSpaceCapacity += root.getDiskSpaceCapacity();
 		}
 		return totalDiskSpaceAvailable;
 	}
+
+	//TODO check if paths are under different or same mount
 	public long getTotalDiskSpaceCapacity() {
-		//		long totalDiskSpaceAvailable=0;
 		long totalDiskSpaceCapacity = 0;
 
 		for (Iterator iter = roots.iterator(); iter.hasNext();) {
 			File root = (File) iter.next();
-			//			totalDiskSpaceAvailable += root.getDiskSpaceAvailable();
 			totalDiskSpaceCapacity += root.getDiskSpaceCapacity();
 		}
 		return totalDiskSpaceCapacity;
@@ -115,7 +114,6 @@ public class RootBasket {
 			if(file.exists()) files.add(file);
 		}
 		if(files.size() == 0) throw new FileNotFoundException("No files found");
-		//return (File[])files.toArray(new File[] {});
 		return files;
 	}
 }

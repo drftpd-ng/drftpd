@@ -7,7 +7,7 @@ import java.util.Collection;
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
 public abstract class RemoteFile {
-
+	
 	/**
 	 * separatorChar is always "/" as "/" is always used in (SYST type UNIX) FTP.
 	 */
@@ -47,7 +47,7 @@ public abstract class RemoteFile {
 	
 	public String getGroup() {
 		if (group == null)
-			return "<unknown>";
+			return "drftpd";
 		return group;
 	}
 

@@ -8,7 +8,6 @@ import java.rmi.RemoteException;
 
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.SFVFile;
-import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 /**
@@ -46,7 +45,6 @@ public interface Slave extends Remote {
 	public Transfer doConnectReceive(
 		String dirname,
 		String file,
-		User owner,
 		long offset,
 		InetAddress addr,
 		int port)
@@ -58,7 +56,6 @@ public interface Slave extends Remote {
 	public Transfer doListenReceive(
 		String dirname,
 		String file,
-		User owner,
 		long offset)
 		throws RemoteException, IOException;
 

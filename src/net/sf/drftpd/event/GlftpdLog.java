@@ -48,7 +48,7 @@ public class GlftpdLog implements FtpListener {
 			for (Iterator iter = nukees.keySet().iterator(); iter.hasNext();) {
 				//User nukee = (User) iter.next();
 				String nukeeUsername = (String)iter.next();
-				Integer amount = (Integer)nukees.get(nukeeUsername);
+				Long amount = (Long)nukees.get(nukeeUsername);
 				if(nukeeUsername == null) {
 					nukeeUsername = "<unknown>";
 				} else {
@@ -78,7 +78,7 @@ public class GlftpdLog implements FtpListener {
 			for (Iterator iter = nukees.keySet().iterator(); iter.hasNext();) {
 				//User nukee = (User) iter.next();
 				String nukeeUsername = (String)iter.next();
-				Integer amount = (Integer)nukees.get(nukeeUsername);
+				Long amount = (Long)nukees.get(nukeeUsername);
 				if(nukeeUsername == null) {
 					nukeeUsername = "<unknown>";
 				} else {

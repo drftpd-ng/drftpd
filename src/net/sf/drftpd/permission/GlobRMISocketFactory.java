@@ -15,21 +15,21 @@ import java.util.Collection;
  * Window>Preferences>Java>Code Generation.
  */
 public class GlobRMISocketFactory implements RMIServerSocketFactory {
-	private Collection masks;
+	private Collection rslaves;
 	
 	/**
 	 * Constructor for GlobRMIServerSocketFactory.
 	 */
-	public GlobRMISocketFactory(Collection masks) {
+	public GlobRMISocketFactory(Collection rslaves) {
 		super();
-		this.masks = masks;
+		this.rslaves = rslaves;
 	}
 
 	/**
 	 * @see java.rmi.server.RMIServerSocketFactory#createServerSocket(int)
 	 */
 	public ServerSocket createServerSocket(int port) throws IOException {
-		return new GlobServerSocket(port, masks);
+		return new GlobServerSocket(port, rslaves);
 	}
 
 }

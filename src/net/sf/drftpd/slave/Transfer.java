@@ -8,8 +8,8 @@ import java.rmi.RemoteException;
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
 public interface Transfer extends Remote {
-	public static final char TRANSFER_RECEIVING='R';// TRANSFER_UPLOAD='R';
-	public static final char TRANSFER_SENDING='S';// TRANSFER_DOWNLOAD='S';
+	public static final char TRANSFER_RECEIVING_UPLOAD='R';
+	public static final char TRANSFER_SENDING_DOWNLOAD='S';
 	public static final char TRANSFER_THROUGHPUT='A';
 	
 	public long getChecksum() throws RemoteException;

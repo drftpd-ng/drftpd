@@ -5,8 +5,10 @@ import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import net.sf.drftpd.slave.RemoteSlave;
+import net.sf.drftpd.master.RemoteSlave;
 
 import org.jdom.Element;
 
@@ -20,10 +22,15 @@ import org.jdom.Element;
  */
 public class JDOMRemoteFile extends RemoteFile {
 
+	private static Logger logger =
+		Logger.getLogger(JDOMRemoteFile.class.getName());
+	static {
+		logger.setLevel(Level.FINEST);
+	}
 	protected List files = null;
 	protected Collection slaves;
 	Hashtable allSlaves;
-	
+
 	private static Hashtable rslavesToHashtable(Collection rslaves) {
 		Hashtable map = new Hashtable(rslaves.size());
 		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
@@ -40,6 +47,7 @@ public class JDOMRemoteFile extends RemoteFile {
 	}
 
 	public JDOMRemoteFile(Element element, Hashtable allSlaves) {
+		this.allSlaves = allSlaves;
 		this.name = element.getAttributeValue("name");
 		if (element.getName().equals("directory")) {
 			this.isDirectory = true;
@@ -57,24 +65,26 @@ public class JDOMRemoteFile extends RemoteFile {
 		this.group = element.getChild("group").getText();
 		this.lastModified =
 			Long.parseLong(element.getChild("lastModified").getText());
-		if(this.allSlaves == null) {
-			this.allSlaves = new Hashtable();
-			for (Iterator iter = element.getChild("slaves").getChildren("slave").iterator(); iter.hasNext();) {
-				Element slaveElement = (Element) iter.next();
-				String slaveName = slaveElement.getText();
-				this.allSlaves.put(slaveName, new RemoteSlave(slaveName));
+		//TODO allslaves == null
+		if (allSlaves == null)
+			throw new IllegalArgumentException("allslaves can't be null");
+		this.slaves = new ArrayList();
+		for (Iterator iter =
+			element.getChild("slaves").getChildren("slave").iterator();
+			iter.hasNext();
+			) {
+			Element slaveElement = (Element) iter.next();
+			String slaveName = slaveElement.getName();
+			RemoteSlave rslave = (RemoteSlave) this.allSlaves.get(slaveName);
+			if (rslave == null) {
+				logger.log(
+					Level.WARNING,
+					slaveName
+						+ " not in slavelist, not adding file: "
+						+ getName());
+				continue;
 			}
-			this.slaves = this.allSlaves.values();
-		} else {
-			this.slaves = new ArrayList();
-			
-			for (Iterator iter = element.getChild("slaves").getChildren("slave").iterator(); iter.hasNext();) {
-				Element slaveElement = (Element) iter.next();
-				String slaveName = slaveElement.getName();
-				RemoteSlave rslave = (RemoteSlave)this.allSlaves.get(slaveName);
-				if(rslave == null) throw new IllegalStateException("slave name "+slaveName+" not found in allSlaves");
-				this.slaves.add(rslave);
-			}
+			this.slaves.add(rslave);
 		}
 	}
 
@@ -85,7 +95,8 @@ public class JDOMRemoteFile extends RemoteFile {
 		JDOMRemoteFile listFiles[] = new JDOMRemoteFile[files.size()];
 		int i2 = 0;
 		for (Iterator i = files.iterator(); i.hasNext();) {
-			listFiles[i2++] = new JDOMRemoteFile((Element) i.next(), this.allSlaves);
+			listFiles[i2++] =
+				new JDOMRemoteFile((Element) i.next(), this.allSlaves);
 		}
 		return listFiles;
 	}
@@ -133,7 +144,8 @@ public class JDOMRemoteFile extends RemoteFile {
 	public Collection getFiles() {
 		ArrayList listFiles = new ArrayList(files.size());
 		for (Iterator i = files.iterator(); i.hasNext();) {
-			listFiles.add(new JDOMRemoteFile((Element) i.next(), this.allSlaves));
+			listFiles.add(
+				new JDOMRemoteFile((Element) i.next(), this.allSlaves));
 		}
 		return listFiles;
 	}
