@@ -17,13 +17,16 @@
  */
 package net.drmods.plugins.irc.imdb;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Properties;
 
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.sitebot.IRCCommand;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -34,14 +37,33 @@ import f00f.net.irc.martyr.commands.MessageCommand;
  * @author Teflon
  */
 public class IRCListener extends IRCCommand {
-
-    private static final Logger logger = Logger.getLogger(IRCListener.class); 
-    private SiteBot _listener; 
-    private ConnectionManager _cm;
+    private static final Logger logger = Logger.getLogger(IRCListener.class);
+    private String _filters;
     
     public IRCListener(GlobalContext gctx) {
         super(gctx); 
-    }
+		loadConf("conf/drmods.conf");
+	}
+
+	public void loadConf(String confFile) {
+        Properties cfg = new Properties();
+        FileInputStream file;
+        try {
+            file = new FileInputStream(confFile);
+            cfg.load(file);
+            file.close();
+            _filters = cfg.getProperty("imdb.filter");
+            if (_filters == null) {
+                throw new RuntimeException("Unspecified value 'imdb.filter' in " + confFile);        
+            }      
+        } catch (FileNotFoundException e) {
+            logger.error("Error reading " + confFile,e);
+            throw new RuntimeException(e.getMessage());
+        } catch (IOException e) {
+            logger.error("Error reading " + confFile,e);
+            throw new RuntimeException(e.getMessage());
+        }
+	}
 
     public ArrayList<String> doImdb(String command, MessageCommand msgc) {
         ArrayList<String> out = new ArrayList<String>();
@@ -51,7 +73,7 @@ public class IRCListener extends IRCCommand {
        	try { 
        		String searchStr = command.substring(command.indexOf(" ") + 1);
        		
-            IMDBParser imdb = new IMDBParser(searchStr);
+            IMDBParser imdb = new IMDBParser(searchStr, _filters);
             if (!imdb.foundFilm()) {
                 env.add("searchstr", searchStr);
                 out.add(ReplacerUtils.jprintf("imdb.notfound", env, IMDBParser.class));

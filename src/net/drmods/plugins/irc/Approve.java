@@ -18,11 +18,14 @@
 */
 package net.drmods.plugins.irc;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Properties;
 
 import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
@@ -31,7 +34,9 @@ import org.drftpd.plugins.SiteBot;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sitebot.IRCCommand;
 import org.drftpd.usermanager.User;
+import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
+import org.tanesha.replacer.SimplePrintf;
 
 import f00f.net.irc.martyr.commands.MessageCommand;
 import f00f.net.irc.martyr.util.FullNick;
@@ -42,11 +47,33 @@ import f00f.net.irc.martyr.util.FullNick;
  */
 public class Approve extends IRCCommand {
 	private static final Logger logger = Logger.getLogger(Approve.class);
-
+	private String _dirName;
+	
 	public Approve(GlobalContext gctx) {
 		super(gctx);
+		loadConf("conf/drmods.conf");
 	}
 
+	public void loadConf(String confFile) {
+        Properties cfg = new Properties();
+        FileInputStream file;
+        try {
+            file = new FileInputStream(confFile);
+            cfg.load(file);
+            _dirName = cfg.getProperty("approve.dirname");
+            file.close();
+            if (_dirName == null) {
+                throw new RuntimeException("Unspecified value 'approve.dirname' in " + confFile);        
+            }      
+        } catch (FileNotFoundException e) {
+            logger.error("Error reading " + confFile,e);
+            throw new RuntimeException(e.getMessage());
+        } catch (IOException e) {
+            logger.error("Error reading " + confFile,e);
+            throw new RuntimeException(e.getMessage());
+        }
+	}
+	
 	public ArrayList<String> doApprove(String args, MessageCommand msgc) {
 	    ArrayList<String> out = new ArrayList<String>();
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
@@ -75,16 +102,20 @@ public class Approve extends IRCCommand {
         
 		if (dir!= null){
 			env.add("sdirpath",dir.getPath());
-			String approveDirName = ReplacerUtils.jprintf("approve.dirname", env, Approve.class);
-			env.add("adirname",approveDirName);
+			String approveDirName;
+            try {
+                approveDirName = SimplePrintf.jprintf(_dirName, env);
+            } catch (FormatterException e) {
+                out.add(e.getMessage());
+                return out;
+            }
+            env.add("adirname",approveDirName);
 			env.add("adirpath",dir.getPath() + "/" + approveDirName);
 			try {
 				LinkedRemoteFileInterface newdir = dir.createDirectory(approveDirName);
 				newdir.setOwner(user.getName());
 				newdir.setGroup(user.getGroup());
 				out.add(ReplacerUtils.jprintf("approve.success", env, Approve.class));
-				getGlobalContext().dispatchFtpEvent(
-						new DirectoryFtpEvent(user, "MKD", newdir));
 			} catch (FileExistsException e1) {
 				out.add(ReplacerUtils.jprintf("approve.exists", env, Approve.class));
 			}

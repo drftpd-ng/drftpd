@@ -1,0 +1,43 @@
+# This configuration file is strictly for plugin configuration
+# All of these settings can be reloaded with site reload
+
+# net.drmods.plugins.irc.Approve
+# ${ftpuser} will be replaced with the username of the person who typed !approve
+approve.dirname=Approved.by.${ftpuser}
+
+# net.drmods.plugins.irc.IRCNuke
+# set the maximum number of nukes to display in chan if count isn't specified
+nukes.max=5
+
+# net.drmods.plugins.irc.Kick
+# set to the minimum number of seconds a user must be idle in order to kick them
+kick.idlelimit=30
+# set the number of users to display per line on kick output
+kick.usersperline=10
+
+# net.drmods.plugins.irc.Rank
+# set the groups that are exepmt from being listed in !rank counts (space seperated)
+rank.exempt=siteop nuke
+
+# net.drmods.plugins.irc.Request
+# specify the path to your requests folder
+request.dirpath=/requests/
+
+# net.drmods.plugins.irc.New
+# specify the default number of dirs to show
+new.default=5
+# specify the maximum number of dirs to show (overrides user input)
+new.max=25
+# sepcify the sections to exclude from output (space seprated)
+new.exclude=REQUESTS
+# specify the format of the date on announce (See: http://java.sun.com/j2se/1.5.0/docs/api/java/text/SimpleDateFormat.html)
+new.dateformat=MM.dd.yy hh:mma
+
+# net.drmods.plugins.irc.imdb.IMDBParser
+#Specify what will be filtered from the release names (regex allowed)
+#i.e. Shrek.2.2004.NTSC.COMPLETE.iNTERNAL.DVDR-GRP -> Shrek 2
+imdb.filter=dvdrip;rip;divx;xvid;int;internal;dvd;svcd;vcd;complete;ntsc;pal;dvdr;ita;italian;eng;dvdscr;scr;ts;proper;screener;AC3;19[0-9][0-9];20[0-9][0-9]
+#specify which sections to fetch imdb data for when a new dir is created (seperated by ;)
+imdb.sections=VCD;SVCD;DVDR;XVID
+#specify folder names to exclude from fetching imdb data
+imdb.exclude=cd1;cd2;cd3;cd4;cd5;disk1;disk2;disk3;disk4;disk5;sample;covers;cover

@@ -17,8 +17,10 @@
  */
 package net.drmods.plugins.irc;
 
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Properties;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.util.ReplacerUtils;
@@ -45,10 +47,36 @@ import f00f.net.irc.martyr.commands.MessageCommand;
  */
 public class Kick extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Kick.class);
-
+    private int _idleTimeout;
+    private int _usersPerLine;
+    
     public Kick(GlobalContext gctx) {
 		super(gctx);
-    }
+		loadConf("conf/drmods.conf");
+	}
+
+	public void loadConf(String confFile) {
+        Properties cfg = new Properties();
+        FileInputStream file;
+        try {
+            file = new FileInputStream(confFile);
+            cfg.load(file);
+            String idleTimeout = cfg.getProperty("kick.idlelimit");
+            String usersPerLine = cfg.getProperty("kick.usersperline");
+            file.close();
+            if (idleTimeout == null) {
+                throw new RuntimeException("Unspecified value 'kick.idlelimit' in " + confFile);        
+            }
+            if (usersPerLine == null) {
+                throw new RuntimeException("Unspecified value 'kick.usersperline' in " + confFile);        
+            }
+            _idleTimeout = Integer.parseInt(idleTimeout);
+            _usersPerLine = Integer.parseInt(usersPerLine);
+        } catch (Exception e) {
+            logger.error("Error reading " + confFile,e);
+            throw new RuntimeException(e.getMessage());
+        }
+	}
 
 	public ArrayList<String> doKick(String args, MessageCommand msgc) {
 	    ArrayList<String> out = new ArrayList<String>();
@@ -68,14 +96,7 @@ public class Kick extends IRCCommand {
             //ResourceBundle bundle = ResourceBundle.getBundle(TDPKick.class.getName());
             //String userformat = bundle.getString("kick.userformat");
             
-			long idlelimit = 0;
-			try {
-				idlelimit = Long.parseLong(ReplacerUtils.jprintf("kick.idlelimit", env, Kick.class));
-			} catch (NumberFormatException e1) {
-				logger.warn("kick.idlelimit in Kick.properties is not set to a valid integer value.");
-				idlelimit = 30;
-			}
-			env.add("idlelimit",Long.toString(idlelimit));
+			env.add("idlelimit",Long.toString(_idleTimeout));
 
             ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(getGlobalContext()
                     									.getConnectionManager().getConnections());
@@ -99,13 +120,13 @@ public class Kick extends IRCCommand {
                 env.add("ircchan", cmdchan);
 
                 if (!conn.getDataConnectionHandler().isTransfering()
-                	&& idletime > idlelimit) {
+                	&& idletime > _idleTimeout) {
                     conn.stop(SimplePrintf.jprintf(kickftp, env));
                     msg += SimplePrintf.jprintf(userformat, env) + " ";
                     count++;
                     found = true;
                 }
-                if ((count >= 10 || !iter.hasNext()) && !msg.trim().equals("")) {
+                if ((count >= _usersPerLine || !iter.hasNext()) && !msg.trim().equals("")) {
                     env.add("users", msg.trim());
                     out.add(SimplePrintf.jprintf(kickirc, env));
                     count = 0;

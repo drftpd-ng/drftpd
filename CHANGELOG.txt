@@ -1,6 +1,8 @@
 2005/03/01 Jamal James <teflon114@gmail.com>
 * Fixed !speed ... i hope
 * Fixed Trails plugin and !passed to work with the new SiteBot
+* Moved all net.drmods.plugins.* configuration from .properties files to drmods.conf
+* Added !new irc plugin
 
 2005/02/27 Jamal James <teflon114@gmail.com>
 * All sitebot plugins converted to work with the new implementation

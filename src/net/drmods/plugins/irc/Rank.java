@@ -17,9 +17,13 @@
  */
 package net.drmods.plugins.irc;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.util.ReplacerUtils;
@@ -45,10 +49,33 @@ import f00f.net.irc.martyr.util.FullNick;
  */
 public class Rank extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Approve.class);
+    private String _exemptGroups;
 
     public Rank(GlobalContext gctx) {
 		super(gctx);
-    }
+		loadConf("conf/drmods.conf");
+	}
+
+	public void loadConf(String confFile) {
+        Properties cfg = new Properties();
+        FileInputStream file;
+        try {
+            file = new FileInputStream(confFile);
+            cfg.load(file);
+            _exemptGroups = cfg.getProperty("rank.exempt");
+            file.close();
+            if (_exemptGroups == null) {
+                throw new RuntimeException("Unspecified value 'rank.exempt' in " + confFile);        
+            }      
+        } catch (FileNotFoundException e) {
+            logger.error("Error reading " + confFile,e);
+            throw new RuntimeException(e.getMessage());
+        } catch (IOException e) {
+            logger.error("Error reading " + confFile,e);
+            throw new RuntimeException(e.getMessage());
+        }
+	}
+	
 
 	public ArrayList<String> doRank(String args, MessageCommand msgc) {
 	    ArrayList<String> out = new ArrayList<String>();
@@ -76,8 +103,7 @@ public class Rank extends IRCCommand {
             } 
 	    }
 
-        String exemptgroups = ReplacerUtils.jprintf("top.exempt", env, Rank.class);
-        StringTokenizer st = new StringTokenizer(exemptgroups);
+        StringTokenizer st = new StringTokenizer(_exemptGroups);
         while (st.hasMoreTokens()) {
             if (user.isMemberOf(st.nextToken())) {
                 env.add("eusr", user.getName());
@@ -97,7 +123,7 @@ public class Rank extends IRCCommand {
         String type = "MONTHUP";
 
         boolean allow = false;
-        String exempt[] = exemptgroups.split(" ");
+        String exempt[] = _exemptGroups.split(" ");
         ArrayList<User> filteredusers = new ArrayList<User>();
         for (User fuser : users) {
             allow = true;

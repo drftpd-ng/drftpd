@@ -18,6 +18,7 @@
 */
 package net.drmods.plugins.irc;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -27,6 +28,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 
@@ -58,9 +60,29 @@ import f00f.net.irc.martyr.util.FullNick;
  */
 public class IRCNuke extends IRCCommand {
 	private static final Logger logger = Logger.getLogger(IRCNuke.class);
+	private int _maxNukes;
 	
 	public IRCNuke(GlobalContext gctx) {
 		super(gctx);
+		loadConf("conf/drmods.conf");
+	}
+
+	public void loadConf(String confFile) {
+        Properties cfg = new Properties();
+        FileInputStream file;
+        try {
+            file = new FileInputStream(confFile);
+            cfg.load(file);
+            String maxNukes = cfg.getProperty("nukes.max");
+            file.close();
+            if (maxNukes == null) {
+                throw new RuntimeException("Unspecified value 'nukes.max' in " + confFile);        
+            }
+            _maxNukes = Integer.parseInt(maxNukes);
+        } catch (Exception e) {
+            logger.error("Error reading " + confFile,e);
+            throw new RuntimeException(e.getMessage());
+        }
 	}
 
 	public ArrayList<String> doNuke(String args, MessageCommand msgc) {
@@ -342,15 +364,6 @@ public class IRCNuke extends IRCCommand {
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		env.add("ircnick", msgc.getSource().getNick());
 
-		//set the maximum nuber of nukes
-		int maxNukeCount = 0;
-		try {
-			maxNukeCount=Integer.parseInt(ReplacerUtils.jprintf("nukes.max", env, IRCNuke.class));
-		} catch (NumberFormatException e3) {
-			logger.warn("nukes.max in IRCNuke.properties is not set to a valid integer value.", e3);
-			return out;
-		}
-		
 		//check number of arguments
 		int nukeCount = 0;
 		if (!args.equals("")) {
@@ -362,8 +375,8 @@ public class IRCNuke extends IRCCommand {
 				return out;
 			}
 		}
-		if (nukeCount > maxNukeCount || nukeCount <= 0)
-			nukeCount = maxNukeCount;
+		if (nukeCount > _maxNukes || nukeCount <= 0)
+			nukeCount = _maxNukes;
 
 		Nuke dpsn;
 		dpsn = (Nuke) getGlobalContext().getConnectionManager()

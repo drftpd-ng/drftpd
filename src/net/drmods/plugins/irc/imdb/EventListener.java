@@ -17,28 +17,63 @@
  */
 package net.drmods.plugins.irc.imdb;
 
-import java.util.ResourceBundle;
-
-import org.apache.log4j.Logger;
-import org.drftpd.plugins.SiteBot;
-import org.drftpd.sections.SectionInterface;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
 
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
-import org.drftpd.master.ConnectionManager;
 import net.sf.drftpd.util.ReplacerUtils;
+
+import org.apache.log4j.Logger;
+import org.drftpd.master.ConnectionManager;
+import org.drftpd.plugins.SiteBot;
+import org.drftpd.sections.SectionInterface;
 
 /**
  * @author Teflon
  */
 public class EventListener extends FtpListener {
-
     private static final Logger logger = Logger.getLogger(EventListener.class); 
-
+    private String _sections;
+    private String _excludeDirs;
+    private String _filters;
+    
     public EventListener() {
-    }
+		loadConf("conf/drmods.conf");
+	}
+
+	public void loadConf(String confFile) {
+        Properties cfg = new Properties();
+        FileInputStream file;
+        try {
+            file = new FileInputStream(confFile);
+            cfg.load(file);
+            file.close();
+            _sections = cfg.getProperty("imdb.sections");
+            _excludeDirs = cfg.getProperty("imdb.exclude");
+            _filters = cfg.getProperty("imdb.filter");
+            if (_sections == null) {
+                throw new RuntimeException("Unspecified value 'imdb.sections' in " + confFile);        
+            }      
+            if (_excludeDirs == null) {
+                throw new RuntimeException("Unspecified value 'imdb.sections' in " + confFile);        
+            }      
+            if (_filters == null) {
+                throw new RuntimeException("Unspecified value 'imdb.filter' in " + confFile);        
+            }      
+        } catch (FileNotFoundException e) {
+            logger.error("Error reading " + confFile,e);
+            throw new RuntimeException(e.getMessage());
+        } catch (IOException e) {
+            logger.error("Error reading " + confFile,e);
+            throw new RuntimeException(e.getMessage());
+        }
+	}
+	
 
     public void actionPerformed(Event event) {
         if (!(event instanceof DirectoryFtpEvent))
@@ -51,10 +86,8 @@ public class EventListener extends FtpListener {
             "PRE".equals(devent.getCommand())) {
             String dirName = devent.getDirectory().getName();
             SectionInterface sec = getGlobalContext().getSectionManager().lookup(devent.getDirectory().getPath());
-       		String[] checkSections = ResourceBundle.getBundle(IMDBParser.class.getName())
-       									.getString("mkdir.sections").split(";");
-       		String[] excludeDirs = ResourceBundle.getBundle(IMDBParser.class.getName())
-										.getString("mkdir.exclude").split(";");
+       		String[] checkSections = _sections.split(";");
+       		String[] excludeDirs = _excludeDirs.split(";");
        		
        		for (int i=0; i < checkSections.length; i++) {
        		    if (sec.getName().equalsIgnoreCase(checkSections[i]))
@@ -87,7 +120,7 @@ public class EventListener extends FtpListener {
        		        _dirname = dirname;
        		    }
        		    public void run() {
-       		        IMDBParser imdb = new IMDBParser(_dirname);
+       		        IMDBParser imdb = new IMDBParser(_dirname, _filters);
        		        if (!imdb.foundFilm()) {
        		            logger.info("No imdb info found for " + _dirname);
        		            return;

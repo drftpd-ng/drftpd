@@ -24,7 +24,6 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,9 +52,8 @@ public class IMDBParser {
     private String _year;
     private String _url;
     
-    public IMDBParser(String searchStr) {
-		_filters = ResourceBundle.getBundle(IMDBParser.class.getName())
-						.getString("title.filter").split(";");
+    public IMDBParser(String searchStr, String filters) {
+		_filters = filters.split(";");
 		_foundFilm = getInfo(searchStr);
     }
 
@@ -84,6 +82,7 @@ public class IMDBParser {
             while ((line = in.readLine()) != null) {
                 data += line + "\n";
             }
+            in.close();
             
             if (data.indexOf("<b>No Matches.</b>") > 0)
                 return false;
@@ -111,6 +110,8 @@ public class IMDBParser {
            
             while( ( line = in.readLine( ) ) != null )
             	data = data + line + "\n";
+            
+            in.close();
             
            _title = parseData(data, "<h1><strong class=\"title\">", "<small>");
            _genre = parseData(data, "<b class=\"ch\">Genre:</b>", "<br><br>");

@@ -17,10 +17,12 @@
  */
 package net.drmods.plugins.irc;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.FileExistsException;
@@ -47,8 +49,31 @@ public class Request extends IRCCommand {
     public static final Key REQFILLED = new Key(Request.class, "reqfilled", Integer.class);
     public static final Key WEEKREQS = new Key(Request.class, "weekreq", Integer.class);
 
+    private String _requestPath;
+    
 	public Request(GlobalContext gctx) {
 		super(gctx);
+		loadConf("conf/drmods.conf");
+	}
+
+	public void loadConf(String confFile) {
+        Properties cfg = new Properties();
+        FileInputStream file;
+        try {
+            file = new FileInputStream(confFile);
+            cfg.load(file);
+            _requestPath = cfg.getProperty("request.dirpath");
+            file.close();
+            if (_requestPath == null) {
+                throw new RuntimeException("Unspecified value 'request.dirpath' in " + confFile);        
+            }      
+        } catch (FileNotFoundException e) {
+            logger.error("Error reading " + confFile,e);
+            throw new RuntimeException(e.getMessage());
+        } catch (IOException e) {
+            logger.error("Error reading " + confFile,e);
+            throw new RuntimeException(e.getMessage());
+        }
 	}
 
     public ArrayList<String> doRequests(String args, MessageCommand msgc) {
@@ -65,7 +90,7 @@ public class Request extends IRCCommand {
         env.add("reqfilled",new StringTokenizer(msgc.getMessage()).nextToken());
         
         try {
-            LinkedRemoteFileInterface rdir = getGlobalContext().getRoot().getFile(ReplacerUtils.jprintf("request.dirpath", env, Request.class));
+            LinkedRemoteFileInterface rdir = getGlobalContext().getRoot().lookupFile(_requestPath);
             out.add(ReplacerUtils.jprintf("requests.header", env, Request.class));
             int i=1;
             for (Iterator iter = rdir.getDirectories().iterator(); iter.hasNext();) {
@@ -92,7 +117,8 @@ public class Request extends IRCCommand {
             }
             out.add(ReplacerUtils.jprintf("requests.footer", env, Request.class));
         }  catch (FileNotFoundException e) {
-            out.add(ReplacerUtils.jprintf("reqfilled.error", env, Request.class));
+            env.add("rdirname",_requestPath);
+            out.add(ReplacerUtils.jprintf("request.error", env, Request.class));
             return out; 
         }
         return out;
@@ -129,13 +155,11 @@ public class Request extends IRCCommand {
         
         env.add("fdirname",dirName);	
         
-        String DirPath = ReplacerUtils.jprintf("request.dirpath", env, Request.class);
-        
         boolean nodir = false;
         boolean fdir = false;
         
         try {
-            LinkedRemoteFileInterface dir = getGlobalContext().getRoot().getFile(DirPath);
+            LinkedRemoteFileInterface dir = getGlobalContext().getRoot().lookupFile(_requestPath);
             for (Iterator iter = dir.getDirectories().iterator(); iter.hasNext();) {
                 LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
                 if (file.isDirectory()) {
@@ -162,7 +186,8 @@ public class Request extends IRCCommand {
             if (nodir && !fdir) out.add(ReplacerUtils.jprintf("reqfilled.error", env, Request.class));
             
         } catch (FileNotFoundException e) {
-            out.add(ReplacerUtils.jprintf("reqfilled.error", env, Request.class));
+            env.add("rdirname",_requestPath);
+            out.add(ReplacerUtils.jprintf("request.error", env, Request.class));
             return out;
         }
         return out;
@@ -189,17 +214,17 @@ public class Request extends IRCCommand {
         env.add("rdirname",dirName);
         String requser = user.getName();
         
-        String DirPath = ReplacerUtils.jprintf("request.dirpath", env, Request.class);
         
         try {
-            LinkedRemoteFileInterface dir = getGlobalContext().getRoot().getFile(DirPath);
+            LinkedRemoteFileInterface dir = getGlobalContext().getRoot().lookupFile(_requestPath);
             dir.createDirectory("REQUEST-by." + requser + "-" + dirName);
             LinkedRemoteFileInterface reqdir = dir.getFile("REQUEST-by." + requser + "-" + dirName);
             reqdir.setOwner(requser);
             user.getKeyedMap().setObject(Request.REQUESTS, user.getKeyedMap().getObjectInt(Request.REQUESTS)+1);;
             out.add(ReplacerUtils.jprintf("request.success", env, Request.class));
         } catch (FileNotFoundException e) {
-            out.add(ReplacerUtils.jprintf("reqfilled.error", env, Request.class));
+            env.add("rdirname",_requestPath);
+            out.add(ReplacerUtils.jprintf("request.error", env, Request.class));
             return out;
         } catch (FileExistsException e1) {
             out.add(ReplacerUtils.jprintf("request.exists", env, Request.class));
@@ -228,18 +253,16 @@ public class Request extends IRCCommand {
 
         env.add("ddirname",dirName);	
         
-        String DirPath = ReplacerUtils.jprintf("request.dirpath", env, Request.class);
-        
         boolean nodir = false;
         boolean deldir = false;
         try {
-            LinkedRemoteFileInterface dir = getGlobalContext().getRoot().getFile(DirPath);
+            LinkedRemoteFileInterface dir = getGlobalContext().getRoot().lookupFile(_requestPath);
             for (Iterator iter = dir.getDirectories().iterator(); iter.hasNext();) {
                 LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
                 if (file.isDirectory()) {
                     if (file.getName().endsWith(dirName)) {
                         nodir = false;
-                        if (file.getUsername().equals(user.getName())) {
+                        if (file.getUsername().equals(user.getName()) || user.isAdmin()) {
                             file.delete();
                             deldir = true;
                             out.add(ReplacerUtils.jprintf("reqdel.success", env, Request.class));
