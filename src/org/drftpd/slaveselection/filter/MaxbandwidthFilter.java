@@ -70,7 +70,6 @@ public class MaxbandwidthFilter extends Filter {
 				continue;
 			}
 			if (status.getThroughputDirection(direction) > _maxBandwidth) {
-				logger.debug("removed " + slavescore.getRSlave().getName());
 				iter.remove();
 			}
 		}

@@ -68,7 +68,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.100 2004/07/12 20:37:25 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.101 2004/07/13 06:41:57 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -206,7 +206,7 @@ public class SlaveManagerImpl
 	protected RMIServerSocketFactory _ssf;
 	protected RMIClientSocketFactory _csf;
 
-	private SlaveSelectionManagerInterface _slaveSelectionManager;
+	protected SlaveSelectionManagerInterface _slaveSelectionManager;
 
 	public SlaveManagerImpl() throws RemoteException {
 	}

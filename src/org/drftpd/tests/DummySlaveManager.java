@@ -23,10 +23,11 @@ import java.util.List;
 import net.sf.drftpd.master.SlaveManagerImpl;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: DummySlaveManager.java,v 1.1 2004/07/12 20:37:40 mog Exp $
+ * @version $Id: DummySlaveManager.java,v 1.2 2004/07/13 06:41:58 zubov Exp $
  */
 public class DummySlaveManager extends SlaveManagerImpl {
 	public DummySlaveManager() throws RemoteException {
@@ -38,5 +39,9 @@ public class DummySlaveManager extends SlaveManagerImpl {
 
 	public void setGlobalContext(GlobalContext gctx) {
 		_gctx = gctx;
+	}
+	
+	public void setSlaveSelectionManager(SlaveSelectionManagerInterface ssm) {
+		_slaveSelectionManager = ssm;
 	}
 }

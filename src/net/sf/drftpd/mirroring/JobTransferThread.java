@@ -34,15 +34,11 @@ public class JobTransferThread extends Thread {
 	
 	public void run() {
 		setName("JobTransfer");
-		//logger.debug("JobTransfer started");
 		try {
-		if(_jm.processJob()) {
-			logger.debug("processJob() returned true, file was sent okay");
-		}
+			_jm.processJob();
 		}
 		catch (Exception e) {
 			logger.debug("",e);
 		}
-		//logger.debug("JobTransfer stopped");
 	}
 }

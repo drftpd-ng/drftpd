@@ -18,7 +18,6 @@
 package net.sf.drftpd.master;
 
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
@@ -42,7 +41,6 @@ import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.mirroring.JobManager;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.MLSTSerialize;
 import net.sf.drftpd.slave.SlaveImpl;
 import net.sf.drftpd.util.SafeFileWriter;
@@ -53,7 +51,7 @@ import org.drftpd.GlobalContext;
 import org.drftpd.slave.socket.SocketSlaveManager;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.113 2004/07/12 20:37:25 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.114 2004/07/13 06:41:57 zubov Exp $
  */
 public class ConnectionManager {
 

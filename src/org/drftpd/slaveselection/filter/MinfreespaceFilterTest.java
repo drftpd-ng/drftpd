@@ -33,7 +33,7 @@ import net.sf.drftpd.slave.Transfer;
 
 /**
  * @author mog
- * @version $Id: MinfreespaceFilterTest.java,v 1.6 2004/07/12 20:37:40 mog Exp $
+ * @version $Id: MinfreespaceFilterTest.java,v 1.7 2004/07/13 06:41:58 zubov Exp $
  */
 public class MinfreespaceFilterTest extends TestCase {
 	public static class RemoteSlaveTesting extends RemoteSlave {
@@ -44,7 +44,7 @@ public class MinfreespaceFilterTest extends TestCase {
 			_status = status;
 		}
 		
-		public SlaveStatus getStatus()  {
+		public SlaveStatus getStatusAvailable()  {
 			return _status;
 		}
 	}

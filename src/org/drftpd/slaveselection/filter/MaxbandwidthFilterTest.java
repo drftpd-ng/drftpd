@@ -90,12 +90,11 @@ public class MaxbandwidthFilterTest extends TestCase {
 			super(name);
 		}
 
-		public synchronized SlaveStatus getStatus()
-			throws SlaveUnavailableException {
-				if (getName().equals("slave2"))
-					return new SlaveStatus(0,0,0,0,0,0,0,0);
-				//if (getName().equals("slave1"))
-					return new SlaveStatus(0,0,0,0,9999999,1,9999999,1);
+		public SlaveStatus getStatusAvailable() {
+			if (getName().equals("slave2")) {
+				return new SlaveStatus(0,0,0,0,0,0,0,0);
+			}
+			return new SlaveStatus(0,0,0,0,9999999,1,9999999,1);
 		}
 	}
 
@@ -111,7 +110,6 @@ public class MaxbandwidthFilterTest extends TestCase {
 	public void testSimple() throws ObjectNotFoundException, NoAvailableSlaveException {
 		Properties p = new Properties();
 		p.put("1.maxbandwidth", "800kb");
-
 		Filter f = new MaxbandwidthFilter(new FC(), 1, p);
 		ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 

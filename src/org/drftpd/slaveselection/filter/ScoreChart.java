@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ScoreChart.java,v 1.4 2004/05/20 14:09:00 zubov Exp $
+ * @version $Id: ScoreChart.java,v 1.5 2004/07/13 06:41:58 zubov Exp $
  */
 public class ScoreChart {
 	public static class SlaveScore implements Comparable {
@@ -73,6 +73,7 @@ public class ScoreChart {
 		_scoreChart = new ArrayList();
 		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
+			System.out.println("added slave " + rslave.getName());
 			_scoreChart.add(new SlaveScore(rslave));
 		}
 	}

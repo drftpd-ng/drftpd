@@ -1,3 +1,7 @@
+2004/07/13 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Fixed JUnit tests again as they were broken when slaves were
+  set to only be available after remerge()
+
 2004/07/09 Morgan Christiansson <drftpd@mog.se>
 * Refactored source to use GlobalContext class,
   which will improve navigation and ease of implementing testcases.

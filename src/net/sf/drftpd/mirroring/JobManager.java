@@ -37,7 +37,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.56 2004/07/12 20:37:28 mog Exp $
+ * @version $Id: JobManager.java,v 1.57 2004/07/13 06:41:57 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -110,7 +110,7 @@ public class JobManager implements Runnable {
 	/**
 	 * Returns true if the file was sent okay
 	 */
-	public boolean processJob() {
+	public void processJob() {
 		Job job = null;
 		RemoteSlave sourceSlave = null;
 		RemoteSlave destSlave = null;
@@ -121,7 +121,7 @@ public class JobManager implements Runnable {
 			try {
 				availableSlaves = _cm.getGlobalContext().getSlaveManager().getAvailableSlaves();
 			} catch (NoAvailableSlaveException e1) {
-				return false;
+				return;
 				// can't transfer with no slaves
 			}
 			Set busySlavesDown = new HashSet();
@@ -129,7 +129,7 @@ public class JobManager implements Runnable {
 			while (!busySlavesDown.containsAll(availableSlaves)) {
 				job = getNextJob(busySlavesDown, skipJobs);
 				if (job == null) {
-					return false;
+					return;
 				}
 				//logger.debug("looking up slave for job " + job);
 				try {
@@ -147,7 +147,7 @@ public class JobManager implements Runnable {
 				if (sourceSlave == null) {
 					logger
 							.debug("JobManager was unable to find a suitable job for transfer");
-					return false;
+					return;
 				}
 				try {
 					destSlave = _cm.getGlobalContext().getSlaveManager()
@@ -166,10 +166,8 @@ public class JobManager implements Runnable {
 				logger
 						.debug("destSlave is null, all destination slaves are busy"
 								+ job);
-				return false;
+				return;
 			}
-			logger.debug("ready to transfer " + job + " from "
-					+ sourceSlave.getName() + " to " + destSlave.getName());
 			time = System.currentTimeMillis();
 			difference = 0;
 		}
@@ -187,7 +185,7 @@ public class JobManager implements Runnable {
 				logger.debug("CRC did not match for " + job.getFile()
 						+ " when sending from " + sourceSlave.getName()
 						+ " to " + destSlave.getName());
-				return false;
+				return;
 			}
 		} catch (FileExistsException e) {
 			logger.debug("Caught FileExistsException in sending "
@@ -203,33 +201,33 @@ public class JobManager implements Runnable {
 					} catch (IOException e1) {
 						// queued for deletion
 					}
-					return false;
+					return;
 				}
 			} catch (RemoteException e1) {
 				destSlave.handleRemoteException(e1);
-				return false;
+				return;
 			} catch (NoAvailableSlaveException e1) {
-				return false;
+				return;
 			} catch (SlaveUnavailableException e2) {
-				return false;
+				return;
 			} catch (IOException e1) {
-				return false;
+				return;
 			}
 		} catch (FileNotFoundException e) {
 			logger.debug("Caught FileNotFoundException in sending "
 					+ job.getFile().getName() + " from "
 					+ sourceSlave.getName() + " to " + destSlave.getName(), e);
 			job.getFile().removeSlave(sourceSlave);
-			return false;
+			return;
 		} catch (DestinationSlaveException e) {
 			destSlave.setOffline(e.getMessage());
-			return false;
+			return;
 		} catch (SourceSlaveException e) {
 			sourceSlave.setOffline(e.getMessage());
-			return false;
+			return;
 		}
 		difference = System.currentTimeMillis() - time;
-		logger.debug("Sent file " + job.getFile().getName() + " to "
+		logger.info("Sent file " + job.getFile().getName() + " to "
 				+ destSlave.getName() + " from " + sourceSlave.getName());
 		job.addTimeSpent(difference);
 		job.sentToSlave(destSlave);
@@ -237,7 +235,6 @@ public class JobManager implements Runnable {
 			logger.debug("Job is finished, removing job " + job.getFile());
 			removeJobFromQueue(job);
 		}
-		return true;
 	}
 	public void reload() {
 		reload(null);

@@ -30,34 +30,49 @@ import junit.framework.TestCase;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.SlaveManagerImpl;
 
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
+import org.drftpd.tests.DummyGlobalContext;
+import org.drftpd.tests.DummySlaveManager;
+import org.drftpd.tests.DummySlaveSelectionManager;
 
 /**
  * @author zubov
- * @version $Id: JobManagerTest.java,v 1.11 2004/07/12 04:27:52 zubov Exp $
+ * @version $Id: JobManagerTest.java,v 1.12 2004/07/13 06:41:57 zubov Exp $
  */
 public class JobManagerTest extends TestCase {
 
+	public class RS extends RemoteSlave {
+		public RS(String name) {
+			super(name);
+		}
+		public RS(Properties config) {
+			super(config);
+			// TODO Auto-generated constructor stub
+		}
+		
+		public boolean isAvailable() {
+			return true;
+		}
+	}
+	public class DSM extends DummySlaveManager {
+		public DSM() throws RemoteException {
+			super();
+		}
+		public Collection getAvailableSlaves() throws NoAvailableSlaveException {
+			return slaveList;
+		}
+	}
 	private Properties p;
 	LinkedRemoteFilePath file2;
 	LinkedRemoteFilePath file;
-	static RemoteSlave rslave1 = new RemoteSlave("slave1", new ArrayList());
-	static RemoteSlave rslave2 = new RemoteSlave("slave2", new ArrayList());
-	static RemoteSlave rslave3 = new RemoteSlave("slave3", new ArrayList());
-	static ArrayList slaveList = new ArrayList();
-	static {
-		slaveList.add(rslave1);
-		slaveList.add(rslave2);
-		slaveList.add(rslave3);
-	}
 	/**
 	 * Constructor for JobManagerTest.
 	 * @param arg0
 	 */
 	ConnectionManager cm;
 	JobManager jm;
+	private ArrayList slaveList;
 	class CM extends ConnectionManager {
 		CM(Properties p) {
 			p.put("master.bindname", "slavemanager");
@@ -72,47 +87,31 @@ public class JobManagerTest extends TestCase {
 				"org.drftpd.slaveselection.def.SlaveSelectionManager");
 			p.put("sectionmanager", "org.drftpd.sections.conf.SectionManager");
 			p.put("use.ident", "true");
-			try {
-				sm = new SM();
-			} catch (RemoteException e) {
-			}
 		}
-		SM sm;
-		public SlaveManagerImpl getSlaveManager() {
-			return sm;
-		}
-	public void loadJobManager() {
-		if (_jm != null)
-			return; // already loaded
-		Properties p = new Properties();
-		p.put("sleepSeconds", "1000");
-		_jm = new JobManager(this, p);
-		_jm.startJobs();
-	}
 	}
 
-	class SM extends SlaveManagerImpl {
-		protected SM() throws RemoteException {
-		}
-
-		public Collection getAvailableSlaves()
-			throws NoAvailableSlaveException {
-			return slaveList;
-		}
-
-		public Collection getSlaves() {
-			return slaveList;
-		}
-
-	}
 	public JobManagerTest(String arg0) throws IOException {
 		super(arg0);
 	}
-	public void setUp() {
+	public void setUp() throws RemoteException {
+		RS rslave1 = new RS("slave1");
+		RS rslave2 = new RS("slave2");
+		RS rslave3 = new RS("slave3");
+		slaveList = new ArrayList();
+		slaveList.add(rslave1);
+		slaveList.add(rslave2);
+		slaveList.add(rslave3);
 		p = new Properties();
 		cm = new CM(p);
-		cm.loadJobManager();
-		jm = cm.getJobManager();
+		DummyGlobalContext dgc = new DummyGlobalContext();
+		cm.setGlobalContext(dgc);
+		dgc.setConnectionManager(cm);
+		DummySlaveManager dsm = new DSM();
+		dgc.setSlaveManager(dsm);
+		DummySlaveSelectionManager dssm = new DummySlaveSelectionManager();
+		dsm.setSlaveSelectionManager(dssm);
+		cm.getGlobalContext().loadJobManager();
+		jm = cm.getGlobalContext().getJobManager();
 		file = new LinkedRemoteFilePath("/path/file1.txt");
 		file.addSlave(rslave1);
 		file2 = new LinkedRemoteFilePath("/path/file2.txt");
@@ -134,7 +133,7 @@ public class JobManagerTest extends TestCase {
 			return _path;
 		}
 
-		public void addSlave(RemoteSlave slave) {
+		public void addSlave(RS slave) {
 			slaves.add(slave);
 		}
 
@@ -161,7 +160,7 @@ public class JobManagerTest extends TestCase {
 			return isDeleted;
 		}
 
-		public boolean removeSlave(RemoteSlave slave) {
+		public boolean removeSlave(RS slave) {
 			return slaves.remove(slave);
 		}
 
@@ -170,7 +169,7 @@ public class JobManagerTest extends TestCase {
 			for (Iterator iter = this.getSlaves().iterator();
 				iter.hasNext();
 				) {
-				RemoteSlave rslave = (RemoteSlave) iter.next();
+				RS rslave = (RS) iter.next();
 				string = string + rslave + ",";
 			}
 			return string + "]]";
@@ -189,10 +188,7 @@ public class JobManagerTest extends TestCase {
 	 * Test for Job getNextJob(List)
 	 */
 	public void testGetNextJobList() {
-		HashSet slaveSet = new HashSet();
-		slaveSet.add(rslave1);
-		slaveSet.add(rslave2);
-		slaveSet.add(rslave3);
+		HashSet slaveSet = new HashSet(slaveList);
 		Job job = new Job(file, slaveSet, 0,slaveSet.size());
 		jm.addJobToQueue(job);
 		Set usedSlaveList = new HashSet();
@@ -206,9 +202,7 @@ public class JobManagerTest extends TestCase {
 		skipJobs.add(job2);
 		assertNull(jm.getNextJob(usedSlaveList, skipJobs));
 		skipJobs.clear();
-		usedSlaveList.add(rslave1);
-		usedSlaveList.add(rslave2);
-		usedSlaveList.add(rslave3);
+		usedSlaveList.addAll(slaveList);
 		assertNull(jm.getNextJob(usedSlaveList, skipJobs));
 	}
 }
