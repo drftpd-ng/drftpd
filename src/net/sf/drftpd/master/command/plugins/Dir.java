@@ -361,6 +361,11 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         } else if (!conn.getGlobalContext().getConfig().checkPathPermission("delete", conn.getUserNull(), requestedFile)) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
+        
+        if (requestedFile.isDirectory() && requestedFile.getMap().size() == 0) {
+			return new Reply(550, requestedFile.getPath()
+					+ ": Directory not empty");
+		}
 
         Reply reply = (Reply) Reply.RESPONSE_250_ACTION_OKAY.clone();
 
