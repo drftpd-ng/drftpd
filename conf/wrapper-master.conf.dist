@@ -28,7 +28,7 @@ wrapper.java.library.path.1=lib
 wrapper.java.additional.1=-Djava.rmi.server.randomIDs=true
 wrapper.java.additional.2=-Djava.rmi.dgc.leaseValue=300000
 wrapper.java.additional.3=-Djava.rmi.server.disableHttp=true
-wrapper.java.additional.4=-Dlog4j.configuration=file:log4j-default.properties
+wrapper.java.additional.4=-Dlog4j.configuration=file:conf/log4j-default.properties
 #only needed if RMI uses wrong interface
 #wrapper.java.additional.5=-Djava.rmi.server.hostname=you_didnt_edit_master.sh
 
