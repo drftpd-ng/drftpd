@@ -77,7 +77,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  * @author zubov
- * @version $Id: RemoteSlave.java,v 1.62 2004/11/06 06:04:02 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.63 2004/11/06 06:36:30 zubov Exp $
  */
 public class RemoteSlave implements Runnable, Comparable, Serializable {
     private static final long serialVersionUID = -6973935289361817125L;
@@ -489,14 +489,18 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         _errors = 0;
         _lastNetworkError = System.currentTimeMillis();
         start();
-
-        try {
-            initializeSlaveAfterThreadIsRunning();
-        } catch (IOException e) {
-            setOffline(e);
-        } catch (SlaveUnavailableException e) {
-            setOffline(e);
+        class RemergeThread implements Runnable {
+            public void run() {
+                try {
+                    initializeSlaveAfterThreadIsRunning();
+                } catch (IOException e) {
+                    setOffline(e);
+                } catch (SlaveUnavailableException e) {
+                    setOffline(e);
+                }
+            }
         }
+        new Thread(new RemergeThread()).start();
     }
 
     private void start() {
