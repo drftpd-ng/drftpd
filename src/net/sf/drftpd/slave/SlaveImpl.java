@@ -11,6 +11,7 @@ import java.net.InetAddress;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
@@ -357,14 +358,13 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		fromfile.renameTo(tofile);
 	}
 
-	//TODO delete from all roots, will there ever exist the same file across multiple roots?
 	public void delete(String path) throws IOException {
 		//File file = new File(root + path);
-		File file = roots.getFile(path);
-		if (!file.exists())
-			throw new FileNotFoundException(
-				"cannot delete " + path + ", file does not exist");
-		if (!file.delete())
-			throw new PermissionDeniedException("could not delete " + path);
+		//File file = roots.getFile(path);
+		Collection files = roots.getMultipleFiles(path); // throws FileNotFoundException
+		for (Iterator iter = files.iterator(); iter.hasNext();) {
+			File file = (File) iter.next();
+			if(!file.delete()) throw new PermissionDeniedException("Cannot delete "+path+": permission denied");
+		}
 	}
 }

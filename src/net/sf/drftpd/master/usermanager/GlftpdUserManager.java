@@ -590,7 +590,7 @@ public class GlftpdUserManager extends UserManager {
 			lockTime = System.currentTimeMillis();
 		} catch (IOException ex) {
 			Throwable ex2 =
-				new PermissionDeniedException("Could not create lock file");
+				new PermissionDeniedException("Could not create lock file: "+ex.getMessage());
 			throw (PermissionDeniedException) ex2.initCause(ex);
 		}
 		//this causes the VM to crash at exit (sun jdk 1.4.0)..

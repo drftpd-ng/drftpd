@@ -243,7 +243,7 @@ public class FtpConnection extends BaseFtpConnection {
 		resetState();
 
 		// get new directory name
-		String dirName = "/";
+		String dirName = "~";
 		if (request.hasArgument()) {
 			dirName = request.getArgument();
 		}
@@ -253,6 +253,10 @@ public class FtpConnection extends BaseFtpConnection {
 		} catch (FileNotFoundException ex) {
 			FtpResponse response = new FtpResponse(431, ex.getMessage());
 			out.print(response);
+			return;
+		}
+		if(!newCurrentDirectory.isDirectory()) {
+			out.print(new FtpResponse(530, dirName+": Not a directory"));
 			return;
 		}
 		currentDirectory = newCurrentDirectory;
@@ -454,33 +458,37 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		// get filenames
-		String fileName = request.getArgument();
-		if (VirtualDirectory.isLegalFileName(fileName)) {
-			out.println(
-				"553 Requested action not taken. File name not allowed.");
-			return;
-		}
+		String dirName = request.getArgument();
+		//if (!VirtualDirectory.isLegalFileName(fileName)) {
+		//	out.println(
+		//		"553 Requested action not taken. File name not allowed.");
+		//	return;
+		//}
 
 		LinkedRemoteFile file = currentDirectory;
-		if (file.getMap().containsKey(fileName)) {
-			new FtpResponse(521, "\""+fileName+"\" already exists");
+		try {
+			file.getFile(dirName);
+			//file exists -- bad
+
+			//TODO which FtpResponse ?
+			new FtpResponse(521, "\""+dirName+"\" already exists");
 			out.println(
 				"550 Requested action not taken. "
-					+ fileName
+					+ dirName
 					+ " already exists");
-			return;
-		}
-
+			return;			
+		} catch(FileNotFoundException ex) { } // good
+		
 		try {
-			file.mkdir(user, fileName);
+			file.createDirectory(user, dirName);
 			out.write(
 				ftpStatus.getResponse(
 					250,
 					request,
 					user,
-					new String[] { fileName }));
+					new String[] { dirName }));
 		} catch (FileExistsException ex) {
-			out.println("550 directory " + fileName + " already exists");
+			out.println("550 directory " + dirName + " already exists");
 			return;
 		}
 		//		String args[] = { fileName };
@@ -622,6 +630,7 @@ public class FtpConnection extends BaseFtpConnection {
 		// login failure - close connection
 		String args[] = { user.getUsername()};
 		if (user.login(pass)) {
+			//TODO site welcome
 			out.write(ftpStatus.getResponse(230, request, user, args));
 			authenticated = true;
 		} else {
@@ -927,6 +936,123 @@ public class FtpConnection extends BaseFtpConnection {
 		out.print(FtpResponse.RESPONSE_226_CLOSING_DATA_CONNECTION);
 		//out.write(ftpStatus.getResponse(226, request, user, null));
 		reset();
+	}
+
+
+	/**
+	 * <code>RNFR &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+	 *
+	 * This command specifies the old pathname of the file which is
+	 * to be renamed.  This command must be immediately followed by
+	 * a "rename to" command specifying the new file pathname.
+	 */
+	public void doRNFR(FtpRequest request, PrintWriter out) {
+		//out.print(new FtpResponse(500, "Command not implemented").toString());
+
+		// reset state variable
+		resetState();
+
+		// argument check
+		if (!request.hasArgument()) {
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			//out.write(ftpStatus.getResponse(501, request, user, null));
+			return;
+		}
+
+		// set state variable
+
+		// get filenames
+		//String fileName = request.getArgument();
+		//fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
+		//mstRenFr = user.getVirtualDirectory().getPhysicalName(fileName);
+
+		try {
+			mstRenFr = currentDirectory.lookupFile(request.getArgument());
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			out.print(FtpResponse.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN);
+			resetState();
+			return;
+		}
+		mbRenFr = true;
+
+		out.print(new FtpResponse(350, "File exists, ready for destination name"));
+		//out.write(ftpStatus.getResponse(350, request, user, args));
+
+	}
+
+	/**
+	 * <code>RNTO &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+	 *
+	 * This command specifies the new pathname of the file
+	 * specified in the immediately preceding "rename from"
+	 * command.  Together the two commands cause a file to be
+	 * renamed.
+	 */
+	//TODO RNTO
+	public void doRNTO(FtpRequest request, PrintWriter out) {
+		//out.print(new FtpResponse(500, "Command not implemented").toString());
+
+		// argument check
+		if (!request.hasArgument()) {
+			resetState();
+			//out.write(ftpStatus.getResponse(501, request, user, null));
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			return;
+		}
+
+		// set state variables
+		if ((!mbRenFr) || (mstRenFr == null)) {
+			resetState();
+			//out.print(FtpResponse.)
+			//TODO Unknown reply code 100, not defined in FtpStauts.properties
+			out.write(ftpStatus.getResponse(100, request, user, null));
+			return;
+		}
+
+		// get filenames
+		//String fromFileStr = user.getVirtualDirectory().getVirtualName(mstRenFr);
+		//String toFileStr = request.getArgument();
+		//toFileStr = user.getVirtualDirectory().getAbsoluteName(toFileStr);
+		//String physicalToFileStr = user.getVirtualDirectory().getPhysicalName(toFileStr);
+		//File fromFile = new File(mstRenFr);
+		//File toFile = new File(physicalToFileStr);
+		//String args[] = {fromFileStr, toFileStr};
+
+		String to =
+			currentDirectory.lookupPath(request.getArgument());
+		logger.info("argument = "+request.getArgument());
+		logger.info("to = "+to);
+		
+		LinkedRemoteFile fromFile = mstRenFr;
+		resetState();
+
+		// check permission
+		//if(!user.getVirtualDirectory().hasCreatePermission(physicalToFileStr, true)) {
+		//   out.write(ftpStatus.getResponse(553, request, user, null));
+		//   return;
+		//}
+
+		// now rename
+		//if(fromFile.renameTo(toFile)) {
+		//    out.write(ftpStatus.getResponse(250, request, user, args));
+		//}
+		logger.info("mstRenFr = "+mstRenFr);
+		try {
+			fromFile.renameTo(to);
+		} catch (FileExistsException e) {
+			out.print(FtpResponse.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN);
+			e.printStackTrace();
+			return;
+		} catch (IllegalTargetException e) {
+			out.print(FtpResponse.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN);
+			e.printStackTrace();
+			return;
+		}
+		
+		//out.write(FtpResponse.RESPONSE_250_ACTION_OKAY.toString());
+		FtpResponse response = new FtpResponse(250, request.getCommand()+" command successfull.");
+		out.print(response);
 	}
 
 	public void doSITE_ADDIP(FtpRequest request, PrintWriter out) {
@@ -1251,8 +1377,8 @@ public class FtpConnection extends BaseFtpConnection {
 	public void doSITE_RESCAN(FtpRequest request, PrintWriter out) {
 		LinkedRemoteFile directory = currentDirectory;
 		LinkedRemoteFile sfvFile = null;
-		Map files = directory.getFiles();
-		for (Iterator i = files.keySet().iterator(); i.hasNext();) {
+		//Map files = directory.getFiles();
+		for (Iterator i = directory.iterateFileNames(); i.hasNext();) {
 			String fileName = (String) i.next();
 			if (fileName.endsWith(".sfv")) {
 				try {
@@ -1572,122 +1698,6 @@ public class FtpConnection extends BaseFtpConnection {
 	    }
 	 }
 	*/
-
-	/**
-	 * <code>RNFR &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
-	 *
-	 * This command specifies the old pathname of the file which is
-	 * to be renamed.  This command must be immediately followed by
-	 * a "rename to" command specifying the new file pathname.
-	 */
-	//TODO RNFR
-	public void doRNFR(FtpRequest request, PrintWriter out) {
-		//out.print(new FtpResponse(500, "Command not implemented").toString());
-
-		// reset state variable
-		resetState();
-
-		// argument check
-		if (!request.hasArgument()) {
-			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
-			//out.write(ftpStatus.getResponse(501, request, user, null));
-			return;
-		}
-
-		// set state variable
-
-		// get filenames
-		//String fileName = request.getArgument();
-		//fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
-		//mstRenFr = user.getVirtualDirectory().getPhysicalName(fileName);
-
-		try {
-			mstRenFr = currentDirectory.lookupFile(request.getArgument());
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			out.print(FtpResponse.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN);
-			resetState();
-			return;
-		}
-		mbRenFr = true;
-
-		//out.write(ftpStatus.getResponse(350, request, user, args));
-
-	}
-
-	/**
-	 * <code>RNTO &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
-	 *
-	 * This command specifies the new pathname of the file
-	 * specified in the immediately preceding "rename from"
-	 * command.  Together the two commands cause a file to be
-	 * renamed.
-	 */
-	//TODO RNTO
-	public void doRNTO(FtpRequest request, PrintWriter out) {
-		//out.print(new FtpResponse(500, "Command not implemented").toString());
-
-		// argument check
-		if (!request.hasArgument()) {
-			resetState();
-			//out.write(ftpStatus.getResponse(501, request, user, null));
-			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
-			return;
-		}
-
-		// set state variables
-		if ((!mbRenFr) || (mstRenFr == null)) {
-			resetState();
-			//out.print(FtpResponse.)
-			//TODO Unknown reply code 100, not defined in FtpStauts.properties
-			out.write(ftpStatus.getResponse(100, request, user, null));
-			return;
-		}
-
-		// get filenames
-		//String fromFileStr = user.getVirtualDirectory().getVirtualName(mstRenFr);
-		//String toFileStr = request.getArgument();
-		//toFileStr = user.getVirtualDirectory().getAbsoluteName(toFileStr);
-		//String physicalToFileStr = user.getVirtualDirectory().getPhysicalName(toFileStr);
-		//File fromFile = new File(mstRenFr);
-		//File toFile = new File(physicalToFileStr);
-		//String args[] = {fromFileStr, toFileStr};
-
-		String to =
-			currentDirectory.lookupPath(request.getArgument());
-		logger.info("argument = "+request.getArgument());
-		logger.info("to = "+to);
-
-		resetState();
-
-		// check permission
-		//if(!user.getVirtualDirectory().hasCreatePermission(physicalToFileStr, true)) {
-		//   out.write(ftpStatus.getResponse(553, request, user, null));
-		//   return;
-		//}
-
-		// now rename
-		//if(fromFile.renameTo(toFile)) {
-		//    out.write(ftpStatus.getResponse(250, request, user, args));
-		//}
-		try {
-			mstRenFr.renameTo(to);
-		} catch (FileExistsException e) {
-			out.print(FtpResponse.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN);
-			e.printStackTrace();
-			return;
-		} catch (IllegalTargetException e) {
-			out.print(FtpResponse.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN);
-			e.printStackTrace();
-			return;
-		}
-		out.print(FtpResponse.RESPONSE_250_ACTION_OKAY);
-		
-		//out.write(ftpStatus.getResponse(250, request, user, args));
-		//else {
-		//    out.write(ftpStatus.getResponse(553, request, user, args));
-		//}
-	}
 
 	/**
 	 * <code>SITE &lt;SP&gt; <string> &lt;CRLF&gt;</code><br>
@@ -2060,14 +2070,17 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		} catch (IOException ex) {
 			ex.printStackTrace();
-			out.print(new FtpResponse(530, ex.getMessage()));
+			out.print(new FtpResponse(530, "IOException: "+ex.getMessage()));
 			return;
 		}
 		String masks[] =
 			{
 				ident + "@" + getClientAddress().getHostAddress(),
 				ident + "@" + getClientAddress().getHostName()};
-		user.checkIP(masks);
+		if(!user.checkIP(masks)) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
 		// check user login status
 		//		mbUser = true;
 		/*		if (user.hasLoggedIn()) {
@@ -2087,7 +2100,9 @@ public class FtpConnection extends BaseFtpConnection {
 			//out.write(ftpStatus.getResponse(530, request, user, null));
 		} else {
 			//			user.setUsername(request.getArgument());
-			out.print(FtpResponse.RESPONSE_331_USERNAME_OK_NEED_PASS);
+			//out.print(FtpResponse.RESPONSE_331_USERNAME_OK_NEED_PASS);
+			FtpResponse response = new FtpResponse(331, "Password required for "+user.getUsername());
+			out.print(response);
 			//out.write(ftpStatus.getResponse(331, request, user, null));
 		}
 		/*

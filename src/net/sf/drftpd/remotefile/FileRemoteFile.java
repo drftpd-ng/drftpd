@@ -164,13 +164,12 @@ public class FileRemoteFile extends RemoteFile {
 		for (Iterator iter = rootBasket.iterator(); iter.hasNext();) {
 			File root = (File) iter.next();
 			File file = new File(root+"/"+path);
-			File tmpFiles[] = file.listFiles();
-			//System.out.println("Capacity 1: size: "+filefiles.size()+" capacity: "+filefiles.capacity()+" add: "+tmpFiles.length);
-			//filefiles.ensureCapacity(filefiles.size()+tmpFiles.length);
-			//System.out.println("Capacity 2: size: "+filefiles.size()+" capacity: "+filefiles.capacity());
+			if(!file.exists()) continue;
+			String tmpFiles[] = file.list(); //returns null if not a dir, blah!
+
 			for (int i = 0; i < tmpFiles.length; i++) {
 				try {
-					filefiles.add(new FileRemoteFile(rootBasket, path+File.separatorChar+tmpFiles[i].getName()));
+					filefiles.add(new FileRemoteFile(rootBasket, path+File.separatorChar+tmpFiles[i]));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

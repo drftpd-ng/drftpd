@@ -75,6 +75,7 @@ public class RootBasket {
 			throw new RuntimeException("NoAvailableRootsException");
 		return mostFreeRoot;
 	}
+	
 	public long getTotalDiskSpaceAvailable() {
 		long totalDiskSpaceAvailable = 0;
 		//		long totalDiskSpaceCapacity=0;
@@ -102,11 +103,19 @@ public class RootBasket {
 			File root = (File) iter.next();
 			File file = new File(root.getPath()+File.separatorChar+path);
 			if(file.exists()) return file;
-			System.out.println("\""+file.getPath()+"\""+" doesn't exist");
 		}
 		throw new FileNotFoundException(path+" not found in any root in the RootBasket");
 	}
-	public File getFile(File path) throws FileNotFoundException {
-		return getFile(path.getPath());
+	
+	public Collection getMultipleFiles(String path) throws FileNotFoundException {
+		Vector files = new Vector();
+		for (Iterator iter = roots.iterator(); iter.hasNext();) {
+			File root = (File) iter.next();
+			File file = new File(root.getPath()+File.separatorChar+path);
+			if(file.exists()) files.add(file);
+		}
+		if(files.size() == 0) throw new FileNotFoundException("No files found");
+		//return (File[])files.toArray(new File[] {});
+		return files;
 	}
 }

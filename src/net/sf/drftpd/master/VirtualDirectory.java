@@ -158,10 +158,8 @@ public class VirtualDirectory {
 		String directoryName = null;
 		String options = "";
 		//String pattern = "*";
-
+		
 		// get options, directory name and pattern
-		//TODO files with spaces ?
-		if (argument != null) {
 			//argument = argument.trim();
 			StringBuffer optionsSb = new StringBuffer(4);
 			StringTokenizer st = new StringTokenizer(argument, " ");
@@ -176,7 +174,6 @@ public class VirtualDirectory {
 				}
 			}
 			options = optionsSb.toString();
-		}
 
 		// check options
 		boolean allOption = options.indexOf('a') != -1;

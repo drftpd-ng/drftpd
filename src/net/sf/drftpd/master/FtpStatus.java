@@ -173,6 +173,7 @@ public class FtpStatus extends Properties {
 	 * @param status ftp status code.
 	 * @param cmd ftp request object (may be null).
 	 * @param ars variable arguent list (may be null).
+	 * @deprecated
 	 */
 	public String getResponse(
 		int status,

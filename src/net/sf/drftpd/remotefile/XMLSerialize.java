@@ -31,7 +31,7 @@ public class XMLSerialize {
 		
 		if(file.isDirectory()) {
 			Element contents = new Element("contents");
-			for(Iterator i = file.getFiles().values().iterator() ; i.hasNext(); ) {
+			for(Iterator i = file.iterateFiles() ; i.hasNext(); ) {
 				contents.addContent(serialize((LinkedRemoteFile)i.next()));
 			}
 			fileElement.addContent(contents);

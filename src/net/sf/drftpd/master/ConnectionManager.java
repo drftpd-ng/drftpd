@@ -8,6 +8,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
+import java.rmi.StubNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -94,8 +95,10 @@ public class ConnectionManager {
 					cfg.getProperty("slavemanager.url"),
 					root,
 					masks);
+		} catch(StubNotFoundException ex) {
+			throw new RuntimeException("StubNotFoundException, try running rmic", ex);
 		} catch (RemoteException ex) {
-			ex.printStackTrace();
+			logger.log(Level.SEVERE, "RemoteException", ex);
 			return;
 		} catch (AlreadyBoundException ex) {
 			ex.printStackTrace();
