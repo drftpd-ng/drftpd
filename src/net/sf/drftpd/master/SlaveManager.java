@@ -11,7 +11,9 @@ public interface SlaveManager extends Remote {
 
     public void addSlave(String key, Slave slave, RemoteFile root) throws RemoteException;
     //public void addSlave(String key, Slave slave) throws RemoteException;
-    public RemoteSlave getRemoteSlave(String key) throws RemoteException;
+	//public RemoteSlave getSlave(String key) throws RemoteException;
+
+    public RemoteSlave getASlave() throws RemoteException;
     public RemoteFile getRoot() throws RemoteException;
 
 }

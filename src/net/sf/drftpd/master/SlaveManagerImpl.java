@@ -4,10 +4,12 @@ import java.rmi.server.UnicastRemoteObject;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Map.Entry;
+//import java.util.Hashtable;
+//import java.util.Map;
+//import java.util.Map.Entry;
+import java.util.Vector;
 import java.util.Iterator;
+import java.util.Random;
 
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.RemoteSlave;
@@ -17,7 +19,8 @@ public class SlaveManagerImpl
 	extends UnicastRemoteObject
 	implements SlaveManager {
 
-	protected Hashtable slaves = new Hashtable();
+//	protected Hashtable slaves = new Hashtable();
+	protected Vector slaves = new Vector();
 	protected RemoteFile root = new RemoteFile();
 
 	public RemoteFile getRoot() {
@@ -37,13 +40,16 @@ public class SlaveManagerImpl
 		throws RemoteException {
 		System.out.println("SlaveManager.addSlave(): " + slave);
 		RemoteSlave rslave;
-		rslave = (RemoteSlave) slaves.get(key);
+		slaves.add(new RemoteSlave(slave));
+/*
+ 		rslave = (RemoteSlave) slaves.get(key);
 		if (rslave != null) {
 			rslave.setSlave(slave);
 		} else {
 			rslave = new RemoteSlave(slave);
 			slaves.put(key, rslave);
 		}
+*/
 		root.merge(remoteroot);
 	}
 
@@ -127,7 +133,15 @@ public class SlaveManagerImpl
 	}
 	*/
 
-	public RemoteSlave getRemoteSlave(String key) {
+/*
+	public RemoteSlave getSlave(String key) {
 		return (RemoteSlave) slaves.get(key);
+	}
+*/
+	private Random rand = new Random();
+	public RemoteSlave getASlave() {
+		int num = rand.nextInt(slaves.size());
+		System.out.println("Slave "+num+" selected out of "+slaves.size()+" available slaves");
+		return (RemoteSlave)slaves.get(num);
 	}
 }

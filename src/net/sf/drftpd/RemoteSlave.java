@@ -46,4 +46,7 @@ public class RemoteSlave implements Serializable {
 		this.address = address;
 	}
 */
+	public String toString() {
+		return slave.toString();
+	}
 }

@@ -1,6 +1,7 @@
 package net.sf.drftpd.slave;
 
 import net.sf.drftpd.master.SlaveManager;
+import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.RemoteFile;
 import net.sf.drftpd.DrftpdFileFilter;
 import net.sf.drftpd.RemoteSlave;
@@ -47,11 +48,14 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 		try {
 			File root = new File(cfg.getProperty("slave.root"));
-			if(!root.isDirectory()) {
-				System.out.println("slave.root = "+root.getPath()+" is not a directory!");
+			if (!root.isDirectory()) {
+				System.out.println(
+					"slave.root = " + root.getPath() + " is not a directory!");
 				System.exit(-1);
 			}
-			manager = (SlaveManager) Naming.lookup(cfg.getProperty("slavemanager.url"));
+			manager =
+				(SlaveManager) Naming.lookup(
+					cfg.getProperty("slavemanager.url"));
 			manager.addSlave(
 				cfg.getProperty("slave.name"),
 				this,
@@ -92,24 +96,20 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		InetAddress address,
 		int port)
 		throws FileNotFoundException, ConnectException {
-//cfg.getProperty("slave.root") +
+		//cfg.getProperty("slave.root") +
 		File file = new File(path);
 		//System.out.println("SEND "+cfg.getProperty("slave.root")+path);
 		try {
 			Socket sock;
 			sock = new Socket(address, port);
-			//sock.setSoTimeout(60000);
-			System.out.println(sock.getSendBufferSize());
-			//sock.setSendBufferSize((int) file.length());
-
 			FileInputStream is = new FileInputStream(file);
-			//RAF for RESUME
-			//RandomAccessFile is = new RandomAccessFile(file, "r");
-
+			is.skip(offset);
 			OutputStream os = sock.getOutputStream();
 
 			transfer(is, os);
 			sock.close();
+		} catch(ConnectException ex) {
+			System.err.println("Error connecting to "+address+":"+port+" to send "+file.getPath());
 		} catch (Throwable ex) {
 			ex.printStackTrace();
 		}
@@ -117,7 +117,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 	private void transfer(InputStream is, OutputStream os) throws IOException {
 		try {
-			byte[] buff = new byte[20480];
+			byte[] buff = new byte[1024];
 			int count;
 			while ((count = is.read(buff)) != -1) {
 				os.write(buff, 0, count);
@@ -128,15 +128,6 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		}
 	}
 
-	/*
-	public Map importDatabase() {
-	File root = new File(cfg.getProperty("slave.root"));
-	long startTime = System.currentTimeMillis();
-	Map map = serialize(root);
-	System.out.println("importDatabase() finished: "+((System.currentTimeMillis()-startTime)/1000f)+" seconds elapsed");
-	return map;
-	}
-	*/
 	/*
 	private Map serialize(File dir) {
 	File files[] = dir.listFiles(new DftpdFileFilter());
@@ -225,4 +216,26 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	i=0;
 	}
 	*/
+	/**
+	 * @see net.sf.drftpd.slave.Slave#doConnectReceive(String, InetAddress, int)
+	 */
+	public void doConnectReceive(String path, InetAddress addr, int port)
+		throws RemoteException, PermissionDeniedException {
+		File file = new File(path);
+		FileOutputStream os;
+		try {
+			os = new FileOutputStream(file);
+		} catch (FileNotFoundException ex) {
+			throw new PermissionDeniedException(ex.toString());
+		}
+
+		try {
+			Socket socket = new Socket(addr, port);
+			InputStream is = socket.getInputStream();
+			transfer(is, os);
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+	}
+
 }

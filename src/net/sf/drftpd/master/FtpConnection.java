@@ -776,7 +776,8 @@ public class FtpConnection extends BaseFtpConnection {
 		//fileName = mUser.getVirtualDirectory().getAbsoluteName(fileName);
 		//String physicalName = mUser.getVirtualDirectory().getPhysicalName(fileName);
 		//File requestedFile = new File(physicalName);
-		RemoteFile requestedFile = mUser.getVirtualDirectory().getAbsoluteFile(fileName);
+		RemoteFile requestedFile =
+			mUser.getVirtualDirectory().getAbsoluteFile(fileName);
 		String args[] = { fileName };
 
 		// check permission
@@ -1075,77 +1076,83 @@ public class FtpConnection extends BaseFtpConnection {
 	 * created at the server site if the file specified in the
 	 * pathname does not already exist.
 	 */
-	/*
-	 public void doSTOR(FtpRequest request, Writer out) throws IOException {
-	     
-	     // set state variables
-	     long skipLen = (mbReset) ? mlSkipLen : 0;
-	     resetState();
-	     
-	     // argument check
-	     if(!request.hasArgument()) {
-	        out.write(mFtpStatus.getResponse(501, request, mUser, null));
-	        return;  
-	     }
-	     
-	     // get filenames
-	     String fileName = request.getArgument();
-	     fileName = mUser.getVirtualDirectory().getAbsoluteName(fileName);
-	     String physicalName = mUser.getVirtualDirectory().getPhysicalName(fileName);
-	     File requestedFile = new File(physicalName);
-	     
-	     // get permission
-	     if(!mUser.getVirtualDirectory().hasCreatePermission(physicalName, true)) {
-	         out.write(mFtpStatus.getResponse(550, request, mUser, null));
-	         return;
-	     }
-	     
-	     // now transfer file data
-	     out.write(mFtpStatus.getResponse(150, request, mUser, null));
-	     InputStream is = null;
-	     OutputStream os = null;
-	     try {
-	         Socket dataSoc = mDataConnection.getDataSocket();
-	         if (dataSoc == null) {
-	              out.write(mFtpStatus.getResponse(550, request, mUser, null));
-	              return;
-	         }
-	         
-	         is = dataSoc.getInputStream();
-	         
-	         RandomAccessFile raf = new RandomAccessFile(requestedFile, "rw");
-	         raf.seek(skipLen);
-	         os = mUser.getOutputStream( new FileOutputStream(raf.getFD()) );
-	         
-	         StreamConnector msc = new StreamConnector(is, os);
-	         msc.setMaxTransferRate(mUser.getMaxUploadRate());
-	         msc.setObserver(this);
-	         msc.connect();
-	         
-	         if(msc.hasException()) {
-	             out.write(mFtpStatus.getResponse(451, request, mUser, null));
-	             return;
-	         }
-	         else {
-	             mConfig.getStatistics().setUpload(requestedFile, mUser, msc.getTransferredSize());
-	         }
-	         
-	         out.write(mFtpStatus.getResponse(226, request, mUser, null));
-	     }
-	     catch(IOException ex) {
-	         out.write(mFtpStatus.getResponse(425, request, mUser, null));
-	     }
-	     finally {
-	     try {
-		 is.close();
-		 os.close();
-	     } catch(Exception ex() {
-		 ex.printStackTrace();
-	     }
-	         mDataConnection.reset();
-	     }
-	 }
-	*/
+
+	public void doSTOR(FtpRequest request, Writer out) throws IOException {
+
+		// set state variables
+		long skipLen = (mbReset) ? mlSkipLen : 0;
+		resetState();
+
+		// argument check
+		if (!request.hasArgument()) {
+			out.write(mFtpStatus.getResponse(501, request, mUser, null));
+			return;
+		}
+
+		// get filenames
+		String fileName = request.getArgument();
+		fileName = mUser.getVirtualDirectory().getAbsoluteName(fileName);
+		String physicalName = mUser.getVirtualDirectory().getPhysicalName(fileName);
+//		File requestedFile = new File(physicalName);
+
+		// get permission
+/*
+		if (!mUser
+			.getVirtualDirectory()
+			.hasCreatePermission(physicalName, true)) {
+			out.write(mFtpStatus.getResponse(550, request, mUser, null));
+			return;
+		}
+*/
+
+		// now transfer file data
+		out.write(mFtpStatus.getResponse(150, request, mUser, null));
+		RemoteSlave slave = slavemanager.getASlave();
+/*
+		InputStream is = null;
+		OutputStream os = null;
+		try {
+			Socket dataSoc = mDataConnection.getDataSocket();
+			if (dataSoc == null) {
+				out.write(mFtpStatus.getResponse(550, request, mUser, null));
+				return;
+			}
+
+			is = dataSoc.getInputStream();
+
+			RandomAccessFile raf = new RandomAccessFile(requestedFile, "rw");
+			raf.seek(skipLen);
+			os = mUser.getOutputStream(new FileOutputStream(raf.getFD()));
+
+			StreamConnector msc = new StreamConnector(is, os);
+			msc.setMaxTransferRate(mUser.getMaxUploadRate());
+			msc.setObserver(this);
+			msc.connect();
+
+			if (msc.hasException()) {
+				out.write(mFtpStatus.getResponse(451, request, mUser, null));
+				return;
+			} else {
+				mConfig.getStatistics().setUpload(
+					requestedFile,
+					mUser,
+					msc.getTransferredSize());
+			}
+
+			out.write(mFtpStatus.getResponse(226, request, mUser, null));
+		} catch (IOException ex) {
+			out.write(mFtpStatus.getResponse(425, request, mUser, null));
+		} finally {
+			try {
+				is.close();
+				os.close();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			mDataConnection.reset();
+		}
+*/
+	}
 
 	/**
 	 * <code>STOU &lt;CRLF&gt;</code><br>
