@@ -1,3 +1,7 @@
+2005/03/02 Matt Zimmerman <zubov@users.sourceforge.net>
+* Hell has frozen over, Dark finally submitted his .diz patch
+* We finally bent, nice work Dark!
+
 2005/03/01 Jamal James <teflon114@gmail.com>
 * Fixed !speed ... i hope
 * Fixed Trails plugin and !passed to work with the new SiteBot
