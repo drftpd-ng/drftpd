@@ -79,11 +79,9 @@ public class SFVFile extends AbstractSFVFile {
             
             try {
                 sfvChecksum = getChecksum(file.getName());
-                fileChecksum = file.getCheckSum();
+                fileChecksum = file.getCheckSumCached();
             } catch (NoSFVEntryException e) {
                 continue; 	//file name not found in sfv
-            } catch (NoAvailableSlaveException e) {
-                continue;	//file not available to get checksum
             }
             
             if (fileChecksum == sfvChecksum) {
