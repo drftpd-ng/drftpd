@@ -34,6 +34,10 @@ irc.user=drftpd
 # [true | false ]
 irc.enable.announce=true
 
+# Sets the time in milliseconds we wait after each command is sent.
+# The best protection you can set to avoid flood disconnects
+irc.sendDelay=300
+
 ##Send different sections to different channels.
 #irc.section.1=CHAN1
 #irc.section.1.channel=#drftpd-test

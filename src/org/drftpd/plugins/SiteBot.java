@@ -810,7 +810,13 @@ public class SiteBot extends FtpListener implements Observer {
         }
 
         _conn = new IRCConnection();
+        
 
+         try {
+            _conn.setSendDelay(Integer.parseInt(ircCfg.getProperty("irc.sendDelay")));
+        } catch (NumberFormatException e1) {
+            logger.warn("irc.sendDelay not set, defaulting to 300ms");
+        }
         _autoReconnect = new AutoReconnect(_conn);
         _autoRegister = addAutoRegister(ircCfg);
 
