@@ -70,7 +70,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.68 2004/11/05 04:06:33 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.69 2004/11/05 15:56:55 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandlerFactory,
     CommandHandler, Cloneable {
@@ -232,7 +232,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
         if (_preTransferRSlave == null) {
             try {
                 _serverSocket = _portRange.getPort(getServerSocketFactory(_encryptedDataChannel));
-                address = new InetSocketAddress(_serverSocket.getInetAddress(),_serverSocket.getLocalPort());
+                address = new InetSocketAddress(conn.getControlSocket().getInetAddress(),_serverSocket.getLocalPort());
                 _isPasv = true;
             } catch (Exception ex) {
                 logger.warn(ex);
@@ -256,7 +256,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                     "Slave could not listen for a connection");
             }
         }
-
+        logger.debug("This is the address to connect to - " + address);
         String addrStr = address.getAddress().getHostAddress().replace('.', ',') +
             ',' + (address.getPort() >> 8) + ',' + (address.getPort() & 0xFF);
 
