@@ -40,7 +40,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Textoutput.java,v 1.14 2004/07/08 16:09:52 zubov Exp $
+ * @version $Id: Textoutput.java,v 1.15 2004/07/30 17:15:26 teflon114 Exp $
  */
 public class Textoutput implements CommandHandlerFactory, CommandHandler {
 
@@ -52,6 +52,21 @@ public class Textoutput implements CommandHandlerFactory, CommandHandler {
 					new FileInputStream("text/" + file + ".txt"),
 					"ISO-8859-1")));
 	}
+	public static String getText(String file) 
+		throws FileNotFoundException, IOException {
+		BufferedReader rd = new BufferedReader(
+								new InputStreamReader(
+									new FileInputStream("text/" + file + ".txt"),
+										"ISO-8859-1"));
+		String text = "", line;
+		while ((line = rd.readLine()) != null) {
+			if (!line.startsWith("#")) {
+				text += line + "\n";
+			}
+		}
+		return text;
+		
+	}		
 	protected static void sendTextToIRC(
 		IRCConnection conn,
 		String destination,

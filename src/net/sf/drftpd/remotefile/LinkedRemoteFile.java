@@ -53,7 +53,7 @@ import de.hampelratte.id3.ID3v1Tag;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.160 2004/07/29 17:39:06 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.161 2004/07/30 17:15:27 teflon114 Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -788,8 +788,8 @@ public class LinkedRemoteFile
 
 	public synchronized ID3v1Tag getID3v1Tag() 
 		throws IOException, FileNotFoundException, NoAvailableSlaveException {
-		logger.warn("getID3v1Tag() : " + getPath());
 			if (mp3tag == null) {
+				logger.warn("getID3v1Tag() : (file) " + getPath());
 				while (true) {
 					RemoteSlave rslave =
 						_ftpConfig.getGlobalContext().getSlaveManager()
@@ -806,6 +806,8 @@ public class LinkedRemoteFile
 						continue;
 					}
 				}
+			} else {
+				logger.warn("getID3v1Tag() : (cached) " + getPath());
 			}
 			return mp3tag;		
 	}
@@ -1050,7 +1052,7 @@ public class LinkedRemoteFile
 	public String lookupMP3File()
 		throws IOException, FileNotFoundException, NoAvailableSlaveException {
 		if (!isDirectory())
-			throw new IllegalStateException("lookupMP3File must be called on a directory");
+			throw new IllegalStateException("lookupMP3File() must be called on a directory");
 
 		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFileInterface myFile =

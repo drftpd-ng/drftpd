@@ -27,6 +27,7 @@ import java.util.StringTokenizer;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.Checksum;
+import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
@@ -34,6 +35,7 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.UploaderPosition;
+import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -55,9 +57,11 @@ import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 
+import de.hampelratte.id3.ID3v1Tag;
+
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.33 2004/07/12 20:37:25 mog Exp $
+ * @version $Id: Dir.java,v 1.34 2004/07/30 17:15:26 teflon114 Exp $
  */
 public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 	private final static SimpleDateFormat DATE_FMT =
@@ -189,6 +193,205 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 		} catch (NoAvailableSlaveException e) {
 			//Error fetching SFV, ignore
 		}
+		return response;
+	}
+
+	private FtpReply doNewCWD(BaseFtpConnection conn){
+		FtpRequest request = conn.getRequest();
+
+		if (!request.hasArgument()) {
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+		}
+
+		LinkedRemoteFile newCurrentDirectory;
+		try {
+			newCurrentDirectory =
+				conn.getCurrentDirectory().lookupFile(request.getArgument());
+		} catch (FileNotFoundException ex) {
+			return new FtpReply(550, ex.getMessage());
+		}
+		if (!conn.getConnectionManager().getGlobalContext().getConfig()
+			.checkPrivPath(conn.getUserNull(), newCurrentDirectory)) {
+			return new FtpReply(550, request.getArgument() + ": Not found");
+			// reply identical to FileNotFoundException.getMessage() above
+		}
+
+		if (!newCurrentDirectory.isDirectory()) {
+			return new FtpReply(
+				550,
+				request.getArgument() + ": Not a directory");
+		}
+		conn.setCurrentDirectory(newCurrentDirectory);
+
+		FtpReply response =
+			new FtpReply(
+				250,
+				"Directory changed to " + newCurrentDirectory.getPath());
+		conn.getConnectionManager().getGlobalContext().getConfig().directoryMessage(
+			response,
+			conn.getUserNull(),
+			newCurrentDirectory);
+		
+		// show cwd_mp3.txt if this is an mp3 release
+		try {
+			ID3v1Tag id3tag = newCurrentDirectory.lookupFile(newCurrentDirectory.lookupMP3File()).getID3v1Tag();
+			String mp3text = Textoutput.getText("cwd_mp3");
+			ReplacerEnvironment env =
+				BaseFtpConnection.getReplacerEnvironment(
+					null,
+					conn.getUserNull());
+			ReplacerFormat id3format = null;
+			try {
+				id3format = ReplacerFormat.createFormat(mp3text);
+			} catch (FormatterException e1) {
+				logger.warn(e1);
+			}
+						
+			env.add("artist",id3tag.getArtist().trim());
+			env.add("album",id3tag.getAlbum().trim());
+			env.add("genre",id3tag.getGenre());
+			env.add("year",id3tag.getYear());
+			
+			try {
+				if (id3format == null) {
+					response.addComment("broken 1");
+				} else {
+					response.addComment( 
+							ReplacerUtils.finalJprintf(id3format, env));
+				}
+			} catch (FormatterException e) {
+				response.addComment("broken 2");
+				logger.warn("",e);
+			}
+		} catch (FileNotFoundException e) {
+			// no mp3 found
+			//logger.warn("",e);
+		} catch (IOException e) {
+			logger.warn("",e);
+		} catch (NoAvailableSlaveException e){
+			logger.warn("",e);
+		}
+		
+		//show race stats
+		try {
+			SFVFile sfvfile = newCurrentDirectory.lookupSFVFile();
+			Collection racers = SiteBot.userSort(sfvfile.getFiles(), "bytes", "high");
+			Collection groups = SiteBot.topFileGroup(sfvfile.getFiles());
+			
+			ReplacerFormat racerlineformat = null;
+			ReplacerFormat grouplineformat = null;
+			try {
+				racerlineformat = ReplacerUtils.finalFormat(Dir.class, "cwd.racers.body");
+				grouplineformat = ReplacerUtils.finalFormat(Dir.class, "cwd.groups.body");
+			} catch (FormatterException e1) {
+				logger.warn(e1);
+			}
+			ReplacerEnvironment env =
+				BaseFtpConnection.getReplacerEnvironment(
+					null,
+					conn.getUserNull());
+					
+			//Start building race message
+			String racetext = ReplacerUtils.jprintf("cwd.racestats.header", env, Dir.class) + "\n";
+			racetext += ReplacerUtils.jprintf("cwd.racers.header", env, Dir.class) + "\n";
+			
+			ReplacerFormat raceformat = null;
+
+			//Add racer stats
+			int position = 1;
+			for (Iterator iter = racers.iterator(); iter.hasNext();) {
+				UploaderPosition stat = (UploaderPosition) iter.next();
+				User raceuser;
+				try {
+					raceuser =
+						conn.getConnectionManager().getGlobalContext().getUserManager().getUserByName(stat.getUsername());
+				} catch (NoSuchUserException e2) {
+					continue;
+				} catch (UserFileException e2) {
+					logger.log(Level.FATAL, "Error reading userfile", e2);
+					continue;
+				}
+				ReplacerEnvironment raceenv =
+					new ReplacerEnvironment();
+
+				raceenv.add("speed", Bytes.formatBytes(stat.getXferspeed())+"/s");
+				raceenv.add("user", stat.getUsername());
+				raceenv.add("group", raceuser.getGroupName());
+				raceenv.add("files", "" + stat.getFiles());
+				raceenv.add("bytes", Bytes.formatBytes(stat.getBytes()));
+				raceenv.add("position",String.valueOf(position));
+				raceenv.add("percent",Integer.toString(stat.getFiles() * 100 / sfvfile.size()) + "%");
+				
+				try {
+					racetext += ReplacerUtils.finalJprintf(racerlineformat, raceenv) + "\n";
+					position++;
+				} catch (FormatterException e) {
+					logger.warn(e);
+				}
+				
+			}	
+					
+			racetext += ReplacerUtils.jprintf("cwd.racers.footer"   , env, Dir.class) + "\n";
+			racetext += ReplacerUtils.jprintf("cwd.groups.header"   , env, Dir.class) + "\n";
+			
+			position = 1;
+			for (Iterator iter = groups.iterator(); iter.hasNext();) {
+				GroupPosition stat = (GroupPosition) iter.next();
+
+				ReplacerEnvironment raceenv = new ReplacerEnvironment();
+
+				raceenv.add("group", stat.getGroupname());
+				raceenv.add("position", new Integer(position++));
+				raceenv.add("bytes", Bytes.formatBytes(stat.getBytes()));
+				raceenv.add("files", Integer.toString(stat.getFiles()));
+				raceenv.add("percent",Integer.toString(stat.getFiles() * 100 / sfvfile.size()) + "%");
+				raceenv.add("speed",Bytes.formatBytes(stat.getXferspeed()) + "/s");
+
+				try {
+					racetext += ReplacerUtils.finalJprintf(grouplineformat, raceenv) + "\n";
+					position++;
+				} catch (FormatterException e) {
+					logger.warn(e);
+				}
+
+			}
+			
+			racetext += ReplacerUtils.jprintf("cwd.groups.footer"   , env, Dir.class) + "\n";
+
+			env.add("totalfiles",Integer.toString(sfvfile.size()));
+			env.add("totalbytes",Bytes.formatBytes(sfvfile.getTotalBytes()));
+			env.add("totalspeed",Bytes.formatBytes(sfvfile.getXferspeed()) + "/s");
+			env.add("totalpercent",Integer.toString(sfvfile.getStatus().getPresent() * 100 / sfvfile.size()) + "%");
+
+			racetext += ReplacerUtils.jprintf("cwd.totals.body"     , env, Dir.class) + "\n";
+			racetext += ReplacerUtils.jprintf("cwd.racestats.footer", env, Dir.class) + "\n";
+
+
+			try {
+				raceformat = ReplacerFormat.createFormat(racetext);
+			} catch (FormatterException e1) {
+				logger.warn(e1);
+			}
+			try {
+				if (raceformat == null) {
+					response.addComment("cwd.uploaders");
+				} else {
+					response.addComment( 
+							ReplacerUtils.finalJprintf(raceformat, env));
+				}
+			} catch (FormatterException e) {
+				response.addComment("cwd.uploaders");
+				logger.warn("",e);
+			}
+
+		} catch (RuntimeException ex) {
+			logger.error("", ex);
+		} catch (IOException e) {
+			//Error fetching SFV, ignore
+		} catch (NoAvailableSlaveException e) {
+			//Error fetching SFV, ignore
+		}
+		
 		return response;
 	}
 
@@ -690,7 +893,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 		if ("CDUP".equals(cmd))
 			return doCDUP(conn);
 		if ("CWD".equals(cmd))
-			return doCWD(conn);
+			return doNewCWD(conn);
 		if ("MKD".equals(cmd))
 			return doMKD(conn);
 		if ("PWD".equals(cmd))
