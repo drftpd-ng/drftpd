@@ -51,7 +51,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.151 2004/06/22 23:33:36 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.152 2004/06/28 14:34:00 zubov Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -1545,9 +1545,6 @@ public class LinkedRemoteFile
 
 		//slaves are copied here too...
 		LinkedRemoteFile toFile = toDir.putFile(this, toName);
-
-		if (!toFile.isDirectory())
-			toFile._slaves = Collections.synchronizedList(new ArrayList());
 		if (isDirectory()) {
 			for (Iterator iter =
 				_ftpConfig.getSlaveManager().getSlaves().iterator();
@@ -1564,15 +1561,16 @@ public class LinkedRemoteFile
 						ex);
 				}
 			}
+			// need to remove the now moved directory
+			delete();
 		} else { // isFile()
+			toFile._slaves = Collections.synchronizedList(new ArrayList());
 			for (Iterator iter = new ArrayList(getSlaves()).iterator();
 				iter.hasNext();
 				) {
 				RemoteSlave rslave = (RemoteSlave) iter.next();
 				try {
 					rslave.rename(getPath(), toDirPath, toName);
-					removeSlave(rslave);
-					toFile.addSlave(rslave);
 				} catch (IOException ex) {
 					logger.log(
 						Level.FATAL,
@@ -1581,29 +1579,11 @@ public class LinkedRemoteFile
 							+ " on a file in LinkedRemoteFile",
 						ex);
 				}
+				// slave is now offline, but when it comes back online, file will be in correct place
+				removeSlave(rslave);
+				toFile.addSlave(rslave);
 			}
 		}
-
-		//Object[] ret = lookupNonExistingFile(to);
-		//
-		//String toName = (String) ret[1];
-		//		if (toName == null)
-		//			throw new ObjectExistsException("Target already exists");
-
-		//		try {
-		//			getParentFile()._files.remove(fromName);
-		//			getParentFileNull().addSize(-length());
-		//		} catch (FileNotFoundException ex) {
-		//			logger.log(
-		//				Level.FATAL,
-		//				"FileNotFoundException on getParentFile() on 'this' in rename",
-		//				ex);
-		//		}
-
-		//		_parent = toDir;
-		//		toDir.getMap().put(toName, this);
-		//		toDir.addSize(length());
-		//		_name = toName;
 		return toFile;
 	}
 	public TransferStatus sendFile(Transfer transfer, char type, long offset)
