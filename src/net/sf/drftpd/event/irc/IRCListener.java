@@ -140,7 +140,8 @@ public class IRCListener implements FtpListener, Observer {
 	private int _port;
 
 	private String _server;
-	private static final ReplacerEnvironment globalEnv = new ReplacerEnvironment();
+	private static final ReplacerEnvironment globalEnv =
+		new ReplacerEnvironment();
 	static {
 		globalEnv.add("bold", "\u0002");
 		globalEnv.add("coloroff", "\u000f");
@@ -150,8 +151,7 @@ public class IRCListener implements FtpListener, Observer {
 	/**
 	 * 
 	 */
-	public IRCListener()
-		throws UnknownHostException, IOException {
+	public IRCListener() throws UnknownHostException, IOException {
 
 		//_cm = cm;
 		//Debug.setDebugLevel(Debug.FAULT);
@@ -172,8 +172,7 @@ public class IRCListener implements FtpListener, Observer {
 		new AutoJoin(_conn, _channelName, _key);
 		new AutoResponder(_conn);
 		_conn.addCommandObserver(this);
-		logger.info(
-			"IRCListener: connecting to " + _server + ":" + _port);
+		logger.info("IRCListener: connecting to " + _server + ":" + _port);
 		_conn.connect(_server, _port);
 	}
 
@@ -565,9 +564,7 @@ public class IRCListener implements FtpListener, Observer {
 
 	private void actionPerformedInvite(InviteEvent event) {
 		String user = event.getCommand();
-		logger.info(
-			"Invited "
-			+ user + " through SITE INVITE");
+		logger.info("Invited " + user + " through SITE INVITE");
 		_conn.sendCommand(new InviteCommand(user, _channelName));
 	}
 
@@ -724,10 +721,10 @@ public class IRCListener implements FtpListener, Observer {
 		for (int i = 0; i < lines.length; i++) {
 			String line = lines[i];
 			String chan;
-			if(line.startsWith("#")) {
+			if (line.startsWith("#")) {
 				int pos = line.indexOf(':');
 				chan = line.substring(0, pos);
-				line = line.substring(pos+1);
+				line = line.substring(pos + 1);
 			} else {
 				chan = _channelName;
 			}
@@ -763,45 +760,10 @@ public class IRCListener implements FtpListener, Observer {
 		try {
 			if (updated instanceof MessageCommand) {
 				MessageCommand msgc = (MessageCommand) updated;
-				//only accept messages from _channelName
-				if(!msgc.getDest().equalsIgnoreCase(_channelName)) return;
-				String message = msgc.getMessage();
-
-				if (message.equals("!help")) {
-					say("Available commands: !bw !slaves !speed !who");
-				} else if (message.equals("!bw")) {
-					try {
-						updateBw(observer, msgc);
-					} catch (FormatterException e) {
-						say("[bw] FormatterException: " + e.getMessage());
-					}
-				} else if (message.equals("!slaves")) {
-					updateSlaves(observer, msgc);
-				} else if (message.startsWith("!speed")) {
-					try {
-						updateSpeed(observer, msgc);
-					} catch (FormatterException e) {
-						say("[speed] FormatterException: " + e.getMessage());
-					}
-				} else if (message.equals("!df")) {
-					try {
-						updateDF(observer, msgc);
-					} catch (FormatterException e) {
-						say("[df] FormatterException: " + e.getMessage());
-					}
-				} else if (
-					message.equals("!who")
-						|| message.equals("!leechers")
-						|| message.equals("!uploaders")) {
-					try {
-						updateWho(observer, msgc);
-					} catch (FormatterException e) {
-						say("[who] FormatterException: " + e.getMessage());
-					}
-				} else if (
-					message.startsWith("!invite ")
-						&& msgc.isPrivateToUs(_clientState)) {
-					String args[] = message.split(" ");
+				String msg = msgc.getMessage();
+				if (msg.startsWith("!invite ")
+					&& msgc.isPrivateToUs(_clientState)) {
+					String args[] = msg.split(" ");
 					User user;
 					try {
 						user = _cm.getUserManager().getUserByName(args[1]);
@@ -830,9 +792,45 @@ public class IRCListener implements FtpListener, Observer {
 								+ " attempted invite with bad password: "
 								+ msgc);
 					}
-				} else if (message.startsWith("replic")) {
+				}
+				//only accept messages from _channelName
+				if (!msgc.getDest().equalsIgnoreCase(_channelName))
+					return;
+
+				if (msg.equals("!help")) {
+					say("Available commands: !bw !slaves !speed !who");
+				} else if (msg.equals("!bw")) {
+					try {
+						updateBw(observer, msgc);
+					} catch (FormatterException e) {
+						say("[bw] FormatterException: " + e.getMessage());
+					}
+				} else if (msg.equals("!slaves")) {
+					updateSlaves(observer, msgc);
+				} else if (msg.startsWith("!speed")) {
+					try {
+						updateSpeed(observer, msgc);
+					} catch (FormatterException e) {
+						say("[speed] FormatterException: " + e.getMessage());
+					}
+				} else if (msg.equals("!df")) {
+					try {
+						updateDF(observer, msgc);
+					} catch (FormatterException e) {
+						say("[df] FormatterException: " + e.getMessage());
+					}
+				} else if (
+					msg.equals("!who")
+						|| msg.equals("!leechers")
+						|| msg.equals("!uploaders")) {
+					try {
+						updateWho(observer, msgc);
+					} catch (FormatterException e) {
+						say("[who] FormatterException: " + e.getMessage());
+					}
+				} else if (msg.startsWith("replic")) {
 					String args[] =
-						message.substring("replic ".length()).split(" ");
+						msg.substring("replic ".length()).split(" ");
 					// replic <user> <pass> <to-slave> <path>
 					User user;
 					try {
