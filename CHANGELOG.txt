@@ -1,7 +1,12 @@
+2005/03/13 Matt Zimmerman <zubov@users.sourceforge.net>
+* 2.0RC3 released
+
 2005/03/12 Matt Zimmerman <zubov@users.sourceforge.net>
 * Blowfish has own settings for each channel
 * User/Group Permissions on a channel can be used to restrict access per argument:
  - SITE BLOWFISH #channel
+ - SITE INVITE
+ - !invite
 
 2005/03/02 Matt Zimmerman <zubov@users.sourceforge.net>
 * Hell has frozen over, Dark finally submitted his .diz patch
