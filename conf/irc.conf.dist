@@ -1,13 +1,27 @@
 irc.server=localhost
 irc.port=6667
+# use SSL for irc.server
+# [ true | false ]
 irc.ssl=false
+# channels to autojoin on successful connection
+# to irc.server
 irc.channel.1=#drftpd-test
 #irc.channel.2=#drftpd-test2
 #irc.channel.2.key=
+
+# general format:
+# irc.nick!irc.user@ipaddress.would.be.here irc.name
+# is returned by /who or /whois
+
+# actual nickname on irc.server
 irc.nick=drftpd
 irc.name=drftpd
+# username -- irc.user@your.ipaddress.shows.here
 irc.user=drftpd
 
+# Announce directories and races 
+# (based on irc.section.x settings below)
+# [true | false ]
 irc.enable.announce=true
 
 ##Send different sections to different channels.
@@ -16,6 +30,7 @@ irc.enable.announce=true
 #irc.section.2=CHAN2
 #irc.section.2.channel=#drftpd-test2
 
+# Plugins ...
 irc.plugins.1=net.sf.drftpd.event.irc.Invite
 irc.plugins.2=net.sf.drftpd.event.irc.Who
 irc.plugins.3=net.sf.drftpd.event.irc.Slaves
