@@ -29,13 +29,10 @@ class TrialSiteBot extends GenericCommandAutoService {
 
 	private IRCListener _irc;
 
-	private Trial _parent;
-
-	protected TrialSiteBot(Trial trial, IRCListener irc, Trial parent) {
+	protected TrialSiteBot(Trial trial, IRCListener irc) {
 		super(irc.getIRCConnection());
-		this._trial = trial;
+		_trial = trial;
 		_irc = irc;
-		_parent = parent;
 	}
 
 	protected String jprintf(
@@ -88,7 +85,7 @@ class TrialSiteBot extends GenericCommandAutoService {
 			User user;
 			try {
 				user =
-					_parent
+					_trial
 						.getConnectionManager()
 						.getUserManager()
 						.getUserByName(
@@ -102,7 +99,7 @@ class TrialSiteBot extends GenericCommandAutoService {
 				return;
 			}
 			int i = 0;
-			for (Iterator iter = _parent.getLimits().iterator();
+			for (Iterator iter = _trial.getLimits().iterator();
 				iter.hasNext();
 				) {
 				Limit limit = (Limit) iter.next();

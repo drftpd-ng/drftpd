@@ -13,7 +13,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: SFVFile.java,v 1.24 2004/01/05 00:14:19 mog Exp $
+ * @version $Id: SFVFile.java,v 1.25 2004/01/08 03:14:48 mog Exp $
  */
 public class SFVFile implements Serializable {
 
@@ -182,13 +182,15 @@ public class SFVFile implements Serializable {
 		}
 		return ret;
 	}
+	
 	public Collection getFiles() {
 		return getEntriesFiles().keySet();
 	}
 
 	public Collection getNames() {
-		return getEntries().values();
+		return getEntries().keySet();
 	}
+	
 	public long getTotalBytes() {
 		long totalBytes = 0;
 		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {

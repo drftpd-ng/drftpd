@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.95 2004/01/04 03:26:01 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.96 2004/01/08 03:14:48 mog Exp $
  */
 
 public class LinkedRemoteFile
@@ -268,6 +268,7 @@ public class LinkedRemoteFile
 			try {
 				if (dirSize() == 0) {
 					Object ret = getParentFile().getMap().remove(getName());
+					addSize(-length());
 					assert ret != null;
 				}
 			} catch (FileNotFoundException ex) {
@@ -772,9 +773,9 @@ public class LinkedRemoteFile
 
 	protected synchronized void addSize(long size) {
 		_length += size;
-		logger.debug(
-			this +" got " + size + " added, now " + _length,
-			new Throwable());
+//		logger.debug(
+//			this +" got " + size + " added, now " + _length,
+//			new Throwable());
 		try {
 			getParentFile().addSize(size);
 		} catch (FileNotFoundException done) {

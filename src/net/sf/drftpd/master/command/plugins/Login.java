@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.15 2004/01/03 23:50:53 mog Exp $
+ * @version $Id: Login.java,v 1.16 2004/01/08 03:14:48 mog Exp $
  */
 public class Login implements CommandHandler, Cloneable {
 
@@ -114,7 +114,7 @@ public class Login implements CommandHandler, Cloneable {
 				}
 				return new FtpReply(
 					331,
-					"Password required for " + newUser.getUsername());
+					conn.jprintf(Login.class.getName(), "user.success"));
 			}
 		}
 		//fail

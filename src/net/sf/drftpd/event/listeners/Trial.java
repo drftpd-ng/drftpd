@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.11 2004/01/05 02:20:07 mog Exp $
+ * @version $Id: Trial.java,v 1.12 2004/01/08 03:14:48 mog Exp $
  */
 public class Trial implements FtpListener {
 	private static final short ACTION_DISABLE = 0;
@@ -130,11 +130,11 @@ public class Trial implements FtpListener {
 			return user.getDownloadedBytes();
 		switch (period) {
 			case PERIOD_DAILY :
-				return user.getDownloadedBytesDay();
+				return user.getUploadedBytesDay();
 			case PERIOD_WEEKLY :
-				return user.getDownloadedBytesWeek();
+				return user.getUploadedBytesWeek();
 			case PERIOD_MONTHLY :
-				return user.getDownloadedBytesMonth();
+				return user.getUploadedBytesMonth();
 			default :
 				throw new IllegalArgumentException();
 		}
@@ -409,7 +409,7 @@ public class Trial implements FtpListener {
 			try {
 				IRCListener _irc =
 					(IRCListener) _cm.getFtpListener(IRCListener.class);
-				_siteBot = new TrialSiteBot(this, _irc, this);
+				_siteBot = new TrialSiteBot(this, _irc);
 			} catch (ObjectNotFoundException e1) {
 				logger.warn("Error loading sitebot component", e1);
 			}

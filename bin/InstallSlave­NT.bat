@@ -5,7 +5,7 @@ rem
 if "%OS%"=="Windows_NT" goto nt
 
 echo This is not NT, so please edit this script and set _APP_HOME manually
-set _APP_HOME=.
+set _APP_HOME=..
 
 goto conf
 
@@ -17,12 +17,12 @@ set _APP_HOME=%_APP_HOME:\bin\=%
 
 
 rem
-rem Find the wrapper-master.conf
+rem Find the wrapper-slave.conf
 rem
 :conf
 set _WRAPPER_CONF="%~f1"
 if not %_WRAPPER_CONF%=="" goto startup
-set _WRAPPER_CONF="%_APP_HOME%\conf\wrapper-master.conf"
+set _WRAPPER_CONF="%_APP_HOME%\conf\wrapper-slave.conf"
 
 
 rem
@@ -30,7 +30,7 @@ rem Run the application.
 rem At runtime, the current directory will be that of Wrapper.exe
 rem
 :startup
-"%_APP_HOME%\bin\Wrapper.exe" -c %_WRAPPER_CONF%
+"%_APP_HOME%\bin\Wrapper.exe" -i %_WRAPPER_CONF%
 if not errorlevel 1 goto end
 pause
 
