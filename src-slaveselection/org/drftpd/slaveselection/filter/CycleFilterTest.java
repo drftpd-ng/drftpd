@@ -20,10 +20,8 @@ package org.drftpd.slaveselection.filter;
 import junit.framework.TestCase;
 
 import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.ObjectNotFoundException;
 
-import org.apache.log4j.BasicConfigurator;
-
-import org.drftpd.Time;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 
@@ -31,45 +29,37 @@ import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyRemoteSlave;
 
 import java.util.Arrays;
-import java.util.Properties;
 
 
 /**
- * @author mog
- * @version $Id$
+ * @author zubov
+ * @version $Id: CycleFilterTest.java 823 2004-11-29 01:36:22Z mog $
  */
-public class MintimeonlineFilterTest extends TestCase {
-    public MintimeonlineFilterTest(String name) {
-        super(name);
+public class CycleFilterTest extends TestCase {
+    /**
+     * Constructor for CycleFilterTest.
+     * @param arg0
+     */
+    public CycleFilterTest(String arg0) {
+        super(arg0);
     }
 
-    public void setUp() {
-        BasicConfigurator.configure();
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(CycleFilterTest.class);
     }
 
-    public void testSimple() throws NoAvailableSlaveException {
-        Properties p = new Properties();
-        p.put("1.multiplier", "1");
-        p.put("1.mintime", "2m");
-
-        long time = System.currentTimeMillis();
-        RemoteSlave[] rslaves = { new RS("slave1", time) };
+    public void testProcess()
+        throws NoAvailableSlaveException, ObjectNotFoundException {
+        RemoteSlave[] rslaves = {
+                new DummyRemoteSlave("slave1", null),
+                new DummyRemoteSlave("slave2", null),
+                new DummyRemoteSlave("slave3", null)
+            };
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
-        MintimeonlineFilter f = new MintimeonlineFilter(null, 1, p);
-        f.process(sc, null, null, Transfer.TRANSFER_UNKNOWN, null, time);
-        assertEquals(-Time.parseTime("1m"), sc.getBestSlaveScore().getScore());
-    }
-
-    public static class RS extends DummyRemoteSlave {
-        private long _time;
-
-        public RS(String name, long time) {
-            super(name, null);
-            _time = time;
-        }
-
-        public long getLastTransferForDirection(char dir) {
-            return _time - Time.parseTime("1m");
-        }
+        Filter f = new CycleFilter(null, 0, null);
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null, null);
+        assertEquals(1, sc.getSlaveScore(rslaves[0]).getScore());
+        assertEquals(0, sc.getSlaveScore(rslaves[1]).getScore());
+        assertEquals(0, sc.getSlaveScore(rslaves[2]).getScore());
     }
 }

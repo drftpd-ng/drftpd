@@ -765,7 +765,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
      * ex2. site chgrp archimede ftp eleet This moves archimede from ftp group
      * to eleet group.
      */
-    private Reply doSITE_CHGRP(BaseFtpConnection conn) {
+    private Reply doSITE_CHGRP(BaseFtpConnection conn) throws ReplyException {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin()) {
@@ -822,7 +822,11 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                 }
             }
         }
-
+        try {
+        	myUser.commit();
+        } catch(UserFileException e) {
+        	throw new ReplyException(e);
+        }
         return response;
     }
 
@@ -861,6 +865,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             User myUser = conn.getGlobalContext().getUserManager()
                               .getUserByName(args[0]);
             myUser.setPassword(args[1]);
+            myUser.commit();
             logger.info("'" + conn.getUserNull().getName() +
                 "' changed password for '" + myUser.getName() + "'");
 
@@ -1465,30 +1470,39 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             "User was last seen: " + new Date(user.getLastAccessTime()));
     }
 
-    private Reply doSITE_TAGLINE(BaseFtpConnection conn) {
+    private Reply doSITE_TAGLINE(BaseFtpConnection conn) throws ReplyException {
         FtpRequest request = conn.getRequest();
 
         if (!request.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "tagline.usage"));
+            return new Reply(501, conn.jprintf(UserManagement.class,
+					"tagline.usage"));
         }
 
-        logger.info("'" + conn.getUserNull().getName() +
-            "' changed his tagline from '" +
-            conn.getUserNull().getKeyedMap().getObject(TAGLINE, "") + "' to '" +
-            request.getArgument() + "'");
-        conn.getUserNull().getKeyedMap().setObject(UserManagement.TAGLINE, request.getArgument());
-
+        try {
+            conn.getUserNull().getKeyedMap().setObject(UserManagement.TAGLINE, request.getArgument());
+			conn.getUserNull().commit();
+	        logger.info("'" + conn.getUserNull().getName()
+					+ "' changed his tagline from '"
+					+ conn.getUserNull().getKeyedMap().getObject(TAGLINE, "")
+					+ "' to '" + request.getArgument() + "'");
+		} catch (UserFileException e) {
+			throw new ReplyException(e);
+		}
         return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    private Reply doSITE_DEBUG(BaseFtpConnection conn) {
+    private Reply doSITE_DEBUG(BaseFtpConnection conn) throws ReplyException {
     	User user = conn.getUserNull();
     	if(!conn.getRequest().hasArgument()) {
     		user.getKeyedMap().setObject(UserManagement.DEBUG, new Boolean(!user.getKeyedMap().getObjectBoolean(UserManagement.DEBUG)));
     	} else {
     		String arg = conn.getRequest().getArgument();
     		user.getKeyedMap().setObject(UserManagement.DEBUG, new Boolean(arg.equals("true") || arg.equals("on")));
+    	}
+    	try {
+    		user.commit();
+    	} catch(UserFileException e) {
+    		throw new ReplyException(e);
     	}
     	return new Reply(200, conn.jprintf(UserManagement.class, "debug"));
     }
@@ -1563,7 +1577,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
      *
      * This will show detailed information about user 'Archimede'.
      */
-    private Reply doSITE_USER(BaseFtpConnection conn) {
+    private Reply doSITE_USER(BaseFtpConnection conn) throws ReplyException {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin() &&
@@ -1589,7 +1603,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
             //return FtpResponse.RESPONSE_200_COMMAND_OK);
         } catch (UserFileException ex) {
-            return new Reply(452, ex.getMessage());
+            throw new ReplyException(ex);
         }
 
         if (conn.getUserNull().isGroupAdmin() &&
@@ -1624,7 +1638,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         return response;
     }
 
-    private Reply doSITE_USERS(BaseFtpConnection conn) {
+    private Reply doSITE_USERS(BaseFtpConnection conn) throws ReplyException {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin()) {
@@ -1639,7 +1653,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         } catch (UserFileException e) {
             logger.log(Level.FATAL, "IO error reading all users", e);
 
-            return new Reply(452, "IO error: " + e.getMessage());
+            throw new ReplyException(e);
         }
 
         if (request.hasArgument()) {

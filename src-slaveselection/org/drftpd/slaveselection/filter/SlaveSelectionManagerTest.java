@@ -36,7 +36,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: SlaveSelectionManagerTest.java 838 2004-12-01 02:35:02Z mog $
  */
 public class SlaveSelectionManagerTest extends TestCase {
     public SlaveSelectionManagerTest(String fName) {

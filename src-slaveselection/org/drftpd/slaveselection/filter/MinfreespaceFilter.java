@@ -45,7 +45,7 @@ import java.util.Properties;
  *   addScore((minfreespace - diskfree) * multiplier)
  * }
  * @author mog
- * @version $Id$
+ * @version $Id: MinfreespaceFilter.java 847 2004-12-02 03:32:41Z mog $
  */
 public class MinfreespaceFilter extends Filter {
     private long _minfreespace;

@@ -50,6 +50,8 @@
 
   <target name="clean">
     <delete dir="${outputDir}" />
+    <delete dir="${outputDir}-archive" />
+    <delete dir="${outputDir}-slaveselection" />
   </target>
 
   <target name="prepare">
@@ -136,6 +138,7 @@
   	<javac srcdir="${sourceDir}" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.5">
   		<patternset refid="excludes"/>
     </javac>
+  	<javac srcdir="${sourceDir}-slaveselection" destdir="${outputDir}-slaveselection" classpathref="classpath" debug="true" source="1.5"/>
     <copy todir="${outputDir}">
       <fileset dir="${sourceDir}">
         <include name="**/*.properties"/>

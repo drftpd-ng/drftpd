@@ -34,7 +34,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: MaxTransfersPerUserFilter.java 849 2004-12-02 05:21:41Z mog $
  */
 public class MaxTransfersPerUserFilter extends Filter {
 

@@ -18,48 +18,37 @@
 package org.drftpd.slaveselection.filter;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Properties;
 
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.mirroring.Job;
-import net.sf.drftpd.mirroring.JobManager;
+import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.master.config.FtpConfig;
 
-import org.drftpd.GlobalContext;
+import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.permissions.Permission;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
 
+import com.Ostermiller.util.StringTokenizer;
+
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: UserFilter.java 879 2004-12-29 03:39:22Z mog $
  */
-public class MaxUploadsPerSlaveJob extends Filter {
-	private GlobalContext _gctx;
+public class UserFilter extends Filter {
+    private Permission _perm;
+	private ArrayList<MatchdirFilter.AssignSlave> _assigns;
 
-	public MaxUploadsPerSlaveJob(FilterChain fc, int i, Properties p) {
-		_gctx = fc.getGlobalContext();
-	}
-
-	public MaxUploadsPerSlaveJob(GlobalContext gctx) {
-		_gctx = gctx;
-	}
+	public UserFilter(FilterChain fc, int i, Properties p) throws ObjectNotFoundException {
+    	_perm = new Permission(FtpConfig.makeUsers(new StringTokenizer(PropertyHelper.getProperty(p, i+".perm"))));
+    	_assigns = MatchdirFilter.parseAssign(PropertyHelper.getProperty(p, i+".assign"), fc.getGlobalContext().getSlaveManager());
+    }
 
 	public void process(ScoreChart scorechart, User user, InetAddress peer,
-			char direction, LinkedRemoteFileInterface dir,
-			RemoteSlave sourceSlave) throws NoAvailableSlaveException {
-		process(scorechart, sourceSlave);
-	}
-	public void process(ScoreChart scorechart, RemoteSlave sourceSlave) {
-		if (sourceSlave == null)
-			return;
-		JobManager jm = _gctx.getJobManager();
-		for (Job job : jm.getAllJobsFromQueue()) {
-			if (job.isTransferring()) {
-				synchronized (job) {
-					if (job.getSourceSlave().equals(sourceSlave))
-						scorechart.removeSlaveScore(job.getDestinationSlave());
-				}
-			}
-		}
+			char direction, LinkedRemoteFileInterface dir, RemoteSlave sourceSlave)
+			throws NoAvailableSlaveException {
+		MatchdirFilter.doAssign(_assigns, scorechart);
 	}
 }

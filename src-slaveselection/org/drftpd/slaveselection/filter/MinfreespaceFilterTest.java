@@ -40,7 +40,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: MinfreespaceFilterTest.java 823 2004-11-29 01:36:22Z mog $
  */
 public class MinfreespaceFilterTest extends TestCase {
     public MinfreespaceFilterTest(String fName) {

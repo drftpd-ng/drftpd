@@ -31,7 +31,7 @@ import java.net.InetAddress;
  * if download, the inetaddress would be the dest.
  *
  * @author mog
- * @version $Id$
+ * @version $Id: Filter.java 847 2004-12-02 03:32:41Z mog $
  */
 public abstract class Filter {
     public abstract void process(ScoreChart scorechart, User user,

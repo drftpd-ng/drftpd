@@ -46,7 +46,7 @@ import java.util.Set;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: MatchdirFilterTest.java 823 2004-11-29 01:36:22Z mog $
  */
 public class MatchdirFilterTest extends TestCase {
     RemoteSlave[] rslaves = {
@@ -153,10 +153,6 @@ public class MatchdirFilterTest extends TestCase {
         public void remerge(CaseInsensitiveHashtable lightRemoteFiles,
             RemoteSlave rslave) throws IOException {
         }
-
-		public boolean isValid() {
-			return true;
-		}
     }
 
     public class FC extends FilterChain {

@@ -41,7 +41,7 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: DefaultSlaveSelectionManager.java 874 2004-12-23 17:43:28Z mog $
  */
 public class DefaultSlaveSelectionManager
     implements SlaveSelectionManagerInterface {

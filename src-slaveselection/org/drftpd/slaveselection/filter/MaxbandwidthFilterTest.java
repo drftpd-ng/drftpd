@@ -49,7 +49,7 @@ import java.util.Set;
 
 /**
  * @author zubov
- * @version $Id$
+ * @version $Id: MaxbandwidthFilterTest.java 880 2004-12-29 04:24:27Z mog $
  */
 public class MaxbandwidthFilterTest extends TestCase {
     RemoteSlave[] rslaves = {
@@ -99,10 +99,6 @@ public class MaxbandwidthFilterTest extends TestCase {
         public void remerge(CaseInsensitiveHashtable lightRemoteFiles,
             RemoteSlave rslave) throws IOException {
         }
-
-		public boolean isValid() {
-			return true;
-		}
     }
 
     public class FC extends FilterChain {

@@ -39,7 +39,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: FilterChain.java 847 2004-12-02 03:32:41Z mog $
  */
 public class FilterChain {
     private SlaveSelectionManagerInterface _ssm;

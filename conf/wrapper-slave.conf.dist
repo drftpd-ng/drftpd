@@ -18,7 +18,8 @@ wrapper.java.classpath.3=lib/replacer.jar
 wrapper.java.classpath.4=classes
 
 
-# Java Library Path (location of Wrapper.DLL or libwrapper.so)
+# Java Library Path (location of Wrapper.DLL or libwrapper.so
+# and libFileSystem.so FileSystem.dll)
 wrapper.java.library.path.1=lib
 
 # Java Additional Parameters

@@ -46,7 +46,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: SlaveSelectionManager.java 930 2005-01-30 15:16:42Z zubov $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     private GlobalContext _gctx;

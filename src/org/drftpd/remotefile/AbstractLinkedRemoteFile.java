@@ -234,7 +234,11 @@ public abstract class AbstractLinkedRemoteFile
         throw new UnsupportedOperationException();
     }
 
-    public long lastModified() {
+	public boolean isValid() {
+		return true;
+	}
+
+	public long lastModified() {
         throw new UnsupportedOperationException();
     }
 

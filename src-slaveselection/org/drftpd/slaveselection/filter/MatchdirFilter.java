@@ -44,7 +44,7 @@ import org.drftpd.usermanager.User;
  * </pre>
  *
  * @author mog
- * @version $Id$
+ * @version $Id: MatchdirFilter.java 847 2004-12-02 03:32:41Z mog $
  */
 public class MatchdirFilter extends Filter {
     private ArrayList<AssignSlave> _assigns;

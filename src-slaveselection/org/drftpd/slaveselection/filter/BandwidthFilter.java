@@ -35,7 +35,7 @@ import java.util.Properties;
 /**
  * Removes bandwidth * multiplier from the score.
  * @author mog
- * @version $Id$
+ * @version $Id: BandwidthFilter.java 936 2005-01-31 22:25:52Z mog $
  */
 public class BandwidthFilter extends Filter {
     private static final Logger logger = Logger.getLogger(BandwidthFilter.class);

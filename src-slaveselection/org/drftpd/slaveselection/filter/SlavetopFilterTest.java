@@ -45,7 +45,7 @@ import org.drftpd.tests.DummySlaveManager;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: SlavetopFilterTest.java 847 2004-12-02 03:32:41Z mog $
  */
 public class SlavetopFilterTest extends TestCase {
     private LinkedRemoteFile _dir1;
