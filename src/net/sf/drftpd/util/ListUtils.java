@@ -29,6 +29,7 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
 
 import org.apache.log4j.Logger;
+import org.drftpd.Bytes;
 import org.drftpd.SFVFile;
 import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.Reply;
@@ -175,10 +176,14 @@ public class ListUtils {
                 	env.add("missing","");
                 }
 
-                env.add("complete.total","" + sfvfile.size());
-				env.add("complete.number", "" + sfvstatus.getPresent());
-				env.add("complete.percent","" + (sfvstatus.getPresent() * 100) / sfvfile.size());
-				env.add("complete",conn.jprintf(ListUtils.class, "statusbar.complete",env));
+                env.add("complete.total", "" + sfvfile.size());
+                env.add("complete.number", "" + sfvstatus.getPresent());
+                env.add("complete.percent", "" + (sfvstatus.getPresent() * 100)
+                		/ sfvfile.size());
+                env.add("complete.totalbytes", Bytes.formatBytes(sfvfile
+                		.getTotalBytes()));
+                env.add("complete", conn.jprintf(ListUtils.class,
+                		"statusbar.complete", env));
 
                 if (sfvstatus.getOffline() != 0) {
 					env.add("offline.number","" + sfvstatus.getOffline());
