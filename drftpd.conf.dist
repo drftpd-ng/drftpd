@@ -20,8 +20,9 @@ master.socketport=1100
 master.autoregister=autopass
 
 #User manager to use.
-#XStream is default for 1.1, but JSX is still supported for <1.1 users
+#XStream is default for >=1.1, but JSX is still supported for <1.1 users
 master.usermanager=net.sf.drftpd.master.usermanager.xstream.XStreamUserManager
+#master.usermanager=net.sf.drftpd.master.usermanager.jsx.JSXUserManager
 
 #Slave manager to use, just leave it for now.
 master.slavemanager=net.sf.drftpd.master.SlaveManagerImpl

@@ -62,7 +62,7 @@ import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.93 2004/05/17 12:01:01 mog Exp $
+ * @version $Id: SlaveImpl.java,v 1.94 2004/06/02 23:03:05 zubov Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
@@ -73,7 +73,7 @@ public class SlaveImpl
 	private static final Logger logger =
 		Logger.getLogger(SlaveImpl.class.getName());
 	
-	public static final String VERSION = "DrFTPD 1.0";
+	public static final String VERSION = "DrFTPD 1.1.2";
 
 	/**
 	 * returns the {LinkedRemoteFile} directory that will be serialized and registered at the master.

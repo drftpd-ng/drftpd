@@ -1,3 +1,9 @@
+2004/06/02 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Added UPGRADING.txt, use it!
+* Changed default bufferSize to 0 in slaves.conf, if bufferSize is kept 
+  at 0, default kernel tcp values are used
+* Released 1.1.2
+
 2004/06/01 Morgan Christiansson <drftpd@mog.se>
 * Refactored net.sf.drftpd.master.command.CommandHandler to
   org.drftpd.command.CommandHandlerFactory and
