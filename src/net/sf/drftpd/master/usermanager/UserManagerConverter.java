@@ -13,7 +13,7 @@ import net.sf.drftpd.event.listeners.Trial;
  * Usage: java net.sf.drftpd.master.usermanager.UserManagerConverter net.sf.drftpd.master.usermanager.glftpd.GlftpdUserManager net.sf.drftpd.master.usermanager.JSXUserManager
  * 
  * @author mog
- * @version $Id: UserManagerConverter.java,v 1.7 2004/01/14 00:28:00 mog Exp $
+ * @version $Id: UserManagerConverter.java,v 1.8 2004/01/14 00:32:07 mog Exp $
  */
 public class UserManagerConverter {
 	private static final Logger logger =
@@ -135,11 +135,11 @@ public class UserManagerConverter {
 
 			to.setUploadedFilesForPeriod(
 				period,
-				from.getUploadedFilesForPeriod(i));
+				from.getUploadedFilesForPeriod(period));
 
 			to.setDownloadedFilesForPeriod(
 				period,
-				from.getDownloadedFilesForPeriod(i));
+				from.getDownloadedFilesForPeriod(period));
 		}
 
 		to.commit();
