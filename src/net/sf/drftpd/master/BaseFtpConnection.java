@@ -47,6 +47,8 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UnhandledCommandException;
+import org.drftpd.commands.UserManagment;
+
 import org.drftpd.slave.RemoteTransfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -62,7 +64,7 @@ import org.tanesha.replacer.SimplePrintf;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.101 2004/11/05 04:06:32 zubov Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.102 2004/11/05 13:27:18 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
     private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() +
@@ -123,7 +125,7 @@ public class BaseFtpConnection implements Runnable {
             env.add("user", user.getUsername());
             env.add("credits", Bytes.formatBytes(user.getCredits()));
             env.add("ratio", "" + user.getRatio());
-            env.add("tagline", user.getTagline());
+            env.add("tagline", user.getObjectString(UserManagment.TAGLINE));
             env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
             env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
             env.add("group", user.getGroupName());

@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.master.command.plugins;
+package org.drftpd.commands;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.event.listeners.Trial;
@@ -24,16 +24,13 @@ import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
+import net.sf.drftpd.master.command.plugins.Textoutput;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.Permission;
 import net.sf.drftpd.util.UserComparator;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
-import org.drftpd.commands.CommandHandler;
-import org.drftpd.commands.CommandHandlerFactory;
-import org.drftpd.commands.UnhandledCommandException;
 
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -53,7 +50,7 @@ import java.util.StringTokenizer;
 
 
 /**
- * @version $Id: TransferStatistics.java,v 1.27 2004/11/03 16:46:40 mog Exp $
+ * @version $Id: TransferStatistics.java,v 1.1 2004/11/05 13:27:21 mog Exp $
  */
 public class TransferStatistics implements CommandHandlerFactory,
     CommandHandler {
@@ -226,13 +223,14 @@ public class TransferStatistics implements CommandHandlerFactory,
             getStatsPlace("WKUP", user, userman));
         response.addComment("rank wkdn: " +
             getStatsPlace("WKDN", user, userman));
-        response.addComment("races won: " + user.getRacesWon());
-        response.addComment("races lost: " + user.getRacesLost());
-        response.addComment("races helped: " + user.getRacesParticipated());
-        response.addComment("requests made: " + user.getRequests());
-        response.addComment("requests filled: " + user.getRequestsFilled());
-        response.addComment("nuked " + user.getTimesNuked() + " times for " +
-            user.getNukedBytes() + " bytes");
+
+        //        response.addComment("races won: " + user.getObject2());
+        //        response.addComment("races lost: " + user.getRacesLost());
+        //        response.addComment("races helped: " + user.getRacesParticipated());
+        //        response.addComment("requests made: " + user.getRequests());
+        //        response.addComment("requests filled: " + user.getRequestsFilled());
+        //        response.addComment("nuked " + user.getTimesNuked() + " times for " +
+        //            user.getNukedBytes() + " bytes");
         response.addComment("        FILES		BYTES");
         response.addComment("ALUP   " + user.getUploadedFiles() + "	" +
             Bytes.formatBytes(user.getUploadedBytes()));
@@ -246,6 +244,10 @@ public class TransferStatistics implements CommandHandlerFactory,
             Bytes.formatBytes(user.getUploadedBytesWeek()));
         response.addComment("WKDN   " + user.getDownloadedFilesWeek() + "	" +
             Bytes.formatBytes(user.getDownloadedBytesWeek()));
+        response.addComment("DAYUP   " + user.getUploadedFilesDay() + "     " +
+            Bytes.formatBytes(user.getUploadedBytesDay()));
+        response.addComment("DAYDN   " + user.getDownloadedFilesDay() +
+            "       " + Bytes.formatBytes(user.getDownloadedBytesDay()));
 
         return response;
     }
@@ -368,25 +370,25 @@ public class TransferStatistics implements CommandHandlerFactory,
     }
 
     public static String getUpRate(User user, int period) {
-        double s = user.getUploadedMillisecondsForPeriod(period) / (double) 1000.0;
+        double s = user.getUploadedMillisecondsForTrialPeriod(period) / (double) 1000.0;
 
         if (s <= 0) {
             return "- k/s";
         }
 
-        double rate = user.getUploadedBytesForPeriod(period) / s;
+        double rate = user.getUploadedBytesForTrialPeriod(period) / s;
 
         return Bytes.formatBytes((long) rate) + "/s";
     }
 
     public static String getDownRate(User user, int period) {
-        double s = user.getDownloadedMillisecondsForPeriod(period) / (double) 1000.0;
+        double s = user.getDownloadedMilliSecondsForTrialPeriod(period) / (double) 1000.0;
 
         if (s <= 0) {
             return "- k/s";
         }
 
-        double rate = user.getDownloadedBytesForPeriod(period) / s;
+        double rate = user.getDownloadedBytesForTrialPeriod(period) / s;
 
         return Bytes.formatBytes((long) rate) + "/s";
     }

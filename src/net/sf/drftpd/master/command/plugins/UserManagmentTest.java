@@ -14,6 +14,7 @@ import net.sf.drftpd.master.FtpRequest;
 import org.apache.log4j.BasicConfigurator;
 
 import org.drftpd.commands.UnhandledCommandException;
+import org.drftpd.commands.UserManagment;
 
 import org.drftpd.tests.DummyBaseFtpConnection;
 import org.drftpd.tests.DummyGlobalContext;
@@ -25,7 +26,7 @@ import java.util.ArrayList;
 
 /**
  * @author mog
- * @version $Id: UserManagmentTest.java,v 1.1 2004/10/03 16:13:52 mog Exp $
+ * @version $Id: UserManagmentTest.java,v 1.2 2004/11/05 13:27:20 mog Exp $
  */
 public class UserManagmentTest extends TestCase {
     public void testGAdmin() throws UnhandledCommandException {

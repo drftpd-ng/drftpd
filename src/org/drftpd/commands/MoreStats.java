@@ -32,6 +32,8 @@ import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.plugins.RaceStatistics;
+
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 
@@ -48,7 +50,7 @@ import java.util.Iterator;
 
 /*
  * @author iamn
- * @version $Id: MoreStats.java,v 1.5 2004/11/03 16:46:44 mog Exp $
+ * @version $Id: MoreStats.java,v 1.6 2004/11/05 13:27:21 mog Exp $
  */
 public class MoreStats implements CommandHandlerFactory, CommandHandler {
     public static final int PERIOD_DAILY = Calendar.DAY_OF_MONTH; // = 5
@@ -124,9 +126,9 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
         String updn = command.substring(command.length() - 2).toUpperCase();
 
         if (updn.equals("UP")) {
-            return user.getUploadedBytesForPeriod(period);
+            return user.getUploadedBytesForTrialPeriod(period);
         } else if (updn.equals("DN")) {
-            return user.getDownloadedBytesForPeriod(period);
+            return user.getDownloadedBytesForTrialPeriod(period);
         }
 
         throw new RuntimeException(UnhandledCommandException.create(
@@ -141,9 +143,9 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
         String updn = command.substring(command.length() - 2);
 
         if (updn.equals("UP")) {
-            return user.getUploadedFilesForPeriod(period);
+            return user.getUploadedFilesForTrialPeriod(period);
         } else if (updn.equals("DN")) {
-            return user.getDownloadedFilesForPeriod(period);
+            return user.getDownloadedFilesForTrialPeriod(period);
         }
 
         throw new RuntimeException(UnhandledCommandException.create(
@@ -158,9 +160,9 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
         String updn = command.substring(command.length() - 2);
 
         if (updn.equals("UP")) {
-            return user.getUploadedMillisecondsForPeriod(period);
+            return user.getUploadedMillisecondsForTrialPeriod(period);
         } else if (updn.equals("DN")) {
-            return user.getDownloadedMillisecondsForPeriod(period);
+            return user.getDownloadedMilliSecondsForTrialPeriod(period);
         }
 
         throw new RuntimeException(UnhandledCommandException.create(
@@ -211,7 +213,7 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
             stat.updateBytes(getStats(type, user));
             stat.updateFiles(getFiles(type, user));
             stat.updateXfertime(getTime(type, user));
-            stat.updateRacesWon(user.getRacesWon());
+            stat.updateRacesWon(user.getObjectInt(RaceStatistics.RACESWON));
             stat.updateMembers(1);
             stat = null;
         }
@@ -273,25 +275,25 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
     }
 
     public static String getUpRate(User user, int period) {
-        double s = user.getUploadedMillisecondsForPeriod(period) / (double) 1000.0;
+        double s = user.getUploadedMillisecondsForTrialPeriod(period) / (double) 1000.0;
 
         if (s <= 0) {
             return "- k/s";
         }
 
-        double rate = user.getUploadedBytesForPeriod(period) / s;
+        double rate = user.getUploadedBytesForTrialPeriod(period) / s;
 
         return Bytes.formatBytes((long) rate) + "/s";
     }
 
     public static String getDownRate(User user, int period) {
-        double s = user.getDownloadedMillisecondsForPeriod(period) / (double) 1000.0;
+        double s = user.getDownloadedMilliSecondsForTrialPeriod(period) / (double) 1000.0;
 
         if (s <= 0) {
             return "- k/s";
         }
 
-        double rate = user.getDownloadedBytesForPeriod(period) / s;
+        double rate = user.getDownloadedBytesForTrialPeriod(period) / s;
 
         return Bytes.formatBytes((long) rate) + "/s";
     }
@@ -382,14 +384,14 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
             MonthDn += user.getDownloadedBytesMonth();
             TotalDn += user.getDownloadedBytes();
 
-            MonthUpAvrage += user.getUploadedMillisecondsForPeriod(PERIOD_MONTHLY);
-            WeekUpAvrage += user.getUploadedMillisecondsForPeriod(PERIOD_WEEKLY);
-            DayUpAvrage += user.getUploadedMillisecondsForPeriod(PERIOD_DAILY);
+            MonthUpAvrage += user.getUploadedMillisecondsForTrialPeriod(PERIOD_MONTHLY);
+            WeekUpAvrage += user.getUploadedMillisecondsForTrialPeriod(PERIOD_WEEKLY);
+            DayUpAvrage += user.getUploadedMillisecondsForTrialPeriod(PERIOD_DAILY);
             TotalUpAvrage += user.getUploadedMilliseconds();
 
-            MonthDnAvrage += user.getDownloadedMillisecondsForPeriod(PERIOD_MONTHLY);
-            WeekDnAvrage += user.getDownloadedMillisecondsForPeriod(PERIOD_WEEKLY);
-            DayDnAvrage += user.getDownloadedMillisecondsForPeriod(PERIOD_DAILY);
+            MonthDnAvrage += user.getDownloadedMilliSecondsForTrialPeriod(PERIOD_MONTHLY);
+            WeekDnAvrage += user.getDownloadedMilliSecondsForTrialPeriod(PERIOD_WEEKLY);
+            DayDnAvrage += user.getDownloadedMilliSecondsForTrialPeriod(PERIOD_DAILY);
             TotalDnAvrage += user.getDownloadedMilliseconds();
         }
 

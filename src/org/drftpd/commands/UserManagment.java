@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package net.sf.drftpd.master.command.plugins;
+package org.drftpd.commands;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.DuplicateElementException;
@@ -32,12 +32,9 @@ import net.sf.drftpd.util.Time;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import org.drftpd.commands.CommandHandler;
-import org.drftpd.commands.CommandHandlerFactory;
-import org.drftpd.commands.UnhandledCommandException;
-
 import org.drftpd.slave.RemoteTransfer;
 
+import org.drftpd.usermanager.Key;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserExistsException;
@@ -62,10 +59,14 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  * @author zubov
- * @version $Id: UserManagment.java,v 1.51 2004/11/03 16:46:40 mog Exp $
+ * @version $Id: UserManagment.java,v 1.1 2004/11/05 13:27:21 mog Exp $
  */
 public class UserManagment implements CommandHandler, CommandHandlerFactory {
+    public static final Key TAGLINE = new Key(UserManagment.class, "tagline",
+            String.class);
     private static final Logger logger = Logger.getLogger(UserManagment.class);
+    public static final Key RATIO = new Key(UserManagment.class, "ratio",
+            Float.class);
 
     private FtpReply doSITE_ADDIP(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
@@ -688,7 +689,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 
             logger.info("'" + conn.getUserNull().getUsername() +
                 "' changed tagline for '" + userToChange.getUsername() +
-                "' from '" + userToChange.getTagline() + "' to '" +
+                "' from '" + userToChange.getObject(TAGLINE, "") + "' to '" +
                 fullCommandArgument + "'");
             userToChange.setTagline(fullCommandArgument);
 
@@ -1341,8 +1342,9 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         }
 
         logger.info("'" + conn.getUserNull().getUsername() +
-            "' changed his tagline from '" + conn.getUserNull().getTagline() +
-            "' to '" + request.getArgument() + "'");
+            "' changed his tagline from '" +
+            conn.getUserNull().getObject(TAGLINE, "") + "' to '" +
+            request.getArgument() + "'");
         conn.getUserNull().setTagline(request.getArgument());
 
         return FtpReply.RESPONSE_200_COMMAND_OK;
@@ -1452,6 +1454,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         //int hours = i / 60;
         //int minutes = i - hours * 60;
         //response.addComment("time on today: " + hours + ":" + minutes);
+        //TODO replacerenvironment
         ReplacerEnvironment env = new ReplacerEnvironment();
         env.add("username", myUser.getUsername());
         env.add("created", new Date(myUser.getCreated()));
@@ -1463,14 +1466,13 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         env.add("usercredits", Bytes.formatBytes(myUser.getCredits()));
         env.add("maxlogins", Long.toString(myUser.getMaxLogins()));
         env.add("maxloginsip", Long.toString(myUser.getMaxLoginsPerIP()));
-        env.add("maxsimup", Long.toString(myUser.getMaxSimUploads()));
-        env.add("maxsimdn", Long.toString(myUser.getMaxSimDownloads()));
         env.add("groupslots", Long.toString(myUser.getGroupSlots()));
         env.add("groupleechslots", Long.toString(myUser.getGroupLeechSlots()));
         env.add("useruploaded", Bytes.formatBytes(myUser.getUploadedBytes()));
         env.add("userdownloaded", Bytes.formatBytes(myUser.getDownloadedBytes()));
-        env.add("timesnuked", Long.toString(myUser.getTimesNuked()));
-        env.add("nukedbytes", Bytes.formatBytes(myUser.getNukedBytes()));
+
+        //env.add("timesnuked", Long.toString(myUser.getTimesNuked()));
+        //env.add("nukedbytes", Bytes.formatBytes(myUser.getNukedBytes()));
         env.add("primarygroup", myUser.getGroupName());
         env.add("extragroups", myUser.getGroups());
         env.add("ipmasks", myUser.getHostMaskCollection());

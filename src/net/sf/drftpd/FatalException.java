@@ -20,34 +20,21 @@ package net.sf.drftpd;
 
 /**
  * @author mog
- * @version $Id: FatalException.java,v 1.4 2004/08/03 20:13:54 zubov Exp $
+ * @version $Id: FatalException.java,v 1.5 2004/11/05 13:27:17 mog Exp $
  */
 public class FatalException extends RuntimeException {
-    /**
-     *
-     */
     public FatalException() {
         super();
     }
 
-    /**
-     * @param message
-     */
     public FatalException(String message) {
         super(message);
     }
 
-    /**
-     * @param message
-     * @param cause
-     */
     public FatalException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    /**
-     * @param cause
-     */
     public FatalException(Throwable cause) {
         super(cause);
     }

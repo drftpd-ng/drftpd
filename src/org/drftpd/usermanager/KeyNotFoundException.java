@@ -15,14 +15,27 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.master.usermanager;
+package org.drftpd.usermanager;
 
 
 /**
  * @author mog
- *
- * @version $Id: PlainTextPasswordUser.java,v 1.4 2004/08/03 20:13:59 zubov Exp $
+ * @version $Id: KeyNotFoundException.java,v 1.1 2004/11/05 13:27:23 mog Exp $
  */
-public interface PlainTextPasswordUser extends User {
-    public String getPassword();
+public class KeyNotFoundException extends Exception {
+    public KeyNotFoundException() {
+        super();
+    }
+
+    public KeyNotFoundException(String arg0) {
+        super(arg0);
+    }
+
+    public KeyNotFoundException(String arg0, Throwable arg1) {
+        super(arg0, arg1);
+    }
+
+    public KeyNotFoundException(Throwable arg0) {
+        super(arg0);
+    }
 }

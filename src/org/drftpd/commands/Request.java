@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.master.command.plugins;
+package org.drftpd.commands;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
@@ -28,10 +28,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 
-import org.drftpd.commands.CommandHandler;
-import org.drftpd.commands.CommandHandlerFactory;
-import org.drftpd.commands.UnhandledCommandException;
-
+import org.drftpd.usermanager.Key;
 import org.drftpd.usermanager.NoSuchUserException;
 
 import java.io.IOException;
@@ -41,9 +38,13 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Request.java,v 1.21 2004/11/03 16:46:40 mog Exp $
+ * @version $Id: Request.java,v 1.1 2004/11/05 13:27:21 mog Exp $
  */
 public class Request implements CommandHandlerFactory, CommandHandler {
+    public static final Key REQUESTSFILLED = new Key(Request.class,
+            "requestsFilled", Integer.class);
+    public static final Key REQUESTS = new Key(Request.class, "requests",
+            Integer.class);
     private static final String FILLEDPREFIX = "FILLED-for.";
     private static final Logger logger = Logger.getLogger(Request.class);
     private static final String REQPREFIX = "REQUEST-by.";
@@ -86,7 +87,9 @@ public class Request implements CommandHandlerFactory, CommandHandler {
 
                 //}
                 try {
-                    conn.getUser().addRequestsFilled();
+                    conn.getUser().incrementObjectLong(REQUESTSFILLED);
+
+                    //conn.getUser().addRequestsFilled();
                 } catch (NoSuchUserException e) {
                     e.printStackTrace();
                 }
@@ -123,12 +126,9 @@ public class Request implements CommandHandlerFactory, CommandHandler {
                     conn, "REQUEST", createdDir));
 
             //}
-            try {
-                conn.getUser().addRequests();
-            } catch (NoSuchUserException e) {
-                e.printStackTrace();
-            }
+            conn.getUserNull().incrementObjectLong(REQUESTS);
 
+            //conn.getUser().addRequests();
             return new FtpReply(257, "\"" + createdDir.getPath() +
                 "\" created.");
         } catch (FileExistsException ex) {

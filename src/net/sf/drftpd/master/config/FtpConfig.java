@@ -54,7 +54,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.64 2004/11/03 16:46:40 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.65 2004/11/05 13:27:20 mog Exp $
  */
 public class FtpConfig {
     private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -591,6 +591,6 @@ public class FtpConfig {
     }
 
     public boolean isSiteShutdown(User user) {
-        return !checkPermission("shutdown", user);
+        return checkPermission("shutdown", user);
     }
 }

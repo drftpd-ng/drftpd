@@ -22,42 +22,40 @@ import net.sf.drftpd.util.Crypt;
 
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.UnixPassword;
+import org.drftpd.usermanager.UserManager;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Vector;
 
 
 /**
  * @author mog
  * @author zubov
- * @version $Id: GlftpdUser.java,v 1.13 2004/11/03 16:46:41 mog Exp $
+ * @version $Id: GlftpdUser.java,v 1.14 2004/11/05 13:27:21 mog Exp $
  */
 public class GlftpdUser extends AbstractUser implements UnixPassword {
-    private String password;
-
-    //private String flags;
-    private Vector privateGroups = new Vector();
-
-    //private long weeklyAllotment;
-    //private GlftpdUserManager usermanager;
+    private String _password;
+    private ArrayList _privateGroups = new ArrayList();
+    private GlftpdUserManager _userManager;
 
     /**
      * Constructor for GlftpdUser.
      */
     public GlftpdUser(GlftpdUserManager usermanager, String username) {
-        super(username, usermanager);
+        super(username);
+        _userManager = usermanager;
     }
 
     public void addPrivateGroup(String group) throws DuplicateElementException {
         addSecondaryGroup(group);
-        privateGroups.add(group);
+        _privateGroups.add(group);
     }
 
     public boolean checkPassword(String userPassword) {
-        String userhash = Crypt.crypt(this.password.substring(0, 2),
+        String userhash = Crypt.crypt(this._password.substring(0, 2),
                 userPassword);
 
-        if (password.equals(userhash)) {
+        if (_password.equals(userhash)) {
             login();
 
             return true;
@@ -95,15 +93,11 @@ public class GlftpdUser extends AbstractUser implements UnixPassword {
     * @return Vector
     */
     public Collection getPrivateGroups() {
-        return privateGroups;
+        return _privateGroups;
     }
 
     public String getUnixPassword() {
-        return password;
-    }
-
-    public long getWeeklyAllotment() {
-        return weeklyAllotment;
+        return _password;
     }
 
     public void purge() {
@@ -126,11 +120,7 @@ public class GlftpdUser extends AbstractUser implements UnixPassword {
     }
 
     public void setUnixPassword(String password) {
-        this.password = password;
-    }
-
-    public void setWeeklyAllotment(long weeklyAllotment) {
-        this.weeklyAllotment = weeklyAllotment;
+        this._password = password;
     }
 
     public void update() {
@@ -141,17 +131,15 @@ public class GlftpdUser extends AbstractUser implements UnixPassword {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * @see org.drftpd.usermanager.User#updateDownloadedBytes(long)
-     */
     public void updateDownloadedBytes(long bytes) {
         throw new UnsupportedOperationException();
     }
 
-    /**
-    * @see org.drftpd.usermanager.User#updateUploadedBytes(long)
-    */
     public void updateUploadedBytes(long bytes) {
         throw new UnsupportedOperationException();
+    }
+
+    public UserManager getUserManager() {
+        return _userManager;
     }
 }

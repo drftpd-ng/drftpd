@@ -18,6 +18,7 @@ package org.drftpd.usermanager;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMaskCollection;
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.ConnectionManager;
 
 import java.util.List;
@@ -25,23 +26,24 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: User.java,v 1.1 2004/11/03 16:46:49 mog Exp $
+ * @version $Id: User.java,v 1.2 2004/11/05 13:27:23 mog Exp $
  */
 public interface User {
+    public UserManager getUserManager();
+
     public void addAllMasks(HostMaskCollection hostMaskCollection);
 
     public void addIPMask(String mask) throws DuplicateElementException;
 
-    public void addRacesLost();
-
-    public void addRacesParticipated();
-
-    public void addRacesWon();
-
-    public void addRequests();
-
-    public void addRequestsFilled();
-
+    //    public void addRacesLost();
+    //
+    //    public void addRacesParticipated();
+    //
+    //    public void addRacesWon();
+    //
+    //    public void addRequests();
+    //
+    //    public void addRequestsFilled();
     public void addSecondaryGroup(String group)
         throws DuplicateElementException;
 
@@ -76,7 +78,7 @@ public interface User {
 
     public long getDownloadedBytesDay();
 
-    public long getDownloadedBytesForPeriod(int period);
+    public long getDownloadedBytesForTrialPeriod(int period);
 
     public long getDownloadedBytesMonth();
 
@@ -86,7 +88,7 @@ public interface User {
 
     public int getDownloadedFilesDay();
 
-    public int getDownloadedFilesForPeriod(int i);
+    public int getDownloadedFilesForTrialPeriod(int i);
 
     public int getDownloadedFilesMonth();
 
@@ -94,7 +96,7 @@ public interface User {
 
     public long getDownloadedMilliseconds();
 
-    public long getDownloadedMillisecondsForPeriod(int i);
+    public long getDownloadedMilliSecondsForTrialPeriod(int i);
 
     public short getGroupLeechSlots();
 
@@ -118,13 +120,12 @@ public interface User {
      */
     public long getLastAccessTime();
 
-    /**
-     * Returns the lastNuked.
-     *
-     * @return long
-     */
-    public long getLastNuked();
-
+    //    /**
+    //     * Returns the lastNuked.
+    //     *
+    //     * @return long
+    //     */
+    //    public long getLastNuked();
     public long getLastReset();
 
     /**
@@ -148,32 +149,21 @@ public interface User {
      */
     public int getMaxLoginsPerIP();
 
-    public int getMaxSimDownloads();
-
-    /**
-     * Returns the maxSimUploads.
-     *
-     * @return int
-     */
-    public int getMaxSimUploads();
-
-    /**
-     * Returns the nukedBytes.
-     *
-     * @return long
-     */
-    public long getNukedBytes();
-
-    public int getRacesLost();
-
-    public int getRacesParticipated();
-
-    /**
-     * Returns the downloadedSecondsWeek.
-     *
-     * @return int
-     */
-    public int getRacesWon();
+    //    /**
+    //     * Returns the nukedBytes.
+    //     *
+    //     * @return long
+    //     */
+    //    public long getNukedBytes();
+    //    public int getRacesLost();
+    //
+    //    public int getRacesParticipated();
+    //    /**
+    //     * Returns the downloadedSecondsWeek.
+    //     *
+    //     * @return int
+    //     */
+    //    public int getRacesWon();
 
     /**
      * Returns the ratio.
@@ -182,23 +172,15 @@ public interface User {
      */
     public float getRatio();
 
-    public int getRequests();
-
-    public int getRequestsFilled();
-
-    /**
-     * Returns the tagline.
-     *
-     * @return String
-     */
-    public String getTagline();
-
-    /**
-     * Returns the nuked.
-     *
-     * @return int
-     */
-    public int getTimesNuked();
+    //    public int getRequests();
+    //
+    //    public int getRequestsFilled();
+    //    /**
+    //     * Returns the nuked.
+    //     *
+    //     * @return int
+    //     */
+    //    public int getTimesNuked();
 
     /**
      * Returns the uploadedBytes.
@@ -214,7 +196,7 @@ public interface User {
      */
     public long getUploadedBytesDay();
 
-    public long getUploadedBytesForPeriod(int period);
+    public long getUploadedBytesForTrialPeriod(int period);
 
     /**
      * Returns the uploadedBytesMonth.
@@ -244,7 +226,7 @@ public interface User {
      */
     public int getUploadedFilesDay();
 
-    public int getUploadedFilesForPeriod(int period);
+    public int getUploadedFilesForTrialPeriod(int period);
 
     /**
      * Returns the uploadedFilesMonth.
@@ -262,22 +244,13 @@ public interface User {
 
     public long getUploadedMilliseconds();
 
-    public long getUploadedMillisecondsForPeriod(int i);
+    public long getUploadedMillisecondsForTrialPeriod(int i);
 
     public String getUsername();
 
     public long getWeeklyAllotment();
 
     public boolean isAdmin();
-
-    /**
-     * Check if user is a member of the "anonymous" group.
-     *
-     * If your implementation of User does not use "anonymous" group for
-     * indicating an anonymous user you must still return "anonymous" in
-     * getGroups() and isMemberOf()
-     */
-    public boolean isAnonymous();
 
     /**
      * Returns the deleted.
@@ -344,7 +317,7 @@ public interface User {
 
     public void setDownloadedBytesDay(long bytes);
 
-    public void setDownloadedBytesForPeriod(int period, long bytes);
+    public void setDownloadedBytesForTrialPeriod(int period, long bytes);
 
     public void setDownloadedBytesMonth(long bytes);
 
@@ -354,17 +327,17 @@ public interface User {
 
     public void setDownloadedFilesDay(int files);
 
-    public void setDownloadedFilesForPeriod(int period, int files);
+    public void setDownloadedFilesForTrialPeriod(int period, int files);
 
     public void setDownloadedFilesMonth(int files);
 
     public void setDownloadedFilesWeek(int files);
 
-    public void setDownloadedMilliseconds(long millis);
+    public void setDownloadedMilliSeconds(long millis);
 
     public void setDownloadedMillisecondsDay(long millis);
 
-    public void setDownloadedMillisecondsForPeriod(int i, long millis);
+    public void setDownloadedMillisecondsForTrialPeriod(int i, long millis);
 
     public void setDownloadedMillisecondsMonth(long millis);
 
@@ -401,14 +374,6 @@ public interface User {
     public void setLastAccessTime(long lastAccessTime);
 
     /**
-     * Sets the lastNuked.
-     *
-     * @param lastNuked
-     *            The lastNuked to set
-     */
-    public void setLastNuked(long lastNuked);
-
-    /**
      * Sets the logins.
      *
      * @param logins
@@ -432,24 +397,13 @@ public interface User {
      */
     public void setMaxLoginsPerIP(int maxLoginsPerIP);
 
-    public void setMaxSimDownloads(int maxSimDownloads);
-
-    /**
-     * Sets the maxSimUploads.
-     *
-     * @param maxSimUploads
-     *            The maxSimUploads to set
-     */
-    public void setMaxSimUploads(int maxSimUploads);
-
-    /**
-     * Sets the nukedBytes.
-     *
-     * @param nukedBytes
-     *            The nukedBytes to set
-     */
-    public void setNukedBytes(long nukedBytes);
-
+    //    /**
+    //     * Sets the nukedBytes.
+    //     *
+    //     * @param nukedBytes
+    //     *            The nukedBytes to set
+    //     */
+    //    public void setNukedBytes(long nukedBytes);
     public void setPassword(String password);
 
     /**
@@ -460,21 +414,12 @@ public interface User {
      */
     public void setRatio(float ratio);
 
-    /**
-     * Sets the tagline.
-     *
-     * @param tagline
-     *            The tagline to set
-     */
-    public void setTagline(String tagline);
-
-    public void setTimesNuked(int nuked);
-
+    //    public void setTimesNuked(int nuked);
     public void setUploadedBytes(long bytes);
 
     public void setUploadedBytesDay(long bytes);
 
-    public void setUploadedBytesForPeriod(int i, long l);
+    public void setUploadedBytesForTrialPeriod(int i, long l);
 
     public void setUploadedBytesMonth(long bytes);
 
@@ -484,7 +429,7 @@ public interface User {
 
     public void setUploadedFilesDay(int files);
 
-    public void setUploadedFilesForPeriod(int period, int files);
+    public void setUploadedFilesForTrialPeriod(int period, int files);
 
     public void setUploadedFilesMonth(int files);
 
@@ -494,7 +439,7 @@ public interface User {
 
     public void setUploadedMillisecondsDay(long millis);
 
-    public void setUploadedMillisecondsForPeriod(int i, long millis);
+    public void setUploadedMillisecondsForTrialPeriod(int i, long millis);
 
     public void setUploadedMillisecondsMonth(long millis);
 
@@ -525,13 +470,62 @@ public interface User {
      */
     public void updateLastAccessTime();
 
-    public void updateNukedBytes(long bytes);
-
-    public void updateTimesNuked(int timesNuked);
-
+    //    public void updateNukedBytes(long bytes);
+    //
+    //    public void updateTimesNuked(int timesNuked);
     public void updateUploadedBytes(long bytes);
 
     public void updateUploadedFiles(int i);
 
     public void updateUploadedMilliseconds(long millis);
+
+    public void putObject(Key key, Object obj);
+
+    public Object getObject(Key key) throws KeyNotFoundException;
+
+    public Object getObject(Key key, Object def);
+
+    public void incrementObjectLong(Key key);
+
+    public String getObjectString(Key key);
+
+    public int getObjectInt(Key key);
+
+    public void incrementObjectInt(Key nuked, int i);
+
+    /**
+     * @param fullCommandArgument
+     */
+    public void setTagline(String fullCommandArgument);
+
+    /**
+     * @return
+     */
+    public String getTagline();
+
+    /**
+     * @return
+     */
+    public int getTimesNuked();
+
+    /**
+     * @return
+     */
+    public long getNukedBytes();
+
+    /**
+     * @param nukedBytes
+     */
+    public void setNukedBytes(long nukedBytes);
+
+    /**
+     * @param timesNuked
+     */
+    public void setTimesNuked(int timesNuked);
+
+    /**
+     * @param lastnuked
+     * @return
+     */
+    public long getObjectLong(Key lastnuked);
 }

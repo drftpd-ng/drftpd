@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.event.listeners;
+package org.drftpd.plugins;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
@@ -27,8 +27,7 @@ import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
-import org.drftpd.plugins.SiteBot;
-
+import org.drftpd.usermanager.Key;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -42,9 +41,15 @@ import java.util.Iterator;
 
 /**
  * @author zubov
- * @version $Id: RaceStatistics.java,v 1.16 2004/11/03 16:46:38 mog Exp $
+ * @version $Id: RaceStatistics.java,v 1.1 2004/11/05 13:27:22 mog Exp $
  */
 public class RaceStatistics implements FtpListener {
+    public static final Key RACESWON = new Key(RaceStatistics.class,
+            "racesWon", Integer.class);
+    public static final Key RACES = new Key(RaceStatistics.class, "races",
+            Integer.class);
+    public static final Key RACESLOST = new Key(RaceStatistics.class,
+            "racesLost", Integer.class);
     private ConnectionManager _cm;
 
     public RaceStatistics() {
@@ -69,7 +74,8 @@ public class RaceStatistics implements FtpListener {
         try {
             sfvfile = dir.lookupSFVFile();
 
-            // throws IOException, ObjectNotFoundException, NoAvailableSlaveException
+            // throws IOException, ObjectNotFoundException,
+            // NoAvailableSlaveException
         } catch (FileNotFoundException ex) {
             // can't save stats with no sfv file
             return;
@@ -105,7 +111,8 @@ public class RaceStatistics implements FtpListener {
             try {
                 user = _cm.getGlobalContext().getUserManager().getUserByName(racer.getUsername());
             } catch (NoSuchUserException ex) {
-                // this should not happen, but if it does, it means the user was deleted
+                // this should not happen, but if it does, it means the user was
+                // deleted
                 // we want to ignore their stats, but the race still did happen
                 continue;
             } catch (UserFileException ex) {
@@ -115,18 +122,18 @@ public class RaceStatistics implements FtpListener {
             }
 
             if (count == 1) {
-                user.addRacesWon();
+                //user.addRacesWon();
+                user.incrementObjectLong(RACESWON);
             } else if (count == racers.size()) {
-                user.addRacesLost();
+                //user.addRacesLost();
+                user.incrementObjectLong(RACESLOST);
             } else {
-                user.addRacesParticipated();
+                //user.addRacesParticipated();
+                user.incrementObjectLong(RACES);
             }
         }
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.drftpd.Initializeable#init(net.sf.drftpd.master.ConnectionManager)
-     */
     public void init(ConnectionManager connectionManager) {
         _cm = connectionManager;
     }

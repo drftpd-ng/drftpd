@@ -23,6 +23,8 @@ import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.ConnectionManager;
 
+import org.drftpd.commands.UserManagment;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -53,7 +55,7 @@ import java.io.IOException;
  *</ul>
  *
  * @author mog
- * @version $Id: Exec.java,v 1.3 2004/08/03 20:14:05 zubov Exp $
+ * @version $Id: Exec.java,v 1.4 2004/11/05 13:27:22 mog Exp $
  */
 public class Exec implements FtpListener {
     private ConnectionManager _cm;
@@ -67,7 +69,8 @@ public class Exec implements FtpListener {
         TransferEvent uevent = (TransferEvent) event;
         String[] env = {
                 "USER=" + uevent.getUser().getUsername(),
-                "TAGLINE=" + uevent.getUser().getTagline(),
+                "TAGLINE=" +
+                uevent.getUser().getObjectString(UserManagment.TAGLINE),
                 "GROUP=" + uevent.getUser().getGroupName(),
                 "RATIO=" + uevent.getUser().getRatio(),
                 "SPEED=" + (uevent.getDirectory().getXferspeed() / 1000),

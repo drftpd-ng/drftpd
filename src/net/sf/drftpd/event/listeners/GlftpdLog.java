@@ -41,6 +41,8 @@ import net.sf.drftpd.slave.SlaveStatus;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.commands.UserManagment;
+
 import org.drftpd.plugins.SiteBot;
 
 import org.drftpd.usermanager.NoSuchUserException;
@@ -69,7 +71,7 @@ import java.util.Locale;
 
 /**
  * @author flowman
- * @version $Id: GlftpdLog.java,v 1.13 2004/11/03 16:46:38 mog Exp $
+ * @version $Id: GlftpdLog.java,v 1.14 2004/11/05 13:27:18 mog Exp $
  */
 public class GlftpdLog implements FtpListener {
     private static Logger logger = Logger.getLogger(GlftpdLog.class);
@@ -149,7 +151,7 @@ public class GlftpdLog implements FtpListener {
         print("" + string + ": \"" + dir.getPath() + "\" \"" +
             direvent.getUser().getUsername() + "\" \"" +
             direvent.getUser().getGroupName() + "\" \"" +
-            direvent.getUser().getTagline() + "\"");
+            direvent.getUser().getObjectString(UserManagment.TAGLINE) + "\"");
     }
 
     private void actionPerformedDirectorySTOR(TransferEvent direvent)

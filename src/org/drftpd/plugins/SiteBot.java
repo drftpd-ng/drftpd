@@ -51,7 +51,6 @@ import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.command.plugins.Nuke;
-import net.sf.drftpd.master.command.plugins.TransferStatistics;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -61,6 +60,8 @@ import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+
+import org.drftpd.commands.TransferStatistics;
 
 import org.drftpd.sections.SectionInterface;
 
@@ -98,7 +99,7 @@ import java.util.ResourceBundle;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.23 2004/11/03 16:46:45 mog Exp $
+ * @version $Id: SiteBot.java,v 1.24 2004/11/05 13:27:22 mog Exp $
  */
 public class SiteBot implements FtpListener, Observer {
     public static final ReplacerEnvironment GLOBAL_ENV = new ReplacerEnvironment();

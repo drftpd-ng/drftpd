@@ -4,15 +4,19 @@ import net.sf.drftpd.event.listeners.Trial;
 
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.UserFileException;
+import org.drftpd.usermanager.UserManager;
 
 
 public class DummyUser extends AbstractUser {
+    private DummyUserManager _userManager;
+
     public DummyUser(String name) {
-        super(name, null);
+        super(name);
     }
 
     public DummyUser(String user, DummyUserManager userManager) {
-        super(user, userManager);
+        super(user);
+        _userManager = userManager;
     }
 
     public DummyUser(String username, long time) {
@@ -36,51 +40,54 @@ public class DummyUser extends AbstractUser {
     }
 
     public void setCreated(long l) {
-        created = l;
+        _created = l;
     }
 
     public void setLastReset(long l) {
-        lastReset = l;
+        _lastReset = l;
     }
 
     public void setPassword(String password) {
     }
 
     public void setUploadedBytes(long bytes) {
-        uploadedBytes = bytes;
+        _uploadedBytes[P_ALL] = bytes;
     }
 
     public void setUploadedBytesDay(long bytes) {
-        uploadedBytesDay = bytes;
+        _uploadedBytes[P_DAY] = bytes;
     }
 
     public void setUploadedBytesMonth(long bytes) {
-        uploadedBytesMonth = bytes;
+        _uploadedBytes[P_MONTH] = bytes;
     }
 
-    public void setUploadedBytesPeriod(int period, long l) {
-        switch (period) {
-        case Trial.PERIOD_DAILY:
-            setUploadedBytesDay(l);
-
-            return;
-
-        case Trial.PERIOD_MONTHLY:
-            setUploadedBytesMonth(l);
-
-            return;
-
-        case Trial.PERIOD_WEEKLY:
-            setUploadedBytesWeek(l);
-
-            return;
-
-        default:
-            throw new RuntimeException();
-        }
-    }
-
+    //    public void setUploadedBytesForTrialPeriod(int period, long l) {
+    //        switch (period) {
+    //        case Trial.PERIOD_DAILY:
+    //            setUploadedBytesDay(l);
+    //
+    //            return;
+    //
+    //        case Trial.PERIOD_MONTHLY:
+    //            setUploadedBytesMonth(l);
+    //
+    //            return;
+    //
+    //        case Trial.PERIOD_WEEKLY:
+    //            setUploadedBytesWeek(l);
+    //
+    //            return;
+    //
+    //        default:
+    //            throw new RuntimeException();
+    //        }
+    //    }
     public void setUploadedBytesWeek(long bytes) {
-        uploadedBytesWeek = bytes;
+        _uploadedBytes[P_WEEK] = bytes;
+    }
+
+    public UserManager getUserManager() {
+        return _userManager;
     }
 }

@@ -17,7 +17,6 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import net.sf.drftpd.HostMaskCollection;
 import net.sf.drftpd.event.ConnectionEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -45,7 +44,7 @@ import java.net.UnknownHostException;
 
 /**
  * @author mog
- * @version $Id: Login.java,v 1.38 2004/11/03 16:46:40 mog Exp $
+ * @version $Id: Login.java,v 1.39 2004/11/05 13:27:19 mog Exp $
  */
 public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
     private static final Logger logger = Logger.getLogger(Login.class);
@@ -206,6 +205,8 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
                         newUser);
 
                 if (response != null) {
+                    logger.debug("response != null");
+
                     return response;
                 }
 
@@ -219,6 +220,8 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
         }
 
         //fail
+        logger.warn("Failed hostmask check");
+
         return FtpReply.RESPONSE_530_ACCESS_DENIED;
     }
 

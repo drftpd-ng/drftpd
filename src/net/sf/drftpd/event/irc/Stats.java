@@ -24,11 +24,13 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.event.listeners.Trial;
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.command.plugins.TransferStatistics;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.Permission;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.UserComparator;
+
+import org.drftpd.commands.TransferStatistics;
+import org.drftpd.commands.UserManagment;
 
 import org.drftpd.plugins.SiteBot;
 
@@ -48,7 +50,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author zubov
-  * @version $Id: Stats.java,v 1.12 2004/11/03 16:46:38 mog Exp $
+  * @version $Id: Stats.java,v 1.13 2004/11/05 13:27:17 mog Exp $
  */
 public class Stats extends GenericCommandAutoService
     implements IRCPluginInterface {
@@ -131,11 +133,11 @@ public class Stats extends GenericCommandAutoService
                 break;
             }
 
+            //TODO .jprintf() has most of this afaik
             User user = (User) iter.next();
             ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
             env.add("pos", "" + i);
             env.add("user", user.getUsername());
-            env.add("tagline", user.getTagline());
             env.add("upbytesday", Bytes.formatBytes(user.getUploadedBytesDay()));
             env.add("upfilesday", "" + user.getUploadedFilesDay());
             env.add("uprateday",

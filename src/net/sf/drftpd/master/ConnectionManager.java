@@ -21,7 +21,6 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.event.listeners.RaceStatistics;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.JobManager;
@@ -32,6 +31,8 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.drftpd.GlobalContext;
+
+import org.drftpd.plugins.RaceStatistics;
 
 import org.drftpd.slave.Slave;
 
@@ -56,7 +57,7 @@ import java.util.TimerTask;
 
 
 /**
- * @version $Id: ConnectionManager.java,v 1.121 2004/11/03 16:46:39 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.122 2004/11/05 13:27:18 mog Exp $
  */
 public class ConnectionManager {
     public static final int idleTimeout = 300;

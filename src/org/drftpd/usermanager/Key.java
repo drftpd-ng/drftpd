@@ -1,4 +1,4 @@
-/*
+/**
  * This file is part of DrFTPD, Distributed FTP Daemon.
  *
  * DrFTPD is free software; you can redistribute it and/or modify
@@ -15,16 +15,37 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.master.usermanager;
+package org.drftpd.usermanager;
 
 
 /**
  * @author mog
- * @deprecated used only by glftpdusermanager
- * @version $Id: CorruptUserFileException.java,v 1.7 2004/08/03 20:13:59 zubov Exp $
+ * @version $Id: Key.java,v 1.1 2004/11/05 13:27:23 mog Exp $
  */
-public class CorruptUserFileException extends UserFileException {
-    public CorruptUserFileException(String message) {
-        super(message);
+public class Key {
+    private String _key;
+    private Class _owner;
+    private Class _type;
+
+    public Key(Class owner, String key, Class type) {
+        _owner = owner;
+        _key = key;
+        _type = type;
+    }
+
+    public String getKey() {
+        return _key;
+    }
+
+    public Class getOwner() {
+        return _owner;
+    }
+
+    public Class getType() {
+        return _type;
+    }
+
+    public String toString() {
+        return getOwner().getName() + '@' + getKey();
     }
 }

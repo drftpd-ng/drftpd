@@ -37,6 +37,7 @@ import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 
 import org.drftpd.usermanager.AbstractUser;
+import org.drftpd.usermanager.Key;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -63,10 +64,15 @@ import java.util.StringTokenizer;
  * amount -> amount before multiplier
  *
  * @author mog
- * @version $Id: Nuke.java,v 1.24 2004/11/03 16:46:40 mog Exp $
+ * @version $Id: Nuke.java,v 1.25 2004/11/05 13:27:19 mog Exp $
  */
 public class Nuke implements CommandHandlerFactory, CommandHandler {
+    public static final Key NUKED = new Key(Nuke.class, "nuked", Integer.class);
+    public static final Key NUKEDBYTES = new Key(Nuke.class, "nukedBytes",
+            Long.class);
     private static final Logger logger = Logger.getLogger(Nuke.class);
+    public static final Key LASTNUKED = new Key(Nuke.class, "lastNuked",
+            Long.class);
     private NukeLog _nukelog;
 
     public Nuke() {
@@ -271,9 +277,11 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
             nukeDirSize += size;
             nukee.updateCredits(-debt);
             nukee.updateUploadedBytes(-size);
-            nukee.updateNukedBytes(debt);
-            nukee.updateTimesNuked(1);
-            nukee.setLastNuked(System.currentTimeMillis());
+            nukee.incrementObjectLong(NUKEDBYTES, debt);
+
+            //nukee.updateNukedBytes(debt);
+            nukee.incrementObjectLong(NUKED);
+            nukee.putObject(Nuke.LASTNUKED, new Long(System.currentTimeMillis()));
 
             try {
                 nukee.commit();
@@ -406,7 +414,9 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
 
             nukee.updateCredits(nukedAmount);
             nukee.updateUploadedBytes(nukeeObj.getAmount());
-            nukee.updateTimesNuked(-1);
+
+            //nukee.updateTimesNuked(-1);
+            nukee.incrementObjectInt(NUKED, -1);
 
             try {
                 nukee.commit();

@@ -17,8 +17,11 @@
 package net.sf.drftpd.master.usermanager.glftpd;
 
 import net.sf.drftpd.DuplicateElementException;
+import net.sf.drftpd.master.command.plugins.Nuke;
 
 import org.apache.log4j.Logger;
+
+import org.drftpd.commands.UserManagment;
 
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -40,7 +43,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  * @author zubov
- * @version $Id: GlftpdUserManager.java,v 1.21 2004/11/03 16:46:41 mog Exp $
+ * @version $Id: GlftpdUserManager.java,v 1.22 2004/11/05 13:27:21 mog Exp $
  */
 public class GlftpdUserManager extends UserManager {
     private static final Logger logger = Logger.getLogger(GlftpdUserManager.class.getName());
@@ -226,8 +229,9 @@ public class GlftpdUserManager extends UserManager {
                         // unlimited
                         user.setMaxLogins(Integer.parseInt(param[1]));
                         user.setMaxLoginsPerIP(Integer.parseInt(param[2]));
-                        user.setMaxSimDownloads(Integer.parseInt(param[3]));
-                        user.setMaxSimUploads(Integer.parseInt(param[4]));
+
+                        //user.setMaxSimDownloads(Integer.parseInt(param[3]));
+                        //user.setMaxSimUploads(Integer.parseInt(param[4]));
                     } else if ("FLAGS".equals(param[0])) {
                         if (arg.indexOf('1') != -1) {
                             user.addSecondaryGroup("siteop");
@@ -313,7 +317,7 @@ public class GlftpdUserManager extends UserManager {
                             user.addSecondaryGroup("cust5");
                         }
                     } else if ("TAGLINE".equals(param[0])) {
-                        user.setTagline(arg);
+                        user.putObject(UserManagment.TAGLINE, arg);
 
                         //} else if ("DIR".equals(param[0])) {
                         // DIR is the start-up dir for this user
@@ -367,9 +371,16 @@ public class GlftpdUserManager extends UserManager {
                         //user.setTimeToday(Integer.parseInt(param[4]));
                     } else if ("NUKE".equals(param[0])) {
                         // NUKE: Last Nuked, Times Nuked, Total MBytes Nuked
-                        user.setLastNuked(Integer.parseInt(param[1]));
-                        user.setTimesNuked(Integer.parseInt(param[2]));
-                        user.setNukedBytes(Long.parseLong(param[3]) * 1000000);
+                        //user.setLastNuked(Integer.parseInt(param[1]));
+                        //target problably isn't timestamp with millisecond precision, nobody cares if it's gone
+                        user.putObject(Nuke.LASTNUKED, new Integer(param[1]));
+
+                        //user.setTimesNuked(Integer.parseInt(param[2]));
+                        user.putObject(Nuke.NUKED, new Long(param[2]));
+
+                        //user.setNukedBytes(Long.parseLong(param[3]) * 1000000);
+                        user.putObject(Nuke.NUKEDBYTES,
+                            new Long(Long.parseLong(param[3]) * 1000000));
                     } else if ("SLOTS".equals(param[0])) {
                         //group slots, group leech slots
                         gluser.setGroupSlots(Short.parseShort(param[1]));

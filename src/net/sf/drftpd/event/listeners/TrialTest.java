@@ -36,7 +36,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: TrialTest.java,v 1.9 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: TrialTest.java,v 1.10 2004/11/05 13:27:18 mog Exp $
  */
 public class TrialTest extends TestCase {
     /**
@@ -178,7 +178,7 @@ public class TrialTest extends TestCase {
 
         //pass real period
         user = getJUnitUser();
-        user.setUploadedBytesPeriod(period, TESTBYTES);
+        user.setUploadedBytesForTrialPeriod(period, TESTBYTES);
         action();
         assertUserPassed();
 

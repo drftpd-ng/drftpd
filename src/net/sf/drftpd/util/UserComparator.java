@@ -17,7 +17,7 @@
  */
 package net.sf.drftpd.util;
 
-import net.sf.drftpd.master.command.plugins.TransferStatistics;
+import org.drftpd.commands.TransferStatistics;
 
 import org.drftpd.usermanager.User;
 

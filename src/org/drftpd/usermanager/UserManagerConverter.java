@@ -19,6 +19,7 @@ package org.drftpd.usermanager;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.event.listeners.Trial;
+import net.sf.drftpd.master.command.plugins.Nuke;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
@@ -32,7 +33,7 @@ import java.util.Iterator;
  * Usage: java net.sf.drftpd.master.usermanager.UserManagerConverter net.sf.drftpd.master.usermanager.glftpd.GlftpdUserManager net.sf.drftpd.master.usermanager.JSXUserManager
  *
  * @author mog
- * @version $Id: UserManagerConverter.java,v 1.1 2004/11/03 16:46:49 mog Exp $
+ * @version $Id: UserManagerConverter.java,v 1.2 2004/11/05 13:27:23 mog Exp $
  */
 public class UserManagerConverter {
     private static final Logger logger = Logger.getLogger(UserManagerConverter.class);
@@ -88,7 +89,9 @@ public class UserManagerConverter {
 
         to.setLastAccessTime(from.getLastAccessTime());
 
-        to.setLastNuked(from.getLastNuked());
+        //to.setLastNuked(from.getLastNuked());
+        to.putObject(Nuke.LASTNUKED,
+            new Long(from.getObjectLong(Nuke.LASTNUKED)));
 
         to.setLogins(from.getLogins());
 
@@ -96,10 +99,8 @@ public class UserManagerConverter {
 
         to.setMaxLoginsPerIP(from.getMaxLoginsPerIP());
 
-        to.setMaxSimDownloads(from.getMaxSimDownloads());
-
-        to.setMaxSimUploads(from.getMaxSimUploads());
-
+        //to.setMaxSimDownloads(from.getMaxSimDownloads());
+        //to.setMaxSimUploads(from.getMaxSimUploads());
         to.setNukedBytes(from.getNukedBytes());
 
         if (from instanceof PlainTextPasswordUser) {
@@ -124,23 +125,23 @@ public class UserManagerConverter {
 
         for (int i = 0; i < periods.length; i++) {
             int period = periods[i];
-            to.setUploadedMillisecondsForPeriod(period,
-                from.getUploadedMillisecondsForPeriod(period));
+            to.setUploadedMillisecondsForTrialPeriod(period,
+                from.getUploadedMillisecondsForTrialPeriod(period));
 
-            to.setDownloadedMillisecondsForPeriod(period,
-                from.getDownloadedMillisecondsForPeriod(period));
+            to.setDownloadedMillisecondsForTrialPeriod(period,
+                from.getDownloadedMilliSecondsForTrialPeriod(period));
 
-            to.setUploadedBytesForPeriod(period,
-                from.getUploadedBytesForPeriod(period));
+            to.setUploadedBytesForTrialPeriod(period,
+                from.getUploadedBytesForTrialPeriod(period));
 
-            to.setDownloadedBytesForPeriod(period,
-                from.getDownloadedBytesForPeriod(period));
+            to.setDownloadedBytesForTrialPeriod(period,
+                from.getDownloadedBytesForTrialPeriod(period));
 
-            to.setUploadedFilesForPeriod(period,
-                from.getUploadedFilesForPeriod(period));
+            to.setUploadedFilesForTrialPeriod(period,
+                from.getUploadedFilesForTrialPeriod(period));
 
-            to.setDownloadedFilesForPeriod(period,
-                from.getDownloadedFilesForPeriod(period));
+            to.setDownloadedFilesForTrialPeriod(period,
+                from.getDownloadedFilesForTrialPeriod(period));
         }
 
         to.commit();
