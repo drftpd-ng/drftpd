@@ -48,7 +48,7 @@ import java.util.Map;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveManagement.java,v 1.7 2004/11/08 02:37:17 zubov Exp $
+ * @version $Id: SlaveManagement.java,v 1.8 2004/11/08 04:46:17 zubov Exp $
  */
 public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
     public void unload() {
@@ -160,7 +160,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
             rslave.fetchRemergeResponseFromIndex(rslave.issueRemergeToSlave(
                     conn.getCurrentDirectory().getPath()));
             conn.getCurrentDirectory().cleanSlaveFromMerging(rslave);
-        } catch (RemoteIOException e) {
+        } catch (IOException e) {
             rslave.setOffline("IOException during remerge()");
 
             return new FtpReply(200, "IOException during remerge()");

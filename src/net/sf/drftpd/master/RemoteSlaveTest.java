@@ -31,7 +31,6 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile.CaseInsensitiveHashtable;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
-import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.tests.DummySlaveManager;
@@ -39,7 +38,7 @@ import org.drftpd.tests.DummySlaveManager;
 
 /**
  * @author mog
- * @version $Id: RemoteSlaveTest.java,v 1.14 2004/11/08 02:37:17 zubov Exp $
+ * @version $Id: RemoteSlaveTest.java,v 1.15 2004/11/08 04:46:17 zubov Exp $
  */
 public class RemoteSlaveTest extends TestCase {
     public RemoteSlaveTest(String fName) {
@@ -65,7 +64,7 @@ public class RemoteSlaveTest extends TestCase {
     }
 
     public void testProcessQueue()
-        throws SlaveFileException, RemoteIOException, SlaveUnavailableException {
+        throws SlaveFileException, IOException, SlaveUnavailableException {
         DummySlaveManager sm = new DummySlaveManager();
         GC gc = new GC();
         sm.setGlobalContext(gc);

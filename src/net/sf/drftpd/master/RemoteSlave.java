@@ -77,7 +77,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  * @author zubov
- * @version $Id: RemoteSlave.java,v 1.70 2004/11/08 02:37:16 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.71 2004/11/08 04:46:17 zubov Exp $
  */
 public class RemoteSlave implements Runnable, Comparable, Serializable {
     private static final long serialVersionUID = -6973935289361817125L;
@@ -327,7 +327,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     /**
      * Called when the slave connects
      */
-    private void initializeSlaveAfterThreadIsRunning() throws RemoteIOException,
+    private void initializeSlaveAfterThreadIsRunning() throws IOException,
             SlaveUnavailableException {
         processQueue();
 
@@ -375,19 +375,35 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         return isAvailable();
     }
 
-    public void processQueue() throws RemoteIOException, SlaveUnavailableException {
+    public void processQueue() throws IOException, SlaveUnavailableException {
         for (Iterator iter = _renameQueue.keySet().iterator(); iter.hasNext();) {
             String sourceFile = (String) iter.next();
             String destFile = (String) _renameQueue.get(sourceFile);
 
             if (destFile == null) {
-                fetchResponse(issueDeleteToSlave(sourceFile));
+                try {
+                    fetchResponse(issueDeleteToSlave(sourceFile));
+                } catch (RemoteIOException e) {
+                    if (!(e.getCause() instanceof FileNotFoundException)) {
+                        throw (IOException) e.getCause();
+                    }
+                }
             } else {
                 String fileName = destFile
                         .substring(destFile.lastIndexOf("/") + 1);
                 String destDir = destFile.substring(0, destFile
                         .lastIndexOf("/"));
-                fetchResponse(issueRenameToSlave(sourceFile, destDir, fileName));
+                try {
+                    fetchResponse(issueRenameToSlave(sourceFile, destDir,
+                            fileName));
+                } catch (RemoteIOException e) {
+                    if (!(e.getCause() instanceof FileNotFoundException)) {
+                        throw (IOException) e.getCause();
+                    }
+                    LinkedRemoteFileInterface lrf = getGlobalContext()
+                            .getRoot().lookupFile(destFile);
+                    lrf.removeSlave(this);
+                }
             }
 
             iter.remove();
@@ -512,9 +528,8 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         class RemergeThread implements Runnable {
             public void run() {
                 try {
-
                     initializeSlaveAfterThreadIsRunning();
-                } catch (RemoteIOException e) {
+                } catch (IOException e) {
                     setOffline(e);
                 } catch (SlaveUnavailableException e) {
                     setOffline(e);
@@ -559,12 +574,14 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         throw new SlaveUnavailableException("Went offline fetching an index");
     }
 
-    public int fetchMaxPathFromIndex(String maxPathIndex) throws SlaveUnavailableException {
+    public int fetchMaxPathFromIndex(String maxPathIndex)
+            throws SlaveUnavailableException {
         try {
             return ((AsyncResponseMaxPath) fetchResponse(maxPathIndex))
                     .getMaxPath();
         } catch (RemoteIOException e) {
-            throw new FatalException("this is not possible, slave had an error processing maxpath...");
+            throw new FatalException(
+                    "this is not possible, slave had an error processing maxpath...");
         }
     }
 
@@ -579,6 +596,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     /**
      * returns an AsyncResponse for that index and throws any exceptions thrown
      * on the Slave side
+     * 
      * @throws RemoteIOException
      * 
      * @throws IOException
@@ -619,15 +637,20 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         return rar;
     }
 
-    public SFVFile fetchSFVFileFromIndex(String index) throws RemoteIOException,
-            SlaveUnavailableException {
+    public SFVFile fetchSFVFileFromIndex(String index)
+            throws RemoteIOException, SlaveUnavailableException {
         return ((AsyncResponseSFVFile) fetchResponse(index)).getSFV();
     }
 
     public SlaveStatus fetchStatusFromIndex(String statusIndex)
-            throws RemoteIOException, SlaveUnavailableException {
-        return ((AsyncResponseSlaveStatus) fetchResponse(statusIndex))
-                .getSlaveStatus();
+            throws SlaveUnavailableException {
+        try {
+            return ((AsyncResponseSlaveStatus) fetchResponse(statusIndex))
+                    .getSlaveStatus();
+        } catch (RemoteIOException e) {
+            throw new FatalException(
+                    "Slave threw IOException from getSlaveStatus() which is impossible");
+        }
     }
 
     public InetAddress getInetAddress() {
@@ -834,12 +857,11 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         _maxPath = 0;
         _status = null;
 
-        if (!_available) {
-            return;
+        if (_available) {
+            getGlobalContext().dispatchFtpEvent(
+                    new SlaveEvent("DELSLAVE", reason, this));
         }
         setAvailable(false);
-        getGlobalContext().dispatchFtpEvent(
-                new SlaveEvent("DELSLAVE", reason, this));
         getGlobalContext().getRoot().resetSlaveForMerging(this);
     }
 
@@ -924,9 +946,13 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         return index;
     }
 
-    public void fetchRemergeResponseFromIndex(String index) throws RemoteIOException,
+    public void fetchRemergeResponseFromIndex(String index) throws IOException,
             SlaveUnavailableException {
-        fetchResponse(index, 0);
+        try {
+            fetchResponse(index, 0);
+        } catch (RemoteIOException e) {
+            throw (IOException) e.getCause();
+        }
     }
 
     public boolean isOnlinePing() {

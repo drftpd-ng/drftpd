@@ -23,7 +23,7 @@ import org.drftpd.slave.async.AsyncResponse;
 
 /**
  * @author zubov
- * @version $Id: DummyRemoteSlave.java,v 1.5 2004/11/08 02:37:35 zubov Exp $
+ * @version $Id: DummyRemoteSlave.java,v 1.6 2004/11/08 04:46:17 zubov Exp $
  */
 public class DummyRemoteSlave extends RemoteSlave {
     public DummyRemoteSlave(String name, GlobalContext gctx) {
@@ -81,7 +81,7 @@ public class DummyRemoteSlave extends RemoteSlave {
     }
 
     public SlaveStatus fetchStatusFromIndex(String statusIndex)
-        throws RemoteIOException, SlaveUnavailableException {
+        throws SlaveUnavailableException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -256,7 +256,7 @@ public class DummyRemoteSlave extends RemoteSlave {
      * @see net.sf.drftpd.master.RemoteSlave#fetchRemergeResponseFromIndex(java.lang.String)
      */
     public void fetchRemergeResponseFromIndex(String index)
-        throws RemoteIOException, SlaveUnavailableException {
+        throws IOException, SlaveUnavailableException {
         // TODO Auto-generated method stub
     }
 
