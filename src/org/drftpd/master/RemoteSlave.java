@@ -83,7 +83,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 
 	private static final Logger logger = Logger.getLogger(RemoteSlave.class);
 
-	private transient boolean _available;
+	private transient boolean _isAvailable;
 
 	protected transient int _errors;
 
@@ -422,7 +422,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	 *                 connect
 	 */
 	public synchronized boolean isAvailable() {
-		return _available;
+		return _isAvailable;
 	}
 
 	public boolean isAvailablePing() {
@@ -435,11 +435,9 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 			fetchResponse(index);
 		} catch (SlaveUnavailableException e) {
 			setOffline(e);
-
 			return false;
 		} catch (RemoteIOException e) {
 			setOffline("The slave encountered an IOException while running ping...this is almost not possible");
-
 			return false;
 		}
 
@@ -499,7 +497,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	}
 
 	public final void setAvailable(boolean available) {
-		_available = available;
+		_isAvailable = available;
 	}
 
 	public final void setLastDirection(char direction, long l) {
@@ -726,7 +724,8 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		return ((AsyncResponseSFVFile) fetchResponse(index)).getSFV();
 	}
 
-	public InetAddress getInetAddress() {
+	public InetAddress getInetAddress() throws SlaveUnavailableException {
+		if(_socket == null) throw new SlaveUnavailableException();
 		return _socket.getInetAddress();
 	}
 
@@ -833,8 +832,12 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	}
 
 	public String moreInfo() {
-		return getName() + ":address=[" + getInetAddress() + "]port=["
-				+ Integer.toString(getPort()) + "]";
+		try {
+			return getName() + ":address=[" + getInetAddress() + "]port=["
+					+ Integer.toString(getPort()) + "]";
+		} catch (SlaveUnavailableException e) {
+			return getName()+":offline";
+		}
 	}
 
 	public void run() {
@@ -948,7 +951,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		_sentBytes = 0;
 		_receivedBytes = 0;
 
-		if (_available) {
+		if (_isAvailable) {
 			getGlobalContext().dispatchFtpEvent(
 					new SlaveEvent("DELSLAVE", reason, this));
 		}

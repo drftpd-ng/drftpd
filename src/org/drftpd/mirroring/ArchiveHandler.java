@@ -82,7 +82,7 @@ public class ArchiveHandler extends Thread {
             logger.info("Done archiving " +
                 getArchiveType().getDirectory().getPath());
         } catch (Exception e) {
-            logger.debug("", e);
+            logger.warn("", e);
         }
 
         Archive archive = _archiveType._parent;

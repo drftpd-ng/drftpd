@@ -29,6 +29,7 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
+import org.drftpd.commands.ReplyPermissionDeniedException;
 import org.drftpd.commands.UnhandledCommandException;
 
 import org.drftpd.master.RemoteSlave;
@@ -90,16 +91,16 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    /** Lists all slaves used by the master
+    /**
+     * Lists all slaves used by the master
      * USAGE: SITE SLAVES
-     *
      */
-    private Reply doSITE_SLAVES(BaseFtpConnection conn) {
+    private Reply doSITE_SLAVES(BaseFtpConnection conn) throws ReplyPermissionDeniedException  {
         boolean showMore = conn.getRequest().hasArgument() &&
             (conn.getRequest().getArgument().equalsIgnoreCase("more"));
 
         if (showMore && !conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
+        	throw new ReplyPermissionDeniedException();
         }
 
         Collection slaves = conn.getGlobalContext().getSlaveManager().getSlaves();
@@ -293,7 +294,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
     }
 
     public Reply execute(BaseFtpConnection conn)
-        throws UnhandledCommandException {
+        throws UnhandledCommandException, ReplyPermissionDeniedException {
         String cmd = conn.getRequest().getCommand();
 
         if ("SITE CHECKSLAVES".equals(cmd)) {

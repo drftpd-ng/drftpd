@@ -1,5 +1,6 @@
 2004/11/30 Morgan Christiansson <drftpd@mog.se>
 * Added SITE DELUSER <user> <reason> at the request of M3ta.
+* Added patch from M3ta. http://www.drftpd.org/phpBB2/viewtopic.php?p=117#117
 
 2004/11/29 Morgan Christiansson <drftpd@mog.se>
 * Converted slaves/ to get serialized using javabeans.

@@ -171,12 +171,24 @@ public abstract class ArchiveType {
         return jobQueue;
     }
 
-    protected final boolean isArchivedToXSlaves(LinkedRemoteFileInterface lrf,
+    protected static final boolean isArchivedToXSlaves(LinkedRemoteFileInterface lrf,
         int x) throws IncompleteDirectoryException, OfflineSlaveException {
         HashSet<RemoteSlave> slaveSet = null;
 
         if (lrf.getFiles().isEmpty()) {
             return true;
+        }
+
+        try {
+            if (!lrf.lookupSFVFile().getStatus().isFinished()) {
+                logger.debug(lrf.getPath() + " is not complete");
+                throw new IncompleteDirectoryException(lrf.getPath() +
+                    " is not complete");
+            }
+        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
+        } catch (NoAvailableSlaveException e) {
+        	throw new OfflineSlaveException("SFV is offline", e);
         }
 
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
@@ -185,17 +197,6 @@ public abstract class ArchiveType {
             if (file.isDirectory()) {
                 if (!isArchivedToXSlaves(file, x)) {
                     return false;
-                }
-
-                try {
-                    if (!file.lookupSFVFile().getStatus().isFinished()) {
-                        logger.debug(file.getPath() + " is not complete");
-                        throw new IncompleteDirectoryException(file.getPath() +
-                            " is not complete");
-                    }
-                } catch (FileNotFoundException e) {
-                } catch (IOException e) {
-                } catch (NoAvailableSlaveException e) {
                 }
             } else { // if (file.isFile())
 
@@ -213,7 +214,6 @@ public abstract class ArchiveType {
         }
 
         if (slaveSet == null) { // no files found in directory
-
             return true;
         }
 
