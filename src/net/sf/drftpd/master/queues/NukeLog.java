@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * @author mog
  *
- * @version $Id: NukeLog.java,v 1.12 2004/08/03 20:13:59 zubov Exp $
+ * @version $Id$
  */
 public class NukeLog {
     ArrayList nukes = new ArrayList();
@@ -61,6 +61,15 @@ public class NukeLog {
 
             if (nuke.getPath().equals(path)) {
                 iter.remove();
+                
+                //Removes the <nuke> entry from nukelog.xml
+                XMLOutputter outputter = new XMLOutputter("    ", true);
+
+                try {
+                    outputter.output(this.fromXML(), new FileOutputStream("nukelog.xml"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
                 return;
             }
@@ -97,6 +106,17 @@ public class NukeLog {
         for (Iterator iter = getAll().iterator(); iter.hasNext();) {
             NukeEvent nuke = (NukeEvent) iter.next();
             element.addContent(nuke.toJDOM());
+        }
+
+        return element;
+    }
+    
+    public Element fromXML() {
+        Element element = new Element("nukes");
+
+        for (Iterator iter = getAll().iterator(); iter.hasNext();) {
+            NukeEvent nuke = (NukeEvent) iter.next();
+            element.removeContent(nuke.toJDOM());
         }
 
         return element;

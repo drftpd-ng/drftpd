@@ -698,6 +698,58 @@ public class SiteBot extends FtpListener implements Observer {
             }
         } else if (cmd.equals("UNNUKE")) {
             say(section, ReplacerUtils.jprintf("unnuke", env, SiteBot.class));
+            
+            ReplacerFormat raceformat = ReplacerUtils.finalFormat(SiteBot.class,
+            "unnuke.nukees");
+
+            int position = 1;
+            long nobodyAmount = 0;
+
+            for (Iterator iter = event.getNukees2().iterator(); iter.hasNext();) {
+                Nukee stat = (Nukee) iter.next();
+
+                User raceuser;
+
+                try {
+                    raceuser = getGlobalContext().getUserManager()
+                          .getUserByName(stat.getUsername());
+                } catch (NoSuchUserException e2) {
+                    nobodyAmount += stat.getAmount();
+
+                    continue;
+                } catch (UserFileException e2) {
+                    logger.log(Level.FATAL, "Error reading userfile", e2);
+
+                    continue;
+                }
+
+                ReplacerEnvironment raceenv = new ReplacerEnvironment(GLOBAL_ENV);
+
+                raceenv.add("user", raceuser.getName());
+                raceenv.add("group", raceuser.getGroup());
+
+                raceenv.add("position", "" + position++);
+                raceenv.add("size", Bytes.formatBytes(stat.getAmount()));
+
+                long nukedamount = Nuke.calculateNukedAmount(stat.getAmount(),
+                        raceuser.getKeyedMap().getObjectFloat(UserManagement.RATIO),
+                        event.getMultiplier());
+                raceenv.add("nukedamount", Bytes.formatBytes(nukedamount));
+                say(section, SimplePrintf.jprintf(raceformat, raceenv));
+            }
+
+            if (nobodyAmount != 0) {
+                ReplacerEnvironment raceenv = new ReplacerEnvironment(GLOBAL_ENV);
+
+                raceenv.add("user", "nobody");
+                raceenv.add("group", "nogroup");
+
+                raceenv.add("position", "?");
+                raceenv.add("size", Bytes.formatBytes(nobodyAmount));
+
+                say(section, SimplePrintf.jprintf(raceformat, raceenv));
+            }
+            
         }
     }
 

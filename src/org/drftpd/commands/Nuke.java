@@ -451,7 +451,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
                 reasonDir.delete();
             }
         } catch (FileNotFoundException e3) {
-            logger.debug("Failed to delete 'REASON-" + reason +
+            logger.debug("Failed to delete 'REASON-" + nuke.getReason() +
                 "' dir in UNNUKE", e3);
         }
 
