@@ -2,6 +2,7 @@ export VMARGS="
 	-server
 	-Djava.library.path=lib \
 	-Djava.rmi.dgc.leaseValue=300000 \
+	-Dlog4j.configuration=file:log4j-default.properties \
 	-Djava.rmi.server.randomIDs=true \
 	-Djava.rmi.server.disableHttp=true"
 #	-Djava.rmi.server.hostname=you_didnt_edit_master.sh"
