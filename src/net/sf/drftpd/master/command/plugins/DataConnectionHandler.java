@@ -60,7 +60,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.16 2003/12/05 04:02:25 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.17 2003/12/05 18:24:23 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -955,10 +955,10 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 						getType(),
 						true));
 			}
+			reset();
 		}
 
 		conn.reset();
-
 		return response;
 	}
 	private void reset() {
