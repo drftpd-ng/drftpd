@@ -14,7 +14,6 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.usermanager.CorruptUserFileException;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
@@ -80,7 +79,7 @@ public class GlftpdUserManager implements UserManager {
 		throw new UnsupportedOperationException();
 	}
 
-	void load(User user) throws CorruptUserFileException, NoSuchUserException {
+	void load(User user) throws NoSuchUserException {
 
 		GlftpdUser gluser = null;
 		if (user instanceof GlftpdUser)
@@ -294,11 +293,9 @@ public class GlftpdUserManager implements UserManager {
 		}
 		//		return user
 	}
-	/**
-	 * @throws NoSuchUserException, CorruptUserFileException
-	 */
+
 	public User getUserByNameUnchecked(String username)
-		throws IOException, NoSuchUserException {
+		throws UserFileException, NoSuchUserException {
 		if (!new File(getUserfilepath(username)).exists()) {
 			throw new NoSuchUserException("No userfile for user " + username);
 		}
@@ -318,7 +315,7 @@ public class GlftpdUserManager implements UserManager {
 	public void saveAll() throws UserFileException {
 		throw new UnsupportedOperationException();
 	}
-	public Collection getAllUsersByGroup(String group) throws IOException {
+	public Collection getAllUsersByGroup(String group) throws UserFileException {
 		Collection users = getAllUsers();
 		for (Iterator iter = users.iterator(); iter.hasNext();) {
 			GlftpdUser user = (GlftpdUser) iter.next();
@@ -327,10 +324,10 @@ public class GlftpdUserManager implements UserManager {
 		}
 		return users;
 	}
-	public List getAllUsers() throws IOException {
+	public List getAllUsers() throws UserFileException {
 		System.out.println("userpathFile = " + userpathFile);
 		if (!userpathFile.exists())
-			throw new FileNotFoundException(userpathFile + " not found");
+			throw new UserFileException(userpathFile + " not found");
 		String userpaths[] = userpathFile.list();
 		ArrayList users = new ArrayList();
 
@@ -348,12 +345,12 @@ public class GlftpdUserManager implements UserManager {
 				users.add(getUserByName(userpath));
 				// throws IOException
 			} catch (NoSuchUserException e) {
-				throw (IOException) new IOException().initCause(e);
+				throw new UserFileException("", e);
 			}
 		}
 		return users;
 	}
-	public Collection getAllGroups() throws IOException {
+	public Collection getAllGroups() throws UserFileException {
 		throw new UnsupportedOperationException();
 
 		/*Collection users = this.getAllUsers();
@@ -378,7 +375,7 @@ public class GlftpdUserManager implements UserManager {
 	public void init(ConnectionManager mgr) {
 	}
 
-	public User getUserByName(String username) throws NoSuchUserException, IOException {
+	public User getUserByName(String username) throws NoSuchUserException, UserFileException {
 		User user = getUserByNameUnchecked(username);
 		if(user.isDeleted()) throw new NoSuchUserException(user.getUsername()+" is deleted");
 		return user;

@@ -15,9 +15,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
 
 /**
  * @author mog
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: PatternPathPermission.java,v 1.5 2003/11/17 20:13:10 mog Exp $
  */
 public class PatternPathPermission extends PathPermission {
 	Pattern _pat;
@@ -26,9 +24,6 @@ public class PatternPathPermission extends PathPermission {
 		 _pat = pat;
 	}
 	
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.config.PathPermission#checkPath(java.lang.String)
-	 */
 	public boolean checkPath(LinkedRemoteFile file) {
 		String path = file.getPath();
 		if(file.isDirectory()) path = path.concat("/");

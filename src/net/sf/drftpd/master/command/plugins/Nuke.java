@@ -174,7 +174,7 @@ public class Nuke implements CommandHandler {
 						+ e1.getMessage());
 				logger.warn("", e1);
 				user = null;
-			} catch (IOException e1) {
+			} catch (UserFileException e1) {
 				response.addComment(
 					"Cannot read user data for "
 						+ username
@@ -345,7 +345,7 @@ public class Nuke implements CommandHandler {
 			} catch (NoSuchUserException e) {
 				response.addComment(nukeeName + ": no such user");
 				continue;
-			} catch (IOException e) {
+			} catch (UserFileException e) {
 				response.addComment(nukeeName + ": error reading userfile");
 				logger.log(Level.FATAL, "error reading userfile", e);
 				continue;

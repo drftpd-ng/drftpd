@@ -46,9 +46,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: DataConnectionHandler.java,v 1.9 2003/11/17 20:13:10 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -70,9 +68,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private char type = 'A';
 	private short xdupe = 0;
 
-	/**
-	 * 
-	 */
 	public DataConnectionHandler() {
 		super();
 	}
@@ -288,7 +283,9 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		String clientHostAddress =
 			conn.getControlSocket().getInetAddress().getHostAddress();
 		if ((portHostAddress.startsWith("192.168.")
-			&& !clientHostAddress.startsWith("192.168.")) || (portHostAddress.startsWith("10.") && !clientHostAddress.startsWith("10."))) {
+			&& !clientHostAddress.startsWith("192.168."))
+			|| (portHostAddress.startsWith("10.")
+				&& !clientHostAddress.startsWith("10."))) {
 			FtpReply response = new FtpReply(501);
 			response.addComment("==YOU'RE BEHIND A NAT ROUTER==");
 			response.addComment(
@@ -316,8 +313,10 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 
 		setPortCommand(conn, clientAddr, clientPort);
 
-		if(portHostAddress.startsWith("127.")) {
-			return new FtpReply(200, "Ok, but distributed transfers won't work with local addresses");
+		if (portHostAddress.startsWith("127.")) {
+			return new FtpReply(
+				200,
+				"Ok, but distributed transfers won't work with local addresses");
 		}
 
 		//Notify the user that this is not his IP.. Good for NAT users that aren't aware that their IP has changed.
@@ -638,9 +637,18 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		//			e1.printStackTrace();
 		//		}
 		//		System.err.println("Finished");
-
+		TransferSt
 		FtpReply response =
-			(FtpReply) FtpReply.RESPONSE_226_CLOSING_DATA_CONNECTION.clone();
+			new FtpReply(
+				226,
+				"Transfer complete, "
+					+ Bytes.formatBytes(_transfer.getTransfered())
+					+ " in "
+					+ _transfer.getTransferTime() / 1000
+					+ " seconds ("
+					+ Bytes.formatBytes(_transfer.getXferSpeed())
+					+ "/s)");
+		//	(FtpReply) FtpReply.RESPONSE_226_CLOSING_DATA_CONNECTION.clone();
 
 		try {
 			long checksum = _transfer.getChecksum();
@@ -1000,7 +1008,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			}
 			_transferFile.setLastModified(System.currentTimeMillis());
 			_transferFile.setLength(transferedBytes);
-			_transferFile.setXfertime(_transfer.getTransferTime());
+			_transferFile.setXfertime(_transfer.getElapsed());
 		} catch (RemoteException ex) {
 			_rslave.handleRemoteException(ex);
 			return new FtpReply(
@@ -1162,9 +1170,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.command.CommandHandler#execute(net.sf.drftpd.master.BaseFtpConnection)
-	 */
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {
 		String cmd = conn.getRequest().getCommand();
@@ -1262,22 +1267,13 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		return miPort;
 	}
 
-	/**
-	 * @deprecated use getTransferSlave()
-	 */
-	public RemoteSlave getRSlave() {
-		return _rslave;
-	}
-
-	/**
-	 * 
-	 */
 	public RemoteSlave getTranferSlave() {
 		return _rslave;
 	}
 
 	public Transfer getTransfer() {
-		if(_transfer == null) throw new IllegalStateException();
+		if (_transfer == null)
+			throw new IllegalStateException();
 		return _transfer;
 	}
 
@@ -1285,8 +1281,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		return _transferFile;
 	}
 	/**
-		 * Get the user data type.
-		 */
+	  * Get the user data type.
+	  */
 	public char getType() {
 		return type;
 	}
@@ -1325,6 +1321,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			return false;
 		}
 	}
+
 	/**
 	 * Port command.
 	 */
@@ -1350,6 +1347,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		this.type = type;
 		return true;
 	}
+
 	public void unload() {
 	}
 

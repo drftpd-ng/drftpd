@@ -33,7 +33,8 @@ import org.apache.log4j.Logger;
 /**
  * Represents the file attributes of a remote file.
  * 
- * @author Morgan Christiansson <mog@linux.nu>
+ * @author mog
+ * @version $Id: LinkedRemoteFile.java,v 1.83 2003/11/17 20:13:11 mog Exp $
  */
 
 public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
@@ -78,6 +79,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		_files = Collections.synchronizedMap(new Hashtable());
 		_slaves = Collections.synchronizedList(new ArrayList(1));
 	}
+	
 	/**
 	 * Creates a RemoteFile from file or creates a directory tree representation.
 	 * 
@@ -109,8 +111,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		}
 
 		_isDeleted = file.isDeleted();
-		//_owner = new String(file.getUsername());
-		//_group = new String(file.getGroupname());
 		setOwner(file.getUsername());
 		setGroup(file.getGroupname());
 		_checkSum = file.getCheckSumCached();
@@ -408,39 +408,24 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		//return Collections.unmodifiableMap(ret);
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getGroupname()
-	 */
 	public String getGroupname() {
 		if (_group == null || _group.equals(EMPTY_STRING))
 			return "drftpd";
 		return _group;
 	}
 
-	/** return files;
-	 */
 	public Map getMap() {
 		return _files;
 	}
 
-	/** return name;
-	 */
 	public String getName() {
 		return _name;
 	}
 
-	/**
-	 * @return getParentFile().getPath()
-	 * @see java.io.File#getParent()
-	 * @see net.sf.drftpd.remotefile.RemoteFile#getParent()
-	 */
 	public String getParent() throws FileNotFoundException {
 		return getParentFile().getPath();
 	}
 
-	/**
-	 * @see java.io.File#getParentFile()
-	 */
 	public LinkedRemoteFile getParentFile() throws FileNotFoundException {
 		if (_parent == null)
 			throw new FileNotFoundException("root directory has no parent");
@@ -505,7 +490,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		}
 	}
 
-	/** returns slaves. May return null if a directory.
+	/** returns slaves. returns null if a directory.
 	 */
 	public Collection getSlaves() {
 		if (_slaves == null)
@@ -513,9 +498,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		return _slaves;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getUsername()
-	 */
 	public String getUsername() {
 		if (_owner == null || _owner.equals(EMPTY_STRING))
 			return "nobody";
@@ -586,36 +568,14 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		return _files != null;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#isFile()
-	 */
 	public boolean isFile() {
 		return _files == null;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#lastModified()
-	 */
 	public long lastModified() {
 		return _lastModified;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#finalize()
-	 * 
-	 * ouch, we only want this to happen on the master root. what to do?
-	 * And we don't want the extra dependency on the slave.
-	 * It's so nice to have it save before it exits.
-	 */
-	//	protected void finalize() throws Throwable {
-	//		super.finalize();
-	//		if (this.parent == null) {
-	//			SlaveManagerImpl.saveFilesXML(XMLSerialize.serialize(this));
-	//		}
-	//	}
-	/**
-	 * @see net.sf.drftpd.remotefile.RemoteFile#length()
-	 */
 	public long length() {
 		//		if (isDirectory()) {
 		//			long length = 0;

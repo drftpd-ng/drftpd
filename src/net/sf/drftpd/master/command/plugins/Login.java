@@ -18,6 +18,7 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.master.usermanager.UserFileException;
 
 import org.apache.log4j.Logger;
 
@@ -69,7 +70,7 @@ public class Login implements CommandHandler, Cloneable {
 				conn.getUserManager().getUserByName(request.getArgument());
 		} catch (NoSuchUserException ex) {
 			return new FtpReply(530, ex.getMessage());
-		} catch (IOException ex) {
+		} catch (UserFileException ex) {
 			logger.warn("", ex);
 			return new FtpReply(530, "IOException: " + ex.getMessage());
 		} catch (RuntimeException ex) {

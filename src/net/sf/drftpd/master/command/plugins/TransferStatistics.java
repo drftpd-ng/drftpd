@@ -1,6 +1,5 @@
 package net.sf.drftpd.master.command.plugins;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -18,6 +17,7 @@ import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.Permission;
 import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.master.usermanager.UserFileException;
 
 import org.apache.log4j.Logger;
 
@@ -30,7 +30,7 @@ public class TransferStatistics implements CommandHandler {
 		List users;
 		try {
 			users = conn.getUserManager().getAllUsers();
-		} catch (IOException e) {
+		} catch (UserFileException e) {
 			logger.warn("", e);
 			return new FtpReply(200, "IO error: " + e.getMessage());
 		}

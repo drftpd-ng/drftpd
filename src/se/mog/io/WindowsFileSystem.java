@@ -3,9 +3,7 @@ package se.mog.io;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- *
- * To change the template for this generated type comment go to
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * @version $Id: WindowsFileSystem.java,v 1.3 2003/11/17 20:13:11 mog Exp $
  */
 class WindowsFileSystem extends FileSystem {
 
@@ -24,17 +22,6 @@ class WindowsFileSystem extends FileSystem {
 			System.out.println(mounts[i]);
 		}
 	}
-	/* (non-Javadoc)
-	 * @see se.mog.io.FileSystem#getDiskFreeSpace()
-	 */
 
 	public native DiskFreeSpace getDiskFreeSpace(File file);
-	/* (non-Javadoc)
-	 * @see se.mog.io.FileSystem#getDiskFreeSpace()
-	public DiskFreeSpace getDiskFreeSpace() {
-		DiskFreeSpace diskFreeSpace = new DiskFreeSpace();
-		diskFreeSpace(diskFreeSpace);
-		return diskFreeSpace;
-	}
-	 */
 }

@@ -44,6 +44,7 @@ import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.Transfer;
@@ -69,9 +70,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: IRCListener.java,v 1.65 2003/11/17 20:13:09 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -150,17 +149,12 @@ public class IRCListener implements FtpListener, Observer {
 		globalEnv.add("color", "\u0003");
 	}
 
-	/**
-	 * 
-	 */
 	public IRCListener() throws UnknownHostException, IOException {
 
-		//_cm = cm;
-		//Debug.setDebugLevel(Debug.FAULT);
 		new File("ftp-data/logs").mkdirs();
 		Debug.setOutputStream(
 			new PrintStream(new FileOutputStream("ftp-data/logs/sitebot.log")));
-
+		Debug.setDebugLevel(Debug.FAULT);
 	}
 
 	public void actionPerformed(Event event) {
@@ -185,8 +179,6 @@ public class IRCListener implements FtpListener, Observer {
 				ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
 				env.add("message", mevent.getMessage());
 				say(SimplePrintf.jprintf(_ircCfg.getProperty("shutdown"), env));
-			} else {
-				logger.debug("Unhandled event: " + event);
 			}
 		} catch (FormatterException ex) {
 			say(event.getCommand() + " FormatterException: " + ex.getMessage());
@@ -227,9 +219,6 @@ public class IRCListener implements FtpListener, Observer {
 		}
 	}
 
-	/**
-	 * @param direvent
-	 */
 	private void actionPerformedDirectorySTOR(DirectoryFtpEvent direvent)
 		throws FormatterException {
 		ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
@@ -348,7 +337,7 @@ public class IRCListener implements FtpListener, Observer {
 						_cm.getUserManager().getUserByName(stat.getUsername());
 				} catch (NoSuchUserException e2) {
 					continue;
-				} catch (IOException e2) {
+				} catch (UserFileException e2) {
 					logger.log(Level.FATAL, "Error reading userfile", e2);
 					continue;
 				}
@@ -393,7 +382,7 @@ public class IRCListener implements FtpListener, Observer {
 				env.add("leadgroup", leaduser.getGroupName());
 			} catch (NoSuchUserException e3) {
 				logger.log(Level.WARN, "", e3);
-			} catch (IOException e3) {
+			} catch (UserFileException e3) {
 				logger.log(Level.WARN, "", e3);
 			}
 
@@ -475,7 +464,7 @@ public class IRCListener implements FtpListener, Observer {
 				} catch (NoSuchUserException e2) {
 					nobodyAmount += stat.getAmount();
 					continue;
-				} catch (IOException e2) {
+				} catch (UserFileException e2) {
 					logger.log(Level.FATAL, "Error reading userfile", e2);
 					continue;
 				}
@@ -521,9 +510,7 @@ public class IRCListener implements FtpListener, Observer {
 		Collections.sort(ret);
 		return ret;
 	}
-	/**
-	 * @param event
-	 */
+
 	private void actionPerformedSlave(SlaveEvent event)
 		throws FormatterException {
 		SlaveEvent sevent = (SlaveEvent) event;
@@ -609,10 +596,6 @@ public class IRCListener implements FtpListener, Observer {
 		env.add("file", file.getName());
 	}
 
-	/**
-	 * @param env
-	 * @param status
-	 */
 	private void fillEnvSpace(ReplacerEnvironment env, SlaveStatus status) {
 		env.add("xfers", Integer.toString(status.getTransfers()));
 		env.add("throughput", Bytes.formatBytes(status.getThroughput()));
@@ -639,9 +622,6 @@ public class IRCListener implements FtpListener, Observer {
 		}
 	}
 
-	/**
-	 * 
-	 */
 	private FtpConfig getConfig() {
 		return _cm.getConfig();
 	}
@@ -682,9 +662,6 @@ public class IRCListener implements FtpListener, Observer {
 		return getConnectionManager().getSlaveManager();
 	}
 
-	/**
-	 * 
-	 */
 	private void reload() throws FileNotFoundException, IOException {
 		_ircCfg = new Properties();
 		_ircCfg.load(new FileInputStream("irc.conf"));
@@ -939,10 +916,6 @@ public class IRCListener implements FtpListener, Observer {
 		say(SimplePrintf.jprintf(_ircCfg.getProperty("bw"), env));
 	}
 
-	/**
-	 * @param observer
-	 * @param msgc
-	 */
 	private void updateDF(Observable observer, MessageCommand msgc)
 		throws FormatterException {
 		SlaveStatus status = getSlaveManager().getAllStatus();
@@ -1122,10 +1095,6 @@ public class IRCListener implements FtpListener, Observer {
 		say(status);
 	}
 
-	/**
-	 * @param observer
-	 * @param msgc
-	 */
 	private void updateWho(Observable observer, MessageCommand msgc)
 		throws FormatterException {
 		ReplacerFormat formatup =
@@ -1205,9 +1174,6 @@ public class IRCListener implements FtpListener, Observer {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.event.FtpListener#init(net.sf.drftpd.master.command.CommandManager)
-	 */
 	public void init(ConnectionManager mgr) {
 		_cm = mgr;
 		try {

@@ -1,12 +1,5 @@
-/*
- * Created on 2003-okt-16
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd.master.command.plugins;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Date;
@@ -39,9 +32,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: UserManagment.java,v 1.9 2003/11/17 20:13:10 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	public void load(CommandManagerFactory initializer) {
@@ -86,7 +77,7 @@ public class UserManagment implements CommandHandler {
 			delUser = conn.getUserManager().getUserByNameUnchecked(delUsername);
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, e.getMessage());
-		} catch (IOException e) {
+		} catch (UserFileException e) {
 			return new FtpReply(200, "Couldn't getUser: " + e.getMessage());
 		}
 		if (!delUser.isDeleted()) {
@@ -121,7 +112,7 @@ public class UserManagment implements CommandHandler {
 					request.getArgument());
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, e.getMessage());
-		} catch (IOException e) {
+		} catch (UserFileException e) {
 			return new FtpReply(200, "IO error: " + e.getMessage());
 		}
 
@@ -158,8 +149,6 @@ public class UserManagment implements CommandHandler {
 			return new FtpReply(200, "No such user: " + e.getMessage());
 		} catch (ObjectExistsException e) {
 			return new FtpReply(200, "Target username is already taken");
-		} catch (IOException e) {
-			return new FtpReply(200, "IO error: " + e.getMessage());
 		} catch (UserFileException e) {
 			return new FtpReply(200, e.getMessage());
 		}
@@ -177,7 +166,7 @@ public class UserManagment implements CommandHandler {
 			user = conn.getUserManager().getUserByName(request.getArgument());
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, e.getMessage());
-		} catch (IOException e) {
+		} catch (UserFileException e) {
 			logger.log(Level.FATAL, "", e);
 			return new FtpReply(
 				200,
@@ -231,6 +220,7 @@ public class UserManagment implements CommandHandler {
 			"OK, removed " + credits + "b from " + user2.getUsername() + ".");
 	}
 	private Logger logger = Logger.getLogger(UserManagment.class);
+	
 	/**
 	 * USAGE: site user [<user>]
 	 * 	Lists users / Shows detailed info about a user.
@@ -264,7 +254,7 @@ public class UserManagment implements CommandHandler {
 			response.setMessage("User " + request.getArgument() + " not found");
 			return response;
 			//return FtpResponse.RESPONSE_200_COMMAND_OK);
-		} catch (IOException ex) {
+		} catch (UserFileException ex) {
 			return new FtpReply(200, ex.getMessage());
 		}
 
@@ -299,7 +289,7 @@ public class UserManagment implements CommandHandler {
 		Collection myUsers;
 		try {
 			myUsers = conn.getUserManager().getAllUsers();
-		} catch (IOException e) {
+		} catch (UserFileException e) {
 			logger.log(Level.FATAL, "IO error reading all users", e);
 			return new FtpReply(200, "IO error: " + e.getMessage());
 		}
@@ -513,8 +503,6 @@ public class UserManagment implements CommandHandler {
 		} catch (UserFileException ex) {
 			response.addComment(ex.getMessage());
 			return response;
-		} catch (IOException ex) {
-			return new FtpReply(200, "IO Error: " + ex.getMessage());
 		}
 		return response;
 	}
@@ -579,7 +567,7 @@ public class UserManagment implements CommandHandler {
 						200,
 						"Sorry, no more open slots available.");
 				}
-			} catch (IOException e1) {
+			} catch (UserFileException e1) {
 				logger.warn("", e1);
 				return new FtpReply(200, e1.getMessage());
 			}
@@ -778,7 +766,7 @@ public class UserManagment implements CommandHandler {
 				return new FtpReply(
 					550,
 					"User " + username + " not found: " + e.getMessage());
-			} catch (IOException e) {
+			} catch (UserFileException e) {
 				logger.log(Level.FATAL, "Error loading user", e);
 				return new FtpReply(
 					550,
@@ -812,7 +800,7 @@ public class UserManagment implements CommandHandler {
 							if (((User) iter.next()).getRatio() == 0F)
 								usedleechslots++;
 						}
-					} catch (IOException e1) {
+					} catch (UserFileException e1) {
 						return new FtpReply(
 							200,
 							"IO error reading userfiles: " + e1.getMessage());
@@ -936,7 +924,7 @@ public class UserManagment implements CommandHandler {
 			myUser = conn.getUserManager().getUserByName(args[0]);
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, "User not found: " + e.getMessage());
-		} catch (IOException e) {
+		} catch (UserFileException e) {
 			logger.log(Level.FATAL, "IO error reading user", e);
 			return new FtpReply(
 				200,
@@ -990,7 +978,7 @@ public class UserManagment implements CommandHandler {
 			return FtpReply.RESPONSE_200_COMMAND_OK;
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, "User not found: " + e.getMessage());
-		} catch (IOException e) {
+		} catch (UserFileException e) {
 			logger.log(Level.FATAL, "Error reading userfile", e);
 			return new FtpReply(
 				200,
@@ -1027,7 +1015,7 @@ public class UserManagment implements CommandHandler {
 			myUser = conn.getUserManager().getUserByName(args[0]);
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, e.getMessage());
-		} catch (IOException e) {
+		} catch (UserFileException e) {
 			logger.log(Level.FATAL, "IO error", e);
 			return new FtpReply(200, "IO error: " + e.getMessage());
 		}
@@ -1069,7 +1057,7 @@ public class UserManagment implements CommandHandler {
 			delUser = conn.getUserManager().getUserByName(delUsername);
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, e.getMessage());
-		} catch (IOException e) {
+		} catch (UserFileException e) {
 			return new FtpReply(200, "Couldn't getUser: " + e.getMessage());
 		}
 
@@ -1118,7 +1106,7 @@ public class UserManagment implements CommandHandler {
 		Collection users;
 		try {
 			users = conn.getUserManager().getAllUsersByGroup(group);
-		} catch (IOException e) {
+		} catch (UserFileException e) {
 			return new FtpReply(200, "IO error: " + e.getMessage());
 		}
 
@@ -1182,7 +1170,7 @@ public class UserManagment implements CommandHandler {
 		Collection groups;
 		try {
 			groups = conn.getUserManager().getAllGroups();
-		} catch (IOException e) {
+		} catch (UserFileException e) {
 			logger.log(Level.FATAL, "IO error from getAllGroups()", e);
 			return new FtpReply(200, "IO error: " + e.getMessage());
 		}

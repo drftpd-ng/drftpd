@@ -22,7 +22,8 @@ import org.apache.log4j.Logger;
  * However, as it is instantiated from the slave (or master with local slave),
  * and mainly because it is a helper class for Slave, it is located in net.sf.drftpd.slave.
  * 
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
+ * @author mog
+ * @version $Id: RemoteSlave.java,v 1.18 2003/11/17 20:13:10 mog Exp $
  */
 public class RemoteSlave implements Serializable, Comparable {
 
@@ -63,28 +64,12 @@ public class RemoteSlave implements Serializable, Comparable {
 		this.manager = manager;
 	}
 
-	/**
-	 * @deprecated
-	 */
-	public RemoteSlave(String name, Slave slave) {
-		if (name == null)
-			throw new IllegalArgumentException("name cannot be null (did you set slave.name?)");
-		this.slave = slave;
-		this.name = name;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
 	public int compareTo(Object o) {
 		if (!(o instanceof RemoteSlave))
 			throw new IllegalArgumentException();
 		return getName().compareTo(((RemoteSlave) o).getName());
 	}
 
-	/**
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	public boolean equals(Object obj) {
 		if (obj instanceof RemoteSlave) {
 			RemoteSlave rslave = (RemoteSlave) obj;

@@ -31,7 +31,7 @@ import JSX.ObjIn;
 
 /**
  * @author mog
- * @version $Id: JSXUserManager.java,v 1.20 2003/11/13 22:55:06 mog Exp $
+ * @version $Id: JSXUserManager.java,v 1.21 2003/11/17 20:13:11 mog Exp $
  */
 public class JSXUserManager implements UserManager {
 	private ConnectionManager _connManager;
@@ -44,9 +44,10 @@ public class JSXUserManager implements UserManager {
 	Hashtable users = new Hashtable();
 
 	public JSXUserManager() throws UserFileException {
-		
+
 		if (!userpathFile.exists() && !userpathFile.mkdirs()) {
-			throw new UserFileException(new IOException("Error creating folders: " + userpathFile));
+			throw new UserFileException(
+				new IOException("Error creating folders: " + userpathFile));
 		}
 
 		String userfilenames[] = userpathFile.list();
@@ -93,7 +94,7 @@ public class JSXUserManager implements UserManager {
 		return getUserFile(username).exists();
 	}
 
-	public Collection getAllGroups() throws IOException {
+	public Collection getAllGroups() throws UserFileException {
 		Collection users = this.getAllUsers();
 		ArrayList ret = new ArrayList();
 
@@ -112,64 +113,71 @@ public class JSXUserManager implements UserManager {
 		return ret;
 	}
 
-	public List getAllUsers() throws IOException {
+	public List getAllUsers() throws UserFileException {
 		ArrayList users = new ArrayList();
 
 		String userpaths[] = userpathFile.list();
 		for (int i = 0; i < userpaths.length; i++) {
 			String userpath = userpaths[i];
-			if(!userpath.endsWith(".xml")) continue;
-			String username = userpath.substring(0, userpath.length()-".xml".length());
+			if (!userpath.endsWith(".xml"))
+				continue;
+			String username =
+				userpath.substring(0, userpath.length() - ".xml".length());
 			try {
 				users.add((JSXUser) getUserByNameUnchecked(username));
 				// throws IOException
-			} catch (NoSuchUserException e) {} // continue
+			} catch (NoSuchUserException e) {
+			} // continue
 		}
 		return users;
 	}
 
-	public Collection getAllUsersByGroup(String group) throws IOException {
+	public Collection getAllUsersByGroup(String group) throws UserFileException {
 		Collection users = getAllUsers();
 		for (Iterator iter = users.iterator(); iter.hasNext();) {
 			JSXUser user = (JSXUser) iter.next();
-			if(!user.getGroupName().equals(group)) iter.remove();
+			if (!user.getGroupName().equals(group))
+				iter.remove();
 		}
 		return users;
 	}
-	
-	public User getUserByNameUnchecked(String username) throws NoSuchUserException, IOException {
+
+	public User getUserByNameUnchecked(String username)
+		throws NoSuchUserException, UserFileException {
 		try {
-		JSXUser user = (JSXUser) users.get(username);
-		if (user != null) {
-			return user;
-		}
-		
-		ObjIn in;
-		try {
-			in = new ObjIn(new FileReader(getUserFile(username)));
-		} catch (FileNotFoundException ex) {
-			throw new NoSuchUserException("No such user");
-		}
-		try {
-			user = (JSXUser) in.readObject();
-			//throws RuntimeException
-			user.usermanager = this;
-			users.put(user.getUsername(), user);
-			user.reset(_connManager);
-			return user;
-		} catch (ClassNotFoundException e) {
-			throw new FatalException(e);
-		}		
-		} catch(Throwable ex) {
-			if(ex instanceof NoSuchUserException) throw (NoSuchUserException)ex;
-			throw (IOException)new IOException("Error loading "+username).initCause(ex);
+			JSXUser user = (JSXUser) users.get(username);
+			if (user != null) {
+				return user;
+			}
+
+			ObjIn in;
+			try {
+				in = new ObjIn(new FileReader(getUserFile(username)));
+			} catch (FileNotFoundException ex) {
+				throw new NoSuchUserException("No such user");
+			}
+			try {
+				user = (JSXUser) in.readObject();
+				//throws RuntimeException
+				user.usermanager = this;
+				users.put(user.getUsername(), user);
+				user.reset(_connManager);
+				return user;
+			} catch (ClassNotFoundException e) {
+				throw new FatalException(e);
+			}
+		} catch (Throwable ex) {
+			if (ex instanceof NoSuchUserException)
+				throw (NoSuchUserException) ex;
+			throw new UserFileException("Error loading " + username, ex);
 		}
 	}
-	
+
 	public User getUserByName(String username)
-		throws NoSuchUserException, IOException {
+		throws NoSuchUserException, UserFileException {
 		JSXUser user = (JSXUser) getUserByNameUnchecked(username);
-		if(user.isDeleted()) throw new NoSuchUserException(user.getUsername()+" is deleted");
+		if (user.isDeleted())
+			throw new NoSuchUserException(user.getUsername() + " is deleted");
 		user.reset(_connManager);
 		return user;
 	}
@@ -191,11 +199,11 @@ public class JSXUserManager implements UserManager {
 	}
 
 	public void saveAll() throws UserFileException {
-		logger.log(Level.INFO, "Saving userfiles: "+users);
+		logger.log(Level.INFO, "Saving userfiles: " + users);
 		for (Iterator iter = users.values().iterator(); iter.hasNext();) {
 			Object obj = iter.next();
 			assert obj instanceof JSXUser;
-			JSXUser user = (JSXUser)obj;
+			JSXUser user = (JSXUser) obj;
 			user.commit();
 		}
 	}

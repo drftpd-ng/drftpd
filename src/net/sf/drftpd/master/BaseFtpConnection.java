@@ -38,10 +38,9 @@ import org.apache.log4j.PatternLayout;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
+ * @version $Id: BaseFtpConnection.java,v 1.55 2003/11/17 20:13:10 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
-	private CommandManager _commandManager;
-
 	private static Logger debuglogger =
 		Logger.getLogger(BaseFtpConnection.class.getName() + ".service");
 	static {
@@ -63,6 +62,7 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	protected boolean _authenticated = false;
 	protected ConnectionManager _cm;
+	private CommandManager _commandManager;
 	protected Socket _controlSocket;
 
 	protected User _user;
@@ -80,18 +80,13 @@ public class BaseFtpConnection implements Runnable {
 	 * time when last command from the client finished execution
 	 */
 	protected long lastActive;
-	/**
-	 * Set by setPasvCommand to controlSocket.getLocalAddress()
-	 * Set by setPortCommand to whatever the argument said.
-	 */
 
-	/////////// DATA CONNECTION ///////////
 	protected PrintWriter out;
 
 	/**
-		 * PRE Transfere
-		 *
-		 */
+	  * PRE Transfere
+	  *
+	  */
 	protected FtpRequest request;
 
 	/**
@@ -131,6 +126,11 @@ public class BaseFtpConnection implements Runnable {
 		return clientAddress;
 	}
 
+	public CommandManager getCommandManager() {
+		assert _commandManager != null : toString();
+		return _commandManager;
+	}
+
 	public FtpConfig getConfig() {
 		return getConnectionManager().getConfig();
 	}
@@ -139,9 +139,6 @@ public class BaseFtpConnection implements Runnable {
 		return _cm;
 	}
 
-	/**
-	 * 
-	 */
 	public Socket getControlSocket() {
 		return _controlSocket;
 	}
@@ -152,6 +149,18 @@ public class BaseFtpConnection implements Runnable {
 
 	public LinkedRemoteFile getCurrentDirectory() {
 		return currentDirectory;
+	}
+
+	public DataConnectionHandler getDataConnectionHandler() {
+		try {
+			return (DataConnectionHandler) getCommandManager()
+				.getCommandHandler(
+				DataConnectionHandler.class);
+		} catch (ObjectNotFoundException e) {
+			throw new RuntimeException(
+				"DataConnectionHandler must be available",
+				e);
+		}
 	}
 
 	/**
@@ -168,27 +177,8 @@ public class BaseFtpConnection implements Runnable {
 		return request;
 	}
 
-	/**
-		 * 
-		 */
 	public SlaveManagerImpl getSlaveManager() {
 		return getConnectionManager().getSlaveManager();
-	}
-
-	/**
-	 * @deprecated
-	 */
-	public RemoteSlave getTranferSlave() {
-		if (!isTransfering())
-			throw new IllegalStateException("can only call getTransferSlave() during transfer");
-		return getDataConnectionHandler().getRSlave();
-	}
-
-	/**
-	 * @deprecated
-	 */
-	public Transfer getTransfer() {
-		return getDataConnectionHandler().getTransfer();
 	}
 
 	public char getTransferDirection() {
@@ -203,13 +193,6 @@ public class BaseFtpConnection implements Runnable {
 	}
 
 	/**
-	 * @deprecated
-	 */
-	public LinkedRemoteFile getTransferFile() {
-		return getDataConnectionHandler().getTransferFile();
-	}
-
-	/**
 	 * Get user object
 	 */
 	public User getUser() throws NoSuchUserException {
@@ -218,9 +201,6 @@ public class BaseFtpConnection implements Runnable {
 		return _user;
 	}
 
-	/**
-		 * 
-		 */
 	public UserManager getUserManager() {
 		return getConnectionManager().getUserManager();
 	}
@@ -228,9 +208,7 @@ public class BaseFtpConnection implements Runnable {
 	public User getUserNull() {
 		return _user;
 	}
-	/**
-	 * Check permission - default implementation - does nothing.
-	 */
+
 	protected boolean hasPermission(FtpRequest request) {
 		if (isAuthenticated())
 			return true;
@@ -245,10 +223,6 @@ public class BaseFtpConnection implements Runnable {
 		return false;
 	}
 
-	/**
-	 * Returns the authenticated.
-	 * @return boolean
-	 */
 	public boolean isAuthenticated() {
 		return _authenticated;
 	}
@@ -259,20 +233,7 @@ public class BaseFtpConnection implements Runnable {
 	public boolean isExecuting() {
 		return executing;
 	}
-	/**
-	 * @deprecated
-	 */
-	public boolean isTransfering() {
-		//return _transfer != null;
-		try {
-			DataConnectionHandler dataconn =
-				(DataConnectionHandler) getCommandManager().getCommandHandler(
-					DataConnectionHandler.class);
-			return dataconn.isTransfering();
-		} catch (ObjectNotFoundException e) {
-			throw new RuntimeException(e);
-		}
-	}
+
 	/**
 	 * Reset all the member variables. Close all sockets.
 	 */
@@ -480,9 +441,6 @@ public class BaseFtpConnection implements Runnable {
 					+ _user.getGroupName());
 	}
 
-	/**
-	 * @param file
-	 */
 	public void setCurrentDirectory(LinkedRemoteFile file) {
 		currentDirectory = file;
 	}
@@ -496,8 +454,9 @@ public class BaseFtpConnection implements Runnable {
 		// start() calls run() and execution will start in the background.
 	}
 
-	/** returns a one-line status line
-		 */
+	/**
+	 *  returns a one-line status line
+	 */
 	public String status() {
 		return " [Credits: "
 			+ Bytes.formatBytes(_user.getCredits())
@@ -518,7 +477,7 @@ public class BaseFtpConnection implements Runnable {
 
 	public void stop(String message) {
 		stopRequestMessage = message;
-		if (isTransfering()) {
+		if (getDataConnectionHandler().isTransfering()) {
 			try {
 				getDataConnectionHandler().getTransfer().abort();
 			} catch (RemoteException e) {
@@ -529,18 +488,6 @@ public class BaseFtpConnection implements Runnable {
 			}
 		}
 		stop();
-	}
-
-	public DataConnectionHandler getDataConnectionHandler() {
-		try {
-			return (DataConnectionHandler) getCommandManager()
-				.getCommandHandler(
-				DataConnectionHandler.class);
-		} catch (ObjectNotFoundException e) {
-			throw new RuntimeException(
-				"DataConnectionHandler must be available",
-				e);
-		}
 	}
 
 	public String toString() {
@@ -561,13 +508,5 @@ public class BaseFtpConnection implements Runnable {
 		}
 		buf.append("]");
 		return buf.toString();
-	}
-
-	/**
-	 * 
-	 */
-	public CommandManager getCommandManager() {
-		assert _commandManager != null : toString();
-		return _commandManager;
 	}
 }

@@ -22,7 +22,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.22 2003/11/13 22:55:06 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.23 2003/11/17 20:13:10 mog Exp $
  */
 public abstract class AbstractUser implements User {
 	private static Logger logger = Logger.getLogger(AbstractUser.class);
@@ -412,7 +412,7 @@ public abstract class AbstractUser implements User {
 			throw new NoSuchFieldException("User has no such ip mask");
 	}
 
-	public void reset(ConnectionManager cmgr) {
+	public void reset(ConnectionManager cmgr) throws UserFileException {
 		//handle if we are called from userfileconverter or the like
 		if (cmgr == null ) return;
 		
@@ -423,7 +423,7 @@ public abstract class AbstractUser implements User {
 		CalendarUtils.floorAllLessThanDay(cal);
 
 		//has not been reset since midnight
-		if (lastResetDate.before(cal.getTime()))
+		if (lastResetDate.before(cal.getTime())) 
 			resetDay(cmgr, cal.getTime());
 
 		//floorDayOfWeek could go into the previous month
@@ -437,10 +437,10 @@ public abstract class AbstractUser implements User {
 			resetMonth(cmgr, cal.getTime());
 
 		lastReset = System.currentTimeMillis();
+		commit(); //throws UserFileException
 	}
 
 	private void resetDay(ConnectionManager cm, Date resetDate) {
-		logger.info("Reset daily stats for " + getUsername());
 		cm.dispatchFtpEvent(new UserEvent(this, "RESETDAY", resetDate.getTime()));
 
 		this.downloadedFilesDay = 0;
@@ -452,11 +452,11 @@ public abstract class AbstractUser implements User {
 		this.downloadedBytesDay = 0;
 		this.uploadedBytesDay = 0;
 		this.timeToday = 0;
+		logger.info("Reset daily stats for " + getUsername());
 	}
 
 	private void resetMonth(ConnectionManager cm, Date resetDate) {
 		cm.dispatchFtpEvent(new UserEvent(this, "RESETMONTH", resetDate.getTime()));
-		logger.info("Reset monthly stats for " + getUsername());
 
 		this.downloadedFilesMonth = 0;
 		this.uploadedBytesMonth = 0;
@@ -466,11 +466,11 @@ public abstract class AbstractUser implements User {
 
 		this.downloadedBytesMonth = 0;
 		this.uploadedBytesMonth = 0;
+		logger.info("Reset monthly stats for " + getUsername());
 	}
 
 	private void resetWeek(ConnectionManager cm, Date resetDate) {
 		cm.dispatchFtpEvent(new UserEvent(this, "RESETWEEK", resetDate.getTime()));
-		logger.info("Reset weekly stats for " + getUsername());
 
 		this.downloadedFilesWeek = 0;
 		this.uploadedBytesWeek = 0;
@@ -483,7 +483,7 @@ public abstract class AbstractUser implements User {
 		if (getWeeklyAllotment() > 0) {
 			setCredits(getWeeklyAllotment());
 		}
-
+		logger.info("Reset weekly stats for " + getUsername());
 	}
 
 	public void setComment(String comment) {

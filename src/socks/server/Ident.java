@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.net.ConnectException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.StringTokenizer;
 
@@ -76,8 +77,9 @@ public class Ident{
       successful = false; //We are pessimistic
 
       try{
-        sock = new Socket(s.getInetAddress(),113);
-        sock.setSoTimeout(connectionTimeout);
+        sock = new Socket();
+		sock.setSoTimeout(connectionTimeout);
+        sock.connect(new InetSocketAddress(s.getInetAddress(),113), connectionTimeout);
         byte[] request = (""+s.getPort()+" , "+
                              s.getLocalPort()+"\r\n").getBytes();
 

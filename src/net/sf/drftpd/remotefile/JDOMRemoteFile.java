@@ -15,12 +15,8 @@ import org.jdom.Element;
 import org.jdom.output.XMLOutputter;
 
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
+ * @author mog
+ * @version $Id: JDOMRemoteFile.java,v 1.23 2003/11/17 20:13:11 mog Exp $
  */
 public class JDOMRemoteFile implements RemoteFileInterface {
 
@@ -98,16 +94,11 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 			throw new FatalException(this+" has missing fields, try switching to files.xml.bak", ex);
 		}
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getCheckSum()
-	 */
+
 	public long getCheckSumCached() {
 		return this.checkSum;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#getFiles()
-	 */
 	public Collection getFiles() {
 		ArrayList listFiles = new ArrayList(files.size());
 		for (Iterator i = files.iterator(); i.hasNext();) {
@@ -116,59 +107,31 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 		}
 		return listFiles;
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getGroupname()
-	 */
+
 	public String getGroupname() {
 		return this.group;
 	}
-	/**
-	 * @see net.sf.drftpd.remotefile.RemoteFile#getName()
-	 */
+
 	public String getName() {
 		return name;
 	}
 
-	/**
-	 * @see net.sf.drftpd.remotefile.RemoteFile#getParent()
-	 */
 	public String getParent() {
 		throw new UnsupportedOperationException("JDOMRemoteFile.getParent() not implemented");
 	}
 
-	/**
-	 * @see net.sf.drftpd.remotefile.RemoteFile#getPath()
-	 */
 	public String getPath() {
-		//return name;
 		throw new UnsupportedOperationException("JDOMRemoteFile.getPath() not implemented");
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#getSlaves()
-	 */
 	public Collection getSlaves() {
 		return this.slaves;
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getUsername()
-	 */
+
 	public String getUsername() {
 		return this.owner;
 	}
-//	/* (non-Javadoc)
-//	 * @see net.sf.drftpd.remotefile.RemoteFile#hasFile(java.lang.String)
-//	 */
-//	public boolean hasFile(String filename) {
-//		for (Iterator iter = files.iterator(); iter.hasNext();) {
-//			JDOMRemoteFile file = (JDOMRemoteFile) iter.next();
-//			if(file.getName().equals(filename)) return true;
-//		}
-//		return false;
-//	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#getXfertime()
-	 */
+
 	public long getXfertime() {
 		return xfertime;
 	}
@@ -179,21 +142,16 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 	public boolean isFile() {
 		return files == null;
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#lastModified()
-	 */
+
 	public long lastModified() {
 		return this.lastModified;
 	}
-	/**
-	 * @see net.sf.drftpd.remotefile.RemoteFile#length()
-	 */
+
 	public long length() {
 		return this.length;
 	}
 
 	public RemoteFileInterface[] listFiles() {
-		//JDOMRemoteFile listFiles[] = new JDOMRemoteFile[files.size()];
 		ArrayList listFiles = new ArrayList();
 		for (Iterator i = files.iterator(); i.hasNext();) {
 			Element fileElement = (Element)i.next();

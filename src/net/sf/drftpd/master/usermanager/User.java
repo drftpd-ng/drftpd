@@ -13,7 +13,7 @@ import net.sf.drftpd.ObjectExistsException;
 
 /**
  * @author mog
- * @version $Id: User.java,v 1.22 2003/11/13 22:55:06 mog Exp $
+ * @version $Id: User.java,v 1.23 2003/11/17 20:13:10 mog Exp $
  */
 public interface User {
 
@@ -27,6 +27,7 @@ public interface User {
 
 	/**
 	 * Commit changes.
+	 * @throws UserFileException if an error saving the userfile occured.
 	 */
 	public void commit() throws UserFileException;
 

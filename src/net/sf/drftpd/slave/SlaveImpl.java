@@ -2,10 +2,10 @@ package net.sf.drftpd.slave;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.rmi.ConnectIOException;
 import java.rmi.Naming;
@@ -64,7 +64,8 @@ public class SlaveImpl
 	public static RootBasket getDefaultRootBasket(Properties cfg) {
 		RootBasket roots;
 		// START: RootBasket
-		long defaultMinSpaceFree = Bytes.parseBytes(cfg.getProperty("slave.minspacefree", "50mb"));
+		long defaultMinSpaceFree =
+			Bytes.parseBytes(cfg.getProperty("slave.minspacefree", "50mb"));
 		ArrayList rootStrings = new ArrayList();
 		for (int i = 1; true; i++) {
 			String rootString = cfg.getProperty("slave.root." + i);
@@ -104,8 +105,7 @@ public class SlaveImpl
 
 	public static void main(String args[]) {
 		BasicConfigurator.configure();
-		System.out.println(
-			SlaveImpl.VERSION + " slave server starting");
+		System.out.println(SlaveImpl.VERSION + " slave server starting");
 		String drftpdconf;
 		if (args.length >= 1) {
 			drftpdconf = args[0];
@@ -119,13 +119,13 @@ public class SlaveImpl
 				cfg.load(new FileInputStream(drftpdconf));
 			} catch (Throwable ex) {
 				ex.printStackTrace();
-				System.err.println("Could not open "+drftpdconf+", exiting.");
+				System.err.println(
+					"Could not open " + drftpdconf + ", exiting.");
 				System.exit(0);
 				return;
 			}
-			if(cfg.getProperty("slave.portfrom") != null) {
-			RMISocketFactory
-				.setSocketFactory(
+			if (cfg.getProperty("slave.portfrom") != null) {
+				RMISocketFactory.setSocketFactory(
 					new PortRangeServerSocketFactory(
 						Integer.parseInt(cfg.getProperty("slave.portfrom")),
 						Integer.parseInt(cfg.getProperty("slave.portto"))));
@@ -151,7 +151,6 @@ public class SlaveImpl
 
 	public SlaveImpl(Properties cfg) throws RemoteException {
 		super(0);
-
 
 		String slavemanagerurl;
 		slavemanagerurl =
@@ -202,29 +201,26 @@ public class SlaveImpl
 		logger.debug("Checksumming: " + path);
 		CRC32 crc32 = new CRC32();
 		InputStream in =
-			//			new CheckedInputStream(new FileInputStream(root + path), crc32);
-	new CheckedInputStream(new FileInputStream(_roots.getFile(path)), crc32);
-		byte buf[] = new byte[1024];
+			new CheckedInputStream(
+				new FileInputStream(_roots.getFile(path)),
+				crc32);
+		byte buf[] = new byte[4096];
 		while (in.read(buf) != -1);
 		return crc32.getValue();
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.slave.Slave#connect(java.net.InetAddress, int)
-	 */
 	public Transfer connect(InetAddress addr, int port)
 		throws RemoteException {
-		return new TransferImpl(
-			new ActiveConnection(addr, port),
-			this);
+		return new TransferImpl(new ActiveConnection(addr, port), this);
 	}
 
 	public void delete(String path) throws IOException {
 		Collection files = _roots.getMultipleFiles(path);
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
 			File file = (File) iter.next();
-			if ( !file.exists() ) {
-				throw new FileNotFoundException(file.getAbsolutePath() + " does not exist.");
+			if (!file.exists()) {
+				throw new FileNotFoundException(
+					file.getAbsolutePath() + " does not exist.");
 			}
 			if (!file.delete())
 				throw new PermissionDeniedException("delete failed on " + path);
@@ -245,26 +241,34 @@ public class SlaveImpl
 	public SlaveStatus getSlaveStatus() {
 		int throughputUp = 0, throughputDown = 0;
 		int transfersUp = 0, transfersDown = 0;
-
-		for (Iterator i = _transfers.iterator(); i.hasNext();) {
-			TransferImpl transfer = (TransferImpl) i.next();
-			if (transfer.getDirection()
-				== Transfer.TRANSFER_RECEIVING_UPLOAD) {
-				throughputUp += transfer.getXferSpeed();
-				transfersUp += 1;
-			} else if (
-				transfer.getDirection()
-					== Transfer.TRANSFER_SENDING_DOWNLOAD) {
-				throughputDown += transfer.getXferSpeed();
-				transfersDown += 1;
-			} else {
-				throw new FatalException("unrecognized direction");
+		long bytesReceived, bytesSent;
+		synchronized (_transfers) {
+			bytesReceived = _receivedBytes;
+			bytesSent = _sentBytes;
+			for (Iterator i = _transfers.iterator(); i.hasNext();) {
+				TransferImpl transfer = (TransferImpl) i.next();
+				switch (transfer.getDirection()) {
+					case Transfer.TRANSFER_RECEIVING_UPLOAD :
+						throughputUp += transfer.getXferSpeed();
+						transfersUp += 1;
+						bytesReceived += transfer.getTransfered();
+						break;
+					case Transfer.TRANSFER_SENDING_DOWNLOAD :
+						throughputDown += transfer.getXferSpeed();
+						transfersDown += 1;
+						bytesSent += transfer.getTransfered();
+						break;
+					default :
+						throw new FatalException("unrecognized direction");
+				}
 			}
 		}
 		try {
 			return new SlaveStatus(
 				_roots.getTotalDiskSpaceAvailable(),
 				_roots.getTotalDiskSpaceCapacity(),
+				bytesSent,
+				bytesReceived,
 				throughputUp,
 				transfersUp,
 				throughputDown,
@@ -275,14 +279,8 @@ public class SlaveImpl
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.slave.Slave#listen()
-	 */
 	public Transfer listen() throws RemoteException, IOException {
-
-		return new TransferImpl(
-			new PassiveConnection(null),
-			this);
+		return new TransferImpl(new PassiveConnection(null), this);
 	}
 
 	/**
@@ -344,9 +342,33 @@ public class SlaveImpl
 	}
 
 	/**
-	 * 
+	 * @deprecated
 	 */
 	public Vector getTransfers() {
 		return _transfers;
 	}
+
+	public void addTransfer(TransferImpl o) {
+		synchronized (_transfers) {
+			_transfers.add(o);
+		}
+	}
+
+	public void removeTransfer(TransferImpl o) {
+		synchronized (_transfers) {
+			switch (o.getDirection()) {
+				case Transfer.TRANSFER_RECEIVING_UPLOAD :
+					_receivedBytes += o.getTransfered();
+					break;
+				case Transfer.TRANSFER_SENDING_DOWNLOAD :
+					_sentBytes += o.getTransfered();
+					break;
+				default :
+					throw new IllegalArgumentException();
+			}
+			if (_transfers.remove(o))
+				throw new IllegalStateException();
+		}
+	}
+
 }

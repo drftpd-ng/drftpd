@@ -23,6 +23,7 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 import org.apache.log4j.Level;
@@ -40,9 +41,6 @@ public class Pre implements CommandHandler {
 
 	private Logger logger = Logger.getLogger(Pre.class);
 
-	/**
-	 * @param preDir
-	 */
 	private void preAwardCredits(BaseFtpConnection conn, LinkedRemoteFile preDir, Hashtable awards) {
 		for (Iterator iter = preDir.getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
@@ -55,7 +53,7 @@ public class Pre implements CommandHandler {
 					"PRE: Cannot award credits to non-existing user",
 					e);
 				continue;
-			} catch (IOException e) {
+			} catch (UserFileException e) {
 				logger.log(Level.WARN, "", e);
 				continue;
 			}

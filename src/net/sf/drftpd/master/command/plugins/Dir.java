@@ -28,6 +28,7 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 import org.apache.log4j.Level;
@@ -35,9 +36,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: Dir.java,v 1.8 2003/11/17 20:13:10 mog Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
 	protected LinkedRemoteFile _renameFrom = null;
@@ -46,9 +45,6 @@ public class Dir implements CommandHandler, Cloneable {
 
 	private Logger logger = Logger.getLogger(Dir.class);
 
-	/**
-	 * 
-	 */
 	public Dir() {
 		super();
 	}
@@ -86,6 +82,7 @@ public class Dir implements CommandHandler, Cloneable {
 		}
 		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
+	
 	/**
 	 * <code>CDUP &lt;CRLF&gt;</code><br>
 	 *
@@ -172,7 +169,7 @@ public class Dir implements CommandHandler, Cloneable {
 								stat.getUsername()));
 				} catch (NoSuchUserException e2) {
 					continue;
-				} catch (IOException e2) {
+				} catch (UserFileException e2) {
 					logger.log(Level.FATAL, "Error reading userfile", e2);
 					continue;
 				}
@@ -289,6 +286,7 @@ public class Dir implements CommandHandler, Cloneable {
 				+ conn.getCurrentDirectory().getPath()
 				+ "\" is current directory");
 	}
+	
 	/**
 	 * <code>RMD  &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
 	 *
@@ -478,6 +476,7 @@ public class Dir implements CommandHandler, Cloneable {
 			250,
 			request.getCommand() + " command successfull.");
 	}
+	
 	/**
 	 * <code>DELE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
 	 *
@@ -527,7 +526,7 @@ public class Dir implements CommandHandler, Cloneable {
 					requestedFile.getUsername());
 			uploader.updateCredits(
 				(long) - (requestedFile.length() * uploader.getRatio()));
-		} catch (IOException e) {
+		} catch (UserFileException e) {
 			reply.addComment("Error removing credits: " + e.getMessage());
 		} catch (NoSuchUserException e) {
 			reply.addComment("Error removing credits: " + e.getMessage());
@@ -538,6 +537,7 @@ public class Dir implements CommandHandler, Cloneable {
 		requestedFile.delete();
 		return reply;
 	}
+	
 	/**
 	 * http://www.southrivertech.com/support/titanftp/webhelp/xcrc.htm
 	 * 
@@ -612,6 +612,7 @@ public class Dir implements CommandHandler, Cloneable {
 		//	out.write(ftpStatus.getResponse(550, request, user, null));
 		//}
 	}
+	
 	/**
 	 * <code>SIZE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
 	 *
@@ -712,9 +713,6 @@ public class Dir implements CommandHandler, Cloneable {
 		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.command.CommandHandler#execute(net.sf.drftpd.master.FtpRequest)
-	 */
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {
 		FtpRequest request = conn.getRequest();
@@ -748,9 +746,7 @@ public class Dir implements CommandHandler, Cloneable {
 		throw UnhandledCommandException.create(Dir.class, request);
 
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.command.CommandHandler#initialize(net.sf.drftpd.master.BaseFtpConnection)
-	 */
+
 	public CommandHandler initialize(
 		BaseFtpConnection conn,
 		CommandManager initializer) {

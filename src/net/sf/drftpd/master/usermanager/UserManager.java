@@ -1,5 +1,4 @@
 package net.sf.drftpd.master.usermanager;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -26,14 +25,14 @@ public interface UserManager {
 	 * @param name user name
 	 */
 	public abstract boolean exists(String name);
-	public abstract Collection getAllGroups() throws IOException;
+	public abstract Collection getAllGroups() throws UserFileException;
 
 	/**
 	 * Get all user names in the system.
 	 */
-	public abstract List getAllUsers() throws IOException;
+	public abstract List getAllUsers() throws UserFileException;
 	public abstract Collection getAllUsersByGroup(String group)
-		throws IOException;
+		throws UserFileException;
 	
 
 	/**
@@ -41,8 +40,8 @@ public interface UserManager {
 	 */
 	//TODO garbage collected Map of users.
 	public abstract User getUserByName(String name)
-		throws NoSuchUserException, IOException;
-	public User getUserByNameUnchecked(String username) throws NoSuchUserException, IOException;
+		throws NoSuchUserException, UserFileException;
+	public User getUserByNameUnchecked(String username) throws NoSuchUserException, UserFileException;
 	public abstract void saveAll() throws UserFileException;
 
 }

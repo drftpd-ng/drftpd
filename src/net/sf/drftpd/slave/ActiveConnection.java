@@ -2,29 +2,25 @@ package net.sf.drftpd.slave;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
+ * @author mog
+ * @version $Id: ActiveConnection.java,v 1.3 2003/11/17 20:13:11 mog Exp $
  */
 public class ActiveConnection extends Connection {
-	InetAddress addr;
-	int port;
-
+	private SocketAddress _addr;
+	private static final int TIMEOUT = 10000;
+	
 	public ActiveConnection(InetAddress addr, int port) {
-		this.addr = addr;
-		this.port = port;
+		_addr = new InetSocketAddress(addr, port);
 	}
-	/**
-	 * @see net.sf.drftpd.slave.Connection#connect()
-	 */
+
 	public Socket connect() throws IOException {
-		Socket sock = new Socket(addr, port);
+		Socket sock = new Socket();
+		sock.connect(_addr, TIMEOUT);
 		setSockOpts(sock);
 		return sock;
 	}

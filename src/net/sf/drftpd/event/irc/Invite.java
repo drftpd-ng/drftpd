@@ -6,12 +6,11 @@
  */
 package net.sf.drftpd.event.irc;
 
-import java.io.IOException;
-
 import net.sf.drftpd.event.InviteEvent;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.master.usermanager.UserFileException;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -53,7 +52,7 @@ public class Invite extends GenericCommandAutoService {
 						args[1] + " " + e.getMessage(),
 						e);
 					return;
-				} catch (IOException e) {
+				} catch (UserFileException e) {
 					logger.log(Level.WARN, "", e);
 					return;
 				}

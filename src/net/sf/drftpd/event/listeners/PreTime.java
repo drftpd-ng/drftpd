@@ -111,9 +111,7 @@ public class PreTime implements FtpListener {
 		}
 		return false;
 	}
-	/**
-	 * 
-	 */
+
 	class SiteBot extends GenericCommandAutoService {
 
 		//private static final Logger logger = Logger.getLogger(SiteBot.class);
@@ -122,18 +120,12 @@ public class PreTime implements FtpListener {
 
 		private PreTime parent;
 
-		/**
-		 * @param connection
-		 */
 		protected SiteBot(IRCListener irc, PreTime parent) {
 			super(irc.getIRCConnection());
 			this.irc = irc;
 			this.parent = parent;
 		}
 
-		/* (non-Javadoc)
-		 * @see f00f.net.irc.martyr.GenericCommandAutoService#updateCommand(f00f.net.irc.martyr.InCommand)
-		 */
 		protected void updateCommand(InCommand command) {
 			if (!(command instanceof MessageCommand))
 				return;

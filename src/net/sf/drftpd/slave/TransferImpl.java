@@ -18,11 +18,7 @@ import net.sf.drftpd.AsciiOutputStream;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
+ * @version $Id: TransferImpl.java,v 1.28 2003/11/17 20:13:11 mog Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private boolean _abort = false;
@@ -111,18 +107,11 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		}
 	}
 
-	/**
-	 * Returns the transfered.
-	 * @return long
-	 */
 	public long getTransfered() {
 		return _transfered;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.slave.Transfer#getTransferTime()
-	 */
-	public long getTransferTime() {
+	public long getElapsed() {
 		if (_finished == 0) {
 			return System.currentTimeMillis() - _started;
 		} else {
@@ -131,7 +120,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	}
 
 	public int getXferSpeed() {
-		long elapsed = getTransferTime();
+		long elapsed = getElapsed();
 
 		if (_transfered == 0) {
 			return 0;
@@ -142,7 +131,9 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		}
 		return (int) (_transfered / ((float) elapsed / (float) 1000));
 	}
-
+	public TransferStatus getStatus() {
+		return new TransferStatus(getElapsed(), getTransfered());
+	}
 	public boolean isReceivingUploading() {
 		return _direction == TRANSFER_RECEIVING_UPLOAD;
 	}
@@ -168,7 +159,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 			throw new RuntimeException("neither in or out was null");
 		}
 
-		_slave.getTransfers().add(this);
+		_slave.addTransfer(this);
 		try {
 			byte[] buff = new byte[4096];
 			int count;
@@ -179,7 +170,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 			_out.flush();
 		} finally {
 			_finished = System.currentTimeMillis();
-			_slave.getTransfers().remove(this);
+			_slave.removeTransfer(this);
 
 			_in.close();
 			_out.close();

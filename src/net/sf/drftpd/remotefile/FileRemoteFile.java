@@ -18,7 +18,8 @@ import net.sf.drftpd.slave.RootBasket;
 /**
  * A wrapper for java.io.File to the net.sf.drftpd.RemoteFile structure.
  * 
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
+ * @author mog
+ * @version $Id: FileRemoteFile.java,v 1.27 2003/11/17 20:13:11 mog Exp $
  */
 public class FileRemoteFile extends RemoteFile {
 	private static Logger logger = Logger.getLogger(FileRemoteFile.class.getName());
@@ -47,9 +48,7 @@ public class FileRemoteFile extends RemoteFile {
 		boolean first = true;
 		for (Iterator iter = rootBasket.iterator(); iter.hasNext();) {
 			Root root = (Root)iter.next();
-			//File rootFile = root.getFile();
-			File file = new File(root.getPath()+"/"+path);
-			//System.out.println("File: "+file);
+			File file = root.getFile(path);
 			
 			if (!file.exists()) continue;
 
@@ -99,7 +98,7 @@ public class FileRemoteFile extends RemoteFile {
 	}
 
 	public String getName() {
-		return path.substring(path.lastIndexOf(File.separatorChar)+1);
+		return new String(path.substring(path.lastIndexOf(File.separatorChar)+1));
 	}
 
 	public String getParent() {

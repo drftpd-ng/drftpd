@@ -4,9 +4,7 @@ import java.util.Calendar;
 
 /**
  * @author mog
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: CalendarUtils.java,v 1.2 2003/11/17 20:13:11 mog Exp $
  */
 public class CalendarUtils {
 	private CalendarUtils() {
@@ -47,15 +45,9 @@ public class CalendarUtils {
 		cal.set(Calendar.MONTH, cal.get(Calendar.MONTH) + 1);
 	}
 
-	/**
-	 * 
-	 */
 	public static void incrementWeek(Calendar cal) {
 		cal.set(Calendar.WEEK_OF_YEAR, cal.get(Calendar.WEEK_OF_YEAR) + 1);
 	}
-	/**
-	 * @param cal
-	 */
 	public static void incrementDay(Calendar cal) {
 		cal.set(Calendar.DAY_OF_MONTH, cal.get(Calendar.DAY_OF_MONTH) + 1);
 	}
