@@ -1003,6 +1003,9 @@ public class IRCListener implements FtpListener, Observer {
 		} catch (ArrayIndexOutOfBoundsException e) {
 			logger.warn("", e);
 			return;
+		} catch (StringIndexOutOfBoundsException e) {
+			logger.warn("", e);
+			return;
 		}
 		ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
 		env.add("user", username);

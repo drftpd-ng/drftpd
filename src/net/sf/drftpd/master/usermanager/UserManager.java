@@ -1,6 +1,7 @@
 package net.sf.drftpd.master.usermanager;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Hashtable;
 import java.util.List;
 
 import net.sf.drftpd.master.ConnectionManager;
@@ -34,6 +35,7 @@ public interface UserManager {
 	public abstract List getAllUsers() throws IOException;
 	public abstract Collection getAllUsersByGroup(String group)
 		throws IOException;
+	
 
 	/**
 	 * Get user by name.

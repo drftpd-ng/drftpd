@@ -274,6 +274,7 @@ public interface User {
 	 */
 	public boolean isDeleted();
 	public boolean isGroupAdmin();
+	public boolean isExempt();
 	public boolean isMemberOf(String group);
 	/**
 	 * Returns the nuker.

@@ -566,6 +566,10 @@ public abstract class AbstractUser implements User {
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.usermanager.User#isMemberOf(java.lang.String)
 	 */
+	public boolean isExempt() {
+		return isMemberOf("exempt");
+	}
+
 	public boolean isMemberOf(String group) {
 		if (getGroupName().equals(group))
 			return true;

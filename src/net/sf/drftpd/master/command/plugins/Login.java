@@ -7,6 +7,7 @@
 package net.sf.drftpd.master.command.plugins;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -77,9 +78,6 @@ public class Login implements CommandHandler, Cloneable {
 			return new FtpReply(530, ex.getMessage());
 		}
 
-		if (newUser.isDeleted()) {
-			return FtpReply.RESPONSE_530_ACCESS_DENIED;
-		}
 
 		//		if(connManager.isShutdown() && !conn.getUser().isAdmin()) {
 		//			out.print(new FtpResponse(421, ))
@@ -105,6 +103,20 @@ public class Login implements CommandHandler, Cloneable {
 		if (!newUser.checkIP(masks)) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
+
+		if (newUser.isDeleted()) {
+			return FtpReply.RESPONSE_530_ACCESS_DENIED;
+		}
+
+		if ( !conn.getConnectionManager().canLogin(newUser)) {
+			return FtpReply.RESPONSE_550_SITE_FULL;
+		}
+
+		int answer = conn.getConnectionManager().getLogins(newUser);
+		// if answer == -1, user can login, otherwise the # of the
+		// user's max logins is returned
+		if ( answer > 0 )
+			return new FtpReply(530,"Sorry, your account is restricted to " + answer + " simultaneous logins.");
 
 		if (!conn.getSlaveManager().hasAvailableSlaves()
 			&& !newUser.isAdmin()) {

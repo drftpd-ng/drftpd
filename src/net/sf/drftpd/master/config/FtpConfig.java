@@ -62,7 +62,7 @@ public class FtpConfig {
 	String cfgFileName;
 	private ConnectionManager connManager;
 	private long freespaceMin;
-
+	private int[] max_users;
 	private String newConf = "perms.conf";
 	private Map replacerFormats;
 
@@ -123,6 +123,10 @@ public class FtpConfig {
 		//			}
 		//		}
 		//		return true;
+	}
+
+	public int[] getMaxUsers() {
+		return max_users;
 	}
 
 	private boolean checkPathPermssion(
@@ -277,6 +281,11 @@ public class FtpConfig {
 						new PatternPathPermission(
 							globComiler.compile(st.nextToken()),
 							makeUsers(st)));
+				}
+				else if (command.equals("max_users")) {
+					max_users = new int[2];
+					max_users[0] = Integer.parseInt(st.nextToken());
+					max_users[1] = Integer.parseInt(st.nextToken());
 				}
 				//msgpath <path> <filename> <flag/=group/-user>
 				else if (command.equals("msgpath")) {

@@ -26,6 +26,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.master.usermanager.UserManager;
+import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
 import net.sf.drftpd.slave.SlaveImpl;
 
@@ -328,5 +329,38 @@ public class ConnectionManager {
 	 */
 	public CommandManagerFactory getCommandManagerFactory() {
 		return _commandManagerFactory;
+	}
+
+	public boolean canLogin(User user) {
+		
+		int maxUsers[] = getConfig().getMaxUsers();
+		int count = maxUsers[0];
+		if ( user.isExempt() )
+			count += maxUsers[1];
+		synchronized(_conns) {
+			if ( _conns.size() <= count )
+				return true;
+			return false;
+		}
+	}
+	// if -1 is returned, user can login
+	public int getLogins(User user) {
+		if ( user.getMaxLogins() == -1 ) return -1;
+		int count = 0;
+		synchronized (_conns) {
+			for ( int x = 0; x < _conns.size(); x++ ) {
+				try {
+					if ( ((BaseFtpConnection) _conns.get(x)).getUser().getUsername().equals(user.getUsername()) ) {
+						count++;
+					}
+				}
+				catch (NoSuchUserException ex) {
+					// do nothing, we found our current connection(which has no user attached to it yet)
+				}
+			}
+		}
+		if ( count < user.getMaxLogins() )
+			return -1;
+		return user.getMaxLogins();
 	}
 }
