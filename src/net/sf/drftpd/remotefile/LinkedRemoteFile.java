@@ -55,7 +55,7 @@ import java.util.StringTokenizer;
  * Represents the file attributes of a remote file.
  *
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.174 2004/11/08 18:39:28 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.175 2004/11/09 04:13:53 zubov Exp $
  */
 public class LinkedRemoteFile implements Serializable, Comparable,
     LinkedRemoteFileInterface {
@@ -1550,13 +1550,17 @@ public class LinkedRemoteFile implements Serializable, Comparable,
                 } else if (light.length() == lrf.length()) {
                     lrf.addSlave(rslave);
                 } else { // light.length() != lrf.length()
-
-                    ArrayList list = new ArrayList();
-                    list.add(rslave);
-                    addFile(new StaticRemoteFile(list,
-                            light.getName() + "." + rslave.getName() +
-                            ".conflict", "drftpd", "drftpd", light.length(),
-                            light.lastModified()));
+                    try {
+                        LinkedRemoteFileInterface conflictFile = getFile(light.getName() + "." + rslave.getName() + ".conflict");
+                        conflictFile.addSlave(rslave);
+                    } catch (FileNotFoundException e) {
+                        ArrayList list = new ArrayList();
+                        list.add(rslave);
+                        addFile(new StaticRemoteFile(list,
+                                light.getName() + "." + rslave.getName() +
+                                ".conflict", "drftpd", "drftpd", light.length(),
+                                light.lastModified()));
+                    }
                 }
             } else {
                 lrf.removeSlave(rslave);
