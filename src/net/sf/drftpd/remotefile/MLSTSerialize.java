@@ -70,9 +70,7 @@ public class MLSTSerialize {
 
 		ret.append("size=" + file.length() + ";");
 		ret.append(
-			"modify="
-				+ timeval.format(new Date(file.lastModified()))
-				+ ";");
+			"modify=" + timeval.format(new Date(file.lastModified())) + ";");
 
 		ret.append("unix.owner=" + file.getUsername() + ";");
 		ret.append("unix.group=" + file.getGroupname() + ";");
@@ -123,9 +121,7 @@ public class MLSTSerialize {
 					file.setIsDirectory("dir".equals(v));
 				} else if ("modify".equals(k)) {
 					try {
-						file.setLastModified(
-							timeval.parse(v).getTime());
-							logger.debug(""+new Date(file.lastModified()));
+						file.setLastModified(timeval.parse(v).getTime());
 					} catch (ParseException e) {
 						throw new CorruptFileListException(e);
 					}
@@ -152,7 +148,7 @@ public class MLSTSerialize {
 						rslaves.add(rslave);
 					}
 					file.setRSlaves(rslaves);
-				} else if("x.xfertime".equals(k)) {
+				} else if ("x.xfertime".equals(k)) {
 					file.setXfertime(Long.parseLong(v));
 				}
 			}
@@ -169,7 +165,8 @@ public class MLSTSerialize {
 		for (String line = in.readLine(); line != null; line = in.readLine()) {
 
 			if (!line.endsWith(":"))
-				throw new CorruptFileListException("expecting path, not " + line);
+				throw new CorruptFileListException(
+					"expecting path, not " + line);
 
 			String path = line.substring(0, line.length() - 1);
 			Object ret[] = root.lookupNonExistingFile(path);
