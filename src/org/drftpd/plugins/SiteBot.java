@@ -347,6 +347,13 @@ public class SiteBot extends FtpListener implements Observer {
             throw new FatalException(e);
         }
 
+        // ANNOUNCE NFO FILE
+        if (direvent.getDirectory().getName().toLowerCase().endsWith(".nfo")) {
+            Ret ret = getPropertyFileSuffix("store.nfo", dir); 
+            fillEnvSection(env, direvent, ret.getSection()); 
+            say(ret.getSection(), SimplePrintf.jprintf(ret.getFormat(), env));
+        } 
+
         SFVFile sfvfile;
 
         try {
@@ -379,10 +386,18 @@ public class SiteBot extends FtpListener implements Observer {
         }
 
         ///// start ///// start ////
-        //check if new racer
         String username = direvent.getUser().getName();
         SFVStatus sfvstatus = sfvfile.getStatus();
-
+        // ANNOUNCE FIRST FILE RCVD 
+        //   and EXPECTING xxxMB in xxx Files on same line.
+        if( sfvstatus.getAvailable() == 1) {
+            Ret ret = getPropertyFileSuffix("store.first", dir);
+            fillEnvSection( env, direvent, ret.getSection(), direvent.getDirectory());
+            env.add("files", Integer.toString(sfvfile.size()));
+            env.add("expectedsize", (Bytes.formatBytes(sfvfile.getTotalBytes() * sfvfile.size())));
+            say(ret.getSection(), SimplePrintf.jprintf(ret.getFormat(), env));
+        }
+        //check if new racer
         if ((sfvfile.size() - sfvstatus.getMissing()) != 1) {
             for (Iterator iter = sfvfile.getFiles().iterator(); iter.hasNext();) {
                 LinkedRemoteFile sfvFileEntry = (LinkedRemoteFile) iter.next();
