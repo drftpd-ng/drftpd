@@ -45,7 +45,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 /**
- * @version $Id: SlaveManagerImpl.java,v 1.59 2004/01/20 16:07:17 zubov Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.60 2004/01/20 21:29:45 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -229,7 +229,7 @@ public class SlaveManagerImpl
 	public static List loadRSlaves() {
 		ArrayList rslaves;
 		try {
-			Document doc = new SAXBuilder().build(new FileReader("slaves.xml"));
+			Document doc = new SAXBuilder().build(new FileReader("conf/slaves.xml"));
 			List children = doc.getRootElement().getChildren("slave");
 			rslaves = new ArrayList(children.size());
 			for (Iterator i = children.iterator(); i.hasNext();) {

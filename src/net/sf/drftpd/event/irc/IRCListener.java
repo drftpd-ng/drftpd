@@ -68,7 +68,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.74 2004/01/20 16:54:31 flowman Exp $
+ * @version $Id: IRCListener.java,v 1.75 2004/01/20 21:29:45 zubov Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -390,10 +390,9 @@ public class IRCListener implements FtpListener, Observer {
 			Ret ret3 = getPropertyFileSuffix("store.complete.group", dir);
 			// already have section from ret.section
 			raceformat = ReplacerFormat.createFormat(ret3._format);
-			
 			say(
 				SimplePrintf.jprintf(
-					FtpConfig.getProperty(_ircCfg, "store.complete.group.header"),
+					getPropertyFileSuffix("store.complete.group.header",dir)._format,
 					env));
 			
 			position = 1;
@@ -401,7 +400,7 @@ public class IRCListener implements FtpListener, Observer {
 				GroupPosition stat = (GroupPosition) iter.next();
 
 				ReplacerEnvironment raceenv =
-					new ReplacerEnvironment(globalEnv);
+					new ReplacerEnvironment(GLOBAL_ENV);
 
 				raceenv.add("group", stat.getGroupname());
 
@@ -411,10 +410,10 @@ public class IRCListener implements FtpListener, Observer {
 				raceenv.add(
 					"percent",
 					Integer.toString(stat.getFiles() * 100 / sfvfile.size())
-						 "%");
+						 + "%");
 				raceenv.add(
 					"speed",
-					Bytes.formatBytes(stat.getXferspeed())  "/s");
+					Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
 				say(SimplePrintf.jprintf(raceformat, raceenv));
 			}			
