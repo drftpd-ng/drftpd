@@ -144,7 +144,7 @@ public class SiteBot extends FtpListener implements Observer {
     private Hashtable<String,SectionSettings> _sections;
     protected String _server;
     protected int _port;
-    private Hashtable<String,User> _identWhoisQueue;
+    private ArrayList<WhoisEntry> _identWhoisList = new ArrayList<WhoisEntry>();
 
 	private String _primaryChannelName;
 
@@ -666,7 +666,9 @@ public class SiteBot extends FtpListener implements Observer {
             		}
             	}
             }
-            _identWhoisQueue.put(nick,event.getUser());
+        	synchronized (_identWhoisList) {
+        		_identWhoisList.add(new WhoisEntry(nick,event.getUser()));
+        	}
             logger.info("Looking up "+ nick + " to set IRCIdent");
             _conn.sendCommand(new WhoisCommand(nick));        	
         } else if ("BINVITE".equals(event.getCommand())) {
@@ -1295,8 +1297,6 @@ public class SiteBot extends FtpListener implements Observer {
         		cc.setAutoJoin(new AutoJoin(_conn, channelName, cc._chanKey));
         	}
         }
-        
-        _identWhoisQueue = new Hashtable<String,User>();
 		
         //maximum announcements for race results
 		try {
@@ -1396,35 +1396,40 @@ public class SiteBot extends FtpListener implements Observer {
     public void unload() {
         disconnect();
     }
+    
+    private class WhoisEntry {
+    	private long _created = System.currentTimeMillis();
+    	private String _nick = null;
+    	private User _user = null;
+    	private WhoisEntry(String nick, User user) {
+    		_nick = nick;
+    		_user = user;
+    	}
+    }
 
     public void update(Observable observer, Object updated) {
     	// add ident for those who use site invite
-		if (updated instanceof WhoisUserReply) {
+    	if (updated instanceof WhoisUserReply) {
 			WhoisUserReply whor = (WhoisUserReply) updated;
 			String reply[] = whor.getParameter(whor.getSourceString(), 0)
 					.split(" ");
 			String nick = reply[3];
 			String fullIdent = reply[3] + "!" + reply[4] + "@" + reply[5];
-
-			for (Iterator i = _identWhoisQueue.keySet().iterator(); i.hasNext();) {
-				String n = (String) i.next();
-				if (n.toLowerCase().equals(nick.toLowerCase())) {
-					User user = (User) _identWhoisQueue.get(n);
-					user.getKeyedMap().setObject(UserManagement.IRCIDENT,
-							fullIdent);
-					try {
-						user.commit();
-						_identWhoisQueue.remove(nick);
-						logger.info("Set IRCIdent to '" + fullIdent + "' for '"
-								+ user.getName() + "'");
-					} catch (UserFileException e) {
-						logger.info("Could not set IRCIdent to '" + fullIdent
-								+ "' for '" + user.getName() + "'", e);
+			synchronized (_identWhoisList) {
+				for (Iterator<WhoisEntry> iter = _identWhoisList.iterator(); iter
+						.hasNext();) {
+					WhoisEntry we = iter.next();
+					if (we._nick.equals(nick)) {
+						we._user.getKeyedMap().setObject(
+								UserManagement.IRCIDENT, fullIdent);
+						iter.remove();
+						continue;
+					}
+					if ((System.currentTimeMillis() - we._created) > 60 * 1000) {
+						iter.remove(); // bad nickname or very slow whois reply
 					}
 				}
 			}
-			// clear the queue to avoid excessive memory usage
-			_identWhoisQueue.clear();
 		} else if ((updated instanceof MessageCommand)) {
 			synchronized (this) {
 				MessageCommand msgc = (MessageCommand) updated;
