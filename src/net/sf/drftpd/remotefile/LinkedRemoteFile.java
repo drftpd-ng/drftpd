@@ -874,13 +874,13 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				// 4 scenarios: new/existing file/directory
 				if (mergefile.isDirectory()) {
 					if (!file.isDirectory())
-						throw new RuntimeException("!!! ERROR: Directory/File conflict: "+this+" from "+rslave.getName());
+						throw new RuntimeException("!!! ERROR: Directory/File conflict: "+mergefile+" and "+file+" from "+rslave.getName());
 					// is a directory -- dive into directory and start merging
 					file.remerge(mergefile, rslave);
 				} else {
 					file.addSlave(rslave);
 					if (file.isDirectory())
-						throw new RuntimeException("!!! ERROR: File/Directory conflict: "+this+" from "+rslave.getName());
+						throw new RuntimeException("!!! ERROR: File/Directory conflict: "+mergefile+" and "+file+" from "+rslave.getName());
 				}
 			} // file != null
 		}
