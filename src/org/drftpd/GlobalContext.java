@@ -215,7 +215,7 @@ public class GlobalContext {
         }
 
         try {
-            _jm = new JobManager(_cm);
+            _jm = new JobManager(_cm,null);
             getSlaveManager().getSlaveSelectionManager().reload();
             _jm.startJobs();
         } catch (IOException e) {

@@ -21,6 +21,7 @@ import org.drftpd.tests.DummyBaseFtpConnection;
 import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyUser;
 import org.drftpd.tests.DummyUserManager;
+import org.drftpd.usermanager.User;
 
 import java.util.ArrayList;
 
@@ -36,7 +37,7 @@ public class UserManagmentTest extends TestCase {
         u.toggleGroup("gadmin");
         um.setUser(u);
 
-        ArrayList allUsers = new ArrayList();
+        ArrayList<User> allUsers = new ArrayList<User>();
         allUsers.add(u);
 
         DummyBaseFtpConnection conn = new DummyBaseFtpConnection(null);

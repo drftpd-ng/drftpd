@@ -63,13 +63,10 @@ public class JobManager implements Runnable {
 	/**
 	 * Keeps track of all jobs and controls them
 	 */
-	public JobManager(ConnectionManager cm) throws IOException {
-		this(cm, null);
-	}
-
 	public JobManager(ConnectionManager cm, Properties p) {
 		_cm = cm;
 		_jobList = new LinkedList<Job>();
+		
 		reload(p);
 	}
 
@@ -216,9 +213,7 @@ public class JobManager implements Runnable {
 			}
 
 			if (destSlave == null) {
-				logger
-						.debug("destSlave is null, all destination slaves are busy"
-								+ job);
+				// all slaves are offline or busy
 				return;
 			}
 
@@ -326,10 +321,13 @@ public class JobManager implements Runnable {
 			try {
 				p.load(new FileInputStream("conf/jobmanager.conf"));
 			} catch (IOException e) {
-				throw new FatalException(e);
+				logger.warn("conf/jobmanager.conf missing, using default values");
+				// defaults
+				_useCRC = true;
+				_sleepSeconds = 10;
+				return;
 			}
 		}
-
 		_useCRC = p.getProperty("useCRC", "true").equals("true");
 		_sleepSeconds = 1000 * Integer.parseInt(PropertyHelper.getProperty(p,
 				"sleepSeconds"));
