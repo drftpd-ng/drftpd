@@ -45,6 +45,8 @@ import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.RemoteIOException;
 
+import se.mog.io.File;
+
 /**
  * Represents the file attributes of a remote file.
  * 
@@ -1294,6 +1296,14 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		}
 
 		LinkedRemoteFile toDir = lookupFile(toDirPath);
+		try {
+			if (toDir.getFile(toName) != null) {
+				throw new FileExistsException(toDirPath + File.separatorChar
+						+ toName + " already exists");
+			}
+		} catch (FileNotFoundException e) {
+			// this is good
+		}
 		// throws FileNotFoundException
 		{
 			LinkedRemoteFile tmpDir = toDir;
