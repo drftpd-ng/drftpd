@@ -59,7 +59,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.105 2004/05/19 17:36:21 zombiewoof64 Exp $
+ * @version $Id: ConnectionManager.java,v 1.106 2004/05/19 19:09:34 zombiewoof64 Exp $
  */
 public class ConnectionManager {
 
@@ -168,29 +168,19 @@ public class ConnectionManager {
 			throw new FatalException(ex);
 		}
 		_timer = new Timer();
-		List rslaves = SlaveManagerImpl.loadRSlaves();
-		GlobRMIServerSocketFactory ssf =
-			new GlobRMIServerSocketFactory(rslaves);
-
-		try {
-			List rslaves1 = rslaves;
-			_root = ConnectionManager.loadMLSTFileDatabase(rslaves1, this);
-		} catch (FileNotFoundException e) {
-			logger.info("files.mlst not found, creating a new filelist", e);
-			_root = new LinkedRemoteFile(getConfig());
-			//saveFilelist();
-		} catch (IOException e) {
-			throw new FatalException(e);
-		}
-
+                
+                
 		/** register slavemanager **/
-		try {
+                try {
                         String smclass = null;
                         try {
                             smclass = FtpConfig.getProperty(cfg, "master.slavemanager");
                         } catch (Exception ex) {}
                         if (smclass == null) smclass = "net.sf.drftpd.master.SlaveManagerImpl";
                         _slaveManager = (SlaveManagerImpl) Class.forName(smclass).newInstance();
+        		List rslaves = _slaveManager.loadSlaves();
+                	GlobRMIServerSocketFactory ssf =
+                        	new GlobRMIServerSocketFactory(rslaves);
                         _slaveManager.init(cfg, rslaves, ssf, this);
 		} catch (Exception e) {
 			logger.log(Level.WARN, "Exception instancing SlaveManager", e);
@@ -198,6 +188,18 @@ public class ConnectionManager {
 				"Cannot create instance of slavemanager, check master.slavemanager in "
 					+ cfgFileName,
 				e);
+		}
+
+
+		try {
+			List rslaves1 = _slaveManager.getSlaveList();
+			_root = ConnectionManager.loadMLSTFileDatabase(rslaves1, this);
+		} catch (FileNotFoundException e) {
+			logger.info("files.mlst not found, creating a new filelist", e);
+			_root = new LinkedRemoteFile(getConfig());
+			//saveFilelist();
+		} catch (IOException e) {
+			throw new FatalException(e);
 		}
 
 		// start socket slave manager

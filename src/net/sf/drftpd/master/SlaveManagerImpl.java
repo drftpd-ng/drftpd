@@ -70,7 +70,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.88 2004/05/19 17:36:22 zombiewoof64 Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.89 2004/05/19 19:09:35 zombiewoof64 Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -81,48 +81,54 @@ public class SlaveManagerImpl
 	/**
 	 * Checksums call us with null BaseFtpConnection.
 	 */
-	public static RemoteSlave getASlave(
-		Collection slaves,
-		char direction,
-		FtpConfig config,
-		BaseFtpConnection conn,
-		LinkedRemoteFileInterface file)
-		throws NoAvailableSlaveException {
-		return config.getSlaveManager().getSlaveSelectionManager().getASlave(
-			slaves,
-			direction,
-			conn,
-			file);
-	}
+//	public static RemoteSlave getASlave(
+//		Collection slaves,
+//		char direction,
+//		FtpConfig config,
+//		BaseFtpConnection conn,
+//		LinkedRemoteFileInterface file)
+//		throws NoAvailableSlaveException {
+//		return config.getSlaveManager().getSlaveSelectionManager().getASlave(
+//			slaves,
+//			direction,
+//			conn,
+//			file);
+//	}
 
-	public static Collection getAvailableSlaves(Collection slaves)
-		throws NoAvailableSlaveException {
-		ArrayList availableSlaves = new ArrayList();
-		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
-			RemoteSlave rslave = (RemoteSlave) iter.next();
-			if (!rslave.isAvailable())
-				continue;
-			availableSlaves.add(rslave);
-		}
-		if (availableSlaves.isEmpty()) {
-			throw new NoAvailableSlaveException("No slaves online");
-		}
-		return availableSlaves;
-	}
+//	public static Collection getAvailableSlaves()
+//		throws NoAvailableSlaveException {
+//		ArrayList availableSlaves = new ArrayList();
+//		for (Iterator iter = _rslaves.iterator(); iter.hasNext();) {
+//			RemoteSlave rslave = (RemoteSlave) iter.next();
+//			if (!rslave.isAvailable())
+//				continue;
+//			availableSlaves.add(rslave);
+//		}
+//		if (availableSlaves.isEmpty()) {
+//			throw new NoAvailableSlaveException("No slaves online");
+//		}
+//		return availableSlaves;
+//	}
 
-	public static RemoteSlave loadRSlave(Element slaveElement) {
+//	public static RemoteSlave loadRSlave(Element slaveElement) {
 //		List masks = new ArrayList();
 //		List maskElements = slaveElement.getChildren("mask");
 //		for (Iterator i2 = maskElements.iterator(); i2.hasNext();) {
 //			masks.add(((Element) i2.next()).getText());
 //		}
-		return new RemoteSlave(slaveElement);
+//		return new RemoteSlave(slaveElement);
 //			slaveElement.getChildText("name").toString(),
 //			masks,
 //			slaveElement);
-	}
+//	}
 
-	public static List loadRSlaves() {
+        public static List loadRSlaves()
+        {
+            if (_self == null) return null;
+            return _self.loadSlaves();
+        }
+        
+	public List loadSlaves() {
 		ArrayList rslaves;
 		try {
 			Document doc =
@@ -143,6 +149,11 @@ public class SlaveManagerImpl
 	}
 
 	public static Collection rslavesToMasks(Collection rslaves) {
+            if (_self != null) return _self.getMasks(rslaves);
+            return null;
+        }
+        
+	public Collection getMasks(Collection rslaves) {
 		ArrayList masks = new ArrayList();
 		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
 			RemoteSlave rslave2 = (RemoteSlave) iter.next();
@@ -154,28 +165,27 @@ public class SlaveManagerImpl
 	/**
 	 * @deprecated
 	 */
-	public static void saveFilesXML(Element root) {
-		File filesDotXml = new File("files.xml");
-		File filesxmlbak = new File("files.xml.bak");
-		filesxmlbak.delete();
-		filesDotXml.renameTo(filesxmlbak);
-		try {
-			FileWriter out = new FileWriter(filesDotXml);
-			new XMLOutputter("  ", true).output(root, out);
-			out.flush();
-		} catch (IOException ex) {
-			logger.log(
-				Level.WARN,
-				"Error saving to " + filesDotXml.getPath(),
-				ex);
-		}
-	}
-	public static void setRSlavesManager(
-		Collection rslaves,
-		SlaveManagerImpl manager) {
-		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
+//	public static void saveFilesXML(Element root) {
+//		File filesDotXml = new File("files.xml");
+//		File filesxmlbak = new File("files.xml.bak");
+//		filesxmlbak.delete();
+//		filesDotXml.renameTo(filesxmlbak);
+//		try {
+//			FileWriter out = new FileWriter(filesDotXml);
+//			new XMLOutputter("  ", true).output(root, out);
+//			out.flush();
+//		} catch (IOException ex) {
+//			logger.log(
+//				Level.WARN,
+//				"Error saving to " + filesDotXml.getPath(),
+//				ex);
+//		}
+//	}
+        
+	public void setRSlavesManager() {
+		for (Iterator iter = _rslaves.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
-			rslave.setManager(manager);
+			rslave.setManager(this);
 		}
 	}
 
@@ -186,7 +196,11 @@ public class SlaveManagerImpl
         protected RMIClientSocketFactory _csf;
         
 	private SlaveSelectionManagerInterface _slaveSelectionManager;
+        
+        private static SlaveManagerImpl _self = null;
+        
 	protected SlaveManagerImpl() throws RemoteException {
+            _self = this;
 	}
         
 	public void init(
@@ -199,12 +213,9 @@ public class SlaveManagerImpl
 		_csf = RMISocketFactory.getSocketFactory();
                 _ssf = ssf;
 		_cm = cm;
-
-		// sure would be nice if we could do this in or before the super() call,
-		// but we can't reference ''this?? from there.
-		setRSlavesManager(rslaves, this);
-
 		_rslaves = rslaves;
+
+                setRSlavesManager();
 
 		Registry registry =
 			LocateRegistry.createRegistry(
@@ -420,16 +431,28 @@ public class SlaveManagerImpl
 		BaseFtpConnection conn,
 		LinkedRemoteFileInterface file)
 		throws NoAvailableSlaveException {
-		return getASlave(
+		return _slaveSelectionManager.getASlave(
 			getSlaves(),
 			direction,
-			getConnectionManager().getConfig(),
 			conn,
 			file);
 	}
 
-	public Collection getAvailableSlaves() throws NoAvailableSlaveException {
-		return getAvailableSlaves(getSlaves());
+	public Collection getAvailableSlaves() throws NoAvailableSlaveException 
+               {
+               
+                ArrayList availableSlaves = new ArrayList();
+		for (Iterator iter = _rslaves.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
+			if (!rslave.isAvailable())
+				continue;
+			availableSlaves.add(rslave);
+		}
+		if (availableSlaves.isEmpty()) {
+			throw new NoAvailableSlaveException("No slaves online");
+		}
+		return availableSlaves;
+		//return getAvailableSlaves(getSlaves());
 	}
 	
         public ConnectionManager getConnectionManager() {
