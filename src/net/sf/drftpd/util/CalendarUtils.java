@@ -4,7 +4,7 @@ import java.util.Calendar;
 
 /**
  * @author mog
- * @version $Id: CalendarUtils.java,v 1.3 2003/12/07 22:31:46 mog Exp $
+ * @version $Id: CalendarUtils.java,v 1.4 2004/01/08 05:37:47 mog Exp $
  */
 public class CalendarUtils {
 	private CalendarUtils() {
@@ -61,5 +61,10 @@ public class CalendarUtils {
 	}
 	public static void incrementDay(Calendar cal) {
 		cal.add(Calendar.DAY_OF_MONTH, 1);
+	}
+	public static int getLastDayOfWeek(Calendar cal) {
+		int dow = cal.getFirstDayOfWeek()-1;
+		if(dow == 0) dow = Calendar.SATURDAY;
+		return dow;
 	}
 }

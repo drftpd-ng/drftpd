@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.12 2004/01/08 03:14:48 mog Exp $
+ * @version $Id: Trial.java,v 1.13 2004/01/08 05:37:46 mog Exp $
  */
 public class Trial implements FtpListener {
 	private static final short ACTION_DISABLE = 0;
@@ -97,19 +97,27 @@ public class Trial implements FtpListener {
 	}
 	public static Calendar getCalendarForEndOfPeriod(int period) {
 		Calendar cal = Calendar.getInstance();
-		switch(period) {
-			case PERIOD_DAILY:
-			break;
-			case PERIOD_WEEKLY:
-			CalendarUtils.floorDayOfWeek(cal);
-			break;
-			case PERIOD_MONTHLY:
-			CalendarUtils.floorDayOfMonth(cal);
-			break;
-			default:
-			throw new IllegalArgumentException(""+period);
+		CalendarUtils.ceilAllLessThanDay(cal);
+		switch (period) {
+			case PERIOD_DAILY :
+				break;
+			case PERIOD_WEEKLY :
+				//TODO i'm really tired, is the week really ending up right?
+				int dow = CalendarUtils.getLastDayOfWeek(cal);
+				if (dow < cal.get(Calendar.DAY_OF_WEEK)) {
+					cal.add(Calendar.WEEK_OF_YEAR, 1);
+				}
+				cal.set(Calendar.DAY_OF_WEEK, dow);
+				return cal;
+			case PERIOD_MONTHLY :
+				cal.set(
+					Calendar.DAY_OF_MONTH,
+					cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+				return cal;
+			default :
+				throw new IllegalArgumentException("" + period);
 		}
-		moveCalendarToEndOfPeriod(cal, period);
+		//moveCalendarToEndOfPeriod(cal, period);
 		return cal;
 	}
 	public static String getPeriodName(int s) {
