@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: PassiveConnection.java,v 1.8 2004/01/13 20:30:55 mog Exp $
+ * @version $Id: PassiveConnection.java,v 1.9 2004/02/03 20:12:50 mog Exp $
  */
 public class PassiveConnection extends Connection {
 	private PortRange _portRange;
@@ -41,6 +41,7 @@ public class PassiveConnection extends Connection {
 		} else {
 			server.bind(bindAddr, 1);
 		}
+		server.setSoTimeout(TIMEOUT);
 	}
 
 	public Socket connect() throws IOException {
