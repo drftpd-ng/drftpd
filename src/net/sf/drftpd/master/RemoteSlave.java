@@ -76,7 +76,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  * @author zubov
- * @version $Id: RemoteSlave.java,v 1.68 2004/11/08 00:38:19 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.69 2004/11/08 00:51:52 zubov Exp $
  */
 public class RemoteSlave implements Runnable, Comparable, Serializable {
     private static final long serialVersionUID = -6973935289361817125L;
@@ -588,7 +588,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     public synchronized AsyncResponse fetchResponse(String index, int wait)
             throws SlaveUnavailableException, IOException {
         long total = System.currentTimeMillis();
-        while (isOnline() && _indexWithCommands.containsKey(index)) {
+        while (isOnline() && !_indexWithCommands.containsKey(index)) {
             try {
                 wait(1000);
                 // will wait a maximum of 1000 milliseconds before waking up
@@ -610,8 +610,9 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
             if (t instanceof IOException) {
                 throw (IOException) t;
             }
-            logger.error("Exception in AsyncResponse", t);
-            setOffline("Exception in AsyncResponse");
+            logger.error("Exception on slave that is unable to be handled by the master", t);
+            setOffline("Exception on slave that is unable to be handled by the master");
+            throw new SlaveUnavailableException("Exception on slave that is unable to be handled by the master");
         }
         return rar;
     }
@@ -805,7 +806,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
                         }
                     } else {
                         _indexWithCommands.put(ar.getIndex(), ar);
-                        _indexWithCommands.notifyAll();
+                        notifyAll();
                     }
                 }
             }
