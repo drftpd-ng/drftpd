@@ -13,6 +13,7 @@
   to users/jsx/ and users/xstream/ respectively.
 * Added org.drftpd.usermanager.ResetMonthlyStats for resetting monthly stats
   and dispatching events to any plugins (such as Trial)
+* Changed filelist (LinkedRemoteFile) to be case insensitive.
 
 2004/05/31 Morgan Christiansson <drftpd@mog.se>
 * Users hostmask wasn't checked when user wasn't running an

@@ -59,7 +59,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.88 2004/06/01 15:40:27 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.89 2004/06/02 03:04:47 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -380,6 +380,7 @@ public class BaseFtpConnection implements Runnable {
 
 				request = new FtpRequest(commandLine);
 
+				if(!request.getCommand().equals("PASS"))
 				debuglogger.debug(
 					"<< "
 						+ request.getCommandLine()

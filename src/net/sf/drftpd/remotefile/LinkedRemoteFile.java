@@ -52,10 +52,39 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.144 2004/05/31 02:47:19 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.145 2004/06/02 03:04:48 mog Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
+	public static class CaseInsensitiveHashtable extends Hashtable {
+
+		public CaseInsensitiveHashtable() {
+			super();
+		}
+
+		public CaseInsensitiveHashtable(int initialCapacity) {
+			super(initialCapacity);
+		}
+
+		public CaseInsensitiveHashtable(
+			int initialCapacity,
+			float loadFactor) {
+			super(initialCapacity, loadFactor);
+		}
+
+		public CaseInsensitiveHashtable(Map t) {
+			super(t);
+		}
+
+		public synchronized Object get(Object key) {
+			return super.get(((String)key).toLowerCase());
+		}
+
+		public synchronized Object put(Object key, Object value) {
+			return super.put(((String)key).toLowerCase(), value);
+		}
+
+	}
 	public static class NonExistingFile {
 		private LinkedRemoteFile _file;
 		private String _path;
@@ -177,7 +206,7 @@ public class LinkedRemoteFile
 	}
 	private long _checkSum;
 
-	private Map _files;
+	private CaseInsensitiveHashtable _files;
 	private transient FtpConfig _ftpConfig;
 	private String _group;
 	//private Random rand = new Random();
@@ -210,7 +239,7 @@ public class LinkedRemoteFile
 		_length = 0;
 		_parent = null;
 		_name = "";
-		_files = Collections.synchronizedMap(new Hashtable());
+		_files = new CaseInsensitiveHashtable();
 		_slaves = Collections.synchronizedList(new ArrayList(1));
 	}
 
@@ -282,8 +311,7 @@ public class LinkedRemoteFile
 			//				throw new FatalException(
 			//					"Constructor called with empty dir: " + file);
 			_files =
-				Collections.synchronizedMap(
-					new Hashtable(file.getFiles().size()));
+					new CaseInsensitiveHashtable(file.getFiles().size());
 			Stack dirstack = new Stack();
 			//for (int i = 0; i < dir.length; i++) {
 			for (Iterator iter = file.getFiles().iterator(); iter.hasNext();) {
@@ -347,7 +375,8 @@ public class LinkedRemoteFile
 	public void addSlave(RemoteSlave slave) {
 		if (_slaves == null) //isDirectory()
 			throw new IllegalStateException("Cannot addSlave() on a directory");
-		if( slave == null) throw new NullPointerException();
+		if (slave == null)
+			throw new NullPointerException();
 
 		// we get lots of duplicate adds when merging and the slave is already
 		// in the file database
@@ -439,7 +468,8 @@ public class LinkedRemoteFile
 			try {
 				if (dirSize() == 0) { //remove empty dir
 					Object ret = getParentFile().getMap().remove(getName());
-					if( ret == null) throw new NullPointerException();
+					if (ret == null)
+						throw new NullPointerException();
 				}
 			} catch (FileNotFoundException ex) {
 				logger.log(
@@ -682,7 +712,7 @@ public class LinkedRemoteFile
 			if (file.isDeleted())
 				iter.remove();
 		}
-		return ret;
+		return Collections.unmodifiableMap(ret);
 	}
 
 	public String getGroupname() {
@@ -889,7 +919,8 @@ public class LinkedRemoteFile
 			return true;
 		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
-			if(rslave == null) throw new RuntimeException();
+			if (rslave == null)
+				throw new RuntimeException();
 			if (rslave.isAvailable())
 				return true;
 		}

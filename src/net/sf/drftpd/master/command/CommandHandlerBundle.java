@@ -17,12 +17,13 @@
  */
 package net.sf.drftpd.master.command;
 
+import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 
 /**
  * @author mog
- * @version $Id: CommandHandlerBundle.java,v 1.1 2004/06/01 15:40:29 mog Exp $
+ * @version $Id: CommandHandlerBundle.java,v 1.2 2004/06/02 03:04:47 mog Exp $
  * @deprecated
  */
-public interface CommandHandlerBundle extends CommandHandlerFactory, org.drftpd.commands.CommandHandler  {
+public interface CommandHandlerBundle extends CommandHandlerFactory, CommandHandler  {
 }
