@@ -234,6 +234,7 @@
     	<include name="text/**"/>
     	<include name="docs/*"/>
 	<include name="bin/xstream2beans.sh"/>
+	<include name="bin/jsx2beans.sh"/>
 	<include name="bin/InstallMaster.bat"/>
 	<include name="bin/UnInstallMaster.bat"/>
 	<include name="bin/InstallSlave.bat"/>
