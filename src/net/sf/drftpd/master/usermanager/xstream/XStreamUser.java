@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import net.sf.drftpd.master.usermanager.AbstractUser;
 import net.sf.drftpd.master.usermanager.PlainTextPasswordUser;
 import net.sf.drftpd.master.usermanager.UnixPassword;
-import net.sf.drftpd.master.usermanager.UserExistsException;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.util.Crypt;
 import net.sf.drftpd.util.SafeFileWriter;
@@ -31,7 +30,7 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 /**
  * @author mog
- * @version $Id: XStreamUser.java,v 1.6 2004/07/06 00:55:34 zubov Exp $
+ * @version $Id: XStreamUser.java,v 1.7 2004/07/07 17:29:53 zubov Exp $
  */
 public class XStreamUser extends AbstractUser
 		implements
@@ -41,8 +40,6 @@ public class XStreamUser extends AbstractUser
 	private String unixPassword;
 	public XStreamUser(XStreamUserManager usermanager, String username) {
 		super(username,usermanager);
-		created = System.currentTimeMillis();
-		this._usermanager = usermanager;
 	}
 	public boolean checkPassword(String password) {
 		if (this.password == null) {

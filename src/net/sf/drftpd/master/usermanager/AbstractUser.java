@@ -20,6 +20,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMask;
@@ -27,6 +28,7 @@ import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.event.listeners.Trial;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.util.CalendarUtils;
+
 import org.apache.log4j.Logger;
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
@@ -37,7 +39,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  * 
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya </a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.47 2004/07/06 00:55:33 zubov Exp $
+ * @version $Id: AbstractUser.java,v 1.48 2004/07/07 17:29:39 zubov Exp $
  */
 public abstract class AbstractUser implements User {
 	private static final Logger logger = Logger.getLogger(AbstractUser.class);
@@ -104,6 +106,7 @@ public abstract class AbstractUser implements User {
 	public AbstractUser(String username, UserManager usermanager) {
 		this.username = username;
 		_usermanager = usermanager;
+		created = System.currentTimeMillis();
 	}
 	public void addIPMask(String mask) throws DuplicateElementException {
 		if (ipMasks.contains(mask))

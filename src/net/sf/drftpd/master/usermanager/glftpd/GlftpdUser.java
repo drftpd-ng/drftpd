@@ -28,7 +28,7 @@ import net.sf.drftpd.util.Crypt;
 /**
  * @author mog
  * @author zubov
- * @version $Id: GlftpdUser.java,v 1.10 2004/07/01 16:07:50 zubov Exp $
+ * @version $Id: GlftpdUser.java,v 1.11 2004/07/07 17:29:40 zubov Exp $
  */
 public class GlftpdUser extends AbstractUser implements UnixPassword {
 	private String password;
@@ -40,9 +40,8 @@ public class GlftpdUser extends AbstractUser implements UnixPassword {
 	/**
 	 * Constructor for GlftpdUser.
 	 */
-	public GlftpdUser(String username) {
-		super(username);
-		//this.usermanager = usermanager;
+	public GlftpdUser(GlftpdUserManager usermanager, String username) {
+		super(username,usermanager);
 	}
 	public void addPrivateGroup(String group)
 		throws DuplicateElementException {

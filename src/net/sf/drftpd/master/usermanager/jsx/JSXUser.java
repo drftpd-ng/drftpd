@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 import JSX.ObjOut;
 /**
  * @author mog
- * @version $Id: JSXUser.java,v 1.15 2004/07/06 00:55:34 zubov Exp $
+ * @version $Id: JSXUser.java,v 1.16 2004/07/07 17:29:53 zubov Exp $
  */
 public class JSXUser extends AbstractUser
 		implements
@@ -40,7 +40,6 @@ public class JSXUser extends AbstractUser
 	private String unixPassword;
 	public JSXUser(JSXUserManager usermanager, String username) {
 		super(username,usermanager);
-		created = System.currentTimeMillis();
 	}
 	public boolean checkPassword(String password) {
 		if (this.password == null) {
