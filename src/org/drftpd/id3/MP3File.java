@@ -26,7 +26,7 @@ import java.io.RandomAccessFile;
 
 /**
  * @author Teflon-
- *
+ * @version $Id$
  */
 public class MP3File extends RandomAccessFile {
     final static long TAGLENGTH = 128;

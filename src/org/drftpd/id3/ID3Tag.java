@@ -22,7 +22,7 @@ import java.io.Serializable;
 
 /**
  * @author Teflon
- *
+ * @version $Id$
  */
 public class ID3Tag implements Serializable {
     String artist = "";

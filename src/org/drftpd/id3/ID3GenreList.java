@@ -1,17 +1,28 @@
 /*
- * Created on Aug 4, 2004
+ * This file is part of DrFTPD, Distributed FTP Daemon.
  *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * DrFTPD is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * DrFTPD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with DrFTPD; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.drftpd.id3;
+
+import org.apache.log4j.Logger;
 
 
 /**
  * @author Jamal
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id$
  */
 public class ID3GenreList {
     public static final String[] genres = {
@@ -40,16 +51,18 @@ public class ID3GenreList {
             "Rhytmic Soul", "Freestyle", "Duet", "Punk Rock", "Drum Solo",
             "Acapella", "Euro-House", "Dance Hall", "unknown"
         };
+	private static final Logger logger = Logger.getLogger(ID3GenreList.class);
 
     /** Returns the Genre for given number
      *        @return Genre as String
      */
     public static String getGenre(int number) {
-        if (number < 0) {
-            return "";
+        try {
+        	return genres[number];
+        } catch(ArrayIndexOutOfBoundsException e) {
+        	logger.warn("Unknown genre number: "+number);
+        	return "";
         }
-
-        return genres[number];
     }
 
     /** Checks, if the given genre is a valid one
