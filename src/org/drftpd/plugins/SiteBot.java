@@ -62,6 +62,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.drftpd.commands.TransferStatistics;
+import org.drftpd.commands.UserManagment;
 
 import org.drftpd.sections.SectionInterface;
 
@@ -99,7 +100,7 @@ import java.util.ResourceBundle;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.24 2004/11/05 13:27:22 mog Exp $
+ * @version $Id: SiteBot.java,v 1.25 2004/11/06 07:55:34 mog Exp $
  */
 public class SiteBot implements FtpListener, Observer {
     public static final ReplacerEnvironment GLOBAL_ENV = new ReplacerEnvironment();
@@ -659,7 +660,7 @@ public class SiteBot implements FtpListener, Observer {
                 raceenv.add("size", Bytes.formatBytes(stat.getAmount()));
 
                 long nukedamount = Nuke.calculateNukedAmount(stat.getAmount(),
-                        raceuser.getRatio(), event.getMultiplier());
+                        raceuser.getObjectFloat(UserManagment.RATIO), event.getMultiplier());
                 raceenv.add("nukedamount", Bytes.formatBytes(nukedamount));
                 say(section, SimplePrintf.jprintf(raceformat, raceenv));
             }

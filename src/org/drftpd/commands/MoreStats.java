@@ -50,7 +50,7 @@ import java.util.Iterator;
 
 /*
  * @author iamn
- * @version $Id: MoreStats.java,v 1.6 2004/11/05 13:27:21 mog Exp $
+ * @version $Id: MoreStats.java,v 1.7 2004/11/06 07:55:34 mog Exp $
  */
 public class MoreStats implements CommandHandlerFactory, CommandHandler {
     public static final int PERIOD_DAILY = Calendar.DAY_OF_MONTH; // = 5
@@ -160,9 +160,9 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
         String updn = command.substring(command.length() - 2);
 
         if (updn.equals("UP")) {
-            return user.getUploadedMillisecondsForTrialPeriod(period);
+            return user.getUploadedTimeForTrialPeriod(period);
         } else if (updn.equals("DN")) {
-            return user.getDownloadedMilliSecondsForTrialPeriod(period);
+            return user.getDownloadedTimeForTrialPeriod(period);
         }
 
         throw new RuntimeException(UnhandledCommandException.create(
@@ -275,7 +275,7 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
     }
 
     public static String getUpRate(User user, int period) {
-        double s = user.getUploadedMillisecondsForTrialPeriod(period) / (double) 1000.0;
+        double s = user.getUploadedTimeForTrialPeriod(period) / (double) 1000.0;
 
         if (s <= 0) {
             return "- k/s";
@@ -287,7 +287,7 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
     }
 
     public static String getDownRate(User user, int period) {
-        double s = user.getDownloadedMilliSecondsForTrialPeriod(period) / (double) 1000.0;
+        double s = user.getDownloadedTimeForTrialPeriod(period) / (double) 1000.0;
 
         if (s <= 0) {
             return "- k/s";
@@ -384,15 +384,15 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
             MonthDn += user.getDownloadedBytesMonth();
             TotalDn += user.getDownloadedBytes();
 
-            MonthUpAvrage += user.getUploadedMillisecondsForTrialPeriod(PERIOD_MONTHLY);
-            WeekUpAvrage += user.getUploadedMillisecondsForTrialPeriod(PERIOD_WEEKLY);
-            DayUpAvrage += user.getUploadedMillisecondsForTrialPeriod(PERIOD_DAILY);
-            TotalUpAvrage += user.getUploadedMilliseconds();
+            MonthUpAvrage += user.getUploadedTimeForTrialPeriod(PERIOD_MONTHLY);
+            WeekUpAvrage += user.getUploadedTimeForTrialPeriod(PERIOD_WEEKLY);
+            DayUpAvrage += user.getUploadedTimeForTrialPeriod(PERIOD_DAILY);
+            TotalUpAvrage += user.getUploadedTime();
 
-            MonthDnAvrage += user.getDownloadedMilliSecondsForTrialPeriod(PERIOD_MONTHLY);
-            WeekDnAvrage += user.getDownloadedMilliSecondsForTrialPeriod(PERIOD_WEEKLY);
-            DayDnAvrage += user.getDownloadedMilliSecondsForTrialPeriod(PERIOD_DAILY);
-            TotalDnAvrage += user.getDownloadedMilliseconds();
+            MonthDnAvrage += user.getDownloadedTimeForTrialPeriod(PERIOD_MONTHLY);
+            WeekDnAvrage += user.getDownloadedTimeForTrialPeriod(PERIOD_WEEKLY);
+            DayDnAvrage += user.getDownloadedTimeForTrialPeriod(PERIOD_DAILY);
+            TotalDnAvrage += user.getDownloadedTime();
         }
 
         try {

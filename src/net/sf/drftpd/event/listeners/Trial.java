@@ -29,6 +29,7 @@ import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.commands.UserManagment;
 import org.drftpd.plugins.SiteBot;
 
 import org.drftpd.usermanager.User;
@@ -47,7 +48,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.30 2004/11/03 16:46:38 mog Exp $
+ * @version $Id: Trial.java,v 1.31 2004/11/06 07:55:29 mog Exp $
  */
 public class Trial implements FtpListener {
     private static final Logger logger = Logger.getLogger(Trial.class);
@@ -102,7 +103,7 @@ public class Trial implements FtpListener {
 
     public static Calendar getCalendarForEndOfBonus(User user, int period) {
         Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(user.getCreated());
+        cal.setTimeInMillis(user.getObjectLong(UserManagment.CREATED));
         moveCalendarToEndOfPeriod(cal, period);
 
         return cal;
@@ -113,7 +114,7 @@ public class Trial implements FtpListener {
      */
     public static Calendar getCalendarForEndOfFirstPeriod(User user, int period) {
         Calendar cal = Calendar.getInstance();
-        cal.setTime(new Date(user.getCreated()));
+        cal.setTime(new Date(user.getObjectLong(UserManagment.CREATED)));
         CalendarUtils.ceilAllLessThanDay(cal);
 
         switch (period) {

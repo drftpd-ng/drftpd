@@ -35,6 +35,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
+import org.drftpd.commands.UserManagment;
 
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.Key;
@@ -64,7 +65,7 @@ import java.util.StringTokenizer;
  * amount -> amount before multiplier
  *
  * @author mog
- * @version $Id: Nuke.java,v 1.25 2004/11/05 13:27:19 mog Exp $
+ * @version $Id: Nuke.java,v 1.26 2004/11/06 07:55:30 mog Exp $
  */
 public class Nuke implements CommandHandlerFactory, CommandHandler {
     public static final Key NUKED = new Key(Nuke.class, "nuked", Integer.class);
@@ -271,7 +272,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
 
             long size = ((Long) nukees2.get(nukee)).longValue();
 
-            long debt = calculateNukedAmount(size, nukee.getRatio(), multiplier);
+            long debt = calculateNukedAmount(size, nukee.getObjectFloat(UserManagment.RATIO), multiplier);
 
             nukedAmount += debt;
             nukeDirSize += size;
@@ -410,7 +411,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
             }
 
             long nukedAmount = calculateNukedAmount(nukeeObj.getAmount(),
-                    nukee.getRatio(), nuke.getMultiplier());
+                    nukee.getObjectFloat(UserManagment.RATIO), nuke.getMultiplier());
 
             nukee.updateCredits(nukedAmount);
             nukee.updateUploadedBytes(nukeeObj.getAmount());

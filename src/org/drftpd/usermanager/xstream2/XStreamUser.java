@@ -28,6 +28,7 @@ import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.PlainTextPasswordUser;
 import org.drftpd.usermanager.UnixPassword;
 import org.drftpd.usermanager.UserFileException;
+import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserManager;
 
 import java.io.File;
@@ -36,11 +37,11 @@ import java.io.IOException;
 
 /**
  * @author mog
- * @version $Id: XStreamUser.java,v 1.1 2004/11/05 14:07:23 mog Exp $
+ * @version $Id: XStreamUser.java,v 1.2 2004/11/06 07:55:36 mog Exp $
  */
 public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
     UnixPassword {
-    private transient UserManager _userManager;
+    private transient AbstractUserManager _userManager;
     private String _password;
     private String _unixPassword;
     private boolean _purged = false;
@@ -136,11 +137,18 @@ public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
         // AbstractUser
     }
 
-    void setUserManager(UserManager um) {
+    void setUserManager(AbstractUserManager um) {
         _userManager = um;
     }
 
     public UserManager getUserManager() {
         return _userManager;
     }
+
+	/* (non-Javadoc)
+	 * @see org.drftpd.usermanager.AbstractUser#getAbstractUserManager()
+	 */
+	public AbstractUserManager getAbstractUserManager() {
+		return _userManager;
+	}
 }

@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-import org.drftpd.usermanager.UserManager;
+import org.drftpd.usermanager.AbstractUserManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -39,143 +39,136 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-
 /**
  * @author mog
- * @version $Id: XStreamUserManager.java,v 1.1 2004/11/05 14:07:23 mog Exp $
+ * @version $Id: XStreamUserManager.java,v 1.2 2004/11/06 07:55:36 mog Exp $
  */
-public class XStreamUserManager extends UserManager {
-    private static final Logger logger = Logger.getLogger(XStreamUserManager.class.getName());
-    String _userpath = "users/xstream2/";
-    File _userpathFile = new File(_userpath);
+public class XStreamUserManager extends AbstractUserManager {
+	private static final Logger logger = Logger
+			.getLogger(XStreamUserManager.class.getName());
 
-    public XStreamUserManager() throws UserFileException {
-        if (!_userpathFile.exists() && !_userpathFile.mkdirs()) {
-            throw new UserFileException(new IOException(
-                    "Error creating folders: " + _userpathFile));
-        }
+	String _userpath = "users/xstream2/";
 
-        String[] userfilenames = _userpathFile.list();
-        int numUsers = 0;
+	File _userpathFile = new File(_userpath);
 
-        for (int i = 0; i < userfilenames.length; i++) {
-            String string = userfilenames[i];
+	public XStreamUserManager() throws UserFileException {
+		this(true);
+	}
 
-            if (string.endsWith(".xml")) {
-                numUsers++;
-            }
-        }
+	public XStreamUserManager(boolean createIfNoUser) throws UserFileException {
+		if (!_userpathFile.exists() && !_userpathFile.mkdirs()) {
+			throw new UserFileException(new IOException(
+					"Error creating folders: " + _userpathFile));
+		}
 
-        if (numUsers == 0) {
-            User user = createUser("drftpd");
-            user.setGroup("drftpd");
-            user.setPassword("drftpd");
+		if (!createIfNoUser) {
+			String[] userfilenames = _userpathFile.list();
+			boolean hasUsers = false;
 
-            try {
-                user.addIPMask("*@127.0.0.1");
-                user.addIPMask("*@0:0:0:0:0:0:0:1");
-            } catch (DuplicateElementException e) {
-            }
+			for (int i = 0; i < userfilenames.length; i++) {
+				String string = userfilenames[i];
 
-            try {
-                user.addSecondaryGroup("siteop");
-            } catch (DuplicateElementException e1) {
-            }
+				if (string.endsWith(".xml")) {
+					hasUsers = true;
+					break;
+				}
+			}
 
-            user.commit();
-        }
-    }
+			if (!hasUsers)
+				createSiteopUser();
+		}
+	}
 
-    public User createUser(String username) {
-        XStreamUser user = new XStreamUser(this, username);
+	public User createUser(String username) {
+		XStreamUser user = new XStreamUser(this, username);
 
-        return user;
-    }
+		return user;
+	}
 
-    public void delete(String username) {
-        getUserFile(username).delete();
-    }
+	public void delete(String username) {
+		getUserFile(username).delete();
+	}
 
-    public Collection getAllUsers() throws UserFileException {
-        ArrayList users = new ArrayList();
-        String[] userpaths = _userpathFile.list();
+	public Collection getAllUsers() throws UserFileException {
+		ArrayList users = new ArrayList();
+		String[] userpaths = _userpathFile.list();
 
-        for (int i = 0; i < userpaths.length; i++) {
-            String userpath = userpaths[i];
+		for (int i = 0; i < userpaths.length; i++) {
+			String userpath = userpaths[i];
 
-            if (!userpath.endsWith(".xml")) {
-                continue;
-            }
+			if (!userpath.endsWith(".xml")) {
+				continue;
+			}
 
-            String username = userpath.substring(0,
-                    userpath.length() - ".xml".length());
+			String username = userpath.substring(0, userpath.length()
+					- ".xml".length());
 
-            try {
-                users.add((XStreamUser) getUserByNameUnchecked(username));
+			try {
+				users.add((XStreamUser) getUserByNameUnchecked(username));
 
-                // throws IOException
-            } catch (NoSuchUserException e) {
-            } // continue
-        }
+				// throws IOException
+			} catch (NoSuchUserException e) {
+			} // continue
+		}
 
-        return users;
-    }
+		return users;
+	}
 
-    public User getUserByNameUnchecked(String username)
-        throws NoSuchUserException, UserFileException {
-        try {
-            XStreamUser user = (XStreamUser) _users.get(username);
+	public User getUserByNameUnchecked(String username)
+			throws NoSuchUserException, UserFileException {
+		try {
+			XStreamUser user = (XStreamUser) _users.get(username);
 
-            if (user != null) {
-                return user;
-            }
+			if (user != null) {
+				return user;
+			}
 
-            XStream inp = new XStream(new DomDriver());
-            FileReader in;
+			XStream inp = new XStream(new DomDriver());
+			FileReader in;
 
-            try {
-                in = new FileReader(getUserFile(username));
-            } catch (FileNotFoundException ex) {
-                throw new NoSuchUserException("No such user");
-            }
+			try {
+				in = new FileReader(getUserFile(username));
+			} catch (FileNotFoundException ex) {
+				throw new NoSuchUserException("No such user");
+			}
 
-            try {
-                user = (XStreamUser) inp.fromXML(in);
+			try {
+				user = (XStreamUser) inp.fromXML(in);
 
-                //throws RuntimeException
-                user.setUserManager(this);
-                _users.put(user.getUsername(), user);
-                user.reset(_connManager);
+				//throws RuntimeException
+				user.setUserManager(this);
+				_users.put(user.getUsername(), user);
+				user.reset(_connManager);
 
-                return user;
-            } catch (Exception e) {
-                throw new FatalException(e);
-            }
-        } catch (Throwable ex) {
-            if (ex instanceof NoSuchUserException) {
-                throw (NoSuchUserException) ex;
-            }
+				return user;
+			} catch (Exception e) {
+				throw new FatalException(e);
+			}
+		} catch (Throwable ex) {
+			if (ex instanceof NoSuchUserException) {
+				throw (NoSuchUserException) ex;
+			}
 
-            throw new UserFileException("Error loading " + username, ex);
-        }
-    }
+			throw new UserFileException("Error loading " + username, ex);
+		}
+	}
 
-    protected File getUserFile(String username) {
-        return new File(_userpath + username + ".xml");
-    }
+	protected File getUserFile(String username) {
+		return new File(_userpath + username + ".xml");
+	}
 
-    public void saveAll() throws UserFileException {
-        logger.log(Level.INFO, "Saving userfiles: " + _users);
+	public void saveAll() throws UserFileException {
+		logger.log(Level.INFO, "Saving userfiles: " + _users);
 
-        for (Iterator iter = _users.values().iterator(); iter.hasNext();) {
-            Object obj = iter.next();
+		for (Iterator iter = _users.values().iterator(); iter.hasNext();) {
+			Object obj = iter.next();
 
-            if (!(obj instanceof XStreamUser)) {
-                throw new ClassCastException("not instanceof XStreamUser");
-            }
+			if (!(obj instanceof XStreamUser)) {
+				throw new ClassCastException("not instanceof XStreamUser");
+			}
 
-            XStreamUser user = (XStreamUser) obj;
-            user.commit();
-        }
-    }
+			XStreamUser user = (XStreamUser) obj;
+			user.commit();
+		}
+	}
 }

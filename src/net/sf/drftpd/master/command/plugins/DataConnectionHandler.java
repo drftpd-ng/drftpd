@@ -61,6 +61,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
+import org.drftpd.commands.UserManagment;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteTransfer;
 import org.drftpd.usermanager.UserFileException;
@@ -70,7 +71,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.70 2004/11/05 19:16:17 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.71 2004/11/06 07:55:29 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandlerFactory,
     CommandHandler, Cloneable {
@@ -1086,7 +1087,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
             //check credits
             if (isRetr) {
-                if ((conn.getUserNull().getRatio() != 0) &&
+                if ((conn.getUserNull().getObjectFloat(UserManagment.RATIO) != 0) &&
                         (conn.getUserNull().getCredits() < _transferFile.length())) {
                     return new FtpReply(550, "Not enough credits.");
                 }
@@ -1324,7 +1325,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                     }
 
                     conn.getUserNull().updateDownloadedBytes(status.getTransfered());
-                    conn.getUserNull().updateDownloadedMilliseconds(status.getElapsed());
+                    conn.getUserNull().updateDownloadedTime(status.getElapsed());
                     conn.getUserNull().updateDownloadedFiles(1);
                 } else {
                     conn.getUserNull().updateCredits((long) (status.getTransfered() * conn.getGlobalContext()
@@ -1332,7 +1333,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                                                                                           .getCreditCheckRatio(_transferFile,
                             conn.getUserNull())));
                     conn.getUserNull().updateUploadedBytes(status.getTransfered());
-                    conn.getUserNull().updateUploadedMilliseconds(status.getElapsed());
+                    conn.getUserNull().updateUploadedTime(status.getElapsed());
                     conn.getUserNull().updateUploadedFiles(1);
                 }
 

@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-import org.drftpd.usermanager.UserManager;
+import org.drftpd.usermanager.AbstractUserManager;
 
 import org.tanesha.replacer.ReplacerEnvironment;
 
@@ -50,7 +50,7 @@ import java.util.StringTokenizer;
 
 
 /**
- * @version $Id: TransferStatistics.java,v 1.1 2004/11/05 13:27:21 mog Exp $
+ * @version $Id: TransferStatistics.java,v 1.2 2004/11/06 07:55:34 mog Exp $
  */
 public class TransferStatistics implements CommandHandlerFactory,
     CommandHandler {
@@ -147,7 +147,7 @@ public class TransferStatistics implements CommandHandlerFactory,
     }
 
     public static int getStatsPlace(String command, User user,
-        UserManager userman) {
+        AbstractUserManager userman) {
         // AL MONTH WK DAY
         int place = 1;
         long bytes = getStats(command, user);
@@ -209,8 +209,8 @@ public class TransferStatistics implements CommandHandlerFactory,
         }
 
         FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
-        UserManager userman = conn.getGlobalContext().getUserManager();
-        response.addComment("created: " + new Date(user.getCreated()));
+        AbstractUserManager userman = conn.getGlobalContext().getUserManager();
+        response.addComment("created: " + new Date(user.getObjectLong(UserManagment.CREATED)));
         response.addComment("rank alup: " +
             getStatsPlace("ALUP", user, userman));
         response.addComment("rank aldn: " +
@@ -370,7 +370,7 @@ public class TransferStatistics implements CommandHandlerFactory,
     }
 
     public static String getUpRate(User user, int period) {
-        double s = user.getUploadedMillisecondsForTrialPeriod(period) / (double) 1000.0;
+        double s = user.getUploadedTimeForTrialPeriod(period) / (double) 1000.0;
 
         if (s <= 0) {
             return "- k/s";
@@ -382,7 +382,7 @@ public class TransferStatistics implements CommandHandlerFactory,
     }
 
     public static String getDownRate(User user, int period) {
-        double s = user.getDownloadedMilliSecondsForTrialPeriod(period) / (double) 1000.0;
+        double s = user.getDownloadedTimeForTrialPeriod(period) / (double) 1000.0;
 
         if (s <= 0) {
             return "- k/s";

@@ -23,127 +23,142 @@ import net.sf.drftpd.master.command.plugins.Nuke;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+import org.drftpd.commands.UserManagment;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 
 import java.util.Iterator;
 
-
 /**
- * Usage: java net.sf.drftpd.master.usermanager.UserManagerConverter net.sf.drftpd.master.usermanager.glftpd.GlftpdUserManager net.sf.drftpd.master.usermanager.JSXUserManager
- *
+ * Usage: java net.sf.drftpd.master.usermanager.UserManagerConverter
+ * net.sf.drftpd.master.usermanager.glftpd.GlftpdUserManager
+ * net.sf.drftpd.master.usermanager.JSXUserManager
+ * 
  * @author mog
- * @version $Id: UserManagerConverter.java,v 1.2 2004/11/05 13:27:23 mog Exp $
+ * @version $Id: UserManagerConverter.java,v 1.3 2004/11/06 07:55:35 mog Exp $
  */
 public class UserManagerConverter {
-    private static final Logger logger = Logger.getLogger(UserManagerConverter.class);
+	private static final Logger logger = Logger
+			.getLogger(UserManagerConverter.class);
 
-    public static void main(String[] args)
-        throws InstantiationException, IllegalAccessException, 
-            ClassNotFoundException, IOException, UserFileException {
-        BasicConfigurator.configure();
+	public static void main(String[] args) throws InstantiationException,
+			IllegalAccessException, ClassNotFoundException, IOException,
+			UserFileException {
+		BasicConfigurator.configure();
 
-        if (args.length != 2) {
-            System.out.println(
-                "arguments: <from usermanager class> <to usermanager class>");
+		if (args.length != 2) {
+			System.out
+					.println("arguments: <from usermanager class> <to usermanager class>");
 
-            return;
-        }
+			return;
+		}
 
-        UserManager from = (UserManager) Class.forName(args[0]).newInstance();
-        UserManager to = (UserManager) Class.forName(args[1]).newInstance();
-        logger.debug(from.getAllUsers());
+		UserManager from = (UserManager) Class.forName(args[0]).newInstance();
+		UserManager to;
+		try {
+			Constructor c = Class.forName(args[1]).getConstructor(
+					new Class[] { boolean.class });
+			to = (UserManager) c
+					.newInstance(new Object[] { new Boolean(true) });
 
-        for (Iterator iter = from.getAllUsers().iterator(); iter.hasNext();) {
-            User user = (User) iter.next();
-            convert(user, to.create(user.getUsername()));
-        }
-    }
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 
-    public static void convert(User from, User to) throws UserFileException {
-        logger.debug("Converting " + from.getUsername());
+		logger.debug(from.getAllUsers());
 
-        for (Iterator iter = from.getGroups().iterator(); iter.hasNext();) {
-            try {
-                to.addSecondaryGroup((String) iter.next());
-            } catch (DuplicateElementException e) {
-                logger.warn("", e);
-            }
-        }
+		for (Iterator iter = from.getAllUsers().iterator(); iter.hasNext();) {
+			User user = (User) iter.next();
+			convert(user, to.create(user.getUsername()));
+		}
+	}
 
-        to.addAllMasks(from.getHostMaskCollection());
+	public static void convert(User from, User to) throws UserFileException {
+		logger.debug("Converting " + from.getUsername());
 
-        to.setComment(from.getComment());
+		for (Iterator iter = from.getGroups().iterator(); iter.hasNext();) {
+			try {
+				to.addSecondaryGroup((String) iter.next());
+			} catch (DuplicateElementException e) {
+				logger.warn("", e);
+			}
+		}
 
-        to.setCredits(from.getCredits());
+		to.putAllObjects(from.getAllObjects());
+		to.addAllMasks(from.getHostMaskCollection());
 
-        to.setDeleted(from.isDeleted());
+		to.setCredits(from.getCredits());
 
-        to.setGroup(from.getGroupName());
+		to.setDeleted(from.isDeleted());
 
-        to.setGroupLeechSlots(from.getGroupLeechSlots());
+		to.setGroup(from.getGroupName());
 
-        to.setGroupSlots(from.getGroupLeechSlots());
+		to.setGroupLeechSlots(from.getGroupLeechSlots());
 
-        to.setIdleTime(from.getIdleTime());
+		to.setGroupSlots(from.getGroupLeechSlots());
 
-        to.setLastAccessTime(from.getLastAccessTime());
+		to.setIdleTime(from.getIdleTime());
 
-        //to.setLastNuked(from.getLastNuked());
-        to.putObject(Nuke.LASTNUKED,
-            new Long(from.getObjectLong(Nuke.LASTNUKED)));
+		to.setLastAccessTime(from.getLastAccessTime());
 
-        to.setLogins(from.getLogins());
+		//to.setLastNuked(from.getLastNuked());
+		//to.putObject(Nuke.LASTNUKED, new Long(from
+		//		.getObjectLong(Nuke.LASTNUKED)));
 
-        to.setMaxLogins(from.getMaxLogins());
+		to.setLogins(from.getLogins());
 
-        to.setMaxLoginsPerIP(from.getMaxLoginsPerIP());
+		to.setMaxLogins(from.getMaxLogins());
 
-        //to.setMaxSimDownloads(from.getMaxSimDownloads());
-        //to.setMaxSimUploads(from.getMaxSimUploads());
-        to.setNukedBytes(from.getNukedBytes());
+		to.setMaxLoginsPerIP(from.getMaxLoginsPerIP());
 
-        if (from instanceof PlainTextPasswordUser) {
-            to.setPassword(((PlainTextPasswordUser) from).getPassword());
-        } else if (from instanceof UnixPassword && to instanceof UnixPassword) {
-            ((UnixPassword) to).setUnixPassword(((UnixPassword) from).getUnixPassword());
-        } else {
-            logger.warn("Don't know how to convert password from " +
-                from.getUsername());
-        }
+		//to.setMaxSimDownloads(from.getMaxSimDownloads());
+		//to.setMaxSimUploads(from.getMaxSimUploads());
+		//to.putObject(Nuke.NUKEDBYTES, new Long(from
+		//		.getObjectLong(Nuke.NUKEDBYTES)));
 
-        to.setRatio(from.getRatio());
+		if (from instanceof PlainTextPasswordUser) {
+			to.setPassword(((PlainTextPasswordUser) from).getPassword());
+		} else if (from instanceof UnixPassword && to instanceof UnixPassword) {
+			((UnixPassword) to).setUnixPassword(((UnixPassword) from)
+					.getUnixPassword());
+		} else {
+			logger.warn("Don't know how to convert password from "
+					+ from.getUsername());
+		}
 
-        to.setTagline(from.getTagline());
+		//to.putObject(UserManagment.RATIO, new
+		// Float(from.getObjectFloat(UserManagment.RATIO)));
 
-        to.setTimesNuked(from.getTimesNuked());
+		//to.putObject(UserManagment.TAGLINE,
+		// from.getObjectString(UserManagment.TAGLINE));
 
-        int[] periods = new int[] {
-                Trial.PERIOD_ALL, Trial.PERIOD_DAILY, Trial.PERIOD_MONTHLY,
-                Trial.PERIOD_WEEKLY
-            };
+		//to.putObject(Nuke.NUKED, new Integer(from.getObjectInt(Nuke.NUKED)));
 
-        for (int i = 0; i < periods.length; i++) {
-            int period = periods[i];
-            to.setUploadedMillisecondsForTrialPeriod(period,
-                from.getUploadedMillisecondsForTrialPeriod(period));
+		int[] periods = new int[] { Trial.PERIOD_ALL, Trial.PERIOD_DAILY,
+				Trial.PERIOD_MONTHLY, Trial.PERIOD_WEEKLY };
 
-            to.setDownloadedMillisecondsForTrialPeriod(period,
-                from.getDownloadedMilliSecondsForTrialPeriod(period));
+		for (int i = 0; i < periods.length; i++) {
+			int period = periods[i];
+			to.setUploadedTimeForTrialPeriod(period, from
+					.getUploadedTimeForTrialPeriod(period));
 
-            to.setUploadedBytesForTrialPeriod(period,
-                from.getUploadedBytesForTrialPeriod(period));
+			to.setDownloadedTimeForTrialPeriod(period, from
+					.getDownloadedTimeForTrialPeriod(period));
 
-            to.setDownloadedBytesForTrialPeriod(period,
-                from.getDownloadedBytesForTrialPeriod(period));
+			to.setUploadedBytesForTrialPeriod(period, from
+					.getUploadedBytesForTrialPeriod(period));
 
-            to.setUploadedFilesForTrialPeriod(period,
-                from.getUploadedFilesForTrialPeriod(period));
+			to.setDownloadedBytesForTrialPeriod(period, from
+					.getDownloadedBytesForTrialPeriod(period));
 
-            to.setDownloadedFilesForTrialPeriod(period,
-                from.getDownloadedFilesForTrialPeriod(period));
-        }
+			to.setUploadedFilesForTrialPeriod(period, from
+					.getUploadedFilesForTrialPeriod(period));
 
-        to.commit();
-    }
+			to.setDownloadedFilesForTrialPeriod(period, from
+					.getDownloadedFilesForTrialPeriod(period));
+		}
+
+		to.commit();
+	}
 }

@@ -16,38 +16,33 @@
  */
 package org.drftpd.usermanager;
 
+import java.util.List;
+import java.util.Map;
+
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMaskCollection;
-import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.ConnectionManager;
 
-import java.util.List;
+import org.drftpd.commands.UserManagment;
 
 
 /**
  * @author mog
- * @version $Id: User.java,v 1.2 2004/11/05 13:27:23 mog Exp $
+ * @version $Id: User.java,v 1.3 2004/11/06 07:55:35 mog Exp $
  */
-public interface User {
-    public UserManager getUserManager();
+public abstract class User {
+  public abstract float getObjectFloat(Key key);
+  public abstract UserManager getUserManager();
+  public abstract Map getAllObjects();
+  public abstract void putAllObjects(Map m);
+    public abstract void addAllMasks(HostMaskCollection hostMaskCollection);
 
-    public void addAllMasks(HostMaskCollection hostMaskCollection);
+    public abstract void addIPMask(String mask) throws DuplicateElementException;
 
-    public void addIPMask(String mask) throws DuplicateElementException;
-
-    //    public void addRacesLost();
-    //
-    //    public void addRacesParticipated();
-    //
-    //    public void addRacesWon();
-    //
-    //    public void addRequests();
-    //
-    //    public void addRequestsFilled();
-    public void addSecondaryGroup(String group)
+    public abstract void addSecondaryGroup(String group)
         throws DuplicateElementException;
 
-    public boolean checkPassword(String password);
+    public abstract boolean checkPassword(String password);
 
     /**
      * Commit changes.
@@ -55,247 +50,222 @@ public interface User {
      * @throws UserFileException
      *             if an error saving the userfile occured.
      */
-    public void commit() throws UserFileException;
+    public abstract void commit() throws UserFileException;
 
-    public String getComment();
+    public abstract long getCredits();
 
-    /**
-     * authenticates and logs in the user.
-     *
-     * @param user
-     *            given password
-     */
-    public long getCreated();
+    public abstract long getDownloadedBytes();
 
-    /**
-     * Returns the credits.
-     *
-     * @return long
-     */
-    public long getCredits();
+    public abstract long getDownloadedBytesDay();
 
-    public long getDownloadedBytes();
+    public abstract long getDownloadedBytesForTrialPeriod(int period);
 
-    public long getDownloadedBytesDay();
+    public abstract long getDownloadedBytesMonth();
 
-    public long getDownloadedBytesForTrialPeriod(int period);
+    public abstract long getDownloadedBytesWeek();
 
-    public long getDownloadedBytesMonth();
+    public abstract int getDownloadedFiles();
 
-    public long getDownloadedBytesWeek();
+    public abstract int getDownloadedFilesDay();
 
-    public int getDownloadedFiles();
+    public abstract int getDownloadedFilesForTrialPeriod(int i);
 
-    public int getDownloadedFilesDay();
+    public abstract int getDownloadedFilesMonth();
 
-    public int getDownloadedFilesForTrialPeriod(int i);
+    public abstract int getDownloadedFilesWeek();
 
-    public int getDownloadedFilesMonth();
+    public abstract long getDownloadedTime();
 
-    public int getDownloadedFilesWeek();
+    public abstract long getDownloadedTimeForTrialPeriod(int i);
 
-    public long getDownloadedMilliseconds();
+    public abstract short getGroupLeechSlots();
 
-    public long getDownloadedMilliSecondsForTrialPeriod(int i);
+    public abstract String getGroupName();
 
-    public short getGroupLeechSlots();
+    public abstract List getGroups();
 
-    public String getGroupName();
+    public abstract short getGroupSlots();
 
-    public List getGroups();
-
-    public short getGroupSlots();
-
-    public HostMaskCollection getHostMaskCollection();
+    public abstract HostMaskCollection getHostMaskCollection();
 
     /**
      * Returns the idleTime.
      *
      * @return long
      */
-    public int getIdleTime();
+    public abstract int getIdleTime();
 
     /**
      * Get last access time
      */
-    public long getLastAccessTime();
+    public abstract long getLastAccessTime();
 
-    //    /**
-    //     * Returns the lastNuked.
-    //     *
-    //     * @return long
-    //     */
-    //    public long getLastNuked();
-    public long getLastReset();
+    public abstract long getLastReset();
 
     /**
      * Returns the logins.
      *
      * @return int
      */
-    public int getLogins();
+    public abstract int getLogins();
 
     /**
      * Returns the maxLogins.
      *
      * @return int
      */
-    public int getMaxLogins();
+    public abstract int getMaxLogins();
 
     /**
      * Returns the maxLoginsPerIP.
      *
      * @return int
      */
-    public int getMaxLoginsPerIP();
+    public abstract int getMaxLoginsPerIP();
 
     //    /**
     //     * Returns the nukedBytes.
     //     *
     //     * @return long
     //     */
-    //    public long getNukedBytes();
-    //    public int getRacesLost();
+    //    public abstract long getNukedBytes();
+    //    public abstract int getRacesLost();
     //
-    //    public int getRacesParticipated();
+    //    public abstract int getRacesParticipated();
     //    /**
     //     * Returns the downloadedSecondsWeek.
     //     *
     //     * @return int
     //     */
-    //    public int getRacesWon();
+    //    public abstract int getRacesWon();
 
     /**
      * Returns the ratio.
      *
      * @return float
      */
-    public float getRatio();
+    //public abstract float getRatio();
 
-    //    public int getRequests();
+    //    public abstract int getRequests();
     //
-    //    public int getRequestsFilled();
+    //    public abstract int getRequestsFilled();
     //    /**
     //     * Returns the nuked.
     //     *
     //     * @return int
     //     */
-    //    public int getTimesNuked();
+    //    public abstract int getTimesNuked();
 
     /**
      * Returns the uploadedBytes.
      *
      * @return long
      */
-    public long getUploadedBytes();
+    public abstract long getUploadedBytes();
 
     /**
      * Returns the uploadedBytesDay.
      *
      * @return long
      */
-    public long getUploadedBytesDay();
+    public abstract long getUploadedBytesDay();
 
-    public long getUploadedBytesForTrialPeriod(int period);
+    public abstract long getUploadedBytesForTrialPeriod(int period);
 
     /**
      * Returns the uploadedBytesMonth.
      *
      * @return long
      */
-    public long getUploadedBytesMonth();
+    public abstract long getUploadedBytesMonth();
 
     /**
      * Returns the uploadedBytesWeek.
      *
      * @return long
      */
-    public long getUploadedBytesWeek();
+    public abstract long getUploadedBytesWeek();
 
     /**
      * Returns the uploadedFiles.
      *
      * @return int
      */
-    public int getUploadedFiles();
+    public abstract int getUploadedFiles();
 
     /**
      * Returns the uploadedFilesDay.
      *
      * @return int
      */
-    public int getUploadedFilesDay();
+    public abstract int getUploadedFilesDay();
 
-    public int getUploadedFilesForTrialPeriod(int period);
+    public abstract int getUploadedFilesForTrialPeriod(int period);
 
     /**
      * Returns the uploadedFilesMonth.
      *
      * @return int
      */
-    public int getUploadedFilesMonth();
+    public abstract int getUploadedFilesMonth();
 
     /**
      * Returns the uploadedFilesWeek.
      *
      * @return int
      */
-    public int getUploadedFilesWeek();
+    public abstract int getUploadedFilesWeek();
 
-    public long getUploadedMilliseconds();
+    public abstract long getUploadedTime();
 
-    public long getUploadedMillisecondsForTrialPeriod(int i);
+    public abstract long getUploadedTimeForTrialPeriod(int i);
 
-    public String getUsername();
+    public abstract String getUsername();
 
-    public long getWeeklyAllotment();
+    public abstract long getWeeklyAllotment();
 
-    public boolean isAdmin();
+    public abstract boolean isAdmin();
 
     /**
      * Returns the deleted.
      *
      * @return boolean
      */
-    public boolean isDeleted();
+    public abstract boolean isDeleted();
 
-    public boolean isExempt();
+    public abstract boolean isExempt();
 
-    public boolean isGroupAdmin();
+    public abstract boolean isGroupAdmin();
 
-    public boolean isMemberOf(String group);
+    public abstract boolean isMemberOf(String group);
 
     /**
      * Returns the nuker.
      *
      * @return boolean
      */
-    public boolean isNuker();
+    public abstract boolean isNuker();
 
     /**
      * User login.
      */
-    public void login();
+    public abstract void login();
 
     /**
      * User logout
      */
-    public void logout();
+    public abstract void logout();
 
-    public void purge();
+    public abstract void purge();
 
-    public void removeIpMask(String mask) throws NoSuchFieldException;
+    public abstract void removeIpMask(String mask) throws NoSuchFieldException;
 
-    public void removeSecondaryGroup(String group) throws NoSuchFieldException;
+    public abstract void removeSecondaryGroup(String group) throws NoSuchFieldException;
 
-    public void rename(String username)
+    public abstract void rename(String username)
         throws UserExistsException, UserFileException;
 
-    public void reset(ConnectionManager manager) throws UserFileException;
-
-    public void setComment(String comment);
-
-    public void setCreated(long created);
+    public abstract void reset(ConnectionManager manager) throws UserFileException;
 
     /**
      * Sets the credits.
@@ -303,7 +273,7 @@ public interface User {
      * @param credits
      *            The credits to set
      */
-    public void setCredits(long credits);
+    public abstract void setCredits(long credits);
 
     /**
      * Sets the deleted.
@@ -311,51 +281,43 @@ public interface User {
      * @param deleted
      *            The deleted to set
      */
-    public void setDeleted(boolean deleted);
+    public abstract void setDeleted(boolean deleted);
 
-    public void setDownloadedBytes(long bytes);
+    public abstract void setDownloadedBytes(long bytes);
 
-    public void setDownloadedBytesDay(long bytes);
+    public abstract void setDownloadedBytesDay(long bytes);
 
-    public void setDownloadedBytesForTrialPeriod(int period, long bytes);
+    public abstract void setDownloadedBytesForTrialPeriod(int period, long bytes);
 
-    public void setDownloadedBytesMonth(long bytes);
+    public abstract void setDownloadedBytesMonth(long bytes);
 
-    public void setDownloadedBytesWeek(long bytes);
+    public abstract void setDownloadedBytesWeek(long bytes);
 
-    public void setDownloadedFiles(int files);
+    public abstract void setDownloadedFiles(int files);
 
-    public void setDownloadedFilesDay(int files);
+    public abstract void setDownloadedFilesDay(int files);
 
-    public void setDownloadedFilesForTrialPeriod(int period, int files);
+    public abstract void setDownloadedFilesForTrialPeriod(int period, int files);
 
-    public void setDownloadedFilesMonth(int files);
+    public abstract void setDownloadedFilesMonth(int files);
 
-    public void setDownloadedFilesWeek(int files);
+    public abstract void setDownloadedFilesWeek(int files);
 
-    public void setDownloadedMilliSeconds(long millis);
+    public abstract void setDownloadedTime(long millis);
 
-    public void setDownloadedMillisecondsDay(long millis);
+    public abstract void setDownloadedTimeDay(long millis);
 
-    public void setDownloadedMillisecondsForTrialPeriod(int i, long millis);
+    public abstract void setDownloadedTimeForTrialPeriod(int i, long millis);
 
-    public void setDownloadedMillisecondsMonth(long millis);
+    public abstract void setDownloadedTimeMonth(long millis);
 
-    public void setDownloadedMillisecondsWeek(long millis);
+    public abstract void setDownloadedTimeWeek(long millis);
 
-    public void setDownloadedSeconds(int millis);
+    public abstract void setGroup(String group);
 
-    public void setDownloadedSecondsDay(int millis);
+    public abstract void setGroupLeechSlots(short s);
 
-    public void setDownloadedSecondsMonth(int millis);
-
-    public void setDownloadedSecondsWeek(int millis);
-
-    public void setGroup(String group);
-
-    public void setGroupLeechSlots(short s);
-
-    public void setGroupSlots(short s);
+    public abstract void setGroupSlots(short s);
 
     /**
      * Sets the idleTime.
@@ -363,7 +325,7 @@ public interface User {
      * @param idleTime
      *            The idleTime to set
      */
-    public void setIdleTime(int idleTime);
+    public abstract void setIdleTime(int idleTime);
 
     /**
      * Sets the lastAccessTime.
@@ -371,7 +333,7 @@ public interface User {
      * @param lastAccessTime
      *            The lastAccessTime to set
      */
-    public void setLastAccessTime(long lastAccessTime);
+    public abstract void setLastAccessTime(long lastAccessTime);
 
     /**
      * Sets the logins.
@@ -379,7 +341,7 @@ public interface User {
      * @param logins
      *            The logins to set
      */
-    public void setLogins(int logins);
+    public abstract void setLogins(int logins);
 
     /**
      * Sets the maxLogins.
@@ -387,7 +349,7 @@ public interface User {
      * @param maxLogins
      *            The maxLogins to set
      */
-    public void setMaxLogins(int maxLogins);
+    public abstract void setMaxLogins(int maxLogins);
 
     /**
      * Sets the maxLoginsPerIP.
@@ -395,7 +357,7 @@ public interface User {
      * @param maxLoginsPerIP
      *            The maxLoginsPerIP to set
      */
-    public void setMaxLoginsPerIP(int maxLoginsPerIP);
+    public abstract void setMaxLoginsPerIP(int maxLoginsPerIP);
 
     //    /**
     //     * Sets the nukedBytes.
@@ -403,129 +365,87 @@ public interface User {
     //     * @param nukedBytes
     //     *            The nukedBytes to set
     //     */
-    //    public void setNukedBytes(long nukedBytes);
-    public void setPassword(String password);
+    //    public abstract void setNukedBytes(long nukedBytes);
+    public abstract void setPassword(String password);
 
-    /**
-     * Sets the ratio.
-     *
-     * @param ratio
-     *            The ratio to set
-     */
-    public void setRatio(float ratio);
+    //    public abstract void setTimesNuked(int nuked);
+    public abstract void setUploadedBytes(long bytes);
 
-    //    public void setTimesNuked(int nuked);
-    public void setUploadedBytes(long bytes);
+    public abstract void setUploadedBytesDay(long bytes);
 
-    public void setUploadedBytesDay(long bytes);
+    public abstract void setUploadedBytesForTrialPeriod(int i, long l);
 
-    public void setUploadedBytesForTrialPeriod(int i, long l);
+    public abstract void setUploadedBytesMonth(long bytes);
 
-    public void setUploadedBytesMonth(long bytes);
+    public abstract void setUploadedBytesWeek(long bytes);
 
-    public void setUploadedBytesWeek(long bytes);
+    public abstract void setUploadedFiles(int files);
 
-    public void setUploadedFiles(int files);
+    public abstract void setUploadedFilesDay(int files);
 
-    public void setUploadedFilesDay(int files);
+    public abstract void setUploadedFilesForTrialPeriod(int period, int files);
 
-    public void setUploadedFilesForTrialPeriod(int period, int files);
+    public abstract void setUploadedFilesMonth(int files);
 
-    public void setUploadedFilesMonth(int files);
+    public abstract void setUploadedFilesWeek(int files);
 
-    public void setUploadedFilesWeek(int files);
+    public abstract void setUploadedTime(long millis);
 
-    public void setUploadedMilliseconds(long millis);
+    public abstract void setUploadedTimeDay(long millis);
 
-    public void setUploadedMillisecondsDay(long millis);
+    public abstract void setUploadedTimeForTrialPeriod(int i, long millis);
 
-    public void setUploadedMillisecondsForTrialPeriod(int i, long millis);
+    public abstract void setUploadedTimeMonth(long millis);
 
-    public void setUploadedMillisecondsMonth(long millis);
+    public abstract void setUploadedTimeWeek(long millis);
 
-    public void setUploadedMillisecondsWeek(long millis);
+    public abstract void setUploadedTime(int millis);
 
-    public void setUploadedSeconds(int millis);
+    public abstract void setUploadedTimeDay(int millis);
 
-    public void setUploadedSecondsDay(int millis);
+    public abstract void setUploadedTimeMonth(int millis);
 
-    public void setUploadedSecondsMonth(int millis);
+    public abstract void setUploadedTimeWeek(int millis);
 
-    public void setUploadedSecondsWeek(int millis);
+    public abstract void setWeeklyAllotment(long weeklyAllotment);
 
-    public void setWeeklyAllotment(long weeklyAllotment);
+    public abstract void toggleGroup(String string);
 
-    public void toggleGroup(String string);
+    public abstract void updateCredits(long credits);
 
-    public void updateCredits(long credits);
+    public abstract void updateDownloadedBytes(long bytes);
 
-    public void updateDownloadedBytes(long bytes);
+    public abstract void updateDownloadedFiles(int i);
 
-    public void updateDownloadedFiles(int i);
-
-    public void updateDownloadedMilliseconds(long millis);
+    public abstract void updateDownloadedTime(long millis);
 
     /**
      * Hit user - update last access time
      */
-    public void updateLastAccessTime();
+    public abstract void updateLastAccessTime();
 
-    //    public void updateNukedBytes(long bytes);
+    //    public abstract void updateNukedBytes(long bytes);
     //
-    //    public void updateTimesNuked(int timesNuked);
-    public void updateUploadedBytes(long bytes);
+    //    public abstract void updateTimesNuked(int timesNuked);
+    public abstract void updateUploadedBytes(long bytes);
 
-    public void updateUploadedFiles(int i);
+    public abstract void updateUploadedFiles(int i);
 
-    public void updateUploadedMilliseconds(long millis);
+    public abstract void updateUploadedTime(long millis);
 
-    public void putObject(Key key, Object obj);
+    public abstract void putObject(Key key, Object obj);
 
-    public Object getObject(Key key) throws KeyNotFoundException;
+    public abstract Object getObject(Key key) throws KeyNotFoundException;
 
-    public Object getObject(Key key, Object def);
+    public abstract Object getObject(Key key, Object def);
 
-    public void incrementObjectLong(Key key);
+    public abstract void incrementObjectLong(Key key);
 
-    public String getObjectString(Key key);
+    public abstract String getObjectString(Key key);
 
-    public int getObjectInt(Key key);
+    public abstract int getObjectInt(Key key);
 
-    public void incrementObjectInt(Key nuked, int i);
+    public abstract void incrementObjectInt(Key nuked, int i);
 
-    /**
-     * @param fullCommandArgument
-     */
-    public void setTagline(String fullCommandArgument);
-
-    /**
-     * @return
-     */
-    public String getTagline();
-
-    /**
-     * @return
-     */
-    public int getTimesNuked();
-
-    /**
-     * @return
-     */
-    public long getNukedBytes();
-
-    /**
-     * @param nukedBytes
-     */
-    public void setNukedBytes(long nukedBytes);
-
-    /**
-     * @param timesNuked
-     */
-    public void setTimesNuked(int timesNuked);
-
-    /**
-     * @param lastnuked
-     * @return
-     */
-    public long getObjectLong(Key lastnuked);
+  public abstract long getObjectLong(Key key);
 }

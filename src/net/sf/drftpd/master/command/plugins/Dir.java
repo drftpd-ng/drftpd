@@ -44,6 +44,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
+import org.drftpd.commands.UserManagment;
 
 import org.drftpd.plugins.SiteBot;
 
@@ -69,7 +70,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.42 2004/11/03 16:46:39 mog Exp $
+ * @version $Id: Dir.java,v 1.43 2004/11/06 07:55:30 mog Exp $
  */
 public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
     private final static SimpleDateFormat DATE_FMT = new SimpleDateFormat(
@@ -396,7 +397,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 
         try {
             uploader = conn.getGlobalContext().getUserManager().getUserByName(requestedFile.getUsername());
-            uploader.updateCredits((long) -(requestedFile.length() * uploader.getRatio()));
+            uploader.updateCredits((long) -(requestedFile.length() * uploader.getObjectFloat(UserManagment.RATIO)));
         } catch (UserFileException e) {
             reply.addComment("Error removing credits: " + e.getMessage());
         } catch (NoSuchUserException e) {

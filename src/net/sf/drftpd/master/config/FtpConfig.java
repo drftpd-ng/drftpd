@@ -28,6 +28,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 import org.drftpd.GlobalContext;
 
+import org.drftpd.commands.UserManagment;
 import org.drftpd.slave.Slave;
 
 import org.drftpd.usermanager.User;
@@ -54,7 +55,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.65 2004/11/05 13:27:20 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.66 2004/11/06 07:55:31 mog Exp $
  */
 public class FtpConfig {
     private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -279,11 +280,11 @@ public class FtpConfig {
                     return perm.getRatio();
                 }
 
-                return fromUser.getRatio();
+                return fromUser.getObjectFloat(UserManagment.RATIO);
             }
         }
 
-        return fromUser.getRatio();
+        return fromUser.getObjectFloat(UserManagment.RATIO);
     }
 
     public float getCreditLossRatio(LinkedRemoteFileInterface path,
@@ -299,7 +300,7 @@ public class FtpConfig {
         }
 
         //default credit loss ratio is 1
-        return (fromUser.getRatio() == 0) ? 0 : 1;
+        return (fromUser.getObjectFloat(UserManagment.RATIO) == 0) ? 0 : 1;
     }
 
     public String getDirName(String name) {

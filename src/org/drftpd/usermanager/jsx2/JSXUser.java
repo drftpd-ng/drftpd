@@ -16,35 +16,32 @@
  */
 package org.drftpd.usermanager.jsx2;
 
-import JSX.ObjOut;
+import java.io.File;
+import java.io.IOException;
 
 import net.sf.drftpd.util.Crypt;
 import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Logger;
-
 import org.drftpd.usermanager.AbstractUser;
+import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.PlainTextPasswordUser;
 import org.drftpd.usermanager.UnixPassword;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.usermanager.UserManager;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-
-import java.util.ArrayList;
+import JSX.ObjOut;
 
 
 /**
  * @author mog
- * @version $Id: JSXUser.java,v 1.1 2004/11/05 14:07:22 mog Exp $
+ * @version $Id: JSXUser.java,v 1.2 2004/11/06 07:55:35 mog Exp $
  */
 public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
     UnixPassword {
     private String _password;
     private String _unixPassword;
-    private transient UserManager _usermanager;
+    private transient AbstractUserManager _usermanager;
     private boolean _purged;
 
     public JSXUser(JSXUserManager usermanager, String username) {
@@ -133,7 +130,7 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
         this._unixPassword = password;
     }
 
-    void setUserManager(UserManager um) {
+    void setUserManager(AbstractUserManager um) {
         _usermanager = um;
     }
 
@@ -147,4 +144,8 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
     public UserManager getUserManager() {
         return _usermanager;
     }
+
+	public AbstractUserManager getAbstractUserManager() {
+		return _usermanager;
+	}
 }

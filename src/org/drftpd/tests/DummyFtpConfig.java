@@ -21,6 +21,7 @@ import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.drftpd.commands.UserManagment;
 import org.drftpd.usermanager.User;
 
 
@@ -35,7 +36,7 @@ public class DummyFtpConfig extends FtpConfig {
 
     public float getCreditCheckRatio(LinkedRemoteFileInterface path,
         User fromUser) {
-        return fromUser.getRatio();
+        return fromUser.getObjectFloat(UserManagment.RATIO);
     }
 
     public void setConnectionManager(ConnectionManager cm) {

@@ -64,7 +64,7 @@ import org.tanesha.replacer.SimplePrintf;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.102 2004/11/05 13:27:18 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.103 2004/11/06 07:55:29 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
     private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() +
@@ -124,14 +124,14 @@ public class BaseFtpConnection implements Runnable {
         if (user != null) {
             env.add("user", user.getUsername());
             env.add("credits", Bytes.formatBytes(user.getCredits()));
-            env.add("ratio", "" + user.getRatio());
+            env.add("ratio", "" + user.getObjectFloat(UserManagment.RATIO));
             env.add("tagline", user.getObjectString(UserManagment.TAGLINE));
             env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
             env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
             env.add("group", user.getGroupName());
             env.add("avragespeed",
-                Bytes.formatBytes(user.getUploadedMilliseconds() +
-                    (user.getDownloadedMilliseconds() / 2)));
+                Bytes.formatBytes(user.getUploadedTime() +
+                    (user.getDownloadedTime() / 2)));
         } else {
             env.add("user", "<unknown>");
         }

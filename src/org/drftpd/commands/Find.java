@@ -450,7 +450,7 @@ public class Find implements CommandHandlerFactory, CommandHandler {
                 uploader = conn.getGlobalContext().getConnectionManager()
                                .getGlobalContext().getUserManager()
                                .getUserByName(file.getUsername());
-                uploader.updateCredits((long) -(file.length() * uploader.getRatio()));
+                uploader.updateCredits((long) -(file.length() * uploader.getObjectFloat(UserManagment.RATIO)));
             } catch (UserFileException e) {
                 reply += ("Error removing credits: " + e.getMessage());
             } catch (NoSuchUserException e) {

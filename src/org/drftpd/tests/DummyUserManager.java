@@ -21,7 +21,7 @@ import net.sf.drftpd.master.ConnectionManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-import org.drftpd.usermanager.UserManager;
+import org.drftpd.usermanager.AbstractUserManager;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -29,9 +29,9 @@ import java.util.Collections;
 
 /**
  * @author mog
- * @version $Id: DummyUserManager.java,v 1.5 2004/11/03 16:46:49 mog Exp $
+ * @version $Id: DummyUserManager.java,v 1.6 2004/11/06 07:55:35 mog Exp $
  */
-public class DummyUserManager extends UserManager {
+public class DummyUserManager extends AbstractUserManager {
     private User _user;
 
     public DummyUserManager() {

@@ -2,8 +2,10 @@ package org.drftpd.tests;
 
 import net.sf.drftpd.event.listeners.Trial;
 
+import org.drftpd.commands.UserManagment;
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.UserFileException;
+import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserManager;
 
 
@@ -21,7 +23,7 @@ public class DummyUser extends AbstractUser {
 
     public DummyUser(String username, long time) {
         this(username);
-        setCreated(time);
+        putObject(UserManagment.CREATED, new Long(time));
     }
 
     public boolean checkPassword(String password) {
@@ -37,10 +39,6 @@ public class DummyUser extends AbstractUser {
 
     public void rename(String username) {
         throw new UnsupportedOperationException();
-    }
-
-    public void setCreated(long l) {
-        _created = l;
     }
 
     public void setLastReset(long l) {
@@ -90,4 +88,8 @@ public class DummyUser extends AbstractUser {
     public UserManager getUserManager() {
         return _userManager;
     }
+
+	public AbstractUserManager getAbstractUserManager() {
+		return _userManager;
+	}
 }

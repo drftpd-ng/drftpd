@@ -16,25 +16,24 @@
  */
 package org.drftpd.usermanager;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMaskCollection;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.event.listeners.Trial;
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.command.plugins.Nuke;
 import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.Logger;
-
-import org.drftpd.commands.UserManagment;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 
 
 /**
@@ -42,9 +41,9 @@ import java.util.List;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya </a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.2 2004/11/05 13:27:22 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.3 2004/11/06 07:55:35 mog Exp $
  */
-public abstract class AbstractUser implements User {
+public abstract class AbstractUser extends User {
     private static final Logger logger = Logger.getLogger(AbstractUser.class);
     public static final int P_ALL = 0;
     public static final int P_MONTH = 1;
@@ -57,7 +56,15 @@ public abstract class AbstractUser implements User {
     private long _credits;
     protected HashMap _data = new HashMap();
 
-    //private long _downloadedBytes, _downloadedBytes[P_DAY],
+	public Map getAllObjects() {
+		return Collections.unmodifiableMap(_data);
+	}
+
+	public void putAllObjects(Map m) {
+_data.putAll(m);
+	}
+
+	//private long _downloadedBytes, _downloadedBytes[P_DAY],
     // _downloadedBytes[P_MONTH], _downloadedBytes[P_WEEK];
     private long[] _downloadedBytes = new long[P_SIZE];
 
@@ -211,14 +218,6 @@ public abstract class AbstractUser implements User {
         ? ((User) obj).getUsername().equals(getUsername()) : false;
     }
 
-    public String getComment() {
-        return _comment;
-    }
-
-    public long getCreated() {
-        return _created;
-    }
-
     public long getCredits() {
         return _credits;
     }
@@ -234,16 +233,16 @@ public abstract class AbstractUser implements User {
     public long getDownloadedBytesForTrialPeriod(int period) {
         switch (period) {
         case Trial.PERIOD_DAILY:
-            return this._downloadedBytes[P_DAY];
+            return _downloadedBytes[P_DAY];
 
         case Trial.PERIOD_MONTHLY:
-            return this._downloadedBytes[P_MONTH];
+            return _downloadedBytes[P_MONTH];
 
         case Trial.PERIOD_WEEKLY:
-            return this._downloadedBytes[P_WEEK];
+            return _downloadedBytes[P_WEEK];
 
         case Trial.PERIOD_ALL:
-            return this._downloadedBytes[P_ALL];
+            return _downloadedBytes[P_ALL];
         }
 
         throw new RuntimeException();
@@ -268,16 +267,16 @@ public abstract class AbstractUser implements User {
     public int getDownloadedFilesForTrialPeriod(int period) {
         switch (period) {
         case Trial.PERIOD_DAILY:
-            return this._downloadedFiles[P_DAY];
+            return _downloadedFiles[P_DAY];
 
         case Trial.PERIOD_MONTHLY:
-            return this._downloadedFiles[P_MONTH];
+            return _downloadedFiles[P_MONTH];
 
         case Trial.PERIOD_WEEKLY:
-            return this._downloadedFiles[P_WEEK];
+            return _downloadedFiles[P_WEEK];
 
         case Trial.PERIOD_ALL:
-            return this._downloadedFiles[P_ALL];
+            return _downloadedFiles[P_ALL];
         }
 
         throw new RuntimeException();
@@ -291,11 +290,11 @@ public abstract class AbstractUser implements User {
         return _downloadedFiles[P_WEEK];
     }
 
-    public long getDownloadedMilliseconds() {
+    public long getDownloadedTime() {
         return _downloadedMilliSeconds[P_ALL];
     }
 
-    public long getDownloadedMilliSecondsForTrialPeriod(int period) {
+    public long getDownloadedTimeForTrialPeriod(int period) {
         switch (period) {
         case Trial.PERIOD_DAILY:
             return _downloadedMilliSeconds[P_DAY];
@@ -325,7 +324,6 @@ public abstract class AbstractUser implements User {
         if (_group == null) {
             return "nogroup";
         }
-
         return _group;
     }
 
@@ -347,10 +345,6 @@ public abstract class AbstractUser implements User {
 
     public long getLastAccessTime() {
         return _lastAccessTime;
-    }
-
-    public long getLastNuked() {
-        return getObjectLong(Nuke.LASTNUKED);
     }
 
     public long getLastReset() {
@@ -399,10 +393,6 @@ public abstract class AbstractUser implements User {
         return ((Long) getObject(key, new Long(0))).longValue();
     }
 
-    public long getNukedBytes() {
-        return getObjectLong(Nuke.NUKEDBYTES);
-    }
-
     //    public int getRacesLost() {
     //        return _racesLost;
     //    }
@@ -414,15 +404,12 @@ public abstract class AbstractUser implements User {
     //    public int getRacesWon() {
     //        return _racesWon;
     //    }
-    public float getRatio() {
-        return getObjectFloat(UserManagment.RATIO);
-    }
 
     /**
      * @param ratio
      * @return
      */
-    private float getObjectFloat(Key key) {
+    public float getObjectFloat(Key key) {
         return ((Float) getObject(key, new Float(0))).floatValue();
     }
 
@@ -433,13 +420,6 @@ public abstract class AbstractUser implements User {
     //    public int getRequestsFilled() {
     //        return _requestsFilled;
     //    }
-    public String getTagline() {
-        return getObjectString(UserManagment.TAGLINE);
-    }
-
-    public int getTimesNuked() {
-        return getObjectInt(Nuke.NUKED);
-    }
 
     public long getUploadedBytes() {
         return _uploadedBytes[P_ALL];
@@ -452,16 +432,16 @@ public abstract class AbstractUser implements User {
     public long getUploadedBytesForTrialPeriod(int period) {
         switch (period) {
         case Trial.PERIOD_DAILY:
-            return this._uploadedBytes[P_DAY];
+            return _uploadedBytes[P_DAY];
 
         case Trial.PERIOD_MONTHLY:
-            return this._uploadedBytes[P_MONTH];
+            return _uploadedBytes[P_MONTH];
 
         case Trial.PERIOD_WEEKLY:
-            return this._uploadedBytes[P_WEEK];
+            return _uploadedBytes[P_WEEK];
 
         case Trial.PERIOD_ALL:
-            return this._uploadedBytes[P_ALL];
+            return _uploadedBytes[P_ALL];
         }
 
         throw new RuntimeException();
@@ -486,16 +466,16 @@ public abstract class AbstractUser implements User {
     public int getUploadedFilesForTrialPeriod(int period) {
         switch (period) {
         case Trial.PERIOD_DAILY:
-            return this._uploadedFiles[P_DAY];
+            return _uploadedFiles[P_DAY];
 
         case Trial.PERIOD_MONTHLY:
-            return this._uploadedFiles[P_MONTH];
+            return _uploadedFiles[P_MONTH];
 
         case Trial.PERIOD_WEEKLY:
-            return this._uploadedFiles[P_WEEK];
+            return _uploadedFiles[P_WEEK];
 
         case Trial.PERIOD_ALL:
-            return this._uploadedFiles[P_ALL];
+            return _uploadedFiles[P_ALL];
         }
 
         throw new RuntimeException();
@@ -509,11 +489,11 @@ public abstract class AbstractUser implements User {
         return _uploadedFiles[P_WEEK];
     }
 
-    public long getUploadedMilliseconds() {
+    public long getUploadedTime() {
         return _uploadedMilliSeconds[P_ALL];
     }
 
-    public long getUploadedMillisecondsForTrialPeriod(int period) {
+    public long getUploadedTimeForTrialPeriod(int period) {
         switch (period) {
         case Trial.PERIOD_DAILY:
 
@@ -538,7 +518,7 @@ public abstract class AbstractUser implements User {
     }
 
     public long getWeeklyAllotment() {
-        return this._weeklyAllotment;
+        return _weeklyAllotment;
     }
 
     public int hashCode() {
@@ -623,18 +603,14 @@ public abstract class AbstractUser implements User {
         _logins += 1;
     }
 
-    public void setTagline(String fullCommandArgument) {
-        putObject(UserManagment.TAGLINE, fullCommandArgument);
-    }
-
     public void logout() {
     }
 
     public void putObject(Key key, Object obj) {
+    	if(obj == null) throw new NullPointerException(key+" - "+obj);
         if (!key.getType().isInstance(obj)) {
             throw new ClassCastException();
         }
-
         _data.put(key.getOwner().getName() + '@' + key.getKey(), obj);
     }
 
@@ -652,11 +628,16 @@ public abstract class AbstractUser implements User {
 
     public void rename(String username)
         throws UserExistsException, UserFileException {
-        getUserManager().rename(this, username); // throws ObjectExistsException
-        getUserManager().delete(this.getUsername());
-        this._username = username;
+        getAbstractUserManager().rename(this, username); // throws ObjectExistsException
+        getAbstractUserManager().delete(this.getUsername());
+        _username = username;
         commit(); // throws IOException
     }
+
+    /**
+     * To avoid casting to AbstractUserManager
+     */
+    public abstract AbstractUserManager getAbstractUserManager();
 
     public void reset(ConnectionManager cmgr) throws UserFileException {
         reset(cmgr, Calendar.getInstance());
@@ -669,8 +650,8 @@ public abstract class AbstractUser implements User {
             return;
         }
 
-        Date lastResetDate = new Date(this._lastReset);
-        this._lastReset = cal.getTimeInMillis();
+        Date lastResetDate = new Date(_lastReset);
+        _lastReset = cal.getTimeInMillis();
 
         //cal = Calendar.getInstance();
         Calendar calTmp = (Calendar) cal.clone();
@@ -703,8 +684,8 @@ public abstract class AbstractUser implements User {
 
     private void resetDay(ConnectionManager cm, Date resetDate) {
         cm.dispatchFtpEvent(new UserEvent(this, "RESETDAY", resetDate.getTime()));
-        this._downloadedFiles[P_DAY] = 0;
-        this._uploadedFiles[P_DAY] = 0;
+        _downloadedFiles[P_DAY] = 0;
+        _uploadedFiles[P_DAY] = 0;
         _downloadedMilliSeconds[P_DAY] = 0;
         _uploadedMilliSeconds[P_DAY] = 0;
         _downloadedBytes[P_DAY] = 0;
@@ -739,14 +720,6 @@ public abstract class AbstractUser implements User {
         if (getWeeklyAllotment() > 0) {
             setCredits(getWeeklyAllotment());
         }
-    }
-
-    public void setComment(String comment) {
-        _comment = comment;
-    }
-
-    public void setCreated(long created) {
-        _created = created;
     }
 
     public void setCredits(long credits) {
@@ -851,15 +824,15 @@ public abstract class AbstractUser implements User {
         _downloadedFiles[P_WEEK] = files;
     }
 
-    public void setDownloadedMilliSeconds(long millis) {
+    public void setDownloadedTime(long millis) {
         _downloadedMilliSeconds[P_ALL] = millis;
     }
 
-    public void setDownloadedMillisecondsDay(long millis) {
+    public void setDownloadedTimeDay(long millis) {
         _downloadedMilliSeconds[P_DAY] = millis;
     }
 
-    public void setDownloadedMillisecondsForTrialPeriod(int period, long millis) {
+    public void setDownloadedTimeForTrialPeriod(int period, long millis) {
         switch (period) {
         case Trial.PERIOD_DAILY:
             _downloadedMilliSeconds[P_DAY] = millis;
@@ -885,11 +858,11 @@ public abstract class AbstractUser implements User {
         throw new RuntimeException();
     }
 
-    public void setDownloadedMillisecondsMonth(long millis) {
+    public void setDownloadedTimeMonth(long millis) {
         _downloadedMilliSeconds[P_MONTH] = millis;
     }
 
-    public void setDownloadedMillisecondsWeek(long millis) {
+    public void setDownloadedTimeWeek(long millis) {
         _downloadedMilliSeconds[P_WEEK] = millis;
     }
 
@@ -944,19 +917,7 @@ public abstract class AbstractUser implements User {
     public void setMaxLoginsPerIP(int maxLoginsPerIP) {
         _maxLoginsPerIP = maxLoginsPerIP;
     }
-
-    public void setNukedBytes(long nukedBytes) {
-        putObject(Nuke.NUKEDBYTES, new Long(nukedBytes));
-    }
-
-    public void setRatio(float ratio) {
-        putObject(UserManagment.RATIO, new Float(ratio));
-    }
-
-    public void setTimesNuked(int nuked) {
-        putObject(Nuke.NUKED, new Integer(nuked));
-    }
-
+  
     public void setUploadedBytes(long bytes) {
         _uploadedBytes[P_ALL] = bytes;
     }
@@ -1041,15 +1002,15 @@ public abstract class AbstractUser implements User {
         _uploadedFiles[P_WEEK] = files;
     }
 
-    public void setUploadedMilliseconds(long millis) {
+    public void setUploadedTime(long millis) {
         _uploadedMilliSeconds[P_ALL] = millis;
     }
 
-    public void setUploadedMillisecondsDay(long millis) {
+    public void setUploadedTimeDay(long millis) {
         _uploadedMilliSeconds[P_DAY] = millis;
     }
 
-    public void setUploadedMillisecondsForTrialPeriod(int period, long millis) {
+    public void setUploadedTimeForTrialPeriod(int period, long millis) {
         switch (period) {
         case Trial.PERIOD_DAILY:
             _uploadedMilliSeconds[P_DAY] = millis;
@@ -1075,27 +1036,27 @@ public abstract class AbstractUser implements User {
         throw new RuntimeException();
     }
 
-    public void setUploadedMillisecondsMonth(long millis) {
+    public void setUploadedTimeMonth(long millis) {
         _uploadedMilliSeconds[P_MONTH] = millis;
     }
 
-    public void setUploadedMillisecondsWeek(long millis) {
+    public void setUploadedTimeWeek(long millis) {
         _uploadedMilliSeconds[P_WEEK] = millis;
     }
 
-    public void setUploadedSeconds(int millis) {
+    public void setUploadedTime(int millis) {
         _uploadedMilliSeconds[P_ALL] = millis;
     }
 
-    public void setUploadedSecondsDay(int millis) {
+    public void setUploadedTimeDay(int millis) {
         _uploadedMilliSeconds[P_DAY] = millis;
     }
 
-    public void setUploadedSecondsMonth(int millis) {
+    public void setUploadedTimeMonth(int millis) {
         _uploadedMilliSeconds[P_MONTH] = millis;
     }
 
-    public void setUploadedSecondsWeek(int millis) {
+    public void setUploadedTimeWeek(int millis) {
         _uploadedMilliSeconds[P_WEEK] = millis;
     }
 
@@ -1141,7 +1102,7 @@ public abstract class AbstractUser implements User {
         _downloadedFiles[P_MONTH] += i;
     }
 
-    public void updateDownloadedMilliseconds(long millis) {
+    public void updateDownloadedTime(long millis) {
         _downloadedMilliSeconds[P_ALL] += millis;
         _downloadedMilliSeconds[P_DAY] += millis;
         _downloadedMilliSeconds[P_WEEK] += millis;
@@ -1176,7 +1137,7 @@ public abstract class AbstractUser implements User {
         _uploadedFiles[P_MONTH] += i;
     }
 
-    public void updateUploadedMilliseconds(long millis) {
+    public void updateUploadedTime(long millis) {
         _uploadedMilliSeconds[P_ALL] += millis;
         _uploadedMilliSeconds[P_DAY] += millis;
         _uploadedMilliSeconds[P_WEEK] += millis;

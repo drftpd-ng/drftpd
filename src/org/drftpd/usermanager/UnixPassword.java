@@ -21,9 +21,9 @@ package org.drftpd.usermanager;
 /**
  * @author mog
  *
- * @version $Id: UnixPassword.java,v 1.1 2004/11/03 16:46:49 mog Exp $
+ * @version $Id: UnixPassword.java,v 1.2 2004/11/06 07:55:35 mog Exp $
  */
-public interface UnixPassword extends User {
+public interface UnixPassword {
     public String getUnixPassword();
 
     public void setUnixPassword(String password);

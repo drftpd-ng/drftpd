@@ -47,7 +47,7 @@ import java.util.Map;
 /**
  * @author mog
  *
- * @version $Id: Pre.java,v 1.4 2004/11/03 16:46:44 mog Exp $
+ * @version $Id: Pre.java,v 1.5 2004/11/06 07:55:34 mog Exp $
  */
 public class Pre implements CommandHandlerFactory, CommandHandler {
     private static final Logger logger = Logger.getLogger(Pre.class);
@@ -186,7 +186,7 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
             }
 
             total = new Long(total.longValue() +
-                    (long) (file.length() * owner.getRatio()));
+                    (long) (file.length() * owner.getObjectFloat(UserManagment.RATIO)));
             awards.put(owner, total);
         }
     }

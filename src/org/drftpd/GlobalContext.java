@@ -36,7 +36,7 @@ import org.drftpd.sections.SectionManagerInterface;
 
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
-import org.drftpd.usermanager.UserManager;
+import org.drftpd.usermanager.AbstractUserManager;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -52,7 +52,7 @@ import java.util.Timer;
 
 /**
  * @author mog
- * @version $Id: GlobalContext.java,v 1.6 2004/11/03 16:46:44 mog Exp $
+ * @version $Id: GlobalContext.java,v 1.7 2004/11/06 07:55:33 mog Exp $
  */
 public class GlobalContext {
     private static final Logger logger = Logger.getLogger(GlobalContext.class);
@@ -64,7 +64,7 @@ public class GlobalContext {
     protected SectionManagerInterface _sections;
     private String _shutdownMessage = null;
     protected SlaveManager _slaveManager;
-    protected UserManager _usermanager;
+    protected AbstractUserManager _usermanager;
     private Timer _timer = new Timer();
     protected SlaveSelectionManagerInterface _slaveSelectionManager;
 
@@ -189,7 +189,7 @@ public class GlobalContext {
         return _slaveManager;
     }
 
-    public UserManager getUserManager() {
+    public AbstractUserManager getUserManager() {
         if (_usermanager == null) {
             throw new NullPointerException();
         }
@@ -273,7 +273,7 @@ public class GlobalContext {
 
     protected void loadUserManager(Properties cfg, String cfgFileName) {
         try {
-            _usermanager = (UserManager) Class.forName(FtpConfig.getProperty(
+            _usermanager = (AbstractUserManager) Class.forName(FtpConfig.getProperty(
                         cfg, "master.usermanager")).newInstance();
 
             // if the below method is not run, JSXUserManager fails when trying to do a reset() on the user logging in
