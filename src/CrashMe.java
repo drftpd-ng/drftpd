@@ -10,6 +10,7 @@ public class CrashMe {
         t.test.tryMe();
     }
 
+
     public class Test2 {
         public void tryMe() {
         }
