@@ -75,29 +75,25 @@ public class ConnectionManager {
 
 			/** load config **/
 			Properties cfg = new Properties();
-			try {
-				cfg.load(new FileInputStream(cfgFileName));
-			} catch (IOException e) {
-				throw new FatalException(e);
-			}
+			cfg.load(new FileInputStream(cfgFileName));
 
 			logger.info("Starting ConnectionManager");
 			ConnectionManager mgr = new ConnectionManager(cfg, cfgFileName);
 			/** listen for connections **/
-				ServerSocket server =
-					new ServerSocket(
-						Integer.parseInt(cfg.getProperty("master.port")));
-				logger.info("Listening on port " + server.getLocalPort());
-				while (true) {
-					mgr.start(server.accept());
-				}
+			ServerSocket server =
+				new ServerSocket(
+					Integer.parseInt(cfg.getProperty("master.port")));
+			logger.info("Listening on port " + server.getLocalPort());
+			while (true) {
+				mgr.start(server.accept());
+			}
 		} catch (Exception th) {
 			throw new FatalException(th);
 		}
 	}
-	
-	private Vector _conns = new Vector();
 	private FtpConfig _config;
+
+	private Vector _conns = new Vector();
 
 	private ArrayList _ftpListeners = new ArrayList();
 	private NukeLog _nukelog;
@@ -262,6 +258,18 @@ public class ConnectionManager {
 	public Collection getConnections() {
 		return _conns;
 	}
+	/**
+	 * @return
+	 */
+	public List getFtpListeners() {
+		return _ftpListeners;
+	}
+	/**
+	 * @return
+	 */
+	public NukeLog getNukeLog() {
+		return _nukelog;
+	}
 	public String getShutdownMessage() {
 		return this.shutdownMessage;
 	}
@@ -338,18 +346,6 @@ public class ConnectionManager {
 				}
 			}
 		}
-	}
-	/**
-	 * @return
-	 */
-	public NukeLog getNukeLog() {
-		return _nukelog;
-	}
-	/**
-	 * @return
-	 */
-	public List getFtpListeners() {
-		return _ftpListeners;
 	}
 
 }
