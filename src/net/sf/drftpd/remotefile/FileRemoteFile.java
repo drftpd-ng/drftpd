@@ -5,8 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Vector;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.InvalidDirectoryException;
@@ -22,26 +22,6 @@ public class FileRemoteFile extends RemoteFile {
 //	private File file;
 //	private String root;
 
-	/**
-	 * Creates 
-	 * @param root
-	 * @param file
-	 * @throws IOException
-	 */
-
-//	public FileRemoteFile(String root, File file) throws IOException {
-//		this.root = root;
-//		this.file = file;
-//
-//		if (!file.getCanonicalPath().equals(file.getAbsolutePath())) {
-//			System.out.println(
-//				"FileRemoteFile: warning: not serializing possible symlink: "
-//					+ file.getAbsolutePath());
-//			throw new InvalidDirectoryException(
-//				"Not following symlink: " + file.getAbsolutePath());
-//		}
-//	}
-	//List slaves;
 	RootBasket rootBasket;
 	String path;
 
@@ -50,6 +30,7 @@ public class FileRemoteFile extends RemoteFile {
 	}
 	private boolean isFile;
 	private boolean isDirectory;
+
 	public FileRemoteFile(RootBasket rootBasket, String path) throws IOException {
 		//if(path.length() != 0) {
 		//	if(path.charAt(path.length()-1) == File.separatorChar) path = path.substring(0, path.length()-1);
@@ -68,6 +49,15 @@ public class FileRemoteFile extends RemoteFile {
 			
 			if (!file.exists()) continue;
 
+//			if(file.isDirectory() && file.list().length == 0) {
+//				while(file.list().length == 0) {
+//					File file2 = file.getParentFile();
+//					file.delete();
+//					file = file2;
+//				}
+//				continue;
+//			}
+			
 			if(first) {
 				first=false;
 				isDirectory = file.isDirectory();
@@ -167,34 +157,60 @@ public class FileRemoteFile extends RemoteFile {
 		return (RemoteFileInterface[]) getFiles().toArray(new FileRemoteFile[0]);
 	}
 	
-	/**
-	 * @see net.sf.drftpd.remotefile.RemoteFile#getFiles()
-	 */
-	public Collection getFiles() {
+	Hashtable filefiles;
+	private void buildFileFiles() {
+		if(filefiles != null) return;
+		filefiles = new Hashtable();
+		
 		if (!isDirectory()) {
 			throw new IllegalArgumentException("listFiles() called on !isDirectory()");
 		}
-		Vector filefiles = new Vector();
 		for (Iterator iter = rootBasket.iterator(); iter.hasNext();) {
 			Root root = (Root)iter.next();
 			File file = new File(root.getPath()+"/"+path);
 			if(!file.exists()) continue;
-			if(!file.isDirectory()) throw new FatalException(file.getPath()+" is not a directory, attempt to getPath() on it");
+			if(!file.isDirectory()) throw new FatalException(file.getPath()+" is not a directory, attempt to getFiles() on it");
 			if(!file.canRead()) throw new FatalException("Cannot read: "+file);
-			String tmpFiles[] = file.list(); //returns null if not a dir, blah!
-			if(tmpFiles == null) throw new NullPointerException("list() on "+file+" returned null, permission denied?");
-
+			File tmpFiles[] = file.listFiles(); //returns null if not a dir, blah!
+			if(tmpFiles == null) throw new NullPointerException("list() on "+file+" returned null");
 			for (int i = 0; i < tmpFiles.length; i++) {
 				try {
-					filefiles.add(new FileRemoteFile(rootBasket, path+File.separatorChar+tmpFiles[i]));
+					if(tmpFiles[i].isDirectory() && isEmptyDeleted(tmpFiles[i])) continue;
+					FileRemoteFile listfile = new FileRemoteFile(rootBasket, path+File.separatorChar+tmpFiles[i].getName());
+					filefiles.put(tmpFiles[i].getName(), listfile);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
 		}
-		return filefiles;
+	}
+	/**
+	 * @see net.sf.drftpd.remotefile.RemoteFile#getFiles()
+	 */
+	public Collection getFiles() {
+		buildFileFiles();
+		return filefiles.values();
 	}
 
+	/**
+	 * @return true if directory contained no files and is now deleted, false otherwise.
+	 */
+	private static boolean isEmptyDeleted(File dir) {
+		File listfiles[] = dir.listFiles();
+		if(listfiles == null) throw new FatalException("Not a directory or IO error: "+dir);
+		for (int i = 0; i < listfiles.length; i++) {
+			File file = listfiles[i];
+			if(file.isFile()) return false;
+		}
+		
+		for (int i = 0; i < listfiles.length; i++) {
+			File file = listfiles[i];
+			if(isEmptyDeleted(file)) return false;
+		}
+		dir.delete();
+		return true;
+	}
+	
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.remotefile.RemoteFile#getSlaves()
 	 */

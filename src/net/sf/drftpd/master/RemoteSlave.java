@@ -39,6 +39,10 @@ public class RemoteSlave implements Serializable, Comparable {
 		this.name = name;
 	}
 
+	public RemoteSlave(String name, Collection masks, SlaveManagerImpl manager) {
+		this(name, masks);
+		this.manager = manager;
+	}
 	public RemoteSlave(String name, Collection masks) {
 		this.name = name;
 		this.masks = masks;

@@ -165,7 +165,7 @@ public class IRCListener implements FtpListener, Observer {
 						"xfersdn",
 						Integer.toString(status.getTransfersSending()));
 					env.add(
-						"throughputdn",
+						"througputdown",
 						Bytes.formatBytes(status.getThroughputSending()));
 
 					env.add(
@@ -219,7 +219,7 @@ public class IRCListener implements FtpListener, Observer {
 								rslave.getSlave().getSlaveStatus();
 							ReplacerFormat format =
 								ReplacerFormat.createFormat(
-									"[ xfers total: ${totalxfers} ${totalthroughput}/s ] [ up ${upxfers} ${upthroughput} ] [ down ${downxfers} ${downthroughput} ]");
+									"[ xfers total: ${totalxfers} ${totalthroughput}/s ] [ up ${upxfers} ${througputup} ] [ down ${xfersdown} ${througputdown} ]");
 							ReplacerEnvironment env = new ReplacerEnvironment();
 
 							env.add(
@@ -234,16 +234,16 @@ public class IRCListener implements FtpListener, Observer {
 								"upxfers",
 								new Integer(status.getTransfersReceiving()));
 							env.add(
-								"upthroughput",
+								"througputup",
 								Bytes.formatBytes(
 									status.getThroughputReceiving())
 									+ "/s");
 
 							env.add(
-								"downxfers",
+								"xfersdown",
 								new Integer(status.getTransfersSending()));
 							env.add(
-								"downthroughput",
+								"througputdown",
 								Bytes.formatBytes(
 									status.getThroughputSending()));
 							statusString = SimplePrintf.jprintf(format, env);

@@ -3907,7 +3907,7 @@ public class FtpConnection extends BaseFtpConnection {
 	protected String status() {
 		return " [Credits: "
 			+ Bytes.formatBytes(_user.getCredits())
-			+ "B] [Ratio: 1:"
+			+ "] [Ratio: 1:"
 			+ _user.getRatio()
 			+ "]";
 	}

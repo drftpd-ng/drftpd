@@ -68,14 +68,10 @@ public class SlaveImpl
 	}
 
 	private Vector transfers = new Vector();
-	private InetAddress _address;
 	private static Logger logger = Logger.getLogger(SlaveImpl.class.getName());
 	static {
 		logger.setLevel(Level.FINEST);
 	}
-	//Properties cfg;
-
-	SlaveManager slavemanager;
 	//private String root;
 	private RootBasket roots;
 	private String slavemanagerurl;
@@ -87,16 +83,11 @@ public class SlaveImpl
 	}
 
 	public void register() {
-		System.out.println("register() _manager is "+_manager);
 		while (true) {
 			try {
 				SlaveManager manager;
-				if(_manager == null) {
 				logger.log(Level.INFO, "Getting master reference");
 				manager = (SlaveManager) Naming.lookup(slavemanagerurl);
-				} else {
-					manager = _manager;
-				}
 
 				logger.log(
 					Level.INFO,
@@ -267,64 +258,6 @@ public class SlaveImpl
 	 * @see net.sf.drftpd.slave.Slave#ping()
 	 */
 	public void ping() {
-	}
-
-	/////////////////// TRANSFER METHODS ///////////////////////////
-	// SEND
-
-	/**
-	 * Starts sending 'remotefile' starting at 'offset' bytes to a outputstream from the already connected socket 'sock'.
-	 * @deprecated
-	 */
-	private Transfer doSend(
-		String path,
-		char type,
-		long offset,
-		Connection conn)
-		throws IOException {
-
-		File file = roots.getFile(path); // throws FileNotFoundException
-
-		FileInputStream in = new FileInputStream(file);
-		// throws FileNotFoundException
-		in.skip(offset);
-
-		TransferImpl transfer = new TransferImpl(transfers, in, conn, type);
-		return transfer;
-	}
-
-	//	private Transfer doListen() {
-	//		return new PassiveConnection();
-	//	}
-
-	//RECEIVE
-	/**
-	 * Generic upload/receive method.
-	 * @deprecated
-	 */
-	private Transfer doReceive(
-		String dirname,
-		String filename,
-		char type,
-		long offset,
-		Connection conn)
-		throws IOException {
-
-		String root = roots.getARoot().getPath();
-		new File(root + dirname).mkdirs();
-		File file =
-			new File(
-				root + File.separator + dirname + File.separator + filename);
-		FileOutputStream out = new FileOutputStream(file);
-
-		//		Socket sock = conn.connect();
-		//		InputStream in = sock.getInputStream();
-		/*
-				CRC32 checksum = new CRC32();
-				CheckedOutputStream cos = new CheckedOutputStream(os, checksum);
-		*/
-		TransferImpl transfer = new TransferImpl(transfers, conn, out);
-		return transfer;
 	}
 
 	/**

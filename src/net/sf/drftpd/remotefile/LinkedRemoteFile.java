@@ -650,7 +650,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 
 			if(mergefile.isDirectory() && mergefile.length() == 0) {
 				logger.log(Level.SEVERE, "Attempt to add empty directory: "+mergefile+" from "+rslave.getName());
-				continue;
 			}
 
 			LinkedRemoteFile file =
