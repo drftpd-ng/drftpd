@@ -28,6 +28,7 @@ import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 
 import org.drftpd.slave.Slave;
+import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.PrintWriter;
 
@@ -187,10 +188,13 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
                 }
             }
         }
-        if ("".equals(msg))
-            return new Reply(200,"No help for site "+ cmd);
-        
+
         ResourceBundle bundle = ResourceBundle.getBundle(Misc.class.getName());      
+        ReplacerEnvironment env = new ReplacerEnvironment();
+        env.add("cmd",cmd);
+        if ("".equals(msg))
+            return new Reply(200,conn.jprintf(Misc.class,"help.nohelp", env));
+        
         if ("".equals(cmd)) {
             response.addComment(bundle.getString("help.header"));
             response.addComment(msg);
