@@ -1,6 +1,6 @@
 package net.sf.drftpd.master.sections;
 
-import java.util.List;
+import java.util.Collection;
 
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
