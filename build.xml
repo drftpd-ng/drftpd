@@ -160,8 +160,7 @@
     	<include name="conf/log4j-*.properties" />
     	<include name="lib/*"/>
     	<include name="src/**"/>
-    	<include name="classes/**"/>
-    	<include name="ftp-data/text/**"/>
+    	<include name="text/**"/>
     	<include name="extsources/*"/>
     	<include name="bin/*"/>
     	<exclude name="src/org/drftpd/friendly/**"/>

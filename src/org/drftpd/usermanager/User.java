@@ -33,7 +33,7 @@ import org.drftpd.master.ConnectionManager;
 public abstract class User implements Entity {
     public abstract UserManager getUserManager();
 
-    public abstract KeyedMap getKeyedMap();
+    public abstract KeyedMap<Key, Object> getKeyedMap();
     public abstract void addAllMasks(HostMaskCollection hostMaskCollection);
 
     public abstract void addIPMask(String mask)

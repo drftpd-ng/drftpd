@@ -1,3 +1,6 @@
+2005/01/05 Morgan Christiansson <drftpd@mog.se>
+* Fixed bug in KeyedMap that allowed duplicate keys to be added.
+
 2005/01/04 Jamal James <teflon114@gmail.com>
 * Added getCommandsHelp() to all irc plugins which will be msg'd to user on !help
 

@@ -43,9 +43,9 @@ public class Key implements Serializable {
             return false;
         }
 
-        Key k = (Key) o;
+        Key ok = (Key) o;
 
-        return k.getOwner().equals(getOwner()) && k.getKey().equals(getKey());
+        return ok.getOwner() == getOwner() && ok.getKey().equals(getKey());
     }
 
     public String getKey() {
@@ -67,4 +67,7 @@ public class Key implements Serializable {
     public String toString(Object value) {
         return value.toString();
     }
+	public int hashCode() {
+		return toString().hashCode();
+	}
 }

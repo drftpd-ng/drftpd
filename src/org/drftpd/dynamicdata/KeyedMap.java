@@ -17,8 +17,11 @@
 package org.drftpd.dynamicdata;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
+
+import org.apache.log4j.Logger;
 
 
 
@@ -27,7 +30,9 @@ import java.util.Map;
  * @author mog
  * @version $Id$
  */
-public class KeyedMap extends Hashtable {
+public class KeyedMap<K, V> extends Hashtable {
+	private static final Logger logger = Logger.getLogger(KeyedMap.class);
+
 	public KeyedMap() {
 		super();
 	}
@@ -133,7 +138,6 @@ public class KeyedMap extends Hashtable {
             throw new ClassCastException(key + " - " + key.getType().getName() +
                     " - " + obj + " - " + obj.getClass().getName());
         }
-
         put(key, obj);
 	}
 
@@ -143,5 +147,10 @@ public class KeyedMap extends Hashtable {
 
 	public void setObject(Key k, long v) {
 		setObject(k, new Long(v));
+	}
+
+	public Object put(K key, V value) {
+		logger.debug("put() "+key+" "+value+" remove: "+remove(key));
+		return super.put(key, value);
 	}
 }
