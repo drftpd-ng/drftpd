@@ -83,28 +83,31 @@ public class Who extends IRCCommand {
                     ((System.currentTimeMillis() - conn.getLastActive()) / 1000) +
                     "s");
                 env.add("targetuser", user.getName());
+                
+                synchronized (conn.getDataConnectionHandler()) {
+					if (!conn.getDataConnectionHandler().isTransfering()
+							&& idle) {
+						out.add(SimplePrintf.jprintf(formatidle, env));
+					} else {
+						env.add("speed", Bytes.formatBytes(conn
+								.getDataConnectionHandler().getTransfer()
+								.getXferSpeed())
+								+ "/s");
 
-                if (!conn.getDataConnectionHandler().isTransfering() && idle) {
-                	out.add(SimplePrintf.jprintf(formatidle, env));
-                } else {
-                    env.add("speed",
-                        Bytes.formatBytes(conn.getDataConnectionHandler()
-                                              .getTransfer().getXferSpeed()) +
-                        "/s");
+						env.add("file", conn.getDataConnectionHandler()
+								.getTransferFile().getName());
+						env.add("slave", conn.getDataConnectionHandler()
+								.getTranferSlave().getName());
 
-                    env.add("file",
-                        conn.getDataConnectionHandler().getTransferFile()
-                            .getName());
-                    env.add("slave",
-                        conn.getDataConnectionHandler().getTranferSlave()
-                            .getName());
-
-                    if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD && up) {
-                        out.add(SimplePrintf.jprintf(formatup, env));
-                    } else if (conn.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD && down) {
-                            out.add(SimplePrintf.jprintf(formatdown, env));
-                    }
-                }
+						if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD
+								&& up) {
+							out.add(SimplePrintf.jprintf(formatup, env));
+						} else if (conn.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD
+								&& down) {
+							out.add(SimplePrintf.jprintf(formatdown, env));
+						}
+					}
+				}
                 
             }
         } catch (FormatterException e) {

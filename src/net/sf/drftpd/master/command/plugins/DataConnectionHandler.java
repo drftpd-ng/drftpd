@@ -817,7 +817,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         return _rslave;
     }
 
-    public RemoteTransfer getTransfer() {
+    public synchronized RemoteTransfer getTransfer() {
         if (_transfer == null) {
             throw new IllegalStateException();
         }
@@ -864,14 +864,14 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         return _preTransfer || isPasv();
     }
 
-    public boolean isTransfering() {
+    public synchronized boolean isTransfering() {
         return _transfer != null;
     }
 
     public void load(CommandManagerFactory initializer) {
     }
 
-    protected void reset() {
+    protected synchronized void reset() {
         _rslave = null;
         _transfer = null;
         _transferFile = null;
@@ -1008,7 +1008,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 
             // argument check
             if (!request.hasArgument()) {
-            	reset();
+            	// reset(); already done in finally block
                 return Reply.RESPONSE_501_SYNTAX_ERROR;
             }
 
@@ -1021,14 +1021,14 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                     _transferFile = conn.getCurrentDirectory().lookupFile(request.getArgument());
 
                     if (!_transferFile.isFile()) {
-                    	reset();
+                    	// reset(); already done in finally block
                         return new Reply(550, "Not a plain file");
                     }
 
                     targetDir = _transferFile.getParentFileNull();
                     targetFileName = _transferFile.getName();
                 } catch (FileNotFoundException ex) {
-                	reset();
+                	// reset(); already done in finally block
                     return new Reply(550, ex.getMessage());
                 }
             } else if (isStor) {
@@ -1042,7 +1042,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                 if (ret.exists()) {
                     // target exists, this could be overwrite or resume
                     //TODO overwrite & resume files.
-                	reset();
+                	// reset(); already done in finally block
                     return new Reply(550,
                         "Requested action not taken. File exists.");
 
@@ -1059,7 +1059,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 
                 if (!ListUtils.isLegalFileName(targetFileName) ||
                         !conn.getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), targetDir, true)) {
-                	reset();
+                	// reset(); already done in finally block
                     return new Reply(553,
                         "Requested action not taken. File name not allowed.");
                 }
@@ -1109,14 +1109,14 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                     //sfv not online, do nothing
                 }
              } else {
-            	reset();
+            	// reset(); already done in finally block
                 throw UnhandledCommandException.create(DataConnectionHandler.class,
                     request);
             }
 
             //check access
             if (!conn.getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), targetDir, true)) {
-            	reset();
+            	// reset(); already done in finally block
                 return new Reply(550,
                     request.getArgument() + ": No such file");
             }
@@ -1125,7 +1125,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             case Transfer.TRANSFER_SENDING_DOWNLOAD:
 
                 if (!conn.getGlobalContext().getConfig().checkPathPermission("download", conn.getUserNull(), targetDir)) {
-                	reset();
+                	// reset(); already done in finally block
                     return Reply.RESPONSE_530_ACCESS_DENIED;
                 }
 
@@ -1134,14 +1134,14 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             case Transfer.TRANSFER_RECEIVING_UPLOAD:
 
                 if (!conn.getGlobalContext().getConfig().checkPathPermission("upload", conn.getUserNull(), targetDir)) {
-                	reset();
+                	// reset(); already done in finally block
                     return Reply.RESPONSE_530_ACCESS_DENIED;
                 }
 
                 break;
 
             default:
-            	reset();
+            	// reset(); already done in finally block
                 throw UnhandledCommandException.create(DataConnectionHandler.class,
                     request);
             }
@@ -1155,7 +1155,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                                         conn.getUserNull()) != 0)
                         && (conn.getUserNull().getCredits() < _transferFile
                                 .length())) {
-                    reset();
+                	// reset(); already done in finally block
                     return new Reply(550, "Not enough credits.");
                 }
             }
@@ -1168,7 +1168,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                 //check pretransfer
                 if (isRetr &&
                         !_transferFile.getSlaves().contains(_preTransferRSlave)) {
-                	reset();
+                	// reset(); already done in finally block
                     return Reply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
                 }
 
@@ -1190,13 +1190,13 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                                 Transfer.TRANSFER_RECEIVING_UPLOAD, conn,
                                 targetDir);
                     } else {
-                    	reset();
+                    	// reset(); already done in finally block
                         throw new RuntimeException();
                     }
                 } catch (NoAvailableSlaveException ex) {
                 	//TODO Might not be good to 450 reply always
                 	//from rfc: 450 Requested file action not taken. File unavailable (e.g., file busy).
-                	reset();
+                	// reset(); already done in finally block
                 	throw new ReplySlaveUnavailableException(ex, 450);
                 }
             }
@@ -1204,7 +1204,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             if (isStor) {
                 //setup upload
                 if (_rslave == null) {
-                	reset();
+                	// reset(); already done in finally block
                     throw new NullPointerException();
                 }
 
@@ -1222,10 +1222,12 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                     String index = _rslave.issueConnectToSlave(_portAddress,
                             _encryptedDataChannel);
                     ConnectInfo ci = _rslave.fetchTransferResponseFromIndex(index);
-                    _transfer = _rslave.getTransfer(ci.getTransferIndex());
+                    synchronized (this) {
+                    	_transfer = _rslave.getTransfer(ci.getTransferIndex());
+                    }
                 } catch (Exception ex) {
                     logger.fatal("rslave=" + _rslave, ex);
-                    reset();
+                	// reset(); already done in finally block
                     return new Reply(450,
                         ex.getClass().getName() + " from slave: " +
                         ex.getMessage());
@@ -1233,13 +1235,8 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             } else if (isPasv()) {
                 //_transfer is already set up by doPASV()
             } else {
-            	reset();
+            	// reset(); already done in finally block
                 return Reply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
-            }
-
-            if (_transfer == null) {
-            	reset();
-                throw new NullPointerException();
             }
 
             {
@@ -1317,7 +1314,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                 }
                 
                 reply.addComment(ex.getMessage());
-                reset();
+            	// reset(); already done in finally block
                 return reply;
             } catch (SlaveUnavailableException e) {
             	logger.debug("", e);
@@ -1336,7 +1333,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                 }
 
                 reply.addComment(e.getLocalizedMessage());
-                reset();
+            	// reset(); already done in finally block
                 return reply;
             }
 
