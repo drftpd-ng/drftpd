@@ -126,3 +126,6 @@ SITE\ IRC=net.sf.drftpd.master.command.plugins.IRC
 SITE\ SECTIONS=org.drftpd.commands.Sections
 
 SITE\ NEW=org.drftpd.commands.New
+
+SITE\ ARCHIVE=org.drftpd.commands.Archive
+

@@ -54,19 +54,17 @@ public class ArchiveHandler extends Thread {
 			_archiveType.setDirectory(_archiveType.getOldestNonArchivedDir());
 			if (_archiveType.getDirectory() == null)
 				return; // all done
-			if (_archiveType.getRSlaves() == null) {
-				_archiveType.setRSlaves(_archiveType.findDestinationSlaves());
-			}
+		}
+		if (_archiveType.getRSlaves() == null) {
+			_archiveType.setRSlaves(_archiveType.findDestinationSlaves());
 		}
 		if (_archiveType.getRSlaves() == null)
-			throw new RuntimeException("getRSlaves() is not working");
+			throw new IllegalStateException("getRSlaves() is null");
 		ArrayList jobs = _archiveType.send();
 		_archiveType.waitForSendOfFiles(new ArrayList(jobs));
 		_archiveType.cleanup(jobs);
-		logger.info("directory = " + getArchiveType().getDirectory());
 		logger.info(
 			"Done archiving " + getArchiveType().getDirectory().getPath());
-
 	}
 
 }
