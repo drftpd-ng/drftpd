@@ -20,11 +20,11 @@ package org.drftpd.tests;
 import java.util.Properties;
 
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
+import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.sections.SectionManagerInterface;
 
 

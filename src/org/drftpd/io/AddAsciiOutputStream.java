@@ -15,42 +15,48 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.util;
+package org.drftpd.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
 
 /**
- * OutputStream filter that strips the \r from \r\n sequences.
+ * AddAsciiOutputStream that ensures that there's an \r before every \n.
  *
- * @author mog
- * @version $Id: StripAsciiOutputStream.java,v 1.4 2004/08/03 20:14:03 zubov Exp $
+ * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
+ * @version $Id: AddAsciiOutputStream.java 711 2004-09-25 03:48:43Z mog $
  */
-public class StripAsciiOutputStream extends OutputStream {
+public class AddAsciiOutputStream extends OutputStream {
     private OutputStream _out;
-    boolean _lastWasCarriageReturn = false;
+    private boolean _lastWasCarriageReturn = false;
 
-    public StripAsciiOutputStream(OutputStream out) {
-        _out = out;
+    /**
+     * Constructor.
+     * @param os <code>java.io.OutputStream</code> to be filtered.
+     */
+    public AddAsciiOutputStream(OutputStream os) {
+        _out = os;
     }
 
-    public void write(int b) throws IOException {
-        if (b == '\r') {
+    /**
+     * Write a single byte.
+     * ASCII characters are defined to be
+     * the lower half of an eight-bit code set (i.e., the most
+     * significant bit is zero). Change "\n" to "\r\n".
+     */
+    public void write(int i) throws IOException {
+        if ((i == '\n') && !_lastWasCarriageReturn) {
+            _out.write('\r');
+        }
+
+        _lastWasCarriageReturn = false;
+
+        if (i == '\r') {
             _lastWasCarriageReturn = true;
-
-            return;
         }
 
-        if (_lastWasCarriageReturn) {
-            _lastWasCarriageReturn = false;
-
-            if (b != '\n') {
-                _out.write('\r');
-            }
-        }
-
-        _out.write(b);
+        _out.write(i);
     }
 
     public void close() throws IOException {

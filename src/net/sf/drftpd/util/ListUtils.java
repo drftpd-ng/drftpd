@@ -19,15 +19,15 @@ package net.sf.drftpd.util;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 import org.apache.log4j.Logger;
 import org.drftpd.SFVFile;
 import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.Reply;
 import org.drftpd.id3.ID3Tag;
+import org.drftpd.remotefile.LinkedRemoteFile;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.remotefile.StaticRemoteFile;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

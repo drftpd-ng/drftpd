@@ -8,9 +8,6 @@ package org.drftpd.remotefile;
 
 import junit.framework.TestCase;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 import java.io.FileNotFoundException;
 
@@ -19,7 +16,7 @@ import java.util.Stack;
 
 /**
  * @author mog
- * @version $Id: FileUtilsTest.java,v 1.1 2004/09/25 03:48:39 mog Exp $
+ * @version $Id$
  */
 public class FileUtilsTest extends TestCase {
     public FileUtilsTest(String fName) {

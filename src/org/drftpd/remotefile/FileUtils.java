@@ -17,16 +17,17 @@
  */
 package org.drftpd.remotefile;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+import net.sf.drftpd.ObjectNotFoundException;
 
 import java.io.FileNotFoundException;
 
+import java.util.Iterator;
 import java.util.Stack;
 
 
 /**
  * @author mog
- * @version $Id: FileUtils.java,v 1.3 2004/09/25 03:48:39 mog Exp $
+ * @version $Id$
  */
 public class FileUtils {
     /**
@@ -59,4 +60,25 @@ public class FileUtils {
 
         return (LinkedRemoteFileInterface) s.peek();
     }
+
+	public static LinkedRemoteFile getOldestFile(LinkedRemoteFileInterface dir) throws ObjectNotFoundException {
+	    Iterator iter = dir.getFiles().iterator();
+	    if (!iter.hasNext())
+	        throw new ObjectNotFoundException();
+	
+	    LinkedRemoteFile oldestFile = (LinkedRemoteFile) iter.next();
+	
+	    for (; iter.hasNext();) {
+	        LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+	        if(file.isDirectory()) {
+	        	LinkedRemoteFile oldestFile2 = getOldestFile(file);
+	        	if(oldestFile.lastModified() > oldestFile2.lastModified())
+	        		oldestFile = oldestFile2;
+	        } else if (oldestFile.lastModified() > file.lastModified()) {
+	            oldestFile = file;
+	        }
+	    }
+	
+	    return oldestFile;
+	}
 }

@@ -21,12 +21,12 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.plugins.Textoutput;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Logger;
 
 import org.drftpd.Bytes;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
 
 import org.tanesha.replacer.ReplacerEnvironment;

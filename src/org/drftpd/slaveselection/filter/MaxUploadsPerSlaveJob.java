@@ -23,10 +23,10 @@ import java.util.Properties;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.mirroring.JobManager;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
 
 /**

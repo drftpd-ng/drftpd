@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.event.irc;
+package org.drftpd.sitebot;
 
 import f00f.net.irc.martyr.GenericAutoService;
 import f00f.net.irc.martyr.InCommand;
@@ -41,7 +41,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: Slaves.java 806 2004-11-17 22:29:13Z mog $
  */
 public class Slaves extends GenericAutoService implements IRCPluginInterface {
     private static final int LEN2 = "!slave ".length();

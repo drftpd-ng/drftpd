@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.remotefile;
+package org.drftpd.remotefile;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -26,17 +26,15 @@ import java.util.Set;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 
 import org.drftpd.SFVFile;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.CaseInsensitiveHashtable;
-import org.drftpd.remotefile.RemoteFileInterface;
+import org.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: LinkedRemoteFileInterface.java 833 2004-11-30 00:24:46Z mog $
  *
  */
 public interface LinkedRemoteFileInterface extends RemoteFileInterface {
@@ -109,9 +107,6 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
      * @return the underlying Map for this directory.
      */
     public abstract Map getMap();
-
-    public abstract LinkedRemoteFileInterface getOldestFile()
-        throws ObjectNotFoundException;
 
     public abstract LinkedRemoteFile getParentFile()
         throws FileNotFoundException;

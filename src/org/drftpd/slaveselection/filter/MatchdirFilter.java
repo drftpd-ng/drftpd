@@ -24,7 +24,6 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.Pattern;
@@ -32,6 +31,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
 
 

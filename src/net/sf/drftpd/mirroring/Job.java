@@ -16,7 +16,6 @@
  */
 package net.sf.drftpd.mirroring;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -25,6 +24,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 
 
 /**

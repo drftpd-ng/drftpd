@@ -17,7 +17,6 @@
  */
 package net.sf.drftpd.master.config;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.Logger;
@@ -30,6 +29,7 @@ import org.drftpd.commands.Reply;
 import org.drftpd.commands.UserManagment;
 
 import org.drftpd.master.ConnectionManager;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.Slave;
 
 import org.drftpd.usermanager.User;

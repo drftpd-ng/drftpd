@@ -17,8 +17,9 @@
  */
 package net.sf.drftpd.event;
 
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 
 /**

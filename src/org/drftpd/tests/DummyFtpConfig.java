@@ -22,12 +22,12 @@ import java.io.StringReader;
 import java.util.Properties;
 
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.util.PortRange;
 
 import org.drftpd.commands.UserManagment;
 
 import org.drftpd.master.ConnectionManager;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
 
 public class DummyFtpConfig extends FtpConfig {

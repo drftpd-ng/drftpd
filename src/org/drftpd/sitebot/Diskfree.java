@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.event.irc;
+package org.drftpd.sitebot;
 
 import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.InCommand;
@@ -34,7 +34,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author zubov
- * @version $Id$
+ * @version $Id: Diskfree.java 808 2004-11-18 15:58:39Z mog $
  */
 public class Diskfree extends GenericCommandAutoService
     implements IRCPluginInterface {

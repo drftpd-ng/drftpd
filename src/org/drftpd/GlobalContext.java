@@ -24,15 +24,15 @@ import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.master.SlaveFileException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.JobManager;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.remotefile.MLSTSerialize;
 import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.Logger;
 
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
+import org.drftpd.remotefile.LinkedRemoteFile;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.remotefile.MLSTSerialize;
 import org.drftpd.sections.SectionManagerInterface;
 
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;

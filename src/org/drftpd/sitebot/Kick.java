@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.event.irc;
+package org.drftpd.sitebot;
 
 import java.util.ArrayList;
 
@@ -41,7 +41,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author Teflon
- * @version $Id$
+ * @version $Id: Kick.java 820 2004-11-26 04:54:18Z mog $
  */
 public class Kick extends GenericAutoService implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Kick.class);

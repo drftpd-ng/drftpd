@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.event.irc;
+package org.drftpd.sitebot;
 
 import f00f.net.irc.martyr.GenericAutoService;
 import f00f.net.irc.martyr.InCommand;
@@ -49,7 +49,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: Who.java 820 2004-11-26 04:54:18Z mog $
  */
 public class Who extends GenericAutoService implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Who.class);

@@ -20,7 +20,6 @@ package org.drftpd.mirroring.archivetypes;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 
@@ -28,6 +27,7 @@ import org.drftpd.PropertyHelper;
 import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.plugins.Archive;
 
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
 
 import java.util.ArrayList;

@@ -23,12 +23,12 @@ import junit.framework.TestSuite;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.master.SlaveFileException;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
 
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.slave.async.AsyncResponse;
 

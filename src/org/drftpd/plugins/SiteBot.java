@@ -41,12 +41,9 @@ import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.event.TransferEvent;
-import net.sf.drftpd.event.irc.IRCPluginInterface;
 import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.Time;
 
@@ -64,7 +61,11 @@ import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
 
+import org.drftpd.remotefile.FileUtils;
+import org.drftpd.remotefile.LinkedRemoteFile;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
+import org.drftpd.sitebot.IRCPluginInterface;
 import org.drftpd.slave.SlaveStatus;
 
 import org.drftpd.usermanager.NoSuchUserException;
@@ -816,7 +817,7 @@ public class SiteBot implements FtpListener, Observer {
         long starttime;
 
         try {
-            starttime = dir.getOldestFile().lastModified();
+            starttime = FileUtils.getOldestFile(dir).lastModified();
         } catch (ObjectNotFoundException e) {
             starttime = dir.lastModified();
         }

@@ -1,7 +1,6 @@
 package org.drftpd.tests;
 
 import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.LightSFVFile;
@@ -10,6 +9,7 @@ import org.drftpd.SFVFile;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
+import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.TransferIndex;

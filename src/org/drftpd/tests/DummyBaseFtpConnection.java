@@ -22,10 +22,10 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 import org.drftpd.Bytes;
+import org.drftpd.remotefile.LinkedRemoteFile;
+import org.drftpd.remotefile.StaticRemoteFile;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 
@@ -44,7 +44,7 @@ import javax.net.SocketFactory;
 
 /**
  * @author mog
- * @version $Id: DummyBaseFtpConnection.java,v 1.14 2004/11/09 19:00:00 mog Exp $
+ * @version $Id$
  */
 public class DummyBaseFtpConnection extends BaseFtpConnection {
     private InetAddress _clientAddress;

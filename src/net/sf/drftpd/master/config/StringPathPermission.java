@@ -17,9 +17,10 @@
  */
 package net.sf.drftpd.master.config;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import java.util.Collection;
+
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 
 
 /**

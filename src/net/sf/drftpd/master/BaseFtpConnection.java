@@ -23,8 +23,6 @@ import net.sf.drftpd.event.ConnectionEvent;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.util.AddAsciiOutputStream;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.Time;
 
@@ -38,7 +36,9 @@ import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UserManagment;
 import org.drftpd.dynamicdata.Key;
+import org.drftpd.io.AddAsciiOutputStream;
 
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;

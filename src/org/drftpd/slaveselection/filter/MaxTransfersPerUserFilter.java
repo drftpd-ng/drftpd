@@ -19,11 +19,11 @@ package org.drftpd.slaveselection.filter;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;
@@ -36,11 +36,12 @@ import java.util.Properties;
  * @version $Id$
  */
 public class MaxTransfersPerUserFilter extends Filter {
-	private GlobalContext _gctx;
-	private static final Logger logger = Logger.getLogger(MaxTransfersPerUserFilter.class);
 
-	public MaxTransfersPerUserFilter(FilterChain ssm, int i,
-			Properties p) {
+	private static final Logger logger = Logger
+			.getLogger(MaxTransfersPerUserFilter.class);
+	private GlobalContext _gctx;
+
+	public MaxTransfersPerUserFilter(FilterChain ssm, int i, Properties p) {
 		this(ssm.getGlobalContext());
 	}
 
@@ -48,8 +49,7 @@ public class MaxTransfersPerUserFilter extends Filter {
 		_gctx = gctx;
 	}
 
-	public void process(ScoreChart scorechart, User user, InetAddress peer,
-			char direction, LinkedRemoteFileInterface dir, RemoteSlave sourceSlave)
+	public void process(ScoreChart scorechart, char direction)
 			throws NoAvailableSlaveException {
 
 		for (BaseFtpConnection conn : _gctx.getConnectionManager()
@@ -63,11 +63,19 @@ public class MaxTransfersPerUserFilter extends Filter {
 				ScoreChart.SlaveScore score = iter2.next();
 
 				if (score.getRSlave().equals(
-						conn.getDataConnectionHandler().getTranferSlave()) && direction == conn.getDirection()) {
-					logger.debug("Already has a transfer for slave "+score.getRSlave().getName());
+						conn.getDataConnectionHandler().getTranferSlave())
+						&& direction == conn.getDirection()) {
+					logger.debug("Already has a transfer for slave "
+							+ score.getRSlave().getName());
 					iter2.remove();
 				}
 			}
 		}
+	}
+
+	public void process(ScoreChart scorechart, User user, InetAddress peer,
+			char direction, LinkedRemoteFileInterface dir,
+			RemoteSlave sourceSlave) throws NoAvailableSlaveException {
+		process(scorechart,direction);
 	}
 }

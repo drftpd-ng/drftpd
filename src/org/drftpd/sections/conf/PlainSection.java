@@ -22,16 +22,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.PropertyHelper;
 import org.drftpd.remotefile.FileUtils;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
 
 
 /**
  * @author mog
- * @version $Id: PlainSection.java,v 1.11 2004/11/15 01:12:16 mog Exp $
+ * @version $Id$
  */
 public class PlainSection implements SectionInterface {
     private String _dir;

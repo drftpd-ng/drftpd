@@ -17,10 +17,10 @@
  */
 package org.drftpd.sections.def;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.remotefile.FileUtils;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;

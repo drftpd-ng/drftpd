@@ -20,7 +20,6 @@ package org.drftpd.remotefile;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 
 /**

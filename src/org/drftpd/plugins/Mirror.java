@@ -30,7 +30,6 @@ import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.PatternPathPermission;
 import net.sf.drftpd.mirroring.Job;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 import org.apache.oro.text.GlobCompiler;
@@ -38,6 +37,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import com.Ostermiller.util.StringTokenizer;
 

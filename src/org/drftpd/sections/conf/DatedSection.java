@@ -28,14 +28,14 @@ import java.util.Properties;
 import java.util.TimeZone;
 import java.util.TimerTask;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.remotefile.FileUtils;
+import org.drftpd.remotefile.LinkedRemoteFile;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.remotefile.StaticRemoteFile;
 import org.drftpd.sections.SectionInterface;
 
 

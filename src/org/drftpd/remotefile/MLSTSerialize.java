@@ -15,16 +15,15 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.remotefile;
+package org.drftpd.remotefile;
 
 import net.sf.drftpd.Checksum;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 
 import org.apache.log4j.Logger;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.RemoteFileInterface;
+import org.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -46,7 +45,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: MLSTSerialize.java 806 2004-11-17 22:29:13Z mog $
  */
 public class MLSTSerialize {
     private static final Logger logger = Logger.getLogger(MLSTSerialize.class);

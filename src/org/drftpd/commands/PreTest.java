@@ -21,11 +21,11 @@ import junit.framework.TestCase;
 
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.SlaveFileException;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.remotefile.MLSTSerialize;
-import net.sf.drftpd.remotefile.StaticRemoteFile;
 
+import org.drftpd.remotefile.LinkedRemoteFile;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.remotefile.MLSTSerialize;
+import org.drftpd.remotefile.StaticRemoteFile;
 import org.drftpd.sections.def.SectionManager;
 
 import org.drftpd.tests.DummyBaseFtpConnection;

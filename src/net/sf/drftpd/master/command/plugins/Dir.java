@@ -27,10 +27,6 @@ import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.remotefile.StaticRemoteFile;
 import net.sf.drftpd.util.ListUtils;
 import net.sf.drftpd.util.ReplacerUtils;
 
@@ -47,6 +43,10 @@ import org.drftpd.commands.UserManagment;
 import org.drftpd.id3.ID3Tag;
 
 import org.drftpd.plugins.SiteBot;
+import org.drftpd.remotefile.LinkedRemoteFile;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.remotefile.StaticRemoteFile;
+import org.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;

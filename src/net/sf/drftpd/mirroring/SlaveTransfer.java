@@ -18,12 +18,12 @@ package net.sf.drftpd.mirroring;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.TransferFailedException;

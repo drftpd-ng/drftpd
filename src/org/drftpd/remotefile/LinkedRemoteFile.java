@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.remotefile;
+package org.drftpd.remotefile;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -43,10 +43,6 @@ import org.apache.log4j.Logger;
 import org.drftpd.SFVFile;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.AbstractRemoteFile;
-import org.drftpd.remotefile.CaseInsensitiveHashtable;
-import org.drftpd.remotefile.LightRemoteFile;
-import org.drftpd.remotefile.RemoteFileInterface;
 import org.drftpd.slave.RemoteIOException;
 
 
@@ -54,7 +50,7 @@ import org.drftpd.slave.RemoteIOException;
  * Represents the file attributes of a remote file.
  *
  * @author mog
- * @version $Id$
+ * @version $Id: LinkedRemoteFile.java 840 2004-12-01 05:00:54Z mog $
  */
 public class LinkedRemoteFile implements Serializable, Comparable,
     LinkedRemoteFileInterface {
@@ -225,13 +221,8 @@ public class LinkedRemoteFile implements Serializable, Comparable,
             LinkedRemoteFile fromFile = (LinkedRemoteFile) iter.next();
 
             LinkedRemoteFile toFile;
-
             try {
                 toFile = (LinkedRemoteFile) toDir.getFile(fromFile.getName());
-            } catch (QueuedDeletionException e) {
-                fromFile.delete();
-
-                continue;
             } catch (FileNotFoundException e) {
                 toFile = toDir.putFile(fromFile);
             }
@@ -669,27 +660,6 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
     public String getName() {
         return _name;
-    }
-
-    public LinkedRemoteFileInterface getOldestFile()
-        throws ObjectNotFoundException {
-        Iterator iter = getFiles().iterator();
-
-        if (!iter.hasNext()) {
-            throw new ObjectNotFoundException();
-        }
-
-        LinkedRemoteFile oldestFile = (LinkedRemoteFile) iter.next();
-
-        for (; iter.hasNext();) {
-            LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-
-            if (oldestFile.lastModified() > file.lastModified()) {
-                oldestFile = file;
-            }
-        }
-
-        return oldestFile;
     }
 
     public String getParent() throws FileNotFoundException {
@@ -1706,5 +1676,4 @@ public class LinkedRemoteFile implements Serializable, Comparable,
             getPath() + "]";
         }
     }
-
 }

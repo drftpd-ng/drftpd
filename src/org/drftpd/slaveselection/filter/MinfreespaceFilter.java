@@ -19,11 +19,11 @@ package org.drftpd.slaveselection.filter;
 
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.Bytes;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;

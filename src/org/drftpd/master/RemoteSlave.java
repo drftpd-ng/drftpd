@@ -41,7 +41,6 @@ import java.util.StringTokenizer;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.SlaveEvent;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
@@ -50,6 +49,7 @@ import org.drftpd.LightSFVFile;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.io.SafeFileOutputStream;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.RemoteIOException;

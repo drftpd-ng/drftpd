@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.util;
+package org.drftpd.io;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +25,7 @@ import java.io.InputStream;
  * Not thread-safe (is any-In/OutputStream thread-safe?).
  *
  * @author mog
- * @version $Id: StripAsciiInputStream.java,v 1.5 2004/11/03 05:43:23 zubov Exp $
+ * @version $Id: StripAsciiInputStream.java 750 2004-11-03 05:43:25Z zubov $
  */
 public class StripAsciiInputStream extends InputStream {
     private InputStream _in;

@@ -17,6 +17,8 @@
  */
 package org.drftpd.plugins;
 
+import org.drftpd.sitebot.IRCPluginInterface;
+
 import f00f.net.irc.martyr.GenericAutoService;
 import f00f.net.irc.martyr.IRCConnection;
 import f00f.net.irc.martyr.InCommand;
@@ -29,12 +31,11 @@ import f00f.net.irc.martyr.errors.ChannelInviteOnlyError;
 import f00f.net.irc.martyr.errors.ChannelLimitError;
 import f00f.net.irc.martyr.errors.ChannelWrongKeyError;
 
-import net.sf.drftpd.event.irc.IRCPluginInterface;
 
 
 /**
  * @author mog
- * @version $Id: OnConnect.java,v 1.4 2004/08/03 20:14:05 zubov Exp $
+ * @version $Id$
  */
 public class OnConnect extends GenericAutoService implements IRCPluginInterface {
     private State _state;

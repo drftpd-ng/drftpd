@@ -17,11 +17,11 @@
  */
 package org.drftpd.sections;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import java.util.Collection;
 
 import org.drftpd.master.ConnectionManager;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 
 
 /**

@@ -19,8 +19,6 @@ package org.drftpd;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoSFVEntryException;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -33,10 +31,13 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.drftpd.remotefile.LinkedRemoteFile;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+
 
 /**
  * @author mog
- * @version $Id: SFVFile.java,v 1.1 2004/11/09 18:59:53 mog Exp $
+ * @version $Id$
  */
 public class SFVFile extends AbstractSFVFile {
     private transient LinkedRemoteFileInterface _companion;

@@ -28,13 +28,13 @@ import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.SlaveFileException;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 import org.apache.log4j.BasicConfigurator;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
+import org.drftpd.remotefile.LinkedRemoteFile;
+import org.drftpd.remotefile.StaticRemoteFile;
 import org.drftpd.sections.def.SectionManager;
 import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyConnectionManager;

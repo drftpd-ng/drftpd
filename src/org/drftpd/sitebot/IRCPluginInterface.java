@@ -15,21 +15,13 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.remotefile;
-
-import java.io.FileNotFoundException;
+package org.drftpd.sitebot;
 
 
 /**
- * @author mog
- * @version $Id: QueuedDeletionException.java,v 1.2 2004/08/03 20:14:02 zubov Exp $
+ * @author zubov
+ * @version $Id: IRCPluginInterface.java 808 2004-11-18 15:58:39Z mog $
  */
-public class QueuedDeletionException extends FileNotFoundException {
-    public QueuedDeletionException() {
-        super();
-    }
-
-    public QueuedDeletionException(String arg0) {
-        super(arg0);
-    }
+public interface IRCPluginInterface {
+    public String getCommands();
 }

@@ -17,14 +17,15 @@
  */
 package org.drftpd.sections;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import java.util.Collection;
+
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 
 
 /**
  * @author mog
- * @version $Id: SectionInterface.java,v 1.6 2004/11/15 01:12:15 mog Exp $
+ * @version $Id$
  */
 public interface SectionInterface {
     /**

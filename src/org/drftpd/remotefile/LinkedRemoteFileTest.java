@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.remotefile;
+package org.drftpd.remotefile;
 
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
@@ -24,8 +24,6 @@ import junit.framework.TestCase;
 import org.apache.log4j.BasicConfigurator;
 
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.CaseInsensitiveHashtable;
-import org.drftpd.remotefile.LightRemoteFile;
 
 import org.drftpd.tests.DummyFtpConfig;
 import org.drftpd.tests.DummyRemoteSlave;
@@ -40,7 +38,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: LinkedRemoteFileTest.java 806 2004-11-17 22:29:13Z mog $
  */
 public class LinkedRemoteFileTest extends TestCase {
     private LinkedRemoteFile _root;

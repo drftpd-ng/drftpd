@@ -28,11 +28,11 @@ import java.util.Properties;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.remotefile.LinkedRemoteFileUtils;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;

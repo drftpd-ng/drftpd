@@ -15,26 +15,45 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.remotefile;
+package org.drftpd.remotefile;
 
-import java.util.Comparator;
+import java.io.IOException;
 
 
 /**
  * @author mog
- * @version $Id: RemoteFileLastModifiedComparator.java,v 1.4 2004/08/03 20:14:02 zubov Exp $
+ *
+ * @version $Id: CorruptFileListException.java 690 2004-08-03 20:14:12Z zubov $
  */
-public class RemoteFileLastModifiedComparator implements Comparator {
-    private boolean _reverse;
-
-    public RemoteFileLastModifiedComparator(boolean reverse) {
-        _reverse = reverse;
+public class CorruptFileListException extends IOException {
+    /**
+     *
+     */
+    public CorruptFileListException() {
+        super();
     }
 
-    public int compare(Object o1, Object o2) {
-        long thisVal = ((LinkedRemoteFileInterface) (_reverse ? o2 : o1)).length();
-        long anotherVal = ((LinkedRemoteFileInterface) (_reverse ? o1 : o2)).length();
+    /**
+     * @param message
+     */
+    public CorruptFileListException(String message) {
+        super(message);
+    }
 
-        return ((thisVal < anotherVal) ? (-1) : ((thisVal == anotherVal) ? 0 : 1));
+    /**
+     * @param message
+     * @param cause
+     */
+    public CorruptFileListException(String message, Throwable cause) {
+        super(message);
+        initCause(cause);
+    }
+
+    /**
+     * @param cause
+     */
+    public CorruptFileListException(Throwable cause) {
+        super();
+        initCause(cause);
     }
 }

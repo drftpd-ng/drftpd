@@ -30,9 +30,9 @@ import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 
 import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.util.AddAsciiOutputStream;
 
 import org.apache.log4j.Logger;
+import org.drftpd.io.AddAsciiOutputStream;
 import org.drftpd.slave.async.AsyncResponseDiskStatus;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
 

@@ -26,8 +26,6 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.SlaveFileException;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.remotefile.MLSTSerialize;
 
 import org.apache.log4j.Logger;
 
@@ -35,6 +33,8 @@ import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 
 import org.drftpd.io.SafeFileWriter;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.remotefile.MLSTSerialize;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.async.AsyncCommandArgument;
 

@@ -17,11 +17,11 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.User;

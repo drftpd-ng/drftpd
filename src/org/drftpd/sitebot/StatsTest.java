@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.event.irc;
+package org.drftpd.sitebot;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -31,7 +31,7 @@ import java.util.ArrayList;
 
 /**
  * @author zubov
- * @version $Id: StatsTest.java,v 1.8 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: StatsTest.java 690 2004-08-03 20:14:12Z zubov $
  */
 public class StatsTest extends TestCase {
     /**

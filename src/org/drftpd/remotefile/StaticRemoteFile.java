@@ -15,20 +15,19 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.remotefile;
+package org.drftpd.remotefile;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.drftpd.remotefile.AbstractRemoteFile;
 
 
 /**
  * Creates a single RemoteFile object that is not linked to any other objects.
  *
  * @author mog
- * @version $Id: StaticRemoteFile.java,v 1.33 2004/11/09 18:59:52 mog Exp $
+ * @version $Id: StaticRemoteFile.java 781 2004-11-09 19:00:01Z mog $
  */
 public class StaticRemoteFile extends AbstractRemoteFile {
     private long _checkSum;

@@ -25,7 +25,6 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.queues.NukeLog;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -33,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.dynamicdata.Key;
 
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
