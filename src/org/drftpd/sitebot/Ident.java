@@ -95,7 +95,7 @@ public class Ident extends GenericCommandAutoService implements
 	            	_irc.sayChannel(msgc.getSource().getNick(),"Set IRC ident to '"+ident+"' for "+user.getName());
 				} catch (UserFileException e1) {
 					logger.warn("Error saving userfile for "+user.getName(),e1);
-					_irc.sayChannel(msgc.getSource().getNick(),"Error saving userfile for "+user.getName());
+					_irc.sayPrivMessage(msgc.getSource().getNick(),"Error saving userfile for "+user.getName());
 				}
              }
         }

@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,6 +37,7 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
@@ -53,6 +55,7 @@ import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.config.ConfigInterface;
+import net.sf.drftpd.util.Blowfish;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.Time;
 
@@ -83,7 +86,9 @@ import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
+import f00f.net.irc.martyr.CommandRegister;
 import f00f.net.irc.martyr.Debug;
+import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.IRCConnection;
 import f00f.net.irc.martyr.clientstate.Channel;
 import f00f.net.irc.martyr.commands.InviteCommand;
@@ -115,6 +120,11 @@ public class SiteBot extends FtpListener implements Observer {
     //private AutoJoin _autoJoin;
     private AutoReconnect _autoReconnect;
     private AutoRegister _autoRegister;
+	private ArrayList<Observer> _commandObservers;
+	private boolean _useBlowfish;
+	private String _blowfishKey;
+	private Blowfish _fish;
+	private CommandRegister _commandRegister;
     private String _channelName;
     private String _commands;
     private String _commandsHelp;
@@ -857,6 +867,12 @@ public class SiteBot extends FtpListener implements Observer {
                 if (plugin.getCommandsHelp() != null) {
                 	_commandsHelp = _commandsHelp + plugin.getCommandsHelp() + "\n";
                 }
+                
+                //add plugin to our list and remove from the IRCCOnnection so we can 
+                //decrypt any messages if needed
+                _commandObservers.add(obs);
+                _conn.removeCommandObserver(obs);
+                
             } catch (Exception e) {
                 logger.warn("", e);
                 throw new RuntimeException("Error loading IRC plugin :" +
@@ -1083,6 +1099,9 @@ public class SiteBot extends FtpListener implements Observer {
 
         _sections = sections;
 
+        _commandObservers = new ArrayList<Observer>();
+		_commandRegister = new CommandRegister();
+
         if ((_conn == null) ||
                 !_conn.getClientState().getServer().equals(_server) ||
                 (_conn.getClientState().getPort() != _port)) {
@@ -1106,6 +1125,11 @@ public class SiteBot extends FtpListener implements Observer {
         }
         
         _identWhoisQueue = new Hashtable<String,User>();
+                
+        //Blowfish stuff
+		_useBlowfish = ircCfg.getProperty("irc.blowfish", "false").equalsIgnoreCase("true");
+		_blowfishKey = ircCfg.getProperty("irc.blowkey", "false");
+	    _fish = new Blowfish(_blowfishKey);
    }
 
     public void say(SectionInterface section, String message) {
@@ -1125,9 +1149,23 @@ public class SiteBot extends FtpListener implements Observer {
         }
 
         String[] lines = message.split("\n");
-
+        String line;
         for (int i = 0; i < lines.length; i++) {
-            _conn.sendCommand(new MessageCommand(chan, lines[i]));
+            line = _useBlowfish ? _fish.Encrypt(lines[i]) : lines[i];
+            _conn.sendCommand(new MessageCommand(chan, line));
+        }
+    }
+
+    //never encrypt private messages
+    public void sayPrivMessage(String nick, String message) {
+        if (message.equals("")) {
+            throw new IllegalArgumentException(
+                "Cowardly refusing to send empty message");
+        }
+
+        String[] lines = message.split("\n");
+        for (int i = 0; i < lines.length; i++) {
+            _conn.sendCommand(new MessageCommand(nick, lines[i]));
         }
     }
 
@@ -1189,8 +1227,23 @@ public class SiteBot extends FtpListener implements Observer {
         if (!(updated instanceof MessageCommand)) {
             return;
         }
-
         MessageCommand msgc = (MessageCommand) updated;
+
+        //recreate the MessageCommand with the encrypted text
+        if (_useBlowfish) {
+            try {
+                MessageCommand decmsgc = new MessageCommand(msgc.getSource(), msgc.getDest(),
+                        						  	_fish.Decrypt(msgc.getMessage()));
+                msgc = decmsgc;
+            } catch (UnsupportedEncodingException e) {
+                logger.warn("Unable to decrypt '"+msgc.getSourceString()+"'", e);
+            }
+        }
+        
+        //dispatch the command to our plugins
+    	for (Observer plugin : _commandObservers) {
+    	    plugin.update(observer, msgc);
+    	}
 
         if (msgc.isPrivateToUs(getIRCConnection().getClientState())) {
             return;
@@ -1204,7 +1257,7 @@ public class SiteBot extends FtpListener implements Observer {
 
         if (msg.equals(_chanprefix +"help")) {
             //sayChannel(msgc.getDest(), "Available commands: " + _commands);
-            sayChannel(msgc.getSource().getNick(), "Available commands: \n" + _commandsHelp);
+            sayPrivMessage(msgc.getSource().getNick(), "Available commands: \n" + _commandsHelp);
         }
     }
 

@@ -1,3 +1,8 @@
+2005/01/25 Jamal James <teflon114@gmail.com>
+* Added Blowfish support to SiteBot. w00t
+  Much thanks to the fine folks over at http://mircryption.sourceforge.net/
+  for providing the java blowfish code
+
 2005/01/18 Morgan Christiansson <drftpd@mog.se>
 * Fixed dynamic user data inconsitencies,
   slots should be converted now.
