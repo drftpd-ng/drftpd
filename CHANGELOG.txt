@@ -2,6 +2,8 @@
 * Added Blowfish support to SiteBot. w00t
   Much thanks to the fine folks over at http://mircryption.sourceforge.net/
   for providing the java blowfish code
+  SiteBot tested with FiSH mIRC addon (http://fish.sekure.us/) and assumed
+  to work with mircryption as the code was provided by them.
 
 2005/01/18 Morgan Christiansson <drftpd@mog.se>
 * Fixed dynamic user data inconsitencies,
