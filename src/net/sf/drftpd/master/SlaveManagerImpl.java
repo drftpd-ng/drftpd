@@ -27,6 +27,7 @@ import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.RMISocketFactory;
 import java.rmi.server.RemoteServer;
@@ -69,7 +70,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.87 2004/05/19 17:06:04 zombiewoof64 Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.88 2004/05/19 17:36:22 zombiewoof64 Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -181,18 +182,22 @@ public class SlaveManagerImpl
 	private ConnectionManager _cm;
 
 	protected List _rslaves;
-
+        protected RMIServerSocketFactory _ssf;
+        protected RMIClientSocketFactory _csf;
+        
 	private SlaveSelectionManagerInterface _slaveSelectionManager;
 	protected SlaveManagerImpl() throws RemoteException {
 	}
-	public SlaveManagerImpl(
+        
+	public void init(
 		Properties cfg,
 		List rslaves,
 		RMIServerSocketFactory ssf,
 		ConnectionManager cm)
-		throws RemoteException {
-		super(0, RMISocketFactory.getSocketFactory(), ssf);
-
+		throws RemoteException 
+        {
+		_csf = RMISocketFactory.getSocketFactory();
+                _ssf = ssf;
 		_cm = cm;
 
 		// sure would be nice if we could do this in or before the super() call,
@@ -204,8 +209,7 @@ public class SlaveManagerImpl
 		Registry registry =
 			LocateRegistry.createRegistry(
 				Integer.parseInt(cfg.getProperty("master.bindport", "1099")),
-				RMISocketFactory.getSocketFactory(),
-				ssf);
+				_csf, _ssf);
 		// throws RemoteException
 		try {
 			registry.bind(
@@ -326,7 +330,8 @@ public class SlaveManagerImpl
 
 		rslave.setOffline(reason);
 	}
-	public HashSet findLargestFreeSlaves(int numOfSlaves) {
+
+        public HashSet findLargestFreeSlaves(int numOfSlaves) {
 		Collection slaveList =
 			getConnectionManager().getSlaveManager().getSlaveList();
 		HashMap map = new HashMap();
@@ -426,10 +431,12 @@ public class SlaveManagerImpl
 	public Collection getAvailableSlaves() throws NoAvailableSlaveException {
 		return getAvailableSlaves(getSlaves());
 	}
-	public ConnectionManager getConnectionManager() {
+	
+        public ConnectionManager getConnectionManager() {
 		return _cm;
 	}
-	public RemoteSlave getSlave(String s) throws ObjectNotFoundException {
+	
+        public RemoteSlave getSlave(String s) throws ObjectNotFoundException {
 		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
 			if (rslave.getName().equals(s))
@@ -437,7 +444,8 @@ public class SlaveManagerImpl
 		}
 		throw new ObjectNotFoundException(s + ": No such slave");
 	}
-	public List getSlaveList() {
+	
+        public List getSlaveList() {
 		return _rslaves;
 	}
 
