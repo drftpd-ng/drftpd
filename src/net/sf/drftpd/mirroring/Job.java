@@ -29,7 +29,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.28 2004/07/12 14:05:37 zubov Exp $
+ * @version $Id: Job.java,v 1.29 2004/07/12 14:24:18 zubov Exp $
  */
 public class Job {
 	private RemoteSlave _destSlave;
@@ -190,6 +190,7 @@ public class Job {
 			reset();
 			throw e;
 		}
+		reset();
 		return result;
 	}
 }
