@@ -19,6 +19,7 @@ package org.drftpd.slave;
 
 
 import org.apache.log4j.Logger;
+import org.drftpd.remotefile.AbstractLightRemoteFile;
 import org.drftpd.remotefile.AbstractRemoteFile;
 import org.drftpd.remotefile.RemoteFileInterface;
 
@@ -39,9 +40,9 @@ import java.util.zip.CheckedInputStream;
  * A wrapper for java.io.File to the net.sf.drftpd.RemoteFile structure.
  *
  * @author mog
- * @version $Id: FileRemoteFile.java,v 1.1 2004/11/09 18:59:58 mog Exp $
+ * @version $Id$
  */
-public class FileRemoteFile extends AbstractRemoteFile {
+public class FileRemoteFile extends AbstractLightRemoteFile {
     private static final Logger logger = Logger.getLogger(FileRemoteFile.class);
     Hashtable _filefiles;
     String _path;
