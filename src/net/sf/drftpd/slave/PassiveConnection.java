@@ -17,58 +17,41 @@
  */
 package net.sf.drftpd.slave;
 
-import net.sf.drftpd.util.PortRange;
-
-import org.apache.log4j.Logger;
-
 import java.io.IOException;
-
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
+
+import net.sf.drftpd.util.PortRange;
+
+import org.apache.log4j.Logger;
 
 
 /**
  * @author mog
- * @version $Id: PassiveConnection.java,v 1.12 2004/08/03 20:14:03 zubov Exp $
+ * @version $Id: PassiveConnection.java,v 1.13 2004/11/05 04:06:34 zubov Exp $
  */
 public class PassiveConnection extends Connection {
     private static final Logger logger = Logger.getLogger(PassiveConnection.class);
     private PortRange _portRange;
-    private ServerSocket _server;
+    private ServerSocket _serverSocket;
 
-    public PassiveConnection(SSLContext ctx, PortRange portRange,
-        InetSocketAddress bindAddr) throws IOException {
+    public PassiveConnection(SSLContext ctx, PortRange portRange) throws IOException {
         if (ctx != null) {
-            SSLServerSocket sslserver;
-            sslserver = (SSLServerSocket) ctx.getServerSocketFactory()
-                                             .createServerSocket();
-            _server = sslserver;
+            _serverSocket = portRange.getPort(ctx.getServerSocketFactory());
         } else {
-            _server = ServerSocketFactory.getDefault().createServerSocket();
+            _serverSocket = ServerSocketFactory.getDefault().createServerSocket();
         }
-
-        if (bindAddr.getPort() == 0) {
-            _portRange = portRange;
-            _server.bind(new InetSocketAddress(bindAddr.getAddress(),
-                    portRange.getPort()));
-        } else {
-            _server.bind(bindAddr, 1);
-        }
-
-        _server.setSoTimeout(TIMEOUT);
+        _serverSocket.setSoTimeout(TIMEOUT);
     }
 
     public Socket connect() throws IOException {
-        Socket sock = _server.accept();
-        _server.close();
-        _portRange.releasePort(_server.getLocalPort());
-        _server = null;
+        Socket sock = _serverSocket.accept();
+        _serverSocket.close();
+        _serverSocket = null;
         _portRange = null;
 
         setSockOpts(sock);
@@ -83,12 +66,15 @@ public class PassiveConnection extends Connection {
     }
 
     public int getLocalPort() {
-        return _server.getLocalPort();
+        if (_serverSocket == null) {
+            throw new NullPointerException("_serverSocket == null");
+        }
+        return _serverSocket.getLocalPort();
     }
 
     public void abort() {
         try {
-            _server.close();
+            _serverSocket.close();
         } catch (IOException e) {
             logger.warn("failed to close() server socket", e);
         }

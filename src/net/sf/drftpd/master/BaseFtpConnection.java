@@ -17,6 +17,20 @@
  */
 package net.sf.drftpd.master;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.SocketException;
+
+import javax.net.ssl.SSLSocket;
+
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
@@ -31,37 +45,15 @@ import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.GlobalContext;
-
 import org.drftpd.commands.UnhandledCommandException;
-
 import org.drftpd.slave.RemoteTransfer;
-
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
-
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
-
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.InterruptedIOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.SocketException;
-
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLSocket;
 
 
 /**
@@ -70,7 +62,7 @@ import javax.net.ssl.SSLSocket;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.100 2004/11/03 16:46:38 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.101 2004/11/05 04:06:32 zubov Exp $
  */
 public class BaseFtpConnection implements Runnable {
     private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() +
@@ -240,14 +232,6 @@ public class BaseFtpConnection implements Runnable {
      */
     public FtpRequest getRequest() {
         return _request;
-    }
-
-    public ServerSocketFactory getServerSocketFactory() {
-        return ServerSocketFactory.getDefault();
-    }
-
-    public SocketFactory getSocketFactory() {
-        return SocketFactory.getDefault();
     }
 
     /**

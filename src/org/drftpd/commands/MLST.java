@@ -44,7 +44,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: MLST.java,v 1.5 2004/11/03 16:46:44 mog Exp $
+ * @version $Id: MLST.java,v 1.6 2004/11/05 04:06:35 zubov Exp $
  */
 public class MLST implements CommandHandlerFactory, CommandHandler {
     private static final Logger logger = Logger.getLogger(MLST.class);
@@ -90,7 +90,7 @@ public class MLST implements CommandHandlerFactory, CommandHandler {
             out.flush();
 
             try {
-                Socket sock = dataConnHnd.getDataSocket(conn.getSocketFactory());
+                Socket sock = dataConnHnd.getDataSocket();
                 List files = ListUtils.list(dir, conn);
                 Writer os = new OutputStreamWriter(sock.getOutputStream());
 

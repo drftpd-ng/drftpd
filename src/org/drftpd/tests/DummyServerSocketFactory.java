@@ -28,7 +28,7 @@ import javax.net.ServerSocketFactory;
 
 /**
  * @author mog
- * @version $Id: DummyServerSocketFactory.java,v 1.2 2004/08/03 20:14:10 zubov Exp $
+ * @version $Id: DummyServerSocketFactory.java,v 1.3 2004/11/05 04:06:36 zubov Exp $
  */
 public class DummyServerSocketFactory extends ServerSocketFactory {
     private DummySocketFactory _dssf;
@@ -39,7 +39,7 @@ public class DummyServerSocketFactory extends ServerSocketFactory {
 
     public ServerSocket createServerSocket() {
         try {
-            return new ServerSocket() {
+            return new DummyServerSocket() {
                     public Socket accept() {
                         return getDummySocket();
                     }

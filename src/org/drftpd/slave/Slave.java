@@ -85,7 +85,7 @@ import javax.net.ssl.SSLContext;
 
 /**
  * @author mog
- * @version $Id: Slave.java,v 1.3 2004/11/03 16:46:46 mog Exp $
+ * @version $Id: Slave.java,v 1.4 2004/11/05 04:06:35 zubov Exp $
  */
 public class Slave {
     public static final boolean isWin32 = System.getProperty("os.name")
@@ -140,7 +140,13 @@ public class Slave {
         _bufferSize = Integer.parseInt(p.getProperty("bufferSize", "0"));
         _roots = getDefaultRootBasket(p);
         _transfers = new HashMap();
-        _portRange = new PortRange();
+        int minport = Integer.parseInt(p.getProperty("slave.portfrom", "0"));
+        int maxport = Integer.parseInt(p.getProperty("slave.portto", "0"));
+        if (minport == 0 || maxport == 0) {
+            _portRange = new PortRange();
+        } else {
+            _portRange = new PortRange(minport,maxport);
+        }
     }
 
     public static LinkedRemoteFile getDefaultRoot(RootBasket rootBasket)
@@ -513,8 +519,7 @@ public class Slave {
         PassiveConnection c = null;
 
         try {
-            c = new PassiveConnection(encrypted ? _ctx : null, _portRange,
-                    new InetSocketAddress(0));
+            c = new PassiveConnection(encrypted ? _ctx : null, _portRange);
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);
         }

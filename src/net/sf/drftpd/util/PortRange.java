@@ -19,79 +19,56 @@ package net.sf.drftpd.util;
 
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.Random;
+
+import javax.net.ServerSocketFactory;
 
 
 /**
  * @author mog
- * @version $Id: PortRange.java,v 1.12 2004/11/02 07:32:49 zubov Exp $
+ * @version $Id: PortRange.java,v 1.13 2004/11/05 04:06:34 zubov Exp $
  */
 public class PortRange {
     private static final Logger logger = Logger.getLogger(PortRange.class);
     private int _minPort;
-    private boolean[] _ports;
+    private int _maxPort;
     Random rand = new Random();
 
     /**
      * Creates a default port range for port 49152 to 65535.
      */
     public PortRange() {
-        this(49152, 65535);
+        this(0,0);
     }
 
     public PortRange(int minPort, int maxPort) {
-        _ports = new boolean[maxPort - minPort];
+        _maxPort = maxPort;
         _minPort = minPort;
     }
-
-    protected void finalize() throws Throwable {
-        super.finalize();
-
-        for (int i = 0; i < _ports.length; i++) {
-            if (_ports[i]) {
-                logger.debug(_minPort + i + " not released");
+    
+    public ServerSocket getPort(ServerSocketFactory ssf) {
+        if (_minPort == 0 && _maxPort == 0) {
+            try {
+                return ssf.createServerSocket(0,1);
+            } catch (IOException e) {
+                logger.error("Unable to bind anonymous port",e);
+                throw new RuntimeException(e);
             }
         }
-    }
-
-    /**
-     * @deprecated Doesn't check if port is used even though marked as unused.
-     */
-    public int getPort() {
-        synchronized (_ports) {
-            int initPos = rand.nextInt(_ports.length);
-            logger.debug("initPos: " + initPos);
-
-            int pos = initPos;
-
-            while (true) {
-                if (_ports[pos] == false) {
-                    _ports[pos] = true;
-                    logger.debug("returning " + _minPort + pos);
-
-                    return _minPort + pos;
-                }
-
-                pos++;
-
-                if (pos == initPos) {
-                    throw new RuntimeException("Portrange exhausted");
-                }
-
-                if (pos > _ports.length) {
-                    pos = 0;
-                }
+        int initPos = rand.nextInt(_maxPort-_minPort+1) + _minPort;
+        int pos = initPos+1;
+        while(pos != initPos) {
+            try {
+                return ssf.createServerSocket(pos,1);
+            } catch (IOException e) {
+            }
+            pos++;
+            if (pos > _maxPort) {
+                pos = _minPort;
             }
         }
-    }
-
-    public void releasePort(int port) {
-        synchronized (_ports) {
-            if (_ports[port - _minPort] != true) {
-                throw new RuntimeException("releasePort() on unused port");
-            }
-
-            _ports[port - _minPort] = false;
-        }
+        throw new RuntimeException("PortRange exhausted");
     }
 }

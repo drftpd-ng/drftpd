@@ -55,7 +55,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  *
- * @version $Id: LIST.java,v 1.26 2004/11/02 07:32:41 zubov Exp $
+ * @version $Id: LIST.java,v 1.27 2004/11/05 04:06:34 zubov Exp $
  */
 public class LIST implements CommandHandlerFactory, CommandHandler {
     private final static DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
@@ -342,7 +342,7 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
             out.flush();
 
             try {
-                dataSocket = dataconn.getDataSocket(conn.getSocketFactory());
+                dataSocket = dataconn.getDataSocket();
                 os = new PrintWriter(new OutputStreamWriter(
                             dataSocket.getOutputStream()));
 

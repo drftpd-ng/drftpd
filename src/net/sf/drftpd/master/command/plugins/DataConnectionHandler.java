@@ -16,6 +16,25 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.Checksum;
 import net.sf.drftpd.NoAvailableSlaveException;
@@ -39,44 +58,19 @@ import net.sf.drftpd.util.PortRange;
 import net.sf.drftpd.util.SSLGetContext;
 
 import org.apache.log4j.Logger;
-
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
-
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteTransfer;
-
 import org.drftpd.usermanager.UserFileException;
-
 import org.tanesha.replacer.ReplacerEnvironment;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import java.net.BindException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
 
 
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.67 2004/11/03 16:46:39 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.68 2004/11/05 04:06:33 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandlerFactory,
     CommandHandler, Cloneable {
@@ -237,25 +231,9 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
         if (_preTransferRSlave == null) {
             try {
-                address = new InetSocketAddress(conn.getControlSocket()
-                                                    .getLocalAddress(),
-                        _portRange.getPort());
-                _serverSocket = (_encryptedDataChannel
-                    ? _ctx.getServerSocketFactory()
-                    : conn.getServerSocketFactory()).createServerSocket();
-                _serverSocket.bind(address, 1);
-                _serverSocket.setSoTimeout(60000);
-
-                //				_address2 =
-                //					new InetSocketAddress(
-                //						_serverSocket.getInetAddress(),
-                //						_serverSocket.getLocalPort());
+                _serverSocket = _portRange.getPort(getServerSocketFactory(_encryptedDataChannel));
+                address = new InetSocketAddress(_serverSocket.getInetAddress(),_serverSocket.getLocalPort());
                 _isPasv = true;
-            } catch (BindException ex) {
-                _serverSocket = null;
-                logger.warn(ex);
-
-                return new FtpReply(550, ex.getMessage());
             } catch (Exception ex) {
                 logger.warn(ex);
 
@@ -263,7 +241,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             }
         } else {
             try {
-                String index = _preTransferRSlave.issueListenToSlave(false);
+                String index = _preTransferRSlave.issueListenToSlave(_encryptedDataChannel);
                 ConnectInfo ci = _preTransferRSlave.fetchTransferResponseFromIndex(index);
                 _transfer = _preTransferRSlave.getTransfer(ci.getTransferIndex());
                 address = _transfer.getAddress();
@@ -464,6 +442,12 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
         FtpRequest req = conn.getRequest();
 
+        if (!req.hasArgument()) {
+            //clear
+            _encryptedDataChannel = false;
+
+            return FtpReply.RESPONSE_200_COMMAND_OK;
+        }
         if (!req.hasArgument() || (req.getArgument().length() != 1)) {
             return FtpReply.RESPONSE_501_SYNTAX_ERROR;
         }
@@ -752,22 +736,18 @@ public class DataConnectionHandler implements CommandHandlerFactory,
     }
 
     /**
-     * Get the data socket. In case of error returns null.
+     * Get the data socket.
      *
      * Used by LIST and NLST and MLST.
      */
-    public Socket getDataSocket(SocketFactory socketFactory)
+    public Socket getDataSocket()
         throws IOException {
         Socket dataSocket;
 
         // get socket depending on the selection
         if (isPort()) {
             try {
-                SocketFactory ssf = _encryptedDataChannel
-                    ? _ctx.getSocketFactory() : socketFactory;
-                dataSocket = ssf.createSocket();
-
-                //dataSocket.connect(_address, getPort());
+                dataSocket = getSocketFactory(_encryptedDataChannel).createSocket();
                 dataSocket.connect(_portAddress);
             } catch (IOException ex) {
                 logger.warn("Error opening data socket", ex);
@@ -779,14 +759,13 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                 dataSocket = _serverSocket.accept();
             } finally {
                 _serverSocket.close();
-                _portRange.releasePort(_serverSocket.getLocalPort());
                 _serverSocket = null;
             }
         } else {
             throw new IllegalStateException("Neither PASV nor PORT");
         }
 
-        if (_encryptedDataChannel) {
+        if (dataSocket instanceof SSLSocket) {
             SSLSocket ssldatasocket = (SSLSocket) dataSocket;
             ssldatasocket.setUseClientMode(false);
             ssldatasocket.startHandshake();
@@ -797,6 +776,26 @@ public class DataConnectionHandler implements CommandHandlerFactory,
         return dataSocket;
     }
 
+    public SocketFactory getSocketFactory(boolean dataChannel) {
+        if (dataChannel) {
+            if (_ctx == null) {
+                throw new IllegalStateException("cannot request a secure socket without being in secure mode");
+            }
+            return _ctx.getSocketFactory();
+        }
+        return SocketFactory.getDefault();
+    }
+
+    public ServerSocketFactory getServerSocketFactory(boolean dataChannel) {
+        if (dataChannel) {
+            if (_ctx == null) {
+                throw new IllegalStateException("cannot request a SecureSocketFactory without being in secure mode");
+            }
+            return _ctx.getServerSocketFactory();
+        }
+        return ServerSocketFactory.getDefault();
+    }
+
     public String[] getFeatReplies() {
         if (_ctx != null) {
             return new String[] { "PRET", "AUTH SSL", "PBSZ" };
@@ -805,23 +804,6 @@ public class DataConnectionHandler implements CommandHandlerFactory,
         return new String[] { "PRET" };
     }
 
-    /**
-     * Get client address from PORT command.
-     *
-     * @deprecated
-     */
-
-    //	private InetAddress getInetAddress() {
-    //		return _address;
-    //	}
-
-    /**
-     * Get port number. return miPort
-     */
-
-    //	private int getPort() {
-    //		return _port;
-    //	}
     public RemoteSlave getTranferSlave() {
         return _rslave;
     }
@@ -888,7 +870,10 @@ public class DataConnectionHandler implements CommandHandlerFactory,
         _preTransferRSlave = null;
 
         if (_serverSocket != null) { //isPasv() && _preTransferRSlave == null
-            _portRange.releasePort(_serverSocket.getLocalPort());
+            try {
+                _serverSocket.close();
+            } catch (IOException e) {
+            }
         }
 
         _isPasv = false;
@@ -1372,9 +1357,6 @@ public class DataConnectionHandler implements CommandHandlerFactory,
     }
 
     public void unload() {
-        if (isPasv()) {
-            _portRange.releasePort(_serverSocket.getLocalPort());
-        }
     }
 
     /**

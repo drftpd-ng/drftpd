@@ -31,6 +31,8 @@ import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.tests.DummyBaseFtpConnection;
 import org.drftpd.tests.DummyConnectionManager;
 import org.drftpd.tests.DummyGlobalContext;
+import org.drftpd.tests.DummyServerSocketFactory;
+import org.drftpd.tests.DummySocketFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -38,16 +40,34 @@ import java.io.StringReader;
 
 import java.util.Properties;
 
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
+
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandlerTest.java,v 1.11 2004/10/03 16:13:52 mog Exp $
+ * @version $Id: DataConnectionHandlerTest.java,v 1.12 2004/11/05 04:06:34 zubov Exp $
  */
 public class DataConnectionHandlerTest extends TestCase {
     private DummyGlobalContext gctx;
     private DummyConnectionManager cm;
     DummyBaseFtpConnection conn;
-    DataConnectionHandler dch;
+    DHC dch;
+    
+    public class DHC extends DataConnectionHandler {
+        
+        public ServerSocketFactory getServerSocketFactory(boolean dataChannel) {
+            return new DummyServerSocketFactory(new DummySocketFactory());
+        }
+        
+        public DHC() {
+            super();
+        }
+        
+        public SocketFactory getSocketFactory(boolean dataChannel) {
+            return new DummySocketFactory();
+        }
+    }
 
     public DataConnectionHandlerTest(String fName) {
         super(fName);
@@ -82,6 +102,7 @@ public class DataConnectionHandlerTest extends TestCase {
     }
 
     private String pasvList() throws UnhandledCommandException {
+        
         conn.setRequest(new FtpRequest("PRET LIST"));
 
         FtpReply reply;
@@ -104,7 +125,7 @@ public class DataConnectionHandlerTest extends TestCase {
 
     protected void setUp() throws Exception {
         BasicConfigurator.configure();
-        dch = (DataConnectionHandler) new DataConnectionHandler().initialize(null,
+        dch = (DHC) new DHC().initialize(null,
                 null);
 
         gctx = new DummyGlobalContext();
