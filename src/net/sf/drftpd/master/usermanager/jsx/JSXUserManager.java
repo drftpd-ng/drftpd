@@ -204,12 +204,13 @@ public class JSXUserManager implements UserManager {
                 //throws RuntimeException
                 user.setUserManager(this);
                 users.put(user.getName(), user);
-                user.reset(getGlobalContext());
-                in.close();
+                //user.reset(getGlobalContext());
 
                 return user;
             } catch (ClassNotFoundException e) {
                 throw new FatalException(e);
+            } finally {
+                in.close();
             }
         } catch (Throwable ex) {
             if (ex instanceof NoSuchUserException) {
