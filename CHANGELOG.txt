@@ -1,6 +1,7 @@
 2005/02/03 Morgan Christiansson <drftpd@mog.se>
 * Moved slaveselection to it's own source folder for use with the
   DelegatingSlaveSelectionManager.
+* Fixed a bunch of minor problems reported by CyBeR.
 
 2005/01/31 Morgan Christiansson <drftpd@mog.se>
 * Fixed free credits problem with deleted directories, thanks to VST.
