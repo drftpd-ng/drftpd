@@ -73,7 +73,6 @@ public class FinishReleaseOnSlaves extends ArchiveType {
                 RemoteSlave rslave = (RemoteSlave) iter2.next();
 
                 if(rslave.isMemberOf("incoming")) continue;
-                if(lrf.getSlaves().contains(rslave)) continue;
                 SlaveCount i = (SlaveCount) slaveMap.get(rslave);
                 if (i == null) {
                 	slaveMap.put(rslave, new SlaveCount());

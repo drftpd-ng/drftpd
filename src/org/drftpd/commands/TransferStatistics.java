@@ -17,6 +17,14 @@
  */
 package org.drftpd.commands;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.StringTokenizer;
+
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
@@ -28,24 +36,14 @@ import net.sf.drftpd.util.UserComparator;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.Bytes;
 import org.drftpd.plugins.Trial;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-
+import org.drftpd.usermanager.UserManager;
 import org.tanesha.replacer.ReplacerEnvironment;
-
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.StringTokenizer;
 
 
 /**
@@ -146,7 +144,7 @@ public class TransferStatistics implements CommandHandlerFactory,
     }
 
     public static int getStatsPlace(String command, User user,
-        AbstractUserManager userman) {
+        UserManager userman) {
         // AL MONTH WK DAY
         int place = 1;
         long bytes = getStats(command, user);
@@ -208,7 +206,7 @@ public class TransferStatistics implements CommandHandlerFactory,
         }
 
         Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
-        AbstractUserManager userman = conn.getGlobalContext().getUserManager();
+        UserManager userman = conn.getGlobalContext().getUserManager();
         response.addComment("created: " +
             new Date(user.getObjectLong(UserManagment.CREATED)));
         response.addComment("rank alup: " +

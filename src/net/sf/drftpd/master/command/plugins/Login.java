@@ -31,6 +31,7 @@ import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
+import org.drftpd.commands.UserManagment;
 
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -40,7 +41,6 @@ import java.io.IOException;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
 
 /**
  * @author mog
@@ -62,7 +62,6 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
     private Reply doIDNT(BaseFtpConnection conn) {
         if (_idntAddress != null) {
             logger.error("Multiple IDNT commands");
-
             return new Reply(530, "Multiple IDNT commands");
         }
 
@@ -173,7 +172,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
         User newUser;
 
         try {
-            newUser = conn.getGlobalContext().getUserManager().getUserByName(request.getArgument());
+            newUser = conn.getGlobalContext().getUserManager().getUserByNameIncludeDeleted(request.getArgument());
         } catch (NoSuchUserException ex) {
             return new Reply(530, ex.getMessage());
         } catch (UserFileException ex) {
@@ -186,8 +185,13 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
             return new Reply(530, ex.getMessage());
         }
 
-        if (newUser.isDeleted() ||
-                !conn.getGlobalContext().getConfig().isLoginAllowed(newUser)) {
+        if (newUser.isDeleted()) {
+        	return new Reply(530,
+        			(String)newUser.getKeyedMap().getObject(
+        					UserManagment.REASON,
+							Reply.RESPONSE_530_ACCESS_DENIED.getMessage()));
+        }
+        if(!conn.getGlobalContext().getConfig().isLoginAllowed(newUser)) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 

@@ -22,7 +22,7 @@ public class DummyUser extends AbstractUser {
 
     public DummyUser(String username, long time) {
         this(username);
-        putObject(UserManagment.CREATED, new Long(time));
+        getKeyedMap().setObject(UserManagment.CREATED, new Long(time));
     }
 
     public boolean checkPassword(String password) {

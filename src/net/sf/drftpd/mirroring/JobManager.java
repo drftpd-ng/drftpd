@@ -144,15 +144,13 @@ public class JobManager implements Runnable {
         long difference;
 
         synchronized (this) {
-            Collection availableSlaves;
+            Collection<RemoteSlave> availableSlaves;
 
             try {
                 availableSlaves = _cm.getGlobalContext().getSlaveManager()
                                      .getAvailableSlaves();
             } catch (NoAvailableSlaveException e1) {
-                return;
-
-                // can't transfer with no slaves
+                return; // can't transfer with no slaves
             }
 
             Set<RemoteSlave> busySlavesDown = new HashSet<RemoteSlave>();
@@ -182,14 +180,14 @@ public class JobManager implements Runnable {
                 if (sourceSlave == null) {
                     logger.debug(
                         "JobManager was unable to find a suitable job for transfer");
-
                     return;
                 }
 
+                availableSlaves.removeAll(job.getFile().getSlaves());
                 try {
                     destSlave = _cm.getGlobalContext().getSlaveManager()
                                    .getSlaveSelectionManager()
-                                   .getASlaveForJobUpload(job, sourceSlave);
+                                   .getASlaveForJobUpload(job, sourceSlave, availableSlaves);
 
                     break; // we have a source slave and a destination slave,
 
@@ -206,7 +204,6 @@ public class JobManager implements Runnable {
             if (destSlave == null) {
                 logger.debug(
                     "destSlave is null, all destination slaves are busy" + job);
-
                 return;
             }
 
@@ -267,7 +264,7 @@ public class JobManager implements Runnable {
             return;
         } catch (SourceSlaveException e) {
             if (e.getCause() instanceof FileNotFoundException) {
-                logger.debug("Caught FileNotFoundException in sending " +
+                logger.warn("Caught FileNotFoundException in sending " +
                     job.getFile().getName() + " from " + sourceSlave.getName() +
                     " to " + destSlave.getName(), e);
                 job.getFile().removeSlave(sourceSlave);

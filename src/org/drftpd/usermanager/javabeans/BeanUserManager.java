@@ -18,6 +18,7 @@
 package org.drftpd.usermanager.javabeans;
 
 import java.beans.DefaultPersistenceDelegate;
+import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.File;
@@ -25,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
 
+import org.apache.log4j.Logger;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.HostMask;
@@ -44,6 +46,8 @@ public class BeanUserManager extends AbstractUserManager {
 	private String _userpath = "users/javabeans/";
 
 	private File _userpathFile = new File(_userpath);
+
+	protected static final Logger logger = Logger.getLogger(BeanUserManager.class);
 
 	public BeanUserManager() throws UserFileException {
 		this(true);
@@ -100,6 +104,11 @@ public class BeanUserManager extends AbstractUserManager {
 
 	public XMLEncoder getXMLEncoder(OutputStream out) {
 		XMLEncoder e = new XMLEncoder(out);
+		e.setExceptionListener(new ExceptionListener() {
+			public void exceptionThrown(Exception e) {
+				logger.error("", e);
+			}
+		});
 		e.setPersistenceDelegate(BeanUser.class,
 				new DefaultPersistenceDelegate(new String[] { "name" }));
 		e.setPersistenceDelegate(Key.class, new DefaultPersistenceDelegate(

@@ -444,10 +444,6 @@ public abstract class User implements Entity {
 
     public abstract void updateUploadedTime(long millis);
 
-    public final void putObject(Key key, Object obj) {
-    	getKeyedMap().setObject(key, obj);
-    }
-
     public final Object getObject(Key key) throws KeyNotFoundException {
     	return getKeyedMap().getObject(key);
     }

@@ -29,6 +29,9 @@ public class Key implements Serializable {
     private Class _type;
 
     public Key(Class owner, String key, Class type) {
+    	assert owner != null;
+    	assert key != null;
+    	assert type != null;
         _owner = owner;
         _key = key;
         _type = type;
@@ -52,5 +55,10 @@ public class Key implements Serializable {
 
 	public String toString(Object value) {
 		return value.toString();
+	}
+	public boolean equals(Object o) {
+		if(o == null) return false;
+		Key k = (Key)o;
+		return k.getOwner().equals(getOwner()) && k.getKey().equals(getKey());
 	}
 }

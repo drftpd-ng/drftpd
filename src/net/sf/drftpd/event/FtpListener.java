@@ -17,19 +17,15 @@
  */
 package net.sf.drftpd.event;
 
-import net.sf.drftpd.Initializeable;
+import org.drftpd.master.ConnectionManager;
 
 
 /**
  * @author mog
- *
- */
-/**
  * @version $Id$
  */
-public interface FtpListener extends Initializeable {
+public interface FtpListener {
     public void actionPerformed(Event event);
 
-    //public void init(ConnectionManager mgr);
     public void unload();
-}
+    public void init(ConnectionManager connectionManager);}

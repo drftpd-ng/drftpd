@@ -13,6 +13,7 @@ import net.sf.drftpd.master.FtpRequest;
 import org.apache.log4j.BasicConfigurator;
 
 import org.drftpd.commands.Reply;
+import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.commands.UserManagment;
 
@@ -29,7 +30,7 @@ import java.util.ArrayList;
  * @version $Id$
  */
 public class UserManagmentTest extends TestCase {
-    public void testGAdmin() throws UnhandledCommandException {
+    public void testGAdmin() throws ReplyException {
         DummyUserManager um = new DummyUserManager();
         DummyUser u = new DummyUser("dummy", um);
         u.toggleGroup("gadmin");

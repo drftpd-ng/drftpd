@@ -26,11 +26,11 @@ import java.util.Map;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.event.UserEvent;
-import net.sf.drftpd.master.command.plugins.Nuke;
 import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
+import org.drftpd.commands.Nuke;
 import org.drftpd.commands.Request;
 import org.drftpd.commands.UserManagment;
 import org.drftpd.dynamicdata.KeyedMap;

@@ -335,6 +335,9 @@ public class SlaveManager implements Runnable {
 	//				+ " available slaves");
 	//		return (RemoteSlave) retSlaves.get(num);
 	//	}
+	/**
+	 * Returns a modifiable list of available RemoteSlave's
+	 */
 	public Collection<RemoteSlave> getAvailableSlaves()
 			throws NoAvailableSlaveException {
 		ArrayList<RemoteSlave> availableSlaves = new ArrayList<RemoteSlave>();

@@ -17,30 +17,28 @@
  */
 package org.drftpd.mirroring;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
+
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
-
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.archivetypes.IncompleteDirectoryException;
 import org.drftpd.mirroring.archivetypes.OfflineSlaveException;
 import org.drftpd.plugins.Archive;
-
 import org.drftpd.sections.SectionInterface;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
 
 
 /**
@@ -136,8 +134,11 @@ public abstract class ArchiveType {
     protected abstract boolean isArchivedDir(LinkedRemoteFileInterface lrf)
         throws IncompleteDirectoryException, OfflineSlaveException;
 
+    /**
+     * Returns unmodifiable Set<RemoteSlave>.
+     */
     public final Set<RemoteSlave> getRSlaves() {
-        return _slaveList;
+        return Collections.unmodifiableSet(_slaveList);
     }
 
     /**
@@ -147,17 +148,20 @@ public abstract class ArchiveType {
         return recursiveSend(getDirectory());
     }
 
-    private ArrayList<Job> recursiveSend(LinkedRemoteFileInterface lrf) {
+    private final ArrayList<Job> recursiveSend(LinkedRemoteFileInterface lrf) {
         ArrayList<Job> jobQueue = new ArrayList<Job>();
         JobManager jm = _parent.getConnectionManager().getJobManager();
 
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
 
+            HashSet<RemoteSlave> destSlaves = new HashSet<RemoteSlave>(getRSlaves());
+            destSlaves.removeAll(src.getSlaves());
+            if(destSlaves.isEmpty()) continue;
             if (src.isFile()) {
                 logger.info("Adding " + src.getPath() + " to the job queue");
 
-                Job job = new Job(src, getRSlaves(), 3, getRSlaves().size());
+                Job job = new Job(src, destSlaves, 3, destSlaves.size());
                 jm.addJobToQueue(job);
                 jobQueue.add(job);
             } else {

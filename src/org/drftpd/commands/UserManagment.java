@@ -68,6 +68,8 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             Date.class);
     public static final Key COMMENT = new Key(UserManagment.class, "comment",
             String.class);
+    public static final Key REASON = new Key(UserManagment.class, "reason",
+    		String.class);
 
     private Reply doSITE_ADDIP(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
@@ -240,8 +242,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             newUser.getKeyedMap().setObject(UserManagment.CREATED, new Date());
             response.addComment(conn.jprintf(UserManagment.class,
                     "adduser.success", env));
-            newUser.putObject(UserManagment.COMMENT,
-                "Added by " + conn.getUserNull().getName());
+            newUser.getKeyedMap().setObject(UserManagment.COMMENT, "Added by " + conn.getUserNull().getName());
 
             if (newGroup != null) {
                 newUser.setGroup(newGroup);
@@ -508,7 +509,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                     "' from '" +
                     userToChange.getObjectFloat(UserManagment.RATIO) +
                     "' to '" + ratio + "'");
-                userToChange.putObject(UserManagment.RATIO, new Float(ratio));
+                userToChange.getKeyedMap().setObject(UserManagment.RATIO, new Float(ratio));
                 env.add("newratio",
                     Float.toString(userToChange.getObjectFloat(
                             UserManagment.RATIO)));
@@ -521,7 +522,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                     "' from '" +
                     userToChange.getObjectFloat(UserManagment.RATIO) + " to '" +
                     ratio + "'");
-                userToChange.putObject(UserManagment.RATIO, new Float(ratio));
+                userToChange.getKeyedMap().setObject(UserManagment.RATIO, new Float(ratio));
                 env.add("newratio",
                     Float.toString(userToChange.getObjectFloat(
                             UserManagment.RATIO)));
@@ -548,7 +549,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                 "' from '" +
                 userToChange.getObjectString(UserManagment.COMMENT) + " to '" +
                 fullCommandArgument + "'");
-            userToChange.putObject(UserManagment.COMMENT, fullCommandArgument);
+            userToChange.getKeyedMap().setObject(UserManagment.COMMENT, fullCommandArgument);
             env.add("comment",
                 userToChange.getObjectString(UserManagment.COMMENT));
             response.addComment(conn.jprintf(UserManagment.class,
@@ -675,8 +676,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                 "' from '" +
                 new Date(userToChange.getObjectLong(UserManagment.CREATED)) +
                 "' to '" + myDate + "'");
-            userToChange.putObject(UserManagment.CREATED, myDate);
-            //env.add("created", myDate);
+            userToChange.getKeyedMap().setObject(UserManagment.CREATED, myDate);
 
             response = new Reply(200,
                     conn.jprintf(UserManagment.class, "changecreated.success",
@@ -703,7 +703,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                 "' changed tagline for '" + userToChange.getName() +
                 "' from '" + userToChange.getObject(TAGLINE, "") + "' to '" +
                 fullCommandArgument + "'");
-            userToChange.putObject(UserManagment.TAGLINE, fullCommandArgument);
+            userToChange.getKeyedMap().setObject(UserManagment.TAGLINE, fullCommandArgument);
 
             response = Reply.RESPONSE_200_COMMAND_OK;
         } else {
@@ -906,7 +906,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         return response;
     }
 
-    private Reply doSITE_DELUSER(BaseFtpConnection conn) {
+    private Reply doSITE_DELUSER(BaseFtpConnection conn) throws ReplyException {
         FtpRequest request = conn.getRequest();
 
         if (!request.hasArgument()) {
@@ -919,7 +919,8 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        String delUsername = request.getArgument();
+        StringTokenizer st = new StringTokenizer(request.getArgument());
+        String delUsername = st.nextToken();
         User myUser;
 
         try {
@@ -936,9 +937,19 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         }
 
         myUser.setDeleted(true);
+        String reason = "";
+        if(st.hasMoreTokens()) {
+        	myUser.getKeyedMap().setObject(UserManagment.REASON, reason = st.nextToken("").substring(1));
+        }
+        try {
+			myUser.commit();
+		} catch (UserFileException e1) {
+			logger.error("", e1);
+			throw new ReplyException(e1);
+		}
         logger.info("'" + conn.getUserNull().getName() +
-            "' deleted user '" + myUser.getName() + "'");
-
+            "' deleted user '" + myUser.getName() + "' with reason '"+reason+"'");
+        logger.debug("reason "+myUser.getKeyedMap().getObjectString(UserManagment.REASON));
         return Reply.RESPONSE_200_COMMAND_OK;
     }
 
@@ -1244,7 +1255,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    private Reply doSITE_READD(BaseFtpConnection conn) {
+    private Reply doSITE_READD(BaseFtpConnection conn) throws ReplyException {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin() &&
@@ -1278,9 +1289,15 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         }
 
         myUser.setDeleted(false);
+        myUser.getKeyedMap().remove(UserManagment.REASON);
         logger.info("'" + conn.getUserNull().getName() + "' readded '" +
             myUser.getName() + "'");
-
+        try {
+			myUser.commit();
+		} catch (UserFileException e1) {
+			logger.error(e1);
+			throw new ReplyException(e1);
+		}
         return Reply.RESPONSE_200_COMMAND_OK;
     }
 
@@ -1357,8 +1374,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             "' changed his tagline from '" +
             conn.getUserNull().getObject(TAGLINE, "") + "' to '" +
             request.getArgument() + "'");
-        conn.getUserNull().putObject(UserManagment.TAGLINE,
-            request.getArgument());
+        conn.getUserNull().getKeyedMap().setObject(UserManagment.TAGLINE, request.getArgument());
 
         return Reply.RESPONSE_200_COMMAND_OK;
     }
@@ -1366,12 +1382,10 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
     private Reply doSITE_DEBUG(BaseFtpConnection conn) {
     	User user = conn.getUserNull();
     	if(!conn.getRequest().hasArgument()) {
-    		user.putObject(UserManagment.DEBUG,
-				new Boolean(!user.getObjectBoolean(UserManagment.DEBUG)));
+    		user.getKeyedMap().setObject(UserManagment.DEBUG, new Boolean(!user.getObjectBoolean(UserManagment.DEBUG)));
     	} else {
     		String arg = conn.getRequest().getArgument();
-    		user.putObject(UserManagment.DEBUG,
-				new Boolean(arg.equals("true") || arg.equals("on")));
+    		user.getKeyedMap().setObject(UserManagment.DEBUG, new Boolean(arg.equals("true") || arg.equals("on")));
     	}
     	return new Reply(200, conn.jprintf(UserManagment.class, "debug"));
     }
@@ -1480,31 +1494,25 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         //int hours = i / 60;
         //int minutes = i - hours * 60;
         //response.addComment("time on today: " + hours + ":" + minutes);
-        //TODO replacerenvironment
-        ReplacerEnvironment env = new ReplacerEnvironment();
-        env.add("username", myUser.getName());
-        env.add("created", new Date(myUser.getObjectLong(UserManagment.CREATED)));
-        env.add("comment", myUser.getObjectString(UserManagment.COMMENT));
-        env.add("lastseen", new Date(myUser.getLastAccessTime()));
-        env.add("totallogins", Long.toString(myUser.getLogins()));
-        env.add("idletime", Long.toString(myUser.getIdleTime()));
-        env.add("userratio",
-            Float.toString(myUser.getObjectFloat(UserManagment.RATIO)));
-        env.add("usercredits", Bytes.formatBytes(myUser.getCredits()));
-        env.add("maxlogins", Long.toString(myUser.getMaxLogins()));
-        env.add("maxloginsip", Long.toString(myUser.getMaxLoginsPerIP()));
-        env.add("groupslots", Long.toString(myUser.getGroupSlots()));
-        env.add("groupleechslots", Long.toString(myUser.getGroupLeechSlots()));
-        env.add("useruploaded", Bytes.formatBytes(myUser.getUploadedBytes()));
-        env.add("userdownloaded", Bytes.formatBytes(myUser.getDownloadedBytes()));
+//        ReplacerEnvironment env = new ReplacerEnvironment();
 
-        //env.add("timesnuked", Long.toString(myUser.getTimesNuked()));
-        //env.add("nukedbytes", Bytes.formatBytes(myUser.getNukedBytes()));
-        env.add("primarygroup", myUser.getGroup());
-        env.add("extragroups", myUser.getGroups());
-        env.add("ipmasks", myUser.getHostMaskCollection());
-        env.add("wkly_allotment", Bytes.formatBytes(myUser.getWeeklyAllotment()));
+//        env.add("username", myUser.getName());
+//        env.add("created", new Date(myUser.getObjectLong(UserManagment.CREATED)));
+//        env.add("comment", myUser.getObjectString(UserManagment.COMMENT));
+//        env.add("lastseen", new Date(myUser.getLastAccessTime()));
+//        env.add("totallogins", Long.toString(myUser.getLogins()));
+//        env.add("idletime", Long.toString(myUser.getIdleTime()));
+//        env.add("userratio",
+//            Float.toString(myUser.getObjectFloat(UserManagment.RATIO)));
+//        env.add("usercredits", Bytes.formatBytes(myUser.getCredits()));
+//        env.add("maxlogins", Long.toString(myUser.getMaxLogins()));
+//        env.add("maxloginsip", Long.toString(myUser.getMaxLoginsPerIP()));
+//        env.add("groupslots", Long.toString(myUser.getGroupSlots()));
+//        env.add("groupleechslots", Long.toString(myUser.getGroupLeechSlots()));
+//        env.add("useruploaded", Bytes.formatBytes(myUser.getUploadedBytes()));
+//        env.add("userdownloaded", Bytes.formatBytes(myUser.getDownloadedBytes()));
 
+        ReplacerEnvironment env = BaseFtpConnection.getReplacerEnvironment(null, myUser);
         response.addComment(conn.jprintf(UserManagment.class, "user", env));
 
         return response;
@@ -1650,13 +1658,8 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see net.sf.drftpd.master.command.CommandHandler#execute(net.sf.drftpd.master.BaseFtpConnection)
-     */
     public Reply execute(BaseFtpConnection conn)
-        throws UnhandledCommandException {
+        throws ReplyException {
         String cmd = conn.getRequest().getCommand();
 
         if ("SITE ADDIP".equals(cmd)) {

@@ -1,3 +1,6 @@
+2004/11/30 Morgan Christiansson <drftpd@mog.se>
+* Added SITE DELUSER <user> <reason> at the request of M3ta.
+
 2004/11/29 Morgan Christiansson <drftpd@mog.se>
 * Converted slaves/ to get serialized using javabeans.
   Use this handy code snippet to extract addlines from the old format

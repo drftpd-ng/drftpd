@@ -26,7 +26,6 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.GlobalContext;
 
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.master.RemoteTransfer;
 import org.drftpd.master.SlaveManager;
 
 import org.drftpd.slave.Transfer;
@@ -96,7 +95,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
             Transfer.TRANSFER_SENDING_DOWNLOAD, job.getFile(), null);
     }
 
-    public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
+    public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave, Collection<RemoteSlave> availableSlaves)
         throws NoAvailableSlaveException {
         ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(job.getDestinationSlaves());
 

@@ -131,15 +131,16 @@ public class BaseFtpConnection implements Runnable {
         if (user != null) {
         	for(Map.Entry<Key, Object> o : user.getAllObjects().entrySet()) {
         		env.add(o.getKey().toString(), o.getKey().toString(o.getValue()));
-        		logger.debug("Added "+o.getKey().toString()+" "+o.getKey().toString(o.getValue()));
+        		//logger.debug("Added "+o.getKey().toString()+" "+o.getKey().toString(o.getValue()));
         	}
-//            env.add("user", user.getUsername());
+            env.add("user", user.getName());
+            env.add("username", user.getName());
             env.add("credits", Bytes.formatBytes(user.getCredits()));
 //            env.add("ratio", "" + user.getObjectFloat(UserManagment.RATIO));
 //            env.add("tagline", user.getObjectString(UserManagment.TAGLINE));
             env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
             env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
-//            env.add("group", user.getGroupName());
+            env.add("group", user.getGroup());
             env.add("averagespeed",
                 Bytes.formatBytes(user.getUploadedTime() +
                     (user.getDownloadedTime() / 2)));

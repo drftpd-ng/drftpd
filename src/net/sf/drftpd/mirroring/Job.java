@@ -43,7 +43,7 @@ public class Job {
     private long _timeSpent;
     private int _transferNum;
 
-    public Job(LinkedRemoteFileInterface file, Collection<RemoteSlave> destSlaves,
+    public Job(LinkedRemoteFileInterface file, Collection destSlaves,
         int priority, int transferNum) {
         _destSlaves = new HashSet<RemoteSlave>(destSlaves);
         _file = file;

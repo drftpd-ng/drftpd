@@ -265,4 +265,7 @@ public class XStreamUserManager implements UserManager {
     public void init(ConnectionManager mgr) {
         _connManager = mgr;
     }
+	public User getUserByNameIncludeDeleted(String argument) throws NoSuchUserException, UserFileException {
+		return getUserByName(argument);
+	}
 }

@@ -78,7 +78,7 @@ public class JSXUserManager implements UserManager {
             User user = create("drftpd");
             user.setGroup("drftpd");
             user.setPassword("drftpd");
-            user.putObject(UserManagment.RATIO, new Float(0));
+            user.getKeyedMap().setObject(UserManagment.RATIO, new Float(0));
 
             try {
                 user.addIPMask("*@127.0.0.1");
@@ -266,4 +266,7 @@ public class JSXUserManager implements UserManager {
     public void init(ConnectionManager mgr) {
         _connManager = mgr;
     }
+	public User getUserByNameIncludeDeleted(String argument) throws NoSuchUserException, UserFileException {
+		return getUserByName(argument);
+	}
 }

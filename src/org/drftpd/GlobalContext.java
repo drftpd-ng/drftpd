@@ -38,6 +38,7 @@ import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 import org.drftpd.usermanager.AbstractUserManager;
+import org.drftpd.usermanager.UserManager;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -192,7 +193,7 @@ public class GlobalContext {
         return _slaveManager;
     }
 
-    public AbstractUserManager getUserManager() {
+    public UserManager getUserManager() {
         if (_usermanager == null) {
             throw new NullPointerException();
         }

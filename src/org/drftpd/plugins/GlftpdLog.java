@@ -31,7 +31,6 @@ import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
-import net.sf.drftpd.master.command.plugins.Nuke;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Level;
@@ -39,6 +38,7 @@ import org.apache.log4j.Logger;
 
 import org.drftpd.SFVFile;
 import org.drftpd.SFVFile.SFVStatus;
+import org.drftpd.commands.Nuke;
 import org.drftpd.commands.UserManagment;
 
 import org.drftpd.master.ConnectionManager;

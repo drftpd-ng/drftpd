@@ -48,4 +48,6 @@ public interface UserManager {
     public abstract void init(ConnectionManager mgr);
 
     public abstract void saveAll() throws UserFileException;
+
+	public abstract User getUserByNameIncludeDeleted(String argument) throws NoSuchUserException, UserFileException;
 }

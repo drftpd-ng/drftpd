@@ -38,9 +38,9 @@ LIST=net.sf.drftpd.master.command.plugins.LIST
 NLST=net.sf.drftpd.master.command.plugins.LIST
 STAT=net.sf.drftpd.master.command.plugins.LIST
 
-SITE\ NUKE=net.sf.drftpd.master.command.plugins.Nuke
-SITE\ NUKES=net.sf.drftpd.master.command.plugins.Nuke
-SITE\ UNNUKE=net.sf.drftpd.master.command.plugins.Nuke
+SITE\ NUKE=org.drftpd.commands.Nuke
+SITE\ NUKES=org.drftpd.commands.Nuke
+SITE\ UNNUKE=org.drftpd.commands.Nuke
 
 SITE\ ADDIP=org.drftpd.commands.UserManagment
 SITE\ ADDUSER=org.drftpd.commands.UserManagment

@@ -29,7 +29,6 @@ import net.sf.drftpd.FileExistsException;
 import org.apache.log4j.Logger;
 import org.drftpd.commands.UserManagment;
 import org.drftpd.master.ConnectionManager;
-import org.drftpd.usermanager.jsx3.JSXUser;
 
 /**
  * This is the base class of all the user manager classes. If we want to add a
@@ -84,7 +83,7 @@ public abstract class AbstractUserManager implements UserManager {
         User user = createUser("drftpd");
         user.setGroup("drftpd");
         user.setPassword("drftpd");
-        user.putObject(UserManagment.RATIO, new Float(0));
+        user.getKeyedMap().setObject(UserManagment.RATIO, new Float(0));
 
         try {
             user.addIPMask("*@127.0.0.1");
@@ -174,7 +173,7 @@ public abstract class AbstractUserManager implements UserManager {
                     userpath.length() - ".xml".length());
 
             try {
-                users.add((JSXUser) getUserByNameUnchecked(username));
+                users.add((AbstractUser) getUserByNameUnchecked(username));
 
                 // throws IOException
             } catch (NoSuchUserException e) {
@@ -200,15 +199,20 @@ public abstract class AbstractUserManager implements UserManager {
     }
 
     //TODO garbage collected Map of users.
+    public User getUserByNameIncludeDeleted(String username)
+    	throws NoSuchUserException, UserFileException {
+        User user = getUserByNameUnchecked(username);
+        user.reset(_connManager);
+        return user;
+    }
+
     public User getUserByName(String username)
         throws NoSuchUserException, UserFileException {
-        User user = getUserByNameUnchecked(username);
+        User user = getUserByNameIncludeDeleted(username);
 
         if (user.isDeleted()) {
             throw new NoSuchUserException(user.getName() + " is deleted");
         }
-
-        user.reset(_connManager);
 
         return user;
     }
