@@ -40,6 +40,8 @@ import org.tanesha.replacer.ReplacerFormat;
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 public class FtpConfig {
+	private int _maxUsersExempt;
+	private int _maxUsersTotal = Integer.MAX_VALUE;
 	private static Logger logger = Logger.getLogger(FtpConfig.class);
 	private ArrayList _creditcheck;
 
@@ -62,7 +64,6 @@ public class FtpConfig {
 	String cfgFileName;
 	private ConnectionManager connManager;
 	private long freespaceMin;
-	private int[] max_users;
 	private String newConf = "perms.conf";
 	private Map replacerFormats;
 
@@ -125,10 +126,12 @@ public class FtpConfig {
 		//		return true;
 	}
 
-	public int[] getMaxUsers() {
-		return max_users;
+	public int getMaxUsersTotal() {
+		return _maxUsersTotal;
 	}
-
+	public int getMaxUsersExempt() {
+		return _maxUsersExempt;
+	}
 	private boolean checkPathPermssion(
 		User fromUser,
 		LinkedRemoteFile path,
@@ -263,13 +266,9 @@ public class FtpConfig {
 		ArrayList upload = new ArrayList();
 
 		LineNumberReader in = new LineNumberReader(new FileReader(newConf));
-		int lineno = 0;
 		String line;
 		GlobCompiler globComiler = new GlobCompiler();
 		while ((line = in.readLine()) != null) {
-			lineno++;
-			//			String args = line.split(" ");
-			//			String command = args[0];
 			StringTokenizer st = new StringTokenizer(line);
 			if (!st.hasMoreTokens())
 				continue;
@@ -282,10 +281,10 @@ public class FtpConfig {
 							globComiler.compile(st.nextToken()),
 							makeUsers(st)));
 				}
+				//max_users <maxUsersTotal> <maxUsersExempt>
 				else if (command.equals("max_users")) {
-					max_users = new int[2];
-					max_users[0] = Integer.parseInt(st.nextToken());
-					max_users[1] = Integer.parseInt(st.nextToken());
+					_maxUsersTotal = Integer.parseInt(st.nextToken());
+					_maxUsersExempt = Integer.parseInt(st.nextToken());					
 				}
 				//msgpath <path> <filename> <flag/=group/-user>
 				else if (command.equals("msgpath")) {

@@ -82,7 +82,7 @@ public class UserManagment implements CommandHandler {
 		String delUsername = request.getArgument();
 		User delUser;
 		try {
-			delUser = conn.getUserManager().getUserByName(delUsername);
+			delUser = conn.getUserManager().getUserByNameUnchecked(delUsername);
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, e.getMessage());
 		} catch (IOException e) {
@@ -115,7 +115,7 @@ public class UserManagment implements CommandHandler {
 
 		User myUser;
 		try {
-			myUser = conn.getUserManager().getUserByName(request.getArgument());
+			myUser = conn.getUserManager().getUserByNameUnchecked(request.getArgument());
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, e.getMessage());
 		} catch (IOException e) {
@@ -257,7 +257,7 @@ public class UserManagment implements CommandHandler {
 
 		User myUser;
 		try {
-			myUser = conn.getUserManager().getUserByName(request.getArgument());
+			myUser = conn.getUserManager().getUserByNameUnchecked(request.getArgument());
 		} catch (NoSuchUserException ex) {
 			response.setMessage("User " + request.getArgument() + " not found");
 			return response;

@@ -1,12 +1,15 @@
 irc.server=irc.csbnet.se
 irc.port=6667
-irc.channel=#drftpd
+irc.channel=#drftpd-test
 irc.key=
 irc.nick=drftpd
 irc.name=drftpd
 irc.user=drftpd
 
 ####
+
+request=${color}15${bold}REQUEST${bold}${coloroff}: ${bold}${path}${bold} by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group}.
+reqfilled=${color}15${bold}FILLED${bold}${coloroff}: ${bold}${path}${bold} by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group}.
 
 mkdir=${color}15${bold}NEW${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group}.
 

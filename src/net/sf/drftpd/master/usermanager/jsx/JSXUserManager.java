@@ -133,11 +133,9 @@ public class JSXUserManager implements UserManager {
 			if(!userpath.endsWith(".xml")) continue;
 			String username = userpath.substring(0, userpath.length()-".xml".length());
 			try {
-				users.add((JSXUser) getUserByName(username));
+				users.add((JSXUser) getUserByNameUnchecked(username));
 				// throws IOException
-			} catch (NoSuchUserException e) {
-				throw (IOException) new IOException().initCause(e);
-			}
+			} catch (NoSuchUserException e) {} // continue
 		}
 		return users;
 	}

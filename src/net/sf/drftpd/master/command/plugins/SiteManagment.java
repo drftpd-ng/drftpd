@@ -35,7 +35,7 @@ public class SiteManagment implements CommandHandler {
 
 	private Logger logger = Logger.getLogger(SiteManagment.class);
 
-	public FtpReply doSITE_LIST(BaseFtpConnection conn) {
+	private FtpReply doSITE_LIST(BaseFtpConnection conn) {
 		conn.resetState();
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
 		//Map files = currentDirectory.getMap();

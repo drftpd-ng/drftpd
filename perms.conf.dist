@@ -1,3 +1,6 @@
+#allow 10 conections per slave if you have 10 slaves
+max_users	100	0
+
 upload			*	*
 download		*	*
 

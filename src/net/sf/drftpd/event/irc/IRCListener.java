@@ -64,6 +64,8 @@ import f00f.net.irc.martyr.IRCConnection;
 import f00f.net.irc.martyr.clientstate.ClientState;
 import f00f.net.irc.martyr.commands.InviteCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
+import f00f.net.irc.martyr.commands.NickCommand;
+import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
@@ -81,6 +83,8 @@ public class IRCListener implements FtpListener, Observer {
 			this.section = dir;
 		}
 	}
+	private AutoJoin _autoJoin;
+	private AutoRegister _autoRegister;
 	private static Logger logger = Logger.getLogger(IRCListener.class);
 
 	/**
@@ -160,7 +164,8 @@ public class IRCListener implements FtpListener, Observer {
 			new PrintStream(new FileOutputStream("ftp-data/logs/sitebot.log")));
 
 		reload();
-		connect();
+		//called from reload()
+		//connect();
 	}
 
 	public void actionPerformed(Event event) {
@@ -174,7 +179,6 @@ public class IRCListener implements FtpListener, Observer {
 			} else if (event instanceof InviteEvent) {
 				actionPerformedInvite((InviteEvent) event);
 			} else if (event.getCommand().equals("RELOAD")) {
-
 				try {
 					reload();
 				} catch (IOException e) {
@@ -691,18 +695,38 @@ public class IRCListener implements FtpListener, Observer {
 		_ircCfg.load(new FileInputStream("irc.conf"));
 		_server = _ircCfg.getProperty("irc.server");
 		_port = Integer.parseInt(_ircCfg.getProperty("irc.port"));
+		String oldchannel = _channelName;
 		_channelName = _ircCfg.getProperty("irc.channel");
 		_key = _ircCfg.getProperty("irc.key");
 		if (_key.equals(""))
 			_key = null;
-
-		if (_conn != null) {
-			if (!_conn.getClientState().getServer().equals(_server)
-				|| _conn.getClientState().getPort() != _port
-				|| !_conn.getClientState().isOnChannel(_channelName)) {
-				connect();
+		if (_conn == null
+			|| !_conn.getClientState().getServer().equals(_server)
+			|| _conn.getClientState().getPort() != _port) {
+			connect();
+		} else {
+			if (!_conn
+				.getClientState()
+				.getNick()
+				.getNick()
+				.equals(_ircCfg.getProperty("irc.nick"))) {
+				_conn.removeCommandObserver(_autoRegister);
+				_autoRegister = addAutoRegister();
+				_conn.sendCommand(
+					new NickCommand(_ircCfg.getProperty("irc.nick")));
+			}
+			if(!_conn.getClientState().isOnChannel(_channelName)) {
+				_conn.removeCommandObserver(_autoJoin);
+				_conn.sendCommand(new PartCommand(oldchannel));
 			}
 		}
+	}
+	private AutoRegister addAutoRegister() {
+		return new AutoRegister(
+			_conn,
+			_ircCfg.getProperty("irc.nick"),
+			_ircCfg.getProperty("irc.user"),
+			_ircCfg.getProperty("irc.name"));
 	}
 	private void connect() throws UnknownHostException, IOException {
 		if (_conn != null) {
@@ -713,27 +737,23 @@ public class IRCListener implements FtpListener, Observer {
 		_conn = new IRCConnection(_clientState);
 
 		_autoReconnect = new AutoReconnect(_conn);
-		new AutoRegister(
-			_conn,
-			_ircCfg.getProperty("irc.nick"),
-			_ircCfg.getProperty("irc.user"),
-			_ircCfg.getProperty("irc.name"));
-		new AutoJoin(_conn, _channelName, _key);
+		_autoRegister = addAutoRegister();
+		_autoJoin = new AutoJoin(_conn, _channelName, _key);
 		new AutoResponder(_conn);
-		//TODO more command observers
 		_conn.addCommandObserver(this);
-		
-		for(int i=1;;) {
-			String classname = _ircCfg.getProperty("irc.plugins."+i);
-			if(classname == null) break;
+
+		for (int i = 1;;) {
+			String classname = _ircCfg.getProperty("irc.plugins." + i);
+			if (classname == null)
+				break;
 			Observer obs;
 			try {
 				obs = (Observer) Class.forName(classname).newInstance();
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
-			if(obs instanceof Initializeable) {
-				((Initializeable)obs).init(getConnectionManager());
+			if (obs instanceof Initializeable) {
+				((Initializeable) obs).init(getConnectionManager());
 			}
 			_conn.addCommandObserver(obs);
 		}
@@ -1052,24 +1072,18 @@ public class IRCListener implements FtpListener, Observer {
 								/ 1000
 								+ "s");
 
+						if (_cm
+							.getConfig()
+							.checkHideInWho(
+								connUser,
+								conn.getCurrentDirectory()))
+							continue;
+						first = false;
 						if (!conn.isExecuting()) {
-							if (getConfig()
-								.checkHideInWho(
-									connUser,
-									conn.getTransferFile()))
-								continue;
-							first = false;
 							status.append(
 								SimplePrintf.jprintf(formatidle, env));
 
 						} else if (conn.isTransfering()) {
-							if (_cm
-								.getConfig()
-								.checkHideInWho(
-									connUser,
-									conn.getCurrentDirectory()))
-								continue;
-							first = false;
 							if (conn.isTransfering()) {
 								try {
 									env.add(
