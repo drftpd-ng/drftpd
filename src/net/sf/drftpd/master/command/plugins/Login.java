@@ -28,7 +28,6 @@ import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -43,7 +42,7 @@ import org.drftpd.commands.UnhandledCommandException;
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.29 2004/06/02 00:32:40 mog Exp $
+ * @version $Id: Login.java,v 1.30 2004/06/04 14:18:56 mog Exp $
  */
 public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
 

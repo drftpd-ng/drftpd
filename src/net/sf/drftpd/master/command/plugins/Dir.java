@@ -27,14 +27,13 @@ import java.util.StringTokenizer;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.Checksum;
-import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.FileExistsException;
+import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.UploaderPosition;
-import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -49,6 +48,7 @@ import net.sf.drftpd.util.ReplacerUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.plugins.SiteBot;
 import org.tanesha.replacer.FormatterException;
@@ -57,9 +57,9 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.29 2004/06/01 15:40:30 mog Exp $
+ * @version $Id: Dir.java,v 1.30 2004/06/04 14:18:56 mog Exp $
  */
-public class Dir implements CommandHandlerBundle, Cloneable {
+public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 	private final static SimpleDateFormat DATE_FMT =
 		new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 

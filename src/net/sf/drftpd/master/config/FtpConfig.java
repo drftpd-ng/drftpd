@@ -25,6 +25,7 @@ import java.io.LineNumberReader;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -44,7 +45,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.53 2004/05/31 12:14:37 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.54 2004/06/04 14:18:56 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -68,10 +69,10 @@ public class FtpConfig {
 		return arr;
 	}
 
-	public static ArrayList makeUsers(StringTokenizer st) {
+	public static ArrayList makeUsers(Enumeration st) {
 		ArrayList users = new ArrayList();
-		while (st.hasMoreTokens()) {
-			users.add(st.nextToken());
+		while (st.hasMoreElements()) {
+			users.add(st.nextElement());
 		}
 		return users;
 	}
@@ -79,7 +80,7 @@ public class FtpConfig {
 	private boolean _capFirstDir;
 	private boolean _capFirstFile;
 
-	String _cfgFileName;
+	private String _cfgFileName;
 	private ConnectionManager _connManager;
 	private ArrayList _creditcheck;
 	private ArrayList _creditloss;

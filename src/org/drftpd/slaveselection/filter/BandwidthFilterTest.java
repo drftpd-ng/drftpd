@@ -22,14 +22,9 @@ import junit.framework.TestSuite;
 
 /**
  * @author mog
- * @version $Id: BandwidthFilterTest.java,v 1.1 2004/02/26 13:56:53 mog Exp $
+ * @version $Id: BandwidthFilterTest.java,v 1.2 2004/06/04 14:18:58 mog Exp $
  */
 public class BandwidthFilterTest extends TestCase {
-
-	public static TestSuite suite() {
-		return new TestSuite(BandwidthFilterTest.class);
-	}
-
 	public BandwidthFilterTest(String fName) {
 		super(fName);
 	}

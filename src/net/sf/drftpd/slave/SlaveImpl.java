@@ -62,7 +62,7 @@ import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.94 2004/06/02 23:03:05 zubov Exp $
+ * @version $Id: SlaveImpl.java,v 1.95 2004/06/04 14:18:57 mog Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
@@ -417,6 +417,7 @@ public class SlaveImpl
 
 	public void unreferenced() {
 		logger.info("unreferenced");
+		System.out.println("unreferenced");
 		System.exit(0);
 	}
 

@@ -29,13 +29,13 @@ import net.sf.drftpd.util.Time;
 
 /**
  * @author mog
- * @version $Id: MintimeonlineFilter.java,v 1.1 2004/02/27 01:02:21 mog Exp $
+ * @version $Id: MintimeonlineFilter.java,v 1.2 2004/06/04 14:18:58 mog Exp $
  */
 public class MintimeonlineFilter extends Filter {
 
-	private float _multiplier;
-
 	private long _minTime;
+
+	private float _multiplier;
 
 	public MintimeonlineFilter(FilterChain fc, int i, Properties p) {
 		_minTime = Time.parseTime(FtpConfig.getProperty(p, i + ".mintime"));
@@ -51,13 +51,29 @@ public class MintimeonlineFilter extends Filter {
 		char direction,
 		LinkedRemoteFileInterface dir)
 		throws NoAvailableSlaveException {
+		process(
+			scorechart,
+			user,
+			peer,
+			direction,
+			dir,
+			System.currentTimeMillis());
+	}
 
+	protected void process(
+		ScoreChart scorechart,
+		User user,
+		InetAddress peer,
+		char direction,
+		LinkedRemoteFileInterface dir,
+		long currentTime)
+		throws NoAvailableSlaveException {
 		for (Iterator iter = scorechart.getSlaveScores().iterator();
 			iter.hasNext();
 			) {
 			ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
 			long lastTransfer =
-				System.currentTimeMillis()
+				currentTime
 					- score.getRSlave().getLastTransferForDirection(direction);
 			if (lastTransfer < _minTime) {
 				score.addScore(- (long) (lastTransfer * _multiplier));
@@ -65,5 +81,4 @@ public class MintimeonlineFilter extends Filter {
 
 		}
 	}
-
 }

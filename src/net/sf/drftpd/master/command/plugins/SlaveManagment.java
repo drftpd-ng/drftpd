@@ -26,12 +26,12 @@ import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.slave.SlaveStatus;
 
 import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.plugins.SiteBot;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -39,9 +39,9 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author mog
  *
- * @version $Id: SlaveManagment.java,v 1.11 2004/06/01 15:40:30 mog Exp $
+ * @version $Id: SlaveManagment.java,v 1.12 2004/06/04 14:18:56 mog Exp $
  */
-public class SlaveManagment implements CommandHandlerBundle {
+public class SlaveManagment implements CommandHandlerFactory, CommandHandler {
 	public void unload() {
 	}
 	public void load(CommandManagerFactory initializer) {

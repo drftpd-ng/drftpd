@@ -24,26 +24,26 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import org.drftpd.commands.CommandHandlerFactory;
-
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
 
+import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.CommandHandlerFactory;
+
 /**
  * @author mog
  *
  * Istantiates the CommandManager instances that holds per-connection CommandHandlers.
- * @version $Id: CommandManagerFactory.java,v 1.8 2004/06/01 15:40:29 mog Exp $
+ * @version $Id: CommandManagerFactory.java,v 1.9 2004/06/04 14:18:55 mog Exp $
  */
 public class CommandManagerFactory {
 
 	private ConnectionManager _connMgr;
-	//private static final Logger logger = Logger.getLogger(CommandManagerFactory.class);
 	/**
-	 * Class => CommandHandler
+	 * Class => CommandHandlerFactory
 	 */
 	private Hashtable _hnds;
 	/**
@@ -56,7 +56,13 @@ public class CommandManagerFactory {
 	}
 	private void unload() {
 		for (Iterator iter = _hnds.values().iterator(); iter.hasNext();) {
-			((CommandHandlerBundle) iter.next()).unload();
+			Object o = iter.next();
+			try {
+			CommandHandlerFactory c = ((CommandHandlerFactory) o);
+			c.unload();
+			} catch(ClassCastException e) {
+				throw e;
+			}
 		}
 	}
 
@@ -146,9 +152,9 @@ public class CommandManagerFactory {
 	public Hashtable getCommandsMap() {
 		return _cmds;
 	}
-	public CommandHandlerBundle getHandler(Class clazz)
+	public CommandHandler getHandler(Class clazz)
 		throws ObjectNotFoundException {
-		CommandHandlerBundle ret = (CommandHandlerBundle) _hnds.get(clazz);
+		CommandHandler ret = (CommandHandler) _hnds.get(clazz);
 		if (ret == null)
 			throw new ObjectNotFoundException();
 		return ret;

@@ -17,13 +17,20 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+
+import junit.framework.TestCase;
+import net.sf.drftpd.event.Event;
 
 import org.drftpd.plugins.SiteBot;
 
-import net.sf.drftpd.event.Event;
-import junit.framework.TestCase;
+import f00f.net.irc.martyr.IRCConnection;
+import f00f.net.irc.martyr.OutCommand;
+import f00f.net.irc.martyr.commands.MessageCommand;
 
 /*
  * @author zubov
@@ -43,15 +50,34 @@ public class TextoutputTest extends TestCase {
 		junit.textui.TestRunner.run(TextoutputTest.class);
 	}
 
-	public void testSendTextToIRC() throws UnknownHostException, IOException {
-		SiteBot irc = new SiteBot();
-		irc.actionPerformed(new Event("RELOAD"));
-		irc.connect();
-		Textoutput.sendTextToIRC(irc.getIRCConnection(),"zubov","affils");
-		try {
-			Thread.sleep(20000);
-		} catch (InterruptedException e) {
+	public static class SB extends SiteBot {
+		public final ArrayList msgs = new ArrayList();
+		public SB() throws IOException {
+			super();
+		}
+		public IRCConnection getIRCConnection() {
+			return new IRCConnection() {
+				public void sendCommand(OutCommand arg) {
+					msgs.add(arg);
+				}
+			};
+		}
+		public void actionPerformed() {
+			return;
+		}
+		public void connect() {
+			return;
 		}
 	}
+	public void testSendTextToIRC() throws UnknownHostException, IOException {
+		SB irc = new SB();
 
+		irc.actionPerformed(new Event("RELOAD"));
+		irc.connect();
+		BufferedReader in = new BufferedReader(new StringReader("Sample text\nMore text"));
+		Textoutput.sendTextToIRC(irc.getIRCConnection(), "zubov", in);
+		assertEquals(irc.msgs.size(), 2);
+		assertEquals("Sample text", ((MessageCommand)irc.msgs.get(0)).getMessage());
+		assertEquals("More text", ((MessageCommand)irc.msgs.get(1)).getMessage());
+	}
 }

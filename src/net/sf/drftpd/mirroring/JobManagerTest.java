@@ -26,17 +26,18 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import org.drftpd.remotefile.AbstractLinkedRemoteFile;
-
+import junit.framework.TestCase;
+import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManagerImpl;
-import junit.framework.TestCase;
+
+import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: JobManagerTest.java,v 1.7 2004/05/20 14:08:59 zubov Exp $
+ * @version $Id: JobManagerTest.java,v 1.8 2004/06/04 14:18:57 mog Exp $
  */
 public class JobManagerTest extends TestCase {
 
@@ -81,7 +82,14 @@ public class JobManagerTest extends TestCase {
 		public SlaveManagerImpl getSlaveManager() {
 			return sm;
 		}
-
+	public void loadJobManager() {
+		if (_jm != null)
+			return; // already loaded
+		Properties p = new Properties();
+		p.put("sleepSeconds", "1000");
+		_jm = new JobManager(this, p);
+		_jm.startJobs();
+	}
 	}
 
 	class SM extends SlaveManagerImpl {
@@ -100,6 +108,8 @@ public class JobManagerTest extends TestCase {
 	}
 	public JobManagerTest(String arg0) throws IOException {
 		super(arg0);
+	}
+	public void setUp() {
 		p = new Properties();
 		cm = new CM(p);
 		cm.loadJobManager();
@@ -108,7 +118,6 @@ public class JobManagerTest extends TestCase {
 		file.addSlave(rslave1);
 		file2 = new LinkedRemoteFilePath("/path/file2.txt");
 		file2.addSlave(rslave2);
-
 	}
 
 	public static void main(String[] args) {

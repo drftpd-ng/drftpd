@@ -19,7 +19,6 @@ package net.sf.drftpd.master.command.plugins;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
-import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
@@ -31,7 +30,7 @@ import org.drftpd.commands.UnhandledCommandException;
  * returns 200 Command OK on all commands
  * 
  * @author mog
- * @version $Id: Dummy.java,v 1.5 2004/06/01 15:40:30 mog Exp $
+ * @version $Id: Dummy.java,v 1.6 2004/06/04 14:18:56 mog Exp $
  */
 public class Dummy implements CommandHandlerFactory {
 
@@ -54,11 +53,7 @@ public class Dummy implements CommandHandlerFactory {
 			return (String[]) _cmdmgr.getHandledCommands(getClass()).toArray(
 				new String[0]);
 		}
-		public void unload() {
-		}
 	}
-
-	//private CommandManager _cmdmgr;
 
 	public Dummy() {
 		super();
@@ -70,5 +65,7 @@ public class Dummy implements CommandHandlerFactory {
 		return new DummyHandler(initializer);
 	}
 	public void load(CommandManagerFactory initializer) {
+	}
+	public void unload() {
 	}
 }

@@ -20,19 +20,19 @@ package net.sf.drftpd.master.command.plugins;
 import net.sf.drftpd.event.InviteEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
-import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 
 /**
  * @author mog
  *
- * @version $Id: Invite.java,v 1.9 2004/06/01 15:40:30 mog Exp $
+ * @version $Id: Invite.java,v 1.10 2004/06/04 14:18:56 mog Exp $
  */
-public class Invite implements CommandHandlerBundle {
+public class Invite implements CommandHandlerFactory, CommandHandler {
 	public Invite() {
 	}
 

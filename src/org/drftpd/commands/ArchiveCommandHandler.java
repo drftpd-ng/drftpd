@@ -27,7 +27,6 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -42,7 +41,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author zubov
  * @version $Id
  */
-public class ArchiveCommandHandler implements CommandHandlerBundle {
+public class ArchiveCommandHandler implements CommandHandlerFactory, CommandHandler {
 
 	public ArchiveCommandHandler() {
 		super();

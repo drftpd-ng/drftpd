@@ -58,7 +58,7 @@ import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.slave.socket.SocketSlaveManager;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.110 2004/06/01 17:16:49 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.111 2004/06/04 14:18:55 mog Exp $
  */
 public class ConnectionManager {
 
@@ -143,7 +143,7 @@ public class ConnectionManager {
 	private List _conns = Collections.synchronizedList(new ArrayList());
 
 	private ArrayList _ftpListeners = new ArrayList();
-	private JobManager _jm;
+	protected JobManager _jm;
 
 	protected LinkedRemoteFile _root;
 	private SectionManagerInterface _sections;

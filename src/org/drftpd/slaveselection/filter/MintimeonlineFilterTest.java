@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.slave.Transfer;
@@ -31,7 +30,7 @@ import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author mog
- * @version $Id: MintimeonlineFilterTest.java,v 1.2 2004/03/01 00:21:10 mog Exp $
+ * @version $Id: MintimeonlineFilterTest.java,v 1.3 2004/06/04 14:18:59 mog Exp $
  */
 public class MintimeonlineFilterTest extends TestCase {
 
@@ -39,18 +38,17 @@ public class MintimeonlineFilterTest extends TestCase {
 		super(name);
 	}
 
-	public static TestSuite suite() {
-		return new TestSuite(MintimeonlineFilterTest.class);
-	}
-
 	public static class RS extends RemoteSlave {
 
-		public RS(String name) {
+		private long _time;
+
+		public RS(String name, long time) {
 			super(name, null);
+			_time = time;
 		}
 
 		public long getLastTransferForDirection(char dir) {
-			return System.currentTimeMillis() - Time.parseTime("1m");
+			return _time - Time.parseTime("1m");
 		}
 	}
 	public void setUp() {
@@ -60,11 +58,11 @@ public class MintimeonlineFilterTest extends TestCase {
 		Properties p = new Properties();
 		p.put("1.multiplier", "1");
 		p.put("1.mintime", "2m");
-
-		RemoteSlave rslaves[] = { new RS("slave1")};
+		long time = System.currentTimeMillis();
+		RemoteSlave rslaves[] = { new RS("slave1", time)};
 		ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
-		Filter f = new MintimeonlineFilter(null, 1, p);
-		f.process(sc, null, null, Transfer.TRANSFER_UNKNOWN, null);
+		MintimeonlineFilter f = new MintimeonlineFilter(null, 1, p);
+		f.process(sc, null, null, Transfer.TRANSFER_UNKNOWN, null, time);
 		assertEquals(-Time.parseTime("1m"), sc.getBestSlaveScore().getScore());
 	}
 }

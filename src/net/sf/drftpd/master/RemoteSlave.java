@@ -35,7 +35,7 @@ import org.jdom.Element;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.41 2004/06/01 15:40:28 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.42 2004/06/04 14:18:55 mog Exp $
  */
 public class RemoteSlave implements Comparable {
 	/**
@@ -45,6 +45,7 @@ public class RemoteSlave implements Comparable {
 	public RemoteSlave(String name, Collection list) {
 		Properties p = new Properties();
 		p.setProperty("name", name);
+		_name = name;
 		updateConfig(p);
 	}
 
@@ -136,13 +137,7 @@ public class RemoteSlave implements Comparable {
 	}
 
 	public boolean equals(Object obj) {
-		if (obj instanceof RemoteSlave) {
-			RemoteSlave rslave = (RemoteSlave) obj;
-			if (rslave.getName().equals(getName())) {
-				return true;
-			}
-		}
-		return false;
+		return ((RemoteSlave) obj).getName().equals(getName());
 	}
 
 	public InetAddress getInetAddress() {

@@ -37,7 +37,7 @@ import org.drftpd.tests.DummyUser;
 
 /**
  * @author mog
- * @version $Id: AbstractUserTest.java,v 1.1 2004/06/01 15:40:31 mog Exp $
+ * @version $Id: AbstractUserTest.java,v 1.2 2004/06/04 14:18:57 mog Exp $
  */
 public class AbstractUserTest extends TestCase {
 
@@ -54,9 +54,6 @@ public class AbstractUserTest extends TestCase {
 	 */
 	private static final long RESETTIME = 1071519356421L;
 
-	public static TestSuite suite() {
-		return new TestSuite(AbstractUserTest.class);
-	}
 	private static void verifyEvents(ArrayList eventNames, ArrayList events) {
 		logger.debug(events);
 		i1 : for (Iterator i1 = events.iterator(); i1.hasNext();) {

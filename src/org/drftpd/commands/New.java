@@ -23,24 +23,23 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
 
+import net.sf.drftpd.Bytes;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
-import net.sf.drftpd.master.command.plugins.Textoutput;
-import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
+import net.sf.drftpd.master.command.plugins.Textoutput;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.Bytes;
 
 import org.apache.log4j.Logger;
 import org.drftpd.sections.SectionInterface;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
- * @version $Id: New.java,v 1.3 2004/06/01 15:40:34 mog Exp $
+ * @version $Id: New.java,v 1.4 2004/06/04 14:18:58 mog Exp $
  * @author zubov
  */
-public class New implements CommandHandlerBundle {
+public class New implements CommandHandlerFactory, CommandHandler {
 	private static final Logger logger = Logger.getLogger(New.class);
 
 	private class DateComparator implements Comparator {

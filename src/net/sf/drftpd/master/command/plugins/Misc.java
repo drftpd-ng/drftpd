@@ -21,20 +21,20 @@ import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.drftpd.commands.CommandHandler;
-import org.drftpd.commands.UnhandledCommandException;
-
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
-import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.slave.SlaveImpl;
 
+import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.UnhandledCommandException;
+
 /**
- * @version $Id: Misc.java,v 1.8 2004/06/01 15:40:30 mog Exp $
+ * @version $Id: Misc.java,v 1.9 2004/06/04 14:18:56 mog Exp $
  */
-public class Misc implements CommandHandlerBundle {
+public class Misc implements CommandHandlerFactory, CommandHandler {
 	/**
 	 * <code>ABOR &lt;CRLF&gt;</code><br>
 	 *

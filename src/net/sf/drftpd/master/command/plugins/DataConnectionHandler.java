@@ -48,7 +48,6 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.usermanager.UserFileException;
@@ -65,14 +64,15 @@ import net.sf.drftpd.util.SSLGetContext;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.57 2004/06/01 15:40:29 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.58 2004/06/04 14:18:55 mog Exp $
  */
-public class DataConnectionHandler implements CommandHandlerBundle, Cloneable {
+public class DataConnectionHandler implements CommandHandlerFactory, CommandHandler, Cloneable {
 	private static final Logger logger = Logger
 			.getLogger(DataConnectionHandler.class);
 	private SSLContext _ctx;

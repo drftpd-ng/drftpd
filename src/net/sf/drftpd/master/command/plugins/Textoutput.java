@@ -25,11 +25,11 @@ import java.io.InputStreamReader;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
-import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -40,9 +40,9 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Textoutput.java,v 1.12 2004/06/01 15:40:30 mog Exp $
+ * @version $Id: Textoutput.java,v 1.13 2004/06/04 14:18:56 mog Exp $
  */
-public class Textoutput implements CommandHandlerBundle {
+public class Textoutput implements CommandHandlerFactory, CommandHandler {
 
 	public static void addTextToResponse(FtpReply reply, String file)
 		throws FileNotFoundException, IOException {
@@ -51,6 +51,27 @@ public class Textoutput implements CommandHandlerBundle {
 				new InputStreamReader(
 					new FileInputStream("text/" + file + ".txt"),
 					"ISO-8859-1")));
+	}
+	protected static void sendTextToIRC(
+		IRCConnection conn,
+		String destination,
+		BufferedReader in)
+		throws IOException {
+		String line;
+		while ((line = in.readLine()) != null) {
+			ReplacerEnvironment env = new ReplacerEnvironment();
+			try {
+				conn.sendCommand(
+					new MessageCommand(
+						destination,
+						SimplePrintf.jprintf(line, env)));
+			} catch (FormatterException e1) {
+				conn.sendCommand(
+					new MessageCommand(
+						destination,
+						"Error in formatting of line - " + line));
+			}
+		}
 	}
 
 	public static void sendTextToIRC(
@@ -63,15 +84,7 @@ public class Textoutput implements CommandHandlerBundle {
 				new BufferedReader(
 					new InputStreamReader(
 						new FileInputStream("text/" + file + ".txt")));
-			while (fileReader.ready()) {
-				String line = fileReader.readLine();
-				ReplacerEnvironment env = new ReplacerEnvironment();
-				try {
-					conn.sendCommand(new MessageCommand(destination,SimplePrintf.jprintf(line,env)));
-				} catch (FormatterException e1) {
-					conn.sendCommand(new MessageCommand(destination,"Error in formatting of line - " + line));
-				}
-			}
+			sendTextToIRC(conn, destination, fileReader);
 		} catch (IOException e) {
 			conn.sendCommand(
 				new MessageCommand(

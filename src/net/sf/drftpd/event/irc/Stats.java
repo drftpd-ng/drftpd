@@ -44,7 +44,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author zubov
-  * @version $Id: Stats.java,v 1.5 2004/05/12 00:45:04 mog Exp $
+  * @version $Id: Stats.java,v 1.6 2004/06/04 14:18:55 mog Exp $
  */
 public class Stats
 	extends GenericCommandAutoService
@@ -195,27 +195,26 @@ public class Stats
 
 	public static int fixNumberAndUserlist(String params, List userList) {
 		int number = 10;
-		StringTokenizer st = new StringTokenizer(params);
+		com.Ostermiller.util.StringTokenizer st = new com.Ostermiller.util.StringTokenizer(params);
 		st.nextToken(); // !alup
 		if (!st.hasMoreTokens()) {
 			return 10;
 		}
-		StringTokenizer token = new StringTokenizer(params);
-		token.nextToken(); // !alup
-		if (token.hasMoreTokens()) {
+		if (st.hasMoreTokens()) {
+			//StringTokenizer st2 = st.clone();
 			try {
-				String strin = token.nextToken();
-				number = Integer.parseInt(strin);
+				number = Integer.parseInt(st.peek());
+				st.nextToken();
 			} catch (NumberFormatException ex) {
-				token = st;
 			}
-		}
-		while (token.hasMoreTokens()) {
-			Permission perm = new Permission(FtpConfig.makeUsers(st));
-			for (Iterator iter = userList.iterator(); iter.hasNext();) {
-				User user = (User) iter.next();
-				if (!perm.check(user)) {
-					iter.remove();
+
+			while(st.hasMoreTokens()) {
+				Permission perm = new Permission(FtpConfig.makeUsers(st));
+				for (Iterator iter = userList.iterator(); iter.hasNext();) {
+					User user = (User) iter.next();
+					if (!perm.check(user)) {
+						iter.remove();
+					}
 				}
 			}
 		}

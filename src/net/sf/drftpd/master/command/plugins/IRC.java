@@ -21,21 +21,21 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.plugins.SiteBot;
 
 /**
  * @author mog
- * @version $Id: IRC.java,v 1.4 2004/06/01 15:40:30 mog Exp $
+ * @version $Id: IRC.java,v 1.5 2004/06/04 14:18:56 mog Exp $
  */
-public class IRC implements CommandHandlerBundle {
+public class IRC implements CommandHandlerFactory, CommandHandler {
 
 	private static final Logger logger = Logger.getLogger(IRC.class);
 

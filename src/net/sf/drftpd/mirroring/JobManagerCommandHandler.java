@@ -24,26 +24,26 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.drftpd.commands.CommandHandler;
-import org.drftpd.commands.UnhandledCommandException;
-import org.tanesha.replacer.ReplacerEnvironment;
-
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+
+import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.UnhandledCommandException;
+import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * CommandHandler plugin for viewing and manipulating the JobManager queue.
  * 
  * @author mog
- * @version $Id: JobManagerCommandHandler.java,v 1.16 2004/06/01 15:40:32 mog Exp $
+ * @version $Id: JobManagerCommandHandler.java,v 1.17 2004/06/04 14:18:57 mog Exp $
  */
-public class JobManagerCommandHandler implements CommandHandlerBundle {
+public class JobManagerCommandHandler implements CommandHandlerFactory, CommandHandler {
 
 	public JobManagerCommandHandler() {
 		super();

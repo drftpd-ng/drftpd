@@ -38,7 +38,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.47 2004/05/20 14:08:59 zubov Exp $
+ * @version $Id: JobManager.java,v 1.48 2004/06/04 14:18:57 mog Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -54,6 +54,10 @@ public class JobManager implements Runnable {
 	public JobManager(ConnectionManager cm) throws IOException {
 		_cm = cm;
 		reload();
+	}
+	protected JobManager(ConnectionManager cm, Properties p) {
+		_cm = cm;
+		reload(p);
 	}
 	public void startJobs() {
 		if (thread != null) {
@@ -311,7 +315,10 @@ public class JobManager implements Runnable {
 		} catch (IOException e) {
 			throw new FatalException(e);
 		}
-		_useCRC = FtpConfig.getProperty(p, "useCRC").equals("true");
+		reload(p);
+	}
+	protected void reload(Properties p) {
+		_useCRC = p.getProperty("useCRC", "true").equals("true");
 		_sleepSeconds =
 			1000 * Integer.parseInt(FtpConfig.getProperty(p, "sleepSeconds"));
 	}
