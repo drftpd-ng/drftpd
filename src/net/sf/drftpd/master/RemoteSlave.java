@@ -77,7 +77,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  * @author zubov
- * @version $Id: RemoteSlave.java,v 1.65 2004/11/06 08:04:33 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.66 2004/11/06 08:33:15 zubov Exp $
  */
 public class RemoteSlave implements Runnable, Comparable, Serializable {
     private static final long serialVersionUID = -6973935289361817125L;
@@ -535,8 +535,12 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         _socket = null;
         _sin = null;
         _sout = null;
-        _indexPool = null;
-        _indexWithCommands = null;
+        synchronized (_indexPool) {
+            _indexPool = null;
+        }
+        synchronized (_indexWithCommands) {
+            _indexWithCommands = null;
+        }
         _transfers = null;
     }
 
