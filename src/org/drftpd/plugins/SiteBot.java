@@ -823,19 +823,19 @@ public class SiteBot extends FtpListener implements Observer {
     
     public class ChannelConfig {
     	private String _blowKey = null;
+    	private String _chanKey = null;
     	private WeakReference<Blowfish> _blowFish = null;
 		private String _permissions = null;
-    	private ChannelConfig(String blowKey, String permissions) {
-    		_blowKey = blowKey;
+    	private ChannelConfig(String blowKey, String chanKey, String permissions) {
+    		_chanKey = chanKey;
     		_permissions = (permissions == null) ? "*" : permissions;
-    		logger.debug("permissions = " + _permissions);
     		if (_blowKey != null) {
+        		_blowKey = blowKey;
     			_blowFish = new WeakReference<Blowfish>(new Blowfish(_blowKey));
     		}
     	}
-    	public String getKey(User user) throws ObjectNotFoundException {
-    		Permission p = new Permission(FtpConfig.makeUsers(new StringTokenizer(_permissions)));
-    		if (p.check(user)) {
+    	public String getBlowfishKey(User user) throws ObjectNotFoundException {
+    		if (checkPerms(user)) {
     			return _blowKey;
     		}
     		throw new ObjectNotFoundException("No Permissions");
@@ -866,6 +866,19 @@ public class SiteBot extends FtpListener implements Observer {
     		}
     		return getBlowFish().Encrypt(message);
     	}
+    	
+    	private boolean checkPerms(User user) {
+    		Permission p = new Permission(FtpConfig
+    				.makeUsers(new StringTokenizer(_permissions)));
+    		return p.check(user);
+    	}
+    	
+    	public String getChannelKey(User user) throws ObjectNotFoundException {
+    		if (checkPerms(user)) {
+    			return _chanKey;
+    		}
+    		throw new ObjectNotFoundException("No Permissions");
+    	}
     }
 
     /**
@@ -887,7 +900,8 @@ public class SiteBot extends FtpListener implements Observer {
             logger.warn("irc.sendDelay not set, defaulting to 300ms");
         }
         for (String channelName : _channelMap.keySet()) {
-        	new AutoJoin(_conn, channelName);
+        	ChannelConfig cc = _channelMap.get(channelName);
+        	new AutoJoin(_conn, channelName, cc._chanKey);
         }
         
         _autoReconnect = new AutoReconnect(_conn);
@@ -1149,8 +1163,9 @@ public class SiteBot extends FtpListener implements Observer {
 
         for (int i = 1;; i++) {
             String channelName = ircCfg.getProperty("irc.channel." + i);
-            String key = ircCfg.getProperty("irc.channel.blowkey." + i);
-            String permissions = ircCfg.getProperty("irc.channel.perms." + i);
+            String blowKey = ircCfg.getProperty("irc.channel." + i + ".blowkey");
+            String chanKey = ircCfg.getProperty("irc.channel." + i + ".chankey");
+            String permissions = ircCfg.getProperty("irc.channel." + i + ".perms");
             if (channelName == null) {
             	break;
             }
@@ -1158,7 +1173,7 @@ public class SiteBot extends FtpListener implements Observer {
             	_primaryChannelName = channelName;
             }
             
-        	_channelMap.put(channelName,new ChannelConfig(key, permissions));
+        	_channelMap.put(channelName,new ChannelConfig(blowKey, chanKey, permissions));
         }
         if (_channelMap.size() < 1) {
         	throw new IllegalStateException("SiteBot loaded with no channels, check your config");
@@ -1461,7 +1476,7 @@ public class SiteBot extends FtpListener implements Observer {
 	public String getBlowfishKey(String channel, User user) throws ObjectNotFoundException {
 		
 		if (_channelMap.containsKey(channel)) {
-			return _channelMap.get(channel).getKey(user);
+			return _channelMap.get(channel).getBlowfishKey(user);
 		}
 		throw new ObjectNotFoundException();
 	}
