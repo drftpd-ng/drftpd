@@ -107,6 +107,9 @@ public class SlaveManagerImpl
 
 	public static void saveFilesXML(Element root) {
 		File filesDotXml = new File("files.xml");
+		File filesxmlbak = new File("files.xml.bak");
+		filesxmlbak.delete();
+		filesDotXml.renameTo(filesxmlbak);
 		try {
 			new XMLOutputter("  ", true).output(
 				root,
@@ -247,12 +250,12 @@ public class SlaveManagerImpl
 		this.root = loadXmlFileDatabase(this.rslaves, cm);
 		Registry registry =
 			LocateRegistry.createRegistry(
-				1099,
+				Integer.parseInt(cfg.getProperty("master.bindport", "1099")),
 				RMISocketFactory.getSocketFactory(),
 				ssf);
 		// throws RemoteException
 		try {
-			registry.bind("slavemanager", this);
+			registry.bind(cfg.getProperty("master.bindname"), this);
 		} catch(Exception t) {
 			throw new FatalException(t);
 		}
@@ -540,7 +543,7 @@ public class SlaveManagerImpl
 			for (Iterator i = rslaves.iterator(); i.hasNext();) {
 				RemoteSlave slave = (RemoteSlave) i.next();
 				try {
-					slave.getSlave().ping();
+					slave.ping();
 				} catch (RemoteException ex) {
 					if (slave.handleRemoteException(ex))
 						removed++;

@@ -1,2 +1,9 @@
 #!/bin/sh
-exec java -Djava.library.path=. -Djava.rmi.dgc.leaseValue=300000 -jar slave.jar drftpd.conf
+VMARGS="
+	-server
+	-Djava.library.path=. \
+	-Djava.rmi.dgc.leaseValue=300000 \
+	-Djava.rmi.server.randomIDs=true"
+
+export CLASSPATH=classes
+exec java $VMARGS net.sf.drftpd.slave.SlaveImpl drftpd.conf

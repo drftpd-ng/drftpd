@@ -36,13 +36,13 @@ public class UploaderPosition implements Comparable {
 	}
 	
 	
-	/* (non-Javadoc)
+	/** Sorts in reverse order so that the biggest shows up first.
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	public int compareTo(UploaderPosition o) {
 		long thisVal = getBytes();
 		long anotherVal = o.getBytes();
-		return (thisVal<anotherVal ? -1 : (thisVal==anotherVal ? 0 : 1));
+		return (thisVal<anotherVal ? 1 : (thisVal==anotherVal ? 0 : -1));
 	}
 	/* (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)

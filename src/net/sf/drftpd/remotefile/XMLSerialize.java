@@ -10,11 +10,7 @@ public class XMLSerialize {
 	public static Element serialize(LinkedRemoteFile file) {
 		Element element =
 			new Element(file.isDirectory() ? "directory" : "file");
-		//		if (file.isDirectory()) {
-		//			element = new Element("directory");
-		//		} else {
-		//			element = new Element("file");
-		//		}
+
 		element.setAttribute("name", file.getName());
 
 		element.addContent(new Element("user").setText(file.getOwner()));
@@ -35,14 +31,15 @@ public class XMLSerialize {
 			element.addContent(new Element("checksum").setText(checksum));
 			
 			element.addContent(new Element("xfertime").setText(Long.toString(file.getXfertime())));
-		}
 
-		Element slaves = new Element("slaves");
-		for (Iterator i = file.getSlaves().iterator(); i.hasNext();) {
-			RemoteSlave rslave = (RemoteSlave) i.next();
-			slaves.addContent(new Element("slave").setText(rslave.getName()));
+			Element slaves = new Element("slaves");
+			for (Iterator i = file.getSlaves().iterator(); i.hasNext();) {
+				RemoteSlave rslave = (RemoteSlave) i.next();
+				slaves.addContent(new Element("slave").setText(rslave.getName()));
+			}
+			element.addContent(slaves);
+
 		}
-		element.addContent(slaves);
 
 		if (file.isDirectory()) {
 			Element contents = new Element("contents");

@@ -113,10 +113,14 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		this.owner = file.getOwner();
 		this.group = file.getGroup();
 		this.checkSum = file.getCheckSum();
-		this.slaves =
-			Collections.synchronizedCollection(new ArrayList(file.getSlaves()));
-		if (this.slaves == null) {
-			throw new IllegalArgumentException("slaves == null for " + file);
+		if (file.isFile()) {
+			this.slaves =
+				Collections.synchronizedCollection(
+					new ArrayList(file.getSlaves()));
+			if (this.slaves == null) {
+				throw new IllegalArgumentException(
+					"slaves == null for " + file);
+			}
 		}
 
 		if (parent == null) {
@@ -227,7 +231,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 				}
 				try {
 					slave.delete(getPath());
-					System.out.print("DELETE: "+rslave.getName()+" "+getPath());
+					System.out.print(
+						"DELETE: " + rslave.getName() + " " + getPath());
 					// throws RemoteException, IOException
 					iter.remove();
 				} catch (RemoteException ex) {
@@ -419,6 +424,19 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		return files.containsKey(filename);
 	}
 
+	public boolean hasOfflineSlaves() {
+		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
+			if (!((RemoteSlave) iter.next()).isAvailable())
+				return false;
+		}
+		if (isDirectory()) {
+			for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+				if (((LinkedRemoteFile) iter.next()).hasOfflineSlaves())
+					return true;
+			}
+		}
+		return false;
+	}
 	protected SFVFile sfvFile;
 	public SFVFile lookupSFVFile()
 		throws IOException, ObjectNotFoundException, NoAvailableSlaveException {
@@ -633,7 +651,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	}
 
 	public void removeSlave(RemoteSlave slave) {
-		slaves.remove(slave);
+		if(slaves != null) slaves.remove(slave);
 	}
 
 	// cannot rename to existing file
@@ -742,6 +760,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		}
 		if (isDirectory())
 			ret.append("[directory(" + files.size() + ")]");
+			if(isDeleted()) ret.append("[DELE]");
 		ret.append("]");
 		return ret.toString();
 	}
@@ -761,7 +780,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			} else {
 				file.removeSlave(rslave);
 				//should be safe to remove it as it has no slaves.
-				if(file.getSlaves().size() == 0) i.remove();
+				if (file.getSlaves().size() == 0)
+					i.remove();
 			}
 		}
 		if (isFile() && getSlaves().size() == 0) {

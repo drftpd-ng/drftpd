@@ -296,13 +296,14 @@ public class IRCListener implements FtpListener {
 			}
 
 			if (finishedFiles == sfvfile.size()) {
+				Collection racers = topFileUploaders2(sfvfile.getFiles());
 				say(
 					"[complete] "
 						+ dir.getPath()
 						+ " was finished by "
-						+ formatUser(direvent.getUser()));
+						+ formatUser(direvent.getUser())+" "+racers.size()+" users participated");
 				for (Iterator iter =
-					topFileUploaders2(sfvfile.getFiles()).iterator();
+					racers.iterator();
 					iter.hasNext();
 					) {
 					UploaderPosition stat = (UploaderPosition) iter.next();
@@ -400,6 +401,7 @@ public class IRCListener implements FtpListener {
 			}
 			if (stat == null) {
 				stat = new UploaderPosition(username, file.length(), 1);
+				ret.add(stat);
 			} else {
 				stat.updateBytes(file.length());
 				stat.updateFiles(1);

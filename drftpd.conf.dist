@@ -1,16 +1,16 @@
 # do not remove any entries, it can result
 # in NullPointerException's
 
-slavemanager.url=//localhost/slavemanager
 master.host=localhost
 master.bindname=slavemanager
 
-slave.roots=site
 slave.root.1=site
 slave.root.1.minfreespace=0
 slave.root.1.prio=0
 
 slave.name=moogle
+
+master.bindport=1099
 
 # below is the configuration for the master
 master.port=2121
@@ -23,6 +23,8 @@ master.usermanager=net.sf.drftpd.master.usermanager.jsx.JSXUserManager
 #100 MiB, 100,000,000
 freespace.min=100000000
 
+#enable sitebot?
+irc.enabled=false
 irc.server=irc.hemmet.chalmers.se
 irc.port=6667
 irc.channel=#drftpd

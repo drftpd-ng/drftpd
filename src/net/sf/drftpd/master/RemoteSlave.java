@@ -128,10 +128,17 @@ public class RemoteSlave implements Serializable, Comparable {
 		this.manager = manager;
 	}
 
-	public boolean isAvailable() {
-		if(slave == null) return false;
-		try {
+	private long lastPing;
+	public void ping() throws RemoteException, NoAvailableSlaveException {
+		if(slave == null) throw new NoAvailableSlaveException(getName()+" is offline");
+		if(System.currentTimeMillis() > lastPing+1000) {
 			getSlave().ping();
+		}
+	}
+	public boolean isAvailable() {
+		//if(slave == null) return false;
+		try {
+			ping();
 		} catch (RemoteException e) {
 			handleRemoteException(e);
 		} catch (NoAvailableSlaveException e) {

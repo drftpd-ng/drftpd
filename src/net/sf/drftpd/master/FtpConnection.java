@@ -489,9 +489,10 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		Map listFilesMap = directoryFile.getFilesMap();
+		//Map listFilesMap = directoryFile.getFiles();
 
-		Collection listFiles = new ArrayList(listFilesMap.values());
+		//Collection listFiles = new ArrayList(listFilesMap.values());
+		ArrayList listFiles = new ArrayList(directoryFile.getFiles());
 
 		FtpResponse response =
 			(FtpResponse) FtpResponse
@@ -539,6 +540,7 @@ public class FtpConnection extends BaseFtpConnection {
 			// no sfv file in directory - just skip it
 		} catch(Throwable e) {
 			response.addComment("zipscript error: "+e.getMessage());
+			logger.log(Level.WARNING, "zipscript error", e);
 		}
 
 		try {
@@ -1302,6 +1304,12 @@ public class FtpConnection extends BaseFtpConnection {
 	 * This command specifies the old pathname of the file which is
 	 * to be renamed.  This command must be immediately followed by
 	 * a "rename to" command specifying the new file pathname.
+	 * 
+	 *                RNFR
+                  450, 550
+                  500, 501, 502, 421, 530
+                  350
+
 	 */
 	public void doRNFR(FtpRequest request, PrintWriter out) {
 		//out.print(new FtpResponse(500, "Command not implemented").toString());
@@ -1312,7 +1320,6 @@ public class FtpConnection extends BaseFtpConnection {
 		// argument check
 		if (!request.hasArgument()) {
 			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
-			//out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
 		}
 
@@ -1331,6 +1338,11 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
+		if(mstRenFr.hasOfflineSlaves()) {
+			out.print(new FtpResponse(450, "Cannot rename, file has offline slaves"));
+			resetState();
+			return;
+		}
 		out.print(
 			new FtpResponse(350, "File exists, ready for destination name"));
 		//out.write(ftpStatus.getResponse(350, request, user, args));
@@ -1363,14 +1375,11 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		// get filenames
-		//String fromFileStr = user.getVirtualDirectory().getVirtualName(mstRenFr);
-		//String toFileStr = request.getArgument();
-		//toFileStr = user.getVirtualDirectory().getAbsoluteName(toFileStr);
-		//String physicalToFileStr = user.getVirtualDirectory().getPhysicalName(toFileStr);
-		//File fromFile = new File(mstRenFr);
-		//File toFile = new File(physicalToFileStr);
-		//String args[] = {fromFileStr, toFileStr};
+		if(mstRenFr.hasOfflineSlaves()) {
+			out.print(new FtpResponse(450, "Cannot rename, file has offline slaves"));
+			resetState();
+			return;
+		}
 
 		String to = currentDirectory.lookupPath(request.getArgument());
 		logger.info("argument = " + request.getArgument());
@@ -1385,11 +1394,6 @@ public class FtpConnection extends BaseFtpConnection {
 		//   return;
 		//}
 
-		// now rename
-		//if(fromFile.renameTo(toFile)) {
-		//    out.write(ftpStatus.getResponse(250, request, user, args));
-		//}
-		logger.info("mstRenFr = " + mstRenFr);
 		try {
 			fromFile.renameTo(to);
 		} catch (ObjectExistsException e) {
@@ -1722,21 +1726,29 @@ public class FtpConnection extends BaseFtpConnection {
 				"              tagline max_sim_down max_sim_up");
 			return;
 		} else if ("credits".equalsIgnoreCase(command)) {
-			myUser.setCredits(Long.parseLong(command));
+			myUser.setCredits(Long.parseLong(commandArgument));
+			
 		} else if ("ratio".equalsIgnoreCase(command)) {
 			myUser.setRatio(Float.parseFloat(commandArgument));
+			
 		} else if ("comment".equalsIgnoreCase(command)) {
 			myUser.setComment(commandArgument);
+			
 		} else if ("idle_time".equalsIgnoreCase(command)) {
 			myUser.setIdleTime(Integer.parseInt(commandArgument));
+			
 		} else if ("num_logins_tot".equalsIgnoreCase(command)) {
 			myUser.setMaxLogins(Integer.parseInt(commandArgument));
+			
 		} else if ("num_logins_ip".equalsIgnoreCase(command)) {
 			myUser.setMaxLoginsPerIP(Integer.parseInt(commandArgument));
+			
 		} else if ("max_dlspeed".equalsIgnoreCase(command)) {
 			myUser.setRatio(Long.parseLong(commandArgument));
+			
 		} else if ("max_ulspeed".equals(command)) {
 			myUser.setMaxUploadRate(Integer.parseInt(commandArgument));
+			
 		}
 		try {
 			myUser.commit();
@@ -1991,6 +2003,7 @@ public class FtpConnection extends BaseFtpConnection {
 		for (Iterator iter = files.keySet().iterator(); iter.hasNext();) {
 			String key = (String) iter.next();
 			LinkedRemoteFile file = (LinkedRemoteFile) files.get(key);
+			if(!key.equals(file.getName())) response.addComment("WARNING: "+key+" not equals to "+file.getName());
 			//response.addComment(key);
 			response.addComment(file.toString());
 		}
@@ -2876,11 +2889,27 @@ public class FtpConnection extends BaseFtpConnection {
 		for (Iterator i = connManager.getConnections().iterator();
 			i.hasNext();
 			) {
-			response.addComment(((FtpConnection) i.next()).toString());
+				FtpConnection conn = (FtpConnection)i.next();
+				String username = conn.getUser().getUsername();
+				String command = conn.getRequest().getCommand();
+				
+			if(conn.isExecuting()) {
+				if(conn.getRequest().getCommand().equals("RETR")) {
+					response.addComment(username+"    DL");
+				} else if(command.equals("STOR")) {
+					response.addComment(username+"    UL");
+				} else {
+					response.addComment(conn.getUser().getUsername()+"    "+conn.getRequest().getCommand());
+				}
+
+			} else {
+				response.addComment(conn.getUser().getUsername()+"    IDLE");
+			}
 		}
 		out.print(response.toString());
 		//out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
 	}
+	
 	/**
 	 * USAGE: site wipe [-r] <file/directory>
 	 *                                                                                 
@@ -3116,7 +3145,7 @@ public class FtpConnection extends BaseFtpConnection {
 		try {
 			rslave = slaveManager.getASlave(Transfer.TRANSFER_RECEIVING_UPLOAD);
 		} catch (NoAvailableSlaveException ex) {
-			logger.log(Level.SEVERE, "", ex);
+			logger.log(Level.SEVERE, ex.getMessage());
 			out.print(FtpResponse.RESPONSE_450_SLAVE_UNAVAILABLE);
 			return;
 		}
@@ -3156,7 +3185,8 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		// say we are ready to start sending
-		out.print(FtpResponse.RESPONSE_150_OK);
+
+		out.print(new FtpResponse(150, "File status okay, about to open data connection from "+rslave.getName()+"."));
 		out.flush();
 
 		// connect and start transfer

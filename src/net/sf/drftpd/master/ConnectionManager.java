@@ -36,7 +36,6 @@ import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveImpl;
 
@@ -127,8 +126,7 @@ public class ConnectionManager {
 			throw new FatalException(e);
 		}
 
-		String localslave = cfg.getProperty("master.localslave", "false");
-		if (localslave.equalsIgnoreCase("true")) {
+		if(cfg.getProperty("master.localslave", "false").equalsIgnoreCase("true")) {
 			Slave slave;
 			try {
 				slave = new SlaveImpl(cfg, inetAddress);
@@ -139,19 +137,19 @@ public class ConnectionManager {
 				//the compiler doesn't know that execution stops at System.exit(),
 			}
 			
-			try {
-				LinkedRemoteFile slaveroot =
-					SlaveImpl.getDefaultRoot(
-						cfg.getProperty("slave.roots"));
-				slavemanager.addSlave(cfg.getProperty("slave.name"), slave, slaveroot);
-			} catch (RemoteException ex) {
-				ex.printStackTrace();
-				return;
-			} catch (IOException ex) {
-				ex.printStackTrace();
-				System.exit(0);
-				return;
-			}
+//			try {
+//				LinkedRemoteFile slaveroot =
+//					SlaveImpl.getDefaultRoot(
+//						cfg.getProperty("slave.roots"));
+//				slavemanager.addSlave(cfg.getProperty("slave.name"), slave, slaveroot);
+//			} catch (RemoteException ex) {
+//				ex.printStackTrace();
+//				return;
+//			} catch (IOException ex) {
+//				ex.printStackTrace();
+//				System.exit(0);
+//				return;
+//			}
 		}
 		
 		try {
@@ -182,11 +180,12 @@ public class ConnectionManager {
 		//run every 5 minutes
 		timer.schedule(timerSave, 0, 600 * 1000);
 		
-
+		if(cfg.getProperty("irc.enabled", "false").equals("true")) {
 		try {
 			addFtpListener(new IRCListener(this, cfg));
 		} catch (Exception e2) {
 			logger.log(Level.WARNING, "Error starting IRC bot", e2);
+		}
 		}
 		addFtpListener(new XferLogListener());
 	}
@@ -214,7 +213,7 @@ public class ConnectionManager {
 				//						+ maxIdleTime
 				//						+ "s");
 
-				if (idle >= maxIdleTime) {
+				if (!conn.isExecuting() && idle >= maxIdleTime) {
 					// idle time expired, logout user.
 					conn.stop(
 						"Idle time expired: "
@@ -265,9 +264,9 @@ public class ConnectionManager {
 		conn.stop(message);
 	}
 	
-	public static final String VERSION = "drftpd alpha master server CVS";
+	public static final String VERSION = "drftpd v0.7.0";
 	public static void main(String args[]) {
-		System.out.println(VERSION+" starting.");
+		System.out.println(VERSION+" master server starting.");
 		System.out.println("http://drftpd.sourceforge.net");
 		
 		try {

@@ -1,0 +1,8 @@
+<slaves>
+  <!-- this would allow the slave named sunet connect from *.sunet.se using ident daemon or from ftp.sunet.se using any ident -->
+  <slave>
+    <name>sunet</name>
+    <mask>daemon@*.sunet.se</mask>
+    <mask>*@ftp.sunet.se</mask>
+  </slave>
+</slaves>

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.drftpd.FatalException;
 import net.sf.drftpd.master.RemoteSlave;
 
 import org.jdom.Element;
@@ -48,6 +49,7 @@ public class JDOMRemoteFile extends RemoteFile {
 	}
 
 	public JDOMRemoteFile(Element element, Hashtable allSlaves) {
+		try {
 		this.allSlaves = allSlaves;
 		this.name = element.getAttributeValue("name");
 		if (element.getName().equals("directory")) {
@@ -68,32 +70,36 @@ public class JDOMRemoteFile extends RemoteFile {
 				Long.parseLong(element.getChildText("checksum"), 16);
 			} catch(NumberFormatException e) {
 			}
+			this.length = Long.parseLong(element.getChildText("size"));
+
+			this.slaves = new ArrayList();
+			for (Iterator iter =
+				element.getChild("slaves").getChildren("slave").iterator();
+				iter.hasNext();
+				) {
+				Element slaveElement = (Element) iter.next();
+				String slaveName = slaveElement.getText();
+				if(slaveName == null) throw new NullPointerException(slaveElement+" : slaveElement.getText() returned null");
+				RemoteSlave rslave = (RemoteSlave) this.allSlaves.get(slaveName);
+				if (rslave == null) {
+					logger.log(
+						Level.WARNING,
+						slaveName
+							+ " not in slavelist, not adding file: "
+							+ getName());
+					continue;
+				}
+				// don't add duplicate slaves. shouldn't happen.
+				if(!this.slaves.contains(rslave)) this.slaves.add(rslave);
+			}
 		}
-		this.length = Long.parseLong(element.getChild("size").getText());
 		this.owner = element.getChild("user").getText();
 		this.group = element.getChild("group").getText();
 		this.lastModified =
 			Long.parseLong(element.getChild("lastModified").getText());
 
-		this.slaves = new ArrayList();
-		for (Iterator iter =
-			element.getChild("slaves").getChildren("slave").iterator();
-			iter.hasNext();
-			) {
-			Element slaveElement = (Element) iter.next();
-			String slaveName = slaveElement.getText();
-			if(slaveName == null) throw new NullPointerException(slaveElement+" : slaveElement.getText() returned null");
-			RemoteSlave rslave = (RemoteSlave) this.allSlaves.get(slaveName);
-			if (rslave == null) {
-				logger.log(
-					Level.WARNING,
-					slaveName
-						+ " not in slavelist, not adding file: "
-						+ getName());
-				continue;
-			}
-			// don't add duplicate slaves. shouldn't happen.
-			if(!this.slaves.contains(rslave)) this.slaves.add(rslave);
+		} catch(NumberFormatException ex) {
+			throw new FatalException(this+" has missing fields, try switching to files.xml.bak", ex);
 		}
 	}
 

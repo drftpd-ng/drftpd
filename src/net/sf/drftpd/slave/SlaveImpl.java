@@ -26,6 +26,7 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
+import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -53,7 +54,7 @@ public class SlaveImpl
 	public SlaveImpl(Properties cfg, InetAddress inetAddress) throws RemoteException {
 		//super(0, RMISocketFactory.getDefaultSocketFactory(), new InetAddrRMIServerSocketFactory(inetAddress));
 		super(0);
-		this.slavemanagerurl = "//"+cfg.getProperty("master.host")+"/"+cfg.getProperty("master.bindname");
+		this.slavemanagerurl = "//"+cfg.getProperty("master.host")+":"+cfg.getProperty("master.bindport","1099")+"/"+cfg.getProperty("master.bindname");
 		this.name = cfg.getProperty("slave.name");
 
 		this.roots = getDefaultRootBasket(cfg);
@@ -90,6 +91,7 @@ public class SlaveImpl
 		return;
 	}
 	public static void main(String args[]) {
+		System.out.println(ConnectionManager.VERSION+" slave server starting");
 		String drftpdconf;
 		if(args.length >= 1) {
 			drftpdconf = args[0];

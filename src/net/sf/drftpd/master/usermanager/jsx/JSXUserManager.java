@@ -62,7 +62,7 @@ public class JSXUserManager extends UserManager {
 			User user = this.create("drftpd");
 			user.setPassword("drftpd");
 			try {
-				user.addIPMask("*@localhost");
+				user.addIPMask("*@127.0.0.1");
 			} catch (DuplicateElementException e) {
 			}
 			try {
