@@ -85,7 +85,7 @@ public class SFVFile extends AbstractSFVFile {
                 continue; 	//file name not found in sfv
             }
             
-            if (fileChecksum == sfvChecksum) {
+            if (fileChecksum == sfvChecksum || fileChecksum == 0) {
                 present++;
                 if (!file.isAvailable()) {
                     offline++;
