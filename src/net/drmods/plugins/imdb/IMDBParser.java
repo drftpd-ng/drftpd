@@ -28,8 +28,6 @@ import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sf.drftpd.util.ReplacerUtils;
-
 import org.apache.log4j.Logger;
 import org.drftpd.plugins.SiteBot;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -61,19 +59,18 @@ public class IMDBParser {
 		_foundFilm = getInfo(searchStr);
     }
 
-    public String getGenre()  { return foundFilm() ? _genre : "N/A"; }
-    public String getPlot()   { return foundFilm() ? _plot : "N/A"; }
+    public String getGenre()  { return foundFilm() ? _genre  : "N/A"; }
+    public String getPlot()   { return foundFilm() ? _plot   : "N/A"; }
     public String getRating() { return foundFilm() ? _rating : "N/A"; }
-    public String getTitle()  { return foundFilm() ? _title : "N/A"; }
-    public String getVotes()  { return foundFilm() ? _votes : "N/A"; }
-    public String getYear()   { return foundFilm() ? _year : "N/A"; }
-    public String getURL()    { return foundFilm() ? _url : "N/A"; }
+    public String getTitle()  { return foundFilm() ? _title  : "N/A"; }
+    public String getVotes()  { return foundFilm() ? _votes  : "N/A"; }
+    public String getYear()   { return foundFilm() ? _year   : "N/A"; }
+    public String getURL()    { return foundFilm() ? _url    : "N/A"; }
     public boolean foundFilm() { return _foundFilm; }
     
     private boolean getInfo(String searchString) {
         try {
             String urlString = _searchUrl + filterTitle(searchString);
-            System.out.println(urlString);
             URL url = new URL(urlString);
             URLConnection urlConn = url.openConnection();
             
@@ -226,14 +223,5 @@ public class IMDBParser {
 	      e.printStackTrace(System.err);
 	    }
 	    return new String(cha); 
-    }
-	
-	public static void main(String[] args) {
-        String release = "Windtalkers.2002.NTSC.INT.DVDR-WaYsTeD";
-        release = "VA-DJ_Clue-Monday_Night_Mixtape_(Hosted_by_DJ_Envy_Live_on_Hot_97_05-05-03)-2003-FUA";
-        System.out.println("Querying IRCListener for "+release);
-        IMDBParser imdb = new IMDBParser(release);
-        System.out.println("Found: "+imdb.foundFilm());
-        System.out.println(ReplacerUtils.jprintf("mkdir.announce", imdb.getEnv(), IMDBParser.class));
-	}
+    }	
 }

@@ -52,3 +52,4 @@ irc.plugins.8=org.drftpd.sitebot.OnConnect
 irc.plugins.9=org.drftpd.sitebot.Ident
 irc.plugins.10=net.drmods.plugins.irc.Kick
 irc.plugins.11=net.drmods.plugins.irc.Approve
+irc.plugins.12=net.drmods.plugins.imdb.IRCListener

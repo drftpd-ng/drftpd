@@ -36,10 +36,7 @@ import net.sf.drftpd.util.ReplacerUtils;
 public class EventListener extends FtpListener {
 
     private static final Logger logger = Logger.getLogger(EventListener.class); 
-    private ConnectionManager _cm;
-    private SiteBot _irc;
-    private SectionInterface _section;
-    private String _dirName;
+
     public EventListener() {
     }
 
@@ -47,20 +44,20 @@ public class EventListener extends FtpListener {
         if (!(event instanceof DirectoryFtpEvent))
             return;
         DirectoryFtpEvent devent = (DirectoryFtpEvent) event;
-        if (!_cm.getGlobalContext().getConfig().checkPathPermission("dirlog",devent.getUser(), devent.getDirectory()))
+        if (!getGlobalContext().getConfig().checkPathPermission("dirlog",devent.getUser(), devent.getDirectory()))
             return;
-        
+
         if ("MKD".equals(devent.getCommand()) ||
             "PRE".equals(devent.getCommand())) {
-            _dirName = devent.getDirectory().getName();
-       		_section = _cm.getGlobalContext().getSectionManager().lookup(devent.getDirectory().getPath());
+            String dirName = devent.getDirectory().getName();
+            SectionInterface sec = getGlobalContext().getSectionManager().lookup(devent.getDirectory().getPath());
        		String[] checkSections = ResourceBundle.getBundle(IMDBParser.class.getName())
        									.getString("mkdir.sections").split(";");
        		String[] excludeDirs = ResourceBundle.getBundle(IMDBParser.class.getName())
 										.getString("mkdir.exclude").split(";");
        		
        		for (int i=0; i < checkSections.length; i++) {
-       		    if (_section.getName().equalsIgnoreCase(checkSections[i]))
+       		    if (sec.getName().equalsIgnoreCase(checkSections[i]))
        		        break;
        		    
        		    if (i == checkSections.length-1)
@@ -68,36 +65,46 @@ public class EventListener extends FtpListener {
        		}
  
        		for (int i=0; i < excludeDirs.length; i++) {
-       		    if (_dirName.equalsIgnoreCase(excludeDirs[i]))
+       		    if (dirName.equalsIgnoreCase(excludeDirs[i]))
        		        return;
        		}
        		
-       		Thread thread = new Thread() {
+            SiteBot irc;
+    		try {
+    			irc = (SiteBot) getGlobalContext().getFtpListener(SiteBot.class);
+    		} catch (ObjectNotFoundException e) {
+    			logger.warn("Error loading IMDB sitebot component", e);
+    			return;
+    		}        
+
+    		class IMDBThread extends Thread {
+       		    private SiteBot _irc;
+       		    private SectionInterface _section;
+       		    private String _dirname;
+       		    public IMDBThread(SiteBot irc, SectionInterface sec, String dirname) {
+       		        _irc = irc;
+       		        _section = sec;
+       		        _dirname = dirname;
+       		    }
        		    public void run() {
-       		        IMDBParser imdb = new IMDBParser(_dirName);
+       		        IMDBParser imdb = new IMDBParser(_dirname);
        		        if (!imdb.foundFilm()) {
-       		            logger.info("No imdb info found for " + _dirName);
+       		            logger.info("No imdb info found for " + _dirname);
        		            return;
        		        }           
        		        _irc.say(_section, 
        		                ReplacerUtils.jprintf("mkdir.announce", imdb.getEnv(), IMDBParser.class));
-       		        this.destroy();
        		    }
        		};
+       		IMDBThread thread = new IMDBThread(irc, sec, dirName);
        		thread.start();
-        }
+         }
     }
 
     public void unload() {
     }
 
     public void init(ConnectionManager connectionManager) {
-        _cm = connectionManager;
-		try {
-			_irc = (SiteBot) _cm.getGlobalContext().getFtpListener(SiteBot.class);
-		} catch (ObjectNotFoundException e) {
-			logger.warn("Error loading IMDB sitebot component", e);
-		}
     }
 
 }

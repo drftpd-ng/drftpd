@@ -40,7 +40,6 @@ import f00f.net.irc.martyr.commands.MessageCommand;
  * @version $Id$
  */
 public class Slaves extends GenericAutoService implements IRCPluginInterface {
-    private static final int LEN2 = "!slave ".length();
     private static final Logger logger = Logger.getLogger(Slaves.class);
     private SiteBot _listener;
     private String _trigger;
@@ -102,7 +101,7 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
         String chan = msgc.getDest();
 
         if (msgc.getMessage().startsWith(_trigger + "slave ")) {
-            String slaveName = msgc.getMessage().substring(LEN2);
+            String slaveName = msgc.getMessage().substring((_trigger + "slave ").length());
 
             try {
                 RemoteSlave rslave = getGlobalContext()
