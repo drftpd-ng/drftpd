@@ -66,6 +66,9 @@ SITE\ TAKE=org.drftpd.commands.UserManagement
 SITE\ USER=org.drftpd.commands.UserManagement
 SITE\ USERS=org.drftpd.commands.UserManagement
 SITE\ WHO=org.drftpd.commands.UserManagement
+SITE\ BAN=org.drftpd.commands.UserManagement
+SITE\ UNBAN=org.drftpd.commands.UserManagement
+SITE\ BANS=org.drftpd.commands.UserManagement
 
 SITE\ RELOAD=net.sf.drftpd.master.command.plugins.SiteManagement
 SITE\ SHUTDOWN=net.sf.drftpd.master.command.plugins.SiteManagement

@@ -17,37 +17,6 @@
  */
 package net.sf.drftpd.master;
 
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.event.ConnectionEvent;
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.master.command.CommandManager;
-import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
-import net.sf.drftpd.util.ReplacerUtils;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
-import org.drftpd.Bytes;
-import org.drftpd.GlobalContext;
-import org.drftpd.Time;
-
-import org.drftpd.commands.Reply;
-import org.drftpd.commands.ReplyException;
-import org.drftpd.commands.UserManagement;
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.io.AddAsciiOutputStream;
-
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.slave.Transfer;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-
-import org.tanesha.replacer.FormatterException;
-import org.tanesha.replacer.ReplacerEnvironment;
-import org.tanesha.replacer.ReplacerFormat;
-import org.tanesha.replacer.SimplePrintf;
-
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -57,13 +26,38 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Map;
 
 import javax.net.ssl.SSLSocket;
+
+import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.SlaveUnavailableException;
+import net.sf.drftpd.event.ConnectionEvent;
+import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
+import net.sf.drftpd.util.ReplacerUtils;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.drftpd.Bytes;
+import org.drftpd.GlobalContext;
+import org.drftpd.Time;
+import org.drftpd.commands.Reply;
+import org.drftpd.commands.ReplyException;
+import org.drftpd.commands.UserManagement;
+import org.drftpd.dynamicdata.Key;
+import org.drftpd.io.AddAsciiOutputStream;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.slave.Transfer;
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.tanesha.replacer.FormatterException;
+import org.tanesha.replacer.ReplacerEnvironment;
+import org.tanesha.replacer.ReplacerFormat;
+import org.tanesha.replacer.SimplePrintf;
 
 /**
  * This is a generic ftp connection handler. It delegates
@@ -147,6 +141,9 @@ public class BaseFtpConnection implements Runnable {
                 Bytes.formatBytes(user.getUploadedTime() +
                     (user.getDownloadedTime() / 2)));
             env.add("ipmasks",user.getHostMaskCollection().toString());
+            env.add("isbanned",""+
+                    ((user.getKeyedMap().getObjectDate(UserManagement.BAN_TIME)).getTime() > 
+                    		System.currentTimeMillis()));
 //        } else {
 //            env.add("user", "<unknown>");
         }

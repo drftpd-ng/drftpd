@@ -103,6 +103,7 @@ public abstract class AbstractUserManager implements UserManager {
         user.getKeyedMap().setObject(UserManagement.COMMENT, "Auto-Generated");
         user.getKeyedMap().setObject(UserManagement.IRCIDENT, "N/A");
         user.getKeyedMap().setObject(UserManagement.TAGLINE,"drftpd");
+        user.getKeyedMap().setObject(UserManagement.BAN_TIME, new Date());
         user.getKeyedMap().setObject(Nuke.NUKED,0);
         user.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
 
@@ -181,7 +182,7 @@ public abstract class AbstractUserManager implements UserManager {
     /**
      * Get all user names in the system.
      */
-    public Collection getAllUsers() throws UserFileException {
+    public Collection<AbstractUser> getAllUsers() throws UserFileException {
         ArrayList<AbstractUser> users = new ArrayList<AbstractUser>();
         String[] userpaths = getUserpathFile().list();
 

@@ -74,3 +74,7 @@ userrejectinsecure      !*
 denydiruncrypted        !*
 denydatauncrypted       !*
 
+#only allow siteop to see and set bans
+ban 	*	=siteop
+unban	*	=siteop
+bans 	*	=siteop

@@ -205,7 +205,13 @@ public class ConnectionManager {
 			}
 		}
 
-        if (!baseconn.isSecure() &&
+		if (user.getKeyedMap().getObjectDate(UserManagement.BAN_TIME).getTime() > System.currentTimeMillis()) {
+		    return new Reply(530,"Sorry you are banned until " +  
+		            user.getKeyedMap().getObjectDate(UserManagement.BAN_TIME) + "! (" + 
+		            user.getKeyedMap().getObjectString(UserManagement.BAN_REASON) + ")");
+		}
+
+		if (!baseconn.isSecure() &&
                 getGlobalContext().getConfig().checkPermission("userrejectinsecure", user)) {
             return new Reply(530, "USE SECURE CONNECTION");
         } else if (baseconn.isSecure() &&

@@ -59,37 +59,25 @@ import org.tanesha.replacer.SimplePrintf;
  * @version $Id$
  */
 public class UserManagement implements CommandHandler, CommandHandlerFactory {
-    public static final Key TAGLINE = new Key(UserManagement.class, "tagline",
-            String.class);
-    public static final Key DEBUG = new Key(UserManagement.class, "debug",
-            Boolean.class);
     private static final Logger logger = Logger.getLogger(UserManagement.class);
-    public static final Key RATIO = new Key(UserManagement.class, "ratio",
-            Float.class);
-    public static final Key CREATED = new Key(UserManagement.class, "created",
-            Date.class);
-    public static final Key COMMENT = new Key(UserManagement.class, "comment",
-            String.class);
-    public static final Key REASON = new Key(UserManagement.class, "reason",
-    		String.class);
-    public static final Key IRCIDENT = new Key(UserManagement.class, "ircident",
-    		String.class);
-    public static final Key GROUPSLOTS = new Key(UserManagement.class, "groupslots",
-    		Integer.class);
-    public static final Key LEECHSLOTS = new Key(UserManagement.class, "leechslots",
-    		Integer.class);
-    public static final Key MAXLOGINS = new Key(UserManagement.class, "maxlogins",
-    		Integer.class);
-    public static final Key MAXLOGINSIP = new Key(UserManagement.class, "maxloginsip",
-    		Integer.class);
-    public static final Key MAXSIMUP = new Key(UserManagement.class, "maxsimup",
-    		Integer.class);
-    public static final Key MAXSIMDN = new Key(UserManagement.class, "maxsimdn",
-    		Integer.class);
-    public static final Key LASTSEEN = new Key(UserManagement.class, "lastseen",
-            Date.class);
-    public static final Key WKLY_ALLOTMENT = new Key(UserManagement.class, "wkly_allotment",
-            Long.class);
+
+    public static final Key TAGLINE = new Key(UserManagement.class, "tagline", String.class);
+    public static final Key DEBUG = new Key(UserManagement.class, "debug", Boolean.class);
+    public static final Key RATIO = new Key(UserManagement.class, "ratio", Float.class);
+    public static final Key CREATED = new Key(UserManagement.class, "created", Date.class);
+    public static final Key COMMENT = new Key(UserManagement.class, "comment", String.class);
+    public static final Key REASON = new Key(UserManagement.class, "reason", String.class);
+    public static final Key IRCIDENT = new Key(UserManagement.class, "ircident", String.class);
+    public static final Key GROUPSLOTS = new Key(UserManagement.class, "groupslots", Integer.class);
+    public static final Key LEECHSLOTS = new Key(UserManagement.class, "leechslots", Integer.class);
+    public static final Key MAXLOGINS = new Key(UserManagement.class, "maxlogins", Integer.class);
+    public static final Key MAXLOGINSIP = new Key(UserManagement.class, "maxloginsip", Integer.class);
+    public static final Key MAXSIMUP = new Key(UserManagement.class, "maxsimup", Integer.class);
+    public static final Key MAXSIMDN = new Key(UserManagement.class, "maxsimdn", Integer.class);
+    public static final Key LASTSEEN = new Key(UserManagement.class, "lastseen", Date.class);
+    public static final Key WKLY_ALLOTMENT = new Key(UserManagement.class, "wkly_allotment", Long.class);
+    public static final Key BAN_TIME = new Key(UserManagement.class, "ban_time", Date.class);
+    public static final Key BAN_REASON = new Key(UserManagement.class, "ban_reason", String.class);
 
     private Reply doSITE_ADDIP(BaseFtpConnection conn) throws ImproperUsageException {
         FtpRequest request = conn.getRequest();
@@ -267,6 +255,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             newUser.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
             newUser.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT, new Long(0));
             newUser.getKeyedMap().setObject(UserManagement.IRCIDENT, "N/A");
+            newUser.getKeyedMap().setObject(UserManagement.BAN_TIME, new Date());
             newUser.getKeyedMap().setObject(Nuke.NUKED,0);
             newUser.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
 
@@ -1752,6 +1741,118 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
     }
 
+    private Reply doSITE_BAN(BaseFtpConnection conn) throws ImproperUsageException {
+        FtpRequest request = conn.getRequest();
+
+        if (!request.hasArgument()) {
+        	throw new ImproperUsageException();
+        }
+
+        StringTokenizer st = new StringTokenizer(request.getArgument());
+
+        if (!st.hasMoreTokens()) {
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
+        }
+
+        User myUser;
+        try {
+            myUser = conn.getGlobalContext().getUserManager().getUserByName(st.nextToken());
+        } catch (Exception e) {
+            logger.warn("", e);
+            return new Reply(200, e.getMessage());
+        }
+
+        if (!st.hasMoreTokens()) {
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
+        }
+        
+        long banTime;
+        try {
+            banTime = Long.parseLong(st.nextToken());
+        } catch (NumberFormatException e) {
+            logger.warn("", e);
+            return new Reply(200, e.getMessage());
+        }
+        
+        String banMsg;
+        if (st.hasMoreTokens()) {
+            banMsg = "[" + conn.getUserNull().getName() + "]";
+            while (st.hasMoreTokens())
+                banMsg += " " + st.nextToken();
+        } else {
+            banMsg = "Banned by " + conn.getUserNull().getName() + " for " + banTime + "m";
+        }
+        
+        myUser.getKeyedMap().setObject(UserManagement.BAN_TIME, 
+                					new Date(System.currentTimeMillis() + (banTime*60000)));
+        myUser.getKeyedMap().setObject(UserManagement.BAN_REASON, banMsg);
+        try {
+            myUser.commit();
+        } catch (UserFileException e) {
+            logger.warn("", e);
+            return new Reply(200, e.getMessage());
+        }
+        
+        return Reply.RESPONSE_200_COMMAND_OK;
+    }
+    
+    private Reply doSITE_UNBAN(BaseFtpConnection conn) throws ImproperUsageException {
+        FtpRequest request = conn.getRequest();
+
+        if (!request.hasArgument()) {
+        	throw new ImproperUsageException();
+        }
+
+        StringTokenizer st = new StringTokenizer(request.getArgument());
+
+        if (!st.hasMoreTokens()) {
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
+        }
+
+        User myUser;
+        try {
+            myUser = conn.getGlobalContext().getUserManager().getUserByName(st.nextToken());
+        } catch (Exception e) {
+            logger.warn("", e);
+            return new Reply(200, e.getMessage());
+        }
+
+        myUser.getKeyedMap().setObject(UserManagement.BAN_TIME, new Date());
+        myUser.getKeyedMap().setObject(UserManagement.BAN_REASON, "");
+        
+        try {
+            myUser.commit();
+        } catch (UserFileException e) {
+            logger.warn("", e);
+            return new Reply(200, e.getMessage());
+        }
+        
+        return Reply.RESPONSE_200_COMMAND_OK;
+    }
+
+    private Reply doSITE_BANS(BaseFtpConnection conn) throws ReplyException {
+        Collection<User> myUsers;
+        try {
+            myUsers = conn.getGlobalContext().getUserManager().getAllUsers();
+        } catch (UserFileException e) {
+            logger.log(Level.FATAL, "IO error reading all users", e);
+            throw new ReplyException(e);
+        }
+        
+        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
+        for (User user : myUsers) {
+            long timeleft = user.getKeyedMap().getObjectDate(UserManagement.BAN_TIME).getTime() -
+            	System.currentTimeMillis();
+            if (timeleft > 0) {
+                ReplacerEnvironment env = new ReplacerEnvironment();
+                env.add("timeleft",""+(timeleft/60000));
+                response.addComment(BaseFtpConnection.jprintf(UserManagement.class, "bans", env, user));
+            }
+        }
+        
+        return response;
+    }
+    
     public Reply execute(BaseFtpConnection conn)
         throws ReplyException, ImproperUsageException {
         String cmd = conn.getRequest().getCommand();
@@ -1845,6 +1946,18 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if ("SITE WHO".equals(cmd)) {
             return doSITE_WHO(conn);
+        }
+
+        if ("SITE BAN".equals(cmd)) {
+            return doSITE_BAN(conn);
+        }
+
+        if ("SITE UNBAN".equals(cmd)) {
+            return doSITE_UNBAN(conn);
+        }
+
+        if ("SITE BANS".equals(cmd)) {
+            return doSITE_BANS(conn);
         }
 
         throw UnhandledCommandException.create(UserManagement.class,
