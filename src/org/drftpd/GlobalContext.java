@@ -83,8 +83,9 @@ public class GlobalContext {
             throw new FatalException(ex);
         }
 
-        loadRSlavesAndRoot();
         loadSlaveManager(cfg);
+        loadRSlavesAndRoot();
+        listenForSlaves();
         loadSlaveSelectionManager(cfg);
         loadSectionManager(cfg);
         loadPlugins(cfg);
@@ -238,6 +239,10 @@ public class GlobalContext {
         }
     }
 
+    /**
+     * Depends on slavemanager being loaded.
+     *
+     */
     private void loadRSlavesAndRoot() {
         try {
             List rslaves = _slaveManager.getSlaves();
@@ -270,10 +275,10 @@ public class GlobalContext {
     private void loadSlaveManager(Properties cfg) throws SlaveFileException {
         /** register slavemanager **/
         _slaveManager = new SlaveManager(cfg, this);
+    }
 
-        Thread t = new Thread(_slaveManager);
-        t.setName(_slaveManager.toString());
-        t.start();
+    private void listenForSlaves() {
+    	new Thread(_slaveManager, _slaveManager.toString()).start();
     }
 
     protected void loadUserManager(Properties cfg, String cfgFileName) {
