@@ -257,7 +257,7 @@ public class IRCListener implements FtpListener, Observer {
 						) {
 						BaseFtpConnection conn =
 							(BaseFtpConnection) iter.next();
-						if (conn.getUser().getUsername().equals(username)) {
+						if (conn.isAuthenticated() && conn.getUser().getUsername().equals(username)) {
 							ReplacerEnvironment env = new ReplacerEnvironment();
 							env.add("username", conn.getUser().getUsername());
 							env.add(
