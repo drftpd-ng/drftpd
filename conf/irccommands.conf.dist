@@ -11,6 +11,7 @@
 !bw org.drftpd.sitebot.Bandwidth.doBandwidth public *
 !speed org.drftpd.sitebot.Bandwidth.doSpeed public *
 !df org.drftpd.sitebot.Diskfree.doDiskfree public *
+!passed org.drftpd.sitebot.Trials.doPassed public *
 !invite org.drftpd.sitebot.Invite.doInvite private *
 !ident org.drftpd.sitebot.Ident.doIdent private *
 !bnc org.drftpd.sitebot.GenericTextOutput.doText public *
