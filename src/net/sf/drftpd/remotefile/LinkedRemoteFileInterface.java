@@ -38,7 +38,7 @@ import org.drftpd.remotefile.RemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: LinkedRemoteFileInterface.java,v 1.16 2004/11/09 18:59:52 mog Exp $
+ * @version $Id: LinkedRemoteFileInterface.java,v 1.17 2004/11/12 14:22:18 mog Exp $
  *
  */
 public interface LinkedRemoteFileInterface extends RemoteFileInterface {
@@ -78,7 +78,7 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 
     public abstract long dirSize();
 
-    public abstract Collection getAvailableSlaves()
+    public abstract Collection<RemoteSlave> getAvailableSlaves()
         throws NoAvailableSlaveException;
 
     /**

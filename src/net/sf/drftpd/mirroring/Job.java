@@ -29,11 +29,11 @@ import java.util.Set;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.36 2004/11/09 15:20:16 mog Exp $
+ * @version $Id: Job.java,v 1.37 2004/11/12 14:22:18 mog Exp $
  */
 public class Job {
     private RemoteSlave _destSlave;
-    private Set _destSlaves;
+    private Set<RemoteSlave> _destSlaves;
     private LinkedRemoteFileInterface _file;
     private int _priority;
     private SlaveTransfer _slaveTransfer;
@@ -42,9 +42,9 @@ public class Job {
     private long _timeSpent;
     private int _transferNum;
 
-    public Job(LinkedRemoteFileInterface file, Collection destSlaves,
+    public Job(LinkedRemoteFileInterface file, Collection<RemoteSlave> destSlaves,
         int priority, int transferNum) {
-        _destSlaves = new HashSet(destSlaves);
+        _destSlaves = new HashSet<RemoteSlave>(destSlaves);
         _file = file;
         _priority = priority;
         _timeCreated = System.currentTimeMillis();
@@ -71,7 +71,7 @@ public class Job {
      * Returns a List of slaves that can be used with
      * {@see net.sf.drftpd.master.SlaveManagerImpl#getASlave(Collection, char, FtpConfig)}
      */
-    public Set getDestinationSlaves() {
+    public Set<RemoteSlave> getDestinationSlaves() {
         return Collections.unmodifiableSet(_destSlaves);
     }
 

@@ -33,7 +33,7 @@ import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManagerInterface.java,v 1.9 2004/11/03 16:46:47 mog Exp $
+ * @version $Id: SlaveSelectionManagerInterface.java,v 1.10 2004/11/12 14:22:19 mog Exp $
  */
 public interface SlaveSelectionManagerInterface {
     public abstract void reload() throws IOException;
@@ -41,7 +41,7 @@ public interface SlaveSelectionManagerInterface {
     /**
      * Checksums call us with null BaseFtpConnection.
      */
-    public RemoteSlave getASlave(Collection rslaves, char direction,
+    public RemoteSlave getASlave(Collection<RemoteSlave> rslaves, char direction,
         BaseFtpConnection conn, LinkedRemoteFileInterface file)
         throws NoAvailableSlaveException;
 

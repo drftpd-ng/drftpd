@@ -25,7 +25,24 @@ WRAPPER_CONF="conf/wrapper-master.conf"
 PRIORITY=
 
 # Location of the pid file.
-PIDDIR="./"
+PIDDIR="."
+
+# If uncommented, causes the Wrapper to be shutdown using an anchor file.
+#  When launched with the 'start' command, it will also ignore all INT and
+#  TERM signals.
+#IGNORE_SIGNALS=true
+
+# If specified, the Wrapper will be run as the specified user when the 'start'
+#  command is passed to this script.  When running with the 'console' command
+#  the current user will be used.
+# IMPORTANT - Make sure that the user has the required privileges to write
+#  the PID file and wrapper.log files.  Failure to be able to write the log
+#  file will cause the Wrapper to exit without any way to write out an error
+#  message.
+# NOTE - This will set the user which is used to run the Wrapper as well as
+#  the JVM and is not useful in situations where a privileged resource or
+#  port needs to be allocated prior to the user being changed.
+#RUN_AS_USER=
 
 # Do not modify anything beyond this point
 #-----------------------------------------------------------------------------
@@ -65,6 +82,7 @@ REALPATH=`echo $REALPATH | sed -e 's;:; ;g'`
 cd "`dirname "$REALPATH"`"
 
 # Process ID
+ANCHORFILE="$PIDDIR/$APP_NAME.anchor"
 PIDFILE="$PIDDIR/$APP_NAME.pid"
 pid=""
 
@@ -76,7 +94,7 @@ then
     if [ ! -x $PSEXE ]
     then
         echo "Unable to locate 'ps'."
-        echo "Please report this with the location on your system."
+        echo "Please report this message along with the location of the command on your system."
         exit 1
     fi
 fi
@@ -87,6 +105,34 @@ then
     CMDNICE=""
 else
     CMDNICE="nice -$PRIORITY"
+fi
+
+# Check the configured user
+if [ "X$RUN_AS_USER" != "X" ]
+then
+    # Resolve the location of the 'id' command
+    IDEXE="/usr/xpg4/bin/id"
+    if [ ! -x $IDEXE ]
+    then
+        IDEXE="/usr/bin/id"
+        if [ ! -x $IDEXE ]
+        then
+            echo "Unable to locate 'id'."
+            echo "Please report this message along with the location of the command on your system."
+            exit 1
+        fi
+    fi
+
+    if [ "`$IDEXE -u -n`" = "$RUN_AS_USER" ]
+    then
+        # Already running as the configured user.  Avoid password prompts by not calling su.
+        RUN_AS_USER=""
+    fi
+else
+    if [ $(whoami) = root ] ; then
+        echo "ERROR: Don't run $APP_LONG_NAME as superuser! (Override with RUN_AS_USER)"
+        exit 1
+    fi
 fi
 
 getpid() {
@@ -127,7 +173,12 @@ console() {
     getpid
     if [ "X$pid" = "X" ]
     then
-        exec $CMDNICE $WRAPPER_CMD $WRAPPER_CONF wrapper.pidfile=$PIDFILE
+        if [ "X$IGNORE_SIGNALS" = "X" ]
+        then
+            exec $CMDNICE $WRAPPER_CMD $WRAPPER_CONF wrapper.pidfile=$PIDFILE
+        else
+            exec $CMDNICE $WRAPPER_CMD $WRAPPER_CONF wrapper.pidfile=$PIDFILE wrapper.anchorfile=$ANCHORFILE
+        fi
     else
         echo "$APP_LONG_NAME is already running."
         exit 1
@@ -139,7 +190,22 @@ start() {
     getpid
     if [ "X$pid" = "X" ]
     then
-        exec $CMDNICE $WRAPPER_CMD $WRAPPER_CONF wrapper.pidfile=$PIDFILE wrapper.daemonize=TRUE
+        if [ "X$IGNORE_SIGNALS" = "X" ]
+        then
+            if [ "X$RUN_AS_USER" = "X" ]
+            then
+                exec $CMDNICE $WRAPPER_CMD $WRAPPER_CONF wrapper.pidfile=$PIDFILE wrapper.daemonize=TRUE
+            else
+                su -m $RUN_AS_USER -c "exec $CMDNICE $WRAPPER_CMD $WRAPPER_CONF wrapper.pidfile=$PIDFILE wrapper.daemonize=TRUE"
+            fi
+        else
+            if [ "X$RUN_AS_USER" = "X" ]
+            then
+                exec $CMDNICE $WRAPPER_CMD $WRAPPER_CONF wrapper.pidfile=$PIDFILE wrapper.anchorfile=$ANCHORFILE wrapper.ignore_signals=TRUE wrapper.daemonize=TRUE
+            else
+                su -m $RUN_AS_USER -c "exec $CMDNICE $WRAPPER_CMD $WRAPPER_CONF wrapper.pidfile=$PIDFILE wrapper.anchorfile=$ANCHORFILE wrapper.ignore_signals=TRUE wrapper.daemonize=TRUE"
+            fi
+        fi
     else
         echo "$APP_LONG_NAME is already running."
         exit 1
@@ -153,13 +219,24 @@ stopit() {
     then
         echo "$APP_LONG_NAME was not running."
     else
-         # Running so try to stop it.
-        kill $pid
-        if [ $? -ne 0 ]
+        if [ "X$IGNORE_SIGNALS" = "X" ]
         then
-            # An explanation for the failure should have been given
-            echo "Unable to stop $APP_LONG_NAME."
-            exit 1
+            # Running so try to stop it.
+            kill $pid
+            if [ $? -ne 0 ]
+            then
+                # An explanation for the failure should have been given
+                echo "Unable to stop $APP_LONG_NAME."
+                exit 1
+            fi
+        else
+            rm -f $ANCHORFILE
+            if [ -f $ANCHORFILE ]
+            then
+                # An explanation for the failure should have been given
+                echo "Unable to stop $APP_LONG_NAME."
+                exit 1
+            fi
         fi
 
         # We can not predict how long it will take for the wrapper to
@@ -211,6 +288,18 @@ stopit() {
     fi
 }
 
+status() {
+    getpid
+    if [ "X$pid" = "X" ]
+    then
+        echo "$APP_LONG_NAME is not running."
+        exit 1
+    else
+        echo "$APP_LONG_NAME is running ($pid)."
+        exit 0
+    fi
+}
+
 dump() {
     echo "Dumping $APP_LONG_NAME..."
     getpid
@@ -250,12 +339,16 @@ case "$1" in
         start
         ;;
 
+    'status')
+        status
+        ;;
+
     'dump')
         dump
         ;;
 
     *)
-        echo "Usage: $0 { console | start | stop | restart | dump }"
+        echo "Usage: $0 { console | start | stop | restart | status | dump }"
         exit 1
         ;;
 esac

@@ -17,17 +17,11 @@
  */
 package org.drftpd.slave;
 
-
 import java.io.Serializable;
-
-import net.sf.drftpd.FatalException;
-
-import org.drftpd.slave.async.AsyncResponseDiskStatus;
-
 
 /**
  * @author mog
- * @version $Id: TransferStatus.java,v 1.2 2004/11/09 21:49:59 zubov Exp $
+ * @version $Id: TransferStatus.java,v 1.3 2004/11/12 14:22:19 mog Exp $
  */
 public class TransferStatus implements Serializable {
     private long _checksum;

@@ -69,7 +69,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author mog
- * @version $Id: SlaveManager.java,v 1.27 2004/11/09 21:49:57 zubov Exp $
+ * @version $Id: SlaveManager.java,v 1.28 2004/11/12 14:22:17 mog Exp $
  */
 public class SlaveManager implements Runnable {
     private static final Logger logger = Logger.getLogger(SlaveManager.class.getName());
@@ -429,6 +429,7 @@ public class SlaveManager implements Runnable {
     public void run() {
         try {
             _serverSocket = new ServerSocket(_port);
+            //_serverSocket.setReuseAddress(true);
             logger.info("Listening for slaves on port " + _port);
         } catch (Exception e) {
             throw new FatalException(e);
@@ -498,6 +499,8 @@ public class SlaveManager implements Runnable {
             } catch (Exception e) {
                 rslave.setOffline(e);
                 logger.error(e);
+            } catch(Throwable t) {
+            	logger.error("FATAL: Throwable in SalveManager loop");
             }
         }
     }

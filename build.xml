@@ -1,28 +1,27 @@
 <?xml version="1.0"?>
-<!-- $Id: build.xml,v 1.51 2004/11/11 13:09:02 mog Exp $ -->
+<!-- $Id: build.xml,v 1.52 2004/11/12 14:22:16 mog Exp $ -->
 <project name="drftpd" basedir="." default="compile">
 
   <patternset id="slaveclasses">
-<!--    <include name="net/sf/drftpd/*" />-->
-    <include name="net/sf/drftpd/slave/*" />
-  	<include name="com/Ostermiller/util/StringTokenizer.*"/>
+    <include name="com/Ostermiller/util/StringTokenizer.*"/>
     <include name="net/sf/drftpd/util/PortRange.class" />
     <include name="net/sf/drftpd/util/AddAsciiOutputStream.class" />
+    <include name="net/sf/drftpd/FileExistsException*" />
+    <include name="org/drftpd/bootstrap/*" />
+    <include name="org/drftpd/id3/*" />
+    <include name="org/drftpd/slave/*" />
+    <include name="org/drftpd/slave/async/*" />
     <include name="org/drftpd/Bytes*" />
     <include name="org/drftpd/SSLGetContext*" />
     <include name="org/drftpd/PropertyHelper*" />
     <include name="org/drftpd/LightSFVFile*" />
     <include name="org/drftpd/AbstractSFVFile*" />
     <include name="org/drftpd/AbstractSFVFile*" />
-    <include name="net/sf/drftpd/FileExistsException*" />
-    <include name="org/drftpd/slave/*" />
-    <include name="org/drftpd/slave/async/*" />
-    <include name="org/drftpd/id3/*" />
-  	<include name="se/mog/io/*"/>
     <include name="org/drftpd/remotefile/CaseInsensitiveHashtable*" />
     <include name="org/drftpd/remotefile/LightRemoteFile*" />
     <include name="org/drftpd/remotefile/AbstractRemoteFile*" />
     <include name="org/drftpd/remotefile/RemoteFileInterface*" />
+    <include name="se/mog/io/*"/>
   </patternset>
   <target name="all" depends="compile"/>
 

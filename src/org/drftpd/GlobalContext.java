@@ -52,13 +52,13 @@ import java.util.Timer;
 
 /**
  * @author mog
- * @version $Id: GlobalContext.java,v 1.10 2004/11/09 18:59:53 mog Exp $
+ * @version $Id: GlobalContext.java,v 1.11 2004/11/12 14:22:18 mog Exp $
  */
 public class GlobalContext {
     private static final Logger logger = Logger.getLogger(GlobalContext.class);
     protected ConnectionManager _cm;
     protected FtpConfig _config;
-    private ArrayList _ftpListeners = new ArrayList();
+    private ArrayList<FtpListener> _ftpListeners = new ArrayList<FtpListener>();
     protected JobManager _jm;
     protected LinkedRemoteFileInterface _root;
     protected SectionManagerInterface _sections;
@@ -83,6 +83,7 @@ public class GlobalContext {
             throw new FatalException(ex);
         }
 
+        loadSectionManager(cfg);
         loadSlaveManager(cfg);
         loadSlaveSelectionManager(cfg);
         loadRSlavesAndRoot();
