@@ -20,14 +20,15 @@ public class XMLSerialize {
 		element.addContent(new Element("user").setText(file.getOwner()));
 		element.addContent(new Element("group").setText(file.getGroup()));
 
-		element.addContent(
-			new Element("size").setText(Long.toString(file.length())));
 
 		element.addContent(
 			new Element("lastModified").setText(
 				Long.toString(file.lastModified())));
 
 		if(file.isFile()) {
+			element.addContent(
+				new Element("size").setText(Long.toString(file.length())));
+
 			String checksum = "";
 			checksum = Long.toHexString(file.getCheckSum(false));
 

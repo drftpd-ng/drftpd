@@ -176,6 +176,7 @@ public class BaseFtpConnection implements Runnable {
 					continue;
 
 				request = new FtpRequest(commandLine);
+				//TODO log somewhere else!
 				logger.fine(
 					"<< "
 						+ request.getCommandLine()

@@ -40,7 +40,7 @@ public abstract class AbstractUser extends User {
 	protected int timelimit;
 
 	//quota
-	protected float ratio;
+	protected float ratio = 3.0F;
 	protected long credits;
 
 	protected boolean deleted;

@@ -470,8 +470,8 @@ public class FtpConnection extends BaseFtpConnection {
 		if (directoryName != null) {
 			try {
 				directoryFile = currentDirectory.lookupFile(directoryName);
-			} catch (IOException ex) {
-				out.print(new FtpResponse(450, ex.getMessage()));
+			} catch (FileNotFoundException ex) {
+				out.print(FtpResponse.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN);
 				return;
 			}
 		} else {
@@ -1836,7 +1836,7 @@ public class FtpConnection extends BaseFtpConnection {
 						e2);
 				}
 				response.addComment(
-					myUser.getUsername() + " added to group" + string);
+					myUser.getUsername() + " added to group " + string);
 			}
 		}
 		out.print(response);
@@ -2210,7 +2210,7 @@ public class FtpConnection extends BaseFtpConnection {
 	}
 
 	public void doSITE_PRE(FtpRequest request, PrintWriter out) {
-		//TODO implement me
+		//TODO implement SITE PRE
 		out.print(FtpResponse.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
 		return;
 	}

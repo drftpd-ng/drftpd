@@ -56,39 +56,7 @@ public class SlaveImpl
 		this.slavemanagerurl = "//"+cfg.getProperty("master.host")+"/"+cfg.getProperty("master.bindname");
 		this.name = cfg.getProperty("slave.name");
 
-		// START: RootBasket
-		ArrayList rootStrings = new ArrayList();
-		for (int i = 1; true; i++) {
-			String rootString = cfg.getProperty("slave.root."+i);
-			System.out.println("slave.root."+i+": "+rootString);
-			if(rootString == null) break;
-			
-			long minSpaceFree;
-			try {
-				minSpaceFree = Long.parseLong(cfg.getProperty("slave.root."+i+".minspacefree"));
-			} catch(NumberFormatException ex) {
-				minSpaceFree = 0;
-			}
-
-			int priority;
-			try {
-				priority = Integer.parseInt(cfg.getProperty("slave.root."+i+".priority"));
-			} catch(NumberFormatException ex) {
-				priority = 0;
-			}
-
-			rootStrings.add(new Root(rootString, minSpaceFree, priority));
-		}
-		
-		try {
-			roots = new RootBasket(rootStrings);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			System.exit(0);
-			return;
-		}
-		// END: RootBasket
-
+		this.roots = getDefaultRootBasket(cfg);
 		register();
 		System.gc();
 	}
@@ -151,10 +119,51 @@ public class SlaveImpl
 		}
 	}
 
+	/**
+	 * @deprecated
+	 * @param rootString
+	 * @return
+	 * @throws IOException
+	 */
 	public static LinkedRemoteFile getDefaultRoot(String rootString)
 		throws IOException {
 		return getDefaultRoot(new RootBasket(rootString));
 		//RootBasket  throws FileNotFoundException
+	}
+	
+	public static RootBasket getDefaultRootBasket(Properties cfg) {
+		RootBasket roots;
+		// START: RootBasket
+		ArrayList rootStrings = new ArrayList();
+		for (int i = 1; true; i++) {
+			String rootString = cfg.getProperty("slave.root."+i);
+			System.out.println("slave.root."+i+": "+rootString);
+			if(rootString == null) break;
+			
+			long minSpaceFree;
+			try {
+				minSpaceFree = Long.parseLong(cfg.getProperty("slave.root."+i+".minspacefree"));
+			} catch(NumberFormatException ex) {
+				minSpaceFree = 0;
+			}
+
+			int priority;
+			try {
+				priority = Integer.parseInt(cfg.getProperty("slave.root."+i+".priority"));
+			} catch(NumberFormatException ex) {
+				priority = 0;
+			}
+
+			rootStrings.add(new Root(rootString, minSpaceFree, priority));
+		}
+		
+		try {
+			roots = new RootBasket(rootStrings);
+		} catch (FileNotFoundException e) {
+			throw new FatalException(e);
+		}
+		// END: RootBasket
+		return roots;
 	}
 
 	/**

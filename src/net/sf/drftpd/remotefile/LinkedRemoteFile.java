@@ -565,7 +565,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 * If duplicates exist, the slaves are added to this object and the file-attributes of the oldest file (lastModified) are kept.
 	 */
 	public void remerge(LinkedRemoteFile mergedir, RemoteSlave rslave) {
-		System.out.println("merge(): " + this +" and " + mergedir);
+		//System.out.println("merge(): " + this +" and " + mergedir);
 		if (!isDirectory()) {
 			throw new IllegalArgumentException(
 				"merge() called on a non-directory: "

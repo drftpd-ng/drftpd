@@ -250,11 +250,12 @@ public class IRCListener implements FtpListener {
 		if (direvent.getCommand().equals("MKD")) {
 			say(
 				"[newdir] "
-					+ direvent.getDirectory().getName()
+					+ direvent.getDirectory().getPath()
 					+ " was created by "
 					+ formatUser(direvent.getUser()));
 
 		} else if (direvent.getCommand().equals("STOR")) {
+			//TODO new racer
 			LinkedRemoteFile dir;
 			try {
 				dir = direvent.getDirectory().getParentFile();
@@ -280,16 +281,57 @@ public class IRCListener implements FtpListener {
 
 			//TODO ceil halfway
 			int halfway = sfvfile.size() / 2;
+			///// start ///// start ////
+			
+			//check if new racer
+			String username = direvent.getUser().getUsername();
+			if(finishedFiles != 1) {
+				for (Iterator iter = sfvfile.getFiles().iterator(); iter.hasNext();) {
+					LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+					if(file.getOwner().equals(username)) break;
+					if(!iter.hasNext()) {
+						say(dir.getPath()+" embraces "+formatUser(direvent.getUser()));
+					}
+				}
+			}
 
 			if (finishedFiles == sfvfile.size()) {
 				say(
 					"[complete] "
-						+ dir.getName()
+						+ dir.getPath()
 						+ " was finished by "
 						+ formatUser(direvent.getUser()));
+				for (Iterator iter =
+					topFileUploaders2(sfvfile.getFiles()).iterator();
+					iter.hasNext();
+					) {
+					UploaderPosition stat = (UploaderPosition) iter.next();
+					String str1;
+					try {
+						str1 =
+							formatUser(
+								_cm.getUsermanager().getUserByName(
+									stat.getUsername()));
+					} catch (NoSuchUserException e2) {
+						continue;
+					} catch (IOException e2) {
+						logger.log(
+							Level.SEVERE,
+							"Error reading userfile",
+							e2);
+						continue;
+					}
+					say(
+						str1
+							+ " ["
+							+ stat.getFiles()
+							+ "f/"
+							+ Bytes.formatBytes(stat.getBytes())
+							+ "]");
+				}
 			} else if (sfvfile.size() >= 4) {
 				if (sfvfile.finishedFiles() == halfway) {
-					say("[halfway] " + dir.getName() + " has reached halfway");
+					say("[halfway] " + dir.getPath() + " has reached halfway");
 					for (Iterator iter =
 						topFileUploaders2(sfvfile.getFiles()).iterator();
 						iter.hasNext();
@@ -324,14 +366,14 @@ public class IRCListener implements FtpListener {
 		} else if (direvent.getCommand().equals("RMD")) {
 			say(
 				"[deldir] "
-					+ direvent.getDirectory().getName()
+					+ direvent.getDirectory().getPath()
 					+ " was deleted by "
 					+ formatUser(direvent.getUser()));
 		} else if(direvent.getCommand().equals("WIPE")) {
 			if(direvent.getDirectory().isDirectory()) {
 				say(
 				"[wipe] "
-					+ direvent.getDirectory().getName()
+					+ direvent.getDirectory().getPath()
 					+ " was wiped by "
 					+ formatUser(direvent.getUser()));
 			}

@@ -129,6 +129,7 @@ public class RemoteSlave implements Serializable, Comparable {
 	}
 
 	public boolean isAvailable() {
+		if(slave == null) return false;
 		try {
 			getSlave().ping();
 		} catch (RemoteException e) {

@@ -65,7 +65,6 @@ public class XferLogListener implements FtpListener {
 	Mon Aug 11 14:03:31 2003 33 c-d2b470d5.012-16-67766c2.cust.bredbandsbolaget.se 15000000 /site/tv-dvdrip/Babylon.5.S03E01.DVDRip.XviD-SFM/babylon5.s03e01.dvdrip.xvid-sfm.r15 b _ i r void0 GUD 1 void0
 	Mon Aug 11 14:03:44 2003 13 as1-2-3.ld.bonet.se 15000000 /site/tv-dvdrip/Babylon.5.S03E01.DVDRip.XviD-SFM/babylon5.s03e01.dvdrip.xvid-sfm.r17 b _ i r jh iND 0 *
 	 */
-	// TODO write XferLog
 	static SimpleDateFormat DATE_FMT =
 		new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy ", Locale.ENGLISH);
 	private PrintStream out;

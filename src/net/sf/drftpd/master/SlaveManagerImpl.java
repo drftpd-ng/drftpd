@@ -6,8 +6,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.rmi.AccessException;
-import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -255,23 +253,9 @@ public class SlaveManagerImpl
 		// throws RemoteException
 		try {
 			registry.bind("slavemanager", this);
-		} catch (AccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (AlreadyBoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch(Exception t) {
+			throw new FatalException(t);
 		}
-		//try {
-		//	Naming.rebind(cfg.getProperty("slavemanager.url"), this);
-		//} catch (RemoteException e) {
-		//	throw new FatalException(e);
-		//} catch (MalformedURLException e) {
-		//	throw new FatalException(e);
-		//}
 	}
 
 	public void addSlave(

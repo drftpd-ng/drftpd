@@ -14,7 +14,6 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import net.sf.drftpd.FatalException;
-
 import se.mog.io.File;
 
 /**
@@ -23,6 +22,11 @@ import se.mog.io.File;
 public class RootBasket {
 	private Collection roots;
 
+	/**
+	 * @deprecated
+	 * @param rootString
+	 * @throws FileNotFoundException
+	 */
 	public RootBasket(String rootString) throws FileNotFoundException {
 		ArrayList roots = new ArrayList();
 		StringTokenizer st =
@@ -37,7 +41,6 @@ public class RootBasket {
 	public RootBasket(Collection roots) throws FileNotFoundException {
 		/** sanity checks **/
 		validateRoots(roots);
-		/** check for overlapping roots **/
 		this.roots = new ArrayList(roots);
 	}
 
@@ -73,10 +76,12 @@ public class RootBasket {
 	public File getARoot() {
 		long mostFree = 0;
 		File mostFreeRoot = null;
+		int prio = 0;
 		for (Iterator iter = roots.iterator(); iter.hasNext();) {
 			Root root = (Root) iter.next();
 			File rootFile = root.getFile();
 			long diskSpaceAvailable = rootFile.getDiskSpaceAvailable();
+			//if(root.getPriority() > prio && )
 			if (diskSpaceAvailable > mostFree) {
 				mostFree = diskSpaceAvailable;
 				mostFreeRoot = rootFile;
