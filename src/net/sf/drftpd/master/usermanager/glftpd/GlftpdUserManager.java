@@ -133,7 +133,8 @@ public class GlftpdUserManager extends UserManager {
 						user.setMaxUploadRate(Integer.parseInt(param[4]));
 					} else if ("LOGINS".equals(param[0])) {
 						// max logins per account, max logins from the same IP,
-						// max simult. downloads, max simult. uploads
+						
+						// max simult. downloads, max simult. uploads -1 is unlimited
 						user.setMaxLogins(Integer.parseInt(param[1]));
 						user.setMaxLoginsPerIP(Integer.parseInt(param[2]));
 						user.setMaxSimDownloads(Integer.parseInt(param[3]));
@@ -264,15 +265,11 @@ public class GlftpdUserManager extends UserManager {
 					} else if (param[0].startsWith("#")) {
 						//ignore comments
 					} else {
-						System.out.print("Unknown userfile entry: ");
-						for (int i = 0; i < param.length; i++) {
-							System.out.print(param[i] + ", ");
-						}
-						System.out.println();
+						logger.info("Unrecognized userfile entry: "+line);
 					}
 				}
 			} catch (Exception ex) {
-				ex.printStackTrace();
+				logger.warn("", ex);
 			}
 		}
 		{
@@ -294,12 +291,11 @@ public class GlftpdUserManager extends UserManager {
 						break;
 					}
 				}
-				System.out.println(line);
 			} catch (IOException ex) {
 				ex.printStackTrace();
 			}
 			if (!foundpassword) {
-				System.out.println("didn't find a password in " + passwdfile);
+				logger.warn("couldn't find a password in " + passwdfile);
 				return;
 			}
 		}
@@ -353,7 +349,6 @@ public class GlftpdUserManager extends UserManager {
 			logger.debug(userpath);
 			if (userpath.endsWith(".xml"))
 				continue;
-				logger.debug("1");
 			if (!new File(getUserfilepath(userpath)).isFile())
 				continue;
 			logger.debug("add " + userpath);
