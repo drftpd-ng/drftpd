@@ -17,6 +17,16 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
@@ -26,11 +36,9 @@ import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
 import org.drftpd.SFVFile;
@@ -38,37 +46,20 @@ import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
-import org.drftpd.commands.UserManagement;
 import org.drftpd.id3.ID3Tag;
-
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.remotefile.ListUtils;
 import org.drftpd.remotefile.StaticRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
-
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.text.SimpleDateFormat;
-
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
 
 
 /**
@@ -466,6 +457,17 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
                 " already exists");
         }
 
+        //check for NUKED dir
+        logger.info(conn.getCurrentDirectory().getName());
+        logger.info(request.getArgument());
+        logger.info("[NUKED]-" + ret.getPath());
+        if (conn.getCurrentDirectory().hasFile("[NUKED]-" + ret.getPath())) {
+            return new Reply(550,
+                    "Requested action not taken. " + request.getArgument() +
+                    " is nuked!");
+            
+        }
+        
         String createdDirName = conn.getGlobalContext().getConfig().getDirName(ret.getPath());
 
         if (!ListUtils.isLegalFileName(createdDirName)) {

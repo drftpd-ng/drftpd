@@ -16,6 +16,29 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
+import javax.net.ssl.HandshakeCompletedEvent;
+import javax.net.ssl.HandshakeCompletedListener;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.NoSFVEntryException;
 import net.sf.drftpd.SlaveUnavailableException;
@@ -24,10 +47,8 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
-
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
 import org.drftpd.SFVFile;
@@ -39,7 +60,6 @@ import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.ReplySlaveUnavailableException;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.commands.UserManagement;
-
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.remotefile.LinkedRemoteFile;
@@ -51,34 +71,8 @@ import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slave.TransferFailedException;
 import org.drftpd.slave.TransferStatus;
-
 import org.drftpd.usermanager.UserFileException;
-
 import org.tanesha.replacer.ReplacerEnvironment;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
-import javax.net.ssl.HandshakeCompletedEvent;
-import javax.net.ssl.HandshakeCompletedListener;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
 
 
 /**
@@ -1069,7 +1063,48 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                     return new Reply(553,
                         "Requested action not taken. File name not allowed.");
                 }
-            } else {
+
+                //do our zipscript sfv checks
+                Properties zsConfig = conn.getGlobalContext().getConfig().getZsConfig();
+                boolean checksfv = zsConfig.getProperty("sfv.restrict.files") == null ? false :
+                    				zsConfig.getProperty("sfv.restrict.files").equalsIgnoreCase("true");
+                boolean allowMultiSfv = zsConfig.getProperty("allow.multi.sfv") == null ? true :
+                    				zsConfig.getProperty("allow.multi.sfv").equalsIgnoreCase("true");
+
+                String checkName = targetFileName.toLowerCase();
+                if (!(checkName.endsWith(".nfo") || checkName.endsWith(".m3u")
+                        || checkName.endsWith(".jpg") || checkName.endsWith(".cue"))) {
+                    try {
+                        SFVFile sfv = conn.getCurrentDirectory().lookupSFVFile();
+                        logger.info("checkName.endsWith(\".sfv\") = " + checkName.endsWith(".sfv"));
+                        logger.info("allowMultiSfv = " + allowMultiSfv);
+                        if (checkName.endsWith(".sfv") && !allowMultiSfv) {
+                            return new Reply(533,
+                            	"Requested action not taken. Multiple SFV files not allowed.");
+                        }
+                        if (checksfv) {
+                            boolean allow = false;
+                            for (Iterator iter = sfv.getNames().iterator(); iter.hasNext();) {
+                                String name = (String) iter.next();
+                                if (name.toLowerCase().equals(checkName)) {
+                                    allow = true;
+                                    break;
+                                }
+                            }
+                            if (!allow) {
+                                return new Reply(533,
+                                	"Requested action not taken. File not found in sfv.");
+                            }
+                        }
+                    } catch (FileNotFoundException e1) {
+                        //no sfv found in current dir, do nothing
+                    } catch (IOException e1) {
+                        //error reading sfv, do nothing
+                    } catch (NoAvailableSlaveException e1) {
+                        //sfv not online, do nothing
+                    }
+                }
+             } else {
             	reset();
                 throw UnhandledCommandException.create(DataConnectionHandler.class,
                     request);

@@ -12,3 +12,9 @@ cwd.id3info.enabled=true
 
 #enable race stats [true/false]
 cwd.racestats.enabled=true
+
+#only allow files found in the sfv file [true/false]
+sfv.restrict.files=true
+
+#allow multiple sfv files in one dir [true/false]
+allow.multi.sfv=false
