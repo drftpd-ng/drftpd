@@ -2,7 +2,7 @@ package net.sf.drftpd.slave;
 
 import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.PermissionDeniedException;
-import net.sf.drftpd.RemoteFile;
+import net.sf.drftpd.LinkedRemoteFile;
 import net.sf.drftpd.DrftpdFileFilter;
 import net.sf.drftpd.RemoteSlave;
 
@@ -61,7 +61,7 @@ public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 			manager.addSlave(
 				cfg.getProperty("slave.name"),
 				this,
-				new RemoteFile(new RemoteSlave(this), root));
+				new LinkedRemoteFile(new RemoteSlave(this), root));
 
 		} catch (RemoteException ex) {
 			ex.printStackTrace();
@@ -84,7 +84,7 @@ public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 	//public void doPassiveTransfer(RemoteFile file) {}
 
 	public void doConnectSend(
-		RemoteFile file,
+		LinkedRemoteFile file,
 		long offset,
 		InetAddress address,
 		int port)

@@ -8,15 +8,15 @@ package net.sf.drftpd.util;
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-import net.sf.drftpd.RemoteFile;
+import net.sf.drftpd.LinkedRemoteFile;
 import java.io.File;
 
 public class DirectoryTreeTester {
 
 	public static void main(String[] args) {
-		RemoteFile root = new RemoteFile(null, new File(args[args.length-1]));
+		LinkedRemoteFile root = new LinkedRemoteFile(null, new File(args[args.length-1]));
 		
-		RemoteFile files[] = root.listFiles();
+		LinkedRemoteFile files[] = root.listFiles();
 		for(int i=0; i<files.length; i++) {
 			System.out.println(files[i]);
 		}

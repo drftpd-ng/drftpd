@@ -1,9 +1,11 @@
 package net.sf.drftpd.master;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.Socket;
 import java.net.ServerSocket;
@@ -26,26 +28,43 @@ import java.util.Properties;
 public class BaseFtpConnection implements Runnable {
 
 	protected final static Class[] METHOD_INPUT_SIG =
-		new Class[] { FtpRequest.class, Writer.class };
+		new Class[] { FtpRequest.class, PrintWriter.class };
 
 	//protected FtpConfig mConfig                 = null;
 	protected Properties cfg;
 	/**
 	 * @todo Put back shared FtpStatus
 	 */
-	protected FtpStatus mFtpStatus = null;
+	protected FtpStatus mFtpStatus;
 	//protected FtpDataConnection mDataConnection = null;
-	protected FtpUser mUser = null;
+	protected User user;
 	//protected SpyConnectionInterface mSpy       = null;
 	//protected FtpConnectionObserver mObserver   = null;
-	protected Socket mControlSocket = null;
-	protected Writer mWriter = null;
+	protected Socket mControlSocket;
+	protected PrintWriter mWriter;
 	protected boolean mbStopRequest = false;
 
 	protected SlaveManager slavemanager;
-	public void setSlaveManager(SlaveManager slavemanager) {
-		this.slavemanager = slavemanager;
+	//	public void setSlaveManager(SlaveManager slavemanager) {
+	//		this.slavemanager = slavemanager;
+	//	}
+
+	private InetAddress clientAddress = null;
+
+	/**
+	 * Get client address
+	 */
+	public InetAddress getClientAddress() {
+		return clientAddress;
 	}
+
+	/**
+	 * Set client address
+	 */
+	public void setClientAddress(InetAddress clientAddress) {
+		clientAddress = clientAddress;
+	}
+
 	/**
 	 * Set configuration file and the control socket.
 	 */
@@ -76,7 +95,7 @@ public class BaseFtpConnection implements Runnable {
 		System.out.println(
 			"Handling new request from " + clientAddress.getHostAddress());
 		//mDataConnection = new FtpDataConnection(mConfig);
-		mUser.setClientAddress(clientAddress);
+		setClientAddress(clientAddress);
 		//mConfig.getConnectionService().newConnection(this);
 
 		BufferedReader in = null;
@@ -85,8 +104,12 @@ public class BaseFtpConnection implements Runnable {
 				new BufferedReader(
 					new InputStreamReader(mControlSocket.getInputStream()));
 
-			//mWriter = new FtpWriter(mControlSocket, mConfig);                    
-			mWriter = new FtpWriter(mControlSocket.getOutputStream());
+			mWriter =
+				new PrintWriter(
+					new FtpWriter(
+						new BufferedWriter(
+							new OutputStreamWriter(
+								mControlSocket.getOutputStream()))));
 
 			// permission check
 			/*
@@ -95,9 +118,9 @@ public class BaseFtpConnection implements Runnable {
 			        return;
 			    }
 			*/
-			mWriter.write(mFtpStatus.getResponse(220, null, mUser, null));
-
+			mWriter.write(mFtpStatus.getResponse(220, null, user, null));
 			do {
+				mWriter.flush();
 				//notifyObserver();
 				String commandLine = in.readLine();
 
@@ -112,12 +135,11 @@ public class BaseFtpConnection implements Runnable {
 				}
 
 				FtpRequest request = new FtpRequest(commandLine);
-				/*
-				        if(!hasPermission(request)) {
-				            mWriter.write(mFtpStatus.getResponse(530, request, mUser, null));
-				            break;
-				        }
-				*/
+				if (!hasPermission(request)) {
+					mWriter.write(
+						mFtpStatus.getResponse(530, request, user, null));
+					continue;
+				}
 				// execute command
 				service(request, mWriter);
 			} while (!mbStopRequest);
@@ -149,25 +171,16 @@ public class BaseFtpConnection implements Runnable {
 		System.out.println("<< " + request.getCommandLine());
 		try {
 			String metName;
-			if (request.getCommand().equals("SITE")) {
-				int index = request.getArgument().indexOf(" ");
-				if (index == -1) {
-					metName = "doSITE"+request.getArgument().toUpperCase();
-				} else {
-					metName = "doSITE"+request.getArgument().substring(0, index).toUpperCase();
-				}
-			} else {
-				metName = "do" + request.getCommand();
-			}
+			metName = "do" + request.getCommand().replaceAll(" ", "");
 			System.out.println("!!! " + metName);
 			Method actionMet =
 				getClass().getDeclaredMethod(metName, METHOD_INPUT_SIG);
 			actionMet.invoke(this, new Object[] { request, writer });
 		} catch (NoSuchMethodException ex) {
-			writer.write(mFtpStatus.getResponse(502, request, mUser, null));
+			writer.write(mFtpStatus.getResponse(502, request, user, null));
 		} catch (InvocationTargetException ex) {
 			ex.printStackTrace();
-			writer.write(mFtpStatus.getResponse(500, request, mUser, null));
+			writer.write(mFtpStatus.getResponse(500, request, user, null));
 			Throwable th = ex.getTargetException();
 			if (th instanceof java.io.IOException) {
 				throw (IOException) th;
@@ -178,7 +191,7 @@ public class BaseFtpConnection implements Runnable {
 			    }
 			*/
 		} catch (Exception ex) {
-			writer.write(mFtpStatus.getResponse(500, request, mUser, null));
+			writer.write(mFtpStatus.getResponse(500, request, user, null));
 			ex.printStackTrace();
 			if (ex instanceof java.io.IOException) {
 				throw (IOException) ex;
@@ -195,7 +208,14 @@ public class BaseFtpConnection implements Runnable {
 	 * Check permission - default implementation - does nothing.
 	 */
 	protected boolean hasPermission(FtpRequest request) {
-		return true;
+		if (user != null && user.isLoggedIn())
+			return true;
+
+		String command = request.getCommand();
+		if ("USER".equals(command) || "PASS".equals(command) || "QUIT".equals(command))
+			return true;
+
+		return false;
 	}
 
 	/**
@@ -216,8 +236,8 @@ public class BaseFtpConnection implements Runnable {
 			}
 			mControlSocket = null;
 		}
-		if (mUser.hasLoggedIn()) {
-			mUser.logout();
+		if (user.hasLoggedIn()) {
+			user.logout();
 		}
 		//mObserver = null;
 	}

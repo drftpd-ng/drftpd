@@ -1,6 +1,6 @@
 package net.sf.drftpd.master;
 
-import net.sf.drftpd.RemoteFile;
+import net.sf.drftpd.LinkedRemoteFile;
 import java.io.File;
 import java.io.Writer;
 import java.io.IOException;
@@ -35,12 +35,12 @@ public class VirtualDirectory {
 	private String mstRoot = "/";
 	private String mstCurrDir = "/";
 
-	private RemoteFile root;
+	private LinkedRemoteFile root;
 
 	/**
 	 * Default constructor does nothing
 	 */
-	public VirtualDirectory(RemoteFile root) {
+	public VirtualDirectory(LinkedRemoteFile root) {
 		this.root = root;
 	}
 
@@ -86,7 +86,7 @@ public class VirtualDirectory {
 		return mstCurrDir;
 	}
 
-	public RemoteFile getCurrentDirectory() {
+	public LinkedRemoteFile getCurrentDirectory() {
 		try {
 			return root.lookupFile(mstCurrDir);
 		} catch(FileNotFoundException ex) {
@@ -122,7 +122,7 @@ public class VirtualDirectory {
 		return removeLastSlash(absoluteName);
 	}
 
-	public RemoteFile getAbsoluteFile(String virtualName) throws FileNotFoundException {
+	public LinkedRemoteFile getAbsoluteFile(String virtualName) throws FileNotFoundException {
 		return root.lookupFile(getAbsoluteName(virtualName));
 	}
 	/**
@@ -165,7 +165,7 @@ public class VirtualDirectory {
 		    dir = (Map)o;
 		}
 		     */
-		RemoteFile dirFl;
+		LinkedRemoteFile dirFl;
 		try {
 			dirFl = root.lookupFile(physicalDir);
 		} catch (FileNotFoundException ex) {
@@ -288,7 +288,7 @@ public class VirtualDirectory {
 		if(!(lstDirObj instanceof Map)) return false;
 		lstDirObj = (Map)obj;
 		}*/
-		RemoteFile lstDirObj = root.lookupFile(lsDirName);
+		LinkedRemoteFile lstDirObj = root.lookupFile(lsDirName);
 		if (lstDirObj == null) {
 			return false;
 		}
@@ -305,7 +305,7 @@ public class VirtualDirectory {
 		}
 
 		// get file list
-		RemoteFile flLst[];
+		LinkedRemoteFile flLst[];
 		//if ( (pattern == null) || pattern.equals("*") || pattern.equals("") ) {
 		//    flLst = lstDirObj.listFiles();
 		//} else {
@@ -373,7 +373,7 @@ public class VirtualDirectory {
 
 		// check directory
 		//File lstDirObj = new File(lsDirName);
-		RemoteFile lstDirObj = root.lookupFile(lsDirName);
+		LinkedRemoteFile lstDirObj = root.lookupFile(lsDirName);
 		if (!lstDirObj.exists()) {
 			return false;
 		}
@@ -382,7 +382,7 @@ public class VirtualDirectory {
 		}
 
 		// get file list
-		RemoteFile flLst[];
+		LinkedRemoteFile flLst[];
 		if ((pattern == null) || pattern.equals("*") || pattern.equals("")) {
 			flLst = lstDirObj.listFiles();
 		} else {
@@ -408,21 +408,21 @@ public class VirtualDirectory {
 	/**
 	 * Get file owner.
 	 */
-	private static String getOwner(RemoteFile fl) {
+	private static String getOwner(LinkedRemoteFile fl) {
 		return fl.getUser();
 	}
 
 	/**
 	 * Get group name
 	 */
-	private static String getGroup(RemoteFile fl) {
+	private static String getGroup(LinkedRemoteFile fl) {
 		return fl.getGroup();
 	}
 
 	/**
 	 * Get link count
 	 */
-	private static String getLinkCount(RemoteFile fl) {
+	private static String getLinkCount(LinkedRemoteFile fl) {
 		if (fl.isDirectory()) {
 			return String.valueOf(3);
 		} else {
@@ -433,7 +433,7 @@ public class VirtualDirectory {
 	/**
 	 * Get size
 	 */
-	private static String getLength(RemoteFile fl) {
+	private static String getLength(LinkedRemoteFile fl) {
 		String initStr = "            ";
 		long sz = 0;
 		if (fl.isFile()) {
@@ -449,7 +449,7 @@ public class VirtualDirectory {
 	/**
 	 * Get last modified date string.
 	 */
-	private static String getLastModified(RemoteFile fl) {
+	private static String getLastModified(LinkedRemoteFile fl) {
 		long modTime = fl.lastModified();
 		Date date = new Date(modTime);
 		return DateUtils.getUnixDate(date);
@@ -458,7 +458,7 @@ public class VirtualDirectory {
 	/**
 	 * Get file name.
 	 */
-	private static String getName(RemoteFile fl) {
+	private static String getName(LinkedRemoteFile fl) {
 		String flName = fl.getName();
 		flName = normalizeSeparateChar(flName);
 
@@ -476,7 +476,7 @@ public class VirtualDirectory {
 	/**
 	 * Get permission string.
 	 */
-	private static String getPermission(RemoteFile fl) {
+	private static String getPermission(LinkedRemoteFile fl) {
 
 		StringBuffer sb = new StringBuffer(13);
 		if (fl.isDirectory()) {
@@ -580,7 +580,7 @@ public class VirtualDirectory {
 	/**
 	 * Get each directory line.
 	 */
-	public void printLine(RemoteFile fl, Writer out) throws IOException {
+	public void printLine(LinkedRemoteFile fl, Writer out) throws IOException {
 		out.write(getPermission(fl));
 		out.write(DELIM);
 		out.write(DELIM);

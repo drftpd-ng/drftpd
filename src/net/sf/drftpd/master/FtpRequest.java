@@ -7,70 +7,75 @@ package net.sf.drftpd.master;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  */
-public
-class FtpRequest {
-    
-    private String mstLine     = null;
-    private String mstCommand  = null;
-    private String mstArgument = null;
-    
-    
-    /**
-     * Constructor.
-     *
-     * @param commandLine ftp input command line.
-     */
-    public FtpRequest(String commandLine) {
-        mstLine = commandLine.trim();
-        parse();
-    }
-     
-    /**
-     * Parse the ftp command line.
-     */
-    private void parse() {
-       int spInd = mstLine.indexOf(' ');
-       
-       if(spInd != -1) {
-           mstArgument = mstLine.substring(spInd + 1);
-           mstCommand = mstLine.substring(0, spInd).toUpperCase();
-       }
-       else {
-           mstCommand = mstLine.toUpperCase();
-       }
-       
-       if( (mstCommand.length()>0) && (mstCommand.charAt(0)=='X') ) {
-           mstCommand = mstCommand.substring(1);
-       }
-    }
-    
-    
-    /**
-     * Get the ftp command.
-     */
-    public String getCommand() {
-        return mstCommand;
-    }
-    
-    /**
-     * Get ftp input argument.  
-     */ 
-    public String getArgument() {
-        return mstArgument;
-    }
-    
-    /**
-     * Get the ftp request line.
-     */
-    public String getCommandLine() {
-        return mstLine;
-    }
-    
-    /**
-     * Has argument.
-     */
-    public boolean hasArgument() {
-        return getArgument() != null;
-    }
-         
+public class FtpRequest {
+
+	private String line = null;
+	private String command = null;
+	private String argument = null;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param commandLine ftp input command line.
+	 */
+	public FtpRequest(String commandLine) {
+		line = commandLine.trim();
+		parse();
+	}
+
+	/**
+	 * Parse the ftp command line.
+	 */
+	private void parse() {
+		int spInd = line.indexOf(' ');
+
+		if (spInd != -1) {
+			command = line.substring(0, spInd).toUpperCase();
+			argument = line.substring(spInd + 1);					
+			if (command.equals("SITE")) {
+				spInd = line.indexOf(' ', spInd+1);
+				if(spInd != -1) {
+					command = line.substring(0, spInd).toUpperCase();
+					argument = line.substring(spInd + 1);					
+				} else {
+					command = line.toUpperCase();
+				}
+			}
+		} else {
+			command = line.toUpperCase();
+		}
+
+		if ((command.length() > 0) && (command.charAt(0) == 'X')) {
+			command = command.substring(1);
+		}
+	}
+
+	/**
+	 * Get the ftp command.
+	 */
+	public String getCommand() {
+		return command;
+	}
+
+	/**
+	 * Get ftp input argument.  
+	 */
+	public String getArgument() {
+		return argument;
+	}
+
+	/**
+	 * Get the ftp request line.
+	 */
+	public String getCommandLine() {
+		return line;
+	}
+
+	/**
+	 * Has argument.
+	 */
+	public boolean hasArgument() {
+		return getArgument() != null;
+	}
+
 }
