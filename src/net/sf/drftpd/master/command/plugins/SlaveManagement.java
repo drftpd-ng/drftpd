@@ -29,6 +29,7 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.ImproperUsageException;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyPermissionDeniedException;
 import org.drftpd.commands.UnhandledCommandException;
@@ -176,8 +177,9 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
 
     /**
      * Usage: site slave slavename [set,addmask,delmask]
+     * @throws ImproperUsageException
      */
-    private Reply doSITE_SLAVE(BaseFtpConnection conn) {
+    private Reply doSITE_SLAVE(BaseFtpConnection conn) throws ImproperUsageException {
         if (!conn.getUserNull().isAdmin()) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
@@ -187,16 +189,14 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
         FtpRequest ftpRequest = conn.getRequest();
 
         if (!ftpRequest.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(SlaveManagement.class, "slave.usage"));
+            throw new ImproperUsageException();
         }
 
         String argument = ftpRequest.getArgument();
         StringTokenizer arguments = new StringTokenizer(argument);
 
         if (!arguments.hasMoreTokens()) {
-            return new Reply(501,
-                conn.jprintf(SlaveManagement.class, "slave.usage"));
+        	throw new ImproperUsageException();
         }
 
         String slavename = arguments.nextToken();
@@ -241,8 +241,7 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
 
         if (command.equalsIgnoreCase("set")) {
             if (arguments.countTokens() != 2) {
-                return new Reply(501,
-                    conn.jprintf(SlaveManagement.class, "slave.set.usage"));
+            	throw new ImproperUsageException();
             }
 
             String key = arguments.nextToken();
@@ -256,8 +255,7 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
             return response;
         } else if (command.equalsIgnoreCase("addmask")) {
             if (arguments.countTokens() != 1) {
-                return new Reply(501,
-                    conn.jprintf(SlaveManagement.class, "slave.addmask.usage"));
+            	throw new ImproperUsageException();
             }
 
             String mask = arguments.nextToken();
@@ -273,8 +271,7 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
 			}
         } else if (command.equalsIgnoreCase("delmask")) {
             if (arguments.countTokens() != 1) {
-                return new Reply(501,
-                    conn.jprintf(SlaveManagement.class, "slave.delmask.usage"));
+            	throw new ImproperUsageException();
             }
 
             String mask = arguments.nextToken();
@@ -287,13 +284,11 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
             return new Reply(501, conn.jprintf(SlaveManagement.class,
                         "slave.delmask.failed", env));
         }
-
-        return new Reply(501,
-            conn.jprintf(SlaveManagement.class, "slave.usage"));
+        throw new ImproperUsageException();
     }
 
     public Reply execute(BaseFtpConnection conn)
-        throws UnhandledCommandException, ReplyPermissionDeniedException {
+        throws UnhandledCommandException, ReplyPermissionDeniedException, ImproperUsageException {
         String cmd = conn.getRequest().getCommand();
 
         if ("SITE CHECKSLAVES".equals(cmd)) {
@@ -328,7 +323,7 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
             conn.getRequest());
     }
 
-    private Reply doSITE_DELSLAVE(BaseFtpConnection conn) {
+    private Reply doSITE_DELSLAVE(BaseFtpConnection conn) throws ImproperUsageException {
         if (!conn.getUserNull().isAdmin()) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
@@ -338,16 +333,14 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
         FtpRequest ftpRequest = conn.getRequest();
 
         if (!ftpRequest.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(SlaveManagement.class, "delslave.usage"));
+        	throw new ImproperUsageException();
         }
 
         String argument = ftpRequest.getArgument();
         StringTokenizer arguments = new StringTokenizer(argument);
 
         if (!arguments.hasMoreTokens()) {
-            return new Reply(501,
-                conn.jprintf(SlaveManagement.class, "delslave.usage"));
+        	throw new ImproperUsageException();
         }
 
         String slavename = arguments.nextToken();
@@ -369,7 +362,7 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
         return response;
     }
 
-    private Reply doSITE_ADDSLAVE(BaseFtpConnection conn) {
+    private Reply doSITE_ADDSLAVE(BaseFtpConnection conn) throws ImproperUsageException {
         if (!conn.getUserNull().isAdmin()) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
@@ -379,16 +372,14 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
         FtpRequest ftpRequest = conn.getRequest();
 
         if (!ftpRequest.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(SlaveManagement.class, "addslave.usage"));
+        	throw new ImproperUsageException();
         }
 
         String argument = ftpRequest.getArgument();
         StringTokenizer arguments = new StringTokenizer(argument);
 
         if (!arguments.hasMoreTokens()) {
-            return new Reply(501,
-                conn.jprintf(SlaveManagement.class, "addslave.usage"));
+        	throw new ImproperUsageException();
         }
 
         String slavename = arguments.nextToken();

@@ -38,7 +38,7 @@ import java.util.ArrayList;
  * @version $Id$
  */
 public class UserManagementTest extends TestCase {
-    public void testGAdmin() throws ReplyException {
+    public void testGAdmin() throws ReplyException, ImproperUsageException {
         DummyUserManager um = new DummyUserManager();
         DummyUser u = new DummyUser("dummy", um);
         u.toggleGroup("gadmin");

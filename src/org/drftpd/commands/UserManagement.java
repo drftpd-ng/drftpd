@@ -91,7 +91,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
     public static final Key WKLY_ALLOTMENT = new Key(UserManagement.class, "wkly_allotment",
             Long.class);
 
-    private Reply doSITE_ADDIP(BaseFtpConnection conn) {
+    private Reply doSITE_ADDIP(BaseFtpConnection conn) throws ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin() &&
@@ -100,8 +100,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
 
         if (!request.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "addip.usage"));
+            throw new ImproperUsageException();
         }
 
         String[] args = request.getArgument().split(" ");
@@ -191,21 +190,14 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
      * default.group exists, it will be used as a base instead of default.user.
      *
      * Only public groups can be used as <group>.
+     * @throws ImproperUsageException
      */
-    private Reply doSITE_ADDUSER(BaseFtpConnection conn) {
+    private Reply doSITE_ADDUSER(BaseFtpConnection conn) throws ImproperUsageException {
         FtpRequest request = conn.getRequest();
         boolean isGAdduser = request.getCommand().equals("SITE GADDUSER");
 
         if (!request.hasArgument()) {
-            String key;
-
-            if (isGAdduser) {
-                key = "gadduser.usage";
-            } else { //request.getCommand().equals("SITE ADDUSER");
-                key = "adduser.usage";
-            }
-
-            return new Reply(501, conn.jprintf(UserManagement.class, key));
+        	throw new ImproperUsageException();
         }
 
         String newGroup = null;
@@ -426,11 +418,9 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
      *
      * NOTE: The flag DELETED can not be changed with site change, it will
      * change when someone does a site deluser/readd.
+     * @throws ImproperUsageException
      */
-    private Reply doSITE_CHANGE(BaseFtpConnection conn) {
-        Reply usage = (Reply) Reply.RESPONSE_501_SYNTAX_ERROR.clone();
-        usage.addComment(conn.jprintf(UserManagement.class, "change.usage"));
-
+    private Reply doSITE_CHANGE(BaseFtpConnection conn) throws ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin() &&
@@ -439,7 +429,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
 
         if (!request.hasArgument()) {
-            return usage;
+        	throw new ImproperUsageException();
         }
 
         User userToChange;
@@ -449,7 +439,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         StringTokenizer arguments = new StringTokenizer(request.getArgument());
 
         if (!arguments.hasMoreTokens()) {
-            return usage;
+        	throw new ImproperUsageException();
         }
 
         String username = arguments.nextToken();
@@ -467,7 +457,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
 
         if (!arguments.hasMoreTokens()) {
-            return usage;
+        	throw new ImproperUsageException();
         }
 
         String command = arguments.nextToken().toLowerCase();
@@ -497,7 +487,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         if ("ratio".equals(command)) {
             ////// Ratio //////
             if (commandArguments.length != 1) {
-                return usage;
+            	throw new ImproperUsageException();
             }
 
             float ratio = Float.parseFloat(commandArguments[0]);
@@ -563,7 +553,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             }
         } else if ("credits".equals(command)) {
             if (commandArguments.length != 1) {
-                return usage;
+            	throw new ImproperUsageException();
             }
 
             long credits = Bytes.parseBytes(commandArguments[0]);
@@ -588,7 +578,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                     "changecomment.success", env));
         } else if ("idle_time".equals(command)) {
             if (commandArguments.length != 1) {
-                return usage;
+            	throw new ImproperUsageException();
             }
 
             int idleTime = Integer.parseInt(commandArguments[0]);
@@ -640,7 +630,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             //	myUser.setMaxUploadRate(Integer.parseInt(commandArgument));
         } else if ("group".equals(command)) {
             if (commandArguments.length != 1) {
-                return usage;
+            	throw new ImproperUsageException();
             }
 
             logger.info("'" + conn.getUserNull().getName() +
@@ -715,7 +705,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                         env));
         } else if ("wkly_allotment".equals(command)) {
             if (commandArguments.length != 1) {
-                return usage;
+            	throw new ImproperUsageException();
             }
 
             long weeklyAllotment = Bytes.parseBytes(commandArguments[0]);
@@ -728,7 +718,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             response = Reply.RESPONSE_200_COMMAND_OK;
         } else if ("tagline".equals(command)) {
             if (commandArguments.length < 1) {
-                return usage;
+            	throw new ImproperUsageException();
             }
 
             logger.info("'" + conn.getUserNull().getName() +
@@ -739,7 +729,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
             response = Reply.RESPONSE_200_COMMAND_OK;
         } else {
-            return usage;
+        	throw new ImproperUsageException();
         }
 
         try {
@@ -764,8 +754,9 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
      *
      * ex2. site chgrp archimede ftp eleet This moves archimede from ftp group
      * to eleet group.
+     * @throws ImproperUsageException
      */
-    private Reply doSITE_CHGRP(BaseFtpConnection conn) throws ReplyException {
+    private Reply doSITE_CHGRP(BaseFtpConnection conn) throws ReplyException, ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin()) {
@@ -773,8 +764,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
 
         if (!request.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "chgrp.usage"));
+        	throw new ImproperUsageException();
         }
 
         String[] args = request.getArgument().split("[ ,]");
@@ -840,10 +830,11 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
      * enough" error.
      *  * Denotes any password, ex. site chpass arch * This will allow arch to
      * login with any password
+     * @throws ImproperUsageException
      *  @ Denotes any email-like password, ex. site chpass arch @ This will
      * allow arch to login with a@b.com but not ab.com
      */
-    private Reply doSITE_CHPASS(BaseFtpConnection conn) {
+    private Reply doSITE_CHPASS(BaseFtpConnection conn) throws ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin()) {
@@ -851,8 +842,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
 
         if (!request.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "chpass.usage"));
+        	throw new ImproperUsageException();
         }
 
         String[] args = request.getArgument().split(" ");
@@ -885,8 +875,9 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
      *
      * @param request
      * @param out
+     * @throws ImproperUsageException
      */
-    private Reply doSITE_DELIP(BaseFtpConnection conn) {
+    private Reply doSITE_DELIP(BaseFtpConnection conn) throws ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin() &&
@@ -895,8 +886,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
 
         if (!request.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "delip.usage"));
+        	throw new ImproperUsageException();
         }
 
         String[] args = request.getArgument().split(" ");
@@ -943,12 +933,11 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         return response;
     }
 
-    private Reply doSITE_DELUSER(BaseFtpConnection conn) throws ReplyException {
+    private Reply doSITE_DELUSER(BaseFtpConnection conn) throws ReplyException, ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
         if (!request.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "deluser.usage"));
+        	throw new ImproperUsageException();
         }
 
         if (!conn.getUserNull().isAdmin() &&
@@ -990,7 +979,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    private Reply doSITE_GINFO(BaseFtpConnection conn) {
+    private Reply doSITE_GINFO(BaseFtpConnection conn) throws ImproperUsageException {
 		FtpRequest request = conn.getRequest();
 		//security
 		if (!conn.getUserNull().isAdmin() && !conn.getUserNull().isGroupAdmin()) {
@@ -998,8 +987,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 		}
 		//syntax
 		if (!request.hasArgument()) {
-			return new Reply(501, conn.jprintf(
-				UserManagement.class, "ginfo.usage"));
+			throw new ImproperUsageException();
 		}
 		//gadmin
 		String group = request.getArgument();
@@ -1106,7 +1094,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 		return response;
 	}
 
-    private Reply doSITE_GIVE(BaseFtpConnection conn) {
+    private Reply doSITE_GIVE(BaseFtpConnection conn) throws ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getGlobalContext().getConfig().checkPermission("give", conn.getUserNull())) {
@@ -1114,8 +1102,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
 
         if (!request.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "give.usage"));
+        	throw new ImproperUsageException();
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
@@ -1191,7 +1178,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         return response;
     }
 
-    private Reply doSITE_GRPREN(BaseFtpConnection conn) {
+    private Reply doSITE_GRPREN(BaseFtpConnection conn) throws ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin()) {
@@ -1199,22 +1186,19 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
 
         if (!request.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "grpren.usage"));
+        	throw new ImproperUsageException();
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
 
         if (!st.hasMoreTokens()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "grpren.usage"));
+        	throw new ImproperUsageException();
         }
 
         String oldGroup = st.nextToken();
 
         if (!st.hasMoreTokens()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "grpren.usage"));
+        	throw new ImproperUsageException();
         }
 
         String newGroup = st.nextToken();
@@ -1264,7 +1248,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         return response;
     }
 
-    private Reply doSITE_KICK(BaseFtpConnection conn) {
+    private Reply doSITE_KICK(BaseFtpConnection conn) throws ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin()) {
@@ -1272,8 +1256,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
 
         if (!request.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "kick.usage"));
+        	throw new ImproperUsageException();
         }
 
         String arg = request.getArgument();
@@ -1307,12 +1290,11 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         return response;
     }
 
-    private Reply doSITE_PASSWD(BaseFtpConnection conn) {
+    private Reply doSITE_PASSWD(BaseFtpConnection conn) throws ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
         if (!request.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "passwd.usage"));
+        	throw new ImproperUsageException();
         }
 
         logger.info("'" + conn.getUserNull().getName() +
@@ -1322,7 +1304,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    private Reply doSITE_PURGE(BaseFtpConnection conn) {
+    private Reply doSITE_PURGE(BaseFtpConnection conn) throws ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin() &&
@@ -1331,8 +1313,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
 
         if (!request.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "purge.usage"));
+        	throw new ImproperUsageException();
         }
 
         String delUsername = request.getArgument();
@@ -1363,7 +1344,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    private Reply doSITE_READD(BaseFtpConnection conn) throws ReplyException {
+    private Reply doSITE_READD(BaseFtpConnection conn) throws ReplyException, ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin() &&
@@ -1372,8 +1353,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
 
         if (!request.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "readd.usage"));
+        	throw new ImproperUsageException();
         }
 
         User myUser;
@@ -1409,7 +1389,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    private Reply doSITE_RENUSER(BaseFtpConnection conn) {
+    private Reply doSITE_RENUSER(BaseFtpConnection conn) throws ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin()) {
@@ -1417,8 +1397,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
 
         if (!request.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "renuser.usage"));
+        	throw new ImproperUsageException();
         }
 
         String[] args = request.getArgument().split(" ");
@@ -1445,12 +1424,11 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    private Reply doSITE_SEEN(BaseFtpConnection conn) {
+    private Reply doSITE_SEEN(BaseFtpConnection conn) throws ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
         if (!request.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "seen.usage"));
+        	throw new ImproperUsageException();
         }
 
         User user;
@@ -1470,12 +1448,11 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             "User was last seen: " + new Date(user.getLastAccessTime()));
     }
 
-    private Reply doSITE_TAGLINE(BaseFtpConnection conn) throws ReplyException {
+    private Reply doSITE_TAGLINE(BaseFtpConnection conn) throws ReplyException, ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
         if (!request.hasArgument()) {
-            return new Reply(501, conn.jprintf(UserManagement.class,
-					"tagline.usage"));
+        	throw new ImproperUsageException();
         }
 
         try {
@@ -1514,8 +1491,9 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
      *
      * This will remove 100mb of credits from the user 'Archimede' and send the
      * message haha to him.
+     * @throws ImproperUsageException
      */
-    private Reply doSITE_TAKE(BaseFtpConnection conn) {
+    private Reply doSITE_TAKE(BaseFtpConnection conn) throws ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getGlobalContext().getConfig().checkPermission("take", conn.getUserNull())) {
@@ -1523,8 +1501,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
 
         if (!request.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "take.usage"));
+        	throw new ImproperUsageException();
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
@@ -1576,8 +1553,9 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
      * ex. site user Archimede
      *
      * This will show detailed information about user 'Archimede'.
+     * @throws ImproperUsageException
      */
-    private Reply doSITE_USER(BaseFtpConnection conn) throws ReplyException {
+    private Reply doSITE_USER(BaseFtpConnection conn) throws ReplyException, ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin() &&
@@ -1586,8 +1564,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
 
         if (!request.hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(UserManagement.class, "user.usage"));
+        	throw new ImproperUsageException();
         }
 
         Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
@@ -1777,7 +1754,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
     }
 
     public Reply execute(BaseFtpConnection conn)
-        throws ReplyException {
+        throws ReplyException, ImproperUsageException {
         String cmd = conn.getRequest().getCommand();
 
         if ("SITE ADDIP".equals(cmd)) {

@@ -29,6 +29,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
 import org.drftpd.Bytes;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.ImproperUsageException;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UnhandledCommandException;
@@ -66,15 +67,15 @@ public class JobManagerCommandHandler
      *
      * @param conn
      * @return
+     * @throws ImproperUsageException
      */
-    private Reply doADDJOB(BaseFtpConnection conn) {
+    private Reply doADDJOB(BaseFtpConnection conn) throws ImproperUsageException {
         if (!conn.getUserNull().isAdmin()) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!conn.getRequest().hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(JobManagerCommandHandler.class, "addjob.usage"));
+        	throw new ImproperUsageException();
         }
 
         StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument());
@@ -91,8 +92,7 @@ public class JobManagerCommandHandler
         try {
             priority = Integer.parseInt(st.nextToken());
         } catch (NumberFormatException e) {
-            return new Reply(501,
-                conn.jprintf(JobManagerCommandHandler.class, "addjob.usage"));
+        	throw new ImproperUsageException();
         }
 
         int timesToMirror;
@@ -100,8 +100,7 @@ public class JobManagerCommandHandler
         try {
             timesToMirror = Integer.parseInt(st.nextToken());
         } catch (NumberFormatException e) {
-            return new Reply(501,
-                conn.jprintf(JobManagerCommandHandler.class, "addjob.usage"));
+        	throw new ImproperUsageException();
         }
 
         HashSet<RemoteSlave> destSlaves = new HashSet<RemoteSlave>();
@@ -125,8 +124,7 @@ public class JobManagerCommandHandler
         }
 
         if (destSlaves.size() == 0) {
-            return new Reply(501,
-                conn.jprintf(JobManagerCommandHandler.class, "addjob.usage"));
+        	throw new ImproperUsageException();
         }
 
         Job job = new Job(lrf, destSlaves, priority, timesToMirror);
@@ -175,14 +173,13 @@ public class JobManagerCommandHandler
         return reply;
     }
 
-    private Reply doREMOVEJOB(BaseFtpConnection conn) throws ReplyException {
+    private Reply doREMOVEJOB(BaseFtpConnection conn) throws ReplyException, ImproperUsageException {
         if (!conn.getUserNull().isAdmin()) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!conn.getRequest().hasArgument()) {
-            return new Reply(501,
-                conn.jprintf(JobManagerCommandHandler.class, "removejob.usage"));
+        	throw new ImproperUsageException();
         }
 
         String filename = conn.getRequest().getArgument();
@@ -239,7 +236,7 @@ public class JobManagerCommandHandler
     }
 
     public Reply execute(BaseFtpConnection conn)
-        throws ReplyException {
+        throws ReplyException, ImproperUsageException {
         String cmd = conn.getRequest().getCommand();
 
         if ("SITE LISTJOBS".equals(cmd)) {

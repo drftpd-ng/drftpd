@@ -26,6 +26,7 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.ImproperUsageException;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 
@@ -40,7 +41,7 @@ public class Invite implements CommandHandler, CommandHandlerFactory {
     }
 
     public Reply execute(BaseFtpConnection conn)
-        throws UnhandledCommandException {
+        throws UnhandledCommandException, ImproperUsageException {
         String cmd = conn.getRequest().getCommand();
 
         if (!"SITE INVITE".equals(cmd)) {
@@ -49,7 +50,7 @@ public class Invite implements CommandHandler, CommandHandlerFactory {
         }
 
         if (!conn.getRequest().hasArgument()) {
-            return new Reply(501, conn.jprintf(Invite.class, "invite.usage"));
+        	throw new ImproperUsageException();
         }
 
         String user = conn.getRequest().getArgument();

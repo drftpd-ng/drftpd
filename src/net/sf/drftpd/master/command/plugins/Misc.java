@@ -213,7 +213,7 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
     		response.addComment(ResourceBundle.getBundle(Misc.class.getName())
     				.getString("help.header"));
     	} catch (MissingResourceException e) {
-    		response.addComment("Help has no footer");
+    		response.addComment("Help has no header");
     	}
     	for (Iterator i = sortedList.iterator(); i.hasNext();) {
     		response.addComment(helpInfo.get(i.next()));

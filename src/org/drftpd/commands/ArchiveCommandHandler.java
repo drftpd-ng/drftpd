@@ -57,7 +57,7 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
     }
 
     public Reply execute(BaseFtpConnection conn)
-        throws UnhandledCommandException {
+        throws UnhandledCommandException, ImproperUsageException {
         String cmd = conn.getRequest().getCommand();
 
         if ("SITE LISTARCHIVETYPES".equals(cmd)) {
@@ -72,15 +72,12 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
             conn.getRequest());
     }
 
-    private Reply doARCHIVE(BaseFtpConnection conn) {
+    private Reply doARCHIVE(BaseFtpConnection conn) throws ImproperUsageException {
         Reply reply = new Reply(200);
         ReplacerEnvironment env = new ReplacerEnvironment();
 
         if (!conn.getRequest().hasArgument()) {
-            reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-                    "archive.usage", env));
-
-            return reply;
+        	throw new ImproperUsageException();
         }
 
         StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument());
@@ -95,7 +92,7 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
                           .getGlobalContext().getRoot().lookupFile(dirname);
             } catch (FileNotFoundException e2) {
                 reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-                        "archive.usage", env));
+                        "help.archive", env));
                 env.add("dirname", dirname);
                 reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
                         "archive.baddir", env));

@@ -15,21 +15,28 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
 package org.drftpd.commands;
 
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-
-import net.sf.drftpd.master.BaseFtpConnection;
-
-
 /**
- * @author mog
+ * @author zubov
  * @version $Id$
  */
-public interface CommandHandler {
-    public abstract Reply execute(BaseFtpConnection conn)
-        throws ReplyException, ImproperUsageException;
+public class ImproperUsageException extends Exception {
 
-    public String[] getFeatReplies();
+	public ImproperUsageException() {
+		super();
+	}
+
+	public ImproperUsageException(String arg0) {
+		super(arg0);
+	}
+
+	public ImproperUsageException(String arg0, Throwable arg1) {
+		super(arg0, arg1);
+	}
+
+	public ImproperUsageException(Throwable arg0) {
+		super(arg0);
+	}
 }

@@ -123,14 +123,15 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
      *     This way, multiplier of 2 causes user to lose size * ratio + size * 1,
      *     so the additional penalty in this case is the size of nuked files. If the
      *     multiplier is 3, user loses size * ratio + size * 2, etc.
+     * @throws ImproperUsageException
      */
-    private Reply doSITE_NUKE(BaseFtpConnection conn) {
+    private Reply doSITE_NUKE(BaseFtpConnection conn) throws ImproperUsageException {
         if (!conn.getUserNull().isNuker()) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!conn.getRequest().hasArgument()) {
-            return new Reply(501, conn.jprintf(Nuke.class, "nuke.usage"));
+        	throw new ImproperUsageException();
         }
 
         StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument(),
@@ -464,7 +465,7 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
     }
 
     public Reply execute(BaseFtpConnection conn)
-        throws UnhandledCommandException {
+        throws UnhandledCommandException, ImproperUsageException {
         if (_nukelog == null) {
             return new Reply(500, "You must reconnect to use NUKE");
         }

@@ -28,6 +28,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 
 /**
@@ -102,7 +104,17 @@ public class CommandManager {
         } catch (java.lang.StringIndexOutOfBoundsException e) {
         }
 
-        return handler.execute(conn);
+        try {
+			return handler.execute(conn);
+		} catch (ImproperUsageException e2) {
+			try {
+				return new Reply(501, ResourceBundle.getBundle(handler.getClass().getName()).getString(
+						"help." + command + ".specific"));
+			} catch (MissingResourceException e) {
+				return new Reply(501, "Improper usage for the \"SITE " + command + "\" command, bug your siteop to add help");
+			}
+				
+		}
     }
 
     public CommandHandler getCommandHandler(Class clazz)
