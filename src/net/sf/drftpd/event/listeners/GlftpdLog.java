@@ -44,6 +44,7 @@ import net.sf.drftpd.SFVFile.SFVStatus;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
+import net.sf.drftpd.event.InviteEvent;
 import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.SlaveEvent;
@@ -58,15 +59,14 @@ import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.SlaveStatus;
-import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.tanesha.replacer.FormatterException;
 
 /**
- * @author mog
- * @version $Id: GlftpdLog.java,v 1.3 2004/03/01 00:21:08 mog Exp $
+ * @author flowman
+ * @version $Id: GlftpdLog.java,v 1.4 2004/03/03 22:32:30 flowman Exp $
  */
 public class GlftpdLog implements FtpListener {
 	PrintWriter out;
@@ -96,8 +96,8 @@ public class GlftpdLog implements FtpListener {
 				actionPerformedNuke((NukeEvent) event);
 			} else if (event instanceof SlaveEvent) {
 				actionPerformedSlave((SlaveEvent) event);
-//			} else if (event instanceof InviteEvent) {
-//				actionPerformedInvite((InviteEvent) event);
+			} else if (event instanceof InviteEvent) {
+				actionPerformedInvite((InviteEvent) event);
 			} else if (event.getCommand().equals("SHUTDOWN")) {
 				MessageEvent mevent = (MessageEvent) event;
 				print(
@@ -114,11 +114,11 @@ public class GlftpdLog implements FtpListener {
 
 		if ("MKD".equals(direvent.getCommand())) {
 			sayDirectorySection(direvent, "NEWDIR", direvent.getDirectory());
-/**		} else if ("REQUEST".equals(direvent.getCommand())) {
-			sayDirectorySection(direvent, "REQUEST");
+		} else if ("REQUEST".equals(direvent.getCommand())) {
+			sayDirectorySection(direvent, "REQUEST", direvent.getDirectory());
 		} else if ("REQFILLED".equals(direvent.getCommand())) {
-			sayDirectorySection(direvent, "REQFILLED");
-*/		} else if ("RMD".equals(direvent.getCommand())) {
+			sayDirectorySection(direvent, "REQFILLED", direvent.getDirectory());
+		} else if ("RMD".equals(direvent.getCommand())) {
 			sayDirectorySection(direvent, "DELDIR", direvent.getDirectory());
 		} else if ("WIPE".equals(direvent.getCommand())) {
 			if (direvent.getDirectory().isDirectory()) {
@@ -226,7 +226,7 @@ public class GlftpdLog implements FtpListener {
 							+ "\" \""
 							+ Integer.toString(sfvstatus.getMissing())
 							+ "\" \""
-							+ Long.toString((starttime - direvent.getTime()) / 1000)
+							+ Long.toString((direvent.getTime() - starttime) / 1000)
 							+ "\"");
 				}
 			}
@@ -234,10 +234,10 @@ public class GlftpdLog implements FtpListener {
 
 		//COMPLETE
 		if (sfvstatus.isFinished()) {
-			Collection racers = topFileUploaders(sfvfile.getFiles());
+			Collection racers = UserSort(sfvfile.getFiles(), "bytes", "high");
 			Collection groups = topFileGroup(sfvfile.getFiles());
-			Collection fast = UserSort(sfvfile.getFiles(), "xfearspeed", "fast");
-			Collection slow = UserSort(sfvfile.getFiles(), "xfearspeed", "slow");
+			Collection fast = UserSort(sfvfile.getFiles(), "xfearspeed", "high");
+			Collection slow = UserSort(sfvfile.getFiles(), "xfearspeed", "low");
 			
 			UploaderPosition fastestuser = (UploaderPosition) fast.iterator().next();
 			UploaderPosition slowestuser = (UploaderPosition) slow.iterator().next();
@@ -268,7 +268,7 @@ public class GlftpdLog implements FtpListener {
 					+ "\" \""
 					+ sfvfile.getXferspeed()
 					+ "\" \""
-					+ Time.formatTime((direvent.getTime() - starttime))
+					+ Long.toString((direvent.getTime() - starttime) / 1000)
 					+ "\" \""
 					+ Integer.toString(racers.size())
 					+ "\" \""
@@ -358,8 +358,7 @@ public class GlftpdLog implements FtpListener {
 			}
 		//HALFWAY
 		} else if (sfvfile.size() >= 4 && sfvstatus.getMissing() == halfway) {
-			Collection uploaders = topFileUploaders(sfvfile.getFiles());
-			//Collection groups = topFileUploaders(sfvfile.getFiles());
+			Collection uploaders = UserSort(sfvfile.getFiles(), "bytes", "high");
 			UploaderPosition stat =
 				(UploaderPosition) uploaders.iterator().next();
 
@@ -397,103 +396,6 @@ public class GlftpdLog implements FtpListener {
 		}
 	}
 	
-	public static Collection topFileUploaders(Collection files) {
-		ArrayList ret = new ArrayList();
-		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
-			String username = file.getUsername();
-
-			UploaderPosition stat = null;
-			for (Iterator iter2 = ret.iterator(); iter2.hasNext();) {
-				UploaderPosition stat2 = (UploaderPosition) iter2.next();
-				if (stat2.getUsername().equals(username)) {
-					stat = stat2;
-					break;
-				}
-			}
-			if (stat == null) {
-				stat =
-					new UploaderPosition(
-						username,
-						file.length(),
-						1,
-						file.getXfertime());
-				ret.add(stat);
-			} else {
-				stat.updateBytes(file.length());
-				stat.updateFiles(1);
-				stat.updateXfertime(file.getXfertime());
-			}
-		}
-		Collections.sort(ret);
-		return ret;
-	}
-
-	public static Collection topFileGroup(Collection files) {
-		ArrayList ret = new ArrayList();
-		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
-			String groupname = file.getGroupname();
-
-			GroupPosition stat = null;
-			for (Iterator iter2 = ret.iterator(); iter2.hasNext();) {
-				GroupPosition stat2 = (GroupPosition) iter2.next();
-				if (stat2.getGroupname().equals(groupname)) {
-					stat = stat2;
-					break;
-				}
-			}
-			if (stat == null) {
-				stat =
-					new GroupPosition(
-						groupname,
-						file.length(),
-						1,
-						file.getXfertime());
-				ret.add(stat);
-			} else {
-				stat.updateBytes(file.length());
-				stat.updateFiles(1);
-				stat.updateXfertime(file.getXfertime());
-			}
-		}
-		Collections.sort(ret);
-		return ret;
-	}
-	
-	public static Collection UserSort(Collection files, String type, String sort) {
-		ArrayList ret = new ArrayList();
-		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
-			String username = file.getUsername();
-
-			UploaderPosition stat = null;
-			for (Iterator iter2 = ret.iterator(); iter2.hasNext();) {
-				UploaderPosition stat2 = (UploaderPosition) iter2.next();
-				if (stat2.getUsername().equals(username)) {
-					stat = stat2;
-					break;
-				}
-			}
-			if (stat == null) {
-				stat =
-					new UploaderPosition(
-						username,
-						file.length(),
-						1,
-						file.getXfertime());
-				ret.add(stat);
-			} else {
-				stat.updateBytes(file.length());
-				stat.updateFiles(1);
-				stat.updateXfertime(file.getXfertime());
-			}
-		}
-		Collections.sort(ret);
-		Collections.sort(ret, new UserComparator(type, sort));
-		return ret;
-	}
-	
 	private void actionPerformedSlave(SlaveEvent event)
 		throws FormatterException {
 		SlaveEvent sevent = (SlaveEvent) event;
@@ -528,14 +430,14 @@ public class GlftpdLog implements FtpListener {
 		}
 	}
 	
-/*	private void actionPerformedInvite(InviteEvent event) {
+	private void actionPerformedInvite(InviteEvent event) {
 		String user = event.getUser();
 			print(
 					"INVITE: \""
 						+ user
 						+ "\"");
 	}
-*/
+
 	private void actionPerformedNuke(NukeEvent event)
 		throws FormatterException {
 		String cmd = event.getCommand();
@@ -630,6 +532,70 @@ public class GlftpdLog implements FtpListener {
 		}
 	}
 	
+	public static Collection topFileGroup(Collection files) {
+		ArrayList ret = new ArrayList();
+		for (Iterator iter = files.iterator(); iter.hasNext();) {
+			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
+			String groupname = file.getGroupname();
+	
+			GroupPosition stat = null;
+			for (Iterator iter2 = ret.iterator(); iter2.hasNext();) {
+				GroupPosition stat2 = (GroupPosition) iter2.next();
+				if (stat2.getGroupname().equals(groupname)) {
+					stat = stat2;
+					break;
+				}
+			}
+			if (stat == null) {
+				stat =
+					new GroupPosition(
+						groupname,
+						file.length(),
+						1,
+						file.getXfertime());
+				ret.add(stat);
+			} else {
+				stat.updateBytes(file.length());
+				stat.updateFiles(1);
+				stat.updateXfertime(file.getXfertime());
+			}
+		}
+		Collections.sort(ret);
+		return ret;
+	}
+		
+	public static Collection UserSort(Collection files, String type, String sort) {
+		ArrayList ret = new ArrayList();
+		for (Iterator iter = files.iterator(); iter.hasNext();) {
+			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
+			String username = file.getUsername();
+	
+			UploaderPosition stat = null;
+			for (Iterator iter2 = ret.iterator(); iter2.hasNext();) {
+				UploaderPosition stat2 = (UploaderPosition) iter2.next();
+				if (stat2.getUsername().equals(username)) {
+					stat = stat2;
+					break;
+				}
+			}
+			if (stat == null) {
+				stat =
+					new UploaderPosition(
+						username,
+						file.length(),
+						1,
+						file.getXfertime());
+				ret.add(stat);
+			} else {
+				stat.updateBytes(file.length());
+				stat.updateFiles(1);
+				stat.updateXfertime(file.getXfertime());
+			}
+		}
+		Collections.sort(ret, new UserComparator(type, sort));
+		return ret;
+	}
+	
 	DateFormat DATE_FMT = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy ", Locale.ENGLISH);
 	
 	public void print(String line) {
@@ -682,7 +648,7 @@ class UserComparator implements Comparator {
 
 		long thisVal = getType(_type, u1);
 		long anotherVal = getType(_type, u2);
-		if (_sort.equals("slow")) {
+		if (_sort.equals("low")) {
 			return (thisVal < anotherVal ? -1 : (thisVal == anotherVal ? 0 : 1));
 		} else {
 			return (thisVal > anotherVal ? -1 : (thisVal == anotherVal ? 0 : 1));
