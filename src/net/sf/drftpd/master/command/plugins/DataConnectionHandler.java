@@ -60,7 +60,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.18 2003/12/05 23:03:28 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.19 2003/12/06 17:37:48 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -1385,6 +1385,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 					_address);
 			_ServSoc.setSoTimeout(60000);
 			_port = _ServSoc.getLocalPort();
+			mbPort = false;
 			mbPasv = true;
 			return true;
 		} catch (Exception ex) {
@@ -1402,6 +1403,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		int port) {
 		conn.reset();
 		mbPort = true;
+		mbPasv = false;
 		_address = addr;
 		_port = port;
 	}
