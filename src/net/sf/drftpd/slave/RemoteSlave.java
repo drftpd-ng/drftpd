@@ -40,21 +40,12 @@ public class RemoteSlave implements Serializable {
 		return slave;
 	}
 
-/*
-	protected InetAddress address;
-	public InetAddress getAddress() {
-		return address;
-	}
-	public void setAddress(InetAddress address) {
-		this.address = address;
-	}
-*/
 	public String toString() {
 		return slave.toString();
 	}
+	
 	/**
 	 * Returns the name.
-	 * @return String
 	 */
 	public String getName() {
 		return name;

@@ -1,10 +1,10 @@
 package net.sf.drftpd.master;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -14,11 +14,8 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.SocketTimeoutException;
 
 import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.remotefile.*;
-import net.sf.drftpd.slave.*;
 
 //import ranab.util.Message;
 /*import ranab.io.StreamConnectorObserver;*/
@@ -147,7 +144,7 @@ public class BaseFtpConnection implements Runnable {
 				String commandLine;
 				try {
 					commandLine = in.readLine();
-				} catch(SocketTimeoutException ex) {
+				} catch(InterruptedIOException ex) {
 					continue;
 				}
 				if(stopRequest) break;

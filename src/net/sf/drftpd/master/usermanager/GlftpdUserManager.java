@@ -1,24 +1,17 @@
 package net.sf.drftpd.master.usermanager;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.Vector;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-
-import sun.security.x509.IPAddressName;
 
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;

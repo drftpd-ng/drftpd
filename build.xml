@@ -15,7 +15,10 @@
         <property name="outputDir" value="classes/"/>
 
 	<path id="classpath">
-		<pathelement path="${user.home}/jdom-b8/build/jdom.jar"/>
+    	<pathelement path="/usr/share/jdom/lib/jdom.jar"/>
+    	<pathelement path="/usr/share/log4j/lib/log4j-1.2.7.jar"/>
+	    <pathelement path="/usr/share/oro/lib/oro.jar"/>
+
 	    <fileset dir=".">
 	        <include name="lib/*"/>
 	    </fileset>
@@ -36,11 +39,11 @@
 	<src path="${sourceDir}"/>
 	<classpath refid="classpath"/>
     </javac>
-    <rmic base="${outputDir}">
+    <rmic base="${outputDir}" sourcebase="src" stubversion="1.2">
 	<include name="**/*Impl.class"/>
 	<classpath refid="classpath"/>
     </rmic>
-    <copy file="${sourceDir}/net/sf/drftpd/master/FtpStatus.properties" todir="${outputDir}/net/sf/distributedftpd/master"/>
+    <copy file="${sourceDir}/net/sf/drftpd/master/FtpStatus.properties" todir="${outputDir}/net/sf/hutedftpd/master"/>
   </target>
 
 </project>

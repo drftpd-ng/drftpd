@@ -1,4 +1,4 @@
-package net.sf.drftpd.remotefile;
+upackage net.sf.drftpd.remotefile;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -15,8 +15,6 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.InvalidDirectoryException;
@@ -24,6 +22,7 @@ import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.NoAvailableSlaveException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.slave.RemoteSlave;
+import org.apache.log4j.Category;
 
 /**
  * Represents the file attributes of a remote file.
@@ -32,11 +31,7 @@ import net.sf.drftpd.slave.RemoteSlave;
  */
 public class LinkedRemoteFile extends RemoteFile implements Serializable {
 
-	private static Logger logger =
-		Logger.getLogger("net.sf.drftpd.remotefile.LinkedRemoteFile");
-	static {
-		logger.setLevel(Level.ALL);
-	}
+	private static Category logger = Category.getInstance(LinkedRemoteFile.class);
 	/**
 	 * @author mog
 	 *
@@ -438,20 +433,25 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			Iterator i = slaves.iterator();
 			//			Enumeration e = slaves.elements();
 			ret.append("slaves:[");
+
+			// HACK: How can one find out the endpoint without using regexps?
+			Pattern p = Pattern.compile("endpoint:\\[(.*?):.*?\\]");
+
 			while (i.hasNext()) {
-				//[endpoint:[213.114.146.44:2012](remote),objID:[2b6651:ef0b3c7162:-8000, 0]]]]]
-				Pattern p = Pattern.compile("endpoint:\\[(.*?):.*?\\]");
-				Matcher m = p.matcher(i.next().toString());
-				m.find();
+				//SUN J2SDK 1.4: [endpoint:[213.114.146.44:2012](remote),objID:[2b6651:ef0b3c7162:-8000, 0]]]]]
+				//IBM J2SDK 1.4: net.sf.drftpd.slave.SlaveImpl[RemoteStub [ref: [endpoint:[127.0.0.1:32907](local),objID:[1]]]]
+				RemoteSlave slave = (RemoteSlave)i.next();
+				Matcher m = p.matcher(slave.toString());
+				if(!m.find()) {
+					new RuntimeException("RMI regexp didn't match");
+				}
 				ret.append(m.group(1));
-				//ret.append(e.nextElement());
 				if (i.hasNext())
 					ret.append(",");
 			}
 			ret.append("]");
 		}
-		if (isDirectory())
-			ret.append("[directory(" + files.size() + ")]");
+		if (isDirectory()) ret.append("[directory(" + files.size() + ")]");
 		//ret.append("isFile(): " + isFile() + " ");
 		//ret.append(getName());
 		ret.append("]]");

@@ -19,7 +19,7 @@ import net.sf.drftpd.master.usermanager.*;
 public
 class FtpStatus extends Properties {
 
-    private final static String RESOURCE = "net/sf/distributedftpd/master/FtpStatus.properties";
+    private final static String RESOURCE = "net/sf/drftpd/master/FtpStatus.properties";
     private final static String PREFIX   = "FtpServer.status."; 
     private final static String EMPTY    = "";
     private final static String CRLF     = "\r\n";

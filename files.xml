@@ -2,579 +2,209 @@
 <directory name="">
     <user>drftpd</user>
     <group>drftpd</group>
-    <lastModified>1030124614000</lastModified>
+    <lastModified>1034615678000</lastModified>
     <contents>
-        <file name="Llynyrd Skynyrd - Sweet Home Alabama.mp3">
+        <directory name="Cd2">
             <user>drftpd</user>
             <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1030124380000</lastModified>
-            <checksum>c87a3d4a</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <directory name="bilder">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <lastModified>1015858449000</lastModified>
+            <lastModified>1034615689000</lastModified>
             <contents>
-                <file name="SPACE041.JPG">
+                <file name="12-francis_lai-theme_from_love_story-wlm.mp3">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857355000</lastModified>
-                    <checksum>11f3bf59</checksum>
+                    <lastModified>1034615698000</lastModified>
+                    <checksum>35ae09c0</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="SPACE004.JPG">
+                <file name="09-clannad-theme_from_harrys_game-wlm.mp3">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857348000</lastModified>
-                    <checksum>c15184e9</checksum>
+                    <lastModified>1034615737000</lastModified>
+                    <checksum>5be75979</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="CITIES007.JPG">
+                <file name="17-julee_cruise-falling_(twin_peaks_theme)-wlm.mp3">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857311000</lastModified>
-                    <checksum>64e60e17</checksum>
+                    <lastModified>1034615759000</lastModified>
+                    <checksum>ab681dff</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="SPACE030.JPG">
+                <file name="00-va-absolute_relaxed_cd2-2002-wlm.sfv">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857354000</lastModified>
-                    <checksum>a958be3e</checksum>
+                    <lastModified>1034615702000</lastModified>
+                    <checksum>27e621be</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="BEACH033.JPG">
+                <file name="04-city_of_prague_philharmonic-my_heart_will_go_on-wlm.mp3">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857303000</lastModified>
-                    <checksum>e9cba40c</checksum>
+                    <lastModified>1034615728000</lastModified>
+                    <checksum>dc135ee2</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="WATERS_043.JPG">
+                <file name="07-michael_nyman-the_heart_asks_pleasure_first_the_piano-wlm.mp3">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857398000</lastModified>
-                    <checksum>7eff2d26</checksum>
+                    <lastModified>1034615711000</lastModified>
+                    <checksum>fa72eef7</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="DOGS_014.JPG">
+                <file name="03-ennio_morricone-gabriels_obeo_(the_mission)-wlm.mp3">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857313000</lastModified>
-                    <checksum>18115b63</checksum>
+                    <lastModified>1034615752000</lastModified>
+                    <checksum>3573a317</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="LANDSCAPES_003.JPG">
+                <file name="00-va-absolute_relaxed_cd2-2002-wlm.m3u">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857320000</lastModified>
-                    <checksum>bf7a37d7</checksum>
+                    <lastModified>1034615702000</lastModified>
+                    <checksum>2ce266e0</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="PUMA_003.JPG">
+                <file name="08-secret_garden-nocturne-wlm.mp3">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857337000</lastModified>
-                    <checksum>3a81e751</checksum>
+                    <lastModified>1034615744000</lastModified>
+                    <checksum>e033009f</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="CITY-02.JPG">
+                <file name="01-sarah_brightman-time_to_say_goodbye-wlm.mp3">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857311000</lastModified>
-                    <checksum>45b40322</checksum>
+                    <lastModified>1034615707000</lastModified>
+                    <checksum>d74c922e</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="CARS_SUBARU_005.JPG">
+                <file name="00-va-absolute_relaxed_cd2-2002-wlm.nfo">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857308000</lastModified>
-                    <checksum>e0c0c856</checksum>
+                    <lastModified>1034615702000</lastModified>
+                    <checksum>cb4baaae</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="007BEAN.JPG">
+                <file name="11-chris_rea-josies_tune-wlm.mp3">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015856922000</lastModified>
-                    <checksum>aa4cab92</checksum>
+                    <lastModified>1034615714000</lastModified>
+                    <checksum>6bd05b</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="07-wlp01.jpg">
+                <file name="14-academy_of_st_martin_in_the_fields-air-wlm.mp3">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015856923000</lastModified>
-                    <checksum>ba849446</checksum>
+                    <lastModified>1034615693000</lastModified>
+                    <checksum>e4cb8393</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="LOSANG.JPG">
+                <file name="16-jevetta_steele-calling_you_(bagdad_cafe)-wlm.mp3">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857325000</lastModified>
-                    <checksum>86d1b793</checksum>
+                    <lastModified>1034615689000</lastModified>
+                    <checksum>3a255504</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="WALL-23.JPG">
+                <file name="06-richard_clayderman-ballade_pour_adeline-wlm.mp3">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857394000</lastModified>
-                    <checksum>5ec4c6d3</checksum>
+                    <lastModified>1034615740000</lastModified>
+                    <checksum>65fc91fd</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="BRANDS_DRINKS021.JPG">
+                <file name="10-mario_millo_and_jon_english-against_the_wind-wlm.mp3">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857305000</lastModified>
-                    <checksum>66f47013</checksum>
+                    <lastModified>1034615722000</lastModified>
+                    <checksum>527113c7</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="MORNINGLIGHT.JPG">
+                <file name="02-john_williams-cavatina_(deer_hunter)-wlm.mp3">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857331000</lastModified>
-                    <checksum>248a5753</checksum>
+                    <lastModified>1034615734000</lastModified>
+                    <checksum>e964ecff</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="canyon4.jpg">
+                <file name="15-blue_nile-from_a_late_night_train-wlm.mp3">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857306000</lastModified>
-                    <checksum>492a9f83</checksum>
+                    <lastModified>1034615749000</lastModified>
+                    <checksum>b927393f</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="LOWROAD.JPG">
+                <file name="13-staffan_scheja-gymnopedie_1-wlm.mp3">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857327000</lastModified>
-                    <checksum>b08dae57</checksum>
+                    <lastModified>1034615702000</lastModified>
+                    <checksum>de2f1c7b</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="LEOPARD_003.JPG">
+                <file name="05-james_galway-annias_song-wlm.mp3">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1015857322000</lastModified>
-                    <checksum>52d1fe57</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="WATERS_014.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857396000</lastModified>
-                    <checksum>501fd1e3</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="EARLYFROST.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857315000</lastModified>
-                    <checksum>3605d080</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="land4.jpg">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857318000</lastModified>
-                    <checksum>5cab6420</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="PUMA_004.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857339000</lastModified>
-                    <checksum>d1676ed2</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="DOGS_011.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857312000</lastModified>
-                    <checksum>3d39aaaa</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="wolf.jpg">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857398000</lastModified>
-                    <checksum>a8df62d2</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="WALL-24.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857395000</lastModified>
-                    <checksum>3bbbe3f0</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="LEOPARD_004.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857323000</lastModified>
-                    <checksum>a998699</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="OASIS.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857337000</lastModified>
-                    <checksum>3306cb7f</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="FORESTS_006.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857318000</lastModified>
-                    <checksum>28c95e17</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="CAPRICORN.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857306000</lastModified>
-                    <checksum>88fb0c16</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="14-wlp14.jpg">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015856924000</lastModified>
-                    <checksum>77fb7d21</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="WATERS_041.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857397000</lastModified>
-                    <checksum>9028e0d8</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="SPACE021.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857349000</lastModified>
-                    <checksum>dfa05d9e</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="18-wlp01.jpg">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015856925000</lastModified>
-                    <checksum>935c809</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="NEPTUNE.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857333000</lastModified>
-                    <checksum>93a6dcb</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="CARS_SUBARU_003.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857308000</lastModified>
-                    <checksum>eb044385</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="BEACH020.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857302000</lastModified>
-                    <checksum>5906d26a</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="newday.jpg">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857333000</lastModified>
-                    <checksum>4572a31c</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="SPACE010.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857348000</lastModified>
-                    <checksum>4b219a05</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="SPORT041.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857356000</lastModified>
-                    <checksum>509c40b4</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="SKYSONG2.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857344000</lastModified>
-                    <checksum>856ebe12</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="LEOPARD_001.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857321000</lastModified>
-                    <checksum>3f7162cb</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="SNOWTOP.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857346000</lastModified>
-                    <checksum>5a169a1b</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="WOLVES_004.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857399000</lastModified>
-                    <checksum>b6c439f1</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="SIERRAMOON.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857341000</lastModified>
-                    <checksum>60eb4aa0</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="TRUCK017.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857529000</lastModified>
-                    <checksum>dfdc1520</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="WATERS_042.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857397000</lastModified>
-                    <checksum>3782e040</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="SPACE026.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857352000</lastModified>
-                    <checksum>d0c4969a</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="SPACE022.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857351000</lastModified>
-                    <checksum>ef79d7f2</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="06-wlp05.jpg">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015856922000</lastModified>
-                    <checksum>f95a04b5</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="PUMA_002.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857337000</lastModified>
-                    <checksum>bb44fad8</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="BRANDS_DRINKS001.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857304000</lastModified>
-                    <checksum>ce9f2a92</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="rasltho1.jpg">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857341000</lastModified>
-                    <checksum>7ebbc911</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="CARTOONS_WALT_DISNEY002.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857310000</lastModified>
-                    <checksum>9580342</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="SPACE011.JPG">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1015857349000</lastModified>
-                    <checksum>475d9f89</checksum>
+                    <lastModified>1034615718000</lastModified>
+                    <checksum>1e32e21b</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
@@ -584,666 +214,216 @@
                 <slave name="mog" />
             </slaves>
         </directory>
-        <file name="CLASSIC ROCK-Lynard Skynard - Sweet Home Alabama.mp3">
+        <directory name="Cd1">
             <user>drftpd</user>
             <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1030124426000</lastModified>
-            <checksum>c87a3d4a</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="Michael Jackson - Billie Jean - 01.MP3">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1015840745000</lastModified>
-            <checksum>cbf46d1d</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="Belinda Carlisle - Heaven Is A Place On Earth.mp3">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1017149943000</lastModified>
-            <checksum>2e45106b</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="Dreamweaver 4 Installation.exe">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1016933033000</lastModified>
-            <checksum>5dbb3b1c</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="tmp.c">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1028809288000</lastModified>
-            <checksum>6524246b</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="01-michelle_branch-everywhere.mp3">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1014924530000</lastModified>
-            <checksum>c886b5ec</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="Bjrn Rosenstrm - Oh No, Elin.mp3">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1029016828000</lastModified>
-            <checksum>842af744</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="budapest.mpg">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1016643388000</lastModified>
-            <checksum>15298a66</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="test.txt">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1028802522000</lastModified>
-            <checksum>2ca85fc2</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="01 - Dia Psalma - Luft.mp3">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1030118392000</lastModified>
-            <checksum>5681a18c</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="Dreamweaver 4 serial.txt">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1016933180000</lastModified>
-            <checksum>13d72ed8</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <directory name="done">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <lastModified>1026922566000</lastModified>
+            <lastModified>1034615599000</lastModified>
             <contents>
-                <directory name="mp3">
+                <file name="00-va-absolute_relaxed_cd1-2002-wlm.sfv">
                     <user>drftpd</user>
                     <group>drftpd</group>
-                    <lastModified>1027673790000</lastModified>
-                    <contents>
-                        <file name="Aqua - My Oh My.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1013331781000</lastModified>
-                            <checksum>481c5ef</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="Jess~Mike's Nickelback - This Is How You Remind Me (CD Version).mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1013623974000</lastModified>
-                            <checksum>5db07d64</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="06. The Pet Shop Boys - Can You Forgive Her.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1014858904000</lastModified>
-                            <checksum>88c23a</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="MDS.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1011530178000</lastModified>
-                            <checksum>189f3433</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="Metallica - 01 - Enter Sandman.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1013264141000</lastModified>
-                            <checksum>5be9a7da</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="Lilleman - Vart tog pappa vägen(1).mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1013719168000</lastModified>
-                            <checksum>df9538fc</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="Aqua - Doctor Jones.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1013331657000</lastModified>
-                            <checksum>ff612a0d</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="03 Sylvias mother.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1013132345000</lastModified>
-                            <checksum>667e1435</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="Lurad.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1014335329000</lastModified>
-                            <checksum>7991f064</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <directory name="musik">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <lastModified>1014512804000</lastModified>
-                            <contents>
-                                <file name="Shanks &amp; Bigfoot - Sweet Like Chocolate.mp3">
-                                    <user>drftpd</user>
-                                    <group>drftpd</group>
-                                    <size>0</size>
-                                    <lastModified>1014512801000</lastModified>
-                                    <checksum>e8b93275</checksum>
-                                    <slaves>
-                                        <slave name="mog" />
-                                    </slaves>
-                                </file>
-                                <file name="Six Pence None the Richer - Kiss Me.mp3">
-                                    <user>drftpd</user>
-                                    <group>drftpd</group>
-                                    <size>0</size>
-                                    <lastModified>1014512804000</lastModified>
-                                    <checksum>8c8bd280</checksum>
-                                    <slaves>
-                                        <slave name="mog" />
-                                    </slaves>
-                                </file>
-                                <file name="Toploader - Dancing In The Moonlight.mp3">
-                                    <user>drftpd</user>
-                                    <group>drftpd</group>
-                                    <size>0</size>
-                                    <lastModified>1014512804000</lastModified>
-                                    <checksum>17c8390d</checksum>
-                                    <slaves>
-                                        <slave name="mog" />
-                                    </slaves>
-                                </file>
-                                <file name="TECHNO - Shanks &amp; Bigfoot - Sweet like Chocolate.mp3">
-                                    <user>drftpd</user>
-                                    <group>drftpd</group>
-                                    <size>0</size>
-                                    <lastModified>1014512802000</lastModified>
-                                    <checksum>7fbef84f</checksum>
-                                    <slaves>
-                                        <slave name="mog" />
-                                    </slaves>
-                                </file>
-                                <file name="Excellence - Region of Excellence 05 - What's up.mp3">
-                                    <user>drftpd</user>
-                                    <group>drftpd</group>
-                                    <size>0</size>
-                                    <lastModified>1014512800000</lastModified>
-                                    <checksum>5e34c925</checksum>
-                                    <slaves>
-                                        <slave name="mog" />
-                                    </slaves>
-                                </file>
-                            </contents>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </directory>
-                        <file name="03 - The House Jack Built.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1013448332000</lastModified>
-                            <checksum>b5f92e74</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="Deep Blue Something - Breakfast at Tiffanys.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1013971420000</lastModified>
-                            <checksum>364f0e81</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="Underworld - Born Slippy.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1014593954000</lastModified>
-                            <checksum>a77e7a5d</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="FatBoySlim - Push the tempo.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1014214463000</lastModified>
-                            <checksum>e58a911e</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="petter-ta det tillbaka.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1014328625000</lastModified>
-                            <checksum>7c497159</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="Hackers, Soundtrack - 02 Underworld - Cowgirl.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1014594890000</lastModified>
-                            <checksum>6d87941f</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="Metallica - 03 - Holier Than Thou.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1013264135000</lastModified>
-                            <checksum>5fa79307</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="björn rosenström - syrran och hunden.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1014328006000</lastModified>
-                            <checksum>d9638b8e</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="Breathless.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1012822929000</lastModified>
-                            <checksum>752da58a</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="How soon is now (Charmed theme).mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1014207812000</lastModified>
-                            <checksum>11f796f4</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="Dandy Warhols - Bohemian Like You.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1014216716000</lastModified>
-                            <checksum>f8fe5ebc</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="Metallica - 04 - The Unforgiven.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1013264263000</lastModified>
-                            <checksum>daae7eed</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="Aqua - Good Morning Sunshine.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1013331691000</lastModified>
-                            <checksum>63e58bcd</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="Sting - Fields of Gold - Best of 1984-94 - Fields Of Gold.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1013954263000</lastModified>
-                            <checksum>95645124</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="Alizee - ¤Moi Lolita¤.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1012786924000</lastModified>
-                            <checksum>583ec0a0</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="12 - Egon.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1014868437000</lastModified>
-                            <checksum>e2055eb1</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="kylie minouge - i should be so lucky.mp3">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1013776711000</lastModified>
-                            <checksum>e5f52a31</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                    </contents>
+                    <size>0</size>
+                    <lastModified>1034615621000</lastModified>
+                    <checksum>a4f7a410</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
-                </directory>
+                </file>
+                <file name="11-bjorn_json_lindh-brusa_hogre_lilla_a-wlm.mp3">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615610000</lastModified>
+                    <checksum>4fbc821b</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="12-vanessa-mae-widescreen-wlm.mp3">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615604000</lastModified>
+                    <checksum>7c2d7aee</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="03-adiemus-adiemus-wlm.mp3">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615667000</lastModified>
+                    <checksum>de986e2b</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="16-moby-porcelain-wlm.mp3">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615682000</lastModified>
+                    <checksum>11c1eab6</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="15-art_of_noice-moments_in_love-wlm.mp3">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615616000</lastModified>
+                    <checksum>a8fcccd3</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="13-yanni-adagio_in_c-minor-wlm.mp3">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615652000</lastModified>
+                    <checksum>3fb01c2d</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="08-mike_oldfield-etude_(killing_fields)-wlm.mp3">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615677000</lastModified>
+                    <checksum>6f6d38eb</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="14-city_of_prague_philharmonic-john_dunbar_theme-wlm.mp3">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615655000</lastModified>
+                    <checksum>16b9fd7f</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="00-va-absolute_relaxed_cd1-2002-wlm.m3u">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615621000</lastModified>
+                    <checksum>ae3d1a85</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="09-dana_dragomir-pedro_and_blanca-wlm.mp3">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615662000</lastModified>
+                    <checksum>63957956</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="02-enigma-sadness_(part_1)-wlm.mp3">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615626000</lastModified>
+                    <checksum>2a045e4a</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="10-eric_serra-the_big_blue_overture_(the_big_blue)-wlm.mp3">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615599000</lastModified>
+                    <checksum>d38647f2</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="00-va-absolute_relaxed_cd1-2002-wlm.nfo">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615621000</lastModified>
+                    <checksum>3f560b10</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="06-ennio_morricone-chi_mai-wlm.mp3">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615673000</lastModified>
+                    <checksum>19d69baf</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="17-faithless-drifting_away-wlm.mp3">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615621000</lastModified>
+                    <checksum>f28fbe7a</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="07-mark_ayres-leaving_las_vegas_(rain_man)-wlm.mp3">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615629000</lastModified>
+                    <checksum>577ea790</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="04-sacred_spirits-yeha-noha-wlm.mp3">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615647000</lastModified>
+                    <checksum>c8378a0</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="05-kitaro-caravanasary-wlm.mp3">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615641000</lastModified>
+                    <checksum>8edb359b</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="01-gregorianmasters_of_chant-moment_of_peace-wlm.mp3">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1034615634000</lastModified>
+                    <checksum>79d62ec2</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
             </contents>
             <slaves>
                 <slave name="mog" />
             </slaves>
         </directory>
-        <file name="peerCast.ps">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1028809635000</lastModified>
-            <checksum>ae0f3990</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="Lynyrd skynyrd-Sweet home Alabama.mp3">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1030124438000</lastModified>
-            <checksum>c87a3d4a</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="Ken - Eld och Djupa Vatten.mp3">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1030120704000</lastModified>
-            <checksum>1ad6f6d8</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="05 - Bilder fren Cypern.mp3">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1016715777000</lastModified>
-            <checksum>2c6e4c76</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="test.sfv">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1030020401000</lastModified>
-            <checksum>502bd226</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <directory name="GDL">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <lastModified>1017365801000</lastModified>
-            <contents>
-                <directory name="Star Trek TNG - 2x21 -  Peak Performance.avi">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <lastModified>1017169135000</lastModified>
-                    <contents>
-                        <file name="03275000-04F62000">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1017169207000</lastModified>
-                            <checksum>58d5a94f</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name=".cmd">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1017169135000</lastModified>
-                            <checksum>661dba94</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name=".lock">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1017168832000</lastModified>
-                            <checksum>0</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name="00000000-04F62000">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1017169207000</lastModified>
-                            <checksum>c667da34</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                    </contents>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </directory>
-                <directory name="ST-TNG - 2x21 - Peak Performance.avi">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <lastModified>1017168743000</lastModified>
-                    <contents>
-                        <file name=".cmd">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1017168743000</lastModified>
-                            <checksum>72468035</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                        <file name=".lock">
-                            <user>drftpd</user>
-                            <group>drftpd</group>
-                            <size>0</size>
-                            <lastModified>1017168743000</lastModified>
-                            <checksum>0</checksum>
-                            <slaves>
-                                <slave name="mog" />
-                            </slaves>
-                        </file>
-                    </contents>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </directory>
-            </contents>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </directory>
-        <file name="Dia Psalma - 07 - Emelie.mp3">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1030121195000</lastModified>
-            <checksum>97615b2f</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="Lynyrd Skynyrd - Sweet Home Alabama.mp3">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1030124466000</lastModified>
-            <checksum>1d3f3914</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="Pink - Get The Party Started.mpeg">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1016905093000</lastModified>
-            <checksum>e10eee0a</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="Pink - Get This Party Started.mp3">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1016902742000</lastModified>
-            <checksum>fdbeb03a</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="Jennifer Lopez Feat. Ja Rule - I'm Real (DJ Todd Remix).mp3">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1016838528000</lastModified>
-            <checksum>f7caa196</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="spawn.conf">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1028809516000</lastModified>
-            <checksum>898755a</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
-        <file name="Lynard Skynyrd - Sweet Home Alabama.mp3">
-            <user>drftpd</user>
-            <group>drftpd</group>
-            <size>0</size>
-            <lastModified>1030124470000</lastModified>
-            <checksum>80ed806b</checksum>
-            <slaves>
-                <slave name="mog" />
-            </slaves>
-        </file>
     </contents>
     <slaves>
         <slave name="mog" />
