@@ -21,6 +21,7 @@ import net.sf.drftpd.IllegalTargetException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManagerImpl;
@@ -656,6 +657,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 			} else {
 				if (file.isDeleted()) {
 					//TODO mergefile has no RemoteSlave object!
+					logger.log(Level.WARNING, "Queued delete on "+rslave+" for file "+mergefile);
+					mergefile.addSlave(rslave);
 					mergefile.delete();
 					continue;
 				}
@@ -678,11 +681,15 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 						//file.getCheckSum(true);
 						file.lastModified = mergefile.lastModified();
 					} else if (mergefile.length() == 0) {
+						logger.log(Level.INFO, "Deleting 0byte "+mergefile+" on "+rslave);
 						try {
 							rslave.getSlave().delete(mergefile.getPath());
+						} catch(PermissionDeniedException ex) {
+							logger.log(Level.SEVERE, "Error deleting 0byte file on "+rslave, ex);
 						} catch (Exception e) {
 							throw new FatalException(e);
 						}
+						continue;
 					} else {
 						//rename file...
 						try {
