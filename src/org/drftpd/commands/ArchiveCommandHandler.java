@@ -262,10 +262,6 @@ public class ArchiveCommandHandler extends CommandHandler implements CommandHand
         return reply;
     }
 
-    public String getHelp(String cmd) {
-        return this.toString()+"\n";
-    }
-    
     public String[] getFeatReplies() {
         return null;
     }

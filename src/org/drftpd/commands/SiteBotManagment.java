@@ -106,10 +106,6 @@ public class SiteBotManagment extends CommandHandler implements CommandHandlerFa
         return this;
     }
 
-    public String getHelp(String cmd) {
-        return this.toString()+"\n";
-    }
-    
     public String[] getFeatReplies() {
         return null;
     }

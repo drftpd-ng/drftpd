@@ -389,10 +389,6 @@ public class TransferStatistics extends CommandHandler implements CommandHandler
         return Bytes.formatBytes((long) rate) + "/s";
     }
 
-    public String getHelp(String cmd) {
-        return this.toString()+"\n";
-    }
-    
     public String[] getFeatReplies() {
         return null;
     }

@@ -847,11 +847,7 @@ public class Find extends CommandHandler implements CommandHandlerFactory {
 		return null;
 	}
 
-    public String getHelp(String cmd) {
-        return this.toString()+"\n";
-    }
-    
-	public String[] getFeatReplies() {
+ 	public String[] getFeatReplies() {
 		return null;
 	}
 

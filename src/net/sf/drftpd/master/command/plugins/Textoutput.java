@@ -126,10 +126,6 @@ public class Textoutput extends CommandHandler implements CommandHandlerFactory 
         }
     }
 
-    public String getHelp(String cmd) {
-        return "";
-    }
-    
     public String[] getFeatReplies() {
         return null;
     }

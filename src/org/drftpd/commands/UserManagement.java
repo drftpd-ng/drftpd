@@ -1875,10 +1875,6 @@ public class UserManagement extends CommandHandler implements CommandHandlerFact
             conn.getRequest());
     }
 
-    public String getHelp(String cmd) {
-        return this.toString()+"\n";
-    }
-    
     public String[] getFeatReplies() {
         return null;
     }

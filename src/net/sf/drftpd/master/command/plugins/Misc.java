@@ -158,7 +158,6 @@ public class Misc extends CommandHandler implements CommandHandlerFactory {
         Map handlers = conn.getCommandManager().getCommandHandlersMap();
         for (Iterator iter = handlers.keySet().iterator(); iter.hasNext();) {
             CommandHandler hnd = (CommandHandler) handlers.get(iter.next());
-            if (hnd.getHelp(cmd.toLowerCase()).indexOf("org.dr") < 0)
             msg += hnd.getHelp(cmd.toLowerCase());
         }
         if ("".equals(msg))
@@ -217,16 +216,6 @@ public class Misc extends CommandHandler implements CommandHandlerFactory {
         return this;
     }
 
-    public String getHelp(String cmd) {
-        ResourceBundle bundle = ResourceBundle.getBundle(getClass().getName());
-        if ("".equals(cmd))
-            return bundle.getString("help.general")+"\n";
-        else if("help".equals(cmd))
-            return bundle.getString("help.help")+"\n";
-        else
-            return "";
-    }
-    
     public String[] getFeatReplies() {
         return null;
     }

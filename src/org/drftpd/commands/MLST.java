@@ -112,10 +112,6 @@ public class MLST extends CommandHandler implements CommandHandlerFactory {
         return Reply.RESPONSE_500_SYNTAX_ERROR;
     }
 
-    public String getHelp(String cmd) {
-        return this.toString()+"\n";
-    }
-    
     public String[] getFeatReplies() {
         return new String[] {
             "MLST type*,x.crc32*,size*,modify*,unix.owner*,unix.group*,x.slaves*,x.xfertime*"
