@@ -334,7 +334,7 @@ public abstract class AbstractUser extends User {
 		_data.setObject(UserManagement.MAXLOGINS, maxLogins);
 		_data.setObject(UserManagement.MAXLOGINSIP, maxLoginsPerIP);
 		_data.setObject(UserManagement.WKLY_ALLOTMENT, weeklyAllotment);
-		_data.setObject(UserManagement.LASTSEEN, lastAccessTime);
+		_data.setObject(UserManagement.LASTSEEN, new Date(lastAccessTime));
 
 		_data.setObject(RaceStatistics.RACES, racesParticipated);
 		_data.setObject(RaceStatistics.RACESLOST, racesLost);
