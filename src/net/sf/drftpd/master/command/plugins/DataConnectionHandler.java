@@ -51,7 +51,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.39 2004/02/04 00:28:18 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.40 2004/02/05 19:38:52 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -85,11 +85,13 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		try {
 			_ctx = SSLGetContext.getSSLContext();
 		} catch (Exception e) {
-			throw new FatalException(e);
+			_ctx = null;
+			logger.warn("Couldn't load SSLContext, SSL/TLS disabled", e);
 		}
 	}
 
 	private FtpReply doAUTH(BaseFtpConnection conn) {
+		if(_ctx == null) return new FtpReply(500, "TLS not configured");
 		Socket s = conn.getControlSocket();
 
 		//reply success
@@ -465,6 +467,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 
 	private FtpReply doPROT(BaseFtpConnection conn)
 		throws UnhandledCommandException {
+		if(_ctx == null) return new FtpReply(500, "TLS not configured");
 		FtpRequest req = conn.getRequest();
 		if (!req.hasArgument() || req.getArgument().length() != 1)
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
@@ -790,7 +793,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	public String[] getFeatReplies() {
 		if (_ctx != null)
 			return new String[] { "PRET", "AUTH SSL", "PBSZ" };
-		return null;
+		return new String[] {"PRET"};
 	}
 	/**
 	 * Get client address from PORT command.

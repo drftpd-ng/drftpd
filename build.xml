@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- $Id: build.xml,v 1.32 2004/02/05 05:14:36 zubov Exp $ -->
+<!-- $Id: build.xml,v 1.33 2004/02/05 19:38:51 mog Exp $ -->
 <project name="drftpd" basedir="." default="compile">
 
   <target name="all" depends="compile"/>
@@ -90,8 +90,8 @@
       Use argument -Dversion=0.11.0-CVS for example.
     </fail>
     <chmod dir="." perm="+x" includes="*.sh" />
-    <zip destfile="drftpd-${version}.zip" >
-      <zipfileset  prefix="drftpd-${version}" dir=".">
+    <chmod dir="." perm="+x" includes="bin/wrapper" />
+    <patternset id="distfiles">
     	<include name="INSTALL.txt"/>
     	<include name="drftpd.conf.dist"/>
     	<include name="slave.conf.dist"/>
@@ -107,6 +107,18 @@
     	<include name="ftp-data/text/**"/>
     	<include name="extsources/*"/>
     	<include name="bin/*"/>
+    </patternset>
+
+    <tar destfile="drftpd-${version}.tar">
+      <tarfileset prefix="drftpd-${version}" dir=".">
+        <patternset refid="distfiles"/>
+      </tarfileset>
+    </tar>
+    <gzip src="drftpd-${version}.tar" destfile="drftpd-${version}.tar.gz"/>
+
+    <zip destfile="drftpd-${version}.zip">
+      <zipfileset  prefix="drftpd-${version}" dir=".">
+      <patternset refid="distfiles"/>
 	  </zipfileset>
     </zip>
   </target>
