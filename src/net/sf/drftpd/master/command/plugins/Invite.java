@@ -31,7 +31,7 @@ import org.drftpd.commands.UnhandledCommandException;
 /**
  * @author mog
  *
- * @version $Id: Invite.java,v 1.12 2004/11/03 16:46:40 mog Exp $
+ * @version $Id: Invite.java,v 1.13 2004/11/09 03:08:25 zubov Exp $
  */
 public class Invite implements CommandHandlerFactory, CommandHandler {
     public Invite() {
@@ -51,7 +51,8 @@ public class Invite implements CommandHandlerFactory, CommandHandler {
         }
 
         String user = conn.getRequest().getArgument();
-        InviteEvent invite = new InviteEvent(cmd, user);
+        
+        InviteEvent invite = new InviteEvent(cmd, user, conn.getUserNull());
         conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(invite);
 
         return new FtpReply(200, "Inviting " + user);
