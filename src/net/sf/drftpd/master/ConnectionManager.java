@@ -55,7 +55,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.91 2004/03/01 04:21:03 zubov Exp $
+ * @version $Id: ConnectionManager.java,v 1.92 2004/03/04 01:41:27 zubov Exp $
  */
 public class ConnectionManager {
 	private SectionManagerInterface _sections;
@@ -151,7 +151,7 @@ public class ConnectionManager {
 		} catch (Throwable ex) {
 			throw new FatalException(ex);
 		}
-
+		_timer = new Timer();
 		List rslaves = SlaveManagerImpl.loadRSlaves();
 		GlobRMIServerSocketFactory ssf =
 			new GlobRMIServerSocketFactory(rslaves);
@@ -223,13 +223,12 @@ public class ConnectionManager {
 			}
 		}
 		
-		try {
+		try { // only need to reload for SlaveSelection using JobManager settings
 			getSlaveManager().getSlaveSelectionManager().reload();
 		} catch (IOException e1) {
 			throw new FatalException(e1);
 		}
 		
-		_timer = new Timer();
 		TimerTask timerLogoutIdle = new TimerTask() {
 			public void run() {
 				timerLogoutIdle();

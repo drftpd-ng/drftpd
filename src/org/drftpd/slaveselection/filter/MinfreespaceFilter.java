@@ -18,7 +18,6 @@
 package org.drftpd.slaveselection.filter;
 
 import java.net.InetAddress;
-import java.rmi.RemoteException;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -36,7 +35,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
  * <n>.minfreespace=1GB
  * </pre>
  * @author mog
- * @version $Id: MinfreespaceFilter.java,v 1.3 2004/03/01 00:21:10 mog Exp $
+ * @version $Id: MinfreespaceFilter.java,v 1.4 2004/03/04 01:41:27 zubov Exp $
  */
 public class MinfreespaceFilter extends Filter {
 	private long _minfreespace;
@@ -73,9 +72,6 @@ public class MinfreespaceFilter extends Filter {
 							- (long) ((_minfreespace - df) * _multiplier));
 					}
 				}
-			} catch (RemoteException e) {
-				score.getRSlave().handleRemoteException(e);
-				iter.remove();
 			} catch (SlaveUnavailableException e) {
 				iter.remove();
 			}

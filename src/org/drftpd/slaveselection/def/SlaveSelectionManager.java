@@ -20,7 +20,6 @@ package org.drftpd.slaveselection.def;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
@@ -41,7 +40,7 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.6 2004/03/01 05:17:21 zubov Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.7 2004/03/04 01:41:27 zubov Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 
@@ -112,19 +111,14 @@ return getASlaveInternal(file.getAvailableSlaves(), Transfer.TRANSFER_SENDING_DO
 				if (!i.hasNext())
 					throw new NoAvailableSlaveException();
 				bestslave = (RemoteSlave) i.next();
-				try {
 					try {
 						beststatus = bestslave.getStatus();
-						// throws NoAvailableSlaveException
+						// throws SlaveUnavailableException
 					} catch (SlaveUnavailableException ex) {
 						continue;
 					}
 					bestthroughput = beststatus.getThroughputDirection(direction);
 					break;
-				} catch (RemoteException ex) {
-					bestslave.handleRemoteException(ex);
-					continue;
-				}
 			}
 			while (i.hasNext()) {
 				RemoteSlave slave = (RemoteSlave) i.next();
@@ -132,9 +126,6 @@ return getASlaveInternal(file.getAvailableSlaves(), Transfer.TRANSFER_SENDING_DO
 
 				try {
 					status = slave.getStatus();
-				} catch (RemoteException ex) {
-					slave.handleRemoteException(ex);
-					continue;
 				} catch (SlaveUnavailableException ex) {
 					continue;
 				}
@@ -220,9 +211,6 @@ return getASlaveInternal(file.getAvailableSlaves(), Transfer.TRANSFER_SENDING_DO
 		SlaveStatus status = null;
 		try {
 			status = rslave.getStatus();
-		} catch (RemoteException e) {
-			rslave.handleRemoteException(e);
-			throw new NoAvailableSlaveException();
 		} catch (SlaveUnavailableException e) {
 			throw new NoAvailableSlaveException();
 		}

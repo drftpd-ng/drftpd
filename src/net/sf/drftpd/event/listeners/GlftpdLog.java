@@ -23,7 +23,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.UnknownHostException;
-import java.rmi.RemoteException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -66,7 +65,7 @@ import org.tanesha.replacer.FormatterException;
 
 /**
  * @author flowman
- * @version $Id: GlftpdLog.java,v 1.4 2004/03/03 22:32:30 flowman Exp $
+ * @version $Id: GlftpdLog.java,v 1.5 2004/03/04 01:41:27 zubov Exp $
  */
 public class GlftpdLog implements FtpListener {
 	PrintWriter out;
@@ -404,9 +403,6 @@ public class GlftpdLog implements FtpListener {
 			SlaveStatus status;
 			try {
 				status = sevent.getRSlave().getStatus();
-			} catch (RemoteException e) {
-				sevent.getRSlave().handleRemoteException(e);
-				return;
 			} catch (SlaveUnavailableException e) {
 				return;
 			}

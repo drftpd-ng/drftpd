@@ -97,7 +97,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.91 2004/03/01 00:21:08 mog Exp $
+ * @version $Id: IRCListener.java,v 1.92 2004/03/04 01:41:26 zubov Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -629,9 +629,6 @@ public class IRCListener implements FtpListener, Observer {
 			SlaveStatus status;
 			try {
 				status = sevent.getRSlave().getStatus();
-			} catch (RemoteException e) {
-				sevent.getRSlave().handleRemoteException(e);
-				return;
 			} catch (SlaveUnavailableException e) {
 				return;
 			}

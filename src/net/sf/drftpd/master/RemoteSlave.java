@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.27 2004/03/01 00:21:08 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.28 2004/03/04 01:41:27 zubov Exp $
  */
 public class RemoteSlave implements Comparable {
 
@@ -55,8 +55,7 @@ public class RemoteSlave implements Comparable {
 	private Collection _masks;
 	private String _name;
 	private Slave _slave;
-	//private SlaveStatus _status;
-	//private long _statusTime;
+	private SlaveStatus _status;
 
 	public RemoteSlave(String name, Collection masks) {
 		if (name.equalsIgnoreCase("all"))
@@ -124,24 +123,33 @@ public class RemoteSlave implements Comparable {
 	}
 
 	/**
-	 * Get's slave status, caches the status for 10 seconds.
+	 * Returns the RemoteSlave's stored SlaveStatus
 	 */
 	public SlaveStatus getStatus()
-		throws RemoteException, SlaveUnavailableException {
-		return getSlave().getSlaveStatus();
-
-		//		if (statusTime < System.currentTimeMillis() - 10000) {
-		//			status = getSlave().getSlaveStatus();
-		//			statusTime = System.currentTimeMillis();
-		//		}
-		//		return status;
+		throws SlaveUnavailableException {
+			synchronized(_status) {
+			if (_status == null ) {
+				if (isAvailable()) {
+					updateStatus(); // throws SlaveUnavailableException
+				}
+			}
+			return _status;
+			}
+	}
+	
+	public synchronized void updateStatus() throws SlaveUnavailableException {
+		try {
+			_status = getSlave().getSlaveStatus();
+		} catch (RemoteException e) {
+			_status = null;
+		}
 	}
 
 	/**
 	 * @param ex RemoteException
 	 * @return true If exception was fatal and the slave was removed 
 	 */
-	public boolean handleRemoteException(RemoteException ex) {
+	public void handleRemoteException(RemoteException ex) {
 		//		if (!isFatalRemoteException(ex)) {
 		//			logger.log(
 		//				Level.WARN,
@@ -153,7 +161,6 @@ public class RemoteSlave implements Comparable {
 		//		}
 		logger.warn("Exception from " + getName() + ", removing", ex);
 		setOffline(ex.getCause().getMessage());
-		return true;
 	}
 
 	public int hashCode() {
@@ -176,6 +183,11 @@ public class RemoteSlave implements Comparable {
 		return isAvailable();
 	}
 
+	/**
+	 * @deprecated use isAvailablePing() instead
+	 * @throws RemoteException
+	 * @throws SlaveUnavailableException
+	 */
 	public void ping() throws RemoteException, SlaveUnavailableException {
 		if (_slave == null)
 			throw new SlaveUnavailableException(getName() + " is offline");
@@ -207,6 +219,7 @@ public class RemoteSlave implements Comparable {
 				new SlaveEvent("DELSLAVE", reason, this));
 		}
 		_slave = null;
+		_status = null;
 		_inetAddress = null;
 	}
 

@@ -17,7 +17,6 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,14 +27,13 @@ import junit.framework.TestSuite;
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.Transfer;
 
 /**
  * @author mog
- * @version $Id: MinfreespaceFilterTest.java,v 1.4 2004/03/01 00:21:10 mog Exp $
+ * @version $Id: MinfreespaceFilterTest.java,v 1.5 2004/03/04 01:41:27 zubov Exp $
  */
 public class MinfreespaceFilterTest extends TestCase {
 	public static class RemoteSlaveTesting extends RemoteSlave {
@@ -46,8 +44,7 @@ public class MinfreespaceFilterTest extends TestCase {
 			_status = status;
 		}
 		
-		public SlaveStatus getStatus()
-			throws RemoteException, SlaveUnavailableException {
+		public SlaveStatus getStatus()  {
 			return _status;
 		}
 	}

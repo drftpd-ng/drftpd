@@ -31,3 +31,7 @@ use.ident=true
 
 slaveselection=org.drftpd.slaveselection.def.SlaveSelectionManager
 sectionmanager=org.drftpd.sections.def.SectionManager
+
+# the interval at which the slave's status are recached on the master
+# value is in milliseconds
+slaveStatusUpdateTime=10000

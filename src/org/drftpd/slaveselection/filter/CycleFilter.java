@@ -18,7 +18,6 @@
 package org.drftpd.slaveselection.filter;
 
 import java.net.InetAddress;
-import java.rmi.RemoteException;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -31,7 +30,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
  * Checks ScoreChart for slaves with 0 bw usage and assigns 1 extra point to the one in that has been unused for the longest time.
  * 
  * @author mog
- * @version $Id: CycleFilter.java,v 1.2 2004/03/01 00:21:10 mog Exp $
+ * @version $Id: CycleFilter.java,v 1.3 2004/03/04 01:41:27 zubov Exp $
  */
 public class CycleFilter extends Filter {
 
@@ -68,8 +67,6 @@ public class CycleFilter extends Filter {
 						leastUsed = score;
 					}
 				}
-			} catch (RemoteException e) {
-				score.getRSlave().handleRemoteException(e);
 			} catch (SlaveUnavailableException e) {
 				iter.remove();
 			}

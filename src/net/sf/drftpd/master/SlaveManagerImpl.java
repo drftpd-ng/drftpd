@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.TimerTask;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
@@ -64,7 +65,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.72 2004/03/01 04:21:03 zubov Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.73 2004/03/04 01:41:27 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -282,6 +283,9 @@ public class SlaveManagerImpl
 		return masks;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public static void saveFilesXML(Element root) {
 		File filesDotXml = new File("files.xml");
 		File filesxmlbak = new File("files.xml.bak");
@@ -307,12 +311,11 @@ public class SlaveManagerImpl
 		}
 	}
 
-	SlaveStatus allStatus = null;
-	long allStatusTime = 0;
 	private ConnectionManager _cm;
 
 	protected LinkedRemoteFile _root;
 	protected List _rslaves;
+	private long _statusReloadTime;
 	protected SlaveManagerImpl() throws RemoteException {
 	}
 	public SlaveManagerImpl(
@@ -367,7 +370,25 @@ public class SlaveManagerImpl
 				throw (RuntimeException) e;
 			throw new FatalException(e);
 		}
+		_statusReloadTime = Long.parseLong(cfg.getProperty("slaveStatusUpdateTime","10000"));
+		_cm.getTimer().scheduleAtFixedRate(updateSlaveStatus,_statusReloadTime,_statusReloadTime);
 	}
+	
+	public TimerTask updateSlaveStatus = new TimerTask() {
+		public void run () {
+			try {
+				for (Iterator iter = getAvailableSlaves().iterator(); iter.hasNext();) {
+					RemoteSlave slave = (RemoteSlave) iter.next();
+					try {
+						slave.updateStatus();
+					} catch (SlaveUnavailableException e1) {
+						continue;
+					}
+				}
+			} catch (NoAvailableSlaveException e) {
+			}
+		}
+	};
 
 	protected void addShutdownHook() {
 		//add shutdown hook last
@@ -452,10 +473,6 @@ public class SlaveManagerImpl
 			long size = 0;
 			try {
 				size = rslave.getStatus().getDiskSpaceAvailable();
-			} catch (RemoteException e) {
-				logger.warn(
-					"Got remote exception in slave " + rslave.getName(),
-					e);
 			} catch (SlaveUnavailableException e) {
 				continue;
 			}
@@ -477,10 +494,6 @@ public class SlaveManagerImpl
 			long size = Integer.MAX_VALUE;
 			try {
 				size = rslave.getStatus().getDiskSpaceAvailable();
-			} catch (RemoteException e) {
-				logger.warn(
-					"Got remote exception in slave " + rslave.getName(),
-					e);
 			} catch (SlaveUnavailableException e) {
 				continue;
 			}
@@ -493,19 +506,14 @@ public class SlaveManagerImpl
 	}
 
 	/**
-	 * Cached for 1 second.
+	 * Not cached at all since RemoteSlave objects cache their SlaveStatus
 	 */
 	public SlaveStatus getAllStatus() {
-		if (allStatusTime >= System.currentTimeMillis() - 1000)
-			return allStatus;
-		allStatus = new SlaveStatus();
-		allStatusTime = System.currentTimeMillis();
+		SlaveStatus allStatus = new SlaveStatus();
 		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
 			try {
 				allStatus = allStatus.append(rslave.getStatus());
-			} catch (RemoteException e) {
-				rslave.handleRemoteException(e);
 			} catch (SlaveUnavailableException e) {
 				//slave is offline, continue
 			}
@@ -574,10 +582,10 @@ public class SlaveManagerImpl
 	/**
 	 * @deprecated Use RemoteSlave.handleRemoteException instead
 	 */
-	public boolean handleRemoteException(
+	public void handleRemoteException(
 		RemoteException ex,
 		RemoteSlave rslave) {
-		return rslave.handleRemoteException(ex);
+		rslave.handleRemoteException(ex);
 	}
 
 	/**
@@ -691,14 +699,8 @@ public class SlaveManagerImpl
 		synchronized (_rslaves) {
 			for (Iterator i = _rslaves.iterator(); i.hasNext();) {
 				RemoteSlave slave = (RemoteSlave) i.next();
-				try {
-					slave.ping();
-				} catch (RemoteException ex) {
-					if (slave.handleRemoteException(ex))
-						removed++;
-				} catch (SlaveUnavailableException ex) {
-					continue;
-				}
+				if (!slave.isAvailablePing())
+					removed++;
 			}
 		}
 		return removed;
