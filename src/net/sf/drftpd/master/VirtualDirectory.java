@@ -35,7 +35,7 @@ public class VirtualDirectory {
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
 			RemoteFileInterface file = (RemoteFileInterface) iter.next();
 			printLine(file, out);
-			out.flush();
+			//out.flush();
 		}
 	}
 
@@ -77,10 +77,11 @@ public class VirtualDirectory {
 	}
 
 	private static String padToLength(String value, int length) {
-		if(value.length() >= length) return value;
+		if (value.length() >= length)
+			return value;
 		String padding = "          ";
 		assert padding.length() > length : "padding must be longer than length";
-		return padding.substring(0, length-value.length())+value;
+		return padding.substring(0, length - value.length()) + value;
 	}
 	/**
 	 * Get file name.
@@ -141,25 +142,6 @@ public class VirtualDirectory {
 	 */
 	public static void printLine(RemoteFileInterface fl, Writer out)
 		throws IOException {
-		if (fl.isDirectory()) {
-			if (fl instanceof LinkedRemoteFile) {
-				LinkedRemoteFile file = (LinkedRemoteFile) fl;
-				int filesleft = file.lookupSFVFile().filesLeft();
-				if (filesleft != 0)
-					out.write(
-					"l--------- 3 "
-						+ padToLength(fl.getUsername(), 8)
-						+ DELIM
-						+ padToLength(fl.getGroupname(), 8)
-						+ " 0 "
-						+ DateUtils.getUnixDate(fl.lastModified())
-						+ DELIM
-						+ fl.getName()
-						+ "-MISSING-"
-						+ filesleft
-						+ "-FILES"+NEWLINE);
-			}
-		}
 		StringBuffer line = new StringBuffer();
 		if (fl instanceof LinkedRemoteFile
 			&& !((LinkedRemoteFile) fl).isAvailable()) {
@@ -186,6 +168,28 @@ public class VirtualDirectory {
 		}
 		line.append(NEWLINE);
 		out.write(line.toString());
+
+		if (fl.isDirectory() && fl instanceof LinkedRemoteFile) {
+			LinkedRemoteFile file = (LinkedRemoteFile) fl;
+			try {
+				int filesleft = file.lookupSFVFile().filesLeft();
+				if (filesleft != 0)
+					out.write(
+						"l--------- 3 "
+							+ padToLength(fl.getUsername(), 8)
+							+ DELIM
+							+ padToLength(fl.getGroupname(), 8)
+							+ " 0 "
+							+ DateUtils.getUnixDate(fl.lastModified())
+							+ DELIM
+							+ fl.getName()
+							+ "-MISSING-"
+							+ filesleft
+							+ "-FILES"
+							+ NEWLINE);
+			} catch (IOException e) {
+			} // errors getting SFV? FINE! We don't care!
+		}
 	}
 
 }
