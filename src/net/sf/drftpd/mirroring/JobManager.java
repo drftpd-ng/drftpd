@@ -16,22 +16,10 @@
  */
 package net.sf.drftpd.mirroring;
 
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.config.FtpConfig;
-
-import org.apache.log4j.Logger;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
 import java.net.SocketException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -41,10 +29,21 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import net.sf.drftpd.FatalException;
+import net.sf.drftpd.FileExistsException;
+import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.SlaveUnavailableException;
+import net.sf.drftpd.master.ConnectionManager;
+import net.sf.drftpd.master.RemoteSlave;
+import net.sf.drftpd.master.config.FtpConfig;
+
+import org.apache.log4j.Logger;
+import org.drftpd.slave.RemoteIOException;
+
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.61 2004/11/02 07:32:46 zubov Exp $
+ * @version $Id: JobManager.java,v 1.62 2004/11/08 02:37:18 zubov Exp $
  */
 public class JobManager implements Runnable {
     private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -253,7 +252,7 @@ public class JobManager implements Runnable {
                     return;
                 } catch (SlaveUnavailableException e2) {
                     return;
-                } catch (IOException e1) {
+                } catch (RemoteIOException e1) {
                     return;
                 }
             } else if (e.getCause() instanceof SocketException) {

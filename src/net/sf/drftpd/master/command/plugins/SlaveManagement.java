@@ -34,6 +34,7 @@ import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 
 import org.drftpd.plugins.SiteBot;
+import org.drftpd.slave.RemoteIOException;
 
 import org.tanesha.replacer.ReplacerEnvironment;
 
@@ -47,7 +48,7 @@ import java.util.Map;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveManagement.java,v 1.6 2004/11/03 16:46:40 mog Exp $
+ * @version $Id: SlaveManagement.java,v 1.7 2004/11/08 02:37:17 zubov Exp $
  */
 public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
     public void unload() {
@@ -159,7 +160,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
             rslave.fetchRemergeResponseFromIndex(rslave.issueRemergeToSlave(
                     conn.getCurrentDirectory().getPath()));
             conn.getCurrentDirectory().cleanSlaveFromMerging(rslave);
-        } catch (IOException e) {
+        } catch (RemoteIOException e) {
             rslave.setOffline("IOException during remerge()");
 
             return new FtpReply(200, "IOException during remerge()");

@@ -1,5 +1,12 @@
 package org.drftpd.tests;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+
 import net.sf.drftpd.ID3Tag;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.SlaveUnavailableException;
@@ -8,23 +15,15 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.SlaveStatus;
 
 import org.drftpd.GlobalContext;
-
+import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.RemoteTransfer;
 import org.drftpd.slave.TransferIndex;
 import org.drftpd.slave.async.AsyncResponse;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-
 
 /**
  * @author zubov
- * @version $Id: DummyRemoteSlave.java,v 1.4 2004/11/06 08:04:35 zubov Exp $
+ * @version $Id: DummyRemoteSlave.java,v 1.5 2004/11/08 02:37:35 zubov Exp $
  */
 public class DummyRemoteSlave extends RemoteSlave {
     public DummyRemoteSlave(String name, GlobalContext gctx) {
@@ -70,7 +69,7 @@ public class DummyRemoteSlave extends RemoteSlave {
     }
 
     public int fetchMaxPathFromIndex(String maxPathIndex)
-        throws IOException, SlaveUnavailableException {
+        throws SlaveUnavailableException {
         // TODO Auto-generated method stub
         return 0;
     }
@@ -82,7 +81,7 @@ public class DummyRemoteSlave extends RemoteSlave {
     }
 
     public SlaveStatus fetchStatusFromIndex(String statusIndex)
-        throws IOException, SlaveUnavailableException {
+        throws RemoteIOException, SlaveUnavailableException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -93,19 +92,19 @@ public class DummyRemoteSlave extends RemoteSlave {
     }
 
     public long fetchChecksumFromIndex(String index)
-        throws IOException, SlaveUnavailableException {
+        throws RemoteIOException, SlaveUnavailableException {
         // TODO Auto-generated method stub
         return 0;
     }
 
     public ID3Tag fetchID3TagFromIndex(String index)
-        throws IOException, SlaveUnavailableException {
+        throws RemoteIOException, SlaveUnavailableException {
         // TODO Auto-generated method stub
         return null;
     }
 
     public SFVFile fetchSFVFileFromIndex(String index)
-        throws IOException, SlaveUnavailableException {
+        throws RemoteIOException, SlaveUnavailableException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -257,7 +256,7 @@ public class DummyRemoteSlave extends RemoteSlave {
      * @see net.sf.drftpd.master.RemoteSlave#fetchRemergeResponseFromIndex(java.lang.String)
      */
     public void fetchRemergeResponseFromIndex(String index)
-        throws IOException, SlaveUnavailableException {
+        throws RemoteIOException, SlaveUnavailableException {
         // TODO Auto-generated method stub
     }
 

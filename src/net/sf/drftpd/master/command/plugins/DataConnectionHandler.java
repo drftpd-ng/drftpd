@@ -63,6 +63,7 @@ import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.commands.UserManagment;
 import org.drftpd.slave.ConnectInfo;
+import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.RemoteTransfer;
 import org.drftpd.usermanager.UserFileException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -71,7 +72,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.71 2004/11/06 07:55:29 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.72 2004/11/08 02:37:17 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandlerFactory,
     CommandHandler, Cloneable {
@@ -249,7 +250,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                 _isPasv = true;
             } catch (SlaveUnavailableException e) {
                 return FtpReply.RESPONSE_530_SLAVE_UNAVAILABLE;
-            } catch (IOException e) {
+            } catch (RemoteIOException e) {
                 _preTransferRSlave.setOffline(
                     "Slave could not listen for a connection");
 

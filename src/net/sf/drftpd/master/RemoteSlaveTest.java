@@ -17,34 +17,29 @@
  */
 package net.sf.drftpd.master;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
-import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.remotefile.LinkedRemoteFile.CaseInsensitiveHashtable;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-
-import org.drftpd.GlobalContext;
-
-import org.drftpd.remotefile.AbstractLinkedRemoteFile;
-
-import org.drftpd.slave.async.AsyncResponse;
-
-import org.drftpd.tests.DummyRemoteSlave;
-import org.drftpd.tests.DummySlaveManager;
-
 import java.io.IOException;
-
 import java.net.SocketException;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+import net.sf.drftpd.SlaveUnavailableException;
+import net.sf.drftpd.event.Event;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+import net.sf.drftpd.remotefile.LinkedRemoteFile.CaseInsensitiveHashtable;
+
+import org.drftpd.GlobalContext;
+import org.drftpd.remotefile.AbstractLinkedRemoteFile;
+import org.drftpd.slave.RemoteIOException;
+import org.drftpd.slave.async.AsyncResponse;
+import org.drftpd.tests.DummyRemoteSlave;
+import org.drftpd.tests.DummySlaveManager;
 
 
 /**
  * @author mog
- * @version $Id: RemoteSlaveTest.java,v 1.13 2004/11/06 08:04:34 zubov Exp $
+ * @version $Id: RemoteSlaveTest.java,v 1.14 2004/11/08 02:37:17 zubov Exp $
  */
 public class RemoteSlaveTest extends TestCase {
     public RemoteSlaveTest(String fName) {
@@ -70,7 +65,7 @@ public class RemoteSlaveTest extends TestCase {
     }
 
     public void testProcessQueue()
-        throws SlaveFileException, IOException, SlaveUnavailableException {
+        throws SlaveFileException, RemoteIOException, SlaveUnavailableException {
         DummySlaveManager sm = new DummySlaveManager();
         GC gc = new GC();
         sm.setGlobalContext(gc);

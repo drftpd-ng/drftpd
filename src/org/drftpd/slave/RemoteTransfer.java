@@ -30,7 +30,7 @@ import java.net.InetSocketAddress;
 /**
  * @author zubov
  * @author mog
- * @version $Id: RemoteTransfer.java,v 1.3 2004/11/03 16:46:46 mog Exp $
+ * @version $Id: RemoteTransfer.java,v 1.4 2004/11/08 02:37:34 zubov Exp $
  */
 public class RemoteTransfer {
     public static final char TRANSFER_RECEIVING_UPLOAD = 'R';
@@ -144,13 +144,21 @@ public class RemoteTransfer {
         throws IOException, SlaveUnavailableException {
         String index = _rslave.issueReceiveToSlave(path, type, position,
                 getTransferIndex());
-        _rslave.fetchResponse(index);
+        try {
+            _rslave.fetchResponse(index);
+        } catch (RemoteIOException e) {
+            throw (IOException) e.getCause();
+        }
     }
 
     public void sendFile(String path, char type, long position)
         throws IOException, SlaveUnavailableException {
         String index = _rslave.issueSendToSlave(path, type, position,
                 getTransferIndex());
-        _rslave.fetchResponse(index);
+        try {
+            _rslave.fetchResponse(index);
+        } catch (RemoteIOException e) {
+            throw (IOException) e.getCause();
+        }
     }
 }

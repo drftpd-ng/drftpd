@@ -15,31 +15,18 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+package org.drftpd.slave;
 
-package org.drftpd.slave.async;
-
+import java.io.IOException;
 
 /**
- * @author mog
- * @version $Id: AsyncResponseException.java,v 1.3 2004/11/08 02:37:35 zubov Exp $
+ * @author zubov
+ * @version $Id: RemoteIOException.java,v 1.1 2004/11/08 02:37:34 zubov Exp $
  */
-public class AsyncResponseException extends AsyncResponse {
-    private static final long serialVersionUID = -6024340147843529987L;
-    private Throwable _t;
+public class RemoteIOException extends Exception {
 
-    /**
-     *
-     */
-
-    public String toString() {
-        return "AsyncResponseException exception is - " + _t.getMessage();
-    }
-    public AsyncResponseException(String index, Throwable t) {
-        super(index);
-        _t = t;
+    public RemoteIOException(IOException cause) {
+        super(cause);
     }
 
-    public Throwable getThrowable() {
-        return _t;
-    }
 }

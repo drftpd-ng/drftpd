@@ -17,6 +17,20 @@
  */
 package net.sf.drftpd.remotefile;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.StringTokenizer;
+
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.ID3Tag;
@@ -30,30 +44,15 @@ import net.sf.drftpd.util.ListUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.remotefile.LightRemoteFile;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.StringTokenizer;
+import org.drftpd.slave.RemoteIOException;
 
 
 /**
  * Represents the file attributes of a remote file.
  *
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.172 2004/11/05 19:16:18 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.173 2004/11/08 02:37:18 zubov Exp $
  */
 public class LinkedRemoteFile implements Serializable, Comparable,
     LinkedRemoteFileInterface {
@@ -534,7 +533,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
                 try {
                     index = slave.issueChecksumToSlave(getPath());
                     _checkSum = slave.fetchChecksumFromIndex(index);
-                } catch (IOException e2) {
+                } catch (RemoteIOException e2) {
                     continue;
                 } catch (SlaveUnavailableException e2) {
                     continue;
@@ -750,9 +749,12 @@ public class LinkedRemoteFile implements Serializable, Comparable,
                     sfvFile.setCompanion(this);
 
                     break;
-                } catch (FileNotFoundException e) {
-                    removeSlave(rslave);
-                    throw e;
+                } catch (RemoteIOException e) {
+                    if (e.getCause() instanceof FileNotFoundException) {
+                        removeSlave(rslave);
+                        throw (FileNotFoundException) e.getCause();
+                    }
+                    throw (IOException) e.getCause();
                 } catch (SlaveUnavailableException e) {
                     continue;
                 }
@@ -768,7 +770,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
     }
 
     public synchronized ID3Tag getID3v1Tag()
-        throws IOException, FileNotFoundException, NoAvailableSlaveException {
+        throws NoAvailableSlaveException, FileNotFoundException, IOException {
         if (mp3tag == null) {
             logger.info("getID3v1Tag() : (file) " + getPath());
 
@@ -789,11 +791,14 @@ public class LinkedRemoteFile implements Serializable, Comparable,
                     mp3tag = rslave.fetchID3TagFromIndex(index);
 
                     break;
-                } catch (FileNotFoundException ex) {
-                    removeSlave(rslave);
-                    throw ex;
                 } catch (SlaveUnavailableException e) {
                     continue;
+                } catch (RemoteIOException e) {
+                    if (e.getCause() instanceof FileNotFoundException) {
+                        removeSlave(rslave);
+                        throw (FileNotFoundException) e.getCause();
+                    }
+                    throw (IOException) e.getCause();
                 }
             }
         } else {

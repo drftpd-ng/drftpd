@@ -16,6 +16,9 @@
  */
 package net.sf.drftpd.mirroring;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.RemoteSlave;
@@ -23,19 +26,15 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.TransferFailedException;
 
 import org.apache.log4j.Logger;
-
 import org.drftpd.slave.ConnectInfo;
+import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.RemoteTransfer;
-
-import java.io.IOException;
-
-import java.net.InetSocketAddress;
 
 
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveTransfer.java,v 1.24 2004/11/03 16:46:42 mog Exp $
+ * @version $Id: SlaveTransfer.java,v 1.25 2004/11/08 02:37:18 zubov Exp $
  */
 public class SlaveTransfer {
     private static final Logger logger = Logger.getLogger(SlaveTransfer.class);
@@ -73,7 +72,7 @@ public class SlaveTransfer {
             destTransfer = _destSlave.getTransfer(ci.getTransferIndex());
         } catch (SlaveUnavailableException e) {
             throw new SourceSlaveException(e);
-        } catch (IOException e) {
+        } catch (RemoteIOException e) {
             throw new SourceSlaveException(e);
         }
 
@@ -85,7 +84,7 @@ public class SlaveTransfer {
             srcTransfer = _srcSlave.getTransfer(ci.getTransferIndex());
         } catch (SlaveUnavailableException e) {
             throw new DestinationSlaveException(e);
-        } catch (IOException e) {
+        } catch (RemoteIOException e) {
             throw new DestinationSlaveException(e);
         }
 

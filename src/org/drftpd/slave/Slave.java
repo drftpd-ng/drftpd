@@ -85,7 +85,7 @@ import javax.net.ssl.SSLContext;
 
 /**
  * @author mog
- * @version $Id: Slave.java,v 1.7 2004/11/07 19:46:34 mog Exp $
+ * @version $Id: Slave.java,v 1.8 2004/11/08 02:37:34 zubov Exp $
  */
 public class Slave {
     public static final boolean isWin32 = System.getProperty("os.name")
@@ -661,7 +661,7 @@ public class Slave {
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {
-                logger.debug("", e);
+                logger.debug("IOException - " + e.getMessage());
                 throw new FatalException(e);
             }
 
@@ -745,14 +745,13 @@ public class Slave {
             return;
         }
 
-        if (response instanceof AsyncResponseException) {
-            logger.debug("", ((AsyncResponseException) response).getThrowable());
-        }
-
         try {
             _sout.writeObject(response);
             _sout.flush();
             logger.debug("Slave wrote response - " + response);
+            if (response instanceof AsyncResponseException) {
+                logger.debug("",((AsyncResponseException) response).getThrowable());
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
