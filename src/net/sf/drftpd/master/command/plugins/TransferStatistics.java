@@ -47,7 +47,7 @@ import org.apache.log4j.Logger;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
- * @version $Id: TransferStatistics.java,v 1.16 2004/03/03 04:48:08 zubov Exp $
+ * @version $Id: TransferStatistics.java,v 1.17 2004/03/15 02:50:25 zubov Exp $
  */
 public class TransferStatistics implements CommandHandler {
 
@@ -56,9 +56,9 @@ public class TransferStatistics implements CommandHandler {
 
 	public static long getStats(String command, User user) {
 		// AL MONTH WK DAY
-		String period = command.substring(0, command.length() - 2);
+		String period = command.substring(0, command.length() - 2).toUpperCase();
 		// UP DN
-		String updn = command.substring(command.length() - 2);
+		String updn = command.substring(command.length() - 2).toUpperCase();
 		if (updn.equals("UP")) {
 			if (period.equals("AL"))
 				return user.getUploadedBytes();
@@ -333,7 +333,6 @@ public class TransferStatistics implements CommandHandler {
 		} catch (IOException ioe) {
 			logger.warn("Error reading " + type + "_footer", ioe);
 		}
-
 		return response;
 	}
 
