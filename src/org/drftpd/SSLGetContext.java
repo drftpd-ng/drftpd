@@ -31,13 +31,13 @@ import javax.net.ssl.SSLContext;
  * @author mog
  * @version $Id$
  */
-public class SSLGetContext { // Singleton
+public class SSLGetContext {
 	static SSLContext ctx = null;
     public static SSLContext getSSLContext()
         throws GeneralSecurityException, IOException {
     	
     	if (ctx != null)
-    		return ctx;
+    		return ctx; // reuse previous SSLContext
     	
         ctx = SSLContext.getInstance("TLSv1");
 
