@@ -35,9 +35,8 @@ import org.drftpd.sections.SectionInterface;
 public class StripeFilesOffSpecificSlaves extends ArchiveType {
 	private static final Logger logger = Logger
 			.getLogger(StripeFilesOffSpecificSlaves.class);
-	RemoteSlave[] _destSlavesArray;
+	HashSet _destSlaves;
 	HashSet _offOfSlaves;
-	int _destSlavesIndex = 0;
 	int _numOfSlaves = 1;
 	public StripeFilesOffSpecificSlaves(Archive archive, SectionInterface section) {
 		super(archive, section);
@@ -75,6 +74,30 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 		} catch (NullPointerException e) {
 			_numOfSlaves = 1;
 		}
+		_destSlaves = new HashSet();
+		for (int i = 1;; i++) {
+			String slavename = null;
+			try {
+				slavename = FtpConfig.getProperty(props, getSection().getName() + ".slavename." + i);
+			} catch (NullPointerException e) {
+				break; // done
+			}
+			try {
+				RemoteSlave rslave = _parent.getConnectionManager().getSlaveManager().getSlave(slavename);
+				if (!_offOfSlaves.contains(rslave)) {
+					_destSlaves.add(rslave);
+				}
+			} catch (ObjectNotFoundException e) {
+				logger.debug("Unable to get slave " + slavename + " from the SlaveManager");
+			}
+		}
+		if (_destSlaves.isEmpty()) {
+			_destSlaves = null; // used as a flag for dynamic slaves
+		} else {
+			if (_destSlaves.size() < _numOfSlaves) {
+				throw new IllegalStateException("Cannot continue, numOfSlave cannot be less than the # of slaveName's");
+			}
+		}
 	}
 	public void cleanup(ArrayList jobList) {
 		for (Iterator iter = jobList.iterator(); iter.hasNext();) {
@@ -83,6 +106,8 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 		}
 	}
 	public HashSet findDestinationSlaves() {
+		if (_destSlaves != null)
+			return _destSlaves;
 		HashSet availableSlaves;
 		try {
 			availableSlaves = new HashSet(_parent.getConnectionManager()
@@ -121,33 +146,11 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 		}
 		return true;
 	}
-	private void reset() {
-		_destSlavesArray = new RemoteSlave[getRSlaves().size()];
-		_destSlavesIndex = 0;
-		for (Iterator iter = getRSlaves().iterator(); iter.hasNext();) {
-			RemoteSlave rslave = (RemoteSlave) iter.next();
-			_destSlavesArray[_destSlavesIndex] = rslave;
-			_destSlavesIndex++;
-		}
-		_destSlavesIndex = 0;
-	}
 	
 	public ArrayList send() {
-		reset();
 		return recursiveSend(getDirectory());
 	}
-	private HashSet getNextSlaves() {
-		HashSet destSlaves = new HashSet();
-		for (int x = 0; x < _numOfSlaves; x++) {
-			logger.debug("adding " + _destSlavesArray[_destSlavesIndex% _destSlavesArray.length].getName() + " to getNextSlaves()");
-			destSlaves.add(_destSlavesArray[_destSlavesIndex
-					% _destSlavesArray.length]);
-			_destSlavesIndex++;
-		}
-		logger.debug("returning getNextSlaves()");
-		return destSlaves;
-	}
-	
+
 	private ArrayList recursiveSend(LinkedRemoteFileInterface lrf) {
 		ArrayList jobQueue = new ArrayList();
 		JobManager jm = _parent.getConnectionManager().getJobManager();
@@ -157,8 +160,8 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 			if (file.isDirectory()) {
 				jobQueue.addAll(recursiveSend(file));
 			} else {
-				logger.info("Adding " + file.getPath() + " to the job queue");
-				Job job = new Job(file, getNextSlaves(), this, null, 3);
+				logger.info("Adding " + file.getPath() + " to the job queue with numOfSlaves = " + _numOfSlaves);
+				Job job = new Job(file, _destSlaves, this, null, 3, _numOfSlaves);
 				jm.addJob(job);
 				jobQueue.add(job);
 			}
@@ -184,5 +187,8 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 				break;
 			}
 		}
+	}
+	public String toString() {
+		return "StripeFilesOffSpecificSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(getRSlaves()) + "]offOfSlaves=[" + outputSlaves(_offOfSlaves) + "]numOfSlaves=[" + _numOfSlaves + "]]";
 	}
 }

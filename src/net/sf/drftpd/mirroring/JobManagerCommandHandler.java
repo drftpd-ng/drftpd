@@ -19,6 +19,7 @@ package net.sf.drftpd.mirroring;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -39,7 +40,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
  * CommandHandler plugin for viewing and manipulating the JobManager queue.
  * 
  * @author mog
- * @version $Id: JobManagerCommandHandler.java,v 1.14 2004/05/18 18:16:17 zubov Exp $
+ * @version $Id: JobManagerCommandHandler.java,v 1.15 2004/05/20 14:08:59 zubov Exp $
  */
 public class JobManagerCommandHandler implements CommandHandler {
 
@@ -69,32 +70,47 @@ public class JobManagerCommandHandler implements CommandHandler {
 		} catch (FileNotFoundException e) {
 			return new FtpReply(500, "File does not exist");
 		}
-		int priority = Integer.parseInt(st.nextToken());
-		ArrayList destSlaves = new ArrayList();
+		int priority;
+		try {
+			priority = Integer.parseInt(st.nextToken());
+		} catch (NumberFormatException e) {
+			return new FtpReply(
+					501,
+					conn.jprintf(
+						JobManagerCommandHandler.class.getName(),
+						"addjob.usage"));
+		}
+		int timesToMirror;
+		try {
+			timesToMirror = Integer.parseInt(st.nextToken());
+		} catch (NumberFormatException e) {
+			return new FtpReply(
+					501,
+					conn.jprintf(
+						JobManagerCommandHandler.class.getName(),
+						"addjob.usage"));
+		}
+		HashSet destSlaves = new HashSet();
 		FtpReply reply = new FtpReply(200);
 		while (st.hasMoreTokens()) {
 			String slaveName = st.nextToken();
-			if (slaveName.equals("null"))
-				destSlaves.add(null);
-			else {
-				RemoteSlave rslave;
-				try {
-					rslave = conn.getSlaveManager().getSlave(slaveName);
-				} catch (ObjectNotFoundException e1) {
-					reply.addComment(
-						slaveName
-							+ "was not found, cannot add to destination slave list");
-					continue;
-				}
-				destSlaves.add(rslave);
+			RemoteSlave rslave;
+			try {
+				rslave = conn.getSlaveManager().getSlave(slaveName);
+			} catch (ObjectNotFoundException e1) {
+				reply.addComment(
+					slaveName
+						+ "was not found, cannot add to destination slave list");
+				continue;
 			}
+			destSlaves.add(rslave);
 		}
-		if (destSlaves.size() == 0) {
+		if (destSlaves.size() == 0 ) {
 			return new FtpReply(
 				501,
 				conn.jprintf(JobManagerCommandHandler.class, "addjob.usage"));
 		}
-		Job job = new Job(lrf, destSlaves, this, conn.getUserNull(), priority);
+		Job job = new Job(lrf, destSlaves, this, conn.getUserNull(), priority, timesToMirror);
 		conn.getConnectionManager().getJobManager().addJob(job);
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		env.add("job", job);

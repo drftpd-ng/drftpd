@@ -22,9 +22,12 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.FileExistsException;
@@ -32,11 +35,10 @@ import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.46 2004/05/18 12:02:48 zubov Exp $
+ * @version $Id: JobManager.java,v 1.47 2004/05/20 14:08:59 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -77,17 +79,16 @@ public class JobManager implements Runnable {
 
 	public synchronized void addJob(Job job) {
 		Collection slaves = job.getFile().getSlaves();
-		for (Iterator iter = job.getDestinationSlaves().iterator();
+		for (Iterator iter = slaves.iterator();
 			iter.hasNext();
 			) {
 			RemoteSlave slave = (RemoteSlave) iter.next();
-			if (slaves.contains(slave)) {
-				iter.remove();
-				if (job.isDone()) {
-					return;
-				}
+			if (job.getDestinationSlaves().contains(slave)) {
+				job.sentToSlave(slave);
 			}
 		}
+		if (job.isDone())
+			return;
 		_jobList.add(job);
 		Collections.sort(_jobList, new JobComparator());
 	}
@@ -97,33 +98,8 @@ public class JobManager implements Runnable {
 	public synchronized List getAllJobs() {
 		return Collections.unmodifiableList(_jobList);
 	}
-	/**
-	 * Get all jobs for a specific LinkedRemoteFile.
-	 */
-	public synchronized List getAllJobs(LinkedRemoteFileInterface lrf) {
-		ArrayList tempList = new ArrayList();
-		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
-			Job tempJob = (Job) iter.next();
-			if (tempJob.getFile() == lrf) {
-				tempList.add(tempJob);
-			}
-		}
-		return tempList;
-	}
-	/**
-	 * Get all jobs where Job.getSource() is source
-	 */
-	public synchronized List getAllJobs(Object source) {
-		ArrayList tempList = new ArrayList();
-		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
-			Job tempJob = (Job) iter.next();
-			if (tempJob.getSource().equals(source))
-				tempList.add(tempJob);
-		}
-		return tempList;
-	}
 	
-	public synchronized Job getNextJob(List busySlaves, List skipJobs) {
+	public synchronized Job getNextJob(Set busySlaves, Set skipJobs) {
 		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
 			Job tempJob = (Job) iter.next();
 			if (tempJob.getFile().isDeleted() || tempJob.isDone()) {
@@ -162,16 +138,12 @@ public class JobManager implements Runnable {
 				return false;
 				// can't transfer with no slaves
 			}
-			ArrayList busySlavesDown = new ArrayList();
-			ArrayList skipJobs = new ArrayList();
+			Set busySlavesDown = new HashSet();
+			Set skipJobs = new HashSet();
 			while (!busySlavesDown.containsAll(availableSlaves)) {
 				job = getNextJob(busySlavesDown, skipJobs);
 				if (job == null) {
 					return false;
-				}
-				if (job.getFile().getSlaves().containsAll(_cm.getSlaveManager().getSlaves())) {
-					stopJob(job);
-					continue;
 				}
 				logger.debug("looking up slave for job " + job);
 				try {
@@ -182,7 +154,10 @@ public class JobManager implements Runnable {
 							.getASlaveForJobDownload(
 							job);
 				} catch (NoAvailableSlaveException e) {
-					busySlavesDown.addAll(job.getFile().getSlaves());
+					try {
+						busySlavesDown.addAll(job.getFile().getAvailableSlaves());
+					} catch (NoAvailableSlaveException e2) {
+					}
 					continue;
 				}
 				if (sourceSlave == null) {
@@ -205,7 +180,7 @@ public class JobManager implements Runnable {
 				}
 			}
 			if (destSlave == null) {
-				logger.debug("destSlave is null, this shouldn't happen.  job = " + job);
+				logger.debug("destSlave is null, all destination slaves are busy" + job);
 				return false;
 			}
 			logger.debug(
@@ -321,20 +296,13 @@ public class JobManager implements Runnable {
 				+ " from "
 				+ sourceSlave.getName());
 		job.addTimeSpent(difference);
-		if (job.removeDestinationSlave(destSlave)) {
-			if (job.isDone()) {
-				logger.debug("Job is finished, removing job " + job.getFile());
-			} else
-				addJob(job);
-			return true;
+		job.sentToSlave(destSlave);
+		if (job.isDone()) {
+			logger.debug("Job is finished, removing job " + job.getFile());
+		} else {
+			addJob(job);
 		}
-		logger.debug(
-			"Was unable to remove "
-				+ destSlave.getName()
-				+ " from the destination list for file "
-				+ job);
-		addJob(job);
-		return false;
+		return true;
 	}
 	public void reload() {
 		Properties p = new Properties();
@@ -358,7 +326,7 @@ public class JobManager implements Runnable {
 	
 	public void stopJob(Job job) {
 		removeJob(job);
-		job._destSlaves.clear();
+		job.setDone();
 	}
 
 	public void run() {

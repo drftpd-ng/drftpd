@@ -36,7 +36,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
- * @version $Id: MoveReleaseToSpecificSlaves.java,v 1.1 2004/05/16 05:44:55 zubov Exp $
+ * @version $Id: MoveReleaseToSpecificSlaves.java,v 1.2 2004/05/20 14:09:00 zubov Exp $
  */
 public class MoveReleaseToSpecificSlaves extends ArchiveType {
 
@@ -108,5 +108,8 @@ public class MoveReleaseToSpecificSlaves extends ArchiveType {
 				break;
 			}
 		}
+	}
+	public String toString() {
+		return "MoveReleaseToSpecificSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(getRSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
 	}
 }

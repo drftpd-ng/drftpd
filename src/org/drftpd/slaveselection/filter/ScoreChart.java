@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ScoreChart.java,v 1.3 2004/05/18 20:28:18 zubov Exp $
+ * @version $Id: ScoreChart.java,v 1.4 2004/05/20 14:09:00 zubov Exp $
  */
 public class ScoreChart {
 	public static class SlaveScore implements Comparable {
@@ -94,7 +94,7 @@ public class ScoreChart {
 				bestscore = score;
 			}
 		}
-		if (bestscore == null) throw new NoAvailableSlaveException("This is not supposed to be thrown");
+		if (bestscore == null) throw new NoAvailableSlaveException();
 		return bestscore;
 	}
 

@@ -34,8 +34,7 @@ master.slavemanager=net.sf.drftpd.master.SlaveManagerImpl
 #plugins.1=org.drftpd.plugins.SiteBotSSL
 #plugins.2=net.sf.drftpd.event.listeners.Trial
 #plugins.3=net.sf.drftpd.event.listeners.PreTime
-#plugins.4=net.sf.drftpd.event.listeners.Mirror
-#plugins.5=net.sf.drftpd.event.listeners.Archive
+#plugins.4=net.sf.drftpd.event.listeners.Archive
 
 slaveselection=org.drftpd.slaveselection.def.SlaveSelectionManager
 sectionmanager=org.drftpd.sections.def.SectionManager

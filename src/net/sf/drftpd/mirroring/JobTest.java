@@ -18,6 +18,7 @@
 package net.sf.drftpd.mirroring;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import net.sf.drftpd.master.RemoteSlave;
 
@@ -25,7 +26,7 @@ import junit.framework.TestCase;
 
 /*
  * @author zubov
- * @version $Id: JobTest.java,v 1.3 2004/05/18 18:16:17 zubov Exp $
+ * @version $Id: JobTest.java,v 1.4 2004/05/20 14:08:59 zubov Exp $
  */
 public class JobTest extends TestCase {
 
@@ -42,15 +43,12 @@ public class JobTest extends TestCase {
 	}
 	
 	public void testRemoveDestinationSlave() {
-		ArrayList slaveSet = new ArrayList();
-		slaveSet.add(null);
-		slaveSet.add(null);
+		HashSet slaveSet = new HashSet();
 		RemoteSlave rslave = new RemoteSlave("name",null);
 		slaveSet.add(rslave);
-		Job job = new Job(null,slaveSet,null,null,0);
-		assertTrue(job.removeDestinationSlave(null));
-		assertTrue(job.removeDestinationSlave(rslave));
-		assertEquals(1,slaveSet.size());
+		Job job = new Job(null,slaveSet,null,null,0,1);
+		job.sentToSlave(rslave);
+		assertEquals(0,slaveSet.size());
 	}
 
 }

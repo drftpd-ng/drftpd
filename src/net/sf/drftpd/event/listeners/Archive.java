@@ -27,13 +27,14 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
+
 import org.apache.log4j.Logger;
 import org.drftpd.mirroring.ArchiveHandler;
 import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.sections.SectionInterface;
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.26 2004/05/16 05:44:52 zubov Exp $
+ * @version $Id: Archive.java,v 1.27 2004/05/20 14:08:59 zubov Exp $
  */
 public class Archive implements FtpListener, Runnable {
 	private Properties _props;
@@ -47,8 +48,10 @@ public class Archive implements FtpListener, Runnable {
 	private ArrayList _exemptList = new ArrayList();
 	private boolean _isStopped = false;
 	private Thread thread = null;
+	private ArrayList _archiveHandlers;
 	public Archive() {
 		logger.info("Archive plugin loaded successfully");
+		_archiveHandlers = new ArrayList();
 	}
 	public Properties getProperties() {
 		return _props;
@@ -151,13 +154,12 @@ public class Archive implements FtpListener, Runnable {
 		}
 	}
 	public void run() {
-		ArrayList archiveHandlers = new ArrayList();
 		while (true) {
 			if (isStopped()) {
 				logger.debug("Stopping ArchiveStarter thread");
 				return;
 			}
-			for (Iterator iter = archiveHandlers.iterator(); iter.hasNext();) {
+			for (Iterator iter = _archiveHandlers.iterator(); iter.hasNext();) {
 				ArchiveHandler archiveHandler = (ArchiveHandler) iter.next();
 				if (!archiveHandler.isAlive()) {
 					iter.remove();
@@ -173,7 +175,6 @@ public class Archive implements FtpListener, Runnable {
 				if (archiveType.isBusy()) // archiveType was not done with it's
 					continue;			 // current send, cannot process another
 				ArchiveHandler archiveHandler = new ArchiveHandler(archiveType);
-				archiveHandlers.add(archiveHandler);
 				archiveHandler.start();
 			}
 			try {

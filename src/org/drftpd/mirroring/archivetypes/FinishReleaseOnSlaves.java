@@ -40,7 +40,7 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author zubov
- * @version $Id: FinishReleaseOnSlaves.java,v 1.1 2004/05/16 05:44:55 zubov Exp $
+ * @version $Id: FinishReleaseOnSlaves.java,v 1.2 2004/05/20 14:09:00 zubov Exp $
  */
 public class FinishReleaseOnSlaves extends ArchiveType {
 	private static final Logger logger = Logger.getLogger(FinishReleaseOnSlaves.class);
@@ -146,5 +146,9 @@ public class FinishReleaseOnSlaves extends ArchiveType {
 				break;
 			}
 		}
+	}
+
+	public String toString() {
+		return "FinishReleaseOnSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(getRSlaves()) + "]]";
 	}
 }

@@ -38,7 +38,7 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.12 2004/05/16 05:44:55 zubov Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.13 2004/05/20 14:09:00 zubov Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 	private SlaveManagerImpl _sm;
@@ -84,14 +84,9 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 	public RemoteSlave getASlaveForJobDownload(Job job)
 		throws NoAvailableSlaveException {
 		ArrayList slaves = new ArrayList(job.getFile().getAvailableSlaves());
-		for (Iterator iter = job.getDestinationSlaves().iterator();
-			iter.hasNext();
-			) {
-			RemoteSlave slave = (RemoteSlave) iter.next();
-			if (slave != null) {
-				slaves.remove(slave);
-			}
-		}
+		slaves.removeAll(job.getDestinationSlaves());
+		if (slaves.isEmpty())
+			throw new NoAvailableSlaveException();
 		return process(
 			"jobdown",
 			new ScoreChart(slaves),
@@ -103,12 +98,14 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 
 	public RemoteSlave getASlaveForJobUpload(Job job)
 		throws NoAvailableSlaveException {
-		ArrayList slaves = new ArrayList(_sm.getAvailableSlaves());
-		slaves.removeAll(job.getFile().getAvailableSlaves());
-		if (!job.getDestinationSlaves().contains(null)) {
-			slaves.clear();
-			slaves.addAll(job.getDestinationSlaves());
+		ArrayList slaves = new ArrayList(job.getDestinationSlaves());
+		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
+			if (!rslave.isAvailable())
+				iter.remove();
 		}
+		if (slaves.isEmpty())
+			throw new NoAvailableSlaveException();
 		return process(
 			"jobup",
 			new ScoreChart(slaves),

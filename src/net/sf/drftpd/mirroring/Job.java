@@ -17,10 +17,11 @@
  */
 package net.sf.drftpd.mirroring;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.usermanager.User;
@@ -29,10 +30,11 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.18 2004/05/18 20:28:18 zubov Exp $
+ * @version $Id: Job.java,v 1.19 2004/05/20 14:08:59 zubov Exp $
  */
 public class Job {
-	protected List _destSlaves;
+	protected int _transferNum;
+	protected Set _destSlaves;
 	protected LinkedRemoteFileInterface _file;
 	protected User _owner;
 	protected int _priority;
@@ -42,24 +44,22 @@ public class Job {
 
 	public Job(
 		LinkedRemoteFileInterface file,
-		Collection destSlaves,
+		Set destSlaves,
 		Object source,
 		User owner,
-		int priority) {
+		int priority,
+		int transferNum) {
 		super();
-		_destSlaves = new ArrayList(destSlaves);
+		_destSlaves = new HashSet(destSlaves);
 		_file = file;
 		_source = source;
 		_owner = owner;
 		_priority = priority;
 		_timeCreated = System.currentTimeMillis();
 		_timeSpent = 0;
-	}
-	/**
-	 * Add destination slaves to this job
-	 */
-	public synchronized void addSlaves(List list) {
-		_destSlaves.addAll(list);
+		_transferNum = transferNum;
+		if (_transferNum > destSlaves.size())
+			throw new IllegalArgumentException("transferNum cannot be greater than destSlaves.size()");
 	}
 
 	public void addTimeSpent(long time) {
@@ -69,8 +69,8 @@ public class Job {
 	/**
 	 * Returns a List of slaves that can be used with {@see net.sf.drftpd.master.SlaveManagerImpl#getASlave(Collection, char, FtpConfig)}
 	 */
-	public List getDestinationSlaves() {
-		return _destSlaves;
+	public Set getDestinationSlaves() {
+		return Collections.unmodifiableSet(_destSlaves);
 	}
 
 	/**
@@ -123,28 +123,27 @@ public class Job {
 	 * returns true if this job has nothing more to send
 	 */
 	public boolean isDone() {
-		return getDestinationSlaves().isEmpty();
+		return _transferNum < 1;
 	}
 
-	public synchronized boolean removeDestinationSlave(RemoteSlave slave) {
-		if (_destSlaves.contains(slave))
-			return _destSlaves.remove(slave);
-		else return _destSlaves.remove(null);
+	public synchronized void sentToSlave(RemoteSlave slave) {
+		if (_destSlaves.remove(slave)) {
+			_transferNum--;
+		} else {
+			throw new IllegalArgumentException("Slave " + slave.getName() + " does not exist as a destination slave for job " + this);
+		}
+		if (_destSlaves.isEmpty() && _transferNum > 0) {
+			throw new IllegalStateException("Job cannot have a destSlaveSet of size 0 with transferNum > 0");
+		}
 	}
 
 	private String outputDestinationSlaves() {
 		String toReturn = new String();
 		for (Iterator iter = getDestinationSlaves().iterator();iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
-			String name;
-			if (rslave == null) {
-				name = "null";
-			} else {
-				name = rslave.getName();
-			}
 			if (!iter.hasNext())
-				return toReturn + name;
-			toReturn = toReturn + name + ",";
+				return toReturn + rslave.getName();
+			toReturn = toReturn + rslave.getName() + ",";
 		}
 		return toReturn;
 	}
@@ -153,9 +152,9 @@ public class Job {
 		String toReturn =
 			"Job[file="
 				+ getFile().getName()
-				+ ",dest="
+				+ "],dest=["
 				+ outputDestinationSlaves()
-				+ ",owner=";
+				+ "],owner=";
 		if (getOwner() != null) {
 			toReturn += getOwner().getUsername();
 		} else {
@@ -163,5 +162,9 @@ public class Job {
 		}
 		toReturn += "]";
 		return toReturn;
+	}
+
+	public void setDone() {
+		_transferNum = 0;
 	}
 }

@@ -18,22 +18,27 @@
 package org.drftpd.mirroring;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Set;
 
 import net.sf.drftpd.event.listeners.Archive;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 import org.drftpd.sections.SectionInterface;
 
 /*
  * @author zubov
- * @version $Id
+ * @version $Id: ArchiveHandler.java,v 1.7 2004/05/20 14:09:00 zubov Exp $
  */
 public class ArchiveHandler extends Thread {
 	protected static Logger logger = Archive.getLogger();
 
 	private ArchiveType _archiveType;
+	
+	private static ArrayList _archiveHandlers = new ArrayList();
 
 	public ArchiveHandler(ArchiveType archiveType) {
 		_archiveType = archiveType;
@@ -41,6 +46,17 @@ public class ArchiveHandler extends Thread {
 			_archiveType.getClass().getName()
 				+ " archiving "
 				+ _archiveType.getSection().getName());
+	}
+	
+	public static ArchiveType getArchiveTypeForDirectory(LinkedRemoteFileInterface lrf) {
+		for (Iterator iter = _archiveHandlers.iterator(); iter.hasNext();) {
+			ArchiveHandler archiveHandler = (ArchiveHandler) iter.next();
+			ArchiveType archiveType = archiveHandler.getArchiveType();
+			if (lrf == archiveType.getDirectory()) {
+				return archiveType;
+			}
+		}
+		return null;
 	}
 
 	public ArchiveType getArchiveType() {
@@ -68,6 +84,17 @@ public class ArchiveHandler extends Thread {
 			}
 			_archiveType.setRSlaves(Collections.unmodifiableSet(destSlaves));
 		}
+		ArchiveType dupeArchiveType;
+		synchronized(_archiveHandlers) {
+			dupeArchiveType = getArchiveTypeForDirectory(_archiveType.getDirectory());
+			if (dupeArchiveType == null) {
+				addArchiveHandler(this);
+			}
+		}
+		if (dupeArchiveType != null) {
+			logger.info(_archiveType.getDirectory() + " is already being archived by " + dupeArchiveType);
+			return;
+		}
 		ArrayList jobs = _archiveType.send();
 		_archiveType.waitForSendOfFiles(new ArrayList(jobs));
 		_archiveType.cleanup(jobs);
@@ -78,5 +105,19 @@ public class ArchiveHandler extends Thread {
 		} catch (Exception e) {
 			logger.debug("",e);
 		}
+		if(!removeArchiveHandler(this)) {
+			logger.debug("This is a serious bug, unable to remove the ArchiveHandler!");
+		}
+	}
+
+	private static void addArchiveHandler(ArchiveHandler handler) {
+		_archiveHandlers.add(handler);
+	}
+	private static boolean removeArchiveHandler(ArchiveHandler handler) {
+		return _archiveHandlers.remove(handler);
+	}
+
+	public static Collection getArchiveHandlers() {
+		return Collections.unmodifiableCollection(_archiveHandlers);
 	}
 }

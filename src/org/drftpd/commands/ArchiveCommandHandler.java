@@ -20,6 +20,7 @@ package org.drftpd.commands;
 import java.io.FileNotFoundException;
 import java.lang.reflect.Constructor;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.ObjectNotFoundException;
@@ -42,19 +43,32 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author zubov
  * @version $Id
  */
-public class Archive implements CommandHandler {
+public class ArchiveCommandHandler implements CommandHandler {
 
-	public Archive() {
+	public ArchiveCommandHandler() {
 		super();
 	}
-	private static final Logger logger = Logger.getLogger(Archive.class);
+	private static final Logger logger = Logger.getLogger(ArchiveCommandHandler.class);
 	
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {
+		String cmd = conn.getRequest().getCommand();
+		if ("SITE LISTARCHIVETYPES".equals(cmd)) {
+			return doLISTARCHIVETYPES(conn);
+		}
+		if ("SITE ARCHIVE".equals(cmd)) {
+			return doARCHIVE(conn);
+		}
+		throw UnhandledCommandException.create(
+				ArchiveCommandHandler.class,
+				conn.getRequest());
+	}
+
+	private FtpReply doARCHIVE(BaseFtpConnection conn) {
 		FtpReply reply = new FtpReply(200);
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		if (!conn.getRequest().hasArgument()) {
-			reply.addComment(conn.jprintf(Archive.class, "archive.usage", env));
+			reply.addComment(conn.jprintf(ArchiveCommandHandler.class, "archive.usage", env));
 			return reply;
 		}
 		StringTokenizer st =
@@ -68,10 +82,10 @@ public class Archive implements CommandHandler {
 				lrf = conn.getConnectionManager().getRoot().lookupFile(dirname);
 			} catch (FileNotFoundException e2) {
 				reply.addComment(
-					conn.jprintf(Archive.class, "archive.usage", env));
+					conn.jprintf(ArchiveCommandHandler.class, "archive.usage", env));
 				env.add("dirname", dirname);
 				reply.addComment(
-					conn.jprintf(Archive.class, "archive.baddir", env));
+					conn.jprintf(ArchiveCommandHandler.class, "archive.baddir", env));
 				return reply;
 			}
 		}
@@ -83,7 +97,7 @@ public class Archive implements CommandHandler {
 					.getFtpListener(net.sf.drftpd.event.listeners.Archive.class);
 		} catch (ObjectNotFoundException e3) {
 			reply.addComment(
-				conn.jprintf(Archive.class, "archive.loadarchive", env));
+				conn.jprintf(ArchiveCommandHandler.class, "archive.loadarchive", env));
 			return reply;
 		}
 		String archiveTypeName = null;
@@ -100,7 +114,7 @@ public class Archive implements CommandHandler {
 						"org.drftpd.mirroring.archivetypes." + archiveTypeName).getConstructor(classParams);
 			} catch (Exception e1) {
 				logger.debug("Unable to load ArchiveType for section " + section.getName(), e1);
-				reply.addComment(conn.jprintf(Archive.class, "archive.badarchivetype", env));
+				reply.addComment(conn.jprintf(ArchiveCommandHandler.class, "archive.badarchivetype", env));
 				return reply;
 			}
 			Object[] objectParams = { archive, section };
@@ -108,7 +122,7 @@ public class Archive implements CommandHandler {
 				archiveType = (ArchiveType) constructor.newInstance(objectParams);
 			} catch (Exception e2) {
 				logger.debug("Unable to load ArchiveType for section " + section.getName(), e2);
-				reply.addComment(conn.jprintf(Archive.class, "archive.badarchivetype", env));
+				reply.addComment(conn.jprintf(ArchiveCommandHandler.class, "archive.badarchivetype", env));
 				return reply;
 			}
 		}
@@ -120,36 +134,52 @@ public class Archive implements CommandHandler {
 		}
 		HashSet slaveSet = new HashSet();
 		synchronized(archiveType) {
-		if (archiveType.isBusy()) {
-			env.add("section", section.getName());
-			reply.addComment(
-				conn.jprintf(Archive.class, "archive.wait1", env));
-			reply.addComment(
-				conn.jprintf(Archive.class, "archive.wait2", env));
-			return reply;
-		}
-		while (st.hasMoreTokens()) {
-			String slavename = st.nextToken();
-			try {
-				RemoteSlave rslave =
-					conn.getConnectionManager().getSlaveManager().getSlave(
-						slavename);
-				slaveSet.add(rslave);
-			} catch (ObjectNotFoundException e2) {
-				env.add("slavename", slavename);
+			if (archiveType.isBusy()) {
+				env.add("section", section.getName());
 				reply.addComment(
-					conn.jprintf(Archive.class, "archive.badslave", env));
+						conn.jprintf(ArchiveCommandHandler.class, "archive.wait1", env));
+				reply.addComment(
+						conn.jprintf(ArchiveCommandHandler.class, "archive.wait2", env));
+				return reply;
 			}
-		}
-		archiveType.setDirectory(lrf);
+			while (st.hasMoreTokens()) {
+				String slavename = st.nextToken();
+				try {
+					RemoteSlave rslave =
+						conn.getConnectionManager().getSlaveManager().getSlave(
+								slavename);
+					slaveSet.add(rslave);
+				} catch (ObjectNotFoundException e2) {
+					env.add("slavename", slavename);
+					reply.addComment(
+							conn.jprintf(ArchiveCommandHandler.class, "archive.badslave", env));
+				}
+			}
+			archiveType.setDirectory(lrf);
 		}
 		if (!slaveSet.isEmpty())
 			archiveType.setRSlaves(slaveSet);
+		ArchiveType usedArchiveType = ArchiveHandler.getArchiveTypeForDirectory(archiveType.getDirectory());
+		if (usedArchiveType != null) {
+			env.add("archivetype",usedArchiveType);
+			reply.addComment(conn.jprintf(ArchiveCommandHandler.class, "archive.fail", env));
+			return reply;
+		}
 		ArchiveHandler archiveHandler = new ArchiveHandler(archiveType);
 		archiveHandler.start();
 		env.add("dirname", lrf.getPath());
 		env.add("archivetypename", archiveTypeName);
-		reply.addComment(conn.jprintf(Archive.class, "archive.success", env));
+		reply.addComment(conn.jprintf(ArchiveCommandHandler.class, "archive.success", env));
+		return reply;
+	}
+
+	private FtpReply doLISTARCHIVETYPES(BaseFtpConnection conn) {
+		FtpReply reply = new FtpReply(200);
+		int x = 0;
+		for (Iterator iter = ArchiveHandler.getArchiveHandlers().iterator(); iter.hasNext(); x++) {
+			ArchiveHandler archiveHandler = (ArchiveHandler) iter.next();
+			reply.addComment(x + ". " + archiveHandler.getArchiveType());
+		}
 		return reply;
 	}
 

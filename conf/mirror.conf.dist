@@ -1,9 +1,0 @@
-#total number of each newly stored file that should be on the site
-numberOfMirrors=2
-
-# do not archive releases under these sections  
-#exclude.1=sectiona
-#exclude.2=sectionb
-
-#if you want to mirror SFV files to all slaves
-mirrorAllSFV=true

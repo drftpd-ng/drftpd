@@ -35,7 +35,7 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author zubov
- * @version $Id: MoveReleaseToMostFreeSlaves.java,v 1.1 2004/05/16 05:44:55 zubov Exp $
+ * @version $Id: MoveReleaseToMostFreeSlaves.java,v 1.2 2004/05/20 14:09:00 zubov Exp $
  */
 public class MoveReleaseToMostFreeSlaves extends ArchiveType {
 	private static final Logger logger = Logger.getLogger(MoveReleaseToMostFreeSlaves.class);
@@ -96,6 +96,9 @@ public class MoveReleaseToMostFreeSlaves extends ArchiveType {
 	protected boolean isArchivedDir(LinkedRemoteFileInterface lrf)
 		throws IncompleteDirectoryException, OfflineSlaveException {
 			return isArchivedToXSlaves(lrf,_numOfSlaves);
+	}
+	public String toString() {
+		return "MoveReleaseToMostFreeSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(getRSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
 	}
 
 }

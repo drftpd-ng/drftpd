@@ -42,7 +42,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
- * @version $Id: ArchiveType.java,v 1.6 2004/05/18 18:16:17 zubov Exp $
+ * @version $Id: ArchiveType.java,v 1.7 2004/05/20 14:09:00 zubov Exp $
  */
 public abstract class ArchiveType {
 	private long _archiveAfter;
@@ -108,8 +108,8 @@ public abstract class ArchiveType {
 			}
 		}
 		if (oldestDir != null)
-			logger.debug("Returning the oldest directory " + oldestDir);
-		else logger.debug("Returning a null directory");
+			logger.debug(getClass().toString() + " - Returning the oldest directory " + oldestDir);
+		else logger.debug(getClass().toString() + " - Returning a null directory");
 		return oldestDir;
 	}
 	/**
@@ -137,7 +137,7 @@ public abstract class ArchiveType {
 				(LinkedRemoteFileInterface) iter.next();
 			if (src.isFile()) {
 				logger.info("Adding " + src.getPath() + " to the job queue");
-				Job job = new Job(src, getRSlaves(), this, null, 3);
+				Job job = new Job(src, getRSlaves(), this, null, 3, getRSlaves().size());
 				jm.addJob(job);
 				jobQueue.add(job);
 			}
@@ -187,7 +187,6 @@ public abstract class ArchiveType {
 		}
 		return (slaveSet.size() == x);
 	}
-
 	
 	public final boolean isBusy() {
 		return (getDirectory() != null);
@@ -220,5 +219,18 @@ public abstract class ArchiveType {
 	}
 
 	public abstract void waitForSendOfFiles(ArrayList jobQueue);
+	
+	public abstract String toString();
 
+	protected String outputSlaves(Collection slaveList) {
+		String toReturn = new String();
+		for (Iterator iter = slaveList.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
+			toReturn = toReturn + rslave.getName();
+			if (iter.hasNext())
+				toReturn = toReturn + ",";
+			else return toReturn;
+		}
+		return "Empty";
+	}
 }
