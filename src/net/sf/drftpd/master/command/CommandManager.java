@@ -32,7 +32,7 @@ import java.util.Map;
 
 /**
  * @author mog
- * @version $Id: CommandManager.java,v 1.10 2004/08/03 20:13:56 zubov Exp $
+ * @version $Id: CommandManager.java,v 1.11 2004/09/12 00:43:27 zubov Exp $
  */
 public class CommandManager {
     private CommandManagerFactory _factory;
@@ -76,6 +76,18 @@ public class CommandManager {
         if (handler == null) {
             throw new UnhandledCommandException("No command handler for " +
                 command);
+        }
+
+        try {
+            command = command.substring("SITE ".length()).toLowerCase();
+
+            if (!conn.getConnectionManager().getGlobalContext().getConfig()
+                         .checkPathPermission(command, conn.getUserNull(),
+                        conn.getCurrentDirectory(), true)) {
+                //logger.debug("Blocking access to execute : SITE "+command);
+                return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            }
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
         }
 
         return handler.execute(conn);

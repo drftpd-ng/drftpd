@@ -52,7 +52,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.59 2004/08/03 20:13:58 zubov Exp $
+ * @version $Id: FtpConfig.java,v 1.60 2004/09/12 00:43:27 zubov Exp $
  */
 public class FtpConfig {
     private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -180,7 +180,7 @@ public class FtpConfig {
         return checkPathPermission(key, fromUser, path, false);
     }
 
-    private boolean checkPathPermission(String key, User fromUser,
+    public boolean checkPathPermission(String key, User fromUser,
         LinkedRemoteFileInterface path, boolean defaults) {
         Collection coll = ((Collection) _patternPaths.get(key));
 
@@ -492,6 +492,11 @@ public class FtpConfig {
                         }
 
                         permissions.put(cmd, new Permission(makeUsers(st)));
+                    } else {
+                        if (!cmd.startsWith("#")) {
+                            makePatternPathPermission(patternPathPermissions,
+                                cmd, st);
+                        }
                     }
                 } catch (Exception e) {
                     logger.warn("Exception when reading " + newConf + " line " +
