@@ -38,7 +38,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 /**
  * @author zubov
  *
- * @version $Id: Mirror.java,v 1.13 2004/02/10 00:03:06 mog Exp $
+ * @version $Id: Mirror.java,v 1.14 2004/02/11 03:58:36 zubov Exp $
  */
 public class Mirror implements FtpListener {
 
@@ -61,8 +61,6 @@ public class Mirror implements FtpListener {
 		TransferEvent transevent = (TransferEvent) event;
 		if (!transevent.getCommand().equals("STOR"))
 			return;
-		if (_numberOfMirrors < 2)
-			return;
 		LinkedRemoteFile dir;
 		dir = transevent.getDirectory();
 		if (checkExclude(dir)) {
@@ -73,7 +71,10 @@ public class Mirror implements FtpListener {
 		for (int x = 1; x < _numberOfMirrors; x++) { // already have one copy
 			slaveToMirror.add(null);
 		}
-		//logger.info("Adding " + dir.getPath() + " to the JobList");
+		if (slaveToMirror.isEmpty()) {
+			logger.debug("slaveToMirror was empty, returning");
+			return;
+		}
 		_cm.getJobManager().addJob(new Job(dir, slaveToMirror, this, null, 5));
 		logger.debug("Done adding " + dir.getPath() + " to the JobList");
 	}

@@ -18,7 +18,6 @@
 package net.sf.drftpd.mirroring;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,14 +40,15 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.24 2004/02/10 00:03:14 mog Exp $
+ * @version $Id: JobManager.java,v 1.25 2004/02/11 03:58:37 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
 	private ConnectionManager _cm;
 	private boolean _isStopped = false;
 	private ArrayList _jobList = new ArrayList();
-	private ArrayList _slaveSendingList = new ArrayList();
+	private int _maxTransfers;
+	private long _maxWait;
 	private ArrayList _threadList = new ArrayList();
 	private boolean _useCRC;
 
@@ -131,15 +131,14 @@ public class JobManager implements FtpListener {
 		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
 			Job tempJob = (Job) iter.next();
 			if (tempJob.getDestinationSlaves().contains(null)) { // mirror job
+				if (tempJob.getFile().isDeleted() || tempJob.isDone()) {
+					iter.remove();
+					continue;
+				}
 				try {
 					if (jobToReturn == null) {
 						if (tempJob.getFile() == null) {
 							logger.error("tempJob.getFile() == null");
-							continue;
-						}
-						if (tempJob.getFile().getAvailableSlaves() == null) {
-							logger.debug(
-								"tempJob.getFile().getAvailableSlaves() == null, can't transfer the file from nowhere");
 							continue;
 						}
 						if (!tempJob
@@ -150,18 +149,11 @@ public class JobManager implements FtpListener {
 						}
 					}
 				} catch (NoAvailableSlaveException e) {
-					if (tempJob.getFile().isDeleted()) {
-						iter.remove();
-						logger.debug(
-							"Job "
-								+ tempJob
-								+ " was removed from the list because it is deleted");
-						continue;
-					}
 					logger.debug(
 						"NoAvailableSlaveException for mirror algorithm - "
 							+ slave.getName(),
 						e);
+					continue;
 					// can't transfer it, so don't set jobToReturn
 				}
 				continue;
@@ -200,43 +192,11 @@ public class JobManager implements FtpListener {
 	 */
 	public boolean processJob(RemoteSlave slave) {
 		Job temp;
-		while (true) {
-			temp = getNextJob(slave);
-
-			if (temp == null) { // nothing to process for this slave
-				return false;
-			}
-			if (!temp.getFile().isDeleted()) {
-				// file is not deleted, process it now
-				break;
-			}
-			// job is already out of the list and isDeleted(), just continue
+		temp = getNextJob(slave);
+		if (temp == null) { // nothing to process for this slave
+			return false;
 		}
-		if (temp.getFile().getSlaves().contains(slave)) {
-			if (temp.removeDestinationSlave(slave)) {
-				// if it's already there, remove it from the destinationList
-				if (temp.getDestinationSlaves().size() > 0) {
-					addJob(temp);
-				} else {
-					temp.setDone();
-				}
-				return true;
-			}
-			if (temp.removeDestinationSlave(null)) {
-				if (temp.getDestinationSlaves().size() > 0) {
-					addJob(temp);
-				} else {
-					temp.setDone();
-				}
-				return true;
-			}
-			logger.debug(
-				"Unable to remove "
-					+ slave.getName()
-					+ " from the destination list of the job "
-					+ temp);
-			return false; // should not get here
-		}
+		// job is not deleted and is out of the jobList, we are ready to process
 		logger.info(
 			"Sending " + temp.getFile().getName() + " to " + slave.getName());
 		long time = System.currentTimeMillis();
@@ -254,13 +214,28 @@ public class JobManager implements FtpListener {
 				addJob(temp);
 				return false;
 			}
-			while (true) {
-				synchronized (_slaveSendingList) {
-					if (!_slaveSendingList.contains(sourceSlave))
-						break;
-					_slaveSendingList.add(sourceSlave);
+			if (System.currentTimeMillis() - temp.getTimeCreated()
+				< _maxWait) {
+				// check to see if we should transfer it
+				if (sourceSlave.getStatus().getTransfersSending()
+					> _maxTransfers
+					|| slave.getStatus().getTransfersReceiving()
+						> _maxTransfers) {
+					logger.debug(
+						"One of the slaves, "
+							+ sourceSlave.getName()
+							+ " or "
+							+ slave.getName()
+							+ ", has too many transfers");
+					addJob(temp);
+					return false;
 				}
-				Thread.sleep(20000);
+			} // job has been in the queue too long or 
+			//the sourceSlave and destSlave are both idle, send it now!
+			else {
+				logger.debug(
+					temp.getFile()
+						+ " has been in the queue too long, sending now");
 			}
 			SlaveTransfer slaveTransfer =
 				new SlaveTransfer(temp.getFile(), sourceSlave, slave);
@@ -281,7 +256,6 @@ public class JobManager implements FtpListener {
 				return false;
 			}
 		} catch (IOException e) {
-			_slaveSendingList.remove(sourceSlave);
 			if (!e.getMessage().equals("File exists")) {
 				logger.debug(
 					"Uncaught IOException in sending "
@@ -291,13 +265,15 @@ public class JobManager implements FtpListener {
 						+ " to "
 						+ slave.getName(),
 					e);
+				addJob(temp);
+				return false;
+				// with this code we'll try to send it again
 			} else
 				logger.debug(
 					"File "
 						+ temp.getFile()
 						+ " was sent okay because it was already on the destination slave");
 		} catch (Exception e) {
-			_slaveSendingList.remove(sourceSlave);
 			logger.debug(
 				"Error Sending "
 					+ temp.getFile().getName()
@@ -308,8 +284,8 @@ public class JobManager implements FtpListener {
 				e);
 			addJob(temp);
 			return false;
+			// with this code we'll try to send it again
 		}
-		_slaveSendingList.remove(sourceSlave);
 		difference = System.currentTimeMillis() - time;
 		logger.debug(
 			"Sent file "
@@ -319,32 +295,42 @@ public class JobManager implements FtpListener {
 				+ " from "
 				+ sourceSlave.getName());
 		temp.addTimeSpent(difference);
-		if (!temp.removeDestinationSlave(slave)) {
-			if (!temp.removeDestinationSlave(null))
-				logger.debug(
-					"Not able to remove slave "
-						+ slave.getName()
-						+ " or a null reference from job "
-						+ temp);
-		}
-		if (temp.getDestinationSlaves().size() > 0) {
-			logger.debug("Adding job " + temp + " back into the jobList");
-			addJob(temp); // job still has more places to transfer
+		if (temp.removeDestinationSlave(slave)) {
+			// if it's there, remove it from the destinationList
+			if (!temp.isDone()) {
+				addJob(temp);
+			}
+			return true;
 		} else {
-			temp.setDone();
-			//			logger.debug("Setting job " + temp + " to be done");
+			if (temp.removeDestinationSlave(null)) {
+				if (!temp.isDone()) {
+					addJob(temp);
+				}
+				return true;
+			}
+			logger.debug(
+				"Was unable to remove "
+					+ slave.getName()
+					+ " from the destination list for file "
+					+ temp.getFile());
+			// job was naturally removed from the list
+			return false;
+
 		}
-		return true;
 	}
 
 	private void reload() {
-		Properties ircCfg = new Properties();
+		Properties jobManCfg = new Properties();
 		try {
-			ircCfg.load(new FileInputStream("conf/jobmanager.conf"));
+			jobManCfg.load(new FileInputStream("conf/jobmanager.conf"));
 		} catch (IOException e) {
 			throw new FatalException(e);
 		}
-		_useCRC = FtpConfig.getProperty(ircCfg, "useCRC").equals("true");
+		_useCRC = FtpConfig.getProperty(jobManCfg, "useCRC").equals("true");
+		_maxWait =
+			60000 * Long.parseLong(FtpConfig.getProperty(jobManCfg, "maxWait"));
+		_maxTransfers =
+			Integer.parseInt(FtpConfig.getProperty(jobManCfg, "maxTransfers"));
 	}
 
 	public synchronized void removeJob(Job job) {

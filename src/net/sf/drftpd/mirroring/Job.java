@@ -26,7 +26,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: Job.java,v 1.6 2004/02/10 00:03:14 mog Exp $
+ * @version $Id: Job.java,v 1.7 2004/02/11 03:58:37 zubov Exp $
  */
 public class Job {
 	protected ArrayList _destSlaves;
@@ -122,18 +122,11 @@ public class Job {
 	 * returns true if this job has nothing more to send
 	 */
 	public boolean isDone() {
-		return _done;
+		return getDestinationSlaves().isEmpty();
 	}
 
 	public boolean removeDestinationSlave(RemoteSlave slave) {
 		return _destSlaves.remove(slave);
-	}
-
-	/**
-	 * sets the job to being finished
-	 */
-	public void setDone() {
-		_done = true;
 	}
 
 	public String toString() {
