@@ -31,9 +31,7 @@ import JSX.ObjIn;
 
 /**
  * @author mog
- *
- * To change the template for this generated type comment go to
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * @version $Id: JSXUserManager.java,v 1.20 2003/11/13 22:55:06 mog Exp $
  */
 public class JSXUserManager implements UserManager {
 	private ConnectionManager _connManager;
@@ -43,9 +41,6 @@ public class JSXUserManager implements UserManager {
 		"ftp-data" + File.separatorChar + "users" + File.separatorChar;
 	File userpathFile = new File(userpath);
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.UserManager#getUserByName(java.lang.String)
-	 */
 	Hashtable users = new Hashtable();
 
 	public JSXUserManager() throws UserFileException {
@@ -78,9 +73,6 @@ public class JSXUserManager implements UserManager {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.UserManager#create(java.lang.String)
-	 */
 	public User create(String username) throws UserFileException {
 		try {
 			getUserByName(username);
@@ -96,9 +88,7 @@ public class JSXUserManager implements UserManager {
 		users.put(user.getUsername(), user);
 		return user;
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.UserManager#exists(java.lang.String)
-	 */
+
 	public boolean exists(String username) {
 		return getUserFile(username).exists();
 	}
@@ -122,9 +112,6 @@ public class JSXUserManager implements UserManager {
 		return ret;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.UserManager#getAllUserNames()
-	 */
 	public List getAllUsers() throws IOException {
 		ArrayList users = new ArrayList();
 
@@ -213,9 +200,6 @@ public class JSXUserManager implements UserManager {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.UserManager#init(net.sf.drftpd.master.ConnectionManager)
-	 */
 	public void init(ConnectionManager mgr) {
 		_connManager = mgr;
 	}

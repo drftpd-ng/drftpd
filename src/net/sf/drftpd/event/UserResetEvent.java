@@ -6,16 +6,17 @@ import net.sf.drftpd.master.usermanager.User;
  * Dispatched when a user is reset.
  * Usually dispatched with the command "RESETDAY", "RESETWEEK" or "RESETMONTH".
  * 
+ * @deprecated use user.getLastReset() instead
  * @author mog
- * @version $Id: UserResetEvent.java,v 1.1 2003/11/13 13:26:24 mog Exp $
+ * @version $Id: UserResetEvent.java,v 1.2 2003/11/13 22:55:06 mog Exp $
  */
 public class UserResetEvent extends UserEvent {
 
 	private long _lastreset;
 
-	public UserResetEvent(User user, String command, long lastreset) {
-		this(user, command, lastreset, System.currentTimeMillis());
-	}
+//	public UserResetEvent(User user, String command, long lastreset) {
+//		this(user, command, lastreset, System.currentTimeMillis());
+//	}
 
 	public UserResetEvent(User user, String command, long lastreset, long time) {
 		super(user, command, time);

@@ -6,6 +6,7 @@
 */
 package net.sf.drftpd.event.irc;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -156,6 +157,7 @@ public class IRCListener implements FtpListener, Observer {
 
 		//_cm = cm;
 		//Debug.setDebugLevel(Debug.FAULT);
+		new File("ftp-data/logs").mkdirs();
 		Debug.setOutputStream(
 			new PrintStream(new FileOutputStream("ftp-data/logs/sitebot.log")));
 

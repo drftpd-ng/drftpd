@@ -11,8 +11,9 @@ import net.sf.drftpd.master.usermanager.User;
 /**
  * @author mog
  *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * Dispatched for LOGIN, LOGOUT and RELOAD.
+ * 
+ * Subclassed for events that are paired with a user object.
  */
 public class UserEvent extends Event {
 	User user;

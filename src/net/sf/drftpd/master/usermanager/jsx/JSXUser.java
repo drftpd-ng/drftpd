@@ -1,9 +1,3 @@
-/*
- * Created on 2003-jul-26
- *
- * To change the template for this generated file go to
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
 package net.sf.drftpd.master.usermanager.jsx;
 
 import java.io.File;
@@ -20,9 +14,7 @@ import JSX.ObjOut;
 
 /**
  * @author mog
- *
- * To change the template for this generated type comment go to
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * @version $Id: JSXUser.java,v 1.8 2003/11/13 22:55:06 mog Exp $
  */
 public class JSXUser
 	extends AbstractUser
@@ -34,6 +26,7 @@ public class JSXUser
 
 	public JSXUser(JSXUserManager usermanager, String username) {
 		super(username);
+		created = System.currentTimeMillis();
 		this.usermanager = usermanager;
 	}
 
@@ -60,9 +53,6 @@ public class JSXUser
 		return this.password;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.AbstractUser#rename(java.lang.String)
-	 */
 	public void rename(String username)
 		throws ObjectExistsException, UserFileException {
 		usermanager.rename(this, username); // throws ObjectExistsException
@@ -71,9 +61,6 @@ public class JSXUser
 		commit(); // throws IOException
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.User#commit()
-	 */
 	public void commit() throws UserFileException {
 		if (this.purged)
 			return;
@@ -93,24 +80,18 @@ public class JSXUser
 					+ ex.getMessage());
 		}
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.User#purge()
-	 */
+
 	public void purge() {
 		this.purged = true;
 		usermanager.remove(this);
 		File userfile = usermanager.getUserFile(this.getUsername());
 		userfile.delete();
 	}
-	/* (non-Javadoc)
-	 * @see java.lang.Object#finalize()
-	 */
+
 	protected void finalize() throws Throwable {
 		this.commit();
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.AbstractUser#update()
-	 */
+
 	public void update() {
 		//an update was made, but commit() should be called from all places so we don't need to do anything.
 		//if we do, make sure it's implemented in all set and update methods in AbstractUser

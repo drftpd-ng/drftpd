@@ -18,9 +18,11 @@ import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Matcher;
 
 /**
- * Generic user class. 
+ * Implements basic functionality for the User interface. 
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
+ * @author mog
+ * @version $Id: AbstractUser.java,v 1.22 2003/11/13 22:55:06 mog Exp $
  */
 public abstract class AbstractUser implements User {
 	private static Logger logger = Logger.getLogger(AbstractUser.class);
@@ -60,9 +62,6 @@ public abstract class AbstractUser implements User {
 	protected ArrayList ipMasks = new ArrayList();
 	protected long lastAccessTime = 0;
 
-	/**
-	 * Time last nuked specified in seconds since 1970
-	 */
 	protected long lastNuked;
 	protected long lastReset;
 
@@ -118,8 +117,6 @@ public abstract class AbstractUser implements User {
 		groups.add(group);
 	}
 
-	//////////////////////////////// generic getters & setters ///////////////////////
-
 	public void addIPMask(String mask) throws DuplicateElementException {
 		if (ipMasks.contains(mask))
 			throw new DuplicateElementException("IP mask already added");
@@ -148,7 +145,6 @@ public abstract class AbstractUser implements User {
 				}
 			}
 		}
-		System.out.println(getClass().getName() + ".checkIP(): no match");
 		return false;
 	}
 
@@ -160,106 +156,54 @@ public abstract class AbstractUser implements User {
 		return created;
 	}
 
-	/**
-	 * Returns the credits.
-	 * @return long
-	 */
 	public long getCredits() {
 		return credits;
 	}
 
-	/**
-	 * Returns the downloadedBytes.
-	 * @return long
-	 */
 	public long getDownloadedBytes() {
 		return downloadedBytes;
 	}
 
-	/**
-	 * Returns the downloadedBytesDay.
-	 * @return long
-	 */
 	public long getDownloadedBytesDay() {
 		return downloadedBytesDay;
 	}
 
-	/**
-	 * Returns the downloadedBytesMonth.
-	 * @return long
-	 */
 	public long getDownloadedBytesMonth() {
 		return downloadedBytesMonth;
 	}
 
-	/**
-	 * Returns the downloadedBytesWeek.
-	 * @return long
-	 */
 	public long getDownloadedBytesWeek() {
 		return downloadedBytesWeek;
 	}
 
-	/**
-	 * Returns the downloadedFiles.
-	 * @return int
-	 */
 	public int getDownloadedFiles() {
 		return downloadedFiles;
 	}
 
-	/**
-	 * Returns the downloadedFilesDay.
-	 * @return int
-	 */
 	public int getDownloadedFilesDay() {
 		return downloadedFilesDay;
 	}
 
-	/**
-	 * Returns the downloadedFilesMonth.
-	 * @return int
-	 */
 	public int getDownloadedFilesMonth() {
 		return downloadedFilesMonth;
 	}
 
-	/**
-	 * Returns the downloadedFilesWeek.
-	 * @return int
-	 */
 	public int getDownloadedFilesWeek() {
 		return downloadedFilesWeek;
 	}
 
-	/**
-	 * Returns the downloadedSeconds.
-	 * @return int
-	 */
 	public int getDownloadedSeconds() {
 		return downloadedSeconds;
 	}
 
-	/**
-	 * Returns the downloadedSecondsDay.
-	 * @return int
-	 */
 	public int getDownloadedSecondsDay() {
 		return downloadedSecondsDay;
 	}
 
-	/**
-	 * Returns the downloadedSecondsMonth.
-	 * @return int
-	 */
 	public int getDownloadedSecondsMonth() {
 		return downloadedSecondsMonth;
 	}
 
-	/**
-	 * Returns the downloadedSecondsWeek.
-	 * @return int
-	 */
 	public int getDownloadedSecondsWeek() {
 		return downloadedSecondsWeek;
 	}
@@ -274,10 +218,6 @@ public abstract class AbstractUser implements User {
 		return _group;
 	}
 
-	/**
-	 * Returns the groups.
-	 * @return Vector
-	 */
 	public Collection getGroups() {
 		return groups;
 	}
@@ -286,72 +226,42 @@ public abstract class AbstractUser implements User {
 		return groupSlots;
 	}
 
-	/**
-	 * Returns the homedir(chroot).
-	 * @return String
-	 */
 	public String getHomeDirectory() {
 		return home;
 	}
 
-	/**
-	 * Returns the idleTime.
-	 * @return long
-	 */
 	public int getIdleTime() {
 		return idleTime;
 	}
 
-	/**
-	 * Returns the ipMasks.
-	 * @return Vector
-	 */
 	public Collection getIpMasks() {
 		return ipMasks;
 	}
 
-	/**
-	 * Get last access time
-	 */
 	public long getLastAccessTime() {
 		return lastAccessTime;
 	}
 
-	/**
-	 * Returns the lastNuked.
-	 * @return long
-	 */
 	public long getLastNuked() {
 		return lastNuked;
 	}
 
-	/**
-	 * Returns the logins.
-	 * @return int
-	 */
+	public long getLastReset() {
+		return lastReset;
+	}
+
 	public int getLogins() {
 		return logins;
 	}
 
-	/**
-	 * Get maximum user download rate in bytes/sec
-	 */
 	public int getMaxDownloadRate() {
 		return maxDownloadRate;
 	}
 
-	/**
-	 * Returns the maxLogins.
-	 * @return int
-	 */
 	public int getMaxLogins() {
 		return maxLogins;
 	}
 
-	/**
-	 * Returns the maxLoginsPerIP.
-	 * @return int
-	 */
 	public int getMaxLoginsPerIP() {
 		return maxLoginsPerIP;
 	}
@@ -360,169 +270,86 @@ public abstract class AbstractUser implements User {
 		return maxSimDownloads;
 	}
 
-	/**
-	 * Returns the maxSimUploads.
-	 * @return int
-	 */
 	public int getMaxSimUploads() {
 		return maxSimUploads;
 	}
 
-	/**
-	 * Get maximum user upload rate in bytes/sec.
-	 */
 	public int getMaxUploadRate() {
 		return maxUploadRate;
 	}
 
-	/**
-	 * Returns the nukedBytes.
-	 * @return long
-	 */
 	public long getNukedBytes() {
 		return nukedBytes;
 	}
 
-	/**
-	 * Returns the ratio.
-	 * @return float
-	 */
 	public float getRatio() {
 		return ratio;
 	}
 
-	/**
-	 * Returns the tagline.
-	 * @return String
-	 */
 	public String getTagline() {
 		return tagline;
 	}
 
-	/**
-	 * Returns the timelimit.
-	 * @return int
-	 */
 	public int getTimelimit() {
 		return timelimit;
 	}
 
-	/**
-	 * Returns the nuked.
-	 * @return int
-	 */
 	public int getTimesNuked() {
 		return timesNuked;
 	}
 
-	/**
-	 * Returns the timeToday.
-	 * @return long
-	 */
 	public long getTimeToday() {
 		return timeToday;
 	}
 
-	/**
-	 * Returns the uploadedBytes.
-	 * @return long
-	 */
 	public long getUploadedBytes() {
 		return uploadedBytes;
 	}
 
-	/**
-	 * Returns the uploadedBytesDay.
-	 * @return long
-	 */
 	public long getUploadedBytesDay() {
 		return uploadedBytesDay;
 	}
 
-	/**
-	 * Returns the uploadedBytesMonth.
-	 * @return long
-	 */
 	public long getUploadedBytesMonth() {
 		return uploadedBytesMonth;
 	}
 
-	/**
-	 * Returns the uploadedBytesWeek.
-	 * @return long
-	 */
 	public long getUploadedBytesWeek() {
 		return uploadedBytesWeek;
 	}
 
-	/**
-	 * Returns the uploadedFiles.
-	 * @return int
-	 */
 	public int getUploadedFiles() {
 		return uploadedFiles;
 	}
 
-	/**
-	 * Returns the uploadedFilesDay.
-	 * @return int
-	 */
 	public int getUploadedFilesDay() {
 		return uploadedFilesDay;
 	}
 
-	/**
-	 * Returns the uploadedFilesMonth.
-	 * @return int
-	 */
 	public int getUploadedFilesMonth() {
 		return uploadedFilesMonth;
 	}
 
-	/**
-	 * Returns the uploadedFilesWeek.
-	 * @return int
-	 */
 	public int getUploadedFilesWeek() {
 		return uploadedFilesWeek;
 	}
 
-	/**
-	 * Returns the uploadedSeconds.
-	 * @return int
-	 */
 	public int getUploadedSeconds() {
 		return uploadedSeconds;
 	}
 
-	/**
-	 * Returns the uploadedSecondsDay.
-	 * @return int
-	 */
 	public int getUploadedSecondsDay() {
 		return uploadedSecondsDay;
 	}
 
-	/**
-	 * Returns the uploadedSecondsMonth.
-	 * @return int
-	 */
 	public int getUploadedSecondsMonth() {
 		return uploadedSecondsMonth;
 	}
 
-	/**
-	 * Returns the uploadedSecondsWeek.
-	 * @return int
-	 */
 	public int getUploadedSecondsWeek() {
 		return uploadedSecondsWeek;
 	}
 
-	////////////////////////////////// autogenerated getters & setters below /////////////////////////////
-	/**
-	 * Get the user name.
-	 */
 	public String getUsername() {
 		return username;
 	}
@@ -537,32 +364,22 @@ public abstract class AbstractUser implements User {
 	public boolean isAdmin() {
 		return isMemberOf("siteop");
 	}
-	/**
-	 * Returns the anonymous.
-	 * @return boolean
-	 */
+	
 	public boolean isAnonymous() {
 		return anonymous;
 	}
 
-	/**
-	 * Returns the deleted.
-	 * @return boolean
-	 */
+
 	public boolean isDeleted() {
 		return isMemberOf("deleted");
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.User#isGroupAdmin()
-	 */
-	public boolean isGroupAdmin() {
-		return isMemberOf("gadmin");
-	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.User#isMemberOf(java.lang.String)
-	 */
+
 	public boolean isExempt() {
 		return isMemberOf("exempt");
+	}
+	
+	public boolean isGroupAdmin() {
+		return isMemberOf("gadmin");
 	}
 
 	public boolean isMemberOf(String group) {
@@ -578,29 +395,18 @@ public abstract class AbstractUser implements User {
 		return isMemberOf("nuke");
 	}
 
-	/**
-	 * User login.
-	 */
 	public void login() {
 		updateLogins(1);
 	}
 
-	/**
-	 * User logout
-	 */
 	public void logout() {
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.User#removeGroup()
-	 */
 	public void removeGroup(String group) throws NoSuchFieldException {
 		if (!groups.remove(group))
 			throw new NoSuchFieldException("User is not a member of that group");
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.User#removeIpMask(java.lang.String)
-	 */
+
 	public void removeIpMask(String mask) throws NoSuchFieldException {
 		if (!ipMasks.remove(mask))
 			throw new NoSuchFieldException("User has no such ip mask");
@@ -632,9 +438,7 @@ public abstract class AbstractUser implements User {
 
 		lastReset = System.currentTimeMillis();
 	}
-	/**
-	 * 
-	 */
+
 	private void resetDay(ConnectionManager cm, Date resetDate) {
 		logger.info("Reset daily stats for " + getUsername());
 		cm.dispatchFtpEvent(new UserEvent(this, "RESETDAY", resetDate.getTime()));
@@ -649,9 +453,7 @@ public abstract class AbstractUser implements User {
 		this.uploadedBytesDay = 0;
 		this.timeToday = 0;
 	}
-	/**
-	 * 
-	 */
+
 	private void resetMonth(ConnectionManager cm, Date resetDate) {
 		cm.dispatchFtpEvent(new UserEvent(this, "RESETMONTH", resetDate.getTime()));
 		logger.info("Reset monthly stats for " + getUsername());
@@ -665,9 +467,7 @@ public abstract class AbstractUser implements User {
 		this.downloadedBytesMonth = 0;
 		this.uploadedBytesMonth = 0;
 	}
-	/**
-	 * 
-	 */
+
 	private void resetWeek(ConnectionManager cm, Date resetDate) {
 		cm.dispatchFtpEvent(new UserEvent(this, "RESETWEEK", resetDate.getTime()));
 		logger.info("Reset weekly stats for " + getUsername());
@@ -690,18 +490,10 @@ public abstract class AbstractUser implements User {
 		this.comment = comment;
 	}
 
-	/**
-	 * Sets the credits.
-	 * @param credits The credits to set
-	 */
 	public void setCredits(long credits) {
 		this.credits = credits;
 	}
 
-	/**
-	 * Sets the deleted.
-	 * @param deleted The deleted to set
-	 */
 	public void setDeleted(boolean deleted) {
 		if (deleted) {
 			try {
@@ -715,62 +507,35 @@ public abstract class AbstractUser implements User {
 			}
 		}
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.User#setGroup(java.lang.String)
-	 */
+
 	public void setGroup(String group) {
 		_group = group;
 	}
 
-	/**
-	 * @param s
-	 */
 	public void setGroupLeechSlots(short s) {
 		groupLeechSlots = s;
 	}
 
-	/**
-	 * @param s
-	 */
 	public void setGroupSlots(short s) {
 		groupSlots = s;
 	}
 
-	/**
-	 * Sets the homedir(chroot).
-	 * @param home The homedir to set
-	 */
 	public void setHomeDirectory(String home) {
 		this.home = home;
 	}
 
-	/**
-	 * Sets the idleTime.
-	 * @param idleTime The idleTime to set
-	 */
 	public void setIdleTime(int idleTime) {
 		this.idleTime = idleTime;
 	}
 
-	/**
-	 * Sets the lastAccessTime.
-	 * @param lastAccessTime The lastAccessTime to set
-	 */
 	public void setLastAccessTime(long lastAccessTime) {
 		this.lastAccessTime = lastAccessTime;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.User#setLastNuked(long)
-	 */
 	public void setLastNuked(long lastNuked) {
 		this.lastNuked = lastNuked;
 	}
 
-	/**
-	 * Sets the logins.
-	 * @param logins The logins to set
-	 */
 	public void setLogins(int logins) {
 		this.logins = logins;
 	}
@@ -778,90 +543,52 @@ public abstract class AbstractUser implements User {
 	/**
 	 * Set user maximum download rate limit.
 	 * Less than or equal to zero means no limit.
+	 * @deprecated not implemented
 	 */
 	public void setMaxDownloadRate(int rate) {
 		maxDownloadRate = rate;
 	}
 
-	/**
-	 * Sets the maxLogins.
-	 * @param maxLogins The maxLogins to set
-	 */
 	public void setMaxLogins(int maxLogins) {
 		this.maxLogins = maxLogins;
 	}
 
-	/**
-	 * Sets the maxLoginsPerIP.
-	 * @param maxLoginsPerIP The maxLoginsPerIP to set
-	 */
 	public void setMaxLoginsPerIP(int maxLoginsPerIP) {
 		this.maxLoginsPerIP = maxLoginsPerIP;
 	}
+	
 	public void setMaxSimDownloads(int maxSimDownloads) {
 		this.maxSimDownloads = maxSimDownloads;
 	}
 
-	/**
-	 * Sets the maxSimUploads.
-	 * @param maxSimUploads The maxSimUploads to set
-	 */
 	public void setMaxSimUploads(int maxSimUploads) {
 		this.maxSimUploads = maxSimUploads;
 	}
 
-	/**
-	 * Set user maximum upload rate limit.
-	 * Less than or equal to zero means no limit.
-	 */
 	public void setMaxUploadRate(int rate) {
 		maxUploadRate = rate;
 	}
 
-	/**
-	 * Sets the nukedBytes.
-	 * @param nukedBytes The nukedBytes to set
-	 */
 	public void setNukedBytes(long nukedBytes) {
 		this.nukedBytes = nukedBytes;
 	}
 
-	/**
-	 * Sets the ratio.
-	 * @param ratio The ratio to set
-	 */
 	public void setRatio(float ratio) {
 		this.ratio = ratio;
 	}
 
-	/**
-	 * Sets the tagline.
-	 * @param tagline The tagline to set
-	 */
 	public void setTagline(String tagline) {
 		this.tagline = tagline;
 	}
 
-	/**
-	 * Sets the timelimit.
-	 * @param timelimit The timelimit to set
-	 */
 	public void setTimelimit(int timelimit) {
 		this.timelimit = timelimit;
 	}
 
-	/**
-	 * Sets the nuked.
-	 * @param nuked The nuked to set
-	 */
 	public void setTimesNuked(int nuked) {
 		this.timesNuked = nuked;
 	}
 
-	/**
-	 * Sets the timeToday.
-	 * @param timeToday The timeToday to set
-	 */
 	public void setTimeToday(long timeToday) {
 		this.timeToday = timeToday;
 	}
@@ -870,9 +597,6 @@ public abstract class AbstractUser implements User {
 		this.weeklyAllotment = weeklyAllotment;
 	}
 
-	/** 
-	 * String representation
-	 */
 	public String toString() {
 		return username;
 	}
@@ -887,9 +611,7 @@ public abstract class AbstractUser implements User {
 		this.downloadedBytesWeek += bytes;
 		this.downloadedBytesMonth += bytes;
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.User#updateDownloadedFiles(int)
-	 */
+
 	public void updateDownloadedFiles(int i) {
 		this.downloadedFiles += i;
 		this.downloadedFilesDay += i;
@@ -904,18 +626,14 @@ public abstract class AbstractUser implements User {
 		lastAccessTime = System.currentTimeMillis();
 	}
 
-	/**
-	 * @param i
-	 */
 	private void updateLogins(int i) {
 		logins += 1;
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.User#updateNukedBytes(long)
-	 */
+
 	public void updateNukedBytes(long bytes) {
 		this.nukedBytes += bytes;
 	}
+	
 	public void updateTimesNuked(int timesNuked) {
 		this.timesNuked += timesNuked;
 	}
@@ -927,9 +645,6 @@ public abstract class AbstractUser implements User {
 		this.uploadedBytesMonth += bytes;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.User#updateUploadedFiles(int)
-	 */
 	public void updateUploadedFiles(int i) {
 		this.uploadedFiles += i;
 		this.uploadedFilesDay += i;

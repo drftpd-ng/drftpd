@@ -33,19 +33,13 @@ public class StaticRemoteFile extends RemoteFile {
 //	}
 	
 	public StaticRemoteFile(List rslaves, String name, String owner, String group, long size, long lastModified) {
-		//if(rslaves == null) throw new NullPointerException("rslaves cannot be null");
 		_rslaves = rslaves;
 		_name = name;
 //		if(name.indexOf("/") != -1) {
 //			throw new IllegalArgumentException("constructor only does files and not paths");
-//			isDirectory = true;
-//			isFile = false;
-//		} else {
-//			_isDirectory = false;
-//			_isFile = true;
 //		}
-		this._username = owner;
-		this._groupname = group;
+		_username = owner;
+		_groupname = group;
 		_length = size;
 		_lastModified = lastModified;
 	}

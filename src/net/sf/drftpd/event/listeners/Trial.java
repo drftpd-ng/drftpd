@@ -175,35 +175,31 @@ public class Trial implements FtpListener {
 			default :
 				throw new IllegalArgumentException("Can't handle " + period);
 		}
-		return new Date().before(cal.getTime());
+		//return (now is before end of bonus)
+		return System.currentTimeMillis() >= cal.getTimeInMillis();
 	}
 
 	public static Calendar getCalendarForEndOfPeriod(short period) {
 		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.MILLISECOND, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		if (period == PERIOD_DAILY) {
-			cal.set(Calendar.DAY_OF_MONTH, cal.get(Calendar.DAY_OF_MONTH) + 1);
-			return cal;
+		CalendarUtils.floorAllLessThanDay(cal);
+		switch (period) {
+			case PERIOD_DAILY :
+				CalendarUtils.incrementDay(cal);
+				return cal;
+			case PERIOD_WEEKLY :
+				CalendarUtils.incrementWeek(cal);
+				return cal;
+			case PERIOD_MONTHLY :
+				CalendarUtils.incrementMonth(cal);
+				return cal;
+			default :
+				throw new IllegalArgumentException("" + period);
 		}
-		if (period == PERIOD_WEEKLY) {
-			cal.set(Calendar.WEEK_OF_YEAR, cal.get(Calendar.WEEK_OF_YEAR) + 1);
-			return cal;
-		}
-		if (period == PERIOD_MONTHLY) {
-			cal.set(Calendar.MONTH, cal.get(Calendar.MONTH) + 1);
-			cal.set(
-				Calendar.DAY_OF_MONTH,
-				cal.getActualMinimum(Calendar.DAY_OF_MONTH));
-			return cal;
-		}
-
-		throw new IllegalArgumentException("" + period);
 	}
 
 	public static long getUploadedBytesForPeriod(User user, short period) {
+		if (isInFirstPeriod(user, period))
+			return user.getDownloadedBytes();
 		switch (period) {
 			case PERIOD_DAILY :
 				return user.getDownloadedBytesDay();
@@ -235,27 +231,48 @@ public class Trial implements FtpListener {
 		if ("RELOAD".equals(cmd)) {
 			reload();
 		}
-		if ("RESETMONTH".equals(cmd)) {
-			checkPassed(uevent.getUser(), PERIOD_MONTHLY);
+		if ("RESETDAY".equals(cmd)) {
+			checkPassed(uevent.getUser(), uevent.getUser().getUploadedBytesDay(), PERIOD_DAILY);
+			//call checkPassed for unique period if this resetday event also reset's the unique period
+			Calendar cal;
+			cal = getCalendarForEndOfPeriod(PERIOD_WEEKLY);
+			Date eventdate = new Date(uevent.getTime());
+			//			logger.debug("Checking whether to reset unique weekly period for "+uevent.getUser().getUsername());
+			//			logger.debug("created = "+new Date(uevent.getUser().getCreated()));
+			//			logger.debug("eventdate = "+eventdate);
+			//			logger.debug("lastreset = "+new Date(uevent.getUser().getLastReset()));
+			//			logger.debug("calendarforendofperiod = "+cal.getTime());
+
+			if (eventdate.equals(cal.getTime())
+				&& new Date(uevent.getUser().getLastReset()).before(eventdate)) {
+				checkPassed(uevent.getUser(), uevent.getUser().getUploadedBytes(), PERIOD_WEEKLY);
+			}
+
+			cal = getCalendarForEndOfPeriod(PERIOD_MONTHLY);
+			//			logger.debug("Checking whether to reset unique monthly period for "+uevent.getUser().getUsername());
+			//			logger.debug("created = "+new Date(uevent.getUser().getCreated()));
+			//			logger.debug("eventdate = "+eventdate);
+			//			logger.debug("lastreset = "+new Date(uevent.getUser().getLastReset()));
+			//			logger.debug("calendarforendofperiod = "+cal.getTime());
+
+			//cal = getCalendarForEndOfPeriod(PERIOD_MONTHLY);
 		}
 		if ("RESETWEEK".equals(cmd)) {
-			checkPassed(uevent.getUser(), PERIOD_WEEKLY);
+			checkPassed(uevent.getUser(), uevent.getUser().getUploadedBytesWeek(), PERIOD_WEEKLY);
 		}
-		if ("RESETDAY".equals(cmd)) {
-			checkPassed(uevent.getUser(), PERIOD_DAILY);
+		if ("RESETMONTH".equals(cmd)) {
+			checkPassed(uevent.getUser(), uevent.getUser().getUploadedBytesMonth(), PERIOD_MONTHLY);
 		}
 	}
 
-	/**
-		 * @param user
-		 * @param PERIOD_MONTHLY
-		 */
-	private void checkPassed(User user, short period) {
+	private void checkPassed(User user, long bytes, short period) {
 		for (Iterator iter = _limits.iterator(); iter.hasNext();) {
 			Limit limit = (Limit) iter.next();
 			if (limit.period == period) {
-				long bytesleft =
-					limit.bytes - getUploadedBytesForPeriod(user, period);
+				//is this the reset for the unique period
+				isResetForUniquePeriod(user, period);
+				isInFirstPeriod(user, period);
+				long bytesleft = limit.bytes - bytes;
 				if (bytesleft > 0) {
 					logger.info(
 						user.getUsername()
@@ -263,7 +280,7 @@ public class Trial implements FtpListener {
 							+ limit.name
 							+ " by "
 							+ Bytes.formatBytes(bytesleft));
-					//TODO take action: disable, delete
+					//TODO take action: disable, delete, change group
 				} else {
 					logger.info(
 						user.getUsername()
@@ -272,9 +289,18 @@ public class Trial implements FtpListener {
 							+ " with "
 							+ Bytes.formatBytes(-bytesleft)
 							+ " extra");
+					//TODO take action: change group
 				}
 			}
 		}
+	}
+
+	/**
+	 * @param user
+	 * @param period
+	 */
+	private boolean isResetForUniquePeriod(User user, short period) {
+		return false;
 	}
 
 	//	private boolean isExempt(User user) {

@@ -21,8 +21,8 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
  */
 public class SFVFile implements Serializable {
 	static final long serialVersionUID = 5381510163578487722L;
-	
-	private transient LinkedRemoteFile companion; 
+
+	private transient LinkedRemoteFile companion;
 	/**
 	 * String fileName as key
 	 * Long checkSum as value
@@ -34,51 +34,56 @@ public class SFVFile implements Serializable {
 	public SFVFile(BufferedReader in) throws IOException {
 		String line;
 		while ((line = in.readLine()) != null) {
-			if(line.length() == 0) continue;
+			if (line.length() == 0)
+				continue;
 			if (line.charAt(0) == ';')
 				continue;
 			int separator = line.indexOf(" ");
-			if(separator == -1) continue;
+			if (separator == -1)
+				continue;
 
 			String fileName = line.substring(0, separator);
 			String checkSumString = line.substring(separator + 1);
 			Long checkSum;
 			try {
 				checkSum = Long.valueOf(checkSumString, 16);
-			} catch(NumberFormatException e) {
+			} catch (NumberFormatException e) {
 				continue;
 			}
 			entries.put(fileName, checkSum);
 		}
 	}
-	
+
 	public Map getEntries() {
 		return entries;
 	}
-	
+
 	public long getChecksum(String fileName) throws ObjectNotFoundException {
-		Long checksum = (Long)entries.get(fileName);
-		if(checksum == null) throw new ObjectNotFoundException();
+		Long checksum = (Long) entries.get(fileName);
+		if (checksum == null)
+			throw new ObjectNotFoundException();
 		return checksum.longValue();
 	}
-	
+
 	public void setCompanion(LinkedRemoteFile companion) {
-		if(this.companion != null) throw new IllegalStateException("Can't overwrite companion");
+		if (this.companion != null)
+			throw new IllegalStateException("Can't overwrite companion");
 		this.companion = companion;
 	}
-	
+
+	/**
+	 * @return the number of files in the dir that are in the .sfv and aren't 0 bytes
+	 */
 	public int finishedFiles() {
 		int good = 0;
-
-		for (Iterator iter = getFiles().iterator();
-			iter.hasNext();
-			) {
+		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			if(file.length() != 0) good++;
+			if (file.length() != 0)
+				good++;
 		}
 		return good;
 	}
-	
+
 	public Map getEntriesFiles() {
 		LinkedRemoteFile dir;
 		try {
@@ -89,7 +94,7 @@ public class SFVFile implements Serializable {
 
 		Map sfventries = getEntries();
 		Map ret = new Hashtable();
-		
+
 		for (Iterator iter = sfventries.entrySet().iterator();
 			iter.hasNext();
 			) {
@@ -121,7 +126,7 @@ public class SFVFile implements Serializable {
 	}
 
 	public long getTotalBytes() {
-		long totalBytes=0;
+		long totalBytes = 0;
 		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
 			totalBytes += ((LinkedRemoteFile) iter.next()).length();
 		}
@@ -129,7 +134,7 @@ public class SFVFile implements Serializable {
 	}
 
 	public long getTotalXfertime() {
-		long totalXfertime=0;
+		long totalXfertime = 0;
 		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
 			totalXfertime += ((LinkedRemoteFile) iter.next()).getXfertime();
 		}
@@ -137,11 +142,12 @@ public class SFVFile implements Serializable {
 	}
 
 	public int filesLeft() {
-		return size()-finishedFiles();
+		return size() - finishedFiles();
 	}
 
 	public long getXferspeed() {
-		if(getTotalXfertime() == 0) return 0;
+		if (getTotalXfertime() == 0)
+			return 0;
 		return getTotalBytes() / (getTotalXfertime() / 1000);
 	}
 
