@@ -1,3 +1,7 @@
+2004/11/02 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Fixed a minor bug in ArchiveType's where directories without files 
+  could cause a NullPointerException, Thanks to akrog for the report
+
 2004/06/09 Morgan Christiansson <drftpd@mog.se>
 * Added hideIps=true setting in drftpd.conf for disabling logging of ips.
   Ips might still be logged in some places.

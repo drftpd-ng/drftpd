@@ -42,7 +42,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
- * @version $Id: ArchiveType.java,v 1.7 2004/05/20 14:09:00 zubov Exp $
+ * @version $Id: ArchiveType.java,v 1.8 2004/06/11 04:03:10 zubov Exp $
  */
 public abstract class ArchiveType {
 	private long _archiveAfter;
@@ -178,6 +178,9 @@ public abstract class ArchiveType {
 					}
 				}
 			}
+		}
+		if (slaveSet == null) { // no files found in directory
+			return true;
 		}
 		for (Iterator iter = slaveSet.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
