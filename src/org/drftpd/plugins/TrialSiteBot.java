@@ -34,6 +34,7 @@ import org.drftpd.usermanager.UserFileException;
 
 import org.tanesha.replacer.ReplacerEnvironment;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.Iterator;
 
@@ -86,6 +87,16 @@ public class TrialSiteBot extends GenericCommandAutoService {
 
         if (msgc.isPrivateToUs(_irc.getIRCConnection().getClientState())) {
             return;
+        }
+        
+        if (_irc.getBlowfish() != null) {
+            try {
+                MessageCommand decmsgc = new MessageCommand(msgc.getSource(), msgc.getDest(),
+                        						_irc.getBlowfish().Decrypt(msgc.getMessage()));
+                msgc = decmsgc;
+            } catch (UnsupportedEncodingException e) {
+                logger.warn("Unable to decrypt '"+msgc.getSourceString()+"'", e);
+            }           
         }
 
         String msg = msgc.getMessage();

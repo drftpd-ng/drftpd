@@ -1014,6 +1014,10 @@ public class SiteBot extends FtpListener implements Observer {
         return _msgprefix;
     }
 
+    public Blowfish getBlowfish() {
+        return _fish;
+    }
+    
     public String getChannelName() {
         return _channelName;
     }

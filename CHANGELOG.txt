@@ -5,6 +5,8 @@
   sfv.restrict.files=true
   #allow multiple sfv files in one dir [true/false]
   allow.multi.sfv=false
+* Fixed TrialSiteBot to recieve decrypted message when using blowfish
+* Removed !failed 
 
 2005/02/13 Matt Zimmerman <zubov@users.sourceforge.net>
 * Updated perms.conf.dist to reflect login_prompt and secure(SSL/TLS)
