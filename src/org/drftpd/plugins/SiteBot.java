@@ -100,6 +100,8 @@ import f00f.net.irc.martyr.clientstate.Channel;
 import f00f.net.irc.martyr.commands.InviteCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 import f00f.net.irc.martyr.commands.NickCommand;
+import f00f.net.irc.martyr.commands.NoticeCommand;
+import f00f.net.irc.martyr.commands.RawCommand;
 import f00f.net.irc.martyr.commands.WhoisCommand;
 import f00f.net.irc.martyr.replies.WhoisUserReply;
 import f00f.net.irc.martyr.services.AutoJoin;
@@ -635,18 +637,31 @@ public class SiteBot extends FtpListener implements Observer {
         		"SITE INVITE".equals(event.getCommand())) {
 
             ReplacerFormat format = ReplacerUtils.finalFormat(SiteBot.class,"invite.success");
-            logger.info("Invited " + nick + " through SITE INVITE");
+            logger.info("Invited " + nick);
         	for (Enumeration e = getIRCConnection().getClientState().getChannels();
             	e.hasMoreElements();) {
             	Channel chan = (Channel) e.nextElement();
 
             	if (chan.findMember(getIRCConnection().getClientState().getNick()
                                     .getNick()).hasOps()) {
-            		_conn.sendCommand(new InviteCommand(nick, chan.getName()));
+            		ChannelConfig cc = _channelMap.get(chan.getName());
+            		if (cc != null) {
+            			if (cc.checkPerms(event.getUser())) {
+            				_conn.sendCommand(new InviteCommand(nick, chan.getName()));
+            	    		say(chan.getName(),SimplePrintf.jprintf(format, env));
+            	    		try {
+            	    			notice(nick, "Channel key for " + chan.getName() + " is " + cc.getChannelKey(event.getUser()));
+            	    		} catch (ObjectNotFoundException execption) {
+            	    			// no key or not enough permissions
+            	    		}
+            			} else {
+            				logger.warn("User does not have enough permissions to invite into " + chan.getName());
+            			}
+            		} else {
+            			logger.error("Could not find ChannelConfig for " + chan.getName());
+            		}
             	}
-            } 
-    		sayGlobal(SimplePrintf.jprintf(format, env));
-        	
+            }
             _identWhoisQueue.put(nick,event.getUser());
             logger.info("Looking up "+ nick + " to set IRCIdent");
             _conn.sendCommand(new WhoisCommand(nick));        	
@@ -874,7 +889,7 @@ public class SiteBot extends FtpListener implements Observer {
     	}
     	
     	public String getChannelKey(User user) throws ObjectNotFoundException {
-    		if (checkPerms(user)) {
+    		if (checkPerms(user) && _chanKey != null) {
     			return _chanKey;
     		}
     		throw new ObjectNotFoundException("No Permissions");
@@ -1260,6 +1275,21 @@ public class SiteBot extends FtpListener implements Observer {
 				line = _channelMap.get(dest).encrypt(line);
 			}
 			_conn.sendCommand(new MessageCommand(dest, line));
+		}
+    }
+    
+    public void notice(String dest, String message) {
+        if (message == null || message.equals("")) {
+        	return;
+        }
+        boolean isChan = dest.startsWith("#");
+        String[] lines = message.split("\n");
+        for (String line : lines) {
+			// don't encrypt private notices, at least not yet :)
+			if (isChan) {
+				line = _channelMap.get(dest).encrypt(line);
+			}
+			_conn.sendCommand(new RawCommand("NOTICE " + dest + " :" + line));
 		}
     }
 

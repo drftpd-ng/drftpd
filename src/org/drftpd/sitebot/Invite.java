@@ -47,7 +47,6 @@ public class Invite extends IRCCommand {
 
 	public ArrayList<String> doInvite(String args, MessageCommand msgc) {
 	    ArrayList<String> out = new ArrayList<String>();
-	    out.add("");
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 
 		StringTokenizer st = new StringTokenizer(args);
