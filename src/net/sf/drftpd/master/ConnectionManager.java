@@ -21,6 +21,7 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.event.XferLogListener;
+import net.sf.drftpd.event.listeners.RaceStatistics;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -189,6 +190,7 @@ public class ConnectionManager {
 		//		}
 
 		addFtpListener(new XferLogListener());
+		addFtpListener(new RaceStatistics(this));
 
 		_timer = new Timer();
 		TimerTask timerLogoutIdle = new TimerTask() {
