@@ -12,14 +12,14 @@ import net.sf.drftpd.master.RemoteSlave;
 
 /**
  * @author zubov
- * @version $Id: JobManagerThread.java,v 1.1 2003/12/11 18:19:26 zubov Exp $
+ * @version $Id: JobManagerThread.java,v 1.2 2003/12/11 23:12:51 zubov Exp $
  */
 public class JobManagerThread extends Thread {
+	private JobManager _jm;
 
 	private RemoteSlave _rslave;
-	private JobManager _jm;
-	private boolean stopped = false;
 	private Logger logger = Logger.getLogger(JobManagerThread.class);
+	private boolean stopped = false;
 
 	/**
 	 * 
@@ -35,10 +35,6 @@ public class JobManagerThread extends Thread {
 		_jm = jm;
 	}
 
-	public void stopme() {
-		stopped = true;
-	}
-
 	public RemoteSlave getRSlave() {
 		return _rslave;
 	}
@@ -47,13 +43,16 @@ public class JobManagerThread extends Thread {
 		logger.info("JobManagerThread started for " + _rslave.getName());
 		while (true) {
 			if (stopped) {
-				logger.info("JobManagerThread stopped for " + _rslave.getName());
+				logger.info(
+					"JobManagerThread stopped for " + _rslave.getName());
 				return;
 			}
 			try {
-				_jm.processJob(_rslave);
+				while (_jm.processJob(_rslave));
 			} catch (RuntimeException e1) {
-				logger.info("Caught RunTimeException in processJob for " + _rslave.getName());
+				logger.info(
+					"Caught RunTimeException in processJob for "
+						+ _rslave.getName());
 				e1.printStackTrace();
 			}
 			try {
@@ -61,5 +60,9 @@ public class JobManagerThread extends Thread {
 			} catch (InterruptedException e) {
 			}
 		}
+	}
+
+	public void stopme() {
+		stopped = true;
 	}
 }

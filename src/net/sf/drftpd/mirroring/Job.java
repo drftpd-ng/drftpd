@@ -8,13 +8,18 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 /**
  * 
  * @author mog
- * @version $Id: Job.java,v 1.1 2003/12/11 18:19:26 zubov Exp $
+ * @version $Id: Job.java,v 1.2 2003/12/11 23:12:51 zubov Exp $
  */
 public abstract class Job {
 
 	public Job() {
 		super();
 	}
+	/**
+	 * Add destination slaves to this job
+	 */
+	public abstract void addSlaves(List list);
+	public abstract void addTimeSpent(long time);
 
 	/**
 	 * Returns a List of slaves that can be used with {@see net.sf.drftpd.master.SlaveManagerImpl#getASlave(Collection, char, FtpConfig)}
@@ -54,9 +59,4 @@ public abstract class Job {
 	 * This is the amount of time spent processing this job
 	 */
 	public abstract long getTimeSpent();
-	/**
-	 * Add destination slaves to this job
-	 */
-	public abstract void addSlaves(List list);
-	public abstract void addTimeSpent(long time);
 }

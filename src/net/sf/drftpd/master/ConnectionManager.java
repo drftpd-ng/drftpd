@@ -30,6 +30,7 @@ import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.master.usermanager.UserManager;
+import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
 import net.sf.drftpd.slave.SlaveImpl;
 
@@ -80,24 +81,29 @@ public class ConnectionManager {
 			} else {
 				slaveCfgFileName = "slave.conf";
 			}
-			
+
 			/** load master config **/
 			Properties cfg = new Properties();
 			cfg.load(new FileInputStream(cfgFileName));
-			
+
 			/** load slave config **/
 			Properties slaveCfg; //used as a flag for if localslave=true
 			if (cfg
-			.getProperty("master.localslave", "false")
-			.equalsIgnoreCase("true")) {
+				.getProperty("master.localslave", "false")
+				.equalsIgnoreCase("true")) {
 				slaveCfg = new Properties();
 				slaveCfg.load(new FileInputStream(slaveCfgFileName));
 			} else {
 				slaveCfg = null;
 			}
-			
+
 			logger.info("Starting ConnectionManager");
-			ConnectionManager mgr = new ConnectionManager(cfg, slaveCfg, cfgFileName, slaveCfgFileName);
+			ConnectionManager mgr =
+				new ConnectionManager(
+					cfg,
+					slaveCfg,
+					cfgFileName,
+					slaveCfgFileName);
 			/** listen for connections **/
 			ServerSocket server =
 				new ServerSocket(
@@ -120,6 +126,7 @@ public class ConnectionManager {
 		return ret;
 	}
 	private FtpConfig _config;
+	private JobManager _jm;
 	private Properties _cfg;
 	private List _conns = Collections.synchronizedList(new ArrayList());
 
@@ -129,7 +136,11 @@ public class ConnectionManager {
 	private SlaveManagerImpl _slaveManager;
 	private Timer _timer;
 	private UserManager _usermanager;
-	public ConnectionManager(Properties cfg, Properties slaveCfg, String cfgFileName, String slaveCfgFileName) {
+	public ConnectionManager(
+		Properties cfg,
+		Properties slaveCfg,
+		String cfgFileName,
+		String slaveCfgFileName) {
 		try {
 			_config = new FtpConfig(cfg, cfgFileName, this);
 		} catch (Throwable ex) {
@@ -147,7 +158,7 @@ public class ConnectionManager {
 			throw new FatalException(e);
 		}
 
-		if (slaveCfg != null ) {
+		if (slaveCfg != null) {
 			try {
 				new SlaveImpl(slaveCfg);
 			} catch (RemoteException ex) {
@@ -176,13 +187,14 @@ public class ConnectionManager {
 			if (classname == null)
 				break;
 			try {
-				addFtpListener(
-					(FtpListener) Class.forName(classname).newInstance());
+				FtpListener ftpListener = (FtpListener) Class.forName(classname).newInstance();
+				addFtpListener(ftpListener);
+				if ( ftpListener instanceof JobManager )
+					_jm = (JobManager) ftpListener;
 			} catch (Exception e) {
 				throw new FatalException("Error loading plugins", e);
 			}
 		}
-
 		_commandManagerFactory = new CommandManagerFactory(this);
 
 		//		if (cfg.getProperty("irc.enabled", "false").equals("true")) {
@@ -255,9 +267,9 @@ public class ConnectionManager {
 	public FtpConfig getConfig() {
 		return _config;
 	}
-	
-	public boolean useIdent(){
-		return _cfg.getProperty("use.ident").equals("true");	
+
+	public boolean useIdent() {
+		return _cfg.getProperty("use.ident").equals("true");
 	}
 
 	/**
@@ -345,6 +357,10 @@ public class ConnectionManager {
 
 	public CommandManagerFactory getCommandManagerFactory() {
 		return _commandManagerFactory;
+	}
+	
+	public JobManager getJobManager() {
+		return _jm;
 	}
 
 	public FtpReply canLogin(BaseFtpConnection baseconn) {

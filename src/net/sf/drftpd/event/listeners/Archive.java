@@ -8,44 +8,29 @@ package net.sf.drftpd.event.listeners;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.sql.Time;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
-import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.SlaveManager;
-import net.sf.drftpd.master.SlaveManagerImpl;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.slave.Transfer;
-import net.sf.drftpd.util.ArchiveHandler;
-import net.sf.drftpd.util.CooperativeSlaveTransfer;
+import net.sf.drftpd.mirroring.ArchiveHandler;
 
 /**
  * @author zubov
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: Archive.java,v 1.6 2003/12/11 23:12:51 zubov Exp $
  */
+
 public class Archive implements FtpListener {
-	private boolean _archiving;
 	private ConnectionManager _cm;
 	private long _cycleTime;
-	private long lastchecked;
+	private long _lastchecked;
+	private long _archiveAfter;
+	private ArrayList archivingList = new ArrayList();
 
 	private Logger logger = Logger.getLogger(Archive.class);
 
@@ -63,17 +48,11 @@ public class Archive implements FtpListener {
 	public void actionPerformed(Event event) {
 		if (!(event instanceof TransferEvent))
 			return;
-		//System.out.println("We are now about to try and archive");
-		System.out.println("System.currentTimeMillis() - lastchecked = " + (System.currentTimeMillis() - lastchecked));
-		System.out.println("System.currentTimeMillis() = " + System.currentTimeMillis());
-		System.out.println("lastchecked = " + lastchecked);
-		System.out.println("_cycleTime = " + _cycleTime);
-		if (System.currentTimeMillis() - lastchecked > _cycleTime) {
-			lastchecked = System.currentTimeMillis();
-			new ArchiveHandler((DirectoryFtpEvent) event,this).start();
+		if (System.currentTimeMillis() - _lastchecked > _cycleTime) {
+			_lastchecked = System.currentTimeMillis();
+			new ArchiveHandler((DirectoryFtpEvent) event, this,_archiveAfter).start();
 			System.out.println("Launched the ArchiveHandler");
 		}
-		System.out.println("at the end of archive");
 	}
 
 	/* (non-Javadoc)
@@ -89,8 +68,34 @@ public class Archive implements FtpListener {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		_cycleTime = Long.parseLong(props.getProperty("cycleTime"));
-		lastchecked = System.currentTimeMillis();
-		_archiving = false;
+		_cycleTime = 60000 * Long.parseLong(props.getProperty("cycleTime"));
+		_archiveAfter = 60000 * Long.parseLong(props.getProperty("archiveAfter"));
+		_lastchecked = System.currentTimeMillis();
+	}
+	/**
+	 * Returns the ConnectionManager
+	 */
+	public ConnectionManager getConnectionManager() {
+		return _cm;
+	}
+
+	/**
+	 * This list represents path names of directories currently being handled by ArchiveHandlers
+	 */
+	public ArrayList getArchivingList() {
+		return archivingList;
+	}
+
+	/**
+	 * Adds directories to the list
+	 */
+	public void addToArchivingList(String dir) {
+		archivingList.add(dir);
+	}
+	/**
+	 * Removes directories from the list
+	 */
+	public void removeFromArchivingList(String dir) {
+		archivingList.remove(dir);
 	}
 }

@@ -1,8 +1,6 @@
 /*
  * Created on Dec 5, 2003
  *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 package net.sf.drftpd.mirroring;
 
@@ -23,19 +21,23 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.1 2003/12/11 18:19:26 zubov Exp $
+ * @version $Id: ArchiveHandler.java,v 1.2 2003/12/11 23:12:51 zubov Exp $
  */
 public class ArchiveHandler extends Thread {
-	private boolean _archiving;
+	private long _archiveAfter;
 	private DirectoryFtpEvent _dirEvent;
 	private Archive _parent;
 
 	private Logger logger = Logger.getLogger(ArchiveHandler.class);
 
-	public ArchiveHandler(DirectoryFtpEvent dirEvent, Archive archive) {
+	public ArchiveHandler(
+		DirectoryFtpEvent dirEvent,
+		Archive archive,
+		long archiveAfter) {
 		reload();
 		_dirEvent = dirEvent;
 		_parent = archive;
+		_archiveAfter = archiveAfter;
 	}
 	private RemoteSlave findDestinationSlave(LinkedRemoteFile lrf) {
 		ArrayList slaveList = new ArrayList();
@@ -75,9 +77,43 @@ public class ArchiveHandler extends Thread {
 
 	private LinkedRemoteFile getOldestNonArchivedDir(LinkedRemoteFile lrf) {
 		if (lrf.getDirectories().size() == 0) {
-			Collection files = lrf.getFiles();
-			if (files.size() == 0)
+			if (System.currentTimeMillis() - lrf.lastModified()
+				< _archiveAfter) {
+				logger.info(lrf.getPath() + " is too young to archive");
 				return null;
+			}
+			Collection files = lrf.getFiles();
+			if (files.size() == 0) {
+				logger.info(
+					lrf.getPath()
+						+ " does not have any files in it, it is already archived");
+				return null;
+			}
+			if (_parent.getArchivingList().contains(lrf.getPath())) {
+				logger.info(
+					lrf.getPath()
+						+ " is already being handled by another ArchiveHandler");
+				return null;
+			}
+			try {
+				if (lrf.lookupSFVFile().getStatus().getOffline() > 0) {
+					logger.info(
+						lrf.getPath()
+							+ " does not have all files online, will not archive it");
+					return null;
+				}
+				if (lrf.lookupSFVFile().getStatus().getMissing() > 0) {
+					logger.info(
+						lrf.getPath()
+							+ " does not have all files complete, will not archive it");
+					return null;
+				}
+			} catch (Exception e) {
+				logger.info(
+					lrf.getPath() + " exception in lookupSFVFile() ",
+					e);
+				return null;
+			}
 			ArrayList slaveList = new ArrayList();
 			for (Iterator iter = files.iterator(); iter.hasNext();) {
 				LinkedRemoteFile temp = (LinkedRemoteFile) iter.next();
@@ -130,42 +166,55 @@ public class ArchiveHandler extends Thread {
 	 * @see java.lang.Runnable#run()
 	 */
 	public void run() {
-		synchronized (_parent) {
-			if (!_archiving)
-				_archiving = true;
-			else
-				return;
-		}
 		LinkedRemoteFile oldDir = _dirEvent.getDirectory();
 		LinkedRemoteFile root = oldDir.getRoot();
-		oldDir = getOldestNonArchivedDir(root);
-		if (oldDir == null)
-			return; //everything is archived
+		synchronized (_parent) {
+			oldDir = getOldestNonArchivedDir(root);
+			if (oldDir == null)
+				return; //everything is archived
+			_parent.addToArchivingList(oldDir.getPath());
+		}
 		logger.info("The oldest Directory is " + oldDir.getPath());
 		RemoteSlave slave = findDestinationSlave(oldDir);
 		logger.info("The slave to archive to is " + slave.getName());
+		ArrayList jobQueue = new ArrayList();
+		JobManager jm = _parent.getConnectionManager().getJobManager();
 		for (Iterator iter = oldDir.getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile src = (LinkedRemoteFile) iter.next();
 			AbstractJob job = null;
 			if (!src.getSlaves().contains(slave)) {
 				ArrayList tempList = new ArrayList();
 				tempList.add(slave);
-				job = new AbstractJob(src, tempList,this,null,3);
-				_parent.getConnectionManager().getJobManager().addJob(job);
+				logger.info("Adding " + src.getPath() + " to the job queue");
+				job = new AbstractJob(src, tempList, this, null, 3);
+				jm.addJob(job);
+				jobQueue.add(job);
 			} else {
 				src.deleteOthers(slave);
 				src.getSlaves().clear();
 				src.addSlave(slave);
 				continue;
 			}
-			while (!_parent.getConnectionManager().getJobManager().isDone(job))
-				Thread.yield();
-			src.deleteOthers(slave);
-			src.getSlaves().clear();
-			src.addSlave(slave);
 		}
+		while (true) {
+			for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
+				Job job = (Job) iter.next();
+				if (jm.isDone(job)) {
+					iter.remove();
+					job.getFile().deleteOthers(slave);
+					job.getFile().getSlaves().clear();
+					job.getFile().addSlave(slave);
+				}
+				try {
+					sleep(10000);
+				} catch (InterruptedException e) {
+				}
+			}
+			if (jobQueue.isEmpty())
+				break;
+		}
+		_parent.removeFromArchivingList(oldDir.getPath());
 		logger.info("Done archiving " + oldDir.getPath());
-		_archiving = false;
 	}
 
 }

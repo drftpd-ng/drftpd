@@ -10,7 +10,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
 
 /**
  * @author mog
- * @version $Id: HostMask.java,v 1.3 2003/12/07 22:31:44 mog Exp $
+ * @version $Id: HostMask.java,v 1.4 2003/12/11 23:12:51 zubov Exp $
  */
 public class HostMask {
 	private static final Logger logger = Logger.getLogger(HostMask.class);
@@ -43,15 +43,15 @@ public class HostMask {
 		Perl5Matcher m = new Perl5Matcher();
 
 		GlobCompiler c = new GlobCompiler();
-		System.out.println(
-			"comparing "
-				+ ident
-				+ "@"
-				+ address.getHostAddress()
-				+ " and "
-				+ getIdentMask()
-				+ "@"
-				+ getHostMask());
+//		System.out.println(
+//			"comparing "
+//				+ ident
+//				+ "@"
+//				+ address.getHostAddress()
+//				+ " and "
+//				+ getIdentMask()
+//				+ "@"
+//				+ getHostMask());
 		try {
 			if (!isIdentMaskSignificant() || m.matches(ident, c.compile(getIdentMask()))) {
 				Pattern p = c.compile(getHostMask());

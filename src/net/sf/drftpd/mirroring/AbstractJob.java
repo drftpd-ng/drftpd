@@ -14,16 +14,16 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: AbstractJob.java,v 1.1 2003/12/11 18:19:26 zubov Exp $
+ * @version $Id: AbstractJob.java,v 1.2 2003/12/11 23:12:51 zubov Exp $
  */
 public class AbstractJob extends Job {
-	private long _timeCreated;
-	private long _timeSpent;
 	private ArrayList _destSlaves;
 	private LinkedRemoteFile _file;
 	private User _owner;
 	private int _priority;
 	private Object _source;
+	private long _timeCreated;
+	private long _timeSpent;
 
 	public AbstractJob(
 		LinkedRemoteFile file,
@@ -42,6 +42,9 @@ public class AbstractJob extends Job {
 	}
 	public synchronized void addSlaves(List list) {
 		_destSlaves.addAll(list);
+	}
+	public void addTimeSpent(long time) {
+		_timeSpent += time;
 	}
 	public List getDestinationSlaves() {
 		return _destSlaves;
@@ -67,8 +70,5 @@ public class AbstractJob extends Job {
 	}
 	public long getTimeSpent() {
 		return _timeSpent;
-	}
-	public void addTimeSpent(long time) {
-		_timeSpent += time;
 	}
 }
