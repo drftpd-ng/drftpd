@@ -23,7 +23,7 @@ import net.sf.drftpd.mirroring.ArchiveHandler;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.9 2004/01/12 03:13:35 zubov Exp $
+ * @version $Id: Archive.java,v 1.10 2004/01/13 05:56:14 zubov Exp $
  */
 
 public class Archive implements FtpListener {
@@ -125,7 +125,7 @@ public class Archive implements FtpListener {
 			60000
 				* Long.parseLong(FtpConfig.getProperty(props, "archiveAfter"));
 		_archiveToFreeSlave =
-			(FtpConfig.getProperty(props, "archiveToFreeSlave") == "true");
+			(FtpConfig.getProperty(props, "archiveToFreeSlave").equals("true"));
 		//_moveFullSlaves = 1048576*Long.parseLong(FtpConfig.getProperty(props,"moveFullSlaves"));
 		_lastchecked = System.currentTimeMillis();
 	}
