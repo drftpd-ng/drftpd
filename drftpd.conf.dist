@@ -21,8 +21,7 @@ master.usermanager=org.drftpd.usermanager.javabeans.BeanUserManager
 #loaded plugins must use in sequential numbering
 #plugins.1=org.drftpd.plugins.SiteBotSSL
 #plugins.2=net.sf.drftpd.event.listeners.Trial
-#plugins.3=net.sf.drftpd.event.listeners.PreTime
-#plugins.4=net.sf.drftpd.event.listeners.Archive
+#plugins.3=net.sf.drftpd.event.listeners.Archive
 
 slaveselection=org.drftpd.slaveselection.filter.SlaveSelectionManager
 sectionmanager=org.drftpd.sections.def.SectionManager
