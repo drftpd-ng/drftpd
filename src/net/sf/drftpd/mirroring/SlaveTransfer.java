@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveTransfer.java,v 1.13 2004/05/12 00:45:09 mog Exp $
+ * @version $Id: SlaveTransfer.java,v 1.14 2004/05/13 12:25:44 zubov Exp $
  */
 public class SlaveTransfer {
 	class DstXfer extends Thread {
@@ -131,7 +131,7 @@ public class SlaveTransfer {
 		}
 		dstxfer.start();
 		srcxfer.start();
-		while (srcxfer.isAlive() && dstxfer.isAlive()) {
+		while (srcxfer.isAlive() || dstxfer.isAlive()) {
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
