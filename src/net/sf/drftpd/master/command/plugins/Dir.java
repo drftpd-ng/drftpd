@@ -17,13 +17,12 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import de.hampelratte.id3.ID3v1Tag;
-
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.Checksum;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SFVFile;
+import net.sf.drftpd.ID3Tag;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -67,7 +66,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.35 2004/08/03 20:13:57 zubov Exp $
+ * @version $Id: Dir.java,v 1.36 2004/08/04 20:44:01 teflon114 Exp $
  */
 public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
     private final static SimpleDateFormat DATE_FMT = new SimpleDateFormat(
@@ -238,7 +237,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 
         // show cwd_mp3.txt if this is an mp3 release
         try {
-            ID3v1Tag id3tag = newCurrentDirectory.lookupFile(newCurrentDirectory.lookupMP3File())
+            ID3Tag id3tag = newCurrentDirectory.lookupFile(newCurrentDirectory.lookupMP3File())
                                                  .getID3v1Tag();
             String mp3text = Textoutput.getText("cwd_mp3");
             ReplacerEnvironment env = BaseFtpConnection.getReplacerEnvironment(null,
