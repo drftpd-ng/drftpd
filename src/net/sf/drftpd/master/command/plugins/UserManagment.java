@@ -35,7 +35,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.21 2004/01/20 06:59:00 mog Exp $
+ * @version $Id: UserManagment.java,v 1.22 2004/01/20 22:12:02 zubov Exp $
  */
 public class UserManagment implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -139,7 +139,7 @@ public class UserManagment implements CommandHandler {
 	 */
 	private FtpReply doSITE_ADDUSER(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
-		boolean isGAdduser = conn.getRequest().equals("SITE GADDUSER");
+		boolean isGAdduser = request.getCommand().equals("SITE GADDUSER");
 		conn.resetState();
 
 		if (!conn.getUserNull().isAdmin()
@@ -196,7 +196,6 @@ public class UserManagment implements CommandHandler {
 			env.add("targetuser", newUsername);
 
 			String pass = st.nextToken();
-
 			response.addComment(
 				conn.jprintf(
 					UserManagment.class.getName(),
