@@ -46,7 +46,6 @@ import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.UserFileException;
-import net.sf.drftpd.remotefile.CorruptFileListException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.MLSTSerialize;
@@ -65,7 +64,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.76 2004/03/30 14:16:34 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.77 2004/03/31 04:43:50 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject

@@ -53,7 +53,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.130 2004/03/30 14:16:35 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.131 2004/03/31 04:43:51 zubov Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -1256,9 +1256,8 @@ public class LinkedRemoteFile
 										throw new RuntimeException(
 											ret
 												+ " - target already exists on the slave - ???");
-									String destpath = ret.getPath();
 									StringTokenizer destst =
-										new StringTokenizer(destpath, "/");
+										new StringTokenizer(ret.getPath(), "/");
 									String desttok = null;
 									if (!destst.hasMoreTokens())
 										throw new RuntimeException("Invalid queued rename target");
@@ -1418,16 +1417,11 @@ public class LinkedRemoteFile
 		// unmerge() gets called on all files not on slave & all directories
 		//for (Iterator i = new ArrayList(getFilesMap().values()).iterator();
 		// getFilesMap() returns a copy of the list and without isDeleted files
-		for (Iterator i = _files.values().iterator(); i.hasNext();) {
+		for (Iterator i = new ArrayList(_files.values()).iterator(); i.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) i.next();
 			if (mergedir == null) { // slave doesn't have the directory
 				if (file.isFile()) {
-					if (file.getSlaves().contains(rslave)) {
-						file.getSlaves().remove(rslave);
-					}
-					if (file.getSlaves().isEmpty()) {
-						i.remove();
-					}
+					file.unmergeFile(rslave);
 				} else {
 					file.remergePass2(null, rslave);
 				}
@@ -1435,12 +1429,7 @@ public class LinkedRemoteFile
 			}
 			if (!mergedir.hasFile(file.getName())) {
 				if (file.isFile()) {
-					if (file.getSlaves().contains(rslave)) {
-						file.getSlaves().remove(rslave);
-					}
-					if (file.getSlaves().isEmpty()) {
-						i.remove();
-					}
+					file.unmergeFile(rslave);
 				} else {
 					file.remergePass2(null, rslave);
 				}

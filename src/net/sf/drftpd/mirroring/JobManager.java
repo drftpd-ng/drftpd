@@ -36,7 +36,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.38 2004/03/15 13:53:09 zubov Exp $
+ * @version $Id: JobManager.java,v 1.39 2004/03/31 04:43:51 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -76,12 +76,15 @@ public class JobManager implements Runnable {
 	}
 
 	public synchronized void addJob(Job job) {
-		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
-			Job temp = (Job) iter.next();
-			if (temp.getFile() == job.getFile()) {
-				temp.addSlaves(job.getDestinationSlaves());
+		Collection slaves = job.getFile().getSlaves();
+		for (Iterator iter = job.getDestinationSlaves().iterator(); iter.hasNext();) {
+		RemoteSlave slave = (RemoteSlave) iter.next();
+		if(slaves.contains(slave)) {
+			iter.remove();
+			if (job.isDone()) {
 				return;
 			}
+		}
 		}
 		_jobList.add(job);
 		Collections.sort(_jobList, new JobComparator());
@@ -191,19 +194,8 @@ public class JobManager implements Runnable {
 			} catch (NoAvailableSlaveException e) {
 				continue; // can't transfer what isn't online
 			}
-			for (Iterator iter2 = availableSlaves.iterator();
-				iter2.hasNext();
-				) {
-				RemoteSlave slave = (RemoteSlave) iter2.next();
-				if(tempJob.removeDestinationSlave(slave)) {
-					if (tempJob.isDone()) {
-						iter.remove();
-						break;
-					}
-				}
-				else	if (!busySlaves.contains(slave)) {
+			if (!busySlaves.containsAll(availableSlaves)) {
 					return tempJob;
-				}
 			}
 		}
 		return null;
@@ -250,6 +242,7 @@ public class JobManager implements Runnable {
 							+ busySlavesDown);
 					return false;
 				}
+				logger.debug("looking up slave for job " + job);
 				try {
 					sourceSlave = _cm.getSlaveManager().getSlaveSelectionManager().getASlaveForJobDownload(job);
 					break; // we have a download slave!
