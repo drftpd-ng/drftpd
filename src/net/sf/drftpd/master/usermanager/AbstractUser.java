@@ -23,7 +23,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.31 2003/12/07 22:31:45 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.32 2003/12/12 22:06:19 zubov Exp $
  */
 public abstract class AbstractUser implements User {
 	private static Logger logger = Logger.getLogger(AbstractUser.class);
@@ -666,7 +666,7 @@ public abstract class AbstractUser implements User {
 	}
 
 	private void updateLogins(int i) {
-		logins += 1;
+		logins += i;
 	}
 
 	public void updateNukedBytes(long bytes) {
