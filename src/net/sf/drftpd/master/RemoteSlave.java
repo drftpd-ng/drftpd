@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
  * and mainly because it is a helper class for Slave, it is located in net.sf.drftpd.slave.
  * 
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.18 2003/11/17 20:13:10 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.19 2003/11/18 00:13:23 mog Exp $
  */
 public class RemoteSlave implements Serializable, Comparable {
 
@@ -199,10 +199,8 @@ public class RemoteSlave implements Serializable, Comparable {
 		masks = collection;
 	}
 
-	/**
-	 * 
-	 */
 	public void setOffline(String reason) {
+		assert manager != null;
 		manager.getConnectionManager().dispatchFtpEvent(
 			new SlaveEvent("DELSLAVE", reason, this));
 		this.slave = null;

@@ -18,7 +18,7 @@ import net.sf.drftpd.AsciiOutputStream;
 
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.29 2003/11/17 20:33:10 mog Exp $
+ * @version $Id: TransferImpl.java,v 1.30 2003/11/18 00:13:24 mog Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private boolean _abort = false;
@@ -156,7 +156,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 				_out = _sock.getOutputStream();
 			}
 		} else {
-			throw new RuntimeException("neither in or out was null");
+			throw new IllegalStateException("neither in or out was null");
 		}
 
 		_slave.addTransfer(this);

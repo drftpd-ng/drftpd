@@ -156,7 +156,7 @@ public class MLSTSerialize {
 			}
 			//if(isFile && !file.isFile()) file.setRSlaves(Collections.EMPTY_LIST);
 			if (isFile != file.isFile() && isDir != file.isDirectory())
-				throw new CorruptFileListException("entry is a file but had no x.slaves entry");
+				throw new CorruptFileListException("entry is a file but had no x.slaves entry: "+line);
 
 			dir.putFile(file);
 		}

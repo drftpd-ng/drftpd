@@ -334,39 +334,30 @@ public class SlaveImpl
 		//		System.gc();
 	}
 
-	/**
-	 * 
-	 */
 	public RootBasket getRoots() {
 		return _roots;
 	}
 
-	/**
-	 * @deprecated
-	 */
-	public Vector getTransfers() {
-		return _transfers;
-	}
 
-	public void addTransfer(TransferImpl o) {
+	public void addTransfer(TransferImpl transfer) {
 		synchronized (_transfers) {
-			_transfers.add(o);
+			_transfers.add(transfer);
 		}
 	}
 
-	public void removeTransfer(TransferImpl o) {
+	public void removeTransfer(TransferImpl transfer) {
 		synchronized (_transfers) {
-			switch (o.getDirection()) {
+			switch (transfer.getDirection()) {
 				case Transfer.TRANSFER_RECEIVING_UPLOAD :
-					_receivedBytes += o.getTransfered();
+					_receivedBytes += transfer.getTransfered();
 					break;
 				case Transfer.TRANSFER_SENDING_DOWNLOAD :
-					_sentBytes += o.getTransfered();
+					_sentBytes += transfer.getTransfered();
 					break;
 				default :
 					throw new IllegalArgumentException();
 			}
-			if (!_transfers.remove(o))
+			if (!_transfers.remove(transfer))
 				throw new IllegalStateException();
 		}
 	}

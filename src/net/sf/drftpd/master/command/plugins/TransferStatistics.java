@@ -16,9 +16,11 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.Permission;
+import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 public class TransferStatistics implements CommandHandler {
@@ -27,6 +29,8 @@ public class TransferStatistics implements CommandHandler {
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {
 		FtpRequest request = conn.getRequest();
+		if (request.getCommand().equals("SITE STATS"))
+			return doSITE_STATS(conn);
 		List users;
 		try {
 			users = conn.getUserManager().getAllUsers();
@@ -114,6 +118,86 @@ public class TransferStatistics implements CommandHandler {
 			//							+ " "
 			//							+ Bytes.formatBytes(user.getDownloadedBytesMonth()));
 		}
+		return response;
+	}
+
+	/**
+	 * USAGE: site stats [<user>]
+	 *	Display a user's upload/download statistics.
+	 */
+	public FtpReply doSITE_STATS(BaseFtpConnection conn) {
+		FtpRequest request = conn.getRequest();
+
+		if (!request.hasArgument()) {
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+		}
+
+		User user;
+		if (!request.hasArgument()) {
+			user = conn.getUserNull();
+		} else {
+			try {
+				user =
+					conn.getUserManager().getUserByName(request.getArgument());
+			} catch (NoSuchUserException e) {
+				return new FtpReply(200, "No such user: " + e.getMessage());
+			} catch (UserFileException e) {
+				logger.log(Level.WARN, "", e);
+				return new FtpReply(200, e.getMessage());
+			}
+		}
+
+		if (conn.getUserNull().isGroupAdmin()
+			&& !conn.getUserNull().getGroupName().equals(user.getGroupName())) {
+			return FtpReply.RESPONSE_530_ACCESS_DENIED;
+		} else if (
+			!conn.getUserNull().isAdmin()
+				&& !user.equals(conn.getUserNull())) {
+			return FtpReply.RESPONSE_530_ACCESS_DENIED;
+		}
+
+		FtpReply response = new FtpReply(200);
+		response.addComment("bytes up, files up, bytes down, files down");
+		response.addComment(
+			"total: "
+				+ Bytes.formatBytes(user.getUploadedBytes())
+				+ " "
+				+ user.getUploadedFiles()
+				+ "f "
+				+ Bytes.formatBytes(user.getDownloadedBytes())
+				+ " "
+				+ user.getDownloadedFiles()
+				+ "f ");
+		response.addComment(
+			"month: "
+				+ Bytes.formatBytes(user.getUploadedBytesMonth())
+				+ " "
+				+ user.getUploadedFilesMonth()
+				+ "f "
+				+ Bytes.formatBytes(user.getDownloadedBytesMonth())
+				+ " "
+				+ user.getDownloadedFilesMonth()
+				+ "f ");
+		response.addComment(
+			"week: "
+				+ Bytes.formatBytes(user.getUploadedBytesWeek())
+				+ " "
+				+ user.getUploadedFilesWeek()
+				+ "f "
+				+ Bytes.formatBytes(user.getDownloadedBytesWeek())
+				+ "b "
+				+ user.getDownloadedFilesWeek()
+				+ "f ");
+		response.addComment(
+			"day: "
+				+ Bytes.formatBytes(user.getUploadedBytesDay())
+				+ "b "
+				+ user.getUploadedFilesDay()
+				+ "f "
+				+ Bytes.formatBytes(user.getDownloadedBytesDay())
+				+ "b "
+				+ user.getDownloadedFilesDay()
+				+ "f ");
 		return response;
 	}
 
