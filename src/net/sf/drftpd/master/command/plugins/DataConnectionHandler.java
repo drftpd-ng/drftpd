@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
@@ -1065,24 +1064,17 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                 }
 
                 //do our zipscript sfv checks
-                Properties zsConfig = conn.getGlobalContext().getConfig().getZsConfig();
-                boolean checksfv = zsConfig.getProperty("sfv.restrict.files") == null ? false :
-                    				zsConfig.getProperty("sfv.restrict.files").equalsIgnoreCase("true");
-                boolean allowMultiSfv = zsConfig.getProperty("allow.multi.sfv") == null ? true :
-                    				zsConfig.getProperty("allow.multi.sfv").equalsIgnoreCase("true");
-
                 String checkName = targetFileName.toLowerCase();
                 if (!(checkName.endsWith(".nfo") || checkName.endsWith(".m3u")
                         || checkName.endsWith(".jpg") || checkName.endsWith(".cue"))) {
                     try {
                         SFVFile sfv = conn.getCurrentDirectory().lookupSFVFile();
-                        logger.info("checkName.endsWith(\".sfv\") = " + checkName.endsWith(".sfv"));
-                        logger.info("allowMultiSfv = " + allowMultiSfv);
-                        if (checkName.endsWith(".sfv") && !allowMultiSfv) {
+                        if (checkName.endsWith(".sfv") && 
+                        	!conn.getGlobalContext().getZsConfig().multiSfvAllowed()) {
                             return new Reply(533,
                             	"Requested action not taken. Multiple SFV files not allowed.");
                         }
-                        if (checksfv) {
+                        if (conn.getGlobalContext().getZsConfig().restrictSfvEnabled()) {
                             boolean allow = false;
                             for (Iterator iter = sfv.getNames().iterator(); iter.hasNext();) {
                                 String name = (String) iter.next();

@@ -34,6 +34,7 @@ import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.master.SlaveFileException;
 import net.sf.drftpd.master.config.ConfigInterface;
 import net.sf.drftpd.master.config.FtpConfig;
+import net.sf.drftpd.master.config.ZipscriptConfig;
 import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.util.PortRange;
 
@@ -57,6 +58,7 @@ public class GlobalContext {
     private static final Logger logger = Logger.getLogger(GlobalContext.class);
     protected ConnectionManager _cm;
     protected ConfigInterface _config;
+    protected ZipscriptConfig _zsConfig;
     private ArrayList<FtpListener> _ftpListeners = new ArrayList<FtpListener>();
     protected JobManager _jm;
     protected LinkedRemoteFileInterface _root;
@@ -73,6 +75,7 @@ public class GlobalContext {
 
     public void reloadFtpConfig() throws IOException {
     	_config = new FtpConfig(_cfgFileName, this);
+    	_zsConfig = new ZipscriptConfig(this);
     }
 
     public GlobalContext(Properties cfg, String cfgFileName,
@@ -84,6 +87,12 @@ public class GlobalContext {
 
         try {
             _config = new FtpConfig(cfg, cfgFileName, this);
+        } catch (Throwable ex) {
+            throw new FatalException(ex);
+        }
+
+        try {
+            _zsConfig = new ZipscriptConfig(this);
         } catch (Throwable ex) {
             throw new FatalException(ex);
         }
@@ -141,6 +150,11 @@ public class GlobalContext {
         return _config;
     }
 
+    public ZipscriptConfig getZsConfig() {
+        assert _zsConfig != null;
+        return _zsConfig;
+    }
+    
     public ConnectionManager getConnectionManager() {
     	assert _cm != null;
         return _cm;

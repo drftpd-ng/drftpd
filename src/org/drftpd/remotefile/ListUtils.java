@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
-
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
 
@@ -75,12 +73,6 @@ public class ListUtils {
         int numTotal = 0;
         boolean id3found = false;
         ID3Tag mp3tag = null;
-
-        //Properties zsCfg = new Properties();
-        //FileInputStream zsFile = new FileInputStream("conf/zipscript.conf");
-        //zsCfg.load(zsFile);
-        //zsFile.close();
-        Properties zsCfg = conn.getGlobalContext().getConfig().getZsConfig();
 
         for (Iterator iter = tempFileList.iterator(); iter.hasNext();) {
             LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
@@ -133,8 +125,8 @@ public class ListUtils {
             //				listFiles.add(element);
             //				continue;
             //			} else if (
-    		boolean offlineEnabled = zsCfg.getProperty("files.offline.enabled", "true").equalsIgnoreCase("true");
-            if (!element.isAvailable() && offlineEnabled) { // directories are always available
+            if (!element.isAvailable() && 
+                    conn.getGlobalContext().getZsConfig().offlineFilesEnabled()) { // directories are always available
                 ReplacerEnvironment env = new ReplacerEnvironment();
 				env.add("ofilename",element.getName());
 				String oFileName = conn.jprintf(ListUtils.class, "files.offline.filename", env);
@@ -209,14 +201,12 @@ public class ListUtils {
                     throw new RuntimeException();
                 }
 
-                boolean statusbarEnabled = zsCfg.getProperty("statusbar.enabled").equalsIgnoreCase("true");
-                if (statusbarEnabled) {
+                if (conn.getGlobalContext().getZsConfig().statusBarEnabled()) {
                 	listFiles.add(new StaticRemoteFile(null, statusDirName,
                         "drftpd", "drftpd", 0L, dir.lastModified()));
                 }
 
-                boolean missingEnabled = zsCfg.getProperty("files.missing.enabled").equalsIgnoreCase("true");
-                if (missingEnabled) {
+                if (conn.getGlobalContext().getZsConfig().missingFilesEnabled()) {
                     for (Iterator iter = sfvfile.getNames().iterator();
                     	iter.hasNext();) {
                     	String filename = (String) iter.next();

@@ -23,7 +23,6 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
@@ -138,12 +137,9 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         conn.getGlobalContext().getConfig().directoryMessage(response,
             conn.getUserNull(), newCurrentDirectory);
 
-        Properties zsCfg = conn.getGlobalContext().getConfig().getZsConfig();
-
         // show cwd_mp3.txt if this is an mp3 release
-        boolean id3Enabled = zsCfg.getProperty("cwd.id3info.enabled").equalsIgnoreCase("true");
         ResourceBundle bundle = ResourceBundle.getBundle(Dir.class.getName());
-        if (id3Enabled) {
+        if (conn.getGlobalContext().getZsConfig().id3Enabled()) {
             try {
                 ID3Tag id3tag = newCurrentDirectory.lookupFile(newCurrentDirectory.lookupMP3File())
                                                    .getID3v1Tag();
@@ -184,9 +180,7 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         }
 
         //show race stats
-        boolean racestatsEnabled = zsCfg.getProperty("cwd.racestats.enabled").equalsIgnoreCase("true");
-
-        if (racestatsEnabled) {
+        if (conn.getGlobalContext().getZsConfig().raceStatsEnabled()) {
             try {
                 SFVFile sfvfile = newCurrentDirectory.lookupSFVFile();
                 Collection racers = SiteBot.userSort(sfvfile.getFiles(),
