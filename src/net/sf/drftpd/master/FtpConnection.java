@@ -1295,8 +1295,10 @@ public class FtpConnection extends BaseFtpConnection {
 					return;
 				}
 				break;
+			} else {
+				out.println(" 502 Command not implemented. ");
+				return;
 			}
-			//TODO: passive transfer
 		}
 		out.write(ftpStatus.getResponse(150, request, user, null));
 		out.flush();
