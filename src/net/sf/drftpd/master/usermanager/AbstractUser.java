@@ -20,14 +20,22 @@ import org.apache.oro.text.regex.Perl5Matcher;
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  */
 
-public abstract class AbstractUser extends User {
+public abstract class AbstractUser implements User {
 
+	private long weeklyAllotment;
 	private static Logger logger = Logger.getLogger(AbstractUser.class);
+	/**
+	 * Should problably be named group for consistency,
+	 * this would reset group for JSXUser though. 
+	 */
 	private String _group = "nogroup";
 
 	protected boolean anonymous;
 	protected String comment;
 	protected long credits;
+	public int hashCode() {
+		return getUsername().hashCode();
+	}
 
 	protected long downloadedBytes;
 	protected long downloadedBytesDay;
@@ -49,7 +57,6 @@ public abstract class AbstractUser extends User {
 
 	protected short groupSlots;
 
-	// time limits
 	protected int idleTime = 0; // no limit
 	protected ArrayList ipMasks = new ArrayList();
 	protected long lastAccessTime = 0;
@@ -80,7 +87,7 @@ public abstract class AbstractUser extends User {
 	protected int timelimit;
 	protected int timesNuked;
 
-	protected int timeToday;
+	protected long timeToday;
 
 	protected long uploadedBytes;
 	protected long uploadedBytesDay;
@@ -284,7 +291,7 @@ public abstract class AbstractUser extends User {
 	 * Returns the idleTime.
 	 * @return long
 	 */
-	public long getIdleTime() {
+	public int getIdleTime() {
 		return idleTime;
 	}
 
@@ -331,13 +338,6 @@ public abstract class AbstractUser extends User {
 	 */
 	public int getMaxDownloadRate() {
 		return maxDownloadRate;
-	}
-
-	/**
-	 * Get the maximum idle time in second.
-	 */
-	public int getMaxIdleTime() {
-		return idleTime;
 	}
 
 	/**
@@ -534,29 +534,6 @@ public abstract class AbstractUser extends User {
 		lastAccessTime = System.currentTimeMillis();
 	}
 
-	/**
-	 * Is still active. Compares the last access time with the
-	 * current time.
-	 */
-	public boolean isActive() {
-		return isActive(System.currentTimeMillis());
-	}
-
-	/**
-	 * Is an active user (is removable)?
-	 * Compares the last access time with the specified time.
-	 * @deprecated
-	 */
-	public boolean isActive(long currTime) {
-		boolean bActive = true;
-		long maxIdleTime = getMaxIdleTime() * 1000; // milliseconds
-		if (maxIdleTime != 0L) {
-			long idleTime = currTime - lastAccessTime;
-			bActive = maxIdleTime > idleTime;
-		}
-		return bActive;
-	}
-
 	public boolean isAdmin() {
 		return isMemberOf("siteop");
 	}
@@ -627,8 +604,8 @@ public abstract class AbstractUser extends User {
 		if (!ipMasks.remove(mask))
 			throw new NoSuchFieldException("User has no such ip mask");
 	}
+	
 	public void reset() {
-
 		Calendar now = Calendar.getInstance();
 		Calendar lastResetCalendar = Calendar.getInstance();
 		lastResetCalendar.setTime(new Date(lastReset));
@@ -661,6 +638,7 @@ public abstract class AbstractUser extends User {
 
 		this.downloadedBytesDay = 0;
 		this.uploadedBytesDay = 0;
+		this.timeToday = 0;
 	}
 	/**
 	 * 
@@ -690,13 +668,6 @@ public abstract class AbstractUser extends User {
 		//TODO wkly_allotment
 	}
 
-	/**
-	 * Sets the anonymous.
-	 * @param anonymous The anonymous to set
-	 */
-	public void setAnonymous(boolean anonymous) {
-		this.anonymous = anonymous;
-	}
 	public void setComment(String comment) {
 		this.comment = comment;
 	}
@@ -759,7 +730,7 @@ public abstract class AbstractUser extends User {
 	 * Sets the lastAccessTime.
 	 * @param lastAccessTime The lastAccessTime to set
 	 */
-	public void setLastAccessTime(int lastAccessTime) {
+	public void setLastAccessTime(long lastAccessTime) {
 		this.lastAccessTime = lastAccessTime;
 	}
 
@@ -768,7 +739,6 @@ public abstract class AbstractUser extends User {
 	 */
 	public void setLastNuked(long lastNuked) {
 		this.lastNuked = lastNuked;
-		update();
 	}
 
 	/**
@@ -777,7 +747,6 @@ public abstract class AbstractUser extends User {
 	 */
 	public void setLogins(int logins) {
 		this.logins = logins;
-		update();
 	}
 
 	/**
@@ -786,13 +755,6 @@ public abstract class AbstractUser extends User {
 	 */
 	public void setMaxDownloadRate(int rate) {
 		maxDownloadRate = rate;
-	}
-
-	/**
-	 * Set the maximum idle time in second.
-	 */
-	public void setMaxIdleTime(int idleTime) {
-		this.idleTime = idleTime;
 	}
 
 	/**
@@ -874,7 +836,7 @@ public abstract class AbstractUser extends User {
 	 * Sets the timeToday.
 	 * @param timeToday The timeToday to set
 	 */
-	public void setTimeToday(int timeToday) {
+	public void setTimeToday(long timeToday) {
 		this.timeToday = timeToday;
 	}
 
@@ -884,10 +846,6 @@ public abstract class AbstractUser extends User {
 	public String toString() {
 		return username;
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.User#updateTimesNuked(int)
-	 */
-	public abstract void update();
 
 	public void updateCredits(long credits) {
 		this.credits += credits;
@@ -913,11 +871,9 @@ public abstract class AbstractUser extends User {
 	 */
 	public void updateNukedBytes(long bytes) {
 		this.nukedBytes += bytes;
-		update();
 	}
 	public void updateTimesNuked(int timesNuked) {
 		this.timesNuked += timesNuked;
-		update();
 	}
 
 	public void updateUploadedBytes(long bytes) {
@@ -935,5 +891,13 @@ public abstract class AbstractUser extends User {
 		this.uploadedFilesDay += i;
 		this.uploadedFilesWeek += i;
 		this.uploadedFilesMonth += i;
+	}
+
+	public void setWeeklyAllotment(long weeklyAllotment) {
+		this.weeklyAllotment = weeklyAllotment;
+	}
+
+	public long getWeeklyAllotment() {
+		return this.weeklyAllotment;
 	}
 }

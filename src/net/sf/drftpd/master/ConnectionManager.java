@@ -1,6 +1,5 @@
 package net.sf.drftpd.master;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -26,6 +25,7 @@ import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.XferLogListener;
 import net.sf.drftpd.event.irc.IRCListener;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.queues.NukeLog;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -35,10 +35,9 @@ import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
 import net.sf.drftpd.slave.SlaveImpl;
 
-import org.apache.log4j.FileAppender;
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -50,17 +49,17 @@ public class ConnectionManager {
 		Logger.getLogger(ConnectionManager.class.getName());
 
 	public static void main(String args[]) {
-		//BasicConfigurator.configure();
-		Logger root = Logger.getRootLogger();
-		new File("ftp-data/logs").mkdirs();
-		try {
-			root.addAppender(
-				new FileAppender(
-					new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN),
-					"ftp-data/logs/drftpd.log"));
-		} catch (IOException e1) {
-			throw new FatalException(e1);
-		}
+		BasicConfigurator.configure();
+//		Logger root = Logger.getRootLogger();
+//		new File("ftp-data/logs").mkdirs();
+//		try {
+//			root.addAppender(
+//				new FileAppender(
+//					new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN),
+//					"ftp-data/logs/drftpd.log"));
+//		} catch (IOException e1) {
+//			throw new FatalException(e1);
+//		}
 		System.out.println(SlaveImpl.VERSION + " master server starting.");
 		System.out.println("http://drftpd.sourceforge.net");
 
@@ -88,7 +87,9 @@ public class ConnectionManager {
 				mgr.start(server.accept());
 			}
 		} catch (Exception th) {
-			throw new FatalException(th);
+			logger.error("", th);
+			System.exit(0);
+			return;
 		}
 	}
 	private FtpConfig _config;
@@ -108,7 +109,6 @@ public class ConnectionManager {
 		} catch (Throwable ex) {
 			throw new FatalException(ex);
 		}
-		new File("ftp-data/logs").mkdirs();
 
 		/** END: load XML file database **/
 
@@ -237,7 +237,7 @@ public class ConnectionManager {
 	public void addFtpListener(FtpListener listener) {
 		_ftpListeners.add(listener);
 	}
-	protected void dispatchFtpEvent(Event event) {
+	public void dispatchFtpEvent(Event event) {
 		for (Iterator iter = _ftpListeners.iterator(); iter.hasNext();) {
 			try {
 				FtpListener handler = (FtpListener) iter.next();
@@ -312,14 +312,14 @@ public class ConnectionManager {
 			for (Iterator iter = getConnections().iterator();
 				iter.hasNext();
 				) {
-				((FtpConnection) iter.next()).stop(message);
+				((BaseFtpConnection) iter.next()).stop(message);
 			}
 		}
 		dispatchFtpEvent(new MessageEvent("SHUTDOWN", message));
 	}
-
+	private CommandManagerFactory commandManagerFactory = new CommandManagerFactory();
 	public void start(Socket sock) throws IOException {
-		FtpConnection conn = new FtpConnection(sock, this);
+		BaseFtpConnection conn = new BaseFtpConnection(this, sock);
 		_conns.add(conn);
 		conn.start();
 	}
@@ -328,12 +328,12 @@ public class ConnectionManager {
 		long currTime = System.currentTimeMillis();
 		synchronized (_conns) {
 			for (Iterator i = _conns.iterator(); i.hasNext();) {
-				FtpConnection conn = (FtpConnection) i.next();
+				BaseFtpConnection conn = (BaseFtpConnection) i.next();
 
 				int idle = (int) ((currTime - conn.getLastActive()) / 1000);
 				int maxIdleTime;
 				try {
-					maxIdleTime = conn.getUser().getMaxIdleTime();
+					maxIdleTime = conn.getUser().getIdleTime();
 					if (maxIdleTime == 0)
 						maxIdleTime = idleTimeout;
 				} catch (NoSuchUserException e) {
@@ -346,6 +346,13 @@ public class ConnectionManager {
 				}
 			}
 		}
+	}
+
+	/**
+	 * @return
+	 */
+	public CommandManagerFactory getCommandManagerFactory() {
+		return commandManagerFactory;
 	}
 
 }

@@ -45,10 +45,3 @@ freespace.min=100MB
 
 #sitebot settings
 irc.enabled=false
-irc.server=irc.hemmet.chalmers.se
-irc.port=6667
-irc.channel=#drftpd
-irc.key=
-irc.nick=drftpd
-irc.name=drftpd
-irc.user=drftpd

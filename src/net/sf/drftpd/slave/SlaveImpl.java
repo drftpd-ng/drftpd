@@ -141,8 +141,10 @@ public class SlaveImpl
 	private RootBasket _roots;
 
 	private Vector _transfers = new Vector();
+	private long _sentBytes = 0;
+	private long _receivedBytes = 0;
 
-	public static final String VERSION = "DrFTPD 0.9.0";
+	public static final String VERSION = "DrFTPD 0.9.0-CVS";
 
 	public SlaveImpl(Properties cfg) throws RemoteException {
 		super(0);
@@ -210,9 +212,8 @@ public class SlaveImpl
 	public Transfer connect(InetAddress addr, int port)
 		throws RemoteException {
 		return new TransferImpl(
-			this._transfers,
 			new ActiveConnection(addr, port),
-			this._roots);
+			this);
 	}
 
 	public void delete(String path) throws IOException {
@@ -275,9 +276,8 @@ public class SlaveImpl
 	public Transfer listen() throws RemoteException, IOException {
 
 		return new TransferImpl(
-			this._transfers,
 			new PassiveConnection(null),
-			this._roots);
+			this);
 	}
 
 	/**
@@ -331,5 +331,19 @@ public class SlaveImpl
 		//			"Lost master, trying to re-register with master.");
 		//		register();
 		//		System.gc();
+	}
+
+	/**
+	 * 
+	 */
+	public RootBasket getRoots() {
+		return _roots;
+	}
+
+	/**
+	 * 
+	 */
+	public Vector getTransfers() {
+		return _transfers;
 	}
 }

@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import net.sf.drftpd.master.FtpResponse;
+import net.sf.drftpd.master.FtpReply;
 
 /**
  * @author mog
@@ -38,7 +38,7 @@ public class MessagePathPermission extends StringPathPermission {
 		message.trimToSize();
 	}
 
-	public void printMessage(FtpResponse response) {
+	public void printMessage(FtpReply response) {
 		for (Iterator iter = message.iterator(); iter.hasNext();) {
 			String line = (String) iter.next();
 			response.addComment(line);

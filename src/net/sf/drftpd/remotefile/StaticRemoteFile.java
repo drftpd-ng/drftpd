@@ -1,9 +1,7 @@
 package net.sf.drftpd.remotefile;
 
-import java.util.ArrayList;
 import java.util.Collection;
-
-import net.sf.drftpd.master.usermanager.User;
+import java.util.List;
 
 /**
  * Creates a single RemoteFile object that is not linked to any other objects.
@@ -14,74 +12,54 @@ import net.sf.drftpd.master.usermanager.User;
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
 public class StaticRemoteFile extends RemoteFile {
-	private String path;
-	private long length;
-	private long lastModified;
-	private Collection slaves;
-	private boolean isDirectory;
-	private boolean isFile;
+	private boolean _isDeleted;
+	private boolean _isDirectory;
+	private boolean _isFile;
+	private long _lastModified;
+	private long _length;
+	private String _name;
+	private List _rslaves;
+	private long _xfertime;
 	
-	public StaticRemoteFile(RemoteFile file) {
-//		canRead = file.canRead();
-//		canWrite = file.canWrite();
-		this.lastModified = file.lastModified();
-		this.length = file.length();
-		//isHidden = file.isHidden();
-		this.isDirectory = file.isDirectory();
-		this.isFile = file.isFile();
-		this.path = file.getPath();
-		this.slaves = new ArrayList(0);
-		/* serialize directory*/
-		//slaves = file.getSlaves();
-	}
+//	//no longer used
+//	public StaticRemoteFile(RemoteFile file) {
+////		canRead = file.canRead();
+////		canWrite = file.canWrite();
+//		this.lastModified = file.lastModified();
+//		this.length = file.length();
+//		//isHidden = file.isHidden();
+//		this.isDirectory = file.isDirectory();
+//		this.isFile = file.isFile();
+//		this.path = file.getPath();
+//		this.slaves = new ArrayList(0);
+//		/* serialize directory*/
+//		//slaves = file.getSlaves();
+//	}
 	
-	/**
-	 * Creates a new RemoteFile from nothing.
-	 * 
-	 * If 'path' ends with "/" the RemoteFile will be marked as a directory
-	 * 
-	 * If this file has no owner 'owner' may be null, then "drftpd:drftpd will be used.
-	 * 
-	 * If lastModified is 0 it will be set to the currentTimeMillis.
-	 * @deprecated
-	 */
-	public StaticRemoteFile(Collection rslaves, String path, User owner, long size, long lastModified) {
-		this(rslaves, path, owner.getUsername(), owner.getGroupName(), size, lastModified);
-	}
-	
-	public StaticRemoteFile(Collection rslaves, String path, String owner, String group, long size, long lastModified) {
-		this.slaves = rslaves;
-		this.path = path;
-		if(path.endsWith("/")) {
-			isDirectory = true;
-			isFile = false;
+	public StaticRemoteFile(List rslaves, String name, String owner, String group, long size, long lastModified) {
+		if(rslaves == null) throw new NullPointerException("rslaves cannot be null");
+		_rslaves = rslaves;
+		_name = name;
+		if(name.indexOf("/") != -1) {
+			throw new IllegalArgumentException("constructor only does files and not paths");
+//			isDirectory = true;
+//			isFile = false;
 		} else {
-			isDirectory = false;
-			isFile = true;
+			_isDirectory = false;
+			_isFile = true;
 		}
-			this.owner = owner;
-			this.group = group;
-		this.length = size;
-		this.lastModified = lastModified;
+			this._username = owner;
+			this._groupname = group;
+		_length = size;
+		_lastModified = lastModified;
 	}
 	
-	/**
-	 * @deprecated
-	 * @param rslaves
-	 * @param path
-	 * @param owner
-	 * @param size
-	 * @param lastModified
-	 * @param checkSum
-	 */
-	public StaticRemoteFile(Collection rslaves, String path, User owner, long size, long lastModified, long checkSum) {
-		this(rslaves, path, owner.getUsername(), owner.getGroupName(), size, lastModified);
+	public StaticRemoteFile(List rslaves, String name, String owner, String group, long size, long lastModified, long checkSum) {
+		this(rslaves, name, owner, group, size, lastModified);
 		this.checkSum = checkSum;
 	}
-
-	public StaticRemoteFile(Collection rslaves, String path, String owner, String group, long size, long lastModified, long checkSum) {
-		this(rslaves, path, owner, group, size, lastModified);
-		this.checkSum = checkSum;
+	public StaticRemoteFile(String name) {
+		_name = name;
 	}
 	
 	/**
@@ -92,75 +70,139 @@ public class StaticRemoteFile extends RemoteFile {
 		return getPath().equals(((RemoteFile)file).getPath());
 	}
 
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFile#getFiles()
+	 */
+	public Collection getFiles() {
+		throw new UnsupportedOperationException("getFiles() does not exist in StaticRemoteFile");
+	}
+
 	/**
 	 * @see net.sf.drftpd.RemoteFile#getName()
 	 */
 	public String getName() {
-		int index = path.lastIndexOf(RemoteFile.separatorChar);
-		return path.substring(index + 1);
+		return _name;
 	}
 
 	/**
 	 * @see net.sf.drftpd.RemoteFile#getParent()
 	 */
 	public String getParent() {
-		throw new NoSuchMethodError("getParent() does not exist in StaticRemoteFile");
+		throw new UnsupportedOperationException("getParent() does not exist in StaticRemoteFile");
 	}
 	
 	/**
 	 * @see net.sf.drftpd.RemoteFile#getPath()
 	 */
 	public String getPath() {
-		return path;
-	}
-	
-	/**
-	 * @see net.sf.drftpd.remotefile.RemoteFileTree#listFiles()
-	 */
-	public RemoteFileInterface[] listFiles() {
-		throw new NoSuchMethodError("listFiles() does not exist in StaticRemoteFile");
-	}
-
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#getFiles()
-	 */
-	public Collection getFiles() {
-		throw new NoSuchMethodError("getFiles() does not exist in StaticRemoteFile");
+		throw new UnsupportedOperationException();
 	}
 
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.remotefile.RemoteFile#getSlaves()
 	 */
 	public Collection getSlaves() {
-		return slaves;
+		return _rslaves;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#length()
-	 */
-	public long length() {
-		return this.length;
+	public long getXfertime() {
+		return _xfertime;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#lastModified()
-	 */
-	public long lastModified() {
-		return this.lastModified;
+	public boolean isDeleted() {
+		return _isDeleted;
+	}
+
+	public boolean isDirectory() {
+		return _isDirectory;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.remotefile.RemoteFile#isFile()
 	 */
 	public boolean isFile() {
-		return this.isFile;
+		return _isFile;
 	}
 
 	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#isDirectory()
+	 * @see net.sf.drftpd.remotefile.RemoteFile#lastModified()
 	 */
-	public boolean isDirectory() {
-		return this.isDirectory;
+	public long lastModified() {
+		return _lastModified;
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFile#length()
+	 */
+	public long length() {
+		return _length;
+	}
+	
+	/**
+	 * @see net.sf.drftpd.remotefile.RemoteFileTree#listFiles()
+	 */
+	public RemoteFileInterface[] listFiles() {
+		return new RemoteFileInterface[0];
+	}
+
+	public void setChecksum(long l) {
+		checkSum = l;
+	}
+
+	/**
+	 * @param b
+	 */
+	public void setDeleted(boolean b) {
+		_isDeleted = b;
+	}
+
+	public void setGroupname(String v) {
+		_groupname = v;
+	}
+
+	public void setIsDirectory(boolean b) {
+		_isDirectory = b;
+	}
+
+	public void setIsFile(boolean b) {
+		_isFile = b;
+	}
+
+	public void setLastModified(long l) {
+		_lastModified = l;
+	}
+
+	public void setLength(long l) {
+		_length = l;
+	}
+
+	public void setRSlaves(List rslaves) {
+		_rslaves = rslaves;
+	}
+
+	public void setUsername(String v) {
+		_username = v;
+	}
+
+	public void setXfertime(long l) {
+		_xfertime = l;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		
+		StringBuffer ret = new StringBuffer();
+		ret.append(getClass().getName()+"[");
+		if (isDirectory())
+			ret.append("[directory: true]");
+		if(isFile())
+			ret.append("[file: true]");
+		ret.append("[length(): "+length()+"]");
+		ret.append(getName());
+		ret.append("]");
+		return ret.toString();
 	}
 
 }

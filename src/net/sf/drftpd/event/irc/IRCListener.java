@@ -149,7 +149,7 @@ public class IRCListener implements FtpListener, Observer {
 		_cm = cm;
 		//Debug.setDebugLevel(Debug.FAULT);
 		Debug.setOutputStream(
-			new PrintStream(new FileOutputStream("martyr.out")));
+			new PrintStream(new FileOutputStream("ftp-data/logs/sitebot.log")));
 
 		reload();
 
@@ -215,6 +215,8 @@ public class IRCListener implements FtpListener, Observer {
 			sayDirectorySection(direvent, "mkdir");
 		} else if ("REQUEST".equals(direvent.getCommand())) {
 			sayDirectorySection(direvent, "request");
+		} else if ("REQFILLED".equals(direvent.getCommand())) {
+			sayDirectorySection(direvent, "reqfilled");
 		} else if ("RMD".equals(direvent.getCommand())) {
 			sayDirectorySection(direvent, "rmdir");
 		} else if ("WIPE".equals(direvent.getCommand())) {
@@ -237,7 +239,6 @@ public class IRCListener implements FtpListener, Observer {
 		} else {
 			logger.debug("Unhandled DirectoryEvent: " + direvent);
 		}
-
 	}
 
 	/**
@@ -717,9 +718,6 @@ public class IRCListener implements FtpListener, Observer {
 
 	}
 
-	/**
-	 * @param string
-	 */
 	private void sayDirectorySection(DirectoryFtpEvent direvent, String string)
 		throws FormatterException {
 

@@ -15,11 +15,11 @@ public abstract class RemoteFile implements RemoteFileInterface {
 
 	protected long checkSum = 0;
 
-	protected String group;
+	protected String _groupname;
 
 	protected long lastModified = -1;
 	
-	protected String owner;
+	protected String _username;
 
 	/**
 	 * @see java.lang.Object#equals(Object)
@@ -42,9 +42,9 @@ public abstract class RemoteFile implements RemoteFileInterface {
 //	public abstract Collection getFiles();
 	
 	public String getGroupname() {
-		if (group == null)
+		if (_groupname == null)
 			return "drftpd";
-		return group;
+		return _groupname;
 	}
 
 	/**
@@ -53,9 +53,9 @@ public abstract class RemoteFile implements RemoteFileInterface {
 //	public abstract String getName();
 	
 	public String getUsername() {
-		if (owner == null)
+		if (_username == null)
 			return "drftpd";
-		return owner;
+		return _username;
 	}
 	/**
 	 * @see java.io.File#getParent()
@@ -69,7 +69,7 @@ public abstract class RemoteFile implements RemoteFileInterface {
 	public abstract Collection getSlaves();
 	
 	public long getXfertime() {
-		throw new NoSuchMethodError();
+		throw new UnsupportedOperationException();
 	}
 	/**
 	 * @see java.lang.Object#hashCode()

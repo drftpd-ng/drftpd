@@ -6,7 +6,6 @@
  */
 package net.sf.drftpd.master.config;
 
-import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -23,7 +22,7 @@ import java.util.StringTokenizer;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.FtpResponse;
+import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -179,7 +178,7 @@ public class FtpConfig {
 	}
 
 	public void directoryMessage(
-		FtpResponse response,
+		FtpReply response,
 		User user,
 		LinkedRemoteFile dir) {
 
@@ -200,12 +199,12 @@ public class FtpConfig {
 				if (perm.check(fromUser)) {
 					return perm.getRatio();
 				} else {
-					return 1;
+					return fromUser.getRatio() == 0.0 ? 0 : 1;
 				}
 			}
 		}
 		//default credit loss ratio is 1
-		return 1;
+		return fromUser.getRatio() == 0.0 ? 0 : 1;
 	}
 	public long getFreespaceMin() {
 		return freespaceMin;
@@ -452,8 +451,4 @@ public class FtpConfig {
 		loadConfig(cfg, connManager);
 	}
 
-	public void welcomeMessage(FtpResponse response) throws IOException {
-		response.addComment(
-			new BufferedReader(new FileReader("ftp-data/text/welcome.txt")));
-	}
 }

@@ -1,5 +1,6 @@
 package net.sf.drftpd.master;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -24,10 +25,11 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.SlaveEvent;
-import net.sf.drftpd.master.config.*;
-import net.sf.drftpd.remotefile.JDOMRemoteFile;
+import net.sf.drftpd.master.config.FtpConfig;
+import net.sf.drftpd.remotefile.CorruptFileException;
+import net.sf.drftpd.remotefile.JDOMSerialize;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.XMLSerialize;
+import net.sf.drftpd.remotefile.MLSTSerialize;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.Transfer;
@@ -210,28 +212,38 @@ public class SlaveManagerImpl
 		return rslaves;
 	}
 
-	public static LinkedRemoteFile loadXmlFileDatabase(
-		Collection rslaves,
-		ConnectionManager cm) {
-		LinkedRemoteFile root;
+	public static LinkedRemoteFile loadFileDatabase(
+		List rslaves,
+		ConnectionManager cm) throws FileNotFoundException, IOException, CorruptFileException {
 		/** load XML file database **/
-		try {
-			Document doc = new SAXBuilder().build(new FileReader("files.xml"));
-			System.out.flush();
-			JDOMRemoteFile xmlroot =
-				new JDOMRemoteFile(doc.getRootElement(), rslaves);
-			root = new LinkedRemoteFile(xmlroot, cm.getConfig());
-		} catch (FileNotFoundException ex) {
-			logger.info("files.xml not found, new file will be created.");
-			root = new LinkedRemoteFile(cm.getConfig());
-		} catch (Exception ex) {
-			logger.log(Level.FATAL, "Error loading \"files.xml\"", ex);
-			throw new FatalException(ex);
-		}
-		// System.gc(); done after loading is complete
-		return root;
+//		LinkedRemoteFile root;
+//		try {
+//			Document doc = new SAXBuilder().build(new FileReader("files.xml"));
+//			System.out.flush();
+//			JDOMRemoteFile xmlroot =
+//				new JDOMRemoteFile(doc.getRootElement(), rslaves);
+//			root = new LinkedRemoteFile(xmlroot, cm == null ? null : cm.getConfig());
+//		} catch (FileNotFoundException ex) {
+//			logger.info("files.xml not found, new file will be created.");
+//			root = new LinkedRemoteFile(cm == null ? null : cm.getConfig());
+//		} catch (Exception ex) {
+//			logger.log(Level.FATAL, "Error loading \"files.xml\"", ex);
+//			throw new FatalException(ex);
+//		}
+//		return root;
+		/** load MLST file database **/
+		return MLSTSerialize.unserialize(cm.getConfig(), new BufferedReader(new FileReader("files.mlst")), rslaves);
+		//System.gc(); done after loading is complete
 	}
 
+	public static LinkedRemoteFile loadMLSTFileDatabase(
+	List rslaves, ConnectionManager cm) {
+		try {
+			return MLSTSerialize.unserialize(cm.getConfig(), new BufferedReader(new FileReader("files.mlst")), rslaves);
+		} catch (Exception e) {
+			throw new FatalException(e);
+		}
+	}
 	public static void printRSlaves(Collection rslaves) {
 		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
@@ -292,7 +304,13 @@ public class SlaveManagerImpl
 		setRSlavesManager(rslaves, this);
 
 		this.rslaves = rslaves;
-		this.root = loadXmlFileDatabase(this.rslaves, cm);
+		try {
+			this.root = loadFileDatabase(this.rslaves, cm);
+		} catch(FileNotFoundException e) {
+			logger.info("", e);
+		} catch (IOException e) {
+			throw new FatalException(e);
+		}
 		Registry registry =
 			LocateRegistry.createRegistry(
 				Integer.parseInt(cfg.getProperty("master.bindport", "1099")),
@@ -365,25 +383,28 @@ public class SlaveManagerImpl
 		}
 		getConnectionManager().dispatchFtpEvent(
 			new SlaveEvent("ADDSLAVE", rslave));
-
-		// BAD idea...
-		//saveFilesXML();
 	}
 
-	//TODO cache! called by FtpConnection.status()
+	SlaveStatus allStatus = null;
+	long allStatusTime = 0;
+	/**
+	 * Cached for 1 second.
+	 */
 	public SlaveStatus getAllStatus() {
-		SlaveStatus ret = new SlaveStatus();
+		if(allStatusTime >= System.currentTimeMillis()-1000) return allStatus;
+		allStatus = new SlaveStatus();
+		allStatusTime = System.currentTimeMillis();
 		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
 			try {
-				ret = ret.append(rslave.getStatus());
+				allStatus = allStatus.append(rslave.getStatus());
 			} catch (RemoteException e) {
 				rslave.handleRemoteException(e);
 			} catch (NoAvailableSlaveException e) {
 				//slave is offline, continue
 			}
 		}
-		return ret;
+		return allStatus;
 	}
 
 	//	private Random rand = new Random();
@@ -524,7 +545,7 @@ public class SlaveManagerImpl
 	}
 
 	public void saveFilesXML() {
-		saveFilesXML(XMLSerialize.serialize(this.getRoot()));
+		saveFilesXML(JDOMSerialize.serialize(this.getRoot()));
 	}
 
 	/** ping's all slaves, returns number of slaves removed */

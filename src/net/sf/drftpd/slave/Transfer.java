@@ -19,8 +19,8 @@ public interface Transfer extends Remote {
 	public long getTransfered() throws RemoteException;
 	public int getXferSpeed() throws RemoteException;
 	
-	public void uploadFile(String dirname, String filename, long offset) throws RemoteException, IOException;
-	public void downloadFile(String path, char mode, long resumePosition, boolean checksum) throws RemoteException, IOException;
+	public void receiveFile(String dirname, String filename, long offset) throws RemoteException, IOException;
+	public void sendFile(String path, char mode, long resumePosition, boolean checksum) throws RemoteException, IOException;
 	/**
 	 * @deprecated use RemoteSlave.getAddress()
 	 * @return

@@ -107,7 +107,7 @@ public class FileRemoteFile extends RemoteFile {
 	 * @see net.sf.drftpd.RemoteFile#getParent()
 	 */
 	public String getParent() {
-		throw new NoSuchMethodError();
+		throw new UnsupportedOperationException();
 		//return file.getParent();
 	}
 
@@ -116,7 +116,7 @@ public class FileRemoteFile extends RemoteFile {
 	 */
 	public String getPath() {
 		return path;
-		//throw new NoSuchMethodError();
+		//throw new UnsupportedOperationException();
 		//return file.getPath();
 	}
 
@@ -232,11 +232,12 @@ public class FileRemoteFile extends RemoteFile {
 		return true;
 	}
 	
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#getSlaves()
-	 */
 	public Collection getSlaves() {
 		return new ArrayList();
+	}
+
+	public boolean isDeleted() {
+		return false;
 	}
 
 

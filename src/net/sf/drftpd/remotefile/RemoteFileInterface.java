@@ -41,6 +41,7 @@ public interface RemoteFileInterface {
 	 */
 	public boolean isFile();
 	public boolean isDirectory();
+	public boolean isDeleted();
 	public long lastModified();
 	public long length();
 	public RemoteFileInterface[] listFiles();

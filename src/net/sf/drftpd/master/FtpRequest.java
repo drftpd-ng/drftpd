@@ -47,9 +47,9 @@ public class FtpRequest {
 			argument = null;
 		}
 
-		if ((command.length() > 0) && (command.charAt(0) == 'X')) {
-			command = command.substring(1);
-		}
+//		if ((command.length() > 0) && (command.charAt(0) == 'X')) {
+//			command = command.substring(1);
+//		}
 	}
 
 	/**

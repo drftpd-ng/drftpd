@@ -1,7 +1,14 @@
 <slaves>
-  <!-- this would allow the slave named sunet connect from *.sunet.se using ident daemon or from ftp.sunet.se using any ident -->
+  <!-- add more <slave></slave> blocks as you add more slaves -->
   <slave>
-    <name>sunet</name>
-    <mask>*@ftp.sunet.se</mask>
+
+    <!-- this should be set to what slave.name is set to on the slave -->
+    <name>drftpd</name>
+
+    <!--
+      this allows 127.0.0.1 with any ident to connect
+      You can have multiple <mask> blocks for a single <slave>
+    -->
+    <mask>*@127.0.0.1</mask>
   </slave>
 </slaves>

@@ -12,6 +12,7 @@ import java.io.IOException;
 
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.master.usermanager.AbstractUser;
+import net.sf.drftpd.master.usermanager.PlainTextPasswordUser;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import JSX.ObjOut;
 
@@ -21,7 +22,7 @@ import JSX.ObjOut;
  * To change the template for this generated type comment go to
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
-public class JSXUser extends AbstractUser {
+public class JSXUser extends AbstractUser implements PlainTextPasswordUser {
 	private String password;
 	transient JSXUserManager usermanager;
 	private transient boolean purged;
@@ -43,6 +44,13 @@ public class JSXUser extends AbstractUser {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.master.usermanager.PlainTextPassword#getPassword()
+	 */
+	public String getPassword() {
+		return this.password;
+	}
+
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.usermanager.AbstractUser#rename(java.lang.String)
 	 */

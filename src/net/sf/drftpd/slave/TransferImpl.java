@@ -9,10 +9,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.rmi.RemoteException;
-import java.rmi.server.RMIServerSocketFactory;
-import java.rmi.server.RMISocketFactory;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Collection;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
@@ -35,8 +32,6 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 
 	private InputStream _in;
 	private OutputStream _out;
-	private RootBasket _roots;
-	private Collection _transfers;
 	private char _mode = 'I';
 	private Socket _sock;
 
@@ -44,46 +39,43 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private long _finished = 0;
 
 	private long _transfered = 0;
-
+	private SlaveImpl _slave;
 	/**
 	 * Start undefined passive transfer.
 	 */
-	public TransferImpl(Collection transfers, Connection conn, RootBasket roots) throws RemoteException {
+	public TransferImpl(Connection conn, SlaveImpl slave) throws RemoteException {
 		super(0);
+		_slave = slave;
 		_direction = Transfer.TRANSFER_UNKNOWN;
 		_conn = conn;
-		_transfers = transfers;
-		_roots = roots;
 	}
 
 	/**
 	 * Send/Download, reading from 'in' and write to 'conn' using transfer type 'mode'.
 	 * @deprecated
 	 */
-	public TransferImpl(RMIServerSocketFactory factory,
-		Collection transfers,
-		InputStream in,
-		Connection conn,
-		char mode)
-		throws RemoteException {
-		super(0, RMISocketFactory.getDefaultSocketFactory(), factory);
-		_direction = TRANSFER_SENDING_DOWNLOAD;
-		_in = in;
-		_conn = conn;
-		_mode = mode;
-		_transfers = transfers;
-	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.slave.Transfer#abort()
-	 */
+//	public TransferImpl(RMIServerSocketFactory factory,
+//		Collection transfers,
+//		InputStream in,
+//		Connection conn,
+//		char mode)
+//		throws RemoteException {
+//		super(0, RMISocketFactory.getDefaultSocketFactory(), factory);
+//		_direction = TRANSFER_SENDING_DOWNLOAD;
+//		_in = in;
+//		_conn = conn;
+//		_mode = mode;
+//		_transfers = transfers;
+//	}
+
 	public void abort() throws RemoteException {
 		_abort = true;
 	}
 	
-	public void downloadFile(String path, char type, long resumePosition, boolean doChecksum) throws IOException {
+	public void sendFile(String path, char type, long resumePosition, boolean doChecksum) throws IOException {
 		_direction = TRANSFER_SENDING_DOWNLOAD;
 		
-		_in = new FileInputStream(_roots.getFile(path));
+		_in = new FileInputStream(_slave.getRoots().getFile(path));
 		if(doChecksum) {
 			_checksum = new CRC32();
 			_in = new CheckedInputStream(_in, _checksum);
@@ -161,7 +153,6 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	}
 	/**
 	 * Call sock.connect() and start sending.
-	 * @deprecated
 	 */
 	public void transfer() throws IOException {
 		_started = System.currentTimeMillis();
@@ -178,7 +169,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 			throw new RuntimeException("neither in or out was null");
 		}
 
-		_transfers.add(this);
+		_slave.getTransfers().add(this);
 		try {
 			byte[] buff = new byte[4096];
 			int count;
@@ -189,7 +180,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 			_out.close();
 		} finally {
 			_finished = System.currentTimeMillis();
-			_transfers.remove(this);
+			_slave.getTransfers().remove(this);
 
 			_in.close();
 			_out.close();
@@ -202,11 +193,11 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	}
 	
 	//TODO char mode for uploads?
-	public void uploadFile(String dirname, String filename, long offset) throws IOException {
+	public void receiveFile(String dirname, String filename, long offset) throws IOException {
 		_direction = TRANSFER_RECEIVING_UPLOAD;
 		_checksum = new CRC32();
 
-		String root = _roots.getARootFile(dirname).getPath();
+		String root = _slave.getRoots().getARootFile(dirname).getPath();
 
 		_out = new FileOutputStream(root + File.separator + filename);
 

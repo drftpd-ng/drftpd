@@ -31,8 +31,8 @@ public class DirectoryRemoteFile extends RemoteFile {
 		lastModified = System.currentTimeMillis();
 		//canWrite = true;
 		//canRead = true;
-		this.owner = owner;
-		this.group = group;
+		this._username = owner;
+		this._groupname = group;
 	}
 	
 	/**
@@ -46,14 +46,14 @@ public class DirectoryRemoteFile extends RemoteFile {
 	 * @see net.sf.drftpd.remotefile.RemoteFile#getParent()
 	 */
 	public String getParent() {
-		throw new NoSuchMethodError("getParent() is not implemented on LinkedRemoteFile.DirectoryRemoteFile");
+		throw new UnsupportedOperationException("getParent() is not implemented on LinkedRemoteFile.DirectoryRemoteFile");
 	}
 
 	/**
 	 * @see net.sf.drftpd.remotefile.RemoteFile#getPath()
 	 */
 	public String getPath() {
-		throw new NoSuchMethodError("getPath() is not implemented on LinkedRemoteFile.DirectoryRemoteFile");
+		throw new UnsupportedOperationException("getPath() is not implemented on LinkedRemoteFile.DirectoryRemoteFile");
 	}
 	/**
 	 * @see net.sf.drftpd.remotefile.RemoteFileTree#listFiles()
@@ -105,6 +105,13 @@ public class DirectoryRemoteFile extends RemoteFile {
 	 * we never have any files, so always returns false
 	 */
 	public boolean hasFile(String filename) {
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#isDeleted()
+	 */
+	public boolean isDeleted() {
 		return false;
 	}
 }

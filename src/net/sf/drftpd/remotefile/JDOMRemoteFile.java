@@ -27,7 +27,7 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 	private static Logger logger =
 		Logger.getLogger(JDOMRemoteFile.class.getName());
 
-	private static Hashtable rslavesToHashtable(Collection rslaves) {
+	public static Hashtable rslavesToHashtable(Collection rslaves) {
 		Hashtable map = new Hashtable(rslaves.size());
 		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
@@ -141,7 +141,7 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 	 * @see net.sf.drftpd.remotefile.RemoteFile#getParent()
 	 */
 	public String getParent() {
-		throw new NoSuchMethodError("JDOMRemoteFile.getParent() not implemented");
+		throw new UnsupportedOperationException("JDOMRemoteFile.getParent() not implemented");
 	}
 
 	/**
@@ -149,7 +149,7 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 	 */
 	public String getPath() {
 		//return name;
-		throw new NoSuchMethodError("JDOMRemoteFile.getPath() not implemented");
+		throw new UnsupportedOperationException("JDOMRemoteFile.getPath() not implemented");
 	}
 
 	/* (non-Javadoc)
@@ -229,6 +229,10 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 		//ret.append("isFile(): " + isFile() + " ");
 		ret.append(getName());
 		return ret.toString();
+	}
+
+	public boolean isDeleted() {
+		return false;
 	}
 
 }

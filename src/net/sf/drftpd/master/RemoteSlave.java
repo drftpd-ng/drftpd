@@ -28,14 +28,15 @@ public class RemoteSlave implements Serializable, Comparable {
 		Logger.getLogger(RemoteSlave.class.getName());
 
 	public static boolean isFatalRemoteException(RemoteException ex) {
-		return (ex instanceof ConnectException || ex instanceof ConnectIOException);
+		return (
+			ex instanceof ConnectException || ex instanceof ConnectIOException);
 	}
 	private InetAddress inetAddress;
 
-	private long lastDownloadSending=0;
+	private long lastDownloadSending = 0;
 
 	private long lastPing;
-	private long lastUploadReceiving=0;
+	private long lastUploadReceiving = 0;
 
 	private SlaveManagerImpl manager;
 	private Collection masks;
@@ -43,20 +44,23 @@ public class RemoteSlave implements Serializable, Comparable {
 	private Slave slave;
 	private SlaveStatus status;
 	private long statusTime;
-	
+
 	public RemoteSlave(String name) {
-		this.name = name;
+		this.name = new String(name);
 	}
 	public RemoteSlave(String name, Collection masks) {
-		this.name = name;
+		this(name);
 		this.masks = masks;
 	}
 
-	public RemoteSlave(String name, Collection masks, SlaveManagerImpl manager) {
+	public RemoteSlave(
+		String name,
+		Collection masks,
+		SlaveManagerImpl manager) {
 		this(name, masks);
 		this.manager = manager;
 	}
-	
+
 	/**
 	 * @deprecated
 	 */
@@ -71,8 +75,9 @@ public class RemoteSlave implements Serializable, Comparable {
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	public int compareTo(Object o) {
-		if(!(o instanceof RemoteSlave)) throw new IllegalArgumentException();
-		return getName().compareTo(((RemoteSlave)o).getName());
+		if (!(o instanceof RemoteSlave))
+			throw new IllegalArgumentException();
+		return getName().compareTo(((RemoteSlave) o).getName());
 	}
 
 	/**
@@ -96,14 +101,14 @@ public class RemoteSlave implements Serializable, Comparable {
 	public long getLastDownloadSending() {
 		return this.lastDownloadSending;
 	}
-	
+
 	public long getLastTransfer() {
 		return Math.max(getLastDownloadSending(), getLastUploadReceiving());
 	}
 	public long getLastUploadReceiving() {
 		return this.lastUploadReceiving;
 	}
-	
+
 	public SlaveManagerImpl getManager() {
 		return manager;
 	}
@@ -143,24 +148,29 @@ public class RemoteSlave implements Serializable, Comparable {
 	public SlaveStatus getStatus()
 		throws RemoteException, NoAvailableSlaveException {
 		return getSlave().getSlaveStatus();
-			
-//		if (statusTime < System.currentTimeMillis() - 10000) {
-//			status = getSlave().getSlaveStatus();
-//			statusTime = System.currentTimeMillis();
-//		}
-//		return status;
+
+		//		if (statusTime < System.currentTimeMillis() - 10000) {
+		//			status = getSlave().getSlaveStatus();
+		//			statusTime = System.currentTimeMillis();
+		//		}
+		//		return status;
 	}
-	
+
 	/**
 	 * @param ex RemoteException
 	 * @return true If exception was fatal and the slave was removed 
 	 */
 	public boolean handleRemoteException(RemoteException ex) {
 		if (!isFatalRemoteException(ex)) {
-			logger.log(Level.WARN, "Caught non-fatal exception from "+getName()+", not removing", ex);
+			logger.log(
+				Level.WARN,
+				"Caught non-fatal exception from "
+					+ getName()
+					+ ", not removing",
+				ex);
 			return false;
 		}
-		logger.warn("Fatal exception from "+getName()+", removing", ex);
+		logger.warn("Fatal exception from " + getName() + ", removing", ex);
 		setOffline(ex.getCause().getMessage());
 		return true;
 	}
@@ -172,7 +182,7 @@ public class RemoteSlave implements Serializable, Comparable {
 	public boolean isAvailable() {
 		return slave != null;
 	}
-	
+
 	public boolean isAvailablePing() {
 		try {
 			getSlave().ping();
@@ -185,8 +195,9 @@ public class RemoteSlave implements Serializable, Comparable {
 		return isAvailable();
 	}
 	public void ping() throws RemoteException, NoAvailableSlaveException {
-		if(slave == null) throw new NoAvailableSlaveException(getName()+" is offline");
-		if(System.currentTimeMillis() > lastPing+1000) {
+		if (slave == null)
+			throw new NoAvailableSlaveException(getName() + " is offline");
+		if (System.currentTimeMillis() > lastPing + 1000) {
 			getSlave().ping();
 		}
 	}
@@ -196,9 +207,10 @@ public class RemoteSlave implements Serializable, Comparable {
 	public void setLastUploadReceiving(long lastUploadReceiving) {
 		this.lastUploadReceiving = lastUploadReceiving;
 	}
-	
+
 	public void setManager(SlaveManagerImpl manager) {
-		if(this.manager != null) throw new IllegalStateException("Can't overwrite manager");
+		if (this.manager != null)
+			throw new IllegalStateException("Can't overwrite manager");
 		this.manager = manager;
 	}
 
@@ -213,7 +225,8 @@ public class RemoteSlave implements Serializable, Comparable {
 	 * 
 	 */
 	public void setOffline(String reason) {
-		manager.getConnectionManager().dispatchFtpEvent(new SlaveEvent("DELSLAVE", reason, this));
+		manager.getConnectionManager().dispatchFtpEvent(
+			new SlaveEvent("DELSLAVE", reason, this));
 		this.slave = null;
 		this.inetAddress = null;
 	}
@@ -222,8 +235,9 @@ public class RemoteSlave implements Serializable, Comparable {
 	 * @param slave
 	 */
 	public void setSlave(Slave slave, InetAddress inetAddress) {
-		if(slave == null && this.slave != null) {
-			manager.getConnectionManager().dispatchFtpEvent(new SlaveEvent("DELSLAVE", this));
+		if (slave == null && this.slave != null) {
+			manager.getConnectionManager().dispatchFtpEvent(
+				new SlaveEvent("DELSLAVE", this));
 		}
 		this.slave = slave;
 		this.inetAddress = inetAddress;

@@ -12,8 +12,6 @@ import java.util.List;
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  */
 public abstract class UserManager {
-	
-	private Hashtable users = new Hashtable();
 
 	/**
 	 * Constrcutor
@@ -33,6 +31,7 @@ public abstract class UserManager {
 	 */
 	public abstract List getAllUsers() throws IOException;
 	public abstract Collection getAllUsersByGroup(String group) throws IOException;
+	
 	/**
 	 * Get user by name.
 	 */
