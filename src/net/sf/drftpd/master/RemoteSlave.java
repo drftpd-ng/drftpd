@@ -36,7 +36,7 @@ import org.jdom.Element;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.48 2004/07/02 19:58:52 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.49 2004/07/10 04:03:17 zubov Exp $
  */
 public class RemoteSlave implements Comparable {
 	/**
@@ -338,6 +338,9 @@ public class RemoteSlave implements Comparable {
 	}
 
 	public void setOffline(String reason) {
+		if (!isAvailable()) {
+			return; // already offline
+		}
 		if (_manager == null) {
 			throw new RuntimeException("_manager == null");
 		}

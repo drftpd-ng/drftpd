@@ -19,18 +19,19 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
-import net.sf.drftpd.Bytes;
+
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.Transfer;
+
 import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveTransfer.java,v 1.17 2004/07/09 17:08:38 zubov Exp $
+ * @version $Id: SlaveTransfer.java,v 1.18 2004/07/10 04:03:22 zubov Exp $
  */
 public class SlaveTransfer {
 	class DstXfer extends Thread {

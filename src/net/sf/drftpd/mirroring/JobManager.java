@@ -41,7 +41,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.53 2004/07/09 17:08:37 zubov Exp $
+ * @version $Id: JobManager.java,v 1.54 2004/07/10 04:03:18 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -252,15 +252,11 @@ public class JobManager implements Runnable {
 			addAndRemove(job);
 			return false;
 		} catch (DestinationSlaveException e) {
-			if (destSlave.isAvailable()) {
-				destSlave.setOffline(e.getMessage());
-			}
+			destSlave.setOffline(e.getMessage());
 			addAndRemove(job);
 			return false;
 		} catch (SourceSlaveException e) {
-			if (sourceSlave.isAvailable()) {
-				sourceSlave.setOffline(e.getMessage());
-			}
+			sourceSlave.setOffline(e.getMessage());
 			addAndRemove(job);
 			return false;
 		}
