@@ -51,15 +51,16 @@ import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.MLSTSerialize;
 import net.sf.drftpd.slave.SlaveImpl;
-import net.sf.drftpd.tcpslave.SocketSlaveManager;
 import net.sf.drftpd.util.SafeFileWriter;
+
+import org.drftpd.slave.socket.*;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.106 2004/05/19 19:09:34 zombiewoof64 Exp $
+ * @version $Id: ConnectionManager.java,v 1.107 2004/05/20 20:26:33 zombiewoof64 Exp $
  */
 public class ConnectionManager {
 
