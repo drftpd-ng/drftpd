@@ -44,7 +44,6 @@ import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
-import org.jdom.output.XMLOutputter;
 
 public class ConnectionManager {
 	public static final int idleTimeout = 300;
@@ -155,7 +154,6 @@ public class ConnectionManager {
 						new Long(nukeeElement.getChildText("amount"));
 					nukees.put(nukeeUsername, nukeeAmount);
 				}
-			new XMLOutputter("  ").output(nukeElement, System.out);
 				nukelog.add(
 					new NukeEvent(
 						user,

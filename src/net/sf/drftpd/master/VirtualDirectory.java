@@ -32,13 +32,14 @@ public class VirtualDirectory {
 	 */
 	public static void printList(Collection files, Writer out)
 		throws IOException {
-		out = new BufferedWriter(out, 65536);
+		//out = new BufferedWriter(out);
 		out.write("total 0"+NEWLINE);
 
 		// print file list
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
 			RemoteFileInterface file = (RemoteFileInterface) iter.next();
 			printLine(file, out);
+			out.flush();
 		}
 	}
 
@@ -56,7 +57,6 @@ public class VirtualDirectory {
 		Writer out)
 		throws IOException {
 
-		out.write("total 0"+NEWLINE);
 		for (Iterator iter = fileList.iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
 			if (bDetail) {
