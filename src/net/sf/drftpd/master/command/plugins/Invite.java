@@ -11,25 +11,28 @@ import net.sf.drftpd.master.command.UnhandledCommandException;
 /**
  * @author mog
  *
- * @version $Id: Invite.java,v 1.6 2004/01/13 20:30:54 mog Exp $
+ * @version $Id: Invite.java,v 1.7 2004/02/02 14:36:40 mog Exp $
  */
 public class Invite implements CommandHandler {
 	public Invite() {
 	}
 
-	public FtpReply doSITE_INVITE(BaseFtpConnection conn) {
-		String user = conn.getRequest().getArgument();
-		InviteEvent invite = new InviteEvent(conn.getRequest().getCommand(),user);
-		conn.getConnectionManager().dispatchFtpEvent(invite);
-		return new FtpReply(200, "Inviting " + user);
-	}
-
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {
 		String cmd = conn.getRequest().getCommand();
-		if ("SITE INVITE".equals(cmd))
-			return doSITE_INVITE(conn);
-		throw UnhandledCommandException.create(Invite.class, conn.getRequest());
+		if (!"SITE INVITE".equals(cmd)) {
+			throw UnhandledCommandException.create(
+				Invite.class,
+				conn.getRequest());
+		}
+		if (!conn.getRequest().hasArgument())
+			return new FtpReply(
+				501,
+				conn.jprintf(Invite.class, "invite.usage"));
+		String user = conn.getRequest().getArgument();
+		InviteEvent invite = new InviteEvent(cmd, user);
+		conn.getConnectionManager().dispatchFtpEvent(invite);
+		return new FtpReply(200, "Inviting " + user);
 	}
 
 	public String[] getFeatReplies() {

@@ -37,7 +37,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.14 2004/01/31 16:58:07 zubov Exp $
+ * @version $Id: Dir.java,v 1.15 2004/02/02 14:36:40 mog Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
 	protected LinkedRemoteFile _renameFrom = null;
@@ -124,27 +124,26 @@ public class Dir implements CommandHandler, Cloneable {
 		// reset state variables
 		conn.resetState();
 
-		// get new directory name
-		String dirName = "";
-		if (request.hasArgument()) {
-			dirName = request.getArgument();
+		if (!request.hasArgument()) {
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
+
 		LinkedRemoteFile newCurrentDirectory;
 		try {
 			newCurrentDirectory =
-				conn.getCurrentDirectory().lookupFile(dirName);
+				conn.getCurrentDirectory().lookupFile(request.getArgument());
 		} catch (FileNotFoundException ex) {
 			return new FtpReply(550, ex.getMessage());
 		}
 		if (!conn
 			.getConfig()
 			.checkPrivPath(conn.getUserNull(), newCurrentDirectory)) {
-			return new FtpReply(550, dirName + ": Not found");
+			return new FtpReply(550, request.getArgument() + ": Not found");
 			// reply identical to FileNotFoundException.getMessage() above
 		}
 
 		if (!newCurrentDirectory.isDirectory()) {
-			return new FtpReply(550, dirName + ": Not a directory");
+			return new FtpReply(550, request.getArgument() + ": Not a directory");
 		}
 		conn.setCurrentDirectory(newCurrentDirectory);
 

@@ -6,7 +6,6 @@
 #######################
 
 #This is the IP of the master to register to.
-master.host=you_didnt_edit_drftpd.conf
 master.bindname=slavemanager
 #Port to accept Slave connections on
 master.bindport=1099

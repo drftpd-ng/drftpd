@@ -51,7 +51,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.36 2004/02/02 11:59:40 flowman Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.37 2004/02/02 14:36:40 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -263,7 +263,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				//						_serverSocket.getInetAddress(),
 				//						_serverSocket.getLocalPort());
 				isPasv = true;
-			} catch(BindException ex) {
+			} catch (BindException ex) {
 				_serverSocket = null;
 				logger.warn("", ex);
 				return new FtpReply(550, ex.getMessage());
@@ -1286,8 +1286,9 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			//zipscript
 			if (isRetr) {
 				//compare checksum from transfer to cached checksum
-				logger.debug("checksum from transfer = " + status.getChecksum());
-				if ( status.getChecksum() != 0 ){
+				logger.debug(
+					"checksum from transfer = " + status.getChecksum());
+				if (status.getChecksum() != 0) {
 					response.addComment(
 						"Checksum from transfer: "
 							+ Checksum.formatChecksum(status.getChecksum()));
@@ -1350,8 +1351,9 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 							response.addComment(
 								"checksum match: SLAVE/SFV:"
 									+ Long.toHexString(status.getChecksum()));
-						} else if (status.getChecksum() == 0 ){
-							response.addComment("checksum match: SLAVE/SFV: DISABLED"); 
+						} else if (status.getChecksum() == 0) {
+							response.addComment(
+								"checksum match: SLAVE/SFV: DISABLED");
 						} else {
 							response.addComment(
 								"checksum mismatch: SLAVE: "
@@ -1411,8 +1413,10 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 					conn.getUserNull().updateCredits(
 						(long) (-status.getTransfered() * ratio));
 				}
-				conn.getUserNull().updateDownloadedBytes(status.getTransfered());
-				conn.getUserNull().updateDownloadedMilliseconds(status.getElapsed());
+				conn.getUserNull().updateDownloadedBytes(
+					status.getTransfered());
+				conn.getUserNull().updateDownloadedMilliseconds(
+					status.getElapsed());
 				conn.getUserNull().updateDownloadedFiles(1);
 			} else {
 				conn.getUserNull().updateCredits(
@@ -1421,7 +1425,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 							_transferFile,
 							conn.getUserNull())));
 				conn.getUserNull().updateUploadedBytes(status.getTransfered());
-				conn.getUserNull().updateUploadedMilliseconds(status.getElapsed());
+				conn.getUserNull().updateUploadedMilliseconds(
+					status.getElapsed());
 				conn.getUserNull().updateUploadedFiles(1);
 			}
 			try {

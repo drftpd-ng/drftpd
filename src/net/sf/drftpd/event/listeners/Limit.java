@@ -8,7 +8,7 @@ import net.sf.drftpd.master.usermanager.User;
 
 /**
  * @author mog
- * @version $Id: Limit.java,v 1.3 2004/01/22 21:48:22 mog Exp $
+ * @version $Id: Limit.java,v 1.4 2004/02/02 14:36:40 mog Exp $
  */
 class Limit {
 	public Limit() {
@@ -94,8 +94,8 @@ class Limit {
 		String cmd = st.nextToken();
 		if (!("delete".equals(action)
 			|| "purge".equals(action)
-			|| "chgrp".equals(cmd))
-			|| "setgrp".equals(cmd)) {
+			|| "chgrp".equals(cmd)
+			|| "setgrp".equals(cmd))) {
 			throw new IllegalArgumentException(cmd+" is not a valid action");
 		}
 		if("setgrp".equals(cmd)) {

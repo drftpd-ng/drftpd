@@ -1,8 +1,8 @@
 package net.sf.drftpd.event;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.UnknownHostException;
@@ -17,27 +17,21 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
 
-import net.sf.drftpd.Time;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.Nukee;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.SFVFile.SFVStatus;
-import net.sf.drftpd.event.DirectoryFtpEvent;
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.event.MessageEvent;
-import net.sf.drftpd.event.NukeEvent;
-import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.command.plugins.Nuke;
-import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.GroupPosition;
+import net.sf.drftpd.master.UploaderPosition;
+import net.sf.drftpd.master.command.plugins.Nuke;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.SlaveStatus;
+import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -45,7 +39,7 @@ import org.tanesha.replacer.FormatterException;
 
 /**
  * @author mog
- * @version $Id: GlftpdLog.java,v 1.8 2004/01/28 22:47:16 flowman Exp $
+ * @version $Id: GlftpdLog.java,v 1.9 2004/02/02 14:36:40 mog Exp $
  */
 public class GlftpdLog implements FtpListener {
 	PrintWriter out;
@@ -620,6 +614,9 @@ public class GlftpdLog implements FtpListener {
 		out.println(str = DATE_FMT.format(date) + line);
 		out.flush();
 		System.out.println(str);		
+	}
+
+	public void unload() {
 	}
 }
 
