@@ -1344,9 +1344,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 
             if (zipscript) {
                 //transferstatistics
-                if (isRetr && 
-                        !conn.getGlobalContext().getConfig().checkPathPermission(
-                                "nostatsdn", conn.getUserNull(), conn.getCurrentDirectory())) {
+                if (isRetr) {
                     
                     float ratio = conn.getGlobalContext().getConfig()
                                       .getCreditLossRatio(_transferFile,
@@ -1356,20 +1354,24 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                         conn.getUserNull().updateCredits((long) (-status.getTransfered() * ratio));
                     }
 
-                    conn.getUserNull().updateDownloadedBytes(status.getTransfered());
-                    conn.getUserNull().updateDownloadedTime(status.getElapsed());
-                    conn.getUserNull().updateDownloadedFiles(1);
-                } else if (isStor &&
-                        !conn.getGlobalContext().getConfig().checkPathPermission(
-                                "nostatsup", conn.getUserNull(), conn.getCurrentDirectory())){
+                    if (!conn.getGlobalContext().getConfig().checkPathPermission(
+                                "nostatsdn", conn.getUserNull(), conn.getCurrentDirectory())) {
+                        conn.getUserNull().updateDownloadedBytes(status.getTransfered());
+                    	conn.getUserNull().updateDownloadedTime(status.getElapsed());
+                    	conn.getUserNull().updateDownloadedFiles(1);
+                    }
+                } else {
                     
                     conn.getUserNull().updateCredits((long) (status.getTransfered() * conn.getGlobalContext()
                                                                                           .getConfig()
                                                                                           .getCreditCheckRatio(_transferFile,
                             conn.getUserNull())));
-                    conn.getUserNull().updateUploadedBytes(status.getTransfered());
-                    conn.getUserNull().updateUploadedTime(status.getElapsed());
-                    conn.getUserNull().updateUploadedFiles(1);
+                    if (!conn.getGlobalContext().getConfig().checkPathPermission(
+                                "nostatsup", conn.getUserNull(), conn.getCurrentDirectory())) {
+                        conn.getUserNull().updateUploadedBytes(status.getTransfered());
+                    	conn.getUserNull().updateUploadedTime(status.getElapsed());
+                    	conn.getUserNull().updateUploadedFiles(1);
+                    }
                 }
 
                 try {
