@@ -168,7 +168,7 @@ public class SlaveManager implements Runnable {
 		} catch (FileNotFoundException e) {
 			throw new ObjectNotFoundException(e);
 		} catch (Exception e) {
-			throw new FatalException(e);
+			throw new FatalException("Error loading "+slavename, e);
 		}
 	}
 

@@ -141,6 +141,7 @@ public class BaseFtpConnection implements Runnable {
             env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
             env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
             env.add("group", user.getGroup());
+            env.add("groups", user.getGroups());
             env.add("averagespeed",
                 Bytes.formatBytes(user.getUploadedTime() +
                     (user.getDownloadedTime() / 2)));

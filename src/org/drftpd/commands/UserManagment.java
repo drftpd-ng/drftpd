@@ -50,7 +50,6 @@ import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
-
 /**
  * @author mog
  * @author zubov
@@ -1512,9 +1511,8 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 //        env.add("useruploaded", Bytes.formatBytes(myUser.getUploadedBytes()));
 //        env.add("userdownloaded", Bytes.formatBytes(myUser.getDownloadedBytes()));
 
-        ReplacerEnvironment env = BaseFtpConnection.getReplacerEnvironment(null, myUser);
-        response.addComment(conn.jprintf(UserManagment.class, "user", env));
-
+        //ReplacerEnvironment env = BaseFtpConnection.getReplacerEnvironment(null, myUser);
+        response.addComment(BaseFtpConnection.jprintf(UserManagment.class, "user", null, myUser));
         return response;
     }
 
