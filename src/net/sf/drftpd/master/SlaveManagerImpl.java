@@ -46,7 +46,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 /**
- * @version $Id: SlaveManagerImpl.java,v 1.54 2004/01/03 23:50:53 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.55 2004/01/04 18:53:08 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -305,7 +305,7 @@ public class SlaveManagerImpl
 		this.cm = cm;
 
 		// sure would be nice if we could do this in or before the super() call,
-		// but we can't reference ''this´´ from there.
+		// but we can't reference ''this?? from there.
 		setRSlavesManager(rslaves, this);
 
 		this.rslaves = rslaves;
@@ -329,9 +329,6 @@ public class SlaveManagerImpl
 		} catch (Exception t) {
 			throw new FatalException(t);
 		}
-	}
-	public List getSlaveList(){
-		return rslaves;
 	}
 
 	public void addSlave(
@@ -391,6 +388,54 @@ public class SlaveManagerImpl
 		}
 		getConnectionManager().dispatchFtpEvent(
 			new SlaveEvent("ADDSLAVE", rslave));
+	}
+	public RemoteSlave findLargestFreeSlave() {
+		Collection slaveList =
+			getConnectionManager().getSlaveManager().getSlaveList();
+		long bigSize = 0;
+		RemoteSlave bigSlave = null;
+		for (Iterator iter = slaveList.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
+			long size = 0;
+			try {
+				size = rslave.getStatus().getDiskSpaceAvailable();
+			} catch (RemoteException e) {
+				logger.warn(
+					"Got remote exception in slave " + rslave.getName(),
+					e);
+			} catch (NoAvailableSlaveException e) {
+				continue;
+			}
+			if (size > bigSize) {
+				bigSize = size;
+				bigSlave = rslave;
+			}
+		}
+		return bigSlave;
+	}
+	public RemoteSlave findSmallestFreeSlave() {
+		Collection slaveList =
+			getConnectionManager().getSlaveManager().getSlaveList();
+		long smallSize = Integer.MAX_VALUE;
+		RemoteSlave smallSlave = null;
+		for (Iterator iter = slaveList.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
+			long size = Integer.MAX_VALUE;
+			try {
+				size = rslave.getStatus().getDiskSpaceAvailable();
+			} catch (RemoteException e) {
+				logger.warn(
+					"Got remote exception in slave " + rslave.getName(),
+					e);
+			} catch (NoAvailableSlaveException e) {
+				continue;
+			}
+			if (size < smallSize) {
+				smallSize = size;
+				smallSlave = rslave;
+			}
+		}
+		return smallSlave;
 	}
 	/**
 	 * Cached for 1 second.
@@ -458,6 +503,9 @@ public class SlaveManagerImpl
 				return rslave;
 		}
 		throw new ObjectNotFoundException(s + ": No such slave");
+	}
+	public List getSlaveList() {
+		return rslaves;
 	}
 
 	public Collection getSlaves() {

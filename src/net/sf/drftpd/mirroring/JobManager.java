@@ -25,7 +25,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author matt
- * @version $Id: JobManager.java,v 1.4 2003/12/23 13:38:21 mog Exp $
+ * @version $Id: JobManager.java,v 1.5 2004/01/04 18:53:09 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private ConnectionManager _cm;
@@ -120,7 +120,7 @@ public class JobManager implements FtpListener {
 							.getFile()
 							.getAvailableSlaves()
 							.contains(slave)) {
-							logger.info(
+							logger.debug(
 								"myMirror is assigned - " + slave.getName());
 							myMirrorJob = tempJob;
 						}
@@ -139,6 +139,10 @@ public class JobManager implements FtpListener {
 					logger.info(
 						"tempJob is being returned - " + slave.getName());
 					return tempJob;
+				}
+				else if (tempJob.getFile().getAvailableSlaves().contains(slave)) {
+					tempJob.getFile().getAvailableSlaves().remove(slave);
+					// if it's already there, remove it from the queue
 				}
 			} catch (NoAvailableSlaveException e) {
 				// continue searching through jobs

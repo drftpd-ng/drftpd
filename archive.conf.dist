@@ -1,9 +1,18 @@
-#times are represented in minutes
-#10080 = 1 week
-#43200 = 1 month
+# times are represented in minutes
+# 10080 = 1 week
+# 43200 = 1 month
 
-#smallest number of time in between cycles
+# where to archive releases
+# true = to the slave with the most free space
+# false = to the slave with the most files of the release
+archiveToFreeSlave=true
+
+# move files off of slaves that are almost full to slaves with
+# the most free space? (set to 0 to disable) (sizes are in MB)
+moveFullSlaves=100
+
+# smallest number of time in between cycles
 cycleTime=30
 
-#do not archive releases younger than
+# do not archive releases younger than
 archiveAfter=10080

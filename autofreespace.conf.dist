@@ -1,0 +1,12 @@
+# times are represented in minutes
+# 10080 = 1 week
+# 43200 = 1 month
+
+# smallest number of time in between cycles
+cycleTime=30
+
+# do not delete releases younger than
+archiveAfter=10080
+
+# AutoFreeSpace will try to keep each slave above this number (in MB)
+keepFree=1000
