@@ -644,7 +644,7 @@ public class SiteBot extends FtpListener implements Observer {
 
             	if (chan.findMember(getIRCConnection().getClientState().getNick()
                                     .getNick()).hasOps()) {
-            		ChannelConfig cc = _channelMap.get(chan.getName());
+            		ChannelConfig cc = _channelMap.get(chan.getName().toUpperCase());
             		if (cc != null) {
             			if (cc.checkPerms(event.getUser())) {
             				_conn.sendCommand(new InviteCommand(nick, chan.getName()));
@@ -1185,10 +1185,10 @@ public class SiteBot extends FtpListener implements Observer {
             	break;
             }
             if (i == 1) {
-            	_primaryChannelName = channelName;
+            	_primaryChannelName = channelName.toUpperCase();
             }
             
-        	_channelMap.put(channelName,new ChannelConfig(blowKey, chanKey, permissions));
+        	_channelMap.put(channelName.toUpperCase(),new ChannelConfig(blowKey, chanKey, permissions));
         }
         if (_channelMap.size() < 1) {
         	throw new IllegalStateException("SiteBot loaded with no channels, check your config");
@@ -1272,7 +1272,7 @@ public class SiteBot extends FtpListener implements Observer {
         for (String line : lines) {
 			// don't encrypt private messages, at least not yet :)
 			if (isChan) {
-				line = _channelMap.get(dest).encrypt(line);
+				line = _channelMap.get(dest.toUpperCase()).encrypt(line);
 			}
 			_conn.sendCommand(new MessageCommand(dest, line));
 		}
@@ -1287,7 +1287,7 @@ public class SiteBot extends FtpListener implements Observer {
         for (String line : lines) {
 			// don't encrypt private notices, at least not yet :)
 			if (isChan) {
-				line = _channelMap.get(dest).encrypt(line);
+				line = _channelMap.get(dest.toUpperCase()).encrypt(line);
 			}
 			_conn.sendCommand(new RawCommand("NOTICE " + dest + " :" + line));
 		}
@@ -1359,7 +1359,7 @@ public class SiteBot extends FtpListener implements Observer {
 			// recreate the MessageCommand with the decrypted text
 			if (!msgc.isPrivateToUs(_conn.getClientState())) {
 				try {
-					msgc = _channelMap.get(msgc.getDest()).decrypt(msgc); 
+					msgc = _channelMap.get(msgc.getDest().toUpperCase()).decrypt(msgc); 
 				} catch (UnsupportedEncodingException e) {
 					logger.warn("Unable to decrypt '" + msgc.getSourceString()
 							+ "'");
@@ -1505,8 +1505,8 @@ public class SiteBot extends FtpListener implements Observer {
 	 */
 	public String getBlowfishKey(String channel, User user) throws ObjectNotFoundException {
 		
-		if (_channelMap.containsKey(channel)) {
-			return _channelMap.get(channel).getBlowfishKey(user);
+		if (_channelMap.containsKey(channel.toUpperCase())) {
+			return _channelMap.get(channel.toUpperCase()).getBlowfishKey(user);
 		}
 		throw new ObjectNotFoundException();
 	}
