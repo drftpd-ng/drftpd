@@ -66,6 +66,9 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 	 * Trying to lookupFile() or getFile() a deleted file throws FileNotFoundException.
 	 */
 	public abstract void delete();
+	/**
+	 * This method will delete files off of slaves not contained in the destSlaves Set
+	 */
 	public abstract void deleteOthers(Set destSlaves);
 	public abstract long dirSize();
 	public abstract RemoteSlave getASlave(char direction, BaseFtpConnection conn)

@@ -1,7 +1,7 @@
 2004/05/16 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Refactored ArchiveType(s) to accept multiple destination slaves
-* There are three ArchiveType(s) now available, MoveReleaseToMostFreeSlaves
-  MoveReleaseToSpecificSlaves, and FinishReleaseOnSlaves
+* There are four ArchiveType(s) now available, MoveReleaseToMostFreeSlaves
+  MoveReleaseToSpecificSlaves, FinishReleaseOnSlaves, and StripeFilesOffSpecificSlave
 * Settings in archive.conf have changed
 
 2004/05/11 Morgan Christiansson <drftpd@mog.se>
