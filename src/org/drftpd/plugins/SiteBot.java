@@ -258,9 +258,6 @@ public class SiteBot extends FtpListener implements Observer {
                             SiteBot.class));
                 }
             } catch (FormatterException ex) {
-                say(null,
-                    event.getCommand() + " FormatterException: " +
-                    ex.getMessage());
                 logger.warn("", ex);
             }
         }
@@ -1202,33 +1199,19 @@ public class SiteBot extends FtpListener implements Observer {
             sn = (SectionSettings) _sections.get(section.getName());
         }
 
-        sayChannel((sn != null) ? sn.getChannel() : _channelName, message);
+        say((sn != null) ? sn.getChannel() : _channelName, message);
     }
 
-    public void sayChannel(String chan, String message) {
+    public void say(String dest, String message) {
         if (message == null || message.equals("")) {
-            throw new IllegalArgumentException(
-                "Cowardly refusing to send empty message");
+        	return;
         }
-
+        boolean isChan = dest.startsWith("#");
         String[] lines = message.split("\n");
-        String line;
-        for (int i = 0; i < lines.length; i++) {
-            line = (_fish != null) ? _fish.Encrypt(lines[i]) : lines[i];
-            _conn.sendCommand(new MessageCommand(chan, line));
-        }
-    }
-
-    //never encrypt private messages
-    public void sayPrivMessage(String nick, String message) {
-    	if (message == null || message.equals("")) {
-            throw new IllegalArgumentException(
-                "Cowardly refusing to send empty message");
-        }
-
-        String[] lines = message.split("\n");
-        for (int i = 0; i < lines.length; i++) {
-            _conn.sendCommand(new MessageCommand(nick, lines[i]));
+        for (String line : lines) {
+        	// don't encrypt private messages, at least not yet :)
+            line = ((_fish != null) && isChan) ? _fish.Encrypt(line) : line;
+            _conn.sendCommand(new MessageCommand(dest, line));
         }
     }
 
@@ -1246,7 +1229,7 @@ public class SiteBot extends FtpListener implements Observer {
     public void sayGlobal(String string) {
         for (Enumeration e = getIRCConnection().getClientState()
                                  .getChannelNames(); e.hasMoreElements();) {
-            sayChannel((String) e.nextElement(), string);
+            say((String) e.nextElement(), string);
         }
     }
 
@@ -1332,15 +1315,15 @@ public class SiteBot extends FtpListener implements Observer {
 				try {
 					ArrayList<String> list = (ArrayList) ((Method) objects[0]).invoke(objects[1],new Object[] {args, msgc});
 					if (list.isEmpty()) {
-						sayChannel(getSource(msgc), "There is no output to return");
+						say(getSource(msgc), "There is no output to return");
 					}
 					for (String output : list) {
-						sayChannel(getSource(msgc),output);
+						say(getSource(msgc),output);
 					}
 					
 				} catch (Exception e) {
 					logger.error("Error in method invocation on IRCCommand " + trigger, e);
-					sayChannel(getSource(msgc), e.getMessage());
+					say(getSource(msgc), e.getMessage());
 				}
 			}
 		}

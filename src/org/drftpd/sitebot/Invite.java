@@ -93,12 +93,12 @@ public class Invite extends GenericCommandAutoService
     		try {
                 if (!_listener.getIRCConfig().checkIrcPermission(
                         _listener.getCommandPrefix() + "invite",msgc.getSource())) {
-                	_listener.sayChannel(msgc.getDest(), 
+                	_listener.say(msgc.getDest(), 
                 			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
                 	return;				
                 }
             } catch (NoSuchUserException e) {
-    			_listener.sayChannel(msgc.getDest(), 
+    			_listener.say(msgc.getDest(), 
     					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
     			return;
             }

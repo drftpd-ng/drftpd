@@ -112,12 +112,12 @@ public class Stats extends GenericCommandAutoService
 		try {
             if (!_listener.getIRCConfig().checkIrcPermission(
                     _listener.getCommandPrefix() + type.toLowerCase(),msgc.getSource())) {
-            	_listener.sayChannel(msgc.getDest(), 
+            	_listener.say(msgc.getDest(), 
             			ReplacerUtils.jprintf("ident.denymsg", env1, SiteBot.class));
             	return;				
             }
         } catch (NoSuchUserException e) {
-			_listener.sayChannel(msgc.getDest(), 
+			_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("ident.noident", env1, SiteBot.class));
 			return;
         }
@@ -132,7 +132,7 @@ public class Stats extends GenericCommandAutoService
         try {
             users = getGlobalContext().getUserManager().getAllUsers();
         } catch (UserFileException e) {
-            _listener.sayChannel(msgc.getDest(),"Error processing userfiles");
+            _listener.say(msgc.getDest(),"Error processing userfiles");
             logger.error("Error processing userfiles", e);
 
             return;
@@ -197,12 +197,12 @@ public class Stats extends GenericCommandAutoService
             type = type.toLowerCase();
 
             try {
-                _listener.sayChannel(msgc.getDest(),
+                _listener.say(msgc.getDest(),
                         SimplePrintf.jprintf(ReplacerUtils.jprintf(
                                 "transferstatistics" + type, env, Stats.class),
                             env));
             } catch (FormatterException e) {
-                _listener.sayChannel(msgc.getDest(),
+                _listener.say(msgc.getDest(),
                         "FormatterException for transferstatistics" + type);
 
                 break;

@@ -93,12 +93,12 @@ public class Kick extends GenericAutoService implements IRCPluginInterface {
 		try {
             if (!_listener.getIRCConfig().checkIrcPermission(
                     _listener.getCommandPrefix() + "kick",msgc.getSource())) {
-            	_listener.sayChannel(msgc.getDest(), 
+            	_listener.say(msgc.getDest(), 
             			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
             	return;				
             }
         } catch (NoSuchUserException e) {
-			_listener.sayChannel(msgc.getDest(), 
+			_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
 			return;
         }
@@ -156,13 +156,13 @@ public class Kick extends GenericAutoService implements IRCPluginInterface {
                 }
                 if ((count >= 10 || !iter.hasNext()) && !msg.trim().equals("")) {
                     env.add("users", msg.trim());
-                    _listener.sayChannel(msgc.getDest(),SimplePrintf.jprintf(kickirc, env));
+                    _listener.say(msgc.getDest(),SimplePrintf.jprintf(kickirc, env));
                     count = 0;
                     msg = "";
                 }
             }
             if (!found) {
-				_listener.sayChannel(msgc.getDest(),
+				_listener.say(msgc.getDest(),
 					ReplacerUtils.jprintf("kick.none", env, Kick.class));
             }
         } catch (FormatterException e) {

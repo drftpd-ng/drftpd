@@ -112,21 +112,21 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 		try {
             ftpuser = _listener.getIRCConfig().lookupUser(msgc.getSource());
         } catch (NoSuchUserException e) {
-			_listener.sayChannel(msgc.getDest(), 
+			_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
 			return;
         }
 		env.add("ftpuser",ftpuser.getName());
 
 		if (!_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "nuke",ftpuser)) {
-			_listener.sayChannel(msgc.getDest(), 
+			_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
 			return;				
 		}
 
 		String msg = msgc.getMessage().trim();
 		if (msg.equals("!nuke")) {
-			_listener.sayChannel(msgc.getDest(), 
+			_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("nuke.usage", env, IRCNuke.class));
 			return;
 		}
@@ -134,7 +134,7 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 		//check number of arguments
 		String args[] = msg.split(" ");
 		if (args.length < 4) {
-			_listener.sayChannel(msgc.getDest(), 
+			_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("nuke.usage", env, IRCNuke.class));
 			return;
 		}
@@ -145,7 +145,7 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 		try {
 			nukemult = Integer.parseInt(args[2]);
 		} catch (NumberFormatException e2) {
-			_listener.sayChannel(msgc.getDest(), 
+			_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("nuke.usage", env, IRCNuke.class));
 			return;
 		}
@@ -160,7 +160,7 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 			findDir(_cm, _cm.getGlobalContext().getRoot(), ftpuser, searchstr);
 
 		if (nukeDir == null){
-			_listener.sayChannel(msgc.getDest(), 
+			_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("nuke.error", env, IRCNuke.class));
 		} else {
 			String nukeDirPath = nukeDir.getPath();
@@ -179,12 +179,12 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 					user =
 						_cm.getGlobalContext().getUserManager().getUserByName(username);
 				} catch (NoSuchUserException e1) {
-				    _listener.sayChannel(msgc.getDest(),"Cannot remove credits from " 
+				    _listener.say(msgc.getDest(),"Cannot remove credits from " 
 						+ username + ": " + e1.getMessage());
 					logger.warn("", e1);
 					user = null;
 				} catch (UserFileException e1) {
-				    _listener.sayChannel(msgc.getDest(),"Cannot read user data for " 
+				    _listener.say(msgc.getDest(),"Cannot read user data for " 
 						+ username + ": " + e1.getMessage());
 					logger.warn("", e1);
 					return;
@@ -222,7 +222,7 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 					"REASON-" + nukemsg);
 			} catch (IOException ex) {
 				logger.warn("", ex);
-				_listener.sayChannel(msgc.getDest(),
+				_listener.say(msgc.getDest(),
 					" cannot rename to \""
 						+ toDirPath
 						+ "/"
@@ -257,7 +257,7 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 				try {
 					nukee.commit();
 				} catch (UserFileException e1) {
-					_listener.sayChannel(msgc.getDest(),
+					_listener.say(msgc.getDest(),
 						"Error writing userfile: " + e1.getMessage());
 					logger.warn("Error writing userfile", e1);
 				}
@@ -291,21 +291,21 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 		try {
             ftpuser = _listener.getIRCConfig().lookupUser(msgc.getSource());
         } catch (NoSuchUserException e) {
-			_listener.sayChannel(msgc.getDest(), 
+			_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
 			return;
         }
 		env.add("ftpuser",ftpuser.getName());
 
 		if (!_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "unnuke",ftpuser)) {
-			_listener.sayChannel(msgc.getDest(), 
+			_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
 			return;				
 		}
 
 		String msg = msgc.getMessage().trim();
 		if (msg.equals("!unnuke")) {
-			_listener.sayChannel(msgc.getDest(), 
+			_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("unnuke.usage", env, IRCNuke.class));
 			return;
 		}
@@ -313,7 +313,7 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 		//check number of arguments
 		String args[] = msg.split(" ");
 		if (args.length < 2) {
-			_listener.sayChannel(msgc.getDest(), 
+			_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("unnuke.usage", env, IRCNuke.class));
 			return;
 		}
@@ -332,7 +332,7 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 			findDir(_cm, _cm.getGlobalContext().getRoot(), ftpuser, nukeName);
 			
 		if (nukeDir == null){
-			_listener.sayChannel(msgc.getDest(), 
+			_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("nuke.error", env, IRCNuke.class));
 			return;
 		} 
@@ -348,7 +348,7 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 					.get(Nuke.class);
 			nuke = dpsn.getNukeLog().get(toPath);
 		} catch (ObjectNotFoundException ex) {
-			_listener.sayChannel(msgc.getDest(),ex.getMessage());
+			_listener.say(msgc.getDest(),ex.getMessage());
 			logger.warn(ex);
 			return;
 		}
@@ -362,10 +362,10 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 					_cm.getGlobalContext().getUserManager().getUserByName(
 						nukeeName);
 			} catch (NoSuchUserException e) {
-			    _listener.sayChannel(msgc.getDest(),nukeeName + ": no such user");
+			    _listener.say(msgc.getDest(),nukeeName + ": no such user");
 				continue;
 			} catch (UserFileException e) {
-			    _listener.sayChannel(msgc.getDest(),nukeeName + ": error reading userfile");
+			    _listener.say(msgc.getDest(),nukeeName + ": error reading userfile");
 				logger.fatal("error reading userfile", e);
 				continue;
 			}
@@ -385,7 +385,7 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 				logger.fatal(
 					"Eroror saving userfile for " + nukee.getName(),
 					e3);
-				_listener.sayChannel(msgc.getDest(),
+				_listener.say(msgc.getDest(),
 					"Error saving userfile for " + nukee.getName());
 			}
 		}//for
@@ -398,7 +398,7 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 		try {
 			nukeDir.renameTo(toDir, toName);
 		} catch (FileExistsException e1) {
-		    _listener.sayChannel(msgc.getDest(),
+		    _listener.say(msgc.getDest(),
 				"Error renaming nuke, target dir already exists");
 		} catch (IOException e1) {
 			//response.addComment("Error: " + e1.getMessage());
@@ -434,14 +434,14 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 		try {
             ftpuser = _listener.getIRCConfig().lookupUser(msgc.getSource());
         } catch (NoSuchUserException e) {
-			_listener.sayChannel(msgc.getDest(), 
+			_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
 			return;
         }
 		env.add("ftpuser",ftpuser.getName());
 
 		if (!_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "nukes",ftpuser)) {
-			_listener.sayChannel(msgc.getDest(), 
+			_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
 			return;				
 		}
@@ -463,7 +463,7 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 				nukeCount = Integer.parseInt(args[1]);
 			} catch (NumberFormatException e2) {
 				logger.warn("parameter passed to !nukes is not a valid Integer", e2);
-				_listener.sayChannel(msgc.getDest(), 
+				_listener.say(msgc.getDest(), 
 						ReplacerUtils.jprintf("nukes.usage", env, IRCNuke.class));
 				return;
 			}
@@ -480,7 +480,7 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 		int count = 0;
 		
 		if (allNukes.size() == 0) {
-			_listener.sayChannel(msgc.getDest(), 
+			_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("nukes.nonukes", env, IRCNuke.class));
 		} else {
 			for (int i = allNukes.size()-1; i >= 0; i--) {
@@ -496,7 +496,7 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 				dFormat.setTimeZone(TimeZone.getDefault());
 				env.add("nuketime", dFormat.format(new Date(nuke.getTime())));
 			
-				_listener.sayChannel(msgc.getDest(), 
+				_listener.say(msgc.getDest(), 
 						ReplacerUtils.jprintf("nukes.msg", env, IRCNuke.class));
 				count++;
 			}

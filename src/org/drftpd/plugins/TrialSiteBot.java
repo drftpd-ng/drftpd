@@ -112,7 +112,7 @@ public class TrialSiteBot extends GenericCommandAutoService {
             user = _trial.getGlobalContext().getUserManager().getUserByName(
 					username);
         } catch (NoSuchUserException e) {
-            _irc.sayChannel(msgc.getDest(), "[passed] No such user: " +
+            _irc.say(msgc.getDest(), "[passed] No such user: " +
                 username);
             logger.info("", e);
 
@@ -141,11 +141,11 @@ public class TrialSiteBot extends GenericCommandAutoService {
 
                     if (bytesleft <= 0) {
                         //in bonus or passed
-                        _irc.sayChannel(msgc.getDest(),
+                        _irc.say(msgc.getDest(),
                             jprintf("passedunique", user, limit, bytesleft, true));
                     } else {
                         //in unique period
-                        _irc.sayChannel(msgc.getDest(),
+                        _irc.say(msgc.getDest(),
                             jprintf("trialunique", user, limit, bytesleft, true));
                     }
                 } else {
@@ -154,10 +154,10 @@ public class TrialSiteBot extends GenericCommandAutoService {
                         Trial.getUploadedBytesForPeriod(user, limit.getPeriod());
 
                     if (bytesleft <= 0) {
-                        _irc.sayChannel(msgc.getDest(),
+                        _irc.say(msgc.getDest(),
                             jprintf("passed", user, limit, bytesleft, false));
                     } else {
-                        _irc.sayChannel(msgc.getDest(),
+                        _irc.say(msgc.getDest(),
                             jprintf("trial", user, limit, bytesleft, false));
                     }
                 }
@@ -165,7 +165,7 @@ public class TrialSiteBot extends GenericCommandAutoService {
         }
 
         if (i == 0) {
-            _irc.sayChannel(msgc.getDest(),
+            _irc.say(msgc.getDest(),
                 jprintf("exempt", user, null, 0, false));
         }
     }

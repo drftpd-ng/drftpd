@@ -116,7 +116,7 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
         try {
             user = _listener.getIRCConfig().lookupUser(msgc.getSource());
         } catch (NoSuchUserException e) {
-            _listener.sayChannel(msgc.getDest(), 
+            _listener.say(msgc.getDest(), 
                     ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
             return;
         }
@@ -124,7 +124,7 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
         env.add("reqfilled",_listener.getCommandPrefix() + "reqfilled");
         
         if (!_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "requests",user)) {
-            _listener.sayChannel(msgc.getDest(), 
+            _listener.say(msgc.getDest(), 
                     ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
             return;				
         }
@@ -132,7 +132,7 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
         
         try {
             LinkedRemoteFileInterface rdir = getConnectionManager().getGlobalContext().getRoot().getFile(ReplacerUtils.jprintf("request.dirpath", env, Request.class));
-            _listener.sayChannel(msgc.getDest(),
+            _listener.say(msgc.getDest(),
                     ReplacerUtils.jprintf("requests.header", env, Request.class));
             int i=1;
             for (Iterator iter = rdir.getDirectories().iterator(); iter.hasNext();) {
@@ -153,11 +153,11 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
                         env.add("requser",byuser.replaceAll("by ",""));
                         env.add("reqrequest",request);
                         i=i+1;
-                        _listener.sayChannel(msgc.getDest(),ReplacerUtils.jprintf("requests.list", env, Request.class));	
+                        _listener.say(msgc.getDest(),ReplacerUtils.jprintf("requests.list", env, Request.class));	
                     }
                 }
             }
-            _listener.sayChannel(msgc.getDest(),
+            _listener.say(msgc.getDest(),
                     ReplacerUtils.jprintf("requests.footer", env, Request.class));
         }  catch (FileNotFoundException e) {
             return; 
@@ -174,14 +174,14 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
         try {
             user = _listener.getIRCConfig().lookupUser(msgc.getSource());
         } catch (NoSuchUserException e) {
-            _listener.sayChannel(msgc.getDest(), 
+            _listener.say(msgc.getDest(), 
                     ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
             return;
         }
         env.add("ftpuser",user.getName());
         
         if (!_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "reqfilled",user)) {
-            _listener.sayChannel(msgc.getDest(), 
+            _listener.say(msgc.getDest(), 
                     ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
             return;				
         }
@@ -191,19 +191,19 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
             dirName = msgc.getMessage().substring((_listener.getCommandPrefix() + "reqfilled ").length()).trim();
             if (dirName.length()==0) 
             { 
-                _listener.sayChannel(msgc.getDest(), 
+                _listener.say(msgc.getDest(), 
                         ReplacerUtils.jprintf("reqfilled.usage", env, Request.class)); 
                 return; 
             } 
             
         } catch (ArrayIndexOutOfBoundsException e) {
             logger.warn("", e);
-            _listener.sayChannel(msgc.getDest(), 
+            _listener.say(msgc.getDest(), 
                     ReplacerUtils.jprintf("reqfilled.usage", env, Request.class));
             return;
         } catch (StringIndexOutOfBoundsException e) {
             logger.warn("", e);
-            _listener.sayChannel(msgc.getDest(), 
+            _listener.say(msgc.getDest(), 
                     ReplacerUtils.jprintf("reqfilled.usage", env, Request.class));
             return;
         }
@@ -240,10 +240,10 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
                 }
             }
             
-            if (nodir && !fdir) _listener.sayChannel(msgc.getDest(),ReplacerUtils.jprintf("reqfilled.error", env, Request.class));
+            if (nodir && !fdir) _listener.say(msgc.getDest(),ReplacerUtils.jprintf("reqfilled.error", env, Request.class));
             
         } catch (FileNotFoundException e) {
-            _listener.sayChannel(msgc.getDest(),ReplacerUtils.jprintf("reqfilled.error", env, Request.class));
+            _listener.say(msgc.getDest(),ReplacerUtils.jprintf("reqfilled.error", env, Request.class));
             return;
         }
         
@@ -258,14 +258,14 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
         try {
             user = _listener.getIRCConfig().lookupUser(msgc.getSource());
         } catch (NoSuchUserException e) {
-            _listener.sayChannel(msgc.getDest(), 
+            _listener.say(msgc.getDest(), 
                     ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
             return;
         }
         env.add("ftpuser",user.getName());
         
         if (!_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "request",user)) {
-            _listener.sayChannel(msgc.getDest(), 
+            _listener.say(msgc.getDest(), 
                     ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
             return;				
         }
@@ -275,19 +275,19 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
             dirName = msgc.getMessage().substring("!request ".length()).trim();
             if (dirName.length()==0) 
             { 
-                _listener.sayChannel(msgc.getDest(), 
+                _listener.say(msgc.getDest(), 
                         ReplacerUtils.jprintf("request.usage", env, Request.class)); 
                 return; 
             } 
             
         } catch (ArrayIndexOutOfBoundsException e) {
             logger.warn("", e);
-            _listener.sayChannel(msgc.getDest(), 
+            _listener.say(msgc.getDest(), 
                     ReplacerUtils.jprintf("request.usage", env, Request.class));
             return;
         } catch (StringIndexOutOfBoundsException e) {
             logger.warn("", e);
-            _listener.sayChannel(msgc.getDest(), 
+            _listener.say(msgc.getDest(), 
                     ReplacerUtils.jprintf("request.usage", env, Request.class));
             return;
         }
@@ -304,10 +304,10 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
                 user.getKeyedMap().setObject(Request.REQUESTS, user.getKeyedMap().getObjectInt(Request.REQUESTS)+1);;
                 _listener.sayGlobal(ReplacerUtils.jprintf("request.success", env, Request.class));
             } catch (FileNotFoundException e) {
-                _listener.sayChannel(msgc.getDest(),DirPath + " doesn't exist!");
+                _listener.say(msgc.getDest(),DirPath + " doesn't exist!");
                 return;
             } catch (FileExistsException e1) {
-                _listener.sayChannel(msgc.getDest(),ReplacerUtils.jprintf("request.exists", env, Request.class));
+                _listener.say(msgc.getDest(),ReplacerUtils.jprintf("request.exists", env, Request.class));
             } 	
         }
 
@@ -320,14 +320,14 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
         try {
             user = _listener.getIRCConfig().lookupUser(msgc.getSource());
         } catch (NoSuchUserException e) {
-            _listener.sayChannel(msgc.getDest(), 
+            _listener.say(msgc.getDest(), 
                     ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
             return;
         }
         env.add("ftpuser",user.getName());
         
         if (!_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "reqdel",user)) {
-            _listener.sayChannel(msgc.getDest(), 
+            _listener.say(msgc.getDest(), 
                     ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
             return;				
         }
@@ -338,19 +338,19 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
             dirName = msgc.getMessage().substring((_listener.getCommandPrefix() + "reqdel ").length()).trim();
             if (dirName.length()==0) 
             { 
-                _listener.sayChannel(msgc.getDest(), 
+                _listener.say(msgc.getDest(), 
                         ReplacerUtils.jprintf("reqdel.usage", env, Request.class)); 
                 return; 
             } 
             
         } catch (ArrayIndexOutOfBoundsException e) {
             logger.warn("", e);
-            _listener.sayChannel(msgc.getDest(), 
+            _listener.say(msgc.getDest(), 
                     ReplacerUtils.jprintf("reqdel.usage", env, Request.class));
             return;
         } catch (StringIndexOutOfBoundsException e) {
             logger.warn("", e);
-            _listener.sayChannel(msgc.getDest(), 
+            _listener.say(msgc.getDest(), 
                     ReplacerUtils.jprintf("reqdel.usage", env, Request.class));
             return;
         }
@@ -386,11 +386,11 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
                 }
             }
             
-            if (nodir && !deldir) _listener.sayChannel(msgc.getDest(),ReplacerUtils.jprintf("reqdel.error", env, Request.class));
+            if (nodir && !deldir) _listener.say(msgc.getDest(),ReplacerUtils.jprintf("reqdel.error", env, Request.class));
             
             
         } catch (FileNotFoundException e) {
-            _listener.sayChannel(msgc.getDest(),ReplacerUtils.jprintf("reqdel.error", env, Request.class));
+            _listener.say(msgc.getDest(),ReplacerUtils.jprintf("reqdel.error", env, Request.class));
             return;
         }
     }

@@ -71,12 +71,12 @@ public class IRCListener extends GenericAutoService implements IRCPluginInterfac
     		try {
                 if (!_listener.getIRCConfig().checkIrcPermission(
                         _listener.getCommandPrefix() + "imdb",msgc.getSource())) {
-                	_listener.sayChannel(msgc.getDest(), 
+                	_listener.say(msgc.getDest(), 
                 			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
                 	return;				
                 }
             } catch (NoSuchUserException e) {
-    			_listener.sayChannel(msgc.getDest(), 
+    			_listener.say(msgc.getDest(), 
     					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
     			return;
             }
@@ -88,16 +88,16 @@ public class IRCListener extends GenericAutoService implements IRCPluginInterfac
                 IMDBParser imdb = new IMDBParser(searchStr);
                 if (!imdb.foundFilm()) {
                     env.add("searchstr", searchStr);
-                    _listener.sayChannel(msgc.getDest(),
+                    _listener.say(msgc.getDest(),
                             ReplacerUtils.jprintf("imdb.notfound", env, IMDBParser.class));
                 } else {
-               		_listener.sayChannel(msgc.getDest(),
+               		_listener.say(msgc.getDest(),
                   		     ReplacerUtils.jprintf("imdb.announce", imdb.getEnv(), IMDBParser.class));
                     
                 }
            	} catch (StringIndexOutOfBoundsException e) { 
            		logger.warn("", e); 
-           		_listener.sayChannel(msgc.getDest(), "!imdb what??"); 
+           		_listener.say(msgc.getDest(), "!imdb what??"); 
            		return; 
            	}          
         }   

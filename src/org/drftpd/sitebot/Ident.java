@@ -94,10 +94,10 @@ public class Ident extends GenericCommandAutoService implements
             	try {
 					user.commit();
 		           	logger.info("Set IRC ident to '"+ident+"' for "+user.getName());
-	            	_listener.sayPrivMessage(msgc.getSource().getNick(),"Set IRC ident to '"+ident+"' for "+user.getName());
+	            	_listener.say(msgc.getSource().getNick(),"Set IRC ident to '"+ident+"' for "+user.getName());
 				} catch (UserFileException e1) {
 					logger.warn("Error saving userfile for "+user.getName(),e1);
-					_listener.sayPrivMessage(msgc.getSource().getNick(),"Error saving userfile for "+user.getName());
+					_listener.say(msgc.getSource().getNick(),"Error saving userfile for "+user.getName());
 				}
              }
         }

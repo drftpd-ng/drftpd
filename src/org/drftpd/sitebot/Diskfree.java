@@ -80,12 +80,12 @@ public class Diskfree extends GenericCommandAutoService
     		try {
                 if (!_listener.getIRCConfig().checkIrcPermission(
                         _listener.getCommandPrefix() + "df",msgc.getSource())) {
-                	_listener.sayChannel(msgc.getDest(), 
+                	_listener.say(msgc.getDest(), 
                 			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
                 	return;				
                 }
             } catch (NoSuchUserException e) {
-    			_listener.sayChannel(msgc.getDest(), 
+    			_listener.say(msgc.getDest(), 
     					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
     			return;
             }
@@ -94,7 +94,7 @@ public class Diskfree extends GenericCommandAutoService
 					.getAllStatus();
 
             SiteBot.fillEnvSlaveStatus(env, status, _listener.getSlaveManager());
-            _listener.sayChannel(msgc.getDest(),
+            _listener.say(msgc.getDest(),
                 ReplacerUtils.jprintf("diskfree", env, SiteBot.class));
         }
     }

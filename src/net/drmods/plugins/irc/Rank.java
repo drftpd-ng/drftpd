@@ -95,14 +95,14 @@ public class Rank extends GenericCommandAutoService implements
 			try {
 	            user = _listener.getIRCConfig().lookupUser(msgc.getSource());
 	        } catch (NoSuchUserException e) {
-				_listener.sayChannel(msgc.getDest(), 
+				_listener.say(msgc.getDest(), 
 						ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
 				return;
 	        }
 			env.add("ftpuser",user.getName());
 
 			if (!_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "rank",user)) {
-				_listener.sayChannel(msgc.getDest(), 
+				_listener.say(msgc.getDest(), 
 						ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
 				return;				
 			}
@@ -127,16 +127,16 @@ public class Rank extends GenericCommandAutoService implements
                     if (luser.isMemberOf(st.nextToken())) {
                         env.add("eusr", luser.getName());
                         env.add("egrp", luser.getGroup());
-                        _listener.sayChannel(msgc.getDest(), ReplacerUtils
+                        _listener.say(msgc.getDest(), ReplacerUtils
                                 .jprintf("exempt", env, Rank.class));
                         return;
                     }
                 }
             } catch (NoSuchUserException e2) {
-                _listener.sayChannel(msgc.getDest(), "Not a valid username");
+                _listener.say(msgc.getDest(), "Not a valid username");
                 return;
             } catch (UserFileException e2) {
-                _listener.sayChannel(msgc.getDest(), "Error opening user file");
+                _listener.say(msgc.getDest(), "Error opening user file");
                 return;
             }
 
@@ -213,21 +213,21 @@ public class Rank extends GenericCommandAutoService implements
             }
 
             if (msgtype == 1)
-                _listener.sayChannel(msgc.getDest(), ReplacerUtils.jprintf(
+                _listener.say(msgc.getDest(), ReplacerUtils.jprintf(
                         "msg1", env, Rank.class));
             else if (msgtype == 2) {
                 if (!user1.equals(null) && !user2.equals(null))
                     env.add("toup", Bytes.formatBytes(user2
                             .getUploadedBytesMonth()
                             - user1.getUploadedBytesMonth()));
-                _listener.sayChannel(msgc.getDest(), ReplacerUtils.jprintf(
+                _listener.say(msgc.getDest(), ReplacerUtils.jprintf(
                         "msg2", env, Rank.class));
             } else if (msgtype == 3) {
                 if (!user1.equals(null) && !user2.equals(null))
                     env.add("toup", Bytes.formatBytes(user2
                             .getUploadedBytesMonth()
                             - user1.getUploadedBytesMonth()));
-                _listener.sayChannel(msgc.getDest(), ReplacerUtils.jprintf(
+                _listener.say(msgc.getDest(), ReplacerUtils.jprintf(
                         "msg3", env, Rank.class));
             }
 

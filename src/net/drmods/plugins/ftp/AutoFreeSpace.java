@@ -88,7 +88,7 @@ public class AutoFreeSpace extends FtpListener {
         if (_irc == null) {
             return;
         }
-        _irc.sayChannel(_irc.getChannelName(), text);
+        _irc.say(_irc.getChannelName(), text);
     }
 
     private void reload() {

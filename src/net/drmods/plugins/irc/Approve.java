@@ -85,18 +85,18 @@ public class Approve extends GenericCommandAutoService implements IRCPluginInter
 
 		String msg = msgc.getMessage().trim();
 		if (msg.equals(_trigger + "approve")) {
-			_listener.sayChannel(msgc.getDest(), 
+			_listener.say(msgc.getDest(), 
 				ReplacerUtils.jprintf("approve.usage", env, Approve.class));			
 		} else if (msg.startsWith(_trigger + "approve ")) {
     		try {
                 if (!_listener.getIRCConfig().checkIrcPermission(
                         _listener.getCommandPrefix() + "slaves",msgc.getSource())) {
-                	_listener.sayChannel(msgc.getDest(), 
+                	_listener.say(msgc.getDest(), 
                 			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
                 	return;				
                 }
             } catch (NoSuchUserException e) {
-    			_listener.sayChannel(msgc.getDest(), 
+    			_listener.say(msgc.getDest(), 
     					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
     			return;
             }
@@ -106,12 +106,12 @@ public class Approve extends GenericCommandAutoService implements IRCPluginInter
 				dirName = msgc.getMessage().substring((_trigger + "approve ").length());
 			} catch (ArrayIndexOutOfBoundsException e) {
 				logger.warn("", e);
-				_listener.sayChannel(msgc.getDest(), 
+				_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("approve.usage", env, Approve.class));
 				return;
 			} catch (StringIndexOutOfBoundsException e) {
 				logger.warn("", e);
-				_listener.sayChannel(msgc.getDest(), 
+				_listener.say(msgc.getDest(), 
 					ReplacerUtils.jprintf("approve.usage", env, Approve.class));
 				return;
 			}
@@ -121,7 +121,7 @@ public class Approve extends GenericCommandAutoService implements IRCPluginInter
             try {
                 user = _listener.getIRCConfig().lookupUser(msgc.getSource());
             } catch (NoSuchUserException e2) {
-    			_listener.sayChannel(msgc.getDest(), 
+    			_listener.say(msgc.getDest(), 
     					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
     			return;
             }
@@ -140,16 +140,16 @@ public class Approve extends GenericCommandAutoService implements IRCPluginInter
 					LinkedRemoteFileInterface newdir = dir.createDirectory(approveDirName);
 					newdir.setOwner(user.getName());
 					newdir.setGroup(user.getGroup());
-					_listener.sayChannel(msgc.getDest(), 
+					_listener.say(msgc.getDest(), 
 										 ReplacerUtils.jprintf("approve.success", env, Approve.class));
 					getGlobalContext().dispatchFtpEvent(
 							new DirectoryFtpEvent(user, "MKD", newdir));
 				} catch (FileExistsException e1) {
-					_listener.sayChannel(msgc.getDest(), 
+					_listener.say(msgc.getDest(), 
 										 ReplacerUtils.jprintf("approve.exists", env, Approve.class));
 				}
 			} else {
-				_listener.sayChannel(msgc.getDest(), 
+				_listener.say(msgc.getDest(), 
 									 ReplacerUtils.jprintf("approve.error", env, Approve.class));
 			}
 

@@ -113,12 +113,12 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
     		try {
                 if (!_listener.getIRCConfig().checkIrcPermission(
                         _listener.getCommandPrefix() + "slave",msgc.getSource())) {
-                	_listener.sayChannel(msgc.getDest(), 
+                	_listener.say(msgc.getDest(), 
                 			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
                 	return;				
                 }
             } catch (NoSuchUserException e) {
-    			_listener.sayChannel(msgc.getDest(), 
+    			_listener.say(msgc.getDest(), 
     					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
     			return;
             }
@@ -128,28 +128,28 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
             try {
                 RemoteSlave rslave = getGlobalContext()
                                          .getSlaveManager().getRemoteSlave(slaveName);
-                _listener.sayChannel(chan, makeStatusString(rslave));
+                _listener.say(chan, makeStatusString(rslave));
             } catch (ObjectNotFoundException e) {
                 env.add("slave", slaveName);
-                _listener.sayChannel(chan,
+                _listener.say(chan,
                     ReplacerUtils.jprintf("slaves.notfound", env, Slaves.class));
             }
         } else if (msgc.getMessage().equals(_trigger + "slaves")) {
     		try {
                 if (!_listener.getIRCConfig().checkIrcPermission(
                         _listener.getCommandPrefix() + "slaves",msgc.getSource())) {
-                	_listener.sayChannel(msgc.getDest(), 
+                	_listener.say(msgc.getDest(), 
                 			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
                 	return;				
                 }
             } catch (NoSuchUserException e) {
-    			_listener.sayChannel(msgc.getDest(), 
+    			_listener.say(msgc.getDest(), 
     					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
     			return;
             }
 
         	for(RemoteSlave rslave : getGlobalContext().getSlaveManager().getSlaves()) {
-                _listener.sayChannel(chan, makeStatusString(rslave));
+                _listener.say(chan, makeStatusString(rslave));
             }
         }
     }

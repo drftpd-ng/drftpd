@@ -91,12 +91,12 @@ public class Bandwidth extends GenericCommandAutoService
     		try {
                 if (!_listener.getIRCConfig().checkIrcPermission(
                         _listener.getCommandPrefix() + "bw",msgc.getSource())) {
-                	_listener.sayChannel(msgc.getDest(), 
+                	_listener.say(msgc.getDest(), 
                 			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
                 	return;				
                 }
             } catch (NoSuchUserException e) {
-    			_listener.sayChannel(msgc.getDest(), 
+    			_listener.say(msgc.getDest(), 
     					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
     			return;
             }
@@ -107,7 +107,7 @@ public class Bandwidth extends GenericCommandAutoService
 
             SiteBot.fillEnvSlaveStatus(env, status, _listener.getSlaveManager());
 
-            _listener.sayChannel(msgc.getDest(),
+            _listener.say(msgc.getDest(),
                 ReplacerUtils.jprintf("bw", env, Bandwidth.class));
         } else if (msg.startsWith(getCommandPrefix() + "speed ")) {
             ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
@@ -116,12 +116,12 @@ public class Bandwidth extends GenericCommandAutoService
     		try {
                 if (!_listener.getIRCConfig().checkIrcPermission(
                         _listener.getCommandPrefix() + "speed",msgc.getSource())) {
-                	_listener.sayChannel(msgc.getDest(), 
+                	_listener.say(msgc.getDest(), 
                 			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
                 	return;				
                 }
             } catch (NoSuchUserException e) {
-    			_listener.sayChannel(msgc.getDest(), 
+    			_listener.say(msgc.getDest(), 
     					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
     			return;
             }
@@ -145,11 +145,11 @@ public class Bandwidth extends GenericCommandAutoService
 				user = getGlobalContext()
 						.getUserManager().getUserByName(username);
 			} catch (NoSuchUserException e1) {
-				_listener.sayChannel(msgc.getDest(), ReplacerUtils.jprintf(
+				_listener.say(msgc.getDest(), ReplacerUtils.jprintf(
 						"speed.usernotfound", env, Bandwidth.class));
 				return;
 			} catch (UserFileException e1) {
-				_listener.sayChannel(msgc.getDest(), ReplacerUtils.jprintf(
+				_listener.say(msgc.getDest(), ReplacerUtils.jprintf(
 						"speed.usererror", env, Bandwidth.class));
 				return;
 			}
@@ -223,7 +223,7 @@ public class Bandwidth extends GenericCommandAutoService
                         Bandwidth.class);
             }
 
-            _listener.sayChannel(msgc.getDest(), status);
+            _listener.say(msgc.getDest(), status);
         }
     }
 
