@@ -8,6 +8,7 @@ package net.sf.drftpd.slave;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import se.mog.io.File;
@@ -19,7 +20,18 @@ import se.mog.io.File;
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 public class RootBasket {
-	private Vector roots = new Vector();
+	private Vector roots;
+
+	public RootBasket(String rootString) {
+		Vector roots = new Vector();
+		StringTokenizer st =
+			new StringTokenizer(rootString, ",;:");
+		while (st.hasMoreTokens()) {
+			roots.add(st.nextToken());
+		}
+		
+		this (roots);
+	}
 	public RootBasket(Collection roots) {
 		/** sanity checks **/
 		for (Iterator iter = roots.iterator(); iter.hasNext();) {
@@ -35,7 +47,7 @@ public class RootBasket {
 			
 		}
 		/** check for overlapping roots **/
-		this.roots.add(roots);
+		this.roots = new Vector(roots);
 	}
 	
 	public Iterator iterator() {

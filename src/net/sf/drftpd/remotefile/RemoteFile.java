@@ -28,13 +28,15 @@ public abstract class RemoteFile {
 		return getPath().startsWith(".");
 	}
 
-	protected long lastModified;
+	protected long lastModified = -1;
 	public long lastModified() {
+		if(length == -1) throw new IllegalStateException("lastModified not set for "+this);
 		return lastModified;
 	}
 
-	protected long length;
+	protected long length = -1;
 	public long length() {
+		if(length == -1) throw new IllegalStateException("length not set for "+this);
 		return length;
 	}
 
@@ -70,7 +72,6 @@ public abstract class RemoteFile {
 	 */
 	public static final char separatorChar = '/';
 
-	/////////////////////// abstract ////////////////////////////
 	/**
 	 * @see java.lang.Object#equals(Object)
 	 */
@@ -82,16 +83,17 @@ public abstract class RemoteFile {
 		
 		return false;
 	}
+
 	/**
-	 * @see net.sf.drftpd.RemoteFile#getName()
+	 * @see java.io.File#getName()
 	 */
 	public abstract String getName();
 	/**
-	 * @see net.sf.drftpd.RemoteFile#getParent()
+	 * @see java.io.File#getParent()
 	 */
 	public abstract String getParent() throws FileNotFoundException;
 	/**
-	 * @see net.sf.drftpd.RemoteFile#getPath()
+	 * @see java.io.File#getPath()
 	 */
 	public abstract String getPath();
 

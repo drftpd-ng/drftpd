@@ -102,7 +102,7 @@ public class SlaveManagerImpl
 	}
 
 	/**
-	 * TODO: support hot swapping slavess
+	 * TODO: support hot swapping slaves
 	 */
 	public void addSlave(RemoteSlave slave, LinkedRemoteFile remoteroot)
 		throws RemoteException {
@@ -115,6 +115,7 @@ public class SlaveManagerImpl
 		System.out.println(
 			"merge() took " + (System.currentTimeMillis() - millis) + "ms");
 		System.out.println("SlaveStatus: " + slave.getSlave().getSlaveStatus());
+		
 		//TODO: write XML representation of "LinkedRemoteFile root"
 		Document doc = new Document(XMLSerialize.serialize(root));
 		try {

@@ -10,6 +10,7 @@ import java.io.File;
 
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.RemoteFile;
+import net.sf.drftpd.slave.RootBasket;
 
 public class DumpFile {
 

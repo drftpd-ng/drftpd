@@ -132,8 +132,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	public LinkedRemoteFile(
 		RemoteSlave remoteSlave,
 		LinkedRemoteFile parent,
-		RemoteFile file)
-		{
+		RemoteFile file) {
 		logger.finest("creating LinkedRemoteFile from " + file);
 		lastModified = file.lastModified();
 		length = file.length();
@@ -207,7 +206,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		slaves.addAll(addslaves);
 		System.out.println("slaves.size() is now " + slaves.size());
 	}
-	
+
 	public void delete() {
 		Vector removed = new Vector(slaves.size());
 		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
@@ -232,8 +231,11 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		if (slaves.size() == 0) {
 			try {
 				getParentFile().getHashtable().remove(this);
-			} catch(FileNotFoundException ex) {
-				logger.log(Level.SEVERE, "FileNotFoundException on getParentFile()", ex);
+			} catch (FileNotFoundException ex) {
+				logger.log(
+					Level.SEVERE,
+					"FileNotFoundException on getParentFile()",
+					ex);
 			}
 		} else {
 			//TODO queued deletion
@@ -326,38 +328,41 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 * @see java.io.File#getParentFile()
 	 */
 	public LinkedRemoteFile getParentFile() throws FileNotFoundException {
-		if(parent == null) throw new FileNotFoundException("Directory has no parent");
+		if (parent == null)
+			throw new FileNotFoundException("Directory has no parent");
 		return parent;
 	}
 
 	public String getPath() {
 		StringBuffer path = new StringBuffer();
 		LinkedRemoteFile parent = this;
-		
+
 		try {
 			while (true) {
-				path.insert(0, "/"+parent.getName());
+				path.insert(0, "/" + parent.getName());
 				parent = parent.getParentFile();
 			}
-		} catch(FileNotFoundException ex) {}
+		} catch (FileNotFoundException ex) {
+		}
 		return path.toString();
-		
-//		StringBuffer path = new StringBuffer("/" + getName());
-//		LinkedRemoteFile parent = getParentFile();
-//		while (parent != null && parent.getParentFile() != null) {
-//			path.insert(0, "/" + parent.getName());
-//			parent = parent.getParentFile();
-//		}
-//		return path.toString();
+
+		//		StringBuffer path = new StringBuffer("/" + getName());
+		//		LinkedRemoteFile parent = getParentFile();
+		//		while (parent != null && parent.getParentFile() != null) {
+		//			path.insert(0, "/" + parent.getName());
+		//			parent = parent.getParentFile();
+		//		}
+		//		return path.toString();
 	}
 
 	public LinkedRemoteFile getRoot() {
-		LinkedRemoteFile root = this;//, candidate;
+		LinkedRemoteFile root = this; //, candidate;
 		try {
 			while (true)
 				root = root.getParentFile();
-				//root = candidate;
-		} catch(FileNotFoundException ex) {}
+			//root = candidate;
+		} catch (FileNotFoundException ex) {
+		}
 		return root;
 	}
 
@@ -409,9 +414,10 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		throws FileNotFoundException {
 		StringTokenizer st = new StringTokenizer(path, "/");
 		LinkedRemoteFile currFile = this;
-		
-		if(path.charAt(0) == '/') currFile = getRoot();
-		
+
+		if (path.charAt(0) == '/')
+			currFile = getRoot();
+
 		while (st.hasMoreTokens()) {
 			String currFileName = st.nextToken();
 
@@ -527,18 +533,22 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		//			try {
 		//				slave.getSlave().mkdir(owner, getPath() + "/" + fileName);
 		//			} catch (RemoteException ex) {
-		//				slave.getManager().handleRemoteException(ex, slave);
+		//				slave.handleRemoteException(ex);
 		//			}
 		//		}
 
-			LinkedRemoteFile file = new LinkedRemoteFile(null, // remoteslave
-		this, // parent
-	new DirectoryRemoteFile(owner, fileName)); //file
+		LinkedRemoteFile file =
+			new LinkedRemoteFile(
+				null,
+				this,
+				new DirectoryRemoteFile(owner, fileName));
 		file.addSlaves(getSlaves());
 		files.put(file.getName(), file);
 		logger.fine("Created directory " + file.getPath());
 	}
 
+	//TODO if RemoteSlave is to represent different remote roots,
+	// it cannot be unmerged with Collection.remove()
 	private void recursiveUmerge(RemoteSlave slave) {
 		if (files == null)
 			return;
@@ -568,28 +578,30 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 *   VirtualDirectory.isLegalFileName(to)
 	 *   destination file does not exist
 	 */
-	public void renameTo(String to) throws IllegalFileNameException, FileExistsException, FileNotFoundException {
+	public void renameTo(String to)
+		throws IllegalFileNameException, FileExistsException, FileNotFoundException {
 		if (!VirtualDirectory.isLegalFileName(to)) {
 			throw new IllegalFileNameException("Illegal file name or a directory");
 		}
-		
-		if(getParentFile().getHashtable().get(to) != null) { // throws FileNotFoundException
+
+		if (getParentFile().getHashtable().get(to) != null) {
+			// throws FileNotFoundException
 			throw new FileExistsException("Target file exists");
 		}
-		
+
 		String from = name;
-		
+
 		getParentFile().getHashtable().remove(from);
 		getParentFile().getHashtable().put(to, this);
-		
+
 		name = to;
-		
+
 		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
-			RemoteSlave rslave= (RemoteSlave) iter.next();
+			RemoteSlave rslave = (RemoteSlave) iter.next();
 			Slave slave = rslave.getSlave();
 			try {
-				slave.rename(getPath(), getParentFile().getPath()+"/"+to);
-			} catch(RemoteException ex) {
+				slave.rename(getPath(), getParentFile().getPath() + "/" + to);
+			} catch (RemoteException ex) {
 				rslave.handleRemoteException(ex);
 			}
 		}

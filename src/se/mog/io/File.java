@@ -6,6 +6,7 @@
  */
 package se.mog.io;
 
+import java.io.IOException;
 import java.net.URI;
 
 /**
@@ -61,5 +62,9 @@ public class File extends java.io.File {
 
 	public long getDiskSpaceCapacity() {
 		return fs.getDiskFreeSpace(this).totalBytes;	
+	}
+	
+	public boolean isSymbolicLink() throws IOException {
+		return !getCanonicalPath().equals(getAbsolutePath());
 	}
 }
