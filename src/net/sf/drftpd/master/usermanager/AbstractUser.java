@@ -607,22 +607,32 @@ public abstract class AbstractUser implements User {
 			throw new NoSuchFieldException("User has no such ip mask");
 	}
 
-	public void reset(ConnectionManager cm) {
-		if ( cm == null ) return;
-		Calendar now = Calendar.getInstance();
-		Calendar lastResetCalendar = Calendar.getInstance();
-		lastResetCalendar.setTime(new Date(lastReset));
+	public void reset(ConnectionManager cmgr) {
+		//handle if we are called from userfileconverter or the like
+		if (cmgr == null ) return;
 		
-		if (now.get(Calendar.MONTH) != lastResetCalendar.get(Calendar.MONTH))
-			resetMonth(cm);
+		Date lastResetDate = new Date(this.lastReset);
 
-		if (now.get(Calendar.WEEK_OF_YEAR)
-			!= lastResetCalendar.get(Calendar.WEEK_OF_YEAR))
-			resetWeek(cm);
+		Calendar cal = Calendar.getInstance();
 
-		if (now.get(Calendar.DAY_OF_YEAR)
-			!= lastResetCalendar.get(Calendar.DAY_OF_YEAR))
-			resetDay(cm);
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+
+		//has not been reset since midnight
+		if (lastResetDate.before(cal.getTime()))
+			resetDay(cmgr);
+
+		//week could go into the previous month
+		Calendar cal2 = (Calendar)cal.clone();
+		cal2.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+		if (lastResetDate.before(cal2.getTime()))
+			resetWeek(cmgr);
+
+		cal.set(Calendar.DAY_OF_MONTH, 1);
+		if (lastResetDate.before(cal.getTime()))
+			resetMonth(cmgr);
 
 		lastReset = System.currentTimeMillis();
 	}
