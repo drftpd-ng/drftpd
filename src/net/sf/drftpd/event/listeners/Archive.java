@@ -36,7 +36,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.19 2004/03/15 13:53:04 zubov Exp $
+ * @version $Id: Archive.java,v 1.20 2004/03/15 14:06:23 zubov Exp $
  */
 
 public class Archive implements FtpListener, Runnable {
@@ -51,6 +51,7 @@ public class Archive implements FtpListener, Runnable {
 	private long _moveFullSlaves;
 	private boolean _isStopped = false;
 	private Thread thread = null;
+	private int _maxArchive;
 
 	/**
 	 * 
@@ -165,6 +166,7 @@ public class Archive implements FtpListener, Runnable {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+		_maxArchive = Integer.parseInt(FtpConfig.getProperty(props,"maxArchive"));
 		_cycleTime =
 			60000 * Long.parseLong(FtpConfig.getProperty(props, "cycleTime"));
 		_archiveAfter =
@@ -206,7 +208,8 @@ public class Archive implements FtpListener, Runnable {
 				logger.debug("Stopping ArchiveStarter thread");
 				return;
 			}
-			new ArchiveHandler(this).start();
+			if (_archivingList.size() < _maxArchive)
+				new ArchiveHandler(this).start();
 			try {
 				Thread.sleep(_cycleTime);
 			} catch (InterruptedException e) {

@@ -7,11 +7,16 @@
 # false = to the slave with the most files of the release
 archiveToFreeSlave=true
 
-# smallest number of time in between cycles
+# amount of time in between cycles checking for releases to archive
 cycleTime=30
 
 # do not archive releases younger than
 archiveAfter=10080
+
+# max number of releases to be archiving at any given time
+# under normal circumstances this setting should be close to the
+# number of slaves that are part of the site
+maxArchive=10
 
 # do not archive releases under these directorys
 #exclude.1=/exempt/*
