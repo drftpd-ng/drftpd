@@ -134,7 +134,7 @@ public class FileRemoteFile extends AbstractLightRemoteFile {
 
                     if (cs.getCheckSum().getValue() != checksum) {
                         throw new IOException(
-                            "File collisions with different checksums");
+                            "File collisions with different checksums - " + files);
                     }
                 }
 
