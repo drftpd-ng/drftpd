@@ -121,7 +121,6 @@ public class SiteBot extends FtpListener implements Observer {
     private AutoReconnect _autoReconnect;
     private AutoRegister _autoRegister;
 	private ArrayList<Observer> _commandObservers;
-	private boolean _useBlowfish;
 	private String _blowfishKey;
 	private Blowfish _fish;
 	private CommandRegister _commandRegister;
@@ -1119,9 +1118,15 @@ public class SiteBot extends FtpListener implements Observer {
         _identWhoisQueue = new Hashtable<String,User>();
                 
         //Blowfish stuff
-		_useBlowfish = ircCfg.getProperty("irc.blowfish", "false").equalsIgnoreCase("true");
-		_blowfishKey = ircCfg.getProperty("irc.blowkey", "false");
-	    _fish = new Blowfish(_blowfishKey);
+		if (ircCfg.getProperty("irc.blowfish", "false")
+				.equalsIgnoreCase("true")) {
+			_blowfishKey = ircCfg.getProperty("irc.blowkey");
+			if (_blowfishKey == null) {
+				throw new RuntimeException(
+						"You need to define irc.blowkey in irc.conf");
+			}
+			_fish = new Blowfish(_blowfishKey);
+		}
    }
 
     public void say(SectionInterface section, String message) {
@@ -1143,7 +1148,7 @@ public class SiteBot extends FtpListener implements Observer {
         String[] lines = message.split("\n");
         String line;
         for (int i = 0; i < lines.length; i++) {
-            line = _useBlowfish ? _fish.Encrypt(lines[i]) : lines[i];
+            line = (_fish != null) ? _fish.Encrypt(lines[i]) : lines[i];
             _conn.sendCommand(new MessageCommand(chan, line));
         }
     }
@@ -1222,7 +1227,7 @@ public class SiteBot extends FtpListener implements Observer {
         MessageCommand msgc = (MessageCommand) updated;
 
         //recreate the MessageCommand with the encrypted text
-        if (_useBlowfish) {
+        if (_fish != null) {
             try {
                 MessageCommand decmsgc = new MessageCommand(msgc.getSource(), msgc.getDest(),
                         						  	_fish.Decrypt(msgc.getMessage()));
