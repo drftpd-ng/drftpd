@@ -222,7 +222,7 @@ public class GlobalContext {
         }
 
         try {
-            _jm = new JobManager(_cm,null);
+            _jm = new JobManager(this);
             getSlaveSelectionManager().reload();
             _jm.startJobs();
         } catch (IOException e) {

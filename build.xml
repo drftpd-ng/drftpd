@@ -61,18 +61,40 @@
       <include name="org/drftpd/friendly/**"/>
     </javac>
   </target>
+
   <target name="compile-jsx">
     <javac srcdir="${sourceDir}" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.4">
       <include  name="net/sf/drftpd/master/usermanager/jsx/**"/>
-      <include name="org/drftpd/usermanager/jsx3/**"/>
     </javac>
+  </target>
+
+  <target name="compile-xstream">
+    <javac srcdir="${sourceDir}" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.4">
+      <include  name="net/sf/drftpd/master/usermanager/xstream/**"/>
+    </javac>
+  </target>
+
+  <patternset id="archive">
+    <include name="org/drftpd/mirroring/*"/>
+    <include name="org/drftpd/plugnis/Archive*"/>
+    <include name="org/drftpd/plugnis/Mirror*"/>
+  </patternset>
+
+  <target name="delegatingarchive">
+    <delete>
+      <fileset id="archive"/>
+    </delete>
+    <javac srcdir="${sourceDir}" destdir="classes-archive" debug="true" classpathref="classpath" source="1.5">
+      <fileset id="archive"/>
+    </javac>
+    <echo>Note that ArchiveCommandHandler and JobManagerCommandHandler aren't delegated yet so they won't load using DelegatingArchive</echo>
   </target>
 
   <patternset id="excludes">
     <exclude name="**/*Test.java"/>
     <exclude name="org/drftpd/friendly/**"/>
     <exclude name="net/sf/drftpd/master/usermanager/jsx/**"/>
-    <exclude name="org/drftpd/usermanager/jsx3/**"/>
+    <exclude name="net/sf/drftpd/master/usermanager/xstream/**"/>
   </patternset>
 
   <target name="compile" depends="prepare">
@@ -141,7 +163,7 @@
   <target name="dist" depends="compile">
     <fail unless="version">
       You need to specify version to build.
-      Use argument -Dversion=0.11.0-CVS for example.
+      Example: ant dist -Dversion=2.0-SVN 
     </fail>
     <chmod dir="." perm="+x" includes="*.sh" />
     <chmod dir="." perm="+x" includes="bin/wrapper" />
@@ -163,8 +185,7 @@
     	<include name="text/**"/>
     	<include name="extsources/*"/>
     	<include name="bin/*"/>
-    	<exclude name="src/org/drftpd/friendly/**"/>
-    	<exclude name="classes/org/drftpd/friendly/**"/>
+    	<exclude name="*/org/drftpd/friendly/**"/>
     </patternset>
 
     <tar destfile="drftpd-${version}.tar">

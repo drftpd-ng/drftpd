@@ -36,6 +36,7 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
 
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.RemoteSlave;
@@ -48,8 +49,6 @@ import org.drftpd.slave.RemoteIOException;
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
 
-	private ConnectionManager _cm;
-
 	private boolean _isStopped = false;
 
 	private LinkedList<Job> _jobList;
@@ -60,14 +59,16 @@ public class JobManager implements Runnable {
 
 	private Thread thread;
 
+	private GlobalContext _gctx;
+
 	/**
 	 * Keeps track of all jobs and controls them
 	 */
-	public JobManager(ConnectionManager cm, Properties p) {
-		_cm = cm;
+	public JobManager(GlobalContext gctx) {
+		_gctx = gctx;
 		_jobList = new LinkedList<Job>();
 		
-		reload(p);
+		reload(null);
 	}
 
 	public synchronized void addJobsToQueue(Collection<Job> jobs) {
@@ -156,7 +157,7 @@ public class JobManager implements Runnable {
 			Collection<RemoteSlave> availableSlaves;
 
 			try {
-				availableSlaves = _cm.getGlobalContext().getSlaveManager()
+				availableSlaves = getGlobalContext().getSlaveManager()
 						.getAvailableSlaves();
 			} catch (NoAvailableSlaveException e1) {
 				return; // can't transfer with no slaves
@@ -174,7 +175,7 @@ public class JobManager implements Runnable {
 
 				// logger.debug("looking up slave for job " + job);
 				try {
-					sourceSlave = _cm.getGlobalContext().getSlaveSelectionManager()
+					sourceSlave = getGlobalContext().getSlaveSelectionManager()
 							.getASlaveForJobDownload(job);
 				} catch (NoAvailableSlaveException e) {
 					try {
@@ -194,7 +195,7 @@ public class JobManager implements Runnable {
 
 				availableSlaves.removeAll(job.getFile().getSlaves());
 				try {
-					destSlave = _cm.getGlobalContext().getSlaveSelectionManager().getASlaveForJobUpload(
+					destSlave = getGlobalContext().getSlaveSelectionManager().getASlaveForJobUpload(
 									job, sourceSlave);
 
 					break; // we have a source slave and a destination
@@ -306,6 +307,10 @@ public class JobManager implements Runnable {
 			logger.debug("Job is finished, removing job " + job.getFile());
 			removeJobFromQueue(job);
 		}
+	}
+
+	private GlobalContext getGlobalContext() {
+		return _gctx;
 	}
 
 	public void reload() {

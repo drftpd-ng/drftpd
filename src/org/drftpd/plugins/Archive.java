@@ -47,11 +47,9 @@ public class Archive extends FtpListener implements Runnable {
     private long _cycleTime;
     private boolean _isStopped = false;
     private Thread thread = null;
-    private ArrayList<ArchiveHandler> _archiveHandlers;
-
+    private ArrayList<ArchiveHandler> _archiveHandlers = new ArrayList<ArchiveHandler>();
     public Archive() {
         logger.info("Archive plugin loaded successfully");
-        _archiveHandlers = new ArrayList<ArchiveHandler>();
     }
 
     public Properties getProperties() {
