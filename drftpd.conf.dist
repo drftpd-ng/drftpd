@@ -24,7 +24,7 @@ master.usermanager=org.drftpd.usermanager.javabeans.BeanUserManager
 slaveselection=org.drftpd.slaveselection.filter.SlaveSelectionManager
 
 # this defines each directory under / as a section, "site sections"
-# alternate is org.drftpd.sections.filter.SectionManager
+# alternate is org.drftpd.sections.conf.SectionManager
 sectionmanager=org.drftpd.sections.def.SectionManager
 
 #hide ips in logs?
