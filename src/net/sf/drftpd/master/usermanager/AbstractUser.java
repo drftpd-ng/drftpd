@@ -24,7 +24,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.37 2004/01/14 02:35:36 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.38 2004/01/27 10:32:15 flowman Exp $
  */
 public abstract class AbstractUser implements User {
 	private static final Logger logger = Logger.getLogger(AbstractUser.class);
@@ -469,6 +469,102 @@ public abstract class AbstractUser implements User {
 
 	public long getUploadedMillisecondsWeek() {
 		return _uploadedMillisecondsWeek;
+	}
+	
+	public void setUploadedFiles(int files) {
+		this.uploadedFiles = files;
+	}
+	
+	public void setUploadedBytes(long bytes) {
+		this.uploadedBytes = bytes;
+	}
+	
+	public void setUploadedSeconds(int millis) {
+		_uploadedMilliseconds = millis;
+	}
+
+	public void setUploadedFilesMonth(int files) {
+		this.uploadedFilesMonth = files;
+	}
+	
+	public void setUploadedBytesMonth(long bytes) {
+		this.uploadedBytesMonth = bytes;
+	}
+	
+	public void setUploadedSecondsMonth(int millis) {
+		_uploadedMillisecondsMonth = millis;
+	}
+
+	public void setUploadedFilesWeek(int files) {
+		this.uploadedFilesWeek = files;
+	}
+	
+	public void setUploadedBytesWeek(long bytes) {
+		this.uploadedBytesWeek = bytes;
+	}
+	
+	public void setUploadedSecondsWeek(int millis) {
+		_uploadedMillisecondsWeek = millis;
+	}
+
+	public void setUploadedFilesDay(int files) {
+		this.uploadedFilesDay = files;
+	}
+	
+	public void setUploadedBytesDay(long bytes) {
+		this.uploadedBytesDay = bytes;
+	}
+	
+	public void setUploadedSecondsDay(int millis) {
+		_uploadedMillisecondsDay = millis;
+	}
+
+	public void setDownloadedFiles(int files) {
+		this.downloadedFiles = files;
+	}
+	
+	public void setDownloadedBytes(long bytes) {
+		this.downloadedBytes = bytes;
+	}
+	
+	public void setDownloadedSeconds(int millis) {
+		_downloadedMilliseconds = millis;
+	}
+
+	public void setDownloadedFilesMonth(int files) {
+		this.downloadedFilesMonth = files;
+	}
+	
+	public void setDownloadedBytesMonth(long bytes) {
+		this.downloadedBytesMonth = bytes;
+	}
+	
+	public void setDownloadedSecondsMonth(int millis) {
+		_downloadedMillisecondsMonth = millis;
+	}
+	
+	public void setDownloadedFilesWeek(int files) {
+		this.downloadedFilesWeek = files;
+	}
+	
+	public void setDownloadedBytesWeek(long bytes) {
+		this.downloadedBytesWeek = bytes;
+	}
+	
+	public void setDownloadedSecondsWeek(int millis) {
+		_downloadedMillisecondsWeek = millis;
+	}	
+	
+	public void setDownloadedFilesDay(int files) {
+		this.downloadedFilesDay = files;
+	}
+	
+	public void setDownloadedBytesDay(long bytes) {
+		this.downloadedBytesDay = bytes;
+	}
+	
+	public void setDownloadedSecondsDay(int millis) {
+		_downloadedMillisecondsDay = millis;
 	}
 
 	public String getUsername() {

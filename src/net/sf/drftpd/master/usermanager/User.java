@@ -7,7 +7,7 @@ import net.sf.drftpd.ObjectExistsException;
 
 /**
  * @author mog
- * @version $Id: User.java,v 1.32 2004/01/13 22:46:44 mog Exp $
+ * @version $Id: User.java,v 1.33 2004/01/27 10:31:31 flowman Exp $
  */
 public interface User {
 
@@ -173,8 +173,43 @@ public interface User {
 	 * @return int
 	 */
 	public int getUploadedFilesWeek();
+	
+	public long getDownloadedMilliseconds();
+	public long getUploadedMilliseconds();
 
 	public long getUploadedMillisecondsForPeriod(int i);
+	
+	public void setUploadedFiles(int files);
+	public void setUploadedBytes(long bytes);
+	public void setUploadedSeconds(int millis);
+		
+	public void setUploadedFilesMonth(int files);
+	public void setUploadedBytesMonth(long bytes);
+	public void setUploadedSecondsMonth(int millis);
+	
+	public void setUploadedFilesWeek(int files);
+	public void setUploadedBytesWeek(long bytes);
+	public void setUploadedSecondsWeek(int millis);
+	
+	public void setUploadedFilesDay(int files);
+	public void setUploadedBytesDay(long bytes);
+	public void setUploadedSecondsDay(int millis);
+
+	public void setDownloadedFiles(int files);
+	public void setDownloadedBytes(long bytes);
+	public void setDownloadedSeconds(int millis);
+
+	public void setDownloadedFilesMonth(int files);
+	public void setDownloadedBytesMonth(long bytes);
+	public void setDownloadedSecondsMonth(int millis);
+	
+	public void setDownloadedFilesWeek(int files);
+	public void setDownloadedBytesWeek(long bytes);
+	public void setDownloadedSecondsWeek(int millis);
+	
+	public void setDownloadedFilesDay(int files);
+	public void setDownloadedBytesDay(long bytes);
+	public void setDownloadedSecondsDay(int millis);
 
 	public String getUsername();
 	public long getWeeklyAllotment();

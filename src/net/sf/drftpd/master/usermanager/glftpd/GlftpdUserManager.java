@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: GlftpdUserManager.java,v 1.11 2004/01/13 23:26:59 zubov Exp $
+ * @version $Id: GlftpdUserManager.java,v 1.12 2004/01/27 10:32:40 flowman Exp $
  */
 public class GlftpdUserManager implements UserManager {
 	private static final Logger logger =
@@ -75,7 +75,6 @@ public class GlftpdUserManager implements UserManager {
 	}
 
 	void load(User user) throws NoSuchUserException, IOException {
-
 		GlftpdUser gluser = null;
 		if (user instanceof GlftpdUser)
 			gluser = (GlftpdUser) user;
@@ -93,6 +92,7 @@ public class GlftpdUserManager implements UserManager {
 			//empty "stuff"
 
 			String param[], line, arg;
+			int temp = 0;
 			try {
 				while (true) {
 					try {
@@ -180,7 +180,7 @@ public class GlftpdUserManager implements UserManager {
 						user.setRatio(Float.parseFloat(param[1]));
 
 						// Xfer information: FILES, KILOBYTES, SECONDS
-						/*} else if ("ALLUP".equals(param[0])) {
+						} else if ("ALLUP".equals(param[0])) {
 							user.setUploadedFiles(Integer.parseInt(param[1]));
 							user.setUploadedBytes(Long.parseLong(param[2]) * 1000);
 							user.setUploadedSeconds(Integer.parseInt(param[3]));
@@ -230,20 +230,24 @@ public class GlftpdUserManager implements UserManager {
 							// TIME: Login Times, Last_On, Time Limit, Time on Today
 							user.setLogins(Integer.parseInt(param[1]));
 							user.setLastAccessTime(Integer.parseInt(param[2]));
-							user.setTimelimit(Integer.parseInt(param[3]));
-							user.setTimeToday(Integer.parseInt(param[4]));
+							//user.setTimelimit(Integer.parseInt(param[3]));
+							//user.setTimeToday(Integer.parseInt(param[4]));
 						} else if ("NUKE".equals(param[0])) {
 							// NUKE: Last Nuked, Times Nuked, Total MBytes Nuked
 							user.setLastNuked(Integer.parseInt(param[1]));
 							user.setTimesNuked(Integer.parseInt(param[2]));
 							user.setNukedBytes(Long.parseLong(param[3]) * 1000000);
-						*/
+						
 					} else if ("SLOTS".equals(param[0])) {
 						//group slots, group leech slots
 						gluser.setGroupSlots(Short.parseShort(param[1]));
 						gluser.setGroupLeechSlots(Short.parseShort(param[2]));
 					} else if ("TIMEFRAME".equals(param[0])) {
 					} else if ("GROUP".equals(param[0])) {
+						if (temp == 0) {
+							user.setGroup(arg);	
+							temp = 1;
+						}
 						user.addGroup(arg);
 					} else if ("PRIVATE".equals(param[0])) {
 						gluser.addPrivateGroup(arg);
