@@ -1,3 +1,7 @@
+2005/02/10 Matt Zimmerman <zubov@users.sourceforge.net>
+* site user should display all user information
+* converting users from 1.1.4 should convert all information
+
 2005/02/07 Matt Zimmerman <zubov@users.sourceforge.net>
 * pasv_addr now a setting in perms.conf for PASV connections to the master (LIST)
 * pasv_addr now a setting for slave configurations, site slave slavename set pasv_addr 1.1.1.1
