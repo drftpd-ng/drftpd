@@ -26,7 +26,7 @@ sfvfirst.required=true
 sfvfirst.allownoext=true
 
 #allow these file extensions even if not in an sfv file
-allowedexts=nfo txt jpg diz mpg avi zip
+allowedexts=nfo txt jpg diz mpg avi zip m3u
 
 #check paths for sfv first enforcement
 sfvfirst.pathcheck=*
