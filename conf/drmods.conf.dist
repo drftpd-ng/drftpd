@@ -28,7 +28,7 @@ request.dirpath=/requests/
 new.default=5
 # specify the maximum number of dirs to show (overrides user input)
 new.max=25
-# sepcify the sections to exclude from output (space seprated)
+# sepcify the sections to exclude from output (space separated)
 new.exclude=REQUESTS
 # specify the format of the date on announce (See: http://java.sun.com/j2se/1.5.0/docs/api/java/text/SimpleDateFormat.html)
 new.dateformat=MM.dd.yy hh:mma
