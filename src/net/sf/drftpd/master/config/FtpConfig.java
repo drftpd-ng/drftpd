@@ -48,7 +48,7 @@ public class FtpConfig {
 	private ArrayList _msgpath;
 	private ArrayList _pre;
 	private ArrayList _privpath;
-	private ArrayList _rename;
+	//private ArrayList _rename;
 	private ArrayList _upload;
 
 	String cfgFileName;

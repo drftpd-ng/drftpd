@@ -1,0 +1,55 @@
+irc.server=irc.csbnet.se
+irc.port=6667
+irc.channel=#drftpd
+irc.key=
+irc.nick=drftpd
+irc.name=drftpd
+irc.user=drftpd
+
+####
+
+mkdir=${color}15${bold}NEW${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group}.
+
+store.halfway=${color}15${bold}HALFWAY${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} with race leader ${bold}${leaduser}${bold}${color}14${bold}/${bold}${coloroff}${leadgroup} ${bold}[${bold}${leadsize}/${leadfiles}F/${leadpercent}/${leadspeed}${bold}]${bold} with ${bold}${filesleft}${bold} files left.
+
+store.embraces=${color}15${bold}RACE${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group} is joining on ${bold}${path}${bold} ${color}14@${coloroff} ${bold}${speed}${bold} and ${bold}${filesleft}${bold} files left.
+ 
+store.complete=${color}15${bold}COMPLETE${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} ${bold}(${bold} ${size} in ${files}F at ${speed} ${bold})${bold} by ${bold}${racers}${bold} racers.\n${color}15${bold}UserTop${bold}${coloroff}:
+
+store.complete.racer=${bold}${position}.${bold} ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group} [${size}/${files}F/${percent}/${speed}]
+
+nuke=${color}15${bold}NUKE ${multiplier}X${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} ${bold}[${bold} NUKER : ${user} ${bold}-${bold} REASON : ${reason} ${bold}]${bold}
+
+nuke.nukees=${color}15${bold}NUKEES${bold}${coloroff}: ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group} with ${bold}${nukedamount}${bold}.
+
+unnuke=${color}15${bold}UNNUKE ${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} ${bold}[${bold} UNNUKER : ${user} ${bold}-${bold} REASON : ${reason} ${bold}-${bold} UNNUKEES: ${nukees} ${bold}]${bold}
+ 
+pre=${color}15${bold}PRE${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${group}${bold} gives us ${bold}${path}${bold}.
+ 
+bw=${color}15${bold}BANDWIDTH${bold}${coloroff}: ${color}15${bold}(${bold}${coloroff} UP: ${xfersup} at ${throughputup}/s ${color}15${bold})-(${bold}${coloroff} DN: ${xfersdn} at ${throughputdown}/s ${color}15${bold})-(${bold}${coloroff} TOTAL: ${xfers} at ${throughput}/s ${color}15${bold})${bold}${coloroff}
+
+rmdir=${color}15${bold}DELDIR${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} was deleted by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group}.
+
+wipe=${color}15${bold}WIPE${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} was wiped by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group}.
+
+diskfree=${color}15${bold}DISKFREE${bold}${coloroff}: We have ${bold}${diskfree}${bold} free, with a total disk space of ${bold}${disktotal}${bold}.
+
+slaves=${color}15${bold}${slave}${coloroff}: ${color}15${bold}(${bold}${coloroff} UP: ${xfersup} @ ${throughputup} ${color}15${bold})-(${bold}${coloroff} DN: ${xfersdown} @ ${throughputdown}/s ${color}15${bold})-(${bold}${coloroff} DF:${bold}${coloroff} ${bold}${diskfree}${bold}/${disktotal} ${color}15${bold})${bold}${coloroff} 
+
+slaves.offline=${color}15${bold}${slave}${coloroff}: ${color}4${bold}OFFLINE${bold}${coloroff}
+
+addslave=${color}15${bold}${slave}${coloroff} came online with ${bold}${diskfree}${bold}/${disktotal} free.
+delslave=${color}15${bold}${slave}${coloroff} went offline: ${message}
+
+shutdown=${color}15${bold}SHUTDOWN${coloroff} : ${message}
+
+speed.pre=
+speed.post=
+speed.separator=\n
+speed.up=${color}15${bold}${user}${coloroff}: UP: ${file} @ ${speed} to ${slave}.
+speed.down=${color}15${bold}${user}${coloroff}: DN: ${file} @ ${speed} from ${slave}.
+speed.idle=${color}15${bold}${user}${coloroff}: IDLE: User has been idle for ${idle}.
+
+who.up=${color}15${bold}WHO${coloroff}: ${user} -> UP: ${file} @ ${speed} to ${slave}.
+who.down=${color}15${bold}WHO${coloroff}: ${user} -> DN: ${file} @ ${speed} from ${slave}.
+who.idle=${color}15${bold}WHO${coloroff}: ${user} -> IDLE: User has been idle for ${idle}.

@@ -1,0 +1,27 @@
+
+upload			*	*
+download		*	*
+
+makedir			*	*
+
+# this is deleteown for non-siteops
+delete			*	*
+
+
+#allows pre in /pre/* to group siteop
+#pre				/pre/*	=siteop
+privpath /pre/*	=siteop
+
+
+#this includes "nodirlog" functionality
+#this behaviour will be changed in the next release
+hideinwho /pre/*	*
+
+
+#creditloss <multiplier> <path> <permissions>
+#creditcheck <path> <ratio> [<-user|=group|flag> ...]
+
+
+#msgpath <path> <filename> <flag/=group/-user>
+#msgpath /incoming/ ftp-data/incoming.txt
+

@@ -69,7 +69,9 @@
     <zip destfile="drftpd-0.7.0.zip" basedir=".">
       <include name="INSTALL.*"/>
       <include name="drftpd.conf.dist"/>
+      <include name="perms.conf.dist"/>
       <include name="slaves.xml.dist"/>
+      <include name="irc.conf.dist"/>
       <include name="slaves.dtd"/>
       <include name="build.xml"/>
       <include name="slave.bat"/>
