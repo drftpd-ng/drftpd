@@ -1,8 +1,6 @@
 package net.sf.drftpd.remotefile;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -60,49 +58,32 @@ public class StaticRemoteFile extends RemoteFile {
 		this(rslaves, name, owner, group, size, lastModified);
 		this.checkSum = checkSum;
 	}
+
 	public StaticRemoteFile(String name) {
 		_name = name;
 	}
 	
-	/**
-	 * @see java.lang.Object#equals(Object)
-	 */
 	public boolean equals(Object file) {
 		if(!(file instanceof RemoteFile)) return false;
 		return getPath().equals(((RemoteFile)file).getPath());
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#getFiles()
-	 */
 	public Collection getFiles() {
 		throw new UnsupportedOperationException("getFiles() does not exist in StaticRemoteFile");
 	}
 
-	/**
-	 * @see net.sf.drftpd.RemoteFile#getName()
-	 */
 	public String getName() {
 		return _name;
 	}
 
-	/**
-	 * @see net.sf.drftpd.RemoteFile#getParent()
-	 */
 	public String getParent() {
 		throw new UnsupportedOperationException("getParent() does not exist in StaticRemoteFile");
 	}
 	
-	/**
-	 * @see net.sf.drftpd.RemoteFile#getPath()
-	 */
 	public String getPath() {
 		throw new UnsupportedOperationException();
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#getSlaves()
-	 */
 	public Collection getSlaves() {
 		return _rslaves;
 	}
@@ -132,7 +113,8 @@ public class StaticRemoteFile extends RemoteFile {
 	}
 	
 	/**
-	 * StaticRemoteFile cannot be linked, returns new RemoteFileInterface[0] 
+	 * StaticRemoteFile cannot be linked
+	 * @return new RemoteFileInterface[0] 
 	 */
 	public RemoteFileInterface[] listFiles() {
 		return new RemoteFileInterface[0];
@@ -142,9 +124,6 @@ public class StaticRemoteFile extends RemoteFile {
 		checkSum = l;
 	}
 
-	/**
-	 * @param b
-	 */
 	public void setDeleted(boolean b) {
 		_isDeleted = b;
 	}
@@ -153,13 +132,6 @@ public class StaticRemoteFile extends RemoteFile {
 		_groupname = v;
 	}
 
-//	public void setIsDirectory(boolean b) {
-//		_isDirectory = b;
-//	}
-
-//	public void setIsFile(boolean b) {
-//		_isFile = b;
-//	}
 
 	public void setLastModified(long l) {
 		_lastModified = l;
@@ -181,9 +153,6 @@ public class StaticRemoteFile extends RemoteFile {
 		_xfertime = l;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	public String toString() {
 		
 		StringBuffer ret = new StringBuffer();
