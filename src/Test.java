@@ -1,9 +1,3 @@
-import se.mog.io.File;
-/*
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-*/
-
 /**
  * @author mog
  *
@@ -23,9 +17,11 @@ public class Test {
 			System.out.println(m.group(1));
 		}
 		*/
+		/*
 		File files[] = File.listMounts();
 		for (int i = 0; i < files.length; i++) {
 			System.out.println(files[i]+"\t"+files[i].getTotalDiskSpace());
 		}
+		*/
 	}
 }

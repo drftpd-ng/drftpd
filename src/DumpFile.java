@@ -8,15 +8,18 @@
  */
 import java.io.File;
 
+import net.sf.drftpd.remotefile.FileRemoteFile;
+import net.sf.drftpd.remotefile.RemoteFile;
+
 public class DumpFile {
 
 	public static void main(String[] args) {
 		for(int i=0; i<args.length; i++) {
-			dumpFile(new File(args[i]));
+			dumpFile(new FileRemoteFile(new File(args[i])));
 			if(args.length-i != 1) System.out.println();
 		}
 	}
-	public static void dumpFile(File file) {
+	public static void dumpFile(RemoteFile file) {
 		//shell script to generate below code with:
 		//for x in canRead canWrite exists getAbsolutePath getCanonicalPath getName getParent getPath isAbsolute isDirectory isFile isHidden lastModified length ; do echo -e "\t\tSystem.out.println(\"$x(): \\\"\"+file.$x()+\"\\\"\");" ; done
 		System.out.println("canRead(): \""+file.canRead()+"\"");

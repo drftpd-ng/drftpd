@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,6 +17,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,8 +27,6 @@ import net.sf.drftpd.remotefile.JDOMRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.RemoteSlave;
 import net.sf.drftpd.slave.SlaveImpl;
-
-//import org.apache.log4j.Category;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -40,8 +40,9 @@ public class ConnectionManager {
 
 	private static Logger logger =
 		Logger.getLogger(ConnectionManager.class.getName());
-
-//	private static Category logger = Category.getInstance(ConnectionManager.class);
+	static {
+		logger.setLevel(Level.FINEST);
+	}
 
 	public ConnectionManager(Properties cfg) {
 		LinkedRemoteFile root = null;
@@ -92,6 +93,9 @@ public class ConnectionManager {
 					root,
 					masks);
 		} catch (RemoteException ex) {
+			ex.printStackTrace();
+			return;
+		} catch(AlreadyBoundException ex) {
 			ex.printStackTrace();
 			return;
 		}
@@ -191,6 +195,9 @@ public class ConnectionManager {
 	}
 
 	public static void main(String args[]) {
+		Handler handlers[] = Logger.getLogger("").getHandlers();
+		handlers[0].setLevel(Level.FINEST);
+
 		logger.info("drftpd-alpha. master server starting.");
 		/** load config **/
 		logger.info("loading drftpd.conf");

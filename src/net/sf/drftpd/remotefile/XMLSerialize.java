@@ -1,5 +1,4 @@
 package net.sf.drftpd.remotefile;
-import java.io.IOException;
 import java.util.Iterator;
 
 import net.sf.drftpd.slave.RemoteSlave;
@@ -38,11 +37,8 @@ public class XMLSerialize {
 			fileElement.addContent(contents);
 		} else {
 			String checksum = "";
-			try {
-				checksum = Long.toHexString(file.getCheckSum());
-			} catch(IOException ex) {
-				System.err.println(ex.getMessage());
-			}
+			checksum = Long.toHexString(file.getCheckSum());
+
 			fileElement.addContent(new Element("checksum").setText(checksum));
 		}
 		

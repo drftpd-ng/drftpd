@@ -17,6 +17,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
@@ -37,10 +39,15 @@ import se.mog.io.File;
  */
 public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	private Vector transfers = new Vector();
+	private static Logger logger = Logger.getLogger(SlaveImpl.class.getName());
+	static {
+		logger.setLevel(Level.FINEST);
+	}
 	//Properties cfg;
 
 	SlaveManager slavemanager;
 	private String root;
+	//private String roots[];
 
 	public SlaveImpl(Properties cfg) throws RemoteException {
 		super();
@@ -219,7 +226,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		InetAddress addr,
 		int port)
 		throws IOException {
-		System.out.println("doConnectSend() called with mode "+mode);
+
 		return doSend(rfile, mode, offset,  new ActiveConnection(addr, port));
 	}
 	
@@ -228,11 +235,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	 */
 	public Transfer doListenSend(RemoteFile remotefile, char mode, long offset)
 		throws IOException {
-		
-//		ServerSocket server = new ServerSocket(0, 1);
-		//server.setSoTimeout(xxx);
-//		Socket sock = server.accept();
-//		server.close();
+
 		return doSend(remotefile, mode, offset, new PassiveConnection());
 	}
 
@@ -292,7 +295,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	 * @see net.sf.drftpd.slave.Slave#checkSum(String)
 	 */
 	public long checkSum(String path) throws IOException {
-		System.out.println("Checksumming: "+path);
+		logger.fine("Checksumming: "+path);
 		CRC32 crc32 = new CRC32();
 		InputStream in = new CheckedInputStream(new FileInputStream(root+path), crc32);
 		byte buf[] = new byte[1024];

@@ -2,209 +2,79 @@
 <directory name="">
     <user>drftpd</user>
     <group>drftpd</group>
-    <lastModified>1034615678000</lastModified>
+    <lastModified>1052521096000</lastModified>
     <contents>
-        <directory name="Cd2">
+        <file name="te3.png">
             <user>drftpd</user>
             <group>drftpd</group>
-            <lastModified>1034615689000</lastModified>
+            <size>0</size>
+            <lastModified>1052521102000</lastModified>
+            <checksum>450a5d21</checksum>
+            <slaves>
+                <slave name="mog" />
+            </slaves>
+        </file>
+        <directory name="CrossOver.Office.2.0.0.Linux-ECN">
+            <user>drftpd</user>
+            <group>drftpd</group>
+            <lastModified>1052521095000</lastModified>
             <contents>
-                <file name="12-francis_lai-theme_from_love_story-wlm.mp3">
+                <file name="file_id.diz">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1034615698000</lastModified>
-                    <checksum>35ae09c0</checksum>
+                    <lastModified>1052521096000</lastModified>
+                    <checksum>2eb49d6f</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="09-clannad-theme_from_harrys_game-wlm.mp3">
+                <file name="ecoo2l04.zip">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1034615737000</lastModified>
-                    <checksum>5be75979</checksum>
+                    <lastModified>1052521096000</lastModified>
+                    <checksum>b58a95f7</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="17-julee_cruise-falling_(twin_peaks_theme)-wlm.mp3">
+                <file name="ecoo2l03.zip">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1034615759000</lastModified>
-                    <checksum>ab681dff</checksum>
+                    <lastModified>1052521096000</lastModified>
+                    <checksum>b2ee52c7</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="00-va-absolute_relaxed_cd2-2002-wlm.sfv">
+                <file name="ecoo2l02.zip">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1034615702000</lastModified>
-                    <checksum>27e621be</checksum>
+                    <lastModified>1052521095000</lastModified>
+                    <checksum>99f3bfc2</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="04-city_of_prague_philharmonic-my_heart_will_go_on-wlm.mp3">
+                <file name="ecoo2l01.zip">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1034615728000</lastModified>
-                    <checksum>dc135ee2</checksum>
+                    <lastModified>1052521095000</lastModified>
+                    <checksum>b5740259</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
                 </file>
-                <file name="07-michael_nyman-the_heart_asks_pleasure_first_the_piano-wlm.mp3">
+                <file name="ecn.nfo">
                     <user>drftpd</user>
                     <group>drftpd</group>
                     <size>0</size>
-                    <lastModified>1034615711000</lastModified>
-                    <checksum>fa72eef7</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="03-ennio_morricone-gabriels_obeo_(the_mission)-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615752000</lastModified>
-                    <checksum>3573a317</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="00-va-absolute_relaxed_cd2-2002-wlm.m3u">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615702000</lastModified>
-                    <checksum>2ce266e0</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="08-secret_garden-nocturne-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615744000</lastModified>
-                    <checksum>e033009f</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="01-sarah_brightman-time_to_say_goodbye-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615707000</lastModified>
-                    <checksum>d74c922e</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="00-va-absolute_relaxed_cd2-2002-wlm.nfo">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615702000</lastModified>
-                    <checksum>cb4baaae</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="11-chris_rea-josies_tune-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615714000</lastModified>
-                    <checksum>6bd05b</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="14-academy_of_st_martin_in_the_fields-air-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615693000</lastModified>
-                    <checksum>e4cb8393</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="16-jevetta_steele-calling_you_(bagdad_cafe)-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615689000</lastModified>
-                    <checksum>3a255504</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="06-richard_clayderman-ballade_pour_adeline-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615740000</lastModified>
-                    <checksum>65fc91fd</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="10-mario_millo_and_jon_english-against_the_wind-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615722000</lastModified>
-                    <checksum>527113c7</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="02-john_williams-cavatina_(deer_hunter)-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615734000</lastModified>
-                    <checksum>e964ecff</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="15-blue_nile-from_a_late_night_train-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615749000</lastModified>
-                    <checksum>b927393f</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="13-staffan_scheja-gymnopedie_1-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615702000</lastModified>
-                    <checksum>de2f1c7b</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="05-james_galway-annias_song-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615718000</lastModified>
-                    <checksum>1e32e21b</checksum>
+                    <lastModified>1052521095000</lastModified>
+                    <checksum>219fe79e</checksum>
                     <slaves>
                         <slave name="mog" />
                     </slaves>
@@ -214,216 +84,16 @@
                 <slave name="mog" />
             </slaves>
         </directory>
-        <directory name="Cd1">
+        <file name="te3.bmp">
             <user>drftpd</user>
             <group>drftpd</group>
-            <lastModified>1034615599000</lastModified>
-            <contents>
-                <file name="00-va-absolute_relaxed_cd1-2002-wlm.sfv">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615621000</lastModified>
-                    <checksum>a4f7a410</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="11-bjorn_json_lindh-brusa_hogre_lilla_a-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615610000</lastModified>
-                    <checksum>4fbc821b</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="12-vanessa-mae-widescreen-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615604000</lastModified>
-                    <checksum>7c2d7aee</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="03-adiemus-adiemus-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615667000</lastModified>
-                    <checksum>de986e2b</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="16-moby-porcelain-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615682000</lastModified>
-                    <checksum>11c1eab6</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="15-art_of_noice-moments_in_love-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615616000</lastModified>
-                    <checksum>a8fcccd3</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="13-yanni-adagio_in_c-minor-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615652000</lastModified>
-                    <checksum>3fb01c2d</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="08-mike_oldfield-etude_(killing_fields)-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615677000</lastModified>
-                    <checksum>6f6d38eb</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="14-city_of_prague_philharmonic-john_dunbar_theme-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615655000</lastModified>
-                    <checksum>16b9fd7f</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="00-va-absolute_relaxed_cd1-2002-wlm.m3u">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615621000</lastModified>
-                    <checksum>ae3d1a85</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="09-dana_dragomir-pedro_and_blanca-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615662000</lastModified>
-                    <checksum>63957956</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="02-enigma-sadness_(part_1)-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615626000</lastModified>
-                    <checksum>2a045e4a</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="10-eric_serra-the_big_blue_overture_(the_big_blue)-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615599000</lastModified>
-                    <checksum>d38647f2</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="00-va-absolute_relaxed_cd1-2002-wlm.nfo">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615621000</lastModified>
-                    <checksum>3f560b10</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="06-ennio_morricone-chi_mai-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615673000</lastModified>
-                    <checksum>19d69baf</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="17-faithless-drifting_away-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615621000</lastModified>
-                    <checksum>f28fbe7a</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="07-mark_ayres-leaving_las_vegas_(rain_man)-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615629000</lastModified>
-                    <checksum>577ea790</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="04-sacred_spirits-yeha-noha-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615647000</lastModified>
-                    <checksum>c8378a0</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="05-kitaro-caravanasary-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615641000</lastModified>
-                    <checksum>8edb359b</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-                <file name="01-gregorianmasters_of_chant-moment_of_peace-wlm.mp3">
-                    <user>drftpd</user>
-                    <group>drftpd</group>
-                    <size>0</size>
-                    <lastModified>1034615634000</lastModified>
-                    <checksum>79d62ec2</checksum>
-                    <slaves>
-                        <slave name="mog" />
-                    </slaves>
-                </file>
-            </contents>
+            <size>0</size>
+            <lastModified>1052521102000</lastModified>
+            <checksum>acd3b062</checksum>
             <slaves>
                 <slave name="mog" />
             </slaves>
-        </directory>
+        </file>
     </contents>
     <slaves>
         <slave name="mog" />

@@ -13,6 +13,8 @@ import java.util.Random;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,8 +32,11 @@ import net.sf.drftpd.slave.RemoteSlave;
  */
 public class LinkedRemoteFile extends RemoteFile implements Serializable {
 
-	//private static Logger logger = Logger.getLogger(LinkedRemoteFile.class.getName());
-//	private static Category logger = Category.getInstance(LinkedRemoteFile.class);
+	private static Logger logger = Logger.getLogger(LinkedRemoteFile.class.getName());
+	static {
+		logger.setLevel(Level.FINE);
+	}
+	//private static Category logger = Category.getInstance(LinkedRemoteFile.class);
 	/**
 	 * @author mog
 	 *
@@ -47,8 +52,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			isDirectory = true;
 			isFile = false;
 			lastModified = System.currentTimeMillis();
-			//			canWrite = true;
-			//			canRead = true;
+			//canWrite = true;
+			//canRead = true;
 			user = owner.getUsername();
 			group = owner.getGroup();
 		}
@@ -122,12 +127,15 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		LinkedRemoteFile parent,
 		RemoteFile file)
 		throws InvalidDirectoryException {
-		System.out.println("creating linkedRemoteFile from " + file);
+		logger.finest("creating linkedRemoteFile from " + file);
 		lastModified = file.lastModified();
 		length = file.length();
 		//isHidden = file.isHidden();
 		isDirectory = file.isDirectory();
 		isFile = file.isFile();
+
+		checkSum = file.getCheckSum();
+		
 		if (parent == null) {
 			name = "";
 		} else {
@@ -184,12 +192,12 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 
 		LinkedRemoteFile file =
 			new LinkedRemoteFile(
-				null,
-				this,
-				new DirectoryRemoteFile(owner, fileName));
+				null, // remoteslave
+				this, // parent
+				new DirectoryRemoteFile(owner, fileName)); //file
 		file.addSlaves(getSlaves());
 		files.put(file.getName(), file);
-		System.out.println("Created directory " + file.getPath());
+		logger.fine("Created directory " + file.getPath());
 	}
 
 	public void addFile(RemoteFile file) throws InvalidDirectoryException {
@@ -256,6 +264,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	}
 
 	//private String path;
+	private String root;
 	private String name;
 	public String getName() {
 		//return path.substring(path.lastIndexOf(separatorChar) + 1);
@@ -341,7 +350,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 				// 4 scenarios: new/existing file/directory
 				if (mergefile.isDirectory()) {
 					if (!file.isDirectory())
-						throw new RuntimeException("!!! WARNING: File/Directory conflict!!");
+						throw new RuntimeException("!!! WARNING: Directory/File conflict!!");
 					// is a directory -- dive into directory and start merging
 					file.merge(mergefile);
 				} else {
@@ -478,19 +487,27 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	/**
 	 * @throws net.sf.drftpd.master.NoAvailableSlaveException
 	 */
-	public long getCheckSum(boolean scan) throws IOException {
+	public long getCheckSum(boolean scan) {
 		if (scan == false)
 			return checkSum;
 		if (checkSum != 0)
-			return super.getCheckSum();
+			return checkSum;
 		
 		RemoteSlave slave;
 		while (true) {
-			slave = getASlave();
+			try {
+				slave = getASlave();
+			} catch(NoAvailableSlaveException ex) {
+				logger.log(Level.WARNING, "NoAvailableSlaveException", ex);
+				return 0L;
+			}
 			try {
 				checkSum = slave.getSlave().checkSum(getPath());
 			} catch (RemoteException ex) {
 				slave.getManager().handleRemoteException(ex, slave);
+				continue;
+			} catch (IOException ex) {
+				logger.log(Level.WARNING, "IOException", ex);
 				continue;
 			}
 			return checkSum;
@@ -501,8 +518,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 * @see net.sf.drftpd.remotefile.RemoteFile#getCheckSum()
 	 * @throws net.sf.drftpd.master.NoAvailableSlaveException
 	 */
-	public long getCheckSum() throws IOException {
-		return getCheckSum(true);
+	public long getCheckSum() {
+		return getCheckSum(false);
 	}
 
 	public void renameTo(String to) {

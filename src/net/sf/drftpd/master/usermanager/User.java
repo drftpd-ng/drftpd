@@ -144,7 +144,7 @@ public abstract class User implements Serializable {
 				}
 			}
 		}
-		System.out.println("no match");
+		System.out.println(getClass().getName()+".checkIP(): no match");
 		return false;
 	}
 

@@ -14,6 +14,8 @@ import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.InvalidDirectoryException;
@@ -44,7 +46,10 @@ import socks.server.Ident;
  */
 
 public class FtpConnection extends BaseFtpConnection {
-
+	private static Logger logger = Logger.getLogger(FtpConnection.class.getName());
+	static {
+		logger.setLevel(Level.FINEST);
+	}
 	private final static SimpleDateFormat DATE_FMT =
 		new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
@@ -544,6 +549,10 @@ public class FtpConnection extends BaseFtpConnection {
 			String fileName = (String)i.next();
 			if(fileName.endsWith(".sfv")) {
 				try {
+					if(sfvFile != null) {
+						logger.warning("Multiple SFV files in "+directory.getName());
+						out.println("200- Multiple SFV files found, using "+fileName);
+					} 
 					sfvFile = directory.lookupFile(fileName);
 				} catch (FileNotFoundException e) {
 					out.println("550 "+e.getMessage());
@@ -574,14 +583,7 @@ public class FtpConnection extends BaseFtpConnection {
 				continue;
 			}
 			boolean ok;
-			try {
-				ok = checkSum.longValue() == file.getCheckSum();
-			} catch(IOException ex) {
-				out.println("200- "+fileName+" "+ex.getMessage());
-				ex.printStackTrace();
-				out.flush();
-				continue;
-			}
+			ok = checkSum.longValue() == file.getCheckSum();
 			out.println("200- "+fileName+(ok ? " OK" : " FAILED"));
 			out.flush();
 		}
@@ -824,7 +826,6 @@ public class FtpConnection extends BaseFtpConnection {
 	 * or as a subdirectory of the current working directory (if
 	 * the pathname is relative).
 	 */
-	//TODO: security issue: basename
 	public void doMKD(FtpRequest request, PrintWriter out) {
 
 		// reset state variables
@@ -841,6 +842,7 @@ public class FtpConnection extends BaseFtpConnection {
 		String fileName = request.getArgument();
 		LinkedRemoteFile file = getVirtualDirectory().getCurrentDirectoryFile();
 		try {
+			//TODO: security issue: basename
 			file.mkdir(user, fileName);
 			out.write(mFtpStatus.getResponse(250, request, user, new String[] {fileName}));
 		} catch(FileExistsException ex) {
@@ -1762,10 +1764,12 @@ public class FtpConnection extends BaseFtpConnection {
 			user = usermanager.getUserByName(request.getArgument());
 		} catch (NoSuchUserException ex) {
 			// TODO: what error code for "no such user" ???
-			out.write(mFtpStatus.getResponse(530, request, user, null));
+			out.println("530 "+ex.getMessage());
+			//out.write(mFtpStatus.getResponse(530, request, user, null));
 			return;
 		} catch(IOException ex) {
-			out.println("200 "+ex.getMessage());
+			out.println("530 "+ex.getMessage());
+			return;
 		}
 		String masks[] =
 			{

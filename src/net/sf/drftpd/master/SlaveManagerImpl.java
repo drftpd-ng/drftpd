@@ -13,6 +13,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.sf.drftpd.permission.GlobRMISocketFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -27,21 +29,25 @@ public class SlaveManagerImpl
 	extends UnicastRemoteObject
 	implements SlaveManager {
 
-	//	protected Hashtable slaves = new Hashtable();
+	private static Logger logger = Logger.getLogger(SlaveManagerImpl.class.getName());
+	static {
+		logger.setLevel(Level.FINEST);
+	}
+
 	protected LinkedRemoteFile root;
-	//	protected Vector slaves = new Vector();
 	protected List slaves;
 
 	public LinkedRemoteFile getRoot() {
 		return root;
 	}
 
-	public SlaveManagerImpl(String url, List masks) throws RemoteException {
+	public SlaveManagerImpl(String url, List masks) throws RemoteException, AlreadyBoundException {
 		this(url, new LinkedRemoteFile(), masks);
 	}
 
 	public SlaveManagerImpl(String url, LinkedRemoteFile root, List masks)
-		throws RemoteException {
+		throws RemoteException, AlreadyBoundException {
+		
 		super(0, (RMIClientSocketFactory) RMISocketFactory.getSocketFactory(),
 					(RMIServerSocketFactory)new GlobRMISocketFactory(masks));
 //		 (RMIServerSocketFactory) RMISocketFactory.getSocketFactory());
@@ -67,13 +73,10 @@ public class SlaveManagerImpl
 		*/
 		//SlaveManager stub = (SlaveManager)
 		//		UnicastRemoteObject.exportObject((Remote)this, 6666);
-		try {
+
 			Registry registry = LocateRegistry.createRegistry(1099);
 			registry.bind("slavemanager", this);
-		} catch (AlreadyBoundException ex) {
-			ex.printStackTrace();
-			return;
-		}
+
 
 		/*		} catch (java.rmi.ConnectException ex) {
 					ex.printStackTrace();
@@ -128,7 +131,7 @@ public class SlaveManagerImpl
 	private Random rand = new Random();
 	public RemoteSlave getASlave() {
 		int num = rand.nextInt(slaves.size());
-		System.out.println(
+		logger.fine(
 			"Slave "
 				+ num
 				+ " selected out of "

@@ -12,6 +12,8 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -26,6 +28,10 @@ import net.sf.drftpd.util.Crypt;
  * Window>Preferences>Java>Code Generation.
  */
 public class GlftpdUserManager extends UserManager {
+	private static Logger logger = Logger.getLogger(GlftpdUserManager.class.getName());
+	static {
+		logger.setLevel(Level.FINEST);
+	}
 	public class GlftpdUser extends User {
 		private GlftpdUserManager usermanager;
 		/**
@@ -58,6 +64,8 @@ public class GlftpdUserManager extends UserManager {
 			if (password.equals(userhash)) {
 				login();
 				return true;
+			} else {
+				System.out.println(password+" != "+userhash);
 			}
 			return false;
 		}
@@ -531,13 +539,16 @@ public class GlftpdUserManager extends UserManager {
 	 */
 	public User getUserByName(String username)
 		throws NoSuchUserException, IOException {
+		if(!new File(getUserfilepath(username)).exists()) {
+			throw new NoSuchUserException("No userfile for user");
+		}
 		getLock(username);
 		GlftpdUser user = new GlftpdUser(this, username);
 		try {
 			load(user);
 		} catch (CorruptUserFileException ex) {
 			ex.printStackTrace();
-			throw new RuntimeException(ex.toString());
+			throw new IOException(ex.toString());
 		}
 		return user;
 	}
@@ -626,7 +637,7 @@ public class GlftpdUserManager extends UserManager {
 					+ yields
 					+ " times)");
 			System.out.println(
-				"If this is a production site please report the above line to mog@linux.nu");
+				"If this is a production site please report the above line to drftpd@mog.se");
 		}
 	}
 

@@ -18,8 +18,6 @@ public abstract class RemoteFile {
 	
 	public abstract RemoteFile[] listFiles();
 	
-	
-	
 	protected String user;
 	public String getUser() {
 		if (user == null)
@@ -117,7 +115,7 @@ public abstract class RemoteFile {
 	/**
 	 * Gets the checkSum
 	 */
-	public long getCheckSum() throws IOException {
+	public long getCheckSum() {
 		return checkSum;	
 	}
 	/**
