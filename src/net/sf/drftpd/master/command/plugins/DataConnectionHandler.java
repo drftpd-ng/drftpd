@@ -1237,7 +1237,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                         if (status.isFinished()) {
                             break;
                         }
-
+                        _transferFile.setLength(status.getTransfered());
                         try {
                             Thread.sleep(100);
                         } catch (InterruptedException e1) {
