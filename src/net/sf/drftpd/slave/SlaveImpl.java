@@ -69,13 +69,13 @@ public class SlaveImpl
 				SlaveManager manager;
 				manager = (SlaveManager) Naming.lookup(slavemanagerurl);
 				
-				logger.log(Level.INFO, "Registering with master");
+				logger.log(Level.INFO, "Registering with master and sending filelist");
 
 				LinkedRemoteFile slaveroot =
 					SlaveImpl.getDefaultRoot(this.roots);
-
 				manager.addSlave(this.name, this, slaveroot);
-				logger.log(Level.INFO, "Registered with master, awaiting commands.");
+				
+				logger.log(Level.INFO, "Finished registered with master, awaiting commands.");
 				break;
 			} catch (Throwable t) {
 				long retry = Long.parseLong(System.getProperty("java.rmi.dgc.leaseValue", "600000"));

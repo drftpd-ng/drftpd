@@ -8,4 +8,4 @@ VMARGS="
 
 CLASSPATH="classes:lib/jdom.jar:lib/martyr.jar:lib/oro.jar:lib/JSX1.0.7.4.jar"
 
-exec java ${VMARGS} $@ net.sf.drftpd.master.ConnectionManager
+exec java ${VMARGS} $@ net.sf.drftpd.master.ConnectionManager 2>&1 | tee drftpd.out

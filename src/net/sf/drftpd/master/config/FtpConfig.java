@@ -61,8 +61,8 @@ public class FtpConfig {
 		Properties cfg = new Properties();
 		cfg.load(new FileInputStream(cfgFileName));
 		loadConfig(cfg);
-		//TODO read drftpd.conf.xml
 	}
+	
 	private ArrayList privpaths;
 	private ArrayList msgpaths;
 	private ArrayList creditloss;
@@ -104,12 +104,9 @@ public class FtpConfig {
 				boolean leechers = !st.nextToken().equalsIgnoreCase("no");
 				String path = st.nextToken();
 				Collection users = makeUsers(st);
+				//TODO leecheres? ignore it? remove it from config?
 				creditloss.add(
-					new LeechersMultiplierPathPermission(
-						path,
-						users,
-						multiplier,
-						leechers));
+					new RatioPathPermission(multiplier, path, users));
 			}
 			//creditcheck <path> <ratio> [<-user|=group|flag> ...]
 			else if (command.equals("creditcheck")) {
@@ -117,7 +114,7 @@ public class FtpConfig {
 				String path = st.nextToken();
 				Collection users = makeUsers(st);
 				creditloss.add(
-					new MultiplierPathPermission(path, users, multiplier));
+					new RatioPathPermission(multiplier, path, users));
 			}
 		}
 		this.privpaths = privpaths;
@@ -134,7 +131,13 @@ public class FtpConfig {
 		for (Iterator iter = privpaths.iterator(); iter.hasNext();) {
 			PathPermission perm = (PathPermission) iter.next();
 			if (perm.checkPath(path)) {
-				System.out.println("check path "+path.getPath()+" for "+user.getUsername()+": "+perm.check(user));
+				System.out.println(
+					"check path "
+						+ path.getPath()
+						+ " for "
+						+ user.getUsername()
+						+ ": "
+						+ perm.check(user));
 				return perm.check(user);
 			}
 		}

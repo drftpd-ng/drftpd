@@ -120,14 +120,14 @@ public class FileRemoteFile extends RemoteFile {
 	/**
 	 * @see net.sf.drftpd.RemoteFile#getGroup()
 	 */
-	public String getGroup() {
+	public String getGroupname() {
 		return "drftpd";
 	}
 
 	/**
 	 * @see net.sf.drftpd.RemoteFile#getUser()
 	 */
-	public String getOwnerUsername() {
+	public String getUsername() {
 		return "drftpd";
 	}
 
@@ -163,8 +163,8 @@ public class FileRemoteFile extends RemoteFile {
 	 * Returns an array of FileRemoteFile:s representing the contents of the directory this FileRemoteFile represents.
 	 * @see net.sf.drftpd.RemoteFileTree#listFiles()
 	 */
-	public RemoteFile[] listFiles() {
-		return (RemoteFile[]) getFiles().toArray(new FileRemoteFile[0]);
+	public RemoteFileInterface[] listFiles() {
+		return (RemoteFileInterface[]) getFiles().toArray(new FileRemoteFile[0]);
 	}
 	
 	/**

@@ -117,7 +117,7 @@ public class StaticRemoteFile extends RemoteFile {
 	/**
 	 * @see net.sf.drftpd.remotefile.RemoteFileTree#listFiles()
 	 */
-	public RemoteFile[] listFiles() {
+	public RemoteFileInterface[] listFiles() {
 		throw new NoSuchMethodError("listFiles() does not exist in StaticRemoteFile");
 	}
 

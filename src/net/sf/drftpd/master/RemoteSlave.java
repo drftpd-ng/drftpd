@@ -181,7 +181,7 @@ public class RemoteSlave implements Serializable, Comparable {
 	 * @param slave
 	 */
 	public void setSlave(Slave slave, InetAddress inetAddress) {
-		if(slave == null) {
+		if(slave == null && this.slave != null) {
 			manager.getConnectionManager().dispatchFtpEvent(new SlaveEvent("DELSLAVE", this));
 		}
 		this.slave = slave;

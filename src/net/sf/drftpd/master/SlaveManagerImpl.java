@@ -292,12 +292,19 @@ public class SlaveManagerImpl
 			throw new FatalException(e1);
 		}
 
+		try {
+			root.remerge(slaveroot, rslave);
+		} catch(RuntimeException t) {
+			logger.log(Level.SEVERE, "", t);
+			rslave.setSlave(null, null);
+			throw t;
+		}
+
 		System.out.println(
 			"SlaveManager.addSlave(): "
 				+ rslave.getName()
 				+ " remoteroot: "
 				+ slaveroot);
-		root.remerge(slaveroot, rslave);
 
 		try {
 			System.out.println(

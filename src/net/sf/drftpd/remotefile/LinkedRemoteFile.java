@@ -3,6 +3,7 @@ package net.sf.drftpd.remotefile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
+import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,7 +83,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 * 
 	 * Also called with null ConnectionManager from slave
 	 */
-	public LinkedRemoteFile(RemoteFile file, ConnectionManager cm)
+	public LinkedRemoteFile(RemoteFileInterface file, ConnectionManager cm)
 		throws IOException {
 		this(null, file, cm);
 	}
@@ -97,17 +98,22 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 */
 	private LinkedRemoteFile(
 		LinkedRemoteFile parent,
-		RemoteFile file,
+		RemoteFileInterface file,
 		ConnectionManager cm) {
 		this.connectionmanager = cm;
 		this.lastModified = file.lastModified();
 		this.length = file.length();
 		if (this.length == -1)
 			throw new IllegalArgumentException("length() == -1 for " + file);
-		//isHidden = file.isHidden();
+		if (!file.isFile() && !file.isDirectory()) {
+			logger.log(
+				Level.SEVERE,
+				"File is not a file nor a directory: " + file,
+				new Throwable());
+		}
 
-		this.owner = file.getOwnerUsername();
-		this.group = file.getGroup();
+		this.owner = file.getUsername();
+		this.group = file.getGroupname();
 		this.checkSum = file.getCheckSum();
 		if (file.isFile()) {
 			this.slaves =
@@ -133,11 +139,11 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		//		}
 
 		if (file.isDirectory()) {
-			RemoteFile dir[] = file.listFiles();
+			RemoteFileInterface dir[] = file.listFiles();
 			this.files = Collections.synchronizedMap(new Hashtable(dir.length));
 			Stack dirstack = new Stack();
 			for (int i = 0; i < dir.length; i++) {
-				RemoteFile file2 = dir[i];
+				RemoteFileInterface file2 = dir[i];
 				if (file2.isDirectory()) {
 					dirstack.push(file2);
 					continue;
@@ -165,8 +171,11 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		return linkedfile;
 	}
 	public void addSlave(RemoteSlave slave) {
-		if (!slaves.contains(slave))
-			slaves.add(slave);
+		if (slaves.contains(slave)) {
+			//logger.log(Level.WARNING, this+" already contained "+slave, new Throwable());
+			return;
+		}
+		slaves.add(slave);
 	}
 	private void addSlaves(Collection addslaves) {
 		if (addslaves == null)
@@ -308,28 +317,36 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	public long getCheckSum(boolean scan) {
 		if (scan == false)
 			return checkSum;
-		if (checkSum != 0 && length != 0)
-			return checkSum;
-
+		if (checkSum != 0 && length != 0) {
+			try {
+				this.checkSum = getCheckSumFromSlave();
+			} catch (NoAvailableSlaveException ex) {
+			} // checkSum will still be 0L, return that...
+		}
+		return this.checkSum;
+	}
+	/**
+	 * Returns the checksum 0L if the checksum cannot be read.
+	 * @return
+	 * @throws NoAvailableSlaveException
+	 */
+	public long getCheckSumFromSlave() throws NoAvailableSlaveException {
 		RemoteSlave slave;
 		while (true) {
+			slave = getASlave();
 			try {
-				slave = getASlave();
-			} catch (NoAvailableSlaveException ex) {
-				logger.log(Level.WARNING, "NoAvailableSlaveException", ex);
-				return 0L;
-			}
-			try {
-				checkSum = slave.getSlave().checkSum(getPath());
+				this.checkSum = slave.getSlave().checkSum(getPath());
 			} catch (RemoteException ex) {
 				slave.handleRemoteException(ex);
 				continue;
 			} catch (IOException ex) {
-				logger.log(Level.WARNING, "IOException", ex);
+				// severe exception.. but we can still try to get the checksum from another slave
+				logger.log(Level.SEVERE, "IOException", ex);
 				continue;
 			}
 			return checkSum;
 		}
+
 	}
 
 	/**
@@ -443,7 +460,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		}
 		return false;
 	}
-	
+
 	protected SFVFile sfvFile;
 	public SFVFile lookupSFVFile()
 		throws IOException, ObjectNotFoundException, NoAvailableSlaveException {
@@ -465,10 +482,10 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			while (true) {
 				RemoteSlave slave = getASlave();
 				try {
-					sfvFile = slave.getSlave().getSFVFile(getPath());
+					sfvFile = slave.getSlave().getSFVFile(getPath()); //throws RemoteException
 					sfvFile.setCompanion(this);
 					break;
-				} catch (RemoteException ex) {
+				} catch (ConnectException ex) {
 					slave.handleRemoteException(ex);
 				}
 			}
@@ -513,7 +530,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		return files != null;
 	}
 
-	public RemoteFile[] listFiles() {
+	public RemoteFileInterface[] listFiles() {
 		if (!isDirectory())
 			throw new RuntimeException(getPath() + " is not a directory");
 		return (LinkedRemoteFile[]) getFilesMap().values().toArray(
@@ -621,19 +638,74 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			if (file == null) {
 				// local file does not exist, just put it in the hashtable
 				map.put(mergefile.getName(), mergefile);
+				mergefile.addSlave(rslave);
 			} else {
 				if (file.isDeleted()) {
+					//TODO mergefile has no RemoteSlave object!
 					mergefile.delete();
 					continue;
 				}
 				if (mergefile.isFile()
 					&& file.length() != mergefile.length()) {
-					throw new RuntimeException(
-						"file sizes differ: "
-							+ file
-							+ " and "
-							+ mergefile
-							+ "don't know what to do! :(");
+					Collection filerslaves = mergefile.getSlaves();
+
+					//					try {
+					//						SFVFile sfvFile = lookupSFVFile();
+					//						long checksum = sfvFile.getChecksum(file.getName());
+					//						if(mergefile.getCheckSum())
+					//					} catch(ObjectNotFoundException e) {
+					//					} catch(Throwable t) {
+					//					}
+					if ((filerslaves.size() == 1
+						&& filerslaves.contains(rslave))
+						|| file.length() == 0) {
+						file.length = mergefile.length();
+						file.checkSum = 0L;
+						//file.getCheckSum(true);
+						file.lastModified = mergefile.lastModified();
+					} else if (mergefile.length() == 0) {
+						try {
+							rslave.getSlave().delete(mergefile.getPath());
+						} catch (Exception e) {
+							throw new FatalException(e);
+						}
+					} else {
+						//rename file...
+						try {
+							rslave.getSlave().rename(
+								getPath() + mergefile.getName(),
+								getPath()
+									+ mergefile.getName()
+									+ "."
+									+ rslave.getName());
+							mergefile.name =
+								mergefile.getName() + "." + rslave.getName();
+							mergefile.addSlave(rslave);
+							files.put(mergefile.getName(), mergefile);
+							logger.log(
+								Level.WARNING,
+								"2 or more slaves contained same file with different sizes, renamed to "
+									+ mergefile.getName());
+							continue;
+						} catch (Exception e) {
+							throw new FatalException(e);
+						}
+						//						throw new RuntimeException(
+						//							"file sizes differ: "
+						//								+ file
+						//								+ " size["
+						//								+ file.length()
+						//								+ "]"
+						//								+ " and "
+						//								+ mergefile
+						//								+ " size["
+						//								+ mergefile.length()
+						//								+ "], contains other slaves than "
+						//								+ rslave
+						//								+ " rslaves"
+						//								+ filerslaves
+						//								+ "don't know what to do!");
+					}
 				}
 
 				// 4 scenarios: new/existing file/directory
@@ -647,7 +719,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 					if (file.isDirectory())
 						throw new RuntimeException("!!! ERROR: File/Directory conflict!!");
 				}
-			}
+			} // file != null
 		}
 
 		//TODO remove all slaves not in mergedir.getFiles()

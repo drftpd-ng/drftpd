@@ -161,14 +161,14 @@ public class VirtualDirectory {
 	 * Get file owner.
 	 */
 	private static String getOwner(RemoteFile fl) {
-		return fl.getOwnerUsername();
+		return fl.getUsername();
 	}
 
 	/**
 	 * Get group name
 	 */
 	private static String getGroup(RemoteFile fl) {
-		return fl.getGroup();
+		return fl.getGroupname();
 	}
 
 	/**

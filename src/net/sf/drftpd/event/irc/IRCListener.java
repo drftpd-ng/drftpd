@@ -287,7 +287,8 @@ public class IRCListener implements FtpListener {
 			if(finishedFiles != 1) {
 				for (Iterator iter = sfvfile.getFiles().iterator(); iter.hasNext();) {
 					LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-					if(file.getOwnerUsername().equals(username)) break;
+					if(file == direvent.getDirectory()) continue;
+					if(file.getUsername().equals(username)) break;
 					if(!iter.hasNext()) {
 						say(dir.getPath()+" embraces "+formatUser(direvent.getUser()));
 					}
@@ -388,7 +389,7 @@ public class IRCListener implements FtpListener {
 		ArrayList ret = new ArrayList();
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			String username = file.getOwnerUsername();
+			String username = file.getUsername();
 
 			UploaderPosition stat = null;
 			for (Iterator iter2 = ret.iterator(); iter2.hasNext();) {

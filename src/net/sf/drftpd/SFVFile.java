@@ -20,6 +20,8 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
  * Window>Preferences>Java>Code Generation.
  */
 public class SFVFile implements Serializable {
+	static final long serialVersionUID = 5381510163578487722L;
+	
 	private transient LinkedRemoteFile companion; 
 	/**
 	 * String fileName as key
@@ -53,8 +55,8 @@ public class SFVFile implements Serializable {
 	public Map getEntries() {
 		return entries;
 	}
-		
-	public long get(String fileName) throws ObjectNotFoundException {
+	
+	public long getChecksum(String fileName) throws ObjectNotFoundException {
 		Long checksum = (Long)entries.get(fileName);
 		if(checksum == null) throw new ObjectNotFoundException();
 		return checksum.longValue();

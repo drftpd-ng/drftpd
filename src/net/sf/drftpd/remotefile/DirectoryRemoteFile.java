@@ -58,8 +58,8 @@ public class DirectoryRemoteFile extends RemoteFile {
 	/**
 	 * @see net.sf.drftpd.remotefile.RemoteFileTree#listFiles()
 	 */
-	public RemoteFile[] listFiles() {
-		return new RemoteFile[0];
+	public RemoteFileInterface[] listFiles() {
+		return new RemoteFileInterface[0];
 	}
 	public String toString() {
 		return "[" + getClass().getName() + "[name: " + getName() + "]]";

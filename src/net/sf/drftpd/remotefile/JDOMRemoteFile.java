@@ -12,6 +12,7 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.master.RemoteSlave;
 
 import org.jdom.Element;
+import org.jdom.output.XMLOutputter;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
@@ -21,7 +22,7 @@ import org.jdom.Element;
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-public class JDOMRemoteFile extends RemoteFile {
+public class JDOMRemoteFile implements RemoteFileInterface {
 
 	private static Logger logger =
 		Logger.getLogger(JDOMRemoteFile.class.getName());
@@ -41,6 +42,10 @@ public class JDOMRemoteFile extends RemoteFile {
 		}
 		return map;
 	}
+	private long checkSum;
+	private String owner;
+	private String group;
+	
 	/**
 	 * Constructor for JDOMRemoteFileTree.
 	 */
@@ -102,14 +107,20 @@ public class JDOMRemoteFile extends RemoteFile {
 	/**
 	 * @see net.sf.drftpd.remotefile.RemoteFileTree#listFiles()
 	 */
-	public RemoteFile[] listFiles() {
-		JDOMRemoteFile listFiles[] = new JDOMRemoteFile[files.size()];
+	public RemoteFileInterface[] listFiles() {
+		//JDOMRemoteFile listFiles[] = new JDOMRemoteFile[files.size()];
+		ArrayList listFiles = new ArrayList();
 		int i2 = 0;
 		for (Iterator i = files.iterator(); i.hasNext();) {
-			listFiles[i2++] =
-				new JDOMRemoteFile((Element) i.next(), this.allSlaves);
+			Element fileElement = (Element)i.next();
+			
+			if(fileElement.getName().equals("file") && fileElement.getChild("slaves").getChildren().size() == 0) {
+				System.out.println(new XMLOutputter().outputString(fileElement)+" has no slaves! skipping");
+				continue;
+			} 
+			listFiles.add(new JDOMRemoteFile(fileElement, this.allSlaves));
 		}
-		return listFiles;
+		return (RemoteFileInterface[])listFiles.toArray(new JDOMRemoteFile[0]);
 	}
 
 	//	protected String path;
@@ -204,6 +215,27 @@ public class JDOMRemoteFile extends RemoteFile {
 	 */
 	public long getXfertime() {
 		return xfertime;
+	}
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getCheckSum()
+	 */
+	public long getCheckSum() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getGroupname()
+	 */
+	public String getGroupname() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getUsername()
+	 */
+	public String getUsername() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

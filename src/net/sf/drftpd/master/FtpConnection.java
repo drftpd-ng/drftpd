@@ -98,9 +98,9 @@ public class FtpConnection extends BaseFtpConnection {
 		SlaveManagerImpl slaveManager,
 		LinkedRemoteFile root,
 		ConnectionManager connManager,
-		NukeLog nukelog) {
+		NukeLog nukelog, Writer debugLog) {
 
-		super(connManager, sock);
+		super(connManager, sock, debugLog);
 		this.userManager = userManager;
 		this.slaveManager = slaveManager;
 
@@ -123,7 +123,6 @@ public class FtpConnection extends BaseFtpConnection {
 	 * Current implementation does not do anything. As here data 
 	 * transfers are not multi-threaded. 
 	 */
-	//TODO implement ABOR
 	public void doABOR(FtpRequest request, PrintWriter out) {
 		// reset state variables
 		resetState();
@@ -352,7 +351,7 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		// check permission
-		if (!getUser().getUsername().equals(requestedFile.getOwnerUsername())
+		if (!getUser().getUsername().equals(requestedFile.getUsername())
 			&& !getUser().isAdmin()) {
 			out.print(
 				new FtpResponse(
@@ -368,7 +367,7 @@ public class FtpConnection extends BaseFtpConnection {
 		try {
 			uploader =
 				this.userManager.getUserByName(
-					requestedFile.getOwnerUsername());
+					requestedFile.getUsername());
 			uploader.updateCredits(
 				(long) - (requestedFile.length() * uploader.getRatio()));
 		} catch (IOException e) {
@@ -1180,7 +1179,7 @@ public class FtpConnection extends BaseFtpConnection {
 		try {
 			rslave = remoteFile.getASlave(Transfer.TRANSFER_SENDING_DOWNLOAD);
 		} catch (NoAvailableSlaveException ex) {
-			out.print(FtpResponse.RESPONSE_450_SLAVE_UNAVAILABLE);
+			out.print(FtpResponse.RESPONSE_530_SLAVE_UNAVAILABLE);
 			return;
 		}
 
@@ -1797,13 +1796,34 @@ public class FtpConnection extends BaseFtpConnection {
 	public void doSITE_CHPASS(FtpRequest request, PrintWriter out) {
 		resetState();
 
+		if (!getUser().isAdmin()) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
+
 		if (!request.hasArgument()) {
 			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
 		}
 
-		if (!getUser().isAdmin()) {
-			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+		String args[] = request.getArgument().split(" ");
+		if(args.length != 2) {
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			return;
+		}
+		
+		try {
+			User user = userManager.getUserByName(args[0]);
+			user.setPassword(args[1]);
+			
+			out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
+			return;
+		} catch (NoSuchUserException e) {
+			out.print(new FtpResponse(200, "User not found: "+e.getMessage()));
+			return;
+		} catch (IOException e) {
+			out.print(new FtpResponse(200, "Error reading userfile: "+e.getMessage()));
+			logger.log(Level.SEVERE, "Error reading userfile", e);
 			return;
 		}
 
@@ -1964,8 +1984,15 @@ public class FtpConnection extends BaseFtpConnection {
 
 		delUser.setDeleted(true);
 		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
+		return;
 	}
-
+	
+	public void doSITE_DUPE(FtpRequest request, PrintWriter out) {
+		//TODO implement SITE DUPE
+		out.print(FtpResponse.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
+		return;
+	}
+	
 	public void doSITE_GROUPS(FtpRequest request, PrintWriter out) {
 		resetState();
 
@@ -2224,7 +2251,7 @@ public class FtpConnection extends BaseFtpConnection {
 		Hashtable nukees) {
 		for (Iterator iter = nukeDir.getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			String owner = file.getOwnerUsername();
+			String owner = file.getUsername();
 			Long total = (Long) nukees.get(owner);
 			if (total == null)
 				total = new Long(0);
@@ -2465,7 +2492,8 @@ public class FtpConnection extends BaseFtpConnection {
 				}
 				sfvFile = file;
 			}
-		}
+		} // end for (getfiles.iterator)
+		//TODO use LinkedRemoteFile.lookupSFVFile()
 		if (sfvFile == null) {
 			out.println("550 Sorry! no .sfv file found!");
 			return;
@@ -2474,7 +2502,8 @@ public class FtpConnection extends BaseFtpConnection {
 		try {
 			sfv = sfvFile.getSFVFile();
 		} catch (IOException e) {
-			out.println("550 " + e.getMessage());
+			out.print(new FtpResponse(550, e.getMessage()));
+			logger.log(Level.SEVERE, "", e);
 			return;
 		}
 		for (Iterator i = sfv.getEntries().entrySet().iterator();
@@ -2501,9 +2530,25 @@ public class FtpConnection extends BaseFtpConnection {
 					+ (ok ? " OK" : " FAILED"));
 			out.flush();
 		}
-		out.println("200 Command ok.");
+		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
 	}
 
+	public void doSITE_SHUTDOWN(FtpRequest request, PrintWriter out) {
+		resetState();
+		if(!getUser().isAdmin()) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
+		String message;
+		if(!request.hasArgument()) {
+			message = "Service shutdown issued by "+getUser().getUsername();
+		} else {
+			message = request.getArgument();
+		}
+		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
+		connManager.shutdown(message);
+	}
+	
 	/** Lists all slaves used by the master
 	 * USAGE: SITE SLAVES
 	 * 
@@ -2536,6 +2581,12 @@ public class FtpConnection extends BaseFtpConnection {
 		out.print(new FtpResponse(200, status()));
 		return;
 	}
+	
+	public void doSITE_SEARCH(FtpRequest request, PrintWriter out) {
+		//TODO implement SITE SEARCH
+		out.print(FtpResponse.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
+		return;
+	}
 
 	public void doSITE_SEEN(FtpRequest request, PrintWriter out) {
 		if (!request.hasArgument()) {
@@ -2564,6 +2615,7 @@ public class FtpConnection extends BaseFtpConnection {
 				"User was last seen: " + new Date(user.getLastAccessTime())));
 		return;
 	}
+	
 	/**
 	 * USAGE: site stats [<user>]
 	    Display a user's upload/download statistics.
@@ -3283,7 +3335,7 @@ public class FtpConnection extends BaseFtpConnection {
 				.clone();
 		try {
 			long checksum;
-			checksum = targetDir.lookupSFVFile().get(targetFilename);
+			checksum = targetDir.lookupSFVFile().getChecksum(targetFilename);
 			if (checksum == targetFile.getCheckSum(true)) {
 				response.addComment("zipscript - checksum match");
 
@@ -3560,7 +3612,7 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		if (!slaveManager.hasAvailableSlaves() && !newUser.isAdmin()) {
-			out.print(new FtpResponse(530, "No transfer slave(s) available"));
+			out.print(new FtpResponse(530, "No transfer slave(s) available, try again later."));
 			return;
 		}
 		

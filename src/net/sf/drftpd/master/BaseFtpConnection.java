@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -111,13 +112,10 @@ public class BaseFtpConnection implements Runnable {
 	    mUser = new FtpUser();
 	}
 	*/
-	public BaseFtpConnection(ConnectionManager connManager, Socket soc) {
-		//mConfig = ftpConfig;
-		//this.cfg = cfg;
-		//mFtpStatus = mConfig.getStatus();
-		controlSocket = soc;
+	private Writer debugLog;
+	public BaseFtpConnection(ConnectionManager connManager, Socket soc, Writer debugLog) {
+		this.controlSocket = soc;
 		this.connManager = connManager;
-		//mUser = new FtpUser();
 	}
 
 	BufferedReader in;
@@ -156,7 +154,11 @@ public class BaseFtpConnection implements Runnable {
 			        return;
 			    }
 			*/
-			out.println("220 Service ready for new user.");
+			if(connManager.isShutdown()) {
+				stop(connManager.getShutdownMessage());
+			} else {
+				out.println("220 Service ready for new user.");
+			}
 			while (!stopRequest) {
 				out.flush();
 				//notifyObserver();

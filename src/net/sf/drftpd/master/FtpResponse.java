@@ -106,6 +106,9 @@ public class FtpResponse implements Cloneable {
 	public static final FtpResponse RESPONSE_530_ACCESS_DENIED =
 		new FtpResponse(530, "Access denied");
 
+	public static final FtpResponse RESPONSE_530_SLAVE_UNAVAILABLE = 
+	new FtpResponse(530, "No transfer-slave(s) available");
+
 	/** 530 Not logged in. */
 	public static final FtpResponse RESPONSE_530_NOT_LOGGED_IN =
 		new FtpResponse(530, "Not logged in.");
@@ -129,7 +132,7 @@ public class FtpResponse implements Cloneable {
 	public FtpResponse() {
 	}
 	public FtpResponse(int code) {
-		this.code = code;
+		setCode(code);
 	}
 	public FtpResponse(int code, String response) {
 		setCode(code);
@@ -149,8 +152,10 @@ public class FtpResponse implements Cloneable {
 		return this;
 	}
 	public void setMessage(String response) {
-		if (response.indexOf('\n') != -1)
-			throw new IllegalArgumentException("newlines not allowed in the response");
+		if (response.indexOf('\n') != -1) {
+			response = response.substring(0, response.indexOf('\n'));
+			logger.log(Level.WARNING, "Truncated response message with multiple lines: "+response);
+		}
 		this.message = response;
 	}
 	public void setCode(int code) {

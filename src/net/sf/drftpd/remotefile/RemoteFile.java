@@ -6,7 +6,7 @@ import java.util.Collection;
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
-public abstract class RemoteFile {
+public abstract class RemoteFile implements RemoteFileInterface {
 	
 	/**
 	 * separatorChar is always "/" as "/" is always used in (SYST type UNIX) FTP.
@@ -16,10 +16,6 @@ public abstract class RemoteFile {
 	protected long checkSum = 0;
 
 	protected String group;
-
-//	protected boolean isDirectory;
-//
-//	protected boolean isFile;
 
 	protected long lastModified = -1;
 	
@@ -43,9 +39,9 @@ public abstract class RemoteFile {
 		return checkSum;	
 	}
 	
-	public abstract Collection getFiles();
+//	public abstract Collection getFiles();
 	
-	public String getGroup() {
+	public String getGroupname() {
 		if (group == null)
 			return "drftpd";
 		return group;
@@ -54,9 +50,9 @@ public abstract class RemoteFile {
 	/**
 	 * @see java.io.File#getName()
 	 */
-	public abstract String getName();
+//	public abstract String getName();
 	
-	public String getOwnerUsername() {
+	public String getUsername() {
 		if (owner == null)
 			return "drftpd";
 		return owner;
@@ -81,25 +77,14 @@ public abstract class RemoteFile {
 	public int hashCode() {
 		return getName().hashCode();
 	}
-//	public boolean isDirectory() {
-//		return isDirectory;
-//	}
-//	public boolean isFile() {
-//		return isFile;
-//	}
-	public abstract boolean isFile();
-	public abstract boolean isDirectory();
+
+//	public abstract boolean isFile();
+//	public abstract boolean isDirectory();
 	
-	//boolean isHidden;
-	public boolean isHidden() {
-		return getPath().startsWith(".");
-	}
-	
-	public abstract long lastModified();
-	public abstract long length();
+//	public abstract long lastModified();
+//	public abstract long length();
 			
-	public abstract RemoteFile[] listFiles();
-	//public abstract boolean hasFile(String filename);
+//	public abstract RemoteFileInterface[] listFiles();
 	
 	/**
 	 * Sets the checkSum.

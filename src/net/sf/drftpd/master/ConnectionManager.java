@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.net.BindException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -28,10 +30,11 @@ import java.util.logging.Logger;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
+import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.XferLogListener;
 import net.sf.drftpd.event.irc.IRCListener;
-import net.sf.drftpd.master.config.*;
+import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.queues.NukeLog;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
@@ -50,6 +53,7 @@ public class ConnectionManager {
 	private UserManager usermanager;
 	private NukeLog nukelog;
 	private SlaveManagerImpl slavemanager;
+	private String shutdownMessage = null;
 	private Timer timer;
 
 	private FtpConfig config;
@@ -59,11 +63,16 @@ public class ConnectionManager {
 	static {
 		logger.setLevel(Level.FINEST);
 	}
-
+	private Writer commandDebug;
 	protected void dispatchFtpEvent(Event event) {
 		for (Iterator iter = ftpListeners.iterator(); iter.hasNext();) {
+			try {
 			FtpListener handler = (FtpListener) iter.next();
+			System.out.println("Dispatching "+event.getCommand()+" to "+handler.getClass().getName());
 			handler.actionPerformed(event);
+			} catch(Throwable t) {
+				logger.log(Level.WARNING, "Exception dispatching event", t);
+			}
 		}
 	}
 
@@ -73,7 +82,13 @@ public class ConnectionManager {
 		} catch(Throwable ex) {
 			throw new FatalException(ex);
 		}
+		new File("ftp-data/logs").mkdirs();
 		
+		try {
+			this.commandDebug = new FileWriter("ftp-data/logs/debug.log");
+		} catch (IOException e1) {
+			throw new FatalException(e1);
+		}
 		/** END: load XML file database **/
 		
 		nukelog = new NukeLog();
@@ -222,10 +237,17 @@ public class ConnectionManager {
 				slavemanager,
 				slavemanager.getRoot(),
 				this,
-				this.nukelog);
+				this.nukelog, this.commandDebug);
 		conn.ftpListeners = this.ftpListeners;
 		connections.add(conn);
 		conn.start();
+	}
+	public void shutdown(String message) {
+		this.shutdownMessage = message;
+		for (Iterator iter = getConnections().iterator(); iter.hasNext();) {
+			((FtpConnection) iter.next()).stop(message);
+		}
+		dispatchFtpEvent(new MessageEvent("SHUTDOWN", message));
 	}
 	
 	private ArrayList ftpListeners = new ArrayList();
@@ -237,21 +259,28 @@ public class ConnectionManager {
 		if (!connections.remove(conn)) {
 			throw new RuntimeException("connections.remove() returned false.");
 		}
+		if(isShutdown() && connections.isEmpty()) {
+			slavemanager.saveFilesXML();
+			try {
+				getUsermanager().saveAll();
+			} catch (UserFileException e) {
+				logger.log(Level.WARNING, "Failed to save all userfiles", e);
+			}
+			System.exit(0);
+		}
 	}
 
 	/**
 	 * returns a <code>Collection</code> of current connections
 	 */
 	public Collection getConnections() {
-		return connections;
+		return this.connections;
 	}
-	/**
-	 * @deprecated use {@link net.sf.drftpd.master.BaseFtpConnection#stop}
-	 * @param conn
-	 * @param message
-	 */
-	public void killConnection(BaseFtpConnection conn, String message) {
-		conn.stop(message);
+	public boolean isShutdown() {
+		return this.shutdownMessage != null;
+	}
+	public String getShutdownMessage() {
+		return this.shutdownMessage;
 	}
 	
 	public static final String VERSION = "drftpd v0.7.0";
