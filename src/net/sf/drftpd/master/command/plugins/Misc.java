@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
+import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UnhandledCommandException;
 
 import org.drftpd.slave.Slave;
@@ -154,56 +155,72 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
         return new Reply(200, "Server time is: " + new Date());
     }
 
-    private Reply doSITE_HELP(BaseFtpConnection conn) {
-        String cmd = "", msg = "";
-        if (conn.getRequest().hasArgument()) {
-            cmd = conn.getRequest().getArgument().toLowerCase();
-        }
-        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
-        Map handlers = conn.getCommandManager().getCommandHandlersMap();
-        for (Iterator iter = handlers.keySet().iterator(); iter.hasNext();) {
-            CommandHandler hnd = (CommandHandler) handlers.get(iter.next());    
-            List<String> handledCmds = conn.getCommandManager().getHandledCommands(hnd.getClass());
-            for (String hndcmd : handledCmds) {
-                if (hndcmd.indexOf("SITE ") < 0) {
-                    continue;
-                } else {
-                    hndcmd = hndcmd.toLowerCase().replaceAll("site ","");                    
-                }
-                
-                if (!conn.getGlobalContext().getConfig().checkPathPermission(hndcmd,
-                        conn.getUserNull(), conn.getCurrentDirectory(), true)) 
-                    continue;
-                
-                try {
-                    ResourceBundle bundle = ResourceBundle.getBundle(hnd.getClass().getName());
-                    if ("".equals(cmd)) {
-                        msg += bundle.getString("help."+hndcmd)+"\n";
-                    } else if (cmd.equals(hndcmd)){
-                        msg += bundle.getString("help."+hndcmd+".specific")+"\n";
-                    }
-                } catch (MissingResourceException e) {
-                } catch (Exception e2) {
-                    logger.warn(e2);
-                }
-            }
-        }
-
-        ResourceBundle bundle = ResourceBundle.getBundle(Misc.class.getName());      
-        ReplacerEnvironment env = new ReplacerEnvironment();
-        env.add("cmd",cmd);
-        if ("".equals(msg))
-            return new Reply(200,conn.jprintf(Misc.class,"help.nohelp", env));
-        
-        if ("".equals(cmd)) {
-            response.addComment(bundle.getString("help.header"));
-            response.addComment(msg);
-            response.addComment(bundle.getString("help.footer"));
-        } else {
-            response.addComment(msg);
-        }
-        
-        return response;
+    private Reply doSITE_HELP(BaseFtpConnection conn) throws ReplyException {
+    	Map handlers = conn.getCommandManager().getCommandHandlersMap();
+    	if (conn.getRequest().hasArgument()) {
+    		String cmd = conn.getRequest().getArgument().toLowerCase();
+    		for (Iterator iter = handlers.keySet().iterator(); iter.hasNext();) {
+    			CommandHandler hnd = (CommandHandler) handlers.get(iter.next());
+    			if (conn.getCommandManager().getHandledCommands(hnd.getClass())
+    					.contains("SITE " + cmd)) {
+    				if (!conn.getGlobalContext().getConfig()
+    						.checkPathPermission(cmd, conn.getUserNull(),
+    								conn.getCurrentDirectory(), true)) {
+    					throw new ReplyException(
+    					"You do not have permissions for that command");
+    				}
+    				try {
+    					return new Reply(200, ResourceBundle.getBundle(
+    							hnd.getClass().getName()).getString(
+    									"help." + cmd + ".specific"));
+    				} catch (MissingResourceException e) {
+    					throw new ReplyException(cmd
+    							+ " does not have any help, bug your siteop", e);
+    				}
+    			}
+    		}
+    		throw new ReplyException("the " + cmd + " command does not exist");
+    	}
+    	// global list of commands with help
+    	Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
+    	try {
+    		response.addComment(ResourceBundle.getBundle(Misc.class.getName())
+    				.getString("help.header"));
+    	} catch (MissingResourceException e) {
+    		response.addComment("Help has no footer");
+    	}
+    	for (Iterator iter = handlers.keySet().iterator(); iter.hasNext();) {
+    		CommandHandler hnd = (CommandHandler) handlers.get(iter.next());
+    		List<String> handledCmds = conn.getCommandManager()
+			.getHandledCommands(hnd.getClass());
+    		
+    		for (String cmd : handledCmds) {
+    			try {
+    				cmd = cmd.substring("SITE ".length()).toLowerCase();
+    				if (!conn.getGlobalContext().getConfig()
+    						.checkPathPermission(cmd, conn.getUserNull(),
+    								conn.getCurrentDirectory(), true)) {
+    					continue;
+    				}
+    				try {
+    					response.addComment(ResourceBundle.getBundle(
+    							hnd.getClass().getName()).getString(
+    									"help." + cmd));
+    				} catch (MissingResourceException e) {
+    					response.addComment(cmd
+    							+ " does not have any help, bug your siteop");
+    				}
+    			} catch (java.lang.StringIndexOutOfBoundsException e) {
+    			}
+    		}
+    	}
+    	try {
+    		response.addComment(ResourceBundle.getBundle(Misc.class.getName())
+    				.getString("help.footer"));
+    	} catch (MissingResourceException e) {
+    		response.addComment("Help has no footer");
+    	}
+    	return response;
     }
 
     private Reply doSITE_VERS(BaseFtpConnection conn) {
@@ -211,7 +228,7 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
     }
     
     public Reply execute(BaseFtpConnection conn)
-        throws UnhandledCommandException {
+        throws ReplyException {
         String cmd = conn.getRequest().getCommand();
 
         if ("ABOR".equals(cmd)) {
