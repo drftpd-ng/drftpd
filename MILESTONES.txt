@@ -1,1 +1,2 @@
 Aug 05 2002 - First file uploaded to a slave running in the same JVM.
+May 2003 - Resumed development of drftpd

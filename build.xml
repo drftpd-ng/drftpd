@@ -1,22 +1,18 @@
 <?xml version="1.0"?>
-
-<project name="drftpd" basedir="." default="all">
+<project name="drftpd" basedir="." default="compile">
 
     <target name="all" depends="compile"/>
 
     <target name="init">
-        <!-- You can set up any variables you want used throughout the script here. -->
-        <!-- To use e.g. Jikes, uncomment this line. -->
-        <!-- (Or make the same change in Tools | Options | Ant Settings | Properties.) -->
-        <!-- <property name="build.compiler" value="jikes"/> -->
+        <property name="build.compiler" value="gcj"/>
         <!-- You might like to set up some overridable paths, etc.: -->
         <!-- <property name="mylib" value="../lib/mylib.jar"/> -->
         <property name="sourceDir" value="src/"/>
         <property name="outputDir" value="classes/"/>
 
 	<path id="classpath">
-    	<pathelement path="/usr/share/jdom/lib/jdom.jar"/>
-    	<pathelement path="/usr/share/log4j/lib/log4j-1.2.7.jar"/>
+	    <pathelement path="/usr/share/jdom/lib/jdom.jar"/>
+	    <pathelement path="/usr/share/log4j/lib/log4j-1.2.7.jar"/>
 	    <pathelement path="/usr/share/oro/lib/oro.jar"/>
 
 	    <fileset dir=".">
@@ -39,7 +35,8 @@
 	<src path="${sourceDir}"/>
 	<classpath refid="classpath"/>
     </javac>
-    <rmic base="${outputDir}" sourcebase="src" stubversion="1.2">
+    <!--sourcebase="src"-->
+    <rmic base="${outputDir}" stubversion="1.2">
 	<include name="**/*Impl.class"/>
 	<classpath refid="classpath"/>
     </rmic>
