@@ -1,3 +1,11 @@
+2004/08/24 Teflon <teflon114@@users.sourceforge.net>
+* Added MP3 ID3Tag support
+* Fixed bug where file xfertime would reset to 0 on daemon restart.
+* Fixed NullPointerException bug when mp3 file does not have an id3 tag
+* Rebuilt id3 support to no longer need yalil library. Put new MP3 classes into net.sf.drftpd
+* Made CWD message more customizable and added id3 info to it
+* Added Idle Kick IRC plugin
+
 2004/07/29 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Removed slaves.xml in favor of storing seperate slave config files in slaves/
 * You can no longer add/remove slaves through editing slaves.xml and issuing
