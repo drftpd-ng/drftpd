@@ -22,7 +22,7 @@ allow.multi.sfv=false
 #disallow files before sfv [true/false]
 sfvfirst.required=true
 
-#allow files w/o extensions even if stor.sfv.first.enabled=true [true/false]
+#allow files w/o extensions even if sfvfirst.required=true [true/false]
 sfvfirst.allownoext=true
 
 #allow these file extensions even if not in an sfv file
