@@ -54,7 +54,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.29 2004/03/01 00:21:08 mog Exp $
+ * @version $Id: UserManagment.java,v 1.30 2004/03/14 13:11:14 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -441,14 +441,18 @@ public class UserManagment implements CommandHandler {
 
 			int pos2 = argument.indexOf(' ', pos1 + 1);
 			if (pos2 == -1) {
-				return new FtpReply(
-					501,
-					conn.jprintf(
-						UserManagment.class.getName(),
-						"change.specify"));
+				//				return new FtpReply(
+				//					501,
+				//					conn.jprintf(
+				//						UserManagment.class.getName(),
+				//						"change.specify"));
+				command = argument.substring(pos1+1);
+				commandArgument = "";
+			} else {
+				command = argument.substring(pos1 + 1, pos2);
+				commandArgument = argument.substring(pos2 + 1);
 			}
-			command = argument.substring(pos1 + 1, pos2);
-			commandArgument = argument.substring(pos2 + 1);
+			
 			env.add("targetuser", myUser.getUsername());
 			if (conn.getUserNull().isGroupAdmin()) {
 				////// ratio //////
@@ -615,16 +619,23 @@ public class UserManagment implements CommandHandler {
 			} catch (NumberFormatException ex) {
 				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 			}
+		} else if ("created".equals(command)) {
+			if (!commandArgument.equals("")) {
+				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+			}
+			myUser.setCreated(System.currentTimeMillis());
+			return new FtpReply(
+				200,
+				conn.jprintf(
+					UserManagment.class,
+					"changecreated.success",
+					env));
 		} else {
 			FtpReply response2 =
 				(FtpReply) FtpReply.RESPONSE_501_SYNTAX_ERROR.clone();
 
 			response2.addComment(
-				conn.jprintf(UserManagment.class.getName(), "change.usage1"));
-			response2.addComment(
-				conn.jprintf(UserManagment.class.getName(), "change.usage2"));
-			response2.addComment(
-				conn.jprintf(UserManagment.class.getName(), "change.usage3"));
+				conn.jprintf(UserManagment.class.getName(), "change.usage"));
 			return response2;
 		}
 		try {

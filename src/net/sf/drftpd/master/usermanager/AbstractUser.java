@@ -41,7 +41,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.41 2004/02/26 13:56:50 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.42 2004/03/14 13:11:16 mog Exp $
  */
 public abstract class AbstractUser implements User {
 	private static final Logger logger = Logger.getLogger(AbstractUser.class);
@@ -488,102 +488,6 @@ public abstract class AbstractUser implements User {
 		return _uploadedMillisecondsWeek;
 	}
 
-	public void setUploadedFiles(int files) {
-		this.uploadedFiles = files;
-	}
-
-	public void setUploadedBytes(long bytes) {
-		this.uploadedBytes = bytes;
-	}
-
-	public void setUploadedSeconds(int millis) {
-		_uploadedMilliseconds = millis;
-	}
-
-	public void setUploadedFilesMonth(int files) {
-		this.uploadedFilesMonth = files;
-	}
-
-	public void setUploadedBytesMonth(long bytes) {
-		this.uploadedBytesMonth = bytes;
-	}
-
-	public void setUploadedSecondsMonth(int millis) {
-		_uploadedMillisecondsMonth = millis;
-	}
-
-	public void setUploadedFilesWeek(int files) {
-		this.uploadedFilesWeek = files;
-	}
-
-	public void setUploadedBytesWeek(long bytes) {
-		this.uploadedBytesWeek = bytes;
-	}
-
-	public void setUploadedSecondsWeek(int millis) {
-		_uploadedMillisecondsWeek = millis;
-	}
-
-	public void setUploadedFilesDay(int files) {
-		this.uploadedFilesDay = files;
-	}
-
-	public void setUploadedBytesDay(long bytes) {
-		this.uploadedBytesDay = bytes;
-	}
-
-	public void setUploadedSecondsDay(int millis) {
-		_uploadedMillisecondsDay = millis;
-	}
-
-	public void setDownloadedFiles(int files) {
-		this.downloadedFiles = files;
-	}
-
-	public void setDownloadedBytes(long bytes) {
-		this.downloadedBytes = bytes;
-	}
-
-	public void setDownloadedSeconds(int millis) {
-		_downloadedMilliseconds = millis;
-	}
-
-	public void setDownloadedFilesMonth(int files) {
-		this.downloadedFilesMonth = files;
-	}
-
-	public void setDownloadedBytesMonth(long bytes) {
-		this.downloadedBytesMonth = bytes;
-	}
-
-	public void setDownloadedSecondsMonth(int millis) {
-		_downloadedMillisecondsMonth = millis;
-	}
-
-	public void setDownloadedFilesWeek(int files) {
-		this.downloadedFilesWeek = files;
-	}
-
-	public void setDownloadedBytesWeek(long bytes) {
-		this.downloadedBytesWeek = bytes;
-	}
-
-	public void setDownloadedSecondsWeek(int millis) {
-		_downloadedMillisecondsWeek = millis;
-	}
-
-	public void setDownloadedFilesDay(int files) {
-		this.downloadedFilesDay = files;
-	}
-
-	public void setDownloadedBytesDay(long bytes) {
-		this.downloadedBytesDay = bytes;
-	}
-
-	public void setDownloadedSecondsDay(int millis) {
-		_downloadedMillisecondsDay = millis;
-	}
-
 	public String getUsername() {
 		return username;
 	}
@@ -728,6 +632,10 @@ public abstract class AbstractUser implements User {
 		this.comment = comment;
 	}
 
+	public void setCreated(long created) {
+		this.created = created;
+	}
+
 	public void setCredits(long credits) {
 		this.credits = credits;
 	}
@@ -744,6 +652,14 @@ public abstract class AbstractUser implements User {
 			} catch (NoSuchFieldException e) {
 			}
 		}
+	}
+
+	public void setDownloadedBytes(long bytes) {
+		this.downloadedBytes = bytes;
+	}
+
+	public void setDownloadedBytesDay(long bytes) {
+		this.downloadedBytesDay = bytes;
 	}
 
 	public void setDownloadedBytesForPeriod(int period, long bytes) {
@@ -764,6 +680,22 @@ public abstract class AbstractUser implements User {
 		throw new RuntimeException();
 	}
 
+	public void setDownloadedBytesMonth(long bytes) {
+		this.downloadedBytesMonth = bytes;
+	}
+
+	public void setDownloadedBytesWeek(long bytes) {
+		this.downloadedBytesWeek = bytes;
+	}
+
+	public void setDownloadedFiles(int files) {
+		this.downloadedFiles = files;
+	}
+
+	public void setDownloadedFilesDay(int files) {
+		this.downloadedFilesDay = files;
+	}
+
 	public void setDownloadedFilesForPeriod(int period, int files) {
 		switch (period) {
 			case Trial.PERIOD_DAILY :
@@ -780,6 +712,14 @@ public abstract class AbstractUser implements User {
 				return;
 		}
 		throw new RuntimeException();
+	}
+
+	public void setDownloadedFilesMonth(int files) {
+		this.downloadedFilesMonth = files;
+	}
+
+	public void setDownloadedFilesWeek(int files) {
+		this.downloadedFilesWeek = files;
 	}
 
 	public void setDownloadedMilliseconds(long millis) {
@@ -812,6 +752,22 @@ public abstract class AbstractUser implements User {
 	}
 
 	public void setDownloadedMillisecondsWeek(long millis) {
+		_downloadedMillisecondsWeek = millis;
+	}
+
+	public void setDownloadedSeconds(int millis) {
+		_downloadedMilliseconds = millis;
+	}
+
+	public void setDownloadedSecondsDay(int millis) {
+		_downloadedMillisecondsDay = millis;
+	}
+
+	public void setDownloadedSecondsMonth(int millis) {
+		_downloadedMillisecondsMonth = millis;
+	}
+
+	public void setDownloadedSecondsWeek(int millis) {
 		_downloadedMillisecondsWeek = millis;
 	}
 
@@ -875,6 +831,14 @@ public abstract class AbstractUser implements User {
 		this.timesNuked = nuked;
 	}
 
+	public void setUploadedBytes(long bytes) {
+		this.uploadedBytes = bytes;
+	}
+
+	public void setUploadedBytesDay(long bytes) {
+		this.uploadedBytesDay = bytes;
+	}
+
 	public void setUploadedBytesForPeriod(int period, long bytes) {
 		switch (period) {
 			case Trial.PERIOD_DAILY :
@@ -893,6 +857,22 @@ public abstract class AbstractUser implements User {
 		throw new RuntimeException();
 	}
 
+	public void setUploadedBytesMonth(long bytes) {
+		this.uploadedBytesMonth = bytes;
+	}
+
+	public void setUploadedBytesWeek(long bytes) {
+		this.uploadedBytesWeek = bytes;
+	}
+
+	public void setUploadedFiles(int files) {
+		this.uploadedFiles = files;
+	}
+
+	public void setUploadedFilesDay(int files) {
+		this.uploadedFilesDay = files;
+	}
+
 	public void setUploadedFilesForPeriod(int period, int files) {
 		switch (period) {
 			case Trial.PERIOD_DAILY :
@@ -909,6 +889,14 @@ public abstract class AbstractUser implements User {
 				return;
 		}
 		throw new RuntimeException();
+	}
+
+	public void setUploadedFilesMonth(int files) {
+		this.uploadedFilesMonth = files;
+	}
+
+	public void setUploadedFilesWeek(int files) {
+		this.uploadedFilesWeek = files;
 	}
 
 	public void setUploadedMilliseconds(long millis) {
@@ -942,6 +930,22 @@ public abstract class AbstractUser implements User {
 	}
 
 	public void setUploadedMillisecondsWeek(long millis) {
+		_uploadedMillisecondsWeek = millis;
+	}
+
+	public void setUploadedSeconds(int millis) {
+		_uploadedMilliseconds = millis;
+	}
+
+	public void setUploadedSecondsDay(int millis) {
+		_uploadedMillisecondsDay = millis;
+	}
+
+	public void setUploadedSecondsMonth(int millis) {
+		_uploadedMillisecondsMonth = millis;
+	}
+
+	public void setUploadedSecondsWeek(int millis) {
 		_uploadedMillisecondsWeek = millis;
 	}
 

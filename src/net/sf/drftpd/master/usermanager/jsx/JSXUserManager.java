@@ -42,7 +42,7 @@ import JSX.ObjIn;
 
 /**
  * @author mog
- * @version $Id: JSXUserManager.java,v 1.27 2004/02/23 01:14:38 mog Exp $
+ * @version $Id: JSXUserManager.java,v 1.28 2004/03/14 13:11:16 mog Exp $
  */
 public class JSXUserManager implements UserManager {
 	private ConnectionManager _connManager;
@@ -149,7 +149,7 @@ public class JSXUserManager implements UserManager {
 		Collection users = getAllUsers();
 		for (Iterator iter = users.iterator(); iter.hasNext();) {
 			JSXUser user = (JSXUser) iter.next();
-			if (!user.getGroupName().equals(group))
+			if (!user.isMemberOf(group))
 				iter.remove();
 		}
 		return users;

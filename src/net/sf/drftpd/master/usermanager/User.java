@@ -24,7 +24,7 @@ import net.sf.drftpd.ObjectExistsException;
 
 /**
  * @author mog
- * @version $Id: User.java,v 1.34 2004/02/10 00:03:09 mog Exp $
+ * @version $Id: User.java,v 1.35 2004/03/14 13:11:16 mog Exp $
  */
 public interface User {
 
@@ -52,6 +52,7 @@ public interface User {
 	 * @param user given password
 	 */
 	public long getCreated();
+
 	/**
 	 * Returns the credits.
 	 * @return long
@@ -68,6 +69,8 @@ public interface User {
 	public int getDownloadedFilesForPeriod(int i);
 	public int getDownloadedFilesMonth();
 	public int getDownloadedFilesWeek();
+	
+	public long getDownloadedMilliseconds();
 
 	public long getDownloadedMillisecondsForPeriod(int i);
 	public short getGroupLeechSlots();
@@ -190,43 +193,9 @@ public interface User {
 	 * @return int
 	 */
 	public int getUploadedFilesWeek();
-	
-	public long getDownloadedMilliseconds();
 	public long getUploadedMilliseconds();
 
 	public long getUploadedMillisecondsForPeriod(int i);
-	
-	public void setUploadedFiles(int files);
-	public void setUploadedBytes(long bytes);
-	public void setUploadedSeconds(int millis);
-		
-	public void setUploadedFilesMonth(int files);
-	public void setUploadedBytesMonth(long bytes);
-	public void setUploadedSecondsMonth(int millis);
-	
-	public void setUploadedFilesWeek(int files);
-	public void setUploadedBytesWeek(long bytes);
-	public void setUploadedSecondsWeek(int millis);
-	
-	public void setUploadedFilesDay(int files);
-	public void setUploadedBytesDay(long bytes);
-	public void setUploadedSecondsDay(int millis);
-
-	public void setDownloadedFiles(int files);
-	public void setDownloadedBytes(long bytes);
-	public void setDownloadedSeconds(int millis);
-
-	public void setDownloadedFilesMonth(int files);
-	public void setDownloadedBytesMonth(long bytes);
-	public void setDownloadedSecondsMonth(int millis);
-	
-	public void setDownloadedFilesWeek(int files);
-	public void setDownloadedBytesWeek(long bytes);
-	public void setDownloadedSecondsWeek(int millis);
-	
-	public void setDownloadedFilesDay(int files);
-	public void setDownloadedBytesDay(long bytes);
-	public void setDownloadedSecondsDay(int millis);
 
 	public String getUsername();
 	public long getWeeklyAllotment();
@@ -269,6 +238,7 @@ public interface User {
 		throws ObjectExistsException, UserFileException;
 
 	public void setComment(String comment);
+	public void setCreated(long created);
 	/**
 	 * Sets the credits.
 	 * @param credits The credits to set
@@ -279,10 +249,22 @@ public interface User {
 	 * @param deleted The deleted to set
 	 */
 	public void setDeleted(boolean deleted);
+	public void setDownloadedBytes(long bytes);
+	public void setDownloadedBytesDay(long bytes);
 
 	public void setDownloadedBytesForPeriod(int period, long bytes);
+	public void setDownloadedBytesMonth(long bytes);
+	public void setDownloadedBytesWeek(long bytes);
+
+	public void setDownloadedFiles(int files);
+	
+	public void setDownloadedFilesDay(int files);
 
 	public void setDownloadedFilesForPeriod(int period, int files);
+
+	public void setDownloadedFilesMonth(int files);
+	
+	public void setDownloadedFilesWeek(int files);
 
 	public void setDownloadedMilliseconds(long millis);
 	public void setDownloadedMillisecondsDay(long millis);
@@ -290,6 +272,10 @@ public interface User {
 	public void setDownloadedMillisecondsForPeriod(int i, long millis);
 	public void setDownloadedMillisecondsMonth(long millis);
 	public void setDownloadedMillisecondsWeek(long millis);
+	public void setDownloadedSeconds(int millis);
+	public void setDownloadedSecondsDay(int millis);
+	public void setDownloadedSecondsMonth(int millis);
+	public void setDownloadedSecondsWeek(int millis);
 	public void setGroup(String group);
 	public void setGroupLeechSlots(short s);
 
@@ -353,9 +339,21 @@ public interface User {
 
 	public void setTagline(String tagline);
 	public void setTimesNuked(int nuked);
+	public void setUploadedBytes(long bytes);
+	public void setUploadedBytesDay(long bytes);
 	public void setUploadedBytesForPeriod(int i, long l);
+	public void setUploadedBytesMonth(long bytes);
+	public void setUploadedBytesWeek(long bytes);
+	
+	public void setUploadedFiles(int files);
+	
+	public void setUploadedFilesDay(int files);
 
 	public void setUploadedFilesForPeriod(int period, int files);
+		
+	public void setUploadedFilesMonth(int files);
+	
+	public void setUploadedFilesWeek(int files);
 
 	public void setUploadedMilliseconds(long millis);
 	public void setUploadedMillisecondsDay(long millis);
@@ -363,6 +361,10 @@ public interface User {
 	public void setUploadedMillisecondsForPeriod(int i, long millis);
 	public void setUploadedMillisecondsMonth(long millis);
 	public void setUploadedMillisecondsWeek(long millis);
+	public void setUploadedSeconds(int millis);
+	public void setUploadedSecondsDay(int millis);
+	public void setUploadedSecondsMonth(int millis);
+	public void setUploadedSecondsWeek(int millis);
 
 	public void setWeeklyAllotment(long weeklyAllotment);
 
