@@ -1,16 +1,16 @@
 /*
  * This file is part of DrFTPD, Distributed FTP Daemon.
- * 
+ *
  * DrFTPD is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * DrFTPD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -20,42 +20,41 @@ package net.sf.drftpd.event;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.usermanager.User;
 
+
 /**
  * Dispatched for LOGIN, LOGOUT and RELOAD.
- * 
+ *
  * Subclassed for events that are paired with a user object.
- * 
+ *
  * @author mog
- * @version $Id: ConnectionEvent.java,v 1.1 2004/07/02 19:58:49 mog Exp $
+ * @version $Id: ConnectionEvent.java,v 1.2 2004/08/03 20:13:54 zubov Exp $
  */
 public class ConnectionEvent extends Event {
-	private transient BaseFtpConnection _conn;
-	public ConnectionEvent(BaseFtpConnection conn, String command) {
-		this(conn, command, System.currentTimeMillis());
-	}
-	public ConnectionEvent(BaseFtpConnection conn, String command, long time) {
-		super(command, time);
-		_conn = conn;
-	}
+    private transient BaseFtpConnection _conn;
 
-	public BaseFtpConnection getConn() {
-		return _conn;
-	}
+    public ConnectionEvent(BaseFtpConnection conn, String command) {
+        this(conn, command, System.currentTimeMillis());
+    }
 
-	public User getUser() {
-		return _conn.getUserNull();
-	}
+    public ConnectionEvent(BaseFtpConnection conn, String command, long time) {
+        super(command, time);
+        _conn = conn;
+    }
 
-	public void setConn(BaseFtpConnection conn) {
-		_conn = conn;
-	}
+    public BaseFtpConnection getConn() {
+        return _conn;
+    }
 
-	public String toString() {
-		return getClass().getName()
-			+ "[user="
-			+ getUser()
-			+ ",cmd="
-			+ getCommand()
-			+ "]";
-	}
+    public User getUser() {
+        return _conn.getUserNull();
+    }
+
+    public void setConn(BaseFtpConnection conn) {
+        _conn = conn;
+    }
+
+    public String toString() {
+        return getClass().getName() + "[user=" + getUser() + ",cmd=" +
+        getCommand() + "]";
+    }
 }

@@ -1,37 +1,21 @@
 /*
  * This file is part of DrFTPD, Distributed FTP Daemon.
- * 
+ *
  * DrFTPD is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * DrFTPD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package net.sf.drftpd.master.command.plugins;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.net.Socket;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -44,381 +28,393 @@ import net.sf.drftpd.remotefile.RemoteFileInterface;
 import net.sf.drftpd.util.ListUtils;
 
 import org.apache.log4j.Logger;
+
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
+
+import java.net.Socket;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.List;
+import java.util.StringTokenizer;
+
 
 /**
  * @author mog
  *
- * @version $Id: LIST.java,v 1.21 2004/07/12 20:37:26 mog Exp $
+ * @version $Id: LIST.java,v 1.22 2004/08/03 20:13:57 zubov Exp $
  */
 public class LIST implements CommandHandlerFactory, CommandHandler {
+    private final static DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
+    private final static DateFormat BEFORE_SIX = new SimpleDateFormat("HH:mm");
+    private final static String DELIM = " ";
+    private final static DateFormat FULL = new SimpleDateFormat("HH:mm:ss yyyy");
+    private static final Logger logger = Logger.getLogger(LIST.class);
+    private final static String[] MONTHS = {
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct",
+            "Nov", "Dec"
+        };
+    private final static String NEWLINE = "\r\n";
 
-	private final static DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
+    /**
+     * Get size
+     * @deprecated
+     */
+    private static String getLength(RemoteFileInterface fl) {
+        String initStr = "             ";
+        String szStr = Long.toString(fl.length());
 
-	private final static DateFormat BEFORE_SIX = new SimpleDateFormat("HH:mm");
+        if (szStr.length() > initStr.length()) {
+            return szStr;
+        }
 
-	private final static String DELIM = " ";
+        return initStr.substring(0, initStr.length() - szStr.length()) + szStr;
+    }
 
-	private final static DateFormat FULL =
-		new SimpleDateFormat("HH:mm:ss yyyy");
-	private static final Logger logger = Logger.getLogger(LIST.class);
+    /**
+     * Get file name.
+     */
+    private static String getName(LinkedRemoteFileInterface fl) {
+        String flName = fl.getName();
 
-	private final static String[] MONTHS =
-		{
-			"Jan",
-			"Feb",
-			"Mar",
-			"Apr",
-			"May",
-			"Jun",
-			"Jul",
-			"Aug",
-			"Sep",
-			"Oct",
-			"Nov",
-			"Dec" };
+        int lastIndex = flName.lastIndexOf("/");
 
-	private final static String NEWLINE = "\r\n";
+        if (lastIndex == -1) {
+            return flName;
+        } else {
+            return flName.substring(lastIndex + 1);
+        }
+    }
 
-	/**
-	 * Get size
-	 * @deprecated
-	 */
-	private static String getLength(RemoteFileInterface fl) {
-		String initStr = "             ";
-		String szStr = Long.toString(fl.length());
-		if (szStr.length() > initStr.length()) {
-			return szStr;
-		}
-		return initStr.substring(0, initStr.length() - szStr.length()) + szStr;
-	}
+    /**
+     * Get permission string.
+     */
+    private static String getPermission(RemoteFileInterface fl) {
+        StringBuffer sb = new StringBuffer(13);
+        sb.append(fl.isDirectory() ? 'd' : '-');
 
-	/**
-	 * Get file name.
-	 */
-	private static String getName(LinkedRemoteFileInterface fl) {
-		String flName = fl.getName();
+        sb.append("rw");
+        sb.append(fl.isDirectory() ? "x" : "-");
 
-		int lastIndex = flName.lastIndexOf("/");
-		if (lastIndex == -1) {
-			return flName;
-		} else {
-			return flName.substring(lastIndex + 1);
-		}
-	}
+        sb.append("rw");
+        sb.append(fl.isDirectory() ? "x" : "-");
 
-	/**
-	 * Get permission string.
-	 */
-	private static String getPermission(RemoteFileInterface fl) {
+        sb.append("rw");
+        sb.append(fl.isDirectory() ? "x" : "-");
 
-		StringBuffer sb = new StringBuffer(13);
-		sb.append(fl.isDirectory() ? 'd' : '-');
+        return sb.toString();
+    }
 
-		sb.append("rw");
-		sb.append(fl.isDirectory() ? "x" : "-");
+    public static String getUnixDate(long date, boolean fulldate) {
+        Date date1 = new Date(date);
+        long dateTime = date1.getTime();
 
-		sb.append("rw");
-		sb.append(fl.isDirectory() ? "x" : "-");
+        if (dateTime < 0) {
+            return "------------";
+        }
 
-		sb.append("rw");
-		sb.append(fl.isDirectory() ? "x" : "-");
+        Calendar cal = new GregorianCalendar();
+        cal.setTime(date1);
 
-		return sb.toString();
-	}
+        String firstPart = MONTHS[cal.get(Calendar.MONTH)] + ' ';
 
-	public static String getUnixDate(long date, boolean fulldate) {
-		Date date1 = new Date(date);
-		long dateTime = date1.getTime();
-		if (dateTime < 0) {
-			return "------------";
-		}
+        String dateStr = String.valueOf(cal.get(Calendar.DATE));
 
-		Calendar cal = new GregorianCalendar();
-		cal.setTime(date1);
-		String firstPart = MONTHS[cal.get(Calendar.MONTH)] + ' ';
+        if (dateStr.length() == 1) {
+            dateStr = ' ' + dateStr;
+        }
 
-		String dateStr = String.valueOf(cal.get(Calendar.DATE));
-		if (dateStr.length() == 1) {
-			dateStr = ' ' + dateStr;
-		}
-		firstPart += dateStr + ' ';
+        firstPart += (dateStr + ' ');
 
-		long nowTime = System.currentTimeMillis();
-		if (fulldate) {
-			return firstPart + FULL.format(date1);
-		} else if (
-			Math.abs(nowTime - dateTime) > 183L * 24L * 60L * 60L * 1000L) {
-			return firstPart + AFTER_SIX.format(date1);
-		} else {
-			return firstPart + BEFORE_SIX.format(date1);
-		}
-	}
+        long nowTime = System.currentTimeMillis();
 
-	/**
-	 * Get each directory line.
-	 */
-	private static void printLine(
-		RemoteFileInterface fl,
-		Writer out,
-		boolean fulldate)
-		throws IOException {
-		StringBuffer line = new StringBuffer();
-		if (fl instanceof LinkedRemoteFileInterface
-			&& !((LinkedRemoteFileInterface) fl).isAvailable()) {
-			line.append("----------");
-		} else {
-			line.append(getPermission(fl));
-		}
-		line.append(DELIM);
-		line.append((fl.isDirectory() ? "3" : "1"));
-		line.append(DELIM);
-		line.append(ListUtils.padToLength(fl.getUsername(), 8));
-		line.append(DELIM);
-		line.append(ListUtils.padToLength(fl.getGroupname(), 8));
-		line.append(DELIM);
-		line.append(getLength(fl));
-		line.append(DELIM);
-		line.append(getUnixDate(fl.lastModified(), fulldate));
-		line.append(DELIM);
-		line.append(fl.getName());
-		line.append(NEWLINE);
-		out.write(line.toString());
-	}
+        if (fulldate) {
+            return firstPart + FULL.format(date1);
+        } else if (Math.abs(nowTime - dateTime) > (183L * 24L * 60L * 60L * 1000L)) {
+            return firstPart + AFTER_SIX.format(date1);
+        } else {
+            return firstPart + BEFORE_SIX.format(date1);
+        }
+    }
 
-	/**
-	 * Print file list. Detail listing.
-	 * <pre>
-	 *   -a : display all (including hidden files)
-	 * </pre>
-	 * @return true if success
-	 */
-	private static void printList(
-		Collection files,
-		Writer os,
-		boolean fulldate)
-		throws IOException {
-		//out = new BufferedWriter(out);
-		os.write("total 0" + NEWLINE);
+    /**
+     * Get each directory line.
+     */
+    private static void printLine(RemoteFileInterface fl, Writer out,
+        boolean fulldate) throws IOException {
+        StringBuffer line = new StringBuffer();
 
-		// print file list
-		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			RemoteFileInterface file = (RemoteFileInterface) iter.next();
-			LIST.printLine(file, os, fulldate);
-		}
-	}
+        if (fl instanceof LinkedRemoteFileInterface &&
+                !((LinkedRemoteFileInterface) fl).isAvailable()) {
+            line.append("----------");
+        } else {
+            line.append(getPermission(fl));
+        }
 
-	/**
-	 * Print file list.
-	 * <pre>
-	 *   -l : detail listing
-	 *   -a : display all (including hidden files)
-	 * </pre>
-	 * @return true if success
-	 */
-	private static void printNList(
-		Collection fileList,
-		boolean bDetail,
-		Writer out)
-		throws IOException {
+        line.append(DELIM);
+        line.append((fl.isDirectory() ? "3" : "1"));
+        line.append(DELIM);
+        line.append(ListUtils.padToLength(fl.getUsername(), 8));
+        line.append(DELIM);
+        line.append(ListUtils.padToLength(fl.getGroupname(), 8));
+        line.append(DELIM);
+        line.append(getLength(fl));
+        line.append(DELIM);
+        line.append(getUnixDate(fl.lastModified(), fulldate));
+        line.append(DELIM);
+        line.append(fl.getName());
+        line.append(NEWLINE);
+        out.write(line.toString());
+    }
 
-		for (Iterator iter = fileList.iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			if (bDetail) {
-				printLine(file, out, false);
-			} else {
-				out.write(file.getName() + NEWLINE);
-			}
-		}
-	}
+    /**
+     * Print file list. Detail listing.
+     * <pre>
+     *   -a : display all (including hidden files)
+     * </pre>
+     * @return true if success
+     */
+    private static void printList(Collection files, Writer os, boolean fulldate)
+        throws IOException {
+        //out = new BufferedWriter(out);
+        os.write("total 0" + NEWLINE);
 
-	/**
-	 * <code>NLST [&lt;SP&gt; &lt;pathname&gt;] &lt;CRLF&gt;</code><br>
-	 *
-	 * This command causes a directory listing to be sent from
-	 * server to user site.  The pathname should specify a
-	 * directory or other system-specific file group descriptor; a
-	 * null argument implies the current directory.  The server
-	 * will return a stream of names of files and no other
-	 * information.
-	 *
-	 *
-	 * <code>LIST [&lt;SP&gt; &lt;pathname&gt;] &lt;CRLF&gt;</code><br>
-	 *
-	 * This command causes a list to be sent from the server to the
-	 * passive DTP.  If the pathname specifies a directory or other
-	 * group of files, the server should transfer a list of files
-	 * in the specified directory.  If the pathname specifies a
-	 * file then the server should send current information on the
-	 * file.  A null argument implies the user's current working or
-	 * default directory.  The data transfer is over the data
-	 * connection
-	 * 
-	 *                LIST
-	 *                   125, 150
-	 *                      226, 250
-	 *                      425, 426, 451
-	 *                   450
-	 *                   500, 501, 502, 421, 530
-	 */
-	public FtpReply execute(BaseFtpConnection conn) {
-		FtpRequest request = conn.getRequest();
+        // print file list
+        for (Iterator iter = files.iterator(); iter.hasNext();) {
+            RemoteFileInterface file = (RemoteFileInterface) iter.next();
+            LIST.printLine(file, os, fulldate);
+        }
+    }
 
-		String directoryName = null;
-		String options = "";
-		//String pattern = "*";
+    /**
+     * Print file list.
+     * <pre>
+     *   -l : detail listing
+     *   -a : display all (including hidden files)
+     * </pre>
+     * @return true if success
+     */
+    private static void printNList(Collection fileList, boolean bDetail,
+        Writer out) throws IOException {
+        for (Iterator iter = fileList.iterator(); iter.hasNext();) {
+            LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
 
-		// get options, directory name and pattern
-		//argument == null if there was no argument for LIST
-		if (request.hasArgument()) {
-			//argument = argument.trim();
-			StringBuffer optionsSb = new StringBuffer(4);
-			StringTokenizer st =
-				new StringTokenizer(request.getArgument(), " ");
-			while (st.hasMoreTokens()) {
-				String token = st.nextToken();
-				if (token.charAt(0) == '-') {
-					if (token.length() > 1) {
-						optionsSb.append(token.substring(1));
-					}
-				} else {
-					directoryName = token;
-				}
-			}
-			options = optionsSb.toString();
-		}
+            if (bDetail) {
+                printLine(file, out, false);
+            } else {
+                out.write(file.getName() + NEWLINE);
+            }
+        }
+    }
 
-		// check options
-		//		boolean allOption = options.indexOf('a') != -1;
-		boolean fulldate = options.indexOf('T') != -1;
-		boolean detailOption =
-			request.getCommand().equals("LIST")
-				|| request.getCommand().equals("STAT")
-				|| options.indexOf('l') != -1;
-		//		boolean directoryOption = options.indexOf("d") != -1;
+    /**
+     * <code>NLST [&lt;SP&gt; &lt;pathname&gt;] &lt;CRLF&gt;</code><br>
+     *
+     * This command causes a directory listing to be sent from
+     * server to user site.  The pathname should specify a
+     * directory or other system-specific file group descriptor; a
+     * null argument implies the current directory.  The server
+     * will return a stream of names of files and no other
+     * information.
+     *
+     *
+     * <code>LIST [&lt;SP&gt; &lt;pathname&gt;] &lt;CRLF&gt;</code><br>
+     *
+     * This command causes a list to be sent from the server to the
+     * passive DTP.  If the pathname specifies a directory or other
+     * group of files, the server should transfer a list of files
+     * in the specified directory.  If the pathname specifies a
+     * file then the server should send current information on the
+     * file.  A null argument implies the user's current working or
+     * default directory.  The data transfer is over the data
+     * connection
+     *
+     *                LIST
+     *                   125, 150
+     *                      226, 250
+     *                      425, 426, 451
+     *                   450
+     *                   500, 501, 502, 421, 530
+     */
+    public FtpReply execute(BaseFtpConnection conn) {
+        FtpRequest request = conn.getRequest();
 
-		DataConnectionHandler dataconn = null;
-		if (!request.getCommand().equals("STAT")) {
-			dataconn = conn.getDataConnectionHandler();
-			if (!dataconn.isPasv() && !dataconn.isPort()) {
-				return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
-			}
-		}
+        String directoryName = null;
+        String options = "";
 
-		LinkedRemoteFileInterface directoryFile;
-		if (directoryName != null) {
-			try {
-				directoryFile =
-					conn.getCurrentDirectory().lookupFile(directoryName);
-			} catch (FileNotFoundException ex) {
-				return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
-			}
-			if (!conn.getConnectionManager().getGlobalContext().getConfig()
-				.checkPrivPath(conn.getUserNull(), directoryFile)) {
-				return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
-			}
-		} else {
-			directoryFile = conn.getCurrentDirectory();
-		}
+        //String pattern = "*";
+        // get options, directory name and pattern
+        //argument == null if there was no argument for LIST
+        if (request.hasArgument()) {
+            //argument = argument.trim();
+            StringBuffer optionsSb = new StringBuffer(4);
+            StringTokenizer st = new StringTokenizer(request.getArgument(), " ");
 
-		PrintWriter out = conn.getControlWriter();
-		Socket dataSocket = null;
-		Writer os;
+            while (st.hasMoreTokens()) {
+                String token = st.nextToken();
 
-		if (request.getCommand().equals("STAT")) {
-			os = out;
-			out.write(
-				"213- Status of " + request.getArgument() + ":" + NEWLINE);
-		} else {
-			if (!dataconn.isEncryptedDataChannel()
-				&& conn.getConnectionManager().getGlobalContext().getConfig().checkDenyDirUnencrypted(conn.getUserNull())) {
-				return new FtpReply(550, "Secure Listing Required");
-			}
-			out.write(FtpReply.RESPONSE_150_OK);
-			out.flush();
-			try {
-				dataSocket = dataconn.getDataSocket(conn.getSocketFactory());
-				os =
-					new PrintWriter(
-						new OutputStreamWriter(dataSocket.getOutputStream()));
-				//out2 = dataSocket.getChannel();
-			} catch (IOException ex) {
-				logger.warn("from master", ex);
-				return new FtpReply(425, ex.getMessage());
-			}
-		}
+                if (token.charAt(0) == '-') {
+                    if (token.length() > 1) {
+                        optionsSb.append(token.substring(1));
+                    }
+                } else {
+                    directoryName = token;
+                }
+            }
 
-		////////////////
-		List listFiles = ListUtils.list(directoryFile, conn);
-		////////////////
+            options = optionsSb.toString();
+        }
 
-		try {
-			if (request.getCommand().equals("LIST")
-				|| request.getCommand().equals("STAT")) {
-				printList(listFiles, os, fulldate);
-			} else if (request.getCommand().equals("NLST")) {
-				printNList(listFiles, detailOption, os);
-			}
+        // check options
+        //		boolean allOption = options.indexOf('a') != -1;
+        boolean fulldate = options.indexOf('T') != -1;
+        boolean detailOption = request.getCommand().equals("LIST") ||
+            request.getCommand().equals("STAT") ||
+            (options.indexOf('l') != -1);
 
-			FtpReply response =
-				(FtpReply) FtpReply
-					.RESPONSE_226_CLOSING_DATA_CONNECTION
-					.clone();
+        //		boolean directoryOption = options.indexOf("d") != -1;
+        DataConnectionHandler dataconn = null;
 
-			try {
-				if (!request.getCommand().equals("STAT")) {
-					os.close();
-					dataSocket.close();
-					response.addComment(conn.status());
-					return response;
-				} else {
-					return new FtpReply(213, "End of Status");
-				}
-			} catch (IOException ioe) {
-				logger.error("", ioe);
-				return new FtpReply(450, ioe.getMessage());
-			}
+        if (!request.getCommand().equals("STAT")) {
+            dataconn = conn.getDataConnectionHandler();
 
-		} catch (IOException ex) {
-			logger.warn("from master", ex);
-			return new FtpReply(450, ex.getMessage());
-		}
+            if (!dataconn.isPasv() && !dataconn.isPort()) {
+                return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
+            }
+        }
 
-		//redo connection handling
-		//conn.reset();
-	}
-	public String[] getFeatReplies() {
-		return null;
-	}
+        LinkedRemoteFileInterface directoryFile;
 
-	/**
-	 * <code>STAT [&lt;SP&gt; &lt;pathname&gt;] &lt;CRLF&gt;</code><br>
-	 *
-	 * This command shall cause a status response to be sent over
-	 * the control connection in the form of a reply.
-	 */
-	//	public void doSTAT(FtpRequest request, PrintWriter out) {
-	//		reset();
-	//		if (request.hasArgument()) {
-	//			doLIST(request, out);
-	//		} else {
-	//			out.print(FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM);
-	//		}
-	//		return;
-	//	}
+        if (directoryName != null) {
+            try {
+                directoryFile = conn.getCurrentDirectory().lookupFile(directoryName);
+            } catch (FileNotFoundException ex) {
+                return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+            }
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.command.CommandHandler#initialize(net.sf.drftpd.master.BaseFtpConnection)
-	 */
-	public CommandHandler initialize(
-		BaseFtpConnection conn,
-		CommandManager initializer) {
-		return this;
-	}
+            if (!conn.getConnectionManager().getGlobalContext().getConfig()
+                         .checkPrivPath(conn.getUserNull(), directoryFile)) {
+                return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+            }
+        } else {
+            directoryFile = conn.getCurrentDirectory();
+        }
 
-	public void load(CommandManagerFactory initializer) {
-	}
-	public void unload() {
-	}
+        PrintWriter out = conn.getControlWriter();
+        Socket dataSocket = null;
+        Writer os;
+
+        if (request.getCommand().equals("STAT")) {
+            os = out;
+            out.write("213- Status of " + request.getArgument() + ":" +
+                NEWLINE);
+        } else {
+            if (!dataconn.isEncryptedDataChannel() &&
+                    conn.getConnectionManager().getGlobalContext().getConfig()
+                            .checkDenyDirUnencrypted(conn.getUserNull())) {
+                return new FtpReply(550, "Secure Listing Required");
+            }
+
+            out.write(FtpReply.RESPONSE_150_OK);
+            out.flush();
+
+            try {
+                dataSocket = dataconn.getDataSocket(conn.getSocketFactory());
+                os = new PrintWriter(new OutputStreamWriter(
+                            dataSocket.getOutputStream()));
+
+                //out2 = dataSocket.getChannel();
+            } catch (IOException ex) {
+                logger.warn("from master", ex);
+
+                return new FtpReply(425, ex.getMessage());
+            }
+        }
+
+        ////////////////
+        List listFiles = ListUtils.list(directoryFile, conn);
+
+        ////////////////
+        try {
+            if (request.getCommand().equals("LIST") ||
+                    request.getCommand().equals("STAT")) {
+                printList(listFiles, os, fulldate);
+            } else if (request.getCommand().equals("NLST")) {
+                printNList(listFiles, detailOption, os);
+            }
+
+            FtpReply response = (FtpReply) FtpReply.RESPONSE_226_CLOSING_DATA_CONNECTION.clone();
+
+            try {
+                if (!request.getCommand().equals("STAT")) {
+                    os.close();
+                    dataSocket.close();
+                    response.addComment(conn.status());
+
+                    return response;
+                } else {
+                    return new FtpReply(213, "End of Status");
+                }
+            } catch (IOException ioe) {
+                logger.error("", ioe);
+
+                return new FtpReply(450, ioe.getMessage());
+            }
+        } catch (IOException ex) {
+            logger.warn("from master", ex);
+
+            return new FtpReply(450, ex.getMessage());
+        }
+
+        //redo connection handling
+        //conn.reset();
+    }
+
+    public String[] getFeatReplies() {
+        return null;
+    }
+
+    /**
+     * <code>STAT [&lt;SP&gt; &lt;pathname&gt;] &lt;CRLF&gt;</code><br>
+     *
+     * This command shall cause a status response to be sent over
+     * the control connection in the form of a reply.
+     */
+
+    //	public void doSTAT(FtpRequest request, PrintWriter out) {
+    //		reset();
+    //		if (request.hasArgument()) {
+    //			doLIST(request, out);
+    //		} else {
+    //			out.print(FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM);
+    //		}
+    //		return;
+    //	}
+
+    /* (non-Javadoc)
+     * @see net.sf.drftpd.master.command.CommandHandler#initialize(net.sf.drftpd.master.BaseFtpConnection)
+     */
+    public CommandHandler initialize(BaseFtpConnection conn,
+        CommandManager initializer) {
+        return this;
+    }
+
+    public void load(CommandManagerFactory initializer) {
+    }
+
+    public void unload() {
+    }
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- $Id: build.xml,v 1.42 2004/07/02 19:58:47 mog Exp $ -->
+<!-- $Id: build.xml,v 1.43 2004/08/03 20:13:52 zubov Exp $ -->
 <project name="drftpd" basedir="." default="compile">
 
   <target name="all" depends="compile"/>
@@ -13,6 +13,22 @@
 	    <include name="lib/*.jar"/>
 	  </fileset>
     </path>
+  </target>
+
+  <target name="format" depends="init">
+    <taskdef name="jalopy" classname="de.hunsicker.jalopy.plugin.ant.AntPlugin">
+      <classpath>
+        <fileset dir="jalopy/lib">
+          <include name="*.jar" />
+        </fileset>
+      </classpath>
+    </taskdef>
+    <jalopy fileformat="unix"
+      classpathref="classpath">
+      <fileset dir="${sourceDir}">
+        <include name="**/*.java" />
+      </fileset>
+    </jalopy>
   </target>
 
   <target name="clean" depends="init">

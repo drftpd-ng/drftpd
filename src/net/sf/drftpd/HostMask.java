@@ -1,84 +1,94 @@
 /*
  * This file is part of DrFTPD, Distributed FTP Daemon.
- * 
+ *
  * DrFTPD is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * DrFTPD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package net.sf.drftpd;
 
-import java.net.InetAddress;
-
 import org.apache.log4j.Logger;
+
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Matcher;
 
+import java.net.InetAddress;
+
+
 /**
  * @author mog
- * @version $Id: HostMask.java,v 1.9 2004/05/31 12:36:31 mog Exp $
+ * @version $Id: HostMask.java,v 1.10 2004/08/03 20:13:54 zubov Exp $
  */
 public class HostMask {
-	private static final Logger logger = Logger.getLogger(HostMask.class);
-	private String _hostMask;
-	private String _identMask;
+    private static final Logger logger = Logger.getLogger(HostMask.class);
+    private String _hostMask;
+    private String _identMask;
 
-	public HostMask(String string) {
-		int pos = string.indexOf('@');
-		if (pos == -1) {
-			_identMask = null;
-			_hostMask = string;
-		} else {
-			_identMask = string.substring(0, pos);
-			_hostMask = string.substring(pos + 1);
-		}
-	}
+    public HostMask(String string) {
+        int pos = string.indexOf('@');
 
-	public String getHostMask() {
-		return _hostMask;
-	}
+        if (pos == -1) {
+            _identMask = null;
+            _hostMask = string;
+        } else {
+            _identMask = string.substring(0, pos);
+            _hostMask = string.substring(pos + 1);
+        }
+    }
 
-	public String getIdentMask() {
-		return _identMask;
-	}
+    public String getHostMask() {
+        return _hostMask;
+    }
 
-	/**
-	 * Is ident used?
-	 * @return false is ident mask equals "*"
-	 */
-	public boolean isIdentMaskSignificant() {
-		return _identMask != null && !_identMask.equals("*");
-	}
+    public String getIdentMask() {
+        return _identMask;
+    }
 
-	public boolean matches(String ident, InetAddress address) {
-		if(ident == null) ident = "";
-		Perl5Matcher m = new Perl5Matcher();
+    /**
+     * Is ident used?
+     * @return false is ident mask equals "*"
+     */
+    public boolean isIdentMaskSignificant() {
+        return (_identMask != null) && !_identMask.equals("*");
+    }
 
-		GlobCompiler c = new GlobCompiler();
-		try {
-			if (!isIdentMaskSignificant()
-				|| m.matches(ident, c.compile(getIdentMask()))) {
-				Pattern p = c.compile(getHostMask());
-				if (m.matches(address.getHostAddress(), p)
-					|| m.matches(address.getHostName(), p)) {
-					return true;
-				}
-			}
-			return false;
-		} catch (MalformedPatternException ex) {
-			logger.warn("", ex);
-			return false;
-		}
-	}
+    public boolean matches(String ident, InetAddress address) {
+        if (ident == null) {
+            ident = "";
+        }
+
+        Perl5Matcher m = new Perl5Matcher();
+
+        GlobCompiler c = new GlobCompiler();
+
+        try {
+            if (!isIdentMaskSignificant() ||
+                    m.matches(ident, c.compile(getIdentMask()))) {
+                Pattern p = c.compile(getHostMask());
+
+                if (m.matches(address.getHostAddress(), p) ||
+                        m.matches(address.getHostName(), p)) {
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (MalformedPatternException ex) {
+            logger.warn("", ex);
+
+            return false;
+        }
+    }
 }

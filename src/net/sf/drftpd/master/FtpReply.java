@@ -1,222 +1,236 @@
 /*
  * This file is part of DrFTPD, Distributed FTP Daemon.
- * 
+ *
  * DrFTPD is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * DrFTPD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package net.sf.drftpd.master;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Vector;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+
+import java.util.Iterator;
+import java.util.Vector;
+
+
 /**
  * @author mog
- * @version $Id: FtpReply.java,v 1.12 2004/07/30 17:15:26 teflon114 Exp $
+ * @version $Id: FtpReply.java,v 1.13 2004/08/03 20:13:56 zubov Exp $
  */
 public class FtpReply implements Cloneable {
-	private static final Logger logger =
-		Logger.getLogger(FtpReply.class.getName());
+    private static final Logger logger = Logger.getLogger(FtpReply.class.getName());
 
-	/** 150 File status okay; about to open data connection. */
-	public static final String RESPONSE_150_OK =
-		"150 File status okay; about to open data connection.\r\n";
+    /** 150 File status okay; about to open data connection. */
+    public static final String RESPONSE_150_OK = "150 File status okay; about to open data connection.\r\n";
 
-	/** 200 Command okay */
-	public static final FtpReply RESPONSE_200_COMMAND_OK =
-		new FtpReply(200, "Command okay");
+    /** 200 Command okay */
+    public static final FtpReply RESPONSE_200_COMMAND_OK = new FtpReply(200,
+            "Command okay");
 
-	/** 202 Command not implemented, superfluous at this site. */
-	public static final FtpReply RESPONSE_202_COMMAND_NOT_IMPLEMENTED =
-		new FtpReply(
-			202,
-			"Command not implemented, superfluous at this site.");
+    /** 202 Command not implemented, superfluous at this site. */
+    public static final FtpReply RESPONSE_202_COMMAND_NOT_IMPLEMENTED = new FtpReply(202,
+            "Command not implemented, superfluous at this site.");
 
-	/** 215 NAME system type. */
-	public static final FtpReply RESPONSE_215_SYSTEM_TYPE =
-		new FtpReply(215, "UNIX system type.");
+    /** 215 NAME system type. */
+    public static final FtpReply RESPONSE_215_SYSTEM_TYPE = new FtpReply(215,
+            "UNIX system type.");
 
-	/** 221 Service closing control connection. */
-	public static final FtpReply RESPONSE_221_SERVICE_CLOSING =
-		new FtpReply(221, "Service closing control connection.");
+    /** 221 Service closing control connection. */
+    public static final FtpReply RESPONSE_221_SERVICE_CLOSING = new FtpReply(221,
+            "Service closing control connection.");
 
-	/** 226 Closing data connection */
-	public static final FtpReply RESPONSE_226_CLOSING_DATA_CONNECTION =
-		new FtpReply(226, "Closing data connection");
+    /** 226 Closing data connection */
+    public static final FtpReply RESPONSE_226_CLOSING_DATA_CONNECTION = new FtpReply(226,
+            "Closing data connection");
 
-	/** 230 User logged in, proceed. */
-	public static final FtpReply RESPONSE_230_USER_LOGGED_IN =
-		new FtpReply(230, "User logged in, proceed.");
+    /** 230 User logged in, proceed. */
+    public static final FtpReply RESPONSE_230_USER_LOGGED_IN = new FtpReply(230,
+            "User logged in, proceed.");
 
-	/** 250 Requested file action okay, completed. */
-	public static final FtpReply RESPONSE_250_ACTION_OKAY =
-		new FtpReply(250, "Requested file action okay, completed.");
+    /** 250 Requested file action okay, completed. */
+    public static final FtpReply RESPONSE_250_ACTION_OKAY = new FtpReply(250,
+            "Requested file action okay, completed.");
 
-	/** 331 User name okay, need password. */
-	public static final FtpReply RESPONSE_331_USERNAME_OK_NEED_PASS =
-		new FtpReply(331, "User name okay, need password.");
+    /** 331 User name okay, need password. */
+    public static final FtpReply RESPONSE_331_USERNAME_OK_NEED_PASS = new FtpReply(331,
+            "User name okay, need password.");
 
-	/** 350 Requested file action pending further information. */
-	public static final FtpReply RESPONSE_350_PENDING_FURTHER_INFORMATION =
-		new FtpReply(
-			350,
-			"Requested file action pending further information.");
+    /** 350 Requested file action pending further information. */
+    public static final FtpReply RESPONSE_350_PENDING_FURTHER_INFORMATION = new FtpReply(350,
+            "Requested file action pending further information.");
 
-	/** 425 Can't open data connection. */
-	public static final String RESPONSE_425_CANT_OPEN_DATA_CONNECTION =
-		"425 Can't open data connection.\r\n";
-	
-	/** 426 Connection closed; transfer aborted. */
-	public static final FtpReply RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED =
-		new FtpReply(426, "Connection closed; transfer aborted.");
-		
-	/** 450 Requested file action not taken. */
-	public static final FtpReply RESPONSE_450_REQUESTED_ACTION_NOT_TAKEN = 
-		new FtpReply(450, "Requested file action not taken.");
+    /** 425 Can't open data connection. */
+    public static final String RESPONSE_425_CANT_OPEN_DATA_CONNECTION = "425 Can't open data connection.\r\n";
 
-	/** 450 No transfer-slave(s) available
-	 * author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
-	 */
-	public static final FtpReply RESPONSE_450_SLAVE_UNAVAILABLE =
-		new FtpReply(450, "No transfer-slave(s) available");
+    /** 426 Connection closed; transfer aborted. */
+    public static final FtpReply RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED =
+        new FtpReply(426, "Connection closed; transfer aborted.");
 
-	/** 500 Syntax error, command unrecognized. */
-	public static final FtpReply RESPONSE_500_SYNTAX_ERROR =
-		new FtpReply(500, "Syntax error, command unrecognized.");
+    /** 450 Requested file action not taken. */
+    public static final FtpReply RESPONSE_450_REQUESTED_ACTION_NOT_TAKEN = new FtpReply(450,
+            "Requested file action not taken.");
 
-	/** 501 Syntax error in parameters or arguments */
-	public static final FtpReply RESPONSE_501_SYNTAX_ERROR =
-		new FtpReply(501, "Syntax error in parameters or arguments");
+    /** 450 No transfer-slave(s) available
+     * author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
+     */
+    public static final FtpReply RESPONSE_450_SLAVE_UNAVAILABLE = new FtpReply(450,
+            "No transfer-slave(s) available");
 
-	/** 502 Command not implemented. */
-	public static final FtpReply RESPONSE_502_COMMAND_NOT_IMPLEMENTED =
-		new FtpReply(502, "Command not implemented.");
+    /** 500 Syntax error, command unrecognized. */
+    public static final FtpReply RESPONSE_500_SYNTAX_ERROR = new FtpReply(500,
+            "Syntax error, command unrecognized.");
 
-	/** 503 Bad sequence of commands. */
-	public static final FtpReply RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS =
-		new FtpReply(503, "Bad sequence of commands.");
+    /** 501 Syntax error in parameters or arguments */
+    public static final FtpReply RESPONSE_501_SYNTAX_ERROR = new FtpReply(501,
+            "Syntax error in parameters or arguments");
 
-	/** 504 Command not implemented for that parameter. */
-	public static final FtpReply RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM =
-		new FtpReply(504, "Command not implemented for that parameter.");
+    /** 502 Command not implemented. */
+    public static final FtpReply RESPONSE_502_COMMAND_NOT_IMPLEMENTED = new FtpReply(502,
+            "Command not implemented.");
 
-	/** 530 Access denied */
-	public static final FtpReply RESPONSE_530_ACCESS_DENIED =
-		new FtpReply(530, "Access denied");
+    /** 503 Bad sequence of commands. */
+    public static final FtpReply RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS = new FtpReply(503,
+            "Bad sequence of commands.");
 
-	/** 530 Not logged in. */
-	public static final FtpReply RESPONSE_530_NOT_LOGGED_IN =
-		new FtpReply(530, "Not logged in.");
+    /** 504 Command not implemented for that parameter. */
+    public static final FtpReply RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM = new FtpReply(504,
+            "Command not implemented for that parameter.");
 
-	public static final FtpReply RESPONSE_530_SLAVE_UNAVAILABLE = 
-	new FtpReply(530, "No transfer-slave(s) available");
+    /** 530 Access denied */
+    public static final FtpReply RESPONSE_530_ACCESS_DENIED = new FtpReply(530,
+            "Access denied");
 
-	/** 550 Requested action not taken. File unavailable.
-	 * File unavailable (e.g., file not found, no access).
-	 */
-	public static final FtpReply RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN =
-		new FtpReply(550, "Requested action not taken. File unavailable.");
+    /** 530 Not logged in. */
+    public static final FtpReply RESPONSE_530_NOT_LOGGED_IN = new FtpReply(530,
+            "Not logged in.");
+    public static final FtpReply RESPONSE_530_SLAVE_UNAVAILABLE = new FtpReply(530,
+            "No transfer-slave(s) available");
 
-	/** 553 Requested action not taken.
-	 * File name not allowed.
-	 */
-	public static final FtpReply RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN =
-		new FtpReply(553, "Requested action not taken.");
-	protected int _code;
+    /** 550 Requested action not taken. File unavailable.
+     * File unavailable (e.g., file not found, no access).
+     */
+    public static final FtpReply RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN = new FtpReply(550,
+            "Requested action not taken. File unavailable.");
 
-	protected Vector _lines = new Vector();
-	protected String _message;
+    /** 553 Requested action not taken.
+     * File name not allowed.
+     */
+    public static final FtpReply RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN = new FtpReply(553,
+            "Requested action not taken.");
+    protected int _code;
+    protected Vector _lines = new Vector();
+    protected String _message;
 
-	public FtpReply() {
-	}
-	public FtpReply(int code) {
-		setCode(code);
-	}
-	public FtpReply(int code, String response) {
-		setCode(code);
-		setMessage(response);
-	}
+    public FtpReply() {
+    }
 
-	public FtpReply addComment(BufferedReader in) throws IOException {
-		String line;
-		while ((line = in.readLine()) != null) { //throws IOException
-			this.addComment(line);
-		}
-		return this;
-	}
+    public FtpReply(int code) {
+        setCode(code);
+    }
 
-	public FtpReply addComment(Object response) {
-		String resp = String.valueOf(response);
-		if (resp.indexOf('\n') != -1) {
-			String lines[] = resp.split("\n");
-			for (int i = 0 ; i < lines.length ; i++) {
-				_lines.add(lines[i]);
-			}
-		} else {
-			_lines.add(resp);
-		}
-		return this;
-	}
+    public FtpReply(int code, String response) {
+        setCode(code);
+        setMessage(response);
+    }
 
-	public Object clone() {
-		try {
-			FtpReply r = (FtpReply) super.clone();
-			r._lines = (Vector) _lines.clone();
-			return r;
-		} catch (CloneNotSupportedException ex) {
-			throw new RuntimeException(ex);
-		}
-	}
+    public FtpReply addComment(BufferedReader in) throws IOException {
+        String line;
 
-	public int getCode() {
-		return _code;
-	}
-	public void setCode(int code) {
-		_code = code;
-	}
-	public void setMessage(String response) {
-		int pos = response.indexOf('\n');
-		if (pos != -1) {
-			addComment(response.substring(pos+1));
-			response = response.substring(0, pos);
-			logger.log(Level.DEBUG, "Truncated response message with multiple lines: "+response);
-		}
-		_message = response;
-	}
-	public int size() {
-		return _lines.size();
-	}
+        while ((line = in.readLine()) != null) { //throws IOException
+            this.addComment(line);
+        }
 
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		//sb.append(code + "-");
-		if(_lines.size() == 0 && _message == null) setMessage("No text specified");
-		for (Iterator iter = _lines.iterator(); iter.hasNext();) {
-			String comment = (String) iter.next();
-			if (!iter.hasNext() && _message == null) {
-				sb.append(_code + "  " + comment + "\r\n");
-			} else {
-				sb.append(_code + "- " + comment + "\r\n");
-			}
-		}
-		if (_message != null)
-			sb.append(_code + " " + _message + "\r\n");
-		return sb.toString();
-	}
+        return this;
+    }
 
+    public FtpReply addComment(Object response) {
+        String resp = String.valueOf(response);
+
+        if (resp.indexOf('\n') != -1) {
+            String[] lines = resp.split("\n");
+
+            for (int i = 0; i < lines.length; i++) {
+                _lines.add(lines[i]);
+            }
+        } else {
+            _lines.add(resp);
+        }
+
+        return this;
+    }
+
+    public Object clone() {
+        try {
+            FtpReply r = (FtpReply) super.clone();
+            r._lines = (Vector) _lines.clone();
+
+            return r;
+        } catch (CloneNotSupportedException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public int getCode() {
+        return _code;
+    }
+
+    public void setCode(int code) {
+        _code = code;
+    }
+
+    public void setMessage(String response) {
+        int pos = response.indexOf('\n');
+
+        if (pos != -1) {
+            addComment(response.substring(pos + 1));
+            response = response.substring(0, pos);
+            logger.log(Level.DEBUG,
+                "Truncated response message with multiple lines: " + response);
+        }
+
+        _message = response;
+    }
+
+    public int size() {
+        return _lines.size();
+    }
+
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+
+        //sb.append(code + "-");
+        if ((_lines.size() == 0) && (_message == null)) {
+            setMessage("No text specified");
+        }
+
+        for (Iterator iter = _lines.iterator(); iter.hasNext();) {
+            String comment = (String) iter.next();
+
+            if (!iter.hasNext() && (_message == null)) {
+                sb.append(_code + "  " + comment + "\r\n");
+            } else {
+                sb.append(_code + "- " + comment + "\r\n");
+            }
+        }
+
+        if (_message != null) {
+            sb.append(_code + " " + _message + "\r\n");
+        }
+
+        return sb.toString();
+    }
 }

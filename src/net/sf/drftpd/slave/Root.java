@@ -1,88 +1,90 @@
 /*
  * This file is part of DrFTPD, Distributed FTP Daemon.
- * 
+ *
  * DrFTPD is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * DrFTPD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package net.sf.drftpd.slave;
 
+import se.mog.io.File;
+
 import java.io.IOException;
 
-import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: Root.java,v 1.8 2004/05/12 00:45:11 mog Exp $
+ * @version $Id: Root.java,v 1.9 2004/08/03 20:14:03 zubov Exp $
  */
 public class Root {
-	private File _rootFile;
-	private String _root;
-	private long _minSpaceFree = 50000000; //50,000,000 = 50mb
-	private int _priority = 0;
-	private long _lastModified;
+    private File _rootFile;
+    private String _root;
+    private long _minSpaceFree = 50000000; //50,000,000 = 50mb
+    private int _priority = 0;
+    private long _lastModified;
 
-	public Root(String root, long minSpaceFree, int priority) throws IOException {
-		_rootFile = new File(new File(root).getCanonicalFile());
-		_root = _rootFile.getPath();
-		_lastModified = getFile().lastModified();
-	}
+    public Root(String root, long minSpaceFree, int priority)
+        throws IOException {
+        _rootFile = new File(new File(root).getCanonicalFile());
+        _root = _rootFile.getPath();
+        _lastModified = getFile().lastModified();
+    }
 
-	public File getFile() {
-		return _rootFile;
-	}
+    public File getFile() {
+        return _rootFile;
+    }
 
-	public String getPath() {
-		return _root;
-	}
+    public String getPath() {
+        return _root;
+    }
 
-	public long lastModified() {
-		return _lastModified;
-	}
+    public long lastModified() {
+        return _lastModified;
+    }
 
-	public void touch() {
-		getFile().setLastModified(_lastModified = System.currentTimeMillis());
-	}
+    public void touch() {
+        getFile().setLastModified(_lastModified = System.currentTimeMillis());
+    }
 
-	public long getMinSpaceFree() {
-		return _minSpaceFree;
-	}
+    public long getMinSpaceFree() {
+        return _minSpaceFree;
+    }
 
-	public int getPriority() {
-		return _priority;
-	}
+    public int getPriority() {
+        return _priority;
+    }
 
-	public String toString() {
-		return "[root=" + getPath() + "]";
-	}
+    public String toString() {
+        return "[root=" + getPath() + "]";
+    }
 
-	public long getDiskSpaceAvailable() {
-		return getFile().getDiskSpaceAvailable();
-	}
+    public long getDiskSpaceAvailable() {
+        return getFile().getDiskSpaceAvailable();
+    }
 
-	public long getDiskSpaceCapacity() {
-		return getFile().getDiskSpaceCapacity();
-	}
+    public long getDiskSpaceCapacity() {
+        return getFile().getDiskSpaceCapacity();
+    }
 
-	public File getFile(String path) {
-		return new File(_root + File.separator + path);
-	}
+    public File getFile(String path) {
+        return new File(_root + File.separator + path);
+    }
 
-	/**
-	 * Returns true if File.getDiskSpaceAvailable() is less than getMinSpaceFree()
-	 * @return true if File.getDiskSpaceAvailable() is less than getMinSpaceFree()
-	 */
-	public boolean isFull() {
-		return getFile().getDiskSpaceAvailable() < getMinSpaceFree();
-	}
+    /**
+     * Returns true if File.getDiskSpaceAvailable() is less than getMinSpaceFree()
+     * @return true if File.getDiskSpaceAvailable() is less than getMinSpaceFree()
+     */
+    public boolean isFull() {
+        return getFile().getDiskSpaceAvailable() < getMinSpaceFree();
+    }
 }

@@ -1,31 +1,21 @@
 /*
  * This file is part of DrFTPD, Distributed FTP Daemon.
- * 
+ *
  * DrFTPD is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * DrFTPD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.drftpd.tests;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.util.Collections;
-
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.event.Event;
@@ -40,220 +30,232 @@ import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+import java.net.InetAddress;
+import java.net.Socket;
+
+import java.util.Collections;
+
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
+
+
 /**
  * @author mog
- * @version $Id: DummyBaseFtpConnection.java,v 1.7 2004/07/12 20:37:40 mog Exp $
+ * @version $Id: DummyBaseFtpConnection.java,v 1.8 2004/08/03 20:14:10 zubov Exp $
  */
 public class DummyBaseFtpConnection extends BaseFtpConnection {
-	private InetAddress _clientAddress;
+    private InetAddress _clientAddress;
+    private DataConnectionHandler _dch;
+    private StringWriter _out2;
+    private PrintWriter _printWriter;
+    private DummyServerSocketFactory _serverSocketFactory;
+    private DummySocketFactory _socketFactory;
 
-	private DataConnectionHandler _dch;
-	private StringWriter _out2;
-	private PrintWriter _printWriter;
-	private DummyServerSocketFactory _serverSocketFactory;
-	private DummySocketFactory _socketFactory;
+    public DummyBaseFtpConnection(DataConnectionHandler dch) {
+        _dch = dch;
+        _socketFactory = new DummySocketFactory();
+        _serverSocketFactory = new DummyServerSocketFactory(_socketFactory);
 
-	public DummyBaseFtpConnection(DataConnectionHandler dch) {
-		_dch = dch;
-		_socketFactory = new DummySocketFactory();
-		_serverSocketFactory = new DummyServerSocketFactory(_socketFactory);
+        _currentDirectory = new LinkedRemoteFile(null);
+        _currentDirectory.addFile(new StaticRemoteFile(Collections.EMPTY_LIST,
+                "testfile", "drftpd", "drftpd", Bytes.parseBytes("10M"),
+                System.currentTimeMillis()));
+        _out2 = new StringWriter();
+        _out = new PrintWriter(_out2);
+    }
 
-		_currentDirectory = new LinkedRemoteFile(null);
-		_currentDirectory.addFile(
-			new StaticRemoteFile(
-				Collections.EMPTY_LIST,
-				"testfile",
-				"drftpd",
-				"drftpd",
-				Bytes.parseBytes("10M"),
-				System.currentTimeMillis()));
-		_out2 = new StringWriter();
-		_out = new PrintWriter(_out2);
-	}
+    protected Object clone() throws CloneNotSupportedException {
+        throw new UnsupportedOperationException();
+    }
 
-	protected Object clone() throws CloneNotSupportedException {
-		throw new UnsupportedOperationException();
-	}
+    /**
+     * @deprecated
+     */
+    protected void dispatchFtpEvent(Event event) {
+        throw new UnsupportedOperationException();
+    }
 
-	/**
-	 * @deprecated
-	 */
-	protected void dispatchFtpEvent(Event event) {
-		throw new UnsupportedOperationException();
-	}
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    public boolean equals(Object obj) {
+        throw new UnsupportedOperationException();
+    }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	public boolean equals(Object obj) {
-		throw new UnsupportedOperationException();
-	}
+    public InetAddress getClientAddress() {
+        if (_clientAddress == null) {
+            throw new NullPointerException();
+        }
 
-	public InetAddress getClientAddress() {
-		if (_clientAddress == null)
-			throw new NullPointerException();
-		return _clientAddress;
-	}
+        return _clientAddress;
+    }
 
-	public CommandManager getCommandManager() {
-		throw new UnsupportedOperationException();
-	}
+    public CommandManager getCommandManager() {
+        throw new UnsupportedOperationException();
+    }
 
-	public ConnectionManager getConnectionManager() {
-		if(_cm == null) throw new NullPointerException();
-		return _cm;
-	}
+    public ConnectionManager getConnectionManager() {
+        if (_cm == null) {
+            throw new NullPointerException();
+        }
 
-	public Socket getControlSocket() {
-		return new DummySocket();
-	}
+        return _cm;
+    }
 
-	public DataConnectionHandler getDataConnectionHandler() {
-		if (_dch == null)
-			throw new NullPointerException("No DataConnectionHandler set");
-		return _dch;
-	}
+    public Socket getControlSocket() {
+        return new DummySocket();
+    }
 
-	public char getDirection() {
-		throw new UnsupportedOperationException();
+    public DataConnectionHandler getDataConnectionHandler() {
+        if (_dch == null) {
+            throw new NullPointerException("No DataConnectionHandler set");
+        }
 
-	}
+        return _dch;
+    }
 
-	public StringWriter getDummyOut() {
-		return _out2;
-	}
+    public char getDirection() {
+        throw new UnsupportedOperationException();
+    }
 
-	public DummyServerSocketFactory getDummySSF() {
-		return _serverSocketFactory;
-	}
+    public StringWriter getDummyOut() {
+        return _out2;
+    }
 
-	public long getLastActive() {
-		throw new UnsupportedOperationException();
+    public DummyServerSocketFactory getDummySSF() {
+        return _serverSocketFactory;
+    }
 
-	}
+    public long getLastActive() {
+        throw new UnsupportedOperationException();
+    }
 
-	public ServerSocketFactory getServerSocketFactory() {
-		return _serverSocketFactory;
-	}
+    public ServerSocketFactory getServerSocketFactory() {
+        return _serverSocketFactory;
+    }
 
-	public SlaveManagerImpl getSlaveManager() {
-		throw new UnsupportedOperationException();
+    public SlaveManagerImpl getSlaveManager() {
+        throw new UnsupportedOperationException();
+    }
 
-	}
+    public SocketFactory getSocketFactory() {
+        return _socketFactory;
+    }
 
-	public SocketFactory getSocketFactory() {
-		return _socketFactory;
-	}
+    public char getTransferDirection() {
+        throw new UnsupportedOperationException();
+    }
 
-	public char getTransferDirection() {
-		throw new UnsupportedOperationException();
-	}
+    public User getUser() throws NoSuchUserException {
+        throw new UnsupportedOperationException();
+    }
 
-	public User getUser() throws NoSuchUserException {
-		throw new UnsupportedOperationException();
-	}
+    /* (non-Javadoc)
+     * @see net.sf.drftpd.master.BaseFtpConnection#getUserNull()
+     */
+    public User getUserNull() {
+        return super.getUserNull();
+    }
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.BaseFtpConnection#getUserNull()
-	 */
-	public User getUserNull() {
-		return super.getUserNull();
-	}
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    public int hashCode() {
+        throw new UnsupportedOperationException();
+    }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	public int hashCode() {
-		throw new UnsupportedOperationException();
-	}
+    protected boolean hasPermission(FtpRequest request) {
+        throw new UnsupportedOperationException();
+    }
 
-	protected boolean hasPermission(FtpRequest request) {
-		throw new UnsupportedOperationException();
-	}
+    public boolean isExecuting() {
+        throw new UnsupportedOperationException();
+    }
 
-	public boolean isExecuting() {
-		throw new UnsupportedOperationException();
-	}
+    /**
+     * @deprecated
+     */
+    public void reset() {
+        throw new UnsupportedOperationException();
+    }
 
-	/**
-	 * @deprecated
-	 */
-	public void reset() {
-		throw new UnsupportedOperationException();
-	}
+    public void resetState() {
+    }
 
-	public void resetState() {
-	}
+    /* (non-Javadoc)
+     * @see java.lang.Runnable#run()
+     */
+    public void run() {
+        throw new UnsupportedOperationException();
+    }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Runnable#run()
-	 */
-	public void run() {
-		throw new UnsupportedOperationException();
-	}
+    /* (non-Javadoc)
+     * @see net.sf.drftpd.master.BaseFtpConnection#service(net.sf.drftpd.master.FtpRequest, java.io.PrintWriter)
+     */
+    public void service(FtpRequest request, PrintWriter out)
+        throws IOException {
+        throw new UnsupportedOperationException();
+    }
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.BaseFtpConnection#service(net.sf.drftpd.master.FtpRequest, java.io.PrintWriter)
-	 */
-	public void service(FtpRequest request, PrintWriter out)
-		throws IOException {
-		throw new UnsupportedOperationException();
-	}
-	public void setClientAddress(InetAddress clientAddress) {
-		_clientAddress = clientAddress;
-	}
+    public void setClientAddress(InetAddress clientAddress) {
+        _clientAddress = clientAddress;
+    }
 
-	public void setConnectionManager(ConnectionManager manager) {
-		_cm = manager;
-	}
+    public void setConnectionManager(ConnectionManager manager) {
+        _cm = manager;
+    }
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.BaseFtpConnection#setControlSocket(java.net.Socket)
-	 */
-	public void setControlSocket(Socket socket) {
-		throw new UnsupportedOperationException();
-	}
-	public void setRequest(FtpRequest request) {
-		_request = request;
-	}
+    /* (non-Javadoc)
+     * @see net.sf.drftpd.master.BaseFtpConnection#setControlSocket(java.net.Socket)
+     */
+    public void setControlSocket(Socket socket) {
+        throw new UnsupportedOperationException();
+    }
 
-	public void setUser(User user) {
-		super.setUser(user);
-	}
+    public void setRequest(FtpRequest request) {
+        _request = request;
+    }
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.BaseFtpConnection#start()
-	 */
-	public void start() {
-		throw new UnsupportedOperationException();
-	}
+    public void setUser(User user) {
+        super.setUser(user);
+    }
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.BaseFtpConnection#status()
-	 */
-	public String status() {
-		return "dummy status string";
-	}
+    /* (non-Javadoc)
+     * @see net.sf.drftpd.master.BaseFtpConnection#start()
+     */
+    public void start() {
+        throw new UnsupportedOperationException();
+    }
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.BaseFtpConnection#stop()
-	 */
-	public void stop() {
-		throw new UnsupportedOperationException();
-	}
+    /* (non-Javadoc)
+     * @see net.sf.drftpd.master.BaseFtpConnection#status()
+     */
+    public String status() {
+        return "dummy status string";
+    }
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.BaseFtpConnection#stop(java.lang.String)
-	 */
-	public void stop(String message) {
-		throw new UnsupportedOperationException();
-	}
+    /* (non-Javadoc)
+     * @see net.sf.drftpd.master.BaseFtpConnection#stop()
+     */
+    public void stop() {
+        throw new UnsupportedOperationException();
+    }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString() {
-		throw new UnsupportedOperationException();
-	}
+    /* (non-Javadoc)
+     * @see net.sf.drftpd.master.BaseFtpConnection#stop(java.lang.String)
+     */
+    public void stop(String message) {
+        throw new UnsupportedOperationException();
+    }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+        throw new UnsupportedOperationException();
+    }
 }

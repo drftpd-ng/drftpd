@@ -1,37 +1,21 @@
 /*
  * This file is part of DrFTPD, Distributed FTP Daemon.
- * 
+ *
  * DrFTPD is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * DrFTPD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package net.sf.drftpd.master;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.InterruptedIOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.SocketException;
-import java.rmi.RemoteException;
-
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLSocket;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -49,492 +33,522 @@ import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+
 import org.drftpd.commands.UnhandledCommandException;
+
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.SocketException;
+
+import java.rmi.RemoteException;
+
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLSocket;
+
+
 /**
- * This is a generic ftp connection handler. It delegates 
+ * This is a generic ftp connection handler. It delegates
  * the request to appropriate methods in subclasses.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.93 2004/07/12 20:37:25 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.94 2004/08/03 20:13:55 zubov Exp $
  */
 public class BaseFtpConnection implements Runnable {
-	private static final Logger debuglogger =
-		Logger.getLogger(BaseFtpConnection.class.getName() + ".service");
+    private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() +
+            ".service");
+    private static final Logger logger = Logger.getLogger(BaseFtpConnection.class);
+    public static final String NEWLINE = "\r\n";
 
-	private static final Logger logger =
-		Logger.getLogger(BaseFtpConnection.class);
-	public static final String NEWLINE = "\r\n";
+    /**
+     * Is the current password authenticated?
+     */
+    protected boolean _authenticated = false;
+    protected ConnectionManager _cm;
+    private CommandManager _commandManager;
+    protected Socket _controlSocket;
+    protected User _user;
+    protected LinkedRemoteFileInterface _currentDirectory;
 
-	public static ReplacerEnvironment getReplacerEnvironment(
-		ReplacerEnvironment env,
-		User user) {
-		env = new ReplacerEnvironment(env);
+    /**
+     * Is the client running a command?
+     */
+    protected boolean _executing;
+    private BufferedReader _in;
 
-		if (user != null) {
-			env.add("user", user.getUsername());
-			env.add("credits", Bytes.formatBytes(user.getCredits()));
-			env.add("ratio", "" + user.getRatio());
-			env.add("tagline", user.getTagline());
-			env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
-			env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
-			env.add("group", user.getGroupName());
-			env.add(
-				"avragespeed",
-				Bytes.formatBytes(
-					user.getUploadedMilliseconds()
-						+ user.getDownloadedMilliseconds() / 2));
-		} else {
-			env.add("user", "<unknown>");
-		}
-		return env;
-	}
+    /**
+     * time when last command from the client finished execution
+     */
+    protected long _lastActive;
+    protected PrintWriter _out;
+    protected FtpRequest _request;
 
-	public static String jprintf(
-		ReplacerFormat format,
-		ReplacerEnvironment env,
-		User user)
-		throws FormatterException {
-		env = getReplacerEnvironment(env, user);
-		return ReplacerUtils.finalJprintf(format, env);
-	}
+    /**
+     * Should this thread stop insted of continue looping?
+     */
+    protected boolean _stopRequest = false;
+    protected String _stopRequestMessage;
+    protected Thread _thread;
 
-	public static String jprintf(
-		String baseName,
-		String key,
-		ReplacerEnvironment env,
-		User user) {
-		env = getReplacerEnvironment(env, user);
-		return ReplacerUtils.jprintf(key, env, baseName);
-	}
+    protected BaseFtpConnection() {
+    }
 
-	/**
-	 * Is the current password authenticated?
-	 */
-	protected boolean _authenticated = false;
-	protected ConnectionManager _cm;
-	private CommandManager _commandManager;
-	protected Socket _controlSocket;
+    public BaseFtpConnection(ConnectionManager connManager, Socket soc)
+        throws IOException {
+        _commandManager = connManager.getCommandManagerFactory().initialize(this);
+        _cm = connManager;
+        setControlSocket(soc);
+        _lastActive = System.currentTimeMillis();
+        setCurrentDirectory(connManager.getGlobalContext().getRoot());
+    }
 
-	protected User _user;
+    public static ReplacerEnvironment getReplacerEnvironment(
+        ReplacerEnvironment env, User user) {
+        env = new ReplacerEnvironment(env);
 
-	protected LinkedRemoteFileInterface _currentDirectory;
+        if (user != null) {
+            env.add("user", user.getUsername());
+            env.add("credits", Bytes.formatBytes(user.getCredits()));
+            env.add("ratio", "" + user.getRatio());
+            env.add("tagline", user.getTagline());
+            env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
+            env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
+            env.add("group", user.getGroupName());
+            env.add("avragespeed",
+                Bytes.formatBytes(user.getUploadedMilliseconds() +
+                    (user.getDownloadedMilliseconds() / 2)));
+        } else {
+            env.add("user", "<unknown>");
+        }
 
-	/**
-	 * Is the client running a command?
-	 */
-	protected boolean _executing;
+        return env;
+    }
 
-	private BufferedReader _in;
-	/**
-	 * time when last command from the client finished execution
-	 */
-	protected long _lastActive;
+    public static String jprintf(ReplacerFormat format,
+        ReplacerEnvironment env, User user) throws FormatterException {
+        env = getReplacerEnvironment(env, user);
 
-	protected PrintWriter _out;
+        return ReplacerUtils.finalJprintf(format, env);
+    }
 
-	protected FtpRequest _request;
+    public static String jprintf(String baseName, String key,
+        ReplacerEnvironment env, User user) {
+        env = getReplacerEnvironment(env, user);
 
-	/**
-	 * Should this thread stop insted of continue looping?
-	 */
-	protected boolean _stopRequest = false;
-	protected String _stopRequestMessage;
-	protected Thread _thread;
-	protected BaseFtpConnection() {
-	}
-	public BaseFtpConnection(ConnectionManager connManager, Socket soc)
-		throws IOException {
-		_commandManager =
-			connManager.getCommandManagerFactory().initialize(this);
-		_cm = connManager;
-		setControlSocket(soc);
-		_lastActive = System.currentTimeMillis();
-		setCurrentDirectory(connManager.getGlobalContext().getRoot());
-	}
+        return ReplacerUtils.jprintf(key, env, baseName);
+    }
 
-	/**
-	 * @deprecated use getConnectionManager().dispatchFtpEvent()
-	 */
-	protected void dispatchFtpEvent(Event event) {
-		getConnectionManager().dispatchFtpEvent(event);
-	}
+    /**
+     * @deprecated use getConnectionManager().dispatchFtpEvent()
+     */
+    protected void dispatchFtpEvent(Event event) {
+        getConnectionManager().dispatchFtpEvent(event);
+    }
 
-	/**
-	 * Get client address
-	 */
-	public InetAddress getClientAddress() {
-		return _controlSocket.getInetAddress();
-	}
+    /**
+     * Get client address
+     */
+    public InetAddress getClientAddress() {
+        return _controlSocket.getInetAddress();
+    }
 
-	public CommandManager getCommandManager() {
-		return _commandManager;
-	}
+    public CommandManager getCommandManager() {
+        return _commandManager;
+    }
 
-	public ConnectionManager getConnectionManager() {
-		if(_cm == null) throw new NullPointerException();
-		return _cm;
-	}
+    public ConnectionManager getConnectionManager() {
+        if (_cm == null) {
+            throw new NullPointerException();
+        }
 
-	public BufferedReader getControlReader() {
-		return _in;
-	}
+        return _cm;
+    }
 
-	public Socket getControlSocket() {
-		return _controlSocket;
-	}
+    public BufferedReader getControlReader() {
+        return _in;
+    }
 
-	public PrintWriter getControlWriter() {
-		return _out;
-	}
+    public Socket getControlSocket() {
+        return _controlSocket;
+    }
 
-	public LinkedRemoteFileInterface getCurrentDirectory() {
-		return _currentDirectory;
-	}
+    public PrintWriter getControlWriter() {
+        return _out;
+    }
 
-	public DataConnectionHandler getDataConnectionHandler() {
-		try {
-			return (DataConnectionHandler) getCommandManager()
-				.getCommandHandler(
-				DataConnectionHandler.class);
-		} catch (ObjectNotFoundException e) {
-			throw new RuntimeException(
-				"DataConnectionHandler must be available",
-				e);
-		}
-	}
-	public char getDirection() {
-		String cmd = getRequest().getCommand();
-		if ("RETR".equals(cmd))
-			return Transfer.TRANSFER_SENDING_DOWNLOAD;
-		if ("STOR".equals(cmd) || "APPE".equals(cmd))
-			return Transfer.TRANSFER_RECEIVING_UPLOAD;
-		return Transfer.TRANSFER_UNKNOWN;
-	}
+    public LinkedRemoteFileInterface getCurrentDirectory() {
+        return _currentDirectory;
+    }
 
-	/**
-	 * Returns the "currentTimeMillis" when last command finished executing.
-	 */
-	public long getLastActive() {
-		return _lastActive;
-	}
+    public DataConnectionHandler getDataConnectionHandler() {
+        try {
+            return (DataConnectionHandler) getCommandManager()
+                                               .getCommandHandler(DataConnectionHandler.class);
+        } catch (ObjectNotFoundException e) {
+            throw new RuntimeException("DataConnectionHandler must be available",
+                e);
+        }
+    }
 
-	/**
-	 * Returns the FtpRequest of current or last command executed.
-	 */
-	public FtpRequest getRequest() {
-		return _request;
-	}
+    public char getDirection() {
+        String cmd = getRequest().getCommand();
 
-	public ServerSocketFactory getServerSocketFactory() {
-		return ServerSocketFactory.getDefault();
-	}
+        if ("RETR".equals(cmd)) {
+            return Transfer.TRANSFER_SENDING_DOWNLOAD;
+        }
 
-	public SlaveManagerImpl getSlaveManager() {
-		return getConnectionManager().getGlobalContext().getSlaveManager();
-	}
+        if ("STOR".equals(cmd) || "APPE".equals(cmd)) {
+            return Transfer.TRANSFER_RECEIVING_UPLOAD;
+        }
 
-	public SocketFactory getSocketFactory() {
-		return SocketFactory.getDefault();
-	}
+        return Transfer.TRANSFER_UNKNOWN;
+    }
 
-	/**
-	 * Returns Transfer.TRANSFER_SENDING_DOWNLOAD if this connection is processing a RETR command
-	 * or Transfer.TRANSFER_RECEIVING_UPLOAD if this connection is processing a STOR command.
-	 * @throws IllegalStateException if the connection isn't processing a STOR or RETR command.
-	 */
-	public char getTransferDirection() {
-		String cmd = getRequest().getCommand();
-		if (cmd.equals("RETR")) {
-			return Transfer.TRANSFER_SENDING_DOWNLOAD;
-		} else if (cmd.equals("STOR")) {
-			return Transfer.TRANSFER_RECEIVING_UPLOAD;
-		} else {
-			throw new IllegalStateException("Not transfering");
-		}
-	}
+    /**
+     * Returns the "currentTimeMillis" when last command finished executing.
+     */
+    public long getLastActive() {
+        return _lastActive;
+    }
 
-	/**
-	 * Get user object
-	 */
-	public User getUser() throws NoSuchUserException {
-		if (_user == null || !isAuthenticated())
-			throw new NoSuchUserException("no user logged in for connection");
-		return _user;
-	}
+    /**
+     * Returns the FtpRequest of current or last command executed.
+     */
+    public FtpRequest getRequest() {
+        return _request;
+    }
 
-	public User getUserNull() {
-		return _user;
-	}
+    public ServerSocketFactory getServerSocketFactory() {
+        return ServerSocketFactory.getDefault();
+    }
 
-	protected boolean hasPermission(FtpRequest request) {
-		if (isAuthenticated())
-			return true;
+    public SlaveManagerImpl getSlaveManager() {
+        return getConnectionManager().getGlobalContext().getSlaveManager();
+    }
 
-		String cmd = request.getCommand();
-		if ("USER".equals(cmd)
-			|| "PASS".equals(cmd)
-			|| "QUIT".equals(cmd)
-			|| "HELP".equals(cmd)
-			|| "AUTH".equals(cmd)
-			|| "PBSZ".equals(cmd)
-			|| "IDNT".equals(cmd))
-			return true;
+    public SocketFactory getSocketFactory() {
+        return SocketFactory.getDefault();
+    }
 
-		return false;
-	}
+    /**
+     * Returns Transfer.TRANSFER_SENDING_DOWNLOAD if this connection is processing a RETR command
+     * or Transfer.TRANSFER_RECEIVING_UPLOAD if this connection is processing a STOR command.
+     * @throws IllegalStateException if the connection isn't processing a STOR or RETR command.
+     */
+    public char getTransferDirection() {
+        String cmd = getRequest().getCommand();
 
-	public boolean isAuthenticated() {
-		return _authenticated;
-	}
+        if (cmd.equals("RETR")) {
+            return Transfer.TRANSFER_SENDING_DOWNLOAD;
+        } else if (cmd.equals("STOR")) {
+            return Transfer.TRANSFER_RECEIVING_UPLOAD;
+        } else {
+            throw new IllegalStateException("Not transfering");
+        }
+    }
 
-	/**
-	 * Returns true if client is executing a command.
-	 */
-	public boolean isExecuting() {
-		return _executing;
-	}
+    /**
+     * Get user object
+     */
+    public User getUser() throws NoSuchUserException {
+        if ((_user == null) || !isAuthenticated()) {
+            throw new NoSuchUserException("no user logged in for connection");
+        }
 
-	public boolean isSecure() {
-		return _controlSocket instanceof SSLSocket;
-	}
+        return _user;
+    }
 
-	public String jprintf(Class baseName, String key) {
-		return jprintf(baseName.getName(), key, null);
-	}
+    public User getUserNull() {
+        return _user;
+    }
 
-	public String jprintf(
-		Class class1,
-		String string,
-		ReplacerEnvironment env) {
-		return jprintf(class1.getName(), string, env);
-	}
+    protected boolean hasPermission(FtpRequest request) {
+        if (isAuthenticated()) {
+            return true;
+        }
 
-	public String jprintf(String baseName, String key) {
-		return jprintf(baseName, key, null);
-	}
+        String cmd = request.getCommand();
 
-	/**
-	 * @param env null for an empty parent replacerenvironment.
-	 */
-	public String jprintf(
-		String baseName,
-		String key,
-		ReplacerEnvironment env) {
-		return jprintf(baseName, key, env, getUserNull());
-	}
+        if ("USER".equals(cmd) || "PASS".equals(cmd) || "QUIT".equals(cmd) ||
+                "HELP".equals(cmd) || "AUTH".equals(cmd) || "PBSZ".equals(cmd) ||
+                "IDNT".equals(cmd)) {
+            return true;
+        }
 
-	/**
-	 * Server one FTP connection.
-	 */
-	public void run() {
-		_lastActive = System.currentTimeMillis();
-		logger.info(
-			"Handling new request from " + getClientAddress().getHostAddress());
-		if (!getConnectionManager().getGlobalContext().getConfig().getHideIps()) {
-			_thread.setName(
-				"FtpConn from " + getClientAddress().getHostAddress());
-		}
+        return false;
+    }
 
-		try {
-			//			in =
-			//				new BufferedReader(
-			//					new InputStreamReader(_controlSocket.getInputStream()));
+    public boolean isAuthenticated() {
+        return _authenticated;
+    }
 
-			//			out = new PrintWriter(
-			//				//new FtpWriter( no need for spying :P
-			//	new BufferedWriter(
-			//		new OutputStreamWriter(_controlSocket.getOutputStream())));
+    /**
+     * Returns true if client is executing a command.
+     */
+    public boolean isExecuting() {
+        return _executing;
+    }
 
-			_controlSocket.setSoTimeout(1000);
-			if (getConnectionManager().getGlobalContext().isShutdown()) {
-				stop(getConnectionManager().getGlobalContext().getShutdownMessage());
-			} else {
-				FtpReply response =
-					new FtpReply(220, getConnectionManager().getGlobalContext().getConfig().getLoginPrompt());
-				_out.print(response);
-			}
-			while (!_stopRequest) {
+    public boolean isSecure() {
+        return _controlSocket instanceof SSLSocket;
+    }
 
-				_out.flush();
-				//notifyObserver();
-				String commandLine;
-				try {
-					commandLine = _in.readLine();
-				} catch (InterruptedIOException ex) {
-					continue;
-				}
-				if (_stopRequest)
-					break;
-				// test command line
-				if (commandLine == null)
-					break;
+    public String jprintf(Class baseName, String key) {
+        return jprintf(baseName.getName(), key, null);
+    }
 
-				//spyRequest(commandLine);
-				if (commandLine.equals(""))
-					continue;
+    public String jprintf(Class class1, String string, ReplacerEnvironment env) {
+        return jprintf(class1.getName(), string, env);
+    }
 
-				_request = new FtpRequest(commandLine);
+    public String jprintf(String baseName, String key) {
+        return jprintf(baseName, key, null);
+    }
 
-				if (!_request.getCommand().equals("PASS"))
-					debuglogger.debug("<< " + _request.getCommandLine());
-				if (!hasPermission(_request)) {
-					_out.print(FtpReply.RESPONSE_530_NOT_LOGGED_IN);
-					continue;
-				}
-				// execute command
-				_executing = true;
-				service(_request, _out);
-				_executing = false;
-				_lastActive = System.currentTimeMillis();
-			}
-			if (_stopRequestMessage != null) {
-				_out.print(new FtpReply(421, _stopRequestMessage));
-			} else {
-				_out.println("421 Connection closing");
-			}
-			_out.flush();
-		} catch (SocketException ex) {
-			logger.log(
-				Level.INFO,
-				ex.getMessage()
-					+ ", closing for user "
-					+ (_user == null ? "<not logged in>" : _user.getUsername()),
-				ex);
-		} catch (Exception ex) {
-			logger.log(Level.INFO, "Exception, closing", ex);
-		} finally {
-			try {
-				_in.close();
-				_out.close();
-			} catch (Exception ex2) {
-				logger.log(Level.WARN, "Exception closing stream", ex2);
-			}
-			if (isAuthenticated()) {
-				_user.updateLastAccessTime();
-				dispatchFtpEvent(new ConnectionEvent(this, "LOGOUT"));
-			}
-			getConnectionManager().remove(this);
-		}
-	}
+    /**
+     * @param env null for an empty parent replacerenvironment.
+     */
+    public String jprintf(String baseName, String key, ReplacerEnvironment env) {
+        return jprintf(baseName, key, env, getUserNull());
+    }
 
-	/**
-	 * Execute the ftp command.
-	 */
-	public void service(FtpRequest request, PrintWriter out)
-		throws IOException {
-		FtpReply reply;
-		try {
-			reply = _commandManager.execute(this);
-		} catch (UnhandledCommandException e) {
-			reply = new FtpReply(500, e.getMessage());
-			logger.warn("", e);
-		} catch (Throwable e) {
-			reply = new FtpReply(500, e.toString());
-			logger.warn("", e);
-		}
-		if (reply != null)
-			out.print(reply);
-	}
+    /**
+     * Server one FTP connection.
+     */
+    public void run() {
+        _lastActive = System.currentTimeMillis();
+        logger.info("Handling new request from " +
+            getClientAddress().getHostAddress());
 
-	public void setAuthenticated(boolean authenticated) {
-		_authenticated = authenticated;
-		if (isAuthenticated() && !getConnectionManager().getGlobalContext().getConfig().getHideIps())
-			_thread.setName(
-				"FtpConn from "
-					+ getClientAddress().getHostAddress()
-					+ " "
-					+ _user.getUsername()
-					+ "/"
-					+ _user.getGroupName());
-	}
+        if (!getConnectionManager().getGlobalContext().getConfig().getHideIps()) {
+            _thread.setName("FtpConn from " +
+                getClientAddress().getHostAddress());
+        }
 
-	public void setControlSocket(Socket socket) {
-		try {
-			_controlSocket = socket;
-			_in =
-				new BufferedReader(
-					new InputStreamReader(
-						_controlSocket.getInputStream(),
-						"ISO-8859-1"));
+        try {
+            //			in =
+            //				new BufferedReader(
+            //					new InputStreamReader(_controlSocket.getInputStream()));
+            //			out = new PrintWriter(
+            //				//new FtpWriter( no need for spying :P
+            //	new BufferedWriter(
+            //		new OutputStreamWriter(_controlSocket.getOutputStream())));
+            _controlSocket.setSoTimeout(1000);
 
-			_out =
-				new PrintWriter(
-					new OutputStreamWriter(
-						new AddAsciiOutputStream(_controlSocket.getOutputStream()),
-						"ISO-8859-1"));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+            if (getConnectionManager().getGlobalContext().isShutdown()) {
+                stop(getConnectionManager().getGlobalContext()
+                         .getShutdownMessage());
+            } else {
+                FtpReply response = new FtpReply(220,
+                        getConnectionManager().getGlobalContext().getConfig()
+                            .getLoginPrompt());
+                _out.print(response);
+            }
 
-	public void setCurrentDirectory(LinkedRemoteFileInterface file) {
-		_currentDirectory = file;
-	}
+            while (!_stopRequest) {
+                _out.flush();
 
-	public void setUser(User user) {
-		_user = user;
-	}
-	public void start() {
-		_thread = new Thread(this);
-		_thread.start();
-		// start() calls run() and execution will start in the background.
-	}
+                //notifyObserver();
+                String commandLine;
 
-	/**
-	 *  returns a two-line status
-	 */
-	public String status() {
-		return jprintf(BaseFtpConnection.class.getName(), "statusline");
-	}
+                try {
+                    commandLine = _in.readLine();
+                } catch (InterruptedIOException ex) {
+                    continue;
+                }
 
-	/**
-	 * User logout and stop this thread.
-	 */
-	public void stop() {
-		_stopRequest = true;
-	}
+                if (_stopRequest) {
+                    break;
+                }
 
-	public void stop(String message) {
-		_stopRequestMessage = message;
-		if (getDataConnectionHandler().isTransfering()) {
-			try {
-				getDataConnectionHandler().getTransfer().abort();
-			} catch (RemoteException e) {
-				getDataConnectionHandler()
-					.getTranferSlave()
-					.handleRemoteException(
-					e);
-			}
-		}
-		stop();
-	}
+                // test command line
+                if (commandLine == null) {
+                    break;
+                }
 
-	public String toString() {
-		StringBuffer buf = new StringBuffer("[BaseFtpConnection");
-		if (_user != null) {
-			buf.append("[user: " + _user + "]");
-		}
-		if (_request != null) {
-			buf.append("[command: " + _request.getCommand() + "]");
-		}
-		if (isExecuting()) {
-			buf.append("[executing]");
-		} else {
-			buf.append(
-				"[idle: "
-					+ Time.formatTime(
-						System.currentTimeMillis() - getLastActive()));
-		}
-		buf.append("]");
-		return buf.toString();
-	}
+                //spyRequest(commandLine);
+                if (commandLine.equals("")) {
+                    continue;
+                }
 
-	public OutputStream getOutputStream() throws IOException {
-		return _controlSocket.getOutputStream();
-	}
+                _request = new FtpRequest(commandLine);
+
+                if (!_request.getCommand().equals("PASS")) {
+                    debuglogger.debug("<< " + _request.getCommandLine());
+                }
+
+                if (!hasPermission(_request)) {
+                    _out.print(FtpReply.RESPONSE_530_NOT_LOGGED_IN);
+
+                    continue;
+                }
+
+                // execute command
+                _executing = true;
+                service(_request, _out);
+                _executing = false;
+                _lastActive = System.currentTimeMillis();
+            }
+
+            if (_stopRequestMessage != null) {
+                _out.print(new FtpReply(421, _stopRequestMessage));
+            } else {
+                _out.println("421 Connection closing");
+            }
+
+            _out.flush();
+        } catch (SocketException ex) {
+            logger.log(Level.INFO,
+                ex.getMessage() + ", closing for user " +
+                ((_user == null) ? "<not logged in>" : _user.getUsername()), ex);
+        } catch (Exception ex) {
+            logger.log(Level.INFO, "Exception, closing", ex);
+        } finally {
+            try {
+                _in.close();
+                _out.close();
+            } catch (Exception ex2) {
+                logger.log(Level.WARN, "Exception closing stream", ex2);
+            }
+
+            if (isAuthenticated()) {
+                _user.updateLastAccessTime();
+                dispatchFtpEvent(new ConnectionEvent(this, "LOGOUT"));
+            }
+
+            getConnectionManager().remove(this);
+        }
+    }
+
+    /**
+     * Execute the ftp command.
+     */
+    public void service(FtpRequest request, PrintWriter out)
+        throws IOException {
+        FtpReply reply;
+
+        try {
+            reply = _commandManager.execute(this);
+        } catch (UnhandledCommandException e) {
+            reply = new FtpReply(500, e.getMessage());
+            logger.warn("", e);
+        } catch (Throwable e) {
+            reply = new FtpReply(500, e.toString());
+            logger.warn("", e);
+        }
+
+        if (reply != null) {
+            out.print(reply);
+        }
+    }
+
+    public void setAuthenticated(boolean authenticated) {
+        _authenticated = authenticated;
+
+        if (isAuthenticated() &&
+                !getConnectionManager().getGlobalContext().getConfig()
+                         .getHideIps()) {
+            _thread.setName("FtpConn from " +
+                getClientAddress().getHostAddress() + " " +
+                _user.getUsername() + "/" + _user.getGroupName());
+        }
+    }
+
+    public void setControlSocket(Socket socket) {
+        try {
+            _controlSocket = socket;
+            _in = new BufferedReader(new InputStreamReader(
+                        _controlSocket.getInputStream(), "ISO-8859-1"));
+
+            _out = new PrintWriter(new OutputStreamWriter(
+                        new AddAsciiOutputStream(
+                            _controlSocket.getOutputStream()), "ISO-8859-1"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void setCurrentDirectory(LinkedRemoteFileInterface file) {
+        _currentDirectory = file;
+    }
+
+    public void setUser(User user) {
+        _user = user;
+    }
+
+    public void start() {
+        _thread = new Thread(this);
+        _thread.start();
+
+        // start() calls run() and execution will start in the background.
+    }
+
+    /**
+     *  returns a two-line status
+     */
+    public String status() {
+        return jprintf(BaseFtpConnection.class.getName(), "statusline");
+    }
+
+    /**
+     * User logout and stop this thread.
+     */
+    public void stop() {
+        _stopRequest = true;
+    }
+
+    public void stop(String message) {
+        _stopRequestMessage = message;
+
+        if (getDataConnectionHandler().isTransfering()) {
+            try {
+                getDataConnectionHandler().getTransfer().abort();
+            } catch (RemoteException e) {
+                getDataConnectionHandler().getTranferSlave()
+                    .handleRemoteException(e);
+            }
+        }
+
+        stop();
+    }
+
+    public String toString() {
+        StringBuffer buf = new StringBuffer("[BaseFtpConnection");
+
+        if (_user != null) {
+            buf.append("[user: " + _user + "]");
+        }
+
+        if (_request != null) {
+            buf.append("[command: " + _request.getCommand() + "]");
+        }
+
+        if (isExecuting()) {
+            buf.append("[executing]");
+        } else {
+            buf.append("[idle: " +
+                Time.formatTime(System.currentTimeMillis() - getLastActive()));
+        }
+
+        buf.append("]");
+
+        return buf.toString();
+    }
+
+    public OutputStream getOutputStream() throws IOException {
+        return _controlSocket.getOutputStream();
+    }
 }

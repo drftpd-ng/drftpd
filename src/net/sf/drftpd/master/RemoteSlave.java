@@ -17,20 +17,8 @@
  */
 package net.sf.drftpd.master;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.SlaveEvent;
@@ -42,439 +30,504 @@ import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Logger;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Serializable;
+
+import java.net.InetAddress;
+import java.net.SocketException;
+
+import java.rmi.RemoteException;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.53 2004/07/29 19:39:38 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.54 2004/08/03 20:13:56 zubov Exp $
  */
 public class RemoteSlave implements Comparable, Serializable {
-	private transient int _errors;
-	private transient long _lasterror;
+    private static final Logger logger = Logger.getLogger(RemoteSlave.class);
+    private transient int _errors;
+    private transient long _lasterror;
+    private HashMap renameQueue;
+    private transient int _maxPath;
+    private transient InetAddress _inetAddress;
+    private transient long _lastDownloadSending = 0;
+    private transient long _lastPing;
+    private transient long _lastUploadReceiving = 0;
+    private transient SlaveManagerImpl _manager;
+    private Collection ipMasks;
+    private transient String _name;
+    private transient Slave _slave;
+    private transient SlaveStatus _status;
+    private Properties keysAndValues;
+    private transient boolean _available;
 
-	/**
-	 * Used by everything including tests
-	 */
-	public RemoteSlave(String name, SlaveManagerImpl manager) {
-		init(name,manager);
-		keysAndValues = new Properties();
-		ipMasks = new ArrayList();
-		renameQueue = new HashMap();
-		commit();
-	}
+    /**
+     * Used by everything including tests
+     */
+    public RemoteSlave(String name, SlaveManagerImpl manager) {
+        init(name, manager);
+        keysAndValues = new Properties();
+        ipMasks = new ArrayList();
+        renameQueue = new HashMap();
+        commit();
+    }
 
-	private void addQueueRename(String fileName, String destName) {
-		if (isAvailable())
-			throw new IllegalStateException("Slave is available, you cannot queue an operation");
-		if (renameQueue.containsKey(fileName))
-			throw new IllegalArgumentException(
-				fileName + " is already in the queue for processing");
-		renameQueue.put(fileName, destName);
-		commit();
-	}
-	
-	/**
-	 * If X # of errors occur in Y amount of time, kick slave offline
-	 */
-	public void addNetworkError(SocketException e) {
-		// set slave offline if too many network errors
-		long errortimeout = Long.parseLong(getProperty("errortimeout","60000")); // one minute
-		if (errortimeout <= 0) errortimeout = 60000;
-		int maxerrors = Integer.parseInt(getProperty("maxerrors","5"));
-		if (maxerrors < 0) maxerrors = 5;
-		_errors -= (System.currentTimeMillis()-_lasterror)/errortimeout;
-		if (_errors < 0) {
-			_errors = 0;
-		}
-		_errors++;
-		_lasterror = System.currentTimeMillis();
-		if (_errors > maxerrors)
-			setOffline("Too many network errors");
-	}
+    private void addQueueRename(String fileName, String destName) {
+        if (isAvailable()) {
+            throw new IllegalStateException(
+                "Slave is available, you cannot queue an operation");
+        }
 
-	private void addQueueDelete(String fileName) {
-		addQueueRename(fileName, null);
-	}
+        if (renameQueue.containsKey(fileName)) {
+            throw new IllegalArgumentException(fileName +
+                " is already in the queue for processing");
+        }
 
-	/**
-	 * Rename files.
-	 */
-	public void rename(String from, String toDirPath, String toName)
-		throws IOException {
-		try {
-			getSlave().rename(from, toDirPath, toName);
-		} catch (RemoteException e) {
-			handleRemoteException(e);
-			addQueueRename(from, toDirPath + "/" + toName);
-		} catch (IOException e) {
-			setOffline(e.getMessage());
-			addQueueRename(from, toDirPath + "/" + toName);
-			throw e;
-		} catch (SlaveUnavailableException e) {
-			addQueueRename(from, toDirPath + "/" + toName);
-		}
-	}
+        renameQueue.put(fileName, destName);
+        commit();
+    }
 
-	/**
-	 * Delete files.
-	 */
-	public void deleteFile(String path) {
-		try {
-			getSlave().delete(path);
-		} catch (RemoteException e) {
-			handleRemoteException(e);
-			addQueueDelete(path);
-		} catch (FileNotFoundException e) {
-			return;
-		} catch (IOException e) {
-			setOffline("IOException deleting file, check logs for specific error");
-			addQueueDelete(path);
-			logger.error(e);
-		} catch (SlaveUnavailableException e) {
-			addQueueDelete(path);
-		}
-	}
+    /**
+     * If X # of errors occur in Y amount of time, kick slave offline
+     */
+    public void addNetworkError(SocketException e) {
+        // set slave offline if too many network errors
+        long errortimeout = Long.parseLong(getProperty("errortimeout", "60000")); // one minute
 
-	private HashMap renameQueue;
+        if (errortimeout <= 0) {
+            errortimeout = 60000;
+        }
 
-	private transient int _maxPath;
+        int maxerrors = Integer.parseInt(getProperty("maxerrors", "5"));
 
-	private static final Logger logger = Logger.getLogger(RemoteSlave.class);
+        if (maxerrors < 0) {
+            maxerrors = 5;
+        }
 
-	private transient InetAddress _inetAddress;
-	private transient long _lastDownloadSending = 0;
-	private transient long _lastPing;
-	private transient long _lastUploadReceiving = 0;
-	private transient SlaveManagerImpl _manager;
-	private Collection ipMasks;
-	private transient String _name;
-	private transient Slave _slave;
-	private transient SlaveStatus _status;
-	private Properties keysAndValues;
+        _errors -= ((System.currentTimeMillis() - _lasterror) / errortimeout);
 
-	private transient boolean _available;
+        if (_errors < 0) {
+            _errors = 0;
+        }
 
-	public void processQueue() throws RemoteException {
-		for (Iterator iter = renameQueue.keySet().iterator(); iter.hasNext();) {
-			String sourceFile = (String) iter.next();
-			String destFile = (String) renameQueue.get(sourceFile);
-			if (destFile == null) {
-				try {
-					_slave.delete(sourceFile);
-				} catch (IOException e) {
-					// just remove and continue, we can't do much
-					// if the OS has the file locked
-				}
-			} else {
-				String fileName =
-					destFile.substring(destFile.lastIndexOf("/") + 1);
-				String destDir =
-					destFile.substring(0, destFile.lastIndexOf("/"));
-				try {
-					_slave.rename(sourceFile, destDir, fileName);
-				} catch (IOException e) {
-					// just remove and continue, we can't do much except keep it in the queue
-					// if the OS has the file locked
-					continue;
-				}
-			}
-			iter.remove();
-		}
-	}
-	
-	public void setProperty(String name, String value) {
-		keysAndValues.put(name,value);
-		commit();
-	}
-	
-	public String getProperty(String name,String def) {
-		String value = keysAndValues.getProperty(name);
-		if (value == null)
-			return def;
-		return keysAndValues.getProperty(name);
-	}
-	
-	public Map getProperties() {
-		return Collections.unmodifiableMap(keysAndValues);
-	}
+        _errors++;
+        _lasterror = System.currentTimeMillis();
 
-	public void commit() {
-		if (_manager == null) {
-			return; // for testing
-		}
-		try {
-			XStream xst = new XStream(new DomDriver());
-			SafeFileWriter out = new SafeFileWriter(
-					(_manager.getSlaveFile(this.getName())));
-			try {
-				out.write(xst.toXML(this));
-			} finally {
-				out.close();
-			}
-			Logger.getLogger(RemoteSlave.class).debug("wrote " + getName());
-		} catch (IOException ex) {
-			throw new RuntimeException("Error writing slavefile for "
-					+ this.getName() + ": " + ex.getMessage(), ex);
-		}
-	}
+        if (_errors > maxerrors) {
+            setOffline("Too many network errors");
+        }
+    }
 
-/*	public void updateConfig(Properties config) {
-		if (name.equalsIgnoreCase("all")) {
-			throw new IllegalArgumentException(
-				name
-					+ " is a reserved keyword, it can't be used as a slave name");
-		}
-		_config = config;
-		renameQueue = new HashMap();
-	}
-*/
-/*	public Element getConfigXML() {
-		Element root = new org.jdom.Element("slave");
-		Enumeration e = _config.keys();
-		while (e.hasMoreElements()) {
-			String key = (String) e.nextElement();
-			Element tmp = new Element(key);
-			tmp.setText((String) _config.get(key));
-			root.addContent(tmp);
-		}
-		Iterator i = _masks.iterator();
-		while (i.hasNext()) {
-			String mask = (String) i.next();
-			Element tmp = new Element("mask");
-			tmp.setText(mask);
-			root.addContent(tmp);
-		}
-		return root;
-	}*/
+    private void addQueueDelete(String fileName) {
+        addQueueRename(fileName, null);
+    }
 
-	public int compareTo(Object o) {
-		if (!(o instanceof RemoteSlave))
-			throw new IllegalArgumentException();
-		return getName().compareTo(((RemoteSlave) o).getName());
-	}
+    /**
+     * Rename files.
+     */
+    public void rename(String from, String toDirPath, String toName)
+        throws IOException {
+        try {
+            getSlave().rename(from, toDirPath, toName);
+        } catch (RemoteException e) {
+            handleRemoteException(e);
+            addQueueRename(from, toDirPath + "/" + toName);
+        } catch (IOException e) {
+            setOffline(e.getMessage());
+            addQueueRename(from, toDirPath + "/" + toName);
+            throw e;
+        } catch (SlaveUnavailableException e) {
+            addQueueRename(from, toDirPath + "/" + toName);
+        }
+    }
 
-	public boolean equals(Object obj) {
-		return ((RemoteSlave) obj).getName().equals(getName());
-	}
+    /**
+     * Delete files.
+     */
+    public void deleteFile(String path) {
+        try {
+            getSlave().delete(path);
+        } catch (RemoteException e) {
+            handleRemoteException(e);
+            addQueueDelete(path);
+        } catch (FileNotFoundException e) {
+            return;
+        } catch (IOException e) {
+            setOffline(
+                "IOException deleting file, check logs for specific error");
+            addQueueDelete(path);
+            logger.error(e);
+        } catch (SlaveUnavailableException e) {
+            addQueueDelete(path);
+        }
+    }
 
-	public InetAddress getInetAddress() {
-		return _inetAddress;
-	}
+    public void processQueue() throws RemoteException {
+        for (Iterator iter = renameQueue.keySet().iterator(); iter.hasNext();) {
+            String sourceFile = (String) iter.next();
+            String destFile = (String) renameQueue.get(sourceFile);
 
-	public long getLastDownloadSending() {
-		return _lastDownloadSending;
-	}
+            if (destFile == null) {
+                try {
+                    _slave.delete(sourceFile);
+                } catch (IOException e) {
+                    // just remove and continue, we can't do much
+                    // if the OS has the file locked
+                }
+            } else {
+                String fileName = destFile.substring(destFile.lastIndexOf("/") +
+                        1);
+                String destDir = destFile.substring(0, destFile.lastIndexOf("/"));
 
-	public long getLastTransfer() {
-		return Math.max(getLastDownloadSending(), getLastUploadReceiving());
-	}
+                try {
+                    _slave.rename(sourceFile, destDir, fileName);
+                } catch (IOException e) {
+                    // just remove and continue, we can't do much except keep it in the queue
+                    // if the OS has the file locked
+                    continue;
+                }
+            }
 
-	public long getLastUploadReceiving() {
-		return _lastUploadReceiving;
-	}
-	
-	public SlaveManagerImpl getManager() {
-		return _manager;
-	}
+            iter.remove();
+        }
+    }
 
-	public Collection getMasks() {
-		return ipMasks;
-	}
+    public void setProperty(String name, String value) {
+        keysAndValues.put(name, value);
+        commit();
+    }
 
-	/**
-	 * Returns the name.
-	 */
-	public String getName() {
-		return _name;
-	}
+    public String getProperty(String name, String def) {
+        String value = keysAndValues.getProperty(name);
 
-	/**
-	 * Throws NoAvailableSlaveException only if slave is offline
-	 */
-	public Slave getSlave() throws SlaveUnavailableException {
-		if (!isAvailable())
-			throw new SlaveUnavailableException("slave is offline");
-		return _slave;
-	}
+        if (value == null) {
+            return def;
+        }
 
-	/**
-	 * Returns the RemoteSlave's stored SlaveStatus, can return a status before remerge() is completed
-	 */
-	public synchronized SlaveStatus getStatus() throws SlaveUnavailableException {
-		if (_status == null) {
-			throw new SlaveUnavailableException();
-		}
-		return _status;
-	}
+        return keysAndValues.getProperty(name);
+    }
 
-	public synchronized void updateStatus() throws SlaveUnavailableException {
-		try {
-			_status = getSlave().getSlaveStatus();
-		} catch (RemoteException e) {
-			handleRemoteException(e);
-		}
-	}
+    public Map getProperties() {
+        return Collections.unmodifiableMap(keysAndValues);
+    }
 
-	/**
-	 * @param ex RemoteException
-	 */
-	public synchronized void handleRemoteException(RemoteException ex) {
-		logger.warn("Exception from " + getName() + ", removing", ex);
-		setOffline(ex.getCause().getMessage());
-	}
+    public void commit() {
+        if (_manager == null) {
+            return; // for testing
+        }
 
-	public int hashCode() {
-		return getName().hashCode();
-	}
+        try {
+            XStream xst = new XStream(new DomDriver());
+            SafeFileWriter out = new SafeFileWriter((_manager.getSlaveFile(
+                        this.getName())));
 
-	public void setAvailable(boolean available) {
-		_available = available;
-	}
+            try {
+                out.write(xst.toXML(this));
+            } finally {
+                out.close();
+            }
 
-	public boolean isAvailable() {
-		return _available;
-	}
+            Logger.getLogger(RemoteSlave.class).debug("wrote " + getName());
+        } catch (IOException ex) {
+            throw new RuntimeException("Error writing slavefile for " +
+                this.getName() + ": " + ex.getMessage(), ex);
+        }
+    }
 
-	public boolean isAvailablePing() {
-		try {
-			getSlave().ping();
-		} catch (RemoteException e) {
-			handleRemoteException(e);
-			return false;
-		} catch (SlaveUnavailableException e) {
-			return false;
-		}
-		return isAvailable();
-	}
+    /*        public void updateConfig(Properties config) {
+                    if (name.equalsIgnoreCase("all")) {
+                            throw new IllegalArgumentException(
+                                    name
+                                            + " is a reserved keyword, it can't be used as a slave name");
+                    }
+                    _config = config;
+                    renameQueue = new HashMap();
+            }
+    */
+    /*        public Element getConfigXML() {
+                    Element root = new org.jdom.Element("slave");
+                    Enumeration e = _config.keys();
+                    while (e.hasMoreElements()) {
+                            String key = (String) e.nextElement();
+                            Element tmp = new Element(key);
+                            tmp.setText((String) _config.get(key));
+                            root.addContent(tmp);
+                    }
+                    Iterator i = _masks.iterator();
+                    while (i.hasNext()) {
+                            String mask = (String) i.next();
+                            Element tmp = new Element("mask");
+                            tmp.setText(mask);
+                            root.addContent(tmp);
+                    }
+                    return root;
+            }*/
+    public int compareTo(Object o) {
+        if (!(o instanceof RemoteSlave)) {
+            throw new IllegalArgumentException();
+        }
 
-	public void setLastDownloadSending(long lastDownloadSending) {
-		_lastDownloadSending = lastDownloadSending;
-	}
-	public void setLastUploadReceiving(long lastUploadReceiving) {
-		_lastUploadReceiving = lastUploadReceiving;
-	}
+        return getName().compareTo(((RemoteSlave) o).getName());
+    }
 
-	public synchronized void setOffline(String reason) {
-		if (!isAvailable()) {
-			return; // already offline
-		}
-		if (_manager == null) {
-			throw new RuntimeException("_manager == null");
-		}
-		if (_slave != null) {
-			_manager.getGlobalContext().dispatchFtpEvent(
-				new SlaveEvent("DELSLAVE", reason, this));
-		}
-		_slave = null;
-		_status = null;
-		_inetAddress = null;
-		_maxPath = 0;
-		setAvailable(false);
-	}
+    public boolean equals(Object obj) {
+        return ((RemoteSlave) obj).getName().equals(getName());
+    }
 
-	public void setSlave(
-		Slave slave,
-		InetAddress inetAddress,
-		SlaveStatus status,
-		int maxPath)
-		throws RemoteException {
-		if (slave == null)
-			throw new IllegalArgumentException();
-		_slave = slave;
-		_inetAddress = inetAddress;
-		_status = status;
-		_maxPath = maxPath;
-		processQueue();
-		_errors = 0;
-		_lasterror = System.currentTimeMillis();
-	}
+    public InetAddress getInetAddress() {
+        return _inetAddress;
+    }
 
-	public String toString() {
-		try {
-			return getName() + "[slave=" + getSlave().toString() + "]";
-		} catch (SlaveUnavailableException e) {
-			return getName() + "[slave=offline]";
-		}
-	}
+    public long getLastDownloadSending() {
+        return _lastDownloadSending;
+    }
 
-	public static Hashtable rslavesToHashtable(Collection rslaves) {
-		Hashtable map = new Hashtable(rslaves.size());
-		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
-			RemoteSlave rslave = (RemoteSlave) iter.next();
-			map.put(rslave.getName(), rslave);
-		}
-		return map;
-	}
+    public long getLastTransfer() {
+        return Math.max(getLastDownloadSending(), getLastUploadReceiving());
+    }
 
-	public long getLastTransferForDirection(char dir) {
-		if (dir == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-			return getLastUploadReceiving();
-		} else if (dir == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-			return getLastDownloadSending();
-		} else if (dir == Transfer.TRANSFER_THROUGHPUT) {
-			return getLastTransfer();
-		} else {
-			throw new IllegalArgumentException();
-		}
-	}
+    public long getLastUploadReceiving() {
+        return _lastUploadReceiving;
+    }
 
-	/**
-	 * Returns an updated slaveRoot
-	 */
-	public LinkedRemoteFile getSlaveRoot()
-		throws IOException, SlaveUnavailableException {
-		if (_slave == null)
-			throw new SlaveUnavailableException("Cannot getSlaveRoot() with Offline Slave");
-		return _slave.getSlaveRoot();
-	}
+    public SlaveManagerImpl getManager() {
+        return _manager;
+    }
 
-	public void setLastDirection(char direction, long l) {
-		switch (direction) {
-			case Transfer.TRANSFER_RECEIVING_UPLOAD :
-				setLastUploadReceiving(l);
-				return;
-			case Transfer.TRANSFER_SENDING_DOWNLOAD :
-				setLastDownloadSending(l);
-				return;
-			default :
-				throw new IllegalArgumentException();
-		}
-	}
-	/**
-	 * Returns the RemoteSlave's stored SlaveStatus, will not return a status before remerge() is completed
-	 */
-	public synchronized SlaveStatus getStatusAvailable() throws SlaveUnavailableException {
-		if (isAvailable())
-			return getStatus();
-		throw new SlaveUnavailableException("Slave is not online");
-	}
+    public Collection getMasks() {
+        return ipMasks;
+    }
 
-	/**
-	 * @return true if the mask is a valid mask
-	 */
-	public boolean addMask(String mask) {
-		if (mask.indexOf("@") == -1  || mask.endsWith("@") || mask.startsWith("@")){
-			// @ has to exist as well as not being the first/last character
-			return false;
-		}
-		ipMasks.add(mask);
-		commit();
-		return true;
-	}
+    /**
+     * Returns the name.
+     */
+    public String getName() {
+        return _name;
+    }
 
-	/**
-	 * @return true if the mask was removed successfully
-	 */
-	public boolean removeMask(String mask) {
-		boolean value = ipMasks.remove(mask);
-		if (value)
-			commit();
-		return value;
-	}
+    /**
+     * Throws NoAvailableSlaveException only if slave is offline
+     */
+    public Slave getSlave() throws SlaveUnavailableException {
+        if (!isAvailable()) {
+            throw new SlaveUnavailableException("slave is offline");
+        }
 
-	protected void init(String name,SlaveManagerImpl impl) {
-		_name = name;
-		_manager = impl;
-	}
+        return _slave;
+    }
+
+    /**
+     * Returns the RemoteSlave's stored SlaveStatus, can return a status before remerge() is completed
+     */
+    public synchronized SlaveStatus getStatus()
+        throws SlaveUnavailableException {
+        if (_status == null) {
+            throw new SlaveUnavailableException();
+        }
+
+        return _status;
+    }
+
+    public synchronized void updateStatus() throws SlaveUnavailableException {
+        try {
+            _status = getSlave().getSlaveStatus();
+        } catch (RemoteException e) {
+            handleRemoteException(e);
+        }
+    }
+
+    /**
+     * @param ex RemoteException
+     */
+    public synchronized void handleRemoteException(RemoteException ex) {
+        logger.warn("Exception from " + getName() + ", removing", ex);
+        setOffline(ex.getCause().getMessage());
+    }
+
+    public int hashCode() {
+        return getName().hashCode();
+    }
+
+    public void setAvailable(boolean available) {
+        _available = available;
+    }
+
+    public boolean isAvailable() {
+        return _available;
+    }
+
+    public boolean isAvailablePing() {
+        try {
+            getSlave().ping();
+        } catch (RemoteException e) {
+            handleRemoteException(e);
+
+            return false;
+        } catch (SlaveUnavailableException e) {
+            return false;
+        }
+
+        return isAvailable();
+    }
+
+    public void setLastDownloadSending(long lastDownloadSending) {
+        _lastDownloadSending = lastDownloadSending;
+    }
+
+    public void setLastUploadReceiving(long lastUploadReceiving) {
+        _lastUploadReceiving = lastUploadReceiving;
+    }
+
+    public synchronized void setOffline(String reason) {
+        if (!isAvailable()) {
+            return; // already offline
+        }
+
+        if (_manager == null) {
+            throw new RuntimeException("_manager == null");
+        }
+
+        if (_slave != null) {
+            _manager.getGlobalContext().dispatchFtpEvent(new SlaveEvent(
+                    "DELSLAVE", reason, this));
+        }
+
+        _slave = null;
+        _status = null;
+        _inetAddress = null;
+        _maxPath = 0;
+        setAvailable(false);
+    }
+
+    public void setSlave(Slave slave, InetAddress inetAddress,
+        SlaveStatus status, int maxPath) throws RemoteException {
+        if (slave == null) {
+            throw new IllegalArgumentException();
+        }
+
+        _slave = slave;
+        _inetAddress = inetAddress;
+        _status = status;
+        _maxPath = maxPath;
+        processQueue();
+        _errors = 0;
+        _lasterror = System.currentTimeMillis();
+    }
+
+    public String toString() {
+        try {
+            return getName() + "[slave=" + getSlave().toString() + "]";
+        } catch (SlaveUnavailableException e) {
+            return getName() + "[slave=offline]";
+        }
+    }
+
+    public static Hashtable rslavesToHashtable(Collection rslaves) {
+        Hashtable map = new Hashtable(rslaves.size());
+
+        for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
+            RemoteSlave rslave = (RemoteSlave) iter.next();
+            map.put(rslave.getName(), rslave);
+        }
+
+        return map;
+    }
+
+    public long getLastTransferForDirection(char dir) {
+        if (dir == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+            return getLastUploadReceiving();
+        } else if (dir == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+            return getLastDownloadSending();
+        } else if (dir == Transfer.TRANSFER_THROUGHPUT) {
+            return getLastTransfer();
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    /**
+     * Returns an updated slaveRoot
+     */
+    public LinkedRemoteFile getSlaveRoot()
+        throws IOException, SlaveUnavailableException {
+        if (_slave == null) {
+            throw new SlaveUnavailableException(
+                "Cannot getSlaveRoot() with Offline Slave");
+        }
+
+        return _slave.getSlaveRoot();
+    }
+
+    public void setLastDirection(char direction, long l) {
+        switch (direction) {
+        case Transfer.TRANSFER_RECEIVING_UPLOAD:
+            setLastUploadReceiving(l);
+
+            return;
+
+        case Transfer.TRANSFER_SENDING_DOWNLOAD:
+            setLastDownloadSending(l);
+
+            return;
+
+        default:
+            throw new IllegalArgumentException();
+        }
+    }
+
+    /**
+     * Returns the RemoteSlave's stored SlaveStatus, will not return a status before remerge() is completed
+     */
+    public synchronized SlaveStatus getStatusAvailable()
+        throws SlaveUnavailableException {
+        if (isAvailable()) {
+            return getStatus();
+        }
+
+        throw new SlaveUnavailableException("Slave is not online");
+    }
+
+    /**
+     * @return true if the mask is a valid mask
+     */
+    public boolean addMask(String mask) {
+        if ((mask.indexOf("@") == -1) || mask.endsWith("@") ||
+                mask.startsWith("@")) {
+            // @ has to exist as well as not being the first/last character
+            return false;
+        }
+
+        ipMasks.add(mask);
+        commit();
+
+        return true;
+    }
+
+    /**
+     * @return true if the mask was removed successfully
+     */
+    public boolean removeMask(String mask) {
+        boolean value = ipMasks.remove(mask);
+
+        if (value) {
+            commit();
+        }
+
+        return value;
+    }
+
+    protected void init(String name, SlaveManagerImpl impl) {
+        _name = name;
+        _manager = impl;
+    }
 }

@@ -1,16 +1,16 @@
 /*
  * This file is part of DrFTPD, Distributed FTP Daemon.
- * 
+ *
  * DrFTPD is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * DrFTPD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -19,23 +19,22 @@ package net.sf.drftpd.remotefile;
 
 import java.util.Comparator;
 
+
 /**
  * @author mog
- * @version $Id: RemoteFileLastModifiedComparator.java,v 1.3 2004/02/23 01:14:40 mog Exp $
+ * @version $Id: RemoteFileLastModifiedComparator.java,v 1.4 2004/08/03 20:14:02 zubov Exp $
  */
 public class RemoteFileLastModifiedComparator implements Comparator {
+    private boolean _reverse;
 
-	private boolean _reverse;
+    public RemoteFileLastModifiedComparator(boolean reverse) {
+        _reverse = reverse;
+    }
 
-	public RemoteFileLastModifiedComparator(boolean reverse) {
-		_reverse = reverse;
-	}
+    public int compare(Object o1, Object o2) {
+        long thisVal = ((LinkedRemoteFileInterface) (_reverse ? o2 : o1)).length();
+        long anotherVal = ((LinkedRemoteFileInterface) (_reverse ? o1 : o2)).length();
 
-	public int compare(Object o1, Object o2) {
-		long thisVal = ((LinkedRemoteFileInterface)(_reverse ? o2 : o1)).length();
-		long anotherVal = ((LinkedRemoteFileInterface)(_reverse ? o1 : o2)).length();
-		
-		return (thisVal<anotherVal ? -1 : (thisVal==anotherVal ? 0 : 1));
-	}
-
+        return ((thisVal < anotherVal) ? (-1) : ((thisVal == anotherVal) ? 0 : 1));
+    }
 }

@@ -1,15 +1,19 @@
 package socks.server;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
+
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+
 import java.util.StringTokenizer;
 
+
 /**
- Class Ident provides means to obtain user name of the owner of the socket 
+ Class Ident provides means to obtain user name of the owner of the socket
  on remote machine, providing remote machine runs identd daemon.
  <p>
  To use it:
@@ -20,12 +24,35 @@ import java.util.StringTokenizer;
    else handleIdentError(id.errorCode,id.errorMessage)
    </pre></tt>
 */
-public class Ident{
+public class Ident {
+    /** Identd on port 113 can't be contacted*/
+    public static final int ERR_NO_CONNECT = 1;
+
+    /** Connection timed out*/
+    public static final int ERR_TIMEOUT = 2;
+
+    /** Identd daemon responded with ERROR, in this case errorMessage
+        contains the string explanation, as send by the daemon.
+    */
+    public static final int ERR_PROTOCOL = 3;
+
+    /**
+     When parsing server response protocol error happened.
+    */
+    public static final int ERR_PROTOCOL_INCORRECT = 4;
+
+    /** Maximum amount of time we should wait before dropping the
+      connection to identd server.Setting it to 0 implies infinit
+      timeout.
+    */
+    public static final int connectionTimeout = 10000;
 
     /** Error Message can be null.*/
     public String errorMessage;
+
     /** Host type as returned by daemon, can be null, if error happened*/
     public String hostType;
+
     /** User name as returned by the identd daemon, or null, if it failed*/
     public String userName;
 
@@ -34,32 +61,13 @@ public class Ident{
         the corresponding message.
     */
     public boolean successful;
+
     /** Error code*/
     public int errorCode;
-    /** Identd on port 113 can't be contacted*/
-    public static final int ERR_NO_CONNECT = 1;
-    /** Connection timed out*/
-    public static final int ERR_TIMEOUT = 2;
-    /** Identd daemon responded with ERROR, in this case errorMessage
-        contains the string explanation, as send by the daemon.
-    */
-    public static final int ERR_PROTOCOL = 3;
-    /**
-     When parsing server response protocol error happened.
-    */
-    public static final int ERR_PROTOCOL_INCORRECT = 4;
-
-
-    /** Maximum amount of time we should wait before dropping the
-      connection to identd server.Setting it to 0 implies infinit
-      timeout.
-    */
-    public static final int connectionTimeout = 10000;
-    
 
     /**
      Constructor tries to connect to Identd daemon on the host of the
-     given socket, and retrieve user name of the owner of given socket 
+     given socket, and retrieve user name of the owner of given socket
      connection on remote machine. After constructor returns public
      fields are initialised to whatever the server returned.
      <p>
@@ -72,92 +80,101 @@ public class Ident{
      Constructor may block, for a while.
      @param s Socket whose ownership on remote end should be obtained.
     */
-    public Ident(Socket s ){
-      Socket sock = null;
-      successful = false; //We are pessimistic
+    public Ident(Socket s) {
+        Socket sock = null;
+        successful = false; //We are pessimistic
 
-      try{
-        sock = new Socket();
-		sock.setSoTimeout(connectionTimeout);
-        sock.connect(new InetSocketAddress(s.getInetAddress(),113), connectionTimeout);
-        byte[] request = (""+s.getPort()+" , "+
-                             s.getLocalPort()+"\r\n").getBytes();
+        try {
+            sock = new Socket();
+            sock.setSoTimeout(connectionTimeout);
+            sock.connect(new InetSocketAddress(s.getInetAddress(), 113),
+                connectionTimeout);
 
-        sock.getOutputStream().write(request);
+            byte[] request = ("" + s.getPort() + " , " + s.getLocalPort() +
+                "\r\n").getBytes();
 
-        BufferedReader in = new BufferedReader(
-                            new InputStreamReader(sock.getInputStream()));
+            sock.getOutputStream().write(request);
 
-        parseResponse(in.readLine());
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                        sock.getInputStream()));
 
-      }catch(InterruptedIOException iioe){
-        errorCode = ERR_TIMEOUT;
-        errorMessage = "Connection to identd timed out.";
-      }catch(ConnectException ce){
-        errorCode = ERR_NO_CONNECT;
-        errorMessage = "Connection to identd server failed.";
+            parseResponse(in.readLine());
+        } catch (InterruptedIOException iioe) {
+            errorCode = ERR_TIMEOUT;
+            errorMessage = "Connection to identd timed out.";
+        } catch (ConnectException ce) {
+            errorCode = ERR_NO_CONNECT;
+            errorMessage = "Connection to identd server failed.";
+        } catch (IOException ioe) {
+            errorCode = ERR_NO_CONNECT;
+            errorMessage = "" + ioe;
+        } finally {
+            try {
+                if (sock != null) {
+                    sock.close();
+                }
+            } catch (IOException ioe) {
+            }
 
-      }catch(IOException ioe){
-        errorCode = ERR_NO_CONNECT;
-        errorMessage = ""+ioe;
-      }finally{
-        try{ if(sock!=null) sock.close();}catch(IOException ioe){};
-      }
+            ;
+        }
     }
 
-    private void parseResponse(String response){
-      if(response == null){
-         errorCode = ERR_PROTOCOL_INCORRECT;
-         errorMessage = "Identd server closed connection.";
-         return;
-      }
+    private void parseResponse(String response) {
+        if (response == null) {
+            errorCode = ERR_PROTOCOL_INCORRECT;
+            errorMessage = "Identd server closed connection.";
 
-      StringTokenizer st = new StringTokenizer(response,":");
-      if(st.countTokens() < 3){
-         errorCode = ERR_PROTOCOL_INCORRECT;
-         errorMessage = "Can't parse server response.";
-         return;
-      }
+            return;
+        }
 
-      st.nextToken(); //Discard first token, it's basically what we have send
-      String command = st.nextToken().trim().toUpperCase();
+        StringTokenizer st = new StringTokenizer(response, ":");
 
-      if(command.equals("USERID") && st.countTokens() >= 2){
-        successful = true;
-        hostType = st.nextToken().trim();
-        userName = st.nextToken().trim();//Get all that is left
-      }else if(command.equals("ERROR")){
-        errorCode = ERR_PROTOCOL;
-        errorMessage = st.nextToken();
-      }else{
-        errorCode = ERR_PROTOCOL_INCORRECT;
-        System.out.println("Opa!");
-        errorMessage = "Can't parse server response.";
-      }
+        if (st.countTokens() < 3) {
+            errorCode = ERR_PROTOCOL_INCORRECT;
+            errorMessage = "Can't parse server response.";
 
+            return;
+        }
 
+        st.nextToken(); //Discard first token, it's basically what we have send
+
+        String command = st.nextToken().trim().toUpperCase();
+
+        if (command.equals("USERID") && (st.countTokens() >= 2)) {
+            successful = true;
+            hostType = st.nextToken().trim();
+            userName = st.nextToken().trim(); //Get all that is left
+        } else if (command.equals("ERROR")) {
+            errorCode = ERR_PROTOCOL;
+            errorMessage = st.nextToken();
+        } else {
+            errorCode = ERR_PROTOCOL_INCORRECT;
+            System.out.println("Opa!");
+            errorMessage = "Can't parse server response.";
+        }
     }
 
-///////////////////////////////////////////////
-//USED for Testing
-/*
-    public static void main(String[] args) throws IOException{
+    ///////////////////////////////////////////////
+    //USED for Testing
 
-       Socket s = null;
-       s = new Socket("gp101-16", 1391);
+    /*
+        public static void main(String[] args) throws IOException{
 
-       Ident id = new Ident(s);
-       if(id.successful){
-         System.out.println("User: "+id.userName);
-         System.out.println("HostType: "+id.hostType);
-       }else{
-         System.out.println("ErrorCode: "+id.errorCode);
-         System.out.println("ErrorMessage: "+id.errorMessage);
+           Socket s = null;
+           s = new Socket("gp101-16", 1391);
 
-       }
+           Ident id = new Ident(s);
+           if(id.successful){
+             System.out.println("User: "+id.userName);
+             System.out.println("HostType: "+id.hostType);
+           }else{
+             System.out.println("ErrorCode: "+id.errorCode);
+             System.out.println("ErrorMessage: "+id.errorMessage);
 
-       if(s!= null) s.close();
-    }
-//*/
+           }
 
+           if(s!= null) s.close();
+        }
+    //*/
 }
