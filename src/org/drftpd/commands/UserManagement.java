@@ -510,7 +510,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                             conn.jprintf(UserManagement.class,
                                 "changeratio.nomoreslots"));
                     }
-                } else if (ratio != 0F) {
+                } else if (ratio < 3) {
                     return new Reply(452,
                         conn.jprintf(UserManagement.class,
                             "changeratio.invalidratio"));
