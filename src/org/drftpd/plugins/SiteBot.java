@@ -78,6 +78,7 @@ import org.drftpd.commands.TransferStatistics;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.SlaveManager;
+import org.drftpd.misc.CaseInsensitiveHashMap;
 import org.drftpd.permissions.Permission;
 import org.drftpd.remotefile.FileUtils;
 import org.drftpd.remotefile.LinkedRemoteFile;
@@ -101,6 +102,7 @@ import f00f.net.irc.martyr.commands.InviteCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 import f00f.net.irc.martyr.commands.NickCommand;
 import f00f.net.irc.martyr.commands.NoticeCommand;
+import f00f.net.irc.martyr.commands.PartCommand;
 import f00f.net.irc.martyr.commands.RawCommand;
 import f00f.net.irc.martyr.commands.WhoisCommand;
 import f00f.net.irc.martyr.replies.WhoisUserReply;
@@ -135,7 +137,7 @@ public class SiteBot extends FtpListener implements Observer {
     private boolean _enableAnnounce;
     private int _maxUserAnnounce;
     private int _maxGroupAnnounce;
-    private HashMap<String,ChannelConfig> _channelMap;
+    private CaseInsensitiveHashMap<String,ChannelConfig> _channelMap;
 
     //private String _key;
     private Hashtable<String,SectionSettings> _sections;
@@ -235,7 +237,7 @@ public class SiteBot extends FtpListener implements Observer {
         return ret;
     }
 
-    public void actionPerformed(Event event) {
+    public synchronized void actionPerformed(Event event) {
     	if (event.getCommand().equals("RELOAD")) {
 			try {
 				reload();
@@ -644,7 +646,7 @@ public class SiteBot extends FtpListener implements Observer {
 
             	if (chan.findMember(getIRCConnection().getClientState().getNick()
                                     .getNick()).hasOps()) {
-            		ChannelConfig cc = getChannelConfig(chan.getName());
+            		ChannelConfig cc = _channelMap.get(chan.getName());
             		if (cc != null) {
             			if (cc.checkPerms(event.getUser())) {
             				_conn.sendCommand(new InviteCommand(nick, chan.getName()));
@@ -837,6 +839,7 @@ public class SiteBot extends FtpListener implements Observer {
     }
     
     public class ChannelConfig {
+    	private AutoJoin _autoJoin = null;
     	private String _blowKey = null;
     	private String _chanKey = null;
     	private WeakReference<Blowfish> _blowFish = null;
@@ -849,6 +852,14 @@ public class SiteBot extends FtpListener implements Observer {
     			_blowFish = new WeakReference<Blowfish>(new Blowfish(_blowKey));
     		}
     	}
+    	public void setAutoJoin(AutoJoin aj) {
+    		_autoJoin = aj;
+    	}
+    	
+    	public AutoJoin getAutoJoin() {
+    		return _autoJoin;
+    	}
+    	
     	public String getBlowfishKey(User user) throws ObjectNotFoundException {
     		if (checkPerms(user)) {
     			return _blowKey;
@@ -899,12 +910,9 @@ public class SiteBot extends FtpListener implements Observer {
     /**
      * Loads settings that require the IRCConnection _conn
      */
-    private void connect(Properties ircCfg)
+    private synchronized void connect(Properties ircCfg)
         throws UnknownHostException, IOException {
-        if (_conn != null) {
-            _autoReconnect.disable();
-            _conn.disconnect();
-        }
+        disconnect();
 
         _conn = new IRCConnection();
         
@@ -913,10 +921,6 @@ public class SiteBot extends FtpListener implements Observer {
             _conn.setSendDelay(Integer.parseInt(ircCfg.getProperty("irc.sendDelay")));
         } catch (NumberFormatException e1) {
             logger.warn("irc.sendDelay not set, defaulting to 300ms");
-        }
-        for (String channelName : _channelMap.keySet()) {
-        	ChannelConfig cc = _channelMap.get(channelName);
-        	new AutoJoin(_conn, channelName, cc._chanKey);
         }
         
         _autoReconnect = new AutoReconnect(_conn);
@@ -950,8 +954,12 @@ public class SiteBot extends FtpListener implements Observer {
     }
 
     public void disconnect() {
-        _autoReconnect.disable();
-        _conn.disconnect();
+    	if (_autoReconnect != null) {
+    		_autoReconnect.disable();
+    	}
+    	if (_conn != null) {
+    		_conn.disconnect();
+    	}
     }
 
     private void fillEnvSection(ReplacerEnvironment env,
@@ -1021,11 +1029,14 @@ public class SiteBot extends FtpListener implements Observer {
             env.add("totalfiles", "" + sfvfile.size());
             env.add("totalspeed", Bytes.formatBytes(sfvfile.getXferspeed()));
         } catch (Exception ex) {
-            //COULD BE multi-cd, PRE will have to get it owns fillEnvSection with sub-dir .sfv support!
-            logger.warn("Couldn't get SFV file in announce", ex);
-
             //env.add("size", Bytes.formatBytes(file.length()));
             env.add("totalfiles", "" + file.getFiles().size());
+            //COULD BE multi-cd, PRE will have to get it owns fillEnvSection with sub-dir .sfv support!
+        	if (ex instanceof FileNotFoundException) {
+        		// no need to spam FileNotFound on SFVFile lookups
+        		return;
+        	}
+            logger.warn("Couldn't get SFV file in announce");
         }
     }
 
@@ -1114,8 +1125,8 @@ public class SiteBot extends FtpListener implements Observer {
     protected void reload() throws FileNotFoundException, IOException {
         Properties ircCfg = new Properties();
         ircCfg.load(new FileInputStream("conf/irc.conf"));
-        reload(ircCfg);
         reloadIRCCommands();
+        reload(ircCfg);
     }
 
 	private void reloadIRCCommands() throws IOException {
@@ -1167,14 +1178,17 @@ public class SiteBot extends FtpListener implements Observer {
 	/**
 	 * Loads irc settings, then passes it off to connect(Properties)
 	 */
-	protected void reload(Properties ircCfg) throws IOException {
+	protected synchronized void reload(Properties ircCfg) throws IOException {
         _server = PropertyHelper.getProperty(ircCfg, "irc.server");
         _port = Integer.parseInt(PropertyHelper.getProperty(ircCfg, "irc.port"));
 
         _enableAnnounce = ircCfg.getProperty("irc.enable.announce", "false")
                                 .equals("true");
-        
-        _channelMap = new HashMap<String,ChannelConfig>();
+        CaseInsensitiveHashMap<String,ChannelConfig> oldChannelMap = new CaseInsensitiveHashMap<String, ChannelConfig>();
+        if (_channelMap != null) { // reload config
+        	oldChannelMap.putAll(_channelMap);
+        }
+        _channelMap = new CaseInsensitiveHashMap<String,ChannelConfig>();
 
         for (int i = 1;; i++) {
             String channelName = ircCfg.getProperty("irc.channel." + i);
@@ -1211,26 +1225,41 @@ public class SiteBot extends FtpListener implements Observer {
             _sections.put(name, new SectionSettings(ircCfg, i, chan));
         }
 
-        if ((_conn == null) ||
-                !_conn.getClientState().getServer().equals(_server) ||
+        if (_conn == null) {
+        	connect(ircCfg);
+        }
+        if ((!_conn.getClientState().getServer().equals(_server)) ||
                 (_conn.getClientState().getPort() != _port)) {
             logger.info("Reconnecting due to server change");
             connect(ircCfg);
-        } else {
-            if (!_conn.getClientState().getNick().getNick().equals(PropertyHelper.getProperty(
+        }
+        
+        if (_conn.getClientState().getNick() != null && !_conn.getClientState().getNick().getNick().equals(PropertyHelper.getProperty(
                             ircCfg, "irc.nick"))) {
                 logger.info("Switching to new nick");
                 _autoRegister.disable();
                 _autoRegister = addAutoRegister(ircCfg);
                 _conn.sendCommand(new NickCommand(ircCfg.getProperty("irc.nick")));
-                
-                //if (!_conn.getClientState().isOnChannel(_channelName)) {
-				// _autoJoin.disable();
-				// _conn.removeCommandObserver(_autoJoin);
-				// _conn.sendCommand(new PartCommand(oldchannel));
-				// _autoJoin = new AutoJoin(_conn, _channelName, _key);
-				//}
-            }
+        }
+        for (Enumeration e = _conn.getClientState().getChannelNames(); e.hasMoreElements();) {
+        	String currentChannel = (String) e.nextElement();
+        	if (_channelMap.containsKey(currentChannel)) { // still in channel
+        		ChannelConfig newCC = _channelMap.get(currentChannel);
+        		ChannelConfig oldCC = oldChannelMap.get(currentChannel);
+        		newCC.setAutoJoin(oldCC.getAutoJoin());
+        	} else { // removed from channel
+        		ChannelConfig oldCC = oldChannelMap.get(currentChannel);
+        		oldCC.getAutoJoin().disable();
+				_conn.sendCommand(new PartCommand(currentChannel));
+        		_conn.getClientState().removeChannel(currentChannel);
+        		_conn.removeCommandObserver(oldCC.getAutoJoin());
+        	}
+        }
+		for (String channelName : _channelMap.keySet()) {
+        	ChannelConfig cc = _channelMap.get(channelName);
+        	if (cc.getAutoJoin() == null) { // new channel!
+        		cc.setAutoJoin(new AutoJoin(_conn, channelName, cc._chanKey));
+        	}
         }
         
         _identWhoisQueue = new Hashtable<String,User>();
@@ -1272,7 +1301,7 @@ public class SiteBot extends FtpListener implements Observer {
         for (String line : lines) {
 			// don't encrypt private messages, at least not yet :)
 			if (isChan) {
-				line = getChannelConfig(dest).encrypt(line);
+				line = _channelMap.get(dest).encrypt(line);
 			}
 			_conn.sendCommand(new MessageCommand(dest, line));
 		}
@@ -1287,7 +1316,7 @@ public class SiteBot extends FtpListener implements Observer {
         for (String line : lines) {
 			// don't encrypt private notices, at least not yet :)
 			if (isChan) {
-				line = getChannelConfig(dest).encrypt(line);
+				line = _channelMap.get(dest).encrypt(line);
 			}
 			_conn.sendCommand(new RawCommand("NOTICE " + dest + " :" + line));
 		}
@@ -1323,7 +1352,7 @@ public class SiteBot extends FtpListener implements Observer {
         disconnect();
     }
 
-    public void update(Observable observer, Object updated) {
+    public synchronized void update(Observable observer, Object updated) {
     	// add ident for those who use site invite
 		if (updated instanceof WhoisUserReply) {
 			WhoisUserReply whor = (WhoisUserReply) updated;
@@ -1351,15 +1380,13 @@ public class SiteBot extends FtpListener implements Observer {
 			}
 			// clear the queue to avoid excessive memory usage
 			_identWhoisQueue.clear();
-		}
-
-		if ((updated instanceof MessageCommand)) {
+		} else if ((updated instanceof MessageCommand)) {
 			MessageCommand msgc = (MessageCommand) updated;
 
 			// recreate the MessageCommand with the decrypted text
 			if (!msgc.isPrivateToUs(_conn.getClientState())) {
 				try {
-					msgc = getChannelConfig(msgc.getDest()).decrypt(msgc); 
+					msgc = _channelMap.get(msgc.getDest()).decrypt(msgc);
 				} catch (UnsupportedEncodingException e) {
 					logger.warn("Unable to decrypt '" + msgc.getSourceString()
 							+ "'");
@@ -1413,17 +1440,6 @@ public class SiteBot extends FtpListener implements Observer {
 	 */
 	private String getSource(MessageCommand msgc) {
 		return msgc.isPrivateToUs(_conn.getClientState()) ? msgc.getSource().getNick() : msgc.getDest();
-	}
-
-	private ChannelConfig getChannelConfig(String chan) {
-	    ChannelConfig cc = null;
-        for (String channelName : _channelMap.keySet()) {
-            if (chan.equalsIgnoreCase(channelName))
-                return _channelMap.get(channelName);
-            else if (_primaryChannelName.equalsIgnoreCase(channelName))
-                cc = _channelMap.get(channelName);
-        }
-        return cc;
 	}
 	
 	public class IRCPermission {
@@ -1515,7 +1531,7 @@ public class SiteBot extends FtpListener implements Observer {
 	 * Returns the blowfish key for the channel specified
 	 */
 	public String getBlowfishKey(String channel, User user) throws ObjectNotFoundException {
-		ChannelConfig cc = getChannelConfig(channel);
+		ChannelConfig cc = _channelMap.get(channel);
 		if (cc != null) {
 			return cc.getBlowfishKey(user);
 		}
