@@ -89,7 +89,7 @@ public class NukeEvent extends UserEvent {
 		return "[NUKE:"+getPath()+",multiplier="+getMultiplier()+"]";
 	}
 
-	public Element toXML() {
+	public Element toJDOM() {
 		Element element = new Element("nuke");
 		element.addContent(new Element("user").setText(this.getUser().getUsername()));
 		element.addContent(new Element("path").setText(this.getPath()));

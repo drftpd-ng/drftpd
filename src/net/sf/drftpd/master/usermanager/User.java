@@ -172,6 +172,11 @@ public interface User {
 	 */
 	public abstract String getTagline();
 	/**
+	 * Returns the homedir(chroot).
+	 * @return String
+	 */
+	public abstract String getHomeDirectory();
+	/**
 	 * Returns the timelimit.
 	 * @return int
 	 */
@@ -367,7 +372,14 @@ public interface User {
 	 * Sets the tagline.
 	 * @param tagline The tagline to set
 	 */
+
 	public abstract void setTagline(String tagline);
+
+	/**
+	 * Sets the homedir(chroot).
+	 * @param home The homedir to set
+	 */
+	public abstract void setHomeDirectory(String home);
 	/**
 	 * Sets the timelimit.
 	 * @param timelimit The timelimit to set

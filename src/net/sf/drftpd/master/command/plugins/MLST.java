@@ -20,6 +20,7 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.MLSTSerialize;
@@ -99,6 +100,19 @@ public class MLST implements CommandHandler {
 
 	public String[] getFeatReplies() {
 		return new String[] { "MLST", "MLSD" };
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.master.command.CommandHandler#load(net.sf.drftpd.master.command.CommandManagerFactory)
+	 */
+	public void load(CommandManagerFactory initializer) {}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.master.command.CommandHandler#unload()
+	 */
+	public void unload() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

@@ -7,7 +7,6 @@
 package net.sf.drftpd.master.command.plugins;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -15,6 +14,7 @@ import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
@@ -159,12 +159,7 @@ public class Login implements CommandHandler, Cloneable {
 		}
 	}
 
-	public static final ArrayList handledCommands = new ArrayList();
-	static {
-		handledCommands.add("USER");
-		handledCommands.add("PASS");
-		handledCommands.add("QUIT");
-	}
+	
 	public CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer) {
 		return this;
 //		Login login;
@@ -192,5 +187,12 @@ public class Login implements CommandHandler, Cloneable {
 	public String[] getFeatReplies() {
 		return null;
 	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.master.command.CommandHandler#load(net.sf.drftpd.master.command.CommandManagerFactory)
+	 */
+	public void load(CommandManagerFactory initializer) {}
+
+	public void unload() {}
 
 }

@@ -3,6 +3,7 @@ package net.sf.drftpd.master.usermanager;
 import java.io.IOException;
 import java.util.Iterator;
 
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import net.sf.drftpd.DuplicateElementException;
@@ -17,19 +18,30 @@ public class UserManagerConverter {
 
 	private static Logger logger = Logger.getLogger(UserManagerConverter.class);
 
-	public static void main(String[] args) throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException, UserFileException {
-		if(args.length != 2) {
-			System.out.println("arguments: <from usermanager class> <to usermanager class>");
+	public static void main(String[] args)
+		throws
+			InstantiationException,
+			IllegalAccessException,
+			ClassNotFoundException,
+			IOException,
+			UserFileException {
+		BasicConfigurator.configure();
+		if (args.length != 2) {
+			System.out.println(
+				"arguments: <from usermanager class> <to usermanager class>");
+			return;
 		}
-		UserManager from = (UserManager)Class.forName(args[0]).newInstance();
-		UserManager to = (UserManager)Class.forName(args[1]).newInstance();
+		UserManager from = (UserManager) Class.forName(args[0]).newInstance();
+		UserManager to = (UserManager) Class.forName(args[1]).newInstance();
+		logger.debug(from.getAllUsers());
 		for (Iterator iter = from.getAllUsers().iterator(); iter.hasNext();) {
 			User user = (User) iter.next();
 			convert(user, to.create(user.getUsername()));
 		}
 	}
 
-	public static void convert(User from, User to) {
+	public static void convert(User from, User to) throws UserFileException {
+		logger.debug("Converting " + from.getUsername());
 		for (Iterator iter = from.getGroups().iterator(); iter.hasNext();) {
 			try {
 				to.addGroup((String) iter.next());
@@ -45,12 +57,12 @@ public class UserManagerConverter {
 			} catch (DuplicateElementException e) {
 				logger.warn("", e);
 			}
-		}	
+		}
 
 		to.setComment(from.getComment());
 
 		to.setCredits(from.getCredits());
-		
+
 		to.setDeleted(from.isDeleted());
 
 		to.setGroup(from.getGroupName());
@@ -81,14 +93,20 @@ public class UserManagerConverter {
 
 		to.setNukedBytes(from.getNukedBytes());
 
-		if(from instanceof PlainTextPasswordUser) {
-			to.setPassword(((PlainTextPasswordUser)from).getPassword());
+		if (from instanceof PlainTextPasswordUser) {
+			to.setPassword(((PlainTextPasswordUser) from).getPassword());
+		} else if (
+			from instanceof UnixPassword && to instanceof UnixPassword) {
+			((UnixPassword) to).setUnixPassword(
+				((UnixPassword) from).getUnixPassword());
 		} else {
-			logger.warn("Don't know how to convert password from "+from.getUsername());
+			logger.warn(
+				"Don't know how to convert password from "
+					+ from.getUsername());
 		}
 
 		to.setRatio(from.getRatio());
-	
+
 		to.setTagline(from.getTagline());
 
 		to.setTimelimit(from.getTimelimit());
@@ -97,7 +115,7 @@ public class UserManagerConverter {
 
 		to.setTimeToday(from.getTimeToday());
 
-
+		to.commit();
 
 	}
 }

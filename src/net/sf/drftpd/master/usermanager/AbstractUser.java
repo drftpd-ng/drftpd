@@ -84,6 +84,7 @@ public abstract class AbstractUser implements User {
 
 	protected float ratio = 3.0F;
 	protected String tagline;
+	protected String home;
 	protected int timelimit;
 	protected int timesNuked;
 
@@ -400,6 +401,14 @@ public abstract class AbstractUser implements User {
 	}
 
 	/**
+	 * Returns the homedir(chroot).
+	 * @return String
+	 */
+	public String getHomeDirectory() {
+		return home;
+	}
+
+	/**
 	 * Returns the timelimit.
 	 * @return int
 	 */
@@ -574,6 +583,7 @@ public abstract class AbstractUser implements User {
 
 	/**
 	 * User login.
+	 * TODO use me
 	 */
 	public void login() {
 		logins += 1;
@@ -665,7 +675,9 @@ public abstract class AbstractUser implements User {
 
 		this.downloadedBytesWeek = 0;
 		this.uploadedBytesWeek = 0;
-		//TODO wkly_allotment
+		if(getWeeklyAllotment() > 0) {
+			setCredits(getWeeklyAllotment());
+		}
 	}
 
 	public void setComment(String comment) {
@@ -814,6 +826,14 @@ public abstract class AbstractUser implements User {
 	 */
 	public void setTagline(String tagline) {
 		this.tagline = tagline;
+	}
+
+	/**
+	 * Sets the homedir(chroot).
+	 * @param home The homedir to set
+	 */
+	public void setHomeDirectory(String home) {
+		this.home = home;
 	}
 
 	/**

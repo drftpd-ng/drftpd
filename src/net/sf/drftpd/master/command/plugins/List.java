@@ -26,6 +26,7 @@ import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.VirtualDirectory;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.remotefile.DirectoryRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
@@ -251,13 +252,6 @@ public class List implements CommandHandler {
 	//		return;
 	//	}
 
-	
-	private static final ArrayList handledCommands = new ArrayList();
-	static {
-		handledCommands.add("LIST");
-		handledCommands.add("NLST");
-		handledCommands.add("STAT");
-	}
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.command.CommandHandler#initialize(net.sf.drftpd.master.BaseFtpConnection)
 	 */
@@ -267,4 +261,7 @@ public class List implements CommandHandler {
 	public String[] getFeatReplies() {
 		return null;
 	}
+
+	public void load(CommandManagerFactory initializer) {}
+	public void unload() {}
 }

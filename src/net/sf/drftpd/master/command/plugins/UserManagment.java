@@ -21,6 +21,7 @@ import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.Permission;
@@ -43,6 +44,7 @@ import org.tanesha.replacer.SimplePrintf;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class UserManagment implements CommandHandler {
+	public void load(CommandManagerFactory initializer) {}
 	private FtpReply doSITE_TAGLINE(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
 		conn.resetState();
@@ -1241,5 +1243,7 @@ public class UserManagment implements CommandHandler {
 	public String[] getFeatReplies() {
 		return null;
 	}
+
+	public void unload() {}
 
 }

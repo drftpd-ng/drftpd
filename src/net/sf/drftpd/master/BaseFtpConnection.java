@@ -19,7 +19,6 @@ import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.queues.NukeLog;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserManager;
@@ -41,19 +40,21 @@ import org.apache.log4j.PatternLayout;
 public class BaseFtpConnection implements Runnable {
 	private CommandManager _commandManager;
 
-	private static Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName()+".service");
+	private static Logger debuglogger =
+		Logger.getLogger(BaseFtpConnection.class.getName() + ".service");
 	static {
 		try {
-			debuglogger.addAppender(new FileAppender(new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN), "ftp-data/logs/debug.log"));
+			debuglogger.addAppender(
+				new FileAppender(
+					new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN),
+					"ftp-data/logs/debug.log"));
 			debuglogger.setAdditivity(false);
 		} catch (IOException e) {
 			throw new FatalException(e);
 		}
 	}
 
-
-	private static Logger logger =
-		Logger.getLogger(BaseFtpConnection.class);
+	private static Logger logger = Logger.getLogger(BaseFtpConnection.class);
 
 	/**
 	 * Is the current password authenticated?
@@ -62,9 +63,8 @@ public class BaseFtpConnection implements Runnable {
 	protected ConnectionManager _cm;
 	protected Socket _controlSocket;
 
-
-//	protected final static Class[] METHOD_INPUT_SIG =
-//		new Class[] { FtpRequest.class, PrintWriter.class };
+	//	protected final static Class[] METHOD_INPUT_SIG =
+	//		new Class[] { FtpRequest.class, PrintWriter.class };
 	protected RemoteSlave _rslave;
 	protected Transfer _transfer;
 	protected LinkedRemoteFile _transferFile;
@@ -91,7 +91,7 @@ public class BaseFtpConnection implements Runnable {
 
 	/////////// DATA CONNECTION ///////////
 	protected PrintWriter out;
-	
+
 	/**
 		 * PRE Transfere
 		 *
@@ -104,10 +104,9 @@ public class BaseFtpConnection implements Runnable {
 	protected boolean stopRequest = false;
 	protected String stopRequestMessage;
 	protected Thread thread;
-	public BaseFtpConnection(
-		ConnectionManager connManager,
-		Socket soc) {
-		_commandManager = connManager.getCommandManagerFactory().initialize(this);
+	public BaseFtpConnection(ConnectionManager connManager, Socket soc) {
+		_commandManager =
+			connManager.getCommandManagerFactory().initialize(this);
 		_controlSocket = soc;
 		_cm = connManager;
 		lastActive = System.currentTimeMillis();
@@ -128,7 +127,7 @@ public class BaseFtpConnection implements Runnable {
 		reset();
 		super.finalize();
 	}
-	
+
 	/**
 	 * Get client address
 	 */
@@ -169,12 +168,6 @@ public class BaseFtpConnection implements Runnable {
 		return lastActive;
 	}
 
-	public NukeLog getNukeLog() {
-		return getConnectionManager().getNukeLog();
-	}
-
-
-
 	/**
 	 * Returns the FtpRequest of current or last command executed.
 	 */
@@ -189,7 +182,8 @@ public class BaseFtpConnection implements Runnable {
 		return getConnectionManager().getSlaveManager();
 	}
 	public RemoteSlave getTranferSlave() {
-		if(!isTransfering()) throw new IllegalStateException("can only call getTransferSlave() during transfer");
+		if (!isTransfering())
+			throw new IllegalStateException("can only call getTransferSlave() during transfer");
 		return _rslave;
 	}
 
@@ -212,7 +206,6 @@ public class BaseFtpConnection implements Runnable {
 		return _transferFile;
 	}
 
-
 	/**
 	 * Get user object
 	 */
@@ -226,9 +219,9 @@ public class BaseFtpConnection implements Runnable {
 		 * 
 		 */
 	public UserManager getUserManager() {
-		return getConnectionManager().getUsermanager();
+		return getConnectionManager().getUserManager();
 	}
-	
+
 	public User getUserNull() {
 		return _user;
 	}
@@ -270,33 +263,33 @@ public class BaseFtpConnection implements Runnable {
 	 * Reset all the member variables. Close all sockets.
 	 */
 	public void reset() {
-//
-//		// close data socket
-//		if (_dataSocket != null) {
-//			try {
-//				_dataSocket.close();
-//			} catch (Exception ex) {
-//				logger.log(Level.WARN, "Error closing data socket", ex);
-//			}
-//			_dataSocket = null;
-//		}
-//
-//		// close server socket
-//		//		if (mServSoc != null) {
-//		//			try {
-//		//				mServSoc.close();
-//		//			} catch (Exception ex) {
-//		//				logger.log(Level.WARNING, "Error closing server socket", ex);
-//		//			}
-//		//			mServSoc = null;
-//		//		}
-//
-//		// reset other variables
-//		mAddress = null;
-//		miPort = 0;
-//
-//		mbPort = false;
-//		mbPasv = false;
+		//
+		//		// close data socket
+		//		if (_dataSocket != null) {
+		//			try {
+		//				_dataSocket.close();
+		//			} catch (Exception ex) {
+		//				logger.log(Level.WARN, "Error closing data socket", ex);
+		//			}
+		//			_dataSocket = null;
+		//		}
+		//
+		//		// close server socket
+		//		//		if (mServSoc != null) {
+		//		//			try {
+		//		//				mServSoc.close();
+		//		//			} catch (Exception ex) {
+		//		//				logger.log(Level.WARNING, "Error closing server socket", ex);
+		//		//			}
+		//		//			mServSoc = null;
+		//		//		}
+		//
+		//		// reset other variables
+		//		mAddress = null;
+		//		miPort = 0;
+		//
+		//		mbPort = false;
+		//		mbPasv = false;
 	}
 
 	/**
@@ -304,13 +297,13 @@ public class BaseFtpConnection implements Runnable {
 		 * mstRenFr and resumePosition
 		 */
 	public void resetState() {
-//		_renameFrom = null;
-//		preTransfer = false;
-//		preTransferRSlave = null;
-	
+		//		_renameFrom = null;
+		//		preTransfer = false;
+		//		preTransferRSlave = null;
+
 		//		mbReset = false;
 		//resumePosition = 0;
-	
+
 		//mbUser = false;
 		//mbPass = false;
 	}
@@ -323,9 +316,7 @@ public class BaseFtpConnection implements Runnable {
 		clientAddress = _controlSocket.getInetAddress();
 		logger.info(
 			"Handling new request from " + clientAddress.getHostAddress());
-		thread.setName(
-			"FtpConn from "
-				+ clientAddress.getHostAddress());
+		thread.setName("FtpConn from " + clientAddress.getHostAddress());
 
 		try {
 			in =
@@ -342,16 +333,18 @@ public class BaseFtpConnection implements Runnable {
 				stop(getConnectionManager().getShutdownMessage());
 			} else {
 				FtpReply response = new FtpReply(220);
-				response.addComment("This program is free software; you can redistribute it and/or");
-				response.addComment(" modify it under the terms of the GNU General Public License");
-				response.addComment("Distributed FTP Daemon http://drftpd.mog.se");
+				response.addComment(
+					"This program is free software; you can redistribute it and/or");
+				response.addComment(
+					" modify it under the terms of the GNU General Public License");
+				response.addComment(
+					"Distributed FTP Daemon http://drftpd.mog.se");
 				response.addComment("Service ready for new user.");
 				out.print(response);
 			}
 			while (!stopRequest) {
 				thread.setName(
-					"FtpConn from "
-						+ clientAddress.getHostAddress());
+					"FtpConn from " + clientAddress.getHostAddress());
 
 				out.flush();
 				//notifyObserver();
@@ -372,7 +365,7 @@ public class BaseFtpConnection implements Runnable {
 					continue;
 
 				request = new FtpRequest(commandLine);
-				
+
 				debuglogger.debug(
 					"<< "
 						+ request.getCommandLine()
@@ -400,7 +393,14 @@ public class BaseFtpConnection implements Runnable {
 			}
 			out.flush();
 		} catch (SocketException ex) {
-			logger.log(Level.INFO, ex.getMessage()+", closing for user "+(this._user == null ? "<not logged in>" : this._user.getUsername()), ex);
+			logger.log(
+				Level.INFO,
+				ex.getMessage()
+					+ ", closing for user "
+					+ (this._user == null
+						? "<not logged in>"
+						: this._user.getUsername()),
+				ex);
 		} catch (Exception ex) {
 			logger.log(Level.INFO, "Exception, closing", ex);
 		} finally {
@@ -423,42 +423,42 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	public void service(FtpRequest request, PrintWriter out)
 		throws IOException {
-			FtpReply reply;
-			try {
-				reply = _commandManager.execute(this);
-			} catch (UnhandledCommandException e) {
-				reply = new FtpReply(500, e.getMessage());
-				logger.warn("", e);
-			} catch(RuntimeException e) {
-				reply = new FtpReply(500, e.toString());
-				logger.warn("", e);
-			}
-			if(reply != null) out.print(reply);
-//		try {
-//			String metName;
-//			metName = "do" + request.getCommand().replaceAll(" ", "_");
-//			Method actionMet =
-//				getClass().getDeclaredMethod(metName, METHOD_INPUT_SIG);
-//			actionMet.invoke(this, new Object[] { request, out });
-//		} catch (NoSuchMethodException ex) {
-//			out.print(FtpReply.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
-//			//out.write(ftpStatus.getResponse(502, request, user, null));
-//		} catch (InvocationTargetException ex) {
-//			logger.log(Level.ERROR, "Error", ex);
-//			out.print(
-//				new FtpReply(
-//					500,
-//					"Uncaught exception: " + ex.getCause().toString()));
-//			Throwable th = ex.getTargetException();
-//			th.printStackTrace();
-//		} catch (Exception ex) {
-//			out.print(FtpReply.RESPONSE_500_SYNTAX_ERROR);
-//			if (ex instanceof java.io.IOException) {
-//				throw (IOException) ex;
-//			}
-//		}
+		FtpReply reply;
+		try {
+			reply = _commandManager.execute(this);
+		} catch (UnhandledCommandException e) {
+			reply = new FtpReply(500, e.getMessage());
+			logger.warn("", e);
+		} catch (RuntimeException e) {
+			reply = new FtpReply(500, e.toString());
+			logger.warn("", e);
+		}
+		if (reply != null)
+			out.print(reply);
+		//		try {
+		//			String metName;
+		//			metName = "do" + request.getCommand().replaceAll(" ", "_");
+		//			Method actionMet =
+		//				getClass().getDeclaredMethod(metName, METHOD_INPUT_SIG);
+		//			actionMet.invoke(this, new Object[] { request, out });
+		//		} catch (NoSuchMethodException ex) {
+		//			out.print(FtpReply.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
+		//			//out.write(ftpStatus.getResponse(502, request, user, null));
+		//		} catch (InvocationTargetException ex) {
+		//			logger.log(Level.ERROR, "Error", ex);
+		//			out.print(
+		//				new FtpReply(
+		//					500,
+		//					"Uncaught exception: " + ex.getCause().toString()));
+		//			Throwable th = ex.getTargetException();
+		//			th.printStackTrace();
+		//		} catch (Exception ex) {
+		//			out.print(FtpReply.RESPONSE_500_SYNTAX_ERROR);
+		//			if (ex instanceof java.io.IOException) {
+		//				throw (IOException) ex;
+		//			}
+		//		}
 	}
-
 
 	public void setAuthenticated(boolean authenticated) {
 		_authenticated = authenticated;
@@ -471,8 +471,6 @@ public class BaseFtpConnection implements Runnable {
 		currentDirectory = file;
 	}
 
-
-
 	public void setUser(User user) {
 		_user = user;
 	}
@@ -481,7 +479,6 @@ public class BaseFtpConnection implements Runnable {
 		thread.start();
 		// start() calls run() and execution will start in the background.
 	}
-
 
 	/** returns a one-line status line
 		 */
@@ -505,7 +502,7 @@ public class BaseFtpConnection implements Runnable {
 
 	public void stop(String message) {
 		stopRequestMessage = message;
-		if(isTransfering()) {
+		if (isTransfering()) {
 			try {
 				_transfer.abort();
 			} catch (RemoteException e) {
@@ -514,7 +511,7 @@ public class BaseFtpConnection implements Runnable {
 		}
 		stop();
 	}
-	
+
 	public String toString() {
 		StringBuffer buf = new StringBuffer("[BaseFtpConnection");
 		if (_user != null) {

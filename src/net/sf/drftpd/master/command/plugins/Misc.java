@@ -14,6 +14,7 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.slave.SlaveImpl;
 
@@ -30,7 +31,7 @@ public class Misc implements CommandHandler {
 	 * Current implementation does not do anything. As here data 
 	 * transfers are not multi-threaded. 
 	 */
-	public FtpReply doABOR(BaseFtpConnection conn) {
+	private FtpReply doABOR(BaseFtpConnection conn) {
 		// reset state variables
 		conn.resetState();
 		//mDataConnection.reset();
@@ -38,7 +39,7 @@ public class Misc implements CommandHandler {
 	}
 
 	// LIST;NLST;RETR;STOR
-	public FtpReply doFEAT(BaseFtpConnection conn) {
+	private FtpReply doFEAT(BaseFtpConnection conn) {
 		PrintWriter out = conn.getControlWriter();
 		out.print("211-Extensions supported:\r\n");
 		for (Iterator iter = conn.getCommandManager().getCommandHandlersMap().values().iterator(); iter.hasNext();) {
@@ -99,7 +100,7 @@ public class Misc implements CommandHandler {
 		//		return;
 //	}
 
-	public FtpReply doSITE_STAT(BaseFtpConnection conn) {
+	private FtpReply doSITE_STAT(BaseFtpConnection conn) {
 		conn.resetState();
 		if (conn.getRequest().hasArgument()) {
 			return FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
@@ -107,7 +108,7 @@ public class Misc implements CommandHandler {
 		return new FtpReply(200, conn.status());
 	}
 
-	public FtpReply doSITE_TIME(BaseFtpConnection conn) {
+	private FtpReply doSITE_TIME(BaseFtpConnection conn) {
 		conn.resetState();
 		if (conn.getRequest().hasArgument()) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
@@ -115,7 +116,7 @@ public class Misc implements CommandHandler {
 		return new FtpReply(200, "Server time is: " + new Date());
 	}
 
-	public FtpReply doSITE_VERS(BaseFtpConnection conn) {
+	private FtpReply doSITE_VERS(BaseFtpConnection conn) {
 		conn.resetState();
 		return new FtpReply(200, SlaveImpl.VERSION);
 	}
@@ -130,20 +131,22 @@ public class Misc implements CommandHandler {
 		throw UnhandledCommandException.create(Misc.class, conn.getRequest());
 	}
 
-//	private static final ArrayList handledCommands = new ArrayList();
-//	static {
-//		handledCommands.add("ABOR");
-//		handledCommands.add("FEAT");
-//		handledCommands.add("SITE STAT");
-//		handledCommands.add("SITE TIME");
-//		handledCommands.add("SITE VERS");
-//	}
 	public CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer) {
 		return this;
 	}
 
 	public String[] getFeatReplies() {
 		return null;
+	}
+
+	public void load(CommandManagerFactory initializer) {}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.master.command.CommandHandler#unload()
+	 */
+	public void unload() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

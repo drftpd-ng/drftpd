@@ -1,17 +1,12 @@
-/*
- * Created on 2003-okt-16
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd.master.command.plugins;
 
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -23,7 +18,9 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
+import net.sf.drftpd.master.queues.NukeLog;
 import net.sf.drftpd.master.usermanager.AbstractUser;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
@@ -32,6 +29,9 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.input.SAXBuilder;
 
 /**
  * @author mog
@@ -40,32 +40,45 @@ import org.apache.log4j.Logger;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class Nuke implements CommandHandler {
+	public Nuke() {
+	}
+	public void unload() {
+		_nukelog = null;
+	}
+	private NukeLog _nukelog;
 
 	private Logger logger = Logger.getLogger(Nuke.class);
 
-	public FtpReply execute(BaseFtpConnection conn) throws UnhandledCommandException {
+	public FtpReply execute(BaseFtpConnection conn)
+		throws UnhandledCommandException {
+		if (_nukelog == null) {
+			return new FtpReply(500, "You must reconnect to use NUKE");
+		}
 		String cmd = conn.getRequest().getCommand();
-		if("SITE NUKE".equals(cmd)) return doSITE_NUKE(conn);
-		if("SITE_NUKES".equals(cmd)) return doSITE_NUKES(conn);
-		if("SITE_UNNUKE".equals(cmd)) return doSITE_UNNUKE(conn);
+		if ("SITE NUKE".equals(cmd))
+			return doSITE_NUKE(conn);
+		if ("SITE NUKES".equals(cmd))
+			return doSITE_NUKES(conn);
+		if ("SITE UNNUKE".equals(cmd))
+			return doSITE_UNNUKE(conn);
 		throw UnhandledCommandException.create(Nuke.class, conn.getRequest());
 	}
-	
+
 	private static void nukeRemoveCredits(
 		LinkedRemoteFile nukeDir,
 		Hashtable nukees) {
 		for (Iterator iter = nukeDir.getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			if(file.isDirectory()) {
+			if (file.isDirectory()) {
 				nukeRemoveCredits(file, nukees);
 			}
-			if(file.isFile()) {
-			String owner = file.getUsername();
-			Long total = (Long) nukees.get(owner);
-			if (total == null)
-				total = new Long(0);
-			total = new Long(total.longValue() + file.length());
-			nukees.put(owner, total);
+			if (file.isFile()) {
+				String owner = file.getUsername();
+				Long total = (Long) nukees.get(owner);
+				if (total == null)
+					total = new Long(0);
+				total = new Long(total.longValue() + file.length());
+				nukees.put(owner, total);
 			}
 		}
 	}
@@ -97,7 +110,8 @@ public class Nuke implements CommandHandler {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 
-		StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument(), " ");
+		StringTokenizer st =
+			new StringTokenizer(conn.getRequest().getArgument(), " ");
 
 		if (!st.hasMoreTokens()) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
@@ -250,13 +264,13 @@ public class Nuke implements CommandHandler {
 				multiplier,
 				reason,
 				nukees);
-		conn.getNukeLog().add(nuke);
+		getNukeLog().add(nuke);
 		conn.getConnectionManager().dispatchFtpEvent(nuke);
 		return response;
 	}
 	public FtpReply doSITE_NUKES(BaseFtpConnection conn) {
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
-		for (Iterator iter = conn.getNukeLog().getAll().iterator();
+		for (Iterator iter = getNukeLog().getAll().iterator();
 			iter.hasNext();
 			) {
 			response.addComment(iter.next());
@@ -281,7 +295,8 @@ public class Nuke implements CommandHandler {
 	public FtpReply doSITE_UNNUKE(BaseFtpConnection conn) {
 		conn.resetState();
 
-		StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument());
+		StringTokenizer st =
+			new StringTokenizer(conn.getRequest().getArgument());
 		if (!st.hasMoreTokens()) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
@@ -303,14 +318,14 @@ public class Nuke implements CommandHandler {
 			nukeDir = conn.getCurrentDirectory().getFile(nukeName);
 		} catch (FileNotFoundException e2) {
 			return new FtpReply(
-					200,
-					nukeName + " doesn't exist: " + e2.getMessage());
+				200,
+				nukeName + " doesn't exist: " + e2.getMessage());
 		}
 
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
 		NukeEvent nuke;
 		try {
-			nuke = conn.getNukeLog().get(toPath);
+			nuke = getNukeLog().get(toPath);
 		} catch (ObjectNotFoundException ex) {
 			response.addComment(ex.getMessage());
 			return response;
@@ -351,7 +366,7 @@ public class Nuke implements CommandHandler {
 			response.addComment(nukeeName + ": restored " + amount + "bytes");
 		}
 		try {
-			conn.getNukeLog().remove(toPath);
+			getNukeLog().remove(toPath);
 		} catch (ObjectNotFoundException e) {
 			response.addComment("Error removing nukelog entry");
 		}
@@ -373,13 +388,22 @@ public class Nuke implements CommandHandler {
 		return response;
 	}
 
-	private static final ArrayList handledCommands = new ArrayList();
-	static {
-		handledCommands.add("SITE NUKE");
-		handledCommands.add("SITE NUKES");
-		handledCommands.add("SITE UNNUKE");
+	/**
+	 * 
+	 */
+	private NukeLog getNukeLog() {
+		return _nukelog;
 	}
-	public CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer) {
+
+//	private static final ArrayList handledCommands = new ArrayList();
+//	static {
+//		handledCommands.add("SITE NUKE");
+//		handledCommands.add("SITE NUKES");
+//		handledCommands.add("SITE UNNUKE");
+//	}
+	public CommandHandler initialize(
+		BaseFtpConnection conn,
+		CommandManager initializer) {
 		return this;
 	}
 
@@ -387,5 +411,64 @@ public class Nuke implements CommandHandler {
 		return null;
 	}
 
+
+	public void load(CommandManagerFactory initializer) {
+		_nukelog = new NukeLog();
+		try {
+			Document doc =
+				new SAXBuilder().build(new FileReader("nukelog.xml"));
+			List nukes = doc.getRootElement().getChildren();
+			for (Iterator iter = nukes.iterator(); iter.hasNext();) {
+				Element nukeElement = (Element) iter.next();
+
+				User user =
+					initializer.getConnectionManager().getUserManager().getUserByName(nukeElement.getChildText("user"));
+				String directory = nukeElement.getChildText("path");
+				long time = Long.parseLong(nukeElement.getChildText("time"));
+				int multiplier =
+					Integer.parseInt(nukeElement.getChildText("multiplier"));
+				String reason = nukeElement.getChildText("reason");
+
+				long size = Long.parseLong(nukeElement.getChildText("size"));
+				long nukedAmount =
+					Long.parseLong(nukeElement.getChildText("nukedAmount"));
+
+				Map nukees = new Hashtable();
+				List nukeesElement =
+					nukeElement.getChild("nukees").getChildren("nukee");
+				for (Iterator iterator = nukeesElement.iterator();
+					iterator.hasNext();
+					) {
+					Element nukeeElement = (Element) iterator.next();
+					String nukeeUsername =
+						nukeeElement.getChildText("username");
+					Long nukeeAmount =
+						new Long(nukeeElement.getChildText("amount"));
+
+					nukees.put(nukeeUsername, nukeeAmount);
+				}
+				_nukelog.add(
+					new NukeEvent(
+						user,
+						"NUKE",
+						directory,
+						time,
+						size,
+						nukedAmount,
+						multiplier,
+						reason,
+						nukees));
+			}
+		} catch (FileNotFoundException ex) {
+			logger.log(
+				Level.DEBUG,
+				"nukelog.xml not found, will create it after first nuke.");
+		} catch (Exception ex) {
+			logger.log(
+				Level.INFO,
+				"Error loading nukelog from nukelog.xml",
+				ex);
+		}
+	}
 
 }

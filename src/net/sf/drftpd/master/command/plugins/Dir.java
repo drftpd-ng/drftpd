@@ -9,7 +9,6 @@ package net.sf.drftpd.master.command.plugins;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -26,6 +25,7 @@ import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.VirtualDirectory;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
@@ -44,18 +44,6 @@ public class Dir implements CommandHandler, Cloneable {
 	protected LinkedRemoteFile _renameFrom = null;
 	private final static SimpleDateFormat DATE_FMT =
 		new SimpleDateFormat("yyyyMMddHHmmss.SSS");
-
-	private static final ArrayList handledCommands = new ArrayList();
-	static {
-		handledCommands.add("CDUP");
-		handledCommands.add("CWD");
-		handledCommands.add("MKD");
-		handledCommands.add("PWD");
-		handledCommands.add("RMD");
-		handledCommands.add("RNFR");
-		handledCommands.add("RNTO");
-		handledCommands.add("SITE WIPE");
-	}
 
 	private Logger logger = Logger.getLogger(Dir.class);
 
@@ -735,4 +723,6 @@ public class Dir implements CommandHandler, Cloneable {
 	public String[] getFeatReplies() {
 		return null;
 	}
+	public void load(CommandManagerFactory initializer) {}
+	public void unload() {}
 }

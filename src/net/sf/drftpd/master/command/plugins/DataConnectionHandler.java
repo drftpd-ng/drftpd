@@ -15,7 +15,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -36,6 +35,7 @@ import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.VirtualDirectory;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -52,21 +52,6 @@ import org.apache.log4j.Logger;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
-	private static final ArrayList handledCommands = new ArrayList();
-	static {
-		handledCommands.add("MODE");
-		handledCommands.add("PASV");
-		handledCommands.add("PORT");
-		handledCommands.add("PRET");
-		handledCommands.add("STRU");
-		handledCommands.add("SYST");
-		handledCommands.add("TYPE");
-		handledCommands.add("RETR");
-		handledCommands.add("REST");
-		handledCommands.add("SITE RESCAN");
-		handledCommands.add("SITE XDUPE");
-		handledCommands.add("STOR");
-	}
 	private static Logger logger =
 		Logger.getLogger(DataConnectionHandler.class);
 	private Socket _dataSocket;
@@ -91,27 +76,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 */
 	public DataConnectionHandler() {
 		super();
-	}
-
-	/**
-	 * Listen for passive socket connection. It returns the success flag.
-	 */
-	private boolean acceptPasvConnection() throws IOException {
-		boolean bRet = false;
-		_dataSocket = null;
-		try {
-			_dataSocket = mServSoc.accept();
-			bRet = true;
-		} catch (IOException ex) {
-			throw ex;
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
-		} finally {
-			if (mServSoc != null)
-				mServSoc.close();
-			mServSoc = null;
-		}
-		return bRet;
 	}
 
 	/**
@@ -1168,7 +1132,19 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			}
 		} else if (mbPasv) {
 			if (_dataSocket == null)
-				acceptPasvConnection();
+				{
+					_dataSocket = null;
+					try {
+						_dataSocket = mServSoc.accept();
+					} catch (IOException ex) {
+						throw ex;
+					} catch (Exception ex) {
+						throw new RuntimeException(ex);
+					} finally {
+						mServSoc.close();
+						mServSoc = null;
+					}
+				}
 		}
 		_dataSocket.setSoTimeout(30000); // 30 seconds timeout
 		//_dataSocket.setSendBufferSize(8192);
@@ -1261,5 +1237,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	public String[] getFeatReplies() {
 		return new String[] {"PRET"};
 	}
+	public void load(CommandManagerFactory initializer) {}
+	public void unload() {}
 
 }

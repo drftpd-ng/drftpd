@@ -15,6 +15,7 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
@@ -27,6 +28,9 @@ import org.apache.log4j.Logger;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class Request implements CommandHandler {
+	public void unload() {}
+	public void load(CommandManagerFactory initializer) {}
+
 	private static Logger logger = Logger.getLogger(Request.class);
 	
 	private static final String REQPREFIX = "REQUEST-by.";

@@ -19,6 +19,7 @@ import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
@@ -34,6 +35,9 @@ import org.apache.log4j.Logger;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class Pre implements CommandHandler {
+	public void unload() {}
+	public void load(CommandManagerFactory initializer) {}
+
 	private Logger logger = Logger.getLogger(Pre.class);
 
 	/**

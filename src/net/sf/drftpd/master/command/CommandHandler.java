@@ -20,4 +20,6 @@ public interface CommandHandler {
 		throws UnhandledCommandException;
 	public abstract CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer);
 	public String[] getFeatReplies();
+	public void load(CommandManagerFactory initializer);
+	public void unload();
 }

@@ -7,13 +7,13 @@
 package net.sf.drftpd.master.command.plugins;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 
 import org.apache.log4j.Level;
@@ -26,10 +26,12 @@ import org.apache.log4j.Logger;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class SiteManagment implements CommandHandler {
+	public void unload() {}
+	public void load(CommandManagerFactory initializer) {}
 
 	private Logger logger = Logger.getLogger(SiteManagment.class);
 
-	public FtpReply doSITE_SHUTDOWN(BaseFtpConnection conn) {
+	private FtpReply doSITE_SHUTDOWN(BaseFtpConnection conn) {
 		conn.resetState();
 		if (!conn.getUserNull().isAdmin()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
@@ -44,7 +46,7 @@ public class SiteManagment implements CommandHandler {
 		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
 
-	public FtpReply doSITE_RELOAD(BaseFtpConnection conn) {
+	private FtpReply doSITE_RELOAD(BaseFtpConnection conn) {
 		conn.resetState();
 		if (!conn.getUserNull().isAdmin()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
@@ -53,6 +55,7 @@ public class SiteManagment implements CommandHandler {
 		try {
 			conn.getConnectionManager().getConfig().reloadConfig();
 			conn.getSlaveManager().reloadRSlaves();
+			conn.getConnectionManager().getCommandManagerFactory().reload();
 			//slaveManager.saveFilesXML();
 		} catch (IOException e) {
 			logger.log(Level.FATAL, "Error reloading config", e);
@@ -67,12 +70,6 @@ public class SiteManagment implements CommandHandler {
 		if("SITE RELOAD".equals(cmd)) return doSITE_RELOAD(conn);
 		if("SITE SHUTDOWN".equals(cmd)) return doSITE_SHUTDOWN(conn);
 		throw UnhandledCommandException.create(SiteManagment.class, conn.getRequest());
-	}
-
-	private static final ArrayList handledCommands = new ArrayList();
-	static {
-		handledCommands.add("SITE RELOAD");
-		handledCommands.add("SITE SHUTDOWN");
 	}
 	public CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer) {
 		return this;

@@ -15,6 +15,7 @@ import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
@@ -24,6 +25,9 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class Search implements CommandHandler {
+	public void unload() {}
+	public void load(CommandManagerFactory initializer) {}
+
 	//	private void doSITE_SEARCH(BaseFtpConnection conn) {
 	//		doSITE_DUPE(request, out);
 	//	}
@@ -33,7 +37,7 @@ public class Search implements CommandHandler {
 	 * 
 	 * static except for getConfig() and _user
 	 */
-	public void findFile(
+	private void findFile(
 		BaseFtpConnection conn,
 		FtpReply response,
 		LinkedRemoteFile dir,
@@ -86,11 +90,6 @@ public class Search implements CommandHandler {
 		return response;
 	}
 
-	private static final ArrayList handledCommands = new ArrayList();
-	static {
-		handledCommands.add("SITE SEARCH");
-		handledCommands.add("SITE DUPE");
-	}
 	public CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer) {
 		return this;
 	}

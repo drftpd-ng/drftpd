@@ -13,7 +13,9 @@ import java.io.IOException;
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.master.usermanager.AbstractUser;
 import net.sf.drftpd.master.usermanager.PlainTextPasswordUser;
+import net.sf.drftpd.master.usermanager.UnixPassword;
 import net.sf.drftpd.master.usermanager.UserFileException;
+import net.sf.drftpd.util.Crypt;
 import JSX.ObjOut;
 
 /**
@@ -22,7 +24,10 @@ import JSX.ObjOut;
  * To change the template for this generated type comment go to
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
-public class JSXUser extends AbstractUser implements PlainTextPasswordUser {
+public class JSXUser
+	extends AbstractUser
+	implements PlainTextPasswordUser, UnixPassword {
+	private String unixPassword;
 	private String password;
 	transient JSXUserManager usermanager;
 	private transient boolean purged;
@@ -31,22 +36,26 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser {
 		super(username);
 		this.usermanager = usermanager;
 	}
-	/* (non-Javadoc)
-	* @see net.sf.drftpd.master.usermanager.AbstractUser#login(java.lang.String)
-	*/
+
 	public boolean checkPassword(String password) {
+		if (this.password == null) {
+			if (this.unixPassword == null)
+				throw new IllegalStateException("no password set");
+			if (password
+				.equals(Crypt.crypt(this.password.substring(0, 2), password))) {
+				setPassword(password);
+				return true;
+			}
+			return false;
+		}
 		return this.password.equals(password);
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.AbstractUser#setPassword(java.lang.String)
-	 */
 	public void setPassword(String password) {
+		this.unixPassword = null;
 		this.password = password;
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.PlainTextPassword#getPassword()
-	 */
+
 	public String getPassword() {
 		return this.password;
 	}
@@ -70,13 +79,18 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser {
 			return;
 
 		try {
-		ObjOut out =
-			new ObjOut(
-				new FileWriter(usermanager.getUserFile(this.getUsername())));
-		out.writeObject(this);
-		out.close();
-		} catch(IOException ex) {
-			throw new UserFileException("Error writing userfile for "+this.getUsername()+": "+ex.getMessage());
+			ObjOut out =
+				new ObjOut(
+					new FileWriter(
+						usermanager.getUserFile(this.getUsername())));
+			out.writeObject(this);
+			out.close();
+		} catch (IOException ex) {
+			throw new UserFileException(
+				"Error writing userfile for "
+					+ this.getUsername()
+					+ ": "
+					+ ex.getMessage());
 		}
 	}
 	/* (non-Javadoc)
@@ -100,5 +114,18 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser {
 	public void update() {
 		//an update was made, but commit() should be called from all places so we don't need to do anything.
 		//if we do, make sure it's implemented in all set and update methods in AbstractUser
+	}
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.master.usermanager.UnixPassword#getUnixPassword()
+	 */
+	public String getUnixPassword() {
+		return unixPassword;
+	}
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.master.usermanager.UnixPassword#setUnixPassword(java.lang.String)
+	 */
+	public void setUnixPassword(String password) {
+		this.password = null;
+		this.unixPassword = password;
 	}
 }

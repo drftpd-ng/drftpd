@@ -359,7 +359,7 @@ public class IRCListener implements FtpListener, Observer {
 				User raceuser;
 				try {
 					raceuser =
-						_cm.getUsermanager().getUserByName(stat.getUsername());
+						_cm.getUserManager().getUserByName(stat.getUsername());
 				} catch (NoSuchUserException e2) {
 					continue;
 				} catch (IOException e2) {
@@ -402,7 +402,7 @@ public class IRCListener implements FtpListener, Observer {
 			User leaduser;
 			try {
 				leaduser =
-					_cm.getUsermanager().getUserByName(stat.getUsername());
+					_cm.getUserManager().getUserByName(stat.getUsername());
 				env.add("leaduser", leaduser.getUsername());
 				env.add("leadgroup", leaduser.getGroupName());
 			} catch (NoSuchUserException e3) {
@@ -485,7 +485,7 @@ public class IRCListener implements FtpListener, Observer {
 				User raceuser;
 				try {
 					raceuser =
-						_cm.getUsermanager().getUserByName(stat.getUsername());
+						_cm.getUserManager().getUserByName(stat.getUsername());
 				} catch (NoSuchUserException e2) {
 					nobodyAmount += stat.getAmount();
 					continue;
@@ -713,7 +713,16 @@ public class IRCListener implements FtpListener, Observer {
 
 		String lines[] = message.split("\n");
 		for (int i = 0; i < lines.length; i++) {
-			_conn.sendCommand(new MessageCommand(_channelName, lines[i]));
+			String line = lines[i];
+			String chan;
+			if(line.startsWith("#")) {
+				int pos = line.indexOf(':');
+				chan = line.substring(0, pos);
+				line = line.substring(pos+1);
+			} else {
+				chan = _channelName;
+			}
+			_conn.sendCommand(new MessageCommand(chan, line));
 		}
 
 	}
@@ -745,6 +754,7 @@ public class IRCListener implements FtpListener, Observer {
 		try {
 			if (updated instanceof MessageCommand) {
 				MessageCommand msgc = (MessageCommand) updated;
+				if(msgc.getDest().equalsIgnoreCase(_channelName)) return;
 				String message = msgc.getMessage();
 
 				if (message.equals("!help")) {
@@ -784,7 +794,7 @@ public class IRCListener implements FtpListener, Observer {
 					String args[] = message.split(" ");
 					User user;
 					try {
-						user = _cm.getUsermanager().getUserByName(args[1]);
+						user = _cm.getUserManager().getUserByName(args[1]);
 					} catch (NoSuchUserException e) {
 						logger.log(
 							Level.WARN,
@@ -816,7 +826,7 @@ public class IRCListener implements FtpListener, Observer {
 					// replic <user> <pass> <to-slave> <path>
 					User user;
 					try {
-						user = _cm.getUsermanager().getUserByName(args[0]);
+						user = _cm.getUserManager().getUserByName(args[0]);
 					} catch (NoSuchUserException e) {
 						_conn.sendCommand(
 							new MessageCommand(

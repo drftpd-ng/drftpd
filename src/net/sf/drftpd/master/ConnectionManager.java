@@ -1,18 +1,14 @@
 package net.sf.drftpd.master;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -22,14 +18,11 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.MessageEvent;
-import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.XferLogListener;
 import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.queues.NukeLog;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
@@ -38,9 +31,6 @@ import net.sf.drftpd.slave.SlaveImpl;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.input.SAXBuilder;
 
 public class ConnectionManager {
 	public static final int idleTimeout = 300;
@@ -97,12 +87,11 @@ public class ConnectionManager {
 	private Vector _conns = new Vector();
 
 	private ArrayList _ftpListeners = new ArrayList();
-	private NukeLog _nukelog;
-	private String shutdownMessage = null;
+	private String _shutdownMessage = null;
 	//allow package classes for inner classes without use of synthetic methods
-	private SlaveManagerImpl slaveManager;
-	private Timer timer;
-	private UserManager usermanager;
+	private SlaveManagerImpl _slaveManager;
+	private Timer _timer;
+	private UserManager _usermanager;
 	public ConnectionManager(Properties cfg, String cfgFileName) {
 		try {
 			this._config = new FtpConfig(cfg, cfgFileName, this);
@@ -117,7 +106,7 @@ public class ConnectionManager {
 			new GlobRMIServerSocketFactory(rslaves);
 		/** register slavemanager **/
 		try {
-			slaveManager = new SlaveManagerImpl(cfg, rslaves, ssf, this);
+			_slaveManager = new SlaveManagerImpl(cfg, rslaves, ssf, this);
 		} catch (RemoteException e) {
 			throw new FatalException(e);
 		}
@@ -133,7 +122,7 @@ public class ConnectionManager {
 		}
 
 		try {
-			usermanager =
+			_usermanager =
 				(UserManager) Class
 					.forName(cfg.getProperty("master.usermanager"))
 					.newInstance();
@@ -143,62 +132,7 @@ public class ConnectionManager {
 				e);
 		}
 
-		_nukelog = new NukeLog();
-		try {
-			Document doc =
-				new SAXBuilder().build(new FileReader("nukelog.xml"));
-			List nukes = doc.getRootElement().getChildren();
-			for (Iterator iter = nukes.iterator(); iter.hasNext();) {
-				Element nukeElement = (Element) iter.next();
-
-				User user =
-					usermanager.getUserByName(nukeElement.getChildText("user"));
-				String directory = nukeElement.getChildText("path");
-				long time = Long.parseLong(nukeElement.getChildText("time"));
-				int multiplier =
-					Integer.parseInt(nukeElement.getChildText("multiplier"));
-				String reason = nukeElement.getChildText("reason");
-
-				long size = Long.parseLong(nukeElement.getChildText("size"));
-				long nukedAmount =
-					Long.parseLong(nukeElement.getChildText("nukedAmount"));
-
-				Map nukees = new Hashtable();
-				List nukeesElement =
-					nukeElement.getChild("nukees").getChildren("nukee");
-				for (Iterator iterator = nukeesElement.iterator();
-					iterator.hasNext();
-					) {
-					Element nukeeElement = (Element) iterator.next();
-					String nukeeUsername =
-						nukeeElement.getChildText("username");
-					Long nukeeAmount =
-						new Long(nukeeElement.getChildText("amount"));
-
-					nukees.put(nukeeUsername, nukeeAmount);
-				}
-				_nukelog.add(
-					new NukeEvent(
-						user,
-						"NUKE",
-						directory,
-						time,
-						size,
-						nukedAmount,
-						multiplier,
-						reason,
-						nukees));
-			}
-		} catch (FileNotFoundException ex) {
-			logger.log(
-				Level.DEBUG,
-				"nukelog.xml not found, will create it after first nuke.");
-		} catch (Exception ex) {
-			logger.log(
-				Level.INFO,
-				"Error loading nukelog from nukelog.xml",
-				ex);
-		}
+		_commandManagerFactory = new CommandManagerFactory(this);
 
 		if (cfg.getProperty("irc.enabled", "false").equals("true")) {
 			try {
@@ -211,27 +145,27 @@ public class ConnectionManager {
 
 		addFtpListener(new XferLogListener());
 
-		timer = new Timer();
+		_timer = new Timer();
 		TimerTask timerLogoutIdle = new TimerTask() {
 			public void run() {
 				timerLogoutIdle();
 			}
 		};
 		//run every 10 seconds
-		timer.schedule(timerLogoutIdle, 10 * 1000, 10 * 1000);
+		_timer.schedule(timerLogoutIdle, 10 * 1000, 10 * 1000);
 
 		TimerTask timerSave = new TimerTask() {
 			public void run() {
 				getSlaveManager().saveFilesXML();
 				try {
-					getUsermanager().saveAll();
+					getUserManager().saveAll();
 				} catch (UserFileException e) {
 					logger.log(Level.FATAL, "Error saving all users", e);
 				}
 			}
 		};
 		//run every hour 
-		timer.schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
+		_timer.schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
 
 	}
 	public void addFtpListener(FtpListener listener) {
@@ -242,8 +176,8 @@ public class ConnectionManager {
 			try {
 				FtpListener handler = (FtpListener) iter.next();
 				handler.actionPerformed(event);
-			} catch (RuntimeException t) {
-				logger.log(Level.WARN, "Exception dispatching event", t);
+			} catch (RuntimeException e) {
+				logger.log(Level.WARN, "RuntimeException dispatching event", e);
 			}
 		}
 	}
@@ -264,31 +198,25 @@ public class ConnectionManager {
 	public List getFtpListeners() {
 		return _ftpListeners;
 	}
-	/**
-	 * @return
-	 */
-	public NukeLog getNukeLog() {
-		return _nukelog;
-	}
 	public String getShutdownMessage() {
-		return this.shutdownMessage;
+		return this._shutdownMessage;
 	}
 
 	/**
 	 * @return
 	 */
 	public SlaveManagerImpl getSlaveManager() {
-		return slaveManager;
+		return _slaveManager;
 	}
 
 	/**
 	 * @return
 	 */
-	public UserManager getUsermanager() {
-		return usermanager;
+	public UserManager getUserManager() {
+		return _usermanager;
 	}
 	public boolean isShutdown() {
-		return this.shutdownMessage != null;
+		return this._shutdownMessage != null;
 	}
 
 	public void remove(BaseFtpConnection conn) {
@@ -296,9 +224,9 @@ public class ConnectionManager {
 			throw new RuntimeException("connections.remove() returned false.");
 		}
 		if (isShutdown() && _conns.isEmpty()) {
-			slaveManager.saveFilesXML();
+			_slaveManager.saveFilesXML();
 			try {
-				getUsermanager().saveAll();
+				getUserManager().saveAll();
 			} catch (UserFileException e) {
 				logger.log(Level.WARN, "Failed to save all userfiles", e);
 			}
@@ -306,7 +234,7 @@ public class ConnectionManager {
 		}
 	}
 	public void shutdown(String message) {
-		this.shutdownMessage = message;
+		this._shutdownMessage = message;
 		Collection conns = getConnections();
 		synchronized (conns) {
 			for (Iterator iter = getConnections().iterator();
@@ -317,7 +245,7 @@ public class ConnectionManager {
 		}
 		dispatchFtpEvent(new MessageEvent("SHUTDOWN", message));
 	}
-	private CommandManagerFactory commandManagerFactory = new CommandManagerFactory();
+	private CommandManagerFactory _commandManagerFactory;
 	public void start(Socket sock) throws IOException {
 		BaseFtpConnection conn = new BaseFtpConnection(this, sock);
 		_conns.add(conn);
@@ -352,7 +280,6 @@ public class ConnectionManager {
 	 * @return
 	 */
 	public CommandManagerFactory getCommandManagerFactory() {
-		return commandManagerFactory;
+		return _commandManagerFactory;
 	}
-
 }

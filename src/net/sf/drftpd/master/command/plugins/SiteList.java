@@ -14,6 +14,7 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
@@ -24,6 +25,8 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class SiteList implements CommandHandler {
+	public void unload() {}
+	public void load(CommandManagerFactory initializer) {}
 
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {

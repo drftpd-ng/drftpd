@@ -10,6 +10,7 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 
 /**
@@ -57,5 +58,7 @@ public class Dummy implements CommandHandler {
 //		  out.print(FtpReply.RESPONSE_200_COMMAND_OK);
 //		  return;
 //	  }
+	public void load(CommandManagerFactory initializer) {}
+	public void unload() {}
 
 }

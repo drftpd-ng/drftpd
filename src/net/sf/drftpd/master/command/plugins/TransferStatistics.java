@@ -13,6 +13,7 @@ import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.Permission;
@@ -21,6 +22,7 @@ import net.sf.drftpd.master.usermanager.User;
 import org.apache.log4j.Logger;
 
 public class TransferStatistics implements CommandHandler {
+
 	private static Logger logger = Logger.getLogger(TransferStatistics.class);
 	private FtpRequest request;
 
@@ -115,7 +117,7 @@ public class TransferStatistics implements CommandHandler {
 		return response;
 	}
 
-	public static long getStats(String command, User user) {
+	static long getStats(String command, User user) {
 		// AL MONTH WK DAY
 		String period =
 			command.substring("SITE ".length(), command.length() - 2);
@@ -152,6 +154,9 @@ public class TransferStatistics implements CommandHandler {
 	public String[] getFeatReplies() {
 		return null;
 	}
+
+	public void unload() {}
+	public void load(CommandManagerFactory initializer) {}
 
 }
 class UserComparator implements Comparator {

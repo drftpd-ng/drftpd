@@ -6,7 +6,6 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -16,6 +15,7 @@ import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 
 /**
@@ -25,15 +25,10 @@ import net.sf.drftpd.master.command.UnhandledCommandException;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class SlaveManagment implements CommandHandler {
+	public void unload() {}
+	public void load(CommandManagerFactory initializer) {}
 
-	private static final ArrayList handledCommands = new ArrayList();
-	static {
-		handledCommands.add("SITE CHECKSLAVES");
-		handledCommands.add("SITE KICKSLAVES");
-		handledCommands.add("SITE SLAVES");
-	}
-
-	public FtpReply doSITE_CHECKSLAVES(BaseFtpConnection conn) {
+	private FtpReply doSITE_CHECKSLAVES(BaseFtpConnection conn) {
 		conn.resetState();
 		return new FtpReply(
 			200,
@@ -42,7 +37,7 @@ public class SlaveManagment implements CommandHandler {
 				+ " stale slaves removed");
 	}
 
-	public FtpReply doSITE_KICKSLAVE(BaseFtpConnection conn) {
+	private FtpReply doSITE_KICKSLAVE(BaseFtpConnection conn) {
 		conn.reset();
 		if (!conn.getUserNull().isAdmin()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
@@ -70,7 +65,7 @@ public class SlaveManagment implements CommandHandler {
 	 * USAGE: SITE SLAVES
 	 * 
 	 */
-	public FtpReply doSITE_SLAVES(BaseFtpConnection conn) {
+	private FtpReply doSITE_SLAVES(BaseFtpConnection conn) {
 		if (!conn.getUserNull().isAdmin()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}

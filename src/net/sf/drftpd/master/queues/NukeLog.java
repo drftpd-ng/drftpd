@@ -74,7 +74,7 @@ public class NukeLog implements Serializable {
 		Element element = new Element("nukes");
 		for (Iterator iter = getAll().iterator(); iter.hasNext();) {
 			NukeEvent nuke = (NukeEvent) iter.next();
-			element.addContent(nuke.toXML());
+			element.addContent(nuke.toJDOM());
 		}
 		return element;
 	}

@@ -10,12 +10,12 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 
 /**
@@ -25,12 +25,9 @@ import net.sf.drftpd.master.command.UnhandledCommandException;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class Textoutput implements CommandHandler {
+	public void unload() {}
+	public void load(CommandManagerFactory initializer) {}
 
-	private static final ArrayList handledCommands = new ArrayList();
-	static {
-		handledCommands.add("SITE RULES");
-		handledCommands.add("SITE WELCOME");
-	}
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {
 		conn.resetState();
