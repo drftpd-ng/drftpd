@@ -39,7 +39,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: FilterChain.java,v 1.12 2004/11/09 18:59:59 mog Exp $
+ * @version $Id: FilterChain.java,v 1.13 2004/11/12 18:24:30 mog Exp $
  */
 public class FilterChain {
     private SlaveSelectionManagerInterface _ssm;
@@ -113,10 +113,6 @@ public class FilterChain {
             } catch (Exception e) {
                 throw new FatalException(i + ".filter = " + type, e);
             }
-        }
-
-        if (i == 1) {
-            throw new IllegalArgumentException();
         }
 
         filters.trimToSize();

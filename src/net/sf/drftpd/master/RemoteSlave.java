@@ -75,7 +75,7 @@ import com.thoughtworks.xstream.io.StreamException;
 /**
  * @author mog
  * @author zubov
- * @version $Id: RemoteSlave.java,v 1.77 2004/11/12 14:22:17 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.78 2004/11/12 18:24:30 mog Exp $
  */
 public class RemoteSlave implements Runnable, Comparable, Serializable {
 	private static final long serialVersionUID = -6973935289361817125L;
@@ -513,8 +513,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
 	 */
 	public void simpleDelete(String path) {
 		try {
-			String index = issueDeleteToSlave(path);
-			AsyncResponse ar = fetchResponse(index);
+			fetchResponse(issueDeleteToSlave(path));
 		} catch (RemoteIOException e) {
 			if (e.getCause() instanceof FileNotFoundException) {
 				return;

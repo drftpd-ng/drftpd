@@ -1,3 +1,6 @@
+2004/11/12 Morgan Christiansson <drftpd@mog.se>
+* Made empty filterchains valid.
+
 2004/11/09 Morgan Christiansson <drftpd@mog.se>
 * Added getUser() to InviteEvent at request from beepboop.
 * Added BINVITE event that is dispatched on /msg !invite with bad pass.
