@@ -119,14 +119,52 @@ public class GlftpdUserManager extends UserManager {
 		/**
 		 * @see net.sf.drftpd.master.usermanager.User#removeCredits(long)
 		 */
-		public void removeCredits(long credits) throws IOException {
+		public void updateCredits(long credits) throws IOException {
 			try {
-			usermanager.getLock(getUsername());
-			usermanager.load(this);
-			super.removeCredits(credits);
-			usermanager.save(this);
-			} catch(NoSuchUserException ex) {
-				throw (IOException)new IOException("User is deleted").initCause(ex);
+				usermanager.getLock(getUsername());
+				usermanager.load(this);
+				super.updateCredits(credits);
+				usermanager.save(this);
+			} catch (NoSuchUserException ex) {
+				throw (IOException) new IOException(
+					"User is deleted").initCause(
+					ex);
+			} finally {
+				usermanager.releaseLock(getUsername());
+			}
+		}
+
+		/**
+		 * @see net.sf.drftpd.master.usermanager.User#updateDownloadedBytes(long)
+		 */
+		public void updateDownloadedBytes(long bytes) throws IOException {
+			try {
+				usermanager.getLock(getUsername());
+				usermanager.load(this);
+				super.updateDownloadedBytes(bytes);
+				usermanager.save(this);
+			} catch (NoSuchUserException ex) {
+				throw (IOException) new IOException(
+					"User is deleted").initCause(
+					ex);
+			} finally {
+				usermanager.releaseLock(getUsername());
+			}
+		}
+
+		/**
+		 * @see net.sf.drftpd.master.usermanager.User#updateUploadedBytes(long)
+		 */
+		public void updateUploadedBytes(long bytes) throws IOException {
+			try {
+				usermanager.getLock(getUsername());
+				usermanager.load(this);
+				super.updateUploadedBytes(bytes);
+				usermanager.save(this);
+			} catch (NoSuchUserException ex) {
+				throw (IOException) new IOException(
+					"User is deleted").initCause(
+					ex);
 			} finally {
 				usermanager.releaseLock(getUsername());
 			}
@@ -164,14 +202,14 @@ public class GlftpdUserManager extends UserManager {
 		if (user instanceof GlftpdUser)
 			gluser = (GlftpdUser) user;
 		PrintWriter out;
-//		try {
-			out =
-				new PrintWriter(
-					new FileWriter(getUserfilepath(user.getUsername())));
-//		} catch (IOException ex) {
-//			ex.printStackTrace();
-//			return;
-//		}
+		//		try {
+		out =
+			new PrintWriter(
+				new FileWriter(getUserfilepath(user.getUsername())));
+		//		} catch (IOException ex) {
+		//			ex.printStackTrace();
+		//			return;
+		//		}
 
 		out.println("USER " + user.getComment());
 		if (gluser != null) {
@@ -181,7 +219,7 @@ public class GlftpdUserManager extends UserManager {
 						'.',
 						',')
 					+ " "
-					+ user.getIdleTime()/60
+					+ user.getIdleTime() / 60
 					+ " "
 					+ user.getMaxDownloadRate()
 					+ " "
@@ -189,7 +227,7 @@ public class GlftpdUserManager extends UserManager {
 		} else {
 			out.println(
 				"GENERAL 0,0 "
-					+ user.getIdleTime()/60
+					+ user.getIdleTime() / 60
 					+ " "
 					+ user.getMaxDownloadRate()
 					+ " "
@@ -296,12 +334,12 @@ public class GlftpdUserManager extends UserManager {
 				+ user.getTimeToday());
 		out.println("SLOTS " + gluser.getSlots() + " -1");
 		System.out.println("getGroups(): " + user.getGroups());
-		for (Iterator i = user.getGroups().iterator(); i.hasNext(); ) {
+		for (Iterator i = user.getGroups().iterator(); i.hasNext();) {
 			out.println("GROUP " + (String) i.next());
 		}
 		//		out.println("PRIVATE");
 		System.out.println("getIpMasks(): " + user.getIpMasks());
-		for (Iterator i = user.getIpMasks().iterator(); i.hasNext(); ) {
+		for (Iterator i = user.getIpMasks().iterator(); i.hasNext();) {
 			out.println("IP " + (String) i.next());
 		}
 		out.close();
@@ -316,10 +354,10 @@ public class GlftpdUserManager extends UserManager {
 
 	public void load(User user)
 		throws CorruptUserFileException, NoSuchUserException {
-			
+
 		user.ipMasks = new Vector();
 		user.groups = new Vector();
-			
+
 		GlftpdUser gluser = null;
 		if (user instanceof GlftpdUser)
 			gluser = (GlftpdUser) user;
@@ -333,10 +371,9 @@ public class GlftpdUserManager extends UserManager {
 			} catch (FileNotFoundException ex) {
 				throw new NoSuchUserException(ex.toString());
 			}
-			
+
 			//empty "stuff"
-			
-			
+
 			String param[], line, arg;
 			try {
 				while (true) {
@@ -357,7 +394,7 @@ public class GlftpdUserManager extends UserManager {
 						// GENERAL: WKLY_ALLOTMENT, IDLE_TIME, MAX_DLSPEED, MAX_ULSPEED 
 						gluser.setWeeklyAllotment(
 							Integer.parseInt(param[1].substring(2)));
-						user.setMaxIdleTime(Integer.parseInt(param[2])*60);
+						user.setMaxIdleTime(Integer.parseInt(param[2]) * 60);
 						user.setMaxDownloadRate(Integer.parseInt(param[3]));
 						user.setMaxUploadRate(Integer.parseInt(param[4]));
 					} else if ("LOGINS".equals(param[0])) {
@@ -500,12 +537,13 @@ public class GlftpdUserManager extends UserManager {
 	/**
 	 * @see net.sf.drftpd.master.UserManager#getUserByName(String)
 	 */
-	public User getUserByName(String username) throws NoSuchUserException, IOException {
+	public User getUserByName(String username)
+		throws NoSuchUserException, IOException {
 		getLock(username);
 		GlftpdUser user = new GlftpdUser(this, username);
 		try {
 			load(user);
-		} catch(CorruptUserFileException ex) {
+		} catch (CorruptUserFileException ex) {
 			ex.printStackTrace();
 			throw new RuntimeException(ex.toString());
 		}
@@ -528,7 +566,7 @@ public class GlftpdUserManager extends UserManager {
 
 	//LOCKING
 	private long lockTime;
-	
+
 	/**
 	 * public so that GlftpdUser can access this, noone else should use this.
 	 */
@@ -548,13 +586,19 @@ public class GlftpdUserManager extends UserManager {
 	public void releaseLock(String username) {
 		File lock = new File(userdirpath + "/" + username + ".lock");
 		lock.delete();
-		System.out.println("Lock "+username+" released, kept lock for "+(System.currentTimeMillis()-lockTime)+"ms");
+		System.out.println(
+			"Lock "
+				+ username
+				+ " released, kept lock for "
+				+ (System.currentTimeMillis() - lockTime)
+				+ "ms");
 	}
-	private void waitForLock(String username) throws PermissionDeniedException {
+	private void waitForLock(String username)
+		throws PermissionDeniedException {
 		File lock = new File(userdirpath + "/" + username + ".lock");
 		int yields = 0;
 		long millis = 0L;
-		long lastLocked=0;
+		long lastLocked = 0;
 		if (lock.exists()) {
 			millis = System.currentTimeMillis();
 			lastLocked = lock.lastModified();
@@ -562,21 +606,25 @@ public class GlftpdUserManager extends UserManager {
 		while (lock.exists()) {
 			//			try {
 			//				Thread.sleep(100L);
-			if(lock.lastModified() != lastLocked) {
+			if (lock.lastModified() != lastLocked) {
 				lastLocked = lock.lastModified();
-				System.out.println("INFO: lock renewed by other process while waiting for lock");
+				System.out.println(
+					"INFO: lock renewed by other process while waiting for lock");
 			}
-			if(System.currentTimeMillis() - millis > 10000) {
-				if(lock.delete()) {
-					System.out.println("WARN, waited 10s for lock, problably stale lock -- lock removed");
+			if (System.currentTimeMillis() - millis > 10000) {
+				if (lock.delete()) {
+					System.out.println(
+						"WARN, waited 10s for lock, problably stale lock -- lock removed");
 					break;
 				} else {
-					throw new PermissionDeniedException("Could not delete lockfile for username "+username);
+					throw new PermissionDeniedException(
+						"Could not delete lockfile for username " + username);
 				}
 			}
 			try {
-			Thread.sleep(5);
-			} catch(InterruptedException ex) {}
+				Thread.sleep(5);
+			} catch (InterruptedException ex) {
+			}
 		}
 		if (millis != 0) {
 			System.out.println(
@@ -585,10 +633,11 @@ public class GlftpdUserManager extends UserManager {
 					+ " ms waiting for lock (yielded "
 					+ yields
 					+ " times)");
-			System.out.println("If this is a production site please report the above line to mog@linux.nu");
+			System.out.println(
+				"If this is a production site please report the above line to mog@linux.nu");
 		}
 	}
-	
+
 	private String getUserfilepath(String username) {
 		return userdirpath + "/" + username;
 	}

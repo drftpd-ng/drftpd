@@ -23,6 +23,6 @@ public abstract class Connection implements Serializable {
 		 * IPTOS_LOWDELAY (0x10)
 		 */
 		sock.setTrafficClass(0x08);
-		sock.setSoTimeout(60000); // 1 minute timeout
+		sock.setSoTimeout(30000); // .5 minute timeout
 	}
 }

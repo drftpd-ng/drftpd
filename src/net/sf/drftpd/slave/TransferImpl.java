@@ -49,6 +49,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		this.in = in;
 		this.conn = conn;
 		this.mode = mode;
+		this.transfers = transfers;
 	}
 
 	/**
@@ -60,6 +61,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		checksum = new CRC32();
 		this.conn = conn;
 		this.out = new CheckedOutputStream(out, checksum);
+		this.transfers = transfers;
 	}
 	
 	/**
@@ -127,5 +129,13 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		} else {
 			throw new IllegalStateException("getLocalPort() called on a non-passive transfer");
 		}
+	}
+	
+	/**
+	 * Returns the transfered.
+	 * @return long
+	 */
+	public long getTransfered() {
+		return transfered;
 	}
 }

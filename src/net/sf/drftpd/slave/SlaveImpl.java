@@ -241,7 +241,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	 */
 	private Transfer doReceive(RemoteFile dir, String filename, User user, long offset, Connection conn) throws IOException {
 		
-		File file = new File(root + dir+"/" + filename);
+		File file = new File(root + dir.getPath() +"/" + filename);
 		System.out.println("Will write "+file);
 		FileOutputStream out = new FileOutputStream(file);
 

@@ -9,5 +9,6 @@ import java.rmi.RemoteException;
  */
 public interface Transfer extends Remote {
 	public int getLocalPort() throws RemoteException;
+	public long getTransfered() throws RemoteException;
 	public void transfer() throws RemoteException, IOException;
 }

@@ -6,32 +6,26 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
-
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-
 import java.rmi.RemoteException;
-
 import java.text.SimpleDateFormat;
-
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.FileExistsException;
+import net.sf.drftpd.InvalidDirectoryException;
 import net.sf.drftpd.master.usermanager.GlftpdUserManager;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserManager;
-
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.RemoteFile;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
-
 import net.sf.drftpd.slave.RemoteSlave;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.slave.TransferImpl;
-
 import socks.server.Ident;
 
 /**
@@ -74,6 +68,14 @@ public class FtpConnection extends BaseFtpConnection {
 	    super(cfg, soc);
 	}
 	*/
+	
+	/**
+	 * prints a few lines of status such as credits, ratio, disk free, to the user.s
+	 */
+	protected void printStatus(PrintWriter out, String prefix) {
+		out.println(prefix+" [Credits: "+user.getCredits()+"B] [Ratio: 1:"+user.getRatio()+"]");
+	}
+	
 	public FtpConnection(
 		Socket soc,
 		UserManager usermanager,
@@ -422,6 +424,7 @@ public class FtpConnection extends BaseFtpConnection {
 					out.write(mFtpStatus.getResponse(501, request, user, null));
 				} else {
 					os.flush();
+					printStatus(out, "226-");
 					out.write(mFtpStatus.getResponse(226, request, user, null));
 				}
 			}
@@ -610,7 +613,7 @@ public class FtpConnection extends BaseFtpConnection {
 			user2 = usermanager.getUserByName(args[0]);
 			credits = Long.parseLong(args[1])*1000; // B, not KiB
 //			String message = args[3];
-			user2.removeCredits(credits);
+			user2.updateCredits(0-credits); // adds - credits
 		} catch(Exception ex) {
 			out.println("200 "+ex.getMessage());
 			return;
@@ -1156,8 +1159,9 @@ public class FtpConnection extends BaseFtpConnection {
 	    }
 		*/
 		Transfer transfer;
+		RemoteSlave slave;
 		while (true) {
-			RemoteSlave slave = remoteFile.getAnySlave();
+			slave = remoteFile.getAnySlave();
 			
 			// get socket depending on the selection
 			if (mbPort) {
@@ -1191,7 +1195,15 @@ public class FtpConnection extends BaseFtpConnection {
 		} catch(IOException ex) {
 			ex.printStackTrace();
 		}
-		
+		try {
+		long transferedBytes = transfer.getTransfered();
+		user.updateCredits(0-transferedBytes);
+		user.updateDownloadedBytes(transferedBytes);
+		} catch(RemoteException ex) {
+			slavemanager.handleRemoteException(ex, slave);
+		} catch(IOException ex) {
+			ex.printStackTrace();
+		}
 		out.write(mFtpStatus.getResponse(226, request, user, null));
 		reset();
 	}
@@ -1427,8 +1439,23 @@ public class FtpConnection extends BaseFtpConnection {
 		// now transfer file data
 		
 		RemoteSlave slave;
-		RemoteFile directory = new StaticRemoteFile(getVirtualDirectory().getCurrentDirectoryFile());
+		LinkedRemoteFile directory = getVirtualDirectory().getCurrentDirectoryFile();
 		String fileName = request.getArgument();
+		
+		if(fileName.indexOf("/") != -1) {
+			out.println("553 Sorry, can't use path names in file argument, mail mog@linux.nu");
+			return;			
+		}
+		
+		try {
+			//TODO - overwrite & resume files.
+			directory.lookupFile(fileName);
+			out.println("553 File exists, can't overwrite/resume");
+			return;
+		} catch(FileNotFoundException ex) {
+			// file doesn't exist (good), continue.
+		}
+		
 		Transfer transfer;
 		// find a slave that works
 		while(true) {
@@ -1439,13 +1466,15 @@ public class FtpConnection extends BaseFtpConnection {
 				return;
 			}
 			try {
-				transfer = slave.getSlave().doConnectReceive(directory, fileName, user, resumePosition, mAddress, miPort);
+				transfer = slave.getSlave().doConnectReceive(new StaticRemoteFile(directory), fileName, user, resumePosition, mAddress, miPort);
 				break;
 			} catch(RemoteException ex) {
 				slavemanager.handleRemoteException(ex, slave);
 				continue;
 			} catch(IOException ex) {
+				ex.printStackTrace();
 				out.println("451 "+ex.getMessage());
+				return;
 			}
 		}
 		
@@ -1457,61 +1486,28 @@ public class FtpConnection extends BaseFtpConnection {
 		try {
 			transfer.transfer();
 		} catch(RemoteException ex) {
-			out.println("451 "+ex.getMessage());
+			out.println("426 "+ex.getMessage());
 			slavemanager.handleRemoteException(ex, slave);
-			return;
+			return; // does return prevent finally from being run?
 		} catch(IOException ex) {
-			out.println("451 "+ex.getMessage());
+			out.println("426 "+ex.getMessage());
+		} finally {
+			try {
+				long transferedBytes = transfer.getTransfered();
+				RemoteFile file = new StaticRemoteFile(fileName, user, transferedBytes, System.currentTimeMillis());
+				directory.addFile(file);
+				user.updateCredits( (long)(user.getRatio() * transferedBytes) );
+				user.updateUploadedBytes(transferedBytes);
+			} catch(RemoteException ex) {
+				slavemanager.handleRemoteException(ex, slave);
+			} catch(InvalidDirectoryException ex) {
+				ex.printStackTrace();
+			} catch(IOException ex) {
+				ex.printStackTrace();
+			}
+			printStatus(out, "226");
 			return;
 		}
-
-		out.write(mFtpStatus.getResponse(226, request, user, null));
-		
-//		transfer.
-		/*
-				InputStream is = null;
-				OutputStream os = null;
-				try {
-					Socket dataSoc = mDataConnection.getDataSocket();
-					if (dataSoc == null) {
-						out.write(mFtpStatus.getResponse(550, request, mUser, null));
-						return;
-					}
-		
-					is = dataSoc.getInputStream();
-		
-					RandomAccessFile raf = new RandomAccessFile(requestedFile, "rw");
-					raf.seek(skipLen);
-					os = mUser.getOutputStream(new FileOutputStream(raf.getFD()));
-		
-					StreamConnector msc = new StreamConnector(is, os);
-					msc.setMaxTransferRate(mUser.getMaxUploadRate());
-					msc.setObserver(this);
-					msc.connect();
-		
-					if (msc.hasException()) {
-						out.write(mFtpStatus.getResponse(451, request, mUser, null));
-						return;
-					} else {
-						mConfig.getStatistics().setUpload(
-							requestedFile,
-							mUser,
-							msc.getTransferredSize());
-					}
-		
-					out.write(mFtpStatus.getResponse(226, request, mUser, null));
-				} catch (IOException ex) {
-					out.write(mFtpStatus.getResponse(425, request, mUser, null));
-				} finally {
-					try {
-						is.close();
-						os.close();
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-					mDataConnection.reset();
-				}
-		*/
 	}
 
 	/**
