@@ -1241,4 +1241,11 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	public void unload() {
 	}
 
+	/**
+	 * @return
+	 */
+	public boolean isTransfering() {
+		return _transfer != null;
+	}
+
 }
