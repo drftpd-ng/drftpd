@@ -54,7 +54,7 @@ public class Request implements CommandHandler, CommandHandlerFactory {
         }
 
         LinkedRemoteFileInterface currdir = conn.getCurrentDirectory();
-        String reqname = conn.getRequest().getArgument();
+        String reqname = conn.getRequest().getArgument().trim();
 
         for (Iterator iter = currdir.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
@@ -111,7 +111,7 @@ public class Request implements CommandHandler, CommandHandlerFactory {
         }
 
         String createdDirName = REQPREFIX + conn.getUserNull().getName() +
-            "-" + conn.getRequest().getArgument();
+            "-" + conn.getRequest().getArgument().trim();
 
         try {
             LinkedRemoteFile createdDir = conn.getCurrentDirectory()
