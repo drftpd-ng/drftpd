@@ -202,7 +202,7 @@ public class BaseFtpConnection implements Runnable {
 			}
 			out.flush();
 		} catch (SocketException ex) {
-			logger.log(Level.INFO, "SocketException, closing", ex);
+			logger.log(Level.INFO, ex.getMessage()+", closing for user "+(this.user == null ? "<not logged in>" : this.user.getUsername()), ex);
 		} catch (Exception ex) {
 			logger.log(Level.INFO, "Exception, closing", ex);
 		} finally {
@@ -233,11 +233,11 @@ public class BaseFtpConnection implements Runnable {
 			out.print(FtpResponse.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
 			//out.write(ftpStatus.getResponse(502, request, user, null));
 		} catch (InvocationTargetException ex) {
-			logger.log(Level.SEVERE, "", ex);
+			logger.log(Level.SEVERE, "Error", ex);
 			out.print(
 				new FtpResponse(
 					500,
-					"Server error. " + ex.getCause().toString()));
+					"Uncaught exception: " + ex.getCause().toString()));
 			Throwable th = ex.getTargetException();
 			th.printStackTrace();
 		} catch (Exception ex) {

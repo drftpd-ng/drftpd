@@ -407,7 +407,7 @@ public class SlaveManagerImpl
 				try {
 					status = slave.getStatus();
 				} catch (RemoteException ex) {
-					bestslave.handleRemoteException(ex);
+					slave.handleRemoteException(ex);
 					continue;
 				} catch (NoAvailableSlaveException ex) { // throws NoAvailableSlaveException
 					continue;

@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.RemoteFileInterface;
 
 /**
  * This class is responsible to handle all virtual directory activities.
@@ -53,7 +54,7 @@ public class VirtualDirectory {
 
 		// print file list
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			RemoteFileInterface file = (RemoteFileInterface) iter.next();
 			printLine(file, out);
 		}
 //		if (fileList != null) {
@@ -120,7 +121,7 @@ public class VirtualDirectory {
 	 * Get size
 	 * @deprecated
 	 */
-	private static String getLength(LinkedRemoteFile fl) {
+	private static String getLength(RemoteFileInterface fl) {
 		String initStr = "            ";
 		String szStr = Long.toString(fl.length());
 		if (szStr.length() > initStr.length()) {
@@ -146,7 +147,7 @@ public class VirtualDirectory {
 	/**
 	 * Get permission string.
 	 */
-	private static String getPermission(LinkedRemoteFile fl) {
+	private static String getPermission(RemoteFileInterface fl) {
 
 		StringBuffer sb = new StringBuffer(13);
 		if (fl.isDirectory()) {
@@ -182,8 +183,12 @@ public class VirtualDirectory {
 	/**
 	 * Get each directory line.
 	 */
-	public static void printLine(LinkedRemoteFile fl, Writer out) throws IOException {
-		out.write(fl.isAvailable() ? getPermission(fl) : "------");
+	public static void printLine(RemoteFileInterface fl, Writer out) throws IOException {
+		if(fl instanceof LinkedRemoteFile && !((LinkedRemoteFile)fl).isAvailable())  {
+			out.write("------");
+		} else {
+			out.write(getPermission(fl));
+		}
 		out.write(DELIM);
 		out.write(DELIM);
 		out.write(DELIM);
@@ -191,16 +196,18 @@ public class VirtualDirectory {
 		out.write(DELIM);
 		out.write(fl.getUsername());
 		out.write(DELIM);
-		LinkedRemoteFile fl2 = fl;
-		out.write(fl2.getGroupname());
+		out.write(fl.getGroupname());
 		out.write(DELIM);
 		out.write(getLength(fl));
 		out.write(DELIM);
-		LinkedRemoteFile fl1 = fl;
-		out.write(DateUtils.getUnixDate(fl1.lastModified()));
+		out.write(DateUtils.getUnixDate(fl.lastModified()));
 		out.write(DELIM);
 		//out.write(getName(fl));
-		out.write(fl.getName() + (fl.isAvailable() ? "" : "-OFFLINE"));
+		if(fl instanceof LinkedRemoteFile && !((LinkedRemoteFile)fl).isAvailable())  {
+			out.write(fl.getName() + "-OFFLINE");
+		} else {
+			out.write(fl.getName());
+		}
 		out.write(NEWLINE);
 	}
 

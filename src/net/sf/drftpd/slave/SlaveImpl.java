@@ -324,8 +324,9 @@ public class SlaveImpl
 		// throws FileNotFoundException
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
 			File file = (File) iter.next();
+			if(!file.exists()) continue;
 			if (!file.delete())
-				throw new PermissionDeniedException("Cannot delete " + path);
+				throw new PermissionDeniedException("delete failed on "+ path);
 		}
 	}
 

@@ -259,7 +259,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				} catch (IOException ex) {
 					logger.log(
 						Level.SEVERE,
-						"IOException deleting file on slave.",
+						"IOException deleting file on slave "+rslave,
 						ex);
 					continue;
 				}
