@@ -71,6 +71,7 @@ public class SlaveManagerImpl
 		System.out.println(
 			"merge() took " + (System.currentTimeMillis() - millis) + "ms");
 		System.out.println("SlaveStatus: " + slave.getSlave().getSlaveStatus());
+		//TODO: write XML representation of "LinkedRemoteFile root"
 	}
 
 	private Random rand = new Random();

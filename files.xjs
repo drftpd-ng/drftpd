@@ -1,0 +1,22 @@
+<xml-java-binding-schema version="1.0ea">
+  <options package="net.sf.drftpd.remotefile.xml"/>
+  <element name="files" type="class" root="true">
+    <content>
+      <element-ref name="file"/>
+    </content>
+  </element>
+
+  <element name="file" type="class">
+    <attribute name="name"/>
+    <content>
+      <element-ref name="user"/>
+      <element-ref name="group"/>
+      <element-ref name="checksum"/>
+    </content>
+  </element>
+
+  <element name="user" type="value"/>
+  <element name="group" type="value"/>
+  <element name="checksum" type="value"/>
+
+</xml-java-binding-schema>

@@ -90,4 +90,9 @@ public interface Slave extends Remote {
 	 */
 	public void rename(String from, String to)
 		throws RemoteException, IOException;
+		
+	/**
+	 * Delete files.
+	 */
+	public void delete(String path) throws RemoteException, IOException;
 }

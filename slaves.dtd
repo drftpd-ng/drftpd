@@ -1,0 +1,6 @@
+<!ELEMENT slaves (slave)*>
+
+<!ELEMENT slave (mask+,name)>
+
+<!ELEMENT mask (#PCDATA)>
+<!ELEMENT name (#PCDATA)>

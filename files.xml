@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!DOCTYPE directory SYSTEM "files.dtd">
+<directory name="/">
+	<user>drftpd</user>
+	<group>drftpd</group>
+	<lastModified>1029801971</lastModified>
+	<contents>
+		<directory name="DIVX">
+			<user>drftpd</user>
+			<group>drftpd</group>
+			<lastModified>1029801971</lastModified>
+			<contents/>
+			<slaves>
+				<slave name="mog"/>
+			</slaves>
+		</directory>
+		<file name=".message">
+			<user>drftpd</user>
+			<group>drftpd</group>
+			<checksum/>
+			<size>0</size>
+			<lastModified>1029801971</lastModified>
+			<slaves>
+				<slave name="mog"/>
+			</slaves>
+		</file>
+	</contents>
+	<slaves>
+		<slave name="mog"/>
+	</slaves>
+</directory>
