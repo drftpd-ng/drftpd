@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package net.sf.drftpd.event.listeners;
+package org.drftpd.plugins;
 
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
@@ -44,7 +44,7 @@ import java.util.Properties;
 
 /**
  * @author zubov
- * @version $Id$
+ * @version $Id: Archive.java 814 2004-11-22 02:38:00Z mog $
  */
 public class Archive implements FtpListener, Runnable {
     private static final Logger logger = Logger.getLogger(Archive.class);

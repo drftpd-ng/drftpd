@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.event.listeners;
+package org.drftpd.plugins;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
@@ -42,7 +42,6 @@ import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.UserManagment;
 
 import org.drftpd.master.ConnectionManager;
-import org.drftpd.plugins.SiteBot;
 
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -71,7 +70,7 @@ import java.util.Locale;
 
 /**
  * @author flowman
- * @version $Id$
+ * @version $Id: GlftpdLog.java 823 2004-11-29 01:36:22Z mog $
  */
 public class GlftpdLog implements FtpListener {
     private static Logger logger = Logger.getLogger(GlftpdLog.class);

@@ -25,8 +25,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
 
-import net.sf.drftpd.FatalException;
-
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.HostMask;
@@ -43,16 +41,17 @@ import org.drftpd.usermanager.UserFileException;
  */
 public class BeanUserManager extends AbstractUserManager {
 
-	private static String _userpath = "users/javabeans/";
+	private String _userpath = "users/javabeans/";
 
-	private static File _userpathFile = new File(_userpath);
+	private File _userpathFile = new File(_userpath);
 
 	public BeanUserManager() throws UserFileException {
 		this(true);
 	}
 
 	public BeanUserManager(boolean createIfNoUser) throws UserFileException {
-		super(createIfNoUser);
+		super();
+		init(createIfNoUser);
 	}
 
 	protected User createUser(String username) {

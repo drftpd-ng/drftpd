@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.event.listeners;
+package org.drftpd.plugins;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -39,7 +39,6 @@ import org.drftpd.Bytes;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commands.UserManagment;
 import org.drftpd.master.ConnectionManager;
-import org.drftpd.plugins.SiteBot;
 import org.drftpd.usermanager.User;
 
 import com.Ostermiller.util.StringTokenizer;
@@ -47,7 +46,7 @@ import com.Ostermiller.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: Trial.java 823 2004-11-29 01:36:22Z mog $
  */
 public class Trial implements FtpListener {
     private static final Logger logger = Logger.getLogger(Trial.class);

@@ -21,7 +21,6 @@ import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
-import net.sf.drftpd.event.listeners.Trial;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.Permission;
 import net.sf.drftpd.util.ReplacerUtils;
@@ -32,6 +31,7 @@ import org.drftpd.commands.TransferStatistics;
 
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
+import org.drftpd.plugins.Trial;
 
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;

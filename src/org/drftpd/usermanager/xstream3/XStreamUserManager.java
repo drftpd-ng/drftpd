@@ -40,15 +40,16 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
  */
 public class XStreamUserManager extends AbstractUserManager {
     private static final Logger logger = Logger.getLogger(XStreamUserManager.class.getName());
-    String _userpath = "users/xstream3/";
-    File _userpathFile = new File(_userpath);
+    private static String _userpath = "users/xstream3/";
+    private static File _userpathFile = new File(_userpath);
 
     public XStreamUserManager() throws UserFileException {
         this(true);
     }
 
     public XStreamUserManager(boolean createIfNoUser) throws UserFileException {
-    	super(createIfNoUser);
+    	super();
+    	init(createIfNoUser);
     }
 
     public User createUser(String username) {

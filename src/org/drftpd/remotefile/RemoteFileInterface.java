@@ -20,6 +20,8 @@ package org.drftpd.remotefile;
 import java.io.FileNotFoundException;
 import java.util.Collection;
 
+import org.drftpd.master.RemoteSlave;
+
 
 /**
  * @author mog
@@ -37,7 +39,7 @@ public interface RemoteFileInterface extends LightRemoteFileInterface {
     /**
      * Returns a Collection of RemoteFileInterface objects.
      */
-    public Collection getFiles();
+    public Collection<RemoteFileInterface> getFiles();
 
     /**
      * Get the group owner of the file as a String.
@@ -47,18 +49,16 @@ public interface RemoteFileInterface extends LightRemoteFileInterface {
      */
     public String getGroupname();
 
-    //    /**
-    //     * Returns the target of the link.
-    //     * @return target of the link.
-    //     * @see #isLink()
-    //     */
-    //    public RemoteFileInterface getLink() throws FileNotFoundException;
+    /**
+     * Returns the target of the link.
+     * @return target of the link.
+     */
     public String getLinkPath();
 
     public abstract String getParent() throws FileNotFoundException;
 
     public abstract String getPath();
-    public Collection getSlaves();
+    public Collection<RemoteSlave> getSlaves();
 
     /**
      * Returns string representation of the owner of this file.

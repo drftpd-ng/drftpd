@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
 
-import net.sf.drftpd.event.listeners.Archive;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
@@ -33,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.ArchiveType;
+import org.drftpd.plugins.Archive;
 import org.drftpd.sections.SectionInterface;
 
 
@@ -73,6 +73,7 @@ public class FinishReleaseOnSlaves extends ArchiveType {
                 RemoteSlave rslave = (RemoteSlave) iter2.next();
 
                 if(rslave.isMemberOf("incoming")) continue;
+                if(lrf.getSlaves().contains(rslave)) continue;
                 SlaveCount i = (SlaveCount) slaveMap.get(rslave);
                 if (i == null) {
                 	slaveMap.put(rslave, new SlaveCount());
@@ -88,7 +89,7 @@ public class FinishReleaseOnSlaves extends ArchiveType {
         findDestinationSlavesRecursive(getDirectory(), slaveMap);
 
         HashSet<RemoteSlave> returnMe = new HashSet<RemoteSlave>();
-        
+
         RemoteSlave minslave = null;
         // the value of the lowest count in the ret HashSet
         int mincount = 0;
@@ -127,21 +128,6 @@ public class FinishReleaseOnSlaves extends ArchiveType {
         	}
         }
         return returnMe;
-//        ArrayList<SlaveCount> sorted = new ArrayList<SlaveCount>(slaveMap.values());
-//        Collections.sort(sorted);
-//
-//        HashSet returnMe = new HashSet();
-//
-//        for (ListIterator iter = sorted.listIterator(); iter.hasNext();) {
-//            if (iter.nextIndex() == _numOfSlaves) {
-//                break;
-//            }
-//
-//            RemoteSlave rslave = (RemoteSlave) slaveMap.get(iter.next());
-//            returnMe.add(rslave);
-//        }
-//
-//        return returnMe;
     }
 
     public void cleanup(ArrayList jobList) {
@@ -157,8 +143,8 @@ public class FinishReleaseOnSlaves extends ArchiveType {
     }
 
     public String toString() {
-        return "FinishReleaseOnSlaves=[directory=[" + getDirectory().getPath() +
-        "]dest=[" + outputSlaves(getRSlaves()) + "]]";
+        return "FinishReleaseOnSlaves[directory=" + getDirectory().getPath() +
+        ",dest=" + outputSlaves(getRSlaves()) + "]";
     }
 
     public class SlaveCount implements Comparable {

@@ -18,7 +18,6 @@
 package org.drftpd.commands;
 
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.event.listeners.Archive;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
@@ -30,6 +29,7 @@ import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.ArchiveHandler;
 import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.mirroring.DuplicateArchiveException;
+import org.drftpd.plugins.Archive;
 
 import org.drftpd.sections.SectionInterface;
 
@@ -127,7 +127,7 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
             archiveTypeName = st.nextToken();
 
             Class[] classParams = {
-                    net.sf.drftpd.event.listeners.Archive.class,
+                    org.drftpd.plugins.Archive.class,
                     SectionInterface.class, Properties.class
                 };
             Constructor constructor = null;

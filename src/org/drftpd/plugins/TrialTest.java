@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.event.listeners;
+package org.drftpd.plugins;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -36,7 +36,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: TrialTest.java,v 1.11 2004/11/09 18:59:46 mog Exp $
+ * @version $Id: TrialTest.java 781 2004-11-09 19:00:01Z mog $
  */
 public class TrialTest extends TestCase {
     /**

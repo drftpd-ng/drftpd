@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.event.listeners;
+package org.drftpd.plugins;
 
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
@@ -45,7 +45,7 @@ import java.util.Properties;
 
 /**
  * @author zubov
- * @version $Id$
+ * @version $Id: AutoFreeSpace.java 806 2004-11-17 22:29:13Z mog $
  */
 public class AutoFreeSpace implements FtpListener {
     private static final Logger logger = Logger.getLogger(AutoFreeSpace.class);

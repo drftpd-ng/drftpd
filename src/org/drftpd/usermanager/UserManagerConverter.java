@@ -18,10 +18,10 @@
 package org.drftpd.usermanager;
 
 import net.sf.drftpd.DuplicateElementException;
-import net.sf.drftpd.event.listeners.Trial;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+import org.drftpd.plugins.Trial;
 
 import java.io.IOException;
 

@@ -26,12 +26,10 @@ import java.util.Iterator;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FileExistsException;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.commands.UserManagment;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.usermanager.jsx3.JSXUser;
-
 
 /**
  * This is the base class of all the user manager classes. If we want to add a
@@ -50,7 +48,12 @@ public abstract class AbstractUserManager implements UserManager {
 	 */
 	public AbstractUserManager() {
 	}
-    public AbstractUserManager(boolean createIfNoUser) throws UserFileException {
+
+	/**
+	 * <p>Cannot be a constructor because the child class fields don't get
+	 * initialized until super (this) class gets run.</p> 
+	 */
+    protected void init(boolean createIfNoUser) throws UserFileException {
         if (!getUserpathFile().exists() && !getUserpathFile().mkdirs()) {
             throw new UserFileException(new IOException(
                     "Error creating folders: " + getUserpathFile()));
@@ -70,7 +73,6 @@ public abstract class AbstractUserManager implements UserManager {
             }
 
             if (!hasUsers) {
-            	logger.debug("createSiteopUser()");
                 createSiteopUser();
             }
         }
@@ -244,7 +246,7 @@ public abstract class AbstractUserManager implements UserManager {
 
 
     public void saveAll() throws UserFileException {
-        logger.log(Level.INFO, "Saving userfiles");
+        logger.info("Saving userfiles");
         for(User user : _users.values()) {
             user.commit();
         }

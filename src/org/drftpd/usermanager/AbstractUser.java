@@ -24,13 +24,13 @@ import java.util.List;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.event.UserEvent;
-import net.sf.drftpd.event.listeners.Trial;
 import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.master.ConnectionManager;
+import org.drftpd.plugins.Trial;
 
 
 /**

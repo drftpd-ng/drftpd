@@ -63,6 +63,7 @@ public class Transfer {
 	public static final char TRANSFER_SENDING_DOWNLOAD = 'S';
 	public static final char TRANSFER_THROUGHPUT = 'A';
 	public static final char TRANSFER_UNKNOWN = 'U';
+	private File _file;
 
     /**
      * Start undefined transfer.
@@ -105,6 +106,11 @@ public class Transfer {
 
         try {
             _sock.close();
+            _out.close();
+            _in.close();
+            if(_direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+            	_file.delete();
+            }
         } catch (IOException e) {
             logger.warn("abort() failed to close() the socket", e);
         }
@@ -184,7 +190,7 @@ public class Transfer {
 
         String root = _slave.getRoots().getARootFileDir(dirname).getPath();
 
-        _out = new FileOutputStream(root + File.separator + filename);
+        _out = new FileOutputStream(_file = new File(root + File.separator + filename));
 
         if (_slave.getUploadChecksums()) {
             _checksum = new CRC32();
@@ -207,7 +213,7 @@ public class Transfer {
 
     public TransferStatus sendFile(String path, char type, long resumePosition)
         throws IOException {
-        _in = new FileInputStream(_slave.getRoots().getFile(path));
+        _in = new FileInputStream(_file = new File(_slave.getRoots().getFile(path)));
 
         if (_slave.getDownloadChecksums()) {
             _checksum = new CRC32();

@@ -603,11 +603,10 @@ public class LinkedRemoteFile implements Serializable, Comparable,
      * @return a Collection of all the LinkedRemoteFile objects in this
      *         directory.
      */
-    public Collection getFiles() {
+    public Collection<LinkedRemoteFileInterface> getFiles() {
         if (_files == null) {
             throw new IllegalStateException("Isn't a directory");
         }
-
         return getFilesMap().values();
     }
 
@@ -1702,4 +1701,5 @@ public class LinkedRemoteFile implements Serializable, Comparable,
             getPath() + "]";
         }
     }
+
 }

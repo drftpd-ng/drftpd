@@ -15,19 +15,18 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.event.listeners;
+package org.drftpd.plugins;
 
 import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
-import net.sf.drftpd.event.listeners.Trial.Limit;
 import net.sf.drftpd.master.BaseFtpConnection;
 
 import org.apache.log4j.Logger;
 
 import org.drftpd.Bytes;
-import org.drftpd.plugins.SiteBot;
+import org.drftpd.plugins.Trial.Limit;
 
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;

@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 
-import net.sf.drftpd.event.listeners.Archive;
 import net.sf.drftpd.mirroring.Job;
 
 import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.plugins.Archive;
 import org.drftpd.sections.SectionInterface;
 
 
@@ -70,7 +70,6 @@ public class ArchiveHandler extends Thread {
 
                 if (destSlaves == null) {
                     _archiveType.setDirectory(null);
-
                     return; // no available slaves to use
                 }
 

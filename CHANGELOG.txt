@@ -5,6 +5,7 @@
    grep hostMask * | sed \
    -e 's/^\(.*\)\.xml:/site addslave \1 ; site slave \1 addmask /' \
    -e 's/<__hostMask>/*@/' -e 's/<\/__hostMask>//'
+* Made slaves delete file on aborted file uploads.
 
 2004/11/26 Morgan Christiansson <drftpd@mog.se>
 * Renamed .getUsername() to .getName() and moved the declaration
