@@ -123,7 +123,7 @@ public class Stats extends GenericCommandAutoService
         }
 
 
-        if (!msgc.isPrivateToUs(getConnection().getClientState())) {
+        if (msgc.isPrivateToUs(getConnection().getClientState())) {
             return;
         }
 
