@@ -769,21 +769,20 @@ public class StringTokenizer implements java.util.Enumeration,
 
                 /*System.out.println("Empty token for empty string.");*/
                 return true;
-            } else {
-                char c = text.charAt(position);
+            }
 
-                if (((c <= maxDelimChar) &&
-                        ((nontokenDelims != null) &&
-                        (nontokenDelims.indexOf(c) != -1))) ||
-                        ((tokenDelims != null) &&
-                        (tokenDelims.indexOf(c) != -1))) {
-                    // There is delimiter at the very start of the string
-                    // so we must return an empty token at the beginning.
-                    emptyReturned = true;
+            char c = text.charAt(position);
 
-                    /*System.out.println("Empty token at beginning.");*/
-                    return true;
-                }
+            if (((c <= maxDelimChar) &&
+                    ((nontokenDelims != null) &&
+                    (nontokenDelims.indexOf(c) != -1))) ||
+                    ((tokenDelims != null) && (tokenDelims.indexOf(c) != -1))) {
+                // There is delimiter at the very start of the string
+                // so we must return an empty token at the beginning.
+                emptyReturned = true;
+
+                /*System.out.println("Empty token at beginning.");*/
+                return true;
             }
         }
 
