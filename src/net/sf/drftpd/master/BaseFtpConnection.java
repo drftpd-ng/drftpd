@@ -13,9 +13,13 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Iterator;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.drftpd.event.FtpEvent;
+import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.master.usermanager.User;
 
 //import ranab.util.Message;
@@ -26,9 +30,22 @@ import net.sf.drftpd.master.usermanager.User;
  * the request to appropriate methods in subclasses.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
+ * @author mog
  */
 public class BaseFtpConnection implements Runnable {
-
+	
+	private Vector ftpListeners = new Vector();
+	public void addFtpListener(FtpListener listener) {
+		ftpListeners.add(listener);
+	}
+	
+	protected void dispatchFtpListenerEvent(FtpEvent event) {
+		for (Iterator iter = ftpListeners.iterator(); iter.hasNext();) {
+		FtpListener handler = (FtpListener) iter.next();
+		handler.actionPerformed(event);
+	}
+	}
+	
 	protected final static Class[] METHOD_INPUT_SIG =
 		new Class[] { FtpRequest.class, PrintWriter.class };
 	private static Logger logger = Logger.getLogger(BaseFtpConnection.class.getName());

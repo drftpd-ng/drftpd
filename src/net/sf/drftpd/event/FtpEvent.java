@@ -6,6 +6,7 @@
  */
 package net.sf.drftpd.event;
 
+import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.usermanager.User;
 
 /**
@@ -16,15 +17,20 @@ import net.sf.drftpd.master.usermanager.User;
  */
 public class FtpEvent {
 	User user;
-	String command;
+	FtpRequest request;
 	
-	FtpEvent(User user, String command) {
+	FtpEvent(User user, FtpRequest request) {
 		this.user = user;
+		this.request = request;
+	}
+	public String getCommand() {
+		return request.getCommand();
 	}
 	/**
 	 * @return
 	 */
-	public String getCommand() {
-		return command;
+	public User getUser() {
+		return user;
 	}
+
 }

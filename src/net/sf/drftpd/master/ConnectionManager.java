@@ -20,6 +20,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.drftpd.event.GlftpdLog;
 import net.sf.drftpd.master.usermanager.GlftpdUserManager;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserManager;
@@ -32,6 +33,8 @@ import net.sf.drftpd.slave.SlaveImpl;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
+
+import se.mog.io.File;
 
 public class ConnectionManager {
 	int idleTimeout = 600;
@@ -170,8 +173,8 @@ public class ConnectionManager {
 			}
 		}
 	}
-
-	public void start(Socket sock) {
+	//TODO Fix FtpListener so that it doesn't need to be init:ed for each conn
+	public void start(Socket sock) throws IOException {
 		FtpConnection conn =
 			new FtpConnection(
 				sock,
@@ -179,6 +182,8 @@ public class ConnectionManager {
 				slavemanager,
 				slavemanager.getRoot(),
 				this);
+				
+		conn.addFtpListener(new GlftpdLog(new File("glftpd.log")));
 		connections.add(conn);
 		conn.start();
 	}
