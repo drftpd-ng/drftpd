@@ -24,10 +24,18 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.35 2004/01/30 14:56:10 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.36 2004/02/04 00:28:18 zubov Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
+
+	public static String getProperty(Properties p, String name)
+		throws NullPointerException {
+		String result = p.getProperty(name);
+		if (result == null)
+			throw new NullPointerException("Error getting setting " + name);
+		return result;
+	}
 
 	private static ArrayList makePermission(ArrayList arr, StringTokenizer st)
 		throws MalformedPatternException {
@@ -36,14 +44,6 @@ public class FtpConfig {
 				new GlobCompiler().compile(st.nextToken()),
 				makeUsers(st)));
 		return arr;
-	}
-
-	public static String getProperty(Properties p, String name)
-		throws NullPointerException {
-		String result = p.getProperty(name);
-		if (result == null)
-			throw new NullPointerException("Error getting setting " + name);
-		return result;
 	}
 
 	private static ArrayList makeRatioPermission(
@@ -65,6 +65,8 @@ public class FtpConfig {
 		}
 		return users;
 	}
+	private boolean _capFirstDir;
+	private boolean _capFirstFile;
 	private ConnectionManager _connManager;
 	private ArrayList _creditcheck;
 	private ArrayList _creditloss;
@@ -74,6 +76,9 @@ public class FtpConfig {
 	private ArrayList _download;
 	private long _freespaceMin;
 	private ArrayList _hideinwho;
+	private boolean _isLowerDir;
+	private boolean _isLowerFile;
+	private String _loginPrompt = SlaveImpl.VERSION + " http://drftpd.mog.se";
 	private ArrayList _makedir;
 	private int _maxUsersExempt;
 	private int _maxUsersTotal = Integer.MAX_VALUE;
@@ -82,13 +87,16 @@ public class FtpConfig {
 	private ArrayList _privpath;
 	private ArrayList _rename;
 	private ArrayList _renameown;
+	private StringTokenizer _replaceDir;
+	private StringTokenizer _replaceFile;
 	private ArrayList _request;
 	private ArrayList _upload;
+	private boolean _useDirNames;
+	private boolean _useFileNames;
 
 	private boolean _useIdent;
 
 	String cfgFileName;
-	private String loginPrompt = SlaveImpl.VERSION + " http://drftpd.mog.se";
 	private String newConf = "conf/perms.conf";
 	/**
 	 * Constructor that allows reusing of cfg object
@@ -244,11 +252,41 @@ public class FtpConfig {
 		System.out.println("path did not match anything, path = " + path);
 		return fromUser.getRatio() == 0 ? 0 : 1;
 	}
+
+	public String getDirName(String name) {
+		if (!_useDirNames)
+			return name;
+		String temp = new String(name);
+		if (_isLowerDir)
+			temp = temp.toLowerCase();
+		else
+			temp = temp.toUpperCase();
+		if (_capFirstDir)
+			temp =
+				temp.substring(0, 1).toUpperCase()
+					+ temp.substring(1, temp.length());
+		return replaceName(temp, _replaceDir);
+	}
+
+	public String getFileName(String name) {
+		if (!_useFileNames)
+			return name;
+		String temp = new String(name);
+		if (_isLowerFile)
+			temp = temp.toLowerCase();
+		else
+			temp = temp.toUpperCase();
+		if (_capFirstFile)
+			temp =
+				temp.substring(0, 1).toUpperCase()
+					+ temp.substring(1, temp.length());
+		return replaceName(temp, _replaceFile);
+	}
 	public long getFreespaceMin() {
 		return _freespaceMin;
 	}
 	public String getLoginPrompt() {
-		return loginPrompt;
+		return _loginPrompt;
 	}
 	public int getMaxUsersExempt() {
 		return _maxUsersExempt;
@@ -289,11 +327,15 @@ public class FtpConfig {
 		ArrayList renameown = new ArrayList();
 		ArrayList request = new ArrayList();
 		ArrayList upload = new ArrayList();
+		_useFileNames = false;
+		_replaceFile = null;
+		_useDirNames = false;
+		_replaceDir = null;
 
 		LineNumberReader in = new LineNumberReader(new FileReader(newConf));
 		try {
 			String line;
-			GlobCompiler globComiler = new GlobCompiler();
+			GlobCompiler globCompiler = new GlobCompiler();
 			while ((line = in.readLine()) != null) {
 				StringTokenizer st = new StringTokenizer(line);
 				if (!st.hasMoreTokens())
@@ -304,18 +346,29 @@ public class FtpConfig {
 					if (command.equals("privpath")) {
 						privpath.add(
 							new PatternPathPermission(
-								globComiler.compile(st.nextToken()),
+								globCompiler.compile(st.nextToken()),
 								makeUsers(st)));
 					}
 					// login_prompt <string>
 					else if (command.equals("login_prompt")) {
-						loginPrompt = line.substring(13);
+						_loginPrompt = line.substring(13);
 					}
 					//max_users <maxUsersTotal> <maxUsersExempt>
 					else if (command.equals("max_users")) {
 						_maxUsersTotal = Integer.parseInt(st.nextToken());
 						_maxUsersExempt = Integer.parseInt(st.nextToken());
+					} else if (command.equals("dir_names")) {
+						_useDirNames = true;
+						_capFirstDir = st.nextToken().equals("true");
+						_isLowerDir = st.nextToken().equals("lower");
+						_replaceDir = st;
+					} else if (command.equals("file_names")) {
+						_useFileNames = true;
+						_capFirstFile = st.nextToken().equals("true");
+						_isLowerFile = st.nextToken().equals("lower");
+						_replaceFile = st;
 					}
+
 					//msgpath <path> <filename> <flag/=group/-user>
 					else if (command.equals("msgpath")) {
 						String path = st.nextToken();
@@ -428,6 +481,47 @@ public class FtpConfig {
 		Properties cfg = new Properties();
 		cfg.load(new FileInputStream(cfgFileName));
 		loadConfig(cfg, _connManager);
+	}
+
+	private void replaceChars(
+		StringBuffer source,
+		Character oldChar,
+		Character newChar) {
+		if (newChar == null) {
+			int x = 0;
+			while (x < source.length()) {
+				if (source.charAt(x) == oldChar.charValue()) {
+					source.deleteCharAt(x);
+				} else
+					x++;
+			}
+		} else {
+			int x = 0;
+			while (x < source.length()) {
+				if (source.charAt(x) == oldChar.charValue())
+					source.setCharAt(x, newChar.charValue());
+				x++;
+			}
+		}
+	}
+
+	private String replaceName(String source, StringTokenizer st) {
+		StringBuffer sb = new StringBuffer(source);
+		Character oldChar = null;
+		Character newChar = null;
+		while (true) {
+			if (!st.hasMoreTokens())
+				return sb.toString();
+			String nextToken = st.nextToken();
+			if (nextToken.length() == 1) {
+				oldChar = new Character(nextToken.charAt(0));
+				newChar = null;
+			} else {
+				oldChar = new Character(nextToken.charAt(0));
+				newChar = new Character(nextToken.charAt(1));
+			}
+			replaceChars(sb, oldChar, newChar);
+		}
 	}
 
 	public boolean useIdent() {

@@ -51,7 +51,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.38 2004/02/04 00:19:27 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.39 2004/02/04 00:28:18 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -1035,7 +1035,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			} else if (isStor) {
 				LinkedRemoteFile.NonExistingFile ret =
 					conn.getCurrentDirectory().lookupNonExistingFile(
-						request.getArgument());
+						conn.getConnectionManager().getConfig().getFileName(
+							request.getArgument()));
 				targetDir = ret.getFile();
 				targetFileName = ret.getPath();
 

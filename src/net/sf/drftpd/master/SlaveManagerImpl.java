@@ -1,6 +1,5 @@
 package net.sf.drftpd.master;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -45,7 +44,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 /**
- * @version $Id: SlaveManagerImpl.java,v 1.65 2004/02/03 20:57:14 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.66 2004/02/04 00:28:17 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject

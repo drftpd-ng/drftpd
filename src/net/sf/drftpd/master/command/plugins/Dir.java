@@ -37,51 +37,17 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.15 2004/02/02 14:36:40 mog Exp $
+ * @version $Id: Dir.java,v 1.16 2004/02/04 00:28:18 zubov Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
-	protected LinkedRemoteFile _renameFrom = null;
 	private final static SimpleDateFormat DATE_FMT =
 		new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
 	private static final Logger logger = Logger.getLogger(Dir.class);
+	protected LinkedRemoteFile _renameFrom = null;
 
 	public Dir() {
 		super();
-	}
-
-	private FtpReply doSITE_CHOWN(BaseFtpConnection conn)
-		throws UnhandledCommandException {
-		FtpRequest req = conn.getRequest();
-		StringTokenizer st =
-			new StringTokenizer(conn.getRequest().getArgument());
-		String owner = st.nextToken();
-		String group = null;
-		int pos = owner.indexOf('.');
-		if (pos != -1) {
-			group = owner.substring(pos + 1);
-			owner = owner.substring(0, pos);
-		} else if ("SITE CHGRP".equals(req.getCommand())) {
-			group = owner;
-			owner = null;
-		} else if (!"SITE CHOWN".equals(req.getCommand())) {
-			throw UnhandledCommandException.create(Dir.class, req);
-		}
-		FtpReply reply = new FtpReply(200);
-
-		while (st.hasMoreTokens()) {
-			try {
-				LinkedRemoteFile file =
-					conn.getCurrentDirectory().lookupFile(st.nextToken());
-				if (owner != null)
-					file.setOwner(owner);
-				if (group != null)
-					file.setGroup(group);
-			} catch (FileNotFoundException e) {
-				reply.addComment(e.getMessage());
-			}
-		}
-		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
 
 	/**
@@ -143,7 +109,9 @@ public class Dir implements CommandHandler, Cloneable {
 		}
 
 		if (!newCurrentDirectory.isDirectory()) {
-			return new FtpReply(550, request.getArgument() + ": Not a directory");
+			return new FtpReply(
+				550,
+				request.getArgument() + ": Not a directory");
 		}
 		conn.setCurrentDirectory(newCurrentDirectory);
 
@@ -206,6 +174,106 @@ public class Dir implements CommandHandler, Cloneable {
 	}
 
 	/**
+	 * <code>DELE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+	 *
+	 * This command causes the file specified in the pathname to be
+	 * deleted at the server site.
+	 */
+	private FtpReply doDELE(BaseFtpConnection conn) {
+		FtpRequest request = conn.getRequest();
+		// reset state variables
+		conn.resetState();
+
+		// argument check
+		if (!request.hasArgument()) {
+			//out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+		}
+
+		// get filenames
+		String fileName = request.getArgument();
+		LinkedRemoteFile requestedFile;
+		try {
+			//requestedFile = getVirtualDirectory().lookupFile(fileName);
+			requestedFile = conn.getCurrentDirectory().lookupFile(fileName);
+		} catch (FileNotFoundException ex) {
+			return new FtpReply(550, "File not found: " + ex.getMessage());
+		}
+		// check permission
+		if (requestedFile
+			.getUsername()
+			.equals(conn.getUserNull().getUsername())) {
+			if (!conn
+				.getConfig()
+				.checkDeleteOwn(conn.getUserNull(), requestedFile)) {
+				return FtpReply.RESPONSE_530_ACCESS_DENIED;
+			}
+		} else if (
+			!conn.getConfig().checkDelete(conn.getUserNull(), requestedFile)) {
+			return FtpReply.RESPONSE_530_ACCESS_DENIED;
+		}
+
+		FtpReply reply = (FtpReply) FtpReply.RESPONSE_250_ACTION_OKAY.clone();
+
+		User uploader;
+		try {
+			uploader =
+				conn.getUserManager().getUserByName(
+					requestedFile.getUsername());
+			uploader.updateCredits(
+				(long) - (requestedFile.length() * uploader.getRatio()));
+		} catch (UserFileException e) {
+			reply.addComment("Error removing credits: " + e.getMessage());
+		} catch (NoSuchUserException e) {
+			reply.addComment("Error removing credits: " + e.getMessage());
+		}
+
+		conn.getConnectionManager().dispatchFtpEvent(
+			new DirectoryFtpEvent(conn.getUserNull(), "DELE", requestedFile));
+		requestedFile.delete();
+		return reply;
+	}
+
+	/**
+	 * <code>MDTM &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+	 * 
+	 * Returns the date and time of when a file was modified.
+	 */
+	private FtpReply doMDTM(BaseFtpConnection conn) {
+		FtpRequest request = conn.getRequest();
+		// argument check
+		if (!request.hasArgument()) {
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+		}
+
+		// reset state variables
+		conn.resetState();
+
+		// get filenames
+		String fileName = request.getArgument();
+		LinkedRemoteFile reqFile;
+		try {
+			reqFile = conn.getCurrentDirectory().lookupFile(fileName);
+		} catch (FileNotFoundException ex) {
+			return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+		}
+		//fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
+		//String physicalName =
+		//	user.getVirtualDirectory().getPhysicalName(fileName);
+		//File reqFile = new File(physicalName);
+
+		// now print date
+		//if (reqFile.exists()) {
+		return new FtpReply(
+			213,
+			DATE_FMT.format(new Date(reqFile.lastModified())));
+		//out.print(ftpStatus.getResponse(213, request, user, args));
+		//} else {
+		//	out.write(ftpStatus.getResponse(550, request, user, null));
+		//}
+	}
+
+	/**
 	 * <code>MKD  &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
 	 *
 	 * This command causes the directory specified in the pathname
@@ -238,10 +306,11 @@ public class Dir implements CommandHandler, Cloneable {
 
 		LinkedRemoteFile.NonExistingFile ret =
 			conn.getCurrentDirectory().lookupNonExistingFile(
-				request.getArgument());
+				conn.getConnectionManager().getConfig().getDirName(
+					request.getArgument()));
 		LinkedRemoteFile dir = ret.getFile();
 		//logger.debug("Parent directory is " + dir);
-		for(Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
+		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile temp = (LinkedRemoteFile) iter.next();
 			logger.debug(temp);
 		}
@@ -483,160 +552,38 @@ public class Dir implements CommandHandler, Cloneable {
 			request.getCommand() + " command successfull.");
 	}
 
-	/**
-	 * <code>DELE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
-	 *
-	 * This command causes the file specified in the pathname to be
-	 * deleted at the server site.
-	 */
-	private FtpReply doDELE(BaseFtpConnection conn) {
-		FtpRequest request = conn.getRequest();
-		// reset state variables
-		conn.resetState();
-
-		// argument check
-		if (!request.hasArgument()) {
-			//out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+	private FtpReply doSITE_CHOWN(BaseFtpConnection conn)
+		throws UnhandledCommandException {
+		FtpRequest req = conn.getRequest();
+		StringTokenizer st =
+			new StringTokenizer(conn.getRequest().getArgument());
+		String owner = st.nextToken();
+		String group = null;
+		int pos = owner.indexOf('.');
+		if (pos != -1) {
+			group = owner.substring(pos + 1);
+			owner = owner.substring(0, pos);
+		} else if ("SITE CHGRP".equals(req.getCommand())) {
+			group = owner;
+			owner = null;
+		} else if (!"SITE CHOWN".equals(req.getCommand())) {
+			throw UnhandledCommandException.create(Dir.class, req);
 		}
+		FtpReply reply = new FtpReply(200);
 
-		// get filenames
-		String fileName = request.getArgument();
-		LinkedRemoteFile requestedFile;
-		try {
-			//requestedFile = getVirtualDirectory().lookupFile(fileName);
-			requestedFile = conn.getCurrentDirectory().lookupFile(fileName);
-		} catch (FileNotFoundException ex) {
-			return new FtpReply(550, "File not found: " + ex.getMessage());
-		}
-		// check permission
-		if (requestedFile
-			.getUsername()
-			.equals(conn.getUserNull().getUsername())) {
-			if (!conn
-				.getConfig()
-				.checkDeleteOwn(conn.getUserNull(), requestedFile)) {
-				return FtpReply.RESPONSE_530_ACCESS_DENIED;
-			}
-		} else if (
-			!conn.getConfig().checkDelete(conn.getUserNull(), requestedFile)) {
-			return FtpReply.RESPONSE_530_ACCESS_DENIED;
-		}
-
-		FtpReply reply = (FtpReply) FtpReply.RESPONSE_250_ACTION_OKAY.clone();
-
-		User uploader;
-		try {
-			uploader =
-				conn.getUserManager().getUserByName(
-					requestedFile.getUsername());
-			uploader.updateCredits(
-				(long) - (requestedFile.length() * uploader.getRatio()));
-		} catch (UserFileException e) {
-			reply.addComment("Error removing credits: " + e.getMessage());
-		} catch (NoSuchUserException e) {
-			reply.addComment("Error removing credits: " + e.getMessage());
-		}
-
-		conn.getConnectionManager().dispatchFtpEvent(
-			new DirectoryFtpEvent(conn.getUserNull(), "DELE", requestedFile));
-		requestedFile.delete();
-		return reply;
-	}
-
-	/**
-	 * http://www.southrivertech.com/support/titanftp/webhelp/xcrc.htm
-	 * 
-	 * Originally implemented by CuteFTP Pro and Globalscape FTP Server
-	 */
-	private FtpReply doXCRC(BaseFtpConnection conn) {
-		FtpRequest request = conn.getRequest();
-		if (!request.hasArgument()) {
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-		}
-		StringTokenizer st = new StringTokenizer(request.getArgument());
-		LinkedRemoteFile myFile;
-		try {
-			myFile = conn.getCurrentDirectory().lookupFile(st.nextToken());
-		} catch (FileNotFoundException e) {
-			return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
-		}
-
-		if (st.hasMoreTokens()) {
-			if (!st.nextToken().equals("0")
-				|| !st.nextToken().equals(Long.toString(myFile.length()))) {
-				return FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+		while (st.hasMoreTokens()) {
+			try {
+				LinkedRemoteFile file =
+					conn.getCurrentDirectory().lookupFile(st.nextToken());
+				if (owner != null)
+					file.setOwner(owner);
+				if (group != null)
+					file.setGroup(group);
+			} catch (FileNotFoundException e) {
+				reply.addComment(e.getMessage());
 			}
 		}
-		try {
-			return new FtpReply(
-				250,
-				"XCRC Successful. "
-					+ Checksum.formatChecksum(myFile.getCheckSum()));
-		} catch (IOException e1) {
-			logger.warn("", e1);
-			return new FtpReply(550, "IO error: " + e1.getMessage());
-		}
-
-	}
-
-	/**
-	 * <code>MDTM &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
-	 * 
-	 * Returns the date and time of when a file was modified.
-	 */
-	private FtpReply doMDTM(BaseFtpConnection conn) {
-		FtpRequest request = conn.getRequest();
-		// argument check
-		if (!request.hasArgument()) {
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-		}
-
-		// reset state variables
-		conn.resetState();
-
-		// get filenames
-		String fileName = request.getArgument();
-		LinkedRemoteFile reqFile;
-		try {
-			reqFile = conn.getCurrentDirectory().lookupFile(fileName);
-		} catch (FileNotFoundException ex) {
-			return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
-		}
-		//fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
-		//String physicalName =
-		//	user.getVirtualDirectory().getPhysicalName(fileName);
-		//File reqFile = new File(physicalName);
-
-		// now print date
-		//if (reqFile.exists()) {
-		return new FtpReply(
-			213,
-			DATE_FMT.format(new Date(reqFile.lastModified())));
-		//out.print(ftpStatus.getResponse(213, request, user, args));
-		//} else {
-		//	out.write(ftpStatus.getResponse(550, request, user, null));
-		//}
-	}
-
-	/**
-	 * <code>SIZE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
-	 *
-	 * Returns the size of the file in bytes.
-	 */
-	private FtpReply doSIZE(BaseFtpConnection conn) {
-		FtpRequest request = conn.getRequest();
-		conn.resetState();
-		if (!request.hasArgument()) {
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-		}
-		LinkedRemoteFile file;
-		try {
-			file = conn.getCurrentDirectory().lookupFile(request.getArgument());
-		} catch (FileNotFoundException ex) {
-			return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
-		}
-		return new FtpReply(213, Long.toString(file.length()));
+		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
 
 	/**
@@ -714,6 +661,62 @@ public class Dir implements CommandHandler, Cloneable {
 		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
 
+	/**
+	 * <code>SIZE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+	 *
+	 * Returns the size of the file in bytes.
+	 */
+	private FtpReply doSIZE(BaseFtpConnection conn) {
+		FtpRequest request = conn.getRequest();
+		conn.resetState();
+		if (!request.hasArgument()) {
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+		}
+		LinkedRemoteFile file;
+		try {
+			file = conn.getCurrentDirectory().lookupFile(request.getArgument());
+		} catch (FileNotFoundException ex) {
+			return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+		}
+		return new FtpReply(213, Long.toString(file.length()));
+	}
+
+	/**
+	 * http://www.southrivertech.com/support/titanftp/webhelp/xcrc.htm
+	 * 
+	 * Originally implemented by CuteFTP Pro and Globalscape FTP Server
+	 */
+	private FtpReply doXCRC(BaseFtpConnection conn) {
+		FtpRequest request = conn.getRequest();
+		if (!request.hasArgument()) {
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+		}
+		StringTokenizer st = new StringTokenizer(request.getArgument());
+		LinkedRemoteFile myFile;
+		try {
+			myFile = conn.getCurrentDirectory().lookupFile(st.nextToken());
+		} catch (FileNotFoundException e) {
+			return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+		}
+
+		if (st.hasMoreTokens()) {
+			if (!st.nextToken().equals("0")
+				|| !st.nextToken().equals(Long.toString(myFile.length()))) {
+				return FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+			}
+		}
+		try {
+			return new FtpReply(
+				250,
+				"XCRC Successful. "
+					+ Checksum.formatChecksum(myFile.getCheckSum()));
+		} catch (IOException e1) {
+			logger.warn("", e1);
+			return new FtpReply(550, "IO error: " + e1.getMessage());
+		}
+
+	}
+
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {
 		FtpRequest request = conn.getRequest();
@@ -748,6 +751,10 @@ public class Dir implements CommandHandler, Cloneable {
 
 	}
 
+	public String[] getFeatReplies() {
+		return null;
+	}
+
 	public CommandHandler initialize(
 		BaseFtpConnection conn,
 		CommandManager initializer) {
@@ -756,10 +763,6 @@ public class Dir implements CommandHandler, Cloneable {
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	public String[] getFeatReplies() {
-		return null;
 	}
 	public void load(CommandManagerFactory initializer) {
 	}

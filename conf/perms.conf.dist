@@ -28,3 +28,10 @@ hideinwho /pre/*	*
 #msgpath /incoming/ ftp-data/incoming.txt
 
 dirlog		*	*
+
+
+#dir_names <firstletteruppercase> lower/upper XY XY ..
+#dir_names true lower
+
+#file_names <firstletteruppercase> lower/upper XY XY ..
+#file_names true lower
