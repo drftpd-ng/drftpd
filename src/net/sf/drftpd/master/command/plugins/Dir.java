@@ -365,14 +365,19 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         User uploader;
 
         try {
-            uploader = conn.getGlobalContext().getUserManager().getUserByName(requestedFile.getUsername());
-            uploader.updateCredits((long) -(requestedFile.length() * uploader.getKeyedMap().getObjectFloat(UserManagement.RATIO)));
-            uploader.updateUploadedBytes(-requestedFile.length());
-        } catch (UserFileException e) {
-            reply.addComment("Error removing credits & stats: " + e.getMessage());
-        } catch (NoSuchUserException e) {
-            reply.addComment("Error removing credits & stats: " + e.getMessage());
-        }
+			uploader = conn.getGlobalContext().getUserManager().getUserByName(
+					requestedFile.getUsername());
+			uploader.updateCredits((long) -(requestedFile.length() * conn
+					.getGlobalContext().getConfig().getCreditCheckRatio(
+							requestedFile, uploader)));
+			uploader.updateUploadedBytes(-requestedFile.length());
+		} catch (UserFileException e) {
+			reply.addComment("Error removing credits & stats: "
+					+ e.getMessage());
+		} catch (NoSuchUserException e) {
+			reply.addComment("User " + requestedFile.getUsername()
+					+ " does not exist, cannot remove credits on deletion");
+		}
 
         conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
                 conn, "DELE", requestedFile));
