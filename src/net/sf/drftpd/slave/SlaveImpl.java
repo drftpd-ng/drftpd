@@ -62,11 +62,12 @@ import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.85 2004/03/15 01:55:28 zubov Exp $
+ * @version $Id: SlaveImpl.java,v 1.86 2004/03/21 04:31:32 zubov Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
 	implements Slave, Unreferenced {
+	private int _bufferSize;
 	private static final boolean isWin32 =
 		System.getProperty("os.name").startsWith("Windows");
 	private static final Logger logger =
@@ -191,6 +192,7 @@ public class SlaveImpl
 		}
 		_uploadChecksums = cfg.getProperty("enableuploadchecksums", "true").equals("true");
 		_downloadChecksums = cfg.getProperty("enabledownloadchecksums", "true").equals("true");
+		_bufferSize = Integer.parseInt(cfg.getProperty("bufferSize","65536"));
 
 		String slavemanagerurl;
 		slavemanagerurl =
@@ -420,6 +422,13 @@ public class SlaveImpl
 	public void unreferenced() {
 		logger.info("unreferenced");
 		System.exit(0);
+	}
+
+	/**
+	 * @return
+	 */
+	public int getBufferSize() {
+		return _bufferSize;
 	}
 
 }

@@ -38,7 +38,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.43 2004/02/25 14:26:39 zubov Exp $
+ * @version $Id: TransferImpl.java,v 1.44 2004/03/21 04:31:32 zubov Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private static final Logger logger = Logger.getLogger(TransferImpl.class);
@@ -188,10 +188,10 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		_sock = _conn.connect();
 		_conn = null;
 		if (_in == null) {
-			_sock.setReceiveBufferSize(65536);
+			_sock.setReceiveBufferSize(_slave.getBufferSize());
 			_in = _sock.getInputStream();
 		} else if (_out == null) {
-			_sock.setSendBufferSize(65536);
+			_sock.setSendBufferSize(_slave.getBufferSize());
 			_out = _sock.getOutputStream();
 		} else {
 			throw new IllegalStateException("neither in or out was null");
@@ -202,7 +202,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 
 		_slave.addTransfer(this);
 		try {
-			byte[] buff = new byte[65536];
+			byte[] buff = new byte[_slave.getBufferSize()];
 			int count;
 			while ((count = _in.read(buff)) != -1 && !_abort) {
 				_transfered += count;

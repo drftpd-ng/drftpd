@@ -23,3 +23,5 @@ master.bindport=1099
 
 enableuploadchecksums=true
 enabledownloadchecksums=true
+
+bufferSize=65536

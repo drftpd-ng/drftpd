@@ -62,6 +62,7 @@ import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.command.plugins.Nuke;
+import net.sf.drftpd.master.command.plugins.TransferStatistics;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
@@ -95,7 +96,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.93 2004/03/05 18:32:23 flowman Exp $
+ * @version $Id: IRCListener.java,v 1.94 2004/03/21 04:31:32 zubov Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -287,8 +288,8 @@ public class IRCListener implements FtpListener, Observer {
 		if (sfvstatus.isFinished()) {
 			Collection racers = UserSort(sfvfile.getFiles(), "bytes", "high");
 			Collection groups = topFileGroup(sfvfile.getFiles());
-			Collection fast = UserSort(sfvfile.getFiles(), "xfearspeed", "high");
-			Collection slow = UserSort(sfvfile.getFiles(), "xfearspeed", "low");
+			Collection fast = UserSort(sfvfile.getFiles(), "xferspeed", "high");
+			Collection slow = UserSort(sfvfile.getFiles(), "xferspeed", "low");
 			//// store.complete ////
 			Ret ret = getPropertyFileSuffix("store.complete", dir);
 
@@ -352,6 +353,14 @@ public class IRCListener implements FtpListener, Observer {
 				raceenv.add(
 					"speed",
 					Bytes.formatBytes(stat.getXferspeed()) + "/s");
+				raceenv.add("alup", new Integer(TransferStatistics.getStatsPlace("ALUP",raceuser,_cm.getUserManager())));
+				raceenv.add("monthup", new Integer(TransferStatistics.getStatsPlace("MONTHUP",raceuser,_cm.getUserManager())));
+				raceenv.add("wkup", new Integer(TransferStatistics.getStatsPlace("WKUP",raceuser,_cm.getUserManager())));
+				raceenv.add("dayup", new Integer(TransferStatistics.getStatsPlace("DAYUP",raceuser,_cm.getUserManager())));
+				raceenv.add("aldn", new Integer(TransferStatistics.getStatsPlace("ALDN",raceuser,_cm.getUserManager())));
+				raceenv.add("monthdn", new Integer(TransferStatistics.getStatsPlace("MONTHDN",raceuser,_cm.getUserManager())));
+				raceenv.add("wkdn", new Integer(TransferStatistics.getStatsPlace("WKDN",raceuser,_cm.getUserManager())));
+				raceenv.add("daydn", new Integer(TransferStatistics.getStatsPlace("DAYDN",raceuser,_cm.getUserManager())));
 
 				say(SimplePrintf.jprintf(raceformat, raceenv));
 			}
@@ -1029,9 +1038,9 @@ class UserComparator implements Comparator {
 	static long getType(String type, UploaderPosition user) {
 		if (type.equals("bytes")) {
 			return user.getBytes();
-		} else if (type.equals("xfearspeed")) {
+		} else if (type.equals("xferspeed")) {
 			return user.getXferspeed();
-		} else if (type.equals("xfeartime")) {
+		} else if (type.equals("xfertime")) {
 			return user.getXfertime();
 		}
 		return 0;
