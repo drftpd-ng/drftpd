@@ -5,7 +5,7 @@
 ### Master settings ###
 #######################
 
-#This is the IP of the master to register to.
+#This is the name of the master to register to.
 master.bindname=slavemanager
 #Port to accept Slave connections on
 master.bindport=1099
