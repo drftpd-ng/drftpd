@@ -87,6 +87,7 @@ import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
+import org.drftpd.sitebot.OnConnect;
 
 import f00f.net.irc.martyr.CommandRegister;
 import f00f.net.irc.martyr.Debug;
@@ -894,7 +895,7 @@ public class SiteBot extends FtpListener implements Observer {
                     _commands = _commands + plugin.getCommands() + " ";
                 }
                 
-                //add plugin to our list and remove from the IRCCOnnection so we can 
+                //add plugin to our list and remove from the IRCConnection so we can 
                 //decrypt any messages if needed
                 _commandObservers.add(obs);
                 _conn.removeCommandObserver(obs);
@@ -906,6 +907,8 @@ public class SiteBot extends FtpListener implements Observer {
             }
         }
 
+        // add OnConnect class
+        _conn.addCommandObserver(new OnConnect(this));
         connect();
     }
 

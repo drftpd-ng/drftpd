@@ -1,4 +1,7 @@
 2005/02/21 Jamal James <teflon114@gmail.com>
+* Fixed OnConnect
+
+2005/02/21 Jamal James <teflon114@gmail.com>
 * Added code to deny MKD of a dir thats already nuked
 * Added 2 setings to zipscript.conf
   #only allow files found in the sfv file [true/false]
