@@ -1,0 +1,94 @@
+URL: http://drftpd.mog.se/wiki/wiki.phtml?title=IRC
+
+To enable IRC announcements you need to set irc.enabled=true in drftpd.conf
+
+irc.conf
+Here is an example of server settings
+
+irc.server=irc.csbnet.se
+irc.port=6667
+irc.channel=#drftpd
+irc.key=
+irc.nick=drftpd
+irc.name=drftpd
+irc.user=drftpd
+
+Environment variables
+Global environment variables
+
+${bold} makes bold text on IRC "\u0002"
+${coloroff} turns off bold and color on IRC "\u000f"
+${color} color escape on IRC "\u0003"
+
+Section environment variables
+
+${user} user which triggered the event
+${group} ${user}s primary group
+${section} - section file was uploaded in
+${path} - path to the directory that the file was uploaded in
+
+If target is a file (e.g. STOR, not MKD/RMD etc.)
+
+${size} size of the file which triggered the event in B/s, KB/s, MB/s, ...
+${speed} the speed at which the file that triggered the event was uploaded at
+
+If directory, or if a file, the parent directory, has a .sfv file
+
+${size} total size of files that were in the .sfv
+${files} number of files that were in the .sfv
+${speed} average speed of files in .sfv for directory the file was uploaded in
+
+If no sfv file is present, size will default to size of current fileand files will default to 0
+
+Properties
+
+ The properties file is located at net/sf/drftpd/events/irc/IRCListener.properties
+ There are two versions, one is located in src/ and the other is in classes/
+ The IRC bot actually pulls its info from the classes/ version, but ant copies the src/ version overtop of the classes/ version.
+ The moral of the story is, if you use ant to compile the code, then edit the src/ version so as not to overwrite your changes each time during compilation, otherwise, just editing the classes/ version is fine.
+
+mkdir=${color}15${bold}NEW${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group}.
+
+store.halfway=${color}15${bold}HALFWAY${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} with race leader ${bold}${leaduser}${bold}${color}14${bold}/${bold}${coloroff}${leadgroup} ${bold}[${bold}${leadsize}/${leadfiles}F/${leadpercent}/${leadspeed}${bold}]${bold} with ${bold}${filesleft}${bold} files left.
+
+store.embraces=${color}15${bold}RACE${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group} is joining on ${bold}${path}${bold} ${color}14@${coloroff} ${bold}${speed}${bold} and ${bold}${filesleft}${bold} files left.
+ 
+store.complete=${color}15${bold}COMPLETE${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} ${bold}(${bold} ${size} in ${files}F at ${speed} ${bold})${bold} by ${bold}${racers}${bold} racers.\n${color}15${bold}UserTop${bold}${coloroff}:
+
+store.complete.racer=${bold}${position}.${bold} ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group} [${size}/${files}F/${percent}/${speed}]
+
+nuke=${color}15${bold}NUKE ${multiplier}X${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} ${bold}[${bold} NUKER : ${user} ${bold}-${bold} REASON : ${reason} ${bold}]${bold}
+
+nuke.nukees=${color}15${bold}NUKEES${bold}${coloroff}: ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group} with ${bold}${nukedamount}${bold}.
+
+unnuke=${color}15${bold}UNNUKE ${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} ${bold}[${bold} UNNUKER : ${user} ${bold}-${bold} REASON : ${reason} ${bold}-${bold} UNNUKEES: ${nukees} ${bold}]${bold}
+ 
+pre=${color}15${bold}PRE${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${group}${bold} gives us ${bold}${path}${bold}.
+ 
+bw=${color}15${bold}BANDWIDTH${bold}${coloroff}: ${color}15${bold}(${bold}${coloroff} UP: ${xfersup} at ${throughputup}/s ${color}15${bold})-(${bold}${coloroff} DN: ${xfersdn} at ${throughputdown}/s ${color}15${bold})-(${bold}${coloroff} TOTAL: ${xfers} at ${throughput}/s ${color}15${bold})${bold}${coloroff}
+
+rmdir=${color}15${bold}DELDIR${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} was deleted by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group}.
+
+wipe=${color}15${bold}WIPE${bold}${coloroff} in ${color}15${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} was wiped by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group}.
+
+diskfree=${color}15${bold}DISKFREE${bold}${coloroff}: We have ${bold}${diskfree}${bold} free, with a total disk space of ${bold}${disktotal}${bold}.
+
+slaves=${color}15${bold}${slave}${coloroff}: ${color}15${bold}(${bold}${coloroff} UP: ${xfersup} @ ${throughputup} ${color}15${bold})-(${bold}${coloroff} DN: ${xfersdown} @ ${throughputdown}/s ${color}15${bold})-(${bold}${coloroff} DF:${bold}${coloroff} ${bold}${diskfree}${bold}/${disktotal} ${color}15${bold})${bold}${coloroff} 
+
+slaves.offline=${color}15${bold}${slave}${coloroff}: ${color}4${bold}OFFLINE${bold}${coloroff}
+
+addslave=${color}15${bold}${slave}${coloroff} came online with ${bold}${diskfree}${bold}/${disktotal} free.
+delslave=${color}15${bold}${slave}${coloroff} went offline: ${message}
+
+shutdown=${color}15${bold}SHUTDOWN${coloroff} : ${message}
+
+speed.pre=
+speed.post=
+speed.separator=\n
+speed.up=${color}15${bold}${user}${coloroff}: UP: ${file} @ ${speed} to ${slave}.
+speed.down=${color}15${bold}${user}${coloroff}: DN: ${file} @ ${speed} from ${slave}.
+speed.idle=${color}15${bold}${user}${coloroff}: IDLE: User has been idle for ${idle}.
+
+who.up=${color}15${bold}WHO${coloroff}: ${user} -> UP: ${file} @ ${speed} to ${slave}.
+who.down=${color}15${bold}WHO${coloroff}: ${user} -> DN: ${file} @ ${speed} from ${slave}.
+who.idle=${color}15${bold}WHO${coloroff}: ${user} -> IDLE: User has been idle for ${idle}.

@@ -1,0 +1,53 @@
+URL: http://drftpd.mog.se/wiki/wiki.phtml?title=Perms.conf
+
+Perms.conf
+
+Function	Path			Groups/Users
+----------------------------------------------------
+# who can delete any files where
+delete		/site/GRP_PRE/*		=GRP 
+
+# who can delete their own files where
+deleteown	/site*			*
+	
+# who can overwrite existing files where
+overwrite	/site/GRP* 		=GRP
+	
+# who can upload resume where
+resume		/site*			*
+
+# who can rename any files where
+rename		/site/GRP_PRE/*		=GRP =siteop
+
+# who can rename their own files where
+renameown	/site/*			=TRUSTED
+
+# who can create directories where
+makedir		/site*			*
+	
+# who can upload files to which directories
+upload		/site/request/*		* 
+
+# who can download files from which directories
+download	/site/*			!-viewer *
+
+# which users will be hidden from 'site who' while they are in which paths
+hideinwho	/private/pre/directory*	!=siteop *
+----------------------------------------------------
+
+ex. The following denys users the ability to make a directory in the root directory.
+upload
+upload /* !*
+
+This line enables them to make directories in any other directories.
+
+upload /*/* *
+
+This can be repeated for other commands..
+
+makedir
+makedir directive tells MKD which dirs users can create directories in.
+
+So to disallow creating of directories in root directory, just add makedir / !*.
+
+Or don't add a permission that includes /, the default permission is to not allow creation of directories. /*/* would allow creating directories anywhere, but it needs at least two / in the name, so creating in / is not allowed but creating in /incoming/ is allowed. 

@@ -1,0 +1,67 @@
+URL: http://drftpd.mog.se/wiki/wiki.phtml?title=Command_reference
+
+SITE ADDUSER
+USAGE: site adduser <user> <password> [<ident@ip#1> ... <ident@ip#5>]
+
+Adds a user. You can have wild cards for users that have dynamic ips Examples: *@192.168.1.* , frank@192.168.*.* , bob@192.*.*.* (*@192.168.1.1[5-9] will allow only 192.168.1.15-19 to connect but no one else)
+
+If a user is added by a groupadmin, that user will will inherit the groupadmin's group.
+
+All default values for the user are read from file default.user in /glftpd/ftp-data/users. Comments inside describe what is what. Gadmins can be assigned their own default.<group> userfiles as templates to be used when they add a user, if one is not found, default.user will be used. default.groupname files will also be used for "site gadduser".
+
+ex. site ADDUSER Archimede mypassword
+
+This would add the user 'Archimede' with the password 'mypassword'.
+
+ex. site ADDUSER Archimede mypassword *@127.0.0.1
+
+This would do the same as above + add the ip '*@127.0.0.1' at the same time.
+
+SITE CHANGE
+USAGE: site change <user> <field> <value> - change a field for a user
+
+Fields available:
+
+ratio
+Upload/Download ratio. 0 = Unlimited (Leech)
+
+credits
+Credits left to download.
+
+tagline
+User's tagline.
+
+group_slots
+Number of users a GADMIN is allowed to add. If you specify a second argument, it will be the number of leech accounts the gadmin can give (done by "site change user ratio 0") (2nd arg = leech slots)
+
+comment
+Changes the user's comment.
+
+group
+Changes the users primary group. Primary group is used in group ownership.
+
+SITE CHGRP
+Changes the users extra group. Extra group is used to give a user siteop/nuke/gadmin rights. It is similar to glftpd's flags. You can use them as custom flags or whatever u want and later specify special commands that are usable by only this group.
+
+CHGRP adds a user to the group if he isnt already in it. If he is in the group, then he will be removed from it.
+
+valid fields are: siteop, nuk, gadmin, deleted
+
+USAGE: site chgrp <user> <group>
+
+site chgrp <user> siteop
+user gets siteop flag
+
+site chgrp <user> nuke
+user gets access to nuek command
+
+site chgrp <user> gadmin
+user is gadmin now (see group_slots for help on changing slots)
+
+site chgrp <user> deleted
+deletes the specified user, same as "site deluser <user>"
+
+SITE WIPE
+USAGE: SITE WIPE [-r] <file/dir>
+
+Deletes files without removing credits. -r means delete recursively. 
