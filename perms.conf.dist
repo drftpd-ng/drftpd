@@ -20,8 +20,8 @@ privpath /pre/*	=siteop
 hideinwho /pre/*	*
 
 
-#creditloss <multiplier> <path> <permissions>
-#creditcheck <path> <ratio> [<-user|=group|flag> ...]
+#creditcheck <path> <ratio> <flag/=group/-user>
+#creditloss <path> <ratio> <flag/=group/-user>
 
 
 #msgpath <path> <filename> <flag/=group/-user>
