@@ -8,10 +8,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.BindException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -152,13 +150,6 @@ public class ConnectionManager {
 		try {
 			slavemanager = new SlaveManagerImpl(cfg, rslaves, ssf, this);
 		} catch (RemoteException e) {
-			throw new FatalException(e);
-		}
-
-		InetAddress inetAddress;
-		try {
-			inetAddress = InetAddress.getByName(cfg.getProperty("master.host"));
-		} catch (UnknownHostException e) {
 			throw new FatalException(e);
 		}
 

@@ -104,15 +104,12 @@ public class RemoteSlave implements Serializable, Comparable {
 	 * @return true If exception was fatal and the slave was removed 
 	 */
 	public boolean handleRemoteException(RemoteException ex) {
-		logger.log(
-			Level.FATAL,
-			"Caught exception when trying to communicate with " + this, ex);
 		if (!isFatalRemoteException(ex)) {
-			logger.log(Level.FATAL, ". Non-fatal exception, not removing");
+			logger.log(Level.WARN, "Caught non-fatal exception, not removing", ex);
 			return false;
 		}
-		System.out.println(". Fatal exception, removing");
-		setSlave(null, null);
+		logger.warn("Fatal exception, removing", ex);
+		setOffline(ex.getMessage()+": "+ex.getCause().getMessage());
 		return true;
 	}
 
@@ -233,6 +230,15 @@ public class RemoteSlave implements Serializable, Comparable {
 	 */
 	public InetAddress getInetAddress() {
 		return inetAddress;
+	}
+
+	/**
+	 * 
+	 */
+	public void setOffline(String reason) {
+		manager.getConnectionManager().dispatchFtpEvent(new SlaveEvent("DELSLAVE", reason, this));
+		this.slave = null;
+		this.inetAddress = null;
 	}
 
 }

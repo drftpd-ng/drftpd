@@ -45,12 +45,12 @@ public class SlaveImpl
 	 * @param inetAddress
 	 * @param b
 	 */
-	public SlaveImpl(
-		Properties cfg)
+	public SlaveImpl(Properties cfg)
 		throws RemoteException {
 		super(0); // starts RMI accept thread which will keep us from dying
 
-		this.slavemanagerurl =
+		String slavemanagerurl;
+		slavemanagerurl =
 			"//"
 				+ cfg.getProperty("master.host")
 				+ ":"
@@ -60,7 +60,25 @@ public class SlaveImpl
 		this.name = cfg.getProperty("slave.name");
 
 		this.roots = getDefaultRootBasket(cfg);
-		register();
+		try {
+			SlaveManager manager;
+			logger.log(Level.INFO, "Getting master reference");
+			manager = (SlaveManager) Naming.lookup(slavemanagerurl);
+
+			logger.log(
+				Level.INFO,
+				"Registering with master and sending filelist");
+
+			LinkedRemoteFile slaveroot = SlaveImpl.getDefaultRoot(this.roots);
+			manager.addSlave(this.name, this, slaveroot);
+
+			logger.log(
+				Level.INFO,
+				"Finished registered with master, awaiting commands.");
+		} catch (Throwable t) {
+			logger.warn("Error registering with slave", t);
+			System.exit(0);
+		}
 		System.gc();
 	}
 
@@ -71,50 +89,8 @@ public class SlaveImpl
 	}
 	//private String root;
 	private RootBasket roots;
-	private String slavemanagerurl;
 	private String name;
 
-	public void register() {
-		while (true) {
-			try {
-				SlaveManager manager;
-				logger.log(Level.INFO, "Getting master reference");
-				manager = (SlaveManager) Naming.lookup(slavemanagerurl);
-
-				logger.log(
-					Level.INFO,
-					"Registering with master and sending filelist");
-
-				LinkedRemoteFile slaveroot =
-					SlaveImpl.getDefaultRoot(this.roots);
-				manager.addSlave(this.name, this, slaveroot);
-
-				logger.log(
-					Level.INFO,
-					"Finished registered with master, awaiting commands.");
-				break;
-			} catch (Throwable t) {
-				long retry =
-					Long.parseLong(
-						System.getProperty(
-							"java.rmi.dgc.leaseValue",
-							"600000"));
-				logger.log(
-					Level.FATAL,
-					"Failed to register slave, will retry in "
-						+ retry / 1000
-						+ " seconds",
-					t);
-				try {
-					Thread.sleep(retry);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		System.gc();
-		return;
-	}
 	public static void main(String args[]) {
 		BasicConfigurator.configure();
 		System.out.println(
@@ -137,12 +113,10 @@ public class SlaveImpl
 				return;
 			}
 
-			//Slave slave;
-			//slave = 
 			new SlaveImpl(cfg);
 
 		} catch (Throwable e) {
-			e.printStackTrace();
+			logger.warn("Error registering", e);
 			System.exit(0);
 			return;
 		}
@@ -291,7 +265,8 @@ public class SlaveImpl
 			if (!file.delete())
 				throw new PermissionDeniedException("delete failed on " + path);
 			File dir = new File(file.getParentFile());
-			while(dir != null && dir.list().length == 0) {
+			assert dir != null;
+			while (dir.list().length == 0) {
 				file.delete();
 				dir = new File(dir.getParentFile());
 			}
@@ -304,11 +279,11 @@ public class SlaveImpl
 	public void unreferenced() {
 		logger.info("unreferenced");
 		System.exit(0);
-//		logger.log(
-//			Level.WARN,
-//			"Lost master, trying to re-register with master.");
-//		register();
-//		System.gc();
+		//		logger.log(
+		//			Level.WARN,
+		//			"Lost master, trying to re-register with master.");
+		//		register();
+		//		System.gc();
 	}
 
 	/* (non-Javadoc)

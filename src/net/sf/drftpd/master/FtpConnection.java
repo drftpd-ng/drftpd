@@ -37,6 +37,7 @@ import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.event.irc.UploaderPosition;
+import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.queues.NukeLog;
 import net.sf.drftpd.master.usermanager.AbstractUser;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -1407,6 +1408,13 @@ public class FtpConnection extends BaseFtpConnection {
 	}
 
 	/**
+	 * 
+	 */
+	private FtpConfig getConfig() {
+		return connManager.getConfig();
+	}
+
+	/**
 	 * <code>RMD  &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
 	 *
 	 * This command causes the directory specified in the pathname
@@ -2126,9 +2134,8 @@ public class FtpConnection extends BaseFtpConnection {
 		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
 			if(file.isDirectory()) {
-				findFile(response, dir, searchstrings);
+				findFile(response, file, searchstrings);
 			} else {
-				String name = file.getName();
 				for (Iterator iterator = searchstrings.iterator();
 					iterator.hasNext();
 					) {
@@ -2226,6 +2233,31 @@ public class FtpConnection extends BaseFtpConnection {
 			}
 		}
 		out.print(response);
+		return;
+	}
+	public void doSITE_KICKSLAVES(FtpRequest request, PrintWriter out) {
+		reset();
+		if(!_user.isAdmin()) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
+		if(!request.hasArgument()) {
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			return;
+		}
+		RemoteSlave rslave;
+		try {
+			rslave = connManager.getSlavemanager().getSlave(request.getArgument());
+		} catch (ObjectNotFoundException e) {
+			out.print(new FtpResponse(200, "No such slave"));
+			return;
+		}
+		if(rslave.isAvailable()) {
+			out.print(new FtpResponse(200, "Slave is already offline"));
+			return;
+		}
+		rslave.setOffline("Slave kicked by "+_user.getUsername());
+		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
 		return;
 	}
 
@@ -2532,7 +2564,6 @@ public class FtpConnection extends BaseFtpConnection {
 	private void preAwardCredits(LinkedRemoteFile preDir, Hashtable awards) {
 		for (Iterator iter = preDir.getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			String username = file.getUsername();
 			User owner;
 			try {
 				owner = userManager.getUserByName(file.getUsername());

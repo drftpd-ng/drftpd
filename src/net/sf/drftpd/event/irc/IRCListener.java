@@ -473,7 +473,7 @@ public class IRCListener implements FtpListener, Observer {
 			say(
 				"[slave] "
 					+ sevent.getRSlave().getName()
-					+ " just went offline");
+					+ " just went offline: "+sevent.getMessage());
 		} else if (event.getCommand().equals("SHUTDOWN")) {
 			MessageEvent mevent = (MessageEvent) event;
 			say("[shutdown] " + mevent.getMessage());

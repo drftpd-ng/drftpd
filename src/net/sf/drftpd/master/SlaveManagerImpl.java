@@ -164,7 +164,7 @@ public class SlaveManagerImpl
 				logger.log(
 					Level.WARN,
 					rslave.getName() + " no longer in slaves.xml, unmerging");
-				rslave.setSlave(null, null);
+				rslave.setOffline("Slave removed from slaves.xml");
 				root.unmerge(rslave);
 				//rslaves.remove(rslave);
 				iter.remove();

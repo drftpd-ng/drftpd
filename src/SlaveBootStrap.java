@@ -16,7 +16,7 @@ import java.net.URLClassLoader;
  */
 public class SlaveBootStrap {
 	public static void main(String args[]) throws Throwable {
-		URL urls[] = {new URL("http://mog.se/slave.jar"), new URL("http://mog.se/log4j.jar")};
+		URL urls[] = {new URL("http://mog.se/slave.jar")};
 		URLClassLoader cl = new URLClassLoader(urls);
 		Method met = cl.loadClass("net.sf.drftpd.slave.SlaveImpl").getMethod("main", new Class[] {String[].class});
 		met.invoke(null, new Object[] {args});

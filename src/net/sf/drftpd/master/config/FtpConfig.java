@@ -170,6 +170,7 @@ public class FtpConfig {
 		eventplugins.trimToSize();
 		_eventplugins = eventplugins;
 	}
+	
 	private ArrayList makeUsers(StringTokenizer st) {
 		ArrayList users = new ArrayList();
 		while (st.hasMoreTokens()) {
@@ -177,6 +178,7 @@ public class FtpConfig {
 		}
 		return users;
 	}
+	
 	public boolean isVisible(User user, LinkedRemoteFile path) {
 		for (Iterator iter = _privpaths.iterator(); iter.hasNext();) {
 			PathPermission perm = (PathPermission) iter.next();
@@ -195,7 +197,6 @@ public class FtpConfig {
 	}
 	
 	public boolean checkHideInWho(LinkedRemoteFile path) {
-		
 		for (Iterator iter = _hideinwhos.iterator(); iter.hasNext();) {
 			PathPermission perm = (PathPermission) iter.next();
 			if(perm.checkPath(path)) {
@@ -205,6 +206,10 @@ public class FtpConfig {
 		return false;
 	}
 
+	public float getCreditLossRatio(LinkedRemoteFile path, User fromUser) {
+		
+		return fromUser.getRatio();
+	}
 	public boolean checkHideInWho(LinkedRemoteFile path, User fromUser) {
 		
 		for (Iterator iter = _hideinwhos.iterator(); iter.hasNext();) {
