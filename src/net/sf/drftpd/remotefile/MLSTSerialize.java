@@ -40,7 +40,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: MLSTSerialize.java,v 1.21 2004/01/22 21:49:41 mog Exp $
+ * @version $Id: MLSTSerialize.java,v 1.22 2004/02/03 20:03:14 mog Exp $
  */
 public class MLSTSerialize {
 	private static final Logger logger = Logger.getLogger(MLSTSerialize.class);
@@ -48,23 +48,33 @@ public class MLSTSerialize {
 	public static final SimpleDateFormat timeval =
 		new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
+	public static void serialize(LinkedRemoteFile dir, Writer out) {
+		serialize(dir, new PrintWriter(out));
+	}
 	public static void serialize(LinkedRemoteFile dir, PrintWriter out) {
 		out.println(dir.getPath() + ":");
-		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
+		for (Iterator iter = dir.getMap().values().iterator();
+			iter.hasNext();
+			) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
 			out.println(toMLST(file));
 		}
 		out.println();
-		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
+
+		//Iterator iter = dir.getFiles().iterator();
+		for (Iterator iter = dir.getMap().values().iterator();
+			iter.hasNext();
+			) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
 			if (file.isDirectory())
 				serialize(file, out);
 		}
 	}
+
 	public static String toMLST(RemoteFileInterface file) {
 		StringBuffer ret = new StringBuffer();
-		if(file.isLink()) {
-			ret.append("type=unix.slink:"+file.getLinkPath());
+		if (file.isLink()) {
+			ret.append("type=unix.slink:" + file.getLinkPath() + ";");
 		} else if (file.isFile()) {
 			ret.append("type=file;");
 		} else if (file.isDirectory()) {
@@ -134,12 +144,14 @@ public class MLSTSerialize {
 				String v = entry.substring(pos + 1);
 				if ("type".equals(k)) {
 					//assert v.equals("file") || v.equals("dir") : v;
-					isFile = "file".equals(v);
-					isDir = "dir".equals(v);
-					if(v.startsWith("os.unix=slink:")) {
-						file.setLink(v.substring("os.unix=slink:".length()));
+					if (v.startsWith("unix.slink:")) {
+						file.setLink(v.substring("unix.slink:".length()));
+						isDir = true;
 					} else {
-						if(!(isFile || isDir)) throw new RuntimeException("type");
+						isFile = "file".equals(v);
+						isDir = "dir".equals(v);
+						if (!(isFile || isDir))
+							throw new RuntimeException("!(isFile || isDir)");
 					}
 				} else if ("modify".equals(k)) {
 					try {
@@ -154,14 +166,17 @@ public class MLSTSerialize {
 				} else if ("unix.group".equals(k)) {
 					file.setGroupname(v);
 				} else if ("x.deleted".equals(k)) {
-					if(file.isLink()) {
+					if (file.isLink()) {
 						isFile = true;
 					}
 					file.setDeleted(true);
 				} else if ("size".equals(k)) {
 					file.setLength(Long.parseLong(v));
 				} else if ("x.slaves".equals(k)) {
-
+					if (file.isLink() && isFile) {
+						isFile = true;
+						isDir = false;
+					}
 					ArrayList rslaves = new ArrayList();
 					StringTokenizer st2 = new StringTokenizer(v, ",");
 					while (st2.hasMoreTokens()) {
@@ -184,6 +199,7 @@ public class MLSTSerialize {
 			dir.putFile(file);
 		}
 	}
+
 	public static LinkedRemoteFile unserialize(
 		FtpConfig conf,
 		BufferedReader in,
@@ -198,7 +214,7 @@ public class MLSTSerialize {
 					"expecting path, not " + line);
 
 			String path = line.substring(0, line.length() - 1);
-			NonExistingFile ret = root.lookupNonExistingFile(path);
+			NonExistingFile ret = root.lookupNonExistingFile(path, true);
 			LinkedRemoteFile dir;
 			dir = ret.getFile();
 			if (!ret.exists()) {
@@ -212,9 +228,5 @@ public class MLSTSerialize {
 			unserialize(in, dir, RemoteSlave.rslavesToHashtable(rslaves), path);
 		}
 		return root;
-	}
-
-	public static void serialize(LinkedRemoteFile dir, Writer out) {
-		serialize(dir, new PrintWriter(out));
 	}
 }

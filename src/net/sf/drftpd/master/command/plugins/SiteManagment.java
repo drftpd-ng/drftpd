@@ -8,9 +8,12 @@ package net.sf.drftpd.master.command.plugins;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.UserEvent;
@@ -28,7 +31,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagment.java,v 1.10 2004/02/03 01:04:06 mog Exp $
+ * @version $Id: SiteManagment.java,v 1.11 2004/02/03 20:03:14 mog Exp $
  */
 public class SiteManagment implements CommandHandler {
 
@@ -49,8 +52,7 @@ public class SiteManagment implements CommandHandler {
 				return new FtpReply(200, e.getMessage());
 			}
 		}
-		ArrayList files =
-			new ArrayList(dir.getMap().values());
+		ArrayList files = new ArrayList(dir.getMap().values());
 		Collections.sort(files);
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
@@ -111,6 +113,18 @@ public class SiteManagment implements CommandHandler {
 		}
 		conn.getConnectionManager().dispatchFtpEvent(
 			new UserEvent(conn.getUserNull(), "RELOAD"));
+
+		//ugly hack to clear resourcebundle cache
+		//see http://developer.java.sun.com/developer/bugParade/bugs/4212439.html
+		try {
+			Field cacheList =
+				ResourceBundle.class.getDeclaredField("cacheList");
+			cacheList.setAccessible(true);
+			((Map) cacheList.get(ResourceBundle.class)).clear();
+			cacheList.setAccessible(false);
+		} catch (Exception e) {
+			logger.error("", e);
+		}
 		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
 

@@ -7,7 +7,7 @@ import java.io.Writer;
 
 /**
  * @author mog
- * @version $Id: SafeFileWriter.java,v 1.2 2004/02/03 00:28:29 mog Exp $
+ * @version $Id: SafeFileWriter.java,v 1.3 2004/02/03 20:03:14 mog Exp $
  */
 public class SafeFileWriter extends Writer {
 	private File _actualFile;
@@ -19,14 +19,17 @@ public class SafeFileWriter extends Writer {
 	 * @see java.io.File#File(java.io.File)
 	 */
 	public SafeFileWriter(File file) throws IOException {
-		_actualFile = file.getAbsoluteFile();
-		if (!_actualFile.getParentFile().canWrite())
+		_actualFile = file;
+		if (!_actualFile.getAbsoluteFile().getParentFile().canWrite())
 			throw new IOException("Can't write to target dir");
+		
+		File dir = _actualFile.getParentFile();
+		if(dir == null) dir = new File(".");
 		_tempFile =
 			File.createTempFile(
 				_actualFile.getName(),
 				null,
-				_actualFile.getParentFile());
+				dir);
 		_out = new FileWriter(_tempFile);
 	}
 

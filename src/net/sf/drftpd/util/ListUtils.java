@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.17 2004/01/31 02:02:21 zubov Exp $
+ * @version $Id: ListUtils.java,v 1.18 2004/02/03 20:03:14 mog Exp $
  */
 public class ListUtils {
 
@@ -87,10 +87,12 @@ public class ListUtils {
 						element.getName() + "-OFFLINE",
 						element.getUsername(),
 						element.getGroupname(),
-						0L,
+						element.length(),
 						element.lastModified()));
 				numTotal++;
-				continue; // don't add it's "ONLINE" counterpart
+				// -OFFLINE and "ONLINE" files will both be present until someoe implements
+				// a way to reupload OFFLINE files.
+				// It could be confusing to the user and/or client if the file doesn't exist, but you can't upload it. 
 			}
 			//else element is a file, and is online
 			numOnline++;

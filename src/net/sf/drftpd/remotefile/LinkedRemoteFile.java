@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.109 2004/02/02 14:36:41 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.110 2004/02/03 20:03:14 mog Exp $
  */
 public class LinkedRemoteFile
 	implements RemoteFileInterface, Serializable, Comparable {
@@ -65,6 +65,14 @@ public class LinkedRemoteFile
 		 */
 		public boolean hasPath() {
 			return _path != null;
+		}
+
+		public String toString() {
+			return "[NonExistingFile:file="
+				+ getFile().getPath()
+				+ ",path="
+				+ getPath()
+				+ "]";
 		}
 	}
 	private String _link;
@@ -286,7 +294,9 @@ public class LinkedRemoteFile
 	 * Trying to lookupFile() or getFile() a deleted file throws FileNotFoundException.
 	 */
 	public void delete() {
+		logger.debug("delete(" + getPath() + ")");
 		_isDeleted = true;
+		_link = null;
 		if (isDirectory()) {
 			for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
 				LinkedRemoteFile myFile = (LinkedRemoteFile) iter.next();
@@ -495,10 +505,15 @@ public class LinkedRemoteFile
 	 */
 	public LinkedRemoteFile getFile(String fileName)
 		throws FileNotFoundException {
+		return getFile(fileName, false);
+	}
+
+	public LinkedRemoteFile getFile(String fileName, boolean includeDeleted)
+		throws FileNotFoundException {
 		LinkedRemoteFile file = (LinkedRemoteFile) _files.get(fileName);
 		if (file == null)
 			throw new FileNotFoundException("No such file or directory");
-		if (file.isDeleted())
+		if (!includeDeleted && file.isDeleted())
 			throw new FileNotFoundException("File is queued for deletion");
 		return file;
 	}
@@ -512,7 +527,7 @@ public class LinkedRemoteFile
 	 */
 	public Collection getFiles() {
 		if (_files == null)
-			throw new IllegalStateException("Is a directory");
+			throw new IllegalStateException("Isn't a directory");
 		return getFilesMap().values();
 	}
 
@@ -764,8 +779,13 @@ public class LinkedRemoteFile
 
 	public LinkedRemoteFile lookupFile(String path)
 		throws FileNotFoundException {
+		return lookupFile(path, false);
+	}
 
-		NonExistingFile ret = lookupNonExistingFile(path);
+	public LinkedRemoteFile lookupFile(String path, boolean includeDeleted)
+		throws FileNotFoundException {
+
+		NonExistingFile ret = lookupNonExistingFile(path, includeDeleted);
 
 		if (ret.hasPath())
 			throw new FileNotFoundException(path + ": File not found");
@@ -773,6 +793,11 @@ public class LinkedRemoteFile
 	}
 
 	public NonExistingFile lookupNonExistingFile(String path) {
+		return lookupNonExistingFile(path, false);
+	}
+	public NonExistingFile lookupNonExistingFile(
+		String path,
+		boolean includeDeleted) {
 		if (path == null)
 			throw new IllegalArgumentException("null path not allowed");
 		LinkedRemoteFile currFile = this;
@@ -803,7 +828,10 @@ public class LinkedRemoteFile
 			}
 			LinkedRemoteFile nextFile;
 			try {
-				nextFile = (LinkedRemoteFile) currFile.getFile(currFileName);
+				nextFile =
+					(LinkedRemoteFile) currFile.getFile(
+						currFileName,
+						includeDeleted);
 			} catch (FileNotFoundException ex) {
 				StringBuffer remaining = new StringBuffer(currFileName);
 				if (st.hasMoreElements()) {
@@ -855,68 +883,115 @@ public class LinkedRemoteFile
 	 * If duplicates exist, the slaves are added to this object and the file-attributes of the oldest file (lastModified) are kept.
 	 */
 	public void remerge(LinkedRemoteFile mergedir, RemoteSlave rslave) {
-		assert _ftpConfig != null : this;
+		if (_ftpConfig == null)
+			throw new IllegalStateException("_ftpConfig == null");
+		remergePass1(mergedir, rslave);
+		remergePass2(mergedir, rslave);
+	}
 
-		if (!isDirectory()) {
-			throw new IllegalArgumentException(
-				"merge() called on a non-directory: "
-					+ this
-					+ " argument: "
-					+ mergedir);
-		}
-		if (!mergedir.isDirectory()) {
-			throw new IllegalArgumentException(
-				"argument is not a directory: " + mergedir + " this: " + this);
-		}
-		if (mergedir.getFiles() == null) {
-			throw new FatalException(
-				"dir.getFiles() returned null: " + this +", " + mergedir);
-		}
+	private void remergePass1(LinkedRemoteFile mergedir, RemoteSlave rslave) {
+		if (!isDirectory())
+			throw new IllegalArgumentException("merge() called on a non-directory");
 
-		// add all files from mergedir
+		if (!mergedir.isDirectory())
+			throw new IllegalArgumentException("argument is not a directory");
+
+		// add/merge all files from mergedir
 		for (Iterator i = mergedir.getFiles().iterator(); i.hasNext();) {
 			LinkedRemoteFile mergefile = (LinkedRemoteFile) i.next();
 
-			if (mergefile.isDirectory() && mergefile.length() == 0) {
-				logger.log(
-					Level.FATAL,
+			if (mergefile.isDirectory() && mergefile.length() == 0)
+				logger.fatal(
 					"Attempt to add empty directory: "
 						+ mergefile
 						+ " from "
 						+ rslave.getName());
-			}
 
-			LinkedRemoteFile file =
+			//this is localdir
+			//localfile is local file
+			//mergedir is mergedir argument to remerge()
+			//mergefile is file to be merged
+			LinkedRemoteFile localfile =
 				(LinkedRemoteFile) _files.get(mergefile.getName());
-			// two scenarios: local file does/doesn't exist.
-			if (file == null) {
+			// two scenarios: localfile does/doesn't exist.
+			if (localfile == null) {
 				// local file does not exist, just put it in the hashtable
-				if (!mergefile.isDirectory()) {
-					mergefile.addSlave(rslave);
-				} else {
-					setRSlaveAndConfig(mergefile, _ftpConfig, rslave);
-				}
-				mergefile._ftpConfig = _ftpConfig;
+				recursiveSetRSlaveAndConfig(mergefile, _ftpConfig, rslave);
 				mergefile._parent = this;
 				_files.put(mergefile.getName(), mergefile);
-				logger.warn(
+				logger.info(
 					mergefile.getPath() + " added from " + rslave.getName());
 			} else { //file exists
-				if (file.isDeleted()) {
+				if (localfile.isDeleted()) {
 					//// queued delete or rename ////
-					if (file.isLink()) {
+					if (localfile.isLink()) {
+						String linktarget = localfile.getLinkPath();
 						//// rename ////
 						try {
 							LinkedRemoteFile renameTo =
-								(LinkedRemoteFile) file.getLink();
+								(LinkedRemoteFile) localfile.getLink();
+							logger.debug(
+								"queued rename for "
+									+ localfile.getPath()
+									+ " to "
+									+ renameTo.getPath());
 							try {
 								rslave.getSlave().rename(
-									file.getPath(),
+									localfile.getPath(),
 									renameTo.getParent(),
 									renameTo.getName());
-								file.removeSlave(rslave);
-								renameTo.addSlave(rslave);
+								//recusive migration of rslaves from source to dest
+								if (localfile.isFile()) {
+									recursiveRenameLoopFile(
+										localfile,
+										renameTo);
+								} else {
+									recursiveRenameLoop(localfile, renameTo);
+								}
 
+								//migrate mergefile on mergedir or files will be removed cause they aren't in slave filelist
+								//simple ugly move of the lrf object so that remergePass2() won't delete it
+								{
+									NonExistingFile ret =
+										mergefile.lookupNonExistingFile(
+											linktarget);
+									LinkedRemoteFile destDir = ret.getFile();
+									if (!ret.hasPath())
+										throw new RuntimeException(
+											ret
+												+ " - target already exists on the slave - ???");
+									String destpath = ret.getPath();
+									StringTokenizer destst =
+										new StringTokenizer(destpath, "/");
+									String desttok = null;
+									if (!destst.hasMoreTokens())
+										throw new RuntimeException("Invalid queued rename target");
+									while (destst.hasMoreTokens()) {
+										desttok = destst.nextToken();
+										if (destst.hasMoreTokens()) {
+											destDir =
+												destDir.createDirectory(
+													"drftpd",
+													"drftpd",
+													desttok);
+											logger.debug(
+												"Created " + destDir.getPath());
+										}
+									}
+									mergedir._files.remove(mergefile.getName());
+									mergefile._name = desttok;
+									destDir.putFile(mergefile);
+									mergefile._parent = destDir;
+									logger.debug(
+										"Renamed "
+											+ mergefile.getName()
+											+ " to "
+											+ destDir.getPath());
+									//remove source
+								}
+
+								//file.removeSlave(rslave);
+								//renameTo.addSlave(rslave);
 							} catch (RemoteException e1) {
 								rslave.handleRemoteException(e1);
 							} catch (NoAvailableSlaveException e1) {
@@ -924,14 +999,19 @@ public class LinkedRemoteFile
 							} catch (IOException e1) {
 								logger.warn("", e1);
 							}
+							continue;
 						} catch (FileNotFoundException e) {
-							//queued delete instead
-							file._link = null;
+							//localfile.getLink() failed
+							//target doesn't exist, queued delete instead
+							logger.info(
+								localfile.getPath()
+									+ " target didn't exist for queued rename, scheduling for deletion");
+							localfile._link = null;
 						}
 					}
 
 					//// delete ////
-					if (!file.isLink()) {
+					if (!localfile.isLink()) {
 						logger.log(
 							Level.WARN,
 							"Queued delete on "
@@ -942,25 +1022,26 @@ public class LinkedRemoteFile
 							mergefile.addSlave(rslave);
 						mergefile.delete();
 						continue;
+						//TODO subdir contains queued for rename files.
 					}
-				}
+				} // end queued del/ren
 
 				if (mergefile.isFile()
-					&& file.length() != mergefile.length()) {
+					&& localfile.length() != mergefile.length()) {
 					//// conflict ////
 					Collection filerslaves = mergefile.getSlaves();
 
 					if ((filerslaves.size() == 1
 						&& filerslaves.contains(rslave))
-						|| file.length() == 0) {
+						|| localfile.length() == 0) {
 						//we're the only slave with the file.
-						file.setLength(mergefile.length());
-						file.setCheckSum(0L);
-						file.setLastModified(mergefile.lastModified());
+						localfile.setLength(mergefile.length());
+						localfile.setCheckSum(0L);
+						localfile.setLastModified(mergefile.lastModified());
 					} else if (mergefile.length() == 0) {
 						logger.log(
 							Level.INFO,
-							"Deleting 0byte " + mergefile + " on " + rslave);
+							"Deleting conflicting 0byte " + mergefile + " on " + rslave);
 						try {
 							rslave.getSlave().delete(mergefile.getPath());
 						} catch (PermissionDeniedException ex) {
@@ -1002,82 +1083,129 @@ public class LinkedRemoteFile
 
 				// 4 scenarios: new/existing file/directory
 				if (mergefile.isDirectory()) {
-					if (!file.isDirectory())
+					if (!localfile.isDirectory())
 						throw new RuntimeException(
 							"!!! ERROR: Directory/File conflict: "
 								+ mergefile
 								+ " and "
-								+ file
+								+ localfile
 								+ " from "
 								+ rslave.getName());
 					// is a directory -- dive into directory and start merging
-					file.remerge(mergefile, rslave);
+					localfile.remergePass1(mergefile, rslave);
 				} else {
 					if (!mergefile.isFile())
 						throw new RuntimeException();
-					if (file.isDirectory())
+					if (localfile.isDirectory())
 						throw new RuntimeException(
 							"!!! ERROR: File/Directory conflict: "
 								+ mergefile
 								+ " and "
-								+ file
+								+ localfile
 								+ " from "
 								+ rslave.getName());
-					file.addSlave(rslave);
+					localfile.addSlave(rslave);
 				}
 			} // file != null
 		}
 
+	}
+
+	private void remergePass2(LinkedRemoteFile mergedir, RemoteSlave rslave) {
 		// remove all slaves not in mergedir.getFiles()
 		// unmerge() gets called on all files not on slave & all directories
-		for (Iterator i = new ArrayList(_files.values()).iterator();
+		for (Iterator i = new ArrayList(getFilesMap().values()).iterator();
 			i.hasNext();
 			) {
 			LinkedRemoteFile file = (LinkedRemoteFile) i.next();
-
+			//no point in checking the targets, are there anyway
+			//if(file.isDeleted() && file.isLink()) continue;
 			if (!mergedir.hasFile(file.getName())) {
 				if (file.isFile()) {
 					file.unmergeFile(rslave);
 				} else {
 					file.unmergeDir(rslave);
 				}
+			} else if (file.isDirectory()) {
+				try {
+					file.remergePass2(mergedir.getFile(file.getName()), rslave);
+				} catch (FileNotFoundException e) {
+					throw new RuntimeException(
+						"inconsistent with hasFile() above",
+						e);
+				}
 			}
 		}
 	}
 
 	public boolean removeSlave(RemoteSlave slave) {
-		if (_slaves != null) {
-			boolean ret = _slaves.remove(slave);
-			if (_slaves.isEmpty())
-				delete();
-			return ret;
-		}
-		return false;
+		if (_slaves == null)
+			throw new IllegalStateException("Cannot removeSlave() on non-directory");
+		boolean ret = _slaves.remove(slave);
+		if (_slaves.isEmpty())
+			delete();
+		return ret;
 	}
 
 	public static void recursiveRenameLoop(
 		LinkedRemoteFile fromDir,
 		LinkedRemoteFile toDir) {
-		for (Iterator iter = new ArrayList(fromDir.getFiles()).iterator();
+		logger.debug(
+			"recursiveRenameLoop("
+				+ fromDir.getPath()
+				+ ", "
+				+ toDir.getPath()
+				+ ")");
+		for (Iterator iter =
+			new ArrayList(fromDir.getMap().values()).iterator();
 			iter.hasNext();
 			) {
 			LinkedRemoteFile fromFile = (LinkedRemoteFile) iter.next();
-			LinkedRemoteFile toFile = toDir.putFile(fromFile);
+
+			LinkedRemoteFile toFile;
+			try {
+				toFile = toDir.getFile(fromFile.getName());
+			} catch (FileNotFoundException e) {
+				toFile = toDir.putFile(fromFile);
+			}
 			if (fromFile.isDirectory()) {
 				recursiveRenameLoop(fromFile, toFile);
-				continue;
+			} else {
+				recursiveRenameLoopFile(fromFile, toFile);
 			}
-			for (Iterator iterator =
-				new ArrayList(fromFile.getSlaves()).iterator();
-				iterator.hasNext();
-				) {
-				RemoteSlave rslave = (RemoteSlave) iterator.next();
-				if (rslave.isAvailable()) {
-					toFile.addSlave(rslave);
-					fromFile.removeSlave(rslave);
-				} else {
-					fromFile.queueRename(toFile);
-				}
+		}
+		if (fromDir.isEmpty()) {
+			fromDir.delete();
+		}
+	}
+
+	/**
+	 * @return true if directory is empty.
+	 */
+	private boolean isEmpty() {
+		if (_files == null)
+			throw new IllegalStateException();
+		return _files.isEmpty();
+	}
+
+	public static void recursiveRenameLoopFile(
+		LinkedRemoteFile fromFile,
+		LinkedRemoteFile toFile) {
+		logger.debug(
+			"recursiveRenameLoopFile("
+				+ fromFile.getPath()
+				+ ", "
+				+ toFile.getPath());
+
+		Iterator iterator = new ArrayList(fromFile.getSlaves()).iterator();
+		while (iterator.hasNext()) {
+			RemoteSlave rslave = (RemoteSlave) iterator.next();
+			if (rslave.isAvailable()) {
+				toFile.addSlave(rslave);
+				fromFile.removeSlave(rslave);
+			} else {
+				logger.debug(rslave + " is offline");
+				fromFile.queueRename(toFile);
 			}
 		}
 	}
@@ -1097,7 +1225,7 @@ public class LinkedRemoteFile
 		if (toName.indexOf('/') != -1)
 			throw new RuntimeException("Cannot rename to non-existing directory");
 		if (_ftpConfig == null)
-			throw new RuntimeException("_ftpConfig is null");
+			throw new RuntimeException("_ftpConfig is null: " + this);
 
 		LinkedRemoteFile toDir = lookupFile(toDirPath);
 		// throws FileNotFoundException
@@ -1109,7 +1237,6 @@ public class LinkedRemoteFile
 			toFile._slaves = Collections.synchronizedList(new ArrayList());
 		queueRename(toFile);
 		if (isDirectory()) {
-			recursiveRenameLoop(this, toFile);
 			for (Iterator iter =
 				_ftpConfig.getSlaveManager().getSlaves().iterator();
 				iter.hasNext();
@@ -1134,6 +1261,7 @@ public class LinkedRemoteFile
 						ex);
 				}
 			}
+			recursiveRenameLoop(this, toFile);
 		} else {
 			for (Iterator iter = new ArrayList(getSlaves()).iterator();
 				iter.hasNext();
@@ -1226,6 +1354,8 @@ public class LinkedRemoteFile
 	 * @param toName name argument to LinkedRemoteFile constructor
 	 */
 	private LinkedRemoteFile putFile(RemoteFileInterface file, String toName) {
+		if (_files.containsKey(toName))
+			throw new IllegalStateException("Don't overwrite!");
 		//validate
 		if (file.isFile()) {
 			assert file.getSlaves() != null : file.toString();
@@ -1263,31 +1393,29 @@ public class LinkedRemoteFile
 		_owner = owner.intern();
 	}
 
-	private void setRSlaveAndConfig(
+	private static void recursiveSetRSlaveAndConfig(
 		LinkedRemoteFile dir,
-		FtpConfig cfg,
+		FtpConfig ftpConfig,
 		RemoteSlave rslave) {
-		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			file._ftpConfig = cfg;
-			if (file.isDirectory()) {
-				setRSlaveAndConfig(file, cfg, rslave);
-			} else {
-				file.addSlave(rslave);
+
+		dir._ftpConfig = ftpConfig;
+		if (dir.isFile()) {
+			dir.addSlave(rslave);
+		}
+		if (dir.isDirectory()) {
+			for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
+				recursiveSetRSlaveAndConfig(
+					(LinkedRemoteFile) iter.next(),
+					ftpConfig,
+					rslave);
 			}
 		}
 	}
 
-	/**
-	 * @param l
-	 */
-	public void setXfertime(long l) {
-		_xfertime = l;
+	public void setXfertime(long xfertime) {
+		_xfertime = xfertime;
 	}
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
 	public String toString() {
 		StringBuffer ret = new StringBuffer();
 		ret.append("LinkedRemoteFile[\"" + this.getName() + "\",");
@@ -1325,7 +1453,8 @@ public class LinkedRemoteFile
 
 	public void unmergeDir(RemoteSlave rslave) {
 		if (!isDirectory())
-			return;
+			throw new IllegalStateException();
+
 		for (Iterator i = getFiles().iterator(); i.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) i.next();
 			if (file.isDirectory()) {
@@ -1334,17 +1463,23 @@ public class LinkedRemoteFile
 				if (file.isDeleted() && file.dirSize() == 0) {
 					i.remove();
 					// size SHOULD be 0, but if it isn't, this will even out the unsynched dirsize 
+					if (file.length() != 0)
+						logger.warn(
+							"file.length() == "
+								+ file.length()
+								+ " for unmerged directory");
 					addSize(-file.length());
 				}
 			} else {
-				unmergeFile(rslave);
+				file.unmergeFile(rslave);
 			}
 		}
 	}
 
 	public void unmergeFile(RemoteSlave rslave) {
 		if (!isFile())
-			return;
+			throw new IllegalStateException();
+
 		if (removeSlave(rslave)) {
 			logger.warn(getPath() + " deleted from " + rslave.getName());
 		}

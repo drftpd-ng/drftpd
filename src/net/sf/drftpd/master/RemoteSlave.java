@@ -17,7 +17,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.22 2004/01/13 20:30:53 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.23 2004/02/03 20:03:13 mog Exp $
  */
 public class RemoteSlave implements Comparable {
 
@@ -40,21 +40,18 @@ public class RemoteSlave implements Comparable {
 	//private SlaveStatus _status;
 	//private long _statusTime;
 
-	public RemoteSlave(String name) {
-		_name = name;
-	}
 	public RemoteSlave(String name, Collection masks) {
-		this(name);
+		_name = name;
 		_masks = masks;
 	}
 
-	public RemoteSlave(
-		String name,
-		Collection masks,
-		SlaveManagerImpl manager) {
-		this(name, masks);
-		_manager = manager;
-	}
+//	public RemoteSlave(
+//		String name,
+//		Collection masks,
+//		SlaveManagerImpl manager) {
+//		this(name, masks);
+//		_manager = manager;
+//	}
 
 	public int compareTo(Object o) {
 		if (!(o instanceof RemoteSlave))

@@ -45,7 +45,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 /**
- * @version $Id: SlaveManagerImpl.java,v 1.63 2004/02/03 01:04:06 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.64 2004/02/03 20:03:13 mog Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -362,7 +362,7 @@ public class SlaveManagerImpl
 		} catch (Throwable e1) {
 			throw new FatalException(e1);
 		}
-
+		logger.debug("About to remerge(), slave is " + rslave);
 		try {
 			_root.remerge(slaveroot, rslave);
 		} catch (RuntimeException t) {
