@@ -69,7 +69,7 @@ import java.security.MessageDigest;
 
 /**
  * @author mog
- * @version $Id: SocketSlaveImpl.java,v 1.6 2004/04/28 18:49:42 zombiewoof64 Exp $
+ * @version $Id: SocketSlaveImpl.java,v 1.7 2004/05/02 19:34:51 zombiewoof64 Exp $
  */
 public class SocketSlaveImpl
 extends Thread
@@ -125,7 +125,7 @@ implements Slave, Unreferenced {
                 logger.info(
                 "Check slaves.xml on the master that you are allowed to connect.");
             }
-            logger.info("IOException: " + e.toString());
+            logger.info("IOException: " + e.toString(), e);
             try { sock.close(); } catch (Exception e1) {}
             //System.exit(0);
         } catch (Exception e) {

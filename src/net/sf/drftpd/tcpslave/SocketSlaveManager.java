@@ -12,6 +12,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.Hashtable;
+
+import java.rmi.RemoteException;
 
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
@@ -43,13 +46,15 @@ public class SocketSlaveManager extends java.lang.Thread {
             Collection slaves = _conman.getSlaveManager().getSlaves();
             for (Iterator i=slaves.iterator(); i.hasNext();) {
                 RemoteSlave rslave = (RemoteSlave)i.next();
+                Hashtable cfg = rslave.getConfig();
                 if (rslave.isAvailable()) continue;
-                if (rslave.getConfig().get("addr") == null) continue;
-                if ((String)rslave.getConfig().get("addr") == "Dynamic") continue;
+                if (cfg.get("addr") == null) continue;
+                String host = (String)cfg.get("addr");
+                if (host.equals("Dynamic")) continue;
                 // unconnected socket slave, try to connect
                 try {
                     SocketSlaveImpl tmp = new SocketSlaveImpl(_conman, rslave.getConfig());
-                } catch (Exception e) {
+                } catch (RemoteException e) {
                 }
             }
             try {

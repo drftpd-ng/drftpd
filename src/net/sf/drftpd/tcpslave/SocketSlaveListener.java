@@ -65,6 +65,8 @@ public class SocketSlaveListener extends Thread {
             } catch (Exception e) {
                 throw new FatalException(e);
             }
+            InetAddress addr = slave.getInetAddress();
+            logger.info("SockSlaveListener: accepting " + addr);
             Ident identObj = new Ident(slave);
             String ident;
             if (identObj.successful) {
@@ -72,22 +74,35 @@ public class SocketSlaveListener extends Thread {
             } else {
                 ident = "";
             }
-            InetAddress addr = slave.getInetAddress();
             Perl5Matcher m = new Perl5Matcher();
             
             String ipmask = ident + "@" + addr.getHostAddress();
             String hostmask = ident + "@" + addr.getHostName();
+            logger.info("SockSlaveListener: ipmask " + ipmask);
+            logger.info("SockSlaveListener: hostmask " + hostmask);
             Collection slaves = _conman.getSlaveManager().getSlaves();
             boolean match = false;
             RemoteSlave thisone = null;
             for (Iterator i=slaves.iterator(); i.hasNext();) {
                 RemoteSlave rslave = (RemoteSlave)i.next();
-                if (rslave.isAvailable()) continue; // already connected
-                if (rslave.getConfig().get("addr") == null) continue; // not a socketslave
-                if ((String)rslave.getConfig().get("addr") != "Dynamic") continue; // is a static slave
+                if (rslave.isAvailable()) {
+                    logger.info("SockSlaveListener: online> " + rslave.getName());
+                    continue; // already connected
+                }
+                String saddr = (String)rslave.getConfig().get("addr");
+                if (saddr == null) {
+                    logger.info("SockSlaveListener: noaddr> " + rslave.getName());
+                    continue; // not a socketslave
+                }
+                if (!saddr.equals("Dynamic")) {
+                    logger.info("SockSlaveListener: static> " + rslave.getName());
+                    continue; // is a static slave
+                }
                 // unconnected dynamic socket slave, test masks
+                logger.info("SockSlaveListener: testing " + rslave.getName());
                 for (Iterator i2 = rslave.getMasks().iterator(); i2.hasNext(); ) {
                     String mask = (String) i2.next();
+                    logger.info("SockSlaveListener: mask = " + mask);
                     Pattern p;
                     try {
                         p = new GlobCompiler().compile(mask);
