@@ -324,9 +324,9 @@ public abstract class AbstractUser extends User {
 	public KeyedMap getKeyedMap() {
 		_data = new KeyedMap();
 
-		_data.putObject(Nuke.LASTNUKED, lastNuked);
+		_data.setObject(Nuke.LASTNUKED, lastNuked);
 		_data.setObject(Nuke.NUKED, timesNuked);
-		_data.putObject(Nuke.NUKEDBYTES, nukedBytes);
+		_data.setObject(Nuke.NUKEDBYTES, nukedBytes);
 
 		_data.setObject(Request.REQUESTS, requests);
 		_data.setObject(Request.REQUESTSFILLED, requestsFilled);

@@ -17,7 +17,7 @@
 package org.drftpd.dynamicdata;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 
 import org.drftpd.usermanager.KeyNotFoundException;
@@ -28,7 +28,7 @@ import org.drftpd.usermanager.KeyNotFoundException;
  * @author mog
  * @version $Id$
  */
-public class KeyedMap extends HashMap {
+public class KeyedMap extends Hashtable {
 	public KeyedMap() {
 		super();
 	}
@@ -121,7 +121,7 @@ public class KeyedMap extends HashMap {
         }
 	}
 
-	public void putAllObjects(KeyedMap m) {
+	public void setAllObjects(KeyedMap m) {
 		putAll(m.getAllObjects());
 	}
 
@@ -137,11 +137,12 @@ public class KeyedMap extends HashMap {
 
         put(key, obj);
 	}
+
 	public void setObject(Key k, int v) {
 		setObject(k, new Integer(v));
 	}
 
-	public void putObject(Key k, long v) {
+	public void setObject(Key k, long v) {
 		setObject(k, new Long(v));
 	}
 }

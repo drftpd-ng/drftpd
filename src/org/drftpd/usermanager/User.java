@@ -42,7 +42,7 @@ public abstract class User implements Entity {
     }
 
     public final void putAllObjects(KeyedMap m) {
-    	getKeyedMap().putAllObjects(m);
+    	getKeyedMap().setAllObjects(m);
     }
 
     public abstract KeyedMap getKeyedMap();
