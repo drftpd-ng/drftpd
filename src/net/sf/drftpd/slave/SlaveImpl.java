@@ -357,6 +357,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		fromfile.renameTo(tofile);
 	}
 
+	//TODO delete from all roots, will there ever exist the same file across multiple roots?
 	public void delete(String path) throws IOException {
 		//File file = new File(root + path);
 		File file = roots.getFile(path);

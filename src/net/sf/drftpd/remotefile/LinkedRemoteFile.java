@@ -208,7 +208,6 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
 			Slave slave = rslave.getSlave();
 			try {
-				//TODO prefixes
 				slave.delete(getPath());
 			} catch (RemoteException ex) {
 				rslave.handleRemoteException(ex);
@@ -567,6 +566,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 * @throws IllegalFileNameException, FileExistsException, FileNotFoundException
 	 */
 	//TODO rename to relative path
+	//TODO squash bug that reverts the rename in memory for new connection
 	public void renameTo(String to) throws IOException {
 		//		if (!VirtualDirectory.isLegalFileName(to)) {
 		//			throw new IllegalFileNameException("Illegal file name or a directory");

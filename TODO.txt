@@ -6,11 +6,31 @@
 		- Can always create anywhere.
 
 * SITE NUKE
-	Issue:	
+	Issue:
 		What if a slave is disconnected when nuke:ing?
 	Possible Solution:
 		Keep a backlog of all renames and make sure that
 		returning slaves go through the backlog?
+	Solution:
+		Queued deletes.
+
+* SITE UNNUKE
+	Issue:
+		Needs to get multiplier.
+	Possible solution:
+		nukelog
+		keep the value in LinkedRemoteFile and save to files.xml
+
+* sitebot
+	Issue:
+		Needs to communicate with drftpd
+	Possible solution:
+		java based irc bot.
+		eggdrop communicating over irc.
+
+* PASV - passive transfer mode
+
+* Native user storage
 
 * recheck content on slaves to automatically add new files/remove
   deleted files.
@@ -18,13 +38,12 @@
 		Latency/load, reloading the site contents from disk
 		is time consuming and loads the disks. It possibly
 		overloads the slave too.
-	Solution:
+	Possible Solution:
 		- Recursively check entire site and call sleep() often.
 		- Check one directory at a time and sync directly to the
 		  LinkedRemoteFile tree.
-
-* Make RemoteFile an interface and make RemoteFileTree extends RemoteFile
-	for adding the possibility of extending other classes such as
-	RMI.
+		- Restart slave and make sure slave is unmerge()'d before.
 
 * Automatically delete/move files when diskspace is getting low.
+
+* redundant masters
