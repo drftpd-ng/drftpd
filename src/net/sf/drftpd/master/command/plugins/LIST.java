@@ -50,7 +50,7 @@ import org.drftpd.commands.CommandHandlerFactory;
 /**
  * @author mog
  *
- * @version $Id: LIST.java,v 1.20 2004/06/04 14:18:56 mog Exp $
+ * @version $Id: LIST.java,v 1.21 2004/07/12 20:37:26 mog Exp $
  */
 public class LIST implements CommandHandlerFactory, CommandHandler {
 
@@ -306,7 +306,7 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
 			}
 		}
 
-		LinkedRemoteFile directoryFile;
+		LinkedRemoteFileInterface directoryFile;
 		if (directoryName != null) {
 			try {
 				directoryFile =
@@ -314,8 +314,7 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
 			} catch (FileNotFoundException ex) {
 				return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 			}
-			if (!conn
-				.getConfig()
+			if (!conn.getConnectionManager().getGlobalContext().getConfig()
 				.checkPrivPath(conn.getUserNull(), directoryFile)) {
 				return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 			}
@@ -333,7 +332,7 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
 				"213- Status of " + request.getArgument() + ":" + NEWLINE);
 		} else {
 			if (!dataconn.isEncryptedDataChannel()
-				&& conn.getConfig().checkDenyDirUnencrypted(conn.getUserNull())) {
+				&& conn.getConnectionManager().getGlobalContext().getConfig().checkDenyDirUnencrypted(conn.getUserNull())) {
 				return new FtpReply(550, "Secure Listing Required");
 			}
 			out.write(FtpReply.RESPONSE_150_OK);

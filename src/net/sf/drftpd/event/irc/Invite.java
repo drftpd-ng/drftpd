@@ -33,7 +33,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Invite.java,v 1.9 2004/03/26 00:16:32 mog Exp $
+ * @version $Id: Invite.java,v 1.10 2004/07/12 20:37:24 mog Exp $
  */
 public class Invite
 	extends GenericCommandAutoService
@@ -61,7 +61,7 @@ public class Invite
 			String args[] = msg.split(" ");
 			User user;
 			try {
-				user = _cm.getUserManager().getUserByName(args[1]);
+				user = _cm.getGlobalContext().getUserManager().getUserByName(args[1]);
 			} catch (NoSuchUserException e) {
 				logger.log(Level.WARN, args[1] + " " + e.getMessage(), e);
 				return;

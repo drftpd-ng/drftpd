@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -35,20 +34,20 @@ import net.sf.drftpd.slave.Transfer;
 
 /**
  * @author mog
- * @version $Id: RemoteSlaveTest.java,v 1.3 2004/07/02 19:58:52 mog Exp $
+ * @version $Id: RemoteSlaveTest.java,v 1.4 2004/07/12 20:37:25 mog Exp $
  */
 public class RemoteSlaveTest extends TestCase {
 	public static TestSuite suite() {
 		return new TestSuite(RemoteSlaveTest.class);
 	}
-	
+
 	public RemoteSlaveTest(String fName) {
 		super(fName);
 	}
-	
+
 	public void testEquals() {
-		RemoteSlave rslave1 = new RemoteSlave("test1", Collections.EMPTY_LIST);
-		RemoteSlave rslave2 = new RemoteSlave("test1", Collections.EMPTY_LIST);
+		RemoteSlave rslave1 = new RemoteSlave("test1");
+		RemoteSlave rslave2 = new RemoteSlave("test1");
 		assertTrue(rslave1.equals(rslave1));
 		assertTrue(rslave1.equals(rslave2));
 	}
@@ -58,40 +57,37 @@ public class RemoteSlaveTest extends TestCase {
 		public SlaveImpl(HashSet filelist) {
 			_filelist = filelist;
 		}
-		
+
 		public long checkSum(String path) throws RemoteException, IOException {
-			// TODO Auto-generated method stub
-			return 0;
+			throw new NoSuchMethodError();
 		}
 
-		public Transfer listen(boolean encrypted) throws RemoteException, IOException {
-			// TODO Auto-generated method stub
-			return null;
+		public Transfer listen(boolean encrypted)
+			throws RemoteException, IOException {
+			throw new NoSuchMethodError();
 		}
 
-		public Transfer connect(InetSocketAddress addr, boolean encrypted) throws RemoteException {
-			// TODO Auto-generated method stub
-			return null;
+		public Transfer connect(InetSocketAddress addr, boolean encrypted)
+			throws RemoteException {
+			throw new NoSuchMethodError();
 		}
 
 		public SlaveStatus getSlaveStatus() throws RemoteException {
-			// TODO Auto-generated method stub
-			return null;
+			throw new NoSuchMethodError();
 		}
 
 		public void ping() throws RemoteException {
-			// TODO Auto-generated method stub
-			
 		}
 
-		public SFVFile getSFVFile(String path) throws RemoteException, IOException {
-			// TODO Auto-generated method stub
-			return null;
+		public SFVFile getSFVFile(String path)
+			throws RemoteException, IOException {
+			throw new NoSuchMethodError();
 		}
 
-		public void rename(String from, String toDirPath, String toName) throws RemoteException, IOException {
+		public void rename(String from, String toDirPath, String toName)
+			throws RemoteException, IOException {
 			_filelist.remove(from);
-			_filelist.add(new String(toDirPath+"/"+toName));
+			_filelist.add(new String(toDirPath + "/" + toName));
 		}
 
 		public void delete(String path) throws RemoteException, IOException {
@@ -99,13 +95,12 @@ public class RemoteSlaveTest extends TestCase {
 		}
 
 		public LinkedRemoteFile getSlaveRoot() throws IOException {
-			// TODO Auto-generated method stub
-			return null;
+			throw new NoSuchMethodError();
 		}
 	}
-	
+
 	public void testSetSlave() throws IOException {
-		RemoteSlave rslave = new RemoteSlave("test", Collections.EMPTY_LIST);
+		RemoteSlave rslave = new RemoteSlave("test");
 		rslave.delete("/deleteme");
 		rslave.rename("/renameme", "/indir", "tofile");
 		List list = new ArrayList();
@@ -115,7 +110,7 @@ public class RemoteSlaveTest extends TestCase {
 		filelist.add("/renameme");
 		filelist.add("/indir");
 		Slave slave = new SlaveImpl(filelist);
-		rslave.setSlave(slave,null,null,256);
+		rslave.setSlave(slave, null, null, 256);
 		assertFalse(filelist.contains("/deleteme"));
 		assertFalse(filelist.contains("/renameme"));
 		assertTrue(filelist.contains("/indir"));

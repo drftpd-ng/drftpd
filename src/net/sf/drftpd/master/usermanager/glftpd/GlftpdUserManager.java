@@ -21,22 +21,21 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
 import net.sf.drftpd.DuplicateElementException;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.master.usermanager.UserManager;
+
 import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: GlftpdUserManager.java,v 1.16 2004/07/08 16:09:53 zubov Exp $
+ * @version $Id: GlftpdUserManager.java,v 1.17 2004/07/12 20:37:27 mog Exp $
  */
 public class GlftpdUserManager extends UserManager {
 	private static final Logger logger = Logger

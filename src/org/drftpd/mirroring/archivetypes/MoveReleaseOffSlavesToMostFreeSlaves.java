@@ -33,7 +33,7 @@ import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.sections.SectionInterface;
 /**
  * @author zubov
- * @version $Id: MoveReleaseOffSlavesToMostFreeSlaves.java,v 1.3 2004/07/09 17:08:38 zubov Exp $
+ * @version $Id: MoveReleaseOffSlavesToMostFreeSlaves.java,v 1.4 2004/07/12 20:37:30 mog Exp $
  */
 public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 	private static final Logger logger = Logger
@@ -53,8 +53,7 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 				break; // done
 			}
 			try {
-				_offOfSlaves.add(_parent.getConnectionManager()
-						.getSlaveManager().getSlave(slavename));
+				_offOfSlaves.add(_parent.getConnectionManager().getGlobalContext().getSlaveManager().getSlave(slavename));
 			} catch (ObjectNotFoundException e) {
 				logger.debug("Unable to get slave " + slavename
 						+ " from the SlaveManager");
@@ -77,7 +76,7 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 		}
 	}
 	public HashSet findDestinationSlaves() {
-		HashSet set = _parent.getConnectionManager().getSlaveManager().findSlavesBySpace(_numOfSlaves,_offOfSlaves,false); 
+		HashSet set = _parent.getConnectionManager().getGlobalContext().getSlaveManager().findSlavesBySpace(_numOfSlaves,_offOfSlaves,false); 
 		if (set.isEmpty())
 			return null;
 		return set;

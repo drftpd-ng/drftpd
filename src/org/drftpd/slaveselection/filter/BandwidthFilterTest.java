@@ -18,11 +18,10 @@
 package org.drftpd.slaveselection.filter;
 
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 /**
  * @author mog
- * @version $Id: BandwidthFilterTest.java,v 1.2 2004/06/04 14:18:58 mog Exp $
+ * @version $Id: BandwidthFilterTest.java,v 1.3 2004/07/12 20:37:40 mog Exp $
  */
 public class BandwidthFilterTest extends TestCase {
 	public BandwidthFilterTest(String fName) {

@@ -25,9 +25,10 @@ import java.util.List;
  * Creates a single RemoteFile object that is not linked to any other objects.
  * 
  * @author mog
- * @version $Id: StaticRemoteFile.java,v 1.29 2004/06/09 10:56:40 mog Exp $
+ * @version $Id: StaticRemoteFile.java,v 1.30 2004/07/12 20:37:28 mog Exp $
  */
 public class StaticRemoteFile extends AbstractRemoteFile {
+
 	private long _checkSum;
 	private String _groupname;
 	private boolean _isDeleted;
@@ -38,6 +39,20 @@ public class StaticRemoteFile extends AbstractRemoteFile {
 	private List _rslaves;
 	private String _username;
 	private long _xfertime;
+
+	public StaticRemoteFile(List rslaves, String name, long size) {
+		this(rslaves, name, null, null, size, System.currentTimeMillis());
+	}
+	/**
+	 * @param _rslave
+	 * @param string
+	 * @param string2
+	 * @param string3
+	 * @param i
+	 */
+	public StaticRemoteFile(List rslaves, String name, String user, String group, int size) {
+		this(rslaves, name, user, group, size, System.currentTimeMillis());
+	}
 
 	/**
 	 * @param rslaves null indicates that this is a directory.
@@ -70,10 +85,6 @@ public class StaticRemoteFile extends AbstractRemoteFile {
 		long checkSum) {
 		this(rslaves, name, owner, group, size, lastModified);
 		_checkSum = checkSum;
-	}
-
-	public StaticRemoteFile(List rslaves, String name, long size) {
-		this(rslaves, name, null, null, size, System.currentTimeMillis());
 	}
 	public StaticRemoteFile(String name) {
 		_name = name;

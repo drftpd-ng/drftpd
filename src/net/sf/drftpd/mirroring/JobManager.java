@@ -37,7 +37,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.55 2004/07/12 04:27:52 zubov Exp $
+ * @version $Id: JobManager.java,v 1.56 2004/07/12 20:37:28 mog Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -119,7 +119,7 @@ public class JobManager implements Runnable {
 		synchronized (this) {
 			Collection availableSlaves;
 			try {
-				availableSlaves = _cm.getSlaveManager().getAvailableSlaves();
+				availableSlaves = _cm.getGlobalContext().getSlaveManager().getAvailableSlaves();
 			} catch (NoAvailableSlaveException e1) {
 				return false;
 				// can't transfer with no slaves
@@ -133,7 +133,7 @@ public class JobManager implements Runnable {
 				}
 				//logger.debug("looking up slave for job " + job);
 				try {
-					sourceSlave = _cm.getSlaveManager()
+					sourceSlave = _cm.getGlobalContext().getSlaveManager()
 							.getSlaveSelectionManager()
 							.getASlaveForJobDownload(job);
 				} catch (NoAvailableSlaveException e) {
@@ -150,7 +150,7 @@ public class JobManager implements Runnable {
 					return false;
 				}
 				try {
-					destSlave = _cm.getSlaveManager()
+					destSlave = _cm.getGlobalContext().getSlaveManager()
 							.getSlaveSelectionManager().getASlaveForJobUpload(
 									job);
 					break; // we have a source slave and a destination slave,

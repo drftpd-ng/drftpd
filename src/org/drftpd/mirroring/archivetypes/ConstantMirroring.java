@@ -77,7 +77,7 @@ public class ConstantMirroring extends ArchiveType {
 		}
 	}
 	public HashSet findDestinationSlaves() {
-		return new HashSet(_parent.getConnectionManager()
+		return new HashSet(_parent.getConnectionManager().getGlobalContext()
 				.getSlaveManager().getSlaves());
 	}
 	protected boolean isArchivedDir(LinkedRemoteFileInterface lrf)

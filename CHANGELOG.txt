@@ -1,3 +1,11 @@
+2004/07/09 Morgan Christiansson <drftpd@mog.se>
+* Refactored source to use GlobalContext class,
+  which will improve navigation and ease of implementing testcases.
+* Removed _self var from SlaveManagerImpl, breaking FileListConverter.
+* Moved net.sf.drftpd.master.command.plugins.IRC to
+  org.drftpd.commands.SiteBotManagment
+* Added SITE IRC RAW command for sending RAW IRC commands.
+
 2004/07/09 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Fixed JUnit tests, all pass
 * Implemented "site listjobs" to show transfer status on jobs that are 

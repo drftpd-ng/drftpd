@@ -19,7 +19,6 @@ package org.drftpd.slaveselection.filter;
 
 import java.rmi.RemoteException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
 
@@ -35,7 +34,7 @@ import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: MatchdirFilterTest.java,v 1.7 2004/05/31 02:47:20 mog Exp $
+ * @version $Id: MatchdirFilterTest.java,v 1.8 2004/07/12 20:37:40 mog Exp $
  */
 public class MatchdirFilterTest extends TestCase {
 
@@ -86,9 +85,9 @@ public class MatchdirFilterTest extends TestCase {
 
 	RemoteSlave rslaves[] =
 		{
-			new RemoteSlave("slave1", Collections.EMPTY_LIST),
-			new RemoteSlave("slave2", Collections.EMPTY_LIST),
-			new RemoteSlave("slave3", Collections.EMPTY_LIST)};
+			new RemoteSlave("slave1"),
+			new RemoteSlave("slave2"),
+			new RemoteSlave("slave3")};
 
 	public void testSimple() throws ObjectNotFoundException, NoAvailableSlaveException {
 		Properties p = new Properties();

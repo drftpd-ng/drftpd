@@ -32,7 +32,7 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author mog
- * @version $Id: DatedSection.java,v 1.7 2004/04/25 17:46:19 mog Exp $
+ * @version $Id: DatedSection.java,v 1.8 2004/07/12 20:37:36 mog Exp $
  */
 public class DatedSection implements SectionInterface {
 	private String _basePath;
@@ -53,9 +53,9 @@ public class DatedSection implements SectionInterface {
 
 	public LinkedRemoteFile getBaseFile() {
 		try {
-			return _mgr.getConnectionManager().getRoot().lookupFile(_basePath);
+			return _mgr.getConnectionManager().getGlobalContext().getRoot().lookupFile(_basePath);
 		} catch (FileNotFoundException e) {
-			return _mgr.getConnectionManager().getRoot().createDirectories(_basePath);
+			return _mgr.getConnectionManager().getGlobalContext().getRoot().createDirectories(_basePath);
 		}
 	}
 

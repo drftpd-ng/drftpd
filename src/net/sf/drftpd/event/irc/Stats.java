@@ -44,7 +44,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author zubov
-  * @version $Id: Stats.java,v 1.6 2004/06/04 14:18:55 mog Exp $
+  * @version $Id: Stats.java,v 1.7 2004/07/12 20:37:24 mog Exp $
  */
 public class Stats
 	extends GenericCommandAutoService
@@ -99,7 +99,7 @@ public class Stats
 
 		List users = null;
 		try {
-			users = _cm.getUserManager().getAllUsers();
+			users = _cm.getGlobalContext().getUserManager().getAllUsers();
 		} catch (UserFileException e) {
 			getConnection().sendCommand(
 				new MessageCommand(destination, "Error processing userfiles"));

@@ -38,7 +38,7 @@ import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilter.java,v 1.8 2004/05/16 05:44:55 zubov Exp $
+ * @version $Id: SlavetopFilter.java,v 1.9 2004/07/12 20:37:40 mog Exp $
  */
 public class SlavetopFilter extends Filter {
 
@@ -68,9 +68,7 @@ public class SlavetopFilter extends Filter {
 		//// find the section part of the path name
 		SectionInterface section =
 			_fc
-				.getSlaveManager()
-				.getConnectionManager()
-				.getSectionManager()
+			.getSlaveManager().getGlobalContext().getConnectionManager().getGlobalContext().getSectionManager()
 				.lookup(
 				path);
 		

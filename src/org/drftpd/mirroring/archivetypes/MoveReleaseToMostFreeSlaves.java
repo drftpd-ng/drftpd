@@ -17,8 +17,6 @@
  */
 package org.drftpd.mirroring.archivetypes;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -35,7 +33,7 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author zubov
- * @version $Id: MoveReleaseToMostFreeSlaves.java,v 1.4 2004/07/04 05:40:57 zubov Exp $
+ * @version $Id: MoveReleaseToMostFreeSlaves.java,v 1.5 2004/07/12 20:37:30 mog Exp $
  */
 public class MoveReleaseToMostFreeSlaves extends ArchiveType {
 	private static final Logger logger = Logger.getLogger(MoveReleaseToMostFreeSlaves.class);
@@ -57,7 +55,7 @@ public class MoveReleaseToMostFreeSlaves extends ArchiveType {
 	}
 
 	public HashSet findDestinationSlaves() {
-		HashSet set = _parent.getConnectionManager().getSlaveManager().findSlavesBySpace(_numOfSlaves,new HashSet(), false); 
+		HashSet set = _parent.getConnectionManager().getGlobalContext().getSlaveManager().findSlavesBySpace(_numOfSlaves,new HashSet(), false); 
 		if (set.isEmpty())
 			return null;
 		return set;

@@ -17,6 +17,7 @@
  */
 package net.sf.drftpd.remotefile;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
@@ -34,13 +35,14 @@ import java.util.StringTokenizer;
 import org.apache.log4j.Logger;
 
 import net.sf.drftpd.Checksum;
+import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 
 /**
  * @author mog
- * @version $Id: MLSTSerialize.java,v 1.31 2004/06/09 22:49:16 mog Exp $
+ * @version $Id: MLSTSerialize.java,v 1.32 2004/07/12 20:37:28 mog Exp $
  */
 public class MLSTSerialize {
 	private static final Logger logger = Logger.getLogger(MLSTSerialize.class);
@@ -232,5 +234,15 @@ public class MLSTSerialize {
 			unserialize(in2, dir, RemoteSlave.rslavesToHashtable(rslaves), path);
 		}
 		return root;
+	}
+
+	public static LinkedRemoteFile loadMLSTFileDatabase(
+		List rslaves,
+		ConnectionManager cm)
+		throws IOException {
+		return MLSTSerialize.unserialize(
+			cm != null ? cm.getGlobalContext().getConfig() : null,
+			new FileReader("files.mlst"),
+			rslaves);
 	}
 }

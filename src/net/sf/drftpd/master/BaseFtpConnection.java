@@ -24,7 +24,6 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
@@ -36,14 +35,13 @@ import javax.net.ssl.SSLSocket;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.ConnectionEvent;
+import net.sf.drftpd.event.Event;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
-import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.util.AddAsciiOutputStream;
 import net.sf.drftpd.util.ReplacerUtils;
@@ -62,7 +60,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.92 2004/07/09 17:08:36 zubov Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.93 2004/07/12 20:37:25 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -124,7 +122,7 @@ public class BaseFtpConnection implements Runnable {
 
 	protected User _user;
 
-	protected LinkedRemoteFile _currentDirectory;
+	protected LinkedRemoteFileInterface _currentDirectory;
 
 	/**
 	 * Is the client running a command?
@@ -156,7 +154,7 @@ public class BaseFtpConnection implements Runnable {
 		_cm = connManager;
 		setControlSocket(soc);
 		_lastActive = System.currentTimeMillis();
-		setCurrentDirectory(connManager.getRoot());
+		setCurrentDirectory(connManager.getGlobalContext().getRoot());
 	}
 
 	/**
@@ -177,11 +175,8 @@ public class BaseFtpConnection implements Runnable {
 		return _commandManager;
 	}
 
-	public FtpConfig getConfig() {
-		return getConnectionManager().getConfig();
-	}
-
 	public ConnectionManager getConnectionManager() {
+		if(_cm == null) throw new NullPointerException();
 		return _cm;
 	}
 
@@ -197,7 +192,7 @@ public class BaseFtpConnection implements Runnable {
 		return _out;
 	}
 
-	public LinkedRemoteFile getCurrentDirectory() {
+	public LinkedRemoteFileInterface getCurrentDirectory() {
 		return _currentDirectory;
 	}
 
@@ -240,7 +235,7 @@ public class BaseFtpConnection implements Runnable {
 	}
 
 	public SlaveManagerImpl getSlaveManager() {
-		return getConnectionManager().getSlaveManager();
+		return getConnectionManager().getGlobalContext().getSlaveManager();
 	}
 
 	public SocketFactory getSocketFactory() {
@@ -340,7 +335,7 @@ public class BaseFtpConnection implements Runnable {
 		_lastActive = System.currentTimeMillis();
 		logger.info(
 			"Handling new request from " + getClientAddress().getHostAddress());
-		if (!getConfig().getHideIps()) {
+		if (!getConnectionManager().getGlobalContext().getConfig().getHideIps()) {
 			_thread.setName(
 				"FtpConn from " + getClientAddress().getHostAddress());
 		}
@@ -356,11 +351,11 @@ public class BaseFtpConnection implements Runnable {
 			//		new OutputStreamWriter(_controlSocket.getOutputStream())));
 
 			_controlSocket.setSoTimeout(1000);
-			if (getConnectionManager().isShutdown()) {
-				stop(getConnectionManager().getShutdownMessage());
+			if (getConnectionManager().getGlobalContext().isShutdown()) {
+				stop(getConnectionManager().getGlobalContext().getShutdownMessage());
 			} else {
 				FtpReply response =
-					new FtpReply(220, getConfig().getLoginPrompt());
+					new FtpReply(220, getConnectionManager().getGlobalContext().getConfig().getLoginPrompt());
 				_out.print(response);
 			}
 			while (!_stopRequest) {
@@ -448,7 +443,7 @@ public class BaseFtpConnection implements Runnable {
 
 	public void setAuthenticated(boolean authenticated) {
 		_authenticated = authenticated;
-		if (isAuthenticated() && !getConfig().getHideIps())
+		if (isAuthenticated() && !getConnectionManager().getGlobalContext().getConfig().getHideIps())
 			_thread.setName(
 				"FtpConn from "
 					+ getClientAddress().getHostAddress()
@@ -477,7 +472,7 @@ public class BaseFtpConnection implements Runnable {
 		}
 	}
 
-	public void setCurrentDirectory(LinkedRemoteFile file) {
+	public void setCurrentDirectory(LinkedRemoteFileInterface file) {
 		_currentDirectory = file;
 	}
 

@@ -33,7 +33,7 @@ import org.drftpd.sections.SectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SectionManager.java,v 1.6 2004/04/25 17:46:19 mog Exp $
+ * @version $Id: SectionManager.java,v 1.7 2004/07/12 20:37:39 mog Exp $
  */
 public class SectionManager implements SectionManagerInterface {
 
@@ -81,16 +81,16 @@ public class SectionManager implements SectionManagerInterface {
 
 	public SectionInterface getSection(String string) {
 		try {
-			return new Section(_cm.getRoot().getFile(string));
+			return new Section(_cm.getGlobalContext().getRoot().getFile(string));
 		} catch (FileNotFoundException e) {
-			return new Section(_cm.getRoot());
+			return new Section(_cm.getGlobalContext().getRoot());
 		}
 	}
 
 	public Collection getSections() {
 		ArrayList sections = new ArrayList();
 		for (Iterator iter =
-			_cm.getRoot().getDirectories().iterator();
+			_cm.getGlobalContext().getRoot().getDirectories().iterator();
 			iter.hasNext();
 			) {
 			LinkedRemoteFileInterface dir =
@@ -103,9 +103,9 @@ public class SectionManager implements SectionManagerInterface {
 	public SectionInterface lookup(String string) {
 		StringTokenizer st = new StringTokenizer(string, "/");
 		try {
-			return new Section(_cm.getRoot().getFile(st.nextToken()));
+			return new Section(_cm.getGlobalContext().getRoot().getFile(st.nextToken()));
 		} catch (FileNotFoundException e) {
-			return new Section(_cm.getRoot());
+			return new Section(_cm.getGlobalContext().getRoot());
 		}
 	}
 

@@ -30,7 +30,7 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author mog
- * @version $Id: PlainSection.java,v 1.6 2004/04/25 17:46:19 mog Exp $
+ * @version $Id: PlainSection.java,v 1.7 2004/07/12 20:37:38 mog Exp $
  */
 public class PlainSection implements SectionInterface {
 	private String _dir;
@@ -52,9 +52,9 @@ public class PlainSection implements SectionInterface {
 
 	public LinkedRemoteFileInterface getFile() {
 		try {
-			return _mgr.getConnectionManager().getRoot().lookupFile(_dir);
+			return _mgr.getConnectionManager().getGlobalContext().getRoot().lookupFile(_dir);
 		} catch (FileNotFoundException e) {
-			return _mgr.getConnectionManager().getRoot().createDirectories(_dir);
+			return _mgr.getConnectionManager().getGlobalContext().getRoot().createDirectories(_dir);
 		}
 	}
 

@@ -22,19 +22,19 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
-import org.drftpd.mirroring.ArchiveType;
-import org.drftpd.sections.SectionInterface;
-
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.listeners.Archive;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.apache.log4j.Logger;
+import org.drftpd.mirroring.ArchiveType;
+import org.drftpd.sections.SectionInterface;
+
 /**
  * @author zubov
- * @version $Id: MoveReleaseToSpecificSlaves.java,v 1.4 2004/07/12 04:27:52 zubov Exp $
+ * @version $Id: MoveReleaseToSpecificSlaves.java,v 1.5 2004/07/12 20:37:30 mog Exp $
  */
 public class MoveReleaseToSpecificSlaves extends ArchiveType {
 
@@ -53,7 +53,7 @@ public class MoveReleaseToSpecificSlaves extends ArchiveType {
 				break; // done
 			}
 			try {
-				_destSlaves.add(_parent.getConnectionManager().getSlaveManager().getSlave(slavename));
+				_destSlaves.add(_parent.getConnectionManager().getGlobalContext().getSlaveManager().getSlave(slavename));
 			} catch (ObjectNotFoundException e) {
 				logger.debug("Unable to get slave " + slavename + " from the SlaveManager");
 			}

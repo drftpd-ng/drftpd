@@ -38,7 +38,7 @@ public class AsyncSlaveManager extends java.lang.Thread {
         AsyncSlaveListener ssl = new AsyncSlaveListener(_conman, _socketPort, _socketPass);
         
         while (true) {
-            Collection slaves = _conman.getSlaveManager().getSlaves();
+            Collection slaves = _conman.getGlobalContext().getSlaveManager().getSlaves();
             for (Iterator i=slaves.iterator(); i.hasNext();) {
                 RemoteSlave rslave = (RemoteSlave)i.next();
                 Hashtable cfg = rslave.getConfig();

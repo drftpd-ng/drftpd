@@ -1,8 +1,19 @@
 /*
- * Created on Jun 1, 2004
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This file is part of DrFTPD, Distributed FTP Daemon.
+ * 
+ * DrFTPD is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * DrFTPD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with DrFTPD; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.drftpd.usermanager;
 
@@ -18,10 +29,12 @@ import net.sf.drftpd.master.usermanager.AbstractUser;
 import net.sf.drftpd.slave.SlaveImpl;
 
 import org.apache.log4j.BasicConfigurator;
+import org.drftpd.GlobalContext;
+import org.drftpd.tests.DummyGlobalContext;
 
 /**
  * @author mog
- * @version $Id: ResetMonthlyStats.java,v 1.2 2004/06/02 00:32:43 mog Exp $
+ * @version $Id: ResetMonthlyStats.java,v 1.3 2004/07/12 20:37:41 mog Exp $
  */
 public class ResetMonthlyStats {
 
@@ -46,7 +59,7 @@ public class ResetMonthlyStats {
 		cfg.load(new FileInputStream(cfgFileName));
 
 		CM cm = new CM(cfg, cfgFileName);
-		cm.getUserManager().getAllUsers();
+		cm.getGlobalContext().getUserManager().getAllUsers();
 		Method m =
 			AbstractUser.class.getDeclaredMethod(
 				"resetMonth",
@@ -56,7 +69,7 @@ public class ResetMonthlyStats {
 		Field f = AbstractUser.class.getDeclaredField("lastReset");
 		f.setAccessible(true);
 
-		for (Iterator iter = cm.getUserManager().getAllUsers().iterator();
+		for (Iterator iter = cm.getGlobalContext().getUserManager().getAllUsers().iterator();
 			iter.hasNext();
 			) {
 			AbstractUser user = (AbstractUser) iter.next();
@@ -70,9 +83,12 @@ public class ResetMonthlyStats {
 	}
 
 	public static class CM extends ConnectionManager {
+		private DummyGlobalContext _gctx;
 		public CM(Properties cfg, String cfgFileName) {
-			loadUserManager(cfg, cfgFileName);
-			loadPlugins(cfg);
+			_gctx = new DummyGlobalContext();
+			super._gctx = _gctx;
+			_gctx.loadUserManager(cfg, cfgFileName);
+			_gctx.loadPlugins(cfg);
 		}
 	}
 }

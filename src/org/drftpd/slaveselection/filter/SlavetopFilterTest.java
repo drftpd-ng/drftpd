@@ -17,118 +17,49 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.io.FileNotFoundException;
 import java.rmi.RemoteException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
 
-import org.apache.log4j.BasicConfigurator;
-import org.drftpd.remotefile.FileUtils;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.sections.SectionManagerInterface;
-
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.FileExistsException;
+import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 import net.sf.drftpd.slave.Transfer;
 
+import org.apache.log4j.BasicConfigurator;
+import org.drftpd.sections.def.SectionManager;
+import org.drftpd.tests.DummyConnectionManager;
+import org.drftpd.tests.DummyGlobalContext;
+import org.drftpd.tests.DummySlaveManager;
+
 /**
  * @author mog
- * @version $Id: SlavetopFilterTest.java,v 1.5 2004/04/25 17:46:21 mog Exp $
+ * @version $Id: SlavetopFilterTest.java,v 1.6 2004/07/12 20:37:40 mog Exp $
  */
 public class SlavetopFilterTest extends TestCase {
-
-	public class CM extends ConnectionManager {
-		public SectionManagerInterface getSectionManager() {
-			return new SectionManagerInterface() {
-
-				public ConnectionManager getConnectionManager() {
-					throw new UnsupportedOperationException();
-				}
-				public Collection getSections() {
-					throw new UnsupportedOperationException();
-				}
-				public SectionInterface lookup(String string) {
-					return new SectionInterface() {
-
-						public LinkedRemoteFileInterface getFile() {
-							return dir1;
-						}
-
-						public Collection getFiles() {
-							throw new UnsupportedOperationException();
-						}
-
-						public String getName() {
-							throw new UnsupportedOperationException();
-						}
-
-						public String getPath() {
-							return getFile().getPath();
-						}
-
-						public LinkedRemoteFileInterface getFirstDirInSection(LinkedRemoteFileInterface dir) {
-							//							LinkedRemoteFileInterface dir1 = dir, dir2 = dir;
-							//							while(dir1 != getFile()) {
-							//								dir2 = dir1;
-							//								try {
-							//									dir1 = dir1.getParentFile();
-							//								} catch (FileNotFoundException e) {
-							//									return getFile();
-							//								}
-							//							}
-							//							return dir2;
-							try {
-								return FileUtils.getSubdirOfDirectory(
-									getFile(),
-									dir);
-							} catch (FileNotFoundException e) {
-								return dir;
-							}
-						}
-
-					};
-				}
-				public SectionInterface getSection(String string) {
-					throw new UnsupportedOperationException();
-				}
-				public void reload() {
-				}
-			};
-		}
-	}
-
 	public class FC extends FilterChain {
+		private DummySlaveManager _slavem;
 
 		public SlaveManagerImpl getSlaveManager() {
-			try {
-				return new SlaveManager();
-			} catch (RemoteException e) {
-				throw new RuntimeException(e);
-			}
+			return _slavem;
+		}
+
+		public void setSlaveManager(DummySlaveManager sm) {
+			_slavem = sm;
 		}
 	}
 
 	public class SlaveManager extends SlaveManagerImpl {
-
 		protected SlaveManager() throws RemoteException {
 			super();
 		}
-
-		public ConnectionManager getConnectionManager() {
-			return new CM();
-		}
-
 	}
 
 	public static TestSuite suite() {
@@ -150,16 +81,17 @@ public class SlavetopFilterTest extends TestCase {
 		throws
 			NoAvailableSlaveException,
 			FileExistsException,
-			ObjectNotFoundException {
+			ObjectNotFoundException,
+			RemoteException {
 		Properties p = new Properties();
 		p.put("1.topslaves", "2");
 		p.put("1.assign", "100");
 
 		RemoteSlave rslaves[] =
 			{
-				new RemoteSlave("slave1", null),
-				new RemoteSlave("slave2", null),
-				new RemoteSlave("slave3", null)};
+				new RemoteSlave("slave1"),
+				new RemoteSlave("slave2"),
+				new RemoteSlave("slave3")};
 
 		ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
@@ -204,7 +136,18 @@ public class SlavetopFilterTest extends TestCase {
 				"file8",
 				Collections.singletonList(rslaves[1])));
 
-		Filter f = new SlavetopFilter(new FC(), 1, p);
+		FC fc = new FC();
+		DummyConnectionManager cm = new DummyConnectionManager();
+
+		DummyGlobalContext gctx = new DummyGlobalContext();
+		gctx.setSectionManager(new SectionManager(cm));
+		gctx.setConnectionManager(cm);
+		gctx.setRoot(root);
+		cm.setGlobalContext(gctx);
+		DummySlaveManager sm = new DummySlaveManager();
+		sm.setGlobalContext(gctx);
+		fc.setSlaveManager(sm);
+		Filter f = new SlavetopFilter(fc, 1, p);
 		f.process(sc, null, null, Transfer.TRANSFER_UNKNOWN, dir2);
 		assertEquals(100, sc.getSlaveScore(rslaves[0]).getScore());
 		assertEquals(0, sc.getSlaveScore(rslaves[1]).getScore());

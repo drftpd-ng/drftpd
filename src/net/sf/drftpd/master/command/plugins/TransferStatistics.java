@@ -47,7 +47,7 @@ import org.drftpd.commands.UnhandledCommandException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
- * @version $Id: TransferStatistics.java,v 1.22 2004/06/04 14:18:56 mog Exp $
+ * @version $Id: TransferStatistics.java,v 1.23 2004/07/12 20:37:26 mog Exp $
  */
 public class TransferStatistics implements CommandHandlerFactory, CommandHandler {
 
@@ -154,7 +154,7 @@ public class TransferStatistics implements CommandHandlerFactory, CommandHandler
 		} else {
 			try {
 				user =
-					conn.getConnectionManager().getUserManager().getUserByName(request.getArgument());
+					conn.getConnectionManager().getGlobalContext().getUserManager().getUserByName(request.getArgument());
 			} catch (NoSuchUserException e) {
 				return new FtpReply(200, "No such user: " + e.getMessage());
 			} catch (UserFileException e) {
@@ -172,7 +172,7 @@ public class TransferStatistics implements CommandHandlerFactory, CommandHandler
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
-		UserManager userman = conn.getConnectionManager().getUserManager();
+		UserManager userman = conn.getConnectionManager().getGlobalContext().getUserManager();
 		response.addComment("created: " + new Date(user.getCreated()));
 		response.addComment("rank alup: " + getStatsPlace("ALUP", user, userman));
 		response.addComment("rank aldn: " + getStatsPlace("ALDN", user, userman));
@@ -234,7 +234,7 @@ public class TransferStatistics implements CommandHandlerFactory, CommandHandler
 		}
 		List users;
 		try {
-			users = conn.getConnectionManager().getUserManager().getAllUsers();
+			users = conn.getConnectionManager().getGlobalContext().getUserManager().getAllUsers();
 		} catch (UserFileException e) {
 			logger.warn("", e);
 			return new FtpReply(200, "IO error: " + e.getMessage());

@@ -37,7 +37,7 @@ import org.drftpd.commands.UnhandledCommandException;
 
 /**
  * @author mog
- * @version $Id: Request.java,v 1.17 2004/07/02 19:58:53 mog Exp $
+ * @version $Id: Request.java,v 1.18 2004/07/12 20:37:26 mog Exp $
  */
 public class Request implements CommandHandlerFactory, CommandHandler {
 	private static final String FILLEDPREFIX = "FILLED-for.";
@@ -94,8 +94,7 @@ public class Request implements CommandHandlerFactory, CommandHandler {
 	}
 	private FtpReply doSITE_REQUEST(BaseFtpConnection conn) {
 
-		if (!conn
-			.getConfig()
+		if (!conn.getConnectionManager().getGlobalContext().getConfig()
 			.checkPathPermission(
 				"request",
 				conn.getUserNull(),

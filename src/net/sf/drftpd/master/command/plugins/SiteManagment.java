@@ -32,7 +32,6 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Level;
@@ -44,7 +43,7 @@ import org.drftpd.commands.UnhandledCommandException;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagment.java,v 1.21 2004/07/02 19:58:53 mog Exp $
+ * @version $Id: SiteManagment.java,v 1.22 2004/07/12 20:37:26 mog Exp $
  */
 public class SiteManagment implements CommandHandlerFactory, CommandHandler {
 
@@ -55,7 +54,7 @@ public class SiteManagment implements CommandHandlerFactory, CommandHandler {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
 		//.getMap().values() to get the .isDeleted files as well.
-		LinkedRemoteFile dir = conn.getCurrentDirectory();
+		LinkedRemoteFileInterface dir = conn.getCurrentDirectory();
 		if (conn.getRequest().hasArgument()) {
 			try {
 				dir = dir.lookupFile(conn.getRequest().getArgument(), true);
@@ -90,7 +89,7 @@ public class SiteManagment implements CommandHandlerFactory, CommandHandler {
 			return new FtpReply(
 				500,
 				"Was not able to find the class you are trying to load");
-		conn.getConnectionManager().addFtpListener(ftpListener);
+		conn.getConnectionManager().getGlobalContext().addFtpListener(ftpListener);
 		return new FtpReply(200, "Successfully loaded your plugin");
 	}
 
@@ -116,7 +115,7 @@ public class SiteManagment implements CommandHandlerFactory, CommandHandler {
 
 		try {
 			conn.getConnectionManager().reload();
-			conn.getConnectionManager().getConfig().reloadConfig();
+			conn.getConnectionManager().getGlobalContext().getConfig().reloadConfig();
 			conn.getSlaveManager().reload();
 			try {
 				conn.getConnectionManager().getJobManager().reload();

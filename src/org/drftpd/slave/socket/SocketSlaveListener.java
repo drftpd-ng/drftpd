@@ -7,20 +7,15 @@
 package org.drftpd.slave.socket;
 
 import java.io.BufferedReader;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.StringReader;
-
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-
+import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Iterator;
-
-import java.security.MessageDigest;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.master.ConnectionManager;
@@ -158,7 +153,7 @@ public class SocketSlaveListener extends Thread {
             String hostmask = ident + "@" + addr.getHostName();
             logger.info("SockSlaveListener: ipmask " + ipmask);
             logger.info("SockSlaveListener: hostmask " + hostmask);
-            Collection slaves = _conman.getSlaveManager().getSlaves();
+            Collection slaves = _conman.getGlobalContext().getSlaveManager().getSlaves();
             boolean match = false;
             RemoteSlave thisone = null;
             for (Iterator i=slaves.iterator(); i.hasNext();) {

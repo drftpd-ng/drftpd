@@ -17,8 +17,6 @@
  */
 package org.drftpd.mirroring.archivetypes;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,7 +38,7 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author zubov
- * @version $Id: FinishReleaseOnSlaves.java,v 1.3 2004/07/04 05:40:57 zubov Exp $
+ * @version $Id: FinishReleaseOnSlaves.java,v 1.4 2004/07/12 20:37:30 mog Exp $
  */
 public class FinishReleaseOnSlaves extends ArchiveType {
 	private static final Logger logger = Logger.getLogger(FinishReleaseOnSlaves.class);

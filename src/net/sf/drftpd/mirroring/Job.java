@@ -15,8 +15,8 @@
  * Suite 330, Boston, MA 02111-1307 USA
  */
 package net.sf.drftpd.mirroring;
+
 import java.io.FileNotFoundException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -24,12 +24,11 @@ import java.util.Set;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.29 2004/07/12 14:24:18 zubov Exp $
+ * @version $Id: Job.java,v 1.30 2004/07/12 20:37:28 mog Exp $
  */
 public class Job {
 	private RemoteSlave _destSlave;
@@ -136,6 +135,11 @@ public class Job {
 		}
 		return toReturn;
 	}
+	private synchronized void reset() {
+		_slaveTransfer = null;
+		_destSlave = null;
+		_sourceSlave = null;
+	}
 	public synchronized void sentToSlave(RemoteSlave slave) {
 		if (_destSlaves.remove(slave)) {
 			_transferNum--;
@@ -147,11 +151,6 @@ public class Job {
 			throw new IllegalStateException(
 					"Job cannot have a destSlaveSet of size 0 with transferNum > 0");
 		}
-	}
-	private synchronized void reset() {
-		_slaveTransfer = null;
-		_destSlave = null;
-		_sourceSlave = null;
 	}
  	public void setDone() {
 		_transferNum = 0;

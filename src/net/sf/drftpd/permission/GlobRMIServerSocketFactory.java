@@ -20,29 +20,23 @@ package net.sf.drftpd.permission;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.rmi.server.RMIServerSocketFactory;
-import java.util.Collection;
+
+import net.sf.drftpd.master.SlaveManagerImpl;
 
 
 /**
  * @author mog
- * @version $Id: GlobRMIServerSocketFactory.java,v 1.4 2004/02/10 00:03:15 mog Exp $
+ * @version $Id: GlobRMIServerSocketFactory.java,v 1.5 2004/07/12 20:37:28 mog Exp $
  */
 public class GlobRMIServerSocketFactory implements RMIServerSocketFactory {
-	private Collection rslaves;
-	
-	/**
-	 * Constructor for GlobRMIServerSocketFactory.
-	 */
-	public GlobRMIServerSocketFactory(Collection rslaves) {
-		super();
-		this.rslaves = rslaves;
+	private SlaveManagerImpl _sm;
+
+	public GlobRMIServerSocketFactory(SlaveManagerImpl sm) {
+		_sm = sm;
 	}
 
-	/**
-	 * @see java.rmi.server.RMIServerSocketFactory#createServerSocket(int)
-	 */
 	public ServerSocket createServerSocket(int port) throws IOException {
-		return new GlobServerSocket(port, rslaves);
+		return new GlobServerSocket(port, _sm);
 	}
 
 }

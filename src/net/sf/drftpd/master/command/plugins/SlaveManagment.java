@@ -39,7 +39,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author mog
  *
- * @version $Id: SlaveManagment.java,v 1.13 2004/07/12 04:27:51 zubov Exp $
+ * @version $Id: SlaveManagment.java,v 1.14 2004/07/12 20:37:26 mog Exp $
  */
 public class SlaveManagment implements CommandHandlerFactory, CommandHandler {
 	public void unload() {
@@ -65,7 +65,7 @@ public class SlaveManagment implements CommandHandlerFactory, CommandHandler {
 		RemoteSlave rslave;
 		try {
 			rslave =
-				conn.getConnectionManager().getSlaveManager().getSlave(
+				conn.getConnectionManager().getGlobalContext().getSlaveManager().getSlave(
 					conn.getRequest().getArgument());
 		} catch (ObjectNotFoundException e) {
 			return new FtpReply(200, "No such slave");
@@ -136,7 +136,7 @@ public class SlaveManagment implements CommandHandlerFactory, CommandHandler {
 		RemoteSlave rslave;
 		try {
 			rslave =
-				conn.getConnectionManager().getSlaveManager().getSlave(
+				conn.getConnectionManager().getGlobalContext().getSlaveManager().getSlave(
 					conn.getRequest().getArgument());
 		} catch (ObjectNotFoundException e) {
 			return new FtpReply(200, "No such slave");
@@ -145,7 +145,7 @@ public class SlaveManagment implements CommandHandlerFactory, CommandHandler {
 			return new FtpReply(200, "Slave is offline");
 		}
 		try {
-			conn.getConnectionManager().getSlaveManager().remerge(rslave);
+			conn.getConnectionManager().getGlobalContext().getSlaveManager().remerge(rslave);
 		} catch (IOException e) {
 			rslave.setOffline("IOException during remerge()");
 			return new FtpReply(200, "IOException during remerge()");

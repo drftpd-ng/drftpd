@@ -57,6 +57,7 @@ import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.slave.socket.SocketSlaveImpl;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.jdom.Document;
@@ -67,7 +68,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.99 2004/07/12 04:27:51 zubov Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.100 2004/07/12 20:37:25 mog Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -78,74 +79,69 @@ public class SlaveManagerImpl
 	/**
 	 * Checksums call us with null BaseFtpConnection.
 	 */
-//	public static RemoteSlave getASlave(
-//		Collection slaves,
-//		char direction,
-//		FtpConfig config,
-//		BaseFtpConnection conn,
-//		LinkedRemoteFileInterface file)
-//		throws NoAvailableSlaveException {
-//		return config.getSlaveManager().getSlaveSelectionManager().getASlave(
-//			slaves,
-//			direction,
-//			conn,
-//			file);
-//	}
+	//	public static RemoteSlave getASlave(
+	//		Collection slaves,
+	//		char direction,
+	//		FtpConfig config,
+	//		BaseFtpConnection conn,
+	//		LinkedRemoteFileInterface file)
+	//		throws NoAvailableSlaveException {
+	//		return config.getSlaveManager().getSlaveSelectionManager().getASlave(
+	//			slaves,
+	//			direction,
+	//			conn,
+	//			file);
+	//	}
 
-//	public static Collection getAvailableSlaves()
-//		throws NoAvailableSlaveException {
-//		ArrayList availableSlaves = new ArrayList();
-//		for (Iterator iter = _rslaves.iterator(); iter.hasNext();) {
-//			RemoteSlave rslave = (RemoteSlave) iter.next();
-//			if (!rslave.isAvailable())
-//				continue;
-//			availableSlaves.add(rslave);
-//		}
-//		if (availableSlaves.isEmpty()) {
-//			throw new NoAvailableSlaveException("No slaves online");
-//		}
-//		return availableSlaves;
-//	}
+	//	public static Collection getAvailableSlaves()
+	//		throws NoAvailableSlaveException {
+	//		ArrayList availableSlaves = new ArrayList();
+	//		for (Iterator iter = _rslaves.iterator(); iter.hasNext();) {
+	//			RemoteSlave rslave = (RemoteSlave) iter.next();
+	//			if (!rslave.isAvailable())
+	//				continue;
+	//			availableSlaves.add(rslave);
+	//		}
+	//		if (availableSlaves.isEmpty()) {
+	//			throw new NoAvailableSlaveException("No slaves online");
+	//		}
+	//		return availableSlaves;
+	//	}
 
-//	public static RemoteSlave loadRSlave(Element slaveElement) {
-//		List masks = new ArrayList();
-//		List maskElements = slaveElement.getChildren("mask");
-//		for (Iterator i2 = maskElements.iterator(); i2.hasNext();) {
-//			masks.add(((Element) i2.next()).getText());
-//		}
-//		return new RemoteSlave(slaveElement);
-//			slaveElement.getChildText("name").toString(),
-//			masks,
-//			slaveElement);
-//	}
+	//	public static RemoteSlave loadRSlave(Element slaveElement) {
+	//		List masks = new ArrayList();
+	//		List maskElements = slaveElement.getChildren("mask");
+	//		for (Iterator i2 = maskElements.iterator(); i2.hasNext();) {
+	//			masks.add(((Element) i2.next()).getText());
+	//		}
+	//		return new RemoteSlave(slaveElement);
+	//			slaveElement.getChildText("name").toString(),
+	//			masks,
+	//			slaveElement);
+	//	}
 
-        public static List loadRSlaves()
-        {
-            if (_self == null) return null;
-            return _self.loadSlaves();
-        }
-        
-        private Properties elementToProps(Element config)
-        {
-            Properties props = new Properties();
-            String masks = "";
-            List maskElements = config.getChildren("mask");
-            for (Iterator i2 = maskElements.iterator(); i2.hasNext();) {
-                if (!masks.equals("")) masks += ",";
-                masks += ((Element) i2.next()).getText();
-            }
-            props.put("masks", masks);
-            for (Iterator i = config.getChildren().iterator(); i.hasNext();) {
-                Element e = (Element) i.next();
-                if (e.getName().equalsIgnoreCase("mask")) continue;
-                try {
-                    props.setProperty(e.getName(), e.getText());
-                } catch (Exception e1) {
-                }
-            }
-            return props;
-        }
-        
+	private Properties elementToProps(Element config) {
+		Properties props = new Properties();
+		String masks = "";
+		List maskElements = config.getChildren("mask");
+		for (Iterator i2 = maskElements.iterator(); i2.hasNext();) {
+			if (!masks.equals(""))
+				masks += ",";
+			masks += ((Element) i2.next()).getText();
+		}
+		props.put("masks", masks);
+		for (Iterator i = config.getChildren().iterator(); i.hasNext();) {
+			Element e = (Element) i.next();
+			if (e.getName().equalsIgnoreCase("mask"))
+				continue;
+			try {
+				props.setProperty(e.getName(), e.getText());
+			} catch (Exception e1) {
+			}
+		}
+		return props;
+	}
+
 	public List loadSlaves() {
 		ArrayList rslaves;
 		try {
@@ -155,7 +151,7 @@ public class SlaveManagerImpl
 			rslaves = new ArrayList(children.size());
 			for (Iterator i = children.iterator(); i.hasNext();) {
 				//slavemanager is set in the slavemanager constructor
-                            Properties props = elementToProps((Element) i.next());
+				Properties props = elementToProps((Element) i.next());
 				rslaves.add(new RemoteSlave(props));
 			}
 			rslaves.trimToSize();
@@ -167,14 +163,9 @@ public class SlaveManagerImpl
 		return rslaves;
 	}
 
-	public static Collection rslavesToMasks(Collection rslaves) {
-            if (_self != null) return _self.getMasks(rslaves);
-            return null;
-        }
-        
-	public Collection getMasks(Collection rslaves) {
+	public Collection getMasks() {
 		ArrayList masks = new ArrayList();
-		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
+		for (Iterator iter = _rslaves.iterator(); iter.hasNext();) {
 			RemoteSlave rslave2 = (RemoteSlave) iter.next();
 			masks.addAll(rslave2.getMasks());
 		}
@@ -184,23 +175,23 @@ public class SlaveManagerImpl
 	/**
 	 * @deprecated
 	 */
-//	public static void saveFilesXML(Element root) {
-//		File filesDotXml = new File("files.xml");
-//		File filesxmlbak = new File("files.xml.bak");
-//		filesxmlbak.delete();
-//		filesDotXml.renameTo(filesxmlbak);
-//		try {
-//			FileWriter out = new FileWriter(filesDotXml);
-//			new XMLOutputter("  ", true).output(root, out);
-//			out.flush();
-//		} catch (IOException ex) {
-//			logger.log(
-//				Level.WARN,
-//				"Error saving to " + filesDotXml.getPath(),
-//				ex);
-//		}
-//	}
-        
+	//	public static void saveFilesXML(Element root) {
+	//		File filesDotXml = new File("files.xml");
+	//		File filesxmlbak = new File("files.xml.bak");
+	//		filesxmlbak.delete();
+	//		filesDotXml.renameTo(filesxmlbak);
+	//		try {
+	//			FileWriter out = new FileWriter(filesDotXml);
+	//			new XMLOutputter("  ", true).output(root, out);
+	//			out.flush();
+	//		} catch (IOException ex) {
+	//			logger.log(
+	//				Level.WARN,
+	//				"Error saving to " + filesDotXml.getPath(),
+	//				ex);
+	//		}
+	//	}
+
 	public void setRSlavesManager() {
 		for (Iterator iter = _rslaves.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
@@ -208,38 +199,36 @@ public class SlaveManagerImpl
 		}
 	}
 
-	private ConnectionManager _cm;
+	//protected ConnectionManager _cm;
 
+	protected GlobalContext _gctx;
 	protected List _rslaves;
-        protected RMIServerSocketFactory _ssf;
-        protected RMIClientSocketFactory _csf;
-        
+	protected RMIServerSocketFactory _ssf;
+	protected RMIClientSocketFactory _csf;
+
 	private SlaveSelectionManagerInterface _slaveSelectionManager;
-        
-        private static SlaveManagerImpl _self = null;
-        
-	protected SlaveManagerImpl() throws RemoteException {
-            _self = this;
+
+	public SlaveManagerImpl() throws RemoteException {
 	}
-        
+
 	public void init(
 		Properties cfg,
 		List rslaves,
 		RMIServerSocketFactory ssf,
-		ConnectionManager cm)
-		throws RemoteException 
-        {
+		GlobalContext gctx)
+		throws RemoteException {
 		_csf = RMISocketFactory.getSocketFactory();
-                _ssf = ssf;
-		_cm = cm;
+		_ssf = ssf;
+		_gctx = gctx;
 		_rslaves = rslaves;
 
-                setRSlavesManager();
+		setRSlavesManager();
 
 		Registry registry =
 			LocateRegistry.createRegistry(
 				Integer.parseInt(cfg.getProperty("master.bindport", "1099")),
-				_csf, _ssf);
+				_csf,
+				_ssf);
 		// throws RemoteException
 		try {
 			registry.bind(
@@ -265,7 +254,6 @@ public class SlaveManagerImpl
 			throw new FatalException(e);
 		}
 		logger.debug("starting slavestatus updater thread");
-		//new Thread(this, "SlaveStatusUpdater").start();
 		new SlaveStatusUpdater().start();
 	}
 
@@ -275,9 +263,9 @@ public class SlaveManagerImpl
 			public void run() {
 				logger.info("Running shutdown hook");
 				saveFilelist();
-				
+
 				try {
-					getConnectionManager().getUserManager().saveAll();
+					getGlobalContext().getConnectionManager().getGlobalContext().getUserManager().saveAll();
 				} catch (UserFileException e) {
 					logger.warn("", e);
 				}
@@ -325,7 +313,7 @@ public class SlaveManagerImpl
 					rslave.getName() + " has no slave address");
 			}
 			try {
-			rslave.setSlave(slave, addr, slave.getSlaveStatus(), maxPath);
+				rslave.setSlave(slave, addr, slave.getSlaveStatus(), maxPath);
 			} catch (RemoteException e) {
 				logger.warn("", e);
 				rslave.setOffline("IOException during remerge()");
@@ -347,8 +335,9 @@ public class SlaveManagerImpl
 			return;
 		}
 		rslave.setAvailable(true);
-		logger.info("Slave added: '" + rslave.getName() + "' status: " + status);
-		getConnectionManager().dispatchFtpEvent(
+		logger.info(
+			"Slave added: '" + rslave.getName() + "' status: " + status);
+		getGlobalContext().getConnectionManager().dispatchFtpEvent(
 			new SlaveEvent("ADDSLAVE", rslave));
 	}
 
@@ -370,9 +359,12 @@ public class SlaveManagerImpl
 		rslave.setOffline(reason);
 	}
 
-        public HashSet findSlavesBySpace(int numOfSlaves, Set exemptSlaves, boolean ascending) {
+	public HashSet findSlavesBySpace(
+		int numOfSlaves,
+		Set exemptSlaves,
+		boolean ascending) {
 		Collection slaveList =
-			getConnectionManager().getSlaveManager().getSlaveList();
+			getGlobalContext().getConnectionManager().getGlobalContext().getSlaveManager().getSlaves();
 		HashMap map = new HashMap();
 		for (Iterator iter = slaveList.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
@@ -384,7 +376,7 @@ public class SlaveManagerImpl
 			} catch (SlaveUnavailableException e) {
 				continue;
 			}
-			map.put(size,rslave);
+			map.put(size, rslave);
 		}
 		ArrayList sorted = new ArrayList(map.keySet());
 		if (ascending) {
@@ -394,7 +386,7 @@ public class SlaveManagerImpl
 		}
 		HashSet returnMe = new HashSet();
 		for (ListIterator iter = sorted.listIterator(); iter.hasNext();) {
-			if (iter.nextIndex()==numOfSlaves)
+			if (iter.nextIndex() == numOfSlaves)
 				break;
 			Long key = (Long) iter.next();
 			RemoteSlave rslave = (RemoteSlave) map.get(key);
@@ -403,10 +395,9 @@ public class SlaveManagerImpl
 		return returnMe;
 	}
 
-
 	public RemoteSlave findSmallestFreeSlave() {
 		Collection slaveList =
-			getConnectionManager().getSlaveManager().getSlaveList();
+			getGlobalContext().getConnectionManager().getGlobalContext().getSlaveManager().getSlaves();
 		long smallSize = Integer.MAX_VALUE;
 		RemoteSlave smallSlave = null;
 		for (Iterator iter = slaveList.iterator(); iter.hasNext();) {
@@ -441,6 +432,19 @@ public class SlaveManagerImpl
 		return allStatus;
 	}
 
+	public HashMap getAllStatusArray() {
+		//SlaveStatus[] ret = new SlaveStatus[getSlaves().size()];
+		HashMap ret = new HashMap(getSlaves().size());
+		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
+			try {
+				ret.put(rslave.getName(), rslave.getStatus());
+			} catch (SlaveUnavailableException e) {
+				ret.put(rslave.getName(), (Object) null);
+			}
+		}
+		return ret;
+	}
 	//	private Random rand = new Random();
 	//	public RemoteSlave getASlave() {
 	//		ArrayList retSlaves = new ArrayList();
@@ -474,12 +478,13 @@ public class SlaveManagerImpl
 		}
 		return availableSlaves;
 	}
-	
-        public ConnectionManager getConnectionManager() {
-		return _cm;
+
+	public GlobalContext getGlobalContext() {
+		if(_gctx == null) throw new NullPointerException();
+		return _gctx;
 	}
-	
-        public RemoteSlave getSlave(String s) throws ObjectNotFoundException {
+
+	public RemoteSlave getSlave(String s) throws ObjectNotFoundException {
 		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
 			if (rslave.getName().equals(s))
@@ -487,13 +492,10 @@ public class SlaveManagerImpl
 		}
 		throw new ObjectNotFoundException(s + ": No such slave");
 	}
-	
-        public List getSlaveList() {
-		return _rslaves;
-	}
 
-	public Collection getSlaves() {
-		return _rslaves;
+	public List getSlaves() {
+		if(_rslaves == null) throw new NullPointerException();
+		return Collections.unmodifiableList(_rslaves);
 	}
 
 	public SlaveSelectionManagerInterface getSlaveSelectionManager() {
@@ -556,7 +558,7 @@ public class SlaveManagerImpl
 					Level.WARN,
 					rslave.getName() + " no longer in slaves.xml, unmerging");
 				rslave.setOffline("Slave removed from slaves.xml");
-				getConnectionManager().getRoot().unmergeDir(rslave);
+				getGlobalContext().getConnectionManager().getGlobalContext().getRoot().unmergeDir(rslave);
 				//rslaves.remove(rslave);
 				iter.remove();
 			}
@@ -574,15 +576,15 @@ public class SlaveManagerImpl
 				if (slaveElement
 					.getChildText("name")
 					.equals(rslave.getName())) {
-                                            rslave.updateConfig(elementToProps(slaveElement));
-//					List masks = new ArrayList();
-//					List maskElements = slaveElement.getChildren("mask");
-//					for (Iterator i2 = maskElements.iterator();
-//						i2.hasNext();
-//						) {
-//						masks.add(((Element) i2.next()).getText());
-//					}
-//					rslave.setMasks(masks);
+					rslave.updateConfig(elementToProps(slaveElement));
+					//					List masks = new ArrayList();
+					//					List maskElements = slaveElement.getChildren("mask");
+					//					for (Iterator i2 = maskElements.iterator();
+					//						i2.hasNext();
+					//						) {
+					//						masks.add(((Element) i2.next()).getText());
+					//					}
+					//					rslave.setMasks(masks);
 					continue nextelement;
 				}
 			} // rslaves.iterator()
@@ -599,7 +601,7 @@ public class SlaveManagerImpl
 		LinkedRemoteFile slaveroot;
 		slaveroot = rslave.getSlaveRoot();
 		try {
-			getConnectionManager().getRoot().remerge(slaveroot, rslave);
+			getGlobalContext().getConnectionManager().getGlobalContext().getRoot().remerge(slaveroot, rslave);
 		} catch (RuntimeException t) {
 			logger.log(Level.FATAL, "", t);
 			rslave.setOffline(t.getMessage());
@@ -646,7 +648,7 @@ public class SlaveManagerImpl
 				} catch (NoAvailableSlaveException e) {
 				}
 				try {
-					Thread.sleep(_cm.getConfig().getSlaveStatusUpdateTime());
+					Thread.sleep(getGlobalContext().getConfig().getSlaveStatusUpdateTime());
 				} catch (InterruptedException e1) {
 				}
 			}
@@ -657,7 +659,7 @@ public class SlaveManagerImpl
 		try {
 			SafeFileWriter out = new SafeFileWriter("files.mlst");
 			try {
-				MLSTSerialize.serialize(getConnectionManager().getRoot(), out);
+				MLSTSerialize.serialize(getGlobalContext().getConnectionManager().getGlobalContext().getRoot(), out);
 			} finally {
 				out.close();
 			}
@@ -679,94 +681,96 @@ public class SlaveManagerImpl
 		return removed;
 	}
 
-         public void updateSlave(String name, Hashtable args) throws IOException {
-        Element tmp;
-        
-        String mask = (String)args.get("mask");
-        String skey = (String)args.get("skey");
-        String mkey = (String)args.get("mkey");
-        String port = (String)args.get("port");
-        String addr = (String)args.get("addr");
-        
-        // create new slaves.xml entry
-        Element slave = new Element("slave");
-        
-        tmp = new Element("name");
-        tmp.setText(name);
-        slave.addContent(tmp);
-        
-        tmp = new Element("addr");
-        if (addr == null) {
-            tmp.setText("Dynamic");
-        } else {
-            tmp.setText(addr);
-        }
-        slave.addContent(tmp);
-        
-        if (mask != null) {
-            String[] masks = mask.split(",");
-            for (int i=0; i<masks.length; i++) {
-                tmp = new Element("mask");
-                tmp.setText(masks[i]);
-                slave.addContent(tmp);
-            }
-        }
-        
-        if (port != null) {
-            tmp = new Element("port");
-            tmp.setText(port);
-            slave.addContent(tmp);
-        }
-        
-        if (skey != null) {
-            tmp = new Element("slavepass");
-            tmp.setText(skey);
-            slave.addContent(tmp);
-        }
-        
-        if (mkey != null) {
-            tmp = new Element("masterpass");
-            tmp.setText(mkey);
-            slave.addContent(tmp);
-        }
-        
-        // get the current slaves.xml file
-        Document doc;
-        try {
-            doc = new SAXBuilder().build(new FileReader("conf/slaves.xml"));
-        } catch (JDOMException e) {
-            throw (IOException) new IOException().initCause(e);
-        }
-        
-        // get the current list of slaves
-        List slaveElements = doc.getRootElement().getChildren("slave");
-        
-        // try to find an existing slave
-        Element conf = null;
-        for (Iterator iterator = slaveElements.iterator(); iterator.hasNext(); ) {
-            Element slaveElement = (Element) iterator.next();
-            if (name.equals(slaveElement.getChildText("name"))) {
-                conf = slaveElement;
-            }
-        }
-        
-        if (conf == null) {
-            // create new slave entry
-            doc.getRootElement().addContent(slave);
-        } else {
-            // update existing entry
-            slaveElements.remove(conf);
-            slaveElements.add(slave);
-            doc.setContent(slaveElements);
-        }
-        
-        // write slaves.xml
-        XMLOutputter out = new XMLOutputter("  ", true);
-        out.output(doc, new FileWriter("conf/slaves.xml"));
-        out = null;
-        
-        // trigger the normal slave reload process
-        reloadRSlaves();
-        
-    }
+	public void updateSlave(String name, Hashtable args) throws IOException {
+		Element tmp;
+
+		String mask = (String) args.get("mask");
+		String skey = (String) args.get("skey");
+		String mkey = (String) args.get("mkey");
+		String port = (String) args.get("port");
+		String addr = (String) args.get("addr");
+
+		// create new slaves.xml entry
+		Element slave = new Element("slave");
+
+		tmp = new Element("name");
+		tmp.setText(name);
+		slave.addContent(tmp);
+
+		tmp = new Element("addr");
+		if (addr == null) {
+			tmp.setText("Dynamic");
+		} else {
+			tmp.setText(addr);
+		}
+		slave.addContent(tmp);
+
+		if (mask != null) {
+			String[] masks = mask.split(",");
+			for (int i = 0; i < masks.length; i++) {
+				tmp = new Element("mask");
+				tmp.setText(masks[i]);
+				slave.addContent(tmp);
+			}
+		}
+
+		if (port != null) {
+			tmp = new Element("port");
+			tmp.setText(port);
+			slave.addContent(tmp);
+		}
+
+		if (skey != null) {
+			tmp = new Element("slavepass");
+			tmp.setText(skey);
+			slave.addContent(tmp);
+		}
+
+		if (mkey != null) {
+			tmp = new Element("masterpass");
+			tmp.setText(mkey);
+			slave.addContent(tmp);
+		}
+
+		// get the current slaves.xml file
+		Document doc;
+		try {
+			doc = new SAXBuilder().build(new FileReader("conf/slaves.xml"));
+		} catch (JDOMException e) {
+			throw (IOException) new IOException().initCause(e);
+		}
+
+		// get the current list of slaves
+		List slaveElements = doc.getRootElement().getChildren("slave");
+
+		// try to find an existing slave
+		Element conf = null;
+		for (Iterator iterator = slaveElements.iterator();
+			iterator.hasNext();
+			) {
+			Element slaveElement = (Element) iterator.next();
+			if (name.equals(slaveElement.getChildText("name"))) {
+				conf = slaveElement;
+			}
+		}
+
+		if (conf == null) {
+			// create new slave entry
+			doc.getRootElement().addContent(slave);
+		} else {
+			// update existing entry
+			slaveElements.remove(conf);
+			slaveElements.add(slave);
+			doc.setContent(slaveElements);
+		}
+
+		// write slaves.xml
+		XMLOutputter out = new XMLOutputter("  ", true);
+		out.output(doc, new FileWriter("conf/slaves.xml"));
+		out = null;
+
+		// trigger the normal slave reload process
+		reloadRSlaves();
+
+	}
 }

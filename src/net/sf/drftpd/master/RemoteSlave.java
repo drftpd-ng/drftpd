@@ -36,49 +36,51 @@ import org.jdom.Element;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.50 2004/07/12 04:27:51 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.51 2004/07/12 20:37:25 mog Exp $
  */
 public class RemoteSlave implements Comparable {
 	/**
 	 * Used by JUnit tests
 	 */
-	public RemoteSlave(String name, Collection list) {
+	public RemoteSlave(String name) {
 		Properties p = new Properties();
 		p.setProperty("name", name);
 		_name = name;
 		updateConfig(p);
 	}
-	
-	private void addQueueRename(String fileName,String destName) {
-		if (isAvailable()) throw new IllegalStateException("Slave is available, you cannot queue an operation");
+
+	private void addQueueRename(String fileName, String destName) {
+		if (isAvailable())
+			throw new IllegalStateException("Slave is available, you cannot queue an operation");
 		if (_fileQueue.containsKey(fileName))
-			throw new IllegalArgumentException(fileName + " is already in the queue for processing");
-		_fileQueue.put(fileName,destName);
+			throw new IllegalArgumentException(
+				fileName + " is already in the queue for processing");
+		_fileQueue.put(fileName, destName);
 	}
-	
+
 	private void addQueueDelete(String fileName) {
-		addQueueRename(fileName,null);
+		addQueueRename(fileName, null);
 	}
-	
+
 	/**
 	 * Rename files.
 	 */
 	public void rename(String from, String toDirPath, String toName)
 		throws IOException {
 		try {
-			getSlave().rename(from,toDirPath,toName);
+			getSlave().rename(from, toDirPath, toName);
 		} catch (RemoteException e) {
 			handleRemoteException(e);
-			addQueueRename(from,toDirPath+"/"+toName);
+			addQueueRename(from, toDirPath + "/" + toName);
 		} catch (IOException e) {
 			setOffline(e.getMessage());
-			addQueueRename(from,toDirPath+"/"+toName);
+			addQueueRename(from, toDirPath + "/" + toName);
 			throw e;
 		} catch (SlaveUnavailableException e) {
-			addQueueRename(from,toDirPath+"/"+toName);
+			addQueueRename(from, toDirPath + "/" + toName);
 		}
 	}
-		
+
 	/**
 	 * Delete files.
 	 */
@@ -98,7 +100,7 @@ public class RemoteSlave implements Comparable {
 			addQueueDelete(path);
 		}
 	}
-	
+
 	private HashMap _fileQueue;
 
 	private int _maxPath;
@@ -129,12 +131,13 @@ public class RemoteSlave implements Comparable {
 					// just remove and continue, we can't do much
 					// if the OS has the file locked
 				}
-			}
-			else {
-				String fileName = destFile.substring(destFile.lastIndexOf("/")+1);
-				String destDir = destFile.substring(0,destFile.lastIndexOf("/"));
+			} else {
+				String fileName =
+					destFile.substring(destFile.lastIndexOf("/") + 1);
+				String destDir =
+					destFile.substring(0, destFile.lastIndexOf("/"));
 				try {
-					_slave.rename(sourceFile,destDir,fileName);
+					_slave.rename(sourceFile, destDir, fileName);
 				} catch (IOException e) {
 					// just remove and continue, we can't do much
 					// if the OS has the file locked
@@ -286,7 +289,7 @@ public class RemoteSlave implements Comparable {
 	public int hashCode() {
 		return getName().hashCode();
 	}
-	
+
 	public void setAvailable(boolean available) {
 		_available = available;
 	}
@@ -344,7 +347,7 @@ public class RemoteSlave implements Comparable {
 			throw new RuntimeException("_manager == null");
 		}
 		if (_slave != null) {
-			_manager.getConnectionManager().dispatchFtpEvent(
+			_manager.getGlobalContext().getConnectionManager().dispatchFtpEvent(
 				new SlaveEvent("DELSLAVE", reason, this));
 		}
 		_slave = null;
@@ -358,7 +361,8 @@ public class RemoteSlave implements Comparable {
 		Slave slave,
 		InetAddress inetAddress,
 		SlaveStatus status,
-		int maxPath) throws RemoteException {
+		int maxPath)
+		throws RemoteException {
 		if (slave == null)
 			throw new IllegalArgumentException();
 		_slave = slave;

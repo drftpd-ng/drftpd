@@ -21,10 +21,10 @@ import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import junit.framework.TestCase;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
@@ -34,8 +34,6 @@ import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.Transfer;
 
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
-
-import junit.framework.TestCase;
 
 /*
  * @author zubov
@@ -89,7 +87,7 @@ public class MaxbandwidthFilterTest extends TestCase {
 	
 	public class RS extends RemoteSlave {
 		public RS(String name,Collection duh) {
-			super(name,duh);
+			super(name);
 		}
 
 		public synchronized SlaveStatus getStatus()

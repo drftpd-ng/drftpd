@@ -52,7 +52,7 @@ import net.sf.drftpd.master.ConnectionManager;
  *</ul>
  * 
  * @author mog
- * @version $Id: Exec.java,v 1.1 2004/07/02 19:58:57 mog Exp $
+ * @version $Id: Exec.java,v 1.2 2004/07/12 20:37:30 mog Exp $
  */
 public class Exec implements FtpListener {
 
@@ -73,7 +73,7 @@ public class Exec implements FtpListener {
 				"SPEEDBPS=" + (uevent.getDirectory().getXferspeed()),
 				"HOST=@" + uevent.getConn().getClientAddress(),
 				"SECTION="
-					+ _cm.getSectionManager().lookup(
+					+ _cm.getGlobalContext().getSectionManager().lookup(
 						uevent.getDirectory().getPath())};
 						String cmd[];
 		try {

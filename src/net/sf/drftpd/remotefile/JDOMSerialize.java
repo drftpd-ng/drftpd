@@ -31,7 +31,7 @@ import org.jdom.input.SAXBuilder;
 
 /**
  * @author mog
- * @version $Id: JDOMSerialize.java,v 1.9 2004/05/12 00:45:10 mog Exp $
+ * @version $Id: JDOMSerialize.java,v 1.10 2004/07/12 20:37:28 mog Exp $
  */
 public class JDOMSerialize {
 	private static final Logger logger = Logger.getLogger(JDOMSerialize.class);
@@ -45,7 +45,7 @@ public class JDOMSerialize {
 			root =
 				new LinkedRemoteFile(
 					xmlroot,
-					cm == null ? null : cm.getConfig());
+					cm == null ? null : cm.getGlobalContext().getConfig());
 		} catch (FileNotFoundException ex) {
 			throw ex;
 		} catch (Exception ex) {

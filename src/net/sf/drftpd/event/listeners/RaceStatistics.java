@@ -39,7 +39,7 @@ import org.drftpd.plugins.SiteBot;
 
 /**
  * @author zubov
- * @version $Id: RaceStatistics.java,v 1.13 2004/05/12 00:45:05 mog Exp $
+ * @version $Id: RaceStatistics.java,v 1.14 2004/07/12 20:37:25 mog Exp $
  */
 public class RaceStatistics implements FtpListener {
 
@@ -87,7 +87,7 @@ public class RaceStatistics implements FtpListener {
 			UploaderPosition racer = (UploaderPosition) iter.next();
 			User user;
 			try {
-				user = _cm.getUserManager().getUserByName(racer.getUsername());
+				user = _cm.getGlobalContext().getUserManager().getUserByName(racer.getUsername());
 			} catch (NoSuchUserException ex) {
 				// this should not happen, but if it does, it means the user was deleted
 				// we want to ignore their stats, but the race still did happen

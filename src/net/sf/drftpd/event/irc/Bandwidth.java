@@ -41,7 +41,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author flowman
- * @version $Id: Bandwidth.java,v 1.7 2004/04/23 12:18:30 mog Exp $
+ * @version $Id: Bandwidth.java,v 1.8 2004/07/12 20:37:24 mog Exp $
  */
 
 public class Bandwidth
@@ -77,7 +77,7 @@ public class Bandwidth
 		String msg = msgc.getMessage();
 		if (msg.startsWith("!bw")) {
 			SlaveStatus status =
-				getConnectionManager().getSlaveManager().getAllStatus();
+				getConnectionManager().getGlobalContext().getSlaveManager().getAllStatus();
 
 			ReplacerEnvironment env =
 				new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
@@ -124,8 +124,7 @@ public class Bandwidth
 								System.currentTimeMillis()
 									- conn.getLastActive()));
 
-						if (getConnectionManager()
-							.getConfig()
+						if (getConnectionManager().getGlobalContext().getConfig()
 							.checkHideInWho(
 								connUser,
 								conn.getCurrentDirectory()))

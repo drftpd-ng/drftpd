@@ -34,7 +34,7 @@ import org.drftpd.commands.CommandHandlerFactory;
 
 /**
  * @author mog
- * @version $Id: Search.java,v 1.12 2004/06/04 14:18:56 mog Exp $
+ * @version $Id: Search.java,v 1.13 2004/07/12 20:37:26 mog Exp $
  */
 public class Search implements CommandHandlerFactory, CommandHandler {
 	public void unload() {}
@@ -48,7 +48,7 @@ public class Search implements CommandHandlerFactory, CommandHandler {
 		boolean files,
 		boolean dirs) {
 		//TODO optimize me, checking using regexp for all dirs is possibly slow 
-		if (!conn.getConfig().checkPrivPath(conn.getUserNull(), dir)) {
+		if (!conn.getConnectionManager().getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(), dir)) {
 			Logger.getLogger(Search.class).debug("privpath: "+dir.getPath());
 			return;
 		}

@@ -53,7 +53,7 @@ import org.tanesha.replacer.SimplePrintf;
 /**
  * @author mog
  * @author zubov
- * @version $Id: UserManagment.java,v 1.44 2004/07/07 17:11:33 zubov Exp $
+ * @version $Id: UserManagment.java,v 1.45 2004/07/12 20:37:26 mog Exp $
  */
 public class UserManagment implements CommandHandler, CommandHandlerFactory {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -74,7 +74,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		FtpReply response = new FtpReply(200);
 		User myUser;
 		try {
-			myUser = conn.getConnectionManager().getUserManager()
+			myUser = conn.getConnectionManager().getGlobalContext().getUserManager()
 					.getUserByName(args[0]);
 			if (conn.getUserNull().isGroupAdmin()
 					&& !conn.getUserNull().getGroupName().equals(
@@ -164,7 +164,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 			}
 			int users;
 			try {
-				users = conn.getConnectionManager().getUserManager()
+				users = conn.getConnectionManager().getGlobalContext().getUserManager()
 						.getAllUsersByGroup(conn.getUserNull().getGroupName())
 						.size();
 				if (users >= conn.getUserNull().getGroupSlots()) {
@@ -191,7 +191,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 			env.add("targetuser", newUsername);
 			String pass = st.nextToken();
 			//action, no more NoSuchElementException below here
-			newUser = conn.getConnectionManager().getUserManager().create(
+			newUser = conn.getConnectionManager().getGlobalContext().getUserManager().create(
 					newUsername);
 			newUser.setPassword(pass);
 			response.addComment(conn.jprintf(UserManagment.class.getName(),
@@ -359,7 +359,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		}
 		String username = arguments.nextToken();
 		try {
-			userToChange = conn.getConnectionManager().getUserManager()
+			userToChange = conn.getConnectionManager().getGlobalContext().getUserManager()
 					.getUserByName(username);
 		} catch (NoSuchUserException e) {
 			return new FtpReply(550, "User " + username + " not found: "
@@ -401,8 +401,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 				if (ratio == 0F) {
 					int usedleechslots = 0;
 					try {
-						for (Iterator iter = conn.getConnectionManager()
-								.getUserManager().getAllUsersByGroup(
+						for (Iterator iter = conn.getConnectionManager().getGlobalContext().getUserManager().getAllUsersByGroup(
 										conn.getUserNull().getGroupName())
 								.iterator(); iter.hasNext();) {
 							if (((User) iter.next()).getRatio() == 0F)
@@ -634,7 +633,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		}
 		User myUser;
 		try {
-			myUser = conn.getConnectionManager().getUserManager()
+			myUser = conn.getConnectionManager().getGlobalContext().getUserManager()
 					.getUserByName(args[0]);
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, "User not found: " + e.getMessage());
@@ -699,7 +698,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
 		try {
-			User myUser = conn.getConnectionManager().getUserManager()
+			User myUser = conn.getConnectionManager().getGlobalContext().getUserManager()
 					.getUserByName(args[0]);
 			myUser.setPassword(args[1]);
 			logger.info("'" + conn.getUserNull().getUsername()
@@ -734,7 +733,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		}
 		User myUser;
 		try {
-			myUser = conn.getConnectionManager().getUserManager()
+			myUser = conn.getConnectionManager().getGlobalContext().getUserManager()
 					.getUserByName(args[0]);
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, e.getMessage());
@@ -777,7 +776,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		String delUsername = request.getArgument();
 		User myUser;
 		try {
-			myUser = conn.getConnectionManager().getUserManager()
+			myUser = conn.getConnectionManager().getGlobalContext().getUserManager()
 					.getUserByName(delUsername);
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, e.getMessage());
@@ -813,7 +812,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		}
 		Collection users;
 		try {
-			users = conn.getConnectionManager().getUserManager()
+			users = conn.getConnectionManager().getGlobalContext().getUserManager()
 					.getAllUsersByGroup(group);
 		} catch (UserFileException e) {
 			return new FtpReply(200, "IO error: " + e.getMessage());
@@ -834,7 +833,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 	}
 	private FtpReply doSITE_GIVE(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
-		if (!conn.getConfig().checkGive(conn.getUserNull())) {
+		if (!conn.getConnectionManager().getGlobalContext().getConfig().checkGive(conn.getUserNull())) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		if (!request.hasArgument()) {
@@ -847,7 +846,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		}
 		User myUser;
 		try {
-			myUser = conn.getConnectionManager().getUserManager()
+			myUser = conn.getConnectionManager().getGlobalContext().getUserManager()
 					.getUserByName(st.nextToken());
 		} catch (Exception e) {
 			logger.warn("", e);
@@ -877,7 +876,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 	private FtpReply doSITE_GROUPS(BaseFtpConnection conn) {
 		Collection groups;
 		try {
-			groups = conn.getConnectionManager().getUserManager()
+			groups = conn.getConnectionManager().getGlobalContext().getUserManager()
 					.getAllGroups();
 		} catch (UserFileException e) {
 			logger.log(Level.FATAL, "IO error from getAllGroups()", e);
@@ -913,11 +912,11 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		String newGroup = st.nextToken();
 		Collection users = null;
 		try {
-			if (!conn.getConnectionManager().getUserManager()
+			if (!conn.getConnectionManager().getGlobalContext().getUserManager()
 					.getAllUsersByGroup(newGroup).isEmpty()) {
 				return new FtpReply(500, newGroup + " already exists");
 			}
-			users = conn.getConnectionManager().getUserManager()
+			users = conn.getConnectionManager().getGlobalContext().getUserManager()
 					.getAllUsersByGroup(oldGroup);
 		} catch (UserFileException e) {
 			logger.log(Level.FATAL, "IO error from getAllUsersByGroup("
@@ -1004,7 +1003,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		String delUsername = request.getArgument();
 		User myUser;
 		try {
-			myUser = conn.getConnectionManager().getUserManager()
+			myUser = conn.getConnectionManager().getGlobalContext().getUserManager()
 					.getUserByNameUnchecked(delUsername);
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, e.getMessage());
@@ -1035,7 +1034,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		}
 		User myUser;
 		try {
-			myUser = conn.getConnectionManager().getUserManager()
+			myUser = conn.getConnectionManager().getGlobalContext().getUserManager()
 					.getUserByNameUnchecked(request.getArgument());
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, e.getMessage());
@@ -1069,7 +1068,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
 		try {
-			User myUser = conn.getConnectionManager().getUserManager()
+			User myUser = conn.getConnectionManager().getGlobalContext().getUserManager()
 					.getUserByName(args[0]);
 			String oldUsername = myUser.getUsername();
 			myUser.rename(args[1]);
@@ -1092,7 +1091,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		}
 		User user;
 		try {
-			user = conn.getConnectionManager().getUserManager().getUserByName(
+			user = conn.getConnectionManager().getGlobalContext().getUserManager().getUserByName(
 					request.getArgument());
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, e.getMessage());
@@ -1127,7 +1126,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 	 */
 	private FtpReply doSITE_TAKE(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
-		if (!conn.getConfig().checkTake(conn.getUserNull())) {
+		if (!conn.getConnectionManager().getGlobalContext().getConfig().checkTake(conn.getUserNull())) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		if (!request.hasArgument()) {
@@ -1141,7 +1140,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		User myUser;
 		long credits;
 		try {
-			myUser = conn.getConnectionManager().getUserManager()
+			myUser = conn.getConnectionManager().getGlobalContext().getUserManager()
 					.getUserByName(st.nextToken());
 			if (!st.hasMoreTokens()) {
 				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
@@ -1184,7 +1183,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
 		User myUser;
 		try {
-			myUser = conn.getConnectionManager().getUserManager()
+			myUser = conn.getConnectionManager().getGlobalContext().getUserManager()
 					.getUserByNameUnchecked(request.getArgument());
 		} catch (NoSuchUserException ex) {
 			response.setMessage("User " + request.getArgument() + " not found");
@@ -1259,7 +1258,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		FtpReply response = new FtpReply(200);
 		Collection myUsers;
 		try {
-			myUsers = conn.getConnectionManager().getUserManager()
+			myUsers = conn.getConnectionManager().getGlobalContext().getUserManager()
 					.getAllUsers();
 		} catch (UserFileException e) {
 			logger.log(Level.FATAL, "IO error reading all users", e);
@@ -1309,7 +1308,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 					} catch (NoSuchUserException e) {
 						continue;
 					}
-					if (conn.getConfig().checkHideInWho(user,
+					if (conn.getConnectionManager().getGlobalContext().getConfig().checkHideInWho(user,
 							conn2.getCurrentDirectory()))
 						continue;
 					//StringBuffer status = new StringBuffer();
@@ -1351,7 +1350,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 				}
 			}
 			env.add("currentusers", Long.toString(users));
-			env.add("maxusers", Long.toString(conn.getConfig()
+			env.add("maxusers", Long.toString(conn.getConnectionManager().getGlobalContext().getConfig()
 					.getMaxUsersTotal()));
 			env.add("totalupspeed", Bytes.formatBytes(speedup) + "/s");
 			env.add("totaldnspeed", Bytes.formatBytes(speeddn) + "/s");

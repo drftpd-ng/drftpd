@@ -52,7 +52,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: AsyncSlave.java,v 1.2 2004/05/21 18:42:01 zombiewoof64 Exp $
+ * @version $Id: AsyncSlave.java,v 1.3 2004/07/12 20:37:39 mog Exp $
  */
 public class AsyncSlave extends Thread implements Slave, Unreferenced {
     private static final Logger logger =
@@ -198,7 +198,7 @@ public class AsyncSlave extends Thread implements Slave, Unreferenced {
             if (!spass.toLowerCase().equals(hash.toLowerCase())) {
                 AsyncSlaveListener.invalidSlave("INITFAIL BadKey", _sock);
             }
-            _cman.getSlaveManager().addSlave(_name, this, getSlaveStatus(), -1);
+            _cman.getGlobalContext().getSlaveManager().addSlave(_name, this, getSlaveStatus(), -1);
             start();
         } catch (IOException e) {
             if (e instanceof ConnectIOException
@@ -296,7 +296,7 @@ public class AsyncSlave extends Thread implements Slave, Unreferenced {
         // fatal error occured, close it all down
         // notify SlaveManager that we are dead
         try {
-            _cman.getSlaveManager().delSlave(_name, "Connection lost");
+            _cman.getGlobalContext().getSlaveManager().delSlave(_name, "Connection lost");
         } catch (Exception e) {
         }
     }
@@ -494,9 +494,9 @@ public class AsyncSlave extends Thread implements Slave, Unreferenced {
                 try {
                     LinkedRemoteFile root =
                     MLSTSerialize.unserialize(
-                    _cman.getConfig(),
+                    _cman.getGlobalContext().getConfig(),
                     new StringReader(buf.toString()),
-                    _cman.getSlaveManager().getSlaveList());
+                    _cman.getGlobalContext().getSlaveManager().getSlaves());
                     _root = root;
                 } catch (Exception e) {
                     logger.info("LIST Exception from " + getName(), e);

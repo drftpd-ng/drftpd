@@ -42,7 +42,7 @@ import org.drftpd.commands.UnhandledCommandException;
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.32 2004/07/02 19:58:53 mog Exp $
+ * @version $Id: Login.java,v 1.33 2004/07/12 20:37:26 mog Exp $
  */
 public class Login
 	implements CommandHandlerFactory, CommandHandler, Cloneable {
@@ -63,8 +63,7 @@ public class Login
 			logger.error("Multiple IDNT commands");
 			return new FtpReply(530, "Multiple IDNT commands");
 		}
-		if (!conn
-			.getConfig()
+		if (!conn.getConnectionManager().getGlobalContext().getConfig()
 			.getBouncerIps()
 			.contains(conn.getClientAddress())) {
 			logger.warn("IDNT from non-bnc");
@@ -168,7 +167,7 @@ public class Login
 		User newUser;
 		try {
 			newUser =
-				conn.getConnectionManager().getUserManager().getUserByName(
+				conn.getConnectionManager().getGlobalContext().getUserManager().getUserByName(
 					request.getArgument());
 		} catch (NoSuchUserException ex) {
 			return new FtpReply(530, ex.getMessage());

@@ -36,7 +36,6 @@ import java.util.StringTokenizer;
 
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.FtpReply;
-import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.SlaveImpl;
@@ -44,10 +43,11 @@ import net.sf.drftpd.slave.SlaveImpl;
 import org.apache.log4j.Logger;
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
+import org.drftpd.GlobalContext;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.57 2004/07/07 17:11:33 zubov Exp $
+ * @version $Id: FtpConfig.java,v 1.58 2004/07/12 20:37:26 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -83,7 +83,7 @@ public class FtpConfig {
 	private boolean _capFirstFile;
 
 	private String _cfgFileName;
-	private ConnectionManager _connManager;
+	protected ConnectionManager _connManager;
 	private ArrayList _creditcheck;
 	private ArrayList _creditloss;
 	private boolean _hideIps;
@@ -130,14 +130,6 @@ public class FtpConfig {
 		LinkedRemoteFileInterface path) {
 		return checkPathPermission("deleteown", fromUser, path);
 	}
-	
-	public boolean checkGive(User user) {
-		return checkPermission("give", user);
-	}
-	
-	public boolean checkTake(User user) {
-		return checkPermission("take", user);
-	}
 
 	public boolean checkDenyDataUnencrypted(User user) {
 		return checkPermission("denydatauncrypted", user);
@@ -165,6 +157,10 @@ public class FtpConfig {
 		User fromUser,
 		LinkedRemoteFileInterface path) {
 		return checkPathPermission("download", fromUser, path);
+	}
+	
+	public boolean checkGive(User user) {
+		return checkPermission("give", user);
 	}
 
 	/**
@@ -235,6 +231,10 @@ public class FtpConfig {
 		LinkedRemoteFileInterface path) {
 		return checkPathPermission("renameown", fromUser, path);
 	}
+	
+	public boolean checkTake(User user) {
+		return checkPermission("take", user);
+	}
 
 	/**
 	 * @return true if fromUser is allowed to upload in directory path
@@ -270,6 +270,11 @@ public class FtpConfig {
 	 */
 	public List getBouncerIps() {
 		return _bouncerIps;
+	}
+
+	public ConnectionManager getConnectionManager() {
+		if(_connManager == null) throw new NullPointerException();
+		return _connManager;
 	}
 
 	public float getCreditCheckRatio(
@@ -334,6 +339,10 @@ public class FtpConfig {
 		return replaceName(temp, _replaceFile);
 	}
 
+	public GlobalContext getGlobalContext() {
+		return getConnectionManager().getGlobalContext();
+	}
+
 	public boolean getHideIps() {
 		return _hideIps;
 	}
@@ -348,10 +357,6 @@ public class FtpConfig {
 
 	public int getMaxUsersTotal() {
 		return _maxUsersTotal;
-	}
-
-	public SlaveManagerImpl getSlaveManager() {
-		return _connManager.getSlaveManager();
 	}
 
 	public long getSlaveStatusUpdateTime() {

@@ -30,7 +30,7 @@ import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author mog
- * @version $Id: MintimeonlineFilterTest.java,v 1.3 2004/06/04 14:18:59 mog Exp $
+ * @version $Id: MintimeonlineFilterTest.java,v 1.4 2004/07/12 20:37:40 mog Exp $
  */
 public class MintimeonlineFilterTest extends TestCase {
 
@@ -43,7 +43,7 @@ public class MintimeonlineFilterTest extends TestCase {
 		private long _time;
 
 		public RS(String name, long time) {
-			super(name, null);
+			super(name);
 			_time = time;
 		}
 

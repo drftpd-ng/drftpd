@@ -30,13 +30,14 @@ import net.sf.drftpd.SFVFile.SFVStatus;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.22 2004/06/02 00:32:42 mog Exp $
+ * @version $Id: ListUtils.java,v 1.23 2004/07/12 20:37:29 mog Exp $
  */
 public class ListUtils {
 
@@ -53,13 +54,13 @@ public class ListUtils {
 	}
 
 	public static List list(
-		LinkedRemoteFile directoryFile,
+		LinkedRemoteFileInterface directoryFile,
 		BaseFtpConnection conn) {
 		return list(directoryFile, conn, null);
 	}
 
 	public static List list(
-		LinkedRemoteFile dir,
+		LinkedRemoteFileInterface dir,
 		BaseFtpConnection conn,
 		FtpReply response) {
 		ArrayList tempFileList = new ArrayList(dir.getFiles());
@@ -68,8 +69,8 @@ public class ListUtils {
 		int numTotal = 0;
 		for (Iterator iter = tempFileList.iterator(); iter.hasNext();) {
 			LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
-			if (conn.getConfig() != null
-				&& !conn.getConfig().checkPrivPath(conn.getUserNull(), element)) {
+			if (conn.getConnectionManager().getGlobalContext().getConfig() != null
+				&& !conn.getConnectionManager().getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(), element)) {
 				// don't add it
 				continue;
 			}

@@ -36,18 +36,16 @@ import socks.server.Ident;
 
 /**
  * @author mog
- * @version $Id: GlobServerSocket.java,v 1.10 2004/06/09 22:49:16 mog Exp $
+ * @version $Id: GlobServerSocket.java,v 1.11 2004/07/12 20:37:28 mog Exp $
  */
 public class GlobServerSocket extends ServerSocket {
 
-	public GlobServerSocket(Collection rslaves) throws IOException {
-		super();
-		this.rslaves = rslaves;
-	}
 
-	public GlobServerSocket(int port, Collection rslaves) throws IOException {
+private SlaveManagerImpl _sm;
+
+	public GlobServerSocket(int port, SlaveManagerImpl sm) throws IOException {
 		super(port);
-		this.rslaves = rslaves;
+		_sm = sm;
 	}
 
 	public GlobServerSocket(int arg0, int arg1, List rslaves)
@@ -84,7 +82,7 @@ public class GlobServerSocket extends ServerSocket {
 				ident + "@" + sock.getInetAddress().getHostAddress();
 			String hostmask = ident + "@" + sock.getInetAddress().getHostName();
 			for (Iterator i =
-				SlaveManagerImpl.rslavesToMasks(this.rslaves).iterator();
+				_sm.getMasks().iterator();
 				i.hasNext();
 				) {
 				String mask = (String) i.next();

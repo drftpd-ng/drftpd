@@ -57,7 +57,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.32 2004/07/02 19:58:52 mog Exp $
+ * @version $Id: Dir.java,v 1.33 2004/07/12 20:37:25 mog Exp $
  */
 public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 	private final static SimpleDateFormat DATE_FMT =
@@ -116,8 +116,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 		} catch (FileNotFoundException ex) {
 			return new FtpReply(550, ex.getMessage());
 		}
-		if (!conn
-			.getConfig()
+		if (!conn.getConnectionManager().getGlobalContext().getConfig()
 			.checkPrivPath(conn.getUserNull(), newCurrentDirectory)) {
 			return new FtpReply(550, request.getArgument() + ": Not found");
 			// reply identical to FileNotFoundException.getMessage() above
@@ -134,7 +133,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 			new FtpReply(
 				250,
 				"Directory changed to " + newCurrentDirectory.getPath());
-		conn.getConfig().directoryMessage(
+		conn.getConnectionManager().getGlobalContext().getConfig().directoryMessage(
 			response,
 			conn.getUserNull(),
 			newCurrentDirectory);
@@ -157,7 +156,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 				User user;
 				try {
 					user =
-						conn.getConnectionManager().getUserManager().getUserByName(stat.getUsername());
+						conn.getConnectionManager().getGlobalContext().getUserManager().getUserByName(stat.getUsername());
 				} catch (NoSuchUserException e2) {
 					continue;
 				} catch (UserFileException e2) {
@@ -221,13 +220,12 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 		if (requestedFile
 			.getUsername()
 			.equals(conn.getUserNull().getUsername())) {
-			if (!conn
-				.getConfig()
+			if (!conn.getConnectionManager().getGlobalContext().getConfig()
 				.checkDeleteOwn(conn.getUserNull(), requestedFile)) {
 				return FtpReply.RESPONSE_530_ACCESS_DENIED;
 			}
 		} else if (
-			!conn.getConfig().checkDelete(conn.getUserNull(), requestedFile)) {
+			!conn.getConnectionManager().getGlobalContext().getConfig().checkDelete(conn.getUserNull(), requestedFile)) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 
@@ -236,7 +234,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 		User uploader;
 		try {
 			uploader =
-				conn.getConnectionManager().getUserManager().getUserByName(
+				conn.getConnectionManager().getGlobalContext().getUserManager().getUserByName(
 					requestedFile.getUsername());
 			uploader.updateCredits(
 				(long) - (requestedFile.length() * uploader.getRatio()));
@@ -323,11 +321,11 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 					+ " already exists");
 		}
 		String createdDirName =
-			conn.getConnectionManager().getConfig().getDirName(ret.getPath());
+			conn.getConnectionManager().getGlobalContext().getConfig().getDirName(ret.getPath());
 		if (!ListUtils.isLegalFileName(createdDirName)) {
 			return FtpReply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
 		}
-		if (!conn.getConfig().checkMakeDir(conn.getUserNull(), dir)) {
+		if (!conn.getConnectionManager().getGlobalContext().getConfig().checkMakeDir(conn.getUserNull(), dir)) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		try {
@@ -391,13 +389,12 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 		if (requestedFile
 			.getUsername()
 			.equals(conn.getUserNull().getUsername())) {
-			if (!conn
-				.getConfig()
+			if (!conn.getConnectionManager().getGlobalContext().getConfig()
 				.checkDeleteOwn(conn.getUserNull(), requestedFile)) {
 				return FtpReply.RESPONSE_530_ACCESS_DENIED;
 			}
 		} else if (
-			!conn.getConfig().checkDelete(conn.getUserNull(), requestedFile)) {
+			!conn.getConnectionManager().getGlobalContext().getConfig().checkDelete(conn.getUserNull(), requestedFile)) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 
@@ -456,13 +453,12 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 		if (_renameFrom
 			.getUsername()
 			.equals(conn.getUserNull().getUsername())) {
-			if (!conn
-				.getConfig()
+			if (!conn.getConnectionManager().getGlobalContext().getConfig()
 				.checkRenameOwn(conn.getUserNull(), _renameFrom)) {
 				return FtpReply.RESPONSE_530_ACCESS_DENIED;
 			}
 		} else if (
-			!conn.getConfig().checkRename(conn.getUserNull(), _renameFrom)) {
+			!conn.getConnectionManager().getGlobalContext().getConfig().checkRename(conn.getUserNull(), _renameFrom)) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		return new FtpReply(350, "File exists, ready for destination name");
@@ -503,10 +499,10 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 		if (_renameFrom
 			.getUsername()
 			.equals(conn.getUserNull().getUsername())) {
-			if (!conn.getConfig().checkRenameOwn(conn.getUserNull(), toDir)) {
+			if (!conn.getConnectionManager().getGlobalContext().getConfig().checkRenameOwn(conn.getUserNull(), toDir)) {
 				return FtpReply.RESPONSE_530_ACCESS_DENIED;
 			}
-		} else if (!conn.getConfig().checkRename(conn.getUserNull(), toDir)) {
+		} else if (!conn.getConnectionManager().getGlobalContext().getConfig().checkRename(conn.getUserNull(), toDir)) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 

@@ -34,7 +34,7 @@ import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.sections.SectionInterface;
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.28 2004/07/04 05:40:56 zubov Exp $
+ * @version $Id: Archive.java,v 1.29 2004/07/12 20:37:24 mog Exp $
  */
 public class Archive implements FtpListener, Runnable {
 	private Properties _props;
@@ -82,7 +82,7 @@ public class Archive implements FtpListener, Runnable {
 	}
 	public void init(ConnectionManager connectionManager) {
 		_cm = connectionManager;
-		_cm.loadJobManager();
+		_cm.getGlobalContext().loadJobManager();
 		reload();
 		startArchive();
 	}
@@ -100,7 +100,7 @@ public class Archive implements FtpListener, Runnable {
 				"cycleTime"));
 		_archiveTypes = new HashMap();
 		Class[] classParams = {Archive.class, SectionInterface.class, Properties.class};
-		for (Iterator iter = getConnectionManager().getSectionManager()
+		for (Iterator iter = getConnectionManager().getGlobalContext().getSectionManager()
 				.getSections().iterator(); iter.hasNext();) {
 			SectionInterface section = (SectionInterface) iter.next();
 			ArchiveType archiveType = null;
@@ -141,8 +141,7 @@ public class Archive implements FtpListener, Runnable {
 					iter.remove();
 				}
 			}
-			Collection sectionsToCheck = getConnectionManager()
-					.getSectionManager().getSections();
+			Collection sectionsToCheck = getConnectionManager().getGlobalContext().getSectionManager().getSections();
 			for (Iterator iter = sectionsToCheck.iterator(); iter.hasNext();) {
 				SectionInterface section = (SectionInterface) iter.next();
 				ArchiveType archiveType = getArchiveType(section);

@@ -25,7 +25,6 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.config.FtpConfig;
@@ -36,12 +35,14 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.tests.DummyBaseFtpConnection;
+import org.drftpd.tests.DummyConnectionManager;
+import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyUser;
 import org.drftpd.tests.DummyUserManager;
 
 /**
  * @author mog
- * @version $Id: LoginTest.java,v 1.8 2004/07/09 17:08:37 zubov Exp $
+ * @version $Id: LoginTest.java,v 1.9 2004/07/12 20:37:26 mog Exp $
  */
 public class LoginTest extends TestCase {
 	private DummyUser _user;
@@ -65,21 +66,21 @@ public class LoginTest extends TestCase {
 	private void internalSetUp() {
 		_login = (Login) new Login().initialize(null, null);
 		_conn = new DummyBaseFtpConnection(null);
-		_conn.setConnectionManager(new ConnectionManager() {
+		_userManager = new DummyUserManager();
+		_user = new DummyUser("myuser", _userManager);
+		_userManager.setUser(_user);
+		FC fc = new FC();
+		DummyGlobalContext gctx = new DummyGlobalContext();
+		gctx.setFtpConfig(fc);
+		gctx.setUserManager(_userManager);
+
+		DummyConnectionManager cm = new DummyConnectionManager() {
 			public FtpReply canLogin(BaseFtpConnection baseconn, User user) {
 				return null;
 			}
-			public FtpConfig getConfig() {
-				return new FC();
-			}
-			public UserManager getUserManager() {
-				return _userManager;
-			}
-		});
-		_userManager = new DummyUserManager();
-		_user = new DummyUser("myuser",_userManager);
-		_userManager.setUser(_user);
-		_conn.setUserManager(_userManager);
+		};
+		cm.setGlobalContext(gctx);
+		_conn.setConnectionManager(cm);
 	}
 
 	public void setUp() {

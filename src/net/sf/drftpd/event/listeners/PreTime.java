@@ -41,7 +41,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author zubov
- * @version $Id: PreTime.java,v 1.17 2004/04/25 17:46:15 mog Exp $
+ * @version $Id: PreTime.java,v 1.18 2004/07/12 20:37:25 mog Exp $
  */
 public class PreTime implements FtpListener {
 
@@ -114,8 +114,7 @@ public class PreTime implements FtpListener {
 		if (!(event instanceof DirectoryFtpEvent))
 			return;
 		DirectoryFtpEvent dfe = (DirectoryFtpEvent) event;
-		if (!getConnectionManager()
-			.getConfig()
+		if (!getConnectionManager().getGlobalContext().getConfig()
 			.checkDirLog(dfe.getUser(), dfe.getDirectory())) {
 			return;
 		}

@@ -38,7 +38,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Slaves.java,v 1.15 2004/07/12 04:27:40 zubov Exp $
+ * @version $Id: Slaves.java,v 1.16 2004/07/12 20:37:24 mog Exp $
  */
 public class Slaves extends GenericAutoService implements IRCPluginInterface {
 
@@ -101,7 +101,7 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 			String slaveName = msgc.getMessage().substring(LEN2);
 			try {
 				RemoteSlave rslave =
-					getConnectionManager().getSlaveManager().getSlave(
+					getConnectionManager().getGlobalContext().getSlaveManager().getSlave(
 						slaveName);
 				_listener.sayChannel(chan, makeStatusString(rslave));
 			} catch (ObjectNotFoundException e) {
@@ -117,7 +117,7 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 			}
 		} else if (msgc.getMessage().equals("!slaves")) {
 			for (Iterator iter =
-				getConnectionManager().getSlaveManager().getSlaves().iterator();
+				getConnectionManager().getGlobalContext().getSlaveManager().getSlaves().iterator();
 				iter.hasNext();
 				) {
 				RemoteSlave rslave = (RemoteSlave) iter.next();

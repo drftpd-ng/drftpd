@@ -123,7 +123,7 @@ SITE\ STOPJOBS=net.sf.drftpd.mirroring.JobManagerCommandHandler
 SITE\ ADDJOB=net.sf.drftpd.mirroring.JobManagerCommandHandler
 SITE\ REMOVEJOB=net.sf.drftpd.mirroring.JobManagerCommandHandler
 
-SITE\ IRC=net.sf.drftpd.master.command.plugins.IRC
+SITE\ IRC=org.drftpd.commands.SiteBotManagment
 
 SITE\ SECTIONS=org.drftpd.commands.Sections
 

@@ -78,7 +78,7 @@ public class ArchiveCommandHandler implements CommandHandlerFactory, CommandHand
 			lrf = conn.getCurrentDirectory().getFile(dirname);
 		} catch (FileNotFoundException e1) {
 			try {
-				lrf = conn.getConnectionManager().getRoot().lookupFile(dirname);
+				lrf = conn.getConnectionManager().getGlobalContext().getRoot().lookupFile(dirname);
 			} catch (FileNotFoundException e2) {
 				reply.addComment(
 					conn.jprintf(ArchiveCommandHandler.class, "archive.usage", env));
@@ -102,7 +102,7 @@ public class ArchiveCommandHandler implements CommandHandlerFactory, CommandHand
 		String archiveTypeName = null;
 		ArchiveType archiveType = null;
 		SectionInterface section =
-			conn.getConnectionManager().getSectionManager().lookup(
+			conn.getConnectionManager().getGlobalContext().getSectionManager().lookup(
 				lrf.getPath());
 		if (st.hasMoreTokens()) { // load the specific type
 			archiveTypeName = st.nextToken();
@@ -149,7 +149,7 @@ public class ArchiveCommandHandler implements CommandHandlerFactory, CommandHand
 				String slavename = st.nextToken();
 				try {
 					RemoteSlave rslave =
-						conn.getConnectionManager().getSlaveManager().getSlave(
+						conn.getConnectionManager().getGlobalContext().getSlaveManager().getSlave(
 								slavename);
 					slaveSet.add(rslave);
 				} catch (ObjectNotFoundException e2) {

@@ -18,37 +18,60 @@
 package net.sf.drftpd.util;
 
 /**
- * @author Flowman
- * @version $Id: Time.java,v 1.5 2004/04/20 04:11:51 mog Exp $
+ * @author zubov
+ * @version $Id: Time.java,v 1.6 2004/07/12 20:37:29 mog Exp $
  */
 public class Time {
 	/**
 	 * @return human readable string for time.
 	 */
-	public static String formatTime(long millis) {
-		long days = 0, hours = 0, mins = 0, secs = 0;
-		String time = "";
- 
-		secs = millis / 1000;
- 
-		while ( secs >=  86400) { 
-			days++;
-			secs -= 86400; 
-		} 
-		while ( secs >= 3600 ) { 
-			hours++;
-			secs -= 3600; 
+	public static String formatTime(long time) {
+		long now = System.currentTimeMillis();
+		if (time >= now) {
+			return "0m  0s";
 		}
-		while ( secs >= 60 ) {
-			mins++;
-			secs -= 60; 
+
+		// Less than an hour...  
+		if (now - time < 60 * 60 * 1000) {
+			long min = (now - time) / 60000;
+			long s = ((now - time) - min * 60000) / 1000;
+			return min + "m " + (s > 9 ? "" + s : " " + s) + "s";
 		}
-		if ( days != 0 ) time = days + "days ";
-		if ( hours != 0 ) time = hours + "h ";
-		if ( mins != 0 ) time += mins + "m ";
-		time += secs + "s";
-		
-		return time;
+
+		// Less than a day... 
+		if (now - time < 24 * 60 * 60 * 1000) {
+			long h = (now - time) / (60 * 60000);
+			long min = ((now - time) - h * 60 * 60000) / 60000;
+			return h + "h " + (min > 9 ? "" + min : " " + min) + "m";
+		}
+
+		// Over a day...
+		long d = (now - time) / (24 * 60 * 60000);
+		long h = ((now - time) - d * 24 * 60 * 60000) / (60 * 60000);
+		return d + "d " + (h > 9 ? "" + h : " " + h) + "h";
+//		long days = 0, hours = 0, mins = 0, secs = 0;
+//		String time = "";
+// 
+//		secs = millis / 1000;
+// 
+//		while ( secs >=  86400) { 
+//			days++;
+//			secs -= 86400; 
+//		} 
+//		while ( secs >= 3600 ) { 
+//			hours++;
+//			secs -= 3600; 
+//		}
+//		while ( secs >= 60 ) {
+//			mins++;
+//			secs -= 60; 
+//		}
+//		if ( days != 0 ) time = days + "days ";
+//		if ( hours != 0 ) time = hours + "h ";
+//		if ( mins != 0 ) time += mins + "m ";
+//		time += secs + "s";
+//		
+//		return time;
 	}
 	public static long parseTime(String s) {
 		s=s.toLowerCase();

@@ -18,7 +18,6 @@
 package org.drftpd.slaveselection.filter;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Properties;
 
 import junit.framework.TestCase;
@@ -31,7 +30,7 @@ import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManagerTest.java,v 1.3 2004/03/01 00:21:10 mog Exp $
+ * @version $Id: SlaveSelectionManagerTest.java,v 1.4 2004/07/12 20:37:40 mog Exp $
  */
 public class SlaveSelectionManagerTest extends TestCase {
 
@@ -60,8 +59,8 @@ public class SlaveSelectionManagerTest extends TestCase {
 		FilterChain ssm = new FilterChain(null, p);
 		RemoteSlave rslaves[] =
 			{
-				new RemoteSlave("slave1", Collections.EMPTY_LIST),
-				new RemoteSlave("slave2", Collections.EMPTY_LIST)};
+				new RemoteSlave("slave1"),
+				new RemoteSlave("slave2")};
 
 		try {
 			ssm.getBestSlave(

@@ -57,7 +57,7 @@ import org.jdom.input.SAXBuilder;
  * amount -> amount before multiplier
  * 
  * @author mog
- * @version $Id: Nuke.java,v 1.20 2004/07/02 19:58:53 mog Exp $
+ * @version $Id: Nuke.java,v 1.21 2004/07/12 20:37:26 mog Exp $
  */
 public class Nuke implements CommandHandlerFactory, CommandHandler {
 
@@ -177,7 +177,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
 			String username = (String) iter.next();
 			User user;
 			try {
-				user = conn.getConnectionManager().getUserManager().getUserByName(username);
+				user = conn.getConnectionManager().getGlobalContext().getUserManager().getUserByName(username);
 			} catch (NoSuchUserException e1) {
 				response.addComment(
 					"Cannot remove credits from "
@@ -365,7 +365,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
 			String nukeeName = nukeeObj.getUsername();
 			User nukee;
 			try {
-				nukee = conn.getConnectionManager().getUserManager().getUserByName(nukeeName);
+				nukee = conn.getConnectionManager().getGlobalContext().getUserManager().getUserByName(nukeeName);
 			} catch (NoSuchUserException e) {
 				response.addComment(nukeeName + ": no such user");
 				continue;
@@ -470,8 +470,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
 
 				User user =
 					initializer
-						.getConnectionManager()
-						.getUserManager()
+					.getConnectionManager().getGlobalContext().getUserManager()
 						.getUserByName(
 						nukeElement.getChildText("user"));
 				String directory = nukeElement.getChildText("path");

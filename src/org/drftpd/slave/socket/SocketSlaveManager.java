@@ -39,7 +39,7 @@ public class SocketSlaveManager extends java.lang.Thread {
         SocketSlaveListener ssl = new SocketSlaveListener(_conman, _socketPort, _socketPass);
         
         while (true) {
-            Collection slaves = _conman.getSlaveManager().getSlaves();
+            Collection slaves = _conman.getGlobalContext().getSlaveManager().getSlaves();
             for (Iterator i=slaves.iterator(); i.hasNext();) {
                 RemoteSlave rslave = (RemoteSlave)i.next();
                 Hashtable cfg = rslave.getConfig();

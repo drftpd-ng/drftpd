@@ -29,7 +29,7 @@ import net.sf.drftpd.master.ConnectionManager;
  * new user manager, we have to override this class.
  * 
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya </a>
- * @version $Id: UserManager.java,v 1.21 2004/07/01 16:07:49 zubov Exp $
+ * @version $Id: UserManager.java,v 1.22 2004/07/12 20:37:27 mog Exp $
  */
 public abstract class UserManager {
 	protected ConnectionManager _connManager;
@@ -48,7 +48,7 @@ public abstract class UserManager {
 		} catch (NoSuchUserException e) {
 			//good
 		}
-		User user = _connManager.getUserManager().createUser(username);
+		User user = _connManager.getGlobalContext().getUserManager().createUser(username);
 		user.commit();
 		return user;
 	}

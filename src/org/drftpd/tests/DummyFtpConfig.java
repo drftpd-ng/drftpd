@@ -15,13 +15,31 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.master.command.plugins;
+package org.drftpd.tests;
 
-import org.drftpd.commands.SiteBotManagment;
+import net.sf.drftpd.master.ConnectionManager;
+import net.sf.drftpd.master.config.FtpConfig;
+import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
-/**
- * @author mog
- * @version $Id: IRC.java,v 1.6 2004/07/12 20:37:26 mog Exp $
- */
-public class IRC extends SiteBotManagment {
+public class DummyFtpConfig extends FtpConfig {
+	public DummyFtpConfig() {
+	}
+	public boolean checkPathPermission(
+		String key,
+		User fromUser,
+		LinkedRemoteFileInterface path) {
+		return true;
+	}
+
+	public float getCreditCheckRatio(
+		LinkedRemoteFileInterface path,
+		User fromUser) {
+			return fromUser.getRatio();
+	}
+
+	public void setConnectionManager(ConnectionManager cm) {
+		_connManager = cm;
+	}
+
 }

@@ -17,15 +17,17 @@
  */
 package net.sf.drftpd.master;
 
+import java.io.Serializable;
+
 /**
  * Ftp command request class. We can access command, line and argument using 
  * <code>{CMD}, {ARG}</code> within ftp status file. This represents 
  * single Ftp request.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
- * @version $Id: FtpRequest.java,v 1.7 2004/02/10 00:03:06 mog Exp $
+ * @version $Id: FtpRequest.java,v 1.8 2004/07/12 20:37:25 mog Exp $
  */
-public class FtpRequest {
+public class FtpRequest implements Serializable {
 
 	private String line = null;
 	private String command = null;

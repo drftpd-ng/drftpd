@@ -40,7 +40,7 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.9 2004/07/12 04:27:53 zubov Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.10 2004/07/12 20:37:39 mog Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 
@@ -63,7 +63,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 		p.load(new FileInputStream("conf/slaveselection-old.conf"));
 		_minfreespace = Bytes.parseBytes(FtpConfig.getProperty(p, "minfreespace"));
 		try {
-			if (_sm.getConnectionManager().getJobManager() != null ) {
+			if (_sm.getGlobalContext().getConnectionManager().getJobManager() != null ) {
 				_maxTransfers = Integer.parseInt(FtpConfig.getProperty(p,
 						"maxTransfers"));
 				_maxBandwidth = Bytes.parseBytes(FtpConfig.getProperty(p,
@@ -89,6 +89,7 @@ return getASlaveInternal(file.getAvailableSlaves(), Transfer.TRANSFER_SENDING_DO
 	}
 
 	public SlaveManagerImpl getSlaveManager() {
+		if(_sm == null) throw new NullPointerException();
 		return _sm;
 	}
 

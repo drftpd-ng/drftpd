@@ -33,6 +33,7 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.MLSTSerialize;
 import net.sf.drftpd.remotefile.RemoteFileInterface;
 import net.sf.drftpd.util.ListUtils;
@@ -41,7 +42,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: MLST.java,v 1.1 2004/06/01 15:40:34 mog Exp $
+ * @version $Id: MLST.java,v 1.2 2004/07/12 20:37:30 mog Exp $
  */
 public class MLST implements CommandHandlerFactory, CommandHandler {
 
@@ -50,7 +51,7 @@ public class MLST implements CommandHandlerFactory, CommandHandler {
 		throws UnhandledCommandException {
 		String command = conn.getRequest().getCommand();
 
-		LinkedRemoteFile dir = conn.getCurrentDirectory();
+		LinkedRemoteFileInterface dir = conn.getCurrentDirectory();
 		if (conn.getRequest().hasArgument()) {
 			try {
 				dir = dir.lookupFile(conn.getRequest().getArgument());
@@ -58,7 +59,7 @@ public class MLST implements CommandHandlerFactory, CommandHandler {
 				return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 			}
 		}
-		if (!conn.getConfig().checkPrivPath(conn.getUserNull(), dir)) {
+		if (!conn.getConnectionManager().getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(), dir)) {
 			return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 		}
 		PrintWriter out = conn.getControlWriter();

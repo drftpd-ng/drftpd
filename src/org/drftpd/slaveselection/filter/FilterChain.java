@@ -36,12 +36,12 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: FilterChain.java,v 1.4 2004/05/18 20:28:18 zubov Exp $
+ * @version $Id: FilterChain.java,v 1.5 2004/07/12 20:37:40 mog Exp $
  */
 public class FilterChain {
 	private String _cfgfileName;
 	private ArrayList _filters;
-	private SlaveSelectionManagerInterface _sm;
+	protected SlaveSelectionManagerInterface _sm;
 
 	protected FilterChain() {
 	}
@@ -118,6 +118,7 @@ public class FilterChain {
 	}
 
 	public SlaveManagerImpl getSlaveManager() {
+		if(_sm == null) throw new NullPointerException();
 		return _sm.getSlaveManager();
 	}
 }

@@ -34,7 +34,7 @@ import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.sections.SectionInterface;
 /**
  * @author zubov
- * @version $Id: StripeFilesOffSpecificSlaves.java,v 1.12 2004/07/12 04:27:52 zubov Exp $
+ * @version $Id: StripeFilesOffSpecificSlaves.java,v 1.13 2004/07/12 20:37:30 mog Exp $
  */
 public class StripeFilesOffSpecificSlaves extends ArchiveType {
 	private static final Logger logger = Logger
@@ -54,7 +54,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 				break; // done
 			}
 			try {
-				_offOfSlaves.add(_parent.getConnectionManager()
+				_offOfSlaves.add(_parent.getConnectionManager().getGlobalContext()
 						.getSlaveManager().getSlave(slavename));
 			} catch (ObjectNotFoundException e) {
 				logger.debug("Unable to get slave " + slavename
@@ -79,7 +79,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 				break; // done
 			}
 			try {
-				RemoteSlave rslave = _parent.getConnectionManager().getSlaveManager().getSlave(slavename);
+				RemoteSlave rslave = _parent.getConnectionManager().getGlobalContext().getSlaveManager().getSlave(slavename);
 				if (!_offOfSlaves.contains(rslave)) {
 					_destSlaves.add(rslave);
 				}
@@ -104,7 +104,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 	public HashSet findDestinationSlaves() {
 		if (_destSlaves != null)
 			return _destSlaves;
-		HashSet availableSlaves = new HashSet(_parent.getConnectionManager().getSlaveManager().getSlaves());
+		HashSet availableSlaves = new HashSet(_parent.getConnectionManager().getGlobalContext().getSlaveManager().getSlaves());
 		availableSlaves.removeAll(_offOfSlaves);
 		if (availableSlaves.isEmpty())
 			return null;

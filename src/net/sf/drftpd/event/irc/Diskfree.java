@@ -30,7 +30,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author zubov
- * @version $Id: Diskfree.java,v 1.6 2004/05/12 00:45:04 mog Exp $
+ * @version $Id: Diskfree.java,v 1.7 2004/07/12 20:37:24 mog Exp $
  */
 
 public class Diskfree
@@ -61,7 +61,7 @@ public class Diskfree
 			return;
 		if (msg.equals("!df")) {
 			SlaveStatus status =
-				getConnectionManager().getSlaveManager().getAllStatus();
+				getConnectionManager().getGlobalContext().getSlaveManager().getAllStatus();
 			ReplacerEnvironment env =
 				new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 

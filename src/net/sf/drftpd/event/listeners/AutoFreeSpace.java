@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
 
 import net.sf.drftpd.Bytes;
@@ -31,33 +30,22 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.config.ExcludePath;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.RemoteFileLastModifiedComparator;
 
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author zubov
- * @version $Id: AutoFreeSpace.java,v 1.13 2004/05/12 00:45:05 mog Exp $
+ * @version $Id: AutoFreeSpace.java,v 1.14 2004/07/12 20:37:25 mog Exp $
  */
 public class AutoFreeSpace implements FtpListener {
 	private static final Logger logger = Logger.getLogger(AutoFreeSpace.class);
 
-	public static void main(String args[]) throws IOException {
-		BasicConfigurator.configure();
-		List rslaves = SlaveManagerImpl.loadRSlaves();
-		LinkedRemoteFileInterface root =
-			ConnectionManager.loadMLSTFileDatabase(rslaves, null);
-
-		AutoFreeSpace space = new AutoFreeSpace();
-		space.deleteOldReleases(root.getDirectories(), 0);
-	}
 	private long _archiveAfter;
 
 	private ConnectionManager _cm;

@@ -30,7 +30,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: Sections.java,v 1.3 2004/06/04 14:18:58 mog Exp $
+ * @version $Id: Sections.java,v 1.4 2004/07/12 20:37:30 mog Exp $
  */
 public class Sections implements CommandHandlerFactory, CommandHandler {
 
@@ -40,7 +40,7 @@ public class Sections implements CommandHandlerFactory, CommandHandler {
 
 	public FtpReply execute(BaseFtpConnection conn) throws UnhandledCommandException {
 		FtpReply reply = new FtpReply(200);
-		Collection sections = conn.getConnectionManager().getSectionManager().getSections();
+		Collection sections = conn.getConnectionManager().getGlobalContext().getSectionManager().getSections();
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		for (Iterator iter = sections.iterator(); iter.hasNext();) {
 			SectionInterface section = (SectionInterface) iter.next();

@@ -31,10 +31,12 @@ import net.sf.drftpd.master.config.FtpConfig;
 import org.apache.log4j.BasicConfigurator;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.tests.DummyBaseFtpConnection;
+import org.drftpd.tests.DummyConnectionManager;
+import org.drftpd.tests.DummyGlobalContext;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandlerTest.java,v 1.8 2004/07/02 19:58:52 mog Exp $
+ * @version $Id: DataConnectionHandlerTest.java,v 1.9 2004/07/12 20:37:25 mog Exp $
  */
 public class DataConnectionHandlerTest extends TestCase {
 
@@ -52,6 +54,8 @@ public class DataConnectionHandlerTest extends TestCase {
 	public static TestSuite suite() {
 		return new TestSuite(DataConnectionHandlerTest.class);
 	}
+	private DummyGlobalContext gctx;
+	private DummyConnectionManager cm;
 	DummyBaseFtpConnection conn;
 	DataConnectionHandler dch;
 	public DataConnectionHandlerTest(String fName) {
@@ -62,6 +66,7 @@ public class DataConnectionHandlerTest extends TestCase {
 		assertTrue(val + " is less than " + from, val >= from);
 		assertTrue(val + " is more than " + from, val <= to);
 	}
+
 	private String list() {
 		LIST list = (LIST) new LIST().initialize(null, null);
 
@@ -106,11 +111,15 @@ public class DataConnectionHandlerTest extends TestCase {
 			(DataConnectionHandler) new DataConnectionHandler().initialize(
 				null,
 				null);
-		conn = new DummyBaseFtpConnection(dch) {
-			public FtpConfig getConfig() {
-				return new FC();
-			}
-		};
+		
+		gctx = new DummyGlobalContext();
+		gctx.setFtpConfig(new FC());
+		
+		conn = new DummyBaseFtpConnection(dch);
+		cm = new DummyConnectionManager();
+		cm.setGlobalContext(gctx);
+		
+		conn.setConnectionManager(cm);
 	}
 
 	protected void tearDown() throws Exception {

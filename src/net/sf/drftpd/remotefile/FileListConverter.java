@@ -30,8 +30,7 @@ import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author mog
- *
- * @version $Id: FileListConverter.java,v 1.9 2004/02/23 01:14:40 mog Exp $
+ * @version $Id: FileListConverter.java,v 1.10 2004/07/12 20:37:28 mog Exp $
  */
 public class FileListConverter {
 	public static void main(String[] args) throws IOException {

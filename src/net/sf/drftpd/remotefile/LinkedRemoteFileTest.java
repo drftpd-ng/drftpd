@@ -19,30 +19,22 @@ package net.sf.drftpd.remotefile;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.BasicConfigurator;
+import org.drftpd.tests.DummyFtpConfig;
 
 /**
  * @author mog
- * @version $Id: LinkedRemoteFileTest.java,v 1.5 2004/06/09 22:49:16 mog Exp $
+ * @version $Id: LinkedRemoteFileTest.java,v 1.6 2004/07/12 20:37:28 mog Exp $
  */
 public class LinkedRemoteFileTest extends TestCase {
-
-	public static class FC extends FtpConfig {
-		public FC() {
-		}
-	}
 
 	private static void buildRoot(
 		LinkedRemoteFile root,
@@ -107,9 +99,9 @@ public class LinkedRemoteFileTest extends TestCase {
 		super(fName);
 	}
 	private void internalSetUp() {
-		_slave1 = new RemoteSlave("slave1", Collections.EMPTY_LIST);
-		_slave2 = new RemoteSlave("slave2", Collections.EMPTY_LIST);
-		FC cfg = new FC();
+		_slave1 = new RemoteSlave("slave1");
+		_slave2 = new RemoteSlave("slave2");
+		DummyFtpConfig cfg = new DummyFtpConfig();
 		_root = new LinkedRemoteFile(cfg);
 	}
 

@@ -43,7 +43,7 @@ import org.drftpd.sections.SectionInterface;
 /**
  * @author mog
  *
- * @version $Id: Pre.java,v 1.1 2004/07/02 19:58:56 mog Exp $
+ * @version $Id: Pre.java,v 1.2 2004/07/12 20:37:30 mog Exp $
  */
 public class Pre implements CommandHandlerFactory, CommandHandler {
 
@@ -73,7 +73,7 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
 
-		SectionInterface section = conn.getConnectionManager().getSectionManager().getSection(args[1]);
+		SectionInterface section = conn.getConnectionManager().getGlobalContext().getSectionManager().getSection(args[1]);
 		
 		if(section.getName().equals("")) {
 			return new FtpReply(200, "Invalid section, see SITE SECTIONS for a list of available sections");
@@ -85,8 +85,7 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
 		} catch (FileNotFoundException e) {
 			return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 		}
-		if (!conn
-			.getConfig()
+		if (!conn.getConnectionManager().getGlobalContext().getConfig()
 			.checkPathPermission("pre", conn.getUserNull(), preDir)) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
@@ -99,7 +98,7 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
 		for (Iterator iter = awards.entrySet().iterator(); iter.hasNext();) {
 			Map.Entry entry = (Map.Entry) iter.next();
 			User owner = (User) entry.getKey();
-			if (conn.getConfig().getCreditCheckRatio(preDir, owner) == 0) {
+			if (conn.getConnectionManager().getGlobalContext().getConfig().getCreditCheckRatio(preDir, owner) == 0) {
 				Long award = (Long) entry.getValue();
 				owner.updateCredits(award.longValue());
 				response.addComment(
@@ -149,7 +148,7 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
 				(LinkedRemoteFileInterface) iter.next();
 			User owner;
 			try {
-				owner = conn.getConnectionManager().getUserManager().getUserByName(file.getUsername());
+				owner = conn.getConnectionManager().getGlobalContext().getUserManager().getUserByName(file.getUsername());
 			} catch (NoSuchUserException e) {
 				logger.log(
 					Level.INFO,

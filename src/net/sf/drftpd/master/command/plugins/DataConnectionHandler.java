@@ -50,6 +50,7 @@ import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
+import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -70,11 +71,12 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.60 2004/07/02 19:58:52 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.61 2004/07/12 20:37:25 mog Exp $
  */
-public class DataConnectionHandler implements CommandHandlerFactory, CommandHandler, Cloneable {
-	private static final Logger logger = Logger
-			.getLogger(DataConnectionHandler.class);
+public class DataConnectionHandler
+	implements CommandHandlerFactory, CommandHandler, Cloneable {
+	private static final Logger logger =
+		Logger.getLogger(DataConnectionHandler.class);
 	private SSLContext _ctx;
 	private boolean _encryptedDataChannel;
 	protected boolean _isPasv = false;
@@ -110,14 +112,20 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 		Socket s = conn.getControlSocket();
 		//reply success
 		conn.getControlWriter().write(
-				new FtpReply(234, conn.getRequest().getCommandLine()
-						+ " successfull").toString());
+			new FtpReply(
+				234,
+				conn.getRequest().getCommandLine() + " successfull")
+				.toString());
 		conn.getControlWriter().flush();
 		try {
 			SSLSocket s2;
-			s2 = (SSLSocket) ((SSLSocketFactory) _ctx.getSocketFactory())
-					.createSocket(s, s.getInetAddress().getHostAddress(), s
-							.getPort(), true);
+			s2 =
+				(SSLSocket)
+					((SSLSocketFactory) _ctx.getSocketFactory()).createSocket(
+					s,
+					s.getInetAddress().getHostAddress(),
+					s.getPort(),
+					true);
 			s2.setUseClientMode(false);
 			s2.startHandshake();
 			conn.setControlSocket(s2);
@@ -200,20 +208,26 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 	 */
 	private FtpReply doPASV(BaseFtpConnection conn) {
 		if (!_preTransfer) {
-			return new FtpReply(500,
-					"You need to use a client supporting PRET (PRE Transfer) to use PASV");
+			return new FtpReply(
+				500,
+				"You need to use a client supporting PRET (PRE Transfer) to use PASV");
 		}
 		//reset();
 		_preTransfer = false;
-		if(isPort() == true) throw new RuntimeException();
+		if (isPort() == true)
+			throw new RuntimeException();
 		InetSocketAddress address;
 		if (_preTransferRSlave == null) {
 			try {
-				address = new InetSocketAddress(conn.getControlSocket()
-						.getLocalAddress(), _portRange.getPort());
-				_serverSocket = (_encryptedDataChannel ? _ctx
-						.getServerSocketFactory() : conn
-						.getServerSocketFactory()).createServerSocket();
+				address =
+					new InetSocketAddress(
+						conn.getControlSocket().getLocalAddress(),
+						_portRange.getPort());
+				_serverSocket =
+					(_encryptedDataChannel
+						? _ctx.getServerSocketFactory()
+						: conn.getServerSocketFactory())
+						.createServerSocket();
 				_serverSocket.bind(address, 1);
 				_serverSocket.setSoTimeout(60000);
 				//				_address2 =
@@ -232,8 +246,10 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 		} else {
 			try {
 				_transfer = _preTransferRSlave.getSlave().listen(false);
-				address = new InetSocketAddress(_preTransferRSlave
-						.getInetAddress(), _transfer.getLocalPort());
+				address =
+					new InetSocketAddress(
+						_preTransferRSlave.getInetAddress(),
+						_transfer.getLocalPort());
 				_isPasv = true;
 			} catch (RemoteException e) {
 				_preTransferRSlave.handleRemoteException(e);
@@ -247,8 +263,8 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 		}
 		//InetAddress mAddress == getInetAddress();
 		//miPort == getPort();
-		String addrStr = address.getAddress().getHostAddress()
-				.replace('.', ',')
+		String addrStr =
+			address.getAddress().getHostAddress().replace('.', ',')
 				+ ','
 				+ (address.getPort() >> 8)
 				+ ','
@@ -256,7 +272,7 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 		return new FtpReply(227, "Entering Passive Mode (" + addrStr + ").");
 	}
 	private FtpReply doPBSZ(BaseFtpConnection conn)
-			throws UnhandledCommandException {
+		throws UnhandledCommandException {
 		String cmd = conn.getRequest().getArgument();
 		if (cmd == null || !cmd.equals("0"))
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
@@ -292,33 +308,38 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
 		// get data server
-		String dataSrvName = st.nextToken() + '.' + st.nextToken() + '.'
-				+ st.nextToken() + '.' + st.nextToken();
+		String dataSrvName =
+			st.nextToken()
+				+ '.'
+				+ st.nextToken()
+				+ '.'
+				+ st.nextToken()
+				+ '.'
+				+ st.nextToken();
 		try {
 			clientAddr = InetAddress.getByName(dataSrvName);
 		} catch (UnknownHostException ex) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
 		String portHostAddress = clientAddr.getHostAddress();
-		String clientHostAddress = conn.getControlSocket().getInetAddress()
-				.getHostAddress();
-		if ((portHostAddress.startsWith("192.168.") && !clientHostAddress
-				.startsWith("192.168."))
-				|| (portHostAddress.startsWith("10.") && !clientHostAddress
-						.startsWith("10."))) {
+		String clientHostAddress =
+			conn.getControlSocket().getInetAddress().getHostAddress();
+		if ((portHostAddress.startsWith("192.168.")
+			&& !clientHostAddress.startsWith("192.168."))
+			|| (portHostAddress.startsWith("10.")
+				&& !clientHostAddress.startsWith("10."))) {
 			FtpReply response = new FtpReply(501);
 			response.addComment("==YOU'RE BEHIND A NAT ROUTER==");
-			response
-					.addComment("Configure the firewall settings of your FTP client");
-			response
-					.addComment("  to use your real IP: "
-							+ conn.getControlSocket().getInetAddress()
-									.getHostAddress());
+			response.addComment(
+				"Configure the firewall settings of your FTP client");
+			response.addComment(
+				"  to use your real IP: "
+					+ conn.getControlSocket().getInetAddress().getHostAddress());
 			response.addComment("And set up port forwarding in your router.");
-			response
-					.addComment("Or you can just use a PRET capable client, see");
-			response
-					.addComment("  http://drftpd.org/ for PRET capable clients");
+			response.addComment(
+				"Or you can just use a PRET capable client, see");
+			response.addComment(
+				"  http://drftpd.org/ for PRET capable clients");
 			return response;
 		}
 		int clientPort;
@@ -334,17 +355,18 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 		_isPort = true;
 		_portAddress = new InetSocketAddress(clientAddr, clientPort);
 		if (portHostAddress.startsWith("127.")) {
-			return new FtpReply(200,
-					"Ok, but distributed transfers won't work with local addresses");
+			return new FtpReply(
+				200,
+				"Ok, but distributed transfers won't work with local addresses");
 		}
 		//Notify the user that this is not his IP.. Good for NAT users that
 		// aren't aware that their IP has changed.
 		if (!clientAddr.equals(conn.getControlSocket().getInetAddress())) {
-			return new FtpReply(200,
-					"FXP allowed. If you're not FXPing and set your IP to "
-							+ conn.getControlSocket().getInetAddress()
-									.getHostAddress()
-							+ " (usually in firewall settings)");
+			return new FtpReply(
+				200,
+				"FXP allowed. If you're not FXPing and set your IP to "
+					+ conn.getControlSocket().getInetAddress().getHostAddress()
+					+ " (usually in firewall settings)");
 		}
 		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
@@ -356,19 +378,27 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 		if (cmd.equals("LIST") || cmd.equals("NLST") || cmd.equals("MLSD")) {
 			_preTransferRSlave = null;
 			_preTransfer = true;
-			return new FtpReply(200,
-					"OK, will use master for upcoming transfer");
+			return new FtpReply(
+				200,
+				"OK, will use master for upcoming transfer");
 		} else if (cmd.equals("RETR")) {
 			try {
-				LinkedRemoteFileInterface downFile = conn.getCurrentDirectory()
-						.lookupFile(ghostRequest.getArgument());
-				_preTransferRSlave = conn.getSlaveManager()
-						.getSlaveSelectionManager().getASlave(
-								downFile.getAvailableSlaves(),
-								Transfer.TRANSFER_SENDING_DOWNLOAD, conn,
-								downFile);
+				LinkedRemoteFileInterface downFile =
+					conn.getCurrentDirectory().lookupFile(
+						ghostRequest.getArgument());
+				_preTransferRSlave =
+					conn
+						.getSlaveManager()
+						.getSlaveSelectionManager()
+						.getASlave(
+						downFile.getAvailableSlaves(),
+						Transfer.TRANSFER_SENDING_DOWNLOAD,
+						conn,
+						downFile);
 				_preTransfer = true;
-				return new FtpReply(200, "OK, will use "
+				return new FtpReply(
+					200,
+					"OK, will use "
 						+ _preTransferRSlave.getName()
 						+ " for upcoming transfer");
 			} catch (NoAvailableSlaveException e) {
@@ -377,8 +407,9 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 				return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 			}
 		} else if (cmd.equals("STOR")) {
-			LinkedRemoteFile.NonExistingFile nef = conn.getCurrentDirectory()
-					.lookupNonExistingFile(ghostRequest.getArgument());
+			LinkedRemoteFile.NonExistingFile nef =
+				conn.getCurrentDirectory().lookupNonExistingFile(
+					ghostRequest.getArgument());
 			if (nef.exists()) {
 				return FtpReply.RESPONSE_530_ACCESS_DENIED;
 			}
@@ -386,13 +417,19 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 				return FtpReply.RESPONSE_530_ACCESS_DENIED;
 			}
 			try {
-				_preTransferRSlave = conn.getSlaveManager()
-						.getSlaveSelectionManager().getASlave(
-								conn.getSlaveManager().getAvailableSlaves(),
-								Transfer.TRANSFER_RECEIVING_UPLOAD, conn,
-								nef.getFile());
+				_preTransferRSlave =
+					conn
+						.getSlaveManager()
+						.getSlaveSelectionManager()
+						.getASlave(
+						conn.getSlaveManager().getAvailableSlaves(),
+						Transfer.TRANSFER_RECEIVING_UPLOAD,
+						conn,
+						nef.getFile());
 				_preTransfer = true;
-				return new FtpReply(200, "OK, will use "
+				return new FtpReply(
+					200,
+					"OK, will use "
 						+ _preTransferRSlave.getName()
 						+ " for upcoming transfer");
 			} catch (NoAvailableSlaveException e) {
@@ -403,7 +440,7 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 		}
 	}
 	private FtpReply doPROT(BaseFtpConnection conn)
-			throws UnhandledCommandException {
+		throws UnhandledCommandException {
 		if (_ctx == null)
 			return new FtpReply(500, "TLS not configured");
 		FtpRequest req = conn.getRequest();
@@ -451,18 +488,22 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 	}
 	private FtpReply doSITE_RESCAN(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
-		boolean forceRescan = (request.hasArgument() && request.getArgument()
-				.equalsIgnoreCase("force"));
+		boolean forceRescan =
+			(request.hasArgument()
+				&& request.getArgument().equalsIgnoreCase("force"));
 		LinkedRemoteFileInterface directory = conn.getCurrentDirectory();
 		SFVFile sfv;
 		try {
 			sfv = conn.getCurrentDirectory().lookupSFVFile();
 		} catch (Exception e) {
-			return new FtpReply(200, "Error getting SFV File: "
-					+ e.getMessage());
+			return new FtpReply(
+				200,
+				"Error getting SFV File: " + e.getMessage());
 		}
 		PrintWriter out = conn.getControlWriter();
-		for (Iterator i = sfv.getEntries().entrySet().iterator(); i.hasNext();) {
+		for (Iterator i = sfv.getEntries().entrySet().iterator();
+			i.hasNext();
+			) {
 			Map.Entry entry = (Map.Entry) i.next();
 			String fileName = (String) entry.getKey();
 			Long checkSum = (Long) entry.getValue();
@@ -470,9 +511,12 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 			try {
 				file = directory.lookupFile(fileName);
 			} catch (FileNotFoundException ex) {
-				out.write("200- SFV: "
+				out.write(
+					"200- SFV: "
 						+ Checksum.formatChecksum(checkSum.longValue())
-						+ " SLAVE: " + fileName + " MISSING"
+						+ " SLAVE: "
+						+ fileName
+						+ " MISSING"
 						+ BaseFtpConnection.NEWLINE);
 				continue;
 			}
@@ -485,14 +529,21 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 					fileCheckSum = file.getCheckSum();
 				}
 			} catch (NoAvailableSlaveException e1) {
-				out.println("200- " + fileName + "SFV: "
+				out.println(
+					"200- "
+						+ fileName
+						+ "SFV: "
 						+ Checksum.formatChecksum(checkSum.longValue())
 						+ " SLAVE: OFFLINE");
 				continue;
 			} catch (IOException ex) {
-				out.print("200- " + fileName + " SFV: "
+				out.print(
+					"200- "
+						+ fileName
+						+ " SFV: "
 						+ Checksum.formatChecksum(checkSum.longValue())
-						+ " SLAVE: IO error: " + ex.getMessage());
+						+ " SLAVE: IO error: "
+						+ ex.getMessage());
 				continue;
 			}
 			if (fileCheckSum == 0L) {
@@ -502,10 +553,14 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 			} else {
 				status = "FAILED - checksum missmatch";
 			}
-			out.println("200- " + fileName + " SFV: "
+			out.println(
+				"200- "
+					+ fileName
+					+ " SFV: "
 					+ Checksum.formatChecksum(checkSum.longValue())
 					+ " SLAVE: "
-					+ Checksum.formatChecksum(checkSum.longValue()) + " "
+					+ Checksum.formatChecksum(checkSum.longValue())
+					+ " "
 					+ status);
 			continue;
 		}
@@ -599,7 +654,7 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 		}
 	}
 	public FtpReply execute(BaseFtpConnection conn)
-			throws UnhandledCommandException {
+		throws UnhandledCommandException {
 		String cmd = conn.getRequest().getCommand();
 		if ("MODE".equals(cmd))
 			return doMODE(conn);
@@ -629,21 +684,25 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 			return doPROT(conn);
 		if ("PBSZ".equals(cmd))
 			return doPBSZ(conn);
-		throw UnhandledCommandException.create(DataConnectionHandler.class,
-				conn.getRequest());
+		throw UnhandledCommandException.create(
+			DataConnectionHandler.class,
+			conn.getRequest());
 	}
 	/**
 	 * Get the data socket. In case of error returns null.
 	 * 
 	 * Used by LIST and NLST and MLST.
 	 */
-	public Socket getDataSocket(SocketFactory socketFactory) throws IOException {
+	public Socket getDataSocket(SocketFactory socketFactory)
+		throws IOException {
 		Socket dataSocket;
 		// get socket depending on the selection
 		if (isPort()) {
 			try {
-				SocketFactory ssf = _encryptedDataChannel ? _ctx
-						.getSocketFactory() : socketFactory;
+				SocketFactory ssf =
+					_encryptedDataChannel
+						? _ctx.getSocketFactory()
+						: socketFactory;
 				dataSocket = ssf.createSocket();
 				//dataSocket.connect(_address, getPort());
 				dataSocket.connect(_portAddress);
@@ -673,8 +732,8 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 	}
 	public String[] getFeatReplies() {
 		if (_ctx != null)
-			return new String[]{"PRET", "AUTH SSL", "PBSZ"};
-		return new String[]{"PRET"};
+			return new String[] { "PRET", "AUTH SSL", "PBSZ" };
+		return new String[] { "PRET" };
 	}
 	/**
 	 * Get client address from PORT command.
@@ -707,8 +766,9 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 	public char getType() {
 		return type;
 	}
-	public CommandHandler initialize(BaseFtpConnection conn,
-			CommandManager initializer) {
+	public CommandHandler initialize(
+		BaseFtpConnection conn,
+		CommandManager initializer) {
 		try {
 			return (DataConnectionHandler) clone();
 		} catch (CloneNotSupportedException e) {
@@ -834,10 +894,13 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 	 */
 	//TODO add APPE support
 	private FtpReply transfer(BaseFtpConnection conn)
-			throws UnhandledCommandException {
+		throws UnhandledCommandException {
 		if (!_encryptedDataChannel
-				&& conn.getConfig()
-						.checkDenyDataUnencrypted(conn.getUserNull())) {
+			&& conn
+				.getConnectionManager()
+				.getGlobalContext()
+				.getConfig()
+				.checkDenyDataUnencrypted(conn.getUserNull())) {
 			return new FtpReply(530, "USE SECURE DATA CONNECTION");
 		}
 		try {
@@ -851,7 +914,8 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 			String eventType = isRetr ? "RETR" : "STOR";
 			if (isAppe || isStou)
 				throw UnhandledCommandException.create(
-						DataConnectionHandler.class, conn.getRequest());
+					DataConnectionHandler.class,
+					conn.getRequest());
 			// argument check
 			if (!request.hasArgument()) {
 				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
@@ -861,7 +925,8 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 			String targetFileName;
 			if (isRetr) {
 				try {
-					_transferFile = conn.getCurrentDirectory().lookupFile(
+					_transferFile =
+						conn.getCurrentDirectory().lookupFile(
 							request.getArgument());
 					if (!_transferFile.isFile()) {
 						return new FtpReply(550, "Not a plain file");
@@ -872,17 +937,22 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 					return new FtpReply(550, ex.getMessage());
 				}
 			} else if (isStor) {
-				LinkedRemoteFile.NonExistingFile ret = conn
-						.getCurrentDirectory().lookupNonExistingFile(
-								conn.getConnectionManager().getConfig()
-										.getFileName(request.getArgument()));
+				LinkedRemoteFile.NonExistingFile ret =
+					conn.getCurrentDirectory().lookupNonExistingFile(
+						conn
+							.getConnectionManager()
+							.getGlobalContext()
+							.getConfig()
+							.getFileName(
+							request.getArgument()));
 				targetDir = ret.getFile();
 				targetFileName = ret.getPath();
 				if (ret.exists()) {
 					// target exists, this could be overwrite or resume
 					//TODO overwrite & resume files.
-					return new FtpReply(550,
-							"Requested action not taken. File exists.");
+					return new FtpReply(
+						550,
+						"Requested action not taken. File exists.");
 					//_transferFile = targetDir;
 					//targetDir = _transferFile.getParent();
 					//if(_transfereFile.getOwner().equals(getUser().getUsername()))
@@ -894,42 +964,60 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 					//}
 				}
 				if (!ListUtils.isLegalFileName(targetFileName)
-						|| !conn.getConfig().checkPrivPath(conn.getUserNull(),
-								targetDir)) {
-					return new FtpReply(553,
-							"Requested action not taken. File name not allowed.");
+					|| !conn
+						.getConnectionManager()
+						.getGlobalContext()
+						.getConfig()
+						.checkPrivPath(
+						conn.getUserNull(),
+						targetDir)) {
+					return new FtpReply(
+						553,
+						"Requested action not taken. File name not allowed.");
 				}
 			} else {
 				throw UnhandledCommandException.create(
-						DataConnectionHandler.class, request);
+					DataConnectionHandler.class,
+					request);
 			}
 			//check access
-			if (!conn.getConfig().checkPrivPath(conn.getUserNull(), targetDir)) {
-				return new FtpReply(550, request.getArgument()
-						+ ": No such file");
+			if (!conn
+				.getConnectionManager()
+				.getGlobalContext()
+				.getConfig()
+				.checkPrivPath(conn.getUserNull(), targetDir)) {
+				return new FtpReply(
+					550,
+					request.getArgument() + ": No such file");
 			}
 			switch (direction) {
 				case Transfer.TRANSFER_SENDING_DOWNLOAD :
-					if (!conn.getConnectionManager().getConfig().checkDownload(
-							conn.getUserNull(), targetDir)) {
+					if (!conn
+						.getConnectionManager()
+						.getGlobalContext()
+						.getConfig()
+						.checkDownload(conn.getUserNull(), targetDir)) {
 						return FtpReply.RESPONSE_530_ACCESS_DENIED;
 					}
 					break;
 				case Transfer.TRANSFER_RECEIVING_UPLOAD :
-					if (!conn.getConnectionManager().getConfig().checkUpload(
-							conn.getUserNull(), targetDir)) {
+					if (!conn
+						.getConnectionManager()
+						.getGlobalContext()
+						.getConfig()
+						.checkUpload(conn.getUserNull(), targetDir)) {
 						return FtpReply.RESPONSE_530_ACCESS_DENIED;
 					}
 					break;
 				default :
 					throw UnhandledCommandException.create(
-							DataConnectionHandler.class, request);
+						DataConnectionHandler.class,
+						request);
 			}
 			//check credits
 			if (isRetr) {
 				if (conn.getUserNull().getRatio() != 0
-						&& conn.getUserNull().getCredits() < _transferFile
-								.length()) {
+					&& conn.getUserNull().getCredits() < _transferFile.length()) {
 					return new FtpReply(550, "Not enough credits.");
 				}
 			}
@@ -940,8 +1028,7 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 				//					return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 				//check pretransfer
 				if (isRetr
-						&& !_transferFile.getSlaves().contains(
-								_preTransferRSlave)) {
+					&& !_transferFile.getSlaves().contains(_preTransferRSlave)) {
 					return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 				}
 				_rslave = _preTransferRSlave;
@@ -951,18 +1038,33 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 			} else {
 				try {
 					if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-						_rslave = conn.getConfig().getSlaveManager()
-								.getSlaveSelectionManager().getASlave(
-										_transferFile.getAvailableSlaves(),
-										Transfer.TRANSFER_SENDING_DOWNLOAD,
-										conn, _transferFile);
-					} else if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-						_rslave = conn.getSlaveManager()
-								.getSlaveSelectionManager().getASlave(
-										conn.getSlaveManager()
-												.getAvailableSlaves(),
-										Transfer.TRANSFER_RECEIVING_UPLOAD,
-										conn, targetDir);
+						FtpConfig r =
+							conn
+								.getConnectionManager()
+								.getGlobalContext()
+								.getConfig();
+						_rslave =
+							conn
+								.getConnectionManager()
+								.getGlobalContext()
+								.getSlaveManager()
+								.getSlaveSelectionManager()
+								.getASlave(
+									_transferFile.getAvailableSlaves(),
+									Transfer.TRANSFER_SENDING_DOWNLOAD,
+									conn,
+									_transferFile);
+					} else if (
+						direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+						_rslave =
+							conn
+								.getSlaveManager()
+								.getSlaveSelectionManager()
+								.getASlave(
+								conn.getSlaveManager().getAvailableSlaves(),
+								Transfer.TRANSFER_RECEIVING_UPLOAD,
+								conn,
+								targetDir);
 					} else {
 						throw new RuntimeException();
 					}
@@ -972,39 +1074,57 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 			}
 			if (isStor) {
 				//setup upload
-				if(_rslave == null) throw new NullPointerException();
+				if (_rslave == null)
+					throw new NullPointerException();
 				List rslaves = Collections.singletonList(_rslave);
-				StaticRemoteFile uploadFile = new StaticRemoteFile(rslaves,
-						targetFileName, conn.getUserNull().getUsername(), conn
-								.getUserNull().getGroupName(), 0L, System
-								.currentTimeMillis(), 0L);
+				StaticRemoteFile uploadFile =
+					new StaticRemoteFile(
+						rslaves,
+						targetFileName,
+						conn.getUserNull().getUsername(),
+						conn.getUserNull().getGroupName(),
+						0L,
+						System.currentTimeMillis(),
+						0L);
 				_transferFile = targetDir.addFile(uploadFile);
 			}
 			// setup _transfer
 			if (isPort()) {
 				try {
-					_transfer = _rslave.getSlave().connect(_portAddress,
+					_transfer =
+						_rslave.getSlave().connect(
+							_portAddress,
 							_encryptedDataChannel);
 				} catch (RemoteException ex) {
 					_rslave.handleRemoteException(ex);
-					return new FtpReply(450, "Remote error: " + ex.getMessage());
+					return new FtpReply(
+						450,
+						"Remote error: " + ex.getMessage());
 				} catch (Exception ex) {
 					logger.fatal("rslave=" + _rslave, ex);
-					return new FtpReply(450, ex.getClass().getName()
-							+ " from slave: " + ex.getMessage());
+					return new FtpReply(
+						450,
+						ex.getClass().getName()
+							+ " from slave: "
+							+ ex.getMessage());
 				}
 			} else if (isPasv()) {
 				//_transfer is already set up by doPASV()
 			} else {
 				return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 			}
-			if( _transfer == null)throw new NullPointerException();
+			if (_transfer == null)
+				throw new NullPointerException();
 			{
 				PrintWriter out = conn.getControlWriter();
-				out.write(new FtpReply(150,
+				out.write(
+					new FtpReply(
+						150,
 						"File status okay; about to open data connection "
-								+ (isRetr ? "from " : "to ")
-								+ _rslave.getName() + ".").toString());
+							+ (isRetr ? "from " : "to ")
+							+ _rslave.getName()
+							+ ".")
+						.toString());
 				out.flush();
 			}
 			TransferStatus status;
@@ -1012,10 +1132,16 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 			try {
 				//TODO ABORtable transfers
 				if (isRetr) {
-					status = _transferFile.sendFile(_transfer, getType(),
+					status =
+						_transferFile.sendFile(
+							_transfer,
+							getType(),
 							_resumePosition);
 				} else if (isStor) {
-					status = _transferFile.receiveFile(_transfer, getType(),
+					status =
+						_transferFile.receiveFile(
+							_transfer,
+							getType(),
 							_resumePosition);
 				} else {
 					throw new RuntimeException();
@@ -1024,8 +1150,8 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 				_rslave.handleRemoteException(ex);
 				if (isStor) {
 					_transferFile.delete();
-					logger
-							.error("RemoteException during transfer, deleting file");
+					logger.error(
+						"RemoteException during transfer, deleting file");
 					return new FtpReply(426, "RemoteException, deleting file");
 				} else {
 					logger.error("RemoteException during transfer");
@@ -1034,26 +1160,34 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 			} catch (FileExistsException ex) {
 				// slave is unsync'd
 				logger.warn("Slave is unsynchronized", ex);
-				return new FtpReply(426,
-						"FileExistsException, slave is unsynchronized: "
-								+ ex.getMessage());
+				return new FtpReply(
+					426,
+					"FileExistsException, slave is unsynchronized: "
+						+ ex.getMessage());
 			} catch (IOException ex) {
 				if (ex instanceof TransferFailedException) {
 					status = ((TransferFailedException) ex).getStatus();
 					conn.getConnectionManager().dispatchFtpEvent(
-							new TransferEvent(conn, eventType,
-									_transferFile, conn.getClientAddress(),
-									_rslave, status.getPeer(), type, false));
+						new TransferEvent(
+							conn,
+							eventType,
+							_transferFile,
+							conn.getClientAddress(),
+							_rslave,
+							status.getPeer(),
+							type,
+							false));
 					if (isRetr) {
 						conn.getUserNull().updateCredits(
-								-status.getTransfered());
+							-status.getTransfered());
 					}
 				}
 				FtpReply reply = null;
 				if (isStor) {
 					_transferFile.delete();
-					logger.error("IOException during transfer, deleting file",
-							ex);
+					logger.error(
+						"IOException during transfer, deleting file",
+						ex);
 					reply = new FtpReply(426, "IOException, deleting file");
 				} else {
 					logger.error("IOException during transfer", ex);
@@ -1076,9 +1210,13 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 			env.add("speed", Bytes.formatBytes(status.getXferSpeed()) + "/s");
 			env.add("seconds", "" + status.getElapsed() / 1000);
 			env.add("checksum", Checksum.formatChecksum(status.getChecksum()));
-			FtpReply response = new FtpReply(226, conn.jprintf(
-					DataConnectionHandler.class.getName(), "transfer.complete",
-					env));
+			FtpReply response =
+				new FtpReply(
+					226,
+					conn.jprintf(
+						DataConnectionHandler.class.getName(),
+						"transfer.complete",
+						env));
 			if (isStor) {
 				if (_resumePosition == 0) {
 					_transferFile.setCheckSum(status.getChecksum());
@@ -1103,31 +1241,48 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 				_transferFile.setLength(status.getTransfered());
 				_transferFile.setXfertime(status.getElapsed());
 			}
-			boolean zipscript = zipscript(isRetr, isStor, status.getChecksum(),
-					response, targetFileName, targetDir);
+			boolean zipscript =
+				zipscript(
+					isRetr,
+					isStor,
+					status.getChecksum(),
+					response,
+					targetFileName,
+					targetDir);
 			if (zipscript) {
 				//transferstatistics
 				if (isRetr) {
-					float ratio = conn.getConfig().getCreditLossRatio(
-							_transferFile, conn.getUserNull());
+					float ratio =
+						conn
+							.getConnectionManager()
+							.getGlobalContext()
+							.getConfig()
+							.getCreditLossRatio(
+							_transferFile,
+							conn.getUserNull());
 					if (ratio != 0) {
 						conn.getUserNull().updateCredits(
-								(long) (-status.getTransfered() * ratio));
+							(long) (-status.getTransfered() * ratio));
 					}
 					conn.getUserNull().updateDownloadedBytes(
-							status.getTransfered());
+						status.getTransfered());
 					conn.getUserNull().updateDownloadedMilliseconds(
-							status.getElapsed());
+						status.getElapsed());
 					conn.getUserNull().updateDownloadedFiles(1);
 				} else {
 					conn.getUserNull().updateCredits(
-							(long) (status.getTransfered() * conn.getConfig()
-									.getCreditCheckRatio(_transferFile,
-											conn.getUserNull())));
+						(long) (status.getTransfered()
+							* conn
+								.getConnectionManager()
+								.getGlobalContext()
+								.getConfig()
+								.getCreditCheckRatio(
+								_transferFile,
+								conn.getUserNull())));
 					conn.getUserNull().updateUploadedBytes(
-							status.getTransfered());
+						status.getTransfered());
 					conn.getUserNull().updateUploadedMilliseconds(
-							status.getElapsed());
+						status.getElapsed());
 					conn.getUserNull().updateUploadedFiles(1);
 				}
 				try {
@@ -1138,9 +1293,15 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 			}
 			//Dispatch for both STOR and RETR
 			conn.getConnectionManager().dispatchFtpEvent(
-					new TransferEvent(conn, eventType,
-							_transferFile, conn.getClientAddress(), _rslave,
-							status.getPeer(), getType(), zipscript));
+				new TransferEvent(
+					conn,
+					eventType,
+					_transferFile,
+					conn.getClientAddress(),
+					_rslave,
+					status.getPeer(),
+					getType(),
+					zipscript));
 			return response;
 		} finally {
 			reset();
@@ -1161,55 +1322,70 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 	 *            Returns true if crc check was okay, i.e, if credits should be
 	 *            altered
 	 */
-	private boolean zipscript(boolean isRetr, boolean isStor, long checksum,
-			FtpReply response, String targetFileName,
-			LinkedRemoteFileInterface targetDir) {
+	private boolean zipscript(
+		boolean isRetr,
+		boolean isStor,
+		long checksum,
+		FtpReply response,
+		String targetFileName,
+		LinkedRemoteFileInterface targetDir) {
 		//zipscript
-		logger.debug("Running zipscript on file " + targetFileName
-				+ " with CRC of " + checksum);
+		logger.debug(
+			"Running zipscript on file "
+				+ targetFileName
+				+ " with CRC of "
+				+ checksum);
 		if (isRetr) {
 			//compare checksum from transfer to cached checksum
 			logger.debug("checksum from transfer = " + checksum);
 			if (checksum != 0) {
-				response.addComment("Checksum from transfer: "
+				response.addComment(
+					"Checksum from transfer: "
 						+ Checksum.formatChecksum(checksum));
 				long cachedChecksum;
 				cachedChecksum = _transferFile.getCheckSumCached();
 				if (cachedChecksum == 0) {
 					_transferFile.setCheckSum(checksum);
 				} else if (cachedChecksum != checksum) {
-					response
-							.addComment("WARNING: checksum from transfer didn't match cached checksum");
-					logger.info("checksum from transfer "
+					response.addComment(
+						"WARNING: checksum from transfer didn't match cached checksum");
+					logger.info(
+						"checksum from transfer "
 							+ Checksum.formatChecksum(checksum)
 							+ "didn't match cached checksum"
-							+ Checksum.formatChecksum(cachedChecksum) + " for "
-							+ _transferFile.toString() + " from slave "
-							+ _rslave.getName(), new Throwable());
+							+ Checksum.formatChecksum(cachedChecksum)
+							+ " for "
+							+ _transferFile.toString()
+							+ " from slave "
+							+ _rslave.getName(),
+						new Throwable());
 				}
 				//compare checksum from transfer to checksum from sfv
 				try {
-					long sfvChecksum = _transferFile.getParentFileNull()
-							.lookupSFVFile().getChecksum(
-									_transferFile.getName());
+					long sfvChecksum =
+						_transferFile
+							.getParentFileNull()
+							.lookupSFVFile()
+							.getChecksum(
+							_transferFile.getName());
 					if (sfvChecksum == checksum) {
-						response
-								.addComment("checksum from transfer matched checksum in .sfv");
+						response.addComment(
+							"checksum from transfer matched checksum in .sfv");
 					} else {
-						response
-								.addComment("WARNING: checksum from transfer didn't match checksum in .sfv");
+						response.addComment(
+							"WARNING: checksum from transfer didn't match checksum in .sfv");
 					}
 				} catch (NoAvailableSlaveException e1) {
-					response
-							.addComment("slave with .sfv offline, checksum not verified");
+					response.addComment(
+						"slave with .sfv offline, checksum not verified");
 				} catch (FileNotFoundException e1) {
 					//continue without verification
 				} catch (NoSFVEntryException e1) {
 					//file not found in .sfv, continue
 				} catch (IOException e1) {
 					logger.info("", e1);
-					response.addComment("IO Error reading sfv file: "
-							+ e1.getMessage());
+					response.addComment(
+						"IO Error reading sfv file: " + e1.getMessage());
 				}
 			} else { // slave has disabled download crc
 				//response.addComment("Slave has disabled download checksum");
@@ -1217,17 +1393,20 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 		} else if (isStor) {
 			if (!targetFileName.toLowerCase().endsWith(".sfv")) {
 				try {
-					long sfvChecksum = targetDir.lookupSFVFile().getChecksum(
-							targetFileName);
+					long sfvChecksum =
+						targetDir.lookupSFVFile().getChecksum(targetFileName);
 					if (checksum == sfvChecksum) {
-						response.addComment("checksum match: SLAVE/SFV:"
+						response.addComment(
+							"checksum match: SLAVE/SFV:"
 								+ Long.toHexString(checksum));
 					} else if (checksum == 0) {
-						response
-								.addComment("checksum match: SLAVE/SFV: DISABLED");
+						response.addComment(
+							"checksum match: SLAVE/SFV: DISABLED");
 					} else {
-						response.addComment("checksum mismatch: SLAVE: "
-								+ Long.toHexString(checksum) + " SFV: "
+						response.addComment(
+							"checksum mismatch: SLAVE: "
+								+ Long.toHexString(checksum)
+								+ " SFV: "
 								+ Long.toHexString(sfvChecksum));
 						response.addComment(" deleting file");
 						response.setMessage("Checksum mismatch, deleting file");
@@ -1257,14 +1436,14 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 						// badtargetFilename);
 					}
 				} catch (NoAvailableSlaveException e) {
-					response
-							.addComment("zipscript - SFV unavailable, slave(s) with .sfv file is offline");
+					response.addComment(
+						"zipscript - SFV unavailable, slave(s) with .sfv file is offline");
 				} catch (NoSFVEntryException e) {
 					response.addComment("zipscript - no entry in sfv for file");
 				} catch (IOException e) {
-					response
-							.addComment("zipscript - SFV unavailable, IO error: "
-									+ e.getMessage());
+					response.addComment(
+						"zipscript - SFV unavailable, IO error: "
+							+ e.getMessage());
 				}
 			}
 		}

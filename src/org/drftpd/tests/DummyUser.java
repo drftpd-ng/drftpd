@@ -3,15 +3,18 @@ package org.drftpd.tests;
 import net.sf.drftpd.event.listeners.Trial;
 import net.sf.drftpd.master.usermanager.AbstractUser;
 import net.sf.drftpd.master.usermanager.UserFileException;
-import net.sf.drftpd.master.usermanager.UserManager;
 
 public class DummyUser extends AbstractUser {
-	public DummyUser(String name, UserManager um) {
-		super(name,um);
+	public DummyUser(String name) {
+		super(name, null);
+	}
+
+	public DummyUser(String user, DummyUserManager userManager) {
+		super(user, userManager);
 	}
 
 	public DummyUser(String username, long time) {
-		this(username,null);
+		this(username);
 		setCreated(time);
 	}
 
@@ -33,6 +36,10 @@ public class DummyUser extends AbstractUser {
 		created = l;
 	}
 
+	public void setLastReset(long l) {
+		lastReset = l;
+	}
+
 	public void setPassword(String password) {
 		throw new UnsupportedOperationException();
 	}
@@ -45,13 +52,6 @@ public class DummyUser extends AbstractUser {
 	}
 	public void setUploadedBytesMonth(long bytes) {
 		uploadedBytesMonth = bytes;
-	}
-	public void setUploadedBytesWeek(long bytes) {
-		uploadedBytesWeek = bytes;
-	}
-
-	public void setLastReset(long l) {
-		lastReset = l;
 	}
 
 	public void setUploadedBytesPeriod(int period, long l) {
@@ -68,6 +68,9 @@ public class DummyUser extends AbstractUser {
 			default :
 				throw new RuntimeException();
 		}
+	}
+	public void setUploadedBytesWeek(long bytes) {
+		uploadedBytesWeek = bytes;
 	}
 
 }

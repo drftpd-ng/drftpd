@@ -59,7 +59,7 @@ public class Find implements CommandHandlerFactory, CommandHandler {
 			LinkedRemoteFileInterface dir, Collection options,
 			Collection actions, boolean files, boolean dirs) {
 		//TODO optimize me, checking using regexp for all dirs is possibly slow
-		if (!conn.getConfig().checkPrivPath(conn.getUserNull(), dir)) {
+		if (!conn.getConnectionManager().getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(), dir)) {
 			//Logger.getLogger(Find.class).debug("privpath: " + dir.getPath());
 			return;
 		}
@@ -341,12 +341,12 @@ public class Find implements CommandHandlerFactory, CommandHandler {
 			// check permission
 			if (requestedFile.getUsername().equals(
 					conn.getUserNull().getUsername())) {
-				if (!conn.getConfig().checkDeleteOwn(conn.getUserNull(),
+				if (!conn.getConnectionManager().getGlobalContext().getConfig().checkDeleteOwn(conn.getUserNull(),
 						requestedFile)) {
 					//return FtpReply.RESPONSE_530_ACCESS_DENIED;
 					return "Access denied for " + file.getPath();
 				}
-			} else if (!conn.getConfig().checkDelete(conn.getUserNull(),
+			} else if (!conn.getConnectionManager().getGlobalContext().getConfig().checkDelete(conn.getUserNull(),
 					requestedFile)) {
 				//return FtpReply.RESPONSE_530_ACCESS_DENIED;
 				return "Access denied for " + file.getPath();
@@ -356,7 +356,7 @@ public class Find implements CommandHandlerFactory, CommandHandler {
 			String reply = "Deleted " + requestedFile.getPath();
 			User uploader;
 			try {
-				uploader = conn.getConnectionManager().getUserManager()
+				uploader = conn.getConnectionManager().getGlobalContext().getUserManager()
 						.getUserByName(requestedFile.getUsername());
 				uploader
 						.updateCredits((long) -(requestedFile.length() * uploader
