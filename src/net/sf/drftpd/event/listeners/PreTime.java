@@ -41,21 +41,26 @@ public class PreTime implements FtpListener {
 		if (!(event instanceof DirectoryFtpEvent))
 			return;
 		DirectoryFtpEvent dfe = (DirectoryFtpEvent) event;
-		if ( dfe.getCommand().startsWith("MKD") ) {
-			String release[] = dfe.getDirectory().getPath().split("/");
-			String releaseName;
-			if ( isDatedDir(release[1]) ) {
-				releaseName = release[3];
-				if ( release.length > 4 ) return;  // CD1 || CD2 type directories
+		try {
+			if ( dfe.getCommand().startsWith("MKD") ) {
+				String release[] = dfe.getDirectory().getPath().split("/");
+				String releaseName;
+				if ( isDatedDir(release[1]) ) {
+					releaseName = release[3];
+					if ( release.length > 4 ) return;  // CD1 || CD2 type directories
+				}
+				else {
+					releaseName = release[2];
+					if ( release.length > 3 ) return; // CD1 || CD2 type directories
+				}
+				if ( releaseName == null ) return; // DatedDir section created date dir
+				
+				_irc.getIRCConnection().sendCommand(
+					new MessageCommand(getPreBot(),"!pred " + releaseName));
 			}
-			else {
-				releaseName = release[2];
-				if ( release.length > 3 ) return; // CD1 || CD2 type directories
-			}
-			if ( releaseName == null ) return; // DatedDir section created date dir
-			
-			_irc.getIRCConnection().sendCommand(
-				new MessageCommand(getPreBot(),"!pred " + releaseName));
+		}
+		catch (ArrayIndexOutOfBoundsException ex) {
+			// do nothing just ignore, it's a directory created in /
 		}
 	}
 
