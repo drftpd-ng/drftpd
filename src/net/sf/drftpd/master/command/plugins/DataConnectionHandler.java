@@ -72,7 +72,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.52 2004/04/22 02:10:11 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.53 2004/04/27 19:57:19 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -80,6 +80,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private SSLContext _ctx;
 
 	private boolean _encryptedDataChannel;
+	protected boolean _isPasv = false;
+	protected boolean _isPort = false;
 	/**
 	 * Holds the address that getDataSocket() should connect to in PORT mode.
 	 */
@@ -97,8 +99,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private ServerSocket _serverSocket;
 	private Transfer _transfer;
 	private LinkedRemoteFileInterface _transferFile;
-	protected boolean _isPasv = false;
-	protected boolean _isPort = false;
 
 	private char type = 'A';
 	public DataConnectionHandler() {
@@ -856,6 +856,10 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		}
 	}
 
+	public boolean isEncryptedDataChannel() {
+		return _encryptedDataChannel;
+	}
+
 	/**
 	 * Guarantes pre transfer is set up correctly.
 	 */
@@ -1013,6 +1017,9 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	//TODO add APPE support
 	private FtpReply transfer(BaseFtpConnection conn)
 		throws UnhandledCommandException {
+		if(!_encryptedDataChannel && conn.getConfig().checkDenyDataUnencrypted(conn.getUserNull())) {
+			return new FtpReply(530, "USE SECURE DATA CONNECTION");
+		}
 		try {
 			FtpRequest request = conn.getRequest();
 			char direction = conn.getDirection();

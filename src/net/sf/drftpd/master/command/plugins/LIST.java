@@ -33,6 +33,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.net.ssl.SSLSocket;
+
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
@@ -49,12 +51,19 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * @version $Id: LIST.java,v 1.15 2004/04/17 02:24:37 mog Exp $
+ * @version $Id: LIST.java,v 1.16 2004/04/27 19:57:19 mog Exp $
  */
 public class LIST implements CommandHandler {
-	private static final Logger logger = Logger.getLogger(LIST.class);
+
+	private final static DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
+
+	private final static DateFormat BEFORE_SIX = new SimpleDateFormat("HH:mm");
 
 	private final static String DELIM = " ";
+
+	private final static DateFormat FULL =
+		new SimpleDateFormat("HH:mm:ss yyyy");
+	private static final Logger logger = Logger.getLogger(LIST.class);
 
 	private final static String[] MONTHS =
 		{
@@ -71,14 +80,159 @@ public class LIST implements CommandHandler {
 			"Nov",
 			"Dec" };
 
-	private final static DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
-
-	private final static DateFormat BEFORE_SIX = new SimpleDateFormat("HH:mm");
-
-	private final static DateFormat FULL =
-		new SimpleDateFormat("HH:mm:ss yyyy");
-
 	private final static String NEWLINE = "\r\n";
+
+	/**
+	 * Get size
+	 * @deprecated
+	 */
+	private static String getLength(RemoteFileInterface fl) {
+		String initStr = "             ";
+		String szStr = Long.toString(fl.length());
+		if (szStr.length() > initStr.length()) {
+			return szStr;
+		}
+		return initStr.substring(0, initStr.length() - szStr.length()) + szStr;
+	}
+
+	/**
+	 * Get file name.
+	 */
+	private static String getName(LinkedRemoteFileInterface fl) {
+		String flName = fl.getName();
+
+		int lastIndex = flName.lastIndexOf("/");
+		if (lastIndex == -1) {
+			return flName;
+		} else {
+			return flName.substring(lastIndex + 1);
+		}
+	}
+
+	/**
+	 * Get permission string.
+	 */
+	private static String getPermission(RemoteFileInterface fl) {
+
+		StringBuffer sb = new StringBuffer(13);
+		sb.append(fl.isDirectory() ? 'd' : '-');
+
+		sb.append("rw");
+		sb.append(fl.isDirectory() ? "x" : "-");
+
+		sb.append("rw");
+		sb.append(fl.isDirectory() ? "x" : "-");
+
+		sb.append("rw");
+		sb.append(fl.isDirectory() ? "x" : "-");
+
+		return sb.toString();
+	}
+
+	public static String getUnixDate(long date, boolean fulldate) {
+		Date date1 = new Date(date);
+		long dateTime = date1.getTime();
+		if (dateTime < 0) {
+			return "------------";
+		}
+
+		Calendar cal = new GregorianCalendar();
+		cal.setTime(date1);
+		String firstPart = MONTHS[cal.get(Calendar.MONTH)] + ' ';
+
+		String dateStr = String.valueOf(cal.get(Calendar.DATE));
+		if (dateStr.length() == 1) {
+			dateStr = ' ' + dateStr;
+		}
+		firstPart += dateStr + ' ';
+
+		long nowTime = System.currentTimeMillis();
+		if (fulldate) {
+			return firstPart + FULL.format(date1);
+		} else if (
+			Math.abs(nowTime - dateTime) > 183L * 24L * 60L * 60L * 1000L) {
+			return firstPart + AFTER_SIX.format(date1);
+		} else {
+			return firstPart + BEFORE_SIX.format(date1);
+		}
+	}
+
+	/**
+	 * Get each directory line.
+	 */
+	private static void printLine(
+		RemoteFileInterface fl,
+		Writer out,
+		boolean fulldate)
+		throws IOException {
+		StringBuffer line = new StringBuffer();
+		if (fl instanceof LinkedRemoteFileInterface
+			&& !((LinkedRemoteFileInterface) fl).isAvailable()) {
+			line.append("----------");
+		} else {
+			line.append(getPermission(fl));
+		}
+		line.append(DELIM);
+		line.append((fl.isDirectory() ? "3" : "1"));
+		line.append(DELIM);
+		line.append(ListUtils.padToLength(fl.getUsername(), 8));
+		line.append(DELIM);
+		line.append(ListUtils.padToLength(fl.getGroupname(), 8));
+		line.append(DELIM);
+		line.append(getLength(fl));
+		line.append(DELIM);
+		line.append(getUnixDate(fl.lastModified(), fulldate));
+		line.append(DELIM);
+		line.append(fl.getName());
+		line.append(NEWLINE);
+		out.write(line.toString());
+	}
+
+	/**
+	 * Print file list. Detail listing.
+	 * <pre>
+	 *   -a : display all (including hidden files)
+	 * </pre>
+	 * @return true if success
+	 */
+	private static void printList(
+		Collection files,
+		Writer os,
+		boolean fulldate)
+		throws IOException {
+		//out = new BufferedWriter(out);
+		os.write("total 0" + NEWLINE);
+
+		// print file list
+		for (Iterator iter = files.iterator(); iter.hasNext();) {
+			RemoteFileInterface file = (RemoteFileInterface) iter.next();
+			LIST.printLine(file, os, fulldate);
+		}
+	}
+
+	/**
+	 * Print file list.
+	 * <pre>
+	 *   -l : detail listing
+	 *   -a : display all (including hidden files)
+	 * </pre>
+	 * @return true if success
+	 */
+	private static void printNList(
+		Collection fileList,
+		boolean bDetail,
+		Writer out)
+		throws IOException {
+
+		for (Iterator iter = fileList.iterator(); iter.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			if (bDetail) {
+				printLine(file, out, false);
+			} else {
+				out.write(file.getName() + NEWLINE);
+			}
+		}
+	}
 
 	/**
 	 * <code>NLST [&lt;SP&gt; &lt;pathname&gt;] &lt;CRLF&gt;</code><br>
@@ -147,7 +301,7 @@ public class LIST implements CommandHandler {
 
 		DataConnectionHandler dataconn = null;
 		if (!request.getCommand().equals("STAT")) {
-				dataconn = conn.getDataConnectionHandler();
+			dataconn = conn.getDataConnectionHandler();
 			if (!dataconn.isPasv() && !dataconn.isPort()) {
 				return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 			}
@@ -179,6 +333,11 @@ public class LIST implements CommandHandler {
 			out.write(
 				"213- Status of " + request.getArgument() + ":" + NEWLINE);
 		} else {
+			if (!dataconn.isEncryptedDataChannel()
+				&& conn.getConfig().checkDenyDirUnencrypted(conn.getUserNull())) {
+				return new FtpReply(550, "Secure Listing Required");
+			}
+			//dataSocket.
 			out.write(FtpReply.RESPONSE_150_OK);
 			out.flush();
 			try {
@@ -228,9 +387,12 @@ public class LIST implements CommandHandler {
 			logger.warn("from master", ex);
 			return new FtpReply(450, ex.getMessage());
 		}
-		
+
 		//redo connection handling
 		//conn.reset();
+	}
+	public String[] getFeatReplies() {
+		return null;
 	}
 
 	/**
@@ -257,164 +419,9 @@ public class LIST implements CommandHandler {
 		CommandManager initializer) {
 		return this;
 	}
-	public String[] getFeatReplies() {
-		return null;
-	}
 
 	public void load(CommandManagerFactory initializer) {
 	}
 	public void unload() {
-	}
-
-	/**
-	 * Print file list. Detail listing.
-	 * <pre>
-	 *   -a : display all (including hidden files)
-	 * </pre>
-	 * @return true if success
-	 */
-	private static void printList(
-		Collection files,
-		Writer os,
-		boolean fulldate)
-		throws IOException {
-		//out = new BufferedWriter(out);
-		os.write("total 0" + NEWLINE);
-
-		// print file list
-		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			RemoteFileInterface file = (RemoteFileInterface) iter.next();
-			LIST.printLine(file, os, fulldate);
-		}
-	}
-
-	public static String getUnixDate(long date, boolean fulldate) {
-		Date date1 = new Date(date);
-		long dateTime = date1.getTime();
-		if (dateTime < 0) {
-			return "------------";
-		}
-
-		Calendar cal = new GregorianCalendar();
-		cal.setTime(date1);
-		String firstPart = MONTHS[cal.get(Calendar.MONTH)] + ' ';
-
-		String dateStr = String.valueOf(cal.get(Calendar.DATE));
-		if (dateStr.length() == 1) {
-			dateStr = ' ' + dateStr;
-		}
-		firstPart += dateStr + ' ';
-
-		long nowTime = System.currentTimeMillis();
-		if (fulldate) {
-			return firstPart + FULL.format(date1);
-		} else if (
-			Math.abs(nowTime - dateTime) > 183L * 24L * 60L * 60L * 1000L) {
-			return firstPart + AFTER_SIX.format(date1);
-		} else {
-			return firstPart + BEFORE_SIX.format(date1);
-		}
-	}
-
-	/**
-	 * Get size
-	 * @deprecated
-	 */
-	private static String getLength(RemoteFileInterface fl) {
-		String initStr = "             ";
-		String szStr = Long.toString(fl.length());
-		if (szStr.length() > initStr.length()) {
-			return szStr;
-		}
-		return initStr.substring(0, initStr.length() - szStr.length()) + szStr;
-	}
-
-	/**
-	 * Get file name.
-	 */
-	private static String getName(LinkedRemoteFileInterface fl) {
-		String flName = fl.getName();
-
-		int lastIndex = flName.lastIndexOf("/");
-		if (lastIndex == -1) {
-			return flName;
-		} else {
-			return flName.substring(lastIndex + 1);
-		}
-	}
-
-	/**
-	 * Get permission string.
-	 */
-	private static String getPermission(RemoteFileInterface fl) {
-
-		StringBuffer sb = new StringBuffer(13);
-		sb.append(fl.isDirectory() ? 'd' : '-');
-
-		sb.append("rw");
-		sb.append(fl.isDirectory() ? "x" : "-");
-
-		sb.append("rw");
-		sb.append(fl.isDirectory() ? "x" : "-");
-
-		sb.append("rw");
-		sb.append(fl.isDirectory() ? "x" : "-");
-
-		return sb.toString();
-	}
-
-	/**
-	 * Get each directory line.
-	 */
-	private static void printLine(
-		RemoteFileInterface fl,
-		Writer out,
-		boolean fulldate)
-		throws IOException {
-		StringBuffer line = new StringBuffer();
-		if (fl instanceof LinkedRemoteFileInterface
-			&& !((LinkedRemoteFileInterface) fl).isAvailable()) {
-			line.append("----------");
-		} else {
-			line.append(getPermission(fl));
-		}
-		line.append(DELIM);
-		line.append((fl.isDirectory() ? "3" : "1"));
-		line.append(DELIM);
-		line.append(ListUtils.padToLength(fl.getUsername(), 8));
-		line.append(DELIM);
-		line.append(ListUtils.padToLength(fl.getGroupname(), 8));
-		line.append(DELIM);
-		line.append(getLength(fl));
-		line.append(DELIM);
-		line.append(getUnixDate(fl.lastModified(), fulldate));
-		line.append(DELIM);
-		line.append(fl.getName());
-		line.append(NEWLINE);
-		out.write(line.toString());
-	}
-
-	/**
-	 * Print file list.
-	 * <pre>
-	 *   -l : detail listing
-	 *   -a : display all (including hidden files)
-	 * </pre>
-	 * @return true if success
-	 */
-	private static void printNList(
-		Collection fileList,
-		boolean bDetail,
-		Writer out)
-		throws IOException {
-
-		for (Iterator iter = fileList.iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			if (bDetail) {
-				printLine(file, out, false);
-			} else {
-				out.write(file.getName() + NEWLINE);
-			}
-		}
 	}
 }

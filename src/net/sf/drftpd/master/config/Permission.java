@@ -24,16 +24,16 @@ import net.sf.drftpd.master.usermanager.User;
 
 /**
  * @author mog
- * @version $Id: Permission.java,v 1.5 2004/02/10 00:03:08 mog Exp $
+ * @version $Id: Permission.java,v 1.6 2004/04/27 19:57:20 mog Exp $
  */
 public class Permission {
-	private Collection users;
+	private Collection _users;
 	public Permission(Collection users) {
-		this.users = users;
+		_users = users;
 	}
 	
 	public boolean check(User user) {
-		for (Iterator iter = this.users.iterator(); iter.hasNext();) {
+		for (Iterator iter = _users.iterator(); iter.hasNext();) {
 			String aclUser = (String) iter.next();
 			boolean allow = true;
 			if (aclUser.charAt(0) == '!') {

@@ -30,6 +30,7 @@ import java.rmi.RemoteException;
 
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
+import javax.net.ssl.SSLSocket;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -59,7 +60,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.81 2004/04/22 02:10:11 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.82 2004/04/27 19:57:18 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -68,6 +69,48 @@ public class BaseFtpConnection implements Runnable {
 	private static final Logger logger =
 		Logger.getLogger(BaseFtpConnection.class);
 	public static final String NEWLINE = "\r\n";
+
+	public static ReplacerEnvironment getReplacerEnvironment(
+		ReplacerEnvironment env,
+		User user) {
+		env = new ReplacerEnvironment(env);
+
+		if (user != null) {
+			env.add("user", user.getUsername());
+			env.add("credits", Bytes.formatBytes(user.getCredits()));
+			env.add("ratio", "" + user.getRatio());
+			env.add("tagline", user.getTagline());
+			env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
+			env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
+			env.add("group", user.getGroupName());
+			env.add(
+				"avragespeed",
+				Bytes.formatBytes(
+					user.getUploadedMilliseconds()
+						+ user.getDownloadedMilliseconds() / 2));
+		} else {
+			env.add("user", "<unknown>");
+		}
+		return env;
+	}
+
+	public static String jprintf(
+		ReplacerFormat format,
+		ReplacerEnvironment env,
+		User user)
+		throws FormatterException {
+		env = getReplacerEnvironment(env, user);
+		return ReplacerUtils.finalJprintf(format, env);
+	}
+
+	public static String jprintf(
+		String baseName,
+		String key,
+		ReplacerEnvironment env,
+		User user) {
+		env = getReplacerEnvironment(env, user);
+		return ReplacerUtils.jprintf(key, env, baseName);
+	}
 
 	/**
 	 * Is the current password authenticated?
@@ -106,6 +149,8 @@ public class BaseFtpConnection implements Runnable {
 	protected boolean stopRequest = false;
 	protected String stopRequestMessage;
 	protected Thread thread;
+	protected BaseFtpConnection() {
+	}
 	public BaseFtpConnection(ConnectionManager connManager, Socket soc)
 		throws IOException {
 		_commandManager =
@@ -115,8 +160,6 @@ public class BaseFtpConnection implements Runnable {
 		setControlSocket(soc);
 		lastActive = System.currentTimeMillis();
 		setCurrentDirectory(connManager.getRoot());
-	}
-	protected BaseFtpConnection() {
 	}
 
 	/**
@@ -192,8 +235,16 @@ public class BaseFtpConnection implements Runnable {
 		return request;
 	}
 
+	public ServerSocketFactory getServerSocketFactory() {
+		return ServerSocketFactory.getDefault();
+	}
+
 	public SlaveManagerImpl getSlaveManager() {
 		return getConnectionManager().getSlaveManager();
+	}
+
+	public SocketFactory getSocketFactory() {
+		return SocketFactory.getDefault();
 	}
 
 	/**
@@ -256,12 +307,23 @@ public class BaseFtpConnection implements Runnable {
 		return executing;
 	}
 
-	public String jprintf(String baseName, String key) {
-		return jprintf(baseName, key, null);
+	public boolean isSecure() {
+		return _controlSocket instanceof SSLSocket;
 	}
 
 	public String jprintf(Class baseName, String key) {
 		return jprintf(baseName.getName(), key, null);
+	}
+
+	public String jprintf(
+		Class class1,
+		String string,
+		ReplacerEnvironment env) {
+		return jprintf(class1.getName(), string, env);
+	}
+
+	public String jprintf(String baseName, String key) {
+		return jprintf(baseName, key, null);
 	}
 
 	/**
@@ -272,47 +334,6 @@ public class BaseFtpConnection implements Runnable {
 		String key,
 		ReplacerEnvironment env) {
 		return jprintf(baseName, key, env, getUserNull());
-	}
-
-	public static ReplacerEnvironment getReplacerEnvironment(
-		ReplacerEnvironment env,
-		User user) {
-		env = new ReplacerEnvironment(env);
-
-		if (user != null) {
-			env.add("user", user.getUsername());
-			env.add("credits", Bytes.formatBytes(user.getCredits()));
-			env.add("ratio", "" + user.getRatio());
-			env.add("tagline", user.getTagline());
-			env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
-			env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
-			env.add("group", user.getGroupName());
-			env.add(
-				"avragespeed",
-				Bytes.formatBytes(
-					user.getUploadedMilliseconds()
-						+ user.getDownloadedMilliseconds() / 2));
-		} else {
-			env.add("user", "<unknown>");
-		}
-		return env;
-	}
-
-	public static String jprintf(
-		String baseName,
-		String key,
-		ReplacerEnvironment env,
-		User user) {
-		env = getReplacerEnvironment(env, user);
-		return ReplacerUtils.jprintf(key, env, baseName);
-	}
-	public static String jprintf(
-		ReplacerFormat format,
-		ReplacerEnvironment env,
-		User user)
-		throws FormatterException {
-		env = getReplacerEnvironment(env, user);
-		return ReplacerUtils.finalJprintf(format, env);
 	}
 
 	/**
@@ -445,6 +466,25 @@ public class BaseFtpConnection implements Runnable {
 					+ _user.getGroupName());
 	}
 
+	public void setControlSocket(Socket socket) {
+		try {
+			_controlSocket = socket;
+			in =
+				new BufferedReader(
+					new InputStreamReader(
+						_controlSocket.getInputStream(),
+						"ISO-8859-1"));
+
+			out =
+				new PrintWriter(
+					new OutputStreamWriter(
+						_controlSocket.getOutputStream(),
+						"ISO-8859-1"));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public void setCurrentDirectory(LinkedRemoteFile file) {
 		currentDirectory = file;
 	}
@@ -506,39 +546,5 @@ public class BaseFtpConnection implements Runnable {
 		}
 		buf.append("]");
 		return buf.toString();
-	}
-
-	public void setControlSocket(Socket socket) {
-		try {
-			_controlSocket = socket;
-			in =
-				new BufferedReader(
-					new InputStreamReader(
-						_controlSocket.getInputStream(),
-						"ISO-8859-1"));
-
-			out =
-				new PrintWriter(
-					new OutputStreamWriter(
-						_controlSocket.getOutputStream(),
-						"ISO-8859-1"));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public ServerSocketFactory getServerSocketFactory() {
-		return ServerSocketFactory.getDefault();
-	}
-
-	public SocketFactory getSocketFactory() {
-		return SocketFactory.getDefault();
-	}
-
-	public String jprintf(
-		Class class1,
-		String string,
-		ReplacerEnvironment env) {
-		return jprintf(class1.getName(), string, env);
 	}
 }

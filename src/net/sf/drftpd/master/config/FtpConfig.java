@@ -43,7 +43,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.47 2004/04/20 04:11:48 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.48 2004/04/27 19:57:20 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -93,6 +93,7 @@ public class FtpConfig {
 	private int _maxUsersTotal = Integer.MAX_VALUE;
 	private ArrayList _msgpath;
 	private Hashtable _patternPaths;
+	private Hashtable _permissions;
 	private StringTokenizer _replaceDir;
 	private StringTokenizer _replaceFile;
 	private long _slaveStatusUpdateTime;
@@ -117,10 +118,19 @@ public class FtpConfig {
 	public boolean checkDelete(User fromUser, LinkedRemoteFileInterface path) {
 		return checkPathPermission("delete", fromUser, path);
 	}
+
 	public boolean checkDeleteOwn(
 		User fromUser,
 		LinkedRemoteFileInterface path) {
 		return checkPathPermission("deleteown", fromUser, path);
+	}
+
+	public boolean checkDenyDataUnencrypted(User user) {
+		return checkPermission("denydatauncrypted", user);
+	}
+
+	public boolean checkDenyDirUnencrypted(User user) {
+		return checkPermission("denydiruncrypted", user);
 	}
 
 	/**
@@ -186,6 +196,12 @@ public class FtpConfig {
 		return defaults;
 	}
 
+	private boolean checkPermission(String key, User user) {
+		Permission perm = (Permission)_permissions.get(key);
+		if(perm == null) return false;
+		return perm.check(user);
+	}
+
 	/**
 	 * @return true if user fromUser is allowed to see path
 	 */
@@ -210,6 +226,14 @@ public class FtpConfig {
 	 */
 	public boolean checkUpload(User fromUser, LinkedRemoteFileInterface path) {
 		return checkPathPermission("upload", fromUser, path);
+	}
+
+	public boolean checkUserRejectInsecure(User user) {
+		return checkPermission("userrejectinsecure", user);
+	}
+
+	public boolean checkUserRejectSecure(User user) {
+		return checkPermission("userrejectsecure", user);
 	}
 
 	public void directoryMessage(
@@ -322,11 +346,13 @@ public class FtpConfig {
 			Long.parseLong(cfg.getProperty("slaveStatusUpdateTime", "3000"));
 
 		String bouncerHost = cfg.getProperty("bouncer_ip");
-		_bouncerIp = bouncerHost != null ? InetAddress.getByName(bouncerHost) : null;
+		_bouncerIp =
+			bouncerHost != null ? InetAddress.getByName(bouncerHost) : null;
 	}
 
 	private void loadConfig2() throws IOException {
-		Hashtable patternPathPermission = new Hashtable();
+		Hashtable patternPathPermissions = new Hashtable();
+		Hashtable permissions = new Hashtable();
 		ArrayList creditcheck = new ArrayList();
 		ArrayList creditloss = new ArrayList();
 		ArrayList msgpath = new ArrayList();
@@ -384,7 +410,7 @@ public class FtpConfig {
 						makeRatioPermission(creditcheck, st);
 					} else if (cmd.equals("pathperm")) {
 						makePatternPathPermission(
-							patternPathPermission,
+							patternPathPermissions,
 							st.nextToken(),
 							st);
 						//						patternPathPermission.put(
@@ -404,12 +430,24 @@ public class FtpConfig {
 							|| cmd.equals("renameown")
 							|| cmd.equals("request")) {
 						makePatternPathPermission(
-							patternPathPermission,
+							patternPathPermissions,
 							cmd,
 							st);
 						//						patternPathPermission.put(
 						//							cmd,
 						//							makePatternPathPermission(st));
+					} else if (
+						"userrejectsecure".equals(cmd)
+							|| "userrejectinsecure".equals(cmd)
+							|| "denydiruncrypted".equals(cmd)
+							|| "denydatauncrypted".equals(cmd)) {
+						//ArrayList perms = (ArrayList) permissions1.get(key);
+						//if (perms == null) {
+						//	perms = new ArrayList();
+						//	permissions1.put(key, perms);
+						//}
+						if(permissions.containsKey(cmd)) throw new RuntimeException("Duplicate key in perms.conf: "+cmd+" line: "+in.getLineNumber());
+						permissions.put(cmd, new Permission(makeUsers(st)));
 					}
 				} catch (Exception e) {
 					logger.warn(
@@ -430,7 +468,8 @@ public class FtpConfig {
 			msgpath.trimToSize();
 			_msgpath = msgpath;
 
-			_patternPaths = patternPathPermission;
+			_patternPaths = patternPathPermissions;
+			_permissions = permissions;
 		} finally {
 			in.close();
 		}
@@ -438,29 +477,19 @@ public class FtpConfig {
 
 	private void makePatternPathPermission(
 		Hashtable patternPathPermission,
-		String string,
+		String key,
 		StringTokenizer st)
 		throws MalformedPatternException {
-		ArrayList perms;
-		perms = (ArrayList) patternPathPermission.get(string);
+		ArrayList perms = (ArrayList) patternPathPermission.get(key);
 		if (perms == null) {
 			perms = new ArrayList();
-			patternPathPermission.put(string, perms);
+			patternPathPermission.put(key, perms);
 		}
 		perms.add(
 			new PatternPathPermission(
 				new GlobCompiler().compile(st.nextToken()),
-				makeUsers((st))));
+				makeUsers(st)));
 	}
-
-	//	private static ArrayList makePatternPermission(ArrayList arr, StringTokenizer st)
-	//		throws MalformedPatternException {
-	//		arr.add(
-	//			new PatternPathPermission(
-	//				new GlobCompiler().compile(st.nextToken()),
-	//				makeUsers(st)));
-	//		return arr;
-	//	}
 
 	/**
 	 * 

@@ -58,7 +58,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.96 2004/04/25 17:46:16 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.97 2004/04/27 19:57:18 mog Exp $
  */
 public class ConnectionManager {
 
@@ -288,11 +288,11 @@ public class ConnectionManager {
 	}
 
 	public void reload() {
-//		String url = System.getProperty(LogManager.DEFAULT_CONFIGURATION_KEY);
-//		if(url != null) {
-//			LogManager.resetConfiguration();
-//			OptionConverter.selectAndConfigure(url, null, LogManager.getLoggerRepository());
-//		}
+		//		String url = System.getProperty(LogManager.DEFAULT_CONFIGURATION_KEY);
+		//		if(url != null) {
+		//			LogManager.resetConfiguration();
+		//			OptionConverter.selectAndConfigure(url, null, LogManager.getLoggerRepository());
+		//		}
 		getSectionManager().reload();
 	}
 
@@ -338,6 +338,11 @@ public class ConnectionManager {
 				"Sorry, your account is restricted to "
 					+ user.getMaxLogins()
 					+ " simultaneous logins.");
+		if (!baseconn.isSecure() && getConfig().checkUserRejectInsecure(user)) {
+			return new FtpReply(530, "USE SECURE CONNECTION");
+		} else if(baseconn.isSecure() && getConfig().checkUserRejectSecure(user)) {
+			return new FtpReply(530, "USE INSECURE CONNECTION");
+		}
 		return null; // everything passed
 	}
 
