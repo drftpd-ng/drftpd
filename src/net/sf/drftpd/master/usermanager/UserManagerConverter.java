@@ -13,7 +13,7 @@ import net.sf.drftpd.event.listeners.Trial;
  * Usage: java net.sf.drftpd.master.usermanager.UserManagerConverter net.sf.drftpd.master.usermanager.glftpd.GlftpdUserManager net.sf.drftpd.master.usermanager.JSXUserManager
  * 
  * @author mog
- * @version $Id: UserManagerConverter.java,v 1.5 2004/01/13 22:46:44 mog Exp $
+ * @version $Id: UserManagerConverter.java,v 1.6 2004/01/14 00:11:18 mog Exp $
  */
 public class UserManagerConverter {
 	private static final Logger logger =
@@ -116,24 +116,29 @@ public class UserManagerConverter {
 				Trial.PERIOD_WEEKLY };
 
 		for (int i = 0; i < periods.length; i++) {
+			int period = periods[i];
 			to.setUploadedMillisecondsForPeriod(
-				i,
+				period,
 				from.getUploadedMillisecondsForPeriod(i));
 
 			to.setDownloadedMillisecondsForPeriod(
-				i,
+				period,
 				from.getDownloadedMillisecondsForPeriod(i));
 
-			to.setUploadedBytesForPeriod(i, from.getUploadedBytesForPeriod(i));
+			to.setUploadedBytesForPeriod(
+				period,
+				from.getUploadedBytesForPeriod(i));
 
 			to.setDownloadedBytesForPeriod(
-				i,
+				period,
 				from.getDownloadedBytesForPeriod(i));
 
-			to.setUploadedFilesForPeriod(i, from.getUploadedFilesForPeriod(i));
+			to.setUploadedFilesForPeriod(
+				period,
+				from.getUploadedFilesForPeriod(i));
 
 			to.setDownloadedFilesForPeriod(
-				i,
+				period,
 				from.getDownloadedFilesForPeriod(i));
 		}
 
