@@ -192,9 +192,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		FileInputStream in = new FileInputStream(file);
 		in.skip(offset);
 		
-		Transfer transfer = new TransferImpl(in, conn);
-		System.out.println("RETURNING "+transfer);
-		return transfer;
+		return new TransferImpl(in, conn, mode);
 	}
 	
 	/**
@@ -207,7 +205,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		InetAddress addr,
 		int port)
 		throws IOException {
-
+		System.out.println("doConnectSend() called with mode "+mode);
 		return doSend(rfile, mode, offset,  new ActiveConnection(addr, port));
 	}
 	

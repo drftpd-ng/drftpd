@@ -102,7 +102,14 @@ public abstract class RemoteFile implements Serializable {
 	/**
 	 * @see java.lang.Object#equals(Object)
 	 */
-	public abstract boolean equals(Object arg0);
+	public boolean equals(Object obj) {
+		if(!(obj instanceof RemoteFile)) return false;
+		RemoteFile remotefile = (RemoteFile) obj;
+		
+		if(getPath().equals(remotefile.getPath())) return true;
+		
+		return false;
+	}
 	/**
 	 * @see net.sf.drftpd.RemoteFile#getName()
 	 */
@@ -116,4 +123,10 @@ public abstract class RemoteFile implements Serializable {
 	 */
 	public abstract String getPath();
 
+	/**
+	 * @see java.lang.Object#hashCode()
+	 */
+	public int hashCode() {
+		return getName().hashCode();
+	}
 }

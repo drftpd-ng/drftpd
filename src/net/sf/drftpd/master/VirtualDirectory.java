@@ -8,14 +8,16 @@ import java.io.Writer;
 import java.util.Date;
 import java.util.StringTokenizer;
 
+import net.sf.drftpd.InvalidDirectoryException;
 import net.sf.drftpd.LinkedRemoteFile;
+import net.sf.drftpd.RemoteFileTree;
 
 /**
  * This class is responsible to handle all virtual directory activities.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author <a href="mailto:mog@linux.nu">Morgan Christiansson</a>
-x */
+ */
 public class VirtualDirectory {
 
 	private final static String NEWLINE = "\r\n";
@@ -92,6 +94,7 @@ public class VirtualDirectory {
 
 	/**
 	 * Get physical name (wrt the machine root).
+	 * @deprecated everything is virtual
 	 */
 	public String getPhysicalName(String virtualName) {
 		virtualName = normalizeSeparateChar(virtualName);
@@ -106,17 +109,19 @@ public class VirtualDirectory {
 		virtualName = normalizeSeparateChar(virtualName);
 		String physicalName = replaceDots(virtualName);
 
-		String absoluteName =
-			physicalName.substring(mstRoot.length() - 1).trim();
-		return removeLastSlash(absoluteName);
+//		String absoluteName =
+//			physicalName.substring(mstRoot.length() - 1).trim();
+		return removeLastSlash(physicalName);
 	}
 
 	public LinkedRemoteFile getAbsoluteFile(String virtualName) throws FileNotFoundException {
 		return root.lookupFile(getAbsoluteName(virtualName));
 	}
+
 	/**
 	 * Get virtual name (wrt the virtual root). The virtual
 	 * name will never end with '/' unless it is '/'. 
+	 * @deprecated everything is virtual
 	 */
 	public String getVirtualName(String physicalName) {
 		physicalName = normalizeSeparateChar(physicalName);
@@ -143,17 +148,6 @@ public class VirtualDirectory {
 		}
 
 		StringTokenizer st = new StringTokenizer(physicalDir, "/");
-		/*
-		     Map dir = filesystem;
-		while(st.hasMoreTokens()) {
-		    String nextToken = st.nextToken();
-		    System.out.println(nextToken);
-		    Object o = dir.get(nextToken);
-		    if(o == null) return false;
-		    if(!(o instanceof Map)) return false;
-		    dir = (Map)o;
-		}
-		     */
 		LinkedRemoteFile dirFl;
 		try {
 			dirFl = root.lookupFile(physicalDir);
@@ -171,6 +165,7 @@ public class VirtualDirectory {
 
 	/**
 	 * Check read permission.
+	 * @deprecated use RemoteFile methods instead.
 	 */
 	public boolean hasReadPermission(String fileName, boolean bPhysical) {
 		/*
@@ -192,6 +187,7 @@ public class VirtualDirectory {
 
 	/**
 	 * Chech file write/delete permission.
+	 * @deprecated use RemoteFile methods instead.
 	 */
 	public boolean hasWritePermission(String fileName, boolean bPhysical) {
 
@@ -211,6 +207,7 @@ public class VirtualDirectory {
 
 	/**
 	 * Check file create permission.
+	 * @deprecated use RemoteFile methods instead.
 	 */
 	public boolean hasCreatePermission(String fileName, boolean bPhysical) {
 
@@ -232,7 +229,7 @@ public class VirtualDirectory {
 	 * @return true if success
 	 */
 	public boolean printList(String argument, Writer out) throws IOException {
-		String lsDirName = "./";
+		String directoryName = "./";
 		String options = "";
 		String pattern = "*";
 
@@ -248,23 +245,23 @@ public class VirtualDirectory {
 						optionsSb.append(token.substring(1));
 					}
 				} else {
-					lsDirName = token;
+					directoryName = token;
 				}
 			}
 			options = optionsSb.toString();
 		}
-
+		
 		// check options
 		boolean bAll = options.indexOf('a') != -1;
 		boolean bDetail = options.indexOf('l') != -1;
 		boolean directory = options.indexOf("d") != -1;
 
 		// check pattern
-		lsDirName = getPhysicalName(lsDirName);
-		int slashIndex = lsDirName.lastIndexOf('/');
-		if ((slashIndex != -1) && (slashIndex != (lsDirName.length() - 1))) {
-			pattern = lsDirName.substring(slashIndex + 1);
-			lsDirName = lsDirName.substring(0, slashIndex + 1);
+		directoryName = getPhysicalName(directoryName);
+		int slashIndex = directoryName.lastIndexOf('/');
+		if ((slashIndex != -1) && (slashIndex != (directoryName.length() - 1))) {
+			pattern = directoryName.substring(slashIndex + 1);
+			directoryName = directoryName.substring(0, slashIndex + 1);
 		}
 
 		/*
@@ -278,8 +275,8 @@ public class VirtualDirectory {
 		if(!(lstDirObj instanceof Map)) return false;
 		lstDirObj = (Map)obj;
 		}*/
-		LinkedRemoteFile lstDirObj = root.lookupFile(lsDirName);
-		if (lstDirObj == null) {
+		LinkedRemoteFile directoryFile = root.lookupFile(directoryName);
+		if (directoryFile == null) {
 			return false;
 		}
 		/*
@@ -290,7 +287,7 @@ public class VirtualDirectory {
 		    }
 		*/
 
-		if (!lstDirObj.isDirectory()) {
+		if (!directoryFile.isDirectory()) {
 			return false;
 		}
 
@@ -300,9 +297,11 @@ public class VirtualDirectory {
 		//    flLst = lstDirObj.listFiles();
 		//} else {
 		if(directory) {
-			flLst = new LinkedRemoteFile[] {lstDirObj};
+			flLst = new LinkedRemoteFile[] {directoryFile};
 		} else {
-			flLst = lstDirObj.listFiles(); //new FileRegularFilter(pattern));
+			if(!(directoryFile instanceof RemoteFileTree)) throw new InvalidDirectoryException("lstDirObj is not an instance of RemoteFileTree");
+			RemoteFileTree directoryFileTree = (RemoteFileTree) directoryFile;
+			flLst = directoryFileTree.listFiles(); //new FileRegularFilter(pattern));
 		}
 		//}
 		//Iterator i = lstDirObj.entrySet().iterator();

@@ -14,7 +14,7 @@ import java.io.File;
 public class DirectoryTreeTester {
 
 	public static void main(String[] args) {
-		LinkedRemoteFile root = new LinkedRemoteFile(null, new File(args[args.length-1]));
+		LinkedRemoteFile root = new LinkedRemoteFile(null, new FileRemoteFile(args[args.length-1]));
 		
 		LinkedRemoteFile files[] = root.listFiles();
 		for(int i=0; i<files.length; i++) {

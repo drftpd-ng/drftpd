@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.FileNameMap;
 import java.rmi.RemoteException;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -24,13 +26,12 @@ import java.util.regex.Matcher;
 import net.sf.drftpd.master.NoAvailableSlaveException;
 import net.sf.drftpd.slave.RemoteSlave;
 
-
 /**
  * Represents the file attributes of a remote file.
  * 
  * @author Morgan Christiansson <mog@linux.nu>
  */
-public class LinkedRemoteFile extends RemoteFile {
+public class LinkedRemoteFile extends RemoteFile implements RemoteFileTree {
 
 	/**
 	 * Creates an empty RemoteFile directory, usually used as an empty root directory that
@@ -52,7 +53,7 @@ public class LinkedRemoteFile extends RemoteFile {
 	/**
 	 * The slave argument may be null, if it is null, no slaves will be added.
 	 */
-	public LinkedRemoteFile(RemoteSlave slave, File file) {
+	public LinkedRemoteFile(RemoteSlave slave, RemoteFile file) {
 		this(slave, (LinkedRemoteFile) null, file);
 	}
 
@@ -63,7 +64,8 @@ public class LinkedRemoteFile extends RemoteFile {
 	public LinkedRemoteFile(
 		RemoteSlave slave,
 		LinkedRemoteFile parent,
-		File file) {
+		RemoteFile file) {
+			
 		canRead = file.canRead();
 		canWrite = file.canWrite();
 		lastModified = file.lastModified();
@@ -84,18 +86,12 @@ public class LinkedRemoteFile extends RemoteFile {
 		if (slave != null) {
 			slaves.add(slave);
 		}
+		//file.isDirectory cached
 		if (isDirectory()) {
-			try {
-				if (!file.getCanonicalPath().equals(file.getAbsolutePath())) {
-					isDirectory = false;
-					System.out.println(
-						"NOT following possible symlink: "
-							+ file.getAbsolutePath());
-					return;
-				}
-			} catch (Exception ex) {
-				ex.printStackTrace();
+			if (!(file instanceof RemoteFileTree)) {
+				throw new InvalidDirectoryException("Directories must implement LinkedRemoteFile to be added to the LinkedRemoteFile tree");
 			}
+			RemoteFileTree treefile = (RemoteFileTree)file;
 			/* get existing file entries */
 			File cache = new File(file.getPath() + "/.drftpd");
 			Hashtable oldtable = null;
@@ -114,11 +110,12 @@ public class LinkedRemoteFile extends RemoteFile {
 			}
 			/* END get existing file entries*/
 
-			File dir[] = file.listFiles(new DrftpdFileFilter());
+//			File dir[] = treefile.listFiles(new DrftpdFileFilter());
+			RemoteFile dir[] = treefile.listFiles();
 			files = new Hashtable(dir.length);
 			Stack dirstack = new Stack();
 			for (int i = 0; i < dir.length; i++) {
-				File file2 = dir[i];
+				RemoteFile file2 = dir[i];
 				//				System.out.println("III " + file2);
 				if (file2.isDirectory()) {
 					dirstack.push(file2);
@@ -184,7 +181,11 @@ public class LinkedRemoteFile extends RemoteFile {
 		}
 	}
 
-	public LinkedRemoteFile[] listFiles() {
+	public void addFile(RemoteFile file) {
+
+	}
+
+	public RemoteFile[] listFiles() {
 		if (files == null) {
 			System.out.println(
 				"Warning: attempt to listFiles() on a null files map:");
@@ -344,7 +345,7 @@ public class LinkedRemoteFile extends RemoteFile {
 		}
 		recursiveUmerge(slave);
 	}
-	
+
 	public void unmerge(RemoteSlave slave, Iterator i) {
 		i.remove();
 		recursiveUmerge(slave);
@@ -368,12 +369,12 @@ public class LinkedRemoteFile extends RemoteFile {
 		}
 	}
 
-/////////////////////// SLAVES
+	/////////////////////// SLAVES
 	protected Collection slaves;
 	public void addSlave(RemoteSlave slave) {
 		slaves.add(slave);
 	}
-	public void addSlaves(Collection addslaves) {
+	private void addSlaves(Collection addslaves) {
 		if (addslaves == null)
 			throw new IllegalArgumentException("addslaves cannot be null");
 		System.out.println("Adding " + addslaves + " to " + slaves);
@@ -385,11 +386,13 @@ public class LinkedRemoteFile extends RemoteFile {
 	}
 	private Random rand = new Random();
 	public RemoteSlave getAnySlave() {
-		RemoteSlave myslaves[] = (RemoteSlave[]) slaves.toArray(new RemoteSlave[0]);
+		RemoteSlave myslaves[] =
+			(RemoteSlave[]) slaves.toArray(new RemoteSlave[0]);
 		int num = rand.nextInt(myslaves.length);
 		System.out.println(
 			"Returning slave "
-				+ num+1
+				+ num
+				+ 1
 				+ " out of "
 				+ myslaves.length
 				+ " possible slaves");
@@ -408,7 +411,7 @@ public class LinkedRemoteFile extends RemoteFile {
 		//ret.append(slaves);
 		if (slaves != null) {
 			Iterator i = slaves.iterator();
-//			Enumeration e = slaves.elements();
+			//			Enumeration e = slaves.elements();
 			ret.append("slaves:[");
 			while (i.hasNext()) {
 				//[endpoint:[213.114.146.44:2012](remote),objID:[2b6651:ef0b3c7162:-8000, 0]]]]]

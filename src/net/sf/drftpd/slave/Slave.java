@@ -34,6 +34,11 @@ public interface Slave extends Remote {
 		throws RemoteException, IOException;
 
 	/**
+	 * Connect to 'addr':'port' and save stream to 'path'.
+	 */
+//	public Transfer doConnectReceive(String path, InetAddress addr, int port) throws RemoteException, IOException;
+
+	/**
 	 * Connect to 'addr':'port' and receive file.
 	 */
 	public Transfer doConnectReceive(
