@@ -40,7 +40,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.26 2004/02/11 22:33:17 zubov Exp $
+ * @version $Id: JobManager.java,v 1.27 2004/02/12 21:52:31 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -89,7 +89,7 @@ public class JobManager implements FtpListener {
 	 * Gets all jobs.
 	 * @return All jobs.
 	 */
-	public List getAllJobs() {
+	public synchronized List getAllJobs() {
 		return Collections.unmodifiableList(_jobList);
 	}
 
