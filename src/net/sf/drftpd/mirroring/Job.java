@@ -30,17 +30,17 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.21 2004/06/11 01:02:09 zubov Exp $
+ * @version $Id: Job.java,v 1.22 2004/07/07 23:34:31 zubov Exp $
  */
 public class Job {
 	protected int _transferNum;
-	protected Set _destSlaves;
-	protected LinkedRemoteFileInterface _file;
-	protected User _owner;
-	protected int _priority;
-	protected Object _source;
-	protected long _timeCreated;
-	protected long _timeSpent;
+	private Set _destSlaves;
+	private LinkedRemoteFileInterface _file;
+	private User _owner;
+	private int _priority;
+	private Object _source;
+	private long _timeCreated;
+	private long _timeSpent;
 
 	public Job(
 		LinkedRemoteFileInterface file,
@@ -123,7 +123,7 @@ public class Job {
 	 * returns true if this job has nothing more to send
 	 */
 	public boolean isDone() {
-		return _transferNum < 1;
+		return _transferNum < 1 || _destSlaves.isEmpty();
 	}
 
 	public synchronized void sentToSlave(RemoteSlave slave) {

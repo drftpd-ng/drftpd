@@ -14,23 +14,19 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package net.sf.drftpd;
+package net.sf.drftpd.mirroring;
 /**
- * @author mog
- * @version $Id: SlaveUnavailableException.java,v 1.1 2004/03/01 00:21:07 mog
- *          Exp $
+ * @author zubov
+ * @version $Id: DestinationSlaveException.java,v 1.1 2004/07/07 23:34:31 zubov Exp $
  */
-public class SlaveUnavailableException extends Exception {
-	public SlaveUnavailableException() {
+public class DestinationSlaveException extends Exception {
+	public DestinationSlaveException() {
 		super();
 	}
-	public SlaveUnavailableException(String message) {
-		super(message);
+	public DestinationSlaveException(Exception e) {
+		super(e);
 	}
-	public SlaveUnavailableException(String message, Throwable cause) {
-		super(message, cause);
-	}
-	public SlaveUnavailableException(Throwable cause) {
-		super(cause);
+	public DestinationSlaveException(String s) {
+		super(s);
 	}
 }

@@ -1,22 +1,22 @@
 /*
  * This file is part of DrFTPD, Distributed FTP Daemon.
  * 
- * DrFTPD is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * DrFTPD is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
  * 
- * DrFTPD is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * DrFTPD is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  * 
- * You should have received a copy of the GNU General Public License
- * along with DrFTPD; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along with
+ * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
+ * Suite 330, Boston, MA 02111-1307 USA
  */
 package net.sf.drftpd.mirroring;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -29,25 +29,26 @@ import java.util.Properties;
 import java.util.Set;
 
 import net.sf.drftpd.FatalException;
-import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.FileExistsException;
+import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
+
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.49 2004/06/06 21:33:47 zubov Exp $
+ * @version $Id: JobManager.java,v 1.50 2004/07/07 23:34:31 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
 	private ConnectionManager _cm;
 	private boolean _isStopped = false;
 	private ArrayList _jobList = new ArrayList();
+	private int _sleepSeconds;
 	private boolean _useCRC;
 	private Thread thread;
-	private int _sleepSeconds;
 	/**
 	 * Keeps track of all jobs and controls them
 	 */
@@ -59,33 +60,9 @@ public class JobManager implements Runnable {
 		_cm = cm;
 		reload(p);
 	}
-	public void startJobs() {
-		if (thread != null) {
-			stopJobs();
-			thread.interrupt();
-			while (thread.isAlive()) {
-				logger.debug("thread is still alive");
-				Thread.yield();
-			}
-		}
-		_isStopped = false;
-		thread = new Thread(this, "JobTransferStarter");
-		thread.start();
-	}
-
-	public void stopJobs() {
-		_isStopped = true;
-	}
-
-	public boolean isStopped() {
-		return _isStopped;
-	}
-
 	public synchronized void addJob(Job job) {
 		Collection slaves = job.getFile().getSlaves();
-		for (Iterator iter = slaves.iterator();
-			iter.hasNext();
-			) {
+		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
 			RemoteSlave slave = (RemoteSlave) iter.next();
 			if (job.getDestinationSlaves().contains(slave)) {
 				job.sentToSlave(slave);
@@ -102,7 +79,6 @@ public class JobManager implements Runnable {
 	public synchronized List getAllJobs() {
 		return Collections.unmodifiableList(_jobList);
 	}
-	
 	public synchronized Job getNextJob(Set busySlaves, Set skipJobs) {
 		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
 			Job tempJob = (Job) iter.next();
@@ -124,7 +100,9 @@ public class JobManager implements Runnable {
 		}
 		return null;
 	}
-
+	public boolean isStopped() {
+		return _isStopped;
+	}
 	/**
 	 * Returns true if the file was sent okay
 	 */
@@ -151,64 +129,53 @@ public class JobManager implements Runnable {
 				}
 				logger.debug("looking up slave for job " + job);
 				try {
-					sourceSlave =
-						_cm
-							.getSlaveManager()
+					sourceSlave = _cm.getSlaveManager()
 							.getSlaveSelectionManager()
-							.getASlaveForJobDownload(
-							job);
+							.getASlaveForJobDownload(job);
 				} catch (NoAvailableSlaveException e) {
 					try {
-						busySlavesDown.addAll(job.getFile().getAvailableSlaves());
+						busySlavesDown.addAll(job.getFile()
+								.getAvailableSlaves());
 					} catch (NoAvailableSlaveException e2) {
 					}
 					continue;
 				}
 				if (sourceSlave == null) {
-					logger.debug(
-						"JobManager was unable to find a suitable job for transfer");
+					logger
+							.debug("JobManager was unable to find a suitable job for transfer");
 					return false;
 				}
 				try {
-					destSlave =
-						_cm
-							.getSlaveManager()
-							.getSlaveSelectionManager()
-							.getASlaveForJobUpload(
-							job);
-					break; // we have a source slave and a destination slave, transfer!
+					destSlave = _cm.getSlaveManager()
+							.getSlaveSelectionManager().getASlaveForJobUpload(
+									job);
+					break; // we have a source slave and a destination slave,
+						   // transfer!
 				} catch (NoAvailableSlaveException e) {
-					// job was ready to be sent, but it had no slave that was ready to accept it
+					// job was ready to be sent, but it had no slave that was
+					// ready to accept it
 					skipJobs.add(job);
 					continue;
 				}
 			}
 			if (destSlave == null) {
-				logger.debug("destSlave is null, all destination slaves are busy" + job);
+				logger
+						.debug("destSlave is null, all destination slaves are busy"
+								+ job);
 				return false;
 			}
-			logger.debug(
-				"ready to transfer "
-					+ job
-					+ " from "
-					+ sourceSlave.getName()
-					+ " to "
-					+ destSlave.getName());
+			logger.debug("ready to transfer " + job + " from "
+					+ sourceSlave.getName() + " to " + destSlave.getName());
 			time = System.currentTimeMillis();
 			difference = 0;
 			removeJob(job);
 		}
 		// job is not deleted and is out of the jobList, we are ready to
 		// process
-		logger.info(
-			"Sending "
-				+ job.getFile().getName()
-				+ " from "
-				+ sourceSlave.getName()
-				+ " to "
-				+ destSlave.getName());
-		SlaveTransfer slaveTransfer =
-			new SlaveTransfer(job.getFile(), sourceSlave, destSlave);
+		logger.info("Sending " + job.getFile().getName() + " from "
+				+ sourceSlave.getName() + " to " + destSlave.getName());
+		SlaveTransfer slaveTransfer = new SlaveTransfer(job.getFile(),
+				sourceSlave, destSlave);
 		try {
 			if (!slaveTransfer.transfer(useCRC())) { // crc failed
 				try {
@@ -216,41 +183,19 @@ public class JobManager implements Runnable {
 				} catch (IOException e) {
 					// queued for deletion
 				}
-				logger.debug(
-					"CRC did not match for "
-						+ job.getFile()
-						+ " when sending from "
-						+ sourceSlave.getName()
-						+ " to "
-						+ destSlave.getName());
+				logger.debug("CRC did not match for " + job.getFile()
+						+ " when sending from " + sourceSlave.getName()
+						+ " to " + destSlave.getName());
 				addJob(job);
 				return false;
 			}
-		} catch (IOException e) {
-			logger.debug(
-				"Caught IOException in sending "
-					+ job.getFile().getName()
-					+ " from "
-					+ sourceSlave.getName()
-					+ " to "
-					+ destSlave.getName(),
-				e);
-			if (!(e instanceof FileExistsException)) {
-				try {
-					destSlave.delete(job.getFile().getPath());
-				} catch (IOException e1) {
-					// queued for deletion
-				}
-				addJob(job);
-				return false;
-			}
-			logger.debug(
-				"File "
-					+ job.getFile()
-					+ " was already on the destination slave");
+		} catch (FileExistsException e) {
+			logger.debug("Caught FileExistsException in sending "
+					+ job.getFile().getName() + " from "
+					+ sourceSlave.getName() + " to " + destSlave.getName(), e);
 			try {
-				if (destSlave.getSlave().checkSum(job.getFile().getPath())
-					== job.getFile().getCheckSum()) {
+				if (destSlave.getSlave().checkSum(job.getFile().getPath()) == job
+						.getFile().getCheckSum()) {
 					logger.debug("Accepting file because the crc's match");
 				} else {
 					try {
@@ -263,8 +208,6 @@ public class JobManager implements Runnable {
 				}
 			} catch (RemoteException e1) {
 				destSlave.handleRemoteException(e1);
-				addJob(job);
-				return false;
 			} catch (NoAvailableSlaveException e1) {
 				addJob(job);
 				return false;
@@ -275,26 +218,25 @@ public class JobManager implements Runnable {
 				addJob(job);
 				return false;
 			}
-		} catch (Exception e) {
-			logger.debug(
-				"Error Sending "
-					+ job.getFile().getName()
-					+ " from "
-					+ sourceSlave.getName()
-					+ " to "
-					+ destSlave.getName(),
-				e);
+		} catch (FileNotFoundException e) {
+			logger.debug("Caught FileNotFoundException in sending "
+					+ job.getFile().getName() + " from "
+					+ sourceSlave.getName() + " to " + destSlave.getName(), e);
+			job.getFile().removeSlave(sourceSlave);
+			addJob(job);
+			return false;
+		} catch (DestinationSlaveException e) {
+			destSlave.setOffline(e.getMessage());
+			addJob(job);
+			return false;
+		} catch (SourceSlaveException e) {
+			destSlave.setOffline(e.getMessage());
 			addJob(job);
 			return false;
 		}
 		difference = System.currentTimeMillis() - time;
-		logger.debug(
-			"Sent file "
-				+ job.getFile().getName()
-				+ " to "
-				+ destSlave.getName()
-				+ " from "
-				+ sourceSlave.getName());
+		logger.debug("Sent file " + job.getFile().getName() + " to "
+				+ destSlave.getName() + " from " + sourceSlave.getName());
 		job.addTimeSpent(difference);
 		job.sentToSlave(destSlave);
 		if (job.isDone()) {
@@ -315,23 +257,13 @@ public class JobManager implements Runnable {
 	}
 	protected void reload(Properties p) {
 		_useCRC = p.getProperty("useCRC", "true").equals("true");
-		_sleepSeconds =
-			1000 * Integer.parseInt(FtpConfig.getProperty(p, "sleepSeconds"));
+		_sleepSeconds = 1000 * Integer.parseInt(FtpConfig.getProperty(p,
+				"sleepSeconds"));
 	}
 	public synchronized void removeJob(Job job) {
 		_jobList.remove(job);
 		Collections.sort(_jobList, new JobComparator());
 	}
-
-	private boolean useCRC() {
-		return _useCRC;
-	}
-	
-	public void stopJob(Job job) {
-		removeJob(job);
-		job.setDone();
-	}
-
 	public void run() {
 		while (true) {
 			if (isStopped()) {
@@ -345,5 +277,27 @@ public class JobManager implements Runnable {
 			}
 		}
 	}
-
+	public void startJobs() {
+		if (thread != null) {
+			stopJobs();
+			thread.interrupt();
+			while (thread.isAlive()) {
+				logger.debug("thread is still alive");
+				Thread.yield();
+			}
+		}
+		_isStopped = false;
+		thread = new Thread(this, "JobTransferStarter");
+		thread.start();
+	}
+	public void stopJob(Job job) {
+		removeJob(job);
+		job.setDone();
+	}
+	public void stopJobs() {
+		_isStopped = true;
+	}
+	private boolean useCRC() {
+		return _useCRC;
+	}
 }

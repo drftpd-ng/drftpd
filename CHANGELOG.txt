@@ -2,6 +2,8 @@
 * Integrated "site give" and "site take" with FtpConfig so give and take permissions
   can be defined in perms.conf
 * Fixed the double announce error with the sitebot
+* Refactored JobManager and SlaveTransfer's and added functionality that will result
+  in better error control and output
 
 2004/7/4 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Slightly refactored ArchiveType's
