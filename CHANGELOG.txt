@@ -1,3 +1,9 @@
+2005/02/26 Morgan Christiansson <drftpd@mog.se>
+* Critical bug in ID3 gave errors on CWD into directories containing
+  MP3 files that have genre ID's that aren't in the ID3GenreList.java
+  genre array. The CWD still succeeded even though returning error.
+  This prevented me from downloading my drum'n'bass tunes. :'(
+
 2005/02/25 Jamal James <teflon114@gmail.com>
 * Applied diff for more zipscript options. Thx TDSoul
   See http://www.drftpd.org/phpBB2/viewtopic.php?t=170
