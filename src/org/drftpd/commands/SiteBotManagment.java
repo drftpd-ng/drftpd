@@ -45,13 +45,6 @@ public class SiteBotManagment implements CommandHandler, CommandHandlerFactory {
 
     public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
-        try {
-            if (!conn.getUser().isAdmin()) {
-                return Reply.RESPONSE_530_ACCESS_DENIED;
-            }
-        } catch (NoSuchUserException e1) {
-            throw new RuntimeException(e1);
-        }
 
         SiteBot sitebot;
 
@@ -66,6 +59,22 @@ public class SiteBotManagment implements CommandHandler, CommandHandlerFactory {
         }
 
         FtpRequest req2 = new FtpRequest(conn.getRequest().getArgument());
+
+        if (req2.getCommand().equals("BLOWFISH")) {
+            String _key = sitebot.getBlowfishKey();
+            if (_key != null)
+                return new Reply(200, "Blowfish key is: " + _key);
+            else
+                return new Reply(200, "Blowfish is not enabled.");
+        }
+
+        try {
+            if (!conn.getUser().isAdmin()) {
+                return Reply.RESPONSE_530_ACCESS_DENIED;
+            }
+        } catch (NoSuchUserException e1) {
+            throw new RuntimeException(e1);
+        }
 
         if (req2.getCommand().equals("RECONNECT")) {
             sitebot.reconnect();

@@ -1146,6 +1146,10 @@ public class SiteBot extends FtpListener implements Observer {
 		}
    }
 
+    public String getBlowfishKey() {
+        return _blowfishKey;
+    }
+
     public void say(SectionInterface section, String message) {
         SectionSettings sn = null;
 
