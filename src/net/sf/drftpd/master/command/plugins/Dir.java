@@ -1,9 +1,3 @@
-/*
- * Created on 2003-okt-16
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd.master.command.plugins;
 
 import java.io.FileNotFoundException;
@@ -43,7 +37,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.13 2004/01/22 21:48:31 mog Exp $
+ * @version $Id: Dir.java,v 1.14 2004/01/31 16:58:07 zubov Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
 	protected LinkedRemoteFile _renameFrom = null;
@@ -247,11 +241,16 @@ public class Dir implements CommandHandler, Cloneable {
 			conn.getCurrentDirectory().lookupNonExistingFile(
 				request.getArgument());
 		LinkedRemoteFile dir = ret.getFile();
-		String createdDirName = ret.getPath();
+		//logger.debug("Parent directory is " + dir);
+		for(Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
+			LinkedRemoteFile temp = (LinkedRemoteFile) iter.next();
+			logger.debug(temp);
+		}
 		if (!conn.getConfig().checkMakeDir(conn.getUserNull(), dir)) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
-
+		String createdDirName = ret.getPath();
+		//logger.debug("creating " + createdDirName);
 		if (createdDirName == null) {
 			return new FtpReply(
 				550,
@@ -279,6 +278,7 @@ public class Dir implements CommandHandler, Cloneable {
 				257,
 				"\"" + createdDir.getPath() + "\" created.");
 		} catch (ObjectExistsException ex) {
+			//logger.debug("object exists", ex);
 			return new FtpReply(
 				550,
 				"directory " + createdDirName + " already exists");

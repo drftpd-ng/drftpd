@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.107 2004/01/31 05:18:39 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.108 2004/01/31 16:58:07 zubov Exp $
  */
 public class LinkedRemoteFile
 	implements RemoteFileInterface, Serializable, Comparable {
@@ -252,6 +252,9 @@ public class LinkedRemoteFile
 		String fileName)
 		throws ObjectExistsException {
 		LinkedRemoteFile existingfile = (LinkedRemoteFile) _files.get(fileName);
+		if (existingfile.isDeleted())
+			existingfile.delete();
+		existingfile = (LinkedRemoteFile) _files.get(fileName);
 		if (existingfile != null) {
 			throw new ObjectExistsException(
 				fileName + " already exists in this directory");
@@ -811,6 +814,7 @@ public class LinkedRemoteFile
 				if (st.hasMoreElements()) {
 					remaining.append('/').append(st.nextToken(""));
 				}
+				logger.debug("",ex);
 				return new NonExistingFile(currFile, remaining.toString());
 			}
 			currFile = nextFile;
@@ -1105,7 +1109,8 @@ public class LinkedRemoteFile
 
 		//slaves are copied here too...
 		LinkedRemoteFile toFile = toDir.putFile(this, toName);
-		toFile._slaves = Collections.synchronizedList(new ArrayList());
+		if (!toFile.isDirectory())
+			toFile._slaves = Collections.synchronizedList(new ArrayList());
 		queueRename(toFile);
 		if (isDirectory()) {
 			// TODO call recursiveRenameLoop
