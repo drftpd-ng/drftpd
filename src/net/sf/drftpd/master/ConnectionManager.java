@@ -59,7 +59,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.103 2004/05/16 05:44:53 zubov Exp $
+ * @version $Id: ConnectionManager.java,v 1.104 2004/05/19 17:05:50 zombiewoof64 Exp $
  */
 public class ConnectionManager {
 
@@ -185,13 +185,18 @@ public class ConnectionManager {
 
 		/** register slavemanager **/
 		try {
-			_slaveManager = new SlaveManagerImpl(cfg, rslaves, ssf, this);
-		} catch (RemoteException e) {
-			throw new FatalException(e);
+                        String smclass = FtpConfig.getProperty(cfg, "master.slavemanager");
+                        if (smclass == null) smclass = "net.sf.drftpd.master.SlaveManagerImpl";
+                        _slaveManager = (SlaveManagerImpl) Class.forName(smclass).newInstance();
+		} catch (Exception e) {
+			throw new FatalException(
+				"Cannot create instance of slavemanager, check master.slavemanager in "
+					+ cfgFileName,
+				e);
 		}
 
 		// start socket slave manager
-		if(cfg.getProperty("master.socketslavemanager","false").equals("true")) {
+		if(!cfg.getProperty("master.socketport","").equals("")) {
 			new SocketSlaveManager(this, cfg);
 		}
 
