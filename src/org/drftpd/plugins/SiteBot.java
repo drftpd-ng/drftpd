@@ -1176,91 +1176,108 @@ public class SiteBot extends FtpListener implements Observer {
 	/**
 	 * Loads irc settings, then passes it off to connect(Properties)
 	 */
-	protected synchronized void reload(Properties ircCfg) throws IOException {
+	protected void reload(Properties ircCfg) throws IOException {
         _server = PropertyHelper.getProperty(ircCfg, "irc.server");
-        _port = Integer.parseInt(PropertyHelper.getProperty(ircCfg, "irc.port"));
+		_port = Integer
+				.parseInt(PropertyHelper.getProperty(ircCfg, "irc.port"));
 
-        _enableAnnounce = ircCfg.getProperty("irc.enable.announce", "false")
-                                .equals("true");
-        CaseInsensitiveHashMap<String,ChannelConfig> oldChannelMap = new CaseInsensitiveHashMap<String, ChannelConfig>();
-        if (_channelMap != null) { // reload config
-        	oldChannelMap.putAll(_channelMap);
-        }
-        _channelMap = new CaseInsensitiveHashMap<String,ChannelConfig>();
+		_enableAnnounce = ircCfg.getProperty("irc.enable.announce", "false")
+				.equals("true");
+		CaseInsensitiveHashMap<String, ChannelConfig> oldChannelMap = new CaseInsensitiveHashMap<String, ChannelConfig>();
+		if (_channelMap != null) { // reload config
+			oldChannelMap.putAll(_channelMap);
+		}
+		synchronized (this) {
+			_channelMap = new CaseInsensitiveHashMap<String, ChannelConfig>();
 
-        for (int i = 1;; i++) {
-            String channelName = ircCfg.getProperty("irc.channel." + i);
-            String blowKey = ircCfg.getProperty("irc.channel." + i + ".blowkey");
-            String chanKey = ircCfg.getProperty("irc.channel." + i + ".chankey");
-            String permissions = ircCfg.getProperty("irc.channel." + i + ".perms");
-            if (channelName == null) {
-            	break;
-            }
-            if (i == 1) {
-            	_primaryChannelName = channelName.toUpperCase();
-            }
-            
-        	_channelMap.put(channelName,new ChannelConfig(blowKey, chanKey, permissions));
-        }
-        if (_channelMap.size() < 1) {
-        	throw new IllegalStateException("SiteBot loaded with no channels, check your config");
-        }
+			for (int i = 1;; i++) {
+				String channelName = ircCfg.getProperty("irc.channel." + i);
+				String blowKey = ircCfg.getProperty("irc.channel." + i
+						+ ".blowkey");
+				String chanKey = ircCfg.getProperty("irc.channel." + i
+						+ ".chankey");
+				String permissions = ircCfg.getProperty("irc.channel." + i
+						+ ".perms");
+				if (channelName == null) {
+					break;
+				}
+				if (i == 1) {
+					_primaryChannelName = channelName.toUpperCase();
+				}
 
-        _sections = new Hashtable<String,SectionSettings>();
-        for (int i = 1;; i++) {
-            String name = ircCfg.getProperty("irc.section." + i);
+				_channelMap.put(channelName, new ChannelConfig(blowKey,
+						chanKey, permissions));
+			}
+			if (_channelMap.size() < 1) {
+				throw new IllegalStateException(
+						"SiteBot loaded with no channels, check your config");
+			}
 
-            if (name == null) {
-                break;
-            }
+			_sections = new Hashtable<String, SectionSettings>();
+			for (int i = 1;; i++) {
+				String name = ircCfg.getProperty("irc.section." + i);
 
-            String chan = ircCfg.getProperty("irc.section." + i + ".channel");
+				if (name == null) {
+					break;
+				}
 
-            if (chan == null) {
-                chan = _primaryChannelName;
-            }
+				String chan = ircCfg.getProperty("irc.section." + i
+						+ ".channel");
 
-            _sections.put(name, new SectionSettings(ircCfg, i, chan));
-        }
+				if (chan == null) {
+					chan = _primaryChannelName;
+				}
 
-        if (_conn == null) {
-        	connect(ircCfg);
-        }
-        if ((!_conn.getClientState().getServer().equals(_server)) ||
-                (_conn.getClientState().getPort() != _port)) {
-            logger.info("Reconnecting due to server change");
-            connect(ircCfg);
-        }
-        
-        if (_conn.getClientState().getNick() != null && !_conn.getClientState().getNick().getNick().equals(PropertyHelper.getProperty(
-                            ircCfg, "irc.nick"))) {
-                logger.info("Switching to new nick");
-                _autoRegister.disable();
-                _autoRegister = addAutoRegister(ircCfg);
-                _conn.sendCommand(new NickCommand(ircCfg.getProperty("irc.nick")));
-        }
-        for (Enumeration e = _conn.getClientState().getChannelNames(); e.hasMoreElements();) {
-        	String currentChannel = (String) e.nextElement();
-        	if (_channelMap.containsKey(currentChannel)) { // still in channel
-        		ChannelConfig newCC = _channelMap.get(currentChannel);
-        		ChannelConfig oldCC = oldChannelMap.get(currentChannel);
-        		if (newCC == null || oldCC == null) {
-        			logger.debug("This is a bug! report me! -- channel=" + currentChannel + " newCC=" + newCC + " oldCC=" + oldCC, new Throwable());
-        			continue;
-        		}
-        		newCC.setAutoJoin(oldCC.getAutoJoin());
-        	} else { // removed from channel
-        		ChannelConfig oldCC = oldChannelMap.get(currentChannel);
-        		if (oldCC == null) {
-        			logger.debug("This is a bug! report me! -- channel=" + currentChannel + " oldCC=" + oldCC, new Throwable());
-        			continue;
-        		}
-        		oldCC.getAutoJoin().disable();
-				_conn.sendCommand(new PartCommand(currentChannel));
-        		_conn.getClientState().removeChannel(currentChannel);
-        		_conn.removeCommandObserver(oldCC.getAutoJoin());
-        	}
-        }
+				_sections.put(name, new SectionSettings(ircCfg, i, chan));
+			}
+
+			if (_conn == null) {
+				connect(ircCfg);
+			}
+			if ((!_conn.getClientState().getServer().equals(_server))
+					|| (_conn.getClientState().getPort() != _port)) {
+				logger.info("Reconnecting due to server change");
+				connect(ircCfg);
+			}
+
+			if (_conn.getClientState().getNick() != null
+					&& !_conn.getClientState().getNick().getNick().equals(
+							PropertyHelper.getProperty(ircCfg, "irc.nick"))) {
+				logger.info("Switching to new nick");
+				_autoRegister.disable();
+				_autoRegister = addAutoRegister(ircCfg);
+				_conn.sendCommand(new NickCommand(ircCfg
+						.getProperty("irc.nick")));
+			}
+			for (Enumeration e = _conn.getClientState().getChannelNames(); e
+					.hasMoreElements();) {
+				String currentChannel = (String) e.nextElement();
+				if (_channelMap.containsKey(currentChannel)) { // still in
+					// channel
+					ChannelConfig newCC = _channelMap.get(currentChannel);
+					ChannelConfig oldCC = oldChannelMap.get(currentChannel);
+					if (newCC == null || oldCC == null) {
+						logger.debug("This is a bug! report me! -- channel="
+								+ currentChannel + " newCC=" + newCC
+								+ " oldCC=" + oldCC, new Throwable());
+						continue;
+					}
+					newCC.setAutoJoin(oldCC.getAutoJoin());
+				} else { // removed from channel
+					ChannelConfig oldCC = oldChannelMap.get(currentChannel);
+					if (oldCC == null) {
+						logger.debug("This is a bug! report me! -- channel="
+								+ currentChannel + " oldCC=" + oldCC,
+								new Throwable());
+						continue;
+					}
+					oldCC.getAutoJoin().disable();
+					_conn.sendCommand(new PartCommand(currentChannel));
+					_conn.getClientState().removeChannel(currentChannel);
+					_conn.removeCommandObserver(oldCC.getAutoJoin());
+				}
+			}
+		}
 		for (String channelName : _channelMap.keySet()) {
         	ChannelConfig cc = _channelMap.get(channelName);
     		if (cc == null) {
