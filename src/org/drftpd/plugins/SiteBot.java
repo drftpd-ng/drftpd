@@ -1257,26 +1257,26 @@ public class SiteBot extends FtpListener implements Observer {
             return;
         }
 
-		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-		env.add("botnick",getIRCConnection().getClientState().getNick().getNick());
-		env.add("ircnick",msgc.getSource().getNick());
-        //Get the ftp user account based on irc ident
-		User ftpuser;
-		try {
-            ftpuser = getIRCConfig().lookupUser(msgc.getSource());
-        } catch (NoSuchUserException e) {
-			sayChannel(msgc.getDest(), 
-					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-			return;
-        }
-		if (!getIRCConfig().checkIrcPermission(getCommandPrefix() + "help",ftpuser)) {
-			sayChannel(msgc.getDest(), 
-					ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
-			return;				
-		}
-
 		String msg = msgc.getMessage();
         if (msg.equals(_chanprefix +"help")) {
+    		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+    		env.add("botnick",getIRCConnection().getClientState().getNick().getNick());
+    		env.add("ircnick",msgc.getSource().getNick());
+            //Get the ftp user account based on irc ident
+    		User ftpuser;
+    		try {
+                ftpuser = getIRCConfig().lookupUser(msgc.getSource());
+            } catch (NoSuchUserException e) {
+    			sayChannel(msgc.getDest(), 
+    					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+    			return;
+            }
+    		if (!getIRCConfig().checkIrcPermission(getCommandPrefix() + "help",ftpuser)) {
+    			sayChannel(msgc.getDest(), 
+    					ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
+    			return;				
+    		}
+
             sayPrivMessage(msgc.getSource().getNick(), "Available commands: \n");
             for (Observer obs : _commandObservers) {
                 IRCPluginInterface plugin = (IRCPluginInterface) obs;
