@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.RemoteException;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -21,10 +20,7 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.MessageEvent;
-import net.sf.drftpd.event.listeners.XferLogListener;
-import net.sf.drftpd.event.listeners.RaceStatistics;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
@@ -187,9 +183,10 @@ public class ConnectionManager {
 			if (classname == null)
 				break;
 			try {
-				FtpListener ftpListener = (FtpListener) Class.forName(classname).newInstance();
+				FtpListener ftpListener =
+					(FtpListener) Class.forName(classname).newInstance();
 				addFtpListener(ftpListener);
-				if ( ftpListener instanceof JobManager )
+				if (ftpListener instanceof JobManager)
 					_jm = (JobManager) ftpListener;
 			} catch (Exception e) {
 				throw new FatalException("Error loading plugins", e);
@@ -358,7 +355,7 @@ public class ConnectionManager {
 	public CommandManagerFactory getCommandManagerFactory() {
 		return _commandManagerFactory;
 	}
-	
+
 	public JobManager getJobManager() {
 		return _jm;
 	}

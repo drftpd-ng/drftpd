@@ -220,13 +220,7 @@ public class TransferStatistics implements CommandHandler {
 	
 	static int getStatsPlace(String command, User user, BaseFtpConnection conn) {
 		// AL MONTH WK DAY
-		String period =
-			command.substring(0, command.length() - 2);
-		// UP DN
-		String updn = command.substring(command.length() - 2);
-//		System.out.println("getstatsplace");
-//		System.out.println("period = " + period);
-//		System.out.println("updn = " + updn);
+
 		int place = 1;
 		long bytes = getStats(command,user);
 		List users;

@@ -8,9 +8,7 @@ package net.sf.drftpd.event.listeners;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 
 import net.sf.drftpd.FatalException;
@@ -19,7 +17,6 @@ import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.UploaderPosition;
@@ -30,7 +27,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: RaceStatistics.java,v 1.5 2003/12/07 22:31:44 mog Exp $
+ * @version $Id: RaceStatistics.java,v 1.6 2003/12/13 12:42:47 zubov Exp $
  */
 public class RaceStatistics implements FtpListener {
 

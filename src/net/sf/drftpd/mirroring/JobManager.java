@@ -22,15 +22,15 @@ import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.master.TransferThread;
 
 /**
  * @author matt
- * @version $Id: JobManager.java,v 1.2 2003/12/11 23:12:51 zubov Exp $
+ * @version $Id: JobManager.java,v 1.3 2003/12/13 12:42:48 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private ConnectionManager _cm;
 	private ArrayList _jobList = new ArrayList();
+	private ArrayList _slaveSendingList = new ArrayList();
 	private ArrayList _threadList = new ArrayList();
 	private Logger logger = Logger.getLogger(JobManager.class);
 	/**
@@ -186,14 +186,25 @@ public class JobManager implements FtpListener {
 			"Sending " + temp.getFile().getName() + " to " + slave.getName());
 		long time = System.currentTimeMillis();
 		long difference = 0;
+		RemoteSlave sourceSlave = null;
 		try {
-			new TransferThread(temp.getFile(), slave).transfer();
+			try {
+				sourceSlave = temp.getFile().getASlaveForDownload();
+			} catch (NoAvailableSlaveException e) {
+				return false;
+			}
+			_slaveSendingList.add(sourceSlave);
+			new SlaveTransfer(temp.getFile(), sourceSlave, slave).transfer();
+			_slaveSendingList.remove(sourceSlave);
 			difference = System.currentTimeMillis() - time;
 			temp.addTimeSpent(difference);
 		} catch (IOException e) {
+			_slaveSendingList.remove(sourceSlave);
 			logger.error(
 				"Error Sending "
 					+ temp.getFile().getName()
+					+ " from "
+					+ sourceSlave.getName()
 					+ " to "
 					+ slave.getName());
 			return false;
@@ -201,6 +212,8 @@ public class JobManager implements FtpListener {
 		logger.info(
 			"Done Sending "
 				+ temp.getFile().getName()
+				+ " from "
+				+ sourceSlave.getName()
 				+ " to "
 				+ slave.getName()
 				+ " in "
