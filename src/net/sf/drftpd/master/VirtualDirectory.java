@@ -326,7 +326,6 @@ public class VirtualDirectory {
 	 * </pre>
 	 * @return true if success
 	 */
-	/*
 	public boolean printNList(String argument, Writer out) throws IOException {
 
 		String lsDirName = "./";
@@ -366,9 +365,7 @@ public class VirtualDirectory {
 		// check directory
 		//File lstDirObj = new File(lsDirName);
 		LinkedRemoteFile lstDirObj = root.lookupFile(lsDirName);
-		if (!lstDirObj.exists()) {
-			return false;
-		}
+
 		if (!lstDirObj.isDirectory()) {
 			return false;
 		}
@@ -388,7 +385,7 @@ public class VirtualDirectory {
 					continue;
 				}
 				if (bDetail) {
-					//printLine(flLst[i], out);
+					printLine(flLst[i], out);
 				} else {
 					out.write(getName(flLst[i]) + NEWLINE);
 				}
@@ -396,7 +393,6 @@ public class VirtualDirectory {
 		}
 		return true;
 	}
-	*/
 
 	/**
 	 * Get file owner.

@@ -1,19 +1,19 @@
 package net.sf.drftpd.master;
 
+import java.io.FileInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.io.FileInputStream;
+import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.Hashtable;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
-import java.rmi.RemoteException;
 
 import net.sf.drftpd.LinkedRemoteFile;
-import net.sf.drftpd.master.usermanager.*;
+import net.sf.drftpd.master.usermanager.GlftpdUserManager;
+import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.slave.RemoteSlave;
 import net.sf.drftpd.slave.SlaveImpl;
 
@@ -56,56 +56,68 @@ public class ConnectionManager {
 
 		usermanager = new GlftpdUserManager(cfg);
 
-        timer = new Timer();
-        TimerTask timerTask = new TimerTask() {
-            public void run() {
-                timerTask();
-            }
-        };
-        timer.schedule(timerTask, 0, 10000);
+		timer = new Timer();
+		TimerTask timerTask = new TimerTask() {
+			public void run() {
+				timerTask();
+			}
+		};
+		timer.schedule(timerTask, 0, 10000);
 	}
 	public void timerTask() {
 		long currTime = System.currentTimeMillis();
-		
-		for(Iterator i = ((Vector)connections.clone()).iterator(); i.hasNext(); ) {
-			FtpConnection conn = (FtpConnection)i.next();
-			
-			int idle = (int)((currTime-conn.getLastActive())/1000);
-			if(conn.getUser() == null) continue;
-			System.out.println("User has been idle for "+idle+"s, max "+conn.getUser().getMaxIdleTime()+"s");
-			System.out.println(idle+" >= "+conn.getUser().getMaxIdleTime());
-			if(idle >= conn.getUser().getMaxIdleTime()) {
-				// idle time expired, logout user.
-				conn.stop("Idle time expired "+conn.getUser().getMaxIdleTime()+"s");
+		synchronized (connections) {
+			//		for(Iterator i = ((Vector)connections.clone()).iterator(); i.hasNext(); ) {
+			for (Iterator i = connections.iterator(); i.hasNext();) {
+				FtpConnection conn = (FtpConnection) i.next();
+
+				int idle = (int) ((currTime - conn.getLastActive()) / 1000);
+				if (conn.getUser() == null) {
+					System.out.println(conn + " not logged in");
+					continue;
+				}
+				System.out.println(
+					"User has been idle for "
+						+ idle
+						+ "s, max "
+						+ conn.getUser().getMaxIdleTime()
+						+ "s");
+				if (idle >= conn.getUser().getMaxIdleTime()) {
+					// idle time expired, logout user.
+					conn.stop(
+						"Idle time expired: "
+							+ conn.getUser().getMaxIdleTime()
+							+ "s");
+				}
 			}
 		}
 	}
 
 	public void start(Socket sock) {
-			FtpConnection conn =
-				new FtpConnection(
-					sock,
-					usermanager,
-					slavemanager,
-					slavemanager.getRoot(),
-					this);
-			connections.add(conn);
-			conn.start();
+		FtpConnection conn =
+			new FtpConnection(
+				sock,
+				usermanager,
+				slavemanager,
+				slavemanager.getRoot(),
+				this);
+		connections.add(conn);
+		conn.start();
 	}
-	
+
 	public void remove(BaseFtpConnection conn) {
-		if(!connections.remove(conn)) {
+		if (!connections.remove(conn)) {
 			throw new RuntimeException("connections.remove() returned false.");
 		}
 	}
-	
+
 	/**
 	 * returns a <code>Collection</code> of current connections
 	 */
 	public Collection getConnections() {
 		return connections;
 	}
-	
+
 	public static void main(String args[]) {
 		/** load config **/
 		Properties cfg = new Properties();

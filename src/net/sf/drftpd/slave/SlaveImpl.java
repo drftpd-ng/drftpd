@@ -27,6 +27,7 @@ import com.jconfig.DiskFileException;
 import com.jconfig.DiskObject;
 import com.jconfig.DiskVolume;
 import com.jconfig.FileRegistry;
+import com.sun.corba.se.internal.iiop.ListenerThread;
 
 import net.sf.drftpd.LinkedRemoteFile;
 import net.sf.drftpd.PermissionDeniedException;
@@ -36,7 +37,7 @@ import net.sf.drftpd.master.SlaveManager;
 /**
  * @author <a href="mailto:mog@linux.nu">Morgan Christiansson</a>
  */
-public final class SlaveImpl extends UnicastRemoteObject implements Slave {
+public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	private Vector transfers = new Vector();
 	//Properties cfg;
 
@@ -52,38 +53,47 @@ public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 	public static void main(String args[]) {
 		RemoteSlave slave;
 		Properties cfg = new Properties();
+		SlaveManager manager;
+
 		try {
 			cfg.load(new FileInputStream("drftpd.conf"));
 		} catch (IOException ex) {
 			ex.printStackTrace();
+			System.err.println("Could not open drftpd.conf, exiting.");
+			System.exit(-1);
+			return;
+		}
+
+		try {
+			manager =
+				(SlaveManager) Naming.lookup(
+					cfg.getProperty("slavemanager.url"));
+		} catch (Exception ex) {
+			System.out.println(ex.getMessage());
+			System.out.println("Could not lookup slavemanager.url, this is a critical task, exiting.");
+			System.exit(-1);
+			return;
 		}
 
 		try {
 			slave = new RemoteSlave(new SlaveImpl(cfg));
 		} catch (RemoteException ex) {
 			ex.printStackTrace();
-			System.exit(0);
+			System.exit(-1);
 			return;
-			//the compiler doesn't know that execution stops at System.exit() stops execution
+			//the compiler doesn't know that execution stops at System.exit()
 		}
 
 		LinkedRemoteFile root =
 			getDefaultRoot(cfg.getProperty("slave.root"), slave);
 
-		SlaveManager manager;
-		try {
-			manager =
-				(SlaveManager) Naming.lookup(
-					cfg.getProperty("slavemanager.url"));
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return;
-		}
 		try {
 			System.out.println("manager.addSlave() root: " + root);
 			manager.addSlave(slave, root);
 		} catch (RemoteException ex) {
 			ex.printStackTrace();
+			System.exit(-1);
+			return;
 		}
 	}
 
@@ -160,19 +170,20 @@ public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 			throw new PermissionDeniedException("mkdir(): Permission denied");
 		}
 	}
-
+	
+	/**
+	 * @see net.sf.drftpd.slave.Slave#ping()
+	 */
+	public void ping() throws RemoteException {
+	}
+	
 	/////////////////// TRANSFER METHODS ///////////////////////////
-	/////////////////// TRANSFER METHODS ///////////////////////////
-	/////////////////// TRANSFER METHODS ///////////////////////////
-	/////////////////// TRANSFER METHODS ///////////////////////////
-	/////////////////// TRANSFER METHODS ///////////////////////////
-	// ;-)
 	// SEND
-
+	
 	/**
 	 * Starts sending 'remotefile' starting at 'offset' bytes to a outputstream from the already connected socket 'sock'.
 	 */
-	private Transfer doSend(RemoteFile remotefile, long offset, Socket sock) throws IOException {
+	private Transfer doSend(RemoteFile remotefile, char mode, long offset, Connection conn) throws IOException {
 		File file = new File(root + remotefile.getPath());
 		if (!file.exists())
 			throw new FileNotFoundException(
@@ -181,57 +192,56 @@ public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 		FileInputStream in = new FileInputStream(file);
 		in.skip(offset);
 		
-		TransferImpl transfer = null;
-
-		OutputStream out = sock.getOutputStream();
-		return new TransferImpl(in, out);
+		Transfer transfer = new TransferImpl(in, conn);
+		System.out.println("RETURNING "+transfer);
+		return transfer;
 	}
-
+	
 	/**
 	 * @see net.sf.drftpd.slave.Slave#doConnectSend(REmoteFile, long, InetADdress, int)
 	 */
 	public Transfer doConnectSend(
 		RemoteFile rfile,
+		char mode,
 		long offset,
-		InetAddress address,
+		InetAddress addr,
 		int port)
 		throws IOException {
 
-		Socket sock;
-		sock = new Socket(address, port);
-		return doSend(rfile, offset, sock);
+		return doSend(rfile, mode, offset,  new ActiveConnection(addr, port));
 	}
-
+	
 	/**
 	 * @see net.sf.drftpd.slave.Slave#doListenSend(RemoteFile, long, int)
 	 */
-	public Transfer doListenSend(RemoteFile remotefile, long offset, int port)
+	public Transfer doListenSend(RemoteFile remotefile, char mode, long offset)
 		throws RemoteException, IOException {
 		
-		ServerSocket server = new ServerSocket(port, 1);
+//		ServerSocket server = new ServerSocket(0, 1);
 		//server.setSoTimeout(xxx);
-		Socket sock = server.accept();
-		server.close();
-		return doSend(remotefile, offset, sock);
+//		Socket sock = server.accept();
+//		server.close();
+		return doSend(remotefile, mode, offset, new PassiveConnection());
 	}
 
 	//RECEIVE
 	/**
 	 * Generic receive method.
 	 */
-	private Transfer doReceive(RemoteFile remotefile, long offset, Socket sock) throws IOException {
+	private Transfer doReceive(RemoteFile remotefile, long offset, Connection conn) throws IOException {
 		
 		File file = new File(root + remotefile.getPath());
 		FileOutputStream out;
 		out = new FileOutputStream(file);
 
-		InputStream in = sock.getInputStream();
+//		Socket sock = conn.connect();
+//		InputStream in = sock.getInputStream();
 		/*
 				CRC32 checksum = new CRC32();
 				CheckedOutputStream cos = new CheckedOutputStream(os, checksum);
 		*/
 
-		return new TransferImpl(in, out);
+		return new TransferImpl(conn, out);
 	}
 
 	/**
@@ -242,24 +252,23 @@ public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 		long offset,
 		InetAddress addr,
 		int port)
-		throws RemoteException, PermissionDeniedException, IOException {
+		throws IOException {
 
-		Socket sock = new Socket(addr, port);
-		return doReceive(remotefile, offset, sock);
+		//Socket sock = new Socket(addr, port);
+		return doReceive(remotefile, offset, new ActiveConnection(addr, port));
 	}
 
 
 	/**
 	 * @see net.sf.drftpd.slave.Slave#doListenReceive(RemoteFile, long, int)
 	 */
-	public Transfer doListenReceive(RemoteFile remotefile, long offset, int port)
+	public Transfer doListenReceive(RemoteFile remotefile, long offset)
 		throws IOException {
-		ServerSocket server = new ServerSocket(port, 1);
+//		ServerSocket server = new ServerSocket(0, 1);
 		//server.setSoTimeout(xxx);
-		Socket sock = server.accept();
-		server.close();
-		return doSend(remotefile, offset, sock);
+//		Socket sock = server.accept();
+//		server.close();
+		return doReceive(remotefile, offset, new PassiveConnection());
 	}
-
 
 }

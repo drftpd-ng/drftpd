@@ -72,14 +72,16 @@ public class SlaveManagerImpl
 		return (RemoteSlave) slaves.get(num);
 	}
 
-	public RemoteSlave getASlave(char direction) throws NoAvailableSlaveException {
+	public RemoteSlave getASlave(char direction)
+		throws NoAvailableSlaveException {
 		RemoteSlave bestslave;
 		SlaveStatus beststatus;
 		{
 			Iterator i = slaves.iterator();
-			
-			while(true) {
-				if(!i.hasNext()) throw new NoAvailableSlaveException();
+
+			while (true) {
+				if (!i.hasNext())
+					throw new NoAvailableSlaveException();
 				bestslave = (RemoteSlave) i.next();
 				try {
 					beststatus = bestslave.getStatus();
@@ -89,7 +91,7 @@ public class SlaveManagerImpl
 					continue;
 				}
 			}
-			
+
 			while (i.hasNext()) {
 				RemoteSlave slave = (RemoteSlave) i.next();
 				SlaveStatus status;
@@ -104,14 +106,14 @@ public class SlaveManagerImpl
 				if (direction == TransferImpl.TRANSFER_RECEIVING) {
 					throughput = status.getThroughputReceiving();
 					bestthroughput = beststatus.getThroughputReceiving();
-				} else if(direction == TransferImpl.TRANSFER_SENDING) {
+				} else if (direction == TransferImpl.TRANSFER_SENDING) {
 					throughput = status.getThroughputSending();
 					bestthroughput = beststatus.getThroughputSending();
 				} else {
 					throughput = status.getThroughput();
 					bestthroughput = beststatus.getThroughput();
 				}
-				
+
 				if (throughput < bestthroughput) {
 					bestslave = slave;
 				}
@@ -123,7 +125,34 @@ public class SlaveManagerImpl
 	public void handleRemoteException(RemoteException ex, RemoteSlave slave) {
 		System.out.println(
 			"Caught exception when trying to communicate with " + slave);
+		if(!isFatalRemoteException(ex)) {
+			System.out.println("Non-fatal exception, not removing");
+			return;
+		}
 		System.out.println("This slave should be removed");
 		ex.printStackTrace();
+		System.out.println("Attempting to unmerge()");
+		root.unmerge(slave);
+	}
+
+	public boolean isFatalRemoteException(RemoteException ex) {
+		return (ex instanceof java.rmi.ConnectException);
+	}	
+	
+	public int verifySlaves() {
+		int removed = 0;
+		synchronized(slaves) {
+			for (Iterator i = slaves.iterator(); i.hasNext();) {
+				RemoteSlave slave = (RemoteSlave) i.next();
+				try {
+					slave.getSlave().ping();
+				} catch (RemoteException ex) {
+					if(isFatalRemoteException(ex)) i.remove();
+					handleRemoteException(ex, slave);
+					removed++;
+				}
+			}
+		}
+		return removed;
 	}
 }

@@ -1,7 +1,5 @@
 package net.sf.drftpd;
 
-import java.util.Vector;
-
 /**
  * @author mog
  *
@@ -23,10 +21,9 @@ public class StaticRemoteFile extends RemoteFile {
 		isFile = file.isFile();
 		path = file.getPath();
 		/* serialize directory*/
-		//this.parent = parent;
-		slaves = (Vector)file.getSlaves();
+		//slaves = file.getSlaves();
 	}
-
+	
 	/**
 	 * @see java.lang.Object#equals(Object)
 	 */
@@ -39,7 +36,7 @@ public class StaticRemoteFile extends RemoteFile {
 	 * @see net.sf.drftpd.RemoteFile#getName()
 	 */
 	public String getName() {
-	int index = path.lastIndexOf(separatorChar);
+		int index = path.lastIndexOf(separatorChar);
 		return path.substring(index + 1);
 	}
 

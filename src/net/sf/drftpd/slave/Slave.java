@@ -21,17 +21,16 @@ public interface Slave extends Remote {
 	 */
 	public Transfer doConnectSend(
 		RemoteFile file,
+		char mode,
 		long offset,
 		InetAddress addr,
 		int port)
 		throws RemoteException, IOException;
 
 	/**
-	 * Listen on 'port' and send 'file' when connection is receieved.
-	 * 
-	 * If argument 'port' is 0, the argument to ServerSocket will also be 0 and Transfer.getLocalPort() may be used to retreive the listening port .
+	 * Listen on any port and send 'file' when connection is receieved.
 	 */
-	public Transfer doListenSend(RemoteFile file, long offset, int port)
+	public Transfer doListenSend(RemoteFile file, char mode, long offset)
 		throws RemoteException, IOException;
 
 	/**
@@ -43,12 +42,11 @@ public interface Slave extends Remote {
 		InetAddress addr,
 		int port)
 		throws RemoteException, IOException;
+		
 	/**
-	 * Listen on 'port' and receive 'file' when connection is received.
-	 * 
-	 * If argument 'port' is 0, the argument to ServerSocket will also be 0 and Transfer.getLocalPort() may be used to retreive the listening port .
+	 * Listen on any port and receive 'file' when connection is received.
 	 */
-	public Transfer doListenReceive(RemoteFile file, long offset, int port)
+	public Transfer doListenReceive(RemoteFile file, long offset)
 		throws RemoteException, IOException;
 
 	/**
@@ -60,4 +58,9 @@ public interface Slave extends Remote {
 	 */
 	public void mkdir(String path)
 		throws RemoteException, IOException;
+
+	/**
+	 * Check to see if slave is still up.
+	 */
+	public void ping() throws RemoteException;
 }

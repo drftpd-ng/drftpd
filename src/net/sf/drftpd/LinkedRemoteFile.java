@@ -22,13 +22,15 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 import net.sf.drftpd.master.NoAvailableSlaveException;
-import net.sf.drftpd.slave.*;
+import net.sf.drftpd.slave.RemoteSlave;
+
+
 /**
  * Represents the file attributes of a remote file.
  * 
  * @author Morgan Christiansson <mog@linux.nu>
  */
-public class LinkedRemoteFile extends RemoteFile implements Serializable {
+public class LinkedRemoteFile extends RemoteFile {
 
 	/**
 	 * Creates an empty RemoteFile directory, usually used as an empty root directory that
@@ -85,6 +87,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		if (isDirectory()) {
 			try {
 				if (!file.getCanonicalPath().equals(file.getAbsolutePath())) {
+					isDirectory = false;
 					System.out.println(
 						"NOT following possible symlink: "
 							+ file.getAbsolutePath());
@@ -169,19 +172,25 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			}
 		} /* serialize directory */
 	}
-	
+
 	public void mkdir(String fileName) throws IOException {
-		for(Iterator i = slaves.iterator(); i.hasNext(); ) {
-			RemoteSlave slave = (RemoteSlave)i.next();
+		for (Iterator i = slaves.iterator(); i.hasNext();) {
+			RemoteSlave slave = (RemoteSlave) i.next();
 			try {
-				slave.getSlave().mkdir(getPath()+fileName);
-			} catch(RemoteException ex) {
+				slave.getSlave().mkdir(getPath() + fileName);
+			} catch (RemoteException ex) {
 				slave.getManager().handleRemoteException(ex, slave);
 			}
 		}
 	}
-	
+
 	public LinkedRemoteFile[] listFiles() {
+		if (files == null) {
+			System.out.println(
+				"Warning: attempt to listFiles() on a null files map:");
+			System.out.println(this);
+			return new LinkedRemoteFile[0];
+		}
 		return (LinkedRemoteFile[]) files.values().toArray(
 			new LinkedRemoteFile[0]);
 	}
@@ -209,8 +218,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		return false;
 	}
 
-	private Hashtable files;
-	public Hashtable getHashtable() {
+	private Map files;
+	public Map getHashtable() {
 		return files;
 	}
 
@@ -265,8 +274,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			throw new IllegalArgumentException(
 				"argument is not a directory: " + dir + " this: " + this);
 
-		Hashtable map = getHashtable();
-		Hashtable mergemap = dir.getHashtable();
+		Map map = getHashtable();
+		Map mergemap = dir.getHashtable();
 		if (mergemap == null)
 			return;
 		// remote directory wasn't added, it might have been a symlink.
@@ -308,13 +317,13 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 				if (mergefile.isDirectory()) {
 					if (!file.isDirectory())
 						throw new RuntimeException("!!! WARNING: File/Directory conflict!!");
-						// is a directory -- dive into directory and start merging
+					// is a directory -- dive into directory and start merging
 					file.merge(mergefile);
 				} else {
 					if (file.isDirectory())
 						throw new RuntimeException("!!! WARNING: File/Directory conflict!!");
 				}
-				
+
 				// in all cases we add the slaves of the remote file to 'this' file
 				Collection slaves2 = mergefile.getSlaves();
 				file.addSlaves(slaves2);
@@ -327,25 +336,98 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			lastModified = dir.lastModified();
 		}
 	}
-	
+
 	public void unmerge(RemoteSlave slave) {
 		//LinkedRemoteFile files[] = listFiles();
-		if (getSlaves().remove(slave)) {
-			System.out.println("Removed slave from " + this);
+		if (!getSlaves().remove(slave)) {
+			System.out.println("Slave already removed from " + this);
 		}
+		recursiveUmerge(slave);
+	}
+	
+	public void unmerge(RemoteSlave slave, Iterator i) {
+		i.remove();
+		recursiveUmerge(slave);
+	}
+
+	private void recursiveUmerge(RemoteSlave slave) {
+		if (files == null)
+			return;
 		for (Iterator i = files.entrySet().iterator(); i.hasNext();) {
 			Map.Entry entry = (Map.Entry) i.next();
 			LinkedRemoteFile file = (LinkedRemoteFile) entry.getValue();
 			String filename = (String) entry.getKey();
 			if (file.isDirectory()) {
 				file.unmerge(slave);
-			}
-			else {
-				if (file.getSlaves().remove(slave)) {
+				if (file.listFiles().length == 0)
+					i.remove();
+			} else {
+				if (file.getSlaves().remove(slave))
 					System.out.println("Removed slave from " + file);
-				}
 			}
 		}
 	}
-	
+
+/////////////////////// SLAVES
+	protected Collection slaves;
+	public void addSlave(RemoteSlave slave) {
+		slaves.add(slave);
+	}
+	public void addSlaves(Collection addslaves) {
+		if (addslaves == null)
+			throw new IllegalArgumentException("addslaves cannot be null");
+		System.out.println("Adding " + addslaves + " to " + slaves);
+		slaves.addAll(addslaves);
+		System.out.println("slaves.size() is now " + slaves.size());
+	}
+	public Collection getSlaves() {
+		return slaves;
+	}
+	private Random rand = new Random();
+	public RemoteSlave getAnySlave() {
+		RemoteSlave myslaves[] = (RemoteSlave[]) slaves.toArray(new RemoteSlave[0]);
+		int num = rand.nextInt(myslaves.length);
+		System.out.println(
+			"Returning slave "
+				+ num+1
+				+ " out of "
+				+ myslaves.length
+				+ " possible slaves");
+		return (RemoteSlave) myslaves[num];
+	}
+
+	public void removeSlave(RemoteSlave slave) {
+		slaves.remove(slave);
+	}
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		StringBuffer ret = new StringBuffer();
+		ret.append("[net.sf.drftpd.RemoteFile[");
+		//ret.append(slaves);
+		if (slaves != null) {
+			Iterator i = slaves.iterator();
+//			Enumeration e = slaves.elements();
+			ret.append("slaves:[");
+			while (i.hasNext()) {
+				//[endpoint:[213.114.146.44:2012](remote),objID:[2b6651:ef0b3c7162:-8000, 0]]]]]
+				Pattern p = Pattern.compile("endpoint:\\[(.*?):.*?\\]");
+				Matcher m = p.matcher(i.next().toString());
+				m.find();
+				ret.append(m.group(1));
+				//ret.append(e.nextElement());
+				if (i.hasNext())
+					ret.append(",");
+			}
+			ret.append("]");
+		}
+		if (isDirectory())
+			ret.append("[directory: true]");
+		//ret.append("isFile(): " + isFile() + " ");
+		ret.append(getPath());
+		ret.append("]]");
+		return ret.toString();
+	}
+
 }

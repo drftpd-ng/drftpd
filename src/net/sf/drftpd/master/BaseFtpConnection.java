@@ -14,6 +14,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 import net.sf.drftpd.master.usermanager.User;
 
@@ -129,6 +130,7 @@ public class BaseFtpConnection implements Runnable {
 							new OutputStreamWriter(
 								mControlSocket.getOutputStream()))));
 
+			mControlSocket.setSoTimeout(500);
 			// permission check
 			/*
 			    if( !mConfig.getIpRestrictor().hasPermission(mControlSocket.getInetAddress()) ) {
@@ -140,7 +142,12 @@ public class BaseFtpConnection implements Runnable {
 			while(!stopRequest) {
 				out.flush();
 				//notifyObserver();
-				String commandLine = in.readLine();
+				String commandLine;
+				try {
+					commandLine = in.readLine();
+				} catch(SocketTimeoutException ex) {
+					continue;
+				}
 				if(stopRequest) break;
 				// test command line
 				if (commandLine == null) {
@@ -167,10 +174,11 @@ public class BaseFtpConnection implements Runnable {
 				lastActive = System.currentTimeMillis();
 			}
 			if(stopRequestMessage != null) {
-				out.println("500 "+stopRequestMessage);
+				out.println("421 "+stopRequestMessage);
 			} else {
-				out.println("500 Connection closing");
+				out.println("421 Connection closing");
 			}
+			out.flush();
 		} catch (SocketException ex) {
 			ex.printStackTrace();
 		} catch (Exception ex) {
@@ -209,14 +217,12 @@ public class BaseFtpConnection implements Runnable {
 			ex.printStackTrace();
 			writer.write(mFtpStatus.getResponse(500, request, user, null));
 			Throwable th = ex.getTargetException();
-			if (th instanceof java.io.IOException) {
+			th.printStackTrace();
+/*
+ 			if (th instanceof java.io.IOException) {
 				throw (IOException) th;
 			}
-			/*
-			    else {
-			       mConfig.getLogger().warn(th);
-			    }
-			*/
+*/
 		} catch (Exception ex) {
 			writer.write(mFtpStatus.getResponse(500, request, user, null));
 			ex.printStackTrace();
@@ -252,11 +258,6 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	public void stop() {
 		stopRequest = true;
-		try {
-			in.close();
-		} catch(IOException ex) {
-			ex.printStackTrace();
-		}
 //		t.interrupt();
 	}
 

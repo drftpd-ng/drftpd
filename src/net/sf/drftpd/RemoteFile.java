@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Random;
@@ -25,35 +26,6 @@ import net.sf.drftpd.slave.*;
  */
 public abstract class RemoteFile implements Serializable {
 
-	protected Vector slaves;
-	public void addSlave(RemoteSlave slave) {
-		slaves.add(slave);
-	}
-	public void addSlaves(Collection addslaves) {
-		if (addslaves == null)
-			throw new IllegalArgumentException("addslaves cannot be null");
-		System.out.println("Adding " + addslaves + " to " + slaves);
-		slaves.addAll(addslaves);
-		System.out.println("slaves.size() is now " + slaves.size());
-	}
-	public Collection getSlaves() {
-		return slaves;
-	}
-	private Random rand = new Random();
-	public RemoteSlave getAnySlave() {
-		int num = rand.nextInt(slaves.size());
-		System.out.println(
-			"Returning slave "
-				+ num
-				+ " out of "
-				+ slaves.size()
-				+ " possible slaves");
-		return (RemoteSlave) slaves.get(num);
-	}
-
-	public void removeSlave(RemoteSlave slave) {
-		slaves.remove(slave);
-	}
 
 	protected String user;
 	public String getUser() {
@@ -113,21 +85,6 @@ public abstract class RemoteFile implements Serializable {
 		StringBuffer ret = new StringBuffer();
 		ret.append("[net.sf.drftpd.RemoteFile[");
 		//ret.append(slaves);
-		if (slaves != null) {
-			Enumeration e = slaves.elements();
-			ret.append("slaves:[");
-			while (e.hasMoreElements()) {
-				//[endpoint:[213.114.146.44:2012](remote),objID:[2b6651:ef0b3c7162:-8000, 0]]]]]
-				Pattern p = Pattern.compile("endpoint:\\[(.*?):.*?\\]");
-				Matcher m = p.matcher(e.nextElement().toString());
-				m.find();
-				ret.append(m.group(1));
-				//ret.append(e.nextElement());
-				if (e.hasMoreElements())
-					ret.append(",");
-			}
-			ret.append("]");
-		}
 		if (isDirectory())
 			ret.append("[directory: true]");
 		//ret.append("isFile(): " + isFile() + " ");
