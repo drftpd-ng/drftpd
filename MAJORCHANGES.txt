@@ -9,9 +9,12 @@ The reasons it's 2.0 and not 1.2
 * Added symlinks.
 * Dropped RMI in favor of our own master<->slave protocol which will scale
   much better.
+* Includes Teflon's ircusermanager which now uses dynamic user data.
+* Permissions now configurable for every site and irc command.
+* Blowfish support added to SiteBot
+
 In progress:
 * Dropped glob-style path permissions in favor of ants pattern path expressions.
 * Now requires java 5.0
-* Includes Teflon's ircusermanager which now uses dynamic user data.
 * Now requires ant to build, no more binary .class files.
   JDK is required by ant, JRE is not sufficient.
