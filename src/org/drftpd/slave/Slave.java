@@ -414,6 +414,8 @@ public class Slave {
 
 				}
 			}
+		} catch (Throwable t) {
+			logger.error("Error extracting .diz from zipfile",t);
 		} finally {
 			zipInput.close();
 		}
