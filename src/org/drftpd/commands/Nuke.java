@@ -61,7 +61,7 @@ import java.util.StringTokenizer;
  * @author mog
  * @version $Id$
  */
-public class Nuke extends CommandHandler implements CommandHandlerFactory {
+public class Nuke implements CommandHandler, CommandHandlerFactory {
     public static final Key NUKED = new Key(Nuke.class, "nuked", Integer.class);
     public static final Key NUKEDBYTES = new Key(Nuke.class, "nukedBytes",
             Long.class);

@@ -44,7 +44,7 @@ import java.io.InputStreamReader;
  * @author mog
  * @version $Id$
  */
-public class Textoutput extends CommandHandler implements CommandHandlerFactory {
+public class Textoutput implements CommandHandler, CommandHandlerFactory {
     public static void addTextToResponse(Reply reply, String file)
         throws FileNotFoundException, IOException {
         reply.addComment(new BufferedReader(

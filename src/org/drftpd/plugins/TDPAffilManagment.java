@@ -40,7 +40,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author Teflon
  */
-public class TDPAffilManagment extends CommandHandler implements CommandHandlerFactory {
+public class TDPAffilManagment implements CommandHandler, CommandHandlerFactory {
 	private static final Logger logger = Logger
 			.getLogger(TDPAffilManagment.class);
 

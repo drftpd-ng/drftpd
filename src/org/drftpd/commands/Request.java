@@ -39,7 +39,7 @@ import java.util.Iterator;
  * @author mog
  * @version $Id$
  */
-public class Request extends CommandHandler implements CommandHandlerFactory {
+public class Request implements CommandHandler, CommandHandlerFactory {
     public static final Key REQUESTSFILLED = new Key(Request.class,
             "requestsFilled", Integer.class);
     public static final Key REQUESTS = new Key(Request.class, "requests",

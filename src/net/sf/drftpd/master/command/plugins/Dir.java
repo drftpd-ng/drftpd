@@ -75,7 +75,7 @@ import java.util.StringTokenizer;
  * @author mog
  * @version $Id$
  */
-public class Dir extends CommandHandler implements CommandHandlerFactory, Cloneable {
+public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
     private final static SimpleDateFormat DATE_FMT = new SimpleDateFormat(
             "yyyyMMddHHmmss.SSS");
     private static final Logger logger = Logger.getLogger(Dir.class);

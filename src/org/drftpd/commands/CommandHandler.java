@@ -27,21 +27,9 @@ import net.sf.drftpd.master.BaseFtpConnection;
  * @author mog
  * @version $Id$
  */
-public abstract class CommandHandler {
+public interface CommandHandler {
     public abstract Reply execute(BaseFtpConnection conn)
         throws ReplyException;
 
-    public String[] getFeatReplies(){ return null; }
-    
-    public String getHelp(String cmd) {
-        try {
-            ResourceBundle bundle = ResourceBundle.getBundle(getClass().getName());
-            if ("".equals(cmd))
-                return bundle.getString("help.general")+"\n";
-            else
-                return bundle.getString("help."+cmd)+"\n";
-        } catch (MissingResourceException e) { 
-            return "";
-        }
-    }
+    public String[] getFeatReplies();
 }

@@ -54,8 +54,8 @@ import java.util.StringTokenizer;
  * @version $Id: JobManagerCommandHandler.java,v 1.19 2004/07/09 17:08:38 zubov
  *          Exp $
  */
-public class JobManagerCommandHandler extends CommandHandler 
-	implements CommandHandlerFactory {
+public class JobManagerCommandHandler 
+	implements CommandHandler, CommandHandlerFactory {
     
     public JobManagerCommandHandler() {
         super();

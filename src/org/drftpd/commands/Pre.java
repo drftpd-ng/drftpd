@@ -47,7 +47,7 @@ import java.util.Map;
  *
  * @version $Id$
  */
-public class Pre extends CommandHandler implements CommandHandlerFactory {
+public class Pre implements CommandHandler, CommandHandlerFactory {
     private static final Logger logger = Logger.getLogger(Pre.class);
 
     private static void recursiveRemoveOwnership(LinkedRemoteFileInterface dir, long lastModified) {

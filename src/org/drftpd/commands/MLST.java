@@ -45,7 +45,7 @@ import java.util.List;
  * @author mog
  * @version $Id$
  */
-public class MLST extends CommandHandler implements CommandHandlerFactory {
+public class MLST implements CommandHandler, CommandHandlerFactory {
     private static final Logger logger = Logger.getLogger(MLST.class);
 
     public Reply execute(BaseFtpConnection conn)

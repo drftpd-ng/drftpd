@@ -52,7 +52,7 @@ import java.util.ResourceBundle;
  * @author zubov
  * @version $Id$
  */
-public class SlaveManagement extends CommandHandler implements CommandHandlerFactory {
+public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
     public void unload() {
     }
 

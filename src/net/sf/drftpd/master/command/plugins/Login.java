@@ -47,7 +47,7 @@ import java.net.UnknownHostException;
  * @author mog
  * @version $Id$
  */
-public class Login extends CommandHandler implements CommandHandlerFactory, Cloneable {
+public class Login implements CommandHandler, CommandHandlerFactory, Cloneable {
     private static final Logger logger = Logger.getLogger(Login.class);
 
     /**

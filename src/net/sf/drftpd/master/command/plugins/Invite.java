@@ -35,7 +35,7 @@ import org.drftpd.commands.UnhandledCommandException;
  *
  * @version $Id$
  */
-public class Invite extends CommandHandler implements CommandHandlerFactory {
+public class Invite implements CommandHandler, CommandHandlerFactory {
     public Invite() {
     }
 

@@ -36,7 +36,7 @@ import org.drftpd.usermanager.NoSuchUserException;
  * @author mog
  * @version $Id$
  */
-public class SiteBotManagment extends CommandHandler implements CommandHandlerFactory {
+public class SiteBotManagment implements CommandHandler, CommandHandlerFactory {
     private static final Logger logger = Logger.getLogger(SiteBotManagment.class);
 
     public SiteBotManagment() {

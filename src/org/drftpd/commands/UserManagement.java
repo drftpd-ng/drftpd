@@ -58,7 +58,7 @@ import org.tanesha.replacer.SimplePrintf;
  * @author zubov
  * @version $Id$
  */
-public class UserManagement extends CommandHandler implements CommandHandlerFactory {
+public class UserManagement implements CommandHandler, CommandHandlerFactory {
     public static final Key TAGLINE = new Key(UserManagement.class, "tagline",
             String.class);
     public static final Key DEBUG = new Key(UserManagement.class, "debug",

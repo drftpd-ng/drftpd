@@ -61,7 +61,7 @@ import org.drftpd.usermanager.UserFileException;
  * @author mog
  * @version $Id$
  */
-public class Find extends CommandHandler implements CommandHandlerFactory {
+public class Find implements CommandHandler, CommandHandlerFactory {
 
 	private static class ActionDeleteFromSlaves implements Action {
 		private HashSet<RemoteSlave> _deleteFromSlaves;

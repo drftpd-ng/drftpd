@@ -39,7 +39,7 @@ import java.util.ResourceBundle;
  * @author mog
  * @version $Id$
  */
-public class Search extends CommandHandler implements CommandHandlerFactory {
+public class Search implements CommandHandler, CommandHandlerFactory {
     public void unload() {
     }
 

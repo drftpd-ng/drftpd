@@ -52,7 +52,7 @@ import org.drftpd.remotefile.LinkedRemoteFileInterface;
  * @author zubov
  * @version $Id$
  */
-public class SiteManagement extends CommandHandler implements CommandHandlerFactory {
+public class SiteManagement implements CommandHandler, CommandHandlerFactory {
 	private static final Logger logger = Logger.getLogger(SiteManagement.class);
 
 	private Reply doSITE_LIST(BaseFtpConnection conn) {

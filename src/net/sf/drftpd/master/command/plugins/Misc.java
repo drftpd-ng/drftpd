@@ -21,6 +21,7 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
+import org.apache.log4j.Logger;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
@@ -34,14 +35,18 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 
 /**
  * @version $Id$
  */
-public class Misc extends CommandHandler implements CommandHandlerFactory {
+public class Misc implements CommandHandlerFactory, CommandHandler {
+    private static Logger logger = Logger.getLogger(Misc.class);
+    
     /**
      * <code>ABOR &lt;CRLF&gt;</code><br>
      *
@@ -152,19 +157,40 @@ public class Misc extends CommandHandler implements CommandHandlerFactory {
         String cmd = "";
         String msg = "";
         if (conn.getRequest().hasArgument()) {
-            cmd = conn.getRequest().getArgument();
+            cmd = conn.getRequest().getArgument().toLowerCase();
         }
         Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
         Map handlers = conn.getCommandManager().getCommandHandlersMap();
         for (Iterator iter = handlers.keySet().iterator(); iter.hasNext();) {
-            CommandHandler hnd = (CommandHandler) handlers.get(iter.next());
-            msg += hnd.getHelp(cmd.toLowerCase());
+            CommandHandler hnd = (CommandHandler) handlers.get(iter.next());    
+            List<String> handledCmds = conn.getCommandManager().getHandledCommands(hnd.getClass());
+            for (String hndcmd : handledCmds) {
+                if (hndcmd.indexOf("SITE ") < 0) {
+                    continue;
+                } else {
+                    hndcmd = hndcmd.toLowerCase().replaceAll("site ","");                    
+                }
+                if (!conn.getGlobalContext().getConfig().checkPathPermission(hndcmd,
+                        conn.getUserNull(), conn.getCurrentDirectory(), true)) 
+                    continue;
+                logger.info("cmd="+cmd+" hndcmd="+hndcmd+" hnd="+hnd.toString());
+                try {
+                    ResourceBundle bundle = ResourceBundle.getBundle(hnd.getClass().getName());
+                    if ("".equals(cmd)) {
+                        msg += bundle.getString("help."+hndcmd)+"\n";
+                    } else if (cmd.equals(hndcmd)){
+                        msg += bundle.getString("help."+hndcmd+".specific")+"\n";
+                    }
+                } catch (MissingResourceException e) {
+                } catch (Exception e2) {
+                    logger.warn(e2);
+                }
+            }
         }
         if ("".equals(msg))
             return new Reply(200,"No help for site "+ cmd);
         
-        ResourceBundle bundle = ResourceBundle.getBundle(Misc.class.getName());
-        
+        ResourceBundle bundle = ResourceBundle.getBundle(Misc.class.getName());      
         if ("".equals(cmd)) {
             response.addComment(bundle.getString("help.header"));
             response.addComment(msg);

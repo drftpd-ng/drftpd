@@ -43,7 +43,7 @@ import java.util.TreeSet;
  * @version $Id$
  * @author zubov
  */
-public class New extends CommandHandler implements CommandHandlerFactory {
+public class New implements CommandHandler, CommandHandlerFactory {
     private static final Logger logger = Logger.getLogger(New.class);
 
     public New() {
