@@ -40,19 +40,21 @@ public class Invite extends GenericCommandAutoService
     private static final Logger logger = Logger.getLogger(Invite.class);
     private ConnectionManager _cm;
     private SiteBot _irc;
+    private String _trigger;
 
     public Invite(SiteBot ircListener) {
         super(ircListener.getIRCConnection());
         _cm = ircListener.getConnectionManager();
         _irc = ircListener;
+        _trigger = _irc.getMessageCommandPrefix();
     }
 
     public String getCommands() {
-        return "!invite(msg)";
+        return _trigger + "invite(msg)";
     }
 
     public String getCommandsHelp() {
-    	return "!invite <user> <pass> : Invite yourself to site channel.";
+    	return _trigger + "invite <user> <pass> : Invite yourself to site channel.";
     }
     
     protected void updateCommand(InCommand command) {
@@ -63,7 +65,7 @@ public class Invite extends GenericCommandAutoService
         MessageCommand msgc = (MessageCommand) command;
         String msg = msgc.getMessage();
 
-        if (msg.startsWith("!invite ") &&
+        if (msg.startsWith(_trigger + "invite ") &&
                 msgc.isPrivateToUs(this.getConnection().getClientState())) {
             String[] args = msg.split(" ");
             User user;

@@ -102,7 +102,7 @@ public class Textoutput implements CommandHandlerFactory, CommandHandler {
             sendTextToIRC(conn, destination, fileReader);
         } catch (IOException e) {
             conn.sendCommand(new MessageCommand(destination,
-                    "IOException opening file, check textoutput.conf"));
+                    "IOException opening file "+ path +", check generictextoutput.conf"));
 
             return;
         }

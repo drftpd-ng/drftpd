@@ -47,19 +47,21 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
     private static final int LEN2 = "!slave ".length();
     private static final Logger logger = Logger.getLogger(Slaves.class);
     private SiteBot _listener;
+    private String _trigger;
 
     public Slaves(SiteBot listener) {
         super(listener.getIRCConnection());
         _listener = listener;
+        _trigger = _listener.getCommandPrefix();
     }
 
     public String getCommands() {
-        return "!slaves !slave";
+        return _trigger + "slaves " + _trigger + "slave";
     }
 
     public String getCommandsHelp() {
-        return "!slave <name> : Show transfer stats and disk free for a specific slave.\n" + 
-		       "!slaves : Show transfer stats and disk free for all slaves.";
+        return _trigger + "slave <name> : Show transfer stats and disk free for a specific slave.\n" + 
+        		_trigger + "slaves : Show transfer stats and disk free for all slaves.";
     }
 
     private ConnectionManager getConnectionManager() {
@@ -96,14 +98,14 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 
         MessageCommand msgc = (MessageCommand) inCommand;
 
-        if (!msgc.getMessage().startsWith("!slave") ||
+        if (!msgc.getMessage().startsWith(_trigger + "slave") ||
                 msgc.isPrivateToUs(_listener.getIRCConnection().getClientState())) {
             return;
         }
 
         String chan = msgc.getDest();
 
-        if (msgc.getMessage().startsWith("!slave ")) {
+        if (msgc.getMessage().startsWith(_trigger + "slave ")) {
             String slaveName = msgc.getMessage().substring(LEN2);
 
             try {
@@ -116,7 +118,7 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
                 _listener.sayChannel(chan,
                     ReplacerUtils.jprintf("slaves.notfound", env, Slaves.class));
             }
-        } else if (msgc.getMessage().equals("!slaves")) {
+        } else if (msgc.getMessage().equals(_trigger + "slaves")) {
             for (Iterator iter = getConnectionManager().getGlobalContext()
                                      .getSlaveManager().getSlaves().iterator();
                     iter.hasNext();) {

@@ -55,18 +55,20 @@ import java.util.Iterator;
 public class Who extends GenericAutoService implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Who.class);
     private SiteBot _listener;
+    private String _trigger;
 
     public Who(SiteBot listener) {
         super(listener.getIRCConnection());
         _listener = listener;
+        _trigger = _listener.getCommandPrefix();
     }
 
     public String getCommands() {
-        return "!who";
+        return _trigger + "who";
     }
 
     public String getCommandsHelp() {
-        return "!who : Show who is currently connected to the ftp server.";
+        return _trigger + "who : Show who is currently connected to the ftp server.";
     }
 
     private ConfigInterface getConfig() {
@@ -94,7 +96,7 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
         boolean dn;
         boolean idle;
 
-        if (cmd.equals("!who")) {
+        if (cmd.equals(_trigger + "who")) {
             up = dn = idle = true;
         } else if (cmd.equals("!leechers") || cmd.equals("!uploaders") ||
                 cmd.equals("!idlers")) {

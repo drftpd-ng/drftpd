@@ -39,10 +39,12 @@ import org.tanesha.replacer.ReplacerEnvironment;
 public class Diskfree extends GenericCommandAutoService
     implements IRCPluginInterface {
     private SiteBot _listener;
+    private String _trigger;
 
     public Diskfree(SiteBot listener) {
         super(listener.getIRCConnection());
         _listener = listener;
+        _trigger = _listener.getCommandPrefix();
     }
 
     private ConnectionManager getConnectionManager() {
@@ -50,11 +52,11 @@ public class Diskfree extends GenericCommandAutoService
     }
 
     public String getCommands() {
-        return "!df";
+        return _trigger + "df";
     }
 
     public String getCommandsHelp() {
-    	return "!df : Show total disk usage for all slaves.";
+    	return _trigger + "df : Show total disk usage for all slaves.";
     }
     protected void updateCommand(InCommand command) {
         if (!(command instanceof MessageCommand)) {
@@ -68,7 +70,7 @@ public class Diskfree extends GenericCommandAutoService
             return;
         }
 
-        if (msg.equals("!df")) {
+        if (msg.equals(_trigger + "df")) {
             SlaveStatus status = getConnectionManager().getGlobalContext()
                                      .getSlaveManager().getAllStatus();
             ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);

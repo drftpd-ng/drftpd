@@ -40,20 +40,22 @@ public class Ident extends GenericCommandAutoService implements
     private static final Logger logger = Logger.getLogger(Ident.class);
 	private ConnectionManager _cm;
 	private SiteBot _irc;
+    private String _trigger;
 	public static final Key IDENT = new Key(Ident.class,"IRCIdent",String.class);
 
 	public Ident(SiteBot ircListener) {
 		super(ircListener.getIRCConnection());
 		_cm = ircListener.getConnectionManager();
 		_irc = ircListener;
+        _trigger = _irc.getMessageCommandPrefix();
 	}
 
 	public String getCommands() {
-        return "!ident(msg)";
+        return _trigger + "ident(msg)";
     }
 
     public String getCommandsHelp() {
-    	return "!ident <user> <pass> : Stores your IRC ident in your userfile giving you access to restricted commands.";
+    	return _trigger + "ident <user> <pass> : Stores your IRC ident in your userfile giving you access to restricted commands.";
     }
     
 	protected void updateCommand(InCommand command) {
@@ -64,7 +66,7 @@ public class Ident extends GenericCommandAutoService implements
 
         MessageCommand msgc = (MessageCommand) command;
         String msg = msgc.getMessage();
-        if (msg.startsWith("!ident ") &&
+        if (msg.startsWith(_trigger + "ident ") &&
                 msgc.isPrivateToUs(this.getConnection().getClientState())) {
 
         	String[] args = msg.split(" ");

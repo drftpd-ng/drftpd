@@ -53,19 +53,22 @@ public class Bandwidth extends GenericCommandAutoService
     implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Bandwidth.class);
     private SiteBot _listener;
+    private String _trigger;
 
     public Bandwidth(SiteBot listener) {
         super(listener.getIRCConnection());
         _listener = listener;
+        _trigger = _listener.getCommandPrefix();
     }
 
     public String getCommands() {
-        return "!bw !speed";
+        return _trigger + "bw " + 
+        		_trigger + "speed";
     }
     
     public String getCommandsHelp() {
-    	return "!bw : Show total current site bandwidth usage\n" +
-		       "!speed <user> : Show current transfer speed for <user>";
+    	return _trigger + "bw : Show total current site bandwidth usage\n" +
+    			_trigger + "speed <user> : Show current transfer speed for <user>";
     }
 
     private ConnectionManager getConnectionManager() {
@@ -85,7 +88,7 @@ public class Bandwidth extends GenericCommandAutoService
 
         String msg = msgc.getMessage();
 
-        if (msg.startsWith("!bw")) {
+        if (msg.startsWith(_trigger + "bw")) {
             SlaveStatus status = getConnectionManager().getGlobalContext()
                                      .getSlaveManager().getAllStatus();
 
@@ -95,7 +98,7 @@ public class Bandwidth extends GenericCommandAutoService
 
             _listener.sayChannel(msgc.getDest(),
                 ReplacerUtils.jprintf("bw", env, Bandwidth.class));
-        } else if (msg.startsWith("!speed ")) {
+        } else if (msg.startsWith(_trigger + "speed ")) {
             String username;
 
             try {

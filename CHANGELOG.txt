@@ -1,7 +1,13 @@
 2005/01/09 Jamal James <teflon114@gmail.com>
 * Added getUserByIdent() to UserManager
 * Added !approve irc plugin to net.drmods.plugins.irc
+* Added !credits irc plugin to net.drmods.plugins.irc
 * Moved !kick irc plugin to net.drmods.plugins.irc
+* Added irc.chanprefix and irc.msgprefix to irc.conf
+   msgprefix is for msg commands i.e. !invite & !ident
+   chanprefix is for the public commands
+   commands added to generictextoutput.conf do no use this trigger.
+* Changed !help response to private msg only
 
 2005/01/05 Morgan Christiansson <drftpd@mog.se>
 * Fixed bug in KeyedMap that allowed duplicate keys to be added.

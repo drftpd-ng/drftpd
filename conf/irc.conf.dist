@@ -9,6 +9,10 @@ irc.channel.1=#drftpd-test
 #irc.channel.2=#drftpd-test2
 #irc.channel.2.key=
 
+#Command prefixes for public channel and private message
+irc.chanprefix=!
+irc.msgprefix=!
+
 # general format:
 # irc.nick!irc.user@ipaddress.would.be.here irc.name
 # is returned by /who or /whois
@@ -42,5 +46,3 @@ irc.plugins.8=org.drftpd.sitebot.OnConnect
 irc.plugins.9=org.drftpd.sitebot.Ident
 irc.plugins.10=net.drmods.plugins.irc.Kick
 irc.plugins.11=net.drmods.plugins.irc.Approve
-
-

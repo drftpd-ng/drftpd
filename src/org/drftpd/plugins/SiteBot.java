@@ -118,6 +118,8 @@ public class SiteBot extends FtpListener implements Observer {
     private String _channelName;
     private String _commands;
     private String _commandsHelp;
+    private String _chanprefix;
+    private String _msgprefix;
     protected IRCConnection _conn;
     private boolean _enableAnnounce;
 
@@ -775,6 +777,8 @@ public class SiteBot extends FtpListener implements Observer {
         _conn.addCommandObserver(this);
         _commands = "";
         _commandsHelp = "";
+        _chanprefix = ircCfg.getProperty("irc.chanprefix") != null ? ircCfg.getProperty("irc.chanprefix") : "!";
+        _msgprefix = ircCfg.getProperty("irc.msgprefix") != null ? ircCfg.getProperty("irc.msgprefix") : "!";
 
         for (int i = 1;; i++) {
             String classname = ircCfg.getProperty("irc.plugins." + i);
@@ -929,6 +933,14 @@ public class SiteBot extends FtpListener implements Observer {
         }
     }
 
+    public String getCommandPrefix() {
+        return _chanprefix;
+    }
+    
+    public String getMessageCommandPrefix() {
+        return _msgprefix;
+    }
+
     public String getChannelName() {
         return _channelName;
     }
@@ -1042,7 +1054,7 @@ public class SiteBot extends FtpListener implements Observer {
         }
         
         _identWhoisQueue = new Hashtable<String,User>();
-    }
+   }
 
     public void say(SectionInterface section, String message) {
         SectionSettings sn = null;
@@ -1138,8 +1150,8 @@ public class SiteBot extends FtpListener implements Observer {
 
         String msg = msgc.getMessage();
 
-        if (msg.equals("!help")) {
-            sayChannel(msgc.getDest(), "Available commands: " + _commands);
+        if (msg.equals(_chanprefix +"help")) {
+            //sayChannel(msgc.getDest(), "Available commands: " + _commands);
             sayChannel(msgc.getSource().getNick(), "Available commands: \n" + _commandsHelp);
         }
     }

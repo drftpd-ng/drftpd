@@ -54,18 +54,22 @@ import java.util.StringTokenizer;
 public class Stats extends GenericCommandAutoService
     implements IRCPluginInterface {
     private ConnectionManager _cm;
-
+    private SiteBot _listener;
+    private String _trigger;
+    
     public Stats(SiteBot ircListener) {
         super(ircListener.getIRCConnection());
         _cm = ircListener.getConnectionManager();
+        _listener = ircListener;
+        _trigger = _listener.getCommandPrefix();
     }
 
     public String getCommands() {
-        return "!{al,wk,month,day}{up,dn}";
+        return _trigger + "{al,wk,month,day}{up,dn}";
     }
 
     public String getCommandsHelp() {
-        return "!{al,wk,month,day}{up,dn} [num] : Show top [num] users for the given period and direction. Default num = 10.";
+        return _trigger + "{al,wk,month,day}{up,dn} [num] : Show top [num] users for the given period and direction. Default num = 10.";
     }
 
     protected void updateCommand(InCommand command) {
@@ -83,21 +87,21 @@ public class Stats extends GenericCommandAutoService
         String msg = st.nextToken();
         String type = null;
 
-        if (msg.startsWith("!alup")) {
+        if (msg.startsWith(_trigger+"alup")) {
             type = "ALUP";
-        } else if (msg.startsWith("!aldn")) {
+        } else if (msg.startsWith(_trigger+"aldn")) {
             type = "ALDN";
-        } else if (msg.startsWith("!wkup")) {
+        } else if (msg.startsWith(_trigger+"wkup")) {
             type = "WKUP";
-        } else if (msg.startsWith("!wkdn")) {
+        } else if (msg.startsWith(_trigger+"wkdn")) {
             type = "WKDN";
-        } else if (msg.startsWith("!daydn")) {
+        } else if (msg.startsWith(_trigger+"daydn")) {
             type = "DAYDN";
-        } else if (msg.startsWith("!dayup")) {
+        } else if (msg.startsWith(_trigger+"dayup")) {
             type = "DAYUP";
-        } else if (msg.startsWith("!monthdn")) {
+        } else if (msg.startsWith(_trigger+"monthdn")) {
             type = "MONTHDN";
-        } else if (msg.startsWith("!monthup")) {
+        } else if (msg.startsWith(_trigger+"monthup")) {
             type = "MONTHUP";
         }
 
