@@ -27,7 +27,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.13 2004/04/18 05:57:35 zubov Exp $
+ * @version $Id: Job.java,v 1.14 2004/04/26 21:41:51 zubov Exp $
  */
 public class Job {
 	protected ArrayList _destSlaves;
@@ -125,7 +125,9 @@ public class Job {
 	}
 
 	public synchronized boolean removeDestinationSlave(RemoteSlave slave) {
-		return _destSlaves.remove(slave);
+		if (_destSlaves.contains(slave))
+			return _destSlaves.remove(slave);
+		else return _destSlaves.remove(null);
 	}
 
 	public String toString() {

@@ -37,10 +37,12 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.23 2004/04/18 05:57:35 zubov Exp $
+ * @version $Id: Archive.java,v 1.24 2004/04/26 21:41:51 zubov Exp $
  */
 
 public class Archive implements FtpListener, Runnable {
+	private Properties _props;
+
 	private static final Logger logger = Logger.getLogger(Archive.class);
 
 	public static Logger getLogger() {
@@ -59,6 +61,10 @@ public class Archive implements FtpListener, Runnable {
 	public Archive() {
 		logger.info("Archive plugin loaded successfully");
 	}
+	
+	public Properties getProperties() {
+		return _props;
+	}
 
 	public void actionPerformed(Event event) {
 		if (event.getCommand().equals("RELOAD")) {
@@ -75,22 +81,20 @@ public class Archive implements FtpListener, Runnable {
 		return _exemptList.contains(section.getName());
 	}
 
-	private ArchiveType getAndResetArchiveType(SectionInterface section) {
+	/**
+	 * @return the correct ArchiveType for the @section - if the ArchiveType is still being used, it will return null
+	 */
+	public ArchiveType getArchiveType(SectionInterface section) {
 		ArchiveType archiveType = (ArchiveType) _archiveTypes.get(section);
 		if (archiveType == null)
 			throw new IllegalStateException(
 				"Could not find an archive type for "
 					+ section.getName()
 					+ ", check you make sure default.archiveType is defined in archive.conf");
-		archiveType.setRSlaves(null);
-		archiveType.setDirectory(null);
+		if (archiveType.getDirectory() != null) {
+			return null;
+		}
 		return archiveType;
-	}
-	/**
-	 * Returns the archiveAfter setting
-	 */
-	public long getArchiveAfter() {
-		return _archiveAfter;
 	}
 
 	/**
@@ -119,20 +123,17 @@ public class Archive implements FtpListener, Runnable {
 	}
 
 	private void reload() {
-		Properties props = new Properties();
+		_props = new Properties();
 		try {
-			props.load(new FileInputStream("conf/archive.conf"));
+			_props.load(new FileInputStream("conf/archive.conf"));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 		_cycleTime =
-			60000 * Long.parseLong(FtpConfig.getProperty(props, "cycleTime"));
-		_archiveAfter =
-			60000
-				* Long.parseLong(FtpConfig.getProperty(props, "archiveAfter"));
+			60000 * Long.parseLong(FtpConfig.getProperty(_props, "cycleTime"));
 		_exemptList = new ArrayList();
 		for (int i = 1;; i++) {
-			String path = props.getProperty("exclude." + i);
+			String path = _props.getProperty("exclude." + i);
 			if (path == null)
 				break;
 			_exemptList.add(path);
@@ -153,7 +154,7 @@ public class Archive implements FtpListener, Runnable {
 						.forName(
 							"org.drftpd.mirroring.archivetypes."
 								+ FtpConfig.getProperty(
-									props,
+									_props,
 									section.getName() + ".archiveType"))
 						.newInstance();
 			} catch (NullPointerException e) {
@@ -163,7 +164,7 @@ public class Archive implements FtpListener, Runnable {
 							.forName(
 								"org.drftpd.mirroring.archivetypes."
 									+ FtpConfig.getProperty(
-										props,
+										_props,
 										"default.archiveType"))
 							.newInstance();
 				} catch (Exception e1) {
@@ -184,7 +185,6 @@ public class Archive implements FtpListener, Runnable {
 
 	public void run() {
 		ArrayList archiveHandlers = new ArrayList();
-		ArrayList archiveSections = new ArrayList();
 		while (true) {
 			if (isStopped()) {
 				logger.debug("Stopping ArchiveStarter thread");
@@ -193,19 +193,21 @@ public class Archive implements FtpListener, Runnable {
 			for (Iterator iter = archiveHandlers.iterator(); iter.hasNext();) {
 				ArchiveHandler archiveHandler = (ArchiveHandler) iter.next();
 				if (!archiveHandler.isAlive()) {
+					archiveHandler.getArchiveType().setDirectory(null);
+					archiveHandler.getArchiveType().setRSlaves(null);
 					iter.remove();
-					archiveSections.remove(archiveHandler.getSection());
 				}
 			}
 			Collection sectionsToCheck =
 				getConnectionManager().getSectionManager().getSections();
 			for (Iterator iter = sectionsToCheck.iterator(); iter.hasNext();) {
 				SectionInterface section = (SectionInterface) iter.next();
-				if (archiveSections.contains(section) || checkExclude(section))
+				if (checkExclude(section))
 					continue;
-				ArchiveType archiveType = getAndResetArchiveType(section);
+				ArchiveType archiveType = getArchiveType(section);
+				if (archiveType == null) // archiveType was not done with it's current send, cannot process another
+					continue;
 				ArchiveHandler archiveHandler = new ArchiveHandler(archiveType);
-				archiveSections.add(section);
 				archiveHandlers.add(archiveHandler);
 				archiveHandler.start();
 			}

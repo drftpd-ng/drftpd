@@ -36,7 +36,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.44 2004/04/20 04:11:49 mog Exp $
+ * @version $Id: JobManager.java,v 1.45 2004/04/26 21:41:52 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -271,7 +271,6 @@ public class JobManager implements Runnable {
 				if (destSlave.getSlave().checkSum(job.getFile().getPath())
 					== job.getFile().getCheckSum()) {
 					logger.debug("Accepting file because the crc's match");
-					job.getFile().addSlave(destSlave);
 				} else {
 					try {
 						destSlave.getSlave().delete(job.getFile().getPath());
@@ -318,8 +317,7 @@ public class JobManager implements Runnable {
 				+ " from "
 				+ sourceSlave.getName());
 		job.addTimeSpent(difference);
-		if (job.removeDestinationSlave(destSlave)
-			|| job.removeDestinationSlave(null)) {
+		if (job.removeDestinationSlave(destSlave)) {
 			if (job.isDone()) {
 				logger.debug("Job is finished, removing job " + job.getFile());
 			} else

@@ -17,6 +17,8 @@
  */
 package org.drftpd.mirroring.archivetypes;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -25,7 +27,6 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.mirroring.JobManager;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
@@ -33,7 +34,7 @@ import org.drftpd.mirroring.ArchiveType;
 
 /**
  * @author zubov
- * @version $Id: MoveReleaseToMostFreeSlave.java,v 1.3 2004/04/23 12:18:31 mog Exp $
+ * @version $Id: MoveReleaseToMostFreeSlave.java,v 1.4 2004/04/26 21:41:54 zubov Exp $
  */
 public class MoveReleaseToMostFreeSlave extends ArchiveType {
 	private static final Logger logger = Logger.getLogger(MoveReleaseToMostFreeSlave.class);
@@ -62,97 +63,30 @@ public class MoveReleaseToMostFreeSlave extends ArchiveType {
 				.findLargestFreeSlave());
 		return slaveList;
 	}
-
-	public LinkedRemoteFileInterface getOldestNonArchivedDir() {
-		if (_parent.checkExclude(getSection())) {
-			return null;
-		}
-		return getOldestNonArchivedDir(getSection().getFile());
-	}
-
-	private LinkedRemoteFileInterface getOldestNonArchivedDir(LinkedRemoteFileInterface lrf) {
-		if (lrf.getDirectories().size() == 0) {
-			if (System.currentTimeMillis() - lrf.lastModified()
-				< _parent.getArchiveAfter()) {
-				return null;
-			}
-			Collection files = lrf.getFiles();
-			if (files.size() == 0) {
-				return null;
-			}
-			try {
-				if (lrf.lookupSFVFile().getStatus().getMissing() > 0) {
-					logger.info(lrf.getPath() + "is not complete");
-					return null;
-				}
-			} catch (Exception e) {
-				//assuming complete
-			}
-			ArrayList slaveList = new ArrayList();
-			for (Iterator iter = files.iterator(); iter.hasNext();) {
-				LinkedRemoteFile temp = (LinkedRemoteFile) iter.next();
-				try {
-					if (!temp
-						.getAvailableSlaves()
-						.containsAll(temp.getSlaves())) {
-						//						logger.debug(lrf.getPath() + " contains " + temp.getName() + " which is on an offline slave, will not archive it");
-						return null;
-					}
-				} catch (NoAvailableSlaveException e1) {
-					return null;
-				}
-				for (Iterator iter2 = temp.getSlaves().iterator();
-					iter2.hasNext();
-					) {
-					RemoteSlave tempSlave = (RemoteSlave) iter2.next();
-					if (!slaveList.contains(tempSlave))
-						slaveList.add(tempSlave);
-				}
-			}
-			if (slaveList.size() == 1)
-				return null;
-			return lrf;
-		}
-		ArrayList oldDirs = new ArrayList();
-		for (Iterator iter = lrf.getDirectories().iterator();
-			iter.hasNext();
-			) {
-			LinkedRemoteFileInterface temp =
-				getOldestNonArchivedDir(
-					(LinkedRemoteFileInterface) iter.next());
-			// if temp == null all directories are archived
-			if (temp != null)
-				oldDirs.add(temp);
-		}
-		LinkedRemoteFile oldestDir = null;
-		for (Iterator iter = oldDirs.iterator(); iter.hasNext();) {
-			LinkedRemoteFile temp = (LinkedRemoteFile) iter.next();
-			if (oldestDir == null) {
-				oldestDir = temp;
-				continue;
-			}
-			if (oldestDir.lastModified() > temp.lastModified()) {
-				oldestDir = temp;
-			}
-		}
-		return oldestDir;
-	}
-
-	public ArrayList send() {
+	
+	private ArrayList recursiveSend(LinkedRemoteFileInterface lrf) {
 		ArrayList jobQueue = new ArrayList();
-		//TODO doesn't handle subdirectories
 		JobManager jm = _parent.getConnectionManager().getJobManager();
-		for (Iterator iter = getDirectory().getFiles().iterator();
+		for (Iterator iter = lrf.getFiles().iterator();
 			iter.hasNext();
 			) {
 			LinkedRemoteFileInterface src =
 				(LinkedRemoteFileInterface) iter.next();
-			Job job = null;
-			logger.info("Adding " + src.getPath() + " to the job queue");
-			job = new Job(src, getRSlaves(), this, null, 3);
-			jm.addJob(job);
-			jobQueue.add(job);
+			if (src.isFile()) {
+				Job job = null;
+				logger.info("Adding " + src.getPath() + " to the job queue");
+				job = new Job(src, getRSlaves(), this, null, 3);
+				jm.addJob(job);
+				jobQueue.add(job);
+			}
+			else jobQueue.addAll(recursiveSend(src));
 		}
+		return jobQueue;
+	}
+
+	public ArrayList send() {
+		ArrayList jobQueue = new ArrayList();
+		jobQueue.addAll(recursiveSend(getDirectory()));
 		return jobQueue;
 	}
 
@@ -180,6 +114,46 @@ public class MoveReleaseToMostFreeSlave extends ArchiveType {
 				break;
 			}
 		}
+	}
+
+	/**
+	 * Returns true if this directory is Archived by this ArchiveType's definition
+	 */
+
+	protected boolean isArchivedDir(LinkedRemoteFileInterface lrf)
+		throws IncompleteDirectoryException, OfflineSlaveException {
+			RemoteSlave singleSlave = null;
+			for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
+				LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
+				if (file.isDirectory()) {
+					if (!isArchivedDir(file))
+						return false;
+					try {
+						if (!file.lookupSFVFile().getStatus().isFinished()) {
+							logger.debug(file.getPath() + " is not complete");
+							throw new IncompleteDirectoryException(file.getPath() + " is not complete");
+						}
+					} catch (FileNotFoundException e) {
+					} catch (IOException e) {
+					} catch (NoAvailableSlaveException e) {
+					}
+				}
+				else {// if (file.isFile())
+					Collection availableSlaves = file.getSlaves();
+					for (Iterator slaveIter = availableSlaves.iterator(); slaveIter.hasNext();) {
+						RemoteSlave slave = (RemoteSlave) slaveIter.next();
+						if (!slave.isAvailable()) {
+							throw new OfflineSlaveException(slave.getName() + " is offline");
+						}
+						if (singleSlave == null)
+							singleSlave = slave;
+						if (singleSlave != slave) {
+							return false;
+						}
+					}
+				} 
+			}
+			return true;
 	}
 
 }

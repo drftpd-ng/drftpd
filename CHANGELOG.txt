@@ -1,6 +1,7 @@
 2004/04/26 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Fixed SlaveTransfer so that the destination slave would get added to 
   the file's slave list when not using CRC checking
+* Added Section support for ArchiveType's
 
 2004/04/26 Morgan Christiansson <drftpd@mog.se>
 * Implemented reason dir in nuked directory after a lot whining.

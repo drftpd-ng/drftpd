@@ -56,25 +56,6 @@ public class Archive implements CommandHandler {
 		}
 		StringTokenizer st =
 			new StringTokenizer(conn.getRequest().getArgument());
-		if (st.countTokens() < 2) {
-			reply.addComment(conn.jprintf(Archive.class, "archive.usage", env));
-			return reply;
-		}
-		String archiveTypeName = st.nextToken();
-		ArchiveType archiveType = null;
-		try {
-			archiveType =
-				(ArchiveType) Class
-					.forName(
-						"org.drftpd.mirroring.archivetypes." + archiveTypeName)
-					.newInstance();
-		} catch (Exception e) {
-			reply.addComment(conn.jprintf(Archive.class, "archive.usage", env));
-			env.add("archivetypename", archiveTypeName);
-			reply.addComment(
-				conn.jprintf(Archive.class, "archive.badarchivetype", env));
-			return reply;
-		}
 		String dirname = st.nextToken();
 		LinkedRemoteFileInterface lrf;
 		try {
@@ -91,6 +72,51 @@ public class Archive implements CommandHandler {
 				return reply;
 			}
 		}
+		net.sf.drftpd.event.listeners.Archive archive;
+		try {
+			archive =
+				(net.sf.drftpd.event.listeners.Archive) conn
+					.getConnectionManager()
+					.getFtpListener(net.sf.drftpd.event.listeners.Archive.class);
+		} catch (ObjectNotFoundException e3) {
+			reply.addComment(
+				conn.jprintf(Archive.class, "archive.loadarchive", env));
+			return reply;
+		}
+		String archiveTypeName = null;
+		ArchiveType archiveType = null;
+		if (st.hasMoreTokens()) {
+			archiveTypeName = st.nextToken();
+			try {
+				archiveType =
+					(ArchiveType) Class
+						.forName(
+							"org.drftpd.mirroring.archivetypes."
+								+ archiveTypeName)
+						.newInstance();
+			} catch (Exception e) {
+				reply.addComment(
+					conn.jprintf(Archive.class, "archive.usage", env));
+				env.add("archivetypename", archiveTypeName);
+				reply.addComment(
+					conn.jprintf(Archive.class, "archive.badarchivetype", env));
+				return reply;
+			}
+		}
+		if (archiveTypeName == null) {
+			SectionInterface section =
+				conn.getConnectionManager().getSectionManager().lookup(
+					lrf.getPath());
+			archiveType = archive.getArchiveType(section);
+			if (archiveType == null) {
+				env.add("section", section.getName());
+				reply.addComment(
+					conn.jprintf(Archive.class, "archive.wait1", env));
+				reply.addComment(
+					conn.jprintf(Archive.class, "archive.wait2", env));
+				return reply;
+			}
+		}
 		ArrayList slaveList = new ArrayList();
 		while (st.hasMoreTokens()) {
 			String slavename = st.nextToken();
@@ -104,17 +130,6 @@ public class Archive implements CommandHandler {
 				reply.addComment(
 					conn.jprintf(Archive.class, "archive.badslave", env));
 			}
-		}
-		net.sf.drftpd.event.listeners.Archive archive;
-		try {
-			archive =
-				(net.sf.drftpd.event.listeners.Archive) conn
-					.getConnectionManager()
-					.getFtpListener(net.sf.drftpd.event.listeners.Archive.class);
-		} catch (ObjectNotFoundException e3) {
-			reply.addComment(
-				conn.jprintf(Archive.class, "archive.loadarchive", env));
-			return reply;
 		}
 		SectionInterface section =
 			conn.getConnectionManager().getSectionManager().lookup(

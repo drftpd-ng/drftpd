@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: FinishReleaseOnSlave.java,v 1.3 2004/04/23 12:18:31 mog Exp $
+ * @version $Id: FinishReleaseOnSlave.java,v 1.4 2004/04/26 21:41:53 zubov Exp $
  */
 public class FinishReleaseOnSlave extends MoveReleaseToMostFreeSlave {
 	private static final Logger logger = Logger.getLogger(FinishReleaseOnSlave.class);
@@ -49,12 +49,15 @@ public class FinishReleaseOnSlave extends MoveReleaseToMostFreeSlave {
 			return value;
 		}
 	}
-
-	public ArrayList findDestinationSlaves() {
-		HashMap slaveMap = new HashMap();
-		for (Iterator iter = getDirectory().getFiles().iterator(); iter.hasNext();) {
-			Collection tempSlaveList =
-				((LinkedRemoteFileInterface) iter.next()).getSlaves();
+	public void findDestinationSlaves(LinkedRemoteFileInterface lrf,HashMap slaveMap) {
+		for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
+			LinkedRemoteFileInterface file = null;
+			file = (LinkedRemoteFileInterface) iter.next();
+			if (file.isDirectory()) {
+				findDestinationSlaves(file,slaveMap);
+				continue;
+			}
+			Collection tempSlaveList =file.getSlaves();
 				for (Iterator iter2 = tempSlaveList.iterator(); iter2.hasNext();) {
 					RemoteSlave rslave = (RemoteSlave) iter2.next();
 					if (rslave.isAvailable()) {
@@ -66,6 +69,12 @@ public class FinishReleaseOnSlave extends MoveReleaseToMostFreeSlave {
 					}
 				}
 		}
+
+	}
+
+	public ArrayList findDestinationSlaves() {
+		HashMap slaveMap = new HashMap();
+		findDestinationSlaves(getDirectory(),slaveMap);
 		RemoteSlave highSlave = null;
 		int highCount = 0;
 		for (Iterator iter = slaveMap.keySet().iterator(); iter.hasNext();) {
