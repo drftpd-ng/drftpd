@@ -5,7 +5,7 @@
   <patternset id="slaveclasses">
     <include name="com/Ostermiller/util/StringTokenizer.*"/>
     <include name="net/sf/drftpd/util/PortRange*" />
-    <include name="net/sf/drftpd/util/AddAsciiOutputStream*" />
+    <include name="org/drftpd/io/AddAsciiOutputStream*" />
     <include name="net/sf/drftpd/FileExistsException*" />
     <include name="org/drftpd/bootstrap/*" />
     <include name="org/drftpd/id3/*" />
