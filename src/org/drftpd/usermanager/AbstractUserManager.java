@@ -30,6 +30,7 @@ import net.sf.drftpd.FileExistsException;
 import org.apache.log4j.Logger;
 import org.drftpd.commands.Nuke;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.ConnectionManager;
 
 import se.mog.io.PermissionDeniedException;
@@ -235,6 +236,21 @@ public abstract class AbstractUserManager implements UserManager {
         }
 
         return user;
+    }
+
+    public User getUserByIdent(String ident)
+		throws NoSuchUserException, UserFileException { 
+        for (Iterator iter = getAllUsers().iterator(); iter.hasNext();) {
+		    User user = (User) iter.next();
+	        try {
+                String uident = (String) user.getKeyedMap().getObject(UserManagement.IRCIDENT);
+                if (uident.equals(ident)) {
+                    return user;
+                }
+            } catch (KeyNotFoundException e1) {
+            }	       
+		}
+        throw new NoSuchUserException("No user found with ident = " + ident);
     }
 
     public abstract User getUserByNameUnchecked(String username)

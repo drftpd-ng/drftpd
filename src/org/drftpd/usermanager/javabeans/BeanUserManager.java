@@ -88,6 +88,10 @@ public class BeanUserManager extends AbstractUserManager {
 			throw new UserFileException("Error loading " + username, ex);
 		}
 	}
+    public User getUserByIdent(String ident)
+		throws NoSuchUserException, UserFileException {
+        return super.getUserByIdent(ident);
+    }
 
 	public void saveAll() throws UserFileException {
 	}

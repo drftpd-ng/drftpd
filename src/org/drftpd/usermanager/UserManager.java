@@ -37,6 +37,9 @@ public interface UserManager {
     public abstract User getUserByName(String username)
         throws NoSuchUserException, UserFileException;
 
+    public abstract User getUserByIdent(String ident)
+    	throws NoSuchUserException, UserFileException;
+
     public abstract User getUserByNameUnchecked(String username)
         throws NoSuchUserException, UserFileException;
 

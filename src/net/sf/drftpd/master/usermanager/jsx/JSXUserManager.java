@@ -27,6 +27,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.drftpd.commands.UserManagement;
+import org.drftpd.dynamicdata.KeyNotFoundException;
 
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -269,4 +270,18 @@ public class JSXUserManager implements UserManager {
 	public User getUserByNameIncludeDeleted(String argument) throws NoSuchUserException, UserFileException {
 		return getUserByName(argument);
 	}
+
+    public User getUserByIdent(String ident) throws NoSuchUserException, UserFileException {
+        for (Iterator iter = getAllUsers().iterator(); iter.hasNext();) {
+		    User user = (User) iter.next();
+	        try {
+                String uident = (String) user.getKeyedMap().getObject(UserManagement.IRCIDENT);
+                if (uident.equals(ident)) {
+                    return user;
+                }
+            } catch (KeyNotFoundException e1) {
+            }	       
+		}
+        throw new NoSuchUserException("No user found with ident = " + ident);
+    }
 }
