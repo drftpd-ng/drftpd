@@ -53,6 +53,39 @@ public class Dir implements CommandHandler, Cloneable {
 		super();
 	}
 
+	private FtpReply doSITE_CHOWN(BaseFtpConnection conn)
+		throws UnhandledCommandException {
+		FtpRequest req = conn.getRequest();
+		StringTokenizer st =
+			new StringTokenizer(conn.getRequest().getArgument());
+		String owner = st.nextToken();
+		String group = null;
+		int pos = owner.indexOf('.');
+		if (pos != -1) {
+			group = owner.substring(pos + 1);
+			owner = owner.substring(0, pos);
+		} else if ("SITE CHGRP".equals(req.getCommand())) {
+			group = owner;
+			owner = null;
+		} else if (!"SITE CHOWN".equals(req.getCommand())) {
+			throw UnhandledCommandException.create(Dir.class, req);
+		}
+		FtpReply reply = new FtpReply(200);
+
+		while (st.hasMoreTokens()) {
+			try {
+				LinkedRemoteFile file =
+					conn.getCurrentDirectory().lookupFile(st.nextToken());
+				if (owner != null)
+					file.setOwner(owner);
+				if (group != null)
+					file.setGroup(group);
+			} catch (FileNotFoundException e) {
+				reply.addComment(e.getMessage());
+			}
+		}
+		return FtpReply.RESPONSE_200_COMMAND_OK;
+	}
 	/**
 	 * <code>CDUP &lt;CRLF&gt;</code><br>
 	 *
@@ -463,11 +496,13 @@ public class Dir implements CommandHandler, Cloneable {
 		} catch (FileNotFoundException ex) {
 			return new FtpReply(550, "File not found: " + ex.getMessage());
 		}
-
+		logger.debug("owner: " + requestedFile.getUsername());
+		logger.debug("user: " + conn.getUserNull().getUsername());
 		// check permission
 		if (requestedFile
 			.getUsername()
 			.equals(conn.getUserNull().getUsername())) {
+				logger.debug("deleteown");
 			if (!conn
 				.getConfig()
 				.checkDeleteOwn(conn.getUserNull(), requestedFile)) {
@@ -703,6 +738,8 @@ public class Dir implements CommandHandler, Cloneable {
 			return doSIZE(conn);
 		if ("DELE".equals(cmd))
 			return doDELE(conn);
+		if ("SITE CHOWN".equals(cmd) || "SITE CHGRP".equals(cmd))
+			return doSITE_CHOWN(conn);
 		throw UnhandledCommandException.create(Dir.class, request);
 
 	}
@@ -722,6 +759,8 @@ public class Dir implements CommandHandler, Cloneable {
 	public String[] getFeatReplies() {
 		return null;
 	}
-	public void load(CommandManagerFactory initializer) {}
-	public void unload() {}
+	public void load(CommandManagerFactory initializer) {
+	}
+	public void unload() {
+	}
 }

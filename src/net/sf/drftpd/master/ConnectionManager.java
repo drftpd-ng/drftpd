@@ -222,7 +222,7 @@ public class ConnectionManager {
 	}
 
 	public void dispatchFtpEvent(Event event) {
-		logger.debug("Dispatching "+event+" to "+getFtpListeners());
+		logger.debug("Dispatching " + event + " to " + getFtpListeners());
 		for (Iterator iter = getFtpListeners().iterator(); iter.hasNext();) {
 			try {
 				FtpListener handler = (FtpListener) iter.next();
@@ -336,57 +336,48 @@ public class ConnectionManager {
 	}
 
 	public FtpReply canLogin(BaseFtpConnection baseconn) {
-		User user;
-		try {
-			user = baseconn.getUser();
-			int count = getConfig().getMaxUsersTotal();
-			//Math.max if the integer wraps
-			if (user.isExempt())
-				count = Math.max(count, count + getConfig().getMaxUsersExempt());
-			int userCount = 0;
-			int ipCount = 0;
+		User user = baseconn.getUserNull();
+		int count = getConfig().getMaxUsersTotal();
+		//Math.max if the integer wraps
+		if (user.isExempt())
+			count = Math.max(count, count + getConfig().getMaxUsersExempt());
+		int userCount = 0;
+		int ipCount = 0;
 
-			// not >= because baseconn is already included
-			if (_conns.size() > count)
-				return new FtpReply(550, "The site is full, try again later.");
-			synchronized (_conns) {
-				for (Iterator iter = _conns.iterator(); iter.hasNext();) {
-					BaseFtpConnection tempConnection =
-						(BaseFtpConnection) iter.next();
-					try {
-						User tempUser = tempConnection.getUser();
-						if (tempUser
-							.getUsername()
-							.equals(user.getUsername())) {
-							userCount++;
-							if (tempConnection
-								.getClientAddress()
-								.equals(baseconn.getClientAddress())) {
-								ipCount++;
-							}
+		// not >= because baseconn is already included
+		if (_conns.size() > count)
+			return new FtpReply(550, "The site is full, try again later.");
+		synchronized (_conns) {
+			for (Iterator iter = _conns.iterator(); iter.hasNext();) {
+				BaseFtpConnection tempConnection =
+					(BaseFtpConnection) iter.next();
+				try {
+					User tempUser = tempConnection.getUser();
+					if (tempUser.getUsername().equals(user.getUsername())) {
+						userCount++;
+						if (tempConnection
+							.getClientAddress()
+							.equals(baseconn.getClientAddress())) {
+							ipCount++;
 						}
-					} catch (NoSuchUserException ex) {
-						// do nothing, we found our current connection, baseconn = tempConnection
 					}
+				} catch (NoSuchUserException ex) {
+					// do nothing, we found our current connection, baseconn = tempConnection
 				}
 			}
-			if (user.getMaxLoginsPerIP() > 0
-				&& ipCount > user.getMaxLoginsPerIP())
-				return new FtpReply(
-					530,
-					"Sorry, your maximum number of connections from this IP ("
-						+ user.getMaxLoginsPerIP()
-						+ ") has been reached.");
-			if (user.getMaxLogins() > 0 && userCount > user.getMaxLogins())
-				return new FtpReply(
-					530,
-					"Sorry, your account is restricted to "
-						+ user.getMaxLogins()
-						+ " simultaneous logins.");
-		} catch (NoSuchUserException ex) {
-			logger.warn("", ex);
-			// will not happen as user is always set before getUser() is called
 		}
+		if (user.getMaxLoginsPerIP() > 0 && ipCount > user.getMaxLoginsPerIP())
+			return new FtpReply(
+				530,
+				"Sorry, your maximum number of connections from this IP ("
+					+ user.getMaxLoginsPerIP()
+					+ ") has been reached.");
+		if (user.getMaxLogins() > 0 && userCount > user.getMaxLogins())
+			return new FtpReply(
+				530,
+				"Sorry, your account is restricted to "
+					+ user.getMaxLogins()
+					+ " simultaneous logins.");
 		return null; // everything passed
 	}
 }

@@ -118,8 +118,6 @@ public class XferLogListener implements FtpListener {
 	 * @see net.sf.drftpd.event.FtpListener#init(net.sf.drftpd.master.ConnectionManager)
 	 */
 	public void init(ConnectionManager mgr) {
-		// TODO Auto-generated method stub
-		
 	}
 
 }

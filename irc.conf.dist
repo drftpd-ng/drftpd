@@ -6,6 +6,7 @@ irc.nick=drftpd
 irc.name=drftpd
 irc.user=drftpd
 
+irc.plugins.1=net.sf.drftpd.event.irc.Invite
 ####
 
 request=${color}15${bold}REQUEST${bold}${coloroff}: ${bold}${path}${bold} by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group}.

@@ -25,7 +25,6 @@ import java.util.Properties;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
-import net.sf.drftpd.Initializeable;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.Nukee;
 import net.sf.drftpd.SFVFile;
@@ -36,11 +35,11 @@ import net.sf.drftpd.event.InviteEvent;
 import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.SlaveEvent;
-import net.sf.drftpd.master.*;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManagerImpl;
+import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
@@ -163,9 +162,6 @@ public class IRCListener implements FtpListener, Observer {
 		Debug.setOutputStream(
 			new PrintStream(new FileOutputStream("ftp-data/logs/sitebot.log")));
 
-		reload();
-		//called from reload()
-		//connect();
 	}
 
 	public void actionPerformed(Event event) {
@@ -703,6 +699,7 @@ public class IRCListener implements FtpListener, Observer {
 		if (_conn == null
 			|| !_conn.getClientState().getServer().equals(_server)
 			|| _conn.getClientState().getPort() != _port) {
+			logger.info("Reconnecting due to server change");
 			connect();
 		} else {
 			if (!_conn
@@ -710,14 +707,17 @@ public class IRCListener implements FtpListener, Observer {
 				.getNick()
 				.getNick()
 				.equals(_ircCfg.getProperty("irc.nick"))) {
-				_conn.removeCommandObserver(_autoRegister);
+				logger.info("Switching to new nick");
+				_autoRegister.disable();
 				_autoRegister = addAutoRegister();
 				_conn.sendCommand(
 					new NickCommand(_ircCfg.getProperty("irc.nick")));
 			}
 			if (!_conn.getClientState().isOnChannel(_channelName)) {
+				_autoJoin.disable();
 				_conn.removeCommandObserver(_autoJoin);
 				_conn.sendCommand(new PartCommand(oldchannel));
+				_autoJoin = new AutoJoin(_conn, _channelName, _key);
 			}
 		}
 	}
@@ -742,20 +742,25 @@ public class IRCListener implements FtpListener, Observer {
 		new AutoResponder(_conn);
 		_conn.addCommandObserver(this);
 
-		for (int i = 1;;) {
+		for (int i = 1;; i++) {
 			String classname = _ircCfg.getProperty("irc.plugins." + i);
 			if (classname == null)
 				break;
 			Observer obs;
 			try {
-				obs = (Observer) Class.forName(classname).newInstance();
+				logger.debug("Loading " + Class.forName(classname));
+				obs =
+					(Observer) Class
+						.forName(classname)
+						.getConstructor(new Class[] { IRCListener.class })
+						.newInstance(new Object[] { this});
+				_conn.addCommandObserver(obs);
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				logger.warn("", e);
+				throw new RuntimeException(
+					"Error loading IRC plugin :" + classname,
+					e);
 			}
-			if (obs instanceof Initializeable) {
-				((Initializeable) obs).init(getConnectionManager());
-			}
-			_conn.addCommandObserver(obs);
 		}
 		logger.info("IRCListener: connecting to " + _server + ":" + _port);
 		_conn.connect(_server, _port);
@@ -1215,6 +1220,11 @@ public class IRCListener implements FtpListener, Observer {
 	 */
 	public void init(ConnectionManager mgr) {
 		_cm = mgr;
+		try {
+			reload();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public String getChannelName() {

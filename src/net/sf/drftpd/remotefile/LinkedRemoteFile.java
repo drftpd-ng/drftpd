@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
  */
 
 public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
+	private static final String EMPTY_STRING = "".intern();
 	private static Logger logger =
 		Logger.getLogger(LinkedRemoteFile.class.getName());
 	static final long serialVersionUID = 3585958839961835107L;
@@ -56,12 +57,11 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	private String _owner;
 
 	private LinkedRemoteFile _parent;
-
-	protected SFVFile sfvFile;
 	/////////////////////// SLAVES
 	protected List _slaves;
 	private long _xfertime = 0;
-	private static final String EMPTY_STRING = "".intern();
+
+	protected SFVFile sfvFile;
 	/**
 	 * Creates an empty RemoteFile directory, usually used as an empty root directory that
 	 * <link>{merge()}</link> can be called on.
@@ -109,8 +109,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		_isDeleted = file.isDeleted();
 		//_owner = new String(file.getUsername());
 		//_group = new String(file.getGroupname());
-		_owner = file.getUsername().intern();
-		_group = file.getGroupname().intern();
+		setOwner(file.getUsername());
+		setGroup(file.getGroupname());
 		_checkSum = file.getCheckSumCached();
 		if (file.isFile()) {
 			//			_slaves =
@@ -181,24 +181,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	public LinkedRemoteFile addFile(RemoteFile file) {
 		_lastModified = System.currentTimeMillis();
 		return putFile(file);
-	}
-
-	public LinkedRemoteFile putFile(RemoteFile file) {
-		//validate
-		if (!file.isDirectory()) {
-			assert file.getSlaves() != null : file.toString();
-			for (Iterator iter = file.getSlaves().iterator();
-				iter.hasNext();
-				) {
-				RemoteSlave element = (RemoteSlave) iter.next();
-				assert element != null;
-			}
-		}
-
-		LinkedRemoteFile linkedfile =
-			new LinkedRemoteFile(this, file, _ftpConfig);
-		_files.put(linkedfile.getName(), linkedfile);
-		return linkedfile;
 	}
 	public void addSlave(RemoteSlave slave) {
 		if (_slaves == null) //!isDirectory()
@@ -274,11 +256,14 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 						continue;
 					}
 					try {
-						slave.delete(getPath());
-						// throws RemoteException, IOException
 						System.out.print(
 							"DELETE: " + rslave.getName() + ": " + getPath());
+						slave.delete(getPath());
+						// throws RemoteException, IOException
 						iter.remove();
+					} catch(FileNotFoundException ex) {
+						iter.remove();
+						logger.warn(getPath()+" missing on "+rslave.getName()+" during delete, assumed deleted");
 					} catch (RemoteException ex) {
 						rslave.handleRemoteException(ex);
 						continue;
@@ -738,6 +723,24 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 
 	}
 
+	public LinkedRemoteFile putFile(RemoteFile file) {
+		//validate
+		if (!file.isDirectory()) {
+			assert file.getSlaves() != null : file.toString();
+			for (Iterator iter = file.getSlaves().iterator();
+				iter.hasNext();
+				) {
+				RemoteSlave element = (RemoteSlave) iter.next();
+				assert element != null;
+			}
+		}
+
+		LinkedRemoteFile linkedfile =
+			new LinkedRemoteFile(this, file, _ftpConfig);
+		_files.put(linkedfile.getName(), linkedfile);
+		return linkedfile;
+	}
+
 	/**
 	 * Merges two RemoteFile directories.
 	 * If duplicates exist, the slaves are added to this object and the file-attributes of the oldest file (lastModified) are kept.
@@ -1043,6 +1046,9 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	public void setCheckSum(long l) {
 		_checkSum = l;
 	}
+	public void setGroup(String group) {
+		_group = group.intern();
+	}
 
 	public void setLastModified(long lastModified) {
 		_lastModified = lastModified;
@@ -1050,6 +1056,9 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 
 	public void setLength(long length) {
 		_length = length;
+	}
+	public void setOwner(String owner) {
+		_owner = owner.intern();
 	}
 
 	private void setRSlaveAndConfig(

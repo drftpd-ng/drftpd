@@ -8,7 +8,6 @@ package net.sf.drftpd.event.irc;
 
 import java.io.IOException;
 
-import net.sf.drftpd.Initializeable;
 import net.sf.drftpd.event.InviteEvent;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -18,7 +17,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import f00f.net.irc.martyr.GenericCommandAutoService;
-import f00f.net.irc.martyr.IRCConnection;
 import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
@@ -28,7 +26,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
  * To change the template for this generated type comment go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-public class Invite extends GenericCommandAutoService implements Initializeable {
+public class Invite extends GenericCommandAutoService {
 
 	private Logger logger = Logger.getLogger(Invite.class);
 
@@ -37,8 +35,9 @@ public class Invite extends GenericCommandAutoService implements Initializeable 
 	/**
 	 * @param connection
 	 */
-	public Invite(IRCConnection connection) {
-		super(connection);
+	public Invite(IRCListener ircListener) {
+		super(ircListener.getIRCConnection());
+		_cm = ircListener.getConnectionManager();
 	}
 
 	/* (non-Javadoc)
@@ -87,12 +86,6 @@ public class Invite extends GenericCommandAutoService implements Initializeable 
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.Initializeable#init(net.sf.drftpd.master.ConnectionManager)
-	 */
-	public void init(ConnectionManager connectionManager) {
-		_cm = connectionManager;
-	}
 	private ConnectionManager getConnectionManager() {
 		return _cm;
 	}

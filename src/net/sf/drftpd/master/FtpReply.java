@@ -152,6 +152,9 @@ public class FtpReply implements Cloneable {
 		lines.add(String.valueOf(response));
 		return this;
 	}
+	public int size() {
+		return lines.size();
+	}
 
 	public Object clone() {
 		try {

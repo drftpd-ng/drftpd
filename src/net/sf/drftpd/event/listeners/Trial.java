@@ -27,7 +27,7 @@ import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
-public class Passed implements FtpListener {
+public class Trial implements FtpListener {
 	class Limit {
 		String action;
 		String name;
@@ -42,12 +42,12 @@ public class Passed implements FtpListener {
 
 		private IRCListener _irc;
 
-		private Passed _parent;
+		private Trial _parent;
 
 		/**
 		 * @param connection
 		 */
-		protected SiteBot(IRCListener irc, Passed parent) {
+		protected SiteBot(IRCListener irc, Trial parent) {
 			super(irc.getIRCConnection());
 			_irc = irc;
 			_parent = parent;
@@ -78,7 +78,7 @@ public class Passed implements FtpListener {
 							if (limit.perm.check(user)) {
 								long bytesleft =
 									limit.bytes
-										- Passed.getUploadedBytesForPeriod(
+										- Trial.getUploadedBytesForPeriod(
 											user,
 											limit.period);
 								if (bytesleft <= 0) {
@@ -100,7 +100,7 @@ public class Passed implements FtpListener {
 											+ " with "
 											+ Bytes.formatBytes(bytesleft)
 											+ " left until "
-											+ Passed
+											+ Trial
 												.getCalendarForEndOfPeriod(
 													limit.period)
 												.getTime());
@@ -140,11 +140,15 @@ public class Passed implements FtpListener {
 	}
 	private static final short ACTION_DISABLE = 0;
 	private static final short ACTION_PURGE = 1;
-	private static final Logger logger = Logger.getLogger(Passed.class);
+	private static final Logger logger = Logger.getLogger(Trial.class);
 
 	private static final short PERIOD_DAILY = 0;
 	private static final short PERIOD_MONTHLY = 2;
 	private static final short PERIOD_WEEKLY = 1;
+	
+	//TODO use "ALLUP" for first period
+//	public static boolean firstPeriod(User user, short period) {
+//	}
 
 	public static Calendar getCalendarForEndOfPeriod(short period) {
 		Calendar cal = Calendar.getInstance();
@@ -191,7 +195,7 @@ public class Passed implements FtpListener {
 	/**
 	 * 
 	 */
-	public Passed() throws FileNotFoundException, IOException {
+	public Trial() throws FileNotFoundException, IOException {
 		super();
 	}
 

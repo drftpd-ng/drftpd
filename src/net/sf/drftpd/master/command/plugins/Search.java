@@ -35,9 +35,8 @@ public class Search implements CommandHandler {
 	/**
 	 * Used by doSITE_DUPE()
 	 * 
-	 * static except for getConfig() and _user
 	 */
-	private void findFile(
+	private static void findFile(
 		BaseFtpConnection conn,
 		FtpReply response,
 		LinkedRemoteFile dir,
@@ -55,10 +54,15 @@ public class Search implements CommandHandler {
 				for (Iterator iterator = searchstrings.iterator();
 					iterator.hasNext();
 					) {
+					if(response.size() >= 100) return;
 					String searchstring = (String) iterator.next();
 					if (file.getName().toLowerCase().indexOf(searchstring)
 						!= -1) {
 						response.addComment(file.getPath());
+						if(response.size() >= 100) {
+							response.addComment("<snip>");
+							return;
+						} 
 						break;
 					}
 				}

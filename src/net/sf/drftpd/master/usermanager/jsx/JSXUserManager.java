@@ -64,6 +64,7 @@ public class JSXUserManager implements UserManager {
 		}
 		if (numUsers == 0) {
 			User user = this.create("drftpd");
+			user.setGroup("drftpd");
 			user.setPassword("drftpd");
 			try {
 				user.addIPMask("*@127.0.0.1");

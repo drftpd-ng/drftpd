@@ -90,7 +90,7 @@ public class FtpConfig {
 	}
 
 	public boolean checkDeleteOwn(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermssion(fromUser, path, _delete.iterator());
+		return checkPathPermssion(fromUser, path, _deleteown.iterator());
 	}
 
 	public boolean checkDirLog(User fromUser, LinkedRemoteFile path) {

@@ -14,10 +14,12 @@ import java.rmi.RemoteException;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.UnhandledCommandException;
+import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
@@ -257,7 +259,13 @@ public class BaseFtpConnection implements Runnable {
 		return executing;
 	}
 	public boolean isTransfering() {
-		return _transfer != null;
+		//return _transfer != null;
+		try {
+			DataConnectionHandler dataconn = (DataConnectionHandler) getCommandManager().getCommandHandler(DataConnectionHandler.class);
+			return dataconn.isTransfering();
+		} catch (ObjectNotFoundException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	/**
 	 * Reset all the member variables. Close all sockets.
