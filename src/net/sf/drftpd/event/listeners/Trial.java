@@ -32,17 +32,21 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.4 2003/11/17 20:13:10 mog Exp $
+ * @version $Id: Trial.java,v 1.5 2003/12/06 10:45:27 mog Exp $
  */
 public class Trial implements FtpListener {
 	class Limit {
 		String action;
+		long bytes;
 		String name;
 		short period;
 		Permission perm;
-		long bytes;
 		public String toString() {
-			return "Limit[name="+name+",bytes="+Bytes.formatBytes(bytes)+"]";
+			return "Limit[name="
+				+ name
+				+ ",bytes="
+				+ Bytes.formatBytes(bytes)
+				+ "]";
 		}
 	}
 
@@ -58,6 +62,19 @@ public class Trial implements FtpListener {
 			super(irc.getIRCConnection());
 			_irc = irc;
 			_parent = parent;
+		}
+
+		private String getPeriodName(short s) {
+			switch (s) {
+				case PERIOD_DAILY :
+					return "days";
+				case PERIOD_MONTHLY :
+					return "months";
+				case PERIOD_WEEKLY :
+					return "weeks";
+				default :
+					throw new IllegalArgumentException("" + s);
+			}
 		}
 
 		protected void updateCommand(InCommand command) {
@@ -124,19 +141,6 @@ public class Trial implements FtpListener {
 			}
 
 		}
-
-		private String getPeriodName(short s) {
-			switch (s) {
-				case PERIOD_DAILY :
-					return "days";
-				case PERIOD_MONTHLY :
-					return "months";
-				case PERIOD_WEEKLY :
-					return "weeks";
-				default :
-					throw new IllegalArgumentException("" + s);
-			}
-		}
 	}
 	private static final short ACTION_DISABLE = 0;
 	private static final short ACTION_PURGE = 1;
@@ -145,17 +149,6 @@ public class Trial implements FtpListener {
 	private static final short PERIOD_DAILY = 0;
 	private static final short PERIOD_MONTHLY = 2;
 	private static final short PERIOD_WEEKLY = 1;
-
-	public static boolean isInFirstPeriod(User user, short period, long time) {
-		//return (now is before end of bonus)
-		//TODO must check against end of bonus and not end of unique period
-		return time
-			>= getCalendarForEndOfFirstPeriod(user, period).getTimeInMillis();
-	}
-
-	public static boolean isInFirstPeriod(User user, short period) {
-		return isInFirstPeriod(user, period, System.currentTimeMillis());
-	}
 
 	/**
 	 * Returns last day of the first, unique, period.
@@ -224,6 +217,17 @@ public class Trial implements FtpListener {
 		}
 	}
 
+	public static boolean isInFirstPeriod(User user, short period) {
+		return isInFirstPeriod(user, period, System.currentTimeMillis());
+	}
+
+	public static boolean isInFirstPeriod(User user, short period, long time) {
+		//return (now is before end of bonus)
+		//TODO must check against end of bonus and not end of unique period
+		return time
+			>= getCalendarForEndOfFirstPeriod(user, period).getTimeInMillis();
+	}
+
 	private ConnectionManager _cm;
 
 	private ArrayList _limits;
@@ -279,7 +283,7 @@ public class Trial implements FtpListener {
 					getCalendarForEndOfFirstPeriod(
 						uevent.getUser(),
 						PERIOD_DAILY);
-						
+
 				if (cal.getTimeInMillis() == cal.getTimeInMillis()) {
 					checkPassed(
 						uevent.getUser(),
@@ -295,14 +299,18 @@ public class Trial implements FtpListener {
 			}
 		}
 		if ("RESETWEEK".equals(cmd)) {
-			if (!isInFirstPeriod(uevent.getUser(), PERIOD_WEEKLY, uevent.getTime()))
+			if (!isInFirstPeriod(uevent.getUser(),
+				PERIOD_WEEKLY,
+				uevent.getTime()))
 				checkPassed(
 					uevent.getUser(),
 					uevent.getUser().getUploadedBytesWeek(),
 					PERIOD_WEEKLY);
 		}
 		if ("RESETMONTH".equals(cmd)) {
-			if (!isInFirstPeriod(uevent.getUser(), PERIOD_MONTHLY, uevent.getTime()))
+			if (!isInFirstPeriod(uevent.getUser(),
+				PERIOD_MONTHLY,
+				uevent.getTime()))
 				checkPassed(
 					uevent.getUser(),
 					uevent.getUser().getUploadedBytesMonth(),
