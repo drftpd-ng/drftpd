@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.17 2004/01/21 21:12:58 zubov Exp $
+ * @version $Id: JobManager.java,v 1.18 2004/01/23 01:41:34 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -97,7 +97,7 @@ public class JobManager implements FtpListener {
 		return tempList;
 	}
 	/**
-	 * Gets the next job suitable for the slave, returns true if it is a mirror job
+	 * Gets the next job suitable for the slave
 	 */
 	public synchronized Job getNextJob(RemoteSlave slave) {
 		Job jobToReturn = null;
@@ -125,6 +125,11 @@ public class JobManager implements FtpListener {
 						}
 					}
 				} catch (NoAvailableSlaveException e) {
+					if (tempJob.getFile().isDeleted()) {
+						iter.remove();
+						logger.debug("Job " + tempJob + " was removed from the list because it is deleted");
+						continue;
+					}
 					logger.debug(
 						"NoAvailableSlaveException for mirror algorithm - "
 							+ slave.getName(),
@@ -169,11 +174,19 @@ public class JobManager implements FtpListener {
 	 * Returns true if the slave could possibly have another file to immediately transfer
 	 */
 	public boolean processJob(RemoteSlave slave) {
-		Job temp = getNextJob(slave);
-
-		if (temp == null) { // nothing to process for this slave
-			//			logger.debug("Nothing to process for slave " + slave.getName());
-			return false;
+		Job temp;
+		while(true) {
+			temp = getNextJob(slave);
+			
+			if (temp == null) { // nothing to process for this slave
+				//			logger.debug("Nothing to process for slave " + slave.getName());
+				return false;
+			}
+			if (!temp.getFile().isDeleted()) {
+				// file is not deleted, process it now
+				break;
+			}
+			// job is already out of the list and isDeleted()
 		}
 		if (temp.getFile().getSlaves().contains(slave)) {
 			if (temp.removeDestinationSlave(slave)) {
