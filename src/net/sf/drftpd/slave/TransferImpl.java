@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.38 2004/02/03 20:28:46 mog Exp $
+ * @version $Id: TransferImpl.java,v 1.39 2004/02/04 23:52:57 mog Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private static final Logger logger = Logger.getLogger(TransferImpl.class);
@@ -138,14 +138,40 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 
 	/**
 	 * Call sock.connect() and start sending.
+	 * 
+	 * Read about buffers here:
+	 * http://groups.google.com/groups?hl=sv&lr=&ie=UTF-8&oe=UTF-8&threadm=9eomqe%24rtr%241%40to-gate.itd.utech.de&rnum=22&prev=/groups%3Fq%3Dtcp%2Bgood%2Bbuffer%2Bsize%26start%3D20%26hl%3Dsv%26lr%3D%26ie%3DUTF-8%26oe%3DUTF-8%26selm%3D9eomqe%2524rtr%25241%2540to-gate.itd.utech.de%26rnum%3D22
+	 * 
+	 * Quote:
+	 * Short answer is: if memory is not limited make your buffer big; TCP will flow
+	 *   control itself and only use what it needs.
+	 *
+	 *Longer answer:  for optimal throughput (assuming TCP is not flow controlling itself
+	 *  for other reasons) you want your buffer size to at least be
+	 *
+	 *  channel bandwidth * channel round-trip-delay.
+	 *
+	 *  So on a long slow link, if you can get 100K bps throughput,
+	 *  but your delay -s 8 seconds, you want:
+	 *
+	 *   100Kbps * / bits-per-byte * 8 seconds
+	 *   = 100 Kbytes
+	 *
+	 *  That way TCP can keep transmitting data for 8 seconds before it
+	 *  would have to stop and wait for an ack (to clear space in the
+	 *  buffer for new data so it can put new TX data in there and
+	 *  on the line).  (The idea is to get the ack before you have to stop
+	 *  transmitting.)
 	 */
 	private void transfer() throws IOException {
 		_started = System.currentTimeMillis();
 		_sock = _conn.connect();
 		_conn = null;
 		if (_in == null) {
+			_sock.setReceiveBufferSize(65536);
 			_in = _sock.getInputStream();
 		} else if (_out == null) {
+			_sock.setSendBufferSize(65536);
 			_out = _sock.getOutputStream();
 		} else {
 			throw new IllegalStateException("neither in or out was null");
@@ -156,7 +182,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 
 		_slave.addTransfer(this);
 		try {
-			byte[] buff = new byte[4096];
+			byte[] buff = new byte[65536];
 			int count;
 			while ((count = _in.read(buff)) != -1 && !_abort) {
 				_transfered += count;
@@ -173,6 +199,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 
 			_in = null;
 			_out = null;
+			_sock = null;
 		}
 		if (_abort)
 			throw new IOException("Transfer was aborted");
