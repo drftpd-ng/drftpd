@@ -3,16 +3,17 @@ package net.sf.drftpd.master;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.rmi.ConnectException;
+import java.rmi.ConnectIOException;
 import java.rmi.RemoteException;
 import java.util.Collection;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 /**
  * Class would fit both in net.sf.drftpd.slave and net.sf.drftpd.master.
@@ -109,7 +110,7 @@ public class RemoteSlave implements Serializable, Comparable {
 			return false;
 		}
 		logger.warn("Fatal exception from "+getName()+", removing", ex);
-		setOffline(ex.getMessage()+": "+ex.getCause().getMessage());
+		setOffline(ex.getCause().getMessage());
 		return true;
 	}
 
@@ -118,7 +119,7 @@ public class RemoteSlave implements Serializable, Comparable {
 	}
 
 	public static boolean isFatalRemoteException(RemoteException ex) {
-		return (ex instanceof ConnectException);
+		return (ex instanceof ConnectException || ex instanceof ConnectIOException);
 	}
 	private InetAddress inetAddress;
 	

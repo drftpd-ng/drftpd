@@ -200,33 +200,6 @@ public class IRCListener implements FtpListener, Observer {
 		}
 	}
 
-	/**
-	 * @param event
-	 */
-	private void actionPerformedSlave(SlaveEvent event)
-		throws FormatterException {
-		SlaveEvent sevent = (SlaveEvent) event;
-		ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
-		env.add("slave", sevent.getRSlave().getName());
-		env.add("message", sevent.getMessage());
-		if (event.getCommand().equals("ADDSLAVE")) {
-			SlaveStatus status;
-			try {
-				status = sevent.getRSlave().getStatus();
-			} catch (RemoteException e) {
-				sevent.getRSlave().handleRemoteException(e);
-				return;
-			} catch (NoAvailableSlaveException e) {
-				return;
-			}
-			fillEnvSpace(env, status);
-
-			say(SimplePrintf.jprintf(_ircCfg.getProperty("addslave"), env));
-		} else if (event.getCommand().equals("DELSLAVE")) {
-			say(SimplePrintf.jprintf(_ircCfg.getProperty("delslave"), env));
-		}
-	}
-
 	private void actionPerformedDirectory(DirectoryFtpEvent direvent)
 		throws FormatterException {
 
@@ -351,7 +324,7 @@ public class IRCListener implements FtpListener, Observer {
 
 				Ret ret2 = getPropertyFileSuffix("store.complete.racer", dir);
 				ReplacerFormat raceformat;
-				//TODO already have section from ret.section
+				// already have section from ret.section
 				raceformat = ReplacerFormat.createFormat(ret2.format);
 
 				int position = 1;
@@ -488,6 +461,33 @@ public class IRCListener implements FtpListener, Observer {
 		}
 	}
 
+	/**
+	 * @param event
+	 */
+	private void actionPerformedSlave(SlaveEvent event)
+		throws FormatterException {
+		SlaveEvent sevent = (SlaveEvent) event;
+		ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
+		env.add("slave", sevent.getRSlave().getName());
+		env.add("message", sevent.getMessage());
+		if (event.getCommand().equals("ADDSLAVE")) {
+			SlaveStatus status;
+			try {
+				status = sevent.getRSlave().getStatus();
+			} catch (RemoteException e) {
+				sevent.getRSlave().handleRemoteException(e);
+				return;
+			} catch (NoAvailableSlaveException e) {
+				return;
+			}
+			fillEnvSpace(env, status);
+
+			say(SimplePrintf.jprintf(_ircCfg.getProperty("addslave"), env));
+		} else if (event.getCommand().equals("DELSLAVE")) {
+			say(SimplePrintf.jprintf(_ircCfg.getProperty("delslave"), env));
+		}
+	}
+
 	private void fillEnvSection(
 		ReplacerEnvironment env,
 		DirectoryFtpEvent direvent,
@@ -548,9 +548,29 @@ public class IRCListener implements FtpListener, Observer {
 	 * @param status
 	 */
 	private void fillEnvSpace(ReplacerEnvironment env, SlaveStatus status) {
+		env.add("xfers", Integer.toString(status.getTransfers()));
+		env.add("throughput", Bytes.formatBytes(status.getThroughput()));
+
+		env.add("xfersup", Integer.toString(status.getTransfersReceiving()));
+		env.add(
+			"throughputup",
+			Bytes.formatBytes(status.getThroughputReceiving()));
+
+		env.add("xfersdn", Integer.toString(status.getTransfersSending()));
+		env.add(
+			"throughputdown",
+			Bytes.formatBytes(status.getThroughputSending()));
+
 		env.add("disktotal", Bytes.formatBytes(status.getDiskSpaceCapacity()));
 		env.add("diskfree", Bytes.formatBytes(status.getDiskSpaceAvailable()));
 		env.add("diskused", Bytes.formatBytes(status.getDiskSpaceUsed()));
+	}
+
+	/**
+	 * 
+	 */
+	private FtpConfig getConfig() {
+		return _cm.getConfig();
 	}
 
 	public ConnectionManager getConnectionManager() {
@@ -650,7 +670,11 @@ public class IRCListener implements FtpListener, Observer {
 				if (message.equals("!help")) {
 					say("Available commands: !bw !slaves !speed !who");
 				} else if (message.equals("!bw")) {
-					updateBw(observer, msgc);
+					try {
+						updateBw(observer, msgc);
+					} catch (FormatterException e) {
+						say("[bw] FormatterException: "+e.getMessage());
+					}
 				} else if (message.equals("!slaves")) {
 					updateSlaves(observer, msgc);
 				} else if (message.startsWith("!speed")) {
@@ -658,6 +682,12 @@ public class IRCListener implements FtpListener, Observer {
 						updateSpeed(observer, msgc);
 					} catch (FormatterException e) {
 						say("[speed] FormatterException: " + e.getMessage());
+					}
+				} else if(message.equals("!df")) {
+					try {
+						updateDF(observer, msgc);
+					} catch(FormatterException e) {
+						say("[df] FormatterException: "+e.getMessage());
 					}
 				} else if (message.startsWith("!who")) {
 					try {
@@ -753,6 +783,8 @@ public class IRCListener implements FtpListener, Observer {
 							logger.warn("", e);
 						}
 					}
+				} else {
+					logger.debug("Unhandled IRC message: '"+message+"'");
 				}
 			}
 			// Don't bother martyr with our exceptions.
@@ -762,41 +794,28 @@ public class IRCListener implements FtpListener, Observer {
 		}
 	}
 
-	private void updateBw(Observable observer, MessageCommand command) {
+	private void updateBw(Observable observer, MessageCommand command) throws FormatterException {
 		SlaveStatus status = _cm.getSlaveManager().getAllStatus();
 
-		int idlers = 0;
-		int total = 0;
-		for (Iterator iter = _cm.getConnections().iterator();
-			iter.hasNext();
-			) {
-			BaseFtpConnection conn = (BaseFtpConnection) iter.next();
-			total++;
-			if (!conn.isExecuting())
-				idlers++;
-		}
 		ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
 
-		env.add("xfers", Integer.toString(status.getTransfers()));
-		env.add("throughput", Bytes.formatBytes(status.getThroughput()));
-
-		env.add("xfersup", Integer.toString(status.getTransfersReceiving()));
-		env.add(
-			"throughputup",
-			Bytes.formatBytes(status.getThroughputReceiving()));
-
-		env.add("xfersdn", Integer.toString(status.getTransfersSending()));
-		env.add(
-			"throughputdown",
-			Bytes.formatBytes(status.getThroughputSending()));
 
 		fillEnvSpace(env, status);
 
-		try {
-			say(SimplePrintf.jprintf(_ircCfg.getProperty("bw"), env));
-		} catch (FormatterException e) {
-			logger.log(Level.WARN, "", e);
-		}
+		say(SimplePrintf.jprintf(_ircCfg.getProperty("bw"), env));
+	}
+
+	/**
+	 * @param observer
+	 * @param msgc
+	 */
+	private void updateDF(Observable observer, MessageCommand msgc) throws FormatterException {
+		SlaveStatus status = getSlaveManager().getAllStatus();
+		ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
+		
+		fillEnvSpace(env, status);
+		
+		say(SimplePrintf.jprintf(_ircCfg.getProperty("diskfree"), env));		
 	}
 
 	private void updateSlaves(Observable observer, MessageCommand updated) {
@@ -967,13 +986,6 @@ public class IRCListener implements FtpListener, Observer {
 	}
 
 	/**
-	 * 
-	 */
-	private FtpConfig getConfig() {
-		return _cm.getConfig();
-	}
-
-	/**
 	 * @param observer
 	 * @param msgc
 	 */
@@ -999,7 +1011,7 @@ public class IRCListener implements FtpListener, Observer {
 				} catch (NoSuchUserException e) {
 					continue;
 				}
-				if (!getConfig().checkHideInWho(conn.getCurrentDirectory(), user))
+				if (getConfig().checkHideInWho(conn.getCurrentDirectory(), user))
 					continue;
 				StringBuffer status = new StringBuffer();
 				env.add(

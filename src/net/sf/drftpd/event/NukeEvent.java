@@ -88,7 +88,6 @@ public class NukeEvent extends UserEvent {
 		element.addContent(new Element("multiplier").setText(Integer.toString(this.getMultiplier())));
 		element.addContent(new Element("reason").setText(this.getReason()));
 		element.addContent(new Element("time").setText(Long.toString(this.getTime())));
-		element.addContent(new Element("command").setText(this.getCommand()));
 		
 		Element nukees = new Element("nukees");
 		for (Iterator iter = this.getNukees().entrySet().iterator(); iter.hasNext();) {
@@ -100,6 +99,7 @@ public class NukeEvent extends UserEvent {
 			nukee.addContent(new Element("amount").setText(amount.toString()));
 			nukees.addContent(nukee);
 		}
+		element.addContent(nukees);
 		return element;
 	}
 	/**

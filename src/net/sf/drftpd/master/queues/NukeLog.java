@@ -7,7 +7,9 @@
 package net.sf.drftpd.master.queues;
 
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -15,8 +17,11 @@ import java.util.List;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.NukeEvent;
 
+import org.apache.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.output.XMLOutputter;
+
+import JSX.ObjOut;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
@@ -24,8 +29,12 @@ import org.jdom.output.XMLOutputter;
  * To change the template for this generated type comment go to
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
-public class NukeLog {
+public class NukeLog implements Serializable {
+	private static Logger logger = Logger.getLogger(NukeLog.class);
+
 	ArrayList nukes = new ArrayList();
+	public NukeLog() {
+	}
 	
 	public NukeEvent get(String path) throws ObjectNotFoundException {
 		for (Iterator iter = nukes.iterator(); iter.hasNext();) {
@@ -48,6 +57,12 @@ public class NukeLog {
 	
 	public void add(NukeEvent nuke) {
 		nukes.add(nuke);
+//		try {
+//			ObjOut out = new ObjOut(new FileWriter("nukelog.xml"));
+//			out.writeObject(this);
+//		} catch (IOException e) {
+//			logger.warn("", e);
+//		}
 		XMLOutputter outputter = new XMLOutputter("    ", true);
 		try {
 			outputter.output(this.toXML(), new FileOutputStream("nukelog.xml"));

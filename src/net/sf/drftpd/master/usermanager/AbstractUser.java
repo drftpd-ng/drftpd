@@ -557,7 +557,7 @@ public abstract class AbstractUser extends User {
 	}
 
 	public boolean isAdmin() {
-		return isMemberOf("siteop") || isMemberOf("admin");
+		return isMemberOf("siteop");
 	}
 	/**
 	 * Returns the anonymous.

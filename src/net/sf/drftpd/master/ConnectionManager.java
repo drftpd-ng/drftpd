@@ -44,6 +44,7 @@ import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
+import org.jdom.output.XMLOutputter;
 
 public class ConnectionManager {
 	public static final int idleTimeout = 300;
@@ -91,58 +92,6 @@ public class ConnectionManager {
 		}
 		/** END: load XML file database **/
 
-		nukelog = new NukeLog();
-
-		try {
-			Document doc =
-				new SAXBuilder().build(new FileReader("nukelog.xml"));
-			List nukes = doc.getRootElement().getChildren("nukes");
-			for (Iterator iter = nukes.iterator(); iter.hasNext();) {
-				Element nukeElement = (Element) iter.next();
-
-				User user =
-					usermanager.getUserByName(nukeElement.getChildText("user"));
-				String command = nukeElement.getChildText("command");
-				String directory = nukeElement.getChildText("directory");
-				long time = Long.parseLong(nukeElement.getChildText("time"));
-				int multiplier =
-					Integer.parseInt(nukeElement.getChildText("multiplier"));
-				String reason = nukeElement.getChildText("reason");
-
-				Map nukees = new Hashtable();
-				List nukeesElement =
-					nukeElement.getChild("nukees").getChildren("nukee");
-				for (Iterator iterator = nukeesElement.iterator();
-					iterator.hasNext();
-					) {
-					Element nukeeElement = (Element) iterator.next();
-					String nukeeUsername =
-						nukeeElement.getChildText("username");
-					Long nukeeAmount =
-						new Long(nukeeElement.getChildText("amount"));
-					nukees.put(nukeeUsername, nukeeAmount);
-				}
-
-				nukelog.add(
-					new NukeEvent(
-						user,
-						command,
-						directory,
-						time,
-						multiplier,
-						reason,
-						nukees));
-			}
-		} catch (FileNotFoundException ex) {
-			logger.log(
-				Level.DEBUG,
-				"nukelog.xml not found, will create it after first nuke.");
-		} catch (Exception ex) {
-			logger.log(
-				Level.INFO,
-				"Error loading nukelog from nukelog.xml",
-				ex);
-		}
 		List rslaves = SlaveManagerImpl.loadRSlaves();
 		GlobRMIServerSocketFactory ssf =
 			new GlobRMIServerSocketFactory(rslaves);
@@ -177,6 +126,57 @@ public class ConnectionManager {
 				e);
 		}
 
+		nukelog = new NukeLog();
+		try {
+			Document doc =
+				new SAXBuilder().build(new FileReader("nukelog.xml"));
+			List nukes = doc.getRootElement().getChildren();
+			for (Iterator iter = nukes.iterator(); iter.hasNext();) {
+				Element nukeElement = (Element) iter.next();
+
+				User user =
+					usermanager.getUserByName(nukeElement.getChildText("user"));
+				String directory = nukeElement.getChildText("path");
+				long time = Long.parseLong(nukeElement.getChildText("time"));
+				int multiplier =
+					Integer.parseInt(nukeElement.getChildText("multiplier"));
+				String reason = nukeElement.getChildText("reason");
+
+				Map nukees = new Hashtable();
+				List nukeesElement =
+					nukeElement.getChild("nukees").getChildren("nukee");
+				for (Iterator iterator = nukeesElement.iterator();
+					iterator.hasNext();
+					) {
+					Element nukeeElement = (Element) iterator.next();
+					String nukeeUsername =
+						nukeeElement.getChildText("username");
+					Long nukeeAmount =
+						new Long(nukeeElement.getChildText("amount"));
+					nukees.put(nukeeUsername, nukeeAmount);
+				}
+			new XMLOutputter("  ").output(nukeElement, System.out);
+				nukelog.add(
+					new NukeEvent(
+						user,
+						"NUKE",
+						directory,
+						time,
+						multiplier,
+						reason,
+						nukees));
+			}
+		} catch (FileNotFoundException ex) {
+			logger.log(
+				Level.DEBUG,
+				"nukelog.xml not found, will create it after first nuke.");
+		} catch (Exception ex) {
+			logger.log(
+				Level.INFO,
+				"Error loading nukelog from nukelog.xml",
+				ex);
+		}
+		
 		timer = new Timer();
 		TimerTask timerLogoutIdle = new TimerTask() {
 			public void run() {

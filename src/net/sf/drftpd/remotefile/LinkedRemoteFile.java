@@ -180,6 +180,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		LinkedRemoteFile linkedfile =
 			new LinkedRemoteFile(this, file, this.ftpConfig);
 		files.put(linkedfile.getName(), linkedfile);
+		this.lastModified = System.currentTimeMillis();
 		return linkedfile;
 	}
 	public void addSlave(RemoteSlave slave) {
@@ -220,6 +221,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		//file.addSlaves(getSlaves());
 		files.put(file.getName(), file);
 		logger.debug("Created directory " + file);
+		this.lastModified = System.currentTimeMillis();
 		return file;
 	}
 
@@ -460,7 +462,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		while (true) {
 			if (parent.getName().length() == 0)
 				break;
-			//			if(parent == null) break;
 			path.insert(0, "/" + parent.getName());
 			try {
 				parent = parent.getParentFile();
@@ -469,9 +470,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				break;
 			}
 		}
-		//if (isDirectory())
-		//	path.append("/");
-
+		if(path.length() == 0) return "/";
 		return path.toString();
 	}
 
@@ -875,13 +874,13 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				// 4 scenarios: new/existing file/directory
 				if (mergefile.isDirectory()) {
 					if (!file.isDirectory())
-						throw new RuntimeException("!!! ERROR: Directory/File conflict!!");
+						throw new RuntimeException("!!! ERROR: Directory/File conflict: "+this+" from "+rslave.getName());
 					// is a directory -- dive into directory and start merging
 					file.remerge(mergefile, rslave);
 				} else {
 					file.addSlave(rslave);
 					if (file.isDirectory())
-						throw new RuntimeException("!!! ERROR: File/Directory conflict!!");
+						throw new RuntimeException("!!! ERROR: File/Directory conflict: "+this+" from "+rslave.getName());
 				}
 			} // file != null
 		}
