@@ -172,6 +172,7 @@ public class IRCNuke extends IRCCommand {
 				toDirPath = nukeDir.getParentFile().getPath();
 			} catch (FileNotFoundException ex) {
 				logger.fatal("", ex);
+				out.add("FileNotFoundException");
 				return out;
 			}
 			try {
@@ -244,7 +245,6 @@ public class IRCNuke extends IRCCommand {
 
 	public ArrayList<String> doUnnuke(String args, MessageCommand msgc) {
 	    ArrayList<String> out = new ArrayList<String>();
-	    out.add("");
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		env.add("ircnick", msgc.getSource().getNick());
 		

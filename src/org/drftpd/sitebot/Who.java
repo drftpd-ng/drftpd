@@ -113,6 +113,9 @@ public class Who extends IRCCommand {
         } catch (FormatterException e) {
             logger.warn("", e);
         }
+        if (out.isEmpty()) {
+        	out.add(ReplacerUtils.jprintf("who.none", env, Who.class));
+        }
         return out;
     }
 

@@ -123,8 +123,11 @@ public class Bandwidth extends IRCCommand {
             }
         } // for
 
-        if (!found)
+        if (!found) {
+        	out.clear();
             out.add(ReplacerUtils.jprintf("speed.error", env, Bandwidth.class));
+            return out;
+        }
         out.add(ReplacerUtils.jprintf("speed.post", env, Bandwidth.class));
 
 		return out;

@@ -66,6 +66,9 @@ public class Slaves extends IRCCommand {
     	for(RemoteSlave rslave : getGlobalContext().getSlaveManager().getSlaves()) {
             out.add(makeStatusString(rslave));
         }
+    	if (out.isEmpty()) {
+            out.add(ReplacerUtils.jprintf("slaves.notfound", env, Slaves.class));
+    	}
         return out;
     }
     

@@ -1175,13 +1175,13 @@ public class SiteBot extends FtpListener implements Observer {
 		
         //maximum announcements for race results
 		try {
-            _maxUserAnnounce = Integer.parseInt(ircCfg.getProperty("irc.max.racers"));
+            _maxUserAnnounce = Integer.parseInt(ircCfg.getProperty("irc.max.racers", "100"));
         } catch (NumberFormatException e) {
             logger.warn("Invalid setting in irc.conf: irc.max.racers", e);
             _maxUserAnnounce = 100;
         }
 		try {
-            _maxGroupAnnounce = Integer.parseInt(ircCfg.getProperty("irc.max.groups"));
+            _maxGroupAnnounce = Integer.parseInt(ircCfg.getProperty("irc.max.groups", "100"));
         } catch (NumberFormatException e) {
             logger.warn("Invalid setting in irc.conf: irc.max.groups", e);
             _maxGroupAnnounce = 100;
@@ -1317,13 +1317,13 @@ public class SiteBot extends FtpListener implements Observer {
 				}
 				try {
 					ArrayList<String> list = (ArrayList) ((Method) objects[0]).invoke(objects[1],new Object[] {args, msgc});
-					if (list.isEmpty()) {
-						say(getSource(msgc), "There is no output to return");
+					if (list == null || list.isEmpty()) {
+						logger.debug("There is no direct output to return for command " + trigger + " by " + msgc.getSource().getNick());
+					} else {
+						for (String output : list) {
+							say(getSource(msgc),output);
+						}
 					}
-					for (String output : list) {
-						say(getSource(msgc),output);
-					}
-					
 				} catch (Exception e) {
 					logger.error("Error in method invocation on IRCCommand " + trigger, e);
 					say(getSource(msgc), e.getMessage());
