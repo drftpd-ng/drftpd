@@ -426,6 +426,8 @@ public class UserManagment implements CommandHandler {
 			return doSITE_DELIP(conn);
 		if ("SITE DELUSER".equals(cmd))
 			return doSITE_DELUSER(conn);
+		if ("SITE ADDUSER".equals(cmd))
+			return doSITE_ADDUSER(conn);
 		if ("SITE GADDUSER".equals(cmd))
 			return doSITE_GADDUSER(conn);
 		if ("SITE GINFO".equals(cmd))
