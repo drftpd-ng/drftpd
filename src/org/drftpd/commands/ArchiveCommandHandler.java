@@ -48,7 +48,7 @@ import java.util.StringTokenizer;
 
 /*
  * @author zubov
- * @version $Id: ArchiveCommandHandler.java,v 1.8 2004/11/02 07:32:49 zubov Exp $
+ * @version $Id: ArchiveCommandHandler.java,v 1.9 2004/11/03 16:46:44 mog Exp $
  */
 public class ArchiveCommandHandler implements CommandHandlerFactory,
     CommandHandler {
@@ -93,8 +93,8 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
             lrf = conn.getCurrentDirectory().getFile(dirname);
         } catch (FileNotFoundException e1) {
             try {
-                lrf = conn.getConnectionManager().getGlobalContext().getRoot()
-                          .lookupFile(dirname);
+                lrf = conn.getGlobalContext().getConnectionManager()
+                          .getGlobalContext().getRoot().lookupFile(dirname);
             } catch (FileNotFoundException e2) {
                 reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
                         "archive.usage", env));
@@ -109,7 +109,8 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
         net.sf.drftpd.event.listeners.Archive archive;
 
         try {
-            archive = (net.sf.drftpd.event.listeners.Archive) conn.getConnectionManager()
+            archive = (net.sf.drftpd.event.listeners.Archive) conn.getGlobalContext()
+                                                                  .getConnectionManager()
                                                                   .getFtpListener(net.sf.drftpd.event.listeners.Archive.class);
         } catch (ObjectNotFoundException e3) {
             reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
@@ -120,8 +121,9 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
 
         String archiveTypeName = null;
         ArchiveType archiveType = null;
-        SectionInterface section = conn.getConnectionManager().getGlobalContext()
-                                       .getSectionManager().lookup(lrf.getPath());
+        SectionInterface section = conn.getGlobalContext().getConnectionManager()
+                                       .getGlobalContext().getSectionManager()
+                                       .lookup(lrf.getPath());
 
         if (st.hasMoreTokens()) { // load the specific type
             archiveTypeName = st.nextToken();
@@ -181,7 +183,8 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
             String slavename = st.nextToken();
 
             try {
-                RemoteSlave rslave = conn.getConnectionManager()
+                RemoteSlave rslave = conn.getGlobalContext()
+                                         .getConnectionManager()
                                          .getGlobalContext().getSlaveManager()
                                          .getRemoteSlave(slavename);
                 slaveSet.add(rslave);
@@ -246,7 +249,8 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
         Archive archive;
 
         try {
-            archive = (Archive) conn.getConnectionManager().getFtpListener(Archive.class);
+            archive = (Archive) conn.getGlobalContext().getConnectionManager()
+                                    .getFtpListener(Archive.class);
         } catch (ObjectNotFoundException e) {
             reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
                     "archive.loadarchive", env));

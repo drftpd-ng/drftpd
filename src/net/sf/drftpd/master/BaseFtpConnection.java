@@ -17,6 +17,35 @@
  */
 package net.sf.drftpd.master;
 
+import net.sf.drftpd.Bytes;
+import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.SlaveUnavailableException;
+import net.sf.drftpd.event.ConnectionEvent;
+import net.sf.drftpd.event.Event;
+import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+import net.sf.drftpd.util.AddAsciiOutputStream;
+import net.sf.drftpd.util.ReplacerUtils;
+import net.sf.drftpd.util.Time;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
+import org.drftpd.GlobalContext;
+
+import org.drftpd.commands.UnhandledCommandException;
+
+import org.drftpd.slave.RemoteTransfer;
+
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+
+import org.tanesha.replacer.FormatterException;
+import org.tanesha.replacer.ReplacerEnvironment;
+import org.tanesha.replacer.ReplacerFormat;
+import org.tanesha.replacer.SimplePrintf;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,6 +54,7 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
@@ -33,30 +63,6 @@ import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocket;
 
-import net.sf.drftpd.Bytes;
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.event.ConnectionEvent;
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.master.command.CommandManager;
-import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.util.AddAsciiOutputStream;
-import net.sf.drftpd.util.ReplacerUtils;
-import net.sf.drftpd.util.Time;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
-import org.drftpd.commands.UnhandledCommandException;
-import org.drftpd.slave.RemoteTransfer;
-import org.tanesha.replacer.FormatterException;
-import org.tanesha.replacer.ReplacerEnvironment;
-import org.tanesha.replacer.ReplacerFormat;
-import org.tanesha.replacer.SimplePrintf;
-
 
 /**
  * This is a generic ftp connection handler. It delegates
@@ -64,7 +70,7 @@ import org.tanesha.replacer.SimplePrintf;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.99 2004/11/02 07:32:39 zubov Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.100 2004/11/03 16:46:38 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
     private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() +
@@ -164,7 +170,7 @@ public class BaseFtpConnection implements Runnable {
     * @deprecated use getConnectionManager().dispatchFtpEvent()
     */
     protected void dispatchFtpEvent(Event event) {
-        getConnectionManager().dispatchFtpEvent(event);
+        getGlobalContext().getConnectionManager().dispatchFtpEvent(event);
     }
 
     /**
@@ -180,10 +186,6 @@ public class BaseFtpConnection implements Runnable {
 
     public GlobalContext getGlobalContext() {
         return _gctx;
-    }
-
-    public ConnectionManager getConnectionManager() {
-        return getGlobalContext().getConnectionManager();
     }
 
     public BufferedReader getControlReader() {
@@ -242,10 +244,6 @@ public class BaseFtpConnection implements Runnable {
 
     public ServerSocketFactory getServerSocketFactory() {
         return ServerSocketFactory.getDefault();
-    }
-
-    public SlaveManager getSlaveManager() {
-        return getConnectionManager().getGlobalContext().getSlaveManager();
     }
 
     public SocketFactory getSocketFactory() {
@@ -338,7 +336,8 @@ public class BaseFtpConnection implements Runnable {
         logger.info("Handling new request from " +
             getClientAddress().getHostAddress());
 
-        if (!getConnectionManager().getGlobalContext().getConfig().getHideIps()) {
+        if (!getGlobalContext().getConnectionManager().getGlobalContext()
+                     .getConfig().getHideIps()) {
             _thread.setName("FtpConn from " +
                 getClientAddress().getHostAddress());
         }
@@ -353,13 +352,14 @@ public class BaseFtpConnection implements Runnable {
             //		new OutputStreamWriter(_controlSocket.getOutputStream())));
             _controlSocket.setSoTimeout(1000);
 
-            if (getConnectionManager().getGlobalContext().isShutdown()) {
-                stop(getConnectionManager().getGlobalContext()
+            if (getGlobalContext().getConnectionManager().getGlobalContext()
+                        .isShutdown()) {
+                stop(getGlobalContext().getConnectionManager().getGlobalContext()
                          .getShutdownMessage());
             } else {
                 FtpReply response = new FtpReply(220,
-                        getConnectionManager().getGlobalContext().getConfig()
-                            .getLoginPrompt());
+                        getGlobalContext().getConnectionManager()
+                            .getGlobalContext().getConfig().getLoginPrompt());
                 _out.print(response);
             }
 
@@ -434,7 +434,7 @@ public class BaseFtpConnection implements Runnable {
                 dispatchFtpEvent(new ConnectionEvent(this, "LOGOUT"));
             }
 
-            getConnectionManager().remove(this);
+            getGlobalContext().getConnectionManager().remove(this);
         }
     }
 
@@ -464,8 +464,8 @@ public class BaseFtpConnection implements Runnable {
         _authenticated = authenticated;
 
         if (isAuthenticated() &&
-                !getConnectionManager().getGlobalContext().getConfig()
-                         .getHideIps()) {
+                !getGlobalContext().getConnectionManager().getGlobalContext()
+                         .getConfig().getHideIps()) {
             _thread.setName("FtpConn from " +
                 getClientAddress().getHostAddress() + " " +
                 _user.getUsername() + "/" + _user.getGroupName());
@@ -554,6 +554,7 @@ public class BaseFtpConnection implements Runnable {
 
         return buf.toString();
     }
+
     public OutputStream getOutputStream() throws IOException {
         return _controlSocket.getOutputStream();
     }

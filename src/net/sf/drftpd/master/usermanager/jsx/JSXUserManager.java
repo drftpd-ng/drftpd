@@ -21,13 +21,14 @@ import JSX.ObjIn;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.master.usermanager.UserFileException;
-import net.sf.drftpd.master.usermanager.UserManager;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
+import org.drftpd.usermanager.UserManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -41,7 +42,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: JSXUserManager.java,v 1.35 2004/10/03 16:13:53 mog Exp $
+ * @version $Id: JSXUserManager.java,v 1.36 2004/11/03 16:46:41 mog Exp $
  */
 public class JSXUserManager extends UserManager {
     private static final Logger logger = Logger.getLogger(JSXUserManager.class.getName());

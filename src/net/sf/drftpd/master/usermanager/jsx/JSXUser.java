@@ -18,14 +18,15 @@ package net.sf.drftpd.master.usermanager.jsx;
 
 import JSX.ObjOut;
 
-import net.sf.drftpd.master.usermanager.AbstractUser;
-import net.sf.drftpd.master.usermanager.PlainTextPasswordUser;
-import net.sf.drftpd.master.usermanager.UnixPassword;
-import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.util.Crypt;
 import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Logger;
+
+import org.drftpd.usermanager.AbstractUser;
+import org.drftpd.usermanager.PlainTextPasswordUser;
+import org.drftpd.usermanager.UnixPassword;
+import org.drftpd.usermanager.UserFileException;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +37,7 @@ import java.util.ArrayList;
 
 /**
  * @author mog
- * @version $Id: JSXUser.java,v 1.20 2004/11/03 05:43:23 zubov Exp $
+ * @version $Id: JSXUser.java,v 1.21 2004/11/03 16:46:41 mog Exp $
  */
 public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
     UnixPassword {

@@ -21,7 +21,6 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
@@ -31,6 +30,8 @@ import org.drftpd.remotefile.LinkedRemoteFileUtils;
 import org.drftpd.sections.SectionInterface;
 
 import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
+
+import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;
 
@@ -44,7 +45,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilter.java,v 1.12 2004/11/02 07:33:12 zubov Exp $
+ * @version $Id: SlavetopFilter.java,v 1.13 2004/11/03 16:46:48 mog Exp $
  */
 public class SlavetopFilter extends Filter {
     private GlobalContext _gctx;

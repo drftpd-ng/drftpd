@@ -17,17 +17,6 @@
  */
 package org.drftpd.slave;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.util.zip.CRC32;
-import java.util.zip.CheckedInputStream;
-import java.util.zip.CheckedOutputStream;
-
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.slave.Connection;
 import net.sf.drftpd.slave.PassiveConnection;
@@ -36,68 +25,76 @@ import net.sf.drftpd.slave.TransferStatus;
 import net.sf.drftpd.util.AddAsciiOutputStream;
 
 import org.apache.log4j.Logger;
+
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
 
 import se.mog.io.File;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import java.net.Socket;
+
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
+import java.util.zip.CheckedOutputStream;
+
+
 /**
  * @author zubov
- * @version $Id: Transfer.java,v 1.2 2004/11/02 07:32:52 zubov Exp $
+ * @version $Id: Transfer.java,v 1.3 2004/11/03 16:46:46 mog Exp $
  */
 public class Transfer {
-
     private static final Logger logger = Logger.getLogger(Transfer.class);
-
     private boolean _abort = false;
-
-    public int hashCode() {
-        return _transferIndex.hashCode();
-    }
     private CRC32 _checksum = null;
-
     private Connection _conn;
-
     private char _direction;
-
     private long _finished = 0;
-
     private InputStream _in;
-
     private char _mode = 'I';
-
     private OutputStream _out;
-
     private Slave _slave;
-
     private Socket _sock;
-
     private long _started = 0;
-
     private long _transfered = 0;
-
     private TransferIndex _transferIndex;
-
     private boolean _transferIsFinished = false;
 
     /**
      * Start undefined transfer.
      */
     public Transfer(Connection conn, Slave slave, TransferIndex transferIndex) {
-        if (conn == null)
+        if (conn == null) {
             throw new RuntimeException();
-        if (slave == null)
+        }
+
+        if (slave == null) {
             throw new RuntimeException();
-        if (transferIndex == null)
+        }
+
+        if (transferIndex == null) {
             throw new RuntimeException();
+        }
+
         _slave = slave;
         _conn = conn;
         _direction = RemoteTransfer.TRANSFER_UNKNOWN;
         _transferIndex = transferIndex;
     }
 
+    public int hashCode() {
+        return _transferIndex.hashCode();
+    }
+
     public void abort() {
         _abort = true;
         _transferIsFinished = true;
+
         if (_conn != null) {
             _conn.abort();
         }
@@ -126,6 +123,7 @@ public class Transfer {
         if (_finished == 0) {
             return System.currentTimeMillis() - _started;
         }
+
         return _finished - _started;
     }
 
@@ -133,8 +131,9 @@ public class Transfer {
         if (_conn instanceof PassiveConnection) {
             return ((PassiveConnection) _conn).getLocalPort();
         }
+
         throw new IllegalStateException(
-                "getLocalPort() called on a non-passive transfer");
+            "getLocalPort() called on a non-passive transfer");
     }
 
     public char getState() {
@@ -143,7 +142,7 @@ public class Transfer {
 
     public TransferStatus getTransferStatus() {
         return new TransferStatus(getElapsed(), getTransfered(), getChecksum(),
-                _transferIsFinished, getTransferIndex());
+            _transferIsFinished, getTransferIndex());
     }
 
     public long getTransfered() {
@@ -177,8 +176,7 @@ public class Transfer {
     }
 
     public TransferStatus receiveFile(String dirname, char mode,
-            String filename, long offset) throws IOException {
-
+        String filename, long offset) throws IOException {
         try {
             _slave.getRoots().getFile(dirname + File.separator + filename);
             throw new FileExistsException("File exists");
@@ -206,8 +204,7 @@ public class Transfer {
     }
 
     public TransferStatus sendFile(String path, char type, long resumePosition)
-            throws IOException {
-
+        throws IOException {
         _in = new FileInputStream(_slave.getRoots().getFile(path));
 
         if (_slave.getDownloadChecksums()) {
@@ -218,30 +215,30 @@ public class Transfer {
         _in.skip(resumePosition);
 
         System.out.println("DL:" + path);
-        return transfer();
 
+        return transfer();
     }
 
     /**
      * Call sock.connect() and start sending.
-     * 
+     *
      * Read about buffers here:
      * http://groups.google.com/groups?hl=sv&lr=&ie=UTF-8&oe=UTF-8&threadm=9eomqe%24rtr%241%40to-gate.itd.utech.de&rnum=22&prev=/groups%3Fq%3Dtcp%2Bgood%2Bbuffer%2Bsize%26start%3D20%26hl%3Dsv%26lr%3D%26ie%3DUTF-8%26oe%3DUTF-8%26selm%3D9eomqe%2524rtr%25241%2540to-gate.itd.utech.de%26rnum%3D22
-     * 
+     *
      * Quote: Short answer is: if memory is not limited make your buffer big;
      * TCP will flow control itself and only use what it needs.
-     * 
+     *
      * Longer answer: for optimal throughput (assuming TCP is not flow
      * controlling itself for other reasons) you want your buffer size to at
      * least be
-     * 
+     *
      * channel bandwidth * channel round-trip-delay.
-     * 
+     *
      * So on a long slow link, if you can get 100K bps throughput, but your
      * delay -s 8 seconds, you want:
-     * 
+     *
      * 100Kbps * / bits-per-byte * 8 seconds = 100 Kbytes
-     * 
+     *
      * That way TCP can keep transmitting data for 8 seconds before it would
      * have to stop and wait for an ack (to clear space in the buffer for new
      * data so it can put new TX data in there and on the line). (The idea is to
@@ -280,18 +277,20 @@ public class Transfer {
             byte[] buff = new byte[Math.max(_slave.getBufferSize(), 65535)];
             int count;
             long currentTime = System.currentTimeMillis();
+
             try {
                 while (((count = _in.read(buff)) != -1) && !_abort) {
-                    if (System.currentTimeMillis() - currentTime >= 1000) {
-                        _slave.sendResponse(new AsyncResponseTransferStatus(getTransferStatus()));
+                    if ((System.currentTimeMillis() - currentTime) >= 1000) {
+                        _slave.sendResponse(new AsyncResponseTransferStatus(
+                                getTransferStatus()));
                         currentTime = System.currentTimeMillis();
                     }
+
                     _transfered += count;
                     _out.write(buff, 0, count);
                 }
 
                 _out.flush();
-                
             } catch (IOException e) {
                 throw new TransferFailedException(e, getTransferStatus());
             }
@@ -305,14 +304,15 @@ public class Transfer {
 
             _in = null;
             _out = null;
+
             //_sock = null;
         }
 
         if (_abort) {
             throw new TransferFailedException("Transfer was aborted",
-                    getTransferStatus());
+                getTransferStatus());
         }
-        
+
         return getTransferStatus();
     }
 }

@@ -25,7 +25,6 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.usermanager.User;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
@@ -38,6 +37,8 @@ import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyUser;
 import org.drftpd.tests.DummyUserManager;
 
+import org.drftpd.usermanager.User;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -46,7 +47,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: LoginTest.java,v 1.12 2004/11/02 07:32:41 zubov Exp $
+ * @version $Id: LoginTest.java,v 1.13 2004/11/03 16:46:40 mog Exp $
  */
 public class LoginTest extends TestCase {
     private static final Logger logger = Logger.getLogger(LoginTest.class);

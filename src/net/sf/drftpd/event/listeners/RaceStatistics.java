@@ -25,12 +25,13 @@ import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.UploaderPosition;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.plugins.SiteBot;
+
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -41,7 +42,7 @@ import java.util.Iterator;
 
 /**
  * @author zubov
- * @version $Id: RaceStatistics.java,v 1.15 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: RaceStatistics.java,v 1.16 2004/11/03 16:46:38 mog Exp $
  */
 public class RaceStatistics implements FtpListener {
     private ConnectionManager _cm;

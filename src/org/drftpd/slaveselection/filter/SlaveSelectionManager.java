@@ -17,30 +17,35 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
+
 import org.drftpd.slave.RemoteTransfer;
+
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
+
+import org.drftpd.usermanager.User;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import java.net.InetAddress;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.20 2004/11/03 05:43:25 zubov Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.21 2004/11/03 16:46:48 mog Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     private GlobalContext _gctx;
@@ -158,6 +163,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
             _ssmiJobDown = null;
         }
     }
+
     public GlobalContext getGlobalContext() {
         return _gctx;
     }

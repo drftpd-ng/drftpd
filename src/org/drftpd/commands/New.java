@@ -41,7 +41,7 @@ import java.util.TreeSet;
 
 
 /**
- * @version $Id: New.java,v 1.7 2004/10/05 02:11:25 mog Exp $
+ * @version $Id: New.java,v 1.8 2004/11/03 16:46:44 mog Exp $
  * @author zubov
  */
 public class New implements CommandHandlerFactory, CommandHandler {
@@ -54,8 +54,9 @@ public class New implements CommandHandlerFactory, CommandHandler {
     public FtpReply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         FtpReply reply = new FtpReply(200);
-        Collection sections = conn.getConnectionManager().getGlobalContext()
-                                  .getSectionManager().getSections();
+        Collection sections = conn.getGlobalContext().getConnectionManager()
+                                  .getGlobalContext().getSectionManager()
+                                  .getSections();
         int count = 20;
 
         try {

@@ -21,12 +21,13 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Matcher;
+
+import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;
 
@@ -45,7 +46,7 @@ import java.util.StringTokenizer;
  * </pre>
  *
  * @author mog
- * @version $Id: MatchdirFilter.java,v 1.6 2004/11/02 07:33:12 zubov Exp $
+ * @version $Id: MatchdirFilter.java,v 1.7 2004/11/03 16:46:48 mog Exp $
  */
 public class MatchdirFilter extends Filter {
     private ArrayList _assigns;

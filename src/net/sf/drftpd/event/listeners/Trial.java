@@ -25,12 +25,13 @@ import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.Permission;
-import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.Logger;
 
 import org.drftpd.plugins.SiteBot;
+
+import org.drftpd.usermanager.User;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -46,7 +47,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.29 2004/10/07 01:12:30 teflon114 Exp $
+ * @version $Id: Trial.java,v 1.30 2004/11/03 16:46:38 mog Exp $
  */
 public class Trial implements FtpListener {
     private static final Logger logger = Logger.getLogger(Trial.class);

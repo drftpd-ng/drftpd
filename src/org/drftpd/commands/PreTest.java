@@ -50,7 +50,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: PreTest.java,v 1.7 2004/11/02 07:32:50 zubov Exp $
+ * @version $Id: PreTest.java,v 1.8 2004/11/03 16:46:44 mog Exp $
  */
 public class PreTest extends TestCase {
     private DummyConnectionManager _cm;
@@ -116,6 +116,7 @@ public class PreTest extends TestCase {
         gctx.setConnectionManager(_cm);
         _cm.setGlobalContext(gctx);
         conn.setGlobalConext(gctx);
+
         DummySlaveManager slavem = null;
 
         try {
@@ -125,6 +126,7 @@ public class PreTest extends TestCase {
 
         slavem.setSlaves(Collections.EMPTY_LIST);
         gctx.setSlaveManager(slavem);
+
         FtpReply reply;
         reply = pre.execute(conn);
         MLSTSerialize.serialize(_root, new PrintWriter(System.err, true));

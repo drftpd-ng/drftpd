@@ -17,24 +17,25 @@
  */
 package net.sf.drftpd.remotefile;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Iterator;
-
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.InvalidDirectoryException;
 import net.sf.drftpd.slave.Root;
 import net.sf.drftpd.slave.RootBasket;
+
+import java.io.File;
+import java.io.IOException;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Hashtable;
+import java.util.Iterator;
 
 
 /**
  * A wrapper for java.io.File to the net.sf.drftpd.RemoteFile structure.
  *
  * @author mog
- * @version $Id: FileRemoteFile.java,v 1.40 2004/11/02 07:32:47 zubov Exp $
+ * @version $Id: FileRemoteFile.java,v 1.41 2004/11/03 16:46:43 mog Exp $
  */
 public class FileRemoteFile extends AbstractRemoteFile {
     RootBasket rootBasket;

@@ -17,26 +17,7 @@
  */
 package org.drftpd.slave;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.zip.CRC32;
-import java.util.zip.CheckedInputStream;
-
-import javax.net.ssl.SSLContext;
+import com.Ostermiller.util.StringTokenizer;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
@@ -60,7 +41,9 @@ import net.sf.drftpd.util.SSLGetContext;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+
 import org.drftpd.remotefile.LightRemoteFile;
+
 import org.drftpd.slave.async.AsyncCommand;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
@@ -76,35 +59,105 @@ import org.drftpd.slave.async.AsyncResponseTransferStatus;
 
 import se.mog.io.File;
 
-import com.Ostermiller.util.StringTokenizer;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
+
+import javax.net.ssl.SSLContext;
+
 
 /**
  * @author mog
- * @version $Id: Slave.java,v 1.2 2004/11/02 07:32:52 zubov Exp $
+ * @version $Id: Slave.java,v 1.3 2004/11/03 16:46:46 mog Exp $
  */
 public class Slave {
-    public static final boolean isWin32 = System.getProperty("os.name").startsWith(
-            "Windows");
+    public static final boolean isWin32 = System.getProperty("os.name")
+                                                .startsWith("Windows");
     private static final Logger logger = Logger.getLogger(Slave.class);
-
     private static final int TIMEOUT = 10000;
     public static final String VERSION = "DrFTPD 1.2-CVS";
+    private int _bufferSize;
+    private SSLContext _ctx;
+    private boolean _downloadChecksums;
+    private long _receivedBytes;
+    private RootBasket _roots;
+    private Socket _s;
+    private long _sentBytes;
+    private ObjectInputStream _sin;
+    private ObjectOutputStream _sout;
+    private HashMap _transfers;
+    private boolean _uploadChecksums;
+    private PortRange _portRange;
+    private InetAddress _externalAddress;
+
+    public Slave(Properties p) throws IOException {
+        InetSocketAddress addr = new InetSocketAddress(FtpConfig.getProperty(
+                    p, "master.host"),
+                Integer.parseInt(FtpConfig.getProperty(p, "master.bindport")));
+        logger.info("Connecting to master at " + addr);
+
+        String slavename = FtpConfig.getProperty(p, "slave.name");
+
+        _externalAddress = InetAddress.getByName(FtpConfig.getProperty(p,
+                    "slave.interface"));
+        _s = new Socket();
+        _s.connect(addr, TIMEOUT);
+
+        _sout = new ObjectOutputStream(_s.getOutputStream());
+        _sin = new ObjectInputStream(_s.getInputStream());
+
+        //TODO sendReply()
+        _sout.writeObject(slavename);
+        _sout.flush();
+
+        try {
+            _ctx = SSLGetContext.getSSLContext();
+        } catch (Exception e) {
+            logger.warn("Error loading SSLContext", e);
+        }
+
+        _uploadChecksums = p.getProperty("enableuploadchecksums", "true")
+                            .equals("true");
+        _downloadChecksums = p.getProperty("enabledownloadchecksums", "true")
+                              .equals("true");
+        _bufferSize = Integer.parseInt(p.getProperty("bufferSize", "0"));
+        _roots = getDefaultRootBasket(p);
+        _transfers = new HashMap();
+        _portRange = new PortRange();
+    }
 
     public static LinkedRemoteFile getDefaultRoot(RootBasket rootBasket)
-            throws IOException {
+        throws IOException {
         LinkedRemoteFile linkedroot = new LinkedRemoteFile(new FileRemoteFile(
-                rootBasket), null);
+                    rootBasket), null);
 
         return linkedroot;
     }
 
     public static RootBasket getDefaultRootBasket(Properties cfg)
-            throws IOException {
+        throws IOException {
         RootBasket roots;
 
         // START: RootBasket
         long defaultMinSpaceFree = Bytes.parseBytes(cfg.getProperty(
-                "slave.minspacefree", "50mb"));
+                    "slave.minspacefree", "50mb"));
         ArrayList rootStrings = new ArrayList();
 
         for (int i = 1; true; i++) {
@@ -118,13 +171,13 @@ public class Slave {
 
             /*
              * long minSpaceFree;
-             * 
+             *
              * try { minSpaceFree = Long.parseLong(cfg.getProperty("slave.root." +
              * i + ".minspacefree")); } catch (NumberFormatException ex) {
              * minSpaceFree = defaultMinSpaceFree; }
-             * 
+             *
              * int priority;
-             * 
+             *
              * try { priority = Integer.parseInt(cfg.getProperty("slave.root." +
              * i + ".priority")); } catch (NumberFormatException ex) { priority =
              * 0; }
@@ -146,71 +199,14 @@ public class Slave {
 
     public static void main(String[] args) throws Exception {
         BasicConfigurator.configure();
-        System.out
-                .println("DrFTPD Slave starting, further logging will be done through log4j");
+        System.out.println(
+            "DrFTPD Slave starting, further logging will be done through log4j");
 
         Properties p = new Properties();
         p.load(new FileInputStream("slave.conf"));
 
         Slave s = new Slave(p);
         s.listenForCommands();
-    }
-
-    private int _bufferSize;
-
-    private SSLContext _ctx;
-
-    private boolean _downloadChecksums;
-
-    private long _receivedBytes;
-
-    private RootBasket _roots;
-
-    private Socket _s;
-
-    private long _sentBytes;
-
-    private ObjectInputStream _sin;
-
-    private ObjectOutputStream _sout;
-
-    private HashMap _transfers;
-
-    private boolean _uploadChecksums;
-    private PortRange _portRange;
-    private InetAddress _externalAddress;
-
-    public Slave(Properties p) throws IOException {
-        InetSocketAddress addr = new InetSocketAddress(FtpConfig.getProperty(p,
-                "master.host"), Integer.parseInt(FtpConfig.getProperty(p,
-                "master.bindport")));
-        logger.info("Connecting to master at " + addr);
-        String slavename = FtpConfig.getProperty(p, "slave.name");
-        
-        _externalAddress = InetAddress.getByName(FtpConfig.getProperty(p,"slave.interface"));
-        _s = new Socket();
-        _s.connect(addr, TIMEOUT);
-
-        _sout = new ObjectOutputStream(_s.getOutputStream());
-        _sin = new ObjectInputStream(_s.getInputStream());
-
-        //TODO sendReply()
-        _sout.writeObject(slavename);
-        _sout.flush();
-        try {
-            _ctx = SSLGetContext.getSSLContext();
-        } catch (Exception e) {
-            logger.warn("Error loading SSLContext", e);
-        }
-
-        _uploadChecksums = p.getProperty("enableuploadchecksums", "true")
-                .equals("true");
-        _downloadChecksums = p.getProperty("enabledownloadchecksums", "true")
-                .equals("true");
-        _bufferSize = Integer.parseInt(p.getProperty("bufferSize", "0"));
-        _roots = getDefaultRootBasket(p);
-        _transfers = new HashMap();
-        _portRange = new PortRange();
     }
 
     public void addTransfer(Transfer transfer) {
@@ -226,8 +222,8 @@ public class Slave {
 
         try {
             CRC32 crc32 = new CRC32();
-            in = new CheckedInputStream(new FileInputStream(_roots
-                    .getFile(path)), crc32);
+            in = new CheckedInputStream(new FileInputStream(_roots.getFile(path)),
+                    crc32);
 
             byte[] buf = new byte[4096];
 
@@ -248,8 +244,8 @@ public class Slave {
             File file = root.getFile(path);
 
             if (!file.exists()) {
-                throw new FileNotFoundException(file.getAbsolutePath()
-                        + " does not exist.");
+                throw new FileNotFoundException(file.getAbsolutePath() +
+                    " does not exist.");
             }
 
             if (!file.delete()) {
@@ -318,8 +314,8 @@ public class Slave {
     }
 
     public SFVFile getSFVFile(String path) throws IOException {
-        return new SFVFile(new BufferedReader(new FileReader(_roots
-                .getFile(path))));
+        return new SFVFile(new BufferedReader(
+                new FileReader(_roots.getFile(path))));
     }
 
     public LinkedRemoteFile getSlaveRoot() throws IOException {
@@ -355,13 +351,11 @@ public class Slave {
                     bytesSent += transfer.getTransfered();
 
                     break;
-               
+
                 case RemoteTransfer.TRANSFER_UNKNOWN:
-                    
                 case RemoteTransfer.TRANSFER_THROUGHPUT:
-                    
                     break;
-                    
+
                 default:
                     throw new FatalException("unrecognized direction");
                 }
@@ -369,9 +363,9 @@ public class Slave {
         }
 
         try {
-            return new SlaveStatus(_roots.getTotalDiskSpaceAvailable(), _roots
-                    .getTotalDiskSpaceCapacity(), bytesSent, bytesReceived,
-                    throughputUp, transfersUp, throughputDown, transfersDown);
+            return new SlaveStatus(_roots.getTotalDiskSpaceAvailable(),
+                _roots.getTotalDiskSpaceCapacity(), bytesSent, bytesReceived,
+                throughputUp, transfersUp, throughputDown, transfersDown);
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new RuntimeException(ex.toString());
@@ -390,8 +384,8 @@ public class Slave {
 
     private AsyncResponse handleChecksum(AsyncCommandArgument ac) {
         try {
-            return new AsyncResponseChecksum(ac.getIndex(), checkSum(ac
-                    .getArgs()));
+            return new AsyncResponseChecksum(ac.getIndex(),
+                checkSum(ac.getArgs()));
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);
         }
@@ -401,56 +395,73 @@ public class Slave {
         if (ac.getName().equals("status")) {
             return handleStatus(ac);
         }
+
         if (ac.getName().equals("remerge")) {
             return handleRemerge((AsyncCommandArgument) ac);
         }
+
         if (ac.getName().equals("checksum")) {
             return handleChecksum((AsyncCommandArgument) ac);
         }
+
         if (ac.getName().equals("connect")) {
             return handleConnect((AsyncCommandArgument) ac);
         }
+
         if (ac.getName().equals("delete")) {
             return handleDelete((AsyncCommandArgument) ac);
         }
+
         if (ac.getName().equals("id3tag")) {
             return handleID3Tag((AsyncCommandArgument) ac);
         }
+
         if (ac.getName().equals("listen")) {
             return handleListen((AsyncCommandArgument) ac);
         }
+
         if (ac.getName().equals("maxpath")) {
             return handleMaxpath(ac);
         }
+
         if (ac.getName().equals("ping")) {
             return handlePing(ac);
         }
+
         if (ac.getName().equals("receive")) {
             return handleReceive((AsyncCommandArgument) ac);
         }
+
         if (ac.getName().equals("rename")) {
             return handleRename((AsyncCommandArgument) ac);
         }
+
         if (ac.getName().equals("sfvfile")) {
             return handleSfvFile((AsyncCommandArgument) ac);
         }
+
         if (ac.getName().equals("send")) {
             return handleSend((AsyncCommandArgument) ac);
         }
+
         if (ac.getName().equals("abort")) {
             handleAbort((AsyncCommandArgument) ac);
+
             return null;
         }
-        return new AsyncResponseException(ac.getIndex(), new Exception(ac
-                .getName()
-                + " - Operation Not Supported"));
+
+        return new AsyncResponseException(ac.getIndex(),
+            new Exception(ac.getName() + " - Operation Not Supported"));
     }
 
     private void handleAbort(AsyncCommandArgument argument) {
-        TransferIndex ti = new TransferIndex(Integer.parseInt(argument.getArgs()));
+        TransferIndex ti = new TransferIndex(Integer.parseInt(
+                    argument.getArgs()));
+
         if (!_transfers.containsKey(ti)) {
             return;
         }
+
         Transfer t = (Transfer) _transfers.get(ti);
         t.abort();
     }
@@ -459,31 +470,39 @@ public class Slave {
         String[] data = ac.getArgs().split(",");
         String[] data2 = data[0].split(":");
         InetAddress address;
+
         try {
             address = InetAddress.getByName(data2[0]);
         } catch (UnknownHostException e1) {
-            return new AsyncResponseException(ac.getIndex(),e1);
+            return new AsyncResponseException(ac.getIndex(), e1);
         }
+
         int port = Integer.parseInt(data2[1]);
         boolean encrypted = data[1].equals("true");
-        Transfer t = new Transfer(new ActiveConnection(encrypted ? _ctx : null,new InetSocketAddress(address,port)),this,new TransferIndex());
+        Transfer t = new Transfer(new ActiveConnection(encrypted ? _ctx : null,
+                    new InetSocketAddress(address, port)), this,
+                new TransferIndex());
         addTransfer(t);
-        return new AsyncResponseTransfer(ac.getIndex(),new ConnectInfo(address,port,t.getTransferIndex(),t.getTransferStatus()));
+
+        return new AsyncResponseTransfer(ac.getIndex(),
+            new ConnectInfo(address, port, t.getTransferIndex(),
+                t.getTransferStatus()));
     }
 
     private AsyncResponse handleDelete(AsyncCommandArgument ac) {
         try {
             delete(ac.getArgs());
+
             return new AsyncResponse(ac.getIndex());
         } catch (IOException e) {
-            return new AsyncResponseException(ac.getIndex(),e);
+            return new AsyncResponseException(ac.getIndex(), e);
         }
     }
 
     private AsyncResponse handleID3Tag(AsyncCommandArgument ac) {
         try {
-            return new AsyncResponseID3Tag(ac.getIndex(), getID3v1Tag(ac
-                    .getArgs()));
+            return new AsyncResponseID3Tag(ac.getIndex(),
+                getID3v1Tag(ac.getArgs()));
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);
         }
@@ -492,14 +511,20 @@ public class Slave {
     private AsyncResponse handleListen(AsyncCommandArgument ac) {
         boolean encrypted = ac.getArgs().equals("true");
         PassiveConnection c = null;
+
         try {
-            c = new PassiveConnection(encrypted ? _ctx : null,_portRange, new InetSocketAddress(0));
+            c = new PassiveConnection(encrypted ? _ctx : null, _portRange,
+                    new InetSocketAddress(0));
         } catch (IOException e) {
-            return new AsyncResponseException(ac.getIndex(),e);
+            return new AsyncResponseException(ac.getIndex(), e);
         }
-        Transfer t = new Transfer(c,this,new TransferIndex());
+
+        Transfer t = new Transfer(c, this, new TransferIndex());
         addTransfer(t);
-        return new AsyncResponseTransfer(ac.getIndex(),new ConnectInfo(_externalAddress,c.getLocalPort(),t.getTransferIndex(),t.getTransferStatus()));
+
+        return new AsyncResponseTransfer(ac.getIndex(),
+            new ConnectInfo(_externalAddress, c.getLocalPort(),
+                t.getTransferIndex(), t.getTransferStatus()));
     }
 
     private AsyncResponse handleMaxpath(AsyncCommand ac) {
@@ -511,25 +536,30 @@ public class Slave {
     }
 
     private AsyncResponse handleReceive(AsyncCommandArgument ac) {
-        StringTokenizer st = new StringTokenizer(ac.getArgs(),",");
+        StringTokenizer st = new StringTokenizer(ac.getArgs(), ",");
         char type = st.nextToken().charAt(0);
         long position = Long.parseLong(st.nextToken());
-        TransferIndex transferIndex = new TransferIndex(Integer.parseInt(st.nextToken()));
+        TransferIndex transferIndex = new TransferIndex(Integer.parseInt(
+                    st.nextToken()));
         String path = st.nextToken();
-        String fileName = path.substring(path.lastIndexOf("/")+1);
-        String dirName = path.substring(0,path.lastIndexOf("/"));
+        String fileName = path.substring(path.lastIndexOf("/") + 1);
+        String dirName = path.substring(0, path.lastIndexOf("/"));
         Transfer t = getTransfer(transferIndex);
         sendResponse(new AsyncResponse(ac.getIndex())); // return calling thread on master
+
         try {
-            return new AsyncResponseTransferStatus(t.receiveFile(dirName, type, fileName, position));
+            return new AsyncResponseTransferStatus(t.receiveFile(dirName, type,
+                    fileName, position));
         } catch (IOException e) {
-            return(new AsyncResponseTransferStatus(new TransferStatus(transferIndex,e)));
+            return (new AsyncResponseTransferStatus(new TransferStatus(
+                    transferIndex, e)));
         }
     }
 
     private AsyncResponse handleRemerge(AsyncCommandArgument ac) {
         try {
             handleRemergeRecursive(getSlaveRoot().lookupFile(ac.getArgs()));
+
             return new AsyncResponse(ac.getIndex());
         } catch (FileNotFoundException e) {
             return new AsyncResponse(ac.getIndex());
@@ -540,53 +570,62 @@ public class Slave {
 
     private void handleRemergeRecursive(LinkedRemoteFileInterface file) {
         LinkedRemoteFile.CaseInsensitiveHashtable files = new LinkedRemoteFile.CaseInsensitiveHashtable();
+
         for (Iterator iter = file.getFiles().iterator(); iter.hasNext();) {
-            LinkedRemoteFileInterface lrf = (LinkedRemoteFileInterface) iter
-                    .next();
+            LinkedRemoteFileInterface lrf = (LinkedRemoteFileInterface) iter.next();
+
             if (lrf.isDirectory()) {
                 handleRemergeRecursive(lrf);
             }
+
             if (lrf.isFile()) {
-                files.put(lrf.getName(), new LightRemoteFile(lrf.getName(), lrf
-                        .lastModified(), lrf.length()));
+                files.put(lrf.getName(),
+                    new LightRemoteFile(lrf.getName(), lrf.lastModified(),
+                        lrf.length()));
             }
         }
+
         sendResponse(new AsyncResponseRemerge(file.getPath(), files));
     }
 
     private AsyncResponse handleRename(AsyncCommandArgument ac) {
-        StringTokenizer st = new StringTokenizer(ac.getArgs(),",");
+        StringTokenizer st = new StringTokenizer(ac.getArgs(), ",");
         String from = st.nextToken();
         String toDir = st.nextToken();
         String toFile = st.nextToken();
+
         try {
             rename(from, toDir, toFile);
+
             return new AsyncResponse(ac.getIndex());
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);
         }
-
     }
 
     private AsyncResponse handleSend(AsyncCommandArgument ac) {
-        StringTokenizer st = new StringTokenizer(ac.getArgs(),",");
+        StringTokenizer st = new StringTokenizer(ac.getArgs(), ",");
         char type = st.nextToken().charAt(0);
         long position = Long.parseLong(st.nextToken());
-        TransferIndex transferIndex = new TransferIndex(Integer.parseInt(st.nextToken()));
+        TransferIndex transferIndex = new TransferIndex(Integer.parseInt(
+                    st.nextToken()));
         String path = st.nextToken();
         Transfer t = getTransfer(transferIndex);
         sendResponse(new AsyncResponse(ac.getIndex())); // return calling thread on master
+
         try {
-            return new AsyncResponseTransferStatus(t.sendFile(path,type,position));
+            return new AsyncResponseTransferStatus(t.sendFile(path, type,
+                    position));
         } catch (IOException e) {
-            return new AsyncResponseTransferStatus(new TransferStatus(t.getTransferIndex(),e));
+            return new AsyncResponseTransferStatus(new TransferStatus(
+                    t.getTransferIndex(), e));
         }
     }
 
     private AsyncResponse handleSfvFile(AsyncCommandArgument ac) {
         try {
-            return new AsyncResponseSFVFile(ac.getIndex(), getSFVFile(ac
-                    .getArgs()));
+            return new AsyncResponseSFVFile(ac.getIndex(),
+                getSFVFile(ac.getArgs()));
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);
         }
@@ -599,15 +638,20 @@ public class Slave {
     private void listenForCommands() {
         while (true) {
             AsyncCommand ac;
+
             try {
                 ac = (AsyncCommand) _sin.readObject();
-                if (ac == null) continue;
+
+                if (ac == null) {
+                    continue;
+                }
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {
-                logger.debug("",e);
+                logger.debug("", e);
                 throw new FatalException(e);
             }
+
             logger.debug("Slave fetched " + ac);
             class AsyncCommandHandler implements Runnable {
                 private AsyncCommand _command = null;
@@ -620,8 +664,8 @@ public class Slave {
                     try {
                         sendResponse(handleCommand(_command));
                     } catch (Exception e) {
-                        sendResponse(new AsyncResponseException(_command
-                                .getIndex(), e));
+                        sendResponse(new AsyncResponseException(
+                                _command.getIndex(), e));
                     }
                 }
             }
@@ -653,7 +697,7 @@ public class Slave {
     }
 
     public void rename(String from, String toDirPath, String toName)
-            throws IOException {
+        throws IOException {
         for (Iterator iter = _roots.iterator(); iter.hasNext();) {
             Root root = (Root) iter.next();
 
@@ -670,25 +714,28 @@ public class Slave {
 
             //!win32 == true on linux
             //!win32 && equalsignore == true on win32
-            if (tofile.exists()
-                    && !(isWin32 && fromfile.getName().equalsIgnoreCase(toName))) {
-                throw new FileExistsException("cannot rename from " + fromfile
-                        + " to " + tofile + ", destination exists");
+            if (tofile.exists() &&
+                    !(isWin32 && fromfile.getName().equalsIgnoreCase(toName))) {
+                throw new FileExistsException("cannot rename from " + fromfile +
+                    " to " + tofile + ", destination exists");
             }
 
             if (!fromfile.renameTo(tofile)) {
-                throw new IOException("renameTo(" + fromfile + ", " + tofile
-                        + ") failed");
+                throw new IOException("renameTo(" + fromfile + ", " + tofile +
+                    ") failed");
             }
         }
     }
 
     protected synchronized void sendResponse(AsyncResponse response) {
-        if (response == null)
+        if (response == null) {
             return;
-        if (response instanceof AsyncResponseException) {
-            logger.debug("",((AsyncResponseException) response).getThrowable());
         }
+
+        if (response instanceof AsyncResponseException) {
+            logger.debug("", ((AsyncResponseException) response).getThrowable());
+        }
+
         try {
             _sout.writeObject(response);
             _sout.flush();

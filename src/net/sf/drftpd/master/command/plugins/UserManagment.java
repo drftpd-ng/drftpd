@@ -26,10 +26,6 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.Permission;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.master.usermanager.UserExistsException;
-import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.Time;
 
@@ -41,6 +37,11 @@ import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 
 import org.drftpd.slave.RemoteTransfer;
+
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserExistsException;
+import org.drftpd.usermanager.UserFileException;
 
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -61,7 +62,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  * @author zubov
- * @version $Id: UserManagment.java,v 1.50 2004/11/03 05:43:21 zubov Exp $
+ * @version $Id: UserManagment.java,v 1.51 2004/11/03 16:46:40 mog Exp $
  */
 public class UserManagment implements CommandHandler, CommandHandlerFactory {
     private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -404,6 +405,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         User userToChange;
         FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
         ReplacerEnvironment env = new ReplacerEnvironment();
+
         StringTokenizer arguments = new StringTokenizer(request.getArgument());
 
         if (!arguments.hasMoreTokens()) {
@@ -419,7 +421,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             return new FtpReply(550,
                 "User " + username + " not found: " + e.getMessage());
         } catch (UserFileException e) {
-            logger.log(Level.FATAL, "Error loading user", e);
+            logger.log(Level.ERROR, "Error loading user", e);
 
             return new FtpReply(550, "Error loading user: " + e.getMessage());
         }
@@ -429,6 +431,11 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         }
 
         String command = arguments.nextToken().toLowerCase();
+
+        if (conn.getUserNull().isGroupAdmin() && !command.equals("ratio")) {
+            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+        }
+
         env.add("targetuser", userToChange.getUsername());
 
         //		String args[] = request.getArgument().split(" ");
@@ -775,21 +782,17 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
     }
 
     /**
-     * USAGE: site chpass <user> <password>
-     *         Change users password.
+     * USAGE: site chpass <user><password>Change users password.
      *
-     *         ex. site chpass Archimede newpassword
-     *         This would change the password to 'newpassword' for the
-     *         user 'Archimede'.
+     * ex. site chpass Archimede newpassword This would change the password to
+     * 'newpassword' for the user 'Archimede'.
      *
-     *         See "site passwd" for more info if you get a "Password is not secure
-     *         enough" error.
-     *
-     *         * Denotes any password, ex. site chpass arch *
-     *         This will allow arch to login with any password
-     *
-     *         @ Denotes any email-like password, ex. site chpass arch @
-     *         This will allow arch to login with a@b.com but not ab.com
+     * See "site passwd" for more info if you get a "Password is not secure
+     * enough" error.
+     *  * Denotes any password, ex. site chpass arch * This will allow arch to
+     * login with any password
+     *  @ Denotes any email-like password, ex. site chpass arch @ This will
+     * allow arch to login with a@b.com but not ab.com
      */
     private FtpReply doSITE_CHPASS(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
@@ -1154,7 +1157,8 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         }
 
         FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
-        ArrayList conns = new ArrayList(conn.getConnectionManager()
+        ArrayList conns = new ArrayList(conn.getGlobalContext()
+                                            .getConnectionManager()
                                             .getConnections());
 
         for (Iterator iter = conns.iterator(); iter.hasNext();) {
@@ -1538,7 +1542,8 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             ReplacerFormat formatcommand = ReplacerUtils.finalFormat(UserManagment.class,
                     "who.command");
             ReplacerEnvironment env = new ReplacerEnvironment();
-            ArrayList conns = new ArrayList(conn.getConnectionManager()
+            ArrayList conns = new ArrayList(conn.getGlobalContext()
+                                                .getConnectionManager()
                                                 .getConnections());
 
             for (Iterator iter = conns.iterator(); iter.hasNext();) {

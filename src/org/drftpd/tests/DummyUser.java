@@ -1,8 +1,9 @@
 package org.drftpd.tests;
 
 import net.sf.drftpd.event.listeners.Trial;
-import net.sf.drftpd.master.usermanager.AbstractUser;
-import net.sf.drftpd.master.usermanager.UserFileException;
+
+import org.drftpd.usermanager.AbstractUser;
+import org.drftpd.usermanager.UserFileException;
 
 
 public class DummyUser extends AbstractUser {

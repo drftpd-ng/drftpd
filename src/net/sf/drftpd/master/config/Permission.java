@@ -17,7 +17,7 @@
  */
 package net.sf.drftpd.master.config;
 
-import net.sf.drftpd.master.usermanager.User;
+import org.drftpd.usermanager.User;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -25,7 +25,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Permission.java,v 1.8 2004/10/05 02:11:23 mog Exp $
+ * @version $Id: Permission.java,v 1.9 2004/11/03 16:46:41 mog Exp $
  */
 public class Permission {
     private Collection _users;

@@ -16,31 +16,33 @@
  */
 package net.sf.drftpd.master.usermanager.xstream;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FatalException;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.master.usermanager.UserFileException;
-import net.sf.drftpd.master.usermanager.UserManager;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
+import org.drftpd.usermanager.UserManager;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 
 /**
  * @author mog
- * @version $Id: XStreamUserManager.java,v 1.9 2004/11/02 07:32:45 zubov Exp $
+ * @version $Id: XStreamUserManager.java,v 1.10 2004/11/03 16:46:42 mog Exp $
  */
 public class XStreamUserManager extends UserManager {
     private static final Logger logger = Logger.getLogger(XStreamUserManager.class.getName());

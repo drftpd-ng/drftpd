@@ -47,7 +47,7 @@ import java.util.ResourceBundle;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagement.java,v 1.4 2004/11/02 07:32:41 zubov Exp $
+ * @version $Id: SiteManagement.java,v 1.5 2004/11/03 16:46:40 mog Exp $
  */
 public class SiteManagement implements CommandHandlerFactory, CommandHandler {
     private static final Logger logger = Logger.getLogger(SiteManagement.class);
@@ -117,8 +117,8 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
         FtpReply ftpReply = new FtpReply(200, "Command ok");
         ftpReply.addComment("Plugins loaded:");
 
-        for (Iterator iter = conn.getConnectionManager().getFtpListeners()
-                                 .iterator(); iter.hasNext();) {
+        for (Iterator iter = conn.getGlobalContext().getConnectionManager()
+                                 .getFtpListeners().iterator(); iter.hasNext();) {
             ftpReply.addComment(iter.next().getClass().getName());
         }
 
@@ -131,17 +131,20 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
         }
 
         try {
-            conn.getConnectionManager().reload();
+            conn.getGlobalContext().getConnectionManager().reload();
             conn.getGlobalContext().getConfig().reloadConfig();
-            conn.getSlaveManager().reload();
+            conn.getGlobalContext().getSlaveManager().reload();
+            conn.getGlobalContext().getSlaveSelectionManager().reload();
 
             try {
-                conn.getConnectionManager().getJobManager().reload();
+                conn.getGlobalContext().getConnectionManager().getJobManager()
+                    .reload();
             } catch (IllegalStateException e1) {
                 // not loaded, don't reload
             }
 
-            conn.getConnectionManager().getCommandManagerFactory().reload();
+            conn.getGlobalContext().getConnectionManager()
+                .getCommandManagerFactory().reload();
 
             //slaveManager.saveFilesXML();
         } catch (IOException e) {
@@ -150,8 +153,8 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
             return new FtpReply(200, e.getMessage());
         }
 
-        conn.getConnectionManager().dispatchFtpEvent(new ConnectionEvent(conn,
-                "RELOAD"));
+        conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new ConnectionEvent(
+                conn, "RELOAD"));
 
         //ugly hack to clear resourcebundle cache
         //see http://developer.java.sun.com/developer/bugParade/bugs/4212439.html
@@ -181,7 +184,7 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
             message = conn.getRequest().getArgument();
         }
 
-        conn.getConnectionManager().shutdown(message);
+        conn.getGlobalContext().getConnectionManager().shutdown(message);
 
         return FtpReply.RESPONSE_200_COMMAND_OK;
     }
@@ -195,8 +198,8 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
             return new FtpReply(500, "Usage: site unload className");
         }
 
-        for (Iterator iter = conn.getConnectionManager().getFtpListeners()
-                                 .iterator(); iter.hasNext();) {
+        for (Iterator iter = conn.getGlobalContext().getConnectionManager()
+                                 .getFtpListeners().iterator(); iter.hasNext();) {
             FtpListener ftpListener = (FtpListener) iter.next();
 
             if (ftpListener.getClass().getName().equals("net.sf.drftpd.event.listeners." +

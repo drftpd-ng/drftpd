@@ -17,15 +17,38 @@
  */
 package net.sf.drftpd.master;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
+
+import net.sf.drftpd.FatalException;
+import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.SlaveUnavailableException;
+import net.sf.drftpd.master.config.FtpConfig;
+import net.sf.drftpd.remotefile.MLSTSerialize;
+import net.sf.drftpd.slave.SlaveStatus;
+import net.sf.drftpd.util.SafeFileWriter;
+
+import org.apache.log4j.Logger;
+
+import org.drftpd.GlobalContext;
+
+import org.drftpd.slave.async.AsyncCommandArgument;
+
+import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
+
+import org.drftpd.usermanager.UserFileException;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.reflect.Constructor;
+
 import java.net.ServerSocket;
 import java.net.Socket;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,28 +60,10 @@ import java.util.ListIterator;
 import java.util.Properties;
 import java.util.Set;
 
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.usermanager.UserFileException;
-import net.sf.drftpd.remotefile.MLSTSerialize;
-import net.sf.drftpd.slave.SlaveStatus;
-import net.sf.drftpd.util.SafeFileWriter;
-
-import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
-import org.drftpd.slave.async.AsyncCommandArgument;
-import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
-
 
 /**
  * @author mog
- * @version $Id: SlaveManager.java,v 1.19 2004/11/03 05:43:12 zubov Exp $
+ * @version $Id: SlaveManager.java,v 1.20 2004/11/03 16:46:39 mog Exp $
  */
 public class SlaveManager implements Runnable {
     private static final Logger logger = Logger.getLogger(SlaveManager.class.getName());
@@ -67,7 +72,6 @@ public class SlaveManager implements Runnable {
     protected GlobalContext _gctx;
     protected List _rslaves;
     private int _port;
-    protected SlaveSelectionManagerInterface _slaveSelectionManager;
     protected ServerSocket _serverSocket;
 
     public SlaveManager(Properties p, GlobalContext gctx)
@@ -76,7 +80,6 @@ public class SlaveManager implements Runnable {
         _rslaves = new ArrayList();
         _port = Integer.parseInt(FtpConfig.getProperty(p, "master.bindport"));
         loadSlaves();
-        initSlaveSelectionManager(p);
     }
 
     /**
@@ -155,21 +158,6 @@ public class SlaveManager implements Runnable {
 
     protected File getSlaveFile(String slavename) {
         return new File(slavePath + slavename + ".xml");
-    }
-
-    private void initSlaveSelectionManager(Properties cfg) {
-        try {
-            Constructor c = Class.forName(cfg.getProperty("slaveselection",
-                        "org.drftpd.slaveselection.def.DefaultSlaveSelectionManager"))
-                                 .getConstructor(new Class[] { GlobalContext.class });
-            _slaveSelectionManager = (SlaveSelectionManagerInterface) c.newInstance(new Object[] {getGlobalContext()});
-        } catch (Exception e) {
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
-            }
-
-            throw new FatalException(e);
-        }
     }
 
     protected void addShutdownHook() {
@@ -380,11 +368,7 @@ public class SlaveManager implements Runnable {
     }
 
     public SlaveSelectionManagerInterface getSlaveSelectionManager() {
-        if (_slaveSelectionManager == null) {
-            throw new NullPointerException();
-        }
-
-        return _slaveSelectionManager;
+        return getGlobalContext().getSlaveSelectionManager();
     }
 
     /**
@@ -404,7 +388,6 @@ public class SlaveManager implements Runnable {
     }
 
     public void reload() throws FileNotFoundException, IOException {
-        _slaveSelectionManager.reload();
     }
 
     public void saveFilelist() {
@@ -453,6 +436,7 @@ public class SlaveManager implements Runnable {
             RemoteSlave rslave = null;
             ObjectInputStream in = null;
             ObjectOutputStream out = null;
+
             try {
                 socket = _serverSocket.accept();
                 logger.debug("Slave connected from " +
@@ -462,8 +446,10 @@ public class SlaveManager implements Runnable {
                 out = new ObjectOutputStream(socket.getOutputStream());
                 rslave = getRemoteSlave(RemoteSlave.getSlaveNameFromObjectInput(
                             in));
+
                 if (rslave.isOnlinePing()) {
-                    out.writeObject(new AsyncCommandArgument("", "error", "Already online"));
+                    out.writeObject(new AsyncCommandArgument("", "error",
+                            "Already online"));
                     out.flush();
                     socket.close();
                     throw new IOException("Already online");
@@ -473,14 +459,19 @@ public class SlaveManager implements Runnable {
                     socket.close();
                 } catch (IOException e1) {
                 }
-                logger.error("",e);
+
+                logger.error("", e);
+
                 continue;
             }
+
             try {
                 if (!rslave.checkConnect(socket)) {
                     socket.close();
+
                     continue;
                 }
+
                 rslave.connect(socket, in, out);
             } catch (Exception e) {
                 rslave.setOffline(e);

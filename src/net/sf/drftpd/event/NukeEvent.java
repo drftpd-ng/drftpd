@@ -17,9 +17,9 @@
  */
 package net.sf.drftpd.event;
 
-import net.sf.drftpd.master.usermanager.User;
-
 import org.drftpd.plugins.SiteBot;
+
+import org.drftpd.usermanager.User;
 
 import org.jdom.Element;
 
@@ -31,7 +31,7 @@ import java.util.Map;
 /**
  * @author mog
  *
- * @version $Id: NukeEvent.java,v 1.22 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: NukeEvent.java,v 1.23 2004/11/03 16:46:37 mog Exp $
  */
 public class NukeEvent extends UserEvent {
     private int multiplier;

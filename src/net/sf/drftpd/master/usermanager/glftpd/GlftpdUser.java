@@ -18,9 +18,10 @@
 package net.sf.drftpd.master.usermanager.glftpd;
 
 import net.sf.drftpd.DuplicateElementException;
-import net.sf.drftpd.master.usermanager.AbstractUser;
-import net.sf.drftpd.master.usermanager.UnixPassword;
 import net.sf.drftpd.util.Crypt;
+
+import org.drftpd.usermanager.AbstractUser;
+import org.drftpd.usermanager.UnixPassword;
 
 import java.util.Collection;
 import java.util.Vector;
@@ -29,7 +30,7 @@ import java.util.Vector;
 /**
  * @author mog
  * @author zubov
- * @version $Id: GlftpdUser.java,v 1.12 2004/08/03 20:14:00 zubov Exp $
+ * @version $Id: GlftpdUser.java,v 1.13 2004/11/03 16:46:41 mog Exp $
  */
 public class GlftpdUser extends AbstractUser implements UnixPassword {
     private String password;
@@ -141,14 +142,14 @@ public class GlftpdUser extends AbstractUser implements UnixPassword {
     }
 
     /**
-     * @see net.sf.drftpd.master.usermanager.User#updateDownloadedBytes(long)
+     * @see org.drftpd.usermanager.User#updateDownloadedBytes(long)
      */
     public void updateDownloadedBytes(long bytes) {
         throw new UnsupportedOperationException();
     }
 
     /**
-    * @see net.sf.drftpd.master.usermanager.User#updateUploadedBytes(long)
+    * @see org.drftpd.usermanager.User#updateUploadedBytes(long)
     */
     public void updateUploadedBytes(long bytes) {
         throw new UnsupportedOperationException();

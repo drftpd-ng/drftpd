@@ -16,25 +16,6 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.BindException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.Checksum;
 import net.sf.drftpd.NoAvailableSlaveException;
@@ -48,7 +29,6 @@ import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
@@ -59,18 +39,44 @@ import net.sf.drftpd.util.PortRange;
 import net.sf.drftpd.util.SSLGetContext;
 
 import org.apache.log4j.Logger;
+
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
+
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteTransfer;
+
+import org.drftpd.usermanager.UserFileException;
+
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import java.net.BindException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
 
 
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.66 2004/11/03 05:43:13 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.67 2004/11/03 16:46:39 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandlerFactory,
     CommandHandler, Cloneable {
@@ -272,6 +278,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                     "Slave could not listen for a connection");
             }
         }
+
         String addrStr = address.getAddress().getHostAddress().replace('.', ',') +
             ',' + (address.getPort() >> 8) + ',' + (address.getPort() & 0xFF);
 
@@ -404,7 +411,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             try {
                 LinkedRemoteFileInterface downFile = conn.getCurrentDirectory()
                                                          .lookupFile(ghostRequest.getArgument());
-                _preTransferRSlave = conn.getSlaveManager()
+                _preTransferRSlave = conn.getGlobalContext().getSlaveManager()
                                          .getSlaveSelectionManager().getASlave(downFile.getAvailableSlaves(),
                         RemoteTransfer.TRANSFER_SENDING_DOWNLOAD, conn, downFile);
                 _preTransfer = true;
@@ -430,10 +437,12 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             }
 
             try {
-                _preTransferRSlave = conn.getSlaveManager()
-                                         .getSlaveSelectionManager().getASlave(conn.getSlaveManager()
+                _preTransferRSlave = conn.getGlobalContext().getSlaveManager()
+                                         .getSlaveSelectionManager().getASlave(conn.getGlobalContext()
+                                                                                   .getSlaveManager()
                                                                                    .getAvailableSlaves(),
-                        RemoteTransfer.TRANSFER_RECEIVING_UPLOAD, conn, nef.getFile());
+                        RemoteTransfer.TRANSFER_RECEIVING_UPLOAD, conn,
+                        nef.getFile());
                 _preTransfer = true;
 
                 return new FtpReply(200,
@@ -1123,8 +1132,9 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                                 RemoteTransfer.TRANSFER_SENDING_DOWNLOAD, conn,
                                 _transferFile);
                     } else if (direction == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
-                        _rslave = conn.getSlaveManager()
-                                      .getSlaveSelectionManager().getASlave(conn.getSlaveManager()
+                        _rslave = conn.getGlobalContext().getSlaveManager()
+                                      .getSlaveSelectionManager().getASlave(conn.getGlobalContext()
+                                                                                .getSlaveManager()
                                                                                 .getAvailableSlaves(),
                                 RemoteTransfer.TRANSFER_RECEIVING_UPLOAD, conn,
                                 targetDir);
@@ -1188,24 +1198,32 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             try {
                 //TODO ABORtable transfers
                 if (isRetr) {
-                    _transfer.sendFile(_transferFile.getPath(),getType(),_resumePosition);
+                    _transfer.sendFile(_transferFile.getPath(), getType(),
+                        _resumePosition);
+
                     while (true) {
                         status = _transfer.getTransferStatus();
+
                         if (status.isFinished()) {
                             break;
                         }
+
                         try {
                             Thread.sleep(100);
                         } catch (InterruptedException e1) {
                         }
                     }
                 } else if (isStor) {
-                    _transfer.receiveFile(_transferFile.getPath(),getType(),_resumePosition);
+                    _transfer.receiveFile(_transferFile.getPath(), getType(),
+                        _resumePosition);
+
                     while (true) {
                         status = _transfer.getTransferStatus();
+
                         if (status.isFinished()) {
                             break;
                         }
+
                         try {
                             Thread.sleep(100);
                         } catch (InterruptedException e1) {
@@ -1217,10 +1235,10 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             } catch (IOException ex) {
                 if (ex instanceof TransferFailedException) {
                     status = ((TransferFailedException) ex).getStatus();
-                    conn.getConnectionManager().dispatchFtpEvent(new TransferEvent(
-                            conn, eventType, _transferFile,
-                            conn.getClientAddress(), _rslave, _transfer.getAddress().getAddress(),
-                            type, false));
+                    conn.getGlobalContext().getConnectionManager()
+                        .dispatchFtpEvent(new TransferEvent(conn, eventType,
+                            _transferFile, conn.getClientAddress(), _rslave,
+                            _transfer.getAddress().getAddress(), type, false));
 
                     if (isRetr) {
                         conn.getUserNull().updateCredits(-status.getTransfered());
@@ -1342,9 +1360,10 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             }
 
             //Dispatch for both STOR and RETR
-            conn.getConnectionManager().dispatchFtpEvent(new TransferEvent(
+            conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new TransferEvent(
                     conn, eventType, _transferFile, conn.getClientAddress(),
-                    _rslave, _transfer.getAddress().getAddress(), getType(), zipscript));
+                    _rslave, _transfer.getAddress().getAddress(), getType(),
+                    zipscript));
 
             return response;
         } finally {

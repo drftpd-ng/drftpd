@@ -17,11 +17,35 @@
  */
 package net.sf.drftpd.master;
 
+import net.sf.drftpd.FatalException;
+import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.event.Event;
+import net.sf.drftpd.event.FtpListener;
+import net.sf.drftpd.event.listeners.RaceStatistics;
+import net.sf.drftpd.master.command.CommandManagerFactory;
+import net.sf.drftpd.master.config.FtpConfig;
+import net.sf.drftpd.mirroring.JobManager;
+import net.sf.drftpd.remotefile.MLSTSerialize;
+import net.sf.drftpd.util.SafeFileWriter;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
+import org.drftpd.GlobalContext;
+
+import org.drftpd.slave.Slave;
+
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+
 import java.net.ServerSocket;
 import java.net.Socket;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -30,28 +54,9 @@ import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.event.listeners.RaceStatistics;
-import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.master.usermanager.UserFileException;
-import net.sf.drftpd.mirroring.JobManager;
-import net.sf.drftpd.remotefile.MLSTSerialize;
-import net.sf.drftpd.util.SafeFileWriter;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
-import org.drftpd.slave.Slave;
-
 
 /**
- * @version $Id: ConnectionManager.java,v 1.120 2004/11/03 05:43:09 zubov Exp $
+ * @version $Id: ConnectionManager.java,v 1.121 2004/11/03 16:46:39 mog Exp $
  */
 public class ConnectionManager {
     public static final int idleTimeout = 300;
@@ -66,7 +71,6 @@ public class ConnectionManager {
     public ConnectionManager(Properties cfg, Properties slaveCfg,
         String cfgFileName) throws SlaveFileException {
         _gctx = new GlobalContext(cfg, cfgFileName, this);
-
 
         // start socket slave manager
 

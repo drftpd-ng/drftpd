@@ -16,9 +16,6 @@
  */
 package net.sf.drftpd.mirroring;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.RemoteSlave;
@@ -26,14 +23,19 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.TransferFailedException;
 
 import org.apache.log4j.Logger;
+
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteTransfer;
+
+import java.io.IOException;
+
+import java.net.InetSocketAddress;
 
 
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveTransfer.java,v 1.23 2004/11/02 07:32:46 zubov Exp $
+ * @version $Id: SlaveTransfer.java,v 1.24 2004/11/03 16:46:42 mog Exp $
  */
 public class SlaveTransfer {
     private static final Logger logger = Logger.getLogger(SlaveTransfer.class);
@@ -77,8 +79,8 @@ public class SlaveTransfer {
 
         try {
             String srcIndex = _srcSlave.issueConnectToSlave(new InetSocketAddress(
-                        destTransfer.getAddress().getAddress(), destTransfer.getLocalPort()),
-                    false);
+                        destTransfer.getAddress().getAddress(),
+                        destTransfer.getLocalPort()), false);
             ConnectInfo ci = _srcSlave.fetchTransferResponseFromIndex(srcIndex);
             srcTransfer = _srcSlave.getTransfer(ci.getTransferIndex());
         } catch (SlaveUnavailableException e) {
@@ -86,9 +88,9 @@ public class SlaveTransfer {
         } catch (IOException e) {
             throw new DestinationSlaveException(e);
         }
-        
+
         try {
-            destTransfer.receiveFile(_file.getPath(),'I',0);
+            destTransfer.receiveFile(_file.getPath(), 'I', 0);
         } catch (IOException e1) {
             throw new DestinationSlaveException(e1);
         } catch (SlaveUnavailableException e1) {
@@ -96,7 +98,7 @@ public class SlaveTransfer {
         }
 
         try {
-            srcTransfer.sendFile(_file.getPath(),'I',0);
+            srcTransfer.sendFile(_file.getPath(), 'I', 0);
         } catch (IOException e2) {
             throw new SourceSlaveException(e2);
         } catch (SlaveUnavailableException e2) {
@@ -108,7 +110,7 @@ public class SlaveTransfer {
 
         while (!(srcIsDone && destIsDone)) {
             try {
-                if(srcTransfer.getTransferStatus().isFinished()) {
+                if (srcTransfer.getTransferStatus().isFinished()) {
                     srcIsDone = true;
                 }
             } catch (TransferFailedException e7) {
@@ -117,6 +119,7 @@ public class SlaveTransfer {
                 } catch (SlaveUnavailableException e8) {
                 } catch (IOException e8) {
                 }
+
                 throw new SourceSlaveException(e7);
             } catch (SlaveUnavailableException e7) {
                 try {
@@ -124,10 +127,12 @@ public class SlaveTransfer {
                 } catch (SlaveUnavailableException e8) {
                 } catch (IOException e8) {
                 }
+
                 throw new SourceSlaveException(e7);
             }
+
             try {
-                if(destTransfer.getTransferStatus().isFinished()) {
+                if (destTransfer.getTransferStatus().isFinished()) {
                     destIsDone = true;
                 }
             } catch (TransferFailedException e6) {
@@ -136,6 +141,7 @@ public class SlaveTransfer {
                 } catch (SlaveUnavailableException e8) {
                 } catch (IOException e8) {
                 }
+
                 throw new DestinationSlaveException(e6);
             } catch (SlaveUnavailableException e6) {
                 try {
@@ -143,8 +149,10 @@ public class SlaveTransfer {
                 } catch (SlaveUnavailableException e8) {
                 } catch (IOException e8) {
                 }
+
                 throw new DestinationSlaveException(e6);
             }
+
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e5) {

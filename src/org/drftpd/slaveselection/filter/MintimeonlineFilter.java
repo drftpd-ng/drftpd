@@ -19,9 +19,10 @@ package org.drftpd.slaveselection.filter;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.util.Time;
+
+import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;
 
@@ -31,7 +32,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: MintimeonlineFilter.java,v 1.3 2004/08/03 20:14:10 zubov Exp $
+ * @version $Id: MintimeonlineFilter.java,v 1.4 2004/11/03 16:46:48 mog Exp $
  */
 public class MintimeonlineFilter extends Filter {
     private long _minTime;

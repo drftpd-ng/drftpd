@@ -17,8 +17,18 @@
  */
 package net.sf.drftpd.slave;
 
+import net.sf.drftpd.FatalException;
+import net.sf.drftpd.PermissionDeniedException;
+
+import org.apache.log4j.Logger;
+
+import org.drftpd.slave.Slave;
+
+import se.mog.io.File;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,20 +37,12 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.PermissionDeniedException;
-
-import org.apache.log4j.Logger;
-import org.drftpd.slave.Slave;
-
-import se.mog.io.File;
-
 
 //TODO SECURITY: verify so that we never get outside of a rootbasket root
 
 /**
  * @author mog
- * @version $Id: RootBasket.java,v 1.30 2004/11/02 07:32:48 zubov Exp $
+ * @version $Id: RootBasket.java,v 1.31 2004/11/03 16:46:43 mog Exp $
  */
 public class RootBasket {
     private static final Logger logger = Logger.getLogger(RootBasket.class);

@@ -18,7 +18,8 @@
 package net.sf.drftpd.util;
 
 import net.sf.drftpd.master.command.plugins.TransferStatistics;
-import net.sf.drftpd.master.usermanager.User;
+
+import org.drftpd.usermanager.User;
 
 import java.util.Comparator;
 

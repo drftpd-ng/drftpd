@@ -29,7 +29,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: DummySlaveManager.java,v 1.4 2004/11/02 07:33:13 zubov Exp $
+ * @version $Id: DummySlaveManager.java,v 1.5 2004/11/03 16:46:49 mog Exp $
  */
 public class DummySlaveManager extends SlaveManager {
     public DummySlaveManager() throws SlaveFileException {
@@ -42,9 +42,5 @@ public class DummySlaveManager extends SlaveManager {
 
     public void setGlobalContext(GlobalContext gctx) {
         _gctx = gctx;
-    }
-
-    public void setSlaveSelectionManager(SlaveSelectionManagerInterface ssm) {
-        _slaveSelectionManager = ssm;
     }
 }

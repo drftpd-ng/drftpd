@@ -53,9 +53,6 @@ import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.command.plugins.Nuke;
 import net.sf.drftpd.master.command.plugins.TransferStatistics;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.SlaveStatus;
@@ -66,6 +63,10 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.drftpd.sections.SectionInterface;
+
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
 
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -97,7 +98,7 @@ import java.util.ResourceBundle;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.22 2004/11/02 07:32:51 zubov Exp $
+ * @version $Id: SiteBot.java,v 1.23 2004/11/03 16:46:45 mog Exp $
  */
 public class SiteBot implements FtpListener, Observer {
     public static final ReplacerEnvironment GLOBAL_ENV = new ReplacerEnvironment();
@@ -1164,7 +1165,7 @@ class UserComparator implements Comparator {
             return ((thisVal < anotherVal) ? (-1)
                                            : ((thisVal == anotherVal) ? 0 : 1));
         }
-        return ((thisVal > anotherVal) ? (-1)
-                                       : ((thisVal == anotherVal) ? 0 : 1));
+
+        return ((thisVal > anotherVal) ? (-1) : ((thisVal == anotherVal) ? 0 : 1));
     }
 }

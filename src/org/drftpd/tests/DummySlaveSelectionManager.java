@@ -19,7 +19,7 @@ import java.util.Collection;
 
 /**
  * @author zubov
- * @version $Id: DummySlaveSelectionManager.java,v 1.5 2004/11/02 07:33:13 zubov Exp $
+ * @version $Id: DummySlaveSelectionManager.java,v 1.6 2004/11/03 16:46:49 mog Exp $
  */
 public class DummySlaveSelectionManager
     implements SlaveSelectionManagerInterface {
@@ -54,5 +54,4 @@ public class DummySlaveSelectionManager
     public GlobalContext getGlobalContext() {
         throw new UnsupportedOperationException();
     }
-
 }

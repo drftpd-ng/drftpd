@@ -17,10 +17,6 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import net.sf.drftpd.HostMaskCollection;
 import net.sf.drftpd.event.ConnectionEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -28,20 +24,28 @@ import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.master.usermanager.UserFileException;
 
 import org.apache.log4j.Logger;
+
 import org.apache.oro.text.regex.MalformedPatternException;
+
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
+
+import java.io.IOException;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 
 /**
  * @author mog
- * @version $Id: Login.java,v 1.37 2004/11/03 05:43:21 zubov Exp $
+ * @version $Id: Login.java,v 1.38 2004/11/03 16:46:40 mog Exp $
  */
 public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
     private static final Logger logger = Logger.getLogger(Login.class);
@@ -118,7 +122,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
         if (conn.getUserNull().checkPassword(pass)) {
             conn.getUserNull().login();
             conn.setAuthenticated(true);
-            conn.getConnectionManager().dispatchFtpEvent(new ConnectionEvent(
+            conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new ConnectionEvent(
                     conn, "LOGIN"));
 
             FtpReply response = new FtpReply(230,
@@ -133,8 +137,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
             return response;
         }
 
-        return new FtpReply(530,
-            conn.jprintf(Login.class, "pass.fail"));
+        return new FtpReply(530, conn.jprintf(Login.class, "pass.fail"));
     }
 
     /**
@@ -184,19 +187,22 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
             return new FtpReply(530, ex.getMessage());
         }
 
-        if (newUser.isDeleted() || conn.getGlobalContext().getConfig().isSiteShutdown(newUser)) {
+        if (newUser.isDeleted() ||
+                conn.getGlobalContext().getConfig().isSiteShutdown(newUser)) {
             return FtpReply.RESPONSE_530_ACCESS_DENIED;
         }
-        
+
         try {
             if (((_idntAddress != null) &&
-                    newUser.getHostMaskCollection().check(_idntIdent, _idntAddress, null)) ||
+                    newUser.getHostMaskCollection().check(_idntIdent,
+                        _idntAddress, null)) ||
                     ((_idntAddress == null) &&
-                    (newUser.getHostMaskCollection().check(null, conn.getClientAddress(),
-                        conn.getControlSocket())))) {
+                    (newUser.getHostMaskCollection().check(null,
+                        conn.getClientAddress(), conn.getControlSocket())))) {
                 //success
                 // max_users and num_logins restriction
-                FtpReply response = conn.getConnectionManager().canLogin(conn,
+                FtpReply response = conn.getGlobalContext()
+                                        .getConnectionManager().canLogin(conn,
                         newUser);
 
                 if (response != null) {

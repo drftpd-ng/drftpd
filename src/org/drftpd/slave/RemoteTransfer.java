@@ -17,19 +17,20 @@
  */
 package org.drftpd.slave;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.slave.TransferFailedException;
 import net.sf.drftpd.slave.TransferStatus;
 
+import java.io.IOException;
+
+import java.net.InetSocketAddress;
+
 
 /**
  * @author zubov
  * @author mog
- * @version $Id: RemoteTransfer.java,v 1.2 2004/11/02 07:32:52 zubov Exp $
+ * @version $Id: RemoteTransfer.java,v 1.3 2004/11/03 16:46:46 mog Exp $
  */
 public class RemoteTransfer {
     public static final char TRANSFER_RECEIVING_UPLOAD = 'R';
@@ -37,7 +38,6 @@ public class RemoteTransfer {
     public static final char TRANSFER_THROUGHPUT = 'A';
     public static final char TRANSFER_UNKNOWN = 'U';
     private InetSocketAddress _address;
-
     private char _state = TRANSFER_UNKNOWN;
     private TransferIndex _transferIndex;
     private RemoteSlave _rslave;
@@ -45,15 +45,15 @@ public class RemoteTransfer {
 
     public RemoteTransfer(ConnectInfo ci, RemoteSlave rslave) {
         _transferIndex = ci.getTransferIndex();
-        _address = new InetSocketAddress(ci.getAddress(),ci.getPort());
+        _address = new InetSocketAddress(ci.getAddress(), ci.getPort());
         _rslave = rslave;
         _status = ci.getTransferStatus();
     }
-    
+
     public void updateTransferStatus(TransferStatus ts) {
         _status = ts;
     }
-    
+
     public char getState() {
         return _state;
     }
@@ -93,9 +93,12 @@ public class RemoteTransfer {
         if (!_rslave.isOnline()) {
             throw new SlaveUnavailableException("Slave is offline");
         }
+
         if (_status.threwException()) {
-            throw new TransferFailedException((IOException) _status.getThrowable(),_status);
+            throw new TransferFailedException((IOException) _status.getThrowable(),
+                _status);
         }
+
         return _status;
     }
 
@@ -137,14 +140,17 @@ public class RemoteTransfer {
         _rslave.issueAbortToSlave(getTransferIndex());
     }
 
-    public void receiveFile(String path, char type, long position) throws IOException, SlaveUnavailableException {
-        String index = _rslave.issueReceiveToSlave(path,
-                type, position, getTransferIndex());
+    public void receiveFile(String path, char type, long position)
+        throws IOException, SlaveUnavailableException {
+        String index = _rslave.issueReceiveToSlave(path, type, position,
+                getTransferIndex());
         _rslave.fetchResponse(index);
     }
 
-    public void sendFile(String path, char type, long position) throws IOException, SlaveUnavailableException {
-        String index = _rslave.issueSendToSlave(path, type, position,getTransferIndex());
+    public void sendFile(String path, char type, long position)
+        throws IOException, SlaveUnavailableException {
+        String index = _rslave.issueSendToSlave(path, type, position,
+                getTransferIndex());
         _rslave.fetchResponse(index);
     }
 }

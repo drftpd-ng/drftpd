@@ -15,28 +15,29 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
 package org.drftpd.slave.async;
 
 import net.sf.drftpd.slave.SlaveStatus;
 
+
 /**
  * @author zubov
- * @version $Id: AsyncResponseSlaveStatus.java,v 1.2 2004/11/02 07:32:53 zubov Exp $
+ * @version $Id: AsyncResponseSlaveStatus.java,v 1.3 2004/11/03 16:46:47 mog Exp $
  */
 public class AsyncResponseSlaveStatus extends AsyncResponse {
-
     private SlaveStatus _status;
-    
+
     public AsyncResponseSlaveStatus(SlaveStatus status) {
-        this("SlaveStatus",status);
+        this("SlaveStatus", status);
     }
 
     public AsyncResponseSlaveStatus(String index, SlaveStatus status) {
         super(index);
+
         if (status == null) {
             throw new IllegalArgumentException("status cannot be null");
         }
+
         _status = status;
     }
 

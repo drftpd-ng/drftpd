@@ -17,7 +17,10 @@
  */
 package net.sf.drftpd.slave;
 
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
+
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -25,12 +28,10 @@ import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 
-import org.apache.log4j.Logger;
-
 
 /**
  * @author mog
- * @version $Id: ActiveConnection.java,v 1.9 2004/11/02 07:32:48 zubov Exp $
+ * @version $Id: ActiveConnection.java,v 1.10 2004/11/03 16:46:43 mog Exp $
  */
 public class ActiveConnection extends Connection {
     private static final Logger logger = Logger.getLogger(ActiveConnection.class);
@@ -44,7 +45,9 @@ public class ActiveConnection extends Connection {
     }
 
     public Socket connect() throws IOException {
-        logger.debug("Connecting to " + _addr.getHostName() + ":" + _addr.getPort());
+        logger.debug("Connecting to " + _addr.getHostName() + ":" +
+            _addr.getPort());
+
         if (_ctx != null) {
             SSLSocket sslsock;
             sslsock = (SSLSocket) _ctx.getSocketFactory().createSocket();
@@ -56,10 +59,12 @@ public class ActiveConnection extends Connection {
             _sock = SocketFactory.getDefault().createSocket();
             _sock.connect(_addr, TIMEOUT);
         }
+
         setSockOpts(_sock);
 
         Socket sock = _sock;
         _sock = null;
+
         return sock;
     }
 

@@ -17,17 +17,19 @@
  */
 package org.drftpd.slave.async;
 
+
 /**
  * @author zubov
- * @version $Id: AsyncResponseMaxPath.java,v 1.2 2004/11/02 07:32:53 zubov Exp $
+ * @version $Id: AsyncResponseMaxPath.java,v 1.3 2004/11/03 16:46:47 mog Exp $
  */
 public class AsyncResponseMaxPath extends AsyncResponse {
-
     int _maxPath;
+
     public AsyncResponseMaxPath(String index, int maxPath) {
         super(index);
         _maxPath = maxPath;
     }
+
     public int getMaxPath() {
         return _maxPath;
     }

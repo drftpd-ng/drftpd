@@ -17,13 +17,6 @@
  */
 package org.drftpd.commands;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -34,18 +27,28 @@ import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.plugins.Textoutput;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
+
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
+
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.IOException;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 
 
 /*
  * @author iamn
- * @version $Id: MoreStats.java,v 1.4 2004/11/03 05:43:23 zubov Exp $
+ * @version $Id: MoreStats.java,v 1.5 2004/11/03 16:46:44 mog Exp $
  */
 public class MoreStats implements CommandHandlerFactory, CommandHandler {
     public static final int PERIOD_DAILY = Calendar.DAY_OF_MONTH; // = 5
@@ -175,8 +178,8 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
         Collection users;
 
         try {
-            users = conn.getConnectionManager().getGlobalContext()
-                        .getUserManager().getAllUsers();
+            users = conn.getGlobalContext().getConnectionManager()
+                        .getGlobalContext().getUserManager().getAllUsers();
         } catch (UserFileException e) {
             logger.warn("", e);
 
@@ -318,8 +321,8 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
         Collection users;
 
         try {
-            users = conn.getConnectionManager().getGlobalContext()
-                        .getUserManager().getAllUsers();
+            users = conn.getGlobalContext().getConnectionManager()
+                        .getGlobalContext().getUserManager().getAllUsers();
         } catch (UserFileException e) {
             logger.warn("", e);
 

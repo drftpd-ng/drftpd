@@ -17,10 +17,7 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import com.Ostermiller.util.StringTokenizer;
 
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
@@ -35,16 +32,22 @@ import net.sf.drftpd.slave.SlaveStatus;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
+
 import org.drftpd.plugins.SiteBot;
+
 import org.tanesha.replacer.ReplacerEnvironment;
 
-import com.Ostermiller.util.StringTokenizer;
+import java.io.IOException;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
 
 
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveManagement.java,v 1.5 2004/11/02 07:32:41 zubov Exp $
+ * @version $Id: SlaveManagement.java,v 1.6 2004/11/03 16:46:40 mog Exp $
  */
 public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
     public void unload() {
@@ -55,7 +58,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
 
     private FtpReply doSITE_CHECKSLAVES(BaseFtpConnection conn) {
         return new FtpReply(200,
-            "Ok, " + conn.getSlaveManager().verifySlaves() +
+            "Ok, " + conn.getGlobalContext().getSlaveManager().verifySlaves() +
             " stale slaves removed");
     }
 
@@ -72,7 +75,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
 
         try {
             rslave = conn.getGlobalContext().getSlaveManager().getRemoteSlave(conn.getRequest()
-                                                                            .getArgument());
+                                                                                  .getArgument());
         } catch (ObjectNotFoundException e) {
             return new FtpReply(200, "No such slave");
         }
@@ -99,12 +102,12 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
             return FtpReply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        Collection slaves = conn.getSlaveManager().getSlaves();
+        Collection slaves = conn.getGlobalContext().getSlaveManager().getSlaves();
         FtpReply response = new FtpReply(200,
                 "OK, " + slaves.size() + " slaves listed.");
 
-        for (Iterator iter = conn.getSlaveManager().getSlaves().iterator();
-                iter.hasNext();) {
+        for (Iterator iter = conn.getGlobalContext().getSlaveManager()
+                                 .getSlaves().iterator(); iter.hasNext();) {
             RemoteSlave rslave = (RemoteSlave) iter.next();
 
             if (showMore) {
@@ -116,7 +119,8 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
 
             try {
                 SlaveStatus status = rslave.getStatusAvailable();
-                SiteBot.fillEnvSlaveStatus(env, status, conn.getSlaveManager());
+                SiteBot.fillEnvSlaveStatus(env, status,
+                    conn.getGlobalContext().getSlaveManager());
                 response.addComment(conn.jprintf(SlaveManagement.class,
                         "slaves", env));
             } catch (SlaveUnavailableException e) {
@@ -141,7 +145,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
 
         try {
             rslave = conn.getGlobalContext().getSlaveManager().getRemoteSlave(conn.getRequest()
-                                                                            .getArgument());
+                                                                                  .getArgument());
         } catch (ObjectNotFoundException e) {
             return new FtpReply(200, "No such slave");
         }
@@ -150,18 +154,21 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
             return new FtpReply(200, "Slave is offline");
         }
 
-
         try {
             conn.getCurrentDirectory().setSlaveForMerging(rslave);
-            rslave.fetchRemergeResponseFromIndex(rslave.issueRemergeToSlave(conn.getCurrentDirectory().getPath()));
+            rslave.fetchRemergeResponseFromIndex(rslave.issueRemergeToSlave(
+                    conn.getCurrentDirectory().getPath()));
             conn.getCurrentDirectory().cleanSlaveFromMerging(rslave);
         } catch (IOException e) {
             rslave.setOffline("IOException during remerge()");
+
             return new FtpReply(200, "IOException during remerge()");
         } catch (SlaveUnavailableException e) {
             rslave.setOffline("Slave Unavailable during remerge()");
+
             return new FtpReply(200, "Slave Unavailable during remerge()");
         }
+
         return FtpReply.RESPONSE_200_COMMAND_OK;
     }
 
@@ -207,8 +214,8 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         if (!arguments.hasMoreTokens()) {
             if (!rslave.getMasks().isEmpty()) {
                 env.add("masks", rslave.getMasks());
-                response.addComment(conn.jprintf(
-                        SlaveManagement.class, "slave.masks", env));
+                response.addComment(conn.jprintf(SlaveManagement.class,
+                        "slave.masks", env));
             }
 
             response.addComment(conn.jprintf(SlaveManagement.class,
@@ -348,7 +355,6 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
 
         try {
             conn.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
-
         } catch (ObjectNotFoundException e) {
             response.addComment(conn.jprintf(SlaveManagement.class,
                     "delslave.notfound", env));
@@ -396,7 +402,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         } catch (ObjectNotFoundException e) {
         }
 
-        conn.getSlaveManager().newSlave(slavename);
+        conn.getGlobalContext().getSlaveManager().newSlave(slavename);
         response.addComment(conn.jprintf(SlaveManagement.class,
                 "addslave.success", env));
 

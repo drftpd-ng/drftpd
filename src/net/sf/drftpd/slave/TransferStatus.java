@@ -17,29 +17,25 @@
  */
 package net.sf.drftpd.slave;
 
+import org.drftpd.slave.TransferIndex;
+
 import java.io.Serializable;
 
-import org.drftpd.slave.TransferIndex;
 
 /**
  * @author mog
- * @version $Id: TransferStatus.java,v 1.7 2004/11/02 07:32:48 zubov Exp $
+ * @version $Id: TransferStatus.java,v 1.8 2004/11/03 16:46:44 mog Exp $
  */
 public class TransferStatus implements Serializable {
     private long _checksum;
-
     private long _elapsed;
-
     private boolean _isFinished;
-
     private Throwable _throwable;
-
     private long _transfered;
-
     private TransferIndex _transferIndex;
 
     public TransferStatus(long elapsed, long transfered, long checksum,
-            boolean isFinished, TransferIndex transferIndex) {
+        boolean isFinished, TransferIndex transferIndex) {
         _transferIndex = transferIndex;
         _elapsed = elapsed;
         _transfered = transfered;

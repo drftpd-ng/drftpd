@@ -19,14 +19,15 @@ package net.sf.drftpd.master.usermanager.xstream;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
-import net.sf.drftpd.master.usermanager.AbstractUser;
-import net.sf.drftpd.master.usermanager.PlainTextPasswordUser;
-import net.sf.drftpd.master.usermanager.UnixPassword;
-import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.util.Crypt;
 import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Logger;
+
+import org.drftpd.usermanager.AbstractUser;
+import org.drftpd.usermanager.PlainTextPasswordUser;
+import org.drftpd.usermanager.UnixPassword;
+import org.drftpd.usermanager.UserFileException;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +35,7 @@ import java.io.IOException;
 
 /**
  * @author mog
- * @version $Id: XStreamUser.java,v 1.9 2004/11/02 07:32:45 zubov Exp $
+ * @version $Id: XStreamUser.java,v 1.10 2004/11/03 16:46:42 mog Exp $
  */
 public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
     UnixPassword {

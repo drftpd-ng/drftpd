@@ -24,13 +24,14 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.event.listeners.Trial.Limit;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.master.usermanager.UserFileException;
 
 import org.apache.log4j.Logger;
 
 import org.drftpd.plugins.SiteBot;
+
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
 
 import org.tanesha.replacer.ReplacerEnvironment;
 

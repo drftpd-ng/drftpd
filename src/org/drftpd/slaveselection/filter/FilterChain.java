@@ -17,26 +17,29 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Properties;
-
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
 
+import org.drftpd.usermanager.User;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import java.net.InetAddress;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Properties;
+
 
 /**
  * @author mog
- * @version $Id: FilterChain.java,v 1.10 2004/11/03 05:43:25 zubov Exp $
+ * @version $Id: FilterChain.java,v 1.11 2004/11/03 16:46:48 mog Exp $
  */
 public class FilterChain {
     private SlaveSelectionManager _ssm;

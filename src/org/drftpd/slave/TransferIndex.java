@@ -22,7 +22,7 @@ import java.io.Serializable;
 
 /**
  * @author zubov
- * @version $Id: TransferIndex.java,v 1.2 2004/11/02 07:32:53 zubov Exp $
+ * @version $Id: TransferIndex.java,v 1.3 2004/11/03 16:46:46 mog Exp $
  */
 public final class TransferIndex implements Serializable {
     static int transfers = 0;
@@ -31,7 +31,7 @@ public final class TransferIndex implements Serializable {
     public TransferIndex(int index) {
         _index = index;
     }
-    
+
     public TransferIndex() {
         _index = transfers++;
     }

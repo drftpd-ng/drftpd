@@ -23,7 +23,6 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
@@ -33,6 +32,8 @@ import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 
+import org.drftpd.usermanager.NoSuchUserException;
+
 import java.io.IOException;
 
 import java.util.Iterator;
@@ -40,7 +41,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Request.java,v 1.20 2004/10/05 02:11:22 mog Exp $
+ * @version $Id: Request.java,v 1.21 2004/11/03 16:46:40 mog Exp $
  */
 public class Request implements CommandHandlerFactory, CommandHandler {
     private static final String FILLEDPREFIX = "FILLED-for.";
@@ -80,7 +81,7 @@ public class Request implements CommandHandlerFactory, CommandHandler {
                 }
 
                 //if (conn.getConfig().checkDirLog(conn.getUserNull(), file)) {
-                conn.getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
+                conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
                         conn, "REQFILLED", filledfile));
 
                 //}
@@ -118,7 +119,7 @@ public class Request implements CommandHandlerFactory, CommandHandler {
                     conn.getUserNull().getGroupName(), createdDirName);
 
             //if (conn.getConfig().checkDirLog(conn.getUserNull(), createdDir)) {
-            conn.getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
+            conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
                     conn, "REQUEST", createdDir));
 
             //}

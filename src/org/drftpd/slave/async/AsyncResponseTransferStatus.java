@@ -19,20 +19,21 @@ package org.drftpd.slave.async;
 
 import net.sf.drftpd.slave.TransferStatus;
 
+
 /**
  * @author zubov
- * @version $Id: AsyncResponseTransferStatus.java,v 1.2 2004/11/02 07:32:53 zubov Exp $
+ * @version $Id: AsyncResponseTransferStatus.java,v 1.3 2004/11/03 16:46:47 mog Exp $
  */
 public class AsyncResponseTransferStatus extends AsyncResponse {
-
-
     private TransferStatus _ts;
 
     public AsyncResponseTransferStatus(TransferStatus ts) {
         super("TransferStatus");
+
         if (ts == null) {
             throw new IllegalArgumentException("transferstatus cannot be null");
         }
+
         _ts = ts;
     }
 

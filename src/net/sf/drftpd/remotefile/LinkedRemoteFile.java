@@ -53,7 +53,7 @@ import java.util.StringTokenizer;
  * Represents the file attributes of a remote file.
  *
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.170 2004/11/02 07:32:47 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.171 2004/11/03 16:46:43 mog Exp $
  */
 public class LinkedRemoteFile implements Serializable, Comparable,
     LinkedRemoteFileInterface {
@@ -335,6 +335,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
                 throw new RuntimeException(e);
             }
         }
+
         return dir;
     }
 
@@ -1561,11 +1562,93 @@ public class LinkedRemoteFile implements Serializable, Comparable,
         if (shouldDelete && _files.isEmpty()) {
             delete();
         }
-        if (_slaves == null || !_slaves.contains(rslave)) {
+
+        if ((_slaves == null) || !_slaves.contains(rslave)) {
             // setSlaveForMerging was not called, assuming new directory
             return;
         }
+
         _slaves.remove(rslave);
+
+        if (_slaves.isEmpty()) {
+            _slaves = null;
+        }
+    }
+
+    public void setSlaveForMerging(RemoteSlave rslave) {
+        if (!isDirectory()) {
+            throw new RuntimeException(this + " is not a directory");
+        }
+
+        logger.debug("Setting " + rslave.getName() + " for merging on " +
+            getPath());
+
+        for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+            LinkedRemoteFileInterface lrf = (LinkedRemoteFileInterface) iter.next();
+
+            if (lrf.isDirectory()) {
+                lrf.setSlaveForMerging(rslave);
+            }
+        }
+
+        if (_slaves == null) {
+            _slaves = new ArrayList();
+        }
+
+        if (_slaves.contains(rslave)) {
+            throw new RuntimeException("_slaves already contains " + rslave);
+        }
+
+        _slaves.add(rslave);
+    }
+
+    public void resetSlaveForMerging(RemoteSlave rslave) {
+        if (!isDirectory()) {
+            throw new IllegalArgumentException(this + " is not a directory");
+        }
+
+        for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+            LinkedRemoteFileInterface lrf = (LinkedRemoteFileInterface) iter.next();
+
+            if (lrf.isDirectory()) {
+                lrf.resetSlaveForMerging(rslave);
+            }
+        }
+
+        if (_slaves == null) {
+            return;
+        }
+
+        _slaves.remove(rslave);
+
+        if (_slaves.isEmpty()) {
+            _slaves = null;
+        }
+    }
+
+    public void cleanSlaveFromMerging(RemoteSlave rslave) {
+        if (!isDirectory()) {
+            throw new IllegalArgumentException(this + " is not a directory");
+        }
+
+        for (Iterator iter = new ArrayList(getFiles()).iterator();
+                iter.hasNext();) {
+            LinkedRemoteFileInterface lrf = (LinkedRemoteFileInterface) iter.next();
+
+            if (lrf.isDirectory()) {
+                lrf.cleanSlaveFromMerging(rslave);
+            }
+        }
+
+        if (_slaves == null) {
+            return;
+        }
+
+        if (_slaves.contains(rslave)) {
+            unmergeDir(rslave);
+            _slaves.remove(rslave);
+        }
+
         if (_slaves.isEmpty()) {
             _slaves = null;
         }
@@ -1633,67 +1716,6 @@ public class LinkedRemoteFile implements Serializable, Comparable,
         public String toString() {
             return "[NonExistingFile:file=" + getFile().getPath() + ",path=" +
             getPath() + "]";
-        }
-    }
-
-    public void setSlaveForMerging(RemoteSlave rslave) {
-        if (!isDirectory()) {
-            throw new RuntimeException(this + " is not a directory");
-        }
-        logger.debug("Setting " + rslave.getName() + " for merging on " + getPath());
-        for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
-            LinkedRemoteFileInterface lrf = (LinkedRemoteFileInterface) iter.next();
-            if (lrf.isDirectory()){
-                lrf.setSlaveForMerging(rslave);
-            }
-        }
-        if (_slaves == null) {
-            _slaves = new ArrayList();
-        }
-        if (_slaves.contains(rslave)) {
-            throw new RuntimeException("_slaves already contains " + rslave);
-        }
-        _slaves.add(rslave);
-    }
-
-    public void resetSlaveForMerging(RemoteSlave rslave) {
-        if (!isDirectory()) {
-            throw new IllegalArgumentException(this + " is not a directory");
-        }
-        for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
-            LinkedRemoteFileInterface lrf = (LinkedRemoteFileInterface) iter.next();
-            if (lrf.isDirectory()) {
-                lrf.resetSlaveForMerging(rslave);
-            }
-        }
-        if (_slaves == null) {
-            return;
-        }
-        _slaves.remove(rslave);
-        if (_slaves.isEmpty()) {
-            _slaves = null;
-        }
-    }
-
-    public void cleanSlaveFromMerging(RemoteSlave rslave) {
-        if (!isDirectory()) {
-            throw new IllegalArgumentException(this + " is not a directory");
-        }
-        for (Iterator iter = new ArrayList(getFiles()).iterator(); iter.hasNext();) {
-            LinkedRemoteFileInterface lrf = (LinkedRemoteFileInterface) iter.next();
-            if (lrf.isDirectory()){
-                lrf.cleanSlaveFromMerging(rslave);
-            }
-        }
-        if (_slaves == null) {
-            return;
-        }
-        if (_slaves.contains(rslave)) {
-            unmergeDir(rslave);
-            _slaves.remove(rslave);
-        }
-        if (_slaves.isEmpty()) {
-            _slaves = null;
         }
     }
 }

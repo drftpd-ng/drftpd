@@ -24,8 +24,6 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.Time;
@@ -36,6 +34,9 @@ import org.drftpd.plugins.SiteBot;
 
 import org.drftpd.slave.RemoteTransfer;
 
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ import java.util.Iterator;
 
 /**
  * @author flowman
- * @version $Id: Bandwidth.java,v 1.12 2004/11/02 07:32:38 zubov Exp $
+ * @version $Id: Bandwidth.java,v 1.13 2004/11/03 16:46:38 mog Exp $
  */
 public class Bandwidth extends GenericCommandAutoService
     implements IRCPluginInterface {

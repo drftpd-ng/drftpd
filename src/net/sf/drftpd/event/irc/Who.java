@@ -26,8 +26,6 @@ import net.sf.drftpd.Bytes;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
@@ -35,6 +33,9 @@ import org.apache.log4j.Logger;
 import org.drftpd.plugins.SiteBot;
 
 import org.drftpd.slave.RemoteTransfer;
+
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
 
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -47,7 +48,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Who.java,v 1.9 2004/11/02 07:32:38 zubov Exp $
+ * @version $Id: Who.java,v 1.10 2004/11/03 16:46:38 mog Exp $
  */
 public class Who extends GenericAutoService implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Who.class);

@@ -17,12 +17,12 @@
  */
 package net.sf.drftpd.event;
 
-import net.sf.drftpd.master.usermanager.User;
+import org.drftpd.usermanager.User;
 
 
 /**
  * @author mog
- * @version $Id: UserEvent.java,v 1.12 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: UserEvent.java,v 1.13 2004/11/03 16:46:37 mog Exp $
  */
 public class UserEvent extends Event {
     protected User _user;

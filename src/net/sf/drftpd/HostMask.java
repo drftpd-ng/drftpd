@@ -29,7 +29,7 @@ import java.net.InetAddress;
 
 /**
  * @author mog
- * @version $Id: HostMask.java,v 1.11 2004/11/02 07:32:37 zubov Exp $
+ * @version $Id: HostMask.java,v 1.12 2004/11/03 16:46:37 mog Exp $
  */
 public class HostMask {
     private static final Logger logger = Logger.getLogger(HostMask.class);
@@ -90,8 +90,10 @@ public class HostMask {
     }
 
     public String toString() {
-        if (_identMask != null)
+        if (_identMask != null) {
             return _identMask + "@" + _hostMask;
+        }
+
         return "*@" + _hostMask;
     }
 }

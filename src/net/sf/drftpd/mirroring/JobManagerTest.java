@@ -46,7 +46,7 @@ import java.util.Set;
 
 /**
  * @author zubov
- * @version $Id: JobManagerTest.java,v 1.15 2004/11/02 07:32:46 zubov Exp $
+ * @version $Id: JobManagerTest.java,v 1.16 2004/11/03 16:46:42 mog Exp $
  */
 public class JobManagerTest extends TestCase {
     private Properties p;
@@ -95,7 +95,7 @@ public class JobManagerTest extends TestCase {
         dgc.setSlaveManager(dsm);
 
         DummySlaveSelectionManager dssm = new DummySlaveSelectionManager();
-        dsm.setSlaveSelectionManager(dssm);
+        dgc.setSlaveSelectionManager(dssm);
         cm.getGlobalContext().loadJobManager();
         jm = cm.getGlobalContext().getJobManager();
         file = new LinkedRemoteFilePath("/path/file1.txt");

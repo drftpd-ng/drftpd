@@ -43,7 +43,7 @@ import java.util.Properties;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.32 2004/09/13 15:04:55 zubov Exp $
+ * @version $Id: Archive.java,v 1.33 2004/11/03 16:46:38 mog Exp $
  */
 public class Archive implements FtpListener, Runnable {
     private static final Logger logger = Logger.getLogger(Archive.class);
@@ -57,10 +57,6 @@ public class Archive implements FtpListener, Runnable {
     public Archive() {
         logger.info("Archive plugin loaded successfully");
         _archiveHandlers = new ArrayList();
-    }
-
-    public static Logger getLogger() {
-        return logger;
     }
 
     public Properties getProperties() {

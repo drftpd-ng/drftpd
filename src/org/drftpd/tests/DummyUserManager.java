@@ -17,10 +17,11 @@
 package org.drftpd.tests;
 
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.master.usermanager.UserFileException;
-import net.sf.drftpd.master.usermanager.UserManager;
+
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
+import org.drftpd.usermanager.UserManager;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -28,7 +29,7 @@ import java.util.Collections;
 
 /**
  * @author mog
- * @version $Id: DummyUserManager.java,v 1.4 2004/10/03 16:13:58 mog Exp $
+ * @version $Id: DummyUserManager.java,v 1.5 2004/11/03 16:46:49 mog Exp $
  */
 public class DummyUserManager extends UserManager {
     private User _user;

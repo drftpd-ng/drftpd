@@ -17,14 +17,31 @@
  */
 package net.sf.drftpd.master.config;
 
+import net.sf.drftpd.master.ConnectionManager;
+import net.sf.drftpd.master.FtpReply;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+
+import org.apache.log4j.Logger;
+
+import org.apache.oro.text.GlobCompiler;
+import org.apache.oro.text.regex.MalformedPatternException;
+
+import org.drftpd.GlobalContext;
+
+import org.drftpd.slave.Slave;
+
+import org.drftpd.usermanager.User;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Reader;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -34,21 +51,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.FtpReply;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-
-import org.apache.log4j.Logger;
-import org.apache.oro.text.GlobCompiler;
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.drftpd.GlobalContext;
-import org.drftpd.slave.Slave;
-
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.63 2004/11/03 05:43:21 zubov Exp $
+ * @version $Id: FtpConfig.java,v 1.64 2004/11/03 16:46:40 mog Exp $
  */
 public class FtpConfig {
     private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -197,7 +203,8 @@ public class FtpConfig {
 
     private boolean checkPermission(String key, User user) {
         Permission perm = (Permission) _permissions.get(key);
-        return perm == null ? false : perm.check(user);
+
+        return (perm == null) ? false : perm.check(user);
     }
 
     /**
@@ -473,7 +480,7 @@ public class FtpConfig {
                             "userrejectinsecure".equals(cmd) ||
                             "denydiruncrypted".equals(cmd) ||
                             "denydatauncrypted".equals(cmd) ||
-                            "give".equals(cmd) || "take".equals(cmd) || 
+                            "give".equals(cmd) || "take".equals(cmd) ||
                             "shutdown".equals(cmd)) {
                         if (permissions.containsKey(cmd)) {
                             throw new RuntimeException(

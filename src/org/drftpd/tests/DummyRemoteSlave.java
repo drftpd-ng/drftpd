@@ -1,12 +1,5 @@
 package org.drftpd.tests;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-
 import net.sf.drftpd.ID3Tag;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.SlaveUnavailableException;
@@ -15,14 +8,23 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.SlaveStatus;
 
 import org.drftpd.GlobalContext;
+
 import org.drftpd.slave.RemoteTransfer;
 import org.drftpd.slave.TransferIndex;
 import org.drftpd.slave.async.AsyncResponse;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+
 
 /**
  * @author zubov
- * @version $Id: DummyRemoteSlave.java,v 1.2 2004/11/02 07:33:13 zubov Exp $
+ * @version $Id: DummyRemoteSlave.java,v 1.3 2004/11/03 16:46:49 mog Exp $
  */
 public class DummyRemoteSlave extends RemoteSlave {
     public DummyRemoteSlave(String name, GlobalContext gctx) {

@@ -25,13 +25,14 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
 
 import org.drftpd.plugins.SiteBot;
+
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
 
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -44,7 +45,7 @@ import java.util.Iterator;
 
 /**
  * @author Teflon
- * @version $Id: Kick.java,v 1.3 2004/11/02 07:32:38 zubov Exp $
+ * @version $Id: Kick.java,v 1.4 2004/11/03 16:46:38 mog Exp $
  */
 public class Kick extends GenericAutoService implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Kick.class);

@@ -18,7 +18,8 @@
 package net.sf.drftpd.event;
 
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.usermanager.User;
+
+import org.drftpd.usermanager.User;
 
 
 /**
@@ -27,7 +28,7 @@ import net.sf.drftpd.master.usermanager.User;
  * Subclassed for events that are paired with a user object.
  *
  * @author mog
- * @version $Id: ConnectionEvent.java,v 1.2 2004/08/03 20:13:54 zubov Exp $
+ * @version $Id: ConnectionEvent.java,v 1.3 2004/11/03 16:46:37 mog Exp $
  */
 public class ConnectionEvent extends Event {
     private transient BaseFtpConnection _conn;

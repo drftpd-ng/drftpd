@@ -18,8 +18,9 @@
 package org.drftpd.slaveselection.filter;
 
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+
+import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;
 
@@ -32,7 +33,7 @@ import java.util.Properties;
  * Checks ScoreChart for slaves with 0 bw usage and assigns 1 extra point to the one in that has been unused for the longest time.
  *
  * @author mog, zubov
- * @version $Id: CycleFilter.java,v 1.5 2004/08/03 20:14:10 zubov Exp $
+ * @version $Id: CycleFilter.java,v 1.6 2004/11/03 16:46:48 mog Exp $
  */
 public class CycleFilter extends Filter {
     public CycleFilter(FilterChain fc, int i, Properties p) {

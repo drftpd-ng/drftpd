@@ -17,24 +17,27 @@
  */
 package org.drftpd.usermanager;
 
+import net.sf.drftpd.master.ConnectionManager;
+
+import org.apache.log4j.BasicConfigurator;
+
+import org.drftpd.slave.Slave;
+
+import org.drftpd.tests.DummyGlobalContext;
+
 import java.io.FileInputStream;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 
-import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.usermanager.AbstractUser;
-
-import org.apache.log4j.BasicConfigurator;
-import org.drftpd.slave.Slave;
-import org.drftpd.tests.DummyGlobalContext;
-
 
 /**
  * @author mog
- * @version $Id: ResetMonthlyStats.java,v 1.6 2004/11/02 07:33:13 zubov Exp $
+ * @version $Id: ResetMonthlyStats.java,v 1.7 2004/11/03 16:46:49 mog Exp $
  */
 public class ResetMonthlyStats {
     public ResetMonthlyStats() {

@@ -19,6 +19,7 @@ package net.sf.drftpd.mirroring;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,7 +29,7 @@ import java.util.Set;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.34 2004/11/02 07:32:45 zubov Exp $
+ * @version $Id: Job.java,v 1.35 2004/11/03 16:46:42 mog Exp $
  */
 public class Job {
     private RemoteSlave _destSlave;
@@ -41,8 +42,8 @@ public class Job {
     private long _timeSpent;
     private int _transferNum;
 
-    public Job(LinkedRemoteFileInterface file, Set destSlaves, int priority,
-        int transferNum) {
+    public Job(LinkedRemoteFileInterface file, Collection destSlaves,
+        int priority, int transferNum) {
         _destSlaves = new HashSet(destSlaves);
         _file = file;
         _priority = priority;

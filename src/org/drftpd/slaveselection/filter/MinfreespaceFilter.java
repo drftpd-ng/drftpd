@@ -20,8 +20,9 @@ package org.drftpd.slaveselection.filter;
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+
+import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;
 
@@ -42,7 +43,7 @@ import java.util.Properties;
  *   addScore((minfreespace - diskfree) * multiplier)
  * }
  * @author mog
- * @version $Id: MinfreespaceFilter.java,v 1.8 2004/09/25 03:48:42 mog Exp $
+ * @version $Id: MinfreespaceFilter.java,v 1.9 2004/11/03 16:46:48 mog Exp $
  */
 public class MinfreespaceFilter extends Filter {
     private long _minfreespace;

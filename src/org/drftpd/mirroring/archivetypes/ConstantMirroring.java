@@ -17,12 +17,6 @@
  */
 package org.drftpd.mirroring.archivetypes;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.listeners.Archive;
 import net.sf.drftpd.master.RemoteSlave;
@@ -31,14 +25,25 @@ import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
+
 import org.drftpd.mirroring.ArchiveType;
+
 import org.drftpd.sections.SectionInterface;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Properties;
 
 
 /**
  * @author zubov
  */
 public class ConstantMirroring extends ArchiveType {
+    private static final Logger logger = Logger.getLogger(ConstantMirroring.class);
     private int _numOfSlaves;
 
     public ConstantMirroring(Archive archive, SectionInterface section,
@@ -61,8 +66,11 @@ public class ConstantMirroring extends ArchiveType {
         for (Iterator iter = new ArrayList(lrf.getFiles()).iterator();
                 iter.hasNext();) {
             LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
-            if (src.isLink())
+
+            if (src.isLink()) {
                 continue;
+            }
+
             if (src.isFile()) {
                 Collection slaves = new ArrayList(src.getSlaves());
 
@@ -115,15 +123,20 @@ public class ConstantMirroring extends ArchiveType {
         throws IncompleteDirectoryException, OfflineSlaveException {
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
-            if (src.isLink())
+
+            if (src.isLink()) {
                 continue;
+            }
+
             if (src.isFile()) {
                 Collection onlineSlaves;
+
                 try {
                     onlineSlaves = src.getAvailableSlaves();
                 } catch (NoAvailableSlaveException e) {
-                    continue;  // can't archive this file but maybe others have a chance
+                    continue; // can't archive this file but maybe others have a chance
                 }
+
                 if (onlineSlaves.size() != _numOfSlaves) {
                     return false;
                 }
@@ -150,8 +163,7 @@ public class ConstantMirroring extends ArchiveType {
             LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
 
             if (src.isFile()) {
-                Archive.getLogger().info("Adding " + src.getPath() +
-                    " to the job queue");
+                logger.info("Adding " + src.getPath() + " to the job queue");
 
                 Job job = new Job(src, getRSlaves(), 3, _numOfSlaves);
                 jm.addJobToQueue(job);

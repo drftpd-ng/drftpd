@@ -31,9 +31,6 @@ import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -49,6 +46,10 @@ import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 
 import org.drftpd.plugins.SiteBot;
+
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
 
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -68,7 +69,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.41 2004/11/02 07:32:41 zubov Exp $
+ * @version $Id: Dir.java,v 1.42 2004/11/03 16:46:39 mog Exp $
  */
 public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
     private final static SimpleDateFormat DATE_FMT = new SimpleDateFormat(
@@ -402,7 +403,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
             reply.addComment("Error removing credits: " + e.getMessage());
         }
 
-        conn.getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
+        conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
                 conn, "DELE", requestedFile));
         requestedFile.delete();
 
@@ -468,7 +469,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
             return FtpReply.RESPONSE_501_SYNTAX_ERROR;
         }
 
-        if (!conn.getSlaveManager().hasAvailableSlaves()) {
+        if (!conn.getGlobalContext().getSlaveManager().hasAvailableSlaves()) {
             return FtpReply.RESPONSE_450_SLAVE_UNAVAILABLE;
         }
 
@@ -498,7 +499,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
                                                                   .getUsername(),
                     conn.getUserNull().getGroupName(), createdDirName);
 
-            conn.getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
+            conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
                     conn, "MKD", createdDir));
 
             return new FtpReply(257, "\"" + createdDir.getPath() +
@@ -567,7 +568,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 
         // now delete
         //if (conn.getConfig().checkDirLog(conn.getUserNull(), requestedFile)) {
-        conn.getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
+        conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
                 conn, "RMD", requestedFile));
 
         //}
@@ -826,7 +827,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         }
 
         //if (conn.getConfig().checkDirLog(conn.getUserNull(), wipeFile)) {
-        conn.getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
+        conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
                 conn, "WIPE", wipeFile));
 
         //}

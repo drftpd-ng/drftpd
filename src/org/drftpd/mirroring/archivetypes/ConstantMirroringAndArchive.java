@@ -26,6 +26,9 @@ import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
+
 import org.drftpd.mirroring.ArchiveType;
 
 import org.drftpd.sections.SectionInterface;
@@ -40,9 +43,10 @@ import java.util.Properties;
 /*
  * @author iamn
  * @author zubov
- * @version $Id: ConstantMirroringAndArchive.java,v 1.3 2004/11/02 07:32:50 zubov Exp $
+ * @version $Id: ConstantMirroringAndArchive.java,v 1.4 2004/11/03 16:46:45 mog Exp $
  */
 public class ConstantMirroringAndArchive extends ArchiveType {
+    private static final Logger logger = Logger.getLogger(ConstantMirroringAndArchive.class);
     private int _numOfSlaves;
     private long _slowAfter;
     private ArrayList _fastHosts;
@@ -63,7 +67,7 @@ public class ConstantMirroringAndArchive extends ArchiveType {
                         getSection().getName() + ".slowAfter"));
         } catch (NullPointerException e) {
             _slowAfter = 0;
-            Archive.getLogger().error("Unable to get slowafter!!");
+            logger.error("Unable to get slowafter!!");
         }
 
         _fastHosts = new ArrayList();
@@ -82,7 +86,7 @@ public class ConstantMirroringAndArchive extends ArchiveType {
                 _fastHosts.add(_parent.getConnectionManager().getGlobalContext()
                                       .getSlaveManager().getRemoteSlave(slavename));
             } catch (ObjectNotFoundException e) {
-                Archive.getLogger().error("Unable to get slave " + slavename +
+                logger.error("Unable to get slave " + slavename +
                     " from the SlaveManager");
             }
         }
@@ -154,10 +158,10 @@ public class ConstantMirroringAndArchive extends ArchiveType {
         HashSet returnMe = new HashSet();
 
         /*if ((System.currentTimeMillis() - getDirectory().lastModified()) > _slowAfter) {
-                Archive.getLogger().debug("Returning list of slowhosts");
+                logger.debug("Returning list of slowhosts");
         }
         else {
-                Archive.getLogger().debug("Returning list of fasthosts");
+                logger.debug("Returning list of fasthosts");
         }*/
         for (Iterator iter2 = allHosts.iterator(); iter2.hasNext();) {
             RemoteSlave rslave = (RemoteSlave) iter2.next();
@@ -189,11 +193,11 @@ public class ConstantMirroringAndArchive extends ArchiveType {
         if ((System.currentTimeMillis() - lrf.lastModified()) > _slowAfter) {
             shouldBeFast = false;
 
-            //Archive.getLogger().debug("DBG File " + lrf.getPath() + " should be on slowhost");
+            //logger.debug("DBG File " + lrf.getPath() + " should be on slowhost");
         } else {
             shouldBeFast = true;
 
-            //Archive.getLogger().debug("DBG File " + lrf.getPath() + " should be on fasthost");
+            //logger.debug("DBG File " + lrf.getPath() + " should be on fasthost");
         }
 
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
@@ -209,31 +213,31 @@ public class ConstantMirroringAndArchive extends ArchiveType {
                     }
 
                     if (!src.getSlaves().contains(fasthost) && shouldBeFast) {
-                        //Archive.getLogger().debug("DBG File " + src.getName() + " is on slowhost, moving to fasthost");
+                        //logger.debug("DBG File " + src.getName() + " is on slowhost, moving to fasthost");
                         return false;
                     }
 
                     if (src.getSlaves().contains(fasthost) && !shouldBeFast) {
-                        //Archive.getLogger().debug("DBG File " + src.getName() + " is on fasthost, moving to slowhost");
+                        //logger.debug("DBG File " + src.getName() + " is on fasthost, moving to slowhost");
                         return false;
                     }
                 }
 
                 /*if (!shouldBeFast) {
                             if (!src.getSlaves().contains(_fastHosts)) {
-                                    //Archive.getLogger().debug("DBG File is on fasthost, moving to slowhost");
+                                    //logger.debug("DBG File is on fasthost, moving to slowhost");
                                     return false;
                             }
                     }
                     else {
                             if (src.getSlaves().contains(_fastHosts)) {
-                                    //Archive.getLogger().debug("DBG File is on slowhost, moving to fasthost");
+                                    //logger.debug("DBG File is on slowhost, moving to fasthost");
                                     return false;
                             }
                     }*/
                 try {
                     if (src.getAvailableSlaves().size() != _numOfSlaves) {
-                        Archive.getLogger().debug(src.getPath() +
+                        logger.debug(src.getPath() +
                             " is on too few hosts, mirroring.");
 
                         return false;
@@ -244,7 +248,7 @@ public class ConstantMirroringAndArchive extends ArchiveType {
                 }
 
                 if (src.getSlaves().size() > _numOfSlaves) {
-                    Archive.getLogger().debug(src.getPath() +
+                    logger.debug(src.getPath() +
                         " is on too many hosts, cleaning up.");
 
                     return false;
@@ -273,8 +277,7 @@ public class ConstantMirroringAndArchive extends ArchiveType {
             LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
 
             if (src.isFile()) {
-                Archive.getLogger().info("Adding " + src.getPath() +
-                    " to the job queue");
+                logger.info("Adding " + src.getPath() + " to the job queue");
 
                 Job job = new Job(src, getRSlaves(), 3, _numOfSlaves);
                 jm.addJobToQueue(job);

@@ -17,23 +17,24 @@
  */
 package net.sf.drftpd;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import junit.framework.TestCase;
 
 import org.apache.oro.text.regex.MalformedPatternException;
 
-import junit.framework.TestCase;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 
 /**
  * @author zubov
- * @version $Id: HostMaskTest.java,v 1.2 2004/11/02 07:32:37 zubov Exp $
+ * @version $Id: HostMaskTest.java,v 1.3 2004/11/03 16:46:37 mog Exp $
  */
 public class HostMaskTest extends TestCase {
-
     public static void main(String[] args) {
     }
 
-    public void testMatchesHost() throws UnknownHostException, MalformedPatternException {
+    public void testMatchesHost()
+        throws UnknownHostException, MalformedPatternException {
         HostMask h = new HostMask("*@1.1.1.1");
         assertTrue(h.matchesHost(InetAddress.getByName("1.1.1.1")));
         assertFalse(h.matchesHost(InetAddress.getByName("1.1.1.2")));
@@ -50,7 +51,5 @@ public class HostMaskTest extends TestCase {
         assertFalse(h.matchesIdent(null));
         assertTrue(h.matchesIdent("anything"));
         assertFalse(h.matchesIdent("nothing"));
-
     }
-
 }

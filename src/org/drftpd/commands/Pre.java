@@ -24,9 +24,6 @@ import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
@@ -34,6 +31,10 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.drftpd.sections.SectionInterface;
+
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -46,7 +47,7 @@ import java.util.Map;
 /**
  * @author mog
  *
- * @version $Id: Pre.java,v 1.3 2004/08/03 20:14:04 zubov Exp $
+ * @version $Id: Pre.java,v 1.4 2004/11/03 16:46:44 mog Exp $
  */
 public class Pre implements CommandHandlerFactory, CommandHandler {
     private static final Logger logger = Logger.getLogger(Pre.class);
@@ -83,8 +84,9 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
             return FtpReply.RESPONSE_501_SYNTAX_ERROR;
         }
 
-        SectionInterface section = conn.getConnectionManager().getGlobalContext()
-                                       .getSectionManager().getSection(args[1]);
+        SectionInterface section = conn.getGlobalContext().getConnectionManager()
+                                       .getGlobalContext().getSectionManager()
+                                       .getSection(args[1]);
 
         if (section.getName().equals("")) {
             return new FtpReply(200,
@@ -99,8 +101,9 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
             return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
         }
 
-        if (!conn.getConnectionManager().getGlobalContext().getConfig()
-                     .checkPathPermission("pre", conn.getUserNull(), preDir)) {
+        if (!conn.getGlobalContext().getConnectionManager().getGlobalContext()
+                     .getConfig().checkPathPermission("pre",
+                    conn.getUserNull(), preDir)) {
             return FtpReply.RESPONSE_530_ACCESS_DENIED;
         }
 
@@ -114,8 +117,8 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
             Map.Entry entry = (Map.Entry) iter.next();
             User owner = (User) entry.getKey();
 
-            if (conn.getConnectionManager().getGlobalContext().getConfig()
-                        .getCreditCheckRatio(preDir, owner) == 0) {
+            if (conn.getGlobalContext().getConnectionManager().getGlobalContext()
+                        .getConfig().getCreditCheckRatio(preDir, owner) == 0) {
                 Long award = (Long) entry.getValue();
                 owner.updateCredits(award.longValue());
                 response.addComment("Awarded " +
@@ -138,7 +141,7 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
         }
 
         //ANNOUNCE
-        conn.getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
+        conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
                 conn, "PRE", toDir));
 
         return FtpReply.RESPONSE_200_COMMAND_OK;
@@ -163,8 +166,8 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
             User owner;
 
             try {
-                owner = conn.getConnectionManager().getGlobalContext()
-                            .getUserManager().getUserByName(file.getUsername());
+                owner = conn.getGlobalContext().getConnectionManager()
+                            .getGlobalContext().getUserManager().getUserByName(file.getUsername());
             } catch (NoSuchUserException e) {
                 logger.log(Level.INFO,
                     "PRE: Cannot award credits to non-existing user", e);

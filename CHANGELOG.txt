@@ -1,3 +1,7 @@
+2004/11/02 Morgan Christiansson <drftpd@mog.se>
+* Improved security in SITE CHANGE.
+* Revived Mirror plugin, needed for instant mirroring which Archive can't provide.
+
 2004/10/06  Teflon <teflon114@@users.sourceforge.net>
 * Fixed root cause of "group= iND" bug in files.mlst
 

@@ -25,16 +25,17 @@ import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
 
 import org.apache.log4j.Logger;
 
 import org.drftpd.plugins.SiteBot;
 
+import org.drftpd.usermanager.NoSuchUserException;
+
 
 /**
  * @author mog
- * @version $Id: SiteBotManagment.java,v 1.1 2004/07/19 13:06:14 mog Exp $
+ * @version $Id: SiteBotManagment.java,v 1.2 2004/11/03 16:46:44 mog Exp $
  */
 public class SiteBotManagment implements CommandHandlerFactory, CommandHandler {
     private static final Logger logger = Logger.getLogger(SiteBotManagment.class);
@@ -56,7 +57,8 @@ public class SiteBotManagment implements CommandHandlerFactory, CommandHandler {
         SiteBot sitebot;
 
         try {
-            sitebot = (SiteBot) conn.getConnectionManager().getFtpListener(SiteBot.class);
+            sitebot = (SiteBot) conn.getGlobalContext().getConnectionManager()
+                                    .getFtpListener(SiteBot.class);
         } catch (ObjectNotFoundException e) {
             return new FtpReply(500, "SiteBot not loaded");
         }

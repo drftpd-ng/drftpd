@@ -17,29 +17,34 @@
  */
 package net.sf.drftpd.master;
 
-import java.io.IOException;
-import java.net.SocketException;
-import java.util.HashSet;
-import java.util.Set;
-
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.Event;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.LinkedRemoteFile.CaseInsensitiveHashtable;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
+
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
+
 import org.drftpd.slave.async.AsyncResponse;
+
 import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.tests.DummySlaveManager;
 
+import java.io.IOException;
+
+import java.net.SocketException;
+
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
  * @author mog
- * @version $Id: RemoteSlaveTest.java,v 1.11 2004/11/02 07:32:40 zubov Exp $
+ * @version $Id: RemoteSlaveTest.java,v 1.12 2004/11/03 16:46:39 mog Exp $
  */
 public class RemoteSlaveTest extends TestCase {
     public RemoteSlaveTest(String fName) {

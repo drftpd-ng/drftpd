@@ -17,13 +17,6 @@
  */
 package org.drftpd.slaveselection.def;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Properties;
-
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
@@ -35,13 +28,23 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.SlaveStatus;
 
 import org.drftpd.GlobalContext;
+
 import org.drftpd.slave.RemoteTransfer;
+
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Properties;
 
 
 /**
  * @author mog
- * @version $Id: DefaultSlaveSelectionManager.java,v 1.3 2004/11/03 05:43:24 zubov Exp $
+ * @version $Id: DefaultSlaveSelectionManager.java,v 1.4 2004/11/03 16:46:47 mog Exp $
  */
 public class DefaultSlaveSelectionManager
     implements SlaveSelectionManagerInterface {

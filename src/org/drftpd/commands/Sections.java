@@ -32,7 +32,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Sections.java,v 1.5 2004/08/03 20:14:04 zubov Exp $
+ * @version $Id: Sections.java,v 1.6 2004/11/03 16:46:44 mog Exp $
  */
 public class Sections implements CommandHandlerFactory, CommandHandler {
     public Sections() {
@@ -42,8 +42,9 @@ public class Sections implements CommandHandlerFactory, CommandHandler {
     public FtpReply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         FtpReply reply = new FtpReply(200);
-        Collection sections = conn.getConnectionManager().getGlobalContext()
-                                  .getSectionManager().getSections();
+        Collection sections = conn.getGlobalContext().getConnectionManager()
+                                  .getGlobalContext().getSectionManager()
+                                  .getSections();
         ReplacerEnvironment env = new ReplacerEnvironment();
 
         for (Iterator iter = sections.iterator(); iter.hasNext();) {

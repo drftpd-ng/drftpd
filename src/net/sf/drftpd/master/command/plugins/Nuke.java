@@ -27,10 +27,6 @@ import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.queues.NukeLog;
-import net.sf.drftpd.master.usermanager.AbstractUser;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Level;
@@ -39,6 +35,11 @@ import org.apache.log4j.Logger;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
+
+import org.drftpd.usermanager.AbstractUser;
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -62,7 +63,7 @@ import java.util.StringTokenizer;
  * amount -> amount before multiplier
  *
  * @author mog
- * @version $Id: Nuke.java,v 1.23 2004/10/05 02:11:22 mog Exp $
+ * @version $Id: Nuke.java,v 1.24 2004/11/03 16:46:40 mog Exp $
  */
 public class Nuke implements CommandHandlerFactory, CommandHandler {
     private static final Logger logger = Logger.getLogger(Nuke.class);
@@ -289,7 +290,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
         NukeEvent nuke = new NukeEvent(conn.getUserNull(), "NUKE", nukeDirPath,
                 nukeDirSize, nukedAmount, multiplier, reason, nukees);
         getNukeLog().add(nuke);
-        conn.getConnectionManager().dispatchFtpEvent(nuke);
+        conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);
 
         return response;
     }
@@ -452,7 +453,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
         nuke.setCommand("UNNUKE");
         nuke.setReason(reason);
         nuke.setUser(conn.getUserNull());
-        conn.getConnectionManager().dispatchFtpEvent(nuke);
+        conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);
 
         return response;
     }

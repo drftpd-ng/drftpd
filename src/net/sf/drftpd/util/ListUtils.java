@@ -40,7 +40,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.29 2004/09/13 15:04:59 zubov Exp $
+ * @version $Id: ListUtils.java,v 1.30 2004/11/03 16:46:44 mog Exp $
  */
 public class ListUtils {
     private static final Logger logger = Logger.getLogger(ListUtils.class);
@@ -75,9 +75,11 @@ public class ListUtils {
         for (Iterator iter = tempFileList.iterator(); iter.hasNext();) {
             LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
 
-            if ((conn.getConnectionManager().getGlobalContext().getConfig() != null) &&
-                    !conn.getConnectionManager().getGlobalContext().getConfig()
-                             .checkPrivPath(conn.getUserNull(), element)) {
+            if ((conn.getGlobalContext().getConnectionManager()
+                         .getGlobalContext().getConfig() != null) &&
+                    !conn.getGlobalContext().getConnectionManager()
+                             .getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(),
+                        element)) {
                 // don't add it
                 continue;
             }

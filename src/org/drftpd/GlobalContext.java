@@ -25,7 +25,6 @@ import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.SlaveFileException;
 import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -34,6 +33,10 @@ import net.sf.drftpd.remotefile.MLSTSerialize;
 import org.apache.log4j.Logger;
 
 import org.drftpd.sections.SectionManagerInterface;
+
+import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
+
+import org.drftpd.usermanager.UserManager;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -49,7 +52,7 @@ import java.util.Timer;
 
 /**
  * @author mog
- * @version $Id: GlobalContext.java,v 1.5 2004/11/02 07:32:49 zubov Exp $
+ * @version $Id: GlobalContext.java,v 1.6 2004/11/03 16:46:44 mog Exp $
  */
 public class GlobalContext {
     private static final Logger logger = Logger.getLogger(GlobalContext.class);
@@ -63,6 +66,7 @@ public class GlobalContext {
     protected SlaveManager _slaveManager;
     protected UserManager _usermanager;
     private Timer _timer = new Timer();
+    protected SlaveSelectionManagerInterface _slaveSelectionManager;
 
     protected GlobalContext() {
     }
@@ -80,13 +84,34 @@ public class GlobalContext {
         }
 
         loadSlaveManager(cfg);
+        loadSlaveSelectionManager(cfg);
         loadPlugins(cfg);
         loadRSlavesAndRoot();
     }
 
     /**
-     * Calls init(this) on the argument
-     */
+         *
+         */
+    private void loadSlaveSelectionManager(Properties cfg) {
+        try {
+            Constructor c = Class.forName(cfg.getProperty("slaveselection",
+                        "org.drftpd.slaveselection.def.DefaultSlaveSelectionManager"))
+                                 .getConstructor(new Class[] { GlobalContext.class });
+            _slaveSelectionManager = (SlaveSelectionManagerInterface) c.newInstance(new Object[] {
+                        this
+                    });
+        } catch (Exception e) {
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            }
+
+            throw new FatalException(e);
+        }
+    }
+
+    /**
+    * Calls init(this) on the argument
+    */
     public void addFtpListener(FtpListener listener) {
         listener.init(_cm);
         _ftpListeners.add(listener);
@@ -272,5 +297,9 @@ public class GlobalContext {
 
     public Timer getTimer() {
         return _timer;
+    }
+
+    public SlaveSelectionManagerInterface getSlaveSelectionManager() {
+        return _slaveSelectionManager;
     }
 }

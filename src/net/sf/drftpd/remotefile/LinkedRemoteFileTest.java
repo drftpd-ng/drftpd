@@ -39,7 +39,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: LinkedRemoteFileTest.java,v 1.12 2004/11/02 07:32:47 zubov Exp $
+ * @version $Id: LinkedRemoteFileTest.java,v 1.13 2004/11/03 16:46:43 mog Exp $
  */
 public class LinkedRemoteFileTest extends TestCase {
     private LinkedRemoteFile _root;
@@ -60,10 +60,12 @@ public class LinkedRemoteFileTest extends TestCase {
         root.addFile(new StaticRemoteFile(null, "RemoveDir", 0));
 
         LinkedRemoteFileInterface masterdir = root.getFile("DirTest");
-        masterdir.addFile(new StaticRemoteFile(slaveBothList, "TestFileInDir", 1000));
+        masterdir.addFile(new StaticRemoteFile(slaveBothList, "TestFileInDir",
+                1000));
 
         LinkedRemoteFileInterface removedir = root.getFile("RemoveDir");
-        removedir.addFile(new StaticRemoteFile(slave1List, "TestForRemoval", 1000));
+        removedir.addFile(new StaticRemoteFile(slave1List, "TestForRemoval",
+                1000));
     }
 
     private static void internalRemergeSlave1(LinkedRemoteFile root,
@@ -79,10 +81,12 @@ public class LinkedRemoteFileTest extends TestCase {
         root.setSlaveForMerging(slave1);
         root.remerge(slaveroot, slave1);
         slaveroot.clear();
-        slaveroot.put("TestFileInDir",new LightRemoteFile("TestFileInDir", System.currentTimeMillis(), 1000));
-        root.getFile("DirTest").remerge(slaveroot,slave1);
+        slaveroot.put("TestFileInDir",
+            new LightRemoteFile("TestFileInDir", System.currentTimeMillis(),
+                1000));
+        root.getFile("DirTest").remerge(slaveroot, slave1);
         slaveroot.clear();
-        root.getFile("RemoveDir").remerge(slaveroot,slave1);
+        root.getFile("RemoveDir").remerge(slaveroot, slave1);
         root.cleanSlaveFromMerging(slave1);
     }
 
@@ -96,8 +100,10 @@ public class LinkedRemoteFileTest extends TestCase {
         root.setSlaveForMerging(slave2);
         root.remerge(slaveroot, slave2);
         slaveroot.clear();
-        slaveroot.put("TestFileInDir",new LightRemoteFile("TestFileInDir", System.currentTimeMillis(), 1000));
-        root.getFile("DirTest").remerge(slaveroot,slave2);
+        slaveroot.put("TestFileInDir",
+            new LightRemoteFile("TestFileInDir", System.currentTimeMillis(),
+                1000));
+        root.getFile("DirTest").remerge(slaveroot, slave2);
         root.cleanSlaveFromMerging(slave2);
     }
 
@@ -209,7 +215,9 @@ public class LinkedRemoteFileTest extends TestCase {
         internalRemergeSlave1(_root, _slave1);
         assertEquals(Collections.singletonList(_slave1),
             _root.getFile("AddSlaveTest").getSlaves());
-        assertTrue(_root.getFile("DirTest").getFile("TestFileInDir").getSlaves().contains(_slave1));
+        assertTrue(_root.getFile("DirTest").getFile("TestFileInDir").getSlaves()
+                        .contains(_slave1));
+
         try {
             LinkedRemoteFileInterface file = _root.getFile("RemoveDir");
             throw new AssertionFailedError(file.toString() +
@@ -236,8 +244,8 @@ public class LinkedRemoteFileTest extends TestCase {
             }
 
             LinkedRemoteFileInterface masterdir = _root.getFile("DirTest");
-            assertEquals(masterdir.getFile("TestFileInDir").getSlaves(),slaveBothList);
-            
+            assertEquals(masterdir.getFile("TestFileInDir").getSlaves(),
+                slaveBothList);
         }
     }
 }

@@ -17,38 +17,43 @@
  */
 package org.drftpd.slave;
 
+import net.sf.drftpd.slave.TransferStatus;
+
 import java.io.Serializable;
+
 import java.net.InetAddress;
 
-import net.sf.drftpd.slave.TransferStatus;
 
 /**
  * @author zubov
- * @version $Id: ConnectInfo.java,v 1.2 2004/11/02 07:32:52 zubov Exp $
+ * @version $Id: ConnectInfo.java,v 1.3 2004/11/03 16:46:46 mog Exp $
  */
 public class ConnectInfo implements Serializable {
-
     private InetAddress _address;
     private int _port;
     private TransferIndex _transferIndex;
     private TransferStatus _transferStatus;
 
-    public ConnectInfo(InetAddress address, int port, TransferIndex transferIndex, TransferStatus ts) {
+    public ConnectInfo(InetAddress address, int port,
+        TransferIndex transferIndex, TransferStatus ts) {
         _address = address;
         _port = port;
         _transferIndex = transferIndex;
         _transferStatus = ts;
     }
-    
+
     public InetAddress getAddress() {
         return _address;
     }
+
     public int getPort() {
         return _port;
     }
+
     public TransferIndex getTransferIndex() {
         return _transferIndex;
     }
+
     public TransferStatus getTransferStatus() {
         return _transferStatus;
     }

@@ -19,13 +19,14 @@ package org.drftpd.slave.async;
 
 import net.sf.drftpd.ID3Tag;
 
+
 /**
  * @author zubov
- * @version $Id: AsyncResponseID3Tag.java,v 1.2 2004/11/02 07:32:53 zubov Exp $
+ * @version $Id: AsyncResponseID3Tag.java,v 1.3 2004/11/03 16:46:47 mog Exp $
  */
 public class AsyncResponseID3Tag extends AsyncResponse {
-
     ID3Tag _id3;
+
     public AsyncResponseID3Tag(String index, ID3Tag id3) {
         super(index);
         _id3 = id3;

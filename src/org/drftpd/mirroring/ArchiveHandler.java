@@ -17,22 +17,23 @@
  */
 package org.drftpd.mirroring;
 
+import net.sf.drftpd.event.listeners.Archive;
+
+import org.apache.log4j.Logger;
+
+import org.drftpd.sections.SectionInterface;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 
-import net.sf.drftpd.event.listeners.Archive;
 
-import org.apache.log4j.Logger;
-import org.drftpd.sections.SectionInterface;
-
-
-/*
+/**
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.10 2004/11/02 07:32:50 zubov Exp $
+ * @version $Id: ArchiveHandler.java,v 1.11 2004/11/03 16:46:45 mog Exp $
  */
 public class ArchiveHandler extends Thread {
-    protected final static Logger logger = Archive.getLogger();
+    protected final static Logger logger = Logger.getLogger(ArchiveHandler.class);
     private ArchiveType _archiveType;
 
     public ArchiveHandler(ArchiveType archiveType) {

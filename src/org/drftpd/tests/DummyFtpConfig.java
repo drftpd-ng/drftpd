@@ -19,8 +19,9 @@ package org.drftpd.tests;
 
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+
+import org.drftpd.usermanager.User;
 
 
 public class DummyFtpConfig extends FtpConfig {

@@ -23,19 +23,20 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 import net.sf.drftpd.event.InviteEvent;
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.master.usermanager.UserFileException;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.drftpd.plugins.*;
 
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
+
 
 /**
  * @author mog
- * @version $Id: Invite.java,v 1.11 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: Invite.java,v 1.12 2004/11/03 16:46:38 mog Exp $
  */
 public class Invite extends GenericCommandAutoService
     implements IRCPluginInterface {

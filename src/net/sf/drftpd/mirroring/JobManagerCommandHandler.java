@@ -104,7 +104,8 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
             RemoteSlave rslave;
 
             try {
-                rslave = conn.getSlaveManager().getRemoteSlave(slaveName);
+                rslave = conn.getGlobalContext().getSlaveManager()
+                             .getRemoteSlave(slaveName);
             } catch (ObjectNotFoundException e1) {
                 reply.addComment(slaveName +
                     "was not found, cannot add to destination slave list");
@@ -121,7 +122,8 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
         }
 
         Job job = new Job(lrf, destSlaves, priority, timesToMirror);
-        conn.getConnectionManager().getJobManager().addJobToQueue(job);
+        conn.getGlobalContext().getConnectionManager().getJobManager()
+            .addJobToQueue(job);
 
         ReplacerEnvironment env = new ReplacerEnvironment();
         env.add("job", job);
@@ -140,7 +142,8 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
         int count = 0;
         ReplacerEnvironment env = new ReplacerEnvironment();
 
-        for (Iterator iter = new ArrayList(conn.getConnectionManager()
+        for (Iterator iter = new ArrayList(conn.getGlobalContext()
+                                               .getConnectionManager()
                                                .getJobManager()
                                                .getAllJobsFromQueue()).iterator();
                 iter.hasNext();) {
@@ -179,8 +182,8 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
 
         String filename = conn.getRequest().getArgument();
         Job job = null;
-        List jobs = new ArrayList(conn.getConnectionManager().getJobManager()
-                                      .getAllJobsFromQueue());
+        List jobs = new ArrayList(conn.getGlobalContext().getConnectionManager()
+                                      .getJobManager().getAllJobsFromQueue());
         ReplacerEnvironment env = new ReplacerEnvironment();
         env.add("filename", filename);
 
@@ -189,7 +192,8 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
 
             if (job.getFile().getName().equals(filename)) {
                 env.add("job", job);
-                conn.getConnectionManager().getJobManager().stopJob(job);
+                conn.getGlobalContext().getConnectionManager().getJobManager()
+                    .stopJob(job);
 
                 return new FtpReply(200,
                     conn.jprintf(JobManagerCommandHandler.class,
@@ -206,7 +210,8 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
             return FtpReply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        conn.getConnectionManager().getJobManager().startJobs();
+        conn.getGlobalContext().getConnectionManager().getJobManager()
+            .startJobs();
 
         return new FtpReply(200, "JobTransfers will now start");
     }
@@ -216,7 +221,7 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
             return FtpReply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        conn.getConnectionManager().getJobManager().stopJobs();
+        conn.getGlobalContext().getConnectionManager().getJobManager().stopJobs();
 
         return new FtpReply(200,
             "All JobTransfers will stop after their current transfer");

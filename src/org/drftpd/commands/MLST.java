@@ -17,15 +17,6 @@
  */
 package org.drftpd.commands;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.net.Socket;
-import java.util.Iterator;
-import java.util.List;
-
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -39,10 +30,21 @@ import net.sf.drftpd.util.ListUtils;
 
 import org.apache.log4j.Logger;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
+
+import java.net.Socket;
+
+import java.util.Iterator;
+import java.util.List;
+
 
 /**
  * @author mog
- * @version $Id: MLST.java,v 1.4 2004/11/02 07:32:50 zubov Exp $
+ * @version $Id: MLST.java,v 1.5 2004/11/03 16:46:44 mog Exp $
  */
 public class MLST implements CommandHandlerFactory, CommandHandler {
     private static final Logger logger = Logger.getLogger(MLST.class);
@@ -61,8 +63,8 @@ public class MLST implements CommandHandlerFactory, CommandHandler {
             }
         }
 
-        if (!conn.getConnectionManager().getGlobalContext().getConfig()
-                     .checkPrivPath(conn.getUserNull(), dir)) {
+        if (!conn.getGlobalContext().getConnectionManager().getGlobalContext()
+                     .getConfig().checkPrivPath(conn.getUserNull(), dir)) {
             return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
         }
 
