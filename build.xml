@@ -182,12 +182,12 @@
     	<include name="genkey.sh"/>
     	<include name="genkey.bat"/>
     	<include name="conf/*.dist" />
-    	<include name="conf/log4j-*.properties" />
-    	<include name="lib/*"/>
+    	<include name="conf/log4j-debug.properties" />
+    	<include name="conf/log4j-default.properties" />
     	<include name="src/**"/>
     	<include name="text/**"/>
-    	<include name="extsources/*"/>
     	<include name="bin/*"/>
+    	<include name="docs/*"/>
     	<exclude name="*/org/drftpd/friendly/**"/>
     </patternset>
 

@@ -7,5 +7,14 @@ won't be recognized if commandhandlers.conf isn't up-to-date.
 
 1.1.4 --> 2.0
 run bin/xstream2beans.sh before starting the daemon
+* When converting from 1.1.4 xstream userdb, the xstream libs included
+  with 1.1.4 have slightly different serialized formats,
+  recent xstream escapes _ in field names as __.
+  You can use this code snippet to upgrade them so that they are readable
+  by recent xstream versions.
+  > for x in *.xml ; do sed -e 's/<_/<__/' \
+    -e 's/<\/_/<\/__/' $x > $x- ; mv $x- $x ; done
+
 rm slaves.xml (you will need to create them again, described in MAJORCHANGES.txt)
+
 delete files.mlst(don't worry, it will be recreated)
