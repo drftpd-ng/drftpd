@@ -88,7 +88,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
 	private long _xfertime = 0;
 
-	protected SFVFile sfvFile;
+	protected SFVFile _sfvFile;
 
 	protected ID3Tag mp3tag;
 
@@ -695,7 +695,10 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
 	public synchronized SFVFile getSFVFile() throws IOException,
 			FileNotFoundException, NoAvailableSlaveException {
-		if (sfvFile == null) {
+		/*
+		 *Due to race conditions this method can be called before the file is fully uploaded. 
+		 */
+		if (_sfvFile == null) {
 			while (true) {
 				RemoteSlave rslave = _ftpConfig.getGlobalContext()
 				.getSlaveManager().getGlobalContext().getSlaveSelectionManager()
@@ -703,8 +706,8 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
 				try {
 					String index = rslave.issueSFVFileToSlave(getPath());
-					sfvFile = new SFVFile(rslave.fetchSFVFileFromIndex(index));
-					sfvFile.setCompanion(this);
+					_sfvFile = new SFVFile(rslave.fetchSFVFileFromIndex(index));
+					_sfvFile.setCompanion(this);
 
 					break;
 				} catch (RemoteIOException e) {
@@ -720,13 +723,14 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			}
 		}
 
-		if (sfvFile.size() == 0) {
-			sfvFile = null; // no need to keep a worthless sfv file
+		if (_sfvFile.size() == 0) {
+			//TODO remove invalidation step, use file locking.
+			_sfvFile = null; // no need to keep a worthless sfv file
 			throw new FileNotFoundException(
 					"sfv file contains no checksum entries");
 		}
 
-		return sfvFile;
+		return _sfvFile;
 	}
 
 	public synchronized ID3Tag getID3v1Tag() throws NoAvailableSlaveException,

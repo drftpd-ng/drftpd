@@ -293,10 +293,6 @@ public abstract class AbstractUser extends User {
 		throw new RuntimeException();
 	}
 
-	public short getGroupLeechSlots() {
-		return groupLeechSlots;
-	}
-
 	public String getGroup() {
 		if (_group == null) {
 			return "nogroup";
@@ -307,10 +303,6 @@ public abstract class AbstractUser extends User {
 
 	public List getGroups() {
 		return groups;
-	}
-
-	public short getGroupSlots() {
-		return groupSlots;
 	}
 
 	public HostMaskCollection getHostMaskCollection() {
@@ -335,6 +327,10 @@ public abstract class AbstractUser extends User {
 		_data.setObject(UserManagement.CREATED, new Date(created));
 		_data.setObject(UserManagement.RATIO, new Float(ratio));
 		_data.setObject(UserManagement.TAGLINE, tagline);
+		_data.setObject(UserManagement.LEECHSLOTS, groupLeechSlots);
+		_data.setObject(UserManagement.GROUPSLOTS, groupSlots);
+		_data.setObject(UserManagement.MAXSIMUP, maxSimUploads);
+		_data.setObject(UserManagement.MAXSIMDN, maxSimDownloads);
 
 		_data.setObject(RaceStatistics.RACES, racesParticipated);
 		_data.setObject(RaceStatistics.RACESLOST, racesLost);

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import org.apache.log4j.Logger;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.AbstractUserManager;
@@ -90,4 +91,19 @@ public class BeanUser extends AbstractUser implements Serializable {
 		_um = manager;
 	}
 
+	/**
+	 * Setter for userfile backwards comptibility.
+	 * Should work but i had nothing to test with.
+	 */
+//    public void setGroupSlots(int s) {
+//    	getKeyedMap().setObject(UserManagement.GROUPSLOTS, s);
+//    }
+
+    /**
+	 * Setter for userfile backwards comptibility.
+	 * Should work but i had nothing to test with.
+	 */
+	public void setGroupLeechSlots(short s) {
+    	getKeyedMap().setObject(UserManagement.LEECHSLOTS, s);		
+	}
 }

@@ -41,6 +41,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.permissions.Permission;
+import org.drftpd.plugins.Statistics;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.HostMask;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -76,8 +77,6 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
     public static final Key GROUPSLOTS = new Key(UserManagement.class, "groupslots",
     		Integer.class);
     public static final Key LEECHSLOTS = new Key(UserManagement.class, "leechslots",
-    		Integer.class);
-    public static final Key TOTALLOGINS = new Key(UserManagement.class, "totallogins",
     		Integer.class);
     public static final Key MAXLOGINS = new Key(UserManagement.class, "maxlogins",
     		Integer.class);
@@ -227,7 +226,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                     conn.getGlobalContext().getUserManager().getAllUsersByGroup(conn.getUserNull()
                                                                                     .getGroup()));
 
-                if (users >= conn.getUserNull().getGroupSlots()) {
+                if (users >= conn.getUserNull().getKeyedMap().getObjectInt(UserManagement.GROUPSLOTS)) {
                     return new Reply(452,
                         conn.jprintf(UserManagement.class, "adduser.noslots"));
                 }
@@ -271,7 +270,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             newUser.getKeyedMap().setObject(UserManagement.MAXLOGINSIP,0);
             newUser.getKeyedMap().setObject(UserManagement.MAXSIMUP,0);
             newUser.getKeyedMap().setObject(UserManagement.MAXSIMDN,0);
-            newUser.getKeyedMap().setObject(UserManagement.TOTALLOGINS,0);
+            newUser.getKeyedMap().setObject(Statistics.LOGINS,0);
             newUser.getKeyedMap().setObject(UserManagement.CREATED, new Date());
             newUser.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
             newUser.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT, new Long(0));
@@ -528,7 +527,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                             "IO error reading userfiles: " + e1.getMessage());
                     }
 
-                    if (usedleechslots >= conn.getUserNull().getGroupLeechSlots()) {
+                    if (usedleechslots >= conn.getUserNull().getKeyedMap().getObjectInt(UserManagement.LEECHSLOTS)) {
                         return new Reply(452,
                             conn.jprintf(UserManagement.class,
                                 "changeratio.nomoreslots"));
@@ -598,7 +597,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                 "' from '" + userToChange.getIdleTime() + " to '" + idleTime +
                 "'");
             userToChange.setIdleTime(idleTime);
-            env.add("idletime", Long.toString(userToChange.getIdleTime()));
+            env.add("idletime", ""+userToChange.getIdleTime());
             response.addComment(conn.jprintf(UserManagement.class,
                     "changeidletime.success", env));
         } else if ("num_logins".equals(command)) {
@@ -627,9 +626,8 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                     "' '" + numLoginsIP + "'");
                 userToChange.setMaxLogins(numLogins);
                 userToChange.setMaxLoginsPerIP(numLoginsIP);
-                env.add("numlogins", Long.toString(userToChange.getMaxLogins()));
-                env.add("numloginsip",
-                    Long.toString(userToChange.getMaxLoginsPerIP()));
+                env.add("numlogins", "" + userToChange.getMaxLogins());
+				env.add("numloginsip", "" + userToChange.getMaxLoginsPerIP());
                 response.addComment(conn.jprintf(UserManagement.class,
                         "changenumlogins.success", env));
             } catch (NumberFormatException ex) {
@@ -665,25 +663,26 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                     return Reply.RESPONSE_501_SYNTAX_ERROR;
                 }
 
-                short groupSlots = Short.parseShort(commandArguments[0]);
-                short groupLeechSlots;
+                int groupSlots = Short.parseShort(commandArguments[0]);
+                int groupLeechSlots;
 
                 if (commandArguments.length >= 2) {
-                    groupLeechSlots = Short.parseShort(commandArguments[1]);
+                    groupLeechSlots = Integer.parseInt(commandArguments[1]);
                 } else {
-                    groupLeechSlots = userToChange.getGroupLeechSlots();
+                    groupLeechSlots = userToChange.getKeyedMap().getObjectInt(UserManagement.LEECHSLOTS);
                 }
 
                 logger.info("'" + conn.getUserNull().getName() +
                     "' changed group_slots for '" + userToChange.getName() +
-                    "' from '" + userToChange.getGroupSlots() + "' " +
-                    userToChange.getGroupLeechSlots() + "' to '" + groupSlots +
+                    "' from '" + userToChange.getKeyedMap().getObjectInt(UserManagement.GROUPSLOTS) + "' " +
+                    userToChange.getKeyedMap().getObjectInt(UserManagement.LEECHSLOTS) + "' to '" + groupSlots +
                     "' '" + groupLeechSlots + "'");
-                userToChange.setGroupSlots(groupSlots);
-                userToChange.setGroupLeechSlots(groupLeechSlots);
-                env.add("groupslots", "" + userToChange.getGroupSlots());
-                env.add("groupleechslots",
-                    Long.toString(userToChange.getGroupLeechSlots()));
+                userToChange.getKeyedMap().setObject(UserManagement.GROUPSLOTS, groupSlots);
+                userToChange.getKeyedMap().setObject(UserManagement.LEECHSLOTS, groupLeechSlots);
+                env.add("groupslots", "" + userToChange.getKeyedMap().getObjectInt(UserManagement.GROUPSLOTS));
+                env.add("groupleechslots", ""
+						+ userToChange.getKeyedMap().getObjectInt(
+								UserManagement.LEECHSLOTS));
                 response.addComment(conn.jprintf(UserManagement.class,
                         "changegroupslots.success", env));
             } catch (NumberFormatException ex) {
@@ -1746,10 +1745,9 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                 }
             }
 
-            env.add("currentusers", Long.toString(users));
-            env.add("maxusers",
-                Long.toString(conn.getGlobalContext().getConfig()
-                                  .getMaxUsersTotal()));
+            env.add("currentusers", "" + users);
+            env.add("maxusers", ""
+					+ conn.getGlobalContext().getConfig().getMaxUsersTotal());
             env.add("totalupspeed", Bytes.formatBytes(speedup) + "/s");
             env.add("totaldnspeed", Bytes.formatBytes(speeddn) + "/s");
             response.addComment("");

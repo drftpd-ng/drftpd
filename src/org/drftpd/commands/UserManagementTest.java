@@ -52,7 +52,7 @@ public class UserManagementTest extends TestCase {
         gctx.setUserManager(um);
         conn.setGlobalConext(gctx);
         conn.setUser(u);
-        u.setGroupSlots((short) 1);
+        u.getKeyedMap().setObject(UserManagement.GROUPSLOTS, ((short) 1));
         u.setGroup("group");
 
         UserManagement cmdmgr = (UserManagement) new UserManagement().initialize(conn,

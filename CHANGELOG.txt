@@ -1,3 +1,7 @@
+2005/01/18 Morgan Christiansson <drftpd@mog.se>
+* Fixed dynamic user data inconsitencies,
+  slots should be converted now.
+
 2005/01/09 Jamal James <teflon114@gmail.com>
 * Added getUserByIdent() to UserManager
 * Added !approve irc plugin to net.drmods.plugins.irc

@@ -21,6 +21,7 @@ import net.sf.drftpd.DuplicateElementException;
 import java.util.List;
 import java.util.Map;
 
+import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.master.ConnectionManager;
@@ -78,13 +79,9 @@ public abstract class User implements Entity {
 
     public abstract long getDownloadedTimeForTrialPeriod(int i);
 
-    public abstract short getGroupLeechSlots();
-
     public abstract String getGroup();
 
     public abstract List getGroups();
-
-    public abstract short getGroupSlots();
 
     public abstract HostMaskCollection getHostMaskCollection();
 
@@ -316,10 +313,6 @@ public abstract class User implements Entity {
     public abstract void setDownloadedTimeWeek(long millis);
 
     public abstract void setGroup(String group);
-
-    public abstract void setGroupLeechSlots(short s);
-
-    public abstract void setGroupSlots(short s);
 
     /**
      * Sets the idleTime.

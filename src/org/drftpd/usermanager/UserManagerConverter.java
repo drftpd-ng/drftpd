@@ -21,6 +21,7 @@ import net.sf.drftpd.DuplicateElementException;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.plugins.Trial;
 
 import java.io.IOException;
@@ -61,9 +62,9 @@ public class UserManagerConverter {
 
         to.setGroup(from.getGroup());
 
-        to.setGroupLeechSlots(from.getGroupLeechSlots());
+        //to.getKeyedMap().setObject(UserManagement.LEECHSLOTS, from.getGroupLeechSlots());
 
-        to.setGroupSlots(from.getGroupLeechSlots());
+        //to.setGroupSlots(from.getGroupLeechSlots());
 
         to.setIdleTime(from.getIdleTime());
 

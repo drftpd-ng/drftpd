@@ -32,6 +32,7 @@ import org.drftpd.commands.Nuke;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.ConnectionManager;
+import org.drftpd.plugins.Statistics;
 
 import se.mog.io.PermissionDeniedException;
 
@@ -95,7 +96,7 @@ public abstract class AbstractUserManager implements UserManager {
         user.getKeyedMap().setObject(UserManagement.MAXLOGINSIP,0);
         user.getKeyedMap().setObject(UserManagement.MAXSIMUP,0);
         user.getKeyedMap().setObject(UserManagement.MAXSIMDN,0);
-        user.getKeyedMap().setObject(UserManagement.TOTALLOGINS,0);
+        user.getKeyedMap().setObject(Statistics.LOGINS,0);
         user.getKeyedMap().setObject(UserManagement.CREATED, new Date());
         user.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
         user.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT, new Long(0));

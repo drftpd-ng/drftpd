@@ -28,6 +28,7 @@ import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.Trial;
@@ -58,7 +59,7 @@ public abstract class AbstractUser extends User {
     private String _comment;
     protected long _created;
     private long _credits;
-    protected KeyedMap _data = new KeyedMap();
+    protected KeyedMap<Key, Object> _data = new KeyedMap<Key, Object>();
    
     private long[] _downloadedBytes = new long[P_SIZE];
 
@@ -70,9 +71,7 @@ public abstract class AbstractUser extends User {
     //protected long _downloadedMilliSeconds,
     // _downloadedMilliSeconds[P_DAY],_downloadedMilliSeconds[P_MONTH],_downloadedMilliSeconds[P_WEEK];
     private String _group = "nogroup";
-    private short _groupLeechSlots;
     private ArrayList<String> _groups = new ArrayList<String>();
-    private short _groupSlots;
     private HostMaskCollection _hostMasks = new HostMaskCollection();
     private int _idleTime = 0; // no limit
     private long _lastAccessTime = 0;
@@ -300,10 +299,6 @@ public abstract class AbstractUser extends User {
         throw new RuntimeException();
     }
 
-    public short getGroupLeechSlots() {
-        return _groupLeechSlots;
-    }
-
     public String getGroup() {
         if (_group == null) {
             return "nogroup";
@@ -319,10 +314,6 @@ public abstract class AbstractUser extends User {
     public void setGroups(List<String> groups) {
     	_groups = new ArrayList<String>(groups);
     }
-   
-    public short getGroupSlots() {
-        return _groupSlots;
-    }
 
     public void setHostMaskCollection(HostMaskCollection masks) {
     	_hostMasks = masks;
@@ -336,10 +327,10 @@ public abstract class AbstractUser extends User {
         return _idleTime;
     }
 
-    public KeyedMap getKeyedMap() {
+    public KeyedMap<Key, Object> getKeyedMap() {
     	return _data;
     }
-    public void setKeyedMap(KeyedMap data) {
+    public void setKeyedMap(KeyedMap<Key, Object> data) {
     	_data = data;
     }
     public long getLastAccessTime() {
@@ -781,14 +772,6 @@ public abstract class AbstractUser extends User {
     public void setGroup(String g) {
         checkValidGroupName(g);
         _group = g;
-    }
-
-    public void setGroupLeechSlots(short s) {
-        _groupLeechSlots = s;
-    }
-
-    public void setGroupSlots(short s) {
-        _groupSlots = s;
     }
 
     public void setIdleTime(int idleTime) {
