@@ -52,7 +52,7 @@ import java.util.Timer;
 
 /**
  * @author mog
- * @version $Id: GlobalContext.java,v 1.11 2004/11/12 14:22:18 mog Exp $
+ * @version $Id$
  */
 public class GlobalContext {
     private static final Logger logger = Logger.getLogger(GlobalContext.class);
@@ -83,10 +83,10 @@ public class GlobalContext {
             throw new FatalException(ex);
         }
 
-        loadSectionManager(cfg);
         loadSlaveManager(cfg);
         loadSlaveSelectionManager(cfg);
         loadRSlavesAndRoot();
+        loadSectionManager(cfg);
         loadPlugins(cfg);
     }
 
@@ -250,6 +250,7 @@ public class GlobalContext {
         }
     }
 
+    // depends on having getRoot() working
     private void loadSectionManager(Properties cfg) {
         try {
             Class cl = Class.forName(cfg.getProperty("sectionmanager",
