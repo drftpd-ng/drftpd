@@ -31,7 +31,7 @@ public class ConstantMirroring extends ArchiveType {
 		recursiveCleanup(getDirectory());
 	}
 	private void recursiveCleanup(LinkedRemoteFileInterface lrf) {
-		for (Iterator iter = new ArrayList(getDirectory().getFiles()).iterator();
+		for (Iterator iter = new ArrayList(lrf.getFiles()).iterator();
 		iter.hasNext();
 		) {
 			LinkedRemoteFileInterface src =
@@ -72,7 +72,7 @@ public class ConstantMirroring extends ArchiveType {
 	}
 	protected boolean isArchivedDir(LinkedRemoteFileInterface lrf)
 			throws IncompleteDirectoryException, OfflineSlaveException {
-		for (Iterator iter = getDirectory().getFiles().iterator(); iter.hasNext();
+		for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();
 		) {
 			LinkedRemoteFileInterface src =
 				(LinkedRemoteFileInterface) iter.next();
