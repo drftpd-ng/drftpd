@@ -82,6 +82,7 @@ public class Find extends IRCCommand {
 	public ArrayList<String> doFind(String args, MessageCommand msgc) {
 	    ArrayList<String> out = new ArrayList<String>();
 	    ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+        env.add("ircnick",msgc.getSource().getNick());
 		FullNick fn = msgc.getSource();
 		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
 		User user;
