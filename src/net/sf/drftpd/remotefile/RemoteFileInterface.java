@@ -22,7 +22,7 @@ import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: RemoteFileInterface.java,v 1.10 2004/03/26 11:22:21 mog Exp $
+ * @version $Id: RemoteFileInterface.java,v 1.11 2004/06/06 21:33:47 zubov Exp $
  */
 public interface RemoteFileInterface {
 	/**
@@ -71,15 +71,6 @@ public interface RemoteFileInterface {
 	 */
 	public String getUsername();
 	public long getXfertime();
-	
-	/**
-	 * <p>
-	 * A flag indicating whether this file is queued for deletion.
-	 * <p>
-	 * A file will be queued for deletion when a slave was unable to delete the file, most likely because it was offline at the time of deletion. Deleted will be retried when the slave filelist is merged with the master.
-	 * @return true if the file is deleted.
-	 */
-	public boolean isDeleted();
 	
 	/**
 	 * @see java.io.File#isDirectory()

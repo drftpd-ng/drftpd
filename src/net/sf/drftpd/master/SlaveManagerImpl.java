@@ -67,7 +67,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.94 2004/05/31 02:47:15 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.95 2004/06/06 21:33:46 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -275,6 +275,7 @@ public class SlaveManagerImpl
 			public void run() {
 				logger.info("Running shutdown hook");
 				saveFilelist();
+				
 				try {
 					getConnectionManager().getUserManager().saveAll();
 				} catch (UserFileException e) {

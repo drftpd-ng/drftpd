@@ -70,7 +70,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.58 2004/06/04 14:18:55 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.59 2004/06/06 21:33:46 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandlerFactory, CommandHandler, Cloneable {
 	private static final Logger logger = Logger
@@ -379,7 +379,7 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 		} else if (cmd.equals("STOR")) {
 			LinkedRemoteFile.NonExistingFile nef = conn.getCurrentDirectory()
 					.lookupNonExistingFile(ghostRequest.getArgument());
-			if (!nef.hasPath()) {
+			if (nef.exists()) {
 				return FtpReply.RESPONSE_530_ACCESS_DENIED;
 			}
 			if (!ListUtils.isLegalFileName(nef.getPath())) {

@@ -38,7 +38,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 
 /**
  * @author mog
- * @version $Id: MLSTSerialize.java,v 1.29 2004/05/12 00:45:10 mog Exp $
+ * @version $Id: MLSTSerialize.java,v 1.30 2004/06/06 21:33:47 zubov Exp $
  */
 public class MLSTSerialize {
 	public static final SimpleDateFormat timeval =
@@ -102,8 +102,6 @@ public class MLSTSerialize {
 			}
 			ret.append(";");
 		}
-		if (file.isDeleted())
-			ret.append("x.deleted=true;");
 		if (file.getXfertime() != 0)
 			ret.append("x.xfertime=" + file.getXfertime() + ";");
 		ret.append(" " + file.getName());
@@ -216,7 +214,7 @@ public class MLSTSerialize {
 					"expecting path, not \"" + line+"\" line "+in2.getLineNumber());
 
 			String path = line.substring(0, line.length() - 1);
-			NonExistingFile ret = root.lookupNonExistingFile(path, true);
+			NonExistingFile ret = root.lookupNonExistingFile(path);
 			LinkedRemoteFileInterface dir;
 			dir = ret.getFile();
 			if (!ret.exists()) {

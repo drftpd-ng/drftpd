@@ -1,3 +1,9 @@
+2004/06/02 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Updated LinkedRemoteFileTest to include a test for remerge()
+* Rewrote remerge() and parts of filesystem that used isDeleted()
+  Queued Renames/Deletes are no longer kept in the filesystem but
+  in a Hashmap in the RemoteSlave object
+
 2004/06/04 Morgan Christiansson <drftpd@mog.se>
 * Verified and updated TestCases.
 * Fixed infinite loop in Stats martyr plugin..

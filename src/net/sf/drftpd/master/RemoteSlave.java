@@ -17,6 +17,7 @@
  */
 package net.sf.drftpd.master;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
@@ -35,7 +36,7 @@ import org.jdom.Element;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.43 2004/06/04 21:34:28 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.44 2004/06/06 21:33:46 zubov Exp $
  */
 public class RemoteSlave implements Comparable {
 	/**
@@ -48,6 +49,58 @@ public class RemoteSlave implements Comparable {
 		_name = name;
 		updateConfig(p);
 	}
+	
+	private void addQueueRename(String fileName,String destName) {
+		if (isAvailable()) throw new IllegalStateException("Slave is available, you cannot queue an operation");
+		if (_fileQueue.containsKey(fileName))
+			throw new IllegalArgumentException(fileName + " is already in the queue for processing");
+		_fileQueue.put(fileName,destName);
+	}
+	
+	private void addQueueDelete(String fileName) {
+		addQueueRename(fileName,null);
+	}
+	
+	/**
+	 * Rename files.
+	 */
+	public void rename(String from, String toDirPath, String toName)
+		throws IOException {
+		try {
+			getSlave().rename(from,toDirPath,toName);
+		} catch (RemoteException e) {
+			handleRemoteException(e);
+			addQueueRename(from,toDirPath+"/"+toName);
+		} catch (IOException e) {
+			setOffline(e.getMessage());
+			addQueueRename(from,toDirPath+"/"+toName);
+			throw e;
+		} catch (SlaveUnavailableException e) {
+			addQueueRename(from,toDirPath+"/"+toName);
+		}
+	}
+		
+	/**
+	 * Delete files.
+	 */
+	public void delete(String path) throws IOException {
+		try {
+			getSlave().delete(path);
+		} catch (RemoteException e) {
+			handleRemoteException(e);
+			addQueueDelete(path);
+		} catch (FileNotFoundException e) {
+			return;
+		} catch (IOException e) {
+			setOffline(e.getMessage());
+			addQueueDelete(path);
+			throw e;
+		} catch (SlaveUnavailableException e) {
+			addQueueDelete(path);
+		}
+	}
+	
+	private HashMap _fileQueue;
 
 	private int _maxPath;
 
@@ -64,25 +117,31 @@ public class RemoteSlave implements Comparable {
 	private SlaveStatus _status;
 	private Properties _config;
 
-//	public void oldRemoteSlave(String name, Collection masks) {
-//		if (name.equalsIgnoreCase("all"))
-//			throw new IllegalArgumentException(
-//				name
-//					+ " is a reserved keyword, it can't be used as a slave name");
-//		_name = name;
-//		_masks = masks;
-//	}
-//
-//	public void oldRemoteSlave(String name, Collection masks, Element config) {
-//		//this(name, masks);
-//		for (Iterator i = config.getChildren().iterator(); i.hasNext();) {
-//			Element e = (Element) i.next();
-//			try {
-//				_config.put(e.getName(), e.getText());
-//			} catch (Exception e1) {
-//			}
-//		}
-//	}
+	public void processQueue() throws RemoteException, SlaveUnavailableException {
+		for (Iterator iter = _fileQueue.keySet().iterator(); iter.hasNext();) {
+			String sourceFile = (String) iter.next();
+			String destFile = (String) _fileQueue.get(sourceFile);
+			if (destFile == null) {
+				try {
+					getSlave().delete(sourceFile);
+				} catch (IOException e) {
+					// just remove and continue, we can't do much
+					// if the OS has the file locked
+				}
+			}
+			else {
+				String fileName = destFile.substring(destFile.lastIndexOf("/")+1);
+				String destDir = destFile.substring(0,destFile.lastIndexOf("/")-1);
+				try {
+					getSlave().rename(sourceFile,destDir,fileName);
+				} catch (IOException e) {
+					// just remove and continue, we can't do much
+					// if the OS has the file locked
+				}
+			}
+			iter.remove();
+		}
+	}
 
 	public RemoteSlave(Properties config) {
 		String name = FtpConfig.getProperty(config, "name");
@@ -109,6 +168,7 @@ public class RemoteSlave implements Comparable {
 		}
 		_masks = masks;
 		_config = config;
+		_fileQueue = new HashMap();
 	}
 
 	public Element getConfigXML() {

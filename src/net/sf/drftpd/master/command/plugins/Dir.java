@@ -57,7 +57,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.30 2004/06/04 14:18:56 mog Exp $
+ * @version $Id: Dir.java,v 1.31 2004/06/06 21:33:46 zubov Exp $
  */
 public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 	private final static SimpleDateFormat DATE_FMT =
@@ -313,54 +313,39 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 		}
 		LinkedRemoteFile.NonExistingFile ret =
 			conn.getCurrentDirectory().lookupNonExistingFile(
-				request.getArgument(), true);
+				request.getArgument());
 		LinkedRemoteFile dir = ret.getFile();
-		if(dir.isDeleted()) {
-			dir.setLastModified(System.currentTimeMillis());
-			dir.setOwner(conn.getUserNull().getUsername());
-			dir.setGroup(conn.getUserNull().getGroupName());
-			dir.setDeleted(false);
+		if (ret.exists()) {
+			return new FtpReply(
+					550,
+					"Requested action not taken. "
+					+ request.getArgument()
+					+ " already exists");
+		}
+		String createdDirName =
+			conn.getConnectionManager().getConfig().getDirName(ret.getPath());
+		if (!ListUtils.isLegalFileName(createdDirName)) {
+			return FtpReply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
+		}
+		if (!conn.getConfig().checkMakeDir(conn.getUserNull(), dir)) {
+			return FtpReply.RESPONSE_530_ACCESS_DENIED;
+		}
+		try {
+			LinkedRemoteFile createdDir =
+				dir.createDirectory(
+						conn.getUserNull().getUsername(),
+						conn.getUserNull().getGroupName(),
+						createdDirName);
+			
 			conn.getConnectionManager().dispatchFtpEvent(
-					new DirectoryFtpEvent(conn.getUserNull(), "MKD", dir));
+					new DirectoryFtpEvent(conn.getUserNull(), "MKD", createdDir));
 			return new FtpReply(
 					257,
-					"\"" + dir.getPath() + "\" no longer deleted.");
-		} else {
-
-			if (!ret.hasPath()) {
-				return new FtpReply(
-						550,
-						"Requested action not taken. "
-						+ request.getArgument()
-						+ " already exists");
-			}
-
-			String createdDirName =
-				conn.getConnectionManager().getConfig().getDirName(ret.getPath());
-			if (!ListUtils.isLegalFileName(createdDirName)) {
-				return FtpReply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
-			}
-			if (!conn.getConfig().checkMakeDir(conn.getUserNull(), dir)) {
-				return FtpReply.RESPONSE_530_ACCESS_DENIED;
-			}
-
-			try {
-				LinkedRemoteFile createdDir =
-					dir.createDirectory(
-							conn.getUserNull().getUsername(),
-							conn.getUserNull().getGroupName(),
-							createdDirName);
-				
-				conn.getConnectionManager().dispatchFtpEvent(
-						new DirectoryFtpEvent(conn.getUserNull(), "MKD", createdDir));
-				return new FtpReply(
-						257,
-						"\"" + createdDir.getPath() + "\" created.");
-			} catch (FileExistsException ex) {
-				return new FtpReply(
-						550,
-						"directory " + createdDirName + " already exists");
-			}
+					"\"" + createdDir.getPath() + "\" created.");
+		} catch (FileExistsException ex) {
+			return new FtpReply(
+					550,
+					"directory " + createdDirName + " already exists");
 		}
 	}
 
@@ -506,18 +491,13 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 
 		NonExistingFile ret =
 			conn.getCurrentDirectory().lookupNonExistingFile(
-				request.getArgument(), true);
+				request.getArgument());
 		LinkedRemoteFileInterface toDir = ret.getFile();
 		String name = ret.getPath();
-		if(toDir.isDeleted()) {
-			return new FtpReply(530, "Target file has been queued for deletion, can't overwrite");
-		}
-
 		LinkedRemoteFileInterface fromFile = _renameFrom;
 
 		if (name == null)
 			name = fromFile.getName();
-		//String to = toDir.getPath() + "/" + name;
 
 		// check permission
 		if (_renameFrom

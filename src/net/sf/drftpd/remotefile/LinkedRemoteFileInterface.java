@@ -89,10 +89,6 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 	 */
 	public abstract LinkedRemoteFileInterface getFile(String fileName)
 		throws FileNotFoundException;
-	public abstract LinkedRemoteFileInterface getFileDeleted(
-		String fileName)
-		throws FileNotFoundException;
-
 	/**
 	 * Returns the underlying Map for this directory.
 	 * 
@@ -136,9 +132,6 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 		boolean includeDeleted)
 		throws FileNotFoundException;
 	public abstract NonExistingFile lookupNonExistingFile(String path);
-	public abstract NonExistingFile lookupNonExistingFile(
-		String path,
-		boolean includeDeleted);
 	/**
 	 * Returns path for a non-existing file. Performs path normalization and returns an absolute path
 	 */
@@ -155,7 +148,7 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 	 * Merges mergedir directory onto <code>this</code> directories.
 	 * If duplicates exist, the slaves are added to this object and the file-attributes of the oldest file (lastModified) are kept.
 	 */
-	public abstract void remerge(LinkedRemoteFile mergedir, RemoteSlave rslave);
+	public abstract void remerge(LinkedRemoteFile mergedir, RemoteSlave rslave) throws IOException;
 	public abstract boolean removeSlave(RemoteSlave slave);
 	/**
 	 * Renames this file

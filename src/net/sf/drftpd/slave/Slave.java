@@ -28,7 +28,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 /**
  * Slave interface, this interface is used to initate transfers to and from remote slaves.
  * @author Morgan Christiansson <mog@linux.nu>
- * @version $Id: Slave.java,v 1.31 2004/05/10 02:54:00 mog Exp $
+ * @version $Id: Slave.java,v 1.32 2004/06/06 21:33:47 zubov Exp $
  */
 public interface Slave extends Remote {
 	public long checkSum(
@@ -51,13 +51,13 @@ public interface Slave extends Remote {
 		throws RemoteException, IOException;
 	
 	/**
-	 * Rename files.
+	 * Rename files, should only be called by RemoteSlave
 	 */
 	public void rename(String from, String toDirPath, String toName)
 		throws RemoteException, IOException;
 		
 	/**
-	 * Delete files.
+	 * Delete files, should only be called by RemoteSlave
 	 */
 	public void delete(String path) throws RemoteException, IOException;
 	/**

@@ -38,7 +38,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.48 2004/06/04 14:18:57 mog Exp $
+ * @version $Id: JobManager.java,v 1.49 2004/06/06 21:33:47 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -106,7 +106,7 @@ public class JobManager implements Runnable {
 	public synchronized Job getNextJob(Set busySlaves, Set skipJobs) {
 		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
 			Job tempJob = (Job) iter.next();
-			if (tempJob.getFile().isDeleted() || tempJob.isDone()) {
+			if (tempJob.isDone()) {
 				iter.remove();
 				continue;
 			}
@@ -212,9 +212,9 @@ public class JobManager implements Runnable {
 		try {
 			if (!slaveTransfer.transfer(useCRC())) { // crc failed
 				try {
-					destSlave.getSlave().delete(job.getFile().getPath());
+					destSlave.delete(job.getFile().getPath());
 				} catch (IOException e) {
-					//couldn't delete it, just carry on
+					// queued for deletion
 				}
 				logger.debug(
 					"CRC did not match for "
@@ -237,11 +237,9 @@ public class JobManager implements Runnable {
 				e);
 			if (!(e instanceof FileExistsException)) {
 				try {
-					destSlave.getSlave().delete(job.getFile().getPath());
-				} catch (SlaveUnavailableException e3) {
-					//couldn't delete it, just carry on
+					destSlave.delete(job.getFile().getPath());
 				} catch (IOException e1) {
-					//couldn't delete it, just carry on
+					// queued for deletion
 				}
 				addJob(job);
 				return false;
@@ -256,11 +254,9 @@ public class JobManager implements Runnable {
 					logger.debug("Accepting file because the crc's match");
 				} else {
 					try {
-						destSlave.getSlave().delete(job.getFile().getPath());
-					} catch (SlaveUnavailableException e3) {
-						//couldn't delete it, just carry on
+						destSlave.delete(job.getFile().getPath());
 					} catch (IOException e1) {
-						//couldn't delete it, just carry on
+						// queued for deletion
 					}
 					addJob(job);
 					return false;
