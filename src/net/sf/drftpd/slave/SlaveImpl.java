@@ -79,19 +79,6 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			return;
 		}
 
-		/*
-		RootBasket rootBasket;
-		{
-			Vector roots = new Vector();
-			StringTokenizer st =
-				new StringTokenizer(cfg.getProperty("slave.root"), ",;:");
-			while (st.hasMoreTokens()) {
-				roots.add(st.nextToken());
-			}
-			rootBasket = new RootBasket(roots);
-		}
-		*/
-
 		try {
 			manager =
 				(SlaveManager) Naming.lookup(
@@ -211,17 +198,6 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			throw new RuntimeException(ex.toString());
 		}
 	}
-
-	//	/**
-	//	 * @see net.sf.drftpd.slave.Slave#mkdir()
-	//	 */
-	//	public void mkdir(User user, String path) throws PermissionDeniedException {
-	//		System.out.println("Will create "+root+path);
-	//		if(!new File(root+path).mkdir()) {
-	//			throw new PermissionDeniedException("mkdir(): Permission denied");
-	//		}
-	//		//TODO: serialize directory ownership
-	//	}
 
 	/**
 	 * @see net.sf.drftpd.slave.Slave#ping()

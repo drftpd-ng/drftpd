@@ -225,7 +225,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		slaves.remove(removed);
 		if (slaves.size() == 0) {
 			try {
-				getParentFile().getHashtable().remove(this);
+				getParentFile().getMap().remove(this);
 			} catch (FileNotFoundException ex) {
 				logger.log(
 					Level.SEVERE,
@@ -304,11 +304,11 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	public Map getFiles() {
 		return files;
 	}
-	public Map getHashtable() {
+
+	public Map getMap() {
 		return files;
 	}
 	public String getName() {
-		//return path.substring(path.lastIndexOf(separatorChar) + 1);
 		return name;
 	}
 
@@ -432,7 +432,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 				continue;
 			}
 			LinkedRemoteFile nextFile =
-				(LinkedRemoteFile) currFile.getHashtable().get(currFileName);
+				(LinkedRemoteFile) currFile.getMap().get(currFileName);
 			//currFile =
 			if (nextFile == null) {
 				throw new FileNotFoundException(
@@ -459,8 +459,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			throw new IllegalArgumentException(
 				"argument is not a directory: " + dir + " this: " + this);
 		}
-		Map map = getHashtable();
-		Map mergemap = dir.getHashtable();
+		Map map = getMap();
+		Map mergemap = dir.getMap();
 		if (mergemap == null)
 			return;
 		// remote directory wasn't added, it might have been a symlink.
@@ -573,7 +573,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		//				}
 
 		// throws FileNotFoundException
-		if (getParentFile().getHashtable().get(to) != null) {
+		if (getParentFile().getMap().get(to) != null) {
 			throw new FileExistsException("Target file exists");
 		}
 
@@ -592,10 +592,10 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		//TODO queued renaming
 		System.out.println(
 			"renameTo() remove(from): "
-				+ getParentFile().getHashtable().remove(from));
+				+ getParentFile().getMap().remove(from));
 		System.out.println(
 			"renameTo() put(to): "
-				+ getParentFile().getHashtable().put(to, this));
+				+ getParentFile().getMap().put(to, this));
 		name = to;
 	}
 

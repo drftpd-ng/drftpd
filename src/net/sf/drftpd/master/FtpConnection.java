@@ -12,6 +12,7 @@ import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -458,7 +459,7 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		LinkedRemoteFile file = currentDirectory;
-		if (file.getHashtable().containsKey(fileName)) {
+		if (file.getMap().containsKey(fileName)) {
 			out.println(
 				"550 Requested action not taken. "
 					+ fileName
@@ -1030,7 +1031,7 @@ public class FtpConnection extends BaseFtpConnection {
 		nukeRemoveCredits(nukeDir, nukees);
 
 		FtpResponse response = new FtpResponse(200, "NUKE suceeded");
-		Hashtable nukees2 = new Hashtable(nukees.size());
+		HashMap nukees2 = new HashMap(nukees.size());
 
 		for (Iterator iter = nukees.keySet().iterator(); iter.hasNext();) {
 			
@@ -1059,11 +1060,11 @@ public class FtpConnection extends BaseFtpConnection {
 			}
 			// nukees contains credits as value
 			if(user == null) {
-				Integer add = nukees2.get(null)
+				Integer add = (Integer)nukees2.get(null);
 				if(add == null) {
 					add = new Integer(0);
 				}
-				nukees2.put(user, add.intValue()+nukees.get(username));
+				nukees2.put(user, new Integer(add.intValue()+((Integer)nukees.get(username)).intValue()));
 			} else {
 				nukees2.put(user, nukees.get(username));
 			}
@@ -1083,16 +1084,17 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		for (Iterator iter = nukees2.keySet().iterator(); iter.hasNext();) {
-			User element = (User) iter.next();
-			Integer size = (Integer) nukees2.get(element);
+			User nukee = (User) iter.next();
+			if(nukee == null) continue;
+			Integer size = (Integer) nukees2.get(nukee);
 			Integer debt =
 				new Integer(
-					(int) (size.intValue() * user.getRatio()
+					(int) (size.intValue() * nukee.getRatio()
 						+ size.intValue() * (multiplier - 1)));
 			try {
-				user.updateCredits(-debt.intValue());
+				nukee.updateCredits(-debt.intValue());
 			} catch (IOException e1) {
-				String str = "updateCredits() failed for " + user.getUsername();
+				String str = "updateCredits() failed for " + nukee.getUsername();
 				response.addComment(str + ": " + e1.getMessage());
 				logger.log(Level.WARNING, str, e1);
 			}

@@ -6,7 +6,6 @@
  */
 package net.sf.drftpd.event;
 
-import java.util.Hashtable;
 import java.util.Map;
 
 import net.sf.drftpd.master.FtpRequest;
@@ -25,7 +24,7 @@ public class NukeEvent extends FtpEvent {
 	 * @param multiplier
 	 * @param nukees2
 	 */
-	public NukeEvent(User user, FtpRequest request, String directory, int multiplier, String reason, Hashtable nukees) {
+	public NukeEvent(User user, FtpRequest request, String directory, int multiplier, String reason, Map nukees) {
 		super(user, request);
 		this.multiplier = multiplier;
 		this.nukees = nukees;
