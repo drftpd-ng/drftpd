@@ -36,7 +36,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.24 2004/02/02 11:59:40 flowman Exp $
+ * @version $Id: UserManagment.java,v 1.25 2004/02/05 18:11:54 flowman Exp $
  */
 public class UserManagment implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -51,14 +51,16 @@ public class UserManagment implements CommandHandler {
 		}
 
 		if (!request.hasArgument()) {
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+			return new FtpReply(
+				501,
+				conn.jprintf(UserManagment.class.getName(), "addip.usage"));
 		}
 
 		String args[] = request.getArgument().split(" ");
 		if (args.length < 2) {
 			return new FtpReply(
-				200,
-				conn.jprintf(UserManagment.class.getName(), "addip.usage"));
+				501,
+				conn.jprintf(UserManagment.class.getName(), "addip.specify"));
 		}
 		FtpReply response = new FtpReply(200);
 		User myUser;
@@ -186,7 +188,7 @@ public class UserManagment implements CommandHandler {
 		}
 		StringTokenizer st = new StringTokenizer(request.getArgument());
 		User newUser;
-		FtpReply response = new FtpReply(200);
+		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		try {
 			String group = null;
@@ -197,31 +199,38 @@ public class UserManagment implements CommandHandler {
 			env.add("targetuser", newUsername);
 
 			String pass = st.nextToken();
+			//action, no more NoSuchElementException below here
+			newUser = conn.getUserManager().create(newUsername);
+			newUser.setPassword(pass);
 			response.addComment(
 				conn.jprintf(
 					UserManagment.class.getName(),
 					"adduser.success",
 					env));
-			//action, no more NoSuchElementException below here
-			newUser = conn.getUserManager().create(newUsername);
-			newUser.setPassword(pass);
 			newUser.setComment("Added by " + conn.getUserNull().getUsername());
 			if (conn.getUserNull().isGroupAdmin()) {
 				newUser.setGroup(conn.getUserNull().getGroupName());
 			}
 			if (isGAdduser) {
 				newUser.setGroup(group);
+				env.add("primgroup", newUser.getGroupName());
 				response.addComment(
-					"Primary group set to " + newUser.getGroupName());
+					conn.jprintf(
+							UserManagment.class.getName(),
+							"adduser.primgroup",
+							env));
 			}
 		} catch (NoSuchElementException ex) {
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+			return new FtpReply(
+				501,
+				conn.jprintf(UserManagment.class.getName(), "adduser.missingpass"));
 		} catch (UserFileException ex) {
 			return new FtpReply(200, ex.getMessage());
 		}
 		try {
 			while (st.hasMoreTokens()) {
 				String string = st.nextToken();
+				env.add("mask", string);
 				try {
 					newUser.addIPMask(string);
 					response.addComment(
@@ -371,18 +380,37 @@ public class UserManagment implements CommandHandler {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		if (!request.hasArgument()) {
-			return new FtpReply(
-				501,
-				conn.jprintf(UserManagment.class.getName(), "change.usage"));
+			FtpReply response = (FtpReply) FtpReply.RESPONSE_501_SYNTAX_ERROR.clone();
+			
+			response.addComment(
+				conn.jprintf(UserManagment.class.getName(), "change.usage0"));
+			response.addComment(" ");
+			response.addComment(
+				conn.jprintf(UserManagment.class.getName(), "change.usage1"));
+			response.addComment(
+				conn.jprintf(UserManagment.class.getName(), "change.usage2"));
+			response.addComment(
+				conn.jprintf(UserManagment.class.getName(), "change.usage3"));	
+			return response;
 		}
 
 		String command, commandArgument;
 		User myUser;
+		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+		ReplacerEnvironment env = new ReplacerEnvironment();
 		{
 			String argument = request.getArgument();
 			int pos1 = argument.indexOf(' ');
 			if (pos1 == -1) {
-				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+				FtpReply response2 = (FtpReply) FtpReply.RESPONSE_501_SYNTAX_ERROR.clone();
+			
+				response2.addComment(
+					conn.jprintf(UserManagment.class.getName(), "change.usage1"));
+				response2.addComment(
+					conn.jprintf(UserManagment.class.getName(), "change.usage2"));
+				response2.addComment(
+					conn.jprintf(UserManagment.class.getName(), "change.usage3"));	
+				return response2;
 			}
 			String username = argument.substring(0, pos1);
 			try {
@@ -402,10 +430,13 @@ public class UserManagment implements CommandHandler {
 
 			int pos2 = argument.indexOf(' ', pos1 + 1);
 			if (pos2 == -1) {
-				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+				return new FtpReply(
+					501,
+					conn.jprintf(UserManagment.class.getName(), "change.specify"));
 			}
 			command = argument.substring(pos1 + 1, pos2);
 			commandArgument = argument.substring(pos2 + 1);
+			env.add("targetuser", myUser.getUsername());
 			if (conn.getUserNull().isGroupAdmin()) {
 				////// ratio //////
 				if (!command.equalsIgnoreCase("ratio")
@@ -449,6 +480,11 @@ public class UserManagment implements CommandHandler {
 							"changeratio.invalidratio"));
 				}
 				myUser.setRatio(ratio);
+
+				env.add("ratio", Float.toString(myUser.getRatio()));
+				response.addComment(
+					conn.jprintf(UserManagment.class.getName(),
+						"changeratio.success", env));
 			}
 		}
 
@@ -457,18 +493,38 @@ public class UserManagment implements CommandHandler {
 		// 0 = user
 		// 1 = command
 		// 2- = argument
-		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+
 		if ("credits".equalsIgnoreCase(command)) {
 			myUser.setCredits(Bytes.parseBytes(commandArgument));
-
+			
+			env.add("credits", Bytes.formatBytes(myUser.getCredits()));
+			response.addComment(
+				conn.jprintf(UserManagment.class.getName(),
+					"changecredits.success", env));
+					
 		} else if ("ratio".equalsIgnoreCase(command)) {
 			myUser.setRatio(Float.parseFloat(commandArgument));
+
+			env.add("ratio", Float.toString(myUser.getRatio()));
+			response.addComment(
+				conn.jprintf(UserManagment.class.getName(),
+					"changeratio.success", env));
 
 		} else if ("comment".equalsIgnoreCase(command)) {
 			myUser.setComment(commandArgument);
 
+			env.add("comment", myUser.getComment());
+			response.addComment(
+				conn.jprintf(UserManagment.class.getName(),
+					"changecomment.success", env));
+
 		} else if ("idle_time".equalsIgnoreCase(command)) {
 			myUser.setIdleTime(Integer.parseInt(commandArgument));
+
+			env.add("idletime", Long.toString(myUser.getIdleTime()));
+			response.addComment(
+				conn.jprintf(UserManagment.class.getName(),
+					"changeidletime.success", env));
 
 		} else if ("num_logins".equalsIgnoreCase(command)) {
 			try {
@@ -480,11 +536,15 @@ public class UserManagment implements CommandHandler {
 				if (args.length == 2) {
 					myUser.setMaxLoginsPerIP(Integer.parseInt(args[1]));
 				}
+				
+				env.add("numlogins", Long.toString(myUser.getMaxLogins()));
+				env.add("numloginsip", Long.toString(myUser.getMaxLoginsPerIP()));
+				response.addComment(
+					conn.jprintf(UserManagment.class.getName(),
+						"changenumlogins.success", env));
 			} catch (NumberFormatException ex) {
 				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 			}
-			//		} else if ("num_logins".equalsIgnoreCase(command)) {
-			//			myUser.setMaxLoginsPerIP(Integer.parseInt(commandArgument));
 
 			//} else if ("max_dlspeed".equalsIgnoreCase(command)) {
 			//	myUser.setMaxDownloadRate(Integer.parseInt(commandArgument));
@@ -493,6 +553,11 @@ public class UserManagment implements CommandHandler {
 			//	myUser.setMaxUploadRate(Integer.parseInt(commandArgument));
 		} else if ("group".equals(command)) {
 			myUser.setGroup(commandArgument);
+
+			env.add("primgroup", myUser.getGroupName());
+			response.addComment(
+				conn.jprintf(UserManagment.class.getName(),
+					"changeprimgroup.success", env));
 
 			//			group_slots	Number of users a GADMIN is allowed to add.
 			//					If you specify a second argument, it will be the
@@ -508,11 +573,25 @@ public class UserManagment implements CommandHandler {
 				if (args.length >= 2) {
 					myUser.setGroupLeechSlots(Short.parseShort(args[1]));
 				}
+				
+				env.add("groupslots", Long.toString(myUser.getGroupSlots()));
+				env.add("groupleechslots", Long.toString(myUser.getGroupLeechSlots()));
+				response.addComment(
+					conn.jprintf(UserManagment.class.getName(),
+						"changegroupslots.success", env));
 			} catch (NumberFormatException ex) {
 				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 			}
 		} else {
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+			FtpReply response2 = (FtpReply) FtpReply.RESPONSE_501_SYNTAX_ERROR.clone();
+			
+			response2.addComment(
+				conn.jprintf(UserManagment.class.getName(), "change.usage1"));
+			response2.addComment(
+				conn.jprintf(UserManagment.class.getName(), "change.usage2"));
+			response2.addComment(
+				conn.jprintf(UserManagment.class.getName(), "change.usage3"));	
+			return response2;
 		}
 		try {
 			myUser.commit();
