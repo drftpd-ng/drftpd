@@ -68,7 +68,7 @@ import java.util.Locale;
 
 /**
  * @author flowman
- * @version $Id: GlftpdLog.java,v 1.10 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: GlftpdLog.java,v 1.11 2004/10/05 02:11:21 mog Exp $
  */
 public class GlftpdLog implements FtpListener {
     private static Logger logger = Logger.getLogger(GlftpdLog.class);
@@ -359,22 +359,20 @@ public class GlftpdLog implements FtpListener {
 
     private void actionPerformedSlave(SlaveEvent event)
         throws FormatterException {
-        SlaveEvent sevent = (SlaveEvent) event;
-
         if (event.getCommand().equals("ADDSLAVE")) {
             SlaveStatus status;
 
             try {
-                status = sevent.getRSlave().getStatusAvailable();
+                status = event.getRSlave().getStatusAvailable();
             } catch (SlaveUnavailableException e) {
                 return;
             }
 
-            print("SLAVEONLINE: \"" + sevent.getRSlave().getName() + "\" \"" +
-                sevent.getMessage() + "\" \"" + status.getDiskSpaceCapacity() +
+            print("SLAVEONLINE: \"" + event.getRSlave().getName() + "\" \"" +
+                event.getMessage() + "\" \"" + status.getDiskSpaceCapacity() +
                 "\" \"" + status.getDiskSpaceAvailable() + "\"");
         } else if (event.getCommand().equals("DELSLAVE")) {
-            print("SLAVEOFFLINE: \"" + sevent.getRSlave().getName() + "\"");
+            print("SLAVEOFFLINE: \"" + event.getRSlave().getName() + "\"");
         }
     }
 

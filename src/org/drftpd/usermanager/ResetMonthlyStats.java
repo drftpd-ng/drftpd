@@ -23,8 +23,6 @@ import net.sf.drftpd.slave.SlaveImpl;
 
 import org.apache.log4j.BasicConfigurator;
 
-import org.drftpd.GlobalContext;
-
 import org.drftpd.tests.DummyGlobalContext;
 
 import java.io.FileInputStream;
@@ -39,7 +37,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: ResetMonthlyStats.java,v 1.4 2004/08/03 20:14:10 zubov Exp $
+ * @version $Id: ResetMonthlyStats.java,v 1.5 2004/10/05 02:11:26 mog Exp $
  */
 public class ResetMonthlyStats {
     public ResetMonthlyStats() {

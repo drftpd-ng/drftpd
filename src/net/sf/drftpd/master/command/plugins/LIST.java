@@ -55,7 +55,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  *
- * @version $Id: LIST.java,v 1.22 2004/08/03 20:13:57 zubov Exp $
+ * @version $Id: LIST.java,v 1.23 2004/10/05 02:11:22 mog Exp $
  */
 public class LIST implements CommandHandlerFactory, CommandHandler {
     private final static DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
@@ -305,8 +305,8 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
                 return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
             }
 
-            if (!conn.getConnectionManager().getGlobalContext().getConfig()
-                         .checkPrivPath(conn.getUserNull(), directoryFile)) {
+            if (!conn.getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(),
+                        directoryFile)) {
                 return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
             }
         } else {
@@ -323,8 +323,7 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
                 NEWLINE);
         } else {
             if (!dataconn.isEncryptedDataChannel() &&
-                    conn.getConnectionManager().getGlobalContext().getConfig()
-                            .checkDenyDirUnencrypted(conn.getUserNull())) {
+                    conn.getGlobalContext().getConfig().checkDenyDirUnencrypted(conn.getUserNull())) {
                 return new FtpReply(550, "Secure Listing Required");
             }
 

@@ -27,10 +27,9 @@ import java.io.InputStream;
  * Not thread-safe (is any-In/OutputStream thread-safe?).
  *
  * @author mog
- * @version $Id: StripAsciiInputStream.java,v 1.3 2004/08/03 20:14:03 zubov Exp $
+ * @version $Id: StripAsciiInputStream.java,v 1.4 2004/10/05 02:11:25 mog Exp $
  */
 public class StripAsciiInputStream extends InputStream {
-    private static final Logger logger = Logger.getLogger(StripAsciiInputStream.class);
     private InputStream _in;
     private int peekChar = -1;
     boolean _lastWasCarriageReturn = false;

@@ -1,6 +1,18 @@
+2004/10/05 Morgan Christiansson <drftpd@mog.se>
+* Fixed purge with JSXUserManager.
+* Added wkly_allotment to SITE USER environment and rewrote .properties format
+  for SITE USER output.
+* Fixed time to complete output in SiteBot and reviewed all other elapsed outputs.
+* Changed default permission in SITE USERS permission handling.
+  Defaults to the inverse of the last permission.
+  Ex: SITE USERS =deleted has !* as default
+      SITE USERS !=deleted has * as default
+
 2004/10/03 Morgan Christiansson <drftpd@mog.se>
+* Fixed SiteBot to use section name instead of section path when announcing.
+  Thanks to N3m3Sis.
 * Fixed SITE SEARCH to require all arguments to match instead of requiring any
-  argument to match.
+  argument to match. Thanks to succo.
 * Fixed LinkedRemoteFile.createDirectories()
   Added automatic creation of <sectionname>-NOW symlink.
 

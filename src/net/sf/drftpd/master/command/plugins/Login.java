@@ -46,7 +46,7 @@ import java.util.List;
 
 
 /**
- * @version $Id: Login.java,v 1.34 2004/08/03 20:13:57 zubov Exp $
+ * @version $Id: Login.java,v 1.35 2004/10/05 02:11:22 mog Exp $
  */
 public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
     private static final Logger logger = Logger.getLogger(Login.class);
@@ -68,8 +68,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
             return new FtpReply(530, "Multiple IDNT commands");
         }
 
-        if (!conn.getConnectionManager().getGlobalContext().getConfig()
-                     .getBouncerIps().contains(conn.getClientAddress())) {
+        if (!conn.getGlobalContext().getConfig().getBouncerIps().contains(conn.getClientAddress())) {
             logger.warn("IDNT from non-bnc");
 
             return FtpReply.RESPONSE_530_ACCESS_DENIED;
@@ -128,7 +127,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
                     conn, "LOGIN"));
 
             FtpReply response = new FtpReply(230,
-                    conn.jprintf(Login.class.getName(), "pass.success"));
+                    conn.jprintf(Login.class, "pass.success"));
 
             try {
                 Textoutput.addTextToResponse(response, "welcome");
@@ -138,8 +137,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
 
             return response;
         } else {
-            return new FtpReply(530,
-                conn.jprintf(Login.class.getName(), "pass.fail"));
+            return new FtpReply(530, conn.jprintf(Login.class, "pass.fail"));
         }
     }
 
@@ -152,8 +150,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
     private FtpReply doQUIT(BaseFtpConnection conn) {
         conn.stop();
 
-        return new FtpReply(221,
-            conn.jprintf(Login.class.getName(), "quit.success"));
+        return new FtpReply(221, conn.jprintf(Login.class, "quit.success"));
     }
 
     /**
@@ -178,8 +175,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
         User newUser;
 
         try {
-            newUser = conn.getConnectionManager().getGlobalContext()
-                          .getUserManager().getUserByName(request.getArgument());
+            newUser = conn.getGlobalContext().getUserManager().getUserByName(request.getArgument());
         } catch (NoSuchUserException ex) {
             return new FtpReply(530, ex.getMessage());
         } catch (UserFileException ex) {
@@ -241,7 +237,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
                 conn.setUser(newUser);
 
                 return new FtpReply(331,
-                    conn.jprintf(Login.class.getName(), "user.success"));
+                    conn.jprintf(Login.class, "user.success"));
             }
         }
 

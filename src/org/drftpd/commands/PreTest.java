@@ -49,14 +49,13 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: PreTest.java,v 1.5 2004/10/03 16:13:56 mog Exp $
+ * @version $Id: PreTest.java,v 1.6 2004/10/05 02:11:25 mog Exp $
  */
 public class PreTest extends TestCase {
     private DummyConnectionManager _cm;
     private DummyFtpConfig _config;
     private LinkedRemoteFile _root;
     private List _rslave;
-    private LinkedRemoteFile _section;
 
     public PreTest(String fName) {
         super(fName);
@@ -72,8 +71,9 @@ public class PreTest extends TestCase {
         LinkedRemoteFileInterface masterdir = _root.getFile("release");
         masterdir.addFile(new StaticRemoteFile(_rslave, "file1", "owner",
                 "group", 1000));
-        _section = _root.addFile(new StaticRemoteFile(null, "section",
-                    "drftpd", "drftpd", 0));
+
+        //_section = _root.addFile(new StaticRemoteFile(null, "section",
+        //            "drftpd", "drftpd", 0));
     }
 
     private void checkOwnershipRecursive(LinkedRemoteFileInterface dir) {

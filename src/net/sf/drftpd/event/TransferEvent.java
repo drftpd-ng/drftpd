@@ -26,12 +26,11 @@ import java.net.InetAddress;
 
 /**
  * @author mog
- * @version $Id: TransferEvent.java,v 1.11 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: TransferEvent.java,v 1.12 2004/10/05 02:11:20 mog Exp $
  */
 public class TransferEvent extends DirectoryFtpEvent {
     private boolean _complete;
     private InetAddress _peer;
-    private RemoteSlave _rslave;
     private char _type;
     private InetAddress _clientHost;
 
@@ -53,7 +52,6 @@ public class TransferEvent extends DirectoryFtpEvent {
         long time) {
         super(conn, command, directory, time);
         _clientHost = clientHost;
-        _rslave = rslave;
 
         if (peer == null) {
             throw new NullPointerException();

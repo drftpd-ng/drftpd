@@ -36,12 +36,11 @@ import java.util.ArrayList;
 
 /**
  * @author mog
- * @version $Id: JSXUser.java,v 1.17 2004/08/03 20:14:00 zubov Exp $
+ * @version $Id: JSXUser.java,v 1.18 2004/10/05 02:11:23 mog Exp $
  */
 public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
     UnixPassword {
     private String password;
-    private transient boolean purged;
     private String unixPassword;
 
     public JSXUser(JSXUserManager usermanager, String username) {
@@ -68,7 +67,7 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
     }
 
     public void commit() throws UserFileException {
-        if (this.purged) {
+        if (_purged) {
             return;
         }
 
@@ -95,7 +94,7 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
     }
 
     protected void finalize() throws Throwable {
-        this.commit();
+        commit();
     }
 
     public String getPassword() {

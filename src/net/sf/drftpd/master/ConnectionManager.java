@@ -54,7 +54,7 @@ import java.util.TimerTask;
 
 
 /**
- * @version $Id: ConnectionManager.java,v 1.117 2004/10/03 16:13:51 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.118 2004/10/05 02:11:21 mog Exp $
  */
 public class ConnectionManager {
     public static final int idleTimeout = 300;
@@ -148,13 +148,6 @@ public class ConnectionManager {
 
             return;
         }
-    }
-
-    private static String[] scrubArgs(String[] args) {
-        String[] ret = new String[args.length - 1];
-        System.arraycopy(args, 1, ret, 0, ret.length);
-
-        return ret;
     }
 
     public FtpReply canLogin(BaseFtpConnection baseconn, User user) {

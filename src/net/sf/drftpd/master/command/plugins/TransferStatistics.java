@@ -52,7 +52,7 @@ import java.util.StringTokenizer;
 
 
 /**
- * @version $Id: TransferStatistics.java,v 1.25 2004/10/03 16:13:52 mog Exp $
+ * @version $Id: TransferStatistics.java,v 1.26 2004/10/05 02:11:22 mog Exp $
  */
 public class TransferStatistics implements CommandHandlerFactory,
     CommandHandler {
@@ -192,8 +192,7 @@ public class TransferStatistics implements CommandHandlerFactory,
             user = conn.getUserNull();
         } else {
             try {
-                user = conn.getConnectionManager().getGlobalContext()
-                           .getUserManager().getUserByName(request.getArgument());
+                user = conn.getGlobalContext().getUserManager().getUserByName(request.getArgument());
             } catch (NoSuchUserException e) {
                 return new FtpReply(200, "No such user: " + e.getMessage());
             } catch (UserFileException e) {
@@ -212,8 +211,7 @@ public class TransferStatistics implements CommandHandlerFactory,
         }
 
         FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
-        UserManager userman = conn.getConnectionManager().getGlobalContext()
-                                  .getUserManager();
+        UserManager userman = conn.getGlobalContext().getUserManager();
         response.addComment("created: " + new Date(user.getCreated()));
         response.addComment("rank alup: " +
             getStatsPlace("ALUP", user, userman));
@@ -262,8 +260,7 @@ public class TransferStatistics implements CommandHandlerFactory,
         Collection users;
 
         try {
-            users = conn.getConnectionManager().getGlobalContext()
-                        .getUserManager().getAllUsers();
+            users = conn.getGlobalContext().getUserManager().getAllUsers();
         } catch (UserFileException e) {
             logger.warn("", e);
 
@@ -350,8 +347,8 @@ public class TransferStatistics implements CommandHandlerFactory,
             env.add("dnrate", getDownRate(user, Trial.PERIOD_ALL));
 
             response.addComment(BaseFtpConnection.jprintf(
-                    TransferStatistics.class.getName(),
-                    "transferstatistics" + type, env, user));
+                    TransferStatistics.class, "transferstatistics" + type, env,
+                    user));
 
             //			response.addComment(
             //	user.getUsername()

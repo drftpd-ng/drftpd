@@ -32,7 +32,7 @@ import java.util.Map;
 
 /**
  * @author mog
- * @version $Id: CommandManager.java,v 1.11 2004/09/12 00:43:27 zubov Exp $
+ * @version $Id: CommandManager.java,v 1.12 2004/10/05 02:11:22 mog Exp $
  */
 public class CommandManager {
     private CommandManagerFactory _factory;
@@ -81,9 +81,8 @@ public class CommandManager {
         try {
             command = command.substring("SITE ".length()).toLowerCase();
 
-            if (!conn.getConnectionManager().getGlobalContext().getConfig()
-                         .checkPathPermission(command, conn.getUserNull(),
-                        conn.getCurrentDirectory(), true)) {
+            if (!conn.getGlobalContext().getConfig().checkPathPermission(command,
+                        conn.getUserNull(), conn.getCurrentDirectory(), true)) {
                 //logger.debug("Blocking access to execute : SITE "+command);
                 return FtpReply.RESPONSE_530_ACCESS_DENIED;
             }

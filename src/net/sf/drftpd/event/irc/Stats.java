@@ -48,7 +48,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author zubov
-  * @version $Id: Stats.java,v 1.9 2004/10/03 16:13:51 mog Exp $
+  * @version $Id: Stats.java,v 1.10 2004/10/05 02:11:20 mog Exp $
  */
 public class Stats extends GenericCommandAutoService
     implements IRCPluginInterface {
@@ -179,8 +179,8 @@ public class Stats extends GenericCommandAutoService
             try {
                 getConnection().sendCommand(new MessageCommand(destination,
                         SimplePrintf.jprintf(ReplacerUtils.jprintf(
-                                "transferstatistics" + type, env,
-                                Stats.class.getName()), env)));
+                                "transferstatistics" + type, env, Stats.class),
+                            env)));
             } catch (FormatterException e) {
                 getConnection().sendCommand(new MessageCommand(destination,
                         "FormatterException for transferstatistics" + type));

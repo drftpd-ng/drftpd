@@ -24,7 +24,7 @@ import java.util.Random;
 
 /**
  * @author mog
- * @version $Id: PortRange.java,v 1.10 2004/08/03 20:14:03 zubov Exp $
+ * @version $Id: PortRange.java,v 1.11 2004/10/05 02:11:25 mog Exp $
  */
 public class PortRange {
     private static final Logger logger = Logger.getLogger(PortRange.class);
@@ -70,16 +70,16 @@ public class PortRange {
                     logger.debug("returning " + _minPort + pos);
 
                     return _minPort + pos;
-                } else {
-                    pos++;
+                }
 
-                    if (pos == initPos) {
-                        throw new RuntimeException("Portrange exhausted");
-                    }
+                pos++;
 
-                    if (pos > _ports.length) {
-                        pos = 0;
-                    }
+                if (pos == initPos) {
+                    throw new RuntimeException("Portrange exhausted");
+                }
+
+                if (pos > _ports.length) {
+                    pos = 0;
                 }
             }
         }

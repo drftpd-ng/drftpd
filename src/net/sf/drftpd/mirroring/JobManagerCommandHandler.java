@@ -67,8 +67,7 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
 
         if (!conn.getRequest().hasArgument()) {
             return new FtpReply(501,
-                conn.jprintf(JobManagerCommandHandler.class.getName(),
-                    "addjob.usage"));
+                conn.jprintf(JobManagerCommandHandler.class, "addjob.usage"));
         }
 
         StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument());
@@ -86,8 +85,7 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
             priority = Integer.parseInt(st.nextToken());
         } catch (NumberFormatException e) {
             return new FtpReply(501,
-                conn.jprintf(JobManagerCommandHandler.class.getName(),
-                    "addjob.usage"));
+                conn.jprintf(JobManagerCommandHandler.class, "addjob.usage"));
         }
 
         int timesToMirror;
@@ -96,8 +94,7 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
             timesToMirror = Integer.parseInt(st.nextToken());
         } catch (NumberFormatException e) {
             return new FtpReply(501,
-                conn.jprintf(JobManagerCommandHandler.class.getName(),
-                    "addjob.usage"));
+                conn.jprintf(JobManagerCommandHandler.class, "addjob.usage"));
         }
 
         HashSet destSlaves = new HashSet();
@@ -178,8 +175,7 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
 
         if (!conn.getRequest().hasArgument()) {
             return new FtpReply(501,
-                conn.jprintf(JobManagerCommandHandler.class.getName(),
-                    "removejob.usage"));
+                conn.jprintf(JobManagerCommandHandler.class, "removejob.usage"));
         }
 
         String filename = conn.getRequest().getArgument();
@@ -197,14 +193,13 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
                 conn.getConnectionManager().getJobManager().stopJob(job);
 
                 return new FtpReply(200,
-                    conn.jprintf(JobManagerCommandHandler.class.getName(),
+                    conn.jprintf(JobManagerCommandHandler.class,
                         "removejob.success", env));
             }
         }
 
         return new FtpReply(200,
-            conn.jprintf(JobManagerCommandHandler.class.getName(),
-                "removejob.fail", env));
+            conn.jprintf(JobManagerCommandHandler.class, "removejob.fail", env));
     }
 
     private FtpReply doSTARTJOBS(BaseFtpConnection conn) {

@@ -3,7 +3,6 @@ package org.drftpd.tests;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -20,7 +19,7 @@ import java.util.Collection;
 
 /**
  * @author zubov
- * @version $Id: DummySlaveSelectionManager.java,v 1.3 2004/09/25 03:48:43 mog Exp $
+ * @version $Id: DummySlaveSelectionManager.java,v 1.4 2004/10/05 02:11:26 mog Exp $
  */
 public class DummySlaveSelectionManager
     implements SlaveSelectionManagerInterface {

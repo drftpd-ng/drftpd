@@ -20,7 +20,7 @@ package net.sf.drftpd.master;
 
 /**
  * @author mog
- * @version $Id: UploaderPosition.java,v 1.6 2004/08/03 20:13:56 zubov Exp $
+ * @version $Id: UploaderPosition.java,v 1.7 2004/10/05 02:11:22 mog Exp $
  */
 public class UploaderPosition implements Comparable {
     long bytes;
@@ -81,7 +81,7 @@ public class UploaderPosition implements Comparable {
             return 0;
         }
 
-        return (long) ((long) getBytes() / ((long) getXfertime() / 1000.0));
+        return (long) (getBytes() / (getXfertime() / 1000.0));
     }
 
     public long getXfertime() {

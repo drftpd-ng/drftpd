@@ -45,13 +45,12 @@ import javax.net.SocketFactory;
 
 /**
  * @author mog
- * @version $Id: DummyBaseFtpConnection.java,v 1.9 2004/10/03 16:13:58 mog Exp $
+ * @version $Id: DummyBaseFtpConnection.java,v 1.10 2004/10/05 02:11:26 mog Exp $
  */
 public class DummyBaseFtpConnection extends BaseFtpConnection {
     private InetAddress _clientAddress;
     private DataConnectionHandler _dch;
     private StringWriter _out2;
-    private PrintWriter _printWriter;
     private DummyServerSocketFactory _serverSocketFactory;
     private DummySocketFactory _socketFactory;
 

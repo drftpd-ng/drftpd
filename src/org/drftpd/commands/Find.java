@@ -133,9 +133,9 @@ public class Find implements CommandHandlerFactory, CommandHandler {
     private FindAction getActionWithArgs(String actionName, String args) {
         if (actionName.equals("printf")) {
             return new ActionPrintf(args);
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     private static FtpReply getHelpMsg() {
@@ -509,11 +509,6 @@ public class Find implements CommandHandlerFactory, CommandHandler {
             }
         }
 
-        /*
-         * (non-Javadoc)
-         *
-         * @see net.sf.drftpd.master.command.plugins.find.FindAction#exec(net.sf.drftpd.remotefile.LinkedRemoteFile)
-         */
         public String exec(BaseFtpConnection conn,
             LinkedRemoteFileInterface file) {
             try {
@@ -665,11 +660,6 @@ public class Find implements CommandHandlerFactory, CommandHandler {
     }
 
     private static class OptionGroup implements FindOption {
-        /*
-         * (non-Javadoc)
-         *
-         * @see net.sf.drftpd.master.command.plugins.find.findOption#isTrueFor(net.sf.drftpd.remotefile.LinkedRemoteFile)
-         */
         private String groupname;
 
         public OptionGroup(String g) {
@@ -677,11 +667,7 @@ public class Find implements CommandHandlerFactory, CommandHandler {
         }
 
         public boolean isTrueFor(LinkedRemoteFileInterface file) {
-            if (file.getGroupname().equals(groupname)) {
-                return true;
-            } else {
-                return false;
-            }
+            return file.getGroupname().equals(groupname);
         }
     }
 
@@ -706,11 +692,6 @@ public class Find implements CommandHandlerFactory, CommandHandler {
     }
 
     private static class OptionOffline implements FindOption {
-        /*
-         * (non-Javadoc)
-         *
-         * @see net.sf.drftpd.master.command.plugins.find.FindOption#isTrueFor(net.sf.drftpd.remotefile.LinkedRemoteFileInterface)
-         */
         public boolean isTrueFor(LinkedRemoteFileInterface file) {
             try {
                 return file.lookupSFVFile().getStatus().getOffline() != 0;
@@ -726,11 +707,6 @@ public class Find implements CommandHandlerFactory, CommandHandler {
     }
 
     private static class OptionMTime implements FindOption {
-        /*
-         * (non-Javadoc)
-         *
-         * @see net.sf.drftpd.master.command.plugins.find.findOption#isTrueFor(net.sf.drftpd.remotefile.LinkedRemoteFile)
-         */
         private Date date;
         boolean after;
 
@@ -750,11 +726,7 @@ public class Find implements CommandHandlerFactory, CommandHandler {
         public boolean isTrueFor(LinkedRemoteFileInterface file) {
             Date fileDate = new Date(file.lastModified());
 
-            if (after) {
-                return fileDate.after(date);
-            } else {
-                return fileDate.before(date);
-            }
+            return after ? fileDate.after(date) : fileDate.before(date);
         }
     }
 
@@ -765,11 +737,6 @@ public class Find implements CommandHandlerFactory, CommandHandler {
             pattern = Pattern.compile(str.replaceAll("[*]", ".*"));
         }
 
-        /*
-         * (non-Javadoc)
-         *
-         * @see net.sf.drftpd.master.command.plugins.find.FindOption#isTrueFor(net.sf.drftpd.remotefile.LinkedRemoteFileInterface)
-         */
         public boolean isTrueFor(LinkedRemoteFileInterface file) {
             Matcher m = pattern.matcher(file.getName());
 
@@ -786,17 +753,8 @@ public class Find implements CommandHandlerFactory, CommandHandler {
             size = s;
         }
 
-        /*
-         * (non-Javadoc)
-         *
-         * @see net.sf.drftpd.master.command.plugins.find.FindOption#isTrueFor(net.sf.drftpd.remotefile.LinkedRemoteFileInterface)
-         */
         public boolean isTrueFor(LinkedRemoteFileInterface file) {
-            if (bigger) {
-                return file.length() >= size;
-            } else {
-                return file.length() <= size;
-            }
+            return bigger ? (file.length() >= size) : (file.length() <= size);
         }
     }
 
@@ -807,17 +765,8 @@ public class Find implements CommandHandlerFactory, CommandHandler {
             slave = s;
         }
 
-        /*
-         * (non-Javadoc)
-         *
-         * @see net.sf.drftpd.master.command.plugins.find.FindOption#isTrueFor(net.sf.drftpd.remotefile.LinkedRemoteFileInterface)
-         */
         public boolean isTrueFor(LinkedRemoteFileInterface file) {
-            if (file.hasSlave(slave)) {
-                return true;
-            } else {
-                return false;
-            }
+            return file.hasSlave(slave);
         }
     }
 
@@ -849,11 +798,6 @@ public class Find implements CommandHandlerFactory, CommandHandler {
     }
 
     private static class OptionUser implements FindOption {
-        /*
-         * (non-Javadoc)
-         *
-         * @see net.sf.drftpd.master.command.plugins.find.findOption#isTrueFor(net.sf.drftpd.remotefile.LinkedRemoteFile)
-         */
         private String username;
 
         public OptionUser(String u) {
@@ -861,11 +805,7 @@ public class Find implements CommandHandlerFactory, CommandHandler {
         }
 
         public boolean isTrueFor(LinkedRemoteFileInterface file) {
-            if (file.getUsername().equals(username)) {
-                return true;
-            } else {
-                return false;
-            }
+            return file.getUsername().equals(username);
         }
     }
 }

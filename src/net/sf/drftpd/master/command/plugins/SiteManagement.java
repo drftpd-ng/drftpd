@@ -47,7 +47,7 @@ import java.util.ResourceBundle;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagement.java,v 1.2 2004/08/03 20:13:57 zubov Exp $
+ * @version $Id: SiteManagement.java,v 1.3 2004/10/05 02:11:22 mog Exp $
  */
 public class SiteManagement implements CommandHandlerFactory, CommandHandler {
     private static final Logger logger = Logger.getLogger(SiteManagement.class);
@@ -104,7 +104,7 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
                 "Was not able to find the class you are trying to load");
         }
 
-        conn.getConnectionManager().getGlobalContext().addFtpListener(ftpListener);
+        conn.getGlobalContext().addFtpListener(ftpListener);
 
         return new FtpReply(200, "Successfully loaded your plugin");
     }
@@ -132,8 +132,7 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
 
         try {
             conn.getConnectionManager().reload();
-            conn.getConnectionManager().getGlobalContext().getConfig()
-                .reloadConfig();
+            conn.getGlobalContext().getConfig().reloadConfig();
             conn.getSlaveManager().reload();
 
             try {

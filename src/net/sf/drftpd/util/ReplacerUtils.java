@@ -29,7 +29,7 @@ import java.util.ResourceBundle;
 
 /**
  * @author mog
- * @version $Id: ReplacerUtils.java,v 1.5 2004/08/03 20:14:03 zubov Exp $
+ * @version $Id: ReplacerUtils.java,v 1.6 2004/10/05 02:11:25 mog Exp $
  */
 public class ReplacerUtils {
     private static final Logger logger = Logger.getLogger(ReplacerUtils.class);
@@ -40,37 +40,17 @@ public class ReplacerUtils {
 
     public static ReplacerFormat finalFormat(Class baseName, String key)
         throws FormatterException {
-        return finalFormat(baseName.getName(), key);
-    }
+        ResourceBundle bundle = ResourceBundle.getBundle(baseName.getName());
 
-    public static ReplacerFormat finalFormat(String baseName, String key)
-        throws FormatterException {
-        ResourceBundle bundle = ResourceBundle.getBundle(baseName);
-        String str = bundle.getString(key);
-
-        return ReplacerFormat.createFormat(str);
-    }
-
-    public static String finalJprintf(ReplacerFormat str,
-        ReplacerEnvironment env) throws FormatterException {
-        return SimplePrintf.jprintf(str, env);
+        return ReplacerFormat.createFormat(bundle.getString(key));
     }
 
     public static String jprintf(String key, ReplacerEnvironment env,
-        Class baseName) {
-        return jprintf(key, env, baseName.getName());
-    }
-
-    public static String jprintf(String key, ReplacerEnvironment env,
-        String baseName) {
-        ReplacerFormat str;
-
+        Class class1) {
         try {
-            str = finalFormat(baseName, key);
-
-            return finalJprintf(str, env);
+            return SimplePrintf.jprintf(finalFormat(class1, key), env);
         } catch (Exception e) {
-            logger.warn("basename: " + baseName, e);
+            logger.warn("basename: " + class1.getName(), e);
 
             return key;
         }

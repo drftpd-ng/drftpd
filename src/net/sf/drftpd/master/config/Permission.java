@@ -25,19 +25,27 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Permission.java,v 1.7 2004/08/03 20:13:58 zubov Exp $
+ * @version $Id: Permission.java,v 1.8 2004/10/05 02:11:23 mog Exp $
  */
 public class Permission {
     private Collection _users;
+    private boolean _invert = false;
 
     public Permission(Collection users) {
         _users = users;
     }
 
+    public Permission(Collection users, boolean invert) {
+        this(users);
+        _invert = invert;
+    }
+
     public boolean check(User user) {
+        boolean allow = false;
+
         for (Iterator iter = _users.iterator(); iter.hasNext();) {
             String aclUser = (String) iter.next();
-            boolean allow = true;
+            allow = true;
 
             if (aclUser.charAt(0) == '!') {
                 allow = false;
@@ -67,6 +75,6 @@ public class Permission {
         }
 
         // didn't match.. 
-        return false;
+        return _invert ? (!allow) : false;
     }
 }

@@ -41,6 +41,7 @@ import org.drftpd.commands.UnhandledCommandException;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
+import org.tanesha.replacer.SimplePrintf;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -57,6 +58,8 @@ import java.net.SocketException;
 
 import java.rmi.RemoteException;
 
+import java.util.Date;
+
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocket;
@@ -68,7 +71,7 @@ import javax.net.ssl.SSLSocket;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.96 2004/10/03 16:13:51 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.97 2004/10/05 02:11:21 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
     private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() +
@@ -147,19 +150,26 @@ public class BaseFtpConnection implements Runnable {
         ReplacerEnvironment env, User user) throws FormatterException {
         env = getReplacerEnvironment(env, user);
 
-        return ReplacerUtils.finalJprintf(format, env);
+        return SimplePrintf.jprintf(format, env);
     }
 
-    public static String jprintf(String baseName, String key,
+    public static String jprintf(Class class1, String key,
         ReplacerEnvironment env, User user) {
         env = getReplacerEnvironment(env, user);
 
-        return ReplacerUtils.jprintf(key, env, baseName);
+        return ReplacerUtils.jprintf(key, env, class1);
+    }
+
+    public static String jprintfExceptionStatic(Class class1, String key,
+        ReplacerEnvironment env, User user) throws FormatterException {
+        env = getReplacerEnvironment(env, user);
+
+        return SimplePrintf.jprintf(ReplacerUtils.finalFormat(class1, key), env);
     }
 
     /**
-     * @deprecated use getConnectionManager().dispatchFtpEvent()
-     */
+    * @deprecated use getConnectionManager().dispatchFtpEvent()
+    */
     protected void dispatchFtpEvent(Event event) {
         getConnectionManager().dispatchFtpEvent(event);
     }
@@ -313,22 +323,18 @@ public class BaseFtpConnection implements Runnable {
     }
 
     public String jprintf(Class baseName, String key) {
-        return jprintf(baseName.getName(), key, null);
+        return jprintf(baseName, key, null, getUserNull());
     }
 
     public String jprintf(Class class1, String string, ReplacerEnvironment env) {
-        return jprintf(class1.getName(), string, env);
+        return jprintf(class1, string, env, getUserNull());
     }
 
-    public String jprintf(String baseName, String key) {
-        return jprintf(baseName, key, null);
-    }
+    public String jprintfException(Class class1, String key,
+        ReplacerEnvironment env) throws FormatterException {
+        env = getReplacerEnvironment(env, getUserNull());
 
-    /**
-     * @param env null for an empty parent replacerenvironment.
-     */
-    public String jprintf(String baseName, String key, ReplacerEnvironment env) {
-        return jprintf(baseName, key, env, getUserNull());
+        return jprintfExceptionStatic(class1, key, env, getUserNull());
     }
 
     /**
@@ -507,7 +513,7 @@ public class BaseFtpConnection implements Runnable {
      *  returns a two-line status
      */
     public String status() {
-        return jprintf(BaseFtpConnection.class.getName(), "statusline");
+        return jprintf(BaseFtpConnection.class, "statusline");
     }
 
     /**

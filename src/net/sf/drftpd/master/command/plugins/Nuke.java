@@ -62,7 +62,7 @@ import java.util.StringTokenizer;
  * amount -> amount before multiplier
  *
  * @author mog
- * @version $Id: Nuke.java,v 1.22 2004/08/03 20:13:57 zubov Exp $
+ * @version $Id: Nuke.java,v 1.23 2004/10/05 02:11:22 mog Exp $
  */
 public class Nuke implements CommandHandlerFactory, CommandHandler {
     private static final Logger logger = Logger.getLogger(Nuke.class);
@@ -194,8 +194,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
             User user;
 
             try {
-                user = conn.getConnectionManager().getGlobalContext()
-                           .getUserManager().getUserByName(username);
+                user = conn.getGlobalContext().getUserManager().getUserByName(username);
             } catch (NoSuchUserException e1) {
                 response.addComment("Cannot remove credits from " + username +
                     ": " + e1.getMessage());
@@ -389,8 +388,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
             User nukee;
 
             try {
-                nukee = conn.getConnectionManager().getGlobalContext()
-                            .getUserManager().getUserByName(nukeeName);
+                nukee = conn.getGlobalContext().getUserManager().getUserByName(nukeeName);
             } catch (NoSuchUserException e) {
                 response.addComment(nukeeName + ": no such user");
 

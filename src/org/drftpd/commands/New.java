@@ -41,7 +41,7 @@ import java.util.TreeSet;
 
 
 /**
- * @version $Id: New.java,v 1.6 2004/08/03 20:14:04 zubov Exp $
+ * @version $Id: New.java,v 1.7 2004/10/05 02:11:25 mog Exp $
  * @author zubov
  */
 public class New implements CommandHandlerFactory, CommandHandler {
@@ -91,7 +91,10 @@ public class New implements CommandHandlerFactory, CommandHandler {
             env.add("diruser", dir.getUsername());
             env.add("files", "" + dir.dirSize());
             env.add("size", Bytes.formatBytes(dir.length()));
-            env.add("age", "" + Time.formatTime(dir.lastModified()));
+            env.add("age",
+                "" +
+                Time.formatTime(System.currentTimeMillis() -
+                    dir.lastModified()));
             reply.addComment(conn.jprintf(New.class, "new", env));
         }
 

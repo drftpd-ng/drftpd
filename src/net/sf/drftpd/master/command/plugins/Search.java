@@ -33,92 +33,96 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
+
 /**
  * @author mog
- * @version $Id: Search.java,v 1.15 2004/10/03 16:13:52 mog Exp $
+ * @version $Id: Search.java,v 1.16 2004/10/05 02:11:22 mog Exp $
  */
 public class Search implements CommandHandlerFactory, CommandHandler {
-	public void unload() {
-	}
+    public void unload() {
+    }
 
-	public void load(CommandManagerFactory initializer) {
-	}
+    public void load(CommandManagerFactory initializer) {
+    }
 
-	private static void findFile(BaseFtpConnection conn, FtpReply response,
-			LinkedRemoteFileInterface dir, Collection searchstrings,
-			boolean files, boolean dirs) {
-		//TODO optimize me, checking using regexp for all dirs is possibly slow
-		if (!conn.getGlobalContext().getConfig()
-				.checkPrivPath(conn.getUserNull(), dir)) {
-			Logger.getLogger(Search.class).debug("privpath: " + dir.getPath());
-			return;
-		}
+    private static void findFile(BaseFtpConnection conn, FtpReply response,
+        LinkedRemoteFileInterface dir, Collection searchstrings, boolean files,
+        boolean dirs) {
+        //TODO optimize me, checking using regexp for all dirs is possibly slow
+        if (!conn.getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(),
+                    dir)) {
+            Logger.getLogger(Search.class).debug("privpath: " + dir.getPath());
 
-		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter
-					.next();
+            return;
+        }
 
-			if (file.isDirectory()) {
-				findFile(conn, response, file, searchstrings, files, dirs);
-			}
-			boolean isFind = false;
-			boolean allFind = true;
+        for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
+            LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
 
-			if ((dirs && file.isDirectory()) || (files && file.isFile())) {
-				for (Iterator iterator = searchstrings.iterator(); iterator
-						.hasNext();) {
-					if (response.size() >= 100) {
-						return;
-					}
+            if (file.isDirectory()) {
+                findFile(conn, response, file, searchstrings, files, dirs);
+            }
 
-					String searchstring = (String) iterator.next();
+            boolean isFind = false;
+            boolean allFind = true;
 
-					if (file.getName().toLowerCase().indexOf(searchstring) != -1) {
-						isFind = true;
-					} else {
-						allFind = false;
-					}
-				}
-				if (isFind && allFind) {
-					response.addComment(file.getPath());
-					if (response.size() >= 100) {
-						response.addComment("<snip>");
-						return;
-					}
+            if ((dirs && file.isDirectory()) || (files && file.isFile())) {
+                for (Iterator iterator = searchstrings.iterator();
+                        iterator.hasNext();) {
+                    if (response.size() >= 100) {
+                        return;
+                    }
 
-				}
-			}
-		}
-	}
+                    String searchstring = (String) iterator.next();
 
-	public FtpReply execute(BaseFtpConnection conn) {
-		FtpRequest request = conn.getRequest();
+                    if (file.getName().toLowerCase().indexOf(searchstring) != -1) {
+                        isFind = true;
+                    } else {
+                        allFind = false;
+                    }
+                }
 
-		if (!request.hasArgument()) {
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-		}
+                if (isFind && allFind) {
+                    response.addComment(file.getPath());
 
-		String[] args = request.getArgument().toLowerCase().split(" ");
+                    if (response.size() >= 100) {
+                        response.addComment("<snip>");
 
-		if (args.length == 0) {
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-		}
+                        return;
+                    }
+                }
+            }
+        }
+    }
 
-		Collection searchstrings = Arrays.asList(args);
-		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
-		findFile(conn, response, conn.getCurrentDirectory(), searchstrings,
-				"SITE DUPE".equals(request.getCommand()), "SITE SEARCH"
-						.equals(request.getCommand()));
+    public FtpReply execute(BaseFtpConnection conn) {
+        FtpRequest request = conn.getRequest();
 
-		return response;
-	}
+        if (!request.hasArgument()) {
+            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+        }
 
-	public CommandHandler initialize(BaseFtpConnection conn,
-			CommandManager initializer) {
-		return this;
-	}
+        String[] args = request.getArgument().toLowerCase().split(" ");
 
-	public String[] getFeatReplies() {
-		return null;
-	}
+        if (args.length == 0) {
+            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+        }
+
+        Collection searchstrings = Arrays.asList(args);
+        FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+        findFile(conn, response, conn.getCurrentDirectory(), searchstrings,
+            "SITE DUPE".equals(request.getCommand()),
+            "SITE SEARCH".equals(request.getCommand()));
+
+        return response;
+    }
+
+    public CommandHandler initialize(BaseFtpConnection conn,
+        CommandManager initializer) {
+        return this;
+    }
+
+    public String[] getFeatReplies() {
+        return null;
+    }
 }

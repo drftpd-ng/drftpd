@@ -97,7 +97,7 @@ import java.util.ResourceBundle;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.20 2004/09/13 15:05:01 zubov Exp $
+ * @version $Id: SiteBot.java,v 1.21 2004/10/05 02:11:26 mog Exp $
  */
 public class SiteBot implements FtpListener, Observer {
     public static final ReplacerEnvironment GLOBAL_ENV = new ReplacerEnvironment();
@@ -382,12 +382,7 @@ public class SiteBot implements FtpListener, Observer {
                     Ret ret = getPropertyFileSuffix("store.embraces",
                             direvent.getDirectory());
                     String format = ret.getFormat();
-                    LinkedRemoteFileInterface section = ret.getSection()
-                                                           .getFile();
-
-                    //					ReplacerEnvironment env =
-                    //						new ReplacerEnvironment(globalEnv);
-                    fillEnvSection(env, direvent, section,
+                    fillEnvSection(env, direvent, ret.getSection(),
                         direvent.getDirectory());
                     env.add("filesleft",
                         Integer.toString(sfvstatus.getMissing()));
@@ -412,7 +407,7 @@ public class SiteBot implements FtpListener, Observer {
             Ret ret = getPropertyFileSuffix("store.complete", dir);
 
             try {
-                fillEnvSection(env, direvent, ret.getSection().getFile(),
+                fillEnvSection(env, direvent, ret.getSection(),
                     direvent.getDirectory().getParentFile());
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
@@ -434,7 +429,7 @@ public class SiteBot implements FtpListener, Observer {
             raceformat = ReplacerFormat.createFormat(ret.getFormat());
 
             try {
-                fillEnvSection(env, direvent, ret.getSection().getFile(),
+                fillEnvSection(env, direvent, ret.getSection(),
                     direvent.getDirectory().getParentFile());
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
@@ -559,12 +554,9 @@ public class SiteBot implements FtpListener, Observer {
             }
 
             Ret ret = getPropertyFileSuffix("store.halfway", dir);
-            String format = (String) ret.getFormat();
-            LinkedRemoteFileInterface section = ret.getSection().getFile();
+            fillEnvSection(env, direvent, ret.getSection());
 
-            fillEnvSection(env, direvent, section);
-
-            say(ret.getSection(), SimplePrintf.jprintf(format, env));
+            say(ret.getSection(), SimplePrintf.jprintf(ret.getFormat(), env));
 
             //					for (Iterator iter =
             //						topFileUploaders2(sfvfile.getFiles()).iterator();
@@ -630,8 +622,7 @@ public class SiteBot implements FtpListener, Observer {
 
         //env.add("nukees", event.getNukees().keySet());
         if (cmd.equals("NUKE")) {
-            say(section,
-                ReplacerUtils.jprintf("nuke", env, SiteBot.class.getName()));
+            say(section, ReplacerUtils.jprintf("nuke", env, SiteBot.class));
 
             ReplacerFormat raceformat = ReplacerUtils.finalFormat(SiteBot.class,
                     "nuke.nukees");
@@ -689,16 +680,15 @@ public class SiteBot implements FtpListener, Observer {
 
     private void actionPerformedSlave(SlaveEvent event)
         throws FormatterException {
-        SlaveEvent sevent = (SlaveEvent) event;
         ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
-        env.add("slave", sevent.getRSlave().getName());
-        env.add("message", sevent.getMessage());
+        env.add("slave", event.getRSlave().getName());
+        env.add("message", event.getMessage());
 
         if (event.getCommand().equals("ADDSLAVE")) {
             SlaveStatus status;
 
             try {
-                status = sevent.getRSlave().getStatusAvailable();
+                status = event.getRSlave().getStatusAvailable();
             } catch (SlaveUnavailableException e) {
                 logger.warn("in ADDSLAVE event handler", e);
 
@@ -801,16 +791,16 @@ public class SiteBot implements FtpListener, Observer {
     }
 
     private void fillEnvSection(ReplacerEnvironment env,
-        DirectoryFtpEvent direvent, LinkedRemoteFileInterface section) {
+        DirectoryFtpEvent direvent, SectionInterface section) {
         fillEnvSection(env, direvent, section, direvent.getDirectory());
     }
 
     private void fillEnvSection(ReplacerEnvironment env,
-        DirectoryFtpEvent direvent, LinkedRemoteFileInterface section,
+        DirectoryFtpEvent direvent, SectionInterface section,
         LinkedRemoteFileInterface file) {
         env.add("user", direvent.getUser().getUsername());
         env.add("group", direvent.getUser().getGroupName());
-        env.add("section", strippath(section.getPath()));
+        env.add("section", section.getName());
 
         LinkedRemoteFileInterface dir = file;
 
@@ -841,7 +831,8 @@ public class SiteBot implements FtpListener, Observer {
 
         long elapsed = (direvent.getTime() - starttime);
 
-        env.add("secondstocomplete", Time.formatTime(elapsed));
+        env.add("secondstocomplete",
+            Time.formatTime(System.currentTimeMillis() - elapsed));
 
         long elapsedSeconds = elapsed / 1000;
         env.add("averagespeed",
@@ -1053,10 +1044,9 @@ public class SiteBot implements FtpListener, Observer {
         throws FormatterException {
         Ret ret = getPropertyFileSuffix(string, direvent.getDirectory());
         String format = ret.getFormat();
-        LinkedRemoteFileInterface section = ret.getSection().getFile();
 
         ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
-        fillEnvSection(env, direvent, section);
+        fillEnvSection(env, direvent, ret.getSection());
 
         say(ret.getSection(), SimplePrintf.jprintf(format, env));
     }

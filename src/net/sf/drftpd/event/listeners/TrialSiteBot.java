@@ -74,8 +74,7 @@ public class TrialSiteBot extends GenericCommandAutoService {
         env.add("bytesleft", Bytes.formatBytes(bytesleft));
         env.add("bytespassed", Bytes.formatBytes(-bytesleft));
 
-        return BaseFtpConnection.jprintf(TrialSiteBot.class.getName(), key,
-            env, user);
+        return BaseFtpConnection.jprintf(TrialSiteBot.class, key, env, user);
     }
 
     protected void updateCommand(InCommand command) {

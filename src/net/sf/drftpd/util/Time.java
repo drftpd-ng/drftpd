@@ -20,38 +20,39 @@ package net.sf.drftpd.util;
 
 /**
  * @author zubov
- * @version $Id: Time.java,v 1.7 2004/08/03 20:14:03 zubov Exp $
+ * @version $Id: Time.java,v 1.8 2004/10/05 02:11:25 mog Exp $
  */
 public class Time {
     /**
      * @return human readable string for time.
      */
     public static String formatTime(long time) {
-        long now = System.currentTimeMillis();
-
-        if (time >= now) {
-            return "0m  0s";
+        //long now = System.currentTimeMillis();
+        //long now = 0;
+        //long now = time;
+        if (time == 0) {
+            return "0m 0s";
         }
 
         // Less than an hour...  
-        if ((now - time) < (60 * 60 * 1000)) {
-            long min = (now - time) / 60000;
-            long s = ((now - time) - (min * 60000)) / 1000;
+        if (time < (60 * 60 * 1000)) {
+            long min = time / 60000;
+            long s = (time - (min * 60000)) / 1000;
 
             return min + "m " + ((s > 9) ? ("" + s) : (" " + s)) + "s";
         }
 
         // Less than a day... 
-        if ((now - time) < (24 * 60 * 60 * 1000)) {
-            long h = (now - time) / (60 * 60000);
-            long min = ((now - time) - (h * 60 * 60000)) / 60000;
+        if (time < (24 * 60 * 60 * 1000)) {
+            long h = time / (60 * 60000);
+            long min = (time - (h * 60 * 60000)) / 60000;
 
             return h + "h " + ((min > 9) ? ("" + min) : (" " + min)) + "m";
         }
 
         // Over a day...
-        long d = (now - time) / (24 * 60 * 60000);
-        long h = ((now - time) - (d * 24 * 60 * 60000)) / (60 * 60000);
+        long d = time / (24 * 60 * 60000);
+        long h = (time - (d * 24 * 60 * 60000)) / (60 * 60000);
 
         return d + "d " + ((h > 9) ? ("" + h) : (" " + h)) + "h";
 

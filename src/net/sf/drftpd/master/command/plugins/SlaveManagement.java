@@ -47,7 +47,7 @@ import java.util.Map;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveManagement.java,v 1.3 2004/09/25 03:48:36 mog Exp $
+ * @version $Id: SlaveManagement.java,v 1.4 2004/10/05 02:11:22 mog Exp $
  */
 public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
     public void unload() {
@@ -74,9 +74,8 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         RemoteSlave rslave;
 
         try {
-            rslave = conn.getConnectionManager().getGlobalContext()
-                         .getSlaveManager().getSlave(conn.getRequest()
-                                                         .getArgument());
+            rslave = conn.getGlobalContext().getSlaveManager().getSlave(conn.getRequest()
+                                                                            .getArgument());
         } catch (ObjectNotFoundException e) {
             return new FtpReply(200, "No such slave");
         }
@@ -149,9 +148,8 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         RemoteSlave rslave;
 
         try {
-            rslave = conn.getConnectionManager().getGlobalContext()
-                         .getSlaveManager().getSlave(conn.getRequest()
-                                                         .getArgument());
+            rslave = conn.getGlobalContext().getSlaveManager().getSlave(conn.getRequest()
+                                                                            .getArgument());
         } catch (ObjectNotFoundException e) {
             return new FtpReply(200, "No such slave");
         }
@@ -161,8 +159,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         }
 
         try {
-            conn.getConnectionManager().getGlobalContext().getSlaveManager()
-                .remerge(rslave);
+            conn.getGlobalContext().getSlaveManager().remerge(rslave);
         } catch (IOException e) {
             rslave.setOffline("IOException during remerge()");
 
@@ -190,7 +187,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
 
         if (!ftpRequest.hasArgument()) {
             return new FtpReply(501,
-                conn.jprintf(SlaveManagement.class.getName(), "slave.usage"));
+                conn.jprintf(SlaveManagement.class, "slave.usage"));
         }
 
         String argument = ftpRequest.getArgument();
@@ -198,7 +195,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
 
         if (!arguments.hasMoreTokens()) {
             return new FtpReply(501,
-                conn.jprintf(SlaveManagement.class.getName(), "slave.usage"));
+                conn.jprintf(SlaveManagement.class, "slave.usage"));
         }
 
         String slavename = arguments.nextToken();
@@ -207,10 +204,9 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         RemoteSlave rslave = null;
 
         try {
-            rslave = (RemoteSlave) conn.getConnectionManager().getGlobalContext()
-                                       .getSlaveManager().getSlave(slavename);
+            rslave = conn.getGlobalContext().getSlaveManager().getSlave(slavename);
         } catch (ObjectNotFoundException e) {
-            response.addComment(conn.jprintf(SlaveManagement.class.getName(),
+            response.addComment(conn.jprintf(SlaveManagement.class,
                     "slave.notfound", env));
 
             return response;
@@ -227,11 +223,11 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
 
                 masks = masks.substring(0, masks.length() - 1);
                 env.add("masks", masks);
-                response.addComment(conn.jprintf(
-                        SlaveManagement.class.getName(), "slave.masks", env));
+                response.addComment(conn.jprintf(SlaveManagement.class,
+                        "slave.masks", env));
             }
 
-            response.addComment(conn.jprintf(SlaveManagement.class.getName(),
+            response.addComment(conn.jprintf(SlaveManagement.class,
                     "slave.data.header", env));
 
             Map props = rslave.getProperties();
@@ -241,8 +237,8 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
                 Object value = props.get(key);
                 env.add("key", key);
                 env.add("value", value);
-                response.addComment(conn.jprintf(
-                        SlaveManagement.class.getName(), "slave.data", env));
+                response.addComment(conn.jprintf(SlaveManagement.class,
+                        "slave.data", env));
             }
 
             return response;
@@ -253,8 +249,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         if (command.equalsIgnoreCase("set")) {
             if (arguments.countTokens() != 2) {
                 return new FtpReply(501,
-                    conn.jprintf(SlaveManagement.class.getName(),
-                        "slave.set.usage"));
+                    conn.jprintf(SlaveManagement.class, "slave.set.usage"));
             }
 
             String key = arguments.nextToken();
@@ -262,54 +257,48 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
             rslave.setProperty(key, value);
             env.add("key", key);
             env.add("value", value);
-            response.addComment(conn.jprintf(SlaveManagement.class.getName(),
+            response.addComment(conn.jprintf(SlaveManagement.class,
                     "slave.set.success", env));
 
             return response;
         } else if (command.equalsIgnoreCase("addmask")) {
             if (arguments.countTokens() != 1) {
                 return new FtpReply(501,
-                    conn.jprintf(SlaveManagement.class.getName(),
-                        "slave.addmask.usage"));
+                    conn.jprintf(SlaveManagement.class, "slave.addmask.usage"));
             }
 
             String mask = arguments.nextToken();
             env.add("mask", mask);
 
             if (rslave.addMask(mask)) {
-                response.addComment(conn.jprintf(
-                        SlaveManagement.class.getName(),
+                response.addComment(conn.jprintf(SlaveManagement.class,
                         "slave.addmask.success", env));
 
                 return response;
             }
 
             return new FtpReply(501,
-                conn.jprintf(SlaveManagement.class.getName(),
-                    "slave.addmask.failed"));
+                conn.jprintf(SlaveManagement.class, "slave.addmask.failed"));
         } else if (command.equalsIgnoreCase("delmask")) {
             if (arguments.countTokens() != 1) {
                 return new FtpReply(501,
-                    conn.jprintf(SlaveManagement.class.getName(),
-                        "slave.delmask.usage"));
+                    conn.jprintf(SlaveManagement.class, "slave.delmask.usage"));
             }
 
             String mask = arguments.nextToken();
             env.add("mask", mask);
 
             if (rslave.removeMask(mask)) {
-                response.addComment(conn.jprintf(
-                        SlaveManagement.class.getName(),
+                response.addComment(conn.jprintf(SlaveManagement.class,
                         "slave.delmask.success", env));
             } else {
-                response.addComment(conn.jprintf(
-                        SlaveManagement.class.getName(),
+                response.addComment(conn.jprintf(SlaveManagement.class,
                         "slave.delmask.failed", env));
             }
         }
 
         return new FtpReply(501,
-            conn.jprintf(SlaveManagement.class.getName(), "slave.usage"));
+            conn.jprintf(SlaveManagement.class, "slave.usage"));
     }
 
     public FtpReply execute(BaseFtpConnection conn)
@@ -359,7 +348,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
 
         if (!ftpRequest.hasArgument()) {
             return new FtpReply(501,
-                conn.jprintf(SlaveManagement.class.getName(), "delslave.usage"));
+                conn.jprintf(SlaveManagement.class, "delslave.usage"));
         }
 
         String argument = ftpRequest.getArgument();
@@ -367,25 +356,23 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
 
         if (!arguments.hasMoreTokens()) {
             return new FtpReply(501,
-                conn.jprintf(SlaveManagement.class.getName(), "delslave.usage"));
+                conn.jprintf(SlaveManagement.class, "delslave.usage"));
         }
 
         String slavename = arguments.nextToken();
         env.add("slavename", slavename);
 
         try {
-            conn.getConnectionManager().getGlobalContext().getSlaveManager()
-                .getSlave(slavename);
+            conn.getGlobalContext().getSlaveManager().getSlave(slavename);
         } catch (ObjectNotFoundException e) {
-            response.addComment(conn.jprintf(SlaveManagement.class.getName(),
+            response.addComment(conn.jprintf(SlaveManagement.class,
                     "delslave.notfound", env));
 
             return response;
         }
 
-        conn.getConnectionManager().getGlobalContext().getSlaveManager()
-            .delSlave(slavename);
-        response.addComment(conn.jprintf(SlaveManagement.class.getName(),
+        conn.getGlobalContext().getSlaveManager().delSlave(slavename);
+        response.addComment(conn.jprintf(SlaveManagement.class,
                 "delslave.success", env));
 
         return response;
@@ -402,7 +389,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
 
         if (!ftpRequest.hasArgument()) {
             return new FtpReply(501,
-                conn.jprintf(SlaveManagement.class.getName(), "addslave.usage"));
+                conn.jprintf(SlaveManagement.class, "addslave.usage"));
         }
 
         String argument = ftpRequest.getArgument();
@@ -410,24 +397,23 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
 
         if (!arguments.hasMoreTokens()) {
             return new FtpReply(501,
-                conn.jprintf(SlaveManagement.class.getName(), "addslave.usage"));
+                conn.jprintf(SlaveManagement.class, "addslave.usage"));
         }
 
         String slavename = arguments.nextToken();
         env.add("slavename", slavename);
 
         try {
-            conn.getConnectionManager().getGlobalContext().getSlaveManager()
-                .getSlave(slavename);
+            conn.getGlobalContext().getSlaveManager().getSlave(slavename);
 
             return new FtpReply(501,
-                conn.jprintf(SlaveManagement.class.getName(), "addslave.exists"));
+                conn.jprintf(SlaveManagement.class, "addslave.exists"));
         } catch (ObjectNotFoundException e) {
         }
 
         conn.getSlaveManager().addSlave(new RemoteSlave(slavename,
                 conn.getSlaveManager()));
-        response.addComment(conn.jprintf(SlaveManagement.class.getName(),
+        response.addComment(conn.jprintf(SlaveManagement.class,
                 "addslave.success", env));
 
         return response;

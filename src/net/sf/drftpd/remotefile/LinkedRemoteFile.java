@@ -55,7 +55,7 @@ import java.util.StringTokenizer;
  * Represents the file attributes of a remote file.
  *
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.168 2004/10/03 16:13:54 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.169 2004/10/05 02:11:24 mog Exp $
  */
 public class LinkedRemoteFile implements Serializable, Comparable,
     LinkedRemoteFileInterface {
@@ -999,7 +999,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
             throw new FileNotFoundException(path + ": File not found");
         }
 
-        return (LinkedRemoteFile) ret.getFile();
+        return ret.getFile();
     }
 
     public NonExistingFile lookupNonExistingFile(String path) {

@@ -40,7 +40,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Request.java,v 1.19 2004/08/03 20:13:57 zubov Exp $
+ * @version $Id: Request.java,v 1.20 2004/10/05 02:11:22 mog Exp $
  */
 public class Request implements CommandHandlerFactory, CommandHandler {
     private static final String FILLEDPREFIX = "FILLED-for.";
@@ -99,9 +99,8 @@ public class Request implements CommandHandlerFactory, CommandHandler {
     }
 
     private FtpReply doSITE_REQUEST(BaseFtpConnection conn) {
-        if (!conn.getConnectionManager().getGlobalContext().getConfig()
-                     .checkPathPermission("request", conn.getUserNull(),
-                    conn.getCurrentDirectory())) {
+        if (!conn.getGlobalContext().getConfig().checkPathPermission("request",
+                    conn.getUserNull(), conn.getCurrentDirectory())) {
             return FtpReply.RESPONSE_530_ACCESS_DENIED;
         }
 
