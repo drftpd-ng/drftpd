@@ -154,8 +154,7 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
     }
 
     private Reply doSITE_HELP(BaseFtpConnection conn) {
-        String cmd = "";
-        String msg = "";
+        String cmd = "", msg = "";
         if (conn.getRequest().hasArgument()) {
             cmd = conn.getRequest().getArgument().toLowerCase();
         }
@@ -170,10 +169,11 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
                 } else {
                     hndcmd = hndcmd.toLowerCase().replaceAll("site ","");                    
                 }
+                
                 if (!conn.getGlobalContext().getConfig().checkPathPermission(hndcmd,
                         conn.getUserNull(), conn.getCurrentDirectory(), true)) 
                     continue;
-                logger.info("cmd="+cmd+" hndcmd="+hndcmd+" hnd="+hnd.toString());
+                
                 try {
                     ResourceBundle bundle = ResourceBundle.getBundle(hnd.getClass().getName());
                     if ("".equals(cmd)) {
