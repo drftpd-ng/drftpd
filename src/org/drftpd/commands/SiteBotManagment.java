@@ -44,7 +44,7 @@ public class SiteBotManagment implements CommandHandler, CommandHandlerFactory {
     }
 
     public Reply execute(BaseFtpConnection conn)
-        throws UnhandledCommandException {
+        throws UnhandledCommandException, ImproperUsageException {
 
         SiteBot sitebot;
 
@@ -55,7 +55,7 @@ public class SiteBotManagment implements CommandHandler, CommandHandlerFactory {
         }
 
         if (!conn.getRequest().hasArgument()) {
-            return Reply.RESPONSE_501_SYNTAX_ERROR;
+            throw new ImproperUsageException();
         }
 
         FtpRequest req2 = new FtpRequest(conn.getRequest().getArgument());
