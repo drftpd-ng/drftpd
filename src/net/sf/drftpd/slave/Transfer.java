@@ -31,4 +31,6 @@ public interface Transfer extends Remote {
 	 * @return
 	 */
 	public long getTransferTime() throws RemoteException;
+	
+	public void abort() throws RemoteException;
 }

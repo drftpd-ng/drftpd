@@ -14,6 +14,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.rmi.RemoteException;
 import java.util.List;
 
 import net.sf.drftpd.event.Event;
@@ -116,7 +117,6 @@ public class BaseFtpConnection implements Runnable {
 		mDataSoc = null;
 		try {
 			mDataSoc = mServSoc.accept();
-			mDataSoc.setSoTimeout(60000);
 			bRet = true;
 		} catch (IOException ex) {
 			throw ex;
@@ -169,8 +169,7 @@ public class BaseFtpConnection implements Runnable {
 		if (mbPort) {
 			try {
 				mDataSoc = new Socket(mAddress, miPort);
-				mDataSoc.setSoTimeout(30000); // 30 seconds timeout
-				mDataSoc.setSendBufferSize(8096);
+				//mDataSoc.setSoTimeout(30000); // 30 seconds timeout
 			} catch (IOException ex) {
 				//mConfig.getLogger().warn(ex);
 				logger.log(Level.WARN, "Error opening data socket", ex);
@@ -491,8 +490,16 @@ public class BaseFtpConnection implements Runnable {
 
 	public void stop(String message) {
 		stopRequestMessage = message;
+		if(isTransfering()) {
+			try {
+				_transfer.abort();
+			} catch (RemoteException e) {
+				_rslave.handleRemoteException(e);
+			}
+		}
 		stop();
 	}
+	
 	public String toString() {
 		StringBuffer buf = new StringBuffer("[BaseFtpConnection");
 		if (_user != null) {

@@ -1,6 +1,10 @@
 package net.sf.drftpd.master;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.Iterator;
@@ -28,11 +32,19 @@ public class VirtualDirectory {
 	 */
 	public static void printList(Collection files, Writer out)
 		throws IOException {
+		out = new BufferedWriter(out, 65536);
+		out.write("total 0"+NEWLINE);
 
 		// print file list
+		int i=0;
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
+			if(++i > 565) return;
 			RemoteFileInterface file = (RemoteFileInterface) iter.next();
 			printLine(file, out);
+			if(i % 100 == 0) {
+				System.err.println("i: "+i+" flushing");
+				out.flush();
+			} 
 		}
 	}
 
@@ -50,6 +62,7 @@ public class VirtualDirectory {
 		Writer out)
 		throws IOException {
 
+		out.write("total 0"+NEWLINE);
 		for (Iterator iter = fileList.iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
 			if (bDetail) {
@@ -132,31 +145,38 @@ public class VirtualDirectory {
 	 */
 	public static void printLine(RemoteFileInterface fl, Writer out)
 		throws IOException {
+		StringBuffer line = new StringBuffer();
 		if (fl instanceof LinkedRemoteFile
 			&& !((LinkedRemoteFile) fl).isAvailable()) {
-			out.write("------");
+			line.append("------");
 		} else {
-			out.write(getPermission(fl));
+			line.append(getPermission(fl));
 		}
-		out.write(DELIM);
-		out.write((fl.isDirectory() ? "3" : "1"));
-		out.write(DELIM);
-		out.write(fl.getUsername());
-		out.write(DELIM);
-		out.write(fl.getGroupname());
-		out.write(DELIM);
-		out.write(getLength(fl));
-		out.write(DELIM);
-		out.write(DateUtils.getUnixDate(fl.lastModified()));
-		out.write(DELIM);
+		line.append(DELIM);
+		line.append((fl.isDirectory() ? "3" : "1"));
+		line.append(DELIM);
+		line.append(fl.getUsername());
+		line.append(DELIM);
+		line.append(fl.getGroupname());
+		line.append(DELIM);
+		line.append(getLength(fl));
+		line.append(DELIM);
+		line.append(DateUtils.getUnixDate(fl.lastModified()));
+		line.append(DELIM);
 		if (fl instanceof LinkedRemoteFile
 			&& !((LinkedRemoteFile) fl).isAvailable()) {
-			out.write(fl.getName() + "-OFFLINE");
+			line.append(fl.getName() + "-OFFLINE");
 		} else {
-			out.write(fl.getName());
+			line.append(fl.getName());
 		}
-		out.write(NEWLINE);
-		out.flush();
+		line.append(NEWLINE);
+		out.write(line.toString());
+		try {
+			Thread.sleep(10);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }

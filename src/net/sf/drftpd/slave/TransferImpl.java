@@ -130,7 +130,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		try {
 			byte[] buff = new byte[4096];
 			int count;
-			while ((count = in.read(buff)) != -1) {
+			while ((count = in.read(buff)) != -1 && !abort) {
 				this.transfered += count;
 				out.write(buff, 0, count);
 			}
@@ -213,5 +213,12 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		} else {
 			return finished - started;
 		}
+	}
+	boolean abort = false;
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.slave.Transfer#abort()
+	 */
+	public void abort() throws RemoteException {
+		abort = true;
 	}
 }
