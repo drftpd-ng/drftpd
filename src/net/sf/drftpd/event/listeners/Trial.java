@@ -28,13 +28,115 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.19 2004/01/31 02:32:07 zubov Exp $
+ * @version $Id: Trial.java,v 1.20 2004/02/02 19:09:16 mog Exp $
  */
 public class Trial implements FtpListener {
-	public static final int PERIOD_ALL = 0;
+	public static class Limit {
+		private String _actionFailed;
+		private String _actionPassed;
+		private long _bytes;
+		private String _name;
+		private int _period;
+		private Permission _perm;
+		public Limit() {
+		}
+
+		public void doFailed(User user) {
+			Trial.doAction(getActionFailed(), user);
+		}
+
+		public void doPassed(User user) {
+			Trial.doAction(getActionPassed(), user);
+		}
+
+		public String getActionFailed() {
+			return _actionFailed;
+		}
+
+		public String getActionPassed() {
+			return _actionPassed;
+		}
+
+		public long getBytes() {
+			return _bytes;
+		}
+
+		public String getName() {
+			return _name;
+		}
+
+		public int getPeriod() {
+			return _period;
+		}
+
+		public Permission getPerm() {
+			return _perm;
+		}
+
+		public void setActionFailed(String action) {
+			validateAction(action);
+			_actionFailed = action;
+		}
+
+		public void setActionPassed(String action) {
+			validateAction(action);
+			_actionPassed = action;
+		}
+
+		public void setBytes(long bytes) {
+			_bytes = bytes;
+		}
+
+		public void setName(String name) {
+			_name = name;
+		}
+
+		public void setPeriod(int period) {
+			_period = period;
+		}
+
+		public void setPerm(Permission perm) {
+			_perm = perm;
+		}
+
+		public String toString() {
+			return "Limit[name="
+				+ _name
+				+ ",bytes="
+				+ Bytes.formatBytes(_bytes)
+				+ ",period="
+				+ Trial.getPeriodName(_period)
+				+ "]";
+		}
+
+		private void validateAction(String action) {
+			if (action == null)
+				return;
+			//action = action.toLowerCase();
+			StringTokenizer st = new StringTokenizer(action);
+			if (!st.hasMoreTokens())
+				return;
+			String cmd = st.nextToken();
+			if (!("delete".equals(action)
+				|| "purge".equals(action)
+				|| "chgrp".equals(cmd)
+				|| "setgrp".equals(cmd))) {
+				throw new IllegalArgumentException(
+					cmd + " is not a valid action");
+			}
+			if ("setgrp".equals(cmd)) {
+				st.nextToken();
+				if (st.hasMoreTokens())
+					throw new IllegalArgumentException(
+						"extra tokens in \"" + action + "\"");
+			}
+		}
+	}
 	private static final short ACTION_DISABLE = 0;
 	private static final short ACTION_PURGE = 1;
 	private static final Logger logger = Logger.getLogger(Trial.class);
+	
+	public static final int PERIOD_ALL = 0;
 
 	public static final int PERIOD_DAILY = Calendar.DAY_OF_MONTH; // = 5
 	public static final short PERIOD_MONTHLY = Calendar.MONTH; // = 2
@@ -390,6 +492,23 @@ public class Trial implements FtpListener {
 		}
 		reload(props);
 	}
+
+	public void reload(ArrayList limits) {
+		_limits = limits;
+
+		if (_siteBot != null) {
+			_siteBot.disable();
+		}
+		if (_cm != null) {
+			try {
+				IRCListener _irc =
+					(IRCListener) _cm.getFtpListener(IRCListener.class);
+				_siteBot = new TrialSiteBot(this, _irc);
+			} catch (ObjectNotFoundException e1) {
+				logger.warn("Error loading sitebot component", e1);
+			}
+		}
+	}
 	private void reload(Properties props) {
 		ArrayList limits = new ArrayList();
 		for (int i = 1;; i++) {
@@ -432,23 +551,6 @@ public class Trial implements FtpListener {
 			logger.debug("Limit: " + limit);
 		}
 		reload(limits);
-	}
-
-	public void reload(ArrayList limits) {
-		_limits = limits;
-
-		if (_siteBot != null) {
-			_siteBot.disable();
-		}
-		if (_cm != null) {
-			try {
-				IRCListener _irc =
-					(IRCListener) _cm.getFtpListener(IRCListener.class);
-				_siteBot = new TrialSiteBot(this, _irc);
-			} catch (ObjectNotFoundException e1) {
-				logger.warn("Error loading sitebot component", e1);
-			}
-		}
 	}
 
 	public void unload() {

@@ -69,7 +69,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.77 2004/02/02 12:00:17 flowman Exp $
+ * @version $Id: IRCListener.java,v 1.78 2004/02/02 19:09:15 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -175,9 +175,9 @@ public class IRCListener implements FtpListener, Observer {
 
 	public IRCListener() throws UnknownHostException, IOException {
 
-		new File("ftp-data/logs").mkdirs();
+		new File("logs").mkdirs();
 		Debug.setOutputStream(
-			new PrintStream(new FileOutputStream("ftp-data/logs/sitebot.log")));
+			new PrintStream(new FileOutputStream("logs/sitebot.log")));
 		Debug.setDebugLevel(Debug.FAULT);
 	}
 
