@@ -213,6 +213,8 @@ public class IRCListener implements FtpListener, Observer {
 
 		if ("MKD".equals(direvent.getCommand())) {
 			sayDirectorySection(direvent, "mkdir");
+		} else if("REQUEST".equals(direvent.getCommand())) {
+			sayDirectorySection(direvent, "request");
 		} else if ("RMD".equals(direvent.getCommand())) {
 			sayDirectorySection(direvent, "rmdir");
 		} else if ("WIPE".equals(direvent.getCommand())) {

@@ -552,6 +552,11 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		return false;
 	}
 
+	/**
+	 * Does file have online slaves?
+	 * 
+	 * @return Always true for directories
+	 */
 	public boolean isAvailable() {
 		if (isDirectory())
 			return true;

@@ -780,7 +780,6 @@ public class FtpConnection extends BaseFtpConnection {
 			currentDirectory.lookupNonExistingFile(request.getArgument());
 		LinkedRemoteFile dir = (LinkedRemoteFile) ret[0];
 		String createdDirName = (String) ret[1];
-
 		if (!getConfig().checkMakeDir(_user, dir)) {
 			out.write(FtpResponse.RESPONSE_530_ACCESS_DENIED.toString());
 			return;
@@ -1985,6 +1984,20 @@ public class FtpConnection extends BaseFtpConnection {
 					out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 					return;
 				}
+				float ratio = Float.parseFloat(commandArgument);
+				if(ratio == 0F) {
+					int usedleechslots = 0;
+					try {
+						for (Iterator iter = getUserManager().getAllUsersByGroup(_user.getGroupName()).iterator();
+							iter.hasNext();
+							) {
+							if(((User)iter.next()).getRatio() == 0F) usedleechslots++;
+						}
+					} catch (IOException e1) {
+						out.print(new FtpResponse(200, "IO error reading userfiles: "+e1.getMessage()));
+						return;
+					}
+				}
 			}
 		}
 
@@ -2300,6 +2313,56 @@ public class FtpConnection extends BaseFtpConnection {
 	 */
 	public void doSITE_GADDUSER(FtpRequest request, PrintWriter out) {
 		doSITE_ADDUSER(request, out);
+	}
+	public void doSITE_GINFO(FtpRequest request, PrintWriter out) {
+		resetState();
+		//security
+		if(!_user.isAdmin() && !_user.isGroupAdmin()) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
+		
+		//syntax
+		if(!request.hasArgument()) {
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			return;
+		}
+		
+		//gadmin
+		String group = request.getArgument();
+		if(_user.isGroupAdmin() && !_user.getGroupName().equals(group)) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
+		
+		Collection users;
+		try {
+			users = getUserManager().getAllUsersByGroup(group);
+		} catch (IOException e) {
+			out.print(new FtpResponse(200, "IO error: "+e.getMessage()));
+			return;
+		}
+		
+		FtpResponse response = new FtpResponse(200);
+		for (Iterator iter = users.iterator(); iter.hasNext();) {
+			User user = (User) iter.next();
+			char status = ' ';
+			if(user.isGroupAdmin()) {
+				status='+';
+			} else if(user.isAdmin()) {
+				status = '*';
+			}
+			response.addComment(status+user.getUsername());
+		}
+		response.addComment(" * = siteop   + = gadmin");
+		out.print(response);
+		return;
+	}
+	/**
+	 * 
+	 */
+	public UserManager getUserManager() {
+		return userManager;
 	}
 
 	public void doSITE_GIVE(FtpRequest request, PrintWriter out) {
@@ -2945,7 +3008,42 @@ public class FtpConnection extends BaseFtpConnection {
 	//		}
 	//		
 	//	}
+	public void doSITE_REQUEST(FtpRequest request, PrintWriter out) {
+		resetState();
+		
+		if(!getConfig().checkRequest(_user, currentDirectory)) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
+		
+		if(!request.hasArgument()) {
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			return;
+		}
 
+		String createdDirName = "REQUEST-by."+_user.getUsername()+"-"+request.getArgument();
+		try {
+			LinkedRemoteFile createdDir =
+				currentDirectory.createDirectory(
+					_user.getUsername(),
+					_user.getGroupName(),
+					createdDirName);
+			out.print(
+				new FtpResponse(
+					257,
+					"\"" + createdDir.getPath() + "\" created."));
+
+			if (getConfig().checkDirLog(_user, createdDir)) {
+				_cm.dispatchFtpEvent(
+					new DirectoryFtpEvent(_user, "REQUEST", createdDir));
+			}
+			return;
+		} catch (ObjectExistsException ex) {
+			out.println("550 directory " + createdDirName + " already exists");
+			return;
+		}
+		
+	}
 	public void doSITE_RESCAN(FtpRequest request, PrintWriter out) {
 		resetState();
 		boolean forceRescan =
@@ -3133,6 +3231,11 @@ public class FtpConnection extends BaseFtpConnection {
 	    for the files user.stats and GAMESuser.stats in the /ftp-data/text dir.
 	 */
 	public void doSITE_STATS(FtpRequest request, PrintWriter out) {
+		if(!_user.isAdmin() && !_user.isGroupAdmin()) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
+
 		if (!request.hasArgument()) {
 			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
@@ -3149,7 +3252,12 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(new FtpResponse(200, e.getMessage()));
 			return;
 		}
-
+		
+		if(_user.isGroupAdmin() && !_user.getGroupName().equals(user.getGroupName())) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
+		
 		FtpResponse response = new FtpResponse(200);
 		response.addComment("bytes up, files up, bytes down, files down");
 		response.addComment(
@@ -3400,7 +3508,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 */
 	public void doSITE_USER(FtpRequest request, PrintWriter out) {
 		resetState();
-		if (!_user.isAdmin()) {
+		if (!_user.isAdmin() && !_user.isGroupAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -3424,6 +3532,10 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
+		if(_user.isGroupAdmin() && !_user.getGroupName().equals(myUser.getGroupName())) {
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			return;
+		}
 		response.addComment("comment: " + myUser.getComment());
 		response.addComment("username: " + myUser.getUsername());
 		int i = (int) (myUser.getTimeToday() / 1000);

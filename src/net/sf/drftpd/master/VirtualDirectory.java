@@ -165,7 +165,7 @@ public class VirtualDirectory {
 							+ padToLength(fl.getUsername(), 8)
 							+ DELIM
 							+ padToLength(fl.getGroupname(), 8)
-							+ " 0 "
+							+ "             0 "
 							+ DateUtils.getUnixDate(fl.lastModified())
 							+ DELIM
 							+ fl.getName()
@@ -175,6 +175,21 @@ public class VirtualDirectory {
 							+ NEWLINE);
 			} catch (IOException e) {
 			} // errors getting SFV? FINE! We don't care!
+		}
+		if (fl instanceof LinkedRemoteFile) {
+			LinkedRemoteFile file = (LinkedRemoteFile) fl;
+				if (!file.isAvailable())
+					out.write(
+						"l--------- 3 "
+							+ padToLength(fl.getUsername(), 8)
+							+ DELIM
+							+ padToLength(fl.getGroupname(), 8)
+							+ "             0 "
+							+ DateUtils.getUnixDate(fl.lastModified())
+							+ DELIM
+							+ fl.getName()
+							+ "-OFFLINE"
+							+ NEWLINE);
 		}
 	}
 

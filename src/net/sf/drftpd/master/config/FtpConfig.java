@@ -56,6 +56,7 @@ public class FtpConfig {
 	private ArrayList _privpath;
 	private ArrayList _rename;
 	private ArrayList _renameown;
+	private ArrayList _request;
 	private ArrayList _upload;
 
 	String cfgFileName;
@@ -166,7 +167,9 @@ public class FtpConfig {
 	public boolean checkRenameOwn(User fromUser, LinkedRemoteFile path) {
 		return checkPathPermssion(fromUser, path, _rename.iterator());
 	}
-
+	public boolean checkRequest(User fromUser, LinkedRemoteFile path) {
+		return checkPathPermssion(fromUser, path, _request.iterator());
+	}
 	/**
 	 * @return true if fromUser is allowed to upload in directory path
 	 */
@@ -238,21 +241,22 @@ public class FtpConfig {
 		this.freespaceMin = Long.parseLong(cfg.getProperty("freespace.min"));
 	}
 	private void loadConfig2() throws IOException {
-		ArrayList privpath = new ArrayList();
-		ArrayList msgpath = new ArrayList();
-		ArrayList hideinwho = new ArrayList();
-		ArrayList creditloss = new ArrayList();
 		ArrayList creditcheck = new ArrayList();
-		//ArrayList eventplugin = new ArrayList();
-		ArrayList pre = new ArrayList();
-		ArrayList upload = new ArrayList();
-		ArrayList makedirs = new ArrayList();
-		ArrayList download = new ArrayList();
+		ArrayList creditloss = new ArrayList();
 		ArrayList delete = new ArrayList();
 		ArrayList deleteown = new ArrayList();
 		ArrayList dirlog = new ArrayList();
+		ArrayList download = new ArrayList();
+		ArrayList hideinwho = new ArrayList();
+		ArrayList makedirs = new ArrayList();
+		ArrayList msgpath = new ArrayList();
+		//ArrayList eventplugin = new ArrayList();
+		ArrayList pre = new ArrayList();
+		ArrayList privpath = new ArrayList();
 		ArrayList rename = new ArrayList();
 		ArrayList renameown = new ArrayList();
+		ArrayList request = new ArrayList();
+		ArrayList upload = new ArrayList();
 
 		LineNumberReader in = new LineNumberReader(new FileReader(newConf));
 		int lineno = 0;
@@ -320,6 +324,8 @@ public class FtpConfig {
 					makePermission(rename, st);
 				} else if (command.equals("renameown")) {
 					makePermission(renameown, st);
+				} else if (command.equals("request")) {
+					makePermission(request, st);
 //				} else if (command.equals("plugin")) {
 //					String clazz = st.nextToken();
 //					ArrayList argsCollection = new ArrayList();
@@ -364,7 +370,7 @@ public class FtpConfig {
 		_delete = delete;
 
 		deleteown.trimToSize();
-		_deleteown = delete;
+		_deleteown = deleteown;
 
 		dirlog.trimToSize();
 		_dirlog = dirlog;
@@ -394,7 +400,10 @@ public class FtpConfig {
 		_rename = rename;
 
 		renameown.trimToSize();
-		_renameown = rename;
+		_renameown = renameown;
+
+		request.trimToSize();
+		_request = request;
 
 		upload.trimToSize();
 		_upload = upload;
