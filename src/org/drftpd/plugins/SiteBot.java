@@ -91,7 +91,7 @@ import f00f.net.irc.martyr.commands.NickCommand;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.5 2004/04/17 02:24:38 mog Exp $
+ * @version $Id: SiteBot.java,v 1.6 2004/04/19 22:08:12 zubov Exp $
  */
 public class SiteBot implements FtpListener, Observer {
 
@@ -908,22 +908,24 @@ public class SiteBot implements FtpListener, Observer {
 		env.add("disktotal", Bytes.formatBytes(status.getDiskSpaceCapacity()));
 		env.add("diskfree", Bytes.formatBytes(status.getDiskSpaceAvailable()));
 		env.add("diskused", Bytes.formatBytes(status.getDiskSpaceUsed()));
-		env.add(
-			"diskfreepercent",
-			status.getDiskSpaceAvailable()
-				* 100
-				/ status.getDiskSpaceCapacity()
-				+ "%");
-		env.add(
-			"diskusedpercent",
-			status.getDiskSpaceUsed() * 100 / status.getDiskSpaceCapacity()
-				+ "%");
 		try {
 			env.add(
 				"slaves",
 				"" + getSlaveManager().getAvailableSlaves().size());
+			env.add(
+				"diskfreepercent",
+				status.getDiskSpaceAvailable()
+					* 100
+					/ status.getDiskSpaceCapacity()
+					+ "%");
+			env.add(
+				"diskusedpercent",
+				status.getDiskSpaceUsed() * 100 / status.getDiskSpaceCapacity()
+					+ "%");
 		} catch (NoAvailableSlaveException e) {
 			env.add("slaves", "0");
+			env.add("diskfreepercent","0%");
+			env.add("diskusedpercent","0%");
 		}
 	}
 
