@@ -37,7 +37,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.16 2004/02/04 00:28:18 zubov Exp $
+ * @version $Id: Dir.java,v 1.17 2004/02/04 17:13:12 mog Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
 	private final static SimpleDateFormat DATE_FMT =
@@ -296,30 +296,17 @@ public class Dir implements CommandHandler, Cloneable {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
 
-		// get filenames
-		//String dirName = request.getArgument();
-		//if (!VirtualDirectory.isLegalFileName(fileName)) {
-		//	out.println(
-		//		"553 Requested action not taken. File name not allowed.");
-		//	return;
-		//}
-
 		LinkedRemoteFile.NonExistingFile ret =
 			conn.getCurrentDirectory().lookupNonExistingFile(
-				conn.getConnectionManager().getConfig().getDirName(
-					request.getArgument()));
+				request.getArgument());
 		LinkedRemoteFile dir = ret.getFile();
 		//logger.debug("Parent directory is " + dir);
 		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile temp = (LinkedRemoteFile) iter.next();
 			logger.debug(temp);
 		}
-		if (!conn.getConfig().checkMakeDir(conn.getUserNull(), dir)) {
-			return FtpReply.RESPONSE_530_ACCESS_DENIED;
-		}
-		String createdDirName = ret.getPath();
-		//logger.debug("creating " + createdDirName);
-		if (createdDirName == null) {
+
+		if (!ret.hasPath()) {
 			return new FtpReply(
 				550,
 				"Requested action not taken. "
@@ -327,8 +314,14 @@ public class Dir implements CommandHandler, Cloneable {
 					+ " already exists");
 		}
 
+		String createdDirName =
+			conn.getConnectionManager().getConfig().getDirName(ret.getPath());
 		if (!ListUtils.isLegalFileName(createdDirName)) {
 			return FtpReply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
+		}
+
+		if (!conn.getConfig().checkMakeDir(conn.getUserNull(), dir)) {
+			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 
 		try {
@@ -338,25 +331,16 @@ public class Dir implements CommandHandler, Cloneable {
 					conn.getUserNull().getGroupName(),
 					createdDirName);
 
-			//if (conn.getConfig().checkDirLog(conn.getUserNull(), createdDir)) {
 			conn.getConnectionManager().dispatchFtpEvent(
 				new DirectoryFtpEvent(conn.getUserNull(), "MKD", createdDir));
-			//}
 			return new FtpReply(
 				257,
 				"\"" + createdDir.getPath() + "\" created.");
 		} catch (ObjectExistsException ex) {
-			//logger.debug("object exists", ex);
 			return new FtpReply(
 				550,
 				"directory " + createdDirName + " already exists");
 		}
-
-		// check permission
-		//		if (!getVirtualDirectory().hasCreatePermission(physicalName, true)) {
-		//			out.write(ftpStatus.getResponse(450, request, user, args));
-		//			return;
-		//		}
 	}
 
 	/**

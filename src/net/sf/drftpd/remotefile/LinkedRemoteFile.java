@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.111 2004/02/03 20:57:15 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.112 2004/02/04 17:13:13 mog Exp $
  */
 public class LinkedRemoteFile
 	implements RemoteFileInterface, Serializable, Comparable {
@@ -282,7 +282,7 @@ public class LinkedRemoteFile
 					group,
 					0L,
 					System.currentTimeMillis()));
-		logger.info("Created directory " + file, new Throwable());
+		logger.info("Created directory " + file);
 		_lastModified = System.currentTimeMillis();
 		return file;
 	}
@@ -1218,7 +1218,7 @@ public class LinkedRemoteFile
 	/**
 	 * Renames this file
 	 */
-	public void renameTo(String toDirPath, String toName)
+	public LinkedRemoteFile renameTo(String toDirPath, String toName)
 		throws IOException, FileNotFoundException {
 		if (toDirPath.charAt(0) != '/')
 			throw new RuntimeException("renameTo() must be given an absolute path as argument");
@@ -1311,6 +1311,7 @@ public class LinkedRemoteFile
 		//		toDir.getMap().put(toName, this);
 		//		toDir.addSize(length());
 		//		_name = toName;
+		return toFile;
 	}
 
 	/**

@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * @version $Id: Pre.java,v 1.6 2004/01/22 21:49:10 mog Exp $
+ * @version $Id: Pre.java,v 1.7 2004/02/04 17:13:13 mog Exp $
  */
 public class Pre implements CommandHandler {
 
@@ -88,8 +88,9 @@ public class Pre implements CommandHandler {
 		}
 
 		//RENAME
+		LinkedRemoteFile toDir;
 		try {
-			preDir.renameTo(section.getPath(), preDir.getName());
+			toDir = preDir.renameTo(section.getPath(), preDir.getName());
 		} catch (IOException ex) {
 			logger.warn("", ex);
 			return new FtpReply(200, ex.getMessage());
@@ -98,7 +99,7 @@ public class Pre implements CommandHandler {
 		//ANNOUNCE
 		logger.debug("preDir after rename: " + preDir);
 		conn.getConnectionManager().dispatchFtpEvent(
-			new DirectoryFtpEvent(conn.getUserNull(), "PRE", preDir));
+			new DirectoryFtpEvent(conn.getUserNull(), "PRE", toDir));
 
 		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}

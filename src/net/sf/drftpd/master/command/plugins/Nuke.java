@@ -35,9 +35,11 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 
 /**
+ * nukedamount -> amount after multiplier
+ * amount -> amount before multiplier
+ * 
  * @author mog
- *
- * @version $Id: Nuke.java,v 1.9 2004/01/22 01:41:52 zubov Exp $
+ * @version $Id: Nuke.java,v 1.10 2004/02/04 17:13:13 mog Exp $
  */
 public class Nuke implements CommandHandler {
 
@@ -188,21 +190,21 @@ public class Nuke implements CommandHandler {
 			}
 		}
 		//rename
-		String toDir;
+		String toDirPath;
 		String toName = "[NUKED]-" + nukeDir.getName();
 		try {
-			toDir = nukeDir.getParentFile().getPath();
+			toDirPath = nukeDir.getParentFile().getPath();
 		} catch (FileNotFoundException ex) {
 			logger.fatal("", ex);
 			return FtpReply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
 		}
 		try {
-			nukeDir.renameTo(toDir, toName);
+			nukeDir.renameTo(toDirPath, toName);
 		} catch (IOException ex) {
 			logger.warn("", ex);
 			response.addComment(
 				" cannot rename to \""
-					+ toDir
+					+ toDirPath
 					+ "/"
 					+ toName
 					+ "\": "
@@ -240,7 +242,7 @@ public class Nuke implements CommandHandler {
 				logger.log(Level.WARN, "Error writing userfile", e1);
 			}
 			response.addComment(
-				nukee.getUsername() + " -" + Bytes.formatBytes(debt));
+				nukee.getUsername() + " " + Bytes.formatBytes(debt));
 		}
 		NukeEvent nuke =
 			new NukeEvent(
@@ -370,10 +372,7 @@ public class Nuke implements CommandHandler {
 			}
 
 			response.addComment(
-				nukeeName
-					+ ": restored "
-					+ Bytes.formatBytes(nukedAmount)
-					+ "bytes");
+				nukeeName + ": restored " + Bytes.formatBytes(nukedAmount));
 		}
 		try {
 			getNukeLog().remove(toPath);

@@ -5,7 +5,7 @@ import junit.framework.TestSuite;
 
 /**
  * @author mog
- * @version $Id: BytesTest.java,v 1.1 2004/01/30 14:56:08 mog Exp $
+ * @version $Id: BytesTest.java,v 1.2 2004/02/04 17:13:12 mog Exp $
  */
 public class BytesTest extends TestCase {
 	public static TestSuite suite() {
@@ -29,40 +29,40 @@ public class BytesTest extends TestCase {
 		super.tearDown();
 	}
 	public void testFormat50KB() {
-		assertEquals("50KB", Bytes.formatBytes(Bytes.KILO*50, false));
+		assertEquals("50,0KB", Bytes.formatBytes(Bytes.KILO*50, false));
 	}
 	public void testFormat50KiB() {
-		assertEquals("50KiB", Bytes.formatBytes(Bytes.KIBI*50, true));
+		assertEquals("50,0KiB", Bytes.formatBytes(Bytes.KIBI*50, true));
 	}
 	
 	public void testFormatByte() {
 		assertEquals("123B", Bytes.formatBytes(123, false));
 	}
 	public void testFormatGB() {
-		assertEquals("1GB", Bytes.formatBytes(Bytes.GIGA, false));
+		assertEquals("1,0GB", Bytes.formatBytes(Bytes.GIGA, false));
 	}
 	public void testFormatGiB() {
-		assertEquals("1GiB", Bytes.formatBytes(Bytes.GIBI, true));
+		assertEquals("1,0GiB", Bytes.formatBytes(Bytes.GIBI, true));
 	}
 	public void testFormatKB() {
-		assertEquals("1KB", Bytes.formatBytes(Bytes.KILO, false));
+		assertEquals("1,0KB", Bytes.formatBytes(Bytes.KILO, false));
 	}
 	public void testFormatKiB() {
-		assertEquals("1KiB", Bytes.formatBytes(Bytes.KIBI, true));
+		assertEquals("1,0KiB", Bytes.formatBytes(Bytes.KIBI, true));
 	}
 
 	public void testFormatMB() {
-		assertEquals("1MB", Bytes.formatBytes(Bytes.MEGA, false));
+		assertEquals("1,0MB", Bytes.formatBytes(Bytes.MEGA, false));
 	}
 	
 	public void testFormatMib() {
-		assertEquals("1MiB", Bytes.formatBytes(Bytes.MEBI, true));
+		assertEquals("1,0MiB", Bytes.formatBytes(Bytes.MEBI, true));
 	}
 	public void testFormatTB() {
-		assertEquals("1TB", Bytes.formatBytes(Bytes.TERRA, false));
+		assertEquals("1,0TB", Bytes.formatBytes(Bytes.TERRA, false));
 	}
 	public void testFormatTiB() {
-		assertEquals("1TiB", Bytes.formatBytes(Bytes.TEBI, true));
+		assertEquals("1,0TiB", Bytes.formatBytes(Bytes.TEBI, true));
 	}
 	public void testParse1GB() {
 		assertEquals(Bytes.GIGA, Bytes.parseBytes("1GB"));

@@ -7,7 +7,7 @@ import java.text.DecimalFormatSymbols;
  * See http://physics.nist.gov/cuu/Units/binary.html for an explanation of binary multiples.
  * 
  * @author mog
- * @version $Id: Bytes.java,v 1.12 2004/01/30 14:56:08 mog Exp $
+ * @version $Id: Bytes.java,v 1.13 2004/02/04 17:13:12 mog Exp $
  */
 public class Bytes {
 	private static class Multiple {
@@ -34,36 +34,22 @@ public class Bytes {
 		}
 
 	}
-	private static final DecimalFormat FORMAT = new DecimalFormat();
+	private static final DecimalFormat FORMAT;
 	static {
 		DecimalFormatSymbols formatsymbols = new DecimalFormatSymbols();
-		formatsymbols.setDecimalSeparator('.');
-		DecimalFormat format = new DecimalFormat("0.0", formatsymbols);
-		format.setDecimalSeparatorAlwaysShown(true);
+		//formatsymbols.setDecimalSeparator('.');
+		FORMAT = new DecimalFormat("0.0", formatsymbols);
+		FORMAT.setDecimalSeparatorAlwaysShown(true);
 	}
 
-
 	public static final long GIBI = 1073741824L;
-
-	/**
-	 * 1,000,000,000 GB
-	 */
 	public static final long GIGA = 1000000000L;
 	public static final long KIBI = 1024L;
-
-	/**
-	 * 1,000 KB
-	 */
 	public static final long KILO = 1000L;
-
 	public static final long MEBI = 1048576L;
-
-	/**
-	 * 1,000,000 MB
-	 */
 	public static final long MEGA = 1000000L;
 
-	public static final Multiple[] multiples =
+	private static final Multiple[] MULTIPLES =
 		new Multiple[] {
 			new Multiple('E', 1000000000000000000L, 1152921504606846976L),
 			new Multiple('P', 1000000000000000L, 1125899906842624L),
@@ -72,15 +58,8 @@ public class Bytes {
 			new Multiple('M', 1000000L, 1048576L),
 			new Multiple('K', 1000L, 1024L)};
 
-	/**
-	 * 1,000,000,000,000,000 = peta
-	 */
 	public static final long PETA = 1000000000000000L;
 	public static final long TEBI = 1099511627776L;
-
-	/**
-	 * 1,000,000,000,000 = terra
-	 */
 	public static final long TERRA = 1000000000000L;
 
 	public static String formatBytes(long bytes) {
@@ -89,8 +68,8 @@ public class Bytes {
 
 	public static String formatBytes(long bytes, boolean binary) {
 		long absbytes = Math.abs(bytes);
-		for (int i = 0; i < multiples.length; i++) {
-			Multiple multiple = multiples[i];
+		for (int i = 0; i < MULTIPLES.length; i++) {
+			Multiple multiple = MULTIPLES[i];
 			long multipleVal =
 				binary ? multiple.getBinaryMultiple() : multiple.getMultiple();
 			if (absbytes >= multipleVal) {
@@ -131,8 +110,8 @@ public class Bytes {
 		}
 		str = str.substring(0, str.length() - 1);
 
-		for (int i = 0; i < multiples.length; i++) {
-			Multiple multiple = multiples[i];
+		for (int i = 0; i < MULTIPLES.length; i++) {
+			Multiple multiple = MULTIPLES[i];
 			//long multiple = ;
 			if (suffix == multiple.getSuffix()) {
 				return Long.parseLong(str)

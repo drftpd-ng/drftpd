@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Request.java,v 1.8 2004/01/13 20:30:54 mog Exp $
+ * @version $Id: Request.java,v 1.9 2004/02/04 17:13:13 mog Exp $
  */
 public class Request implements CommandHandler {
 	private static final String FILLEDPREFIX = "FILLED-for.";
@@ -44,8 +44,9 @@ public class Request implements CommandHandler {
 			username = username.substring(0, username.indexOf('-'));
 			if (myreqname.equals(reqname)) {
 				String filledname = FILLEDPREFIX + username + "-" + myreqname;
+				LinkedRemoteFile filledfile;
 				try {
-					file.renameTo(file.getParentFile().getPath(), filledname);
+					filledfile = file.renameTo(file.getParentFile().getPath(), filledname);
 				} catch (IOException e) {
 					logger.warn("", e);
 					return new FtpReply(200, e.getMessage());
@@ -55,7 +56,7 @@ public class Request implements CommandHandler {
 					new DirectoryFtpEvent(
 						conn.getUserNull(),
 						"REQFILLED",
-						file));
+						filledfile));
 				//}
 				try {
 					conn.getUser().addRequestsFilled();
