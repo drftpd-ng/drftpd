@@ -53,7 +53,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.132 2004/04/07 13:05:52 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.133 2004/04/09 22:07:24 mog Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -119,7 +119,7 @@ public class LinkedRemoteFile
 			LinkedRemoteFile toFile;
 			try {
 				toFile = (LinkedRemoteFile) toDir.getFile(fromFile.getName());
-			} catch(QueuedDeletionException e) {
+			} catch (QueuedDeletionException e) {
 				fromFile.delete();
 				continue;
 			} catch (FileNotFoundException e) {
@@ -282,7 +282,9 @@ public class LinkedRemoteFile
 			//			if (name != "" && dir.length == 0)
 			//				throw new FatalException(
 			//					"Constructor called with empty dir: " + file);
-			_files = Collections.synchronizedMap(new Hashtable(file.getFiles().size()));
+			_files =
+				Collections.synchronizedMap(
+					new Hashtable(file.getFiles().size()));
 			Stack dirstack = new Stack();
 			//for (int i = 0; i < dir.length; i++) {
 			for (Iterator iter = file.getFiles().iterator(); iter.hasNext();) {
@@ -527,7 +529,7 @@ public class LinkedRemoteFile
 							+ tempSlave.getName()
 							+ " during delete, assumed deleted",
 						ex);
-						iter.remove();
+					iter.remove();
 				} catch (SlaveUnavailableException e) {
 					logger.debug("Unable to delete file on offline slave", e);
 				} catch (IOException e) {
@@ -659,8 +661,7 @@ public class LinkedRemoteFile
 		return file;
 	}
 
-	public LinkedRemoteFileInterface getFileDeleted(
-		String fileName)
+	public LinkedRemoteFileInterface getFileDeleted(String fileName)
 		throws FileNotFoundException {
 		LinkedRemoteFileInterface file =
 			(LinkedRemoteFileInterface) _files.get(fileName);
@@ -1030,8 +1031,7 @@ public class LinkedRemoteFile
 			LinkedRemoteFile nextFile;
 			try {
 				nextFile =
-					(LinkedRemoteFile) currFile.getFileDeleted(
-						currFileName);
+					(LinkedRemoteFile) currFile.getFileDeleted(currFileName);
 			} catch (FileNotFoundException ex) {
 				StringBuffer remaining = new StringBuffer(currFileName);
 				if (st.hasMoreElements()) {
@@ -1410,42 +1410,45 @@ public class LinkedRemoteFile
 
 	}
 
-	private synchronized void remergePass2(
-		LinkedRemoteFile mergedir,
-		RemoteSlave rslave) {
-		// remove all slaves not in mergedir.getFiles()
-		// unmerge() gets called on all files not on slave & all directories
-		//for (Iterator i = new ArrayList(getFilesMap().values()).iterator();
-		// getFilesMap() returns a copy of the list and without isDeleted files
-		for (Iterator i = new ArrayList(_files.values()).iterator(); i.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) i.next();
-			if (mergedir == null) { // slave doesn't have the directory
-				if (file.isFile()) {
-					file.unmergeFile(rslave);
-				} else {
-					file.remergePass2(null, rslave);
-				}
-				continue;
-			}
-			if (!mergedir.hasFile(file.getName())) {
-				if (file.isFile()) {
-					file.unmergeFile(rslave);
-				} else {
-					file.remergePass2(null, rslave);
-				}
-			} else {
-				if (file.isDirectory()) {
-					try {
-						file.remergePass2(
-							(LinkedRemoteFile) mergedir.getFile(file.getName()),
-							rslave);
-					} catch (FileNotFoundException e) {
-						throw new RuntimeException(
-							"inconsistent with hasFile() above",
-							e);
+	private void remergePass2(LinkedRemoteFile mergedir, RemoteSlave rslave) {
+		synchronized (_files) {
+			// remove all slaves not in mergedir.getFiles()
+			// unmerge() gets called on all files not on slave & all directories
+			//for (Iterator i = new ArrayList(getFilesMap().values()).iterator();
+			// getFilesMap() returns a copy of the list and without isDeleted files
+			for (Iterator i = new ArrayList(_files.values()).iterator();
+				i.hasNext();
+				) {
+				LinkedRemoteFile file = (LinkedRemoteFile) i.next();
+				if (mergedir == null) { // slave doesn't have the directory
+					if (file.isFile()) {
+						file.unmergeFile(rslave);
+					} else {
+						file.remergePass2(null, rslave);
 					}
+					continue;
 				}
-				// else slave has the file
+				if (!mergedir.hasFile(file.getName())) {
+					if (file.isFile()) {
+						file.unmergeFile(rslave);
+					} else {
+						file.remergePass2(null, rslave);
+					}
+				} else {
+					if (file.isDirectory()) {
+						try {
+							file.remergePass2(
+								(LinkedRemoteFile) mergedir.getFile(
+									file.getName()),
+								rslave);
+						} catch (FileNotFoundException e) {
+							throw new RuntimeException(
+								"inconsistent with hasFile() above",
+								e);
+						}
+					}
+					// else slave has the file
+				}
 			}
 		}
 	}

@@ -91,7 +91,7 @@ import f00f.net.irc.martyr.commands.NickCommand;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.3 2004/04/09 19:05:05 mog Exp $
+ * @version $Id: SiteBot.java,v 1.4 2004/04/09 22:07:25 mog Exp $
  */
 public class SiteBot implements FtpListener, Observer {
 
@@ -629,7 +629,7 @@ public class SiteBot implements FtpListener, Observer {
 			if (chan
 				.findMember(getIRCConnection().getClientState().getNick().getNick())
 				.hasOps()) {
-				_conn.sendCommand(new InviteCommand(user, _channelName));
+				_conn.sendCommand(new InviteCommand(user, chan.getName()));
 			}
 		}
 	}
