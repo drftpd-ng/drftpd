@@ -51,24 +51,24 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.54 2004/08/03 20:13:56 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.55 2004/09/15 04:44:36 zubov Exp $
  */
 public class RemoteSlave implements Comparable, Serializable {
     private static final Logger logger = Logger.getLogger(RemoteSlave.class);
     private transient int _errors;
     private transient long _lasterror;
-    private HashMap renameQueue;
+    private HashMap renameQueue; // not _ because of XML Serialization
     private transient int _maxPath;
     private transient InetAddress _inetAddress;
     private transient long _lastDownloadSending = 0;
     private transient long _lastPing;
     private transient long _lastUploadReceiving = 0;
     private transient SlaveManagerImpl _manager;
-    private Collection ipMasks;
+    private Collection ipMasks; // not _ because of XML Serialization
     private transient String _name;
     private transient Slave _slave;
     private transient SlaveStatus _status;
-    private Properties keysAndValues;
+    private Properties keysAndValues; // not _ because of XML Serialization
     private transient boolean _available;
 
     /**
@@ -90,7 +90,7 @@ public class RemoteSlave implements Comparable, Serializable {
 
         if (renameQueue.containsKey(fileName)) {
             throw new IllegalArgumentException(fileName +
-                " is already in the queue for processing");
+                " is already in the queue for " + getName());
         }
 
         renameQueue.put(fileName, destName);
@@ -124,7 +124,8 @@ public class RemoteSlave implements Comparable, Serializable {
         _lasterror = System.currentTimeMillis();
 
         if (_errors > maxerrors) {
-            setOffline("Too many network errors");
+            setOffline("Too many network errors - " + e.getMessage());
+            logger.error(e);
         }
     }
 
@@ -176,11 +177,15 @@ public class RemoteSlave implements Comparable, Serializable {
         for (Iterator iter = renameQueue.keySet().iterator(); iter.hasNext();) {
             String sourceFile = (String) iter.next();
             String destFile = (String) renameQueue.get(sourceFile);
+            iter.remove();
 
             if (destFile == null) {
                 try {
                     _slave.delete(sourceFile);
                 } catch (IOException e) {
+                    logger.error("Caught IOException during processQueue() - " +
+                        e);
+
                     // just remove and continue, we can't do much
                     // if the OS has the file locked
                 }
@@ -192,13 +197,14 @@ public class RemoteSlave implements Comparable, Serializable {
                 try {
                     _slave.rename(sourceFile, destDir, fileName);
                 } catch (IOException e) {
+                    logger.error("Caught IOException during processQueue() - " +
+                        e);
+
                     // just remove and continue, we can't do much except keep it in the queue
                     // if the OS has the file locked
                     continue;
                 }
             }
-
-            iter.remove();
         }
     }
 
