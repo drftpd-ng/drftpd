@@ -1073,14 +1073,12 @@ public class SiteBot extends FtpListener implements Observer {
 			if (line.startsWith("#")) {
 				continue;
 			}
-			logger.debug("reading line - " + line);
 			StringTokenizer st = new StringTokenizer(line);
 			if (st.countTokens() < 4) {
-				logger.debug("Line is invalid -- not enough parameters");
+				logger.error("Line is invalid -- not enough parameters");
 				continue;
 			}
 			String trigger = st.nextToken();
-			logger.debug("trigger = " + trigger);
 			String methodString = st.nextToken();
 			String scopeList = st.nextToken();
 			String permissions = st.toString();
@@ -1088,7 +1086,6 @@ public class SiteBot extends FtpListener implements Observer {
 			int index = methodString.lastIndexOf(".");
 			String className = methodString.substring(0, index);
 			methodString = methodString.substring(index + 1);
-			logger.debug("methodString = " + methodString);
 			Method m = null;
 			try {
 				IRCCommand ircCommand = ircCommands.get(className);
@@ -1100,9 +1097,9 @@ public class SiteBot extends FtpListener implements Observer {
 					ircCommands.put(className, ircCommand);
 				}
 				m = ircCommand.getClass().getMethod(methodString,
-						new Class[] { String.class });
+						new Class[] { String.class, MessageCommand.class});
 				_methodMap.put(trigger, new Object[] { m, ircCommand,
-						new IrcPermission(scopeList, permissions) });
+						new IRCPermission(scopeList, permissions) });
 			} catch (Exception e) {
 				logger.error(
 						"Invalid class/method listed in irccommands.conf - "
@@ -1110,7 +1107,6 @@ public class SiteBot extends FtpListener implements Observer {
 				throw new RuntimeException(e);
 			}
 		}
-		logger.debug("_methodMap = " + _methodMap);
 	}
 
 	protected void reload(Properties ircCfg) throws IOException {
@@ -1311,7 +1307,6 @@ public class SiteBot extends FtpListener implements Observer {
 							+ "'", e);
 				}
 			}
-			logger.debug("received - " + msgc.getMessage());
 			int index = msgc.getMessage().indexOf(" ");
 			String args = null;
 			String trigger = null;
@@ -1321,43 +1316,48 @@ public class SiteBot extends FtpListener implements Observer {
 				trigger = msgc.getMessage().substring(0, index);
 				args = msgc.getMessage().substring(index+1);
 			}
-			logger.debug("trigger = " + trigger);
 			if (_methodMap.containsKey(trigger)) { // is a recognized command
-				logger.debug(trigger + " matched!");
 				Object[] objects = _methodMap.get(trigger);
-				IrcPermission perm = (IrcPermission) objects[2];
+				IRCPermission perm = (IRCPermission) objects[2];
 				String scope = msgc.isPrivateToUs(_conn.getClientState()) ? "private"
 						: msgc.getDest();
-				logger.debug("here1");
-				if (perm.checkScope(scope)) { // not a recognized command on this channel or through privmsg
+				if (!perm.checkScope(scope)) { // not a recognized command on this channel or through privmsg
+					logger.warn(trigger + " is not in scope - " + scope);
 					return;
 				}
-				logger.debug("here2");
-				if (perm.checkPermission(msgc.getSource())) {
+				if (!perm.checkPermission(msgc.getSource())) {
 					logger.warn("Not enough permissions for user to execute " + trigger + " to " + msgc.getDest());
 					return;
 				}
-				logger.debug("here3");
 				try {
-					ArrayList<String> list = (ArrayList) ((Method) objects[0]).invoke(objects[1],args);
+					ArrayList<String> list = (ArrayList) ((Method) objects[0]).invoke(objects[1],new Object[] {args, msgc});
+					if (list.isEmpty()) {
+						sayChannel(getSource(msgc), "There is no output to return");
+					}
 					for (String output : list) {
-						sayChannel(msgc.getDest(), output);
+						sayChannel(getSource(msgc),output);
 					}
 					
 				} catch (Exception e) {
-					logger.error("Error in method invocation on IRCCommand " + trigger);
-					sayChannel(msgc.getDest(), e.getMessage());
+					logger.error("Error in method invocation on IRCCommand " + trigger, e);
+					sayChannel(getSource(msgc), e.getMessage());
 				}
-				logger.debug("here4");
 			}
 		}
     }
      
-    public class IrcPermission {
+    /**
+	 * Returns the source of the message, (channel or nickname)
+	 */
+	private String getSource(MessageCommand msgc) {
+		return msgc.isPrivateToUs(_conn.getClientState()) ? msgc.getSource().getNick() : msgc.getDest();
+	}
+
+	public class IRCPermission {
     	
     	ArrayList<String> _scope = new ArrayList<String>();
     	String _permissions = null;
-        public IrcPermission(String scope, String permissions) {
+        public IRCPermission(String scope, String permissions) {
         	for (String s : scope.split(",")) {
         		_scope.add(s);
         	}
@@ -1369,7 +1369,7 @@ public class SiteBot extends FtpListener implements Observer {
          * Accepts channel names, "public", or "private"
          */
         public boolean checkScope(String scope) {
-        	if (_scope.contains(scope)) {
+        	if (_scope.contains(scope)) { // matches private or channel names
         		return true;
         	}
         	return scope.startsWith("#") && _scope.contains("public");

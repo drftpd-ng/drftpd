@@ -1,3 +1,6 @@
+2005/02/27 Matt Zimmerman <zubov@users.sourceforge.net>
+* New internal SiteBot interface, if you're not a developer, don't bother
+
 2005/02/26 Jamal James <teflon114@gmail.com>
 * Applied creditloss fix. Thx TDSoul
   See http://www.drftpd.org/phpBB2/viewtopic.php?t=142&p=789#789

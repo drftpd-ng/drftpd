@@ -116,19 +116,19 @@ public class Who extends IRCCommand {
         return out;
     }
 
-    public ArrayList<String> doWho(String cmd) {
+    public ArrayList<String> doWho(String cmd, MessageCommand msgc) {
     	return getData(true,true,true);
     }
     
-    public ArrayList<String> doIdlers(String cmd) {
+    public ArrayList<String> doIdlers(String cmd, MessageCommand msgc) {
     	return getData(true, false, false);
     }
     
-    public ArrayList<String> doLeechers(String cmd) {
+    public ArrayList<String> doLeechers(String cmd, MessageCommand msgc) {
     	return getData(false, false, true);
     }
     
-    public ArrayList<String> doUploaders(String cmd) {
+    public ArrayList<String> doUploaders(String cmd, MessageCommand msgc) {
     	return getData(false, true, false);
     }
 }
