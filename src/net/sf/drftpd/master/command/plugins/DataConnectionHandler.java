@@ -16,25 +16,6 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.Checksum;
 import net.sf.drftpd.NoAvailableSlaveException;
@@ -58,21 +39,46 @@ import net.sf.drftpd.util.PortRange;
 import net.sf.drftpd.util.SSLGetContext;
 
 import org.apache.log4j.Logger;
+
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.commands.UserManagment;
+
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.RemoteTransfer;
+
 import org.drftpd.usermanager.UserFileException;
+
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
 
 
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.73 2004/11/08 18:39:24 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.74 2004/11/09 15:20:14 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandlerFactory,
     CommandHandler, Cloneable {
@@ -249,7 +255,8 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                 String index = _preTransferRSlave.issueListenToSlave(_encryptedDataChannel);
                 ConnectInfo ci = _preTransferRSlave.fetchTransferResponseFromIndex(index);
                 _transfer = _preTransferRSlave.getTransfer(ci.getTransferIndex());
-                address = new InetSocketAddress(_preTransferRSlave.getInetAddress(),_transfer.getAddress().getPort());
+                address = new InetSocketAddress(_preTransferRSlave.getInetAddress(),
+                        _transfer.getAddress().getPort());
                 _isPasv = true;
             } catch (SlaveUnavailableException e) {
                 return FtpReply.RESPONSE_530_SLAVE_UNAVAILABLE;
@@ -263,10 +270,8 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             }
         }
 
-        
-        String addrStr= address.getAddress().getHostAddress()
-                                           .replace('.', ',') + ',' +
-            (address.getPort() >> 8) + ',' + (address.getPort() & 0xFF);
+        String addrStr = address.getAddress().getHostAddress().replace('.', ',') +
+            ',' + (address.getPort() >> 8) + ',' + (address.getPort() & 0xFF);
 
         return new FtpReply(227, "Entering Passive Mode (" + addrStr + ").");
     }

@@ -48,7 +48,7 @@ import java.util.StringTokenizer;
 
 /*
  * @author zubov
- * @version $Id: ArchiveCommandHandler.java,v 1.9 2004/11/03 16:46:44 mog Exp $
+ * @version $Id: ArchiveCommandHandler.java,v 1.10 2004/11/09 15:20:18 mog Exp $
  */
 public class ArchiveCommandHandler implements CommandHandlerFactory,
     CommandHandler {
@@ -106,12 +106,11 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
             }
         }
 
-        net.sf.drftpd.event.listeners.Archive archive;
+        Archive archive;
 
         try {
-            archive = (net.sf.drftpd.event.listeners.Archive) conn.getGlobalContext()
-                                                                  .getConnectionManager()
-                                                                  .getFtpListener(net.sf.drftpd.event.listeners.Archive.class);
+            archive = (Archive) conn.getGlobalContext().getConnectionManager()
+                                    .getFtpListener(Archive.class);
         } catch (ObjectNotFoundException e3) {
             reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
                     "archive.loadarchive", env));

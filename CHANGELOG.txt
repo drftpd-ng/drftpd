@@ -1,3 +1,9 @@
+2004/11/09 Morgan Christiansson <drftpd@mog.se>
+* Added getUser() to InviteEvent at request from beepboop.
+* Added BINVITE event that is dispatched on /msg !invite with bad pass.
+* Started using generics on master which breaks pre-5.0 JDK compatibility.
+  We will keep 1.3/1.4 compatibility for slaves however.
+
 2004/11/08 Morgan Christiansson <drftpd@mog.se>
 * Added better handling of file collisions, files are now checksummed 
   in multiple threads and if checksums are identical all but one file is deleted.

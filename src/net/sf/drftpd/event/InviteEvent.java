@@ -23,11 +23,11 @@ import org.drftpd.usermanager.User;
 /**
  * @author mog
  *
- * @version $Id: InviteEvent.java,v 1.6 2004/11/08 18:39:22 mog Exp $
+ * @version $Id: InviteEvent.java,v 1.7 2004/11/09 15:20:11 mog Exp $
  */
 public class InviteEvent extends Event {
     private String _ircNick;
-	private User _user;
+    private User _user;
 
     public InviteEvent(String command, String ircUser, User user) {
         super(command, System.currentTimeMillis());
@@ -38,7 +38,8 @@ public class InviteEvent extends Event {
     public String getIrcNick() {
         return _ircNick;
     }
+
     public User getUser() {
-    	return _user;
+        return _user;
     }
 }

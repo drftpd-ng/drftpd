@@ -68,23 +68,24 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author mog
- * @version $Id: SlaveManager.java,v 1.24 2004/11/08 18:39:24 mog Exp $
+ * @version $Id: SlaveManager.java,v 1.25 2004/11/09 15:20:13 mog Exp $
  */
 public class SlaveManager implements Runnable {
     private static final Logger logger = Logger.getLogger(SlaveManager.class.getName());
     private static final String slavePath = "slaves/";
     private static final File slavePathFile = new File(slavePath);
     protected GlobalContext _gctx;
-    protected List _rslaves;
+    protected List<RemoteSlave> _rslaves = new ArrayList<RemoteSlave>();
+
     private int _port;
     protected ServerSocket _serverSocket;
-    private BlockingQueue _remergeQueue = new LinkedBlockingQueue();
+    private LinkedBlockingQueue<RemergeMessage> _remergeQueue = new LinkedBlockingQueue<RemergeMessage>();
     private RemergeThread _remergeThread;
 
     public SlaveManager(Properties p, GlobalContext gctx)
         throws SlaveFileException {
+    	this();
         _gctx = gctx;
-        _rslaves = new ArrayList();
         _port = Integer.parseInt(FtpConfig.getProperty(p, "master.bindport"));
         loadSlaves();
     }
@@ -93,12 +94,9 @@ public class SlaveManager implements Runnable {
      * For JUnit tests
      */
     public SlaveManager() {
-        _rslaves = new ArrayList();
     }
 
     private void loadSlaves() throws SlaveFileException {
-        _rslaves = new ArrayList();
-
         if (!slavePathFile.exists() && !slavePathFile.mkdirs()) {
             throw new SlaveFileException(new IOException(
                     "Error creating folders: " + slavePathFile));
@@ -200,11 +198,11 @@ public class SlaveManager implements Runnable {
 
     public HashSet findSlavesBySpace(int numOfSlaves, Set exemptSlaves,
         boolean ascending) {
-        Collection slaveList = getGlobalContext().getSlaveManager().getSlaves();
+        Collection<RemoteSlave> slaveList = getSlaves();
         HashMap map = new HashMap();
 
-        for (Iterator iter = slaveList.iterator(); iter.hasNext();) {
-            RemoteSlave rslave = (RemoteSlave) iter.next();
+        for (Iterator<RemoteSlave> iter = slaveList.iterator(); iter.hasNext();) {
+            RemoteSlave rslave = iter.next();
 
             if (exemptSlaves.contains(rslave)) {
                 continue;
@@ -294,8 +292,8 @@ public class SlaveManager implements Runnable {
         //SlaveStatus[] ret = new SlaveStatus[getSlaves().size()];
         HashMap ret = new HashMap(getSlaves().size());
 
-        for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
-            RemoteSlave rslave = (RemoteSlave) iter.next();
+        for (Iterator<RemoteSlave> iter = getSlaves().iterator(); iter.hasNext();) {
+            RemoteSlave rslave = iter.next();
 
             try {
                 ret.put(rslave.getName(), rslave.getStatus());
@@ -326,11 +324,11 @@ public class SlaveManager implements Runnable {
     //				+ " available slaves");
     //		return (RemoteSlave) retSlaves.get(num);
     //	}
-    public Collection getAvailableSlaves() throws NoAvailableSlaveException {
-        ArrayList availableSlaves = new ArrayList();
+    public Collection<RemoteSlave> getAvailableSlaves() throws NoAvailableSlaveException {
+        ArrayList<RemoteSlave> availableSlaves = new ArrayList<RemoteSlave>();
 
-        for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
-            RemoteSlave rslave = (RemoteSlave) iter.next();
+        for (Iterator<RemoteSlave> iter = getSlaves().iterator(); iter.hasNext();) {
+            RemoteSlave rslave = iter.next();
 
             if (!rslave.isAvailable()) {
                 continue;
@@ -355,8 +353,8 @@ public class SlaveManager implements Runnable {
     }
 
     public RemoteSlave getRemoteSlave(String s) throws ObjectNotFoundException {
-        for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
-            RemoteSlave rslave = (RemoteSlave) iter.next();
+        for (Iterator<RemoteSlave> iter = getSlaves().iterator(); iter.hasNext();) {
+            RemoteSlave rslave = iter.next();
 
             if (rslave.getName().equals(s)) {
                 return rslave;
@@ -366,7 +364,7 @@ public class SlaveManager implements Runnable {
         return getSlaveByNameUnchecked(s);
     }
 
-    public List getSlaves() {
+    public List<RemoteSlave> getSlaves() {
         if (_rslaves == null) {
             throw new NullPointerException();
         }
@@ -384,14 +382,11 @@ public class SlaveManager implements Runnable {
      * @return true if one or more slaves are online, false otherwise.
      */
     public boolean hasAvailableSlaves() {
-        for (Iterator iter = _rslaves.iterator(); iter.hasNext();) {
-            RemoteSlave rslave = (RemoteSlave) iter.next();
-
-            if (rslave.isAvailable()) {
+        for (Iterator<RemoteSlave> iter = _rslaves.iterator(); iter.hasNext();) {
+            if (iter.next().isAvailable()) {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -506,12 +501,11 @@ public class SlaveManager implements Runnable {
         }
     }
 
-    public BlockingQueue getRemergeQueue() {
+    public BlockingQueue<RemergeMessage> getRemergeQueue() {
         if (_remergeThread == null) {
             _remergeThread = new RemergeThread(getGlobalContext());
             _remergeThread.start();
         }
-
         return _remergeQueue;
     }
 }
@@ -522,21 +516,23 @@ class RemergeThread extends Thread {
     private GlobalContext _gctx;
 
     public RemergeThread(GlobalContext gctx) {
+    	super("RemergeThread");
         _gctx = gctx;
-        setName("RemergeThread");
     }
 
     public void run() {
-        RemergeMessage msg;
-
         while (true) {
+            RemergeMessage msg;
             try {
-                msg = (RemergeMessage) getGlobalContext().getSlaveManager()
+                msg = getGlobalContext().getSlaveManager()
                                            .getRemergeQueue().take();
             } catch (InterruptedException e) {
                 logger.info("", e);
-
-                return;
+                continue;
+            }
+            if(msg.isCompleted()) {
+            	getGlobalContext().getRoot().cleanSlaveFromMerging(msg.getRslave());
+            	continue;
             }
 
             LinkedRemoteFileInterface lrf;

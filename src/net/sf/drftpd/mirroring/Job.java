@@ -29,7 +29,7 @@ import java.util.Set;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.35 2004/11/03 16:46:42 mog Exp $
+ * @version $Id: Job.java,v 1.36 2004/11/09 15:20:16 mog Exp $
  */
 public class Job {
     private RemoteSlave _destSlave;
@@ -189,8 +189,8 @@ public class Job {
     }
 
     public String toString() {
-        String toReturn = "Job[file=" + getFile().getName() + "]dest=[" +
-            outputDestinationSlaves() + "]transferNum=[" + _transferNum + "]";
+        String toReturn = "Job[file=" + getFile().getName() + ",dest=[" +
+            outputDestinationSlaves() + "],transferNum=" + _transferNum + "]";
 
         return toReturn;
     }

@@ -22,9 +22,10 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile.CaseInsensitiveHashtable;
 
 import org.drftpd.slave.async.AsyncResponseRemerge;
 
+
 /**
  * @author mog
- * @version $Id: RemergeMessage.java,v 1.1 2004/11/09 03:08:26 zubov Exp $
+ * @version $Id: RemergeMessage.java,v 1.2 2004/11/09 15:20:18 mog Exp $
  */
 public class RemergeMessage {
     private RemoteSlave _rslave;
@@ -33,6 +34,15 @@ public class RemergeMessage {
     public RemergeMessage(AsyncResponseRemerge response, RemoteSlave slave) {
         _rslave = slave;
         _response = response;
+    }
+
+    public RemergeMessage(RemoteSlave slave) {
+        _rslave = slave;
+        _response = null;
+    }
+
+    public boolean isCompleted() {
+        return _response == null;
     }
 
     public String getDirectory() {
@@ -46,5 +56,4 @@ public class RemergeMessage {
     public CaseInsensitiveHashtable getFiles() {
         return _response.getFiles();
     }
-
 }

@@ -17,9 +17,17 @@
  */
 package net.sf.drftpd.remotefile;
 
+import net.sf.drftpd.FatalException;
+import net.sf.drftpd.InvalidDirectoryException;
+import net.sf.drftpd.slave.Root;
+import net.sf.drftpd.slave.RootBasket;
+
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -28,19 +36,12 @@ import java.util.List;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.InvalidDirectoryException;
-import net.sf.drftpd.slave.Root;
-import net.sf.drftpd.slave.RootBasket;
-
-import org.apache.log4j.Logger;
-
 
 /**
  * A wrapper for java.io.File to the net.sf.drftpd.RemoteFile structure.
  *
  * @author mog
- * @version $Id: FileRemoteFile.java,v 1.42 2004/11/08 18:39:28 mog Exp $
+ * @version $Id: FileRemoteFile.java,v 1.43 2004/11/09 15:20:16 mog Exp $
  */
 public class FileRemoteFile extends AbstractRemoteFile {
     private static final Logger logger = Logger.getLogger(FileRemoteFile.class);
