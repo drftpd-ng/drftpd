@@ -1358,83 +1358,96 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             Reply response = new Reply(226,
                     conn.jprintf(DataConnectionHandler.class,
                         "transfer.complete", env));
-            synchronized (conn.getGlobalContext()) { // need to synchronize here so only one
-            										 // TransferEvent can be sent at a time
-            if (isStor) {
-                if (_resumePosition == 0) {
-                    _transferFile.setCheckSum(status.getChecksum());
-                } else {
-                    //						try {
-                    //							checksum = _transferFile.getCheckSumFromSlave();
-                    //						} catch (NoAvailableSlaveException e) {
-                    //							response.addComment(
-                    //								"No available slaves when getting checksum from slave: "
-                    //									+ e.getMessage());
-                    //							logger.warn("", e);
-                    //							checksum = 0;
-                    //						} catch (IOException e) {
-                    //							response.addComment(
-                    //								"IO error getting checksum from slave: "
-                    //									+ e.getMessage());
-                    //							logger.warn("", e);
-                    //							checksum = 0;
-                    //						}
-                }
+            synchronized (conn.getGlobalContext()) { // need to synchronize
+														// here so only one
+				// TransferEvent can be sent at a time
+				if (isStor) {
+					if (_resumePosition == 0) {
+						_transferFile.setCheckSum(status.getChecksum());
+					} else {
+						// try {
+						// checksum = _transferFile.getCheckSumFromSlave();
+						// } catch (NoAvailableSlaveException e) {
+						// response.addComment(
+						// "No available slaves when getting checksum from
+						// slave: "
+						// + e.getMessage());
+						// logger.warn("", e);
+						// checksum = 0;
+						// } catch (IOException e) {
+						// response.addComment(
+						// "IO error getting checksum from slave: "
+						// + e.getMessage());
+						// logger.warn("", e);
+						// checksum = 0;
+						// }
+					}
 
-                _transferFile.setLastModified(System.currentTimeMillis());
-                _transferFile.setLength(status.getTransfered());
-                _transferFile.setXfertime(status.getElapsed());
-            }
+					_transferFile.setLastModified(System.currentTimeMillis());
+					_transferFile.setLength(status.getTransfered());
+					_transferFile.setXfertime(status.getElapsed());
+				}
 
-            boolean zipscript = zipscript(isRetr, isStor, status.getChecksum(),
-                    response, targetFileName, targetDir);
+				boolean zipscript = zipscript(isRetr, isStor, status
+						.getChecksum(), response, targetFileName, targetDir);
 
-            if (zipscript) {
-                //transferstatistics
-                if (isRetr) {
-                    
-                    float ratio = conn.getGlobalContext().getConfig()
-                                      .getCreditLossRatio(_transferFile,
-                            conn.getUserNull());
+				if (zipscript) {
+					// transferstatistics
+					if (isRetr) {
 
-                    if (ratio != 0) {
-                        conn.getUserNull().updateCredits((long) (-status.getTransfered() * ratio));
-                    }
+						float ratio = conn.getGlobalContext().getConfig()
+								.getCreditLossRatio(_transferFile,
+										conn.getUserNull());
 
-                    if (!conn.getGlobalContext().getConfig().checkPathPermission(
-                                "nostatsdn", conn.getUserNull(), conn.getCurrentDirectory())) {
-                        conn.getUserNull().updateDownloadedBytes(status.getTransfered());
-                    	conn.getUserNull().updateDownloadedTime(status.getElapsed());
-                    	conn.getUserNull().updateDownloadedFiles(1);
-                    }
-                } else {
-                    
-                    conn.getUserNull().updateCredits((long) (status.getTransfered() * conn.getGlobalContext()
-                                                                                          .getConfig()
-                                                                                          .getCreditCheckRatio(_transferFile,
-                            conn.getUserNull())));
-                    if (!conn.getGlobalContext().getConfig().checkPathPermission(
-                                "nostatsup", conn.getUserNull(), conn.getCurrentDirectory())) {
-                        conn.getUserNull().updateUploadedBytes(status.getTransfered());
-                    	conn.getUserNull().updateUploadedTime(status.getElapsed());
-                    	conn.getUserNull().updateUploadedFiles(1);
-                    }
-                }
+						if (ratio != 0) {
+							conn.getUserNull().updateCredits(
+									(long) (-status.getTransfered() * ratio));
+						}
 
-                try {
-                    conn.getUserNull().commit();
-                } catch (UserFileException e) {
-                    logger.warn("", e);
-                }
-            }
+						if (!conn.getGlobalContext().getConfig()
+								.checkPathPermission("nostatsdn",
+										conn.getUserNull(),
+										conn.getCurrentDirectory())) {
+							conn.getUserNull().updateDownloadedBytes(
+									status.getTransfered());
+							conn.getUserNull().updateDownloadedTime(
+									status.getElapsed());
+							conn.getUserNull().updateDownloadedFiles(1);
+						}
+					} else {
 
-            //Dispatch for both STOR and RETR
-            conn.getGlobalContext().dispatchFtpEvent(new TransferEvent(
-                    conn, eventType, _transferFile, conn.getClientAddress(),
-                    _rslave, _transfer.getAddress().getAddress(), getType(),
-                    zipscript));
-            return response;
-            }
+						conn.getUserNull().updateCredits(
+								(long) (status.getTransfered() * conn
+										.getGlobalContext().getConfig()
+										.getCreditCheckRatio(_transferFile,
+												conn.getUserNull())));
+						if (!conn.getGlobalContext().getConfig()
+								.checkPathPermission("nostatsup",
+										conn.getUserNull(),
+										conn.getCurrentDirectory())) {
+							conn.getUserNull().updateUploadedBytes(
+									status.getTransfered());
+							conn.getUserNull().updateUploadedTime(
+									status.getElapsed());
+							conn.getUserNull().updateUploadedFiles(1);
+						}
+					}
+
+					try {
+						conn.getUserNull().commit();
+					} catch (UserFileException e) {
+						logger.warn("", e);
+					}
+				}
+
+				// Dispatch for both STOR and RETR
+				conn.getGlobalContext().dispatchFtpEvent(
+						new TransferEvent(conn, eventType, _transferFile, conn
+								.getClientAddress(), _rslave, _transfer
+								.getAddress().getAddress(), getType(),
+								zipscript));
+				return response;
+			}
         } finally {
             reset();
         }
@@ -1444,19 +1457,19 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
     }
 
     /**
-     * @param isRetr
-     * @param isStor
-     * @param status
-     * @param response
-     * @param targetFileName
-     * @param targetDir
-     *            Returns true if crc check was okay, i.e, if credits should be
-     *            altered
-     */
+	 * @param isRetr
+	 * @param isStor
+	 * @param status
+	 * @param response
+	 * @param targetFileName
+	 * @param targetDir
+	 *            Returns true if crc check was okay, i.e, if credits should be
+	 *            altered
+	 */
     private boolean zipscript(boolean isRetr, boolean isStor, long checksum,
         Reply response, String targetFileName,
         LinkedRemoteFileInterface targetDir) {
-        //zipscript
+        // zipscript
         logger.debug("Running zipscript on file " + targetFileName +
             " with CRC of " + checksum);
 
