@@ -34,7 +34,7 @@ import net.sf.drftpd.slave.Transfer;
 
 /**
  * @author mog
- * @version $Id: MinfreespaceFilterTest.java,v 1.1 2004/02/26 13:56:53 mog Exp $
+ * @version $Id: MinfreespaceFilterTest.java,v 1.2 2004/02/26 21:11:08 mog Exp $
  */
 public class MinfreespaceFilterTest extends TestCase {
 	public static class RemoteSlaveTesting extends RemoteSlave {
@@ -54,10 +54,12 @@ public class MinfreespaceFilterTest extends TestCase {
 	public MinfreespaceFilterTest(String fName) {
 		super(fName);
 	}
+	
 	public static TestSuite suite() {
 		return new TestSuite(MinfreespaceFilterTest.class);
 	}
-	public void testSimple() throws ObjectNotFoundException {
+	
+	public void testSimple() throws ObjectNotFoundException, NoAvailableSlaveException {
 		Properties p = new Properties();
 		p.put("1.remove", "1");
 		p.put("1.minfreespace", "100GB");

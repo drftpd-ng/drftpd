@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManagerImpl;
@@ -33,7 +34,7 @@ import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: MatchdirFilterTest.java,v 1.1 2004/02/26 13:56:53 mog Exp $
+ * @version $Id: MatchdirFilterTest.java,v 1.2 2004/02/26 21:11:08 mog Exp $
  */
 public class MatchdirFilterTest extends TestCase {
 
@@ -86,7 +87,7 @@ public class MatchdirFilterTest extends TestCase {
 			new RemoteSlave("slave2", Collections.EMPTY_LIST),
 			new RemoteSlave("slave3", Collections.EMPTY_LIST)};
 
-	public void testSimple() throws ObjectNotFoundException {
+	public void testSimple() throws ObjectNotFoundException, NoAvailableSlaveException {
 		Properties p = new Properties();
 		p.put("1.assignslave", "slave1+100,slave2-100");
 		p.put("1.expr", "/path1/*");
@@ -109,7 +110,7 @@ public class MatchdirFilterTest extends TestCase {
 		assertEquals(-100, sc.getSlaveScore(rslaves[1]).getScore());
 		assertEquals(0, sc.getSlaveScore(rslaves[2]).getScore());
 	}
-	public void testAll() throws ObjectNotFoundException {
+	public void testAll() throws ObjectNotFoundException, NoAvailableSlaveException {
 		Properties p = new Properties();
 		p.put("1.assign", "ALL+100");
 		p.put("1.expr", "/path2/*");
