@@ -874,6 +874,13 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 
     protected synchronized void reset() {
         _rslave = null;
+        if (_transfer != null) {
+        	try {
+        		_transfer.abort("reset");
+        	} catch (Throwable t) {
+        		logger.debug("reset failed to abort transfer on the slave", t);
+        	}
+        }
         _transfer = null;
         _transferFile = null;
         _preTransfer = false;
