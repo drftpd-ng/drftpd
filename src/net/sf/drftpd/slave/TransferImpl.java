@@ -90,7 +90,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		this.direction = TRANSFER_RECEIVING_UPLOAD;
 		this.checksum = new CRC32();
 
-		String root = roots.getARoot(dirname).getPath();
+		String root = roots.getARootFile(dirname).getPath();
 
 		FileOutputStream out = new FileOutputStream(root + File.separator + filename);
 

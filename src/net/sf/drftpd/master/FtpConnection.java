@@ -976,7 +976,6 @@ public class FtpConnection extends BaseFtpConnection {
 	 * host and port address this server is listening on.
 	 */
 	public void doPASV(FtpRequest request, PrintWriter out) {
-		// TODO reset(); ?
 		reset();
 		if (!preTransfer) {
 			out.print(

@@ -36,7 +36,4 @@ public class RootRemoteFileTree extends LinkedRemoteFile {
 		super(file, cm);
 		// TODO Auto-generated constructor stub
 	}
-	public void finalize() {
-		
-	}
 }

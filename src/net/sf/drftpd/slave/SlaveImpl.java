@@ -3,7 +3,6 @@ package net.sf.drftpd.slave;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,10 +19,6 @@ import java.util.Vector;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.PermissionDeniedException;
@@ -32,6 +27,11 @@ import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 import se.mog.io.File;
 
 /**
@@ -46,8 +46,7 @@ public class SlaveImpl
 	 * @param b
 	 */
 	public SlaveImpl(
-		Properties cfg,
-		InetAddress inetAddress)
+		Properties cfg)
 		throws RemoteException {
 		super(0); // starts RMI accept thread which will keep us from dying
 
@@ -138,11 +137,9 @@ public class SlaveImpl
 				return;
 			}
 
-			InetAddress masterAddr =
-				InetAddress.getByName(cfg.getProperty("slavemanager.host"));
 			//Slave slave;
 			//slave = 
-			new SlaveImpl(cfg, masterAddr);
+			new SlaveImpl(cfg);
 
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -266,31 +263,31 @@ public class SlaveImpl
 	 */
 	public void rename(String from, String to)
 		throws FileNotFoundException, ObjectExistsException {
-		File fromfile = roots.getFile(from);
+		Root root = roots.getRootForFile(from);
+		File fromfile = new File(root.getPath()+File.separatorChar+from);
 		// throws FileNotFoundException
 		if (!fromfile.exists())
 			throw new FileNotFoundException(
 				"cannot rename from " + from + ", file does not exist");
-		File tofile = new File(roots.getARoot() + to);
-		if (tofile.exists())
+		File tofile;
+		try {
+			roots.getFile(to);
 			throw new ObjectExistsException(
 				"cannot rename from "
 					+ from
 					+ " to "
 					+ to
 					+ ", destination exists");
+		} catch(FileNotFoundException ex) {} // good
+		tofile = new File(root.getPath() + to);
 		fromfile.renameTo(tofile);
 	}
 
 	public void delete(String path) throws IOException {
-		//File file = new File(root + path);
-		//File file = roots.getFile(path);
 		Collection files = roots.getMultipleFiles(path);
-		// throws FileNotFoundException
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
 			File file = (File) iter.next();
-			if (!file.exists())
-				continue;
+			assert file.exists();
 			if (!file.delete())
 				throw new PermissionDeniedException("delete failed on " + path);
 			File dir = new File(file.getParentFile());

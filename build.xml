@@ -4,7 +4,6 @@
     <target name="all" depends="compile"/>
 
     <target name="init">
-<!--        <property name="build.compiler" value="gcj"/>-->
         <!-- You might like to set up some overridable paths, etc.: -->
         <!-- <property name="mylib" value="../lib/mylib.jar"/> -->
         <property name="sourceDir" value="src/"/>

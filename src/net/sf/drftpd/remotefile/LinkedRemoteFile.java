@@ -1020,7 +1020,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	 */
 	public void replicate(final RemoteSlave torslave)
 		throws NoAvailableSlaveException, IOException {
-		// TODO Auto-generated method stub
 
 		final RemoteSlave fromslave = getASlaveForDownload();
 		Transfer fromtransfer = fromslave.getSlave().listen();

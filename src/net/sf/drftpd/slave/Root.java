@@ -16,9 +16,9 @@ import se.mog.io.File;
  */
 public class Root {
 	private String _root;
-	private long _minSpaceFree=0;
-	private int _priority=0;
-	
+	private long _minSpaceFree = 0;
+	private int _priority = 0;
+
 	public Root(String root, long minSpaceFree, int priority) {
 		_root = root;
 	}
@@ -28,7 +28,7 @@ public class Root {
 	public String getPath() {
 		return _root;
 	}
-	
+
 	public long getMinSpaceFree() {
 		return _minSpaceFree;
 	}
@@ -39,7 +39,14 @@ public class Root {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		return "[root="+getPath()+"]";
+		return "[root=" + getPath() + "]";
+	}
+	public long getDiskSpaceAvailable() {
+		return getFile().getDiskSpaceAvailable();
+	}
+
+	public long getDiskSpaceCapacity() {
+		return getFile().getDiskSpaceCapacity();
 	}
 
 }
