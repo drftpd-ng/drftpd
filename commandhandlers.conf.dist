@@ -93,3 +93,5 @@ SITE\ WKUP=net.sf.drftpd.master.command.plugins.TransferStatistics
 SITE\ WKDN=net.sf.drftpd.master.command.plugins.TransferStatistics
 SITE\ DAYUP=net.sf.drftpd.master.command.plugins.TransferStatistics
 SITE\ DAYDN=net.sf.drftpd.master.command.plugins.TransferStatistics
+
+SITE\ PRE=net.sf.drftpd.master.command.plugins.Pre
