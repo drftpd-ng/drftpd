@@ -115,15 +115,9 @@ public class JSXUser
 		//an update was made, but commit() should be called from all places so we don't need to do anything.
 		//if we do, make sure it's implemented in all set and update methods in AbstractUser
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.UnixPassword#getUnixPassword()
-	 */
 	public String getUnixPassword() {
 		return unixPassword;
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.UnixPassword#setUnixPassword(java.lang.String)
-	 */
 	public void setUnixPassword(String password) {
 		this.password = null;
 		this.unixPassword = password;

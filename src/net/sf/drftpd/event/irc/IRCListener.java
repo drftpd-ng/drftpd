@@ -701,7 +701,7 @@ public class IRCListener implements FtpListener, Observer {
 		if (_key.equals(""))
 			_key = null;
 	}
-	private void say(String message) {
+	public void say(String message) {
 		//		if (!_clientState.isOnChannel(_channelName)) {
 		//			logger.warn("Not in "+_channelName+", dropping message");
 		//			return;
@@ -1189,5 +1189,9 @@ public class IRCListener implements FtpListener, Observer {
 	 */
 	public void init(ConnectionManager mgr) {
 		_cm = mgr;
+	}
+
+	public String getChannelName() {
+		return _channelName;
 	}
 }

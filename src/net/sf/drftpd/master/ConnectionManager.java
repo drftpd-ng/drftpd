@@ -16,6 +16,7 @@ import java.util.TimerTask;
 import java.util.Vector;
 
 import net.sf.drftpd.FatalException;
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.MessageEvent;
@@ -198,8 +199,18 @@ public class ConnectionManager {
 	public void addFtpListener(FtpListener listener) {
 		_ftpListeners.add(listener);
 	}
+	public FtpListener getFtpListener(Class clazz)
+		throws ObjectNotFoundException {
+		for (Iterator iter = getFtpListeners().iterator(); iter.hasNext();) {
+			FtpListener listener = (FtpListener) iter.next();
+			if (listener.getClass().equals(clazz))
+				return listener;
+		}
+		throw new ObjectNotFoundException();
+	}
+
 	public void dispatchFtpEvent(Event event) {
-		for (Iterator iter = _ftpListeners.iterator(); iter.hasNext();) {
+		for (Iterator iter = getFtpListeners().iterator(); iter.hasNext();) {
 			try {
 				FtpListener handler = (FtpListener) iter.next();
 				handler.actionPerformed(event);
