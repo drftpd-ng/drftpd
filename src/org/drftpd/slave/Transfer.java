@@ -181,150 +181,150 @@ public class Transfer {
     }
 
     public TransferStatus receiveFile(String dirname, char mode,
-        String filename, long offset) throws IOException {
-        try {
-            _slave.getRoots().getFile(dirname + File.separator + filename);
-            throw new FileExistsException("File "+dirname+File.separatorChar+filename+" exists");
-        } catch (FileNotFoundException ex) {
-        }
+			String filename, long offset) throws IOException {
+		try {
+			_slave.getRoots().getFile(dirname + File.separator + filename);
+			throw new FileExistsException("File " + dirname
+					+ File.separatorChar + filename + " exists");
+		} catch (FileNotFoundException ex) {
+		}
+		String root = _slave.getRoots().getARootFileDir(dirname).getPath();
 
-        String root = _slave.getRoots().getARootFileDir(dirname).getPath();
+		try {
+			_out = new FileOutputStream(_file = new File(root + File.separator
+					+ filename));
 
-        _out = new FileOutputStream(_file = new File(root + File.separator + filename));
+			if (_slave.getUploadChecksums()) {
+				_checksum = new CRC32();
+				_out = new CheckedOutputStream(_out, _checksum);
+			}
+			accept();
+			if (_slave.getBufferSize() > 0) {
+				_sock.setReceiveBufferSize(_slave.getBufferSize());
+			}
 
-        if (_slave.getUploadChecksums()) {
-            _checksum = new CRC32();
-            _out = new CheckedOutputStream(_out, _checksum);
-        }
+			_in = _sock.getInputStream();
+			_direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
 
-        System.out.println(dirname + "/" + filename);
-
-        try {
-        	accept();
-            TransferStatus status = transfer();
-            _slave.sendResponse(new AsyncResponseDiskStatus(_slave.getDiskStatus()));
-            return status;
-        } catch (IOException e) {
-            // TODO really delete on IOException ?
-            //_slave.delete(root + File.separator + filename);
-            throw e; // so the Master can still handle the exception
-        }
-    }
+			System.out.println(dirname + "/" + filename);
+			transfer();
+			_slave.sendResponse(new AsyncResponseDiskStatus(_slave
+					.getDiskStatus()));
+			return getTransferStatus();
+		} catch (IOException e) {
+			// TODO really delete on IOException ?
+			// _slave.delete(root + File.separator + filename);
+			throw e; // so the Master can still handle the exception
+		} finally {
+			if (_out != null) {
+				_out.close();
+			}
+			if (_in != null) {
+				_in.close();
+			}
+			if (_sock != null) {
+				_sock.close();
+			}
+		}
+	}
 
     public TransferStatus sendFile(String path, char type, long resumePosition)
-        throws IOException {
-        _in = new FileInputStream(_file = new File(_slave.getRoots().getFile(path)));
-
-        if (_slave.getDownloadChecksums()) {
-            _checksum = new CRC32();
-            _in = new CheckedInputStream(_in, _checksum);
-        }
-
-        _in.skip(resumePosition);
-
-        System.out.println("DL:" + path);
-        accept();
-        return transfer();
+    throws IOException {
+    	try {
+    		_in = new FileInputStream(_file = new File(_slave.getRoots()
+    				.getFile(path)));
+    		
+    		if (_slave.getDownloadChecksums()) {
+    			_checksum = new CRC32();
+    			_in = new CheckedInputStream(_in, _checksum);
+    		}
+    		
+    		_in.skip(resumePosition);
+    		accept();
+    		if (_slave.getBufferSize() > 0) {
+    			_sock.setSendBufferSize(_slave.getBufferSize());
+    		}
+    		
+    		_out = _sock.getOutputStream();
+    		_direction = Transfer.TRANSFER_SENDING_DOWNLOAD;
+    		
+    		System.out.println("DL:" + path);
+    		transfer();
+    		return getTransferStatus();
+    	} finally {
+    		_in.close();
+    		_out.close();
+    		_sock.close();
+    	}
     }
 
-    private InetSocketAddress accept() throws IOException {
+    private void accept() throws IOException {
         _sock = _conn.connect();
         _conn = null;
-        return new InetSocketAddress(_sock.getInetAddress(),_sock.getPort());
     }
 
     /**
-     * Call sock.connect() and start sending.
-     *
-     * Read about buffers here:
-     * http://groups.google.com/groups?hl=sv&lr=&ie=UTF-8&oe=UTF-8&threadm=9eomqe%24rtr%241%40to-gate.itd.utech.de&rnum=22&prev=/groups%3Fq%3Dtcp%2Bgood%2Bbuffer%2Bsize%26start%3D20%26hl%3Dsv%26lr%3D%26ie%3DUTF-8%26oe%3DUTF-8%26selm%3D9eomqe%2524rtr%25241%2540to-gate.itd.utech.de%26rnum%3D22
-     *
-     * Quote: Short answer is: if memory is not limited make your buffer big;
-     * TCP will flow control itself and only use what it needs.
-     *
-     * Longer answer: for optimal throughput (assuming TCP is not flow
-     * controlling itself for other reasons) you want your buffer size to at
-     * least be
-     *
-     * channel bandwidth * channel round-trip-delay.
-     *
-     * So on a long slow link, if you can get 100K bps throughput, but your
-     * delay -s 8 seconds, you want:
-     *
-     * 100Kbps * / bits-per-byte * 8 seconds = 100 Kbytes
-     *
-     * That way TCP can keep transmitting data for 8 seconds before it would
-     * have to stop and wait for an ack (to clear space in the buffer for new
-     * data so it can put new TX data in there and on the line). (The idea is to
-     * get the ack before you have to stop transmitting.)
-     */
-    private TransferStatus transfer() throws IOException {
-        _started = System.currentTimeMillis();
+	 * Call sock.connect() and start sending.
+	 * 
+	 * Read about buffers here:
+	 * http://groups.google.com/groups?hl=sv&lr=&ie=UTF-8&oe=UTF-8&threadm=9eomqe%24rtr%241%40to-gate.itd.utech.de&rnum=22&prev=/groups%3Fq%3Dtcp%2Bgood%2Bbuffer%2Bsize%26start%3D20%26hl%3Dsv%26lr%3D%26ie%3DUTF-8%26oe%3DUTF-8%26selm%3D9eomqe%2524rtr%25241%2540to-gate.itd.utech.de%26rnum%3D22
+	 * 
+	 * Quote: Short answer is: if memory is not limited make your buffer big;
+	 * TCP will flow control itself and only use what it needs.
+	 * 
+	 * Longer answer: for optimal throughput (assuming TCP is not flow
+	 * controlling itself for other reasons) you want your buffer size to at
+	 * least be
+	 * 
+	 * channel bandwidth * channel round-trip-delay.
+	 * 
+	 * So on a long slow link, if you can get 100K bps throughput, but your
+	 * delay -s 8 seconds, you want:
+	 * 
+	 * 100Kbps * / bits-per-byte * 8 seconds = 100 Kbytes
+	 * 
+	 * That way TCP can keep transmitting data for 8 seconds before it would
+	 * have to stop and wait for an ack (to clear space in the buffer for new
+	 * data so it can put new TX data in there and on the line). (The idea is to
+	 * get the ack before you have to stop transmitting.)
+	 */
+    private void transfer() throws IOException {
+		try {
+			_started = System.currentTimeMillis();
+			if (_mode == 'A') {
+				_out = new AddAsciiOutputStream(_out);
+			}
 
-        int bufsize = _slave.getBufferSize();
+			byte[] buff = new byte[Math.max(_slave.getBufferSize(), 65535)];
+			int count;
+			long currentTime = System.currentTimeMillis();
 
-        if (_in == null) {
-            if (bufsize > 0) {
-                _sock.setReceiveBufferSize(bufsize);
-            }
+			try {
+				while (((count = _in.read(buff)) != -1)
+						&& (_abortReason == null)) {
+					if ((System.currentTimeMillis() - currentTime) >= 1000) {
+						_slave.sendResponse(new AsyncResponseTransferStatus(
+								getTransferStatus()));
+						currentTime = System.currentTimeMillis();
+					}
 
-            _in = _sock.getInputStream();
-            _direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
-        } else if (_out == null) {
-            if (bufsize > 0) {
-                _sock.setSendBufferSize(bufsize);
-            }
+					_transfered += count;
+					_out.write(buff, 0, count);
+				}
 
-            _out = _sock.getOutputStream();
-            _direction = Transfer.TRANSFER_SENDING_DOWNLOAD;
-        } else {
-            throw new IllegalStateException("neither in or out was null");
-        }
+				_out.flush();
+			} catch (IOException e) {
+				throw new TransferFailedException(e, getTransferStatus());
+			}
 
-        if (_mode == 'A') {
-            _out = new AddAsciiOutputStream(_out);
-        }
-
-        try {
-            byte[] buff = new byte[Math.max(_slave.getBufferSize(), 65535)];
-            int count;
-            long currentTime = System.currentTimeMillis();
-
-            try {
-                while (((count = _in.read(buff)) != -1) && (_abortReason == null)) {
-                    if ((System.currentTimeMillis() - currentTime) >= 1000) {
-                        _slave.sendResponse(new AsyncResponseTransferStatus(
-                                getTransferStatus()));
-                        currentTime = System.currentTimeMillis();
-                    }
-
-                    _transfered += count;
-                    _out.write(buff, 0, count);
-                }
-
-                _out.flush();
-            } catch (IOException e) {
-                throw new TransferFailedException(e, getTransferStatus());
-            }
-        } finally {
-            _finished = System.currentTimeMillis();
-            _slave.removeTransfer(this);
-            _transferIsFinished = true;
-            _in.close();
-            _out.close();
-            _sock.close();
-
-            _in = null;
-            _out = null;
-
-            //_sock = null;
-        }
-
-        if (_abortReason != null) {
-            throw new TransferFailedException("Transfer was aborted - " + _abortReason,
-                getTransferStatus());
-        }
-
-        return getTransferStatus();
-    }
+			if (_abortReason != null) {
+				throw new TransferFailedException("Transfer was aborted - "
+						+ _abortReason, getTransferStatus());
+			}
+		} finally {
+			_finished = System.currentTimeMillis();
+			_slave.removeTransfer(this); // transfers are added in setting up the transfer, issueListenToSlave()/issueConnectToSlave()
+			_transferIsFinished = true;
+		}
+	}
 }
