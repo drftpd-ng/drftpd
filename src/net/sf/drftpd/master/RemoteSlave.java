@@ -36,7 +36,7 @@ import org.jdom.Element;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.46 2004/06/11 01:45:01 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.47 2004/06/11 03:45:50 zubov Exp $
  */
 public class RemoteSlave implements Comparable {
 	/**
@@ -118,13 +118,13 @@ public class RemoteSlave implements Comparable {
 
 	private boolean _available;
 
-	public void processQueue() throws RemoteException, SlaveUnavailableException {
+	public void processQueue() throws RemoteException {
 		for (Iterator iter = _fileQueue.keySet().iterator(); iter.hasNext();) {
 			String sourceFile = (String) iter.next();
 			String destFile = (String) _fileQueue.get(sourceFile);
 			if (destFile == null) {
 				try {
-					getSlave().delete(sourceFile);
+					_slave.delete(sourceFile);
 				} catch (IOException e) {
 					// just remove and continue, we can't do much
 					// if the OS has the file locked
@@ -132,9 +132,9 @@ public class RemoteSlave implements Comparable {
 			}
 			else {
 				String fileName = destFile.substring(destFile.lastIndexOf("/")+1);
-				String destDir = destFile.substring(0,destFile.lastIndexOf("/")-1);
+				String destDir = destFile.substring(0,destFile.lastIndexOf("/"));
 				try {
-					getSlave().rename(sourceFile,destDir,fileName);
+					_slave.rename(sourceFile,destDir,fileName);
 				} catch (IOException e) {
 					// just remove and continue, we can't do much
 					// if the OS has the file locked
@@ -355,13 +355,14 @@ public class RemoteSlave implements Comparable {
 		Slave slave,
 		InetAddress inetAddress,
 		SlaveStatus status,
-		int maxPath) {
+		int maxPath) throws RemoteException {
 		if (slave == null)
 			throw new IllegalArgumentException();
 		_slave = slave;
 		_inetAddress = inetAddress;
 		_status = status;
 		_maxPath = maxPath;
+		processQueue();
 	}
 
 	public String toString() {

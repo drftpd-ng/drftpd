@@ -67,7 +67,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.97 2004/06/11 01:45:01 zubov Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.98 2004/06/11 03:45:50 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -324,7 +324,13 @@ public class SlaveManagerImpl
 				throw new IllegalArgumentException(
 					rslave.getName() + " has no slave address");
 			}
+			try {
 			rslave.setSlave(slave, addr, slave.getSlaveStatus(), maxPath);
+			} catch (RemoteException e) {
+				logger.warn("", e);
+				rslave.setOffline("IOException during remerge()");
+				return;
+			}
 		} catch (Throwable e1) {
 			throw new FatalException(e1);
 		}

@@ -50,7 +50,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.147 2004/06/09 22:49:16 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.148 2004/06/11 03:45:51 zubov Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -459,7 +459,8 @@ public class LinkedRemoteFile
 		logger.debug("delete(" + getPath() + ")");
 		_link = null;
 		if (isDirectory()) {
-			for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+			// need to use a copy of getFiles() for recursive delete to avoid ConcurrentModificationErrors
+			for (Iterator iter = new ArrayList(getFiles()).iterator(); iter.hasNext();) {
 				LinkedRemoteFileInterface myFile =
 					(LinkedRemoteFileInterface) iter.next();
 				myFile.delete();
