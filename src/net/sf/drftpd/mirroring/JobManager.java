@@ -10,6 +10,7 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.SlaveEvent;
+import net.sf.drftpd.event.listeners.Mirror;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -18,7 +19,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.10 2004/01/08 18:50:35 zubov Exp $
+ * @version $Id: JobManager.java,v 1.11 2004/01/08 20:53:57 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -121,10 +122,9 @@ public class JobManager implements FtpListener {
 	/**
 	 * Gets the next job suitable for the slave, returns true if it is a mirror job
 	 */
-	public synchronized boolean getNextJob(
-		RemoteSlave slave,
-		Job jobToReturn) {
-		jobToReturn = null;
+	public synchronized Job getNextJob(
+		RemoteSlave slave) {
+		Job jobToReturn = null;
 		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
 			Job tempJob = (Job) iter.next();
 			if (tempJob.getDestinationSlaves().contains(null)) { // mirror job
@@ -166,9 +166,8 @@ public class JobManager implements FtpListener {
 						logger.debug(
 							"an Archive job is being returned - "
 								+ slave.getName());
-						jobToReturn = tempJob;
-						removeJob(jobToReturn);
-						return false; // not a mirror job
+						removeJob(tempJob);
+						return tempJob; // not a mirror job
 					}
 					if (tempJob
 						.getFile()
@@ -195,7 +194,7 @@ public class JobManager implements FtpListener {
 			"jobToReturn is returning a mirror job for - " + slave.getName());
 		if (jobToReturn != null)
 			removeJob(jobToReturn);
-		return true;
+		return jobToReturn;
 	}
 
 	public void init(ConnectionManager mgr) {
@@ -218,8 +217,8 @@ public class JobManager implements FtpListener {
 		return !_jobList.contains(job);
 	}
 	public boolean processJob(RemoteSlave slave) {
-		Job temp = null;
-		boolean isMirrorJob = getNextJob(slave, temp);
+		Job temp = getNextJob(slave);
+		
 		if (temp == null) { // nothing to process for this slave
 			logger.debug("Nothing to process for slave " + slave.getName());
 			return false;
@@ -284,7 +283,7 @@ public class JobManager implements FtpListener {
 				+ difference / 1000
 				+ " seconds");
 		synchronized (temp.getDestinationSlaves()) {
-			if (isMirrorJob) {
+			if (temp.getSource() instanceof Mirror) {
 				temp.getDestinationSlaves().remove(null);
 			} else {
 				temp.getDestinationSlaves().remove(slave);
