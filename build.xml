@@ -129,26 +129,24 @@
 
   <target name="compile">
     <mkdir dir="${outputDir}"/>
+    <echo>Compiling 1.4 compatible slave files</echo>
   	<javac sourcepath="" srcdir="${sourceDir}" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.4">
   		<patternset refid="excludes"/>
   		<patternset refid="slaveclasses"/>
     </javac>
+    <echo>Compiling the rest in 1.5 compatible files</echo>
   	<javac srcdir="${sourceDir}" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.5">
   		<patternset refid="excludes"/>
     </javac>
+    <echo>Compiling 1.5 slaveselection files</echo>
   	<javac srcdir="${sourceDir}-slaveselection" destdir="${outputDir}" debug="true" source="1.5">
-      <classpath>
-        <pathelement path="${classpath}"/>
-        <pathelement location="classes"/>
-      </classpath>
+      <include name="**/*.java"/>
       <patternset refid="excludes"/>
   	  <patternset refid="slaveclasses"/>
   	</javac>
+	<echo>Compiling 1.5 archive files</echo>
   	<javac srcdir="${sourceDir}-archive" destdir="${outputDir}" debug="true" source="1.5">
-      <classpath>
-        <pathelement path="${classpath}"/>
-        <pathelement location="classes"/>
-      </classpath>
+      <include name="**/*.java"/>
       <patternset refid="excludes"/>
   	  <patternset refid="slaveclasses"/>
   	</javac>
@@ -157,7 +155,7 @@
         <include name="**/*.properties"/>
       </fileset>
     </copy>
-    <echo>Additional important compile targets are: compile-jsx</echo>
+    <echo>Additional important compile targets are: compile-jsx, compile-xstream</echo>
   </target>
 
   <target name="compile-junit">
@@ -233,6 +231,8 @@
     	<include name="conf/log4j-debug.properties" />
     	<include name="conf/log4j-default.properties" />
     	<include name="src/**"/>
+    	<include name="src-archive/**"/>
+    	<include name="src-slaveselection/**"/>
     	<include name="text/**"/>
     	<include name="bin/*"/>
     	<include name="docs/*"/>
