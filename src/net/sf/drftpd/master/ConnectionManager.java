@@ -94,16 +94,15 @@ public class ConnectionManager {
 	private UserManager _usermanager;
 	public ConnectionManager(Properties cfg, String cfgFileName) {
 		try {
-			this._config = new FtpConfig(cfg, cfgFileName, this);
+			_config = new FtpConfig(cfg, cfgFileName, this);
 		} catch (Throwable ex) {
 			throw new FatalException(ex);
 		}
 
-		/** END: load XML file database **/
-
 		List rslaves = SlaveManagerImpl.loadRSlaves();
 		GlobRMIServerSocketFactory ssf =
 			new GlobRMIServerSocketFactory(rslaves);
+
 		/** register slavemanager **/
 		try {
 			_slaveManager = new SlaveManagerImpl(cfg, rslaves, ssf, this);

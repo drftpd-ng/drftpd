@@ -121,7 +121,7 @@ public class MLSTSerialize {
 					assert v.equals("file") || v.equals("dir") : v;
 					file.setIsFile("file".equals(v));
 					file.setIsDirectory("dir".equals(v));
-				} else if ("modified".equals(k)) {
+				} else if ("modify".equals(k)) {
 					try {
 						file.setLastModified(
 							timeval.parse(v).getTime());
