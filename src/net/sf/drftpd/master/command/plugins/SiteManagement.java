@@ -20,6 +20,8 @@ package net.sf.drftpd.master.command.plugins;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -34,13 +36,16 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.helpers.OptionConverter;
+import org.drftpd.PropertyHelper;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
+import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
-
 
 /**
  * @author mog
@@ -48,264 +53,281 @@ import org.drftpd.remotefile.LinkedRemoteFileInterface;
  * @version $Id$
  */
 public class SiteManagement implements CommandHandlerFactory, CommandHandler {
-    private static final Logger logger = Logger.getLogger(SiteManagement.class);
+	private static final Logger logger = Logger.getLogger(SiteManagement.class);
 
-    private Reply doSITE_LIST(BaseFtpConnection conn) {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
+	private Reply doSITE_LIST(BaseFtpConnection conn) {
+		if (!conn.getUserNull().isAdmin()) {
+			return Reply.RESPONSE_530_ACCESS_DENIED;
+		}
 
-        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
+		Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
 
-        //.getMap().values() to get the .isDeleted files as well.
-        LinkedRemoteFileInterface dir = conn.getCurrentDirectory();
+		// .getMap().values() to get the .isDeleted files as well.
+		LinkedRemoteFileInterface dir = conn.getCurrentDirectory();
 
-        if (conn.getRequest().hasArgument()) {
-            try {
-                dir = dir.lookupFile(conn.getRequest().getArgument());
-            } catch (FileNotFoundException e) {
-                logger.debug("", e);
+		if (conn.getRequest().hasArgument()) {
+			try {
+				dir = dir.lookupFile(conn.getRequest().getArgument());
+			} catch (FileNotFoundException e) {
+				logger.debug("", e);
 
-                return new Reply(200, e.getMessage());
-            }
-        }
-    
-        List files;
-        if(dir.isFile()) {
-        	files = Collections.singletonList(dir);
-        } else {
-        	files = new ArrayList(dir.getMap().values());
-        }
-        Collections.sort(files);
+				return new Reply(200, e.getMessage());
+			}
+		}
 
-        for (Iterator iter = files.iterator(); iter.hasNext();) {
-            LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
+		List files;
+		if (dir.isFile()) {
+			files = Collections.singletonList(dir);
+		} else {
+			files = new ArrayList(dir.getMap().values());
+		}
+		Collections.sort(files);
 
-            //if (!key.equals(file.getName()))
-            //	response.addComment(
-            //		"WARN: " + key + " not equals to " + file.getName());
-            //response.addComment(key);
-            response.addComment(file.toString());
-        }
+		for (Iterator iter = files.iterator(); iter.hasNext();) {
+			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter
+					.next();
 
-        return response;
-    }
+			// if (!key.equals(file.getName()))
+			// response.addComment(
+			// "WARN: " + key + " not equals to " + file.getName());
+			// response.addComment(key);
+			response.addComment(file.toString());
+		}
 
-    private Reply doSITE_LOADPLUGIN(BaseFtpConnection conn) {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
+		return response;
+	}
 
-        if (!conn.getRequest().hasArgument()) {
-            return new Reply(500, "Usage: site load className");
-        }
+	private Reply doSITE_LOADPLUGIN(BaseFtpConnection conn) {
+		if (!conn.getUserNull().isAdmin()) {
+			return Reply.RESPONSE_530_ACCESS_DENIED;
+		}
 
-        FtpListener ftpListener = getFtpListener(conn.getRequest().getArgument());
+		if (!conn.getRequest().hasArgument()) {
+			return new Reply(500, "Usage: site load className");
+		}
 
-        if (ftpListener == null) {
-            return new Reply(500,
-                "Was not able to find the class you are trying to load");
-        }
+		FtpListener ftpListener = getFtpListener(conn.getRequest()
+				.getArgument());
 
-        conn.getGlobalContext().addFtpListener(ftpListener);
+		if (ftpListener == null) {
+			return new Reply(500,
+					"Was not able to find the class you are trying to load");
+		}
 
-        return new Reply(200, "Successfully loaded your plugin");
-    }
+		conn.getGlobalContext().addFtpListener(ftpListener);
 
-    private Reply doSITE_PLUGINS(BaseFtpConnection conn) {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
+		return new Reply(200, "Successfully loaded your plugin");
+	}
 
-        Reply ftpReply = new Reply(200, "Command ok");
-        ftpReply.addComment("Plugins loaded:");
+	private Reply doSITE_PLUGINS(BaseFtpConnection conn) {
+		if (!conn.getUserNull().isAdmin()) {
+			return Reply.RESPONSE_530_ACCESS_DENIED;
+		}
 
-        for (Iterator iter = conn.getGlobalContext().getConnectionManager()
-                                 .getFtpListeners().iterator(); iter.hasNext();) {
-            ftpReply.addComment(iter.next().getClass().getName());
-        }
+		Reply ftpReply = new Reply(200, "Command ok");
+		ftpReply.addComment("Plugins loaded:");
 
-        return ftpReply;
-    }
+		for (Iterator iter = conn.getGlobalContext().getConnectionManager()
+				.getFtpListeners().iterator(); iter.hasNext();) {
+			ftpReply.addComment(iter.next().getClass().getName());
+		}
 
-    private Reply doSITE_RELOAD(BaseFtpConnection conn) {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
+		return ftpReply;
+	}
 
-        try {
-            conn.getGlobalContext().getConnectionManager().reload();
-            conn.getGlobalContext().getConfig().reloadConfig();
-            conn.getGlobalContext().getSlaveManager().reload();
-            conn.getGlobalContext().getSlaveSelectionManager().reload();
+	private Reply doSITE_RELOAD(BaseFtpConnection conn) throws ReplyException {
+		if (!conn.getUserNull().isAdmin()) {
+			return Reply.RESPONSE_530_ACCESS_DENIED;
+		}
 
-            try {
-                conn.getGlobalContext().getConnectionManager().getJobManager()
-                    .reload();
-            } catch (IllegalStateException e1) {
-                // not loaded, don't reload
-            }
+		try {
+			conn.getGlobalContext().getConnectionManager().reload();
+			conn.getGlobalContext().getConfig().reloadConfig();
+			conn.getGlobalContext().getSlaveManager().reload();
+			conn.getGlobalContext().getSlaveSelectionManager().reload();
 
-            conn.getGlobalContext().getConnectionManager()
-                .getCommandManagerFactory().reload();
+			try {
+				conn.getGlobalContext().getConnectionManager().getJobManager()
+						.reload();
+			} catch (IllegalStateException e1) {
+				// not loaded, don't reload
+			}
 
-            //slaveManager.saveFilesXML();
-        } catch (IOException e) {
-            logger.log(Level.FATAL, "Error reloading config", e);
+			conn.getGlobalContext().getConnectionManager()
+					.getCommandManagerFactory().reload();
 
-            return new Reply(200, e.getMessage());
-        }
+			// slaveManager.saveFilesXML();
+		} catch (IOException e) {
+			logger.log(Level.FATAL, "Error reloading config", e);
 
-        conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new ConnectionEvent(
-                conn, "RELOAD"));
+			return new Reply(200, e.getMessage());
+		}
 
-        //ugly hack to clear resourcebundle cache
-        //see http://developer.java.sun.com/developer/bugParade/bugs/4212439.html
-        try {
-            Field cacheList = ResourceBundle.class.getDeclaredField("cacheList");
-            cacheList.setAccessible(true);
-            ((Map) cacheList.get(ResourceBundle.class)).clear();
-            cacheList.setAccessible(false);
-        } catch (Exception e) {
-            logger.error("", e);
-        }
+		conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(
+				new ConnectionEvent(conn, "RELOAD"));
 
-        return Reply.RESPONSE_200_COMMAND_OK;
-    }
+		// ugly hack to clear resourcebundle cache
+		// see
+		// http://developer.java.sun.com/developer/bugParade/bugs/4212439.html
+		try {
+			Field cacheList = ResourceBundle.class
+					.getDeclaredField("cacheList");
+			cacheList.setAccessible(true);
+			((Map) cacheList.get(ResourceBundle.class)).clear();
+			cacheList.setAccessible(false);
+		} catch (Exception e) {
+			logger.error("", e);
+		}
 
-    private Reply doSITE_SHUTDOWN(BaseFtpConnection conn) {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
+		try {
+			OptionConverter.selectAndConfigure(
+					new URL(PropertyHelper.getProperty(System.getProperties(),
+							"log4j.configuration")), null, LogManager
+							.getLoggerRepository());
+		} catch (MalformedURLException e) {
+			throw new ReplyException(e);
+		} finally {
+		}
+		return Reply.RESPONSE_200_COMMAND_OK;
+	}
 
-        String message;
+	private Reply doSITE_SHUTDOWN(BaseFtpConnection conn) {
+		if (!conn.getUserNull().isAdmin()) {
+			return Reply.RESPONSE_530_ACCESS_DENIED;
+		}
 
-        if (!conn.getRequest().hasArgument()) {
-            message = "Service shutdown issued by " +
-                conn.getUserNull().getName();
-        } else {
-            message = conn.getRequest().getArgument();
-        }
+		String message;
 
-        conn.getGlobalContext().getConnectionManager().shutdown(message);
+		if (!conn.getRequest().hasArgument()) {
+			message = "Service shutdown issued by "
+					+ conn.getUserNull().getName();
+		} else {
+			message = conn.getRequest().getArgument();
+		}
 
-        return Reply.RESPONSE_200_COMMAND_OK;
-    }
+		conn.getGlobalContext().getConnectionManager().shutdown(message);
 
-    private Reply doSITE_UNLOADPLUGIN(BaseFtpConnection conn) {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
+		return Reply.RESPONSE_200_COMMAND_OK;
+	}
 
-        if (!conn.getRequest().hasArgument()) {
-            return new Reply(500, "Usage: site unload className");
-        }
+	private Reply doSITE_UNLOADPLUGIN(BaseFtpConnection conn) {
+		if (!conn.getUserNull().isAdmin()) {
+			return Reply.RESPONSE_530_ACCESS_DENIED;
+		}
 
-        for (Iterator iter = conn.getGlobalContext().getConnectionManager()
-                                 .getFtpListeners().iterator(); iter.hasNext();) {
-            FtpListener ftpListener = (FtpListener) iter.next();
+		if (!conn.getRequest().hasArgument()) {
+			return new Reply(500, "Usage: site unload className");
+		}
 
-            if (ftpListener.getClass().getName().equals("net.sf.drftpd.event.listeners." +
-                        conn.getRequest().getArgument()) ||
-                    ftpListener.getClass().getName().equals(conn.getRequest()
-                                                                    .getArgument())) {
-                try {
-                    ftpListener.unload();
-                } catch (RuntimeException e) {
-                    return new Reply(200,
-                        "Exception unloading plugin, plugin removed");
-                }
+		for (Iterator iter = conn.getGlobalContext().getConnectionManager()
+				.getFtpListeners().iterator(); iter.hasNext();) {
+			FtpListener ftpListener = (FtpListener) iter.next();
 
-                iter.remove();
+			if (ftpListener.getClass().getName().equals(
+					"org.drftpd.plugins."
+							+ conn.getRequest().getArgument())
+					|| ftpListener.getClass().getName().equals(
+							conn.getRequest().getArgument())) {
+				try {
+					ftpListener.unload();
+				} catch (RuntimeException e) {
+					return new Reply(200,
+							"Exception unloading plugin, plugin removed");
+				}
 
-                return new Reply(200, "Successfully unloaded your plugin");
-            }
-        }
+				iter.remove();
 
-        return new Reply(500, "Could not find your plugin on the site");
-    }
+				return new Reply(200, "Successfully unloaded your plugin");
+			}
+		}
 
-    public Reply execute(BaseFtpConnection conn)
-        throws UnhandledCommandException {
-        String cmd = conn.getRequest().getCommand();
+		return new Reply(500, "Could not find your plugin on the site");
+	}
 
-        if ("SITE RELOAD".equals(cmd)) {
-            return doSITE_RELOAD(conn);
-        }
+	public Reply execute(BaseFtpConnection conn) throws ReplyException {
+		String cmd = conn.getRequest().getCommand();
 
-        if ("SITE SHUTDOWN".equals(cmd)) {
-            return doSITE_SHUTDOWN(conn);
-        }
+		if ("SITE RELOAD".equals(cmd)) {
+			return doSITE_RELOAD(conn);
+		}
 
-        if ("SITE LIST".equals(cmd)) {
-            return doSITE_LIST(conn);
-        }
+		if ("SITE SHUTDOWN".equals(cmd)) {
+			return doSITE_SHUTDOWN(conn);
+		}
 
-        if ("SITE LOADPLUGIN".equals(cmd)) {
-            return doSITE_LOADPLUGIN(conn);
-        }
+		if ("SITE LIST".equals(cmd)) {
+			return doSITE_LIST(conn);
+		}
 
-        if ("SITE UNLOADPLUGIN".equals(cmd)) {
-            return doSITE_UNLOADPLUGIN(conn);
-        }
+		if ("SITE LOADPLUGIN".equals(cmd)) {
+			return doSITE_LOADPLUGIN(conn);
+		}
 
-        if ("SITE PLUGINS".equals(cmd)) {
-            return doSITE_PLUGINS(conn);
-        }
+		if ("SITE UNLOADPLUGIN".equals(cmd)) {
+			return doSITE_UNLOADPLUGIN(conn);
+		}
 
-        throw UnhandledCommandException.create(SiteManagement.class,
-            conn.getRequest());
-    }
+		if ("SITE PLUGINS".equals(cmd)) {
+			return doSITE_PLUGINS(conn);
+		}
 
-    public String[] getFeatReplies() {
-        return null;
-    }
+		throw UnhandledCommandException.create(SiteManagement.class, conn
+				.getRequest());
+	}
 
-    private FtpListener getFtpListener(String arg) {
-        FtpListener ftpListener = null;
+	public String[] getFeatReplies() {
+		return null;
+	}
 
-        try {
-            ftpListener = (FtpListener) Class.forName(
-                    "org.drftpd.plugins." + arg).newInstance();
-        } catch (InstantiationException e) {
-            logger.error("Was not able to create an instance of the class, did not load",
-                e);
+	private FtpListener getFtpListener(String arg) {
+		FtpListener ftpListener = null;
 
-            return null;
-        } catch (IllegalAccessException e) {
-            logger.error("This will not happen, I do not exist", e);
-            return null;
-        } catch (ClassNotFoundException e) {
-        }
+		try {
+			ftpListener = (FtpListener) Class.forName(
+					"org.drftpd.plugins." + arg).newInstance();
+		} catch (InstantiationException e) {
+			logger
+					.error(
+							"Was not able to create an instance of the class, did not load",
+							e);
 
-        if (ftpListener == null) {
-            try {
-                ftpListener = (FtpListener) Class.forName(arg).newInstance();
-            } catch (InstantiationException e) {
-                logger.error("Was not able to create an instance of the class, did not load",
-                    e);
+			return null;
+		} catch (IllegalAccessException e) {
+			logger.error("This will not happen, I do not exist", e);
+			return null;
+		} catch (ClassNotFoundException e) {
+		}
 
-                return null;
-            } catch (IllegalAccessException e) {
-                logger.error("This will not happen, I do not exist", e);
+		if (ftpListener == null) {
+			try {
+				ftpListener = (FtpListener) Class.forName(arg).newInstance();
+			} catch (InstantiationException e) {
+				logger
+						.error(
+								"Was not able to create an instance of the class, did not load",
+								e);
 
-                return null;
-            } catch (ClassNotFoundException e) {
-                return null;
-            }
-        }
+				return null;
+			} catch (IllegalAccessException e) {
+				logger.error("This will not happen, I do not exist", e);
 
-        return ftpListener;
-    }
+				return null;
+			} catch (ClassNotFoundException e) {
+				return null;
+			}
+		}
 
-    public CommandHandler initialize(BaseFtpConnection conn,
-        CommandManager initializer) {
-        return this;
-    }
+		return ftpListener;
+	}
 
-    public void load(CommandManagerFactory initializer) {
-    }
+	public CommandHandler initialize(BaseFtpConnection conn,
+			CommandManager initializer) {
+		return this;
+	}
 
-    public void unload() {
-    }
+	public void load(CommandManagerFactory initializer) {
+	}
+
+	public void unload() {
+	}
 }

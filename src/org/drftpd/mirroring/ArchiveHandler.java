@@ -38,9 +38,13 @@ public class ArchiveHandler extends Thread {
     private ArchiveType _archiveType;
 
     public ArchiveHandler(ArchiveType archiveType) {
+        super(archiveType.getClass().getName() + " archiving " +
+                archiveType.getSection().getName());
         _archiveType = archiveType;
-        setName(_archiveType.getClass().getName() + " archiving " +
-            _archiveType.getSection().getName());
+        
+        for(_archiveType._parent.getArchiveHandlers()) {
+        	
+        }
     }
 
     public ArchiveType getArchiveType() {

@@ -86,7 +86,7 @@ public class Request implements CommandHandlerFactory, CommandHandler {
 
                 //}
                 try {
-                    conn.getUser().incrementObjectLong(REQUESTSFILLED);
+                    conn.getUser().getKeyedMap().incrementObjectLong(REQUESTSFILLED);
 
                     //conn.getUser().addRequestsFilled();
                 } catch (NoSuchUserException e) {
@@ -124,8 +124,7 @@ public class Request implements CommandHandlerFactory, CommandHandler {
             conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
                     conn, "REQUEST", createdDir));
 
-            //}
-            conn.getUserNull().incrementObjectLong(REQUESTS);
+            conn.getUserNull().getKeyedMap().incrementObjectLong(REQUESTS);
 
             //conn.getUser().addRequests();
             return new Reply(257, "\"" + createdDir.getPath() +

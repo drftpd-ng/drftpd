@@ -273,11 +273,11 @@ public class FtpConfig {
                     return perm.getRatio();
                 }
 
-                return fromUser.getObjectFloat(UserManagment.RATIO);
+                return fromUser.getKeyedMap().getObjectFloat(UserManagment.RATIO);
             }
         }
 
-        return fromUser.getObjectFloat(UserManagment.RATIO);
+        return fromUser.getKeyedMap().getObjectFloat(UserManagment.RATIO);
     }
 
     public float getCreditLossRatio(LinkedRemoteFileInterface path,
@@ -293,7 +293,7 @@ public class FtpConfig {
         }
 
         //default credit loss ratio is 1
-        return (fromUser.getObjectFloat(UserManagment.RATIO) == 0) ? 0 : 1;
+        return (fromUser.getKeyedMap().getObjectFloat(UserManagment.RATIO) == 0) ? 0 : 1;
     }
 
     public String getDirName(String name) {

@@ -52,7 +52,7 @@ public class UserManagerConverter {
             }
         }
 
-        to.putAllObjects(from.getKeyedMap());
+        to.getKeyedMap().setAllObjects(from.getKeyedMap());
         to.addAllMasks(from.getHostMaskCollection());
 
         to.setCredits(from.getCredits());

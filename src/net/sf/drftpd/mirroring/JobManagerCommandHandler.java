@@ -21,10 +21,15 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
+import org.apache.oro.text.GlobCompiler;
+import org.apache.oro.text.regex.MalformedPatternException;
+import org.apache.oro.text.regex.Pattern;
+import org.apache.oro.text.regex.Perl5Matcher;
 import org.drftpd.Bytes;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
+import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -166,11 +171,10 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
                         "listjobwaiting", env));
             }
         }
-
         return reply;
     }
 
-    private Reply doREMOVEJOB(BaseFtpConnection conn) {
+    private Reply doREMOVEJOB(BaseFtpConnection conn) throws ReplyException {
         if (!conn.getUserNull().isAdmin()) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
@@ -181,28 +185,34 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
         }
 
         String filename = conn.getRequest().getArgument();
+        Pattern p;
+        try {
+        	p= new GlobCompiler().compile(filename);
+        } catch (MalformedPatternException e) {
+			throw new ReplyException(e);
+		}
+        Perl5Matcher m = new Perl5Matcher();
+
         Job job = null;
         List jobs = new ArrayList<Job>(conn.getGlobalContext().getConnectionManager()
                                       .getJobManager().getAllJobsFromQueue());
         ReplacerEnvironment env = new ReplacerEnvironment();
         env.add("filename", filename);
 
+        Reply r = new Reply(200);
+                 
         for (Iterator iter = jobs.iterator(); iter.hasNext();) {
             job = (Job) iter.next();
 
-            if (job.getFile().getName().equals(filename)) {
+            if (m.matches(job.getFile().getPath(), p)) {
                 env.add("job", job);
                 conn.getGlobalContext().getConnectionManager().getJobManager()
                     .stopJob(job);
-
-                return new Reply(200,
-                    conn.jprintf(JobManagerCommandHandler.class,
+                r.addComment(conn.jprintf(JobManagerCommandHandler.class,
                         "removejob.success", env));
             }
         }
-
-        return new Reply(200,
-            conn.jprintf(JobManagerCommandHandler.class, "removejob.fail", env));
+        return r;
     }
 
     private Reply doSTARTJOBS(BaseFtpConnection conn) {
@@ -228,7 +238,7 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
     }
 
     public Reply execute(BaseFtpConnection conn)
-        throws UnhandledCommandException {
+        throws ReplyException {
         String cmd = conn.getRequest().getCommand();
 
         if ("SITE LISTJOBS".equals(cmd)) {

@@ -536,7 +536,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             } else if (checkSum.longValue() == fileCheckSum) {
                 status = "OK";
             } else {
-                status = "FAILED - checksum missmatch";
+                status = "FAILED - checksum mismatch";
             }
 
             out.println("200- " + fileName + " SFV: " +
@@ -1063,7 +1063,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
             //check credits
             if (isRetr) {
-                if ((conn.getUserNull().getObjectFloat(UserManagment.RATIO) != 0) &&
+                if ((conn.getUserNull().getKeyedMap().getObjectFloat(UserManagment.RATIO) != 0) &&
                         (conn.getUserNull().getCredits() < _transferFile.length())) {
                     return new Reply(550, "Not enough credits.");
                 }
@@ -1103,7 +1103,9 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                         throw new RuntimeException();
                     }
                 } catch (NoAvailableSlaveException ex) {
-                	throw new ReplySlaveUnavailableException(ex);
+                	//TODO Might not be good to 450 reply always
+                	//from rfc: 450 Requested file action not taken. File unavailable (e.g., file busy).
+                	throw new ReplySlaveUnavailableException(ex, 450);
                 }
             }
 
@@ -1130,7 +1132,6 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                     _transfer = _rslave.getTransfer(ci.getTransferIndex());
                 } catch (Exception ex) {
                     logger.fatal("rslave=" + _rslave, ex);
-
                     return new Reply(450,
                         ex.getClass().getName() + " from slave: " +
                         ex.getMessage());

@@ -23,10 +23,13 @@ import net.sf.drftpd.NoAvailableSlaveException;
  * @version $Id$
  */
 public class ReplySlaveUnavailableException extends ReplyException {
-	public ReplySlaveUnavailableException(NoAvailableSlaveException ex) {
+	private int _replyCode;
+	public ReplySlaveUnavailableException(NoAvailableSlaveException ex, int replyCode) {
 		super(ex);
+		_replyCode = replyCode;
 	}
+
 	public int getReplyCode() {
-		return 530;
+		return _replyCode;
 	}
 }

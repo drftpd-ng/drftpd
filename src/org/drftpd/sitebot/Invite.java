@@ -44,6 +44,7 @@ public class Invite extends GenericCommandAutoService
     implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Invite.class);
     private ConnectionManager _cm;
+	public static final Key IDENT = new Key(Invite.class, "IRCIdent", String.class);
 
     public Invite(SiteBot ircListener) {
         super(ircListener.getIRCConnection());
@@ -87,11 +88,10 @@ public class Invite extends GenericCommandAutoService
                 logger.info("Invited \"" + msgc.getSourceString() +
                     "\" as user " + user.getName());
                 
-            	Key key = new Key(this.getClass(),"IRCIdent",String.class);
             	String ident = msgc.getSource().getNick() + "!" 
 								+ msgc.getSource().getUser() + "@" 
 								+ msgc.getSource().getHost();
-            	user.getKeyedMap().setObject(key,ident);
+            	user.getKeyedMap().setObject(IDENT,ident);
             	try {
 					user.commit();
 		           	logger.info("Proactively set IRC ident to '"+ident+"' for "+user.getName());

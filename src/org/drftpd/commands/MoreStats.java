@@ -208,7 +208,7 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
             stat.updateBytes(getStats(type, user));
             stat.updateFiles(getFiles(type, user));
             stat.updateXfertime(getTime(type, user));
-            stat.updateRacesWon(user.getObjectInt(RaceStatistics.RACESWON));
+            stat.updateRacesWon(user.getKeyedMap().getObjectInt(RaceStatistics.RACESWON));
             stat.updateMembers(1);
             stat = null;
         }

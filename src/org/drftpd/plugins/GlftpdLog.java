@@ -150,7 +150,7 @@ public class GlftpdLog implements FtpListener {
         print("" + string + ": \"" + dir.getPath() + "\" \"" +
             direvent.getUser().getName() + "\" \"" +
             direvent.getUser().getGroup() + "\" \"" +
-            direvent.getUser().getObjectString(UserManagment.TAGLINE) + "\"");
+            direvent.getUser().getKeyedMap().getObjectString(UserManagment.TAGLINE) + "\"");
     }
 
     private void actionPerformedDirectorySTOR(TransferEvent direvent)
@@ -415,7 +415,7 @@ public class GlftpdLog implements FtpListener {
                 }
 
                 long nukedamount = Nuke.calculateNukedAmount(stat.getAmount(),
-                        raceuser.getObjectFloat(UserManagment.RATIO),
+                        raceuser.getKeyedMap().getObjectFloat(UserManagment.RATIO),
                         event.getMultiplier());
 
                 print("NUKEE: \"" + raceuser.getName() + "\" \"" +

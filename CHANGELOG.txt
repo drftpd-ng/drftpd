@@ -1,9 +1,17 @@
+2004/12/06 Morgan Christiansson <drftpd@mog.se>
+* Removed jsx3 and xstream3 usermanagers, removed AutoFreeSpace.
+  There were reports of them being broken and i'm not maintaining them anymore.
+* Made ${log4j.configuration} reload when using SITE RELOAD.
+* Fixed spelling fault, thanks M3ta.
+* moved Pre, made it reset lastModified() on usage,
+  made it reset lastModified() and ownership on
+  the dir pre'd and not just the subdirs.
+
 2004/12/06 Teflon <teflon114@gmail.com>
 * Added IRC !ident command to identify irc users as their ftp users
 * Modified IRC !invite command to automatically identify irc users
 * Set javabeans to be the default usermanager in drftpd.conf
 * Fixed plugin paths to point to the correct class in irc.conf
-
 
 2004/11/30 Morgan Christiansson <drftpd@mog.se>
 * Added SITE DELUSER <user> <reason> at the request of M3ta.

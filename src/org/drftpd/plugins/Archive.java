@@ -41,7 +41,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
 
-
 /**
  * @author zubov
  * @version $Id: Archive.java 814 2004-11-22 02:38:00Z mog $
@@ -53,7 +52,7 @@ public class Archive implements FtpListener, Runnable {
     private long _cycleTime;
     private boolean _isStopped = false;
     private Thread thread = null;
-    private ArrayList _archiveHandlers;
+    private ArrayList<ArchiveHandler> _archiveHandlers;
 
     public Archive() {
         logger.info("Archive plugin loaded successfully");

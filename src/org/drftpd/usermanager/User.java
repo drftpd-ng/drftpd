@@ -31,19 +31,7 @@ import org.drftpd.master.ConnectionManager;
  * @version $Id$
  */
 public abstract class User implements Entity {
-    public final float getObjectFloat(Key key) {
-    	return getKeyedMap().getObjectFloat(key);
-    }
-
     public abstract UserManager getUserManager();
-
-    public final Map<Key, Object> getAllObjects() {
-    	return getKeyedMap().getAllObjects();
-    }
-
-    public final void putAllObjects(KeyedMap m) {
-    	getKeyedMap().setAllObjects(m);
-    }
 
     public abstract KeyedMap getKeyedMap();
     public abstract void addAllMasks(HostMaskCollection hostMaskCollection);
@@ -443,43 +431,4 @@ public abstract class User implements Entity {
     public abstract void updateUploadedFiles(int i);
 
     public abstract void updateUploadedTime(long millis);
-
-    public final Object getObject(Key key) throws KeyNotFoundException {
-    	return getKeyedMap().getObject(key);
-    }
-
-    public final Object getObject(Key key, Object def) {
-    	return getKeyedMap().getObject(key, def);
-    }
-
-    public final void incrementObjectLong(Key key, long value) {
-    	getKeyedMap().incrementObjectLong(key, value);
-    }
-
-    public final void incrementObjectLong(Key nuked) {
-		getKeyedMap().incrementObjectLong(nuked);
-	}
-
-    public final String getObjectString(Key key) {
-    	return getKeyedMap().getObjectString(key);
-    }
-
-    public final int getObjectInt(Key key) {
-    	return getKeyedMap().getObjectInt(key);
-    }
-
-    public final void incrementObjectInt(Key key, int i) {
-    	getKeyedMap().incrementObjectInt(key, i);
-    }
-
-    public final long getObjectLong(Key key) {
-    	return getKeyedMap().getObjectLong(key);
-    }
-
-	public final boolean getObjectBoolean(Key key) {
-		return getKeyedMap().getObjectBoolean(key);
-	}
-	private final void putObject(Key k, int v) {
-		getKeyedMap().setObject(k, v);
-	}
 }

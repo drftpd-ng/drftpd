@@ -51,7 +51,7 @@ public class DummyFtpConfig extends FtpConfig {
 
     public float getCreditCheckRatio(LinkedRemoteFileInterface path,
         User fromUser) {
-        return fromUser.getObjectFloat(UserManagment.RATIO);
+        return fromUser.getKeyedMap().getObjectFloat(UserManagment.RATIO);
     }
 
     public void setConnectionManager(ConnectionManager cm) {

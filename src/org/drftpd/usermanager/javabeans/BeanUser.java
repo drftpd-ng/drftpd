@@ -18,7 +18,6 @@
 package org.drftpd.usermanager.javabeans;
 
 import java.beans.XMLEncoder;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 

@@ -122,14 +122,11 @@ public class RaceStatistics implements FtpListener {
             }
 
             if (count == 1) {
-                //user.addRacesWon();
-                user.incrementObjectLong(RACESWON);
+                user.getKeyedMap().incrementObjectLong(RACESWON);
             } else if (count == racers.size()) {
-                //user.addRacesLost();
-                user.incrementObjectLong(RACESLOST);
+                user.getKeyedMap().incrementObjectLong(RACESLOST);
             } else {
-                //user.addRacesParticipated();
-                user.incrementObjectLong(RACES);
+                user.getKeyedMap().incrementObjectLong(RACES);
             }
         }
     }

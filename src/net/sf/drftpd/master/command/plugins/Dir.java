@@ -397,8 +397,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 
         try {
             uploader = conn.getGlobalContext().getUserManager().getUserByName(requestedFile.getUsername());
-            uploader.updateCredits((long) -(requestedFile.length() * uploader.getObjectFloat(
-                    UserManagment.RATIO)));
+            uploader.updateCredits((long) -(requestedFile.length() * uploader.getKeyedMap().getObjectFloat(UserManagment.RATIO)));
             uploader.updateUploadedBytes(-requestedFile.length());
         } catch (UserFileException e) {
             reply.addComment("Error removing credits & stats: " + e.getMessage());

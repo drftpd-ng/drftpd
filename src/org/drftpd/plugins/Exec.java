@@ -70,10 +70,10 @@ public class Exec implements FtpListener {
         String[] env = {
                 "USER=" + uevent.getUser().getName(),
                 "TAGLINE=" +
-                uevent.getUser().getObjectString(UserManagment.TAGLINE),
+                uevent.getUser().getKeyedMap().getObjectString(UserManagment.TAGLINE),
                 "GROUP=" + uevent.getUser().getGroup(),
                 "RATIO=" +
-                uevent.getUser().getObjectFloat(UserManagment.RATIO),
+                uevent.getUser().getKeyedMap().getObjectFloat(UserManagment.RATIO),
                 "SPEED=" + (uevent.getDirectory().getXferspeed() / 1000),
                 "SPEEDBPS=" + (uevent.getDirectory().getXferspeed()),
                 "HOST=@" + uevent.getConn().getClientAddress(),

@@ -267,16 +267,15 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
             long size = ((Long) nukees2.get(nukee)).longValue();
 
             long debt = calculateNukedAmount(size,
-                    nukee.getObjectFloat(UserManagment.RATIO), multiplier);
+                    nukee.getKeyedMap().getObjectFloat(UserManagment.RATIO), multiplier);
 
             nukedAmount += debt;
             nukeDirSize += size;
             nukee.updateCredits(-debt);
             nukee.updateUploadedBytes(-size);
-            nukee.incrementObjectLong(NUKEDBYTES, debt);
+            nukee.getKeyedMap().incrementObjectLong(NUKEDBYTES, debt);
 
-            //nukee.updateNukedBytes(debt);
-            nukee.incrementObjectLong(NUKED);
+            nukee.getKeyedMap().incrementObjectLong(NUKED);
             nukee.getKeyedMap().setObject(Nuke.LASTNUKED, new Long(System.currentTimeMillis()));
 
             try {
@@ -406,14 +405,13 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
             }
 
             long nukedAmount = calculateNukedAmount(nukeeObj.getAmount(),
-                    nukee.getObjectFloat(UserManagment.RATIO),
+                    nukee.getKeyedMap().getObjectFloat(UserManagment.RATIO),
                     nuke.getMultiplier());
 
             nukee.updateCredits(nukedAmount);
             nukee.updateUploadedBytes(nukeeObj.getAmount());
 
-            //nukee.updateTimesNuked(-1);
-            nukee.incrementObjectInt(NUKED, -1);
+            nukee.getKeyedMap().incrementObjectInt(NUKED, -1);
 
             try {
                 nukee.commit();

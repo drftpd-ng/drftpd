@@ -482,8 +482,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                                                  .getAllUsersByGroup(conn.getUserNull()
                                                                          .getGroup())
                                                  .iterator(); iter.hasNext();) {
-                            if (((User) iter.next()).getObjectFloat(
-                                        UserManagment.RATIO) == 0F) {
+                            if (((User) iter.next()).getKeyedMap().getObjectFloat(UserManagment.RATIO) == 0F) {
                                 usedleechslots++;
                             }
                         }
@@ -506,12 +505,11 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                 logger.info("'" + conn.getUserNull().getName() +
                     "' changed ratio for '" + userToChange.getName() +
                     "' from '" +
-                    userToChange.getObjectFloat(UserManagment.RATIO) +
+                    userToChange.getKeyedMap().getObjectFloat(UserManagment.RATIO) +
                     "' to '" + ratio + "'");
                 userToChange.getKeyedMap().setObject(UserManagment.RATIO, new Float(ratio));
                 env.add("newratio",
-                    Float.toString(userToChange.getObjectFloat(
-                            UserManagment.RATIO)));
+                    Float.toString(userToChange.getKeyedMap().getObjectFloat(UserManagment.RATIO)));
                 response.addComment(conn.jprintf(UserManagment.class,
                         "changeratio.success", env));
             } else {
@@ -519,12 +517,11 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                 logger.info("'" + conn.getUserNull().getName() +
                     "' changed ratio for '" + userToChange.getName() +
                     "' from '" +
-                    userToChange.getObjectFloat(UserManagment.RATIO) + " to '" +
+                    userToChange.getKeyedMap().getObjectFloat(UserManagment.RATIO) + " to '" +
                     ratio + "'");
                 userToChange.getKeyedMap().setObject(UserManagment.RATIO, new Float(ratio));
                 env.add("newratio",
-                    Float.toString(userToChange.getObjectFloat(
-                            UserManagment.RATIO)));
+                    Float.toString(userToChange.getKeyedMap().getObjectFloat(UserManagment.RATIO)));
                 response.addComment(conn.jprintf(UserManagment.class,
                         "changeratio.success", env));
             }
@@ -546,11 +543,11 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             logger.info("'" + conn.getUserNull().getName() +
                 "' changed comment for '" + userToChange.getName() +
                 "' from '" +
-                userToChange.getObjectString(UserManagment.COMMENT) + " to '" +
+                userToChange.getKeyedMap().getObjectString(UserManagment.COMMENT) + " to '" +
                 fullCommandArgument + "'");
             userToChange.getKeyedMap().setObject(UserManagment.COMMENT, fullCommandArgument);
             env.add("comment",
-                userToChange.getObjectString(UserManagment.COMMENT));
+                userToChange.getKeyedMap().getObjectString(UserManagment.COMMENT));
             response.addComment(conn.jprintf(UserManagment.class,
                     "changecomment.success", env));
         } else if ("idle_time".equals(command)) {
@@ -673,7 +670,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             logger.info("'" + conn.getUserNull().getName() +
                 "' changed created for '" + userToChange.getName() +
                 "' from '" +
-                new Date(userToChange.getObjectLong(UserManagment.CREATED)) +
+                new Date(userToChange.getKeyedMap().getObjectLong(UserManagment.CREATED)) +
                 "' to '" + myDate + "'");
             userToChange.getKeyedMap().setObject(UserManagment.CREATED, myDate);
 
@@ -700,7 +697,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 
             logger.info("'" + conn.getUserNull().getName() +
                 "' changed tagline for '" + userToChange.getName() +
-                "' from '" + userToChange.getObject(TAGLINE, "") + "' to '" +
+                "' from '" + userToChange.getKeyedMap().getObject(TAGLINE, "") + "' to '" +
                 fullCommandArgument + "'");
             userToChange.getKeyedMap().setObject(UserManagment.TAGLINE, fullCommandArgument);
 
@@ -1371,7 +1368,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 
         logger.info("'" + conn.getUserNull().getName() +
             "' changed his tagline from '" +
-            conn.getUserNull().getObject(TAGLINE, "") + "' to '" +
+            conn.getUserNull().getKeyedMap().getObject(TAGLINE, "") + "' to '" +
             request.getArgument() + "'");
         conn.getUserNull().getKeyedMap().setObject(UserManagment.TAGLINE, request.getArgument());
 
@@ -1381,7 +1378,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
     private Reply doSITE_DEBUG(BaseFtpConnection conn) {
     	User user = conn.getUserNull();
     	if(!conn.getRequest().hasArgument()) {
-    		user.getKeyedMap().setObject(UserManagment.DEBUG, new Boolean(!user.getObjectBoolean(UserManagment.DEBUG)));
+    		user.getKeyedMap().setObject(UserManagment.DEBUG, new Boolean(!user.getKeyedMap().getObjectBoolean(UserManagment.DEBUG)));
     	} else {
     		String arg = conn.getRequest().getArgument();
     		user.getKeyedMap().setObject(UserManagment.DEBUG, new Boolean(arg.equals("true") || arg.equals("on")));

@@ -37,7 +37,7 @@ public class Statistics implements FtpListener {
     public void actionPerformed(Event event) {
         if (event.getCommand().equals("LOGIN")) {
             UserEvent uevent = (UserEvent) event;
-            uevent.getUser().incrementObjectInt(LOGINS, 1);
+            uevent.getUser().getKeyedMap().incrementObjectInt(LOGINS, 1);
         }
 
         if (event.getCommand().equals("STOR")) {

@@ -129,7 +129,7 @@ public class BaseFtpConnection implements Runnable {
         env = new ReplacerEnvironment(env);
 
         if (user != null) {
-        	for(Map.Entry<Key, Object> o : user.getAllObjects().entrySet()) {
+        	for(Map.Entry<Key, Object> o : user.getKeyedMap().getAllObjects().entrySet()) {
         		env.add(o.getKey().toString(), o.getKey().toString(o.getValue()));
         		//logger.debug("Added "+o.getKey().toString()+" "+o.getKey().toString(o.getValue()));
         	}
@@ -449,7 +449,7 @@ public class BaseFtpConnection implements Runnable {
         	int replycode = e instanceof ReplyException ? ((ReplyException)e).getReplyCode() : 500;
     		reply = new Reply(replycode, e.getMessage());
         	try {
-				if(getUser().getObjectBoolean(UserManagment.DEBUG)) {
+				if(getUser().getKeyedMap().getObjectBoolean(UserManagment.DEBUG)) {
 					StringWriter sw = new StringWriter();
 					e.printStackTrace(new PrintWriter(sw));
 					reply.addComment(sw.toString());

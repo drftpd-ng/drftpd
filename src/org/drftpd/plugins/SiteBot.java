@@ -661,7 +661,7 @@ public class SiteBot implements FtpListener, Observer {
                 raceenv.add("size", Bytes.formatBytes(stat.getAmount()));
 
                 long nukedamount = Nuke.calculateNukedAmount(stat.getAmount(),
-                        raceuser.getObjectFloat(UserManagment.RATIO),
+                        raceuser.getKeyedMap().getObjectFloat(UserManagment.RATIO),
                         event.getMultiplier());
                 raceenv.add("nukedamount", Bytes.formatBytes(nukedamount));
                 say(section, SimplePrintf.jprintf(raceformat, raceenv));
