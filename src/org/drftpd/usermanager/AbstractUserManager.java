@@ -16,18 +16,21 @@
  */
 package org.drftpd.usermanager;
 
-import net.sf.drftpd.DuplicateElementException;
-import net.sf.drftpd.FileExistsException;
-
-import org.drftpd.commands.UserManagment;
-import org.drftpd.master.ConnectionManager;
-
+import java.io.File;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
+
+import net.sf.drftpd.DuplicateElementException;
+import net.sf.drftpd.FileExistsException;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.drftpd.commands.UserManagment;
+import org.drftpd.master.ConnectionManager;
+import org.drftpd.usermanager.jsx3.JSXUser;
 
 
 /**
@@ -39,13 +42,43 @@ import java.util.Iterator;
  */
 public abstract class AbstractUserManager implements UserManager {
     protected ConnectionManager _connManager;
-    protected Hashtable _users;
+    protected Hashtable<String, User> _users = new Hashtable<String, User>();
+	private static final Logger logger = Logger.getLogger(AbstractUserManager.class);
 
-    public AbstractUserManager() {
-        _users = new Hashtable();
+	/**
+	 * For DummyUserManager, skips creation of userfile directory.
+	 */
+	public AbstractUserManager() {
+	}
+    public AbstractUserManager(boolean createIfNoUser) throws UserFileException {
+        if (!getUserpathFile().exists() && !getUserpathFile().mkdirs()) {
+            throw new UserFileException(new IOException(
+                    "Error creating folders: " + getUserpathFile()));
+        }
+        if (createIfNoUser) {
+            String[] userfilenames = getUserpathFile().list();
+            boolean hasUsers = false;
+
+            for (int i = 0; i < userfilenames.length; i++) {
+                String string = userfilenames[i];
+
+                if (string.endsWith(".xml")) {
+                    hasUsers = true;
+
+                    break;
+                }
+            }
+
+            if (!hasUsers) {
+            	logger.debug("createSiteopUser()");
+                createSiteopUser();
+            }
+        }
     }
 
-    protected void createSiteopUser() throws UserFileException {
+	protected abstract File getUserpathFile();
+
+	protected void createSiteopUser() throws UserFileException {
         User user = createUser("drftpd");
         user.setGroup("drftpd");
         user.setPassword("drftpd");
@@ -88,11 +121,18 @@ public abstract class AbstractUserManager implements UserManager {
 
     protected abstract User createUser(String username);
 
-    protected abstract void delete(String string);
+    /**
+     * final for now to remove duplicate implementations
+     */
+    public void delete(String username) {
+        getUserFile(username).delete();
+    }
 
-    public Collection getAllGroups() throws UserFileException {
+	protected abstract File getUserFile(String username);
+
+	public Collection getAllGroups() throws UserFileException {
         Collection users = getAllUsers();
-        ArrayList ret = new ArrayList();
+        ArrayList<String> ret = new ArrayList<String>();
 
         for (Iterator iter = users.iterator(); iter.hasNext();) {
             User myUser = (User) iter.next();
@@ -106,8 +146,8 @@ public abstract class AbstractUserManager implements UserManager {
                 }
             }
 
-            if (!ret.contains(myUser.getGroupName())) {
-                ret.add(myUser.getGroupName());
+            if (!ret.contains(myUser.getGroup())) {
+                ret.add(myUser.getGroup());
             }
         }
 
@@ -117,11 +157,34 @@ public abstract class AbstractUserManager implements UserManager {
     /**
      * Get all user names in the system.
      */
-    public abstract Collection getAllUsers() throws UserFileException;
+    public Collection getAllUsers() throws UserFileException {
+        ArrayList<AbstractUser> users = new ArrayList<AbstractUser>();
+        String[] userpaths = getUserpathFile().list();
+
+        for (int i = 0; i < userpaths.length; i++) {
+            String userpath = userpaths[i];
+
+            if (!userpath.endsWith(".xml")) {
+                continue;
+            }
+
+            String username = userpath.substring(0,
+                    userpath.length() - ".xml".length());
+
+            try {
+                users.add((JSXUser) getUserByNameUnchecked(username));
+
+                // throws IOException
+            } catch (NoSuchUserException e) {
+            } // continue
+        }
+
+        return users;
+    }
 
     public Collection getAllUsersByGroup(String group)
         throws UserFileException {
-        Collection c = new ArrayList();
+        Collection<User> c = new ArrayList<User>();
 
         for (Iterator iter = getAllUsers().iterator(); iter.hasNext();) {
             User user = (User) iter.next();
@@ -172,7 +235,6 @@ public abstract class AbstractUserManager implements UserManager {
             } catch (NoSuchUserException e) {
                 _users.remove(oldUser.getName());
                 _users.put(newUsername, oldUser);
-
                 return;
             }
         }
@@ -180,5 +242,11 @@ public abstract class AbstractUserManager implements UserManager {
         throw new UserExistsException("user " + newUsername + " exists");
     }
 
-    public abstract void saveAll() throws UserFileException;
+
+    public void saveAll() throws UserFileException {
+        logger.log(Level.INFO, "Saving userfiles");
+        for(User user : _users.values()) {
+            user.commit();
+        }
+    }
 }

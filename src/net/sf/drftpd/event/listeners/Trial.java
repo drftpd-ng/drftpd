@@ -86,7 +86,7 @@ public class Trial implements FtpListener {
             } else if ("setgrp".equals(cmd)) {
                 user.setGroup(st.nextToken());
                 logger.info(user.getName() + " primary group set to " +
-                    user.getGroupName());
+                    user.getGroup());
             } else if ("delete".equals(cmd)) {
                 user.setDeleted(true);
                 logger.info(user.getName() + " deleted");

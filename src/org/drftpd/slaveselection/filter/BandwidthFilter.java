@@ -105,7 +105,7 @@ public class BandwidthFilter extends Filter {
     }
 
     public void process(ScoreChart scorechart, User user, InetAddress source,
-        char direction, LinkedRemoteFileInterface file) {
+        char direction, LinkedRemoteFileInterface file, RemoteSlave sourceSlave) {
         Collection slavescores = scorechart.getSlaveScores();
 
         for (Iterator iter = slavescores.iterator(); iter.hasNext();) {

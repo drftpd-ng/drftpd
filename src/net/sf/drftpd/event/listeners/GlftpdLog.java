@@ -150,7 +150,7 @@ public class GlftpdLog implements FtpListener {
         // TYPE: "/path/to/release" "username" "group" "tagline" 
         print("" + string + ": \"" + dir.getPath() + "\" \"" +
             direvent.getUser().getName() + "\" \"" +
-            direvent.getUser().getGroupName() + "\" \"" +
+            direvent.getUser().getGroup() + "\" \"" +
             direvent.getUser().getObjectString(UserManagment.TAGLINE) + "\"");
     }
 
@@ -223,7 +223,7 @@ public class GlftpdLog implements FtpListener {
                     // "whois_he_racing" "new_racers_speed" "files_left" "time_raced"
                     print("RACE: \"" + dir.getPath() + "\" \"" +
                         direvent.getUser().getName() + "\" \"" +
-                        direvent.getUser().getGroupName() + "\" \"" +
+                        direvent.getUser().getGroup() + "\" \"" +
                         sfvfile.getXferspeed() + "\" \"" +
                         Integer.toString(sfvstatus.getMissing()) + "\" \"" +
                         Long.toString((direvent.getTime() - starttime) / 1000) +
@@ -274,9 +274,9 @@ public class GlftpdLog implements FtpListener {
                 Long.toString((direvent.getTime() - starttime) / 1000) +
                 "\" \"" + Integer.toString(racers.size()) + "\" \"" +
                 Integer.toString(groups.size()) + "\" \"" +
-                fastuser.getName() + "\" \"" + fastuser.getGroupName() +
+                fastuser.getName() + "\" \"" + fastuser.getGroup() +
                 "\" \"" + fastestuser.getXferspeed() + "\" \"" +
-                slowuser.getName() + "\" \"" + slowuser.getGroupName() +
+                slowuser.getName() + "\" \"" + slowuser.getGroup() +
                 "\" \"" + slowestuser.getXferspeed() + "\"");
 
             print("STATS: \"" + dir.getPath() + "\" \"UserTop:\"");
@@ -303,7 +303,7 @@ public class GlftpdLog implements FtpListener {
                 // "files_uploaded" "percent_uploaded" "avrage_speed" 
                 print("STATSUSER: \"" + dir.getPath() + "\" \"" +
                     new Integer(position++) + "\" \"" + raceuser.getName() +
-                    "\" \"" + raceuser.getGroupName() + "\" \"" +
+                    "\" \"" + raceuser.getGroup() + "\" \"" +
                     stat.getBytes() + "\" \"" +
                     Integer.toString(stat.getFiles()) + "\" \"" +
                     Integer.toString((stat.getFiles() * 100) / sfvfile.size()) +
@@ -351,7 +351,7 @@ public class GlftpdLog implements FtpListener {
             // HALFWAY: "/path/to/release" "leading_username" "group" "mb_uploaded" 
             // "files_uploaded" "percent_uploaded" "avrage_speed" "files_left"
             print("HALFWAY: \"" + dir.getPath() + "\" \"" +
-                leaduser.getName() + "\" \"" + leaduser.getGroupName() +
+                leaduser.getName() + "\" \"" + leaduser.getGroup() +
                 "\" \"" + stat.getBytes() + "\" \"" +
                 Integer.toString(stat.getFiles()) + "\" \"" +
                 Integer.toString((stat.getFiles() * 100) / sfvfile.size()) +
@@ -390,7 +390,7 @@ public class GlftpdLog implements FtpListener {
         if (cmd.equals("NUKE")) {
             print("NUKE: \"" + event.getPath() + "\" \"" +
                 event.getUser().getName() + "\" \"" +
-                event.getUser().getGroupName() + "\" \"" +
+                event.getUser().getGroup() + "\" \"" +
                 String.valueOf(event.getMultiplier()) + " " + event.getSize() +
                 "\" \"" + event.getReason() + "\"");
 
@@ -420,7 +420,7 @@ public class GlftpdLog implements FtpListener {
                         event.getMultiplier());
 
                 print("NUKEE: \"" + raceuser.getName() + "\" \"" +
-                    raceuser.getGroupName() + "\" \"" + position++ + "\" \"" +
+                    raceuser.getGroup() + "\" \"" + position++ + "\" \"" +
                     stat.getAmount() + " " + nukedamount + "\"");
             }
 
@@ -431,7 +431,7 @@ public class GlftpdLog implements FtpListener {
         } else if (cmd.equals("UNNUKE")) {
             print("UNNUKE: \"" + event.getPath() + "\" \"" +
                 event.getUser().getName() + "\" \"" +
-                event.getUser().getGroupName() + "\" \"" +
+                event.getUser().getGroup() + "\" \"" +
                 String.valueOf(event.getMultiplier()) + " " + event.getSize() +
                 "\" \"" + event.getReason() + "\"");
         }

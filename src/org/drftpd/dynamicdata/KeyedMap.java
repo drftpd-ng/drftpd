@@ -29,23 +29,19 @@ import org.drftpd.usermanager.KeyNotFoundException;
  * @version $Id$
  */
 public class KeyedMap extends HashMap {
-	//private HashMap<Key, Object> _data = new HashMap<Key, Object>();
-	private HashMap<Key, Object> _data = this;
 	public KeyedMap() {
 		super();
 	}
 
 	public Map<Key, Object> getAllObjects() {
-		return Collections.unmodifiableMap(_data);
+		return Collections.unmodifiableMap(this);
 	}
 
 	public Object getObject(Key key) throws KeyNotFoundException {
-        Object ret = _data.get(key);
-
+        Object ret = get(key);
         if (ret == null) {
             throw new KeyNotFoundException();
         }
-
         return ret;
 	}
 
@@ -90,7 +86,7 @@ public class KeyedMap extends HashMap {
             throw new ClassCastException();
         }
 
-        synchronized (_data) {
+        synchronized (this) {
             Integer i;
 
             try {
@@ -112,7 +108,7 @@ public class KeyedMap extends HashMap {
             throw new ClassCastException();
         }
 
-        synchronized (_data) {
+        synchronized (this) {
             Long i;
 
             try {
@@ -126,7 +122,7 @@ public class KeyedMap extends HashMap {
 	}
 
 	public void putAllObjects(KeyedMap m) {
-		_data.putAll(m.getAllObjects());
+		putAll(m.getAllObjects());
 	}
 
 	public void setObject(Key key, Object obj) {
@@ -139,7 +135,7 @@ public class KeyedMap extends HashMap {
                     " - " + obj + " - " + obj.getClass().getName());
         }
 
-        _data.put(key, obj);
+        put(key, obj);
 	}
 	public void putObject(Key k, int v) {
 		setObject(k, new Integer(v));

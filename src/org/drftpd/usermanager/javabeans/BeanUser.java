@@ -18,10 +18,12 @@
 package org.drftpd.usermanager.javabeans;
 
 import java.beans.XMLEncoder;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 
+import org.apache.log4j.Logger;
+import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserFileException;
@@ -36,6 +38,7 @@ public class BeanUser extends AbstractUser implements Serializable {
 	private BeanUserManager _um;
 	private String _password = "";
 	private boolean _purged;
+	private static final Logger logger = Logger.getLogger(BeanUser.class);
 
 	public BeanUser(String username) {
 		super(username);
@@ -55,15 +58,21 @@ public class BeanUser extends AbstractUser implements Serializable {
 	}
 
 	public boolean checkPassword(String password) {
-		return password.equals(this._password);
+		return password.equals(_password);
 	}
 
 	public void commit() throws UserFileException {
+		logger.debug("commit "+getName());
 		if(_purged) return;
+		XMLEncoder out = null;
 		try {
-			new XMLEncoder(new FileOutputStream(_um.getUserFile(getName()))).writeObject(this);
-		} catch (FileNotFoundException e) {
-			throw new UserFileException(e);
+			out = _um.getXMLEncoder(new SafeFileOutputStream(_um.getUserFile(getName())));
+			out.writeObject(this);
+			logger.debug("wroteObject()");
+		} catch (IOException ex) {
+			throw new UserFileException(ex);
+		} finally {
+				if(out != null) out.close();
 		}
 	}
 
@@ -73,11 +82,15 @@ public class BeanUser extends AbstractUser implements Serializable {
 	}
 
 	public String getPassword() {
-		return this._password;
+		return _password;
 	}
 
 	public void setPassword(String password) {
-		this._password = password;
+		_password = password;
+	}
+
+	public void setUserManager(BeanUserManager manager) {
+		_um = manager;
 	}
 
 }

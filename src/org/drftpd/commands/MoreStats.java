@@ -188,7 +188,7 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
 
         for (Iterator iter = users.iterator(); iter.hasNext();) {
             User user = (User) iter.next();
-            groupname = user.getGroupName();
+            groupname = user.getGroup();
 
             for (Iterator iter2 = grpList.iterator(); iter2.hasNext();) {
                 MyGroupPosition stat2 = (MyGroupPosition) iter2.next();

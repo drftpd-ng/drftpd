@@ -460,7 +460,7 @@ public class SiteBot implements FtpListener, Observer {
                 ReplacerEnvironment raceenv = new ReplacerEnvironment(GLOBAL_ENV);
 
                 raceenv.add("user", raceuser.getName());
-                raceenv.add("group", raceuser.getGroupName());
+                raceenv.add("group", raceuser.getGroup());
 
                 raceenv.add("position", new Integer(position++));
                 raceenv.add("size", Bytes.formatBytes(stat.getBytes()));
@@ -550,7 +550,7 @@ public class SiteBot implements FtpListener, Observer {
                 leaduser = _cm.getGlobalContext().getUserManager()
                               .getUserByName(stat.getUsername());
                 env.add("leaduser", leaduser.getName());
-                env.add("leadgroup", leaduser.getGroupName());
+                env.add("leadgroup", leaduser.getGroup());
             } catch (NoSuchUserException e3) {
                 logger.log(Level.WARN, "", e3);
             } catch (UserFileException e3) {
@@ -622,7 +622,7 @@ public class SiteBot implements FtpListener, Observer {
         env.add("multiplier", String.valueOf(event.getMultiplier()));
 
         env.add("user", event.getUser().getName());
-        env.add("group", event.getUser().getGroupName());
+        env.add("group", event.getUser().getGroup());
 
         //env.add("nukees", event.getNukees().keySet());
         if (cmd.equals("NUKE")) {
@@ -655,7 +655,7 @@ public class SiteBot implements FtpListener, Observer {
                 ReplacerEnvironment raceenv = new ReplacerEnvironment(GLOBAL_ENV);
 
                 raceenv.add("user", raceuser.getName());
-                raceenv.add("group", raceuser.getGroupName());
+                raceenv.add("group", raceuser.getGroup());
 
                 raceenv.add("position", "" + position++);
                 raceenv.add("size", Bytes.formatBytes(stat.getAmount()));
@@ -804,7 +804,7 @@ public class SiteBot implements FtpListener, Observer {
         DirectoryFtpEvent direvent, SectionInterface section,
         LinkedRemoteFileInterface file) {
         env.add("user", direvent.getUser().getName());
-        env.add("group", direvent.getUser().getGroupName());
+        env.add("group", direvent.getUser().getGroup());
         env.add("section", section.getName());
 
         LinkedRemoteFileInterface dir = file;

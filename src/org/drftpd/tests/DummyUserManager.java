@@ -23,6 +23,7 @@ import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -47,10 +48,6 @@ public class DummyUserManager extends AbstractUserManager {
         add(u);
 
         return u;
-    }
-
-    public void delete(String string) {
-        throw new UnsupportedOperationException();
     }
 
     public Collection getAllGroups() throws UserFileException {
@@ -85,4 +82,12 @@ public class DummyUserManager extends AbstractUserManager {
     public Collection getAllUsers() throws UserFileException {
         return Collections.unmodifiableCollection(_users.values());
     }
+
+	protected File getUserpathFile() {
+		throw new UnsupportedOperationException();
+	}
+
+	protected File getUserFile(String username) {
+		throw new UnsupportedOperationException();
+	}
 }

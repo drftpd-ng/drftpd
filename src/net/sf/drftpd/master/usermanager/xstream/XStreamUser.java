@@ -22,10 +22,10 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
 
 import net.sf.drftpd.master.usermanager.AbstractUser;
 import net.sf.drftpd.util.Crypt;
-import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.io.SafeFileWriter;
 import org.drftpd.usermanager.PlainTextPasswordUser;
 import org.drftpd.usermanager.UnixPassword;
 import org.drftpd.usermanager.UserExistsException;

@@ -59,7 +59,7 @@ public class UserManagerConverter {
 
         to.setDeleted(from.isDeleted());
 
-        to.setGroup(from.getGroupName());
+        to.setGroup(from.getGroup());
 
         to.setGroupLeechSlots(from.getGroupLeechSlots());
 

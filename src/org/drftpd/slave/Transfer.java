@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
@@ -190,9 +191,10 @@ public class Transfer {
             _out = new CheckedOutputStream(_out, _checksum);
         }
 
-        System.out.println("UL:" + root + "/" +dirname + "/" + filename);
+        System.out.println(dirname + "/" + filename);
 
         try {
+        	accept();
             TransferStatus status = transfer();
             _slave.sendResponse(new AsyncResponseDiskStatus(_slave.getDiskStatus()));
             return status;
@@ -215,8 +217,14 @@ public class Transfer {
         _in.skip(resumePosition);
 
         System.out.println("DL:" + path);
-
+        accept();
         return transfer();
+    }
+
+    private InetSocketAddress accept() throws IOException {
+        _sock = _conn.connect();
+        _conn = null;
+        return new InetSocketAddress(_sock.getInetAddress(),_sock.getPort());
     }
 
     /**
@@ -246,8 +254,6 @@ public class Transfer {
      */
     private TransferStatus transfer() throws IOException {
         _started = System.currentTimeMillis();
-        _sock = _conn.connect();
-        _conn = null;
 
         int bufsize = _slave.getBufferSize();
 

@@ -71,7 +71,7 @@ public class Exec implements FtpListener {
                 "USER=" + uevent.getUser().getName(),
                 "TAGLINE=" +
                 uevent.getUser().getObjectString(UserManagment.TAGLINE),
-                "GROUP=" + uevent.getUser().getGroupName(),
+                "GROUP=" + uevent.getUser().getGroup(),
                 "RATIO=" +
                 uevent.getUser().getObjectFloat(UserManagment.RATIO),
                 "SPEED=" + (uevent.getDirectory().getXferspeed() / 1000),

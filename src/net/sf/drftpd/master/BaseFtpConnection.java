@@ -467,7 +467,7 @@ public class BaseFtpConnection implements Runnable {
                          .getConfig().getHideIps()) {
             _thread.setName("FtpConn from " +
                 getClientAddress().getHostAddress() + " " +
-                _user.getName() + "/" + _user.getGroupName());
+                _user.getName() + "/" + _user.getGroup());
         }
     }
 

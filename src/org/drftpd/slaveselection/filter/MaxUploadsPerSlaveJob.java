@@ -17,55 +17,47 @@
  */
 package org.drftpd.slaveselection.filter;
 
+import java.net.InetAddress;
+import java.util.Properties;
+
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.master.BaseFtpConnection;
+import net.sf.drftpd.mirroring.Job;
+import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
-import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.User;
-
-import java.net.InetAddress;
-
-import java.util.Iterator;
-import java.util.Properties;
 
 /**
  * @author mog
  * @version $Id$
  */
-public class MaxTransfersPerUserFilter extends Filter {
+public class MaxUploadsPerSlaveJob extends Filter {
 	private GlobalContext _gctx;
-	private static final Logger logger = Logger.getLogger(MaxTransfersPerUserFilter.class);
 
-	public MaxTransfersPerUserFilter(FilterChain ssm, int i,
-			Properties p) {
-		this(ssm.getGlobalContext());
+	public MaxUploadsPerSlaveJob(FilterChain fc, int i, Properties p) {
+		_gctx = fc.getGlobalContext();
 	}
 
-	public MaxTransfersPerUserFilter(GlobalContext gctx) {
+	public MaxUploadsPerSlaveJob(GlobalContext gctx) {
 		_gctx = gctx;
 	}
 
 	public void process(ScoreChart scorechart, User user, InetAddress peer,
-			char direction, LinkedRemoteFileInterface dir, RemoteSlave sourceSlave)
-			throws NoAvailableSlaveException {
-
-		for (BaseFtpConnection conn : _gctx.getConnectionManager()
-				.getConnections()) {
-
-			if (!conn.isTransfering())
-				continue;
-
-			for (Iterator<ScoreChart.SlaveScore> iter2 = scorechart
-					.getSlaveScores().iterator(); iter2.hasNext();) {
-				ScoreChart.SlaveScore score = iter2.next();
-
-				if (score.getRSlave().equals(
-						conn.getDataConnectionHandler().getTranferSlave()) && direction == conn.getDirection()) {
-					logger.debug("Already has a transfer for slave "+score.getRSlave().getName());
-					iter2.remove();
+			char direction, LinkedRemoteFileInterface dir,
+			RemoteSlave sourceSlave) throws NoAvailableSlaveException {
+		process(scorechart, sourceSlave);
+	}
+	public void process(ScoreChart scorechart, RemoteSlave sourceSlave) {
+		if (sourceSlave == null)
+			return;
+		JobManager jm = _gctx.getJobManager();
+		for (Job job : jm.getAllJobsFromQueue()) {
+			if (job.isTransferring()) {
+				synchronized (job) {
+					if (job.getSourceSlave().equals(sourceSlave))
+						scorechart.removeSlaveScore(job.getDestinationSlave());
 				}
 			}
 		}

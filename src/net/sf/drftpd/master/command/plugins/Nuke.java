@@ -248,7 +248,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
         try {
             nukeDir = nukeDir.renameTo(toDirPath, toName);
             nukeDir.createDirectory(conn.getUserNull().getName(),
-                conn.getUserNull().getGroupName(), "REASON-" + reason);
+                conn.getUserNull().getGroup(), "REASON-" + reason);
         } catch (IOException ex) {
             logger.warn("", ex);
             response.addComment(" cannot rename to \"" + toDirPath + "/" +

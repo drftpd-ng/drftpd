@@ -18,51 +18,72 @@
 package org.drftpd.usermanager.javabeans;
 
 import java.beans.DefaultPersistenceDelegate;
+import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.File;
-import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.OutputStream;
-import java.util.Collection;
 
+import net.sf.drftpd.FatalException;
+
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.usermanager.AbstractUserManager;
+import org.drftpd.usermanager.HostMask;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 
 /**
- * This is a new usermanager that after recommendation from captain-
- * serializes user data using javabeans XMLSerialize.
+ * This is a new usermanager that after recommendation from captain- serializes
+ * user data using javabeans XMLSerialize.
  * 
  * @author mog
  * @version $Id$
  */
 public class BeanUserManager extends AbstractUserManager {
 
+	private static String _userpath = "users/javabeans/";
+
+	private static File _userpathFile = new File(_userpath);
+
 	public BeanUserManager() throws UserFileException {
-		if (!_userpathFile.exists() && !_userpathFile.mkdirs()) {
-			throw new UserFileException(new IOException(
-					"Error creating folders: " + _userpathFile));
-		}
+		this(true);
 	}
 
-	private String _userpath = "users/javabeans0/";
-
-	private File _userpathFile = new File(_userpath);
+	public BeanUserManager(boolean createIfNoUser) throws UserFileException {
+		super(createIfNoUser);
+	}
 
 	protected User createUser(String username) {
 		return new BeanUser(this, username);
 	}
 
-	protected void delete(String string) {
-	}
-
-	public Collection getAllUsers() throws UserFileException {
-		return null;
-	}
-
 	public User getUserByNameUnchecked(String username)
 			throws NoSuchUserException, UserFileException {
-		return null;
+		try {
+			BeanUser user = (BeanUser) _users.get(username);
+
+			if (user != null) {
+				return user;
+			}
+
+			XMLDecoder xe = new XMLDecoder(new FileInputStream(
+					getUserFile(username)));
+			user = (BeanUser) xe.readObject();
+
+			user.setUserManager(this);
+			_users.put(user.getName(), user);
+			user.reset(_connManager);
+			return user;
+		} catch (FileNotFoundException ex) {
+			throw new NoSuchUserException("No such user", ex);
+		} catch (Exception ex) {
+			if (ex instanceof NoSuchUserException) {
+				throw (NoSuchUserException) ex;
+			}
+			throw new UserFileException("Error loading " + username, ex);
+		}
 	}
 
 	public void saveAll() throws UserFileException {
@@ -74,14 +95,22 @@ public class BeanUserManager extends AbstractUserManager {
 		u.commit();
 	}
 
-	File getUserFile(String username) {
-		return new File(_userpath = "users/javabeans0/" + username + ".xml");
+	protected File getUserFile(String username) {
+		return new File(_userpath + username + ".xml");
 	}
 
 	public XMLEncoder getXMLEncoder(OutputStream out) {
 		XMLEncoder e = new XMLEncoder(out);
 		e.setPersistenceDelegate(BeanUser.class,
 				new DefaultPersistenceDelegate(new String[] { "name" }));
+		e.setPersistenceDelegate(Key.class, new DefaultPersistenceDelegate(
+				new String[] { "owner", "key", "type" }));
+		e.setPersistenceDelegate(HostMask.class,
+				new DefaultPersistenceDelegate(new String[] { "mask" }));
 		return e;
+	}
+
+	protected File getUserpathFile() {
+		return _userpathFile;
 	}
 }

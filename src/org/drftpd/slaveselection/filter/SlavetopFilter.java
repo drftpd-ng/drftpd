@@ -67,7 +67,7 @@ public class SlavetopFilter extends Filter {
     }
 
     public void process(ScoreChart scorechart, User user, InetAddress peer,
-        char direction, LinkedRemoteFileInterface dir)
+        char direction, LinkedRemoteFileInterface dir, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException {
         String path = dir.getPath();
 

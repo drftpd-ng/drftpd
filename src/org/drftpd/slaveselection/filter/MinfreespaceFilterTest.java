@@ -65,7 +65,7 @@ public class MinfreespaceFilterTest extends TestCase {
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
         Filter f = new MinfreespaceFilter(null, 1, p);
-        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null);
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null, null);
 
         assertEquals(Bytes.parseBytes("-50MB"),
             sc.getSlaveScore(rslaves[0]).getScore());

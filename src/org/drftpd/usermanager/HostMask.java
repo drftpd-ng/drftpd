@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd;
+package org.drftpd.usermanager;
 
 import org.apache.log4j.Logger;
 
@@ -29,7 +29,7 @@ import java.net.InetAddress;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: HostMask.java 808 2004-11-18 15:58:39Z mog $
  */
 public class HostMask {
     private static final Logger logger = Logger.getLogger(HostMask.class);

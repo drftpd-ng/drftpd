@@ -23,6 +23,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.Bytes;
 import org.drftpd.PropertyHelper;
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;
@@ -44,7 +45,7 @@ import java.util.Properties;
  *   addScore((minfreespace - diskfree) * multiplier)
  * }
  * @author mog
- * @version $Id: MinfreespaceFilter.java,v 1.11 2004/11/09 21:50:00 zubov Exp $
+ * @version $Id$
  */
 public class MinfreespaceFilter extends Filter {
     private long _minfreespace;
@@ -59,7 +60,7 @@ public class MinfreespaceFilter extends Filter {
     }
 
     public void process(ScoreChart scorechart, User user, InetAddress source,
-        char direction, LinkedRemoteFileInterface file) {
+        char direction, LinkedRemoteFileInterface file, RemoteSlave sourceSlave) {
         for (Iterator iter = scorechart.getSlaveScores().iterator();
                 iter.hasNext();) {
             ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();

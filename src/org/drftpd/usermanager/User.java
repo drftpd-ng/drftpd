@@ -17,7 +17,6 @@
 package org.drftpd.usermanager;
 
 import net.sf.drftpd.DuplicateElementException;
-import net.sf.drftpd.HostMaskCollection;
 
 import java.util.List;
 import java.util.Map;
@@ -93,7 +92,7 @@ public abstract class User implements Entity {
 
     public abstract short getGroupLeechSlots();
 
-    public abstract String getGroupName();
+    public abstract String getGroup();
 
     public abstract List getGroups();
 

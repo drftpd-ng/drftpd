@@ -196,7 +196,7 @@ public class DefaultSlaveSelectionManager
         return bestslave;
     }
 
-    public RemoteSlave getASlaveForJobUpload(Job job)
+    public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException {
         Collection slaves = getGlobalContext().getSlaveManager()
                                 .getAvailableSlaves();

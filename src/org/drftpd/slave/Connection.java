@@ -25,7 +25,7 @@ import java.net.Socket;
 
 /**
  * @author mog
- * @version $Id: Connection.java,v 1.1 2004/11/09 18:59:58 mog Exp $
+ * @version $Id$
  */
 public abstract class Connection implements Serializable {
     public static final int TIMEOUT = 10000;

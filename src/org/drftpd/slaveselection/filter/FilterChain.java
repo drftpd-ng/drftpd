@@ -61,19 +61,18 @@ public class FilterChain {
         reload();
     }
 
-    public void filter(ScoreChart sc, User user, InetAddress peer, char direction, LinkedRemoteFileInterface file) throws NoAvailableSlaveException {
+    public void filter(ScoreChart sc, User user, InetAddress peer, char direction, LinkedRemoteFileInterface file, RemoteSlave sourceSlave) throws NoAvailableSlaveException {
     	for (Filter filter : _filters) {
-    		filter.process(sc, user, peer, direction, file);
+    		filter.process(sc, user, peer, direction, file, sourceSlave);
         }
 	}
 
     public RemoteSlave getBestSlave(ScoreChart sc, User user, InetAddress peer,
-        char direction, LinkedRemoteFileInterface file)
+        char direction, LinkedRemoteFileInterface file, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException {
-    	filter(sc,user,peer,direction,file);
+    	filter(sc,user,peer,direction,file, sourceSlave);
         RemoteSlave rslave = sc.getBestSlave();
         rslave.setLastDirection(direction, System.currentTimeMillis());
-
         return rslave;
     }
 

@@ -124,6 +124,12 @@ public class Job {
         return _sourceSlave.getName();
     }
 
+    public synchronized RemoteSlave getSourceSlave() {
+        if (!isTransferring()) {
+            throw new IllegalStateException(this + " is not transferring");
+        }
+    	return _sourceSlave;
+    }
     /**
      * This is the time that the job was created
      */
@@ -218,4 +224,11 @@ public class Job {
 
         return result;
     }
+
+	public synchronized RemoteSlave getDestinationSlave() {
+        if (!isTransferring()) {
+            throw new IllegalStateException(this + " is not transferring");
+        }
+		return _destSlave;
+	}
 }

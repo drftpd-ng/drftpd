@@ -20,6 +20,7 @@ package org.drftpd.slaveselection.filter;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;
@@ -30,10 +31,10 @@ import java.net.InetAddress;
  * if download, the inetaddress would be the dest.
  *
  * @author mog
- * @version $Id: Filter.java,v 1.3 2004/11/03 16:46:48 mog Exp $
+ * @version $Id$
  */
 public abstract class Filter {
     public abstract void process(ScoreChart scorechart, User user,
-        InetAddress peer, char direction, LinkedRemoteFileInterface dir)
+        InetAddress peer, char direction, LinkedRemoteFileInterface dir, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException;
 }

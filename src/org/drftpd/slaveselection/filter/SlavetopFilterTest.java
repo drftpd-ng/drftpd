@@ -126,7 +126,7 @@ public class SlavetopFilterTest extends TestCase {
         fc.setSlaveManager(sm);
 
         Filter f = new SlavetopFilter(fc, 1, p);
-        f.process(sc, null, null, Transfer.TRANSFER_UNKNOWN, dir2);
+        f.process(sc, null, null, Transfer.TRANSFER_UNKNOWN, dir2, null);
         assertEquals(100, sc.getSlaveScore(rslaves[0]).getScore());
         assertEquals(0, sc.getSlaveScore(rslaves[1]).getScore());
         assertEquals(100, sc.getSlaveScore(rslaves[2]).getScore());

@@ -65,7 +65,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     /**
      * Checksums call us with null BaseFtpConnection.
      */
-    public RemoteSlave getASlave(Collection rslaves, char direction,
+    public RemoteSlave getASlave(Collection<RemoteSlave> rslaves, char direction,
         BaseFtpConnection conn, LinkedRemoteFileInterface file)
         throws NoAvailableSlaveException {
         InetAddress source = ((conn != null) ? conn.getClientAddress() : null);
@@ -80,12 +80,12 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
         }
 
         return process(status, new ScoreChart(rslaves),
-            (conn != null) ? conn.getUserNull() : null, source, direction, file);
+            (conn != null) ? conn.getUserNull() : null, source, direction, file, null);
     }
 
     public RemoteSlave getASlaveForJobDownload(Job job)
         throws NoAvailableSlaveException {
-        ArrayList slaves = new ArrayList(job.getFile().getAvailableSlaves());
+        ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(job.getFile().getAvailableSlaves());
         slaves.removeAll(job.getDestinationSlaves());
 
         if (slaves.isEmpty()) {
@@ -93,12 +93,12 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
         }
 
         return process("jobdown", new ScoreChart(slaves), null, null,
-            Transfer.TRANSFER_SENDING_DOWNLOAD, job.getFile());
+            Transfer.TRANSFER_SENDING_DOWNLOAD, job.getFile(), null);
     }
 
-    public RemoteSlave getASlaveForJobUpload(Job job)
+    public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException {
-        ArrayList slaves = new ArrayList(job.getDestinationSlaves());
+        ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(job.getDestinationSlaves());
 
         for (Iterator iter = slaves.iterator(); iter.hasNext();) {
             if (!((RemoteSlave) iter.next()).isAvailable()) {
@@ -111,7 +111,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
         }
 
         return process("jobup", new ScoreChart(slaves), null, null,
-            Transfer.TRANSFER_SENDING_DOWNLOAD, job.getFile());
+            Transfer.TRANSFER_SENDING_DOWNLOAD, job.getFile(), sourceSlave);
     }
 
     /**
@@ -120,7 +120,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     public RemoteSlave getASlaveForMaster(LinkedRemoteFileInterface file,
         FtpConfig cfg) throws NoAvailableSlaveException {
         return process("master", new ScoreChart(file.getAvailableSlaves()),
-            null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, file);
+            null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, file, null);
     }
 
     public SlaveManager getSlaveManager() {
@@ -128,7 +128,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     }
 
     private RemoteSlave process(String filterchain, ScoreChart sc, User user,
-        InetAddress peer, char direction, LinkedRemoteFileInterface file)
+        InetAddress peer, char direction, LinkedRemoteFileInterface file, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException {
         FilterChain ssmi;
 
@@ -146,7 +146,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
             throw new IllegalArgumentException();
         }
 
-        return ssmi.getBestSlave(sc, user, peer, direction, file);
+        return ssmi.getBestSlave(sc, user, peer, direction, file, sourceSlave);
     }
 
     public void reload() throws FileNotFoundException, IOException {

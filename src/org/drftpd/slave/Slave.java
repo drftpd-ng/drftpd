@@ -156,8 +156,8 @@ public class Slave {
         RootCollection roots;
 
         // START: RootBasket
-        long defaultMinSpaceFree = Bytes.parseBytes(cfg.getProperty(
-                    "slave.minspacefree", "50mb"));
+        //long defaultMinSpaceFree = Bytes.parseBytes(cfg.getProperty(
+       //             "slave.minspacefree", "50mb"));
         ArrayList rootStrings = new ArrayList();
 
         for (int i = 1; true; i++) {
@@ -167,7 +167,7 @@ public class Slave {
                 break;
             }
 
-            System.out.println("slave.root." + i + ": " + rootString);
+            logger.info("slave.root." + i + ": " + rootString);
 
             /*
              * long minSpaceFree;
@@ -251,7 +251,6 @@ public class Slave {
 
             File dir = new File(file.getParentFile());
 
-            //TODO don't go above empty root
             logger.debug("DELETE: " + path);
 
             while (dir.list().length == 0) {
@@ -498,10 +497,7 @@ public class Slave {
         Transfer t = getTransfer(transferIndex);
         sendResponse(new AsyncResponse(ac.getIndex())); // return
 
-        // calling
-        // thread
-        // on
-        // master
+        // calling thread on master
         try {
             return new AsyncResponseTransferStatus(t.receiveFile(dirName, type,
                     fileName, position));

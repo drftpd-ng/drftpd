@@ -15,31 +15,27 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.util;
-
-import org.apache.log4j.Logger;
+package org.drftpd.io;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
 
+import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: SafeFileWriter.java,v 1.8 2004/08/03 20:14:03 zubov Exp $
+ * @version $Id$
  */
-public class SafeFileWriter extends Writer {
+public class SafeFileOutputStream extends OutputStream {
     private File _actualFile;
     private OutputStreamWriter _out;
     private File _tempFile;
     private boolean failed = false;
 
-    /**
-     * @see java.io.File#File(java.io.File)
-     */
-    public SafeFileWriter(File file) throws IOException {
+    public SafeFileOutputStream(File file) throws IOException {
         _actualFile = file;
 
         if (!_actualFile.getAbsoluteFile().getParentFile().canWrite()) {
@@ -56,10 +52,7 @@ public class SafeFileWriter extends Writer {
         _out = new OutputStreamWriter(new FileOutputStream(_tempFile), "UTF-8");
     }
 
-    /**
-     * @see java.io.File#File(java.lang.String)
-     */
-    public SafeFileWriter(String fileName) throws IOException {
+    public SafeFileOutputStream(String fileName) throws IOException {
         this(new File(fileName));
     }
 
@@ -90,9 +83,9 @@ public class SafeFileWriter extends Writer {
         _out.flush();
     }
 
-    public void write(char[] cbuf, int off, int len) throws IOException {
+	public void write(int b) throws IOException {
         try {
-            _out.write(cbuf, off, len);
+            _out.write(b);
         } catch (IOException e) {
             failed = true;
             throw e;

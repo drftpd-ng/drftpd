@@ -26,7 +26,6 @@ import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.DuplicateElementException;
-import net.sf.drftpd.HostMask;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
@@ -41,6 +40,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.slave.Transfer;
+import org.drftpd.usermanager.HostMask;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserExistsException;
@@ -96,7 +96,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             myUser = conn.getGlobalContext().getUserManager().getUserByName(args[0]);
 
             if (conn.getUserNull().isGroupAdmin() &&
-                    !conn.getUserNull().getGroupName().equals(myUser.getGroupName())) {
+                    !conn.getUserNull().getGroup().equals(myUser.getGroup())) {
                 return Reply.RESPONSE_530_ACCESS_DENIED;
             }
 
@@ -197,12 +197,12 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 
             try {
                 users = conn.getGlobalContext().getUserManager()
-                            .getAllUsersByGroup(conn.getUserNull().getGroupName())
+                            .getAllUsersByGroup(conn.getUserNull().getGroup())
                             .size();
-                logger.debug("Group " + conn.getUserNull().getGroupName() +
+                logger.debug("Group " + conn.getUserNull().getGroup() +
                     " is " +
                     conn.getGlobalContext().getUserManager().getAllUsersByGroup(conn.getUserNull()
-                                                                                    .getGroupName()));
+                                                                                    .getGroup()));
 
                 if (users >= conn.getUserNull().getGroupSlots()) {
                     return new Reply(200,
@@ -214,7 +214,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                 return new Reply(200, e1.getMessage());
             }
 
-            newGroup = conn.getUserNull().getGroupName();
+            newGroup = conn.getUserNull().getGroup();
         } else if (!conn.getUserNull().isAdmin()) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
@@ -247,8 +247,8 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                 newUser.setGroup(newGroup);
                 logger.info("'" + conn.getUserNull().getName() +
                     "' added '" + newUser.getName() + "' with group " +
-                    newUser.getGroupName() + "'");
-                env.add("primgroup", newUser.getGroupName());
+                    newUser.getGroup() + "'");
+                env.add("primgroup", newUser.getGroup());
                 response.addComment(conn.jprintf(UserManagment.class,
                         "adduser.primgroup", env));
             } else {
@@ -469,7 +469,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             if (conn.getUserNull().isGroupAdmin() &&
                     !conn.getUserNull().isAdmin()) {
                 ////// Group Admin Ratio //////
-                if (!conn.getUserNull().getGroupName().equals(userToChange.getGroupName())) {
+                if (!conn.getUserNull().getGroup().equals(userToChange.getGroup())) {
                     return Reply.RESPONSE_530_ACCESS_DENIED;
                 }
 
@@ -480,7 +480,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                         for (Iterator iter = conn.getGlobalContext()
                                                  .getUserManager()
                                                  .getAllUsersByGroup(conn.getUserNull()
-                                                                         .getGroupName())
+                                                                         .getGroup())
                                                  .iterator(); iter.hasNext();) {
                             if (((User) iter.next()).getObjectFloat(
                                         UserManagment.RATIO) == 0F) {
@@ -613,10 +613,10 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 
             logger.info("'" + conn.getUserNull().getName() +
                 "' changed primary group for '" + userToChange.getName() +
-                "' from '" + userToChange.getGroupName() + "' to '" +
+                "' from '" + userToChange.getGroup() + "' to '" +
                 commandArguments[0] + "'");
             userToChange.setGroup(commandArguments[0]);
-            env.add("primgroup", userToChange.getGroupName());
+            env.add("primgroup", userToChange.getGroup());
             response.addComment(conn.jprintf(UserManagment.class,
                     "changeprimgroup.success", env));
 
@@ -881,7 +881,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         }
 
         if (conn.getUserNull().isGroupAdmin() &&
-                !conn.getUserNull().getGroupName().equals(myUser.getGroupName())) {
+                !conn.getUserNull().getGroup().equals(myUser.getGroup())) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
@@ -931,7 +931,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         }
 
         if (conn.getUserNull().isGroupAdmin() &&
-                !conn.getUserNull().getGroupName().equals(myUser.getGroupName())) {
+                !conn.getUserNull().getGroup().equals(myUser.getGroup())) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
@@ -961,7 +961,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         String group = request.getArgument();
 
         if (conn.getUserNull().isGroupAdmin() &&
-                !conn.getUserNull().getGroupName().equals(group)) {
+                !conn.getUserNull().getGroup().equals(group)) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
@@ -1121,7 +1121,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         for (Iterator iter = users.iterator(); iter.hasNext();) {
             User userToChange = (User) iter.next();
 
-            if (userToChange.getGroupName().equals(oldGroup)) {
+            if (userToChange.getGroup().equals(oldGroup)) {
                 userToChange.setGroup(newGroup);
             } else {
                 try {
@@ -1233,7 +1233,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         }
 
         if (conn.getUserNull().isGroupAdmin() &&
-                !conn.getUserNull().getGroupName().equals(myUser.getGroupName())) {
+                !conn.getUserNull().getGroup().equals(myUser.getGroup())) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
@@ -1269,7 +1269,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         }
 
         if (conn.getUserNull().isGroupAdmin() &&
-                !conn.getUserNull().getGroupName().equals(myUser.getGroupName())) {
+                !conn.getUserNull().getGroup().equals(myUser.getGroup())) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
@@ -1472,7 +1472,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         }
 
         if (conn.getUserNull().isGroupAdmin() &&
-                !conn.getUserNull().getGroupName().equals(myUser.getGroupName())) {
+                !conn.getUserNull().getGroup().equals(myUser.getGroup())) {
             return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
@@ -1500,7 +1500,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 
         //env.add("timesnuked", Long.toString(myUser.getTimesNuked()));
         //env.add("nukedbytes", Bytes.formatBytes(myUser.getNukedBytes()));
-        env.add("primarygroup", myUser.getGroupName());
+        env.add("primarygroup", myUser.getGroup());
         env.add("extragroups", myUser.getGroups());
         env.add("ipmasks", myUser.getHostMaskCollection());
         env.add("wkly_allotment", Bytes.formatBytes(myUser.getWeeklyAllotment()));

@@ -28,7 +28,6 @@ import net.sf.drftpd.master.SlaveFileException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.MLSTSerialize;
-import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Logger;
 
@@ -36,6 +35,7 @@ import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 
 
+import org.drftpd.io.SafeFileWriter;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.async.AsyncCommandArgument;
 

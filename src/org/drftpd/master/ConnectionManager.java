@@ -39,13 +39,13 @@ import net.sf.drftpd.master.SlaveFileException;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.MLSTSerialize;
-import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commands.Reply;
+import org.drftpd.io.SafeFileWriter;
 import org.drftpd.plugins.RaceStatistics;
 import org.drftpd.slave.Slave;
 import org.drftpd.usermanager.NoSuchUserException;

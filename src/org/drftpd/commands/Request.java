@@ -118,7 +118,7 @@ public class Request implements CommandHandlerFactory, CommandHandler {
             LinkedRemoteFile createdDir = conn.getCurrentDirectory()
                                               .createDirectory(conn.getUserNull()
                                                                    .getName(),
-                    conn.getUserNull().getGroupName(), createdDirName);
+                    conn.getUserNull().getGroup(), createdDirName);
 
             //if (conn.getConfig().checkDirLog(conn.getUserNull(), createdDir)) {
             conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(

@@ -260,7 +260,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
                     raceenv.add("speed",
                         Bytes.formatBytes(stat.getXferspeed()) + "/s");
                     raceenv.add("user", stat.getUsername());
-                    raceenv.add("group", raceuser.getGroupName());
+                    raceenv.add("group", raceuser.getGroup());
                     raceenv.add("files", "" + stat.getFiles());
                     raceenv.add("bytes", Bytes.formatBytes(stat.getBytes()));
                     raceenv.add("position", String.valueOf(position));
@@ -500,7 +500,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         try {
             LinkedRemoteFile createdDir = dir.createDirectory(conn.getUserNull()
                                                                   .getName(),
-                    conn.getUserNull().getGroupName(), createdDirName);
+                    conn.getUserNull().getGroup(), createdDirName);
 
             conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
                     conn, "MKD", createdDir));

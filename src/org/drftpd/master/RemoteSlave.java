@@ -36,17 +36,16 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.FatalException;
-import net.sf.drftpd.HostMaskCollection;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.LightSFVFile;
 import org.drftpd.id3.ID3Tag;
+import org.drftpd.io.SafeFileWriter;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.RemoteIOException;
@@ -67,6 +66,7 @@ import org.drftpd.slave.async.AsyncResponseSFVFile;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
 import org.drftpd.usermanager.Entity;
+import org.drftpd.usermanager.HostMaskCollection;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.StreamException;

@@ -111,7 +111,7 @@ public class XferLog implements FtpListener {
             event.getDirectory().length() + " " +
             event.getDirectory().getPath() + " " + transferType + " _ " +
             direction + " r " + event.getUser().getName() + " " +
-            event.getUser().getGroupName() +
+            event.getUser().getGroup() +
             " 0 * " // authentication-method   authenticated-user-id
              +completed);
     }

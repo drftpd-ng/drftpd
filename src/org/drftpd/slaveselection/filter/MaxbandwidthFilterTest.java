@@ -76,7 +76,7 @@ public class MaxbandwidthFilterTest extends TestCase {
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD,
-            new LinkedRemoteFilePath("/"));
+            new LinkedRemoteFilePath("/"), null);
         assertEquals(sc.getBestSlave(), rslaves[1]);
     }
 

@@ -200,7 +200,7 @@ public class TransferStatistics implements CommandHandlerFactory,
         }
 
         if (conn.getUserNull().isGroupAdmin() &&
-                !conn.getUserNull().getGroupName().equals(user.getGroupName())) {
+                !conn.getUserNull().getGroup().equals(user.getGroup())) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         } else if (!conn.getUserNull().isAdmin() &&
                 !user.equals(conn.getUserNull())) {

@@ -49,7 +49,7 @@ public class PassiveConnection extends Connection {
         _serverSocket.setSoTimeout(TIMEOUT);
     }
 
-    public Socket connect() throws IOException {
+	public Socket connect() throws IOException {
         Socket sock = _serverSocket.accept();
         _serverSocket.close();
         _serverSocket = null;
@@ -79,7 +79,7 @@ public class PassiveConnection extends Connection {
         } catch (IOException e) {
             logger.warn("failed to close() server socket", e);
         }
-
         _serverSocket = null;
     }
+
 }

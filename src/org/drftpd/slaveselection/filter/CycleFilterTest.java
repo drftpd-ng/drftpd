@@ -57,7 +57,7 @@ public class CycleFilterTest extends TestCase {
             };
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
         Filter f = new CycleFilter(null, 0, null);
-        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null);
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null, null);
         assertEquals(1, sc.getSlaveScore(rslaves[0]).getScore());
         assertEquals(0, sc.getSlaveScore(rslaves[1]).getScore());
         assertEquals(0, sc.getSlaveScore(rslaves[2]).getScore());

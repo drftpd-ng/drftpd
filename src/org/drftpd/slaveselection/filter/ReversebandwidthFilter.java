@@ -19,6 +19,7 @@ package org.drftpd.slaveselection.filter;
 
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 
 import org.drftpd.slave.SlaveStatus;
@@ -42,7 +43,7 @@ public class ReversebandwidthFilter extends BandwidthFilter {
     }
 
     public void process(ScoreChart scorechart, User user, InetAddress source,
-        char direction, LinkedRemoteFileInterface file) {
+        char direction, LinkedRemoteFileInterface file, RemoteSlave sourceSlave) {
         char oppositeDirection;
 
         if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {

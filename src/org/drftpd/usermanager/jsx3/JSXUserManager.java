@@ -16,27 +16,22 @@
  */
 package org.drftpd.usermanager.jsx3;
 
-import JSX.ObjIn;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.Iterator;
 
 import net.sf.drftpd.FatalException;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import JSX.ObjIn;
 
 
 /**
@@ -54,64 +49,13 @@ public class JSXUserManager extends AbstractUserManager {
     }
 
     public JSXUserManager(boolean createIfNoUser) throws UserFileException {
-        if (!_userpathFile.exists() && !_userpathFile.mkdirs()) {
-            throw new UserFileException(new IOException(
-                    "Error creating folders: " + _userpathFile));
-        }
-
-        if (createIfNoUser) {
-            String[] userfilenames = _userpathFile.list();
-            boolean hasUsers = false;
-
-            for (int i = 0; i < userfilenames.length; i++) {
-                String string = userfilenames[i];
-
-                if (string.endsWith(".xml")) {
-                    hasUsers = true;
-
-                    break;
-                }
-            }
-
-            if (!hasUsers) {
-                createSiteopUser();
-            }
-        }
+    	super(createIfNoUser);
     }
 
     public User createUser(String username) {
         JSXUser user = new JSXUser(this, username);
 
         return user;
-    }
-
-    public void delete(String username) {
-        getUserFile(username).delete();
-    }
-
-    public Collection getAllUsers() throws UserFileException {
-        ArrayList<JSXUser> users = new ArrayList<JSXUser>();
-        String[] userpaths = _userpathFile.list();
-
-        for (int i = 0; i < userpaths.length; i++) {
-            String userpath = userpaths[i];
-
-            if (!userpath.endsWith(".xml")) {
-                continue;
-            }
-
-            String username = userpath.substring(0,
-                    userpath.length() - ".xml".length());
-
-            try {
-                users.add((JSXUser) getUserByNameUnchecked(username));
-
-                // throws IOException
-            } catch (NoSuchUserException e) {
-            } // continue
-        }
-
-        return users;
     }
 
     public User getUserByNameUnchecked(String username)
@@ -143,7 +87,7 @@ public class JSXUserManager extends AbstractUserManager {
             } catch (ClassNotFoundException e) {
                 throw new FatalException(e);
             }
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             if (ex instanceof NoSuchUserException) {
                 throw (NoSuchUserException) ex;
             }
@@ -170,4 +114,8 @@ public class JSXUserManager extends AbstractUserManager {
             user.commit();
         }
     }
+
+	protected File getUserpathFile() {
+		return _userpathFile;
+	}
 }

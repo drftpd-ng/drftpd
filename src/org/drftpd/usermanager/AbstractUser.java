@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.sf.drftpd.DuplicateElementException;
-import net.sf.drftpd.HostMaskCollection;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.event.listeners.Trial;
 import net.sf.drftpd.util.CalendarUtils;
@@ -305,7 +304,7 @@ public abstract class AbstractUser extends User {
         return _groupLeechSlots;
     }
 
-    public String getGroupName() {
+    public String getGroup() {
         if (_group == null) {
             return "nogroup";
         }
@@ -316,9 +315,17 @@ public abstract class AbstractUser extends User {
     public List getGroups() {
         return _groups;
     }
-
+   
+    public void setGroups(List<String> groups) {
+    	_groups = new ArrayList<String>(groups);
+    }
+   
     public short getGroupSlots() {
         return _groupSlots;
+    }
+
+    public void setHostMaskCollection(HostMaskCollection masks) {
+    	_hostMasks = masks;
     }
 
     public HostMaskCollection getHostMaskCollection() {
@@ -484,7 +491,7 @@ public abstract class AbstractUser extends User {
     }
 
     public boolean isMemberOf(String group) {
-        if (getGroupName().equals(group)) {
+        if (getGroup().equals(group)) {
             return true;
         }
 

@@ -22,6 +22,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.PropertyHelper;
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 
 import org.drftpd.slave.SlaveStatus;
@@ -46,7 +47,7 @@ public class MaxtransfersFilter extends Filter {
     }
 
     public void process(ScoreChart scorechart, User user, InetAddress peer,
-        char direction, LinkedRemoteFileInterface dir)
+        char direction, LinkedRemoteFileInterface dir, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException {
         for (Iterator iter = scorechart.getSlaveScores().iterator();
                 iter.hasNext();) {

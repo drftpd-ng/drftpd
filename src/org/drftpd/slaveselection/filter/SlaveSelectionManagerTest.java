@@ -73,7 +73,7 @@ public class SlaveSelectionManagerTest extends TestCase {
         try {
             ssm.getBestSlave(new ScoreChart(Arrays.asList(rslaves)), null,
                 null, Transfer.TRANSFER_SENDING_DOWNLOAD,
-                new MatchdirFilterTest.LinkedRemoteFilePath("/blabla/file.txt"));
+                new MatchdirFilterTest.LinkedRemoteFilePath("/blabla/file.txt"), null);
             fail(); // no slaves are online
         } catch (NoAvailableSlaveException pass) {
         }

@@ -168,7 +168,7 @@ public class XStreamUserManager implements UserManager {
         for (Iterator iter = users.iterator(); iter.hasNext();) {
             XStreamUser user = (XStreamUser) iter.next();
 
-            if (!user.getGroupName().equals(group)) {
+            if (!user.getGroup().equals(group)) {
                 iter.remove();
             }
         }

@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd;
+package org.drftpd.usermanager;
 
 import org.apache.log4j.Logger;
 
@@ -36,14 +36,12 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: HostMaskCollection.java 810 2004-11-21 22:33:38Z mog $
  */
-public class HostMaskCollection implements Serializable {
+public class HostMaskCollection extends ArrayList {
     private static final Logger logger = Logger.getLogger(HostMaskCollection.class);
-    ArrayList _masks;
 
     public HostMaskCollection() {
-        _masks = new ArrayList();
     }
 
     /**
@@ -53,20 +51,19 @@ public class HostMaskCollection implements Serializable {
      * @param masks
      */
     public HostMaskCollection(Collection masks) {
-        _masks = new ArrayList();
 
-        for (Iterator iter = masks.iterator(); iter.hasNext();) {
-            String mask = (String) iter.next();
-            _masks.add(new HostMask(mask));
+        for (Iterator<String> iter = masks.iterator(); iter.hasNext();) {
+            String mask = iter.next();
+            add(new HostMask(mask));
         }
     }
 
     public void addAllMasks(HostMaskCollection hostMaskCollection) {
-        for (Iterator i = hostMaskCollection._masks.iterator(); i.hasNext();) {
+        for (Iterator i = hostMaskCollection.iterator(); i.hasNext();) {
             HostMask mask = (HostMask) i.next();
 
-            if (!_masks.contains(mask)) {
-                _masks.add(mask);
+            if (!contains(mask)) {
+                add(mask);
             }
         }
     }
@@ -74,7 +71,7 @@ public class HostMaskCollection implements Serializable {
     public void addMask(String mask) {
         HostMask newMask = new HostMask(mask);
 
-        for (Iterator i = _masks.iterator(); i.hasNext();) {
+        for (Iterator i = iterator(); i.hasNext();) {
             HostMask hostMask = (HostMask) i.next();
 
             if (hostMask.equals(newMask)) {
@@ -83,7 +80,7 @@ public class HostMaskCollection implements Serializable {
             }
         }
 
-        _masks.add(new HostMask(mask));
+        add(new HostMask(mask));
     }
 
     public boolean check(Socket s) throws MalformedPatternException {
@@ -96,7 +93,7 @@ public class HostMaskCollection implements Serializable {
             throw new NullPointerException();
         }
 
-        for (Iterator iter = _masks.iterator(); iter.hasNext();) {
+        for (Iterator iter = iterator(); iter.hasNext();) {
             HostMask mask = (HostMask) iter.next();
 
             if (!mask.matchesHost(a)) {
@@ -122,19 +119,14 @@ public class HostMaskCollection implements Serializable {
         return false;
     }
 
-    public boolean isEmpty() {
-        return _masks.isEmpty();
-    }
-
     /**
      * @param mask
      * @return
      */
     public boolean removeMask(String mask) {
-        for (Iterator iter = _masks.iterator(); iter.hasNext();) {
+        for (Iterator iter = iterator(); iter.hasNext();) {
             if (((HostMask) iter.next()).getMask().equals(mask)) {
                 iter.remove();
-
                 return true;
             }
         }
@@ -143,10 +135,10 @@ public class HostMaskCollection implements Serializable {
     }
 
     public String toString() {
-    	if(_masks.isEmpty()) return "";
+    	if(isEmpty()) return "";
         String masks = "";
 
-        for (Iterator iter = _masks.iterator(); iter.hasNext();) {
+        for (Iterator iter = iterator(); iter.hasNext();) {
             masks = masks + iter.next() + ", ";
         }
 

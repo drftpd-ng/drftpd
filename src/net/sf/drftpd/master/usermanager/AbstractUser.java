@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import net.sf.drftpd.DuplicateElementException;
-import net.sf.drftpd.HostMaskCollection;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.event.listeners.Trial;
 import net.sf.drftpd.master.command.plugins.Nuke;
@@ -39,6 +38,7 @@ import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.RaceStatistics;
 import org.drftpd.plugins.Statistics;
+import org.drftpd.usermanager.HostMaskCollection;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 
@@ -297,7 +297,7 @@ public abstract class AbstractUser extends User {
 		return groupLeechSlots;
 	}
 
-	public String getGroupName() {
+	public String getGroup() {
 		if (_group == null) {
 			return "nogroup";
 		}
@@ -483,7 +483,7 @@ public abstract class AbstractUser extends User {
 	}
 
 	public boolean isMemberOf(String group) {
-		if (getGroupName().equals(group)) {
+		if (getGroup().equals(group)) {
 			return true;
 		}
 

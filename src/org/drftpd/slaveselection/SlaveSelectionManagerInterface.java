@@ -56,6 +56,6 @@ public interface SlaveSelectionManagerInterface {
     public RemoteSlave getASlaveForJobDownload(Job job)
         throws NoAvailableSlaveException;
 
-    public RemoteSlave getASlaveForJobUpload(Job job)
+    public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException;
 }

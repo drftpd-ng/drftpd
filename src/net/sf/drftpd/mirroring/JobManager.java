@@ -20,7 +20,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.SocketException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -190,7 +189,7 @@ public class JobManager implements Runnable {
                 try {
                     destSlave = _cm.getGlobalContext().getSlaveManager()
                                    .getSlaveSelectionManager()
-                                   .getASlaveForJobUpload(job);
+                                   .getASlaveForJobUpload(job, sourceSlave);
 
                     break; // we have a source slave and a destination slave,
 

@@ -107,7 +107,7 @@ public class MatchdirFilter extends Filter {
     }
 
     public void process(ScoreChart scorechart, User user, InetAddress source,
-        char direction, LinkedRemoteFileInterface file) {
+        char direction, LinkedRemoteFileInterface file, RemoteSlave sourceSlave) {
         if (_m.matches(file.getPath(), _p)) {
             doAssign(_assigns, scorechart);
         }
