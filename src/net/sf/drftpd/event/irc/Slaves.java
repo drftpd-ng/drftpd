@@ -19,6 +19,7 @@ package net.sf.drftpd.event.irc;
 
 import java.util.Iterator;
 
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
@@ -37,9 +38,11 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Slaves.java,v 1.13 2004/05/17 11:27:23 mog Exp $
+ * @version $Id: Slaves.java,v 1.14 2004/06/04 21:34:28 mog Exp $
  */
 public class Slaves extends GenericAutoService implements IRCPluginInterface {
+
+	private static final int LEN2 = "!slave ".length();
 
 	private static final Logger logger = Logger.getLogger(Slaves.class);
 
@@ -51,67 +54,77 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 	}
 
 	public String getCommands() {
-		return "!slaves";
+		return "!slaves !slave";
 	}
 
 	private ConnectionManager getConnectionManager() {
 		return _listener.getConnectionManager();
 	}
 
+	private String makeStatusString(RemoteSlave rslave) {
+		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		env.add("slave", rslave.getName());
+
+		try {
+			SlaveStatus status;
+			try {
+				status = rslave.getStatus();
+			} catch (SlaveUnavailableException e1) {
+				return ReplacerUtils.jprintf(
+					"slaves.offline",
+					env,
+					Slaves.class);
+			}
+			SiteBot.fillEnvSlaveStatus(
+				env,
+				status,
+				_listener.getSlaveManager());
+
+			return ReplacerUtils.jprintf("slaves", env, Slaves.class);
+		} catch (RuntimeException t) {
+			logger.log(
+				Level.WARN,
+				"Caught RuntimeException in !slaves loop",
+				t);
+			return ReplacerUtils.jprintf("slaves.offline", env, Slaves.class);
+		}
+	}
 	protected void updateCommand(InCommand inCommand) {
 		if (!(inCommand instanceof MessageCommand))
 			return;
 		MessageCommand msgc = (MessageCommand) inCommand;
-		if (!((MessageCommand) inCommand).getMessage().equals("!slaves"))
-			return;
-		if (msgc.isPrivateToUs(_listener.getIRCConnection().getClientState()))
+		if (!msgc.getMessage().startsWith("!slave")
+			|| msgc.isPrivateToUs(_listener.getIRCConnection().getClientState()))
 			return;
 		String chan = msgc.getDest();
-
-		for (Iterator iter =
-			getConnectionManager().getSlaveManager().getSlaves().iterator();
-			iter.hasNext();
-			) {
-			RemoteSlave rslave = (RemoteSlave) iter.next();
-			String statusString;
-
-			ReplacerEnvironment env =
-				new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-			env.add("slave", rslave.getName());
-
+		if (msgc.getMessage().startsWith("!slave ")) {
+			String slaveName = msgc.getMessage().substring(LEN2);
 			try {
-				SlaveStatus status;
-				try {
-					status = rslave.getStatus();
-				} catch (SlaveUnavailableException e1) {
-					String chan1 = chan;
-					_listener.sayChannel(
-						chan1,
-						ReplacerUtils.jprintf(
-							"slaves.offline",
-							env,
-							Slaves.class));
-					continue;
-				}
-				SiteBot.fillEnvSlaveStatus(env, status, _listener.getSlaveManager());
-
-				statusString =
-					ReplacerUtils.jprintf("slaves", env, Slaves.class);
-			} catch (RuntimeException t) {
-				logger.log(
-					Level.WARN,
-					"Caught RuntimeException in !slaves loop",
-					t);
-				statusString = ReplacerUtils.jprintf(
-						"slaves.offline",
+				RemoteSlave rslave =
+					getConnectionManager().getSlaveManager().getSlave(
+						slaveName);
+				_listener.sayChannel(chan, makeStatusString(rslave));
+			} catch (ObjectNotFoundException e) {
+				ReplacerEnvironment env =
+					new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+				env.add("slave", slaveName);
+				_listener.sayChannel(
+					chan,
+					ReplacerUtils.jprintf(
+						"slaves.notfound",
 						env,
-						Slaves.class);
+						Slaves.class));
 			}
-			String chan1 = chan;
-			String string = statusString;
-			_listener.sayChannel(chan1, string);
+		} else if (msgc.getMessage().equals("!slaves")) {
+			for (Iterator iter =
+				getConnectionManager().getSlaveManager().getSlaves().iterator();
+				iter.hasNext();
+				) {
+				RemoteSlave rslave = (RemoteSlave) iter.next();
+				String statusString = makeStatusString(rslave);
+				_listener.sayChannel(chan, statusString);
+			}
 		}
-
 	}
 
 	protected void updateState(State state) {

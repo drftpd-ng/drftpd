@@ -27,7 +27,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: ReplacerUtils.java,v 1.3 2004/02/10 00:03:32 mog Exp $
+ * @version $Id: ReplacerUtils.java,v 1.4 2004/06/04 21:34:28 mog Exp $
  */
 public class ReplacerUtils {
 	private static final Logger logger = Logger.getLogger(ReplacerUtils.class);
@@ -65,7 +65,7 @@ public class ReplacerUtils {
 		try {
 			str = finalFormat(baseName, key);
 			return finalJprintf(str, env);
-		} catch (FormatterException e) {
+		} catch (Exception e) {
 			logger.warn("basename: "+baseName, e);
 			return key;
 		}

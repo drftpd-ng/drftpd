@@ -3,6 +3,7 @@
 * Fixed infinite loop in Stats martyr plugin..
 * Fixed SITE RELOAD which was broken since
   CommandHandlerBundle refactoring from 2004/06/01
+* Added !slave <slavename> command.
 
 2004/06/02 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Added UPGRADING.txt, use it!
