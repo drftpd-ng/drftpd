@@ -83,9 +83,9 @@ public class StaticRemoteFile extends AbstractRemoteFile {
     	_length = 0;
         _lastModified = System.currentTimeMillis();
         _name = name;
-/*        if (_name.contains("\\")) {
+        if (_name.indexOf("\\") != -1) {
         	throw new RuntimeException("Cannot create a filename with \\ in the path");
-        }*/
+        }
     }
 
     public StaticRemoteFile(String name, List rslaves) {

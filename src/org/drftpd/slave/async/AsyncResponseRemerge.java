@@ -15,7 +15,7 @@ public class AsyncResponseRemerge extends AsyncResponse {
         CaseInsensitiveHashtable files) {
         super("Remerge");
         _files = files;
-        if (directory.contains("\\")) {
+        if (directory.indexOf("\\") != -1) {
         	throw new RuntimeException("\\ is not an acceptable character in a directory path");
         }
         _directory = directory;

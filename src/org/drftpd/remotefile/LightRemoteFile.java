@@ -36,7 +36,7 @@ public final class LightRemoteFile extends AbstractLightRemoteFile
     private boolean _isDirectory;
     
     private void setName(String name) {
-    	if (name.contains("\\")) {
+    	if (name.indexOf("\\") != -1) {
     		throw new RuntimeException("\\ is not an allowed character in filenames");
     	}
     	_filename = name;
