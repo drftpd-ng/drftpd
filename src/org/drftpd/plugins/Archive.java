@@ -217,7 +217,7 @@ public class Archive implements FtpListener, Runnable {
         return false;
     }
 
-    public Collection getArchiveHandlers() {
+    public Collection<ArchiveHandler> getArchiveHandlers() {
         return Collections.unmodifiableCollection(_archiveHandlers);
     }
 

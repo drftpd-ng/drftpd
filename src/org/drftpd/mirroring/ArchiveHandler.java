@@ -42,8 +42,10 @@ public class ArchiveHandler extends Thread {
                 archiveType.getSection().getName());
         _archiveType = archiveType;
         
-        for(_archiveType._parent.getArchiveHandlers()) {
-        	
+        for(ArchiveHandler h : _archiveType._parent.getArchiveHandlers()) {
+        	if(archiveType.getSection().equals(h.getSection()))
+        		throw new RuntimeException(
+        				"Attempt to add start an already running archivehandler");
         }
     }
 
