@@ -39,6 +39,7 @@ import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.slave.Slave;
+import org.tanesha.replacer.ReplacerFormat;
 
 
 /**
@@ -160,20 +161,22 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
     		for (Iterator iter = handlers.keySet().iterator(); iter.hasNext();) {
     			CommandHandler hnd = (CommandHandler) handlers.get(iter.next());
     			if (conn.getCommandManager().getHandledCommands(hnd.getClass())
-    					.contains("SITE " + cmd)) {
+    					.contains("SITE " + cmd.toUpperCase())) {
     				if (!conn.getGlobalContext().getConfig()
     						.checkPathPermission(cmd, conn.getUserNull(),
     								conn.getCurrentDirectory(), true)) {
-    					throw new ReplyException(
-    					"You do not have permissions for that command");
+    					return new Reply(501,
+								"You do not have permissions for that command");
     				}
     				try {
-    					return new Reply(200, ResourceBundle.getBundle(
+    					Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
+    					return response.addComment(ResourceBundle.getBundle(
     							hnd.getClass().getName()).getString(
     									"help." + cmd + ".specific"));
     				} catch (MissingResourceException e) {
-    					throw new ReplyException(cmd
-    							+ " does not have any help, bug your siteop", e);
+    					throw new ReplyException(cmd + " in "
+    							+ hnd.getClass().getName()
+								+ " does not have any specific help, bug your siteop", e);
     				}
     			}
     		}
@@ -181,6 +184,7 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
     	}
     	// global list of commands with help
     	HashMap<String, String> helpInfo = new HashMap<String, String>();
+    	String pad = "            ";
     	for (Iterator iter = handlers.keySet().iterator(); iter.hasNext();) {
     		CommandHandler hnd = (CommandHandler) handlers.get(iter.next());
     		List<String> handledCmds = conn.getCommandManager()
@@ -195,12 +199,14 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
     					continue;
     				}
     				try {
-    					helpInfo.put(cmd, ResourceBundle.getBundle(
+    					String help = ResourceBundle.getBundle(
     							hnd.getClass().getName()).getString(
-    									"help." + cmd));
+    									"help." + cmd);
+    					helpInfo.put(cmd, pad.substring(cmd.length()) + cmd.toUpperCase() + " : " + help);
     				} catch (MissingResourceException e) {
-    					helpInfo.put(cmd, cmd
-    							+ " does not have any help, bug your siteop");
+    					helpInfo.put(cmd, cmd + " in "
+								+ hnd.getClass().getName()
+								+ " does not have any help, bug your siteop");
     				}
     			} catch (java.lang.StringIndexOutOfBoundsException e) {
     			}

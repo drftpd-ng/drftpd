@@ -537,48 +537,9 @@ public class Find implements CommandHandler, CommandHandlerFactory {
 		return str.substring(start + 1, end);
 	}
 
-	private static Reply getHelpMsg() {
-		Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
-		response.addComment("SITE FIND <options> -action <action>");
-		response
-				.addComment("Options: -user <user> -group <group> -nogroup -nouser");
-		response
-				.addComment("Options: -mtime [-]n -type [f|d] -slave <slave> -size [-]size");
-		response
-				.addComment("Options: -name <name>(* for wildcard) -incomplete [min % incomplete] -offline");
-		response.addComment("Actions: print, printf[(format)], wipe, delete");
-		response
-				.addComment("Action: sendtoslaves <numtransfers[:slave[,slave,..][:priority]]>");
-		response.addComment("Action: deletefromslaves <slave[,slave[,...]]>");
-		response.addComment("Options for printf format:");
-		response.addComment("#f - filename");
-		response.addComment("#s - filesize");
-		response.addComment("#u - user");
-		response.addComment("#g - group");
-		response.addComment("#x - slave");
-		response.addComment("#t - last modified");
-		response.addComment("#h - parent");
-		response
-				.addComment("Example: SITE FIND -action printf(filename: #f size: #s");
-		response.addComment("Multipe options and actions");
-		response
-				.addComment("are allowed. If multiple options are given a file must match all");
-		response.addComment("options for action to be taken.");
-
-		return response;
-	}
-
-	private static Reply getShortHelpMsg() {
-		Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
-		response.addComment("Usage: SITE FIND <options> -action <action>");
-		response.addComment("SITE FIND -help for more info.");
-
-		return response;
-	}
-
 	private GlobalContext _gctx;
 
-	public Reply execute(BaseFtpConnection conn) throws ReplyException {
+	public Reply execute(BaseFtpConnection conn) throws ReplyException, ImproperUsageException {
 		FtpRequest request = conn.getRequest();
 
 		//		if (!request.hasArgument()) {
@@ -606,25 +567,25 @@ public class Find implements CommandHandler, CommandHandlerFactory {
 
 			if (arg.toLowerCase().equals("-user")) {
 				if (!iter.hasNext()) {
-					return Reply.RESPONSE_501_SYNTAX_ERROR;
+					throw new ImproperUsageException();
 				}
 
 				options.add(new OptionUser(iter.next()));
 			} else if (arg.toLowerCase().equals("-group")) {
 				if (!iter.hasNext()) {
-					return Reply.RESPONSE_501_SYNTAX_ERROR;
+					throw new ImproperUsageException();
 				}
 
 				options.add(new OptionGroup(iter.next()));
 			} else if (arg.toLowerCase().equals("-name")) {
 				if (!iter.hasNext()) {
-					return Reply.RESPONSE_501_SYNTAX_ERROR;
+					throw new ImproperUsageException();
 				}
 
 				options.add(new OptionName(iter.next()));
 			} else if (arg.toLowerCase().equals("-slave")) {
 				if (!iter.hasNext()) {
-					return Reply.RESPONSE_501_SYNTAX_ERROR;
+					throw new ImproperUsageException();
 				}
 
 				RemoteSlave rs = null;
@@ -642,7 +603,7 @@ public class Find implements CommandHandler, CommandHandlerFactory {
 				options.add(new OptionSlave(rs));
 			} else if (arg.toLowerCase().equals("-mtime")) {
 				if (!iter.hasNext()) {
-					return Reply.RESPONSE_501_SYNTAX_ERROR;
+					throw new ImproperUsageException();
 				}
 
 				int offset = 0;
@@ -650,13 +611,13 @@ public class Find implements CommandHandler, CommandHandlerFactory {
 				try {
 					offset = Integer.parseInt(iter.next());
 				} catch (NumberFormatException e) {
-					return Reply.RESPONSE_501_SYNTAX_ERROR;
+					throw new ImproperUsageException();
 				}
 
 				options.add(new OptionMTime(offset));
 			} else if (arg.toLowerCase().equals("-size")) {
 				if (!iter.hasNext()) {
-					return Reply.RESPONSE_501_SYNTAX_ERROR;
+					throw new ImproperUsageException();
 				}
 
 				long size = 0;
@@ -671,13 +632,13 @@ public class Find implements CommandHandler, CommandHandlerFactory {
 				try {
 					size = Bytes.parseBytes(bytes);
 				} catch (NumberFormatException e) {
-					return Reply.RESPONSE_501_SYNTAX_ERROR;
+					throw new ImproperUsageException();
 				}
 
 				options.add(new OptionSize(size, bigger));
 			} else if (arg.toLowerCase().equals("-type")) {
 				if (!iter.hasNext()) {
-					return Reply.RESPONSE_501_SYNTAX_ERROR;
+					throw new ImproperUsageException();
 				}
 
 				String type = iter.next().toLowerCase();
@@ -690,7 +651,7 @@ public class Find implements CommandHandler, CommandHandlerFactory {
 					return Reply.RESPONSE_501_SYNTAX_ERROR;
 				}
 			} else if (arg.toLowerCase().equals("-help")) {
-				return getHelpMsg();
+				throw new ImproperUsageException();
 			} else if (arg.toLowerCase().equals("-nouser")) {
 				options.add(new OptionUser("nobody"));
 			} else if (arg.toLowerCase().equals("-incomplete")) {
@@ -713,7 +674,7 @@ public class Find implements CommandHandler, CommandHandlerFactory {
 				options.add(new OptionGroup("drftpd"));
 			} else if (arg.toLowerCase().equals("-action")) {
 				if (!iter.hasNext()) {
-					return Reply.RESPONSE_501_SYNTAX_ERROR;
+					throw new ImproperUsageException();
 				}
 
 				String action = iter.next();
@@ -777,7 +738,7 @@ public class Find implements CommandHandler, CommandHandlerFactory {
 					Action findAction = getAction(action.toLowerCase());
 
 					if (findAction == null) {
-						return Reply.RESPONSE_501_SYNTAX_ERROR;
+						throw new ImproperUsageException();
 					}
 
 					if (findAction instanceof ActionWipe) {
