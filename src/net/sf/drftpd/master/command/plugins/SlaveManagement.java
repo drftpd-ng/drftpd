@@ -157,10 +157,8 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         }
 
         try {
-            conn.getCurrentDirectory().setSlaveForMerging(rslave);
             rslave.fetchRemergeResponseFromIndex(rslave.issueRemergeToSlave(
                     conn.getCurrentDirectory().getPath()));
-            conn.getCurrentDirectory().cleanSlaveFromMerging(rslave);
         } catch (IOException e) {
             rslave.setOffline("IOException during remerge()");
 

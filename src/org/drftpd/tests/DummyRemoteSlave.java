@@ -38,6 +38,9 @@ public class DummyRemoteSlave extends RemoteSlave {
         return null;
     }
 
+	public int getPort() {
+		return 10;
+	}
     public void fakeConnect() {
         _errors = 0;
         _lastNetworkError = System.currentTimeMillis();
@@ -50,11 +53,6 @@ public class DummyRemoteSlave extends RemoteSlave {
 
     public LinkedRemoteFile getSlaveRoot()
         throws SlaveUnavailableException, IOException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public String moreInfo() {
         // TODO Auto-generated method stub
         return null;
     }

@@ -566,8 +566,6 @@ class RemergeThread extends Thread {
 				continue;
 			}
 			if (msg.isCompleted()) {
-				getGlobalContext().getRoot().cleanSlaveFromMerging(
-						msg.getRslave());
 				continue;
 			}
 

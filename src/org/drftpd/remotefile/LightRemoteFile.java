@@ -41,19 +41,33 @@ public final class LightRemoteFile extends AbstractLightRemoteFile
         _isFile = file.isFile();
         _isDirectory = file.isDirectory();
     }
+    
+    /**
+     * Will create a directory
+     */
+    public LightRemoteFile(String filename, long lastModified) {
+    	_filename = filename;
+    	_lastModified = lastModified;
+    	_length = 0;
+    	_isDirectory = true;
+    }
 
+    /**
+     * Will create a file
+     */
     public LightRemoteFile(String filename, long lastModified, long length) {
         _filename = filename;
         _lastModified = lastModified;
         _length = length;
+        _isDirectory = false;
     }
 
     public boolean isDirectory() {
-        return false;
+        return _isDirectory;
     }
 
     public boolean isFile() {
-        return true;
+        return !_isDirectory;
     }
 
     public long lastModified() {

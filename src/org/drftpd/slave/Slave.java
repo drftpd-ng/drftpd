@@ -526,10 +526,9 @@ public class Slave {
 
         for (Iterator iter = files.iterator(); iter.hasNext();) {
             FileRemoteFile file = (FileRemoteFile) iter.next();
-
-            if (file.isFile()) {
-                mergeFiles.put(file.getName(), new LightRemoteFile(file));
-            }
+            
+            // need to send directories and files
+            mergeFiles.put(file.getName(), new LightRemoteFile(file));
 
             //keep only dirs for recursiveness
             if (!file.isDirectory()) {

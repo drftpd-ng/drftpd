@@ -92,8 +92,7 @@ public class HostMaskCollection extends ArrayList {
         if (a == null) {
             throw new NullPointerException();
         }
-
-        for (Iterator iter = iterator(); iter.hasNext();) {
+        for (Iterator iter = this.iterator(); iter.hasNext();) {
             HostMask mask = (HostMask) iter.next();
 
             if (!mask.matchesHost(a)) {

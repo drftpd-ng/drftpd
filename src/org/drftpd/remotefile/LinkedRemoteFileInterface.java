@@ -203,13 +203,6 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 
     public abstract void unmergeFile(RemoteSlave rslave);
 
-    public abstract void setSlaveForMerging(RemoteSlave rslave)
-        throws IOException;
-
-    public abstract void resetSlaveForMerging(RemoteSlave slave);
-
-    public abstract void cleanSlaveFromMerging(RemoteSlave slave);
-
 	public abstract void deleteFromSlave(RemoteSlave rslave);
 
 	public abstract Collection<LinkedRemoteFileInterface> getFiles2();

@@ -313,7 +313,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	/**
 	 * Returns the name.
 	 */
-	public final String getName() {
+	public String getName() {
 		return _name;
 	}
 
@@ -405,7 +405,6 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		String maxPathIndex = issueMaxPathToSlave();
 		_maxPath = fetchMaxPathFromIndex(maxPathIndex);
 		logger.debug("maxpath was received");
-		getGlobalContext().getRoot().setSlaveForMerging(this);
 
 		String remergeIndex = issueRemergeToSlave("/");
 		fetchRemergeResponseFromIndex(remergeIndex);
@@ -957,7 +956,6 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		}
 
 		setAvailable(false);
-		getGlobalContext().getRoot().resetSlaveForMerging(this);
 	}
 
 	public void setOffline(Throwable t) {

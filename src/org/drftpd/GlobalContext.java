@@ -251,7 +251,7 @@ public class GlobalContext {
             logger.info("Loading files.mlst");
             _root = MLSTSerialize.loadMLSTFileDatabase(rslaves, _cm);
         } catch (FileNotFoundException e) {
-            logger.info("files.mlst not found, creating a new filelist", e);
+            logger.info("files.mlst not found, creating a new filelist");
             _root = new LinkedRemoteFile(getConfig());
         } catch (IOException e) {
             throw new FatalException(e);

@@ -111,6 +111,9 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
         try {
             _ctx = SSLGetContext.getSSLContext();
+        } catch (FileNotFoundException e) {
+        	_ctx = null;
+        	logger.warn("Couldn't load SSLContext, SSL/TLS disabled");
         } catch (Exception e) {
             _ctx = null;
             logger.warn("Couldn't load SSLContext, SSL/TLS disabled", e);

@@ -77,16 +77,13 @@ public class LinkedRemoteFileTest extends TestCase {
         slaveroot.put("RemoteSlaveTest",
             new LightRemoteFile("RemoteSlaveTest", System.currentTimeMillis(),
                 1000));
-        root.setSlaveForMerging(slave1);
+        slaveroot.put("DirTest",new LightRemoteFile("DirTest",System.currentTimeMillis()));
         root.remerge(slaveroot, slave1);
         slaveroot.clear();
         slaveroot.put("TestFileInDir",
             new LightRemoteFile("TestFileInDir", System.currentTimeMillis(),
                 1000));
         root.getFile("DirTest").remerge(slaveroot, slave1);
-        slaveroot.clear();
-        root.getFile("RemoveDir").remerge(slaveroot, slave1);
-        root.cleanSlaveFromMerging(slave1);
     }
 
     private static void internalRemergeSlave2(LinkedRemoteFile root,
@@ -96,14 +93,14 @@ public class LinkedRemoteFileTest extends TestCase {
             new LightRemoteFile("ConflictTest", System.currentTimeMillis(), 1001));
         slaveroot.put("AddSlaveTest",
             new LightRemoteFile("AddSlaveTest", System.currentTimeMillis(), 1000));
-        root.setSlaveForMerging(slave2);
+        slaveroot.put("DirTest",new LightRemoteFile("DirTest",System.currentTimeMillis()));
         root.remerge(slaveroot, slave2);
         slaveroot.clear();
+        
         slaveroot.put("TestFileInDir",
             new LightRemoteFile("TestFileInDir", System.currentTimeMillis(),
                 1000));
         root.getFile("DirTest").remerge(slaveroot, slave2);
-        root.cleanSlaveFromMerging(slave2);
     }
 
     private void internalSetUp() {
@@ -122,28 +119,29 @@ public class LinkedRemoteFileTest extends TestCase {
         internalSetUp();
 
         List bothSlaves = Arrays.asList(new RemoteSlave[] { _slave1, _slave2 });
-
+        System.out.println("bothSlaves = " + bothSlaves);
+        System.out.println("slave1 = " + _slave1);
+        System.out.println("slave2 = " + _slave2);
         CaseInsensitiveHashtable files = new CaseInsensitiveHashtable();
         files.put("AddSlaveTest",
-            new LightRemoteFile("AddSlaveTest", 1000, System.currentTimeMillis()));
+            new LightRemoteFile("AddSlaveTest", System.currentTimeMillis(), 1000));
 
         CaseInsensitiveHashtable files2 = new CaseInsensitiveHashtable();
         files2.put("AddSlaveTest",
-            new LightRemoteFile("AddSlaveTest", 1000, System.currentTimeMillis()));
-        _root.setSlaveForMerging(_slave1);
+            new LightRemoteFile("AddSlaveTest", System.currentTimeMillis(), 1000));
+        System.out.println("remerging slave1");
         _root.remerge(files, _slave1);
-        _root.setSlaveForMerging(_slave2);
+        System.out.println("remerging slave2");
         _root.remerge(files2, _slave2);
-        _root.cleanSlaveFromMerging(_slave1);
-        _root.cleanSlaveFromMerging(_slave2);
+        System.out.println("slaves remerged");
 
         LinkedRemoteFileInterface file2 = _root.getFile(new StaticRemoteFile(
                     Collections.EMPTY_LIST, "AddSlaveTest", 1000).getName());
         assertEquals(file2, _root.getFile(file2.getName()));
         assertEquals(file2, _root.getFile(file2.getName().toUpperCase()));
         assertEquals(file2, _root.getFile(file2.getName().toLowerCase()));
-        System.out.println(_root.getFile(file2.getName()).getSlaves());
-        System.out.println(_root.getFiles());
+        System.out.println("file2slaves = " + _root.getFile(file2.getName()).getSlaves());
+        System.out.println("files = " + _root.getFiles());
         assertEquals(bothSlaves, _root.getFile(file2.getName()).getSlaves());
     }
 
@@ -198,6 +196,17 @@ public class LinkedRemoteFileTest extends TestCase {
         internalBuildLinks();
         assertNotSame(_root, _root.lookupFile("/dir"));
         assertNotSame(_root, _root.lookupFile("dir"));
+    }
+    
+    public void testConflict() throws IOException {
+    	internalSetUp();
+    	_root.addFile(new StaticRemoteFile(Collections.singletonList(_slave1),"ConflictFile","drftpd","drftpd",1000));
+    	CaseInsensitiveHashtable files = new CaseInsensitiveHashtable();
+    	files.put("ConflictFile",new LightRemoteFile("ConflictFile",System.currentTimeMillis(),1001));
+    	_root.remerge(files,_slave1);
+    	LinkedRemoteFileInterface file = _root.getFile("ConflictFile");
+    	assertNotNull(file);
+    	assertEquals(1001,file.length());
     }
 
     public void testRemerge() throws IOException {

@@ -80,6 +80,7 @@ public class StaticRemoteFile extends AbstractRemoteFile {
     }
 
     public StaticRemoteFile(String name) {
+    	_length = 0;
         _lastModified = System.currentTimeMillis();
         _name = name;
     }
