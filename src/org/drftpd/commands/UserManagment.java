@@ -73,6 +73,24 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
     		String.class);
     public static final Key IRCIDENT = new Key(UserManagment.class, "ircident",
     		String.class);
+    public static final Key GROUPSLOTS = new Key(UserManagment.class, "groupslots",
+    		Integer.class);
+    public static final Key LEECHSLOTS = new Key(UserManagment.class, "leechslots",
+    		Integer.class);
+    public static final Key TOTALLOGINS = new Key(UserManagment.class, "totallogins",
+    		Integer.class);
+    public static final Key MAXLOGINS = new Key(UserManagment.class, "maxlogins",
+    		Integer.class);
+    public static final Key MAXLOGINSIP = new Key(UserManagment.class, "maxloginsip",
+    		Integer.class);
+    public static final Key MAXSIMUP = new Key(UserManagment.class, "maxsimup",
+    		Integer.class);
+    public static final Key MAXSIMDN = new Key(UserManagment.class, "maxsimdn",
+    		Integer.class);
+    public static final Key LASTSEEN = new Key(UserManagment.class, "lastseen",
+            Date.class);
+    public static final Key WKLY_ALLOTMENT = new Key(UserManagment.class, "wkly_allotment",
+            Long.class);
 
     private Reply doSITE_ADDIP(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
@@ -246,6 +264,21 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             response.addComment(conn.jprintf(UserManagment.class,
                     "adduser.success", env));
             newUser.getKeyedMap().setObject(UserManagment.COMMENT, "Added by " + conn.getUserNull().getName());
+            newUser.getKeyedMap().setObject(UserManagment.RATIO, new Float(0));
+            newUser.getKeyedMap().setObject(UserManagment.GROUPSLOTS,0);
+            newUser.getKeyedMap().setObject(UserManagment.LEECHSLOTS,0);
+            newUser.getKeyedMap().setObject(UserManagment.MAXLOGINS,0);
+            newUser.getKeyedMap().setObject(UserManagment.MAXLOGINSIP,0);
+            newUser.getKeyedMap().setObject(UserManagment.MAXSIMUP,0);
+            newUser.getKeyedMap().setObject(UserManagment.MAXSIMDN,0);
+            newUser.getKeyedMap().setObject(UserManagment.TOTALLOGINS,0);
+            newUser.getKeyedMap().setObject(UserManagment.CREATED, new Date());
+            newUser.getKeyedMap().setObject(UserManagment.LASTSEEN, new Date());
+            newUser.getKeyedMap().setObject(UserManagment.WKLY_ALLOTMENT, new Long(0));
+            newUser.getKeyedMap().setObject(UserManagment.COMMENT, "Auto-Generated");
+            newUser.getKeyedMap().setObject(UserManagment.IRCIDENT, "N/A");
+            newUser.getKeyedMap().setObject(Nuke.NUKED,0);
+            newUser.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
 
             if (newGroup != null) {
                 newUser.setGroup(newGroup);

@@ -187,6 +187,7 @@ public class ListUtils {
 					env.add("complete.number","0");
 					env.add("complete.percent","0");						
 				} else {
+					env.add("complete.total","" + sfvfile.size());
 					env.add("complete.number", "" + sfvstatus.getPresent());
 					env.add("complete.percent","" + (sfvstatus.getPresent() * 100) / sfvfile.size());
 				}

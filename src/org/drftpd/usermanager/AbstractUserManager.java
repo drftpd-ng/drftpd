@@ -22,11 +22,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Date;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FileExistsException;
 
 import org.apache.log4j.Logger;
+import org.drftpd.commands.Nuke;
 import org.drftpd.commands.UserManagment;
 import org.drftpd.master.ConnectionManager;
 
@@ -86,6 +88,20 @@ public abstract class AbstractUserManager implements UserManager {
         user.setGroup("drftpd");
         user.setPassword("drftpd");
         user.getKeyedMap().setObject(UserManagment.RATIO, new Float(0));
+        user.getKeyedMap().setObject(UserManagment.GROUPSLOTS,0);
+        user.getKeyedMap().setObject(UserManagment.LEECHSLOTS,0);
+        user.getKeyedMap().setObject(UserManagment.MAXLOGINS,0);
+        user.getKeyedMap().setObject(UserManagment.MAXLOGINSIP,0);
+        user.getKeyedMap().setObject(UserManagment.MAXSIMUP,0);
+        user.getKeyedMap().setObject(UserManagment.MAXSIMDN,0);
+        user.getKeyedMap().setObject(UserManagment.TOTALLOGINS,0);
+        user.getKeyedMap().setObject(UserManagment.CREATED, new Date());
+        user.getKeyedMap().setObject(UserManagment.LASTSEEN, new Date());
+        user.getKeyedMap().setObject(UserManagment.WKLY_ALLOTMENT, new Long(0));
+        user.getKeyedMap().setObject(UserManagment.COMMENT, "Auto-Generated");
+        user.getKeyedMap().setObject(UserManagment.IRCIDENT, "N/A");
+        user.getKeyedMap().setObject(Nuke.NUKED,0);
+        user.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
 
         try {
             user.addIPMask("*@127.0.0.1");

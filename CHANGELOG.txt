@@ -2,6 +2,9 @@
 * Created conf/zipscript.conf
 * Moved CWD config from Dir.properties to zipscript.conf
 * Made the sfv status folder completely configurable via zipscript.conf
+* Finished adding all User attributes and defaults
+* added complete.total to zipscript.conf. thanks M3ta
+
 
 2004/12/07 Teflon <teflon114@gmail.com>
 * Modified SITE GINFO to have more informative output
