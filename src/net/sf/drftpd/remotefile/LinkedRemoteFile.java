@@ -55,7 +55,7 @@ import java.util.StringTokenizer;
  * Represents the file attributes of a remote file.
  *
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.164 2004/08/09 20:54:51 teflon114 Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.165 2004/08/24 21:58:57 teflon114 Exp $
  */
 public class LinkedRemoteFile implements Serializable, Comparable,
     LinkedRemoteFileInterface {
@@ -779,7 +779,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
     public synchronized ID3Tag getID3v1Tag()
         throws IOException, FileNotFoundException, NoAvailableSlaveException {
         if (mp3tag == null) {
-            logger.warn("getID3v1Tag() : (file) " + getPath());
+            logger.info("getID3v1Tag() : (file) " + getPath());
 
             while (true) {
                 RemoteSlave rslave = _ftpConfig.getGlobalContext()
@@ -790,7 +790,6 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
                 try {
                     mp3tag = rslave.getSlave().getID3v1Tag(getPath());
-
                     break;
                 } catch (RemoteException ex) {
                     rslave.handleRemoteException(ex);
@@ -799,10 +798,12 @@ public class LinkedRemoteFile implements Serializable, Comparable,
                 }
             }
         } else {
-            logger.warn("getID3v1Tag() : (cached) " + getPath());
+            logger.info("getID3v1Tag() : (cached) " + getPath());
         }
-
-        return mp3tag;
+        if (mp3tag == null)
+			throw new IOException("No id3tag found for " + getPath());
+		
+		return mp3tag;
     }
 
     /**
