@@ -29,7 +29,7 @@ import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+import net.sf.drftpd.remotefile.RemoteFileInterface;
 import net.sf.drftpd.slave.ActiveConnection;
 import net.sf.drftpd.slave.PassiveConnection;
 import net.sf.drftpd.slave.Root;
@@ -85,7 +85,7 @@ import javax.net.ssl.SSLContext;
 
 /**
  * @author mog
- * @version $Id: Slave.java,v 1.8 2004/11/08 02:37:34 zubov Exp $
+ * @version $Id: Slave.java,v 1.9 2004/11/08 18:39:31 mog Exp $
  */
 public class Slave {
     public static final boolean isWin32 = System.getProperty("os.name")
@@ -116,12 +116,13 @@ public class Slave {
         String slavename = FtpConfig.getProperty(p, "slave.name");
 
         try {
-        _externalAddress = InetAddress.getByName(FtpConfig.getProperty(p,
-                    "slave.interface"));
-        } catch(NullPointerException e) {
-        	//value is already null
-        	//_externalAddress = null;
+            _externalAddress = InetAddress.getByName(FtpConfig.getProperty(p,
+                        "slave.interface"));
+        } catch (NullPointerException e) {
+            //value is already null
+            //_externalAddress = null;
         }
+
         _s = new Socket();
         _s.connect(addr);
 
@@ -145,12 +146,14 @@ public class Slave {
         _bufferSize = Integer.parseInt(p.getProperty("bufferSize", "0"));
         _roots = getDefaultRootBasket(p);
         _transfers = new HashMap();
+
         int minport = Integer.parseInt(p.getProperty("slave.portfrom", "0"));
         int maxport = Integer.parseInt(p.getProperty("slave.portto", "0"));
-        if (minport == 0 || maxport == 0) {
+
+        if ((minport == 0) || (maxport == 0)) {
             _portRange = new PortRange();
         } else {
-            _portRange = new PortRange(minport,maxport);
+            _portRange = new PortRange(minport, maxport);
         }
     }
 
@@ -270,7 +273,7 @@ public class Slave {
 
             while (dir.list().length == 0) {
                 file.delete();
-                logger.debug("DELETEFS: " + file.getPath());
+                logger.debug("rmdir: " + file.getPath());
 
                 java.io.File tmpFile = dir.getParentFile();
 
@@ -460,6 +463,7 @@ public class Slave {
 
             return null;
         }
+
         if (ac.getName().equals("error")) {
             throw new RuntimeException("error - " + ac);
         }
@@ -541,7 +545,8 @@ public class Slave {
     }
 
     private AsyncResponse handleMaxpath(AsyncCommand ac) {
-        return new AsyncResponseMaxPath(ac.getIndex(), 255);
+        return new AsyncResponseMaxPath(ac.getIndex(),
+            isWin32 ? 255 : Integer.MAX_VALUE);
     }
 
     private AsyncResponse handlePing(AsyncCommand ac) {
@@ -558,8 +563,12 @@ public class Slave {
         String fileName = path.substring(path.lastIndexOf("/") + 1);
         String dirName = path.substring(0, path.lastIndexOf("/"));
         Transfer t = getTransfer(transferIndex);
-        sendResponse(new AsyncResponse(ac.getIndex())); // return calling thread on master
+        sendResponse(new AsyncResponse(ac.getIndex())); // return
 
+        // calling
+        // thread
+        // on
+        // master
         try {
             return new AsyncResponseTransferStatus(t.receiveFile(dirName, type,
                     fileName, position));
@@ -571,34 +580,42 @@ public class Slave {
 
     private AsyncResponse handleRemerge(AsyncCommandArgument ac) {
         try {
-            handleRemergeRecursive(getSlaveRoot().lookupFile(ac.getArgs()));
+            handleRemergeRecursive(new FileRemoteFile(_roots));
 
             return new AsyncResponse(ac.getIndex());
-        } catch (FileNotFoundException e) {
-            return new AsyncResponse(ac.getIndex());
-        } catch (IOException e) {
+        } catch (Throwable e) {
+            logger.error("Exception during merging", e);
+
             return new AsyncResponseException(ac.getIndex(), e);
         }
     }
 
-    private void handleRemergeRecursive(LinkedRemoteFileInterface file) {
-        LinkedRemoteFile.CaseInsensitiveHashtable files = new LinkedRemoteFile.CaseInsensitiveHashtable();
+    private void handleRemergeRecursive(RemoteFileInterface dir) {
+        //sendResponse(new AsyncResponseRemerge(file.getPath(),
+        // file.getFiles()));
+        LinkedRemoteFile.CaseInsensitiveHashtable mergeFiles = new LinkedRemoteFile.CaseInsensitiveHashtable();
 
-        for (Iterator iter = file.getFiles().iterator(); iter.hasNext();) {
-            LinkedRemoteFileInterface lrf = (LinkedRemoteFileInterface) iter.next();
+        Collection files = dir.getFiles();
 
-            if (lrf.isDirectory()) {
-                handleRemergeRecursive(lrf);
+        for (Iterator iter = files.iterator(); iter.hasNext();) {
+            RemoteFileInterface file = (RemoteFileInterface) iter.next();
+
+            if (file.isFile()) {
+                mergeFiles.put(file.getName(), new LightRemoteFile(file));
             }
 
-            if (lrf.isFile()) {
-                files.put(lrf.getName(),
-                    new LightRemoteFile(lrf.getName(), lrf.lastModified(),
-                        lrf.length()));
+            //keep only dirs for recursiveness
+            if (!file.isDirectory()) {
+                iter.remove();
             }
         }
 
-        sendResponse(new AsyncResponseRemerge(file.getPath(), files));
+        sendResponse(new AsyncResponseRemerge(dir.getPath(), mergeFiles));
+
+        for (Iterator iter = files.iterator(); iter.hasNext();) {
+            RemoteFileInterface file = (RemoteFileInterface) iter.next();
+            handleRemergeRecursive(file);
+        }
     }
 
     private AsyncResponse handleRename(AsyncCommandArgument ac) {
@@ -624,8 +641,12 @@ public class Slave {
                     st.nextToken()));
         String path = st.nextToken();
         Transfer t = getTransfer(transferIndex);
-        sendResponse(new AsyncResponse(ac.getIndex())); // return calling thread on master
+        sendResponse(new AsyncResponse(ac.getIndex())); // return
 
+        // calling
+        // thread
+        // on
+        // master
         try {
             return new AsyncResponseTransferStatus(t.sendFile(path, type,
                     position));
@@ -676,7 +697,7 @@ public class Slave {
                 public void run() {
                     try {
                         sendResponse(handleCommand(_command));
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         sendResponse(new AsyncResponseException(
                                 _command.getIndex(), e));
                     }
@@ -742,6 +763,8 @@ public class Slave {
 
     protected synchronized void sendResponse(AsyncResponse response) {
         if (response == null) {
+            // handler doesn't return anything or it sends reply on it's own
+            // (threaded for example)
             return;
         }
 
@@ -749,8 +772,10 @@ public class Slave {
             _sout.writeObject(response);
             _sout.flush();
             logger.debug("Slave wrote response - " + response);
+
             if (response instanceof AsyncResponseException) {
-                logger.debug("",((AsyncResponseException) response).getThrowable());
+                logger.debug("",
+                    ((AsyncResponseException) response).getThrowable());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

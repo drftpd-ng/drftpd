@@ -18,19 +18,19 @@
 package org.drftpd.tests;
 
 import java.io.IOException;
+
 import java.net.InetAddress;
 import java.net.ServerSocket;
 
+
 /**
  * @author zubov
- * @version $Id: DummyServerSocket.java,v 1.1 2004/11/05 04:06:36 zubov Exp $
+ * @version $Id: DummyServerSocket.java,v 1.2 2004/11/08 18:39:31 mog Exp $
  */
 public class DummyServerSocket extends ServerSocket {
-
     public DummyServerSocket() throws IOException {
         super(65535);
     }
-
 
     public DummyServerSocket(int port) throws IOException {
         this();
@@ -41,7 +41,7 @@ public class DummyServerSocket extends ServerSocket {
     }
 
     public DummyServerSocket(int port, int backlog, InetAddress bindAddr)
-            throws IOException {
+        throws IOException {
         this();
     }
 }

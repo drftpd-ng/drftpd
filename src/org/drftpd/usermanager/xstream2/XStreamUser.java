@@ -25,10 +25,10 @@ import net.sf.drftpd.util.SafeFileWriter;
 import org.apache.log4j.Logger;
 
 import org.drftpd.usermanager.AbstractUser;
+import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.PlainTextPasswordUser;
 import org.drftpd.usermanager.UnixPassword;
 import org.drftpd.usermanager.UserFileException;
-import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserManager;
 
 import java.io.File;
@@ -37,7 +37,7 @@ import java.io.IOException;
 
 /**
  * @author mog
- * @version $Id: XStreamUser.java,v 1.2 2004/11/06 07:55:36 mog Exp $
+ * @version $Id: XStreamUser.java,v 1.3 2004/11/08 18:39:32 mog Exp $
  */
 public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
     UnixPassword {
@@ -145,10 +145,10 @@ public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
         return _userManager;
     }
 
-	/* (non-Javadoc)
-	 * @see org.drftpd.usermanager.AbstractUser#getAbstractUserManager()
-	 */
-	public AbstractUserManager getAbstractUserManager() {
-		return _userManager;
-	}
+    /* (non-Javadoc)
+     * @see org.drftpd.usermanager.AbstractUser#getAbstractUserManager()
+     */
+    public AbstractUserManager getAbstractUserManager() {
+        return _userManager;
+    }
 }

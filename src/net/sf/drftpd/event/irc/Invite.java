@@ -36,7 +36,7 @@ import org.drftpd.usermanager.UserFileException;
 
 /**
  * @author mog
- * @version $Id: Invite.java,v 1.12 2004/11/03 16:46:38 mog Exp $
+ * @version $Id: Invite.java,v 1.13 2004/11/08 18:39:23 mog Exp $
  */
 public class Invite extends GenericCommandAutoService
     implements IRCPluginInterface {
@@ -84,7 +84,7 @@ public class Invite extends GenericCommandAutoService
                 //_conn.sendCommand(
                 //	new InviteCommand(msgc.getSource(), _channelName));
                 getConnectionManager().dispatchFtpEvent(new InviteEvent(
-                        "INVITE", msgc.getSource().getNick()));
+                        "INVITE", msgc.getSource().getNick(), user));
             } else {
                 logger.log(Level.WARN,
                     msgc.getSourceString() +

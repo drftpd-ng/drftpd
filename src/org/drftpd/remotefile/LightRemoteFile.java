@@ -18,6 +18,7 @@
 package org.drftpd.remotefile;
 
 import net.sf.drftpd.remotefile.AbstractRemoteFile;
+import net.sf.drftpd.remotefile.RemoteFileInterface;
 
 import java.io.FileNotFoundException;
 import java.io.Serializable;
@@ -27,19 +28,25 @@ import java.util.Collection;
 
 /**
  * @author zubov
- * @version $Id: LightRemoteFile.java,v 1.2 2004/11/02 07:32:52 zubov Exp $
+ * @version $Id: LightRemoteFile.java,v 1.3 2004/11/08 18:39:30 mog Exp $
  * For use in sending the filelist from the slave to the master
  */
 public final class LightRemoteFile extends AbstractRemoteFile
     implements Serializable {
-    private String filename;
-    private long lastModified;
-    private long length;
+    private String _filename;
+    private long _lastModified;
+    private long _length;
+
+    public LightRemoteFile(RemoteFileInterface file) {
+        this._filename = file.getName();
+        this._lastModified = file.lastModified();
+        this._length = file.length();
+    }
 
     public LightRemoteFile(String filename, long lastModified, long length) {
-        this.filename = filename;
-        this.lastModified = lastModified;
-        this.length = length;
+        _filename = filename;
+        _lastModified = lastModified;
+        _length = length;
     }
 
     public Collection getFiles() {
@@ -67,14 +74,14 @@ public final class LightRemoteFile extends AbstractRemoteFile
     }
 
     public long lastModified() {
-        return lastModified;
+        return _lastModified;
     }
 
     public long length() {
-        return length;
+        return _length;
     }
 
     public String getName() {
-        return filename;
+        return _filename;
     }
 }

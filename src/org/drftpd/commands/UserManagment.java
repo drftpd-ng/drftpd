@@ -16,15 +16,6 @@
  */
 package org.drftpd.commands;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
-
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMask;
@@ -40,22 +31,35 @@ import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+
 import org.drftpd.slave.RemoteTransfer;
+
 import org.drftpd.usermanager.Key;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserExistsException;
 import org.drftpd.usermanager.UserFileException;
+
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
+
 
 /**
  * @author mog
  * @author zubov
- * @version $Id: UserManagment.java,v 1.2 2004/11/06 07:55:34 mog Exp $
+ * @version $Id: UserManagment.java,v 1.3 2004/11/08 18:39:29 mog Exp $
  */
 public class UserManagment implements CommandHandler, CommandHandlerFactory {
     public static final Key TAGLINE = new Key(UserManagment.class, "tagline",
@@ -63,8 +67,10 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
     private static final Logger logger = Logger.getLogger(UserManagment.class);
     public static final Key RATIO = new Key(UserManagment.class, "ratio",
             Float.class);
-	public static final Key CREATED = new Key(UserManagment.class, "created", Long.class);
-	public static final Key COMMENT = new Key(UserManagment.class, "comment", String.class);
+    public static final Key CREATED = new Key(UserManagment.class, "created",
+            Long.class);
+    public static final Key COMMENT = new Key(UserManagment.class, "comment",
+            String.class);
 
     private FtpReply doSITE_ADDIP(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
@@ -236,7 +242,8 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             newUser.setPassword(pass);
             response.addComment(conn.jprintf(UserManagment.class,
                     "adduser.success", env));
-            newUser.putObject(UserManagment.COMMENT, "Added by " + conn.getUserNull().getUsername());
+            newUser.putObject(UserManagment.COMMENT,
+                "Added by " + conn.getUserNull().getUsername());
 
             if (newGroup != null) {
                 newUser.setGroup(newGroup);
@@ -477,7 +484,8 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                                                  .getAllUsersByGroup(conn.getUserNull()
                                                                          .getGroupName())
                                                  .iterator(); iter.hasNext();) {
-                            if (((User) iter.next()).getObjectFloat(UserManagment.RATIO) == 0F) {
+                            if (((User) iter.next()).getObjectFloat(
+                                        UserManagment.RATIO) == 0F) {
                                 usedleechslots++;
                             }
                         }
@@ -499,20 +507,26 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 
                 logger.info("'" + conn.getUserNull().getUsername() +
                     "' changed ratio for '" + userToChange.getUsername() +
-                    "' from '" + userToChange.getObjectFloat(UserManagment.RATIO) + "' to '" + ratio +
-                    "'");
+                    "' from '" +
+                    userToChange.getObjectFloat(UserManagment.RATIO) +
+                    "' to '" + ratio + "'");
                 userToChange.putObject(UserManagment.RATIO, new Float(ratio));
-                env.add("newratio", Float.toString(userToChange.getObjectFloat(UserManagment.RATIO)));
+                env.add("newratio",
+                    Float.toString(userToChange.getObjectFloat(
+                            UserManagment.RATIO)));
                 response.addComment(conn.jprintf(UserManagment.class,
                         "changeratio.success", env));
             } else {
                 // Ratio changes by an admin //
                 logger.info("'" + conn.getUserNull().getUsername() +
                     "' changed ratio for '" + userToChange.getUsername() +
-                    "' from '" + userToChange.getObjectFloat(UserManagment.RATIO) + " to '" + ratio +
-                    "'");
+                    "' from '" +
+                    userToChange.getObjectFloat(UserManagment.RATIO) + " to '" +
+                    ratio + "'");
                 userToChange.putObject(UserManagment.RATIO, new Float(ratio));
-                env.add("newratio", Float.toString(userToChange.getObjectFloat(UserManagment.RATIO)));
+                env.add("newratio",
+                    Float.toString(userToChange.getObjectFloat(
+                            UserManagment.RATIO)));
                 response.addComment(conn.jprintf(UserManagment.class,
                         "changeratio.success", env));
             }
@@ -533,10 +547,12 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         } else if ("comment".equals(command)) {
             logger.info("'" + conn.getUserNull().getUsername() +
                 "' changed comment for '" + userToChange.getUsername() +
-                "' from '" + userToChange.getObjectString(UserManagment.COMMENT) + " to '" +
+                "' from '" +
+                userToChange.getObjectString(UserManagment.COMMENT) + " to '" +
                 fullCommandArgument + "'");
             userToChange.putObject(UserManagment.COMMENT, fullCommandArgument);
-            env.add("comment", userToChange.getObjectString(UserManagment.COMMENT));
+            env.add("comment",
+                userToChange.getObjectString(UserManagment.COMMENT));
             response.addComment(conn.jprintf(UserManagment.class,
                     "changecomment.success", env));
         } else if ("idle_time".equals(command)) {
@@ -659,8 +675,9 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 
             logger.info("'" + conn.getUserNull().getUsername() +
                 "' changed created for '" + userToChange.getUsername() +
-                "' from '" + new Date(userToChange.getObjectLong(UserManagment.CREATED)) + "' to '" +
-                new Date(myDate) + "'");
+                "' from '" +
+                new Date(userToChange.getObjectLong(UserManagment.CREATED)) +
+                "' to '" + new Date(myDate) + "'");
             userToChange.putObject(UserManagment.CREATED, new Long(myDate));
             env.add("created", new Date(myDate));
 
@@ -1343,7 +1360,8 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             "' changed his tagline from '" +
             conn.getUserNull().getObject(TAGLINE, "") + "' to '" +
             request.getArgument() + "'");
-        conn.getUserNull().putObject(UserManagment.TAGLINE, request.getArgument());
+        conn.getUserNull().putObject(UserManagment.TAGLINE,
+            request.getArgument());
 
         return FtpReply.RESPONSE_200_COMMAND_OK;
     }
@@ -1460,7 +1478,8 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         env.add("lastseen", new Date(myUser.getLastAccessTime()));
         env.add("totallogins", Long.toString(myUser.getLogins()));
         env.add("idletime", Long.toString(myUser.getIdleTime()));
-        env.add("userratio", Float.toString(myUser.getObjectFloat(UserManagment.RATIO)));
+        env.add("userratio",
+            Float.toString(myUser.getObjectFloat(UserManagment.RATIO)));
         env.add("usercredits", Bytes.formatBytes(myUser.getCredits()));
         env.add("maxlogins", Long.toString(myUser.getMaxLogins()));
         env.add("maxloginsip", Long.toString(myUser.getMaxLoginsPerIP()));

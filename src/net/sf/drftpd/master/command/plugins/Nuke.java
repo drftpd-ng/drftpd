@@ -65,7 +65,7 @@ import java.util.StringTokenizer;
  * amount -> amount before multiplier
  *
  * @author mog
- * @version $Id: Nuke.java,v 1.26 2004/11/06 07:55:30 mog Exp $
+ * @version $Id: Nuke.java,v 1.27 2004/11/08 18:39:25 mog Exp $
  */
 public class Nuke implements CommandHandlerFactory, CommandHandler {
     public static final Key NUKED = new Key(Nuke.class, "nuked", Integer.class);
@@ -272,7 +272,8 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
 
             long size = ((Long) nukees2.get(nukee)).longValue();
 
-            long debt = calculateNukedAmount(size, nukee.getObjectFloat(UserManagment.RATIO), multiplier);
+            long debt = calculateNukedAmount(size,
+                    nukee.getObjectFloat(UserManagment.RATIO), multiplier);
 
             nukedAmount += debt;
             nukeDirSize += size;
@@ -411,7 +412,8 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
             }
 
             long nukedAmount = calculateNukedAmount(nukeeObj.getAmount(),
-                    nukee.getObjectFloat(UserManagment.RATIO), nuke.getMultiplier());
+                    nukee.getObjectFloat(UserManagment.RATIO),
+                    nuke.getMultiplier());
 
             nukee.updateCredits(nukedAmount);
             nukee.updateUploadedBytes(nukeeObj.getAmount());

@@ -22,14 +22,12 @@ import net.sf.drftpd.master.SlaveManager;
 
 import org.drftpd.GlobalContext;
 
-import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
-
 import java.util.List;
 
 
 /**
  * @author mog
- * @version $Id: DummySlaveManager.java,v 1.5 2004/11/03 16:46:49 mog Exp $
+ * @version $Id: DummySlaveManager.java,v 1.6 2004/11/08 18:39:31 mog Exp $
  */
 public class DummySlaveManager extends SlaveManager {
     public DummySlaveManager() throws SlaveFileException {

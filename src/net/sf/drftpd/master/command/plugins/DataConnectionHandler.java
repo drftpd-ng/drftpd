@@ -72,7 +72,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.72 2004/11/08 02:37:17 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.73 2004/11/08 18:39:24 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandlerFactory,
     CommandHandler, Cloneable {
@@ -233,8 +233,11 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
         if (_preTransferRSlave == null) {
             try {
-                _serverSocket = _portRange.getPort(getServerSocketFactory(_encryptedDataChannel));
-                address = new InetSocketAddress(conn.getControlSocket().getLocalAddress(),_serverSocket.getLocalPort());
+                _serverSocket = _portRange.getPort(getServerSocketFactory(
+                            _encryptedDataChannel));
+                address = new InetSocketAddress(conn.getControlSocket()
+                                                    .getLocalAddress(),
+                        _serverSocket.getLocalPort());
                 _isPasv = true;
             } catch (Exception ex) {
                 logger.warn(ex);
@@ -246,20 +249,24 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                 String index = _preTransferRSlave.issueListenToSlave(_encryptedDataChannel);
                 ConnectInfo ci = _preTransferRSlave.fetchTransferResponseFromIndex(index);
                 _transfer = _preTransferRSlave.getTransfer(ci.getTransferIndex());
-                address = _transfer.getAddress();
+                address = new InetSocketAddress(_preTransferRSlave.getInetAddress(),_transfer.getAddress().getPort());
                 _isPasv = true;
             } catch (SlaveUnavailableException e) {
                 return FtpReply.RESPONSE_530_SLAVE_UNAVAILABLE;
             } catch (RemoteIOException e) {
                 _preTransferRSlave.setOffline(
                     "Slave could not listen for a connection");
+                logger.error("Slave could not listen for a connection", e);
 
                 return new FtpReply(500,
                     "Slave could not listen for a connection");
             }
         }
-        String addrStr = address.getAddress().getHostAddress().replace('.', ',') +
-            ',' + (address.getPort() >> 8) + ',' + (address.getPort() & 0xFF);
+
+        
+        String addrStr= address.getAddress().getHostAddress()
+                                           .replace('.', ',') + ',' +
+            (address.getPort() >> 8) + ',' + (address.getPort() & 0xFF);
 
         return new FtpReply(227, "Entering Passive Mode (" + addrStr + ").");
     }
@@ -449,6 +456,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
             return FtpReply.RESPONSE_200_COMMAND_OK;
         }
+
         if (!req.hasArgument() || (req.getArgument().length() != 1)) {
             return FtpReply.RESPONSE_501_SYNTAX_ERROR;
         }
@@ -741,14 +749,14 @@ public class DataConnectionHandler implements CommandHandlerFactory,
      *
      * Used by LIST and NLST and MLST.
      */
-    public Socket getDataSocket()
-        throws IOException {
+    public Socket getDataSocket() throws IOException {
         Socket dataSocket;
 
         // get socket depending on the selection
         if (isPort()) {
             try {
-                dataSocket = getSocketFactory(_encryptedDataChannel).createSocket();
+                dataSocket = getSocketFactory(_encryptedDataChannel)
+                                 .createSocket();
                 dataSocket.connect(_portAddress);
             } catch (IOException ex) {
                 logger.warn("Error opening data socket", ex);
@@ -780,20 +788,26 @@ public class DataConnectionHandler implements CommandHandlerFactory,
     public SocketFactory getSocketFactory(boolean dataChannel) {
         if (dataChannel) {
             if (_ctx == null) {
-                throw new IllegalStateException("cannot request a secure socket without being in secure mode");
+                throw new IllegalStateException(
+                    "cannot request a secure socket without being in secure mode");
             }
+
             return _ctx.getSocketFactory();
         }
+
         return SocketFactory.getDefault();
     }
 
     public ServerSocketFactory getServerSocketFactory(boolean dataChannel) {
         if (dataChannel) {
             if (_ctx == null) {
-                throw new IllegalStateException("cannot request a SecureSocketFactory without being in secure mode");
+                throw new IllegalStateException(
+                    "cannot request a SecureSocketFactory without being in secure mode");
             }
+
             return _ctx.getServerSocketFactory();
         }
+
         return ServerSocketFactory.getDefault();
     }
 
@@ -871,6 +885,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
         _preTransferRSlave = null;
 
         if (_serverSocket != null) { //isPasv() && _preTransferRSlave == null
+
             try {
                 _serverSocket.close();
             } catch (IOException e) {

@@ -22,7 +22,7 @@ import net.sf.drftpd.slave.SlaveStatus;
 
 /**
  * @author zubov
- * @version $Id: AsyncResponseSlaveStatus.java,v 1.3 2004/11/03 16:46:47 mog Exp $
+ * @version $Id: AsyncResponseSlaveStatus.java,v 1.4 2004/11/08 18:39:31 mog Exp $
  */
 public class AsyncResponseSlaveStatus extends AsyncResponse {
     private SlaveStatus _status;
@@ -43,5 +43,9 @@ public class AsyncResponseSlaveStatus extends AsyncResponse {
 
     public SlaveStatus getSlaveStatus() {
         return _status;
+    }
+
+    public String toString() {
+        return getClass().getName() + "[status=" + getSlaveStatus() + "]";
     }
 }

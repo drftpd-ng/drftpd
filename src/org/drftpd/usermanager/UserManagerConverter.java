@@ -17,145 +17,143 @@
  */
 package org.drftpd.usermanager;
 
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.util.Iterator;
-
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.event.listeners.Trial;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
+
+import java.lang.reflect.Constructor;
+
+import java.util.Iterator;
+
+
 /**
  * Usage: java net.sf.drftpd.master.usermanager.UserManagerConverter
  * net.sf.drftpd.master.usermanager.glftpd.GlftpdUserManager
  * net.sf.drftpd.master.usermanager.JSXUserManager
- * 
+ *
  * @author mog
- * @version $Id: UserManagerConverter.java,v 1.4 2004/11/07 19:46:34 mog Exp $
+ * @version $Id: UserManagerConverter.java,v 1.5 2004/11/08 18:39:32 mog Exp $
  */
 public class UserManagerConverter {
-	private static final Logger logger = Logger
-			.getLogger(UserManagerConverter.class);
+    private static final Logger logger = Logger.getLogger(UserManagerConverter.class);
 
-	public static void main(String[] args) throws InstantiationException,
-			IllegalAccessException, ClassNotFoundException, IOException,
-			UserFileException {
-		BasicConfigurator.configure();
+    public static void convert(User from, User to) throws UserFileException {
+        logger.debug("Converting " + from.getUsername());
 
-		if (args.length != 2) {
-			System.out
-					.println("arguments: <from usermanager class> <to usermanager class>");
+        for (Iterator iter = from.getGroups().iterator(); iter.hasNext();) {
+            try {
+                to.addSecondaryGroup((String) iter.next());
+            } catch (DuplicateElementException e) {
+                logger.warn("", e);
+            }
+        }
 
-			return;
-		}
+        to.putAllObjects(from.getAllObjects());
+        to.addAllMasks(from.getHostMaskCollection());
 
-		UserManager from = (UserManager) Class.forName(args[0]).newInstance();
-		UserManager to;
-		try {
-			Constructor c = Class.forName(args[1]).getConstructor(
-					new Class[] { boolean.class });
-			to = (UserManager) c
-					.newInstance(new Object[] { new Boolean(false) });
+        to.setCredits(from.getCredits());
 
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+        to.setDeleted(from.isDeleted());
 
-		logger.debug(from.getAllUsers());
+        to.setGroup(from.getGroupName());
 
-		for (Iterator iter = from.getAllUsers().iterator(); iter.hasNext();) {
-			User user = (User) iter.next();
-			convert(user, to.create(user.getUsername()));
-		}
-	}
+        to.setGroupLeechSlots(from.getGroupLeechSlots());
 
-	public static void convert(User from, User to) throws UserFileException {
-		logger.debug("Converting " + from.getUsername());
+        to.setGroupSlots(from.getGroupLeechSlots());
 
-		for (Iterator iter = from.getGroups().iterator(); iter.hasNext();) {
-			try {
-				to.addSecondaryGroup((String) iter.next());
-			} catch (DuplicateElementException e) {
-				logger.warn("", e);
-			}
-		}
+        to.setIdleTime(from.getIdleTime());
 
-		to.putAllObjects(from.getAllObjects());
-		to.addAllMasks(from.getHostMaskCollection());
+        to.setLastAccessTime(from.getLastAccessTime());
 
-		to.setCredits(from.getCredits());
+        //to.setLastNuked(from.getLastNuked());
+        //to.putObject(Nuke.LASTNUKED, new Long(from
+        //		.getObjectLong(Nuke.LASTNUKED)));
+        to.setLogins(from.getLogins());
 
-		to.setDeleted(from.isDeleted());
+        to.setMaxLogins(from.getMaxLogins());
 
-		to.setGroup(from.getGroupName());
+        to.setMaxLoginsPerIP(from.getMaxLoginsPerIP());
 
-		to.setGroupLeechSlots(from.getGroupLeechSlots());
+        //to.setMaxSimDownloads(from.getMaxSimDownloads());
+        //to.setMaxSimUploads(from.getMaxSimUploads());
+        //to.putObject(Nuke.NUKEDBYTES, new Long(from
+        //		.getObjectLong(Nuke.NUKEDBYTES)));
+        if (from instanceof PlainTextPasswordUser) {
+            to.setPassword(((PlainTextPasswordUser) from).getPassword());
+        } else if (from instanceof UnixPassword && to instanceof UnixPassword) {
+            ((UnixPassword) to).setUnixPassword(((UnixPassword) from).getUnixPassword());
+        } else {
+            logger.warn("Don't know how to convert password from " +
+                from.getUsername());
+        }
 
-		to.setGroupSlots(from.getGroupLeechSlots());
+        //to.putObject(UserManagment.RATIO, new
+        // Float(from.getObjectFloat(UserManagment.RATIO)));
+        //to.putObject(UserManagment.TAGLINE,
+        // from.getObjectString(UserManagment.TAGLINE));
+        //to.putObject(Nuke.NUKED, new Integer(from.getObjectInt(Nuke.NUKED)));
+        int[] periods = new int[] {
+                Trial.PERIOD_ALL, Trial.PERIOD_DAILY, Trial.PERIOD_MONTHLY,
+                Trial.PERIOD_WEEKLY
+            };
 
-		to.setIdleTime(from.getIdleTime());
+        for (int i = 0; i < periods.length; i++) {
+            int period = periods[i];
+            to.setUploadedTimeForTrialPeriod(period,
+                from.getUploadedTimeForTrialPeriod(period));
 
-		to.setLastAccessTime(from.getLastAccessTime());
+            to.setDownloadedTimeForTrialPeriod(period,
+                from.getDownloadedTimeForTrialPeriod(period));
 
-		//to.setLastNuked(from.getLastNuked());
-		//to.putObject(Nuke.LASTNUKED, new Long(from
-		//		.getObjectLong(Nuke.LASTNUKED)));
+            to.setUploadedBytesForTrialPeriod(period,
+                from.getUploadedBytesForTrialPeriod(period));
 
-		to.setLogins(from.getLogins());
+            to.setDownloadedBytesForTrialPeriod(period,
+                from.getDownloadedBytesForTrialPeriod(period));
 
-		to.setMaxLogins(from.getMaxLogins());
+            to.setUploadedFilesForTrialPeriod(period,
+                from.getUploadedFilesForTrialPeriod(period));
 
-		to.setMaxLoginsPerIP(from.getMaxLoginsPerIP());
+            to.setDownloadedFilesForTrialPeriod(period,
+                from.getDownloadedFilesForTrialPeriod(period));
+        }
 
-		//to.setMaxSimDownloads(from.getMaxSimDownloads());
-		//to.setMaxSimUploads(from.getMaxSimUploads());
-		//to.putObject(Nuke.NUKEDBYTES, new Long(from
-		//		.getObjectLong(Nuke.NUKEDBYTES)));
+        to.commit();
+    }
 
-		if (from instanceof PlainTextPasswordUser) {
-			to.setPassword(((PlainTextPasswordUser) from).getPassword());
-		} else if (from instanceof UnixPassword && to instanceof UnixPassword) {
-			((UnixPassword) to).setUnixPassword(((UnixPassword) from)
-					.getUnixPassword());
-		} else {
-			logger.warn("Don't know how to convert password from "
-					+ from.getUsername());
-		}
+    public static void main(String[] args)
+        throws InstantiationException, IllegalAccessException, 
+            ClassNotFoundException, IOException, UserFileException {
+        BasicConfigurator.configure();
 
-		//to.putObject(UserManagment.RATIO, new
-		// Float(from.getObjectFloat(UserManagment.RATIO)));
+        if (args.length != 2) {
+            System.out.println(
+                "arguments: <from usermanager class> <to usermanager class>");
 
-		//to.putObject(UserManagment.TAGLINE,
-		// from.getObjectString(UserManagment.TAGLINE));
+            return;
+        }
 
-		//to.putObject(Nuke.NUKED, new Integer(from.getObjectInt(Nuke.NUKED)));
+        UserManager from = (UserManager) Class.forName(args[0]).newInstance();
+        UserManager to;
 
-		int[] periods = new int[] { Trial.PERIOD_ALL, Trial.PERIOD_DAILY,
-				Trial.PERIOD_MONTHLY, Trial.PERIOD_WEEKLY };
+        try {
+            Constructor c = Class.forName(args[1]).getConstructor(new Class[] {
+                        boolean.class
+                    });
+            to = (UserManager) c.newInstance(new Object[] { new Boolean(false) });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
-		for (int i = 0; i < periods.length; i++) {
-			int period = periods[i];
-			to.setUploadedTimeForTrialPeriod(period, from
-					.getUploadedTimeForTrialPeriod(period));
+        logger.debug(from.getAllUsers());
 
-			to.setDownloadedTimeForTrialPeriod(period, from
-					.getDownloadedTimeForTrialPeriod(period));
-
-			to.setUploadedBytesForTrialPeriod(period, from
-					.getUploadedBytesForTrialPeriod(period));
-
-			to.setDownloadedBytesForTrialPeriod(period, from
-					.getDownloadedBytesForTrialPeriod(period));
-
-			to.setUploadedFilesForTrialPeriod(period, from
-					.getUploadedFilesForTrialPeriod(period));
-
-			to.setDownloadedFilesForTrialPeriod(period, from
-					.getDownloadedFilesForTrialPeriod(period));
-		}
-
-		to.commit();
-	}
+        for (Iterator iter = from.getAllUsers().iterator(); iter.hasNext();) {
+            User user = (User) iter.next();
+            convert(user, to.create(user.getUsername()));
+        }
+    }
 }

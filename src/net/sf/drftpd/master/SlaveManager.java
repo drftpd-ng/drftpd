@@ -25,6 +25,7 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.config.FtpConfig;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.MLSTSerialize;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.util.SafeFileWriter;
@@ -32,6 +33,8 @@ import net.sf.drftpd.util.SafeFileWriter;
 import org.apache.log4j.Logger;
 
 import org.drftpd.GlobalContext;
+
+import org.drftpd.master.RemergeMessage;
 
 import org.drftpd.slave.async.AsyncCommandArgument;
 
@@ -59,29 +62,27 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
 
 /**
  * @author mog
- * @version $Id: SlaveManager.java,v 1.23 2004/11/08 05:25:12 zubov Exp $
+ * @version $Id: SlaveManager.java,v 1.24 2004/11/08 18:39:24 mog Exp $
  */
 public class SlaveManager implements Runnable {
-    private static final Logger logger = Logger.getLogger(SlaveManager.class
-            .getName());
-
+    private static final Logger logger = Logger.getLogger(SlaveManager.class.getName());
     private static final String slavePath = "slaves/";
-
     private static final File slavePathFile = new File(slavePath);
-
     protected GlobalContext _gctx;
-
     protected List _rslaves;
-
     private int _port;
-
     protected ServerSocket _serverSocket;
+    private BlockingQueue _remergeQueue = new LinkedBlockingQueue();
+    private RemergeThread _remergeThread;
 
     public SlaveManager(Properties p, GlobalContext gctx)
-            throws SlaveFileException {
+        throws SlaveFileException {
         _gctx = gctx;
         _rslaves = new ArrayList();
         _port = Integer.parseInt(FtpConfig.getProperty(p, "master.bindport"));
@@ -112,8 +113,8 @@ public class SlaveManager implements Runnable {
                 continue;
             }
 
-            String slavename = slavepath.substring(0, slavepath.length()
-                    - ".xml".length());
+            String slavename = slavepath.substring(0,
+                    slavepath.length() - ".xml".length());
 
             try {
                 getSlaveByNameUnchecked(slavename);
@@ -137,7 +138,7 @@ public class SlaveManager implements Runnable {
     }
 
     private RemoteSlave getSlaveByNameUnchecked(String slavename)
-            throws ObjectNotFoundException {
+        throws ObjectNotFoundException {
         if (slavename == null) {
             throw new NullPointerException();
         }
@@ -169,18 +170,18 @@ public class SlaveManager implements Runnable {
     protected void addShutdownHook() {
         //add shutdown hook last
         Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                logger.info("Running shutdown hook");
-                saveFilelist();
+                public void run() {
+                    logger.info("Running shutdown hook");
+                    saveFilelist();
 
-                try {
-                    getGlobalContext().getConnectionManager()
+                    try {
+                        getGlobalContext().getConnectionManager()
                             .getGlobalContext().getUserManager().saveAll();
-                } catch (UserFileException e) {
-                    logger.warn("", e);
+                    } catch (UserFileException e) {
+                        logger.warn("", e);
+                    }
                 }
-            }
-        });
+            });
     }
 
     public void delSlave(String slaveName) {
@@ -198,7 +199,7 @@ public class SlaveManager implements Runnable {
     }
 
     public HashSet findSlavesBySpace(int numOfSlaves, Set exemptSlaves,
-            boolean ascending) {
+        boolean ascending) {
         Collection slaveList = getGlobalContext().getSlaveManager().getSlaves();
         HashMap map = new HashMap();
 
@@ -213,7 +214,7 @@ public class SlaveManager implements Runnable {
 
             try {
                 size = new Long(rslave.getStatusAvailable()
-                        .getDiskSpaceAvailable());
+                                      .getDiskSpaceAvailable());
             } catch (SlaveUnavailableException e) {
                 continue;
             }
@@ -246,7 +247,8 @@ public class SlaveManager implements Runnable {
 
     public RemoteSlave findSmallestFreeSlave() {
         Collection slaveList = getGlobalContext().getConnectionManager()
-                .getGlobalContext().getSlaveManager().getSlaves();
+                                   .getGlobalContext().getSlaveManager()
+                                   .getSlaves();
         long smallSize = Integer.MAX_VALUE;
         RemoteSlave smallSlave = null;
 
@@ -378,7 +380,7 @@ public class SlaveManager implements Runnable {
 
     /**
      * Returns true if one or more slaves are online, false otherwise.
-     * 
+     *
      * @return true if one or more slaves are online, false otherwise.
      */
     public boolean hasAvailableSlaves() {
@@ -401,9 +403,8 @@ public class SlaveManager implements Runnable {
             SafeFileWriter out = new SafeFileWriter("files.mlst");
 
             try {
-                MLSTSerialize.serialize(getGlobalContext()
-                        .getConnectionManager().getGlobalContext().getRoot(),
-                        out);
+                MLSTSerialize.serialize(getGlobalContext().getConnectionManager()
+                                            .getGlobalContext().getRoot(), out);
             } finally {
                 out.close();
             }
@@ -447,18 +448,23 @@ public class SlaveManager implements Runnable {
             try {
                 socket = _serverSocket.accept();
                 socket.setSoTimeout(0);
-                logger.debug("Slave connected from "
-                        + socket.getRemoteSocketAddress());
+                logger.debug("Slave connected from " +
+                    socket.getRemoteSocketAddress());
 
                 in = new ObjectInputStream(socket.getInputStream());
                 out = new ObjectOutputStream(socket.getOutputStream());
-                String slavename = RemoteSlave
-                .getSlaveNameFromObjectInput(in);
+
+                String slavename = RemoteSlave.getSlaveNameFromObjectInput(in);
+
                 try {
-                rslave = getRemoteSlave(slavename);
+                    rslave = getRemoteSlave(slavename);
                 } catch (ObjectNotFoundException e) {
-                    out.writeObject(new AsyncCommandArgument("", "error", slavename + " does not exist, use \"site addslave\""));
-                    logger.info("Slave " + slavename + " does not exist, use \"site addslave\"");
+                    out.writeObject(new AsyncCommandArgument("", "error",
+                            slavename +
+                            " does not exist, use \"site addslave\""));
+                    logger.info("Slave " + slavename +
+                        " does not exist, use \"site addslave\"");
+
                     return;
                 }
 
@@ -483,11 +489,12 @@ public class SlaveManager implements Runnable {
             try {
                 if (!rslave.checkConnect(socket)) {
                     out.writeObject(new AsyncCommandArgument("", "error",
-                            socket.getInetAddress() + " is not a valid mask for "
-                                    + rslave.getName()));
-                    logger.error(socket.getInetAddress()
-                            + " is not a valid ip for " + rslave.getName());
+                            socket.getInetAddress() +
+                            " is not a valid mask for " + rslave.getName()));
+                    logger.error(socket.getInetAddress() +
+                        " is not a valid ip for " + rslave.getName());
                     socket.close();
+
                     continue;
                 }
 
@@ -497,5 +504,59 @@ public class SlaveManager implements Runnable {
                 logger.error(e);
             }
         }
+    }
+
+    public BlockingQueue getRemergeQueue() {
+        if (_remergeThread == null) {
+            _remergeThread = new RemergeThread(getGlobalContext());
+            _remergeThread.start();
+        }
+
+        return _remergeQueue;
+    }
+}
+
+
+class RemergeThread extends Thread {
+    private static final Logger logger = Logger.getLogger(RemergeThread.class);
+    private GlobalContext _gctx;
+
+    public RemergeThread(GlobalContext gctx) {
+        _gctx = gctx;
+        setName("RemergeThread");
+    }
+
+    public void run() {
+        RemergeMessage msg;
+
+        while (true) {
+            try {
+                msg = (RemergeMessage) getGlobalContext().getSlaveManager()
+                                           .getRemergeQueue().take();
+            } catch (InterruptedException e) {
+                logger.info("", e);
+
+                return;
+            }
+
+            LinkedRemoteFileInterface lrf;
+
+            try {
+                lrf = getGlobalContext().getRoot().lookupFile(msg.getDirectory());
+            } catch (FileNotFoundException e1) {
+                lrf = getGlobalContext().getRoot().createDirectories(msg.getDirectory());
+            }
+
+            try {
+                lrf.remerge(msg.getFiles(), msg.getRslave());
+            } catch (IOException e2) {
+                logger.error("IOException during remerge", e2);
+                msg.getRslave().setOffline("IOException during remerge");
+            }
+        }
+    }
+
+    private GlobalContext getGlobalContext() {
+        return _gctx;
     }
 }

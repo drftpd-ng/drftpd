@@ -34,7 +34,7 @@ import java.util.Set;
 
 /**
  * @author mog
- * @version $Id: LinkedRemoteFileInterface.java,v 1.14 2004/11/03 16:46:43 mog Exp $
+ * @version $Id: LinkedRemoteFileInterface.java,v 1.15 2004/11/08 18:39:28 mog Exp $
  *
  */
 public interface LinkedRemoteFileInterface extends RemoteFileInterface {
@@ -206,7 +206,8 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 
     public abstract void unmergeFile(RemoteSlave rslave);
 
-    public abstract void setSlaveForMerging(RemoteSlave rslave);
+    public abstract void setSlaveForMerging(RemoteSlave rslave)
+        throws IOException;
 
     public abstract void resetSlaveForMerging(RemoteSlave slave);
 

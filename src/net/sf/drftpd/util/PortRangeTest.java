@@ -17,43 +17,51 @@
  */
 package net.sf.drftpd.util;
 
+import junit.framework.TestCase;
+
 import java.io.IOException;
+
 import java.net.ServerSocket;
+
 import java.util.ArrayList;
 
 import javax.net.ServerSocketFactory;
 
-import junit.framework.TestCase;
 
 /**
  * @author zubov
- * @version $Id: PortRangeTest.java,v 1.1 2004/11/05 13:13:41 zubov Exp $
+ * @version $Id: PortRangeTest.java,v 1.2 2004/11/08 18:39:29 mog Exp $
  */
 public class PortRangeTest extends TestCase {
-
     public void testGetPort() throws IOException {
-        PortRange pr = new PortRange(45300,45310);
+        PortRange pr = new PortRange(45300, 45310);
         ArrayList ports = new ArrayList();
-        for (int x = 45300; x<=45310; x++) {
+
+        for (int x = 45300; x <= 45310; x++) {
             ports.add(new Integer(x));
         }
-        assertEquals(11,ports.size());
+
+        assertEquals(11, ports.size());
+
         ServerSocket ss = new ServerSocket(45305);
         ports.remove(new Integer(ss.getLocalPort()));
-        assertEquals(10,ports.size());
-        for (int x = 0; x<10; x++) {
+        assertEquals(10, ports.size());
+
+        for (int x = 0; x < 10; x++) {
             ServerSocket socket = pr.getPort(ServerSocketFactory.getDefault());
             ports.remove(new Integer(socket.getLocalPort()));
-            assertEquals(10-x-1,ports.size());
+            assertEquals(10 - x - 1, ports.size());
         }
-        assertEquals(0,ports.size());
+
+        assertEquals(0, ports.size());
+
         try {
             pr.getPort(ServerSocketFactory.getDefault());
         } catch (RuntimeException e) {
             assertTrue(e.getMessage().equals("PortRange exhausted"));
         }
+
         ss.close();
         ss = pr.getPort(ServerSocketFactory.getDefault());
     }
-
 }

@@ -30,6 +30,7 @@ import net.sf.drftpd.util.CalendarUtils;
 import org.apache.log4j.Logger;
 
 import org.drftpd.commands.UserManagment;
+
 import org.drftpd.plugins.SiteBot;
 
 import org.drftpd.usermanager.User;
@@ -48,7 +49,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.31 2004/11/06 07:55:29 mog Exp $
+ * @version $Id: Trial.java,v 1.32 2004/11/08 18:39:24 mog Exp $
  */
 public class Trial implements FtpListener {
     private static final Logger logger = Logger.getLogger(Trial.class);

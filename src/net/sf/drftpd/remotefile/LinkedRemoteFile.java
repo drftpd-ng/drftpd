@@ -17,20 +17,6 @@
  */
 package net.sf.drftpd.remotefile;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.StringTokenizer;
-
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.ID3Tag;
@@ -44,15 +30,32 @@ import net.sf.drftpd.util.ListUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+
 import org.drftpd.remotefile.LightRemoteFile;
+
 import org.drftpd.slave.RemoteIOException;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Serializable;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.StringTokenizer;
 
 
 /**
  * Represents the file attributes of a remote file.
  *
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.173 2004/11/08 02:37:18 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.174 2004/11/08 18:39:28 mog Exp $
  */
 public class LinkedRemoteFile implements Serializable, Comparable,
     LinkedRemoteFileInterface {
@@ -754,6 +757,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
                         removeSlave(rslave);
                         throw (FileNotFoundException) e.getCause();
                     }
+
                     throw (IOException) e.getCause();
                 } catch (SlaveUnavailableException e) {
                     continue;
@@ -798,6 +802,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
                         removeSlave(rslave);
                         throw (FileNotFoundException) e.getCause();
                     }
+
                     throw (IOException) e.getCause();
                 }
             }
@@ -999,6 +1004,10 @@ public class LinkedRemoteFile implements Serializable, Comparable,
     public NonExistingFile lookupNonExistingFile(String path) {
         if (path == null) {
             throw new IllegalArgumentException("null path not allowed");
+        }
+
+        if (path.equals("")) {
+            return new NonExistingFile(this, null);
         }
 
         LinkedRemoteFile currFile = this;
@@ -1580,11 +1589,12 @@ public class LinkedRemoteFile implements Serializable, Comparable,
         }
     }
 
-    public void setSlaveForMerging(RemoteSlave rslave) {
+    public void setSlaveForMerging(RemoteSlave rslave)
+        throws IOException {
         if (!isDirectory()) {
             throw new RuntimeException(this + " is not a directory");
         }
-        
+
         for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface lrf = (LinkedRemoteFileInterface) iter.next();
 
@@ -1598,7 +1608,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
         }
 
         if (_slaves.contains(rslave)) {
-            throw new RuntimeException("_slaves already contains " + rslave);
+            throw new IOException("_slaves already contains " + rslave);
         }
 
         _slaves.add(rslave);

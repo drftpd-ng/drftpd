@@ -5,7 +5,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: AsyncResponseRemerge.java,v 1.2 2004/11/02 07:32:53 zubov Exp $
+ * @version $Id: AsyncResponseRemerge.java,v 1.3 2004/11/08 18:39:31 mog Exp $
  */
 public class AsyncResponseRemerge extends AsyncResponse {
     private LinkedRemoteFile.CaseInsensitiveHashtable _files;
@@ -24,5 +24,9 @@ public class AsyncResponseRemerge extends AsyncResponse {
 
     public LinkedRemoteFile.CaseInsensitiveHashtable getFiles() {
         return _files;
+    }
+
+    public String toString() {
+        return getClass().getName() + "[path=" + getDirectory() + "]";
     }
 }

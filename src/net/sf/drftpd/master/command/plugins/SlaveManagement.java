@@ -34,7 +34,6 @@ import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 
 import org.drftpd.plugins.SiteBot;
-import org.drftpd.slave.RemoteIOException;
 
 import org.tanesha.replacer.ReplacerEnvironment;
 
@@ -48,7 +47,7 @@ import java.util.Map;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveManagement.java,v 1.9 2004/11/08 05:25:13 zubov Exp $
+ * @version $Id: SlaveManagement.java,v 1.10 2004/11/08 18:39:25 mog Exp $
  */
 public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
     public void unload() {
@@ -152,7 +151,8 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         }
 
         if (!rslave.isAvailable()) {
-            return new FtpReply(200, "Slave is still merging from initial connect");
+            return new FtpReply(200,
+                "Slave is still merging from initial connect");
         }
 
         try {

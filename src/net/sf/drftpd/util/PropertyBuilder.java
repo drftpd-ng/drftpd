@@ -22,12 +22,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import java.util.Iterator;
-
 
 /**
  * @author mog
- * @version $Id: PropertyBuilder.java,v 1.1 2004/11/06 07:55:33 mog Exp $
+ * @version $Id: PropertyBuilder.java,v 1.2 2004/11/08 18:39:29 mog Exp $
  */
 public class PropertyBuilder {
     private File _baseFile;

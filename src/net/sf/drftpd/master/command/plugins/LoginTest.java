@@ -42,6 +42,7 @@ import org.drftpd.usermanager.User;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -50,7 +51,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: LoginTest.java,v 1.14 2004/11/05 15:56:56 zubov Exp $
+ * @version $Id: LoginTest.java,v 1.15 2004/11/08 18:39:25 mog Exp $
  */
 public class LoginTest extends TestCase {
     private static final Logger logger = Logger.getLogger(LoginTest.class);
@@ -157,8 +158,10 @@ public class LoginTest extends TestCase {
         public FC() {
             Properties cfg = new Properties();
             cfg.setProperty("bouncer_ip", "10.0.1.1 10.0.0.1");
+
             Reader r = new StringReader("shutdown !*");
             cfg.setProperty("shutdown", "!*");
+
             try {
                 loadConfig1(cfg);
                 loadConfig2(r);

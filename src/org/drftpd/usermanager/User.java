@@ -16,28 +16,31 @@
  */
 package org.drftpd.usermanager;
 
-import java.util.List;
-import java.util.Map;
-
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMaskCollection;
 import net.sf.drftpd.master.ConnectionManager;
 
-import org.drftpd.commands.UserManagment;
+import java.util.List;
+import java.util.Map;
 
 
 /**
  * @author mog
- * @version $Id: User.java,v 1.3 2004/11/06 07:55:35 mog Exp $
+ * @version $Id: User.java,v 1.4 2004/11/08 18:39:32 mog Exp $
  */
 public abstract class User {
-  public abstract float getObjectFloat(Key key);
-  public abstract UserManager getUserManager();
-  public abstract Map getAllObjects();
-  public abstract void putAllObjects(Map m);
+    public abstract float getObjectFloat(Key key);
+
+    public abstract UserManager getUserManager();
+
+    public abstract Map getAllObjects();
+
+    public abstract void putAllObjects(Map m);
+
     public abstract void addAllMasks(HostMaskCollection hostMaskCollection);
 
-    public abstract void addIPMask(String mask) throws DuplicateElementException;
+    public abstract void addIPMask(String mask)
+        throws DuplicateElementException;
 
     public abstract void addSecondaryGroup(String group)
         throws DuplicateElementException;
@@ -144,8 +147,8 @@ public abstract class User {
      *
      * @return float
      */
-    //public abstract float getRatio();
 
+    //public abstract float getRatio();
     //    public abstract int getRequests();
     //
     //    public abstract int getRequestsFilled();
@@ -260,12 +263,14 @@ public abstract class User {
 
     public abstract void removeIpMask(String mask) throws NoSuchFieldException;
 
-    public abstract void removeSecondaryGroup(String group) throws NoSuchFieldException;
+    public abstract void removeSecondaryGroup(String group)
+        throws NoSuchFieldException;
 
     public abstract void rename(String username)
         throws UserExistsException, UserFileException;
 
-    public abstract void reset(ConnectionManager manager) throws UserFileException;
+    public abstract void reset(ConnectionManager manager)
+        throws UserFileException;
 
     /**
      * Sets the credits.
@@ -447,5 +452,5 @@ public abstract class User {
 
     public abstract void incrementObjectInt(Key nuked, int i);
 
-  public abstract long getObjectLong(Key key);
+    public abstract long getObjectLong(Key key);
 }

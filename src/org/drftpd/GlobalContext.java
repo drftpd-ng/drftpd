@@ -52,7 +52,7 @@ import java.util.Timer;
 
 /**
  * @author mog
- * @version $Id: GlobalContext.java,v 1.7 2004/11/06 07:55:33 mog Exp $
+ * @version $Id: GlobalContext.java,v 1.8 2004/11/08 18:39:29 mog Exp $
  */
 public class GlobalContext {
     private static final Logger logger = Logger.getLogger(GlobalContext.class);
@@ -85,8 +85,8 @@ public class GlobalContext {
 
         loadSlaveManager(cfg);
         loadSlaveSelectionManager(cfg);
-        loadPlugins(cfg);
         loadRSlavesAndRoot();
+        loadPlugins(cfg);
     }
 
     /**
@@ -165,7 +165,6 @@ public class GlobalContext {
         if (_root == null) {
             throw new NullPointerException();
         }
-
         return _root;
     }
 

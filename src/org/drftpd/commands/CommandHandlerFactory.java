@@ -24,14 +24,14 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 
 /**
  * @author mog
- * @version $Id: CommandHandlerFactory.java,v 1.3 2004/08/03 20:14:04 zubov Exp $
+ * @version $Id: CommandHandlerFactory.java,v 1.4 2004/11/08 18:39:29 mog Exp $
  */
 public interface CommandHandlerFactory {
     public abstract CommandHandler initialize(BaseFtpConnection conn,
         CommandManager initializer);
 
     /**
-     * @deprecated switch to using constructor & reflection
+     * @deprecated TODO: switch to using constructor & reflection
      */
     public void load(CommandManagerFactory initializer);
 

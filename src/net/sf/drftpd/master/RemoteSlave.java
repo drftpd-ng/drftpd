@@ -37,6 +37,8 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 import org.drftpd.GlobalContext;
 
+import org.drftpd.master.RemergeMessage;
+
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.RemoteTransfer;
@@ -74,52 +76,33 @@ import java.util.Properties;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
+
 /**
  * @author mog
  * @author zubov
- * @version $Id: RemoteSlave.java,v 1.71 2004/11/08 04:46:17 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.72 2004/11/08 18:39:24 mog Exp $
  */
 public class RemoteSlave implements Runnable, Comparable, Serializable {
     private static final long serialVersionUID = -6973935289361817125L;
-
     private static final Logger logger = Logger.getLogger(RemoteSlave.class);
-
     private static XStream _xst = new XStream();
-
     private transient boolean _available;
-
     protected transient int _errors;
-
     private transient GlobalContext _gctx;
-
     private transient long _lastDownloadSending = 0;
-
     protected transient long _lastNetworkError;
-
     private transient long _lastUploadReceiving = 0;
-
     private transient int _maxPath;
-
     private transient String _name;
-
     private transient SlaveStatus _status;
-
     private HostMaskCollection _ipMasks;
-
     private Properties _keysAndValues;
-
     private HashMap _renameQueue;
-
     private Stack _indexPool;
-
     private transient HashMap _indexWithCommands;
-
     private transient ObjectInputStream _sin;
-
     private transient Socket _socket;
-
     private transient ObjectOutputStream _sout;
-
     private transient HashMap _transfers;
 
     /**
@@ -156,8 +139,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
      */
     public final void addNetworkError(SocketException e) {
         // set slave offline if too many network errors
-        long errortimeout = Long
-                .parseLong(getProperty("errortimeout", "60000")); // one minute
+        long errortimeout = Long.parseLong(getProperty("errortimeout", "60000")); // one minute
 
         if (errortimeout <= 0) {
             errortimeout = 60000;
@@ -191,12 +173,12 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     protected void addQueueRename(String fileName, String destName) {
         if (isOnline()) {
             throw new IllegalStateException(
-                    "Slave is online, you cannot queue an operation");
+                "Slave is online, you cannot queue an operation");
         }
 
         if (_renameQueue.containsKey(fileName)) {
-            throw new IllegalArgumentException(fileName
-                    + " is already in the queue for " + getName());
+            throw new IllegalArgumentException(fileName +
+                " is already in the queue for " + getName());
         }
 
         _renameQueue.put(fileName, destName);
@@ -218,7 +200,8 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     public void commit() {
         try {
             SafeFileWriter out = new SafeFileWriter((getGlobalContext()
-                    .getSlaveManager().getSlaveFile(this.getName())));
+                                                         .getSlaveManager()
+                                                         .getSlaveFile(this.getName())));
 
             try {
                 //_xst = new XStream();
@@ -229,8 +212,8 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
 
             Logger.getLogger(RemoteSlave.class).debug("wrote " + getName());
         } catch (IOException ex) {
-            throw new RuntimeException("Error writing slavefile for "
-                    + this.getName() + ": " + ex.getMessage(), ex);
+            throw new RuntimeException("Error writing slavefile for " +
+                this.getName() + ": " + ex.getMessage(), ex);
         }
     }
 
@@ -290,11 +273,11 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
      * remerge() is completed
      */
     public synchronized SlaveStatus getStatus()
-            throws SlaveUnavailableException {
-
-        if (_status == null || !isOnline()) {
+        throws SlaveUnavailableException {
+        if ((_status == null) || !isOnline()) {
             throw new SlaveUnavailableException();
         }
+
         return _status;
     }
 
@@ -303,7 +286,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
      * before remerge() is completed
      */
     public synchronized SlaveStatus getStatusAvailable()
-            throws SlaveUnavailableException {
+        throws SlaveUnavailableException {
         if (isAvailable()) {
             return getStatus();
         }
@@ -327,8 +310,8 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     /**
      * Called when the slave connects
      */
-    private void initializeSlaveAfterThreadIsRunning() throws IOException,
-            SlaveUnavailableException {
+    private void initializeSlaveAfterThreadIsRunning()
+        throws IOException, SlaveUnavailableException {
         processQueue();
 
         String statusIndex = issueStatusToSlave();
@@ -344,8 +327,8 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         getGlobalContext().getRoot().cleanSlaveFromMerging(this);
         setAvailable(true);
         logger.info("Slave added: '" + getName() + "' status: " + _status);
-        getGlobalContext().getConnectionManager().dispatchFtpEvent(
-                new SlaveEvent("ADDSLAVE", this));
+        getGlobalContext().getConnectionManager().dispatchFtpEvent(new SlaveEvent(
+                "ADDSLAVE", this));
     }
 
     /**
@@ -369,9 +352,12 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
 
             return false;
         } catch (RemoteIOException e) {
-            setOffline("The slave encountered an IOException while running ping...this is almost not possible");
+            setOffline(
+                "The slave encountered an IOException while running ping...this is almost not possible");
+
             return false;
         }
+
         return isAvailable();
     }
 
@@ -389,10 +375,10 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
                     }
                 }
             } else {
-                String fileName = destFile
-                        .substring(destFile.lastIndexOf("/") + 1);
-                String destDir = destFile.substring(0, destFile
-                        .lastIndexOf("/"));
+                String fileName = destFile.substring(destFile.lastIndexOf("/") +
+                        1);
+                String destDir = destFile.substring(0, destFile.lastIndexOf("/"));
+
                 try {
                     fetchResponse(issueRenameToSlave(sourceFile, destDir,
                             fileName));
@@ -400,8 +386,9 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
                     if (!(e.getCause() instanceof FileNotFoundException)) {
                         throw (IOException) e.getCause();
                     }
-                    LinkedRemoteFileInterface lrf = getGlobalContext()
-                            .getRoot().lookupFile(destFile);
+
+                    LinkedRemoteFileInterface lrf = getGlobalContext().getRoot()
+                                                        .lookupFile(destFile);
                     lrf.removeSlave(this);
                 }
             }
@@ -463,12 +450,14 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
             if (e.getCause() instanceof FileNotFoundException) {
                 return;
             }
-            setOffline("IOException deleting file, check logs for specific error");
+
+            setOffline(
+                "IOException deleting file, check logs for specific error");
             addQueueDelete(path);
-            logger.error(
-                    "IOException deleting file, check logs for specific error",
-                    e);
+            logger.error("IOException deleting file, check logs for specific error",
+                e);
         } catch (SlaveUnavailableException e) {
+            logger.debug("Failed to delete: " + path, e);
             setOffline(e);
             addQueueDelete(path);
         }
@@ -495,7 +484,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     }
 
     public static String getSlaveNameFromObjectInput(ObjectInputStream in)
-            throws IOException {
+        throws IOException {
         try {
             return (String) in.readObject();
         } catch (ClassNotFoundException e) {
@@ -504,7 +493,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     }
 
     public synchronized void connect(Socket socket, ObjectInputStream in,
-            ObjectOutputStream out) throws IOException {
+        ObjectOutputStream out) throws IOException {
         _socket = socket;
         _sout = out;
         _sin = in;
@@ -536,6 +525,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
                 }
             }
         }
+
         Thread t = new Thread(new RemergeThread());
         t.setName("RemoteSlaveRemerge - " + getName());
         t.start();
@@ -547,13 +537,13 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         t.start();
     }
 
-    public long fetchChecksumFromIndex(String index) throws RemoteIOException,
-            SlaveUnavailableException {
+    public long fetchChecksumFromIndex(String index)
+        throws RemoteIOException, SlaveUnavailableException {
         return ((AsyncResponseChecksum) fetchResponse(index)).getChecksum();
     }
 
-    public ID3Tag fetchID3TagFromIndex(String index) throws RemoteIOException,
-            SlaveUnavailableException {
+    public ID3Tag fetchID3TagFromIndex(String index)
+        throws RemoteIOException, SlaveUnavailableException {
         return ((AsyncResponseID3Tag) fetchResponse(index)).getTag();
     }
 
@@ -562,26 +552,26 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
             try {
                 return (String) _indexPool.pop();
             } catch (EmptyStackException e) {
-                logger
-                        .error("Too many commands sent, need to wait for the slave to process commands");
+                logger.error(
+                    "Too many commands sent, need to wait for the slave to process commands");
             }
+
             try {
                 wait();
             } catch (InterruptedException e1) {
             }
         }
-        logger.error("Went offline fetching an index");
+
         throw new SlaveUnavailableException("Went offline fetching an index");
     }
 
     public int fetchMaxPathFromIndex(String maxPathIndex)
-            throws SlaveUnavailableException {
+        throws SlaveUnavailableException {
         try {
-            return ((AsyncResponseMaxPath) fetchResponse(maxPathIndex))
-                    .getMaxPath();
+            return ((AsyncResponseMaxPath) fetchResponse(maxPathIndex)).getMaxPath();
         } catch (RemoteIOException e) {
             throw new FatalException(
-                    "this is not possible, slave had an error processing maxpath...");
+                "this is not possible, slave had an error processing maxpath...");
         }
     }
 
@@ -589,67 +579,71 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
      * @see fetchResponse(String index, int wait)
      */
     public AsyncResponse fetchResponse(String index)
-            throws SlaveUnavailableException, RemoteIOException {
-        return fetchResponse(index, 10000);
+        throws SlaveUnavailableException, RemoteIOException {
+        return fetchResponse(index, 60 * 1000);
     }
 
     /**
      * returns an AsyncResponse for that index and throws any exceptions thrown
      * on the Slave side
-     * 
-     * @throws RemoteIOException
-     * 
-     * @throws IOException
      */
     public synchronized AsyncResponse fetchResponse(String index, int wait)
-            throws SlaveUnavailableException, RemoteIOException {
+        throws SlaveUnavailableException, RemoteIOException {
         long total = System.currentTimeMillis();
+
         while (isOnline() && !_indexWithCommands.containsKey(index)) {
             try {
                 wait(1000);
+
                 // will wait a maximum of 1000 milliseconds before waking up
             } catch (InterruptedException e) {
             }
-            if (wait != 0 && (System.currentTimeMillis() - total) >= wait) {
-                setOffline("Slave has taken too long while processing command");
+
+            if ((wait != 0) && ((System.currentTimeMillis() - total) >= wait)) {
+                setOffline("Slave has taken too long while waiting for reply " +
+                    index);
             }
         }
+
         if (!isOnline()) {
             throw new SlaveUnavailableException(
-                    "Slave went offline while processing command");
+                "Slave went offline while processing command");
         }
+
         AsyncResponse rar = (AsyncResponse) _indexWithCommands.remove(index);
         _indexPool.push(index);
         notifyAll();
+
         if (rar instanceof AsyncResponseException) {
             Throwable t = ((AsyncResponseException) rar).getThrowable();
+
             if (t instanceof IOException) {
                 throw new RemoteIOException((IOException) t);
             }
-            logger
-                    .error(
-                            "Exception on slave that is unable to be handled by the master",
-                            t);
-            setOffline("Exception on slave that is unable to be handled by the master");
+
+            logger.error("Exception on slave that is unable to be handled by the master",
+                t);
+            setOffline(
+                "Exception on slave that is unable to be handled by the master");
             throw new SlaveUnavailableException(
-                    "Exception on slave that is unable to be handled by the master");
+                "Exception on slave that is unable to be handled by the master");
         }
+
         return rar;
     }
 
     public SFVFile fetchSFVFileFromIndex(String index)
-            throws RemoteIOException, SlaveUnavailableException {
+        throws RemoteIOException, SlaveUnavailableException {
         return ((AsyncResponseSFVFile) fetchResponse(index)).getSFV();
     }
 
     public SlaveStatus fetchStatusFromIndex(String statusIndex)
-            throws SlaveUnavailableException {
+        throws SlaveUnavailableException {
         try {
-            return ((AsyncResponseSlaveStatus) fetchResponse(statusIndex))
-                    .getSlaveStatus();
+            return ((AsyncResponseSlaveStatus) fetchResponse(statusIndex)).getSlaveStatus();
         } catch (RemoteIOException e) {
             throw new FatalException(
-                    "Slave threw IOException from getSlaveStatus() which is impossible");
+                "Slave threw IOException from getSlaveStatus() which is impossible");
         }
     }
 
@@ -666,7 +660,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     }
 
     public String issueChecksumToSlave(String string)
-            throws SlaveUnavailableException {
+        throws SlaveUnavailableException {
         String index = fetchIndex();
         sendCommand(new AsyncCommandArgument(index, "checksum", string));
 
@@ -674,11 +668,11 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     }
 
     public String issueConnectToSlave(InetSocketAddress address,
-            boolean encryptedDataChannel) throws SlaveUnavailableException {
+        boolean encryptedDataChannel) throws SlaveUnavailableException {
         String index = fetchIndex();
-        sendCommand(new AsyncCommandArgument(index, "connect", address
-                .getAddress().getHostAddress()
-                + ":" + address.getPort() + "," + encryptedDataChannel));
+        sendCommand(new AsyncCommandArgument(index, "connect",
+                address.getAddress().getHostAddress() + ":" +
+                address.getPort() + "," + encryptedDataChannel));
 
         return index;
     }
@@ -687,7 +681,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
      * @return String index, needs to be used to fetch the response
      */
     public String issueDeleteToSlave(String sourceFile)
-            throws SlaveUnavailableException {
+        throws SlaveUnavailableException {
         String index = fetchIndex();
         sendCommand(new AsyncCommandArgument(index, "delete", sourceFile));
 
@@ -695,7 +689,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     }
 
     public String issueID3TagToSlave(String path)
-            throws SlaveUnavailableException {
+        throws SlaveUnavailableException {
         String index = fetchIndex();
         sendCommand(new AsyncCommandArgument(index, "id3tag", path));
 
@@ -703,10 +697,10 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     }
 
     public String issueListenToSlave(boolean encryptedDataChannel)
-            throws SlaveUnavailableException {
+        throws SlaveUnavailableException {
         String index = fetchIndex();
-        sendCommand(new AsyncCommandArgument(index, "listen", ""
-                + encryptedDataChannel));
+        sendCommand(new AsyncCommandArgument(index, "listen",
+                "" + encryptedDataChannel));
 
         return index;
     }
@@ -726,25 +720,25 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     }
 
     public String issueReceiveToSlave(String name, char c, long position,
-            TransferIndex tindex) throws SlaveUnavailableException {
+        TransferIndex tindex) throws SlaveUnavailableException {
         String index = fetchIndex();
-        sendCommand(new AsyncCommandArgument(index, "receive", c + ","
-                + position + "," + tindex + "," + name));
+        sendCommand(new AsyncCommandArgument(index, "receive",
+                c + "," + position + "," + tindex + "," + name));
 
         return index;
     }
 
     public String issueRenameToSlave(String from, String toDirPath,
-            String toName) throws SlaveUnavailableException {
+        String toName) throws SlaveUnavailableException {
         String index = fetchIndex();
-        sendCommand(new AsyncCommandArgument(index, "rename", from + ","
-                + toDirPath + "," + toName));
+        sendCommand(new AsyncCommandArgument(index, "rename",
+                from + "," + toDirPath + "," + toName));
 
         return index;
     }
 
     public String issueSFVFileToSlave(String path)
-            throws SlaveUnavailableException {
+        throws SlaveUnavailableException {
         String index = fetchIndex();
         AsyncCommand ac = new AsyncCommandArgument(index, "sfvfile", path);
         sendCommand(ac);
@@ -760,8 +754,8 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     }
 
     public String moreInfo() {
-        return getName() + ":address=[" + getInetAddress() + "]port=["
-                + Integer.toString(getPort()) + "]";
+        return getName() + ":address=[" + getInetAddress() + "]port=[" +
+        Integer.toString(getPort()) + "]";
     }
 
     public void run() {
@@ -778,43 +772,32 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
                     // not online
                     return;
                 }
+
                 if (ar == null) {
                     continue;
                 }
+
                 synchronized (this) {
-                    logger.debug("Received: " + ar);
+                    if (!(ar instanceof AsyncResponseRemerge)) {
+                        logger.debug("Received: " + ar);
+                    }
 
                     if (ar instanceof AsyncResponseTransfer) {
                         AsyncResponseTransfer art = (AsyncResponseTransfer) ar;
                         addTransfer((art.getConnectInfo().getTransferIndex()),
-                                new RemoteTransfer(art.getConnectInfo(), this));
+                            new RemoteTransfer(art.getConnectInfo(), this));
                     }
 
                     if (ar.getIndex().equals("Remerge")) {
-                        AsyncResponseRemerge asr = (AsyncResponseRemerge) ar;
-                        LinkedRemoteFileInterface lrf;
-
-                        try {
-                            lrf = getGlobalContext().getRoot().lookupFile(
-                                    asr.getDirectory());
-                        } catch (FileNotFoundException e1) {
-                            lrf = getGlobalContext().getRoot()
-                                    .createDirectories(asr.getDirectory());
-                        }
-
-                        try {
-                            lrf.remerge(asr.getFiles(), this);
-                        } catch (IOException e2) {
-                            logger.error("IOException during remerge", e2);
-                            setOffline("IOException during remerge");
-                        }
+                        getGlobalContext().getSlaveManager().getRemergeQueue()
+                            .put(new RemergeMessage((AsyncResponseRemerge) ar,
+                                this));
                     } else if (ar.getIndex().equals("SlaveStatus")) {
-                        _status = ((AsyncResponseSlaveStatus) ar)
-                                .getSlaveStatus();
+                        _status = ((AsyncResponseSlaveStatus) ar).getSlaveStatus();
                     } else if (ar.getIndex().equals("TransferStatus")) {
-                        TransferStatus ats = ((AsyncResponseTransferStatus) ar)
-                                .getTransferStatus();
+                        TransferStatus ats = ((AsyncResponseTransferStatus) ar).getTransferStatus();
                         RemoteTransfer rt = null;
+
                         try {
                             rt = getTransfer(ats.getTransferIndex());
                         } catch (SlaveUnavailableException e1) {
@@ -822,6 +805,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
                             // slave is not online
                             return;
                         }
+
                         rt.updateTransferStatus(ats);
 
                         if (ats.isFinished()) {
@@ -838,16 +822,25 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         } catch (StreamException e) {
             setOffline("Slave disconnected");
             logger.error("Slave disconnected", e);
+        } catch (Throwable e) {
+            setOffline("error: " + e.getMessage());
+            logger.error("", e);
         }
     }
 
-    public final synchronized void setOffline(String reason) {
+    public void setOffline(String reason) {
+        logger.info("setOffline() " + reason, new Throwable());
+        setOfflineReal(reason);
+    }
+
+    public final synchronized void setOfflineReal(String reason) {
         if (_socket != null) {
             try {
                 _socket.close();
             } catch (IOException e) {
             }
         }
+
         _socket = null;
         _sin = null;
         _sout = null;
@@ -858,25 +851,28 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         _status = null;
 
         if (_available) {
-            getGlobalContext().dispatchFtpEvent(
-                    new SlaveEvent("DELSLAVE", reason, this));
+            getGlobalContext().dispatchFtpEvent(new SlaveEvent("DELSLAVE",
+                    reason, this));
         }
+
         setAvailable(false);
         getGlobalContext().getRoot().resetSlaveForMerging(this);
     }
 
     public void setOffline(Throwable t) {
+        logger.info("setOffline()", t);
+
         if (t.getMessage() == null) {
-            setOffline("No Message");
+            setOfflineReal("No Message");
         } else {
-            setOffline(t.getMessage());
+            setOfflineReal(t.getMessage());
         }
     }
 
     /**
      * fetches the next AsyncResponse, if IOException is encountered, the slave
      * is setOffline() and the Exception is thrown
-     * 
+     *
      * @throws SlaveUnavailableException
      */
     private AsyncResponse readAsyncResponse() throws SlaveUnavailableException {
@@ -892,36 +888,41 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     }
 
     public void issueAbortToSlave(TransferIndex transferIndex)
-            throws SlaveUnavailableException {
-        sendCommand(new AsyncCommandArgument("abort", "abort", transferIndex
-                .toString()));
+        throws SlaveUnavailableException {
+        sendCommand(new AsyncCommandArgument("abort", "abort",
+                transferIndex.toString()));
     }
 
     public ConnectInfo fetchTransferResponseFromIndex(String index)
-            throws RemoteIOException, SlaveUnavailableException {
+        throws RemoteIOException, SlaveUnavailableException {
         AsyncResponseTransfer art = (AsyncResponseTransfer) fetchResponse(index);
 
         return art.getConnectInfo();
     }
 
-    private synchronized void sendCommand(AsyncCommand rac) {
+    private synchronized void sendCommand(AsyncCommand rac)
+        throws SlaveUnavailableException {
         if (rac == null) {
-            return;
+            throw new NullPointerException();
         }
+
         if (!isOnline()) {
-            return;
+            throw new SlaveUnavailableException();
         }
+
         try {
             _sout.writeObject(rac);
             _sout.flush();
         } catch (IOException e) {
             logger.error("error in sendCommand()", e);
             setOffline(e);
+            throw new SlaveUnavailableException("error sending command (exception already handled)",
+                e);
         }
     }
 
     public String issueTransferStatusToSlave(TransferIndex transferIndex)
-            throws SlaveUnavailableException {
+        throws SlaveUnavailableException {
         String index = fetchIndex();
         sendCommand(new AsyncCommandArgument(index, "transferstatus",
                 transferIndex.toString()));
@@ -930,24 +931,24 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     }
 
     public String issueSendToSlave(String name, char c, long position,
-            TransferIndex tindex) throws SlaveUnavailableException {
+        TransferIndex tindex) throws SlaveUnavailableException {
         String index = fetchIndex();
-        sendCommand(new AsyncCommandArgument(index, "send", c + "," + position
-                + "," + tindex + "," + name));
+        sendCommand(new AsyncCommandArgument(index, "send",
+                c + "," + position + "," + tindex + "," + name));
 
         return index;
     }
 
     public String issueRemergeToSlave(String path)
-            throws SlaveUnavailableException {
+        throws SlaveUnavailableException {
         String index = fetchIndex();
         sendCommand(new AsyncCommandArgument(index, "remerge", path));
 
         return index;
     }
 
-    public void fetchRemergeResponseFromIndex(String index) throws IOException,
-            SlaveUnavailableException {
+    public void fetchRemergeResponseFromIndex(String index)
+        throws IOException, SlaveUnavailableException {
         try {
             fetchResponse(index, 0);
         } catch (RemoteIOException e) {
@@ -968,24 +969,27 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     }
 
     public synchronized void addTransfer(TransferIndex transferIndex,
-            RemoteTransfer transfer) {
+        RemoteTransfer transfer) {
         if (!isOnline()) {
             return;
         }
+
         synchronized (_transfers) {
             _transfers.put(transferIndex, transfer);
         }
     }
 
     public synchronized RemoteTransfer getTransfer(TransferIndex transferIndex)
-            throws SlaveUnavailableException {
+        throws SlaveUnavailableException {
         if (!isOnline()) {
             throw new SlaveUnavailableException("Slave is not online");
         }
+
         synchronized (_transfers) {
             if (!_transfers.containsKey(transferIndex)) {
                 throw new FatalException("there is a bug somewhere in code");
             }
+
             return (RemoteTransfer) _transfers.get(transferIndex);
         }
     }

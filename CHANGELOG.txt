@@ -1,3 +1,7 @@
+2004/11/08 Morgan Christiansson <drftpd@mog.se>
+* Added better handling of file collisions, files are now checksummed 
+  in multiple threads and if checksums are identical all but one file is deleted.
+
 2004/11/06 Morgan Christiansson <drftpd@mog.se>
 * Continued usermanager cleanup/rewrite.
 * Fixed UserManagerConverter with support for converting from 1.1.4 userfiles.

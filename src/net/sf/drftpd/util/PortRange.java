@@ -20,7 +20,9 @@ package net.sf.drftpd.util;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+
 import java.net.ServerSocket;
+
 import java.util.Random;
 
 import javax.net.ServerSocketFactory;
@@ -28,7 +30,7 @@ import javax.net.ServerSocketFactory;
 
 /**
  * @author mog
- * @version $Id: PortRange.java,v 1.15 2004/11/05 20:51:15 zubov Exp $
+ * @version $Id: PortRange.java,v 1.16 2004/11/08 18:39:29 mog Exp $
  */
 public class PortRange {
     private static final Logger logger = Logger.getLogger(PortRange.class);
@@ -40,41 +42,48 @@ public class PortRange {
      * Creates a default port range for port 49152 to 65535.
      */
     public PortRange() {
-        this(0,0);
+        this(0, 0);
     }
 
     public PortRange(int minPort, int maxPort) {
         if (_minPort > _maxPort) {
             throw new RuntimeException("maxPort must be > minPort");
         }
+
         _maxPort = maxPort;
         _minPort = minPort;
     }
-    
+
     public ServerSocket getPort(ServerSocketFactory ssf) {
-        if (_minPort == 0 || _maxPort == 0) {
+        if ((_minPort == 0) || (_maxPort == 0)) {
             try {
-                return ssf.createServerSocket(0,1);
+                return ssf.createServerSocket(0, 1);
             } catch (IOException e) {
-                logger.error("Unable to bind anonymous port",e);
+                logger.error("Unable to bind anonymous port", e);
                 throw new RuntimeException(e);
             }
         }
-        int initPos = rand.nextInt(_maxPort-_minPort+1) + _minPort;
+
+        int initPos = rand.nextInt(_maxPort - _minPort + 1) + _minPort;
         int pos = initPos + 1;
+
         if (pos > _maxPort) {
             pos = _minPort;
         }
-        while(pos != initPos) {
+
+        while (pos != initPos) {
             try {
-                return ssf.createServerSocket(pos,1);
+                return ssf.createServerSocket(pos, 1);
             } catch (IOException e) {
             }
+
             pos++;
+
             if (pos > _maxPort) {
                 pos = _minPort;
             }
         }
+
         throw new RuntimeException("PortRange exhausted");
     }
 }

@@ -29,6 +29,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 
 import org.drftpd.commands.UserManagment;
+
 import org.drftpd.slave.Slave;
 
 import org.drftpd.usermanager.User;
@@ -55,7 +56,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.66 2004/11/06 07:55:31 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.67 2004/11/08 18:39:25 mog Exp $
  */
 public class FtpConfig {
     private static final Logger logger = Logger.getLogger(FtpConfig.class);

@@ -17,7 +17,12 @@
  */
 package net.sf.drftpd.slave;
 
+import net.sf.drftpd.util.PortRange;
+
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
+
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -25,25 +30,23 @@ import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 
-import net.sf.drftpd.util.PortRange;
-
-import org.apache.log4j.Logger;
-
 
 /**
  * @author mog
- * @version $Id: PassiveConnection.java,v 1.14 2004/11/05 20:51:15 zubov Exp $
+ * @version $Id: PassiveConnection.java,v 1.15 2004/11/08 18:39:28 mog Exp $
  */
 public class PassiveConnection extends Connection {
     private static final Logger logger = Logger.getLogger(PassiveConnection.class);
     private ServerSocket _serverSocket;
 
-    public PassiveConnection(SSLContext ctx, PortRange portRange) throws IOException {
+    public PassiveConnection(SSLContext ctx, PortRange portRange)
+        throws IOException {
         if (ctx != null) {
             _serverSocket = portRange.getPort(ctx.getServerSocketFactory());
         } else {
             _serverSocket = portRange.getPort(ServerSocketFactory.getDefault());
         }
+
         _serverSocket.setSoTimeout(TIMEOUT);
     }
 
@@ -67,6 +70,7 @@ public class PassiveConnection extends Connection {
         if (_serverSocket == null) {
             throw new NullPointerException("_serverSocket == null");
         }
+
         return _serverSocket.getLocalPort();
     }
 
@@ -76,6 +80,7 @@ public class PassiveConnection extends Connection {
         } catch (IOException e) {
             logger.warn("failed to close() server socket", e);
         }
+
         _serverSocket = null;
     }
 }

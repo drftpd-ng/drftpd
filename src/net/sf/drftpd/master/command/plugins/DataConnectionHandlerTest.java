@@ -46,28 +46,13 @@ import javax.net.SocketFactory;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandlerTest.java,v 1.12 2004/11/05 04:06:34 zubov Exp $
+ * @version $Id: DataConnectionHandlerTest.java,v 1.13 2004/11/08 18:39:25 mog Exp $
  */
 public class DataConnectionHandlerTest extends TestCase {
     private DummyGlobalContext gctx;
     private DummyConnectionManager cm;
     DummyBaseFtpConnection conn;
     DHC dch;
-    
-    public class DHC extends DataConnectionHandler {
-        
-        public ServerSocketFactory getServerSocketFactory(boolean dataChannel) {
-            return new DummyServerSocketFactory(new DummySocketFactory());
-        }
-        
-        public DHC() {
-            super();
-        }
-        
-        public SocketFactory getSocketFactory(boolean dataChannel) {
-            return new DummySocketFactory();
-        }
-    }
 
     public DataConnectionHandlerTest(String fName) {
         super(fName);
@@ -102,7 +87,6 @@ public class DataConnectionHandlerTest extends TestCase {
     }
 
     private String pasvList() throws UnhandledCommandException {
-        
         conn.setRequest(new FtpRequest("PRET LIST"));
 
         FtpReply reply;
@@ -125,8 +109,7 @@ public class DataConnectionHandlerTest extends TestCase {
 
     protected void setUp() throws Exception {
         BasicConfigurator.configure();
-        dch = (DHC) new DHC().initialize(null,
-                null);
+        dch = (DHC) new DHC().initialize(null, null);
 
         gctx = new DummyGlobalContext();
         gctx.setFtpConfig(new FC());
@@ -166,6 +149,20 @@ public class DataConnectionHandlerTest extends TestCase {
 
     public void testPortList() throws UnhandledCommandException {
         portList();
+    }
+
+    public class DHC extends DataConnectionHandler {
+        public DHC() {
+            super();
+        }
+
+        public ServerSocketFactory getServerSocketFactory(boolean dataChannel) {
+            return new DummyServerSocketFactory(new DummySocketFactory());
+        }
+
+        public SocketFactory getSocketFactory(boolean dataChannel) {
+            return new DummySocketFactory();
+        }
     }
 
     private static class FC extends FtpConfig {

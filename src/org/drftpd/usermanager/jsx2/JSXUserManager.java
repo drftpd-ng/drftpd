@@ -18,18 +18,16 @@ package org.drftpd.usermanager.jsx2;
 
 import JSX.ObjIn;
 
-import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.master.ConnectionManager;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import org.drftpd.commands.UserManagment;
+import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-import org.drftpd.usermanager.AbstractUserManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -40,137 +38,136 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+
 /**
  * @author mog
- * @version $Id: JSXUserManager.java,v 1.2 2004/11/06 07:55:36 mog Exp $
+ * @version $Id: JSXUserManager.java,v 1.3 2004/11/08 18:39:32 mog Exp $
  */
 public class JSXUserManager extends AbstractUserManager {
-	private static final Logger logger = Logger.getLogger(JSXUserManager.class
-			.getName());
+    private static final Logger logger = Logger.getLogger(JSXUserManager.class.getName());
+    private ConnectionManager _connManager;
+    private String _userpath = "users/jsx2/";
+    private File _userpathFile = new File(_userpath);
 
-	private ConnectionManager _connManager;
+    public JSXUserManager() throws UserFileException {
+        this(true);
+    }
 
-	private String _userpath = "users/jsx2/";
+    public JSXUserManager(boolean createIfNoUser) throws UserFileException {
+        if (!_userpathFile.exists() && !_userpathFile.mkdirs()) {
+            throw new UserFileException(new IOException(
+                    "Error creating folders: " + _userpathFile));
+        }
 
-	private File _userpathFile = new File(_userpath);
+        if (createIfNoUser) {
+            String[] userfilenames = _userpathFile.list();
+            boolean hasUsers = false;
 
-	public JSXUserManager() throws UserFileException {
-		this(true);
-	}
+            for (int i = 0; i < userfilenames.length; i++) {
+                String string = userfilenames[i];
 
-	public JSXUserManager(boolean createIfNoUser) throws UserFileException {
-		if (!_userpathFile.exists() && !_userpathFile.mkdirs()) {
-			throw new UserFileException(new IOException(
-					"Error creating folders: " + _userpathFile));
-		}
+                if (string.endsWith(".xml")) {
+                    hasUsers = true;
 
-		if (createIfNoUser) {
-			String[] userfilenames = _userpathFile.list();
-			boolean hasUsers = false;
+                    break;
+                }
+            }
 
-			for (int i = 0; i < userfilenames.length; i++) {
-				String string = userfilenames[i];
+            if (!hasUsers) {
+                createSiteopUser();
+            }
+        }
+    }
 
-				if (string.endsWith(".xml")) {
-					hasUsers = true;
-					break;
-				}
-			}
+    public User createUser(String username) {
+        JSXUser user = new JSXUser(this, username);
 
-			if (!hasUsers)
-				createSiteopUser();
-		}
-	}
+        return user;
+    }
 
-	public User createUser(String username) {
-		JSXUser user = new JSXUser(this, username);
+    public void delete(String username) {
+        getUserFile(username).delete();
+    }
 
-		return user;
-	}
+    public Collection getAllUsers() throws UserFileException {
+        ArrayList users = new ArrayList();
+        String[] userpaths = _userpathFile.list();
 
-	public void delete(String username) {
-		getUserFile(username).delete();
-	}
+        for (int i = 0; i < userpaths.length; i++) {
+            String userpath = userpaths[i];
 
-	public Collection getAllUsers() throws UserFileException {
-		ArrayList users = new ArrayList();
-		String[] userpaths = _userpathFile.list();
+            if (!userpath.endsWith(".xml")) {
+                continue;
+            }
 
-		for (int i = 0; i < userpaths.length; i++) {
-			String userpath = userpaths[i];
+            String username = userpath.substring(0,
+                    userpath.length() - ".xml".length());
 
-			if (!userpath.endsWith(".xml")) {
-				continue;
-			}
+            try {
+                users.add((JSXUser) getUserByNameUnchecked(username));
 
-			String username = userpath.substring(0, userpath.length()
-					- ".xml".length());
+                // throws IOException
+            } catch (NoSuchUserException e) {
+            } // continue
+        }
 
-			try {
-				users.add((JSXUser) getUserByNameUnchecked(username));
+        return users;
+    }
 
-				// throws IOException
-			} catch (NoSuchUserException e) {
-			} // continue
-		}
+    public User getUserByNameUnchecked(String username)
+        throws NoSuchUserException, UserFileException {
+        try {
+            JSXUser user = (JSXUser) _users.get(username);
 
-		return users;
-	}
+            if (user != null) {
+                return user;
+            }
 
-	public User getUserByNameUnchecked(String username)
-			throws NoSuchUserException, UserFileException {
-		try {
-			JSXUser user = (JSXUser) _users.get(username);
+            ObjIn in;
 
-			if (user != null) {
-				return user;
-			}
+            try {
+                in = new ObjIn(new FileReader(getUserFile(username)));
+            } catch (FileNotFoundException ex) {
+                throw new NoSuchUserException("No such user");
+            }
 
-			ObjIn in;
+            try {
+                user = (JSXUser) in.readObject();
 
-			try {
-				in = new ObjIn(new FileReader(getUserFile(username)));
-			} catch (FileNotFoundException ex) {
-				throw new NoSuchUserException("No such user");
-			}
+                //throws RuntimeException
+                user.setUserManager(this);
+                _users.put(user.getUsername(), user);
+                user.reset(_connManager);
 
-			try {
-				user = (JSXUser) in.readObject();
+                return user;
+            } catch (ClassNotFoundException e) {
+                throw new FatalException(e);
+            }
+        } catch (Throwable ex) {
+            if (ex instanceof NoSuchUserException) {
+                throw (NoSuchUserException) ex;
+            }
 
-				//throws RuntimeException
-				user.setUserManager(this);
-				_users.put(user.getUsername(), user);
-				user.reset(_connManager);
+            throw new UserFileException("Error loading " + username, ex);
+        }
+    }
 
-				return user;
-			} catch (ClassNotFoundException e) {
-				throw new FatalException(e);
-			}
-		} catch (Throwable ex) {
-			if (ex instanceof NoSuchUserException) {
-				throw (NoSuchUserException) ex;
-			}
+    protected File getUserFile(String username) {
+        return new File(_userpath + username + ".xml");
+    }
 
-			throw new UserFileException("Error loading " + username, ex);
-		}
-	}
+    public void saveAll() throws UserFileException {
+        logger.log(Level.INFO, "Saving userfiles");
 
-	protected File getUserFile(String username) {
-		return new File(_userpath + username + ".xml");
-	}
+        for (Iterator iter = _users.values().iterator(); iter.hasNext();) {
+            Object obj = iter.next();
 
-	public void saveAll() throws UserFileException {
-		logger.log(Level.INFO, "Saving userfiles");
+            if (!(obj instanceof JSXUser)) {
+                throw new ClassCastException("Only accepts JSXUser objects");
+            }
 
-		for (Iterator iter = _users.values().iterator(); iter.hasNext();) {
-			Object obj = iter.next();
-
-			if (!(obj instanceof JSXUser)) {
-				throw new ClassCastException("Only accepts JSXUser objects");
-			}
-
-			JSXUser user = (JSXUser) obj;
-			user.commit();
-		}
-	}
+            JSXUser user = (JSXUser) obj;
+            user.commit();
+        }
+    }
 }

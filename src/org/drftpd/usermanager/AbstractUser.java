@@ -16,15 +16,6 @@
  */
 package org.drftpd.usermanager;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMaskCollection;
@@ -35,13 +26,22 @@ import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 
 /**
  * Implements basic functionality for the User interface.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya </a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.3 2004/11/06 07:55:35 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.4 2004/11/08 18:39:32 mog Exp $
  */
 public abstract class AbstractUser extends User {
     private static final Logger logger = Logger.getLogger(AbstractUser.class);
@@ -56,15 +56,7 @@ public abstract class AbstractUser extends User {
     private long _credits;
     protected HashMap _data = new HashMap();
 
-	public Map getAllObjects() {
-		return Collections.unmodifiableMap(_data);
-	}
-
-	public void putAllObjects(Map m) {
-_data.putAll(m);
-	}
-
-	//private long _downloadedBytes, _downloadedBytes[P_DAY],
+    //private long _downloadedBytes, _downloadedBytes[P_DAY],
     // _downloadedBytes[P_MONTH], _downloadedBytes[P_WEEK];
     private long[] _downloadedBytes = new long[P_SIZE];
 
@@ -134,6 +126,14 @@ _data.putAll(m);
     public AbstractUser(String username) {
         _username = username;
         _created = System.currentTimeMillis();
+    }
+
+    public Map getAllObjects() {
+        return Collections.unmodifiableMap(_data);
+    }
+
+    public void putAllObjects(Map m) {
+        _data.putAll(m);
     }
 
     public int getObjectInt(Key key) {
@@ -324,6 +324,7 @@ _data.putAll(m);
         if (_group == null) {
             return "nogroup";
         }
+
         return _group;
     }
 
@@ -420,7 +421,6 @@ _data.putAll(m);
     //    public int getRequestsFilled() {
     //        return _requestsFilled;
     //    }
-
     public long getUploadedBytes() {
         return _uploadedBytes[P_ALL];
     }
@@ -607,10 +607,14 @@ _data.putAll(m);
     }
 
     public void putObject(Key key, Object obj) {
-    	if(obj == null) throw new NullPointerException(key+" - "+obj);
+        if (obj == null) {
+            throw new NullPointerException(key + " - " + obj);
+        }
+
         if (!key.getType().isInstance(obj)) {
             throw new ClassCastException();
         }
+
         _data.put(key.getOwner().getName() + '@' + key.getKey(), obj);
     }
 
@@ -917,7 +921,7 @@ _data.putAll(m);
     public void setMaxLoginsPerIP(int maxLoginsPerIP) {
         _maxLoginsPerIP = maxLoginsPerIP;
     }
-  
+
     public void setUploadedBytes(long bytes) {
         _uploadedBytes[P_ALL] = bytes;
     }

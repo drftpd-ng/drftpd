@@ -20,6 +20,8 @@ import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.master.ConnectionManager;
 
+import org.drftpd.commands.UserManagment;
+
 import java.io.IOException;
 
 import java.util.ArrayList;
@@ -27,40 +29,40 @@ import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import org.drftpd.commands.UserManagment;
-
 
 /**
  * This is the base class of all the user manager classes. If we want to add a
  * new user manager, we have to override this class.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya </a>
- * @version $Id: AbstractUserManager.java,v 1.1 2004/11/06 07:55:35 mog Exp $
+ * @version $Id: AbstractUserManager.java,v 1.2 2004/11/08 18:39:32 mog Exp $
  */
 public abstract class AbstractUserManager implements UserManager {
     protected ConnectionManager _connManager;
     protected Hashtable _users;
-protected void createSiteopUser() throws UserFileException {
-    User user = createUser("drftpd");
-    user.setGroup("drftpd");
-    user.setPassword("drftpd");
-    user.putObject(UserManagment.RATIO, new Float(0));
 
-    try {
-        user.addIPMask("*@127.0.0.1");
-        user.addIPMask("*@0:0:0:0:0:0:0:1");
-    } catch (DuplicateElementException e) {
-    }
-
-    try {
-        user.addSecondaryGroup("siteop");
-    } catch (DuplicateElementException e1) {
-    }
-
-    user.commit();
-}
     public AbstractUserManager() {
         _users = new Hashtable();
+    }
+
+    protected void createSiteopUser() throws UserFileException {
+        User user = createUser("drftpd");
+        user.setGroup("drftpd");
+        user.setPassword("drftpd");
+        user.putObject(UserManagment.RATIO, new Float(0));
+
+        try {
+            user.addIPMask("*@127.0.0.1");
+            user.addIPMask("*@0:0:0:0:0:0:0:1");
+        } catch (DuplicateElementException e) {
+        }
+
+        try {
+            user.addSecondaryGroup("siteop");
+        } catch (DuplicateElementException e1) {
+        }
+
+        user.commit();
     }
 
     public User create(String username) throws UserFileException {
@@ -68,7 +70,8 @@ protected void createSiteopUser() throws UserFileException {
             getUserByName(username);
 
             //bad
-            throw new FileExistsException("User "+username+" already exists");
+            throw new FileExistsException("User " + username +
+                " already exists");
         } catch (IOException e) {
             //bad
             throw new UserFileException(e);
@@ -173,6 +176,7 @@ protected void createSiteopUser() throws UserFileException {
                 return;
             }
         }
+
         throw new UserExistsException("user " + newUsername + " exists");
     }
 

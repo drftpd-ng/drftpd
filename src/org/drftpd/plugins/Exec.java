@@ -55,7 +55,7 @@ import java.io.IOException;
  *</ul>
  *
  * @author mog
- * @version $Id: Exec.java,v 1.5 2004/11/06 07:55:34 mog Exp $
+ * @version $Id: Exec.java,v 1.6 2004/11/08 18:39:30 mog Exp $
  */
 public class Exec implements FtpListener {
     private ConnectionManager _cm;
@@ -72,7 +72,8 @@ public class Exec implements FtpListener {
                 "TAGLINE=" +
                 uevent.getUser().getObjectString(UserManagment.TAGLINE),
                 "GROUP=" + uevent.getUser().getGroupName(),
-                "RATIO=" + uevent.getUser().getObjectFloat(UserManagment.RATIO),
+                "RATIO=" +
+                uevent.getUser().getObjectFloat(UserManagment.RATIO),
                 "SPEED=" + (uevent.getDirectory().getXferspeed() / 1000),
                 "SPEEDBPS=" + (uevent.getDirectory().getXferspeed()),
                 "HOST=@" + uevent.getConn().getClientAddress(),

@@ -26,7 +26,6 @@ import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
-import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
 
 import org.drftpd.mirroring.ArchiveType;
@@ -43,7 +42,7 @@ import java.util.Properties;
 /*
  * @author iamn
  * @author zubov
- * @version $Id: ConstantMirroringAndArchive.java,v 1.4 2004/11/03 16:46:45 mog Exp $
+ * @version $Id: ConstantMirroringAndArchive.java,v 1.5 2004/11/08 18:39:30 mog Exp $
  */
 public class ConstantMirroringAndArchive extends ArchiveType {
     private static final Logger logger = Logger.getLogger(ConstantMirroringAndArchive.class);

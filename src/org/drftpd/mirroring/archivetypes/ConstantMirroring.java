@@ -25,7 +25,6 @@ import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
-import org.apache.log4j.Category;
 import org.apache.log4j.Logger;
 
 import org.drftpd.mirroring.ArchiveType;

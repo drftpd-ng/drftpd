@@ -100,7 +100,7 @@ import java.util.ResourceBundle;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.25 2004/11/06 07:55:34 mog Exp $
+ * @version $Id: SiteBot.java,v 1.26 2004/11/08 18:39:30 mog Exp $
  */
 public class SiteBot implements FtpListener, Observer {
     public static final ReplacerEnvironment GLOBAL_ENV = new ReplacerEnvironment();
@@ -132,7 +132,7 @@ public class SiteBot implements FtpListener, Observer {
         Debug.setOutputStream(new PrintStream(
                 new FileOutputStream("logs/sitebot.log", true)));
 
-        //Debug.setDebugLevel(Debug.BAD);
+        Debug.setDebugLevel(Debug.VERBOSE);
     }
 
     public static ArrayList map2nukees(Map nukees) {
@@ -593,7 +593,7 @@ public class SiteBot implements FtpListener, Observer {
     }
 
     private void actionPerformedInvite(InviteEvent event) {
-        String user = event.getUser();
+        String user = event.getIrcNick();
         logger.info("Invited " + user + " through SITE INVITE");
 
         for (Enumeration e = getIRCConnection().getClientState().getChannels();
@@ -660,7 +660,8 @@ public class SiteBot implements FtpListener, Observer {
                 raceenv.add("size", Bytes.formatBytes(stat.getAmount()));
 
                 long nukedamount = Nuke.calculateNukedAmount(stat.getAmount(),
-                        raceuser.getObjectFloat(UserManagment.RATIO), event.getMultiplier());
+                        raceuser.getObjectFloat(UserManagment.RATIO),
+                        event.getMultiplier());
                 raceenv.add("nukedamount", Bytes.formatBytes(nukedamount));
                 say(section, SimplePrintf.jprintf(raceformat, raceenv));
             }

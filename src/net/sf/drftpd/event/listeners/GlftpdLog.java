@@ -71,7 +71,7 @@ import java.util.Locale;
 
 /**
  * @author flowman
- * @version $Id: GlftpdLog.java,v 1.15 2004/11/06 07:55:28 mog Exp $
+ * @version $Id: GlftpdLog.java,v 1.16 2004/11/08 18:39:23 mog Exp $
  */
 public class GlftpdLog implements FtpListener {
     private static Logger logger = Logger.getLogger(GlftpdLog.class);
@@ -380,7 +380,7 @@ public class GlftpdLog implements FtpListener {
     }
 
     private void actionPerformedInvite(InviteEvent event) {
-        String user = event.getUser();
+        String user = event.getIrcNick();
         print("INVITE: \"" + user + "\"");
     }
 
@@ -416,7 +416,8 @@ public class GlftpdLog implements FtpListener {
                 }
 
                 long nukedamount = Nuke.calculateNukedAmount(stat.getAmount(),
-                        raceuser.getObjectFloat(UserManagment.RATIO), event.getMultiplier());
+                        raceuser.getObjectFloat(UserManagment.RATIO),
+                        event.getMultiplier());
 
                 print("NUKEE: \"" + raceuser.getUsername() + "\" \"" +
                     raceuser.getGroupName() + "\" \"" + position++ + "\" \"" +

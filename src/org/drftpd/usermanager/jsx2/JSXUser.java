@@ -16,13 +16,13 @@
  */
 package org.drftpd.usermanager.jsx2;
 
-import java.io.File;
-import java.io.IOException;
+import JSX.ObjOut;
 
 import net.sf.drftpd.util.Crypt;
 import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Logger;
+
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.PlainTextPasswordUser;
@@ -30,12 +30,13 @@ import org.drftpd.usermanager.UnixPassword;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.usermanager.UserManager;
 
-import JSX.ObjOut;
+import java.io.File;
+import java.io.IOException;
 
 
 /**
  * @author mog
- * @version $Id: JSXUser.java,v 1.2 2004/11/06 07:55:35 mog Exp $
+ * @version $Id: JSXUser.java,v 1.3 2004/11/08 18:39:32 mog Exp $
  */
 public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
     UnixPassword {
@@ -145,7 +146,7 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
         return _usermanager;
     }
 
-	public AbstractUserManager getAbstractUserManager() {
-		return _usermanager;
-	}
+    public AbstractUserManager getAbstractUserManager() {
+        return _usermanager;
+    }
 }

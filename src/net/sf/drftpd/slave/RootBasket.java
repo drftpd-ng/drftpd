@@ -42,7 +42,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: RootBasket.java,v 1.31 2004/11/03 16:46:43 mog Exp $
+ * @version $Id: RootBasket.java,v 1.32 2004/11/08 18:39:28 mog Exp $
  */
 public class RootBasket {
     private static final Logger logger = Logger.getLogger(RootBasket.class);
@@ -149,7 +149,8 @@ public class RootBasket {
         }
 
         if (roots.size() == 0) {
-            throw new FileNotFoundException("Unable to find suitable root");
+            throw new FileNotFoundException("Unable to find suitable root: " +
+                path);
         }
 
         return roots;

@@ -22,7 +22,7 @@ import java.io.Serializable;
 
 /**
  * @author mog
- * @version $Id: AsyncResponse.java,v 1.2 2004/11/02 07:32:53 zubov Exp $
+ * @version $Id: AsyncResponse.java,v 1.3 2004/11/08 18:39:31 mog Exp $
  */
 public class AsyncResponse implements Serializable {
     private static final long serialVersionUID = -6915699035949526136L;
@@ -34,5 +34,9 @@ public class AsyncResponse implements Serializable {
 
     public String getIndex() {
         return _index;
+    }
+
+    public String toString() {
+        return getClass().getName() + "[index=" + getIndex() + "]";
     }
 }

@@ -32,10 +32,10 @@ import net.sf.drftpd.util.UserComparator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-import org.drftpd.usermanager.AbstractUserManager;
 
 import org.tanesha.replacer.ReplacerEnvironment;
 
@@ -50,7 +50,7 @@ import java.util.StringTokenizer;
 
 
 /**
- * @version $Id: TransferStatistics.java,v 1.2 2004/11/06 07:55:34 mog Exp $
+ * @version $Id: TransferStatistics.java,v 1.3 2004/11/08 18:39:29 mog Exp $
  */
 public class TransferStatistics implements CommandHandlerFactory,
     CommandHandler {
@@ -210,7 +210,8 @@ public class TransferStatistics implements CommandHandlerFactory,
 
         FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
         AbstractUserManager userman = conn.getGlobalContext().getUserManager();
-        response.addComment("created: " + new Date(user.getObjectLong(UserManagment.CREATED)));
+        response.addComment("created: " +
+            new Date(user.getObjectLong(UserManagment.CREATED)));
         response.addComment("rank alup: " +
             getStatsPlace("ALUP", user, userman));
         response.addComment("rank aldn: " +
