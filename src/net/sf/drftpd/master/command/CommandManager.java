@@ -21,6 +21,7 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 
 import org.drftpd.commands.*;
+import org.drftpd.usermanager.NoSuchUserException;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -80,6 +81,15 @@ public class CommandManager {
         if (conn.getCurrentDirectory().isDeleted()) {
         	conn.setCurrentDirectory(conn.getCurrentDirectory().getRoot());
         }
+        
+        try {
+			if (conn.getUser().isDeleted()) {
+				conn.stop("You are deleted");
+				return new Reply(500, "You are deleted");
+			}
+		} catch (NoSuchUserException e1) {
+			// user hasn't authenticated yet
+		}
 
         try {
             command = command.substring("SITE ".length()).toLowerCase();

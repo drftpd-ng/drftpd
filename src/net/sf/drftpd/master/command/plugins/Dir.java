@@ -67,6 +67,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 
@@ -149,13 +150,13 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         Properties zsCfg = conn.getGlobalContext().getConfig().getZsConfig();
 
         // show cwd_mp3.txt if this is an mp3 release
-        boolean id3Enabled = zsCfg.getProperty("cwd.id3info.enabled").equalsIgnoreCase("true");;
-
+        boolean id3Enabled = zsCfg.getProperty("cwd.id3info.enabled").equalsIgnoreCase("true");
+        ResourceBundle bundle = ResourceBundle.getBundle(Dir.class.getName());
         if (id3Enabled) {
             try {
                 ID3Tag id3tag = newCurrentDirectory.lookupFile(newCurrentDirectory.lookupMP3File())
                                                    .getID3v1Tag();
-                String mp3text = zsCfg.getProperty("cwd.id3info.text");
+                String mp3text = bundle.getString("cwd.id3info.text");
                 ReplacerEnvironment env = BaseFtpConnection.getReplacerEnvironment(null,
                         conn.getUserNull());
                 ReplacerFormat id3format = null;
@@ -201,15 +202,16 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
                         "bytes", "high");
                 Collection groups = SiteBot.topFileGroup(sfvfile.getFiles());
 
-                String racerline = zsCfg.getProperty("cwd.racers.body");
-                String groupline = zsCfg.getProperty("cwd.groups.body");
+                String racerline = bundle.getString("cwd.racers.body");
+                logger.debug("racerline = " + racerline);
+                String groupline = bundle.getString("cwd.groups.body");
 
                 ReplacerEnvironment env = BaseFtpConnection.getReplacerEnvironment(null,
                         conn.getUserNull());
 
                 //Start building race message
-                String racetext = zsCfg.getProperty("cwd.racestats.header") + "\n";
-                racetext += zsCfg.getProperty("cwd.racers.header") + "\n";
+                String racetext = bundle.getString("cwd.racestats.header") + "\n";
+                racetext += bundle.getString("cwd.racers.header") + "\n";
 
                 ReplacerFormat raceformat = null;
 
@@ -253,8 +255,8 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
                     }
                 }
 
-                racetext += (zsCfg.getProperty("cwd.racers.footer") + "\n");
-                racetext += (zsCfg.getProperty("cwd.groups.header") + "\n");
+                racetext += bundle.getString("cwd.racers.footer") + "\n";
+                racetext += bundle.getString("cwd.groups.header") + "\n";
 
                 //add groups stats
                 position = 1;
@@ -283,7 +285,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
                     }
                 }
 
-                racetext += (zsCfg.getProperty("cwd.groups.footer") + "\n");
+                racetext += bundle.getString("cwd.groups.footer") + "\n";
 
                 env.add("totalfiles", Integer.toString(sfvfile.size()));
                 env.add("totalbytes", Bytes.formatBytes(sfvfile.getTotalBytes()));
@@ -294,8 +296,8 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
                         (sfvfile.getStatus().getPresent() * 100) / sfvfile.size()) +
                     "%");
 
-                racetext += (zsCfg.getProperty("cwd.totals.body") + "\n");
-                racetext += (zsCfg.getProperty("cwd.racestats.footer") + "\n");
+                racetext += bundle.getString("cwd.totals.body") + "\n";
+                racetext += bundle.getString("cwd.racestats.footer") + "\n";
 
                 try {
                     raceformat = ReplacerFormat.createFormat(racetext);
