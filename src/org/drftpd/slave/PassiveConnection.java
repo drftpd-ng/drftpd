@@ -50,9 +50,13 @@ public class PassiveConnection extends Connection {
     }
 
 	public Socket connect() throws IOException {
-        Socket sock = _serverSocket.accept();
-        _serverSocket.close();
-        _serverSocket = null;
+		Socket sock = null;
+		try {
+			sock = _serverSocket.accept();
+		} finally {
+			_serverSocket.close();
+			_serverSocket = null;
+		}
 
         setSockOpts(sock);
 
