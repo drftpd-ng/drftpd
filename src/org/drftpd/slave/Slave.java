@@ -872,4 +872,12 @@ public class Slave {
             throw new RuntimeException(e);
         }
     }
+	/**
+	 * @return The current list of Transfer objects
+	 */
+	public ArrayList getTransfers() {
+		synchronized (_transfers) {
+			return new ArrayList(_transfers.values());
+		}
+	}
 }

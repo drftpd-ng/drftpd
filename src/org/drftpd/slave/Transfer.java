@@ -25,11 +25,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Iterator;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 
 import net.sf.drftpd.FileExistsException;
+import net.sf.drftpd.ObjectNotFoundException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.io.AddAsciiOutputStream;
@@ -63,7 +65,8 @@ public class Transfer {
 	public static final char TRANSFER_SENDING_DOWNLOAD = 'S';
 	public static final char TRANSFER_THROUGHPUT = 'A';
 	public static final char TRANSFER_UNKNOWN = 'U';
-	private File _file;
+	private File _file = null;
+	private String _pathForUpload = null;
 
     /**
      * Start undefined transfer.
@@ -83,7 +86,9 @@ public class Transfer {
 
         _slave = slave;
         _conn = conn;
-        _direction = Transfer.TRANSFER_UNKNOWN;
+        synchronized(this) {
+        	_direction = Transfer.TRANSFER_UNKNOWN;
+        }
         _transferIndex = transferIndex;
     }
 
@@ -92,28 +97,37 @@ public class Transfer {
     }
 
     public void abort(String reason) {
+    	try {
     	_abortReason = reason;
         _transferIsFinished = true;
 
-        if (_conn != null) {
-            _conn.abort();
-        }
-
-        if (_sock == null) {
-            // already closed
-            return;
-        }
-
-        try {
-            _sock.close();
-            _out.close();
-            _in.close();
-            if(_direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-            	_file.delete();
+    	} finally {
+            if (_conn != null) {
+                _conn.abort();
             }
-        } catch (IOException e) {
-            logger.warn("abort() failed to close() the socket", e);
-        }
+            if(_direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+            	if (_file != null) {
+            		_file.delete();
+            	}
+            }
+            if (_sock != null) {
+            	try {
+            		_sock.close();
+            	} catch (IOException e) {
+            	}
+            }
+            if (_out != null) {
+            	try {
+            		_out.close();
+            	} catch (IOException e) {
+            	}            }
+            if (_in != null) {
+            	try {
+            		_in.close();
+            	} catch (IOException e) {
+            	}
+            }
+    	}
     }
 
     public long getChecksum() {
@@ -157,6 +171,21 @@ public class Transfer {
     public TransferIndex getTransferIndex() {
         return _transferIndex;
     }
+    
+    private Transfer getUploadForPath(String path) throws ObjectNotFoundException {
+    	for (Iterator iter = _slave.getTransfers().iterator(); iter.hasNext();) {
+			Transfer transfer = (Transfer) iter.next();
+			synchronized (transfer) {
+				if (!transfer.isReceivingUploading()) {
+					continue;
+				}
+				if (transfer._pathForUpload.equalsIgnoreCase(path)) {
+					return transfer;
+				}
+			}
+		}
+    	throw new ObjectNotFoundException("Transfer not found");
+    }
 
     public int getXferSpeed() {
         long elapsed = getElapsed();
@@ -182,8 +211,9 @@ public class Transfer {
 
     public TransferStatus receiveFile(String dirname, char mode,
 			String filename, long offset) throws IOException {
+    	_pathForUpload = dirname + File.separator + filename;
 		try {
-			_slave.getRoots().getFile(dirname + File.separator + filename);
+			_slave.getRoots().getFile(_pathForUpload);
 			throw new FileExistsException("File " + dirname
 					+ File.separatorChar + filename + " exists");
 		} catch (FileNotFoundException ex) {
@@ -191,8 +221,7 @@ public class Transfer {
 		String root = _slave.getRoots().getARootFileDir(dirname).getPath();
 
 		try {
-			_out = new FileOutputStream(_file = new File(root + File.separator
-					+ filename));
+			_out = new FileOutputStream(_file = new File(root + File.separator + filename));
 
 			if (_slave.getUploadChecksums()) {
 				_checksum = new CRC32();
@@ -204,10 +233,12 @@ public class Transfer {
 			}
 
 			_in = _sock.getInputStream();
-			_direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
+			synchronized(this) {
+				_direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
+			}
 
 			System.out.println(dirname + "/" + filename);
-			transfer();
+			transfer(null);
 			_slave.sendResponse(new AsyncResponseDiskStatus(_slave
 					.getDiskStatus()));
 			return getTransferStatus();
@@ -216,21 +247,30 @@ public class Transfer {
 			// _slave.delete(root + File.separator + filename);
 			throw e; // so the Master can still handle the exception
 		} finally {
-			if (_out != null) {
-				_out.close();
-			}
-			if (_in != null) {
-				_in.close();
-			}
-			if (_sock != null) {
-				_sock.close();
-			}
+            if (_sock != null) {
+            	try {
+            		_sock.close();
+            	} catch (IOException e) {
+            	}
+            }
+            if (_out != null) {
+            	try {
+            		_out.close();
+            	} catch (IOException e) {
+            	}            }
+            if (_in != null) {
+            	try {
+            		_in.close();
+            	} catch (IOException e) {
+            	}
+            }
 		}
 	}
 
     public TransferStatus sendFile(String path, char type, long resumePosition)
     throws IOException {
     	try {
+
     		_in = new FileInputStream(_file = new File(_slave.getRoots()
     				.getFile(path)));
     		
@@ -246,26 +286,41 @@ public class Transfer {
     		}
     		
     		_out = _sock.getOutputStream();
-    		_direction = Transfer.TRANSFER_SENDING_DOWNLOAD;
+    		synchronized(this) {
+    			_direction = Transfer.TRANSFER_SENDING_DOWNLOAD;
+    		}
     		
     		System.out.println("DL:" + path);
-    		transfer();
+    		try {
+				transfer(getUploadForPath(path));
+			} catch (ObjectNotFoundException e) {
+				transfer(null);
+			}
     		return getTransferStatus();
-    	} finally {
-			if (_out != null) {
-				_out.close();
-			}
-			if (_in != null) {
-				_in.close();
-			}
-			if (_sock != null) {
-				_sock.close();
-			}
+		} finally {
+            if (_sock != null) {
+            	try {
+            		_sock.close();
+            	} catch (IOException e) {
+            	}
+            }
+            if (_out != null) {
+            	try {
+            		_out.close();
+            	} catch (IOException e) {
+            	}            }
+            if (_in != null) {
+            	try {
+            		_in.close();
+            	} catch (IOException e) {
+            	}
+            }
     	}
     }
 
     private void accept() throws IOException {
         _sock = _conn.connect();
+        
         _conn = null;
     }
 
@@ -294,7 +349,7 @@ public class Transfer {
 	 * data so it can put new TX data in there and on the line). (The idea is to
 	 * get the ack before you have to stop transmitting.)
 	 */
-    private void transfer() throws IOException {
+    private void transfer(Transfer associatedUpload) throws IOException {
 		try {
 			_started = System.currentTimeMillis();
 			if (_mode == 'A') {
@@ -306,8 +361,26 @@ public class Transfer {
 			long currentTime = System.currentTimeMillis();
 
 			try {
-				while (((count = _in.read(buff)) != -1)
-						&& (_abortReason == null)) {
+				while (true) {
+					if (_abortReason != null) {
+						throw new TransferFailedException(
+								"Transfer was aborted - " + _abortReason,
+								getTransferStatus());
+					}
+					count = _in.read(buff);
+					if (count == -1) {
+						if (associatedUpload == null) {
+							break; // done transferring
+						}
+						if (associatedUpload.getTransferStatus().isFinished()) {
+							break; // done transferring
+						}
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e) {
+						}
+						continue; // waiting for upload to catch up
+					}
 					if ((System.currentTimeMillis() - currentTime) >= 1000) {
 						_slave.sendResponse(new AsyncResponseTransferStatus(
 								getTransferStatus()));
@@ -321,11 +394,6 @@ public class Transfer {
 				_out.flush();
 			} catch (IOException e) {
 				throw new TransferFailedException(e, getTransferStatus());
-			}
-
-			if (_abortReason != null) {
-				throw new TransferFailedException("Transfer was aborted - "
-						+ _abortReason, getTransferStatus());
 			}
 		} finally {
 			_finished = System.currentTimeMillis();
