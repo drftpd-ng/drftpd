@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.rmi.ConnectException;
-import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,9 +13,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 import java.util.StringTokenizer;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.IllegalTargetException;
@@ -30,6 +26,9 @@ import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.Transfer;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 /**
  * Represents the file attributes of a remote file.
@@ -147,9 +146,9 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 
 		if (file.isDirectory()) {
 			RemoteFileInterface dir[] = file.listFiles();
-			if (name != "" && dir.length == 0)
-				throw new FatalException(
-					"Constructor called with empty dir: " + file);
+//			if (name != "" && dir.length == 0)
+//				throw new FatalException(
+//					"Constructor called with empty dir: " + file);
 			this.files = Collections.synchronizedMap(new Hashtable(dir.length));
 			Stack dirstack = new Stack();
 			for (int i = 0; i < dir.length; i++) {
