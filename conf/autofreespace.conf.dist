@@ -8,5 +8,5 @@ cycleTime=30
 # do not delete releases younger than
 archiveAfter=10080
 
-# AutoFreeSpace will try to keep each slave above this number (in MB)
-keepFree=1000
+# AutoFreeSpace will try to keep each slave above this number
+keepFree=1000MB

@@ -24,7 +24,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.36 2004/01/13 22:46:44 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.37 2004/01/14 02:35:36 mog Exp $
  */
 public abstract class AbstractUser implements User {
 	private static final Logger logger = Logger.getLogger(AbstractUser.class);
@@ -567,7 +567,7 @@ public abstract class AbstractUser implements User {
 			new UserEvent(this, "RESETDAY", resetDate.getTime()));
 
 		this.downloadedFilesDay = 0;
-		this.uploadedBytesDay = 0;
+		this.uploadedFilesDay = 0;
 
 		_downloadedMillisecondsDay = 0;
 		_uploadedMillisecondsDay = 0;
@@ -582,7 +582,7 @@ public abstract class AbstractUser implements User {
 			new UserEvent(this, "RESETMONTH", resetDate.getTime()));
 
 		this.downloadedFilesMonth = 0;
-		this.uploadedBytesMonth = 0;
+		this.uploadedFilesMonth = 0;
 
 		_downloadedMillisecondsMonth = 0;
 		_uploadedMillisecondsMonth = 0;
@@ -597,7 +597,7 @@ public abstract class AbstractUser implements User {
 			new UserEvent(this, "RESETWEEK", resetDate.getTime()));
 
 		this.downloadedFilesWeek = 0;
-		this.uploadedBytesWeek = 0;
+		this.uploadedFilesWeek = 0;
 
 		_downloadedMillisecondsWeek = 0;
 		_uploadedMillisecondsWeek = 0;

@@ -39,7 +39,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: MLSTSerialize.java,v 1.18 2004/01/13 20:30:55 mog Exp $
+ * @version $Id: MLSTSerialize.java,v 1.19 2004/01/14 02:35:36 mog Exp $
  */
 public class MLSTSerialize {
 	private static final Logger logger = Logger.getLogger(MLSTSerialize.class);
@@ -114,6 +114,7 @@ public class MLSTSerialize {
 			if (line.equals(""))
 				return;
 			int pos = line.indexOf(' ');
+			if(pos == -1) throw new CorruptFileListException("\""+line+"\" is in valid");
 			String filename = line.substring(pos + 1);
 			StaticRemoteFile file = new StaticRemoteFile(filename);
 			StringTokenizer st =

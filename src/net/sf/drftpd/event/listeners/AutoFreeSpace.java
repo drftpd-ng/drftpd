@@ -8,30 +8,35 @@ package net.sf.drftpd.event.listeners;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import net.sf.drftpd.Bytes;
-import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
+import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.slave.SlaveStatus;
+import net.sf.drftpd.remotefile.RemoteFileLastModifiedComparator;
 
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: AutoFreeSpace.java,v 1.4 2004/01/13 22:46:44 mog Exp $
+ * @version $Id: AutoFreeSpace.java,v 1.5 2004/01/14 02:35:36 mog Exp $
  */
 public class AutoFreeSpace implements FtpListener {
-
+	public AutoFreeSpace() {
+		reload();
+	}
 	private static final Logger logger = Logger.getLogger(AutoFreeSpace.class);
 	private long _archiveAfter;
 
@@ -53,47 +58,59 @@ public class AutoFreeSpace implements FtpListener {
 			return;
 		}
 		_lastchecked = System.currentTimeMillis();
-		Collection slaveList = null;
-		try {
-			slaveList = _cm.getSlaveManager().getAvailableSlaves();
-		} catch (NoAvailableSlaveException e) {
-			// done, can't remove space from nonexistant slaves
-		}
-		while (true) {
-			RemoteSlave rslave = _cm.getSlaveManager().findSmallestFreeSlave();
-			SlaveStatus status = null;
-			try {
-				status = rslave.getStatus();
-				if (_keepFree > status.getDiskSpaceAvailable()) {
-					deleteOldReleases(rslave);
-				} else {
-					break;
-				}
-			} catch (RemoteException e1) {
-				rslave.handleRemoteException(e1);
-			} catch (NoAvailableSlaveException e1) {
-			}
-		}
+		
+//		Collection slaveList = null;
+//		try {
+//			slaveList = _cm.getSlaveManager().getAvailableSlaves();
+//		} catch (NoAvailableSlaveException e) {
+//			// done, can't remove space from nonexistant slaves
+//		}
+//		while (true) {
+//			RemoteSlave rslave = _cm.getSlaveManager().findSmallestFreeSlave();
+//			SlaveStatus status = null;
+//			try {
+//				status = rslave.getStatus();
+//				if (_keepFree > status.getDiskSpaceAvailable()) {
+//					deleteOldReleases(rslave);
+//				} else {
+//					break;
+//				}
+//			} catch (RemoteException e1) {
+//				rslave.handleRemoteException(e1);
+//			} catch (NoAvailableSlaveException e1) {
+//			}
+//		}
 	}
-	private void deleteOldReleases(RemoteSlave slave) {
 
+	private void deleteOldReleases(RemoteSlave slave) {
 	}
 
 	/**
 	 * Deletes the oldest directories until _keepFree space is available.
 	 * @param dirs
 	 */
-	private void deleteOldReleases(Collection dirs) {
-		long spaceavailable =
-			getConnectionManager()
-				.getSlaveManager()
-				.getAllStatus()
-				.getDiskSpaceAvailable();
-		if (spaceavailable < _keepFree) {
+	private void deleteOldReleases(Collection rootDirs, long spaceAvailable) {
+		//Collection rootDirs = getConnectionManager().getSlaveManager().getRoot().getDirectories();
+		ArrayList dirs = new ArrayList();
+		for (Iterator iter = rootDirs.iterator(); iter.hasNext();) {
+			LinkedRemoteFile lrf = (LinkedRemoteFile) iter.next();
+			dirs.addAll(lrf.getDirectories());
+		}
+		Collections.sort(dirs, new RemoteFileLastModifiedComparator(true));
+
+//		long spaceAvailable =
+//			getConnectionManager()
+//				.getSlaveManager()
+//				.getAllStatus()
+//				.getDiskSpaceAvailable();
+		if (spaceAvailable < _keepFree) {
 			for (Iterator iter = dirs.iterator(); iter.hasNext();) {
+				logger.debug(Bytes.formatBytes(spaceAvailable)+" < "+Bytes.formatBytes(_keepFree));
+				if(spaceAvailable >= _keepFree) break;
 				LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-				spaceavailable += file.length();
-				file.delete();
+				spaceAvailable += file.length();
+				logger.debug("delete "+file.getPath());
+				//file.delete();
 			}
 		}
 	}
@@ -107,18 +124,28 @@ public class AutoFreeSpace implements FtpListener {
 	private void reload() {
 		Properties props = new Properties();
 		try {
-			props.load(new FileInputStream("archive.conf"));
+			props.load(new FileInputStream("conf/autofreespace.conf"));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+		reload(props);
+	}
+	private void reload(Properties props) {
 		_cycleTime =
 			60000 * Long.parseLong(FtpConfig.getProperty(props, "cycleTime"));
-		_keepFree =
-			Bytes.parseBytes(FtpConfig.getProperty(props, "keepFree"));
+		_keepFree = Bytes.parseBytes(FtpConfig.getProperty(props, "keepFree"));
 		_archiveAfter =
 			60000
 				* Long.parseLong(FtpConfig.getProperty(props, "archiveAfter"));
 		_lastchecked = System.currentTimeMillis();
 	}
-
+	
+	public static void main(String args[]) throws IOException {
+		BasicConfigurator.configure();
+		List rslaves = SlaveManagerImpl.loadRSlaves();
+		LinkedRemoteFile root = SlaveManagerImpl.loadMLSTFileDatabase(rslaves, null);
+		
+		AutoFreeSpace space = new AutoFreeSpace();
+		space.deleteOldReleases(root.getDirectories(), 0);
+	}
 }

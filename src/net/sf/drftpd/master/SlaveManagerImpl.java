@@ -46,7 +46,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 /**
- * @version $Id: SlaveManagerImpl.java,v 1.56 2004/01/13 20:30:53 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.57 2004/01/14 02:35:36 mog Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -212,7 +212,7 @@ public class SlaveManagerImpl
 		ConnectionManager cm)
 		throws IOException {
 		return MLSTSerialize.unserialize(
-			cm.getConfig(),
+			cm != null ? cm.getConfig() : null,
 			new BufferedReader(new FileReader("files.mlst")),
 			rslaves);
 	}
@@ -225,8 +225,8 @@ public class SlaveManagerImpl
 		return new RemoteSlave(
 			slaveElement.getChildText("name").toString(),
 			masks);
-
 	}
+	
 	public static List loadRSlaves() {
 		ArrayList rslaves;
 		try {

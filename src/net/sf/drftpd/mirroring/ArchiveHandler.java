@@ -21,7 +21,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.8 2004/01/13 20:30:54 mog Exp $
+ * @version $Id: ArchiveHandler.java,v 1.9 2004/01/14 02:35:36 mog Exp $
  */
 public class ArchiveHandler extends Thread {
 
@@ -104,6 +104,10 @@ public class ArchiveHandler extends Thread {
 		}
 		return highSlave;
 	}
+
+	/**
+	 * @deprecated
+	 */
 	private LinkedRemoteFile getOldestDirectoryOnSlave(
 		LinkedRemoteFile lrf,
 		RemoteSlave rslave) {
