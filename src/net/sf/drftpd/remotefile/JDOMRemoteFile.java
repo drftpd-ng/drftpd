@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jdom.Element;
+import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
@@ -32,7 +33,12 @@ public class JDOMRemoteFile extends RemoteFile {
 			isDirectory = false;
 			isFile = true;
 			checkSum = Long.parseLong(element.getChild("checksum").getText(), 16);
-			length = Long.parseLong(element.getChild("size").getText());
+			try {
+				length = Long.parseLong(element.getChild("size").getText());
+			} catch(NullPointerException ex) {
+				System.out.println(new XMLOutputter().outputString(element)+" has no size");
+				
+			}
 		}
 //		this.path = path;
 		owner = element.getChild("user").getText();

@@ -28,7 +28,8 @@ import net.sf.drftpd.util.Crypt;
  * Window>Preferences>Java>Code Generation.
  */
 public class GlftpdUserManager extends UserManager {
-	private static Logger logger = Logger.getLogger(GlftpdUserManager.class.getName());
+	private static Logger logger =
+		Logger.getLogger(GlftpdUserManager.class.getName());
 	static {
 		logger.setLevel(Level.FINEST);
 	}
@@ -65,7 +66,7 @@ public class GlftpdUserManager extends UserManager {
 				login();
 				return true;
 			} else {
-				System.out.println(password+" != "+userhash);
+				System.out.println(password + " != " + userhash);
 			}
 			return false;
 		}
@@ -394,7 +395,10 @@ public class GlftpdUserManager extends UserManager {
 						// GENERAL: WKLY_ALLOTMENT, IDLE_TIME, MAX_DLSPEED, MAX_ULSPEED 
 						gluser.setWeeklyAllotment(
 							Integer.parseInt(param[1].substring(2)));
-						user.setMaxIdleTime(Integer.parseInt(param[2]) * 60);
+						int idleTime = Integer.parseInt(param[2]) * 60;
+						if (idleTime < 0)
+							idleTime = 0;
+						user.setMaxIdleTime(idleTime);
 						user.setMaxDownloadRate(Integer.parseInt(param[3]));
 						user.setMaxUploadRate(Integer.parseInt(param[4]));
 					} else if ("LOGINS".equals(param[0])) {
@@ -536,20 +540,16 @@ public class GlftpdUserManager extends UserManager {
 	}
 	/**
 	 * @see net.sf.drftpd.master.UserManager#getUserByName(String)
+	 * @throws NoSuchUserException, CorruptUserFileException
 	 */
 	public User getUserByName(String username)
-		throws NoSuchUserException, IOException {
-		if(!new File(getUserfilepath(username)).exists()) {
+		throws IOException, NoSuchUserException {
+		if (!new File(getUserfilepath(username)).exists()) {
 			throw new NoSuchUserException("No userfile for user");
 		}
-		getLock(username);
+		getLock(username); // throws PermissionDeniedException
 		GlftpdUser user = new GlftpdUser(this, username);
-		try {
-			load(user);
-		} catch (CorruptUserFileException ex) {
-			ex.printStackTrace();
-			throw new IOException(ex.toString());
-		}
+		load(user); //throws CorruptUserFileException, NoSuchUserException
 		return user;
 	}
 
@@ -580,8 +580,9 @@ public class GlftpdUserManager extends UserManager {
 			lock.createNewFile();
 			lockTime = System.currentTimeMillis();
 		} catch (IOException ex) {
-			throw new PermissionDeniedException(
-				"Could not create lock file\n" + ex.toString());
+			Throwable ex2 =
+				new PermissionDeniedException("Could not create lock file");
+			throw (PermissionDeniedException) ex2.initCause(ex);
 		}
 		//this causes the VM to crash at exit (sun jdk 1.4.0)..
 		//lock.deleteOnExit();

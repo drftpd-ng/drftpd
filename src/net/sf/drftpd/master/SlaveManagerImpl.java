@@ -116,7 +116,6 @@ public class SlaveManagerImpl
 			"merge() took " + (System.currentTimeMillis() - millis) + "ms");
 		System.out.println("SlaveStatus: " + slave.getSlave().getSlaveStatus());
 		
-		//TODO: write XML representation of "LinkedRemoteFile root"
 		Document doc = new Document(XMLSerialize.serialize(root));
 		try {
 			new XMLOutputter("    ", true).output(

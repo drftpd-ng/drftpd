@@ -76,7 +76,8 @@ public class VirtualDirectory {
 	//	}
 	/**
 	 * Looks up a file in the current directory
-	 * @see LinkedRemoteFile#lookupFile(String) 
+	 * @see LinkedRemoteFile#lookupFile(String)
+	 * @deprecated Use LinkedRemoteFile.lookupFile instead
 	 */
 	public LinkedRemoteFile lookupFile(String virtualName)
 		throws FileNotFoundException {
@@ -123,6 +124,7 @@ public class VirtualDirectory {
 
 	/**
 	 * Check read permission.
+	 * @deprecated Unusable, user information must be supplied
 	 */
 	public boolean hasReadPermission(LinkedRemoteFile fileName) {
 		return true;
@@ -130,6 +132,7 @@ public class VirtualDirectory {
 
 	/**
 	 * Check file write/delete permission.
+	 * @deprecated Unusable, user information must be supplied
 	 */
 	public boolean hasWritePermission(LinkedRemoteFile fileName) {
 		return true;
@@ -277,7 +280,7 @@ public class VirtualDirectory {
 		boolean bDetail = options.indexOf('l') != -1;
 
 		// check pattern
-		lsDirName = replaceDots(lsDirName);
+		//lsDirName = replaceDots(lsDirName);
 		int slashIndex = lsDirName.lastIndexOf('/');
 		if ((slashIndex != -1) && (slashIndex != (lsDirName.length() - 1))) {
 			//pattern = lsDirName.substring(slashIndex + 1);
@@ -286,7 +289,7 @@ public class VirtualDirectory {
 
 		// check directory
 		//File lstDirObj = new File(lsDirName);
-		LinkedRemoteFile lstDirObj = root.lookupFile(lsDirName);
+		LinkedRemoteFile lstDirObj = dir.lookupFile(lsDirName);
 
 		if (!lstDirObj.isDirectory()) {
 			return false;
@@ -493,7 +496,7 @@ public class VirtualDirectory {
 	}
 
 	public static boolean isLegalFileName(String fileName) {
-		return fileName.indexOf("/") != -1 || fileName.equals(".") || fileName.equals("..");
+		return !(fileName.indexOf("/") != -1) && !fileName.equals(".") && !fileName.equals("..");
 	}
 	/**
 	 * Get each directory line.

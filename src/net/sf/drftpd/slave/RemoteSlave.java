@@ -9,19 +9,13 @@ import net.sf.drftpd.master.SlaveManagerImpl;
 public class RemoteSlave implements Serializable {
 	protected SlaveManagerImpl manager;
 	protected String name="mog";
-	protected String prefix="";
 
 	protected Slave slave;
 	protected SlaveStatus status;
 	protected long statusTime;
-
-	public RemoteSlave(Slave slave, String prefix) {
-		this.slave = slave;
-		this.prefix = prefix;
-	}
 	
 	public RemoteSlave(Slave slave) {
-		this(slave, null);
+		this.slave = slave;
 	}
 	public SlaveManagerImpl getManager() {
 		return manager;

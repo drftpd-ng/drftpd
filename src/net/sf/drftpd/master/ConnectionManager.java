@@ -21,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.sf.drftpd.master.usermanager.GlftpdUserManager;
+import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.remotefile.JDOMRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -33,6 +34,7 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 
 public class ConnectionManager {
+	int idleTimeout = 600;
 	private Vector connections = new Vector();
 	private UserManager usermanager;
 	private SlaveManagerImpl slavemanager;
@@ -49,17 +51,15 @@ public class ConnectionManager {
 
 		/** load XML file database **/
 		try {
-			logger.info("Loading files.xml:1");
 			Document doc = new SAXBuilder().build(new FileReader("files.xml"));
 
 			logger.info("Loading files.xml:2");
 				root = new LinkedRemoteFile(null, // slaves = null
-		null, // parent = null
-		new JDOMRemoteFile("", doc.getRootElement()) // entry
-	);
+				null, // parent = null
+				new JDOMRemoteFile("", doc.getRootElement()) // entry
+			);
 		} catch (FileNotFoundException ex) {
-			logger.info(
-				"files.xml not found, new file will be created.");
+			logger.info("files.xml not found, new file will be created.");
 			root = new LinkedRemoteFile();
 		} catch (Exception ex) {
 			logger.info("Error loading \"files.xml\"");
@@ -95,38 +95,33 @@ public class ConnectionManager {
 		} catch (RemoteException ex) {
 			ex.printStackTrace();
 			return;
-		} catch(AlreadyBoundException ex) {
+		} catch (AlreadyBoundException ex) {
 			ex.printStackTrace();
 			return;
 		}
 
 		String localslave = cfg.getProperty("master.localslave");
 		if (localslave != null && localslave.equalsIgnoreCase("true")) {
-			RemoteSlave remoteSlave;
-			Slave slave = new SlaveImpl(cfg);
+			Slave slave;
 			try {
-				remoteSlave = new RemoteSlave(slave);
+				slave = new SlaveImpl(cfg);
 			} catch (RemoteException ex) {
 				ex.printStackTrace();
 				System.exit(0);
-				return;
-				//the compiler doesn't know that execution stops at System.exit(),
-				// use "return" to supress warning
+				return;	//the compiler doesn't know that execution stops at System.exit(),
 			}
+			RemoteSlave remoteSlave = new RemoteSlave(slave);
 
 			try {
 				LinkedRemoteFile slaveroot =
-					SlaveImpl.getDefaultRoot(
-						//TODO: RootBasket instead of string
-						cfg.getProperty("slave.root"),
-						remoteSlave);
+					SlaveImpl.getDefaultRoot(remoteSlave, cfg.getProperty("slave.roots"));
 				slavemanager.addSlave(remoteSlave, slaveroot);
 			} catch (RemoteException ex) {
 				ex.printStackTrace();
 				return;
 			} catch (IOException ex) {
 				ex.printStackTrace();
-				System.exit(-1);
+				System.exit(0);
 				return;
 			}
 		}
@@ -155,13 +150,17 @@ public class ConnectionManager {
 					logger.finer(conn + " not logged in");
 					continue;
 				}
+				int maxIdleTime = conn.getUser().getMaxIdleTime();
+				if(maxIdleTime == 0) maxIdleTime = idleTimeout;
+				User user = conn.getUser();
 				logger.finer(
 					"User has been idle for "
 						+ idle
 						+ "s, max "
-						+ conn.getUser().getMaxIdleTime()
+						+ maxIdleTime
 						+ "s");
-				if (idle >= conn.getUser().getMaxIdleTime()) {
+				
+				if (idle >=maxIdleTime) {
 					// idle time expired, logout user.
 					conn.stop(
 						"Idle time expired: "
@@ -199,14 +198,15 @@ public class ConnectionManager {
 
 	public static void main(String args[]) {
 		Handler handlers[] = Logger.getLogger("").getHandlers();
-		
-		if(handlers.length == 1) {
-			handlers[0].setLevel(Level.FINEST);			 
+
+		if (handlers.length == 1) {
+			handlers[0].setLevel(Level.FINEST);
 		} else {
-			logger.warning("handlers.length != 1, can't setLevel() on root element");
+			logger.warning(
+				"handlers.length != 1, can't setLevel() on root element");
 		}
 
-		logger.info("drftpd-alpha. master server starting.");
+		System.out.println("drftpd-alpha. master server starting.");
 		/** load config **/
 		logger.info("loading drftpd.conf");
 		Properties cfg = new Properties();
@@ -225,7 +225,7 @@ public class ConnectionManager {
 			ServerSocket server =
 				new ServerSocket(
 					Integer.parseInt(cfg.getProperty("master.port")));
-				logger.info("Listening on port " + server.getLocalPort());
+			logger.info("Listening on port " + server.getLocalPort());
 			while (true) {
 				mgr.start(server.accept());
 			}

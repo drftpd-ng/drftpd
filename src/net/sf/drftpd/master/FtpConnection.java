@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -245,16 +246,16 @@ public class FtpConnection extends BaseFtpConnection {
 		if (request.hasArgument()) {
 			dirName = request.getArgument();
 		}
-
+		LinkedRemoteFile newCurrentDirectory;
 		try {
-			LinkedRemoteFile newCurrentDirectory =
+			newCurrentDirectory =
 				currentDirectory.lookupFile(dirName);
 		} catch (FileNotFoundException ex) {
 			FtpResponse response = new FtpResponse(431, ex.getMessage());
 			out.print(response);
 			return;
 		}
-
+		currentDirectory = newCurrentDirectory;
 		FtpResponse response =
 			new FtpResponse(
 				200,
@@ -282,7 +283,8 @@ public class FtpConnection extends BaseFtpConnection {
 		String fileName = request.getArgument();
 		LinkedRemoteFile requestedFile;
 		try {
-			requestedFile = getVirtualDirectory().lookupFile(fileName);
+			//requestedFile = getVirtualDirectory().lookupFile(fileName);
+			requestedFile = currentDirectory.lookupFile(fileName);
 		} catch (FileNotFoundException ex) {
 			out.println("500 Requested action not taken. " + ex.getMessage());
 			return;
@@ -290,10 +292,10 @@ public class FtpConnection extends BaseFtpConnection {
 		String[] args = { fileName };
 
 		// check permission
-		if (!getVirtualDirectory().hasWritePermission(requestedFile)) {
-			out.write(ftpStatus.getResponse(450, request, user, args));
-			return;
-		}
+//		if (!getVirtualDirectory().hasWritePermission(requestedFile)) {
+//			out.write(ftpStatus.getResponse(450, request, user, args));
+//			return;
+//		}
 
 		// now delete
 		//try {
@@ -391,34 +393,39 @@ public class FtpConnection extends BaseFtpConnection {
 	 * 
 	 * Returns the date and time of when a file was modified.
 	 */
-	/*
-	 public void doMDTM(FtpRequest request, PrintWriter out) throws IOException {
-	     
-	     // argument check
-	     if(!request.hasArgument()) {
-	        out.write(ftpStatus.getResponse(501, request, user, null));
-	        return;  
-	     }
-	    
-	     // reset state variables
-	     resetState();
-	    
-	     // get filenames
-	     String fileName = request.getArgument();
-	     fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
-	     String physicalName = user.getVirtualDirectory().getPhysicalName(fileName);
-	     File reqFile = new File(physicalName);
-	
-	     // now print date
-	     if(reqFile.exists()) {
-	         String args[] = {DATE_FMT.format(new Date(reqFile.lastModified()))};
-	         out.write(ftpStatus.getResponse(213, request, user, args));
-	     }
-	     else {
-	         out.write(ftpStatus.getResponse(550, request, user, null));
-	     }
-	 }
-	*/
+	public void doMDTM(FtpRequest request, PrintWriter out) {
+
+		// argument check
+		if (!request.hasArgument()) {
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			return;
+		}
+
+		// reset state variables
+		resetState();
+
+		// get filenames
+		String fileName = request.getArgument();
+		LinkedRemoteFile reqFile;
+		try {
+			 reqFile = currentDirectory.lookupFile(fileName);
+		} catch (FileNotFoundException ex) {
+			out.print(FtpResponse.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN);
+			return;
+		}
+		//fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
+		//String physicalName =
+		//	user.getVirtualDirectory().getPhysicalName(fileName);
+		//File reqFile = new File(physicalName);
+
+		// now print date
+		//if (reqFile.exists()) {
+			out.print(new FtpResponse(213, DATE_FMT.format(new Date(reqFile.lastModified()))));
+			//out.print(ftpStatus.getResponse(213, request, user, args));
+		//} else {
+		//	out.write(ftpStatus.getResponse(550, request, user, null));
+		//}
+	}
 
 	/**
 	 * <code>MKD  &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
@@ -693,16 +700,13 @@ public class FtpConnection extends BaseFtpConnection {
 		// argument check
 		if (!request.hasArgument()) {
 			//Syntax error in parameters or arguments
-			out.print(
-				new FtpResponse(501, "Syntax error in parameters or arguments")
-					.toString());
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
 		}
 
 		StringTokenizer st = new StringTokenizer(request.getArgument(), ",");
 		if (st.countTokens() != 6) {
-			//TODO no 510 reply in FtpStatus.properties
-			out.write(ftpStatus.getResponse(510, request, user, null));
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
 		}
 
@@ -718,8 +722,7 @@ public class FtpConnection extends BaseFtpConnection {
 		try {
 			clientAddr = InetAddress.getByName(dataSrvName);
 		} catch (UnknownHostException ex) {
-			out.print(
-				new FtpResponse(553, "Requested action not taken").toString());
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
 		}
 
@@ -729,11 +732,12 @@ public class FtpConnection extends BaseFtpConnection {
 			int lo = Integer.parseInt(st.nextToken());
 			clientPort = (hi << 8) | lo;
 		} catch (NumberFormatException ex) {
-			out.write(ftpStatus.getResponse(552, request, user, null));
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			//out.write(ftpStatus.getResponse(552, request, user, null));
 			return;
 		}
 		setPortCommand(clientAddr, clientPort);
-		out.write(ftpStatus.getResponse(200, request, user, null));
+		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
 	}
 
 	/**
@@ -830,28 +834,28 @@ public class FtpConnection extends BaseFtpConnection {
 
 		// argument check
 		if (!request.hasArgument()) {
-			out.write(ftpStatus.getResponse(501, request, user, null));
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
 		}
 
 		// get filenames
 		String fileName = request.getArgument();
-		//fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
 		LinkedRemoteFile remoteFile;
 		RemoteFile staticRemoteFile;
 		try {
-			remoteFile = getVirtualDirectory().lookupFile(fileName);
+			//remoteFile = getVirtualDirectory().lookupFile(fileName);
+			remoteFile = currentDirectory.lookupFile(fileName);
 		} catch (FileNotFoundException ex) {
 			//out.write(ftpStatus.getResponse(550, request, user, null));
 			out.println("550 " + fileName + ": No such file");
 			return;
 		}
 		if (!remoteFile.isFile()) {
-			out.println("550 " + fileName + ": not a plain file.");
+			out.println("550 " + remoteFile + ": not a plain file.");
 			return;
 		}
 		//String args[] = { fileName };
-		if (user.getCredits() < remoteFile.length()) {
+		if (user.getCredits() < remoteFile.length() * user.getRatio()) {
 			out.println("550 Not enough credits.");
 			return;
 		}
@@ -868,7 +872,8 @@ public class FtpConnection extends BaseFtpConnection {
 			try {
 				slave = remoteFile.getASlave();
 			} catch (NoAvailableSlaveException ex) {
-				out.println("550 " + ex.getMessage());
+				out.print(FtpResponse.RESPONSE_450_SLAVE_UNAVAILABLE);
+				//out.println("550 " + ex.getMessage());
 				return;
 			}
 
@@ -910,7 +915,7 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 		try {
 			long transferedBytes = transfer.getTransfered();
-			user.updateCredits(0 - transferedBytes);
+			user.updateCredits((long) ( - transferedBytes * user.getRatio()));
 			user.updateDownloadedBytes(transferedBytes);
 		} catch (RemoteException ex) {
 			slave.handleRemoteException(ex);
@@ -964,37 +969,65 @@ public class FtpConnection extends BaseFtpConnection {
 	}
 
 	/**
-	 * <code>SITE &lt;SP&gt; NUKE &lt;SP&gt; &lt;multiplier&gt; &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+	 * USAGE: site nuke <directory> <multiplier> <message>
+	 * Nuke a directory
+	 *
+	 * ex. site nuke shit 2 CRAP
+	 *
+	 * This will nuke the directory 'shit' and remove x2 credits with the
+	 * comment 'CRAP'.
+	 *
+	 * NOTE: You can enclose the directory in braces if you have spaces in the name
+	 * ex. site NUKE {My directory name} 1 because_i_dont_like_it
+	 * 
+	 * Q)  What does the multiplier in 'site nuke' do?
+	 * A)  Multiplier is a penalty measure. If it is 0, the user doesn't lose any
+	 *     credits for the stuff being nuked. If it is 1, user only loses the
+	 *     amount of credits he gained by uploading the files (which is calculated
+	 *     by multiplying total size of file by his/her ratio). If multiplier is more
+	 *     than 1, the user loses the credits he/she gained by uploading, PLUS some
+	 *     extra credits. The formula is this: size * ratio + size * (multiplier - 1).
+	 *     This way, multiplier of 2 causes user to lose size * ratio + size * 1,
+	 *     so the additional penalty in this case is the size of nuked files. If the
+	 *     multiplier is 3, user loses size * ratio + size * 2, etc.
 	 */
+	//TODO {} directory argument syntax
 	public void doSITE_NUKE(FtpRequest request, PrintWriter out) {
 		//FtpResponse response = new FtpResponse();
 		LinkedRemoteFile thisDir = currentDirectory;
 		LinkedRemoteFile nukeDir;
 		String arg = request.getArgument();
 		int pos = arg.indexOf(' ');
-		int multiplier = Integer.parseInt(arg.substring(0, pos));
-
+		int multiplier; 
 		try {
-			// TODO trim string?
-			nukeDir = thisDir.getFile(arg.substring(pos + 1));
+			multiplier = Integer.parseInt(arg.substring(pos + 1));
+		} catch(NumberFormatException ex) {
+			ex.printStackTrace();
+			out.print(new FtpResponse(501, "Invalid multiplier: "+ex.getMessage()));
+			return;
+		}
+		
+		try {
+			nukeDir = thisDir.getFile(arg.substring(0, pos));
 		} catch (FileNotFoundException e) {
 			FtpResponse response = new FtpResponse(550, e.getMessage());
 			out.print(response.toString());
 			return;
 		}
-		
+
 		if (!nukeDir.isDirectory()) {
-			FtpResponse response = new FtpResponse(550, nukeDir.getName()+" is not a directory");
+			FtpResponse response =
+				new FtpResponse(550, nukeDir.getName() + " is not a directory");
 			out.print(response.toString());
 			return;
 		}
-		
+
 		Hashtable nukees = new Hashtable();
-		nukeRemoveCredits(nukeDir, nukees, multiplier);
-		//TODO sp: suceeded
+		nukeRemoveCredits(nukeDir, nukees);
+
 		FtpResponse response = new FtpResponse(200, "NUKE suceeded");
 		Hashtable nukees2 = new Hashtable(nukees.size());
-		
+
 		for (Iterator iter = nukees.keySet().iterator(); iter.hasNext();) {
 			String username = (String) iter.next();
 			try {
@@ -1017,15 +1050,17 @@ public class FtpConnection extends BaseFtpConnection {
 				out.print(response);
 				return;
 			}
+			// nukees contains credits as value
 			nukees2.put(user, nukees.get(username));
 		}
-		
-		String to = "[NUKED]-"+nukeDir.getName();
+
+		String to = "[NUKED]-" + nukeDir.getName();
 		try {
 			nukeDir.renameTo(to);
 		} catch (IOException e1) {
 			e1.printStackTrace();
-			response.addComment(" cannot rename to \""+to+"\": "+e1.getMessage());
+			response.addComment(
+				" cannot rename to \"" + to + "\": " + e1.getMessage());
 			response.setCode(500);
 			response.setResponse("NUKE failed");
 			out.print(response);
@@ -1034,7 +1069,8 @@ public class FtpConnection extends BaseFtpConnection {
 
 		for (Iterator iter = nukees2.keySet().iterator(); iter.hasNext();) {
 			User element = (User) iter.next();
-			Integer debt = (Integer) nukees2.get(element);
+			Integer size = (Integer) nukees2.get(element);
+			Integer debt = new Integer( (int)(size.intValue() * user.getRatio() + size.intValue() * (multiplier - 1)));
 			try {
 				user.updateCredits(-debt.intValue());
 			} catch (IOException e1) {
@@ -1048,8 +1084,7 @@ public class FtpConnection extends BaseFtpConnection {
 	}
 	private void nukeRemoveCredits(
 		LinkedRemoteFile nukeDir,
-		Hashtable nukees,
-		int multiplier) {
+		Hashtable nukees) {
 		for (Iterator iter = nukeDir.iterateFiles(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
 			String owner = file.getOwner();
@@ -1058,7 +1093,7 @@ public class FtpConnection extends BaseFtpConnection {
 				total = new Integer(0);
 			total =
 				new Integer(
-					(int) (total.intValue() + file.length() * multiplier));
+					(int) (total.intValue() + file.length()));
 			nukees.put(owner, total);
 		}
 	}
@@ -1206,7 +1241,39 @@ public class FtpConnection extends BaseFtpConnection {
 				+ user2.getUsername()
 				+ ".");
 	}
-
+	
+	/**
+	 * USAGE: site unnuke <directory> <message>
+	 * 	Unnuke a directory.
+	 * 
+	 * 	ex. site unnuke shit NOT CRAP
+	 * 	
+	 * 	This will unnuke the directory 'shit' with the comment 'NOT CRAP'.
+	 * 
+	 *         NOTE: You can enclose the directory in braces if you have spaces in the name
+	 *         ex. site unnuke {My directory name} justcause
+	 * 
+	 * 	You need to configure glftpd to keep nuked files if you want to unnuke.
+	 * 	See the section about glftpd.conf.
+	 */
+	//TODO UNNUKE
+	public void doSITE_UNNUKE(FtpRequest request, PrintWriter out) {
+		resetState();
+		throw new NoSuchMethodError("TODO: UNNUKE");
+	}
+	
+	/**
+	 * USAGE: site user [<user>]
+	 * 	Lists users / Shows detailed info about a user.
+	 * 
+	 * 	ex. site user
+	 * 
+	 * 	This will display a list of all users currently on site.
+	 * 
+	 * 	ex. site user Archimede
+	 * 
+	 * 	This will show detailed information about user 'Archimede'.
+	 */
 	public void doSITE_USER(FtpRequest request, PrintWriter out) {
 		resetState();
 		if (!user.isAdmin()) {
@@ -1393,7 +1460,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 * to be renamed.  This command must be immediately followed by
 	 * a "rename to" command specifying the new file pathname.
 	 */
-
+	//TODO RNFR
 	public void doRNFR(FtpRequest request, PrintWriter out)
 		throws IOException {
 		out.print(new FtpResponse(500, "Command not implemented").toString());
@@ -1428,6 +1495,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 * command.  Together the two commands cause a file to be
 	 * renamed.
 	 */
+	//TODO RNTO
 	public void doRNTO(FtpRequest request, PrintWriter out)
 		throws IOException {
 		out.print(new FtpResponse(500, "Command not implemented").toString());
@@ -1501,19 +1569,24 @@ public class FtpConnection extends BaseFtpConnection {
 			out.write(ftpStatus.getResponse(501, request, user, null));
 			return;
 		}
-		RemoteFile file;
+		LinkedRemoteFile file;
 		try {
-			file = getVirtualDirectory().lookupFile(request.getArgument());
+			file = currentDirectory.lookupFile(request.getArgument());
+			//file = getVirtualDirectory().lookupFile(request.getArgument());
 		} catch (FileNotFoundException ex) {
-			out.write(ftpStatus.getResponse(550, request, user, null));
+			out.print(FtpResponse.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN);
 			return;
 		}
-		out.write(
-			ftpStatus.getResponse(
-				213,
-				request,
-				user,
-				new String[] { "" + file.length()}));
+		if(file == null) {
+			System.out.println("got null file instead of FileNotFoundException");
+		}
+		out.print(new FtpResponse(213, Long.toString(file.length())));
+//		out.write(
+//			ftpStatus.getResponse(
+//				213,
+//				request,
+//				user,
+//				new String[] { "" + file.length()}));
 	}
 
 	/**
@@ -1572,7 +1645,10 @@ public class FtpConnection extends BaseFtpConnection {
 		String fileName = request.getArgument();
 
 		if (VirtualDirectory.isLegalFileName(fileName)) {
-			out.print(new FtpResponse(553, "Requested action not taken. File name not allowed."));
+			out.print(
+				new FtpResponse(
+					553,
+					"Requested action not taken. File name not allowed."));
 			return;
 		}
 
@@ -1580,9 +1656,13 @@ public class FtpConnection extends BaseFtpConnection {
 			//TODO overwrite & resume files.
 			directory.lookupFile(fileName);
 			// file exists
-			out.print(new FtpResponse(550, "Requested action not taken. File exists"));
+			out.print(
+				new FtpResponse(
+					550,
+					"Requested action not taken. File exists"));
 			return;
-		} catch (FileNotFoundException ex) { }	// file doesn't exist - good, continue.
+		} catch (FileNotFoundException ex) {
+		} // file doesn't exist - good, continue.
 
 		Transfer transfer;
 		// find a slave that works
@@ -1769,9 +1849,9 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 		String args[] = {systemName};
 		*/
-
-		String args[] = { "UNIX" };
-		out.write(ftpStatus.getResponse(215, request, user, args));
+		out.print(FtpResponse.RESPONSE_215_SYSTEM_TYPE);
+		//String args[] = { "UNIX" };
+		//out.write(ftpStatus.getResponse(215, request, user, args));
 	}
 
 	/**
@@ -1826,12 +1906,12 @@ public class FtpConnection extends BaseFtpConnection {
 		try {
 			user = userManager.getUserByName(request.getArgument());
 		} catch (NoSuchUserException ex) {
-			// TODO: what error code for "no such user" ???
-			out.print(new FtpResponse(530, ex.getMessage()).toString());
-			//out.println("530 " + ex.getMessage());
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			//out.print(new FtpResponse(530, "No such user"));
 			return;
 		} catch (IOException ex) {
-			out.println("530 " + ex.getMessage());
+			ex.printStackTrace();
+			out.print(new FtpResponse(530, ex.getMessage()));
 			return;
 		}
 		String masks[] =
@@ -1854,10 +1934,12 @@ public class FtpConnection extends BaseFtpConnection {
 
 		// set user name and send appropriate message
 		if (user == null) {
-			out.write(ftpStatus.getResponse(530, request, user, null));
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			//out.write(ftpStatus.getResponse(530, request, user, null));
 		} else {
 			//			user.setUsername(request.getArgument());
-			out.write(ftpStatus.getResponse(331, request, user, null));
+			out.print(FtpResponse.RESPONSE_331_USERNAME_OK_NEED_PASS);
+			//out.write(ftpStatus.getResponse(331, request, user, null));
 		}
 		/*
 		if (user.isAnonymous()) {

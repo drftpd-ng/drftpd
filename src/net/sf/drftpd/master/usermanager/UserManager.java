@@ -38,6 +38,7 @@ public abstract class UserManager {
 	/**
 	 * Get user by name.
 	 */
+	//TODO garbage collected Map of users.
 	public abstract User getUserByName(String name) throws NoSuchUserException, IOException;
 
 	/**

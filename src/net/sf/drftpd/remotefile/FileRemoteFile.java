@@ -1,6 +1,7 @@
 package net.sf.drftpd.remotefile;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Vector;
@@ -13,6 +14,7 @@ import net.sf.drftpd.slave.RootBasket;
  * 
  * @author <a href="mailto:mog@linux.nu">Morgan Christiansson</a>
  */
+//TODO import owner/group using se.mog.io.File
 public class FileRemoteFile extends RemoteFile {
 //	private File file;
 //	private String root;
@@ -44,6 +46,9 @@ public class FileRemoteFile extends RemoteFile {
 	}
 	
 	public FileRemoteFile(RootBasket rootBasket, String path) throws IOException {
+		if(path.length() != 0) {
+			if(path.charAt(path.length()-1) == File.separatorChar) path = path.substring(0, path.length()-1);
+		}
 		this.path = path;
 		this.rootBasket = rootBasket;
 
@@ -52,14 +57,16 @@ public class FileRemoteFile extends RemoteFile {
 		for (Iterator iter = rootBasket.iterator(); iter.hasNext();) {
 			File root = (File) iter.next();
 			File file = new File(root.getPath()+"/"+path);
-			System.out.println("File: "+file);
+			//System.out.println("File: "+file);
 			
 			if (!file.exists()) continue;
 
 			if(first) {
 				isDirectory = file.isDirectory();
+				isFile = file.isFile();
 			} else {
 				if(file.isDirectory() != isDirectory) throw new IOException("rootBasket out of sync");
+				if(file.isFile() != isFile) throw new IOException("rootBasket out of sync");
 			}
 					
 			if (!file.getCanonicalPath().equals(file.getAbsolutePath())) {
@@ -71,18 +78,18 @@ public class FileRemoteFile extends RemoteFile {
 			}
 		}
 	}
-
+	private File getFile() {
+		try {
+			return rootBasket.getFile(getPath());
+		} catch(FileNotFoundException ex) {
+			throw new RuntimeException(ex); 
+		}
+	}
 	/**
 	 * @see net.sf.drftpd.RemoteFile#getName()
 	 */
 	public String getName() {
-		/*
-				String name = file.getName();
-				if(name.equals("")) name = "/";
-				return name;
-		*/
-		throw new NoSuchMethodError();
-		//return file.getName();
+		return path.substring(path.lastIndexOf(File.separatorChar)+1);
 	}
 
 	/**
@@ -97,7 +104,8 @@ public class FileRemoteFile extends RemoteFile {
 	 * @see net.sf.drftpd.RemoteFile#getPath()
 	 */
 	public String getPath() {
-		throw new NoSuchMethodError();
+		return path;
+		//throw new NoSuchMethodError();
 		//return file.getPath();
 	}
 
@@ -133,14 +141,15 @@ public class FileRemoteFile extends RemoteFile {
 	 * @see net.sf.drftpd.RemoteFile#lastModified()
 	 */
 	public long lastModified() {
-		return file.lastModified();
+		return getFile().lastModified();
 	}
 
 	/**
 	 * @see net.sf.drftpd.RemoteFile#length()
 	 */
 	public long length() {
-		return file.length();
+		//return file.length();
+		return getFile().length();
 	}
 
 	/**
@@ -156,12 +165,12 @@ public class FileRemoteFile extends RemoteFile {
 			File root = (File) iter.next();
 			File file = new File(root+"/"+path);
 			File tmpFiles[] = file.listFiles();
-			System.out.println("Capacity 1: size: "+filefiles.size()+" capacity: "+filefiles.capacity()+" add: "+tmpFiles.length);
-			filefiles.ensureCapacity(filefiles.size()+tmpFiles.length);
-			System.out.println("Capacity 2: size: "+filefiles.size()+" capacity: "+filefiles.capacity());
+			//System.out.println("Capacity 1: size: "+filefiles.size()+" capacity: "+filefiles.capacity()+" add: "+tmpFiles.length);
+			//filefiles.ensureCapacity(filefiles.size()+tmpFiles.length);
+			//System.out.println("Capacity 2: size: "+filefiles.size()+" capacity: "+filefiles.capacity());
 			for (int i = 0; i < tmpFiles.length; i++) {
 				try {
-					filefiles.add(new FileRemoteFile(rootBasket, path+tmpFiles[i].getName()));
+					filefiles.add(new FileRemoteFile(rootBasket, path+File.separatorChar+tmpFiles[i].getName()));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

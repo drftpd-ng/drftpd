@@ -6,8 +6,6 @@
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-import java.io.File;
-
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.RemoteFile;
 import net.sf.drftpd.slave.RootBasket;
@@ -16,7 +14,7 @@ public class DumpFile {
 
 	public static void main(String[] args) throws Exception {
 		for(int i=0; i<args.length; i++) {
-			dumpFile(new FileRemoteFile("/", new File(args[i])));
+			dumpFile(new FileRemoteFile(new RootBasket("/"), args[i]));
 			if(args.length-i != 1) System.out.println();
 		}
 	}
@@ -35,8 +33,10 @@ public class DumpFile {
 		}
 		*/
 		System.out.println("getName(): \""+file.getName()+"\"");
-		System.out.println("getParent(): \""+file.getParent()+"\"");
+//		System.out.println("getParent(): \""+file.getParent()+"\"");
 		System.out.println("getPath(): \""+file.getPath()+"\"");
+		System.out.println("getOwner(): \""+file.getOwner()+"\"");
+		System.out.println("getGroup(): \""+file.getGroup()+"\"");
 		//System.out.println("isAbsolute(): \""+file.isAbsolute()+"\"");
 		System.out.println("isDirectory(): \""+file.isDirectory()+"\"");
 		System.out.println("isFile(): \""+file.isFile()+"\"");

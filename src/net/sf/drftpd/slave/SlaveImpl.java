@@ -13,7 +13,6 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,13 +46,22 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 	public SlaveImpl(Properties cfg) throws RemoteException {
 		super();
+		/*
 		StringTokenizer st =
 			new StringTokenizer(cfg.getProperty("slave.roots"), ",;");
 		Vector rootCollection = new Vector();
 		while (st.hasMoreTokens()) {
 			rootCollection.add(st.nextToken());
 		}
-		roots = new RootBasket(rootCollection);
+		*/
+		
+		try {
+			roots = new RootBasket(cfg.getProperty("slave.roots"));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			System.exit(0);
+			return;
+		}
 	}
 
 	public static void main(String args[]) {
@@ -104,25 +112,25 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			return;
 			//the compiler doesn't know that execution stops at System.exit()
 		}
-
+		RemoteSlave rslave = new RemoteSlave(slave);
 		try {
 			LinkedRemoteFile slaveroot =
-				SlaveImpl.getDefaultRoot(cfg.getProperty("slave.root"), slave);
+				SlaveImpl.getDefaultRoot(rslave, cfg.getProperty("slave.roots"));
 
 			System.out.println("manager.addSlave() root: " + slaveroot);
-			manager.addSlave(slave, slaveroot);
+			manager.addSlave(rslave, slaveroot);
 		} catch (RemoteException ex) {
 			ex.printStackTrace();
-			System.exit(-1);
+			System.exit(0);
 			return;
 		} catch (IOException ex) {
 			ex.printStackTrace();
 			return;
 		}
 	}
-	public static LinkedRemoteFile getDefaultRoot(String rootString, RemoteSlave rslave)
+	public static LinkedRemoteFile getDefaultRoot(RemoteSlave rslave, String rootString)
 		throws IOException {
-
+		/*
 		RootBasket rootBasket;
 
 		Vector roots = new Vector();
@@ -132,7 +140,8 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			roots.add(st.nextToken());
 		}
 		rootBasket = new RootBasket(roots);
-
+		*/
+		RootBasket rootBasket = new RootBasket(rootString); // throws FileNotFoundException
 		return getDefaultRoot(rootBasket, rslave);
 	}
 
@@ -140,8 +149,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	 * returns the {LinkedRemoteFile} directory that will be serialized and registered at the master.
 	 */
 	public static LinkedRemoteFile getDefaultRoot(
-		RootBasket rootBasket,
-		RemoteSlave rslave)
+		RootBasket rootBasket, RemoteSlave rslave)
 		throws IOException {
 
 		//		//File rootfile = new File(root);
@@ -233,10 +241,11 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		long offset,
 		Connection conn)
 		throws IOException {
-		File file = new File(root + remotefile.getPath());
-		if (!file.exists())
-			throw new FileNotFoundException(
-				"File " + file + " not found, Remotefile: " + remotefile);
+		//File file = new File(root + remotefile.getPath());
+		File file = roots.getFile(remotefile.getPath()); //throws FileNotFoundException
+//		if (!file.exists())
+//			throw new FileNotFoundException(
+//				"File " + file + " not found, Remotefile: " + remotefile);
 
 		FileInputStream in = new FileInputStream(file);
 		in.skip(offset);
@@ -342,25 +351,26 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		logger.fine("Checksumming: " + path);
 		CRC32 crc32 = new CRC32();
 		InputStream in =
-			new CheckedInputStream(new FileInputStream(root + path), crc32);
+//			new CheckedInputStream(new FileInputStream(root + path), crc32);
+			new CheckedInputStream(new FileInputStream(roots.getFile(path)), crc32);
 		byte buf[] = new byte[1024];
 		while (in.read(buf) != -1);
 		return crc32.getValue();
 	}
 
 	public SFVFile getSFVFile(String path) throws IOException {
-		return new SFVFile(new BufferedReader(new FileReader(root + path)));
+		return new SFVFile(new BufferedReader(new FileReader(roots.getFile(path))));
 	}
 	/**
 	 * @see net.sf.drftpd.slave.Slave#rename(String, String)
 	 */
-	public void rename(String from, String to) throws FileNotFoundException {
-
-		File fromfile = new File(root + from);
+	public void rename(String from, String to) throws FileNotFoundException, FileExistsException {
+		System.out.println("rename from "+from+ " to "+to);
+		File fromfile = roots.getFile(from); // throws FileNotFoundException
 		if (!fromfile.exists())
 			throw new FileNotFoundException(
 				"cannot rename from " + from + ", file does not exist");
-		File tofile = new File(root + to);
+		File tofile = new File(roots.getARoot() + to);
 		if (tofile.exists())
 			throw new FileExistsException(
 				"cannot rename from "
@@ -372,7 +382,8 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	}
 
 	public void delete(String path) throws IOException {
-		File file = new File(root + path);
+		//File file = new File(root + path);
+		File file = roots.getFile(path);
 		if (!file.exists())
 			throw new FileNotFoundException(
 				"cannot delete " + path + ", file does not exist");
