@@ -21,11 +21,13 @@ package net.drmods.plugins.irc;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.TimeZone;
 
 import net.sf.drftpd.FileExistsException;
@@ -41,127 +43,63 @@ import org.drftpd.commands.UserManagement;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.sitebot.IRCPluginInterface;
+import org.drftpd.sitebot.IRCCommand;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
-import f00f.net.irc.martyr.GenericCommandAutoService;
-import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
+import f00f.net.irc.martyr.util.FullNick;
 
 /**
  * @author Teflon
  * @version $Id$
  */
-public class IRCNuke extends GenericCommandAutoService implements IRCPluginInterface {
-
+public class IRCNuke extends IRCCommand {
 	private static final Logger logger = Logger.getLogger(IRCNuke.class);
-	private ConnectionManager _cm;
-	private SiteBot _listener;
 	
-	public String getCommands() {
-	    String tr = _listener.getCommandPrefix();
-		return tr + "nuke " + tr + "unnuke " + tr + "nukes";
+	public IRCNuke(GlobalContext gctx) {
+		super(gctx);
 	}
 
-	public String getCommandsHelp(User user) {
-	    String pre = _listener.getCommandPrefix();
-        String help = "";
-        if (_listener.getIRCConfig().checkIrcPermission(pre + "nuke", user))
-            help += pre + "nuke <dirname> <multiplier> <reason> : Nuke a release.\n";
-        if (_listener.getIRCConfig().checkIrcPermission(pre + "unnuke", user))
-            help += pre + "unnuke <dirname> [reason] : Unnuke a release.\n";
-        if (_listener.getIRCConfig().checkIrcPermission(pre + "nukes", user))
-            help += pre + "nukes : List current nuked releases.\n";
-		return help;
-	}
-	public IRCNuke(SiteBot listener) {
-		super(listener.getIRCConnection());
-		_listener = listener;
-		_cm = listener.getGlobalContext().getConnectionManager();
-	}
-
-	private GlobalContext getGlobalContext() {
-		return _listener.getGlobalContext();
-	}
-
-	protected void updateCommand(InCommand command) {
-		if (!(command instanceof MessageCommand))
-			return;
-		MessageCommand msgc = (MessageCommand) command;
-		String msg = msgc.getMessage().trim();
-	    String tr = _listener.getCommandPrefix();
-
-		if (msg.startsWith(tr + "nukes")){
-			doNUKES(msgc);
-		} else if (msg.startsWith(tr + "nuke")) {
-			doNUKE(msgc);
-		} else if (msg.startsWith(tr + "unnuke")) {
-			doUNNUKE(msgc);
-		}
-	}
-
-	private void doNUKE(MessageCommand msgc) {
+	public ArrayList<String> doNuke(String args, MessageCommand msgc) {
+	    ArrayList<String> out = new ArrayList<String>();
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-		env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
-		env.add("ircnick",msgc.getSource().getNick());
-        //Get the ftp user account based on irc ident
-		User ftpuser;
-		try {
-            ftpuser = _listener.getIRCConfig().lookupUser(msgc.getSource());
-        } catch (NoSuchUserException e) {
-			_listener.say(msgc.getDest(), 
-					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-			return;
+		env.add("ircnick", msgc.getSource().getNick());
+		
+        User ftpuser = getUser(msgc.getSource());
+        if (ftpuser == null) {
+     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+     	    return out;
         }
-		env.add("ftpuser",ftpuser.getName());
+        env.add("ftpuser",ftpuser.getName());
 
-		if (!_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "nuke",ftpuser)) {
-			_listener.say(msgc.getDest(), 
-					ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
-			return;				
-		}
-
-		String msg = msgc.getMessage().trim();
-		if (msg.equals("!nuke")) {
-			_listener.say(msgc.getDest(), 
-					ReplacerUtils.jprintf("nuke.usage", env, IRCNuke.class));
-			return;
-		}
-
+        StringTokenizer st = new StringTokenizer(args);
 		//check number of arguments
-		String args[] = msg.split(" ");
-		if (args.length < 4) {
-			_listener.say(msgc.getDest(), 
-					ReplacerUtils.jprintf("nuke.usage", env, IRCNuke.class));
-			return;
+		if (st.countTokens() < 3) {
+			out.add(ReplacerUtils.jprintf("nuke.usage", env, IRCNuke.class));
+			return out;
 		}
 		
 		//read parameters passed
-		String searchstr = args[1];
+		String searchstr = st.nextToken();
+		env.add("searchstr",searchstr);
 		int nukemult;
 		try {
-			nukemult = Integer.parseInt(args[2]);
+			nukemult = Integer.parseInt(st.nextToken());
 		} catch (NumberFormatException e2) {
-			_listener.say(msgc.getDest(), 
-					ReplacerUtils.jprintf("nuke.usage", env, IRCNuke.class));
-			return;
+			out.add(ReplacerUtils.jprintf("nuke.usage", env, IRCNuke.class));
+			return out;
 		}
-		String nukemsg = "";
-		for (int i=3; i < args.length; i++)
-			nukemsg += args[i] + " ";
-		
-		nukemsg = nukemsg.trim();
-		env.add("searchstr",searchstr);
+		String nukemsg = st.nextToken("").trim();
 		
 		LinkedRemoteFileInterface nukeDir = 
-			findDir(_cm, _cm.getGlobalContext().getRoot(), ftpuser, searchstr);
+			findDir(getGlobalContext().getConnectionManager(), getGlobalContext().getRoot(), ftpuser, searchstr);
 
 		if (nukeDir == null){
-			_listener.say(msgc.getDest(), 
-					ReplacerUtils.jprintf("nuke.error", env, IRCNuke.class));
+			out.add(ReplacerUtils.jprintf("nuke.error", env, IRCNuke.class));
+			return out;
 		} else {
 			String nukeDirPath = nukeDir.getPath();
 			env.add("nukedir",nukeDirPath);
@@ -177,17 +115,17 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 				User user;
 				try {
 					user =
-						_cm.getGlobalContext().getUserManager().getUserByName(username);
+						getGlobalContext().getUserManager().getUserByName(username);
 				} catch (NoSuchUserException e1) {
-				    _listener.say(msgc.getDest(),"Cannot remove credits from " 
+				    out.add("Cannot remove credits from " 
 						+ username + ": " + e1.getMessage());
 					logger.warn("", e1);
 					user = null;
 				} catch (UserFileException e1) {
-				    _listener.say(msgc.getDest(),"Cannot read user data for " 
+				    out.add("Cannot read user data for " 
 						+ username + ": " + e1.getMessage());
 					logger.warn("", e1);
-					return;
+					return out;
 				}
 				// nukees contains credits as value
 				if (user == null) {
@@ -212,7 +150,7 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 				toDirPath = nukeDir.getParentFile().getPath();
 			} catch (FileNotFoundException ex) {
 				logger.fatal("", ex);
-				return;
+				return out;
 			}
 			try {
 				nukeDir.renameTo(toDirPath, toName);
@@ -222,14 +160,14 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 					"REASON-" + nukemsg);
 			} catch (IOException ex) {
 				logger.warn("", ex);
-				_listener.say(msgc.getDest(),
+				out.add(
 					" cannot rename to \""
 						+ toDirPath
 						+ "/"
 						+ toName
 						+ "\": "
 						+ ex.getMessage());
-				return;
+				return out;
 			}
 
 			long nukeDirSize = 0;
@@ -257,8 +195,7 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 				try {
 					nukee.commit();
 				} catch (UserFileException e1) {
-					_listener.say(msgc.getDest(),
-						"Error writing userfile: " + e1.getMessage());
+					out.add("Error writing userfile: " + e1.getMessage());
 					logger.warn("Error writing userfile", e1);
 				}
 			}
@@ -274,67 +211,48 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 					nukees);
 
 			Nuke dpsn = (Nuke) 
-				_cm.getCommandManagerFactory()
+				getGlobalContext().getConnectionManager().getCommandManagerFactory()
 					.getHandlersMap()
 					.get(Nuke.class);
 			dpsn.getNukeLog().add(nuke);
-			_cm.dispatchFtpEvent(nuke);
+			getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);
 		}
+		return out;
 	}
 
-	private void doUNNUKE(MessageCommand msgc) {
+	public ArrayList<String> doUnnuke(String args, MessageCommand msgc) {
+	    ArrayList<String> out = new ArrayList<String>();
+	    out.add("");
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-		env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
-		env.add("ircnick",msgc.getSource().getNick());
-        //Get the ftp user account based on irc ident
-		User ftpuser;
-		try {
-            ftpuser = _listener.getIRCConfig().lookupUser(msgc.getSource());
-        } catch (NoSuchUserException e) {
-			_listener.say(msgc.getDest(), 
-					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-			return;
+		env.add("ircnick", msgc.getSource().getNick());
+		
+        User ftpuser = getUser(msgc.getSource());
+        if (ftpuser == null) {
+     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+     	    return out;
         }
-		env.add("ftpuser",ftpuser.getName());
+        env.add("ftpuser",ftpuser.getName());
 
-		if (!_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "unnuke",ftpuser)) {
-			_listener.say(msgc.getDest(), 
-					ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
-			return;				
-		}
-
-		String msg = msgc.getMessage().trim();
-		if (msg.equals("!unnuke")) {
-			_listener.say(msgc.getDest(), 
-					ReplacerUtils.jprintf("unnuke.usage", env, IRCNuke.class));
-			return;
-		}
-
+        StringTokenizer st = new StringTokenizer(args);
 		//check number of arguments
-		String args[] = msg.split(" ");
-		if (args.length < 2) {
-			_listener.say(msgc.getDest(), 
-					ReplacerUtils.jprintf("unnuke.usage", env, IRCNuke.class));
-			return;
+		if (st.countTokens() < 1) {
+			out.add(ReplacerUtils.jprintf("unnuke.usage", env, IRCNuke.class));
+			return out;
 		}
 		
 		//read parameters passed
-		String toName = args[1];
+		String toName = st.nextToken();
 		String nukeName = "[NUKED]-" + toName;
-		String reason = "";
-		for (int i=2; i < args.length; i++)
-			reason += args[i] + " ";
-		
-		reason = reason.trim();
+		String reason = st.hasMoreTokens() ? st.nextToken("").trim() : "";
+
 		env.add("searchstr",nukeName);
 		
 		LinkedRemoteFileInterface nukeDir = 
-			findDir(_cm, _cm.getGlobalContext().getRoot(), ftpuser, nukeName);
+			findDir(getGlobalContext().getConnectionManager(), getGlobalContext().getRoot(), ftpuser, nukeName);
 			
 		if (nukeDir == null){
-			_listener.say(msgc.getDest(), 
-					ReplacerUtils.jprintf("nuke.error", env, IRCNuke.class));
-			return;
+			out.add(ReplacerUtils.jprintf("nuke.error", env, IRCNuke.class));
+			return out;
 		} 
 		
 		String toPath = nukeDir.getParentFileNull().getPath() + "/" + toName;
@@ -342,15 +260,15 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 		NukeEvent nuke;
 		Nuke dpsn;
 		try {
-			 dpsn = (Nuke) 
-				_cm.getCommandManagerFactory()
+			 dpsn = (Nuke) getGlobalContext().getConnectionManager()
+					.getCommandManagerFactory()
 					.getHandlersMap()
 					.get(Nuke.class);
 			nuke = dpsn.getNukeLog().get(toPath);
 		} catch (ObjectNotFoundException ex) {
-			_listener.say(msgc.getDest(),ex.getMessage());
+			out.add(ex.getMessage());
 			logger.warn(ex);
-			return;
+			return out;
 		}
 			
 		for (Iterator iter = nuke.getNukees2().iterator(); iter.hasNext();) {
@@ -358,14 +276,12 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 			String nukeeName = nukeeObj.getUsername();
 			User nukee;
 			try {
-				nukee =
-					_cm.getGlobalContext().getUserManager().getUserByName(
-						nukeeName);
+				nukee = getGlobalContext().getUserManager().getUserByName(nukeeName);
 			} catch (NoSuchUserException e) {
-			    _listener.say(msgc.getDest(),nukeeName + ": no such user");
+			    out.add(nukeeName + ": no such user");
 				continue;
 			} catch (UserFileException e) {
-			    _listener.say(msgc.getDest(),nukeeName + ": error reading userfile");
+			    out.add(nukeeName + ": error reading userfile");
 				logger.fatal("error reading userfile", e);
 				continue;
 			}
@@ -382,11 +298,8 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 			try {
 				nukee.commit();
 			} catch (UserFileException e3) {
-				logger.fatal(
-					"Eroror saving userfile for " + nukee.getName(),
-					e3);
-				_listener.say(msgc.getDest(),
-					"Error saving userfile for " + nukee.getName());
+				logger.fatal("Eroror saving userfile for " + nukee.getName(),e3);
+				out.add("Error saving userfile for " + nukee.getName());
 			}
 		}//for
 			
@@ -398,8 +311,7 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 		try {
 			nukeDir.renameTo(toDir, toName);
 		} catch (FileExistsException e1) {
-		    _listener.say(msgc.getDest(),
-				"Error renaming nuke, target dir already exists");
+		    out.add("Error renaming nuke, target dir already exists");
 		} catch (IOException e1) {
 			//response.addComment("Error: " + e1.getMessage());
 			logger.fatal(
@@ -421,30 +333,14 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 		nuke.setCommand("UNNUKE");
 		nuke.setReason(reason);
 		nuke.setUser(ftpuser);
-		_cm.dispatchFtpEvent(nuke);	
+		getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);	
+		return out;
 	}
 
-	private void doNUKES(MessageCommand msgc) {
+	public ArrayList<String> doNukes(String args, MessageCommand msgc) {
+	    ArrayList<String> out = new ArrayList<String>();
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-		env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
-		env.add("ircnick",msgc.getSource().getNick());
-		String msg = msgc.getMessage().trim();
-        //Get the ftp user account based on irc ident
-		User ftpuser;
-		try {
-            ftpuser = _listener.getIRCConfig().lookupUser(msgc.getSource());
-        } catch (NoSuchUserException e) {
-			_listener.say(msgc.getDest(), 
-					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-			return;
-        }
-		env.add("ftpuser",ftpuser.getName());
-
-		if (!_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "nukes",ftpuser)) {
-			_listener.say(msgc.getDest(), 
-					ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
-			return;				
-		}
+		env.add("ircnick", msgc.getSource().getNick());
 
 		//set the maximum nuber of nukes
 		int maxNukeCount = 0;
@@ -452,36 +348,33 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 			maxNukeCount=Integer.parseInt(ReplacerUtils.jprintf("nukes.max", env, IRCNuke.class));
 		} catch (NumberFormatException e3) {
 			logger.warn("nukes.max in IRCNuke.properties is not set to a valid integer value.", e3);
-			return;
+			return out;
 		}
 		
 		//check number of arguments
-		String args[] = msg.split(" ");
 		int nukeCount = 0;
-		if (args.length > 1) {
+		if (!args.equals("")) {
 			try {
-				nukeCount = Integer.parseInt(args[1]);
+				nukeCount = Integer.parseInt(args);
 			} catch (NumberFormatException e2) {
 				logger.warn("parameter passed to !nukes is not a valid Integer", e2);
-				_listener.say(msgc.getDest(), 
-						ReplacerUtils.jprintf("nukes.usage", env, IRCNuke.class));
-				return;
+				out.add(ReplacerUtils.jprintf("nukes.usage", env, IRCNuke.class));
+				return out;
 			}
-		}	
+		}
 		if (nukeCount > maxNukeCount || nukeCount <= 0)
 			nukeCount = maxNukeCount;
 
 		Nuke dpsn;
-		dpsn = (Nuke) 
-				_cm.getCommandManagerFactory()
+		dpsn = (Nuke) getGlobalContext().getConnectionManager()
+					.getCommandManagerFactory()
 					.getHandlersMap()
 					.get(Nuke.class);
 		List allNukes = dpsn.getNukeLog().getAll();
 		int count = 0;
 		
 		if (allNukes.size() == 0) {
-			_listener.say(msgc.getDest(), 
-					ReplacerUtils.jprintf("nukes.nonukes", env, IRCNuke.class));
+			out.add(ReplacerUtils.jprintf("nukes.nonukes", env, IRCNuke.class));
 		} else {
 			for (int i = allNukes.size()-1; i >= 0; i--) {
 			//for (Iterator iter = allNukes.iterator(); iter.hasNext(); ) {
@@ -496,12 +389,11 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 				dFormat.setTimeZone(TimeZone.getDefault());
 				env.add("nuketime", dFormat.format(new Date(nuke.getTime())));
 			
-				_listener.say(msgc.getDest(), 
-						ReplacerUtils.jprintf("nukes.msg", env, IRCNuke.class));
+				out.add(ReplacerUtils.jprintf("nukes.msg", env, IRCNuke.class));
 				count++;
 			}
 		}
-		
+		return out;
 	}
 
 	private static LinkedRemoteFileInterface findDir(
@@ -531,9 +423,15 @@ public class IRCNuke extends GenericCommandAutoService implements IRCPluginInter
 		return null;
 	}
 
-	private void say2(String propvar, ReplacerEnvironment env) {
-		_listener.sayGlobal( 
-			ReplacerUtils.jprintf(propvar, env, IRCNuke.class));
+	private User getUser(FullNick fn) {
+		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
+		User user = null;
+     	try {
+     	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
+     	} catch (Exception e) {
+     	    logger.warn("Could not identify " + ident);
+     	}
+     	return user;
 	}
 
 }

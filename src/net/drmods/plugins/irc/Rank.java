@@ -20,7 +20,6 @@ package net.drmods.plugins.irc;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.util.ReplacerUtils;
@@ -28,209 +27,108 @@ import net.sf.drftpd.util.UserComparator;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
+import org.drftpd.GlobalContext;
 import org.drftpd.commands.TransferStatistics;
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.plugins.Trial;
-import org.drftpd.sitebot.IRCPluginInterface;
-import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.sitebot.IRCCommand;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
-import f00f.net.irc.martyr.GenericCommandAutoService;
-import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
+import f00f.net.irc.martyr.util.FullNick;
 
 /**
- * @author kolor & Teflon
+ * @author Teflon
  * @version $Id$
  */
-public class Rank extends GenericCommandAutoService implements
-        IRCPluginInterface {
-
+public class Rank extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Approve.class);
 
-    private SiteBot _listener;
-
-    public String getCommands() {
-        return _listener.getCommandPrefix() + "rank [user]";
+    public Rank(GlobalContext gctx) {
+		super(gctx);
     }
 
-    private ConnectionManager getConnectionManager() {
-        return _listener.getGlobalContext().getConnectionManager();
-    }
+	public ArrayList<String> doRank(String args, MessageCommand msgc) {
+	    ArrayList<String> out = new ArrayList<String>();
+		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		env.add("ircnick", msgc.getSource().getNick());
 
-    public String getCommandsHelp(User user) {
-        String help = "";
-        if (_listener.getIRCConfig().checkIrcPermission(
-                _listener.getCommandPrefix() + "rank", user))
-            help += _listener.getCommandPrefix()
-                    + "rank [user] : Displays the rank of the identified user or the user specified\n";
-        return help;
-    }
+		FullNick fn = msgc.getSource();
+		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
+		User user;	
+	    if (args.equals("")) {
+	     	try {
+	     	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
+	     	} catch (Exception e) {
+	     	    logger.warn("Could not identify " + ident);
+	     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+	     	    return out;
+	     	}
+	    } else {
+	        try {
+                user = getGlobalContext().getUserManager().getUserByName(args);
+            } catch (Exception e) {
+                env.add("user", args);
+                out.add(ReplacerUtils.jprintf("rank.error", env, Rank.class));
+                return out;
+            } 
+	    }
 
-    public Rank(SiteBot listener) {
-        super(listener.getIRCConnection());
-        _listener = listener;
-    }
-
-    protected void updateCommand(InCommand command) {
-        if (!(command instanceof MessageCommand)) {
-            return;
+        String exemptgroups = ReplacerUtils.jprintf("top.exempt", env, Rank.class);
+        StringTokenizer st = new StringTokenizer(exemptgroups);
+        while (st.hasMoreTokens()) {
+            if (user.isMemberOf(st.nextToken())) {
+                env.add("eusr", user.getName());
+                env.add("egrp", user.getGroup());
+                out.add(ReplacerUtils.jprintf("rank.exempt", env, Rank.class));
+                return out;
+            }
         }
-        MessageCommand msgc = (MessageCommand) command;
-        if (msgc.isPrivateToUs(_listener.getIRCConnection().getClientState())) {
-            return;
+
+        Collection<User> users;
+        try {
+            users = getGlobalContext().getUserManager().getAllUsers();
+        } catch (UserFileException e) {
+            out.add("Error processing userfiles");
+            return out;
         }
+        String type = "MONTHUP";
 
-        ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-		env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
-        env.add("ircnick", msgc.getSource().getNick());
-
-        String msg = msgc.getMessage().trim();
-
-        if (msg.startsWith(_listener.getCommandPrefix() + "rank")) {
-			User user;
-			try {
-	            user = _listener.getIRCConfig().lookupUser(msgc.getSource());
-	        } catch (NoSuchUserException e) {
-				_listener.say(msgc.getDest(), 
-						ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-				return;
-	        }
-			env.add("ftpuser",user.getName());
-
-			if (!_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "rank",user)) {
-				_listener.say(msgc.getDest(), 
-						ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
-				return;				
-			}
-
-            String lookupuser;
-            try {
-                lookupuser = msgc.getMessage().substring((_listener.getCommandPrefix() + "rank ").length());
-            } catch (ArrayIndexOutOfBoundsException e) {
-                lookupuser = user.getName();
-            } catch (StringIndexOutOfBoundsException e) {
-                lookupuser = user.getName();
+        boolean found = false;
+        String exempt[] = exemptgroups.split(" ");
+        ArrayList<User> filteredusers = new ArrayList<User>();
+        for (User fuser : users) {
+            found = false;
+            for (int i = 0; i < exempt.length; i++) {
+                if (!fuser.isMemberOf(exempt[i]))
+                    found = true;
             }
-
-            String exemptgroups = ReplacerUtils.jprintf("top.exempt", env,
-                    Rank.class);
-
-            try {
-                User luser = getConnectionManager().getGlobalContext().getUserManager()
-                        .getUserByName(lookupuser);
-                StringTokenizer st = new StringTokenizer(exemptgroups, " ");
-                while (st.hasMoreTokens()) {
-                    if (luser.isMemberOf(st.nextToken())) {
-                        env.add("eusr", luser.getName());
-                        env.add("egrp", luser.getGroup());
-                        _listener.say(msgc.getDest(), ReplacerUtils
-                                .jprintf("exempt", env, Rank.class));
-                        return;
-                    }
-                }
-            } catch (NoSuchUserException e2) {
-                _listener.say(msgc.getDest(), "Not a valid username");
-                return;
-            } catch (UserFileException e2) {
-                _listener.say(msgc.getDest(), "Error opening user file");
-                return;
-            }
-
-            Collection<User> users = null;
-            try {
-                users = getConnectionManager().getGlobalContext().getUserManager().getAllUsers();
-            } catch (UserFileException e) {
-                getConnection().sendCommand(
-                        new MessageCommand(msgc.getDest(),
-                                "Error processing userfiles"));
-                return;
-            }
-            String type = "MONTHUP";
-
-            ArrayList<User> users2 = new ArrayList<User>(users);
-            Collections.sort(users2, new UserComparator(type));
-
-            int i = 0;
-            int msgtype = 1;
-            User user1 = null;
-            User user2 = null;
-            for (Iterator iter = users.iterator(); iter.hasNext();) {
-
-                user1 = (User) iter.next();
-                i = i + 1;
-                env.add("ppos", "" + i);
-                env.add("puser", user1.getName());
-                env.add("pmnup", Bytes.formatBytes(user1
-                        .getUploadedBytesMonth()));
-                env.add("pupfilesmonth", "" + user1.getUploadedFilesMonth());
-                env.add("pmnrateup", TransferStatistics.getUpRate(user1,
-                        Trial.PERIOD_MONTHLY));
-                env.add("pgroup", user1.getGroup());
-
-                StringTokenizer st2 = new StringTokenizer(exemptgroups, " ");
-                while (st2.hasMoreTokens()) {
-                    if (user1.isMemberOf(st2.nextToken())) {
-                        i = i - 1;
-                        break;
-                    }
-                }
-
-                if (user1.getName().equals(lookupuser)) {
-                    break;
-                } else
-                    msgtype = 2;
-
-                user2 = (User) iter.next();
-                i = i + 1;
-                env.add("pos", "" + i);
-                env.add("user", user2.getName());
-                env.add("mnup", Bytes
-                        .formatBytes(user2.getUploadedBytesMonth()));
-                env.add("upfilesmonth", "" + user2.getUploadedFilesMonth());
-                env.add("mnrateup", TransferStatistics.getUpRate(user2,
-                        Trial.PERIOD_MONTHLY));
-                env.add("toup", Bytes.formatBytes(user1.getUploadedBytesMonth()
-                        - user2.getUploadedBytesMonth()));
-                env.add("group", user2.getGroup());
-
-                StringTokenizer st3 = new StringTokenizer(exemptgroups, " ");
-                while (st3.hasMoreTokens()) {
-                    if (user2.isMemberOf(st3.nextToken())) {
-                        i = i - 1;
-                        break;
-                    }
-                }
-
-                if (user2.getName().equals(lookupuser)) {
-                    break;
-                } else
-                    msgtype = 3;
-
-            }
-
-            if (msgtype == 1)
-                _listener.say(msgc.getDest(), ReplacerUtils.jprintf(
-                        "msg1", env, Rank.class));
-            else if (msgtype == 2) {
-                if (!user1.equals(null) && !user2.equals(null))
-                    env.add("toup", Bytes.formatBytes(user2
-                            .getUploadedBytesMonth()
-                            - user1.getUploadedBytesMonth()));
-                _listener.say(msgc.getDest(), ReplacerUtils.jprintf(
-                        "msg2", env, Rank.class));
-            } else if (msgtype == 3) {
-                if (!user1.equals(null) && !user2.equals(null))
-                    env.add("toup", Bytes.formatBytes(user2
-                            .getUploadedBytesMonth()
-                            - user1.getUploadedBytesMonth()));
-                _listener.say(msgc.getDest(), ReplacerUtils.jprintf(
-                        "msg3", env, Rank.class));
-            }
-
+            if (found)
+                filteredusers.add(fuser);
         }
-    }
+        
+        Collections.sort(filteredusers, new UserComparator(type));
+        
+        int pos = filteredusers.indexOf(user);
+        env.add("user", user.getName());
+        env.add("group", user.getGroup());
+        env.add("mnup", Bytes.formatBytes(user.getUploadedBytesMonth()));
+        env.add("upfilesmonth", "" + user.getUploadedFilesMonth());
+        env.add("mnrateup", TransferStatistics.getUpRate(user,Trial.PERIOD_MONTHLY));
+        if (pos == 0) {
+            out.add(ReplacerUtils.jprintf("rank.ontop", env, Rank.class));
+        } else {
+            User prevUser = filteredusers.get(pos-1);
+            env.add("pos", ""+(pos+1));
+            env.add("toup", Bytes.formatBytes(
+                    	prevUser.getUploadedBytesMonth() 
+                    		- user.getUploadedBytesMonth()));
+            env.add("puser", prevUser.getName());
+            env.add("pgroup", prevUser.getGroup());
+            out.add(ReplacerUtils.jprintf("rank.losing", env, Rank.class));            
+        }
+        return out;
+	}
 }

@@ -1,6 +1,8 @@
 2005/02/27 Jamal James <teflon114@gmail.com>
-* All core sitebot plugins converted to work with the new implementation
-* Half of the net.drmods.plugins.* plugins are converted
+* All sitebot plugins converted to work with the new implementation
+  It compiles ... w00h00
+* All bugs with !rank should be fixed now. I redid the entire thing from scratch
+
 
 2005/02/27 Matt Zimmerman <zubov@users.sourceforge.net>
 * New internal SiteBot interface, if you're not a developer, don't bother

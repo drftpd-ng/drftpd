@@ -53,8 +53,7 @@ public class Credits extends IRCCommand {
 		
 		FullNick fn = msgc.getSource();
 		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
-		User user;
-		
+		User user;	
 	    if (args.equals("")) {
 	     	try {
 	     	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
