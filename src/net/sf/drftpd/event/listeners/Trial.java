@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.10 2004/01/05 00:14:19 mog Exp $
+ * @version $Id: Trial.java,v 1.11 2004/01/05 02:20:07 mog Exp $
  */
 public class Trial implements FtpListener {
 	private static final short ACTION_DISABLE = 0;
@@ -97,6 +97,18 @@ public class Trial implements FtpListener {
 	}
 	public static Calendar getCalendarForEndOfPeriod(int period) {
 		Calendar cal = Calendar.getInstance();
+		switch(period) {
+			case PERIOD_DAILY:
+			break;
+			case PERIOD_WEEKLY:
+			CalendarUtils.floorDayOfWeek(cal);
+			break;
+			case PERIOD_MONTHLY:
+			CalendarUtils.floorDayOfMonth(cal);
+			break;
+			default:
+			throw new IllegalArgumentException(""+period);
+		}
 		moveCalendarToEndOfPeriod(cal, period);
 		return cal;
 	}

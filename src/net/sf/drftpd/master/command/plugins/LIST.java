@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * @version $Id: LIST.java,v 1.10 2004/01/04 01:23:38 mog Exp $
+ * @version $Id: LIST.java,v 1.11 2004/01/05 02:20:08 mog Exp $
  */
 public class LIST implements CommandHandler {
 	private Logger logger = Logger.getLogger(LIST.class);
@@ -376,46 +376,6 @@ public class LIST implements CommandHandler {
 		line.append(fl.getName());
 		line.append(NEWLINE);
 		out.write(line.toString());
-
-		if (fl.isDirectory() && fl instanceof LinkedRemoteFile) {
-			LinkedRemoteFile file = (LinkedRemoteFile) fl;
-			try {
-				int filesleft = file.lookupSFVFile().getStatus().getMissing();
-				if (filesleft != 0)
-					out.write(
-						"l--------- 3 "
-							+ ListUtils.padToLength(fl.getUsername(), 8)
-							+ DELIM
-							+ ListUtils.padToLength(fl.getGroupname(), 8)
-							+ "             0 "
-							+ getUnixDate(fl.lastModified(), fulldate)
-							+ DELIM
-							+ fl.getName()
-							+ "-MISSING-"
-							+ filesleft
-							+ "-FILES -> "
-							+ fl.getName()
-							+ NEWLINE);
-			} catch (IOException e) {
-			} // errors getting SFV? FINE! We don't care!
-		}
-		if (fl instanceof LinkedRemoteFile) {
-			LinkedRemoteFile file = (LinkedRemoteFile) fl;
-			if (!file.isAvailable())
-				out.write(
-					"l--------- 3 "
-						+ ListUtils.padToLength(fl.getUsername(), 8)
-						+ DELIM
-						+ ListUtils.padToLength(fl.getGroupname(), 8)
-						+ "             0 "
-						+ getUnixDate(fl.lastModified(), fulldate)
-						+ DELIM
-						+ fl.getName()
-						+ "-OFFLINE"
-						+ " -> "
-						+ fl.getName()
-						+ NEWLINE);
-		}
 	}
 
 	/**

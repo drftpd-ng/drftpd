@@ -53,12 +53,14 @@ class TrialSiteBot extends GenericCommandAutoService {
 			if (unique) {
 				env.add(
 					"bonusexpires",
-					Trial.getCalendarForEndOfBonus(user, limit.getPeriod()).getTime());
+					Trial
+						.getCalendarForEndOfBonus(user, limit.getPeriod())
+						.getTime());
 				env.add(
 					"uniqueexpires",
-					Trial.getCalendarForEndOfFirstPeriod(
-						user,
-						limit.getPeriod()).getTime());
+					Trial
+						.getCalendarForEndOfFirstPeriod(user, limit.getPeriod())
+						.getTime());
 			}
 			env.add(
 				"expires",
@@ -112,28 +114,23 @@ class TrialSiteBot extends GenericCommandAutoService {
 					if (System.currentTimeMillis()
 						<= endofbonus.getTimeInMillis()) {
 						//in bonus or unique period
-						Calendar endoffirstperiod =
-							Trial.getCalendarForEndOfFirstPeriod(
-								user,
-								limit.getPeriod());
 						long bytesleft =
 							limit.getBytes() - user.getUploadedBytes();
 
-						if (System.currentTimeMillis()
-							<= endoffirstperiod.getTimeInMillis()) {
-							//in unique period
+						if (bytesleft <= 0) {
+							//in bonus or passed
 							_irc.say(
 								jprintf(
-									"trialunique",
+									"passedunique",
 									user,
 									limit,
 									bytesleft,
 									true));
 						} else {
-							//in bonus
+							//in unique period
 							_irc.say(
 								jprintf(
-									"passedunique",
+									"trialunique",
 									user,
 									limit,
 									bytesleft,
@@ -171,7 +168,6 @@ class TrialSiteBot extends GenericCommandAutoService {
 			if (i == 0) {
 				_irc.say(jprintf("exempt", user, null, 0, false));
 			}
-			//_irc.say()
 		} catch (RuntimeException e) {
 			logger.error("", e);
 		}

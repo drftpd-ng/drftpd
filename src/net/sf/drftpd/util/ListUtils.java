@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.10 2004/01/05 00:14:20 mog Exp $
+ * @version $Id: ListUtils.java,v 1.11 2004/01/05 02:20:08 mog Exp $
  */
 public class ListUtils {
 
@@ -96,6 +96,21 @@ public class ListUtils {
 								0L,
 								dir.lastModified()));
 					}
+				}
+				
+				for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
+					LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+					if (file.isDirectory()) {
+						try {
+							int filesleft = file.lookupSFVFile().getStatus().getMissing();
+							if (filesleft != 0)
+							listFiles.add(new StaticRemoteFile(null, file.getName()+"-"+filesleft+"-FILES-MISSING", "drftpd", "drftpd", 0L, dir.lastModified()));
+						} catch (IOException e) {
+						} // errors getting SFV? FINE! We don't care!
+					}
+
+						if (!file.isAvailable())
+					listFiles.add(new StaticRemoteFile(Collections.EMPTY_LIST, file.getName()+"-OFFLINE", file.getUsername(), file.getGroupname(), 0L, file.lastModified()));
 				}
 			}
 		} catch (NoAvailableSlaveException e) {

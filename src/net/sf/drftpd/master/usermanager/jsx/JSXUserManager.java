@@ -25,14 +25,14 @@ import JSX.ObjIn;
 
 /**
  * @author mog
- * @version $Id: JSXUserManager.java,v 1.22 2003/12/23 13:38:21 mog Exp $
+ * @version $Id: JSXUserManager.java,v 1.23 2004/01/05 02:20:08 mog Exp $
  */
 public class JSXUserManager implements UserManager {
 	private ConnectionManager _connManager;
 	private static Logger logger =
 		Logger.getLogger(JSXUserManager.class.getName());
 	String userpath =
-		"ftp-data" + File.separatorChar + "users" + File.separatorChar;
+		"ftp-data/users/";
 	File userpathFile = new File(userpath);
 
 	Hashtable users = new Hashtable();

@@ -33,7 +33,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.15 2004/01/05 00:14:19 mog Exp $
+ * @version $Id: UserManagment.java,v 1.16 2004/01/05 02:20:08 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	private Logger logger = Logger.getLogger(UserManagment.class);
@@ -211,12 +211,12 @@ public class UserManagment implements CommandHandler {
 					response.addComment(
 						conn.jprintf(
 							UserManagment.class.getName(),
-							"addip.success"));
+							"addip.success", env));
 				} catch (DuplicateElementException e1) {
 					response.addComment(
 						conn.jprintf(
 							UserManagment.class.getName(),
-							"addip.dupe"));
+							"addip.dupe", env));
 				}
 			}
 			newUser.commit();
