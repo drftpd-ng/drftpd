@@ -78,9 +78,7 @@ public class ConnectionManager {
 			try {
 				cfg.load(new FileInputStream(cfgFileName));
 			} catch (IOException e) {
-				logger.fatal(
-					"Error reading " + cfgFileName + ": " + e.getMessage());
-				return;
+				throw new FatalException(e);
 			}
 
 			logger.info("Starting ConnectionManager");

@@ -1,0 +1,3 @@
+Go to 
+http://drftpd.mog.se/wiki.phtml?title=Installation
+for up to date installation instructions.
