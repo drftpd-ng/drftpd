@@ -1,5 +1,5 @@
 # is displayed as the site tagline on first connection
-#login_prompt DrFTPD 2.0-SVN http://drftpd.org
+#login_prompt DrFTPD 2.0rc2 http://drftpd.org
 
 #allow 10 conections per slave if you have 10 slaves
 max_users	100	0
@@ -67,4 +67,10 @@ shutdown *
 #to be used if your master does not report the correct outside ip for
 #PASV commands
 #pasv_addr 1.1.1.1
+
+# TLS enforcements.
+userrejectsecure        !*
+userrejectinsecure      !*
+denydiruncrypted        !*
+denydatauncrypted       !*
 
