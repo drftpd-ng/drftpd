@@ -6,6 +6,7 @@
 */
 package net.sf.drftpd.event.irc;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -30,6 +31,7 @@ import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.MessageEvent;
+import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
@@ -41,6 +43,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.Transfer;
 
+import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
@@ -80,11 +83,16 @@ public class IRCListener implements FtpListener, Observer {
 
 	private AutoReconnect _autoReconnect;
 	private ConnectionManager _cm;
+	private Properties _ircCfg;
 	/**
 	 * 
 	 */
 	public IRCListener(ConnectionManager cm, FtpConfig config, String args[])
 		throws UnknownHostException, IOException {
+
+		_ircCfg = new Properties();
+		_ircCfg.load(new FileInputStream("irc.conf"));
+
 		_cm = cm;
 		Properties cfg = _cm.getPropertiesConfig();
 		Debug.setDebugLevel(Debug.FAULT);
@@ -172,7 +180,7 @@ public class IRCListener implements FtpListener, Observer {
 								rslave.getSlave().getSlaveStatus();
 							ReplacerFormat format =
 								ReplacerFormat.createFormat(
-									"[ xfers total: ${totalxfers,0} ${totalthroughput,0}/s ] [ up ${upxfers} ${upthroughput} ] [ down ${downxfers} ${downthroughput} ]");
+									"[ xfers total: ${totalxfers} ${totalthroughput}/s ] [ up ${upxfers} ${upthroughput} ] [ down ${downxfers} ${downthroughput} ]");
 							ReplacerEnvironment env = new ReplacerEnvironment();
 
 							env.add(
@@ -251,12 +259,12 @@ public class IRCListener implements FtpListener, Observer {
 					String status = "[who] " + username;
 					ReplacerFormat formatup =
 						ReplacerFormat.createFormat(
-							" [ up : ${file,0} ${speed,0} ]");
+							" [ up : ${file} ${speed} ]");
 					ReplacerFormat formatdown =
 						ReplacerFormat.createFormat(
-							" [ dn : ${file,0} ${speed,0} ]");
+							" [ dn : ${file} ${speed} ]");
 					ReplacerFormat formatidle =
-						ReplacerFormat.createFormat(" [ idle : ${user,0} ]");
+						ReplacerFormat.createFormat(" [ idle : ${user} ]");
 
 					for (Iterator iter = _cm.getConnections().iterator();
 						iter.hasNext();
@@ -282,12 +290,11 @@ public class IRCListener implements FtpListener, Observer {
 								if (conn.isTransfering()) {
 									env.add(
 										"speed",
-										new Integer(
-											Bytes.formatBytes(
-												conn
-													.getTransfer()
-													.getTransferSpeed())
-												+ "/s"));
+										Bytes.formatBytes(
+											conn
+												.getTransfer()
+												.getTransferSpeed())
+											+ "/s");
 									env.add("file", conn.getTransferFile());
 								}
 
@@ -325,6 +332,14 @@ public class IRCListener implements FtpListener, Observer {
 		return user.getUsername() + "/" + user.getGroup();
 	}
 
+	public  void actionPerformed(NukeEvent event)  {
+		String cmd=event.getCommand();
+		if(cmd.equals("NUKE")) {
+			
+		} else if(cmd.equals("UNNUKE")) {
+			
+		}
+	}
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.event.FtpListener#actionPerformed(net.sf.drftpd.event.FtpEvent)
 	 */
@@ -334,6 +349,8 @@ public class IRCListener implements FtpListener, Observer {
 		if (event instanceof DirectoryFtpEvent) {
 			actionPerformed((DirectoryFtpEvent) event);
 			return;
+		} else if(event instanceof NukeEvent)  {
+			actionPerformed((NukeEvent)event);
 		}
 		if (event.getCommand().equals("ADDSLAVE")) {
 			SlaveEvent sevent = (SlaveEvent) event;
@@ -366,11 +383,48 @@ public class IRCListener implements FtpListener, Observer {
 
 	public void actionPerformed(DirectoryFtpEvent direvent) {
 		if (direvent.getCommand().equals("MKD")) {
-			say(
-				"[newdir] "
-					+ direvent.getDirectory().getPath()
-					+ " was created by "
-					+ formatUser(direvent.getUser()));
+			LinkedRemoteFile dir = direvent.getDirectory();
+			try {
+				_ircCfg.load(new FileInputStream("irc.conf"));
+			} catch (FileNotFoundException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			} catch (IOException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
+			String format = null;
+			try {
+				while (true) {
+					dir = dir.getParentFile();
+					format = _ircCfg.getProperty("mkdir." + dir.getPath());
+					if (format != null) {
+						break;
+					}
+				}
+			} catch (FileNotFoundException e) {
+			}
+			if (format == null) {
+				format = _ircCfg.getProperty("mkdir");
+			}
+
+			ReplacerEnvironment env = new ReplacerEnvironment();
+			String section = dir.getPath();
+			env.add("bold", "\u0002");
+			env.add("coloroff", "\u000f");
+			env.add("color", "\u0003");
+			env.add("section", section);
+			env.add(
+				"path",
+				direvent.getDirectory().getPath().substring(section.length()));
+				env.add("user", direvent.getUser().getUsername());
+				env.add("group", direvent.getUser().getGroup());
+			System.out.println("SECTION: " + section);
+			try {
+				say(SimplePrintf.jprintf(format, env));
+			} catch (FormatterException e1) {
+				logger.log(Level.WARNING, "", e1);
+			}
 
 		} else if (direvent.getCommand().equals("STOR")) {
 			LinkedRemoteFile dir;
@@ -394,6 +448,9 @@ public class IRCListener implements FtpListener, Observer {
 				logger.log(Level.SEVERE, "lookupSFVFile failed", e1);
 				return;
 			}
+
+			if (!sfvfile.hasFile(direvent.getDirectory().getName()))
+				return;
 			int finishedFiles = sfvfile.finishedFiles();
 
 			int halfway = (int) Math.ceil((double) sfvfile.size() / 2);

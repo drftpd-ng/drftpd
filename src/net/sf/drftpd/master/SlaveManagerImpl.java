@@ -270,6 +270,8 @@ public class SlaveManagerImpl
 		LinkedRemoteFile slaveroot)
 		throws RemoteException {
 
+		slave.ping();
+		
 		RemoteSlave rslave = null;
 		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
 			RemoteSlave rslave2 = (RemoteSlave) iter.next();
@@ -498,6 +500,7 @@ public class SlaveManagerImpl
 			bestslave.setLastUploadReceiving(System.currentTimeMillis());
 			bestslave.setLastDownloadSending(System.currentTimeMillis());
 		}
+		if(bestslave == null) throw new NoAvailableSlaveException("Object had no slaves!");
 		return bestslave;
 	}
 

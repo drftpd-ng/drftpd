@@ -434,7 +434,7 @@ public class FtpConnection extends BaseFtpConnection {
 	}
 	// LIST;NLST;RETR;STOR
 	public void doFEAT(FtpRequest request, PrintWriter out) {
-		out.print("211 Extensions supported:\r\n" +			" PRET\r\n" +			" MDTM" +			" SIZE" +			"211 End\r\n");
+		out.print("211-Extensions supported:\r\n" +			" PRET\r\n" +			" MDTM\r\n" +			" SIZE\r\n" +			"211 End\r\n");
 		return;
 	}
 
@@ -529,7 +529,11 @@ public class FtpConnection extends BaseFtpConnection {
 //		boolean allOption = options.indexOf('a') != -1;
 //		boolean detailOption = options.indexOf('l') != -1;
 //		boolean directoryOption = options.indexOf("d") != -1;
-
+		if(!mbPasv && !mbPort) {
+			out.print(FtpResponse.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS);
+			return;
+		}
+		
 		LinkedRemoteFile directoryFile;
 		if (directoryName != null) {
 			try {
@@ -1133,7 +1137,7 @@ public class FtpConnection extends BaseFtpConnection {
 			}
 		} else if (cmd.equals("STOR")) {
 			try {
-				preTransferRSlave = currentDirectory.getASlaveForDownload();
+				preTransferRSlave = slaveManager.getASlave(Transfer.TRANSFER_RECEIVING_UPLOAD);
 				preTransfer = true;
 				out.print(
 					new FtpResponse(
@@ -2243,32 +2247,26 @@ public class FtpConnection extends BaseFtpConnection {
 	 *     multiplier is 3, user loses size * ratio + size * 2, etc.
 	 */
 	public void doSITE_NUKE(FtpRequest request, PrintWriter out) {
-		//FtpResponse response = new FtpResponse();
-		LinkedRemoteFile thisDir = currentDirectory;
-		LinkedRemoteFile nukeDir;
-		String arg = request.getArgument();
-		int pos;
+		if(!this.user.isNuker()) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
+
 		int multiplier;
-		String reason = "";
 
-		String nukeDirname;
+		StringTokenizer st = new StringTokenizer(request.getArgument(), " ");
 
-		if (arg.charAt(0) == '{') {
-			pos = arg.indexOf('}');
-			nukeDirname = arg.substring(1, pos);
-			pos += 1; // set pos to space
-		} else {
-			pos = arg.indexOf(' ');
-			if (pos == -1) {
-				//out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
-				out.print(new FtpResponse(501, "multiplier missing"));
-				return;
-			}
-			nukeDirname = arg.substring(0, pos);
+		LinkedRemoteFile nukeDir;
+		try {
+			nukeDir = currentDirectory.getFile(st.nextToken());
+		} catch (FileNotFoundException e) {
+			FtpResponse response = new FtpResponse(550, e.getMessage());
+			out.print(response.toString());
+			return;
 		}
 
 		try {
-			multiplier = Integer.parseInt(arg.substring(pos + 1));
+			multiplier = Integer.parseInt(st.nextToken());
 		} catch (NumberFormatException ex) {
 			ex.printStackTrace();
 			out.print(
@@ -2276,14 +2274,13 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		try {
-			nukeDir = thisDir.getFile(nukeDirname);
-		} catch (FileNotFoundException e) {
-			FtpResponse response = new FtpResponse(550, e.getMessage());
-			out.print(response.toString());
-			return;
+		String reason;
+		if(!st.hasMoreTokens()) {
+			reason  = "";
+		} else {
+			reason = st.nextToken("");
 		}
-
+		
 		if (!nukeDir.isDirectory()) {
 			FtpResponse response =
 				new FtpResponse(550, nukeDir.getName() + " is not a directory");
@@ -3065,6 +3062,8 @@ public class FtpConnection extends BaseFtpConnection {
 				e1);
 		}
 		out.print(response);
+		nuke.setCommand("UNNUKE");
+		connManager.dispatchFtpEvent(nuke);
 		return;
 	}
 

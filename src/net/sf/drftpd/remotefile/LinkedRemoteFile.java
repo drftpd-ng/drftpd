@@ -175,7 +175,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		return linkedfile;
 	}
 	public void addSlave(RemoteSlave slave) {
-		if(slaves == null) throw new IllegalStateException("Cannot addSlave() on a directory");
+		if (slaves == null)
+			throw new IllegalStateException("Cannot addSlave() on a directory");
 		if (slaves.contains(slave)) {
 			//logger.log(Level.WARNING, this+" already contained "+slave, new Throwable());
 			return;
@@ -260,7 +261,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				} catch (IOException ex) {
 					logger.log(
 						Level.SEVERE,
-						"IOException deleting file on slave "+rslave,
+						"IOException deleting file on slave " + rslave,
 						ex);
 					continue;
 				}
@@ -304,7 +305,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 			ftpConfig);
 	}
 
-	public RemoteSlave getASlaveForDownload() throws NoAvailableSlaveException {
+	public RemoteSlave getASlaveForDownload()
+		throws NoAvailableSlaveException {
 		return getASlave(Transfer.TRANSFER_SENDING_DOWNLOAD);
 	}
 
@@ -483,20 +485,25 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 
 	}
 	public SFVFile getSFVFile() throws IOException, NoAvailableSlaveException {
-		if (sfvFile == null) {
-			while (true) {
-				RemoteSlave slave = getASlaveForDownload();
-				try {
-					sfvFile = slave.getSlave().getSFVFile(getPath()); //throws RemoteException
-					sfvFile.setCompanion(this);
-					break;
-				} catch (ConnectException ex) {
-					slave.handleRemoteException(ex);
+		if (sfvFile != null)
+			return sfvFile;
+		synchronized (sfvFile) {
+			if (sfvFile == null) {
+				while (true) {
+					RemoteSlave slave = getASlaveForDownload();
+					try {
+						sfvFile = slave.getSlave().getSFVFile(getPath());
+						//throws RemoteException
+						sfvFile.setCompanion(this);
+						break;
+					} catch (ConnectException ex) {
+						slave.handleRemoteException(ex);
+					}
 				}
+				throw new NoAvailableSlaveException("No available slaves");
 			}
-			throw new NoAvailableSlaveException("No available slaves");
+			return sfvFile;
 		}
-		return sfvFile;
 	}
 
 	public Collection getAvailableSlaves() throws NoAvailableSlaveException {
@@ -523,9 +530,11 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	}
 
 	public boolean isAvailable() {
-		if(isDirectory()) return true;
+		if (isDirectory())
+			return true;
 		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
-			if(((RemoteSlave) iter.next()).isAvailable()) return true;
+			if (((RemoteSlave) iter.next()).isAvailable())
+				return true;
 		}
 		return false;
 	}
@@ -649,15 +658,20 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 			// two scenarios:, local file [does not] exists
 			if (file == null) {
 				// local file does not exist, just put it in the hashtable
-				if(!mergefile.isDirectory()) {
+				if (!mergefile.isDirectory()) {
 					mergefile.addSlave(rslave);
-				} 
+				}
 				mergefile.ftpConfig = this.ftpConfig;
 				map.put(mergefile.getName(), mergefile);
 			} else {
 				if (file.isDeleted()) {
 					//TODO mergefile has no RemoteSlave object!
-					logger.log(Level.WARNING, "Queued delete on "+rslave+" for file "+mergefile);
+					logger.log(
+						Level.WARNING,
+						"Queued delete on "
+							+ rslave
+							+ " for file "
+							+ mergefile);
 					mergefile.addSlave(rslave);
 					mergefile.delete();
 					continue;
@@ -681,11 +695,16 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 						//file.getCheckSum(true);
 						file.lastModified = mergefile.lastModified();
 					} else if (mergefile.length() == 0) {
-						logger.log(Level.INFO, "Deleting 0byte "+mergefile+" on "+rslave);
+						logger.log(
+							Level.INFO,
+							"Deleting 0byte " + mergefile + " on " + rslave);
 						try {
 							rslave.getSlave().delete(mergefile.getPath());
-						} catch(PermissionDeniedException ex) {
-							logger.log(Level.SEVERE, "Error deleting 0byte file on "+rslave, ex);
+						} catch (PermissionDeniedException ex) {
+							logger.log(
+								Level.SEVERE,
+								"Error deleting 0byte file on " + rslave,
+								ex);
 						} catch (Exception e) {
 							throw new FatalException(e);
 						}
@@ -781,7 +800,9 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 
 		String fromName = getName();
 
-		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
+		for (Iterator iter = ftpConfig.getSlaveManager().getSlaves().iterator();
+			iter.hasNext();
+			) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
 			Slave slave;
 			try {
@@ -856,7 +877,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				if (rslave == null)
 					throw new FatalException("There's a null in rslaves");
 				ret.append(rslave.getName());
-				if(!rslave.isAvailable()) ret.append("-OFFLINE");
+				if (!rslave.isAvailable())
+					ret.append("-OFFLINE");
 				if (i.hasNext())
 					ret.append(",");
 			}
@@ -909,7 +931,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	 * @see net.sf.drftpd.remotefile.RemoteFile#length()
 	 */
 	public long length() {
-		if(isDirectory()) {
+		if (isDirectory()) {
 			long length = 0;
 			for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
 				LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
@@ -955,7 +977,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getGroupname()
 	 */
 	public String getGroupname() {
-		if(this.group == null || this.group.equals("")) return "drftpd";
+		if (this.group == null || this.group.equals(""))
+			return "drftpd";
 		return this.group;
 	}
 
@@ -963,7 +986,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getUsername()
 	 */
 	public String getUsername() {
-		if(this.owner == null || this.owner.equals("")) return "drftpd";
+		if (this.owner == null || this.owner.equals(""))
+			return "drftpd";
 		return this.owner;
 	}
 

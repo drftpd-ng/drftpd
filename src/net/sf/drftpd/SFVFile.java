@@ -115,6 +115,9 @@ public class SFVFile implements Serializable {
 	public Collection getFiles() {
 		return getEntriesFiles().keySet();
 	}
+	public boolean hasFile(String name) {
+		return getEntries().containsKey(name);
+	}
 	/**
 	 * @return
 	 */

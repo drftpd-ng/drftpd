@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.FtpResponse;
+import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
@@ -190,6 +191,9 @@ public class FtpConfig {
 			}
 		}
 		return true;
+	}
+	public SlaveManagerImpl getSlaveManager() {
+		return this.connManager.getSlavemanager();
 	}
 	public void loadConfig(Properties cfg, ConnectionManager connManager) throws IOException {
 		loadConfig2();
