@@ -59,7 +59,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.76 2004/03/30 14:16:34 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.77 2004/04/01 14:18:18 zubov Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -295,6 +295,7 @@ public class BaseFtpConnection implements Runnable {
 			env.add("tagline", user.getTagline());
 			env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
 			env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
+			env.add("primarygroup", user.getGroupName());
 			env.add(
 				"avragespeed",
 				Bytes.formatBytes(
