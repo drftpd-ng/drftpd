@@ -25,6 +25,7 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.RemoteSlave;
 
 import org.drftpd.Bytes;
+import org.drftpd.master.DiskStatus;
 import org.drftpd.master.RemoteTransfer;
 
 import org.drftpd.slave.SlaveStatus;
@@ -39,7 +40,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: MinfreespaceFilterTest.java,v 1.11 2004/11/09 18:59:59 mog Exp $
+ * @version $Id: MinfreespaceFilterTest.java,v 1.12 2004/11/09 21:50:00 zubov Exp $
  */
 public class MinfreespaceFilterTest extends TestCase {
     public MinfreespaceFilterTest(String fName) {
@@ -56,8 +57,8 @@ public class MinfreespaceFilterTest extends TestCase {
         p.put("1.multiplier", "1");
         p.put("1.minfreespace", "100MB");
 
-        SlaveStatus s = new SlaveStatus(Bytes.parseBytes("50MB"),
-                Bytes.parseBytes("100GB"), 0, 0, 0, 0, 0, 0);
+        SlaveStatus s = new SlaveStatus(new DiskStatus(Bytes.parseBytes("50MB"),
+                Bytes.parseBytes("100GB")), 0, 0, 0, 0, 0, 0);
         RemoteSlave[] rslaves = {
                 new RemoteSlaveTesting("slave1", Collections.EMPTY_LIST, s)
             };
@@ -79,7 +80,7 @@ public class MinfreespaceFilterTest extends TestCase {
             _status = status;
         }
 
-        public SlaveStatus getStatusAvailable() {
+        public SlaveStatus getSlaveStatusAvailable() {
             return _status;
         }
     }

@@ -55,7 +55,7 @@ public class MaxbandwidthFilter extends Filter {
             SlaveStatus status;
 
             try {
-                status = slavescore.getRSlave().getStatusAvailable();
+                status = slavescore.getRSlave().getSlaveStatusAvailable();
             } catch (Exception e) {
                 iter.remove();
                 logger.debug("removed " + slavescore.getRSlave().getName() +

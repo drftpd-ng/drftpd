@@ -44,7 +44,7 @@ import java.util.Properties;
  *   addScore((minfreespace - diskfree) * multiplier)
  * }
  * @author mog
- * @version $Id: MinfreespaceFilter.java,v 1.10 2004/11/09 18:59:59 mog Exp $
+ * @version $Id: MinfreespaceFilter.java,v 1.11 2004/11/09 21:50:00 zubov Exp $
  */
 public class MinfreespaceFilter extends Filter {
     private long _minfreespace;
@@ -66,7 +66,7 @@ public class MinfreespaceFilter extends Filter {
             long df;
 
             try {
-                df = score.getRSlave().getStatusAvailable()
+                df = score.getRSlave().getSlaveStatusAvailable()
                           .getDiskSpaceAvailable();
 
                 if (df < _minfreespace) {

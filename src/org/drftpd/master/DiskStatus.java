@@ -15,37 +15,28 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slave.async;
+package org.drftpd.master;
 
-import org.drftpd.slave.SlaveStatus;
-
+import java.io.Serializable;
 
 /**
  * @author zubov
- * @version $Id: AsyncResponseSlaveStatus.java,v 1.5 2004/11/09 18:59:58 mog Exp $
+ * @version $Id: DiskStatus.java,v 1.1 2004/11/09 21:49:58 zubov Exp $
  */
-public class AsyncResponseSlaveStatus extends AsyncResponse {
-    private SlaveStatus _status;
+public class DiskStatus implements Serializable {
 
-    public AsyncResponseSlaveStatus(SlaveStatus status) {
-        this("SlaveStatus", status);
+    private long _free;
+    private long _total;
+
+    public DiskStatus(long free, long total) {
+        _free = free;
+        _total = total;
     }
 
-    public AsyncResponseSlaveStatus(String index, SlaveStatus status) {
-        super(index);
-
-        if (status == null) {
-            throw new IllegalArgumentException("status cannot be null");
-        }
-
-        _status = status;
+    public long getBytesAvailable() {
+        return _free;
     }
-
-    public SlaveStatus getSlaveStatus() {
-        return _status;
-    }
-
-    public String toString() {
-        return getClass().getName() + "[status=" + getSlaveStatus() + "]";
+    public long getBytesCapacity() {
+        return _total;
     }
 }

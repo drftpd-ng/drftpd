@@ -24,6 +24,7 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManager;
 
+import org.drftpd.master.DiskStatus;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
@@ -139,12 +140,12 @@ public class MaxbandwidthFilterTest extends TestCase {
             super(name, null);
         }
 
-        public SlaveStatus getStatusAvailable() {
+        public SlaveStatus getSlaveStatusAvailable() {
             if (getName().equals("slave2")) {
-                return new SlaveStatus(0, 0, 0, 0, 0, 0, 0, 0);
+                return new SlaveStatus(new DiskStatus(0,0), 0, 0, 0, 0, 0, 0);
             }
 
-            return new SlaveStatus(0, 0, 0, 0, 9999999, 1, 9999999, 1);
+            return new SlaveStatus(new DiskStatus(0,0), 0, 0, 9999999, 1, 9999999, 1);
         }
     }
 }

@@ -101,7 +101,7 @@ import java.util.ResourceBundle;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.27 2004/11/09 18:59:56 mog Exp $
+ * @version $Id: SiteBot.java,v 1.28 2004/11/09 21:49:58 zubov Exp $
  */
 public class SiteBot implements FtpListener, Observer {
     public static final ReplacerEnvironment GLOBAL_ENV = new ReplacerEnvironment();
@@ -693,7 +693,7 @@ public class SiteBot implements FtpListener, Observer {
             SlaveStatus status;
 
             try {
-                status = event.getRSlave().getStatusAvailable();
+                status = event.getRSlave().getSlaveStatusAvailable();
             } catch (SlaveUnavailableException e) {
                 logger.warn("in ADDSLAVE event handler", e);
 

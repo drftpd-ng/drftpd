@@ -71,7 +71,7 @@ import java.util.Locale;
 
 /**
  * @author flowman
- * @version $Id: GlftpdLog.java,v 1.17 2004/11/09 18:59:46 mog Exp $
+ * @version $Id: GlftpdLog.java,v 1.18 2004/11/09 21:49:56 zubov Exp $
  */
 public class GlftpdLog implements FtpListener {
     private static Logger logger = Logger.getLogger(GlftpdLog.class);
@@ -366,7 +366,7 @@ public class GlftpdLog implements FtpListener {
             SlaveStatus status;
 
             try {
-                status = sevent.getRSlave().getStatusAvailable();
+                status = sevent.getRSlave().getSlaveStatusAvailable();
             } catch (SlaveUnavailableException e) {
                 return;
             }

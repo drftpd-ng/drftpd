@@ -69,7 +69,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author mog
- * @version $Id: SlaveManager.java,v 1.26 2004/11/09 18:59:47 mog Exp $
+ * @version $Id: SlaveManager.java,v 1.27 2004/11/09 21:49:57 zubov Exp $
  */
 public class SlaveManager implements Runnable {
     private static final Logger logger = Logger.getLogger(SlaveManager.class.getName());
@@ -212,7 +212,7 @@ public class SlaveManager implements Runnable {
             Long size;
 
             try {
-                size = new Long(rslave.getStatusAvailable()
+                size = new Long(rslave.getSlaveStatusAvailable()
                                       .getDiskSpaceAvailable());
             } catch (SlaveUnavailableException e) {
                 continue;
@@ -256,7 +256,7 @@ public class SlaveManager implements Runnable {
             long size = Integer.MAX_VALUE;
 
             try {
-                size = rslave.getStatusAvailable().getDiskSpaceAvailable();
+                size = rslave.getSlaveStatusAvailable().getDiskSpaceAvailable();
             } catch (SlaveUnavailableException e) {
                 continue;
             }
@@ -280,7 +280,7 @@ public class SlaveManager implements Runnable {
             RemoteSlave rslave = (RemoteSlave) iter.next();
 
             try {
-                allStatus = allStatus.append(rslave.getStatusAvailable());
+                allStatus = allStatus.append(rslave.getSlaveStatusAvailable());
             } catch (SlaveUnavailableException e) {
                 //slave is offline, continue
             }
@@ -297,7 +297,7 @@ public class SlaveManager implements Runnable {
             RemoteSlave rslave = iter.next();
 
             try {
-                ret.put(rslave.getName(), rslave.getStatus());
+                ret.put(rslave.getName(), rslave.getSlaveStatus());
             } catch (SlaveUnavailableException e) {
                 ret.put(rslave.getName(), (Object) null);
             }

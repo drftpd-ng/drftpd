@@ -20,10 +20,14 @@ package org.drftpd.slave;
 
 import java.io.Serializable;
 
+import net.sf.drftpd.FatalException;
+
+import org.drftpd.slave.async.AsyncResponseDiskStatus;
+
 
 /**
  * @author mog
- * @version $Id: TransferStatus.java,v 1.1 2004/11/09 18:59:58 mog Exp $
+ * @version $Id: TransferStatus.java,v 1.2 2004/11/09 21:49:59 zubov Exp $
  */
 public class TransferStatus implements Serializable {
     private long _checksum;
@@ -87,4 +91,10 @@ public class TransferStatus implements Serializable {
     public boolean threwException() {
         return (_throwable != null);
     }
+
+    public String toString() {
+        return "TransferStatus=[xferspeed=" + getXferSpeed() + "][transfered="
+                + getTransfered() + "][elapsed=" + getElapsed() + "]";
+    }
+
 }

@@ -47,7 +47,7 @@ import java.util.Map;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveManagement.java,v 1.11 2004/11/09 18:59:48 mog Exp $
+ * @version $Id: SlaveManagement.java,v 1.12 2004/11/09 21:49:57 zubov Exp $
  */
 public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
     public void unload() {
@@ -118,7 +118,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
             env.add("slave", rslave.getName());
 
             try {
-                SlaveStatus status = rslave.getStatusAvailable();
+                SlaveStatus status = rslave.getSlaveStatusAvailable();
                 SiteBot.fillEnvSlaveStatus(env, status,
                     conn.getGlobalContext().getSlaveManager());
                 response.addComment(conn.jprintf(SlaveManagement.class,

@@ -17,31 +17,31 @@
  */
 package org.drftpd.slave.async;
 
-import org.drftpd.slave.TransferStatus;
+import org.drftpd.master.DiskStatus;
+
 
 
 /**
  * @author zubov
- * @version $Id: AsyncResponseTransferStatus.java,v 1.5 2004/11/09 21:49:59 zubov Exp $
+ * @version $Id: AsyncResponseDiskStatus.java,v 1.1 2004/11/09 21:49:59 zubov Exp $
  */
-public class AsyncResponseTransferStatus extends AsyncResponse {
-    private TransferStatus _ts;
+public class AsyncResponseDiskStatus extends AsyncResponse {
+    private DiskStatus _status;
 
-    public AsyncResponseTransferStatus(TransferStatus ts) {
-        super("TransferStatus");
-
-        if (ts == null) {
-            throw new IllegalArgumentException("transferstatus cannot be null");
+    public AsyncResponseDiskStatus(DiskStatus status) {
+        super("DiskStatus");
+        if (status == null) {
+            throw new IllegalArgumentException("status cannot be null");
         }
 
-        _ts = ts;
+        _status = status;
     }
 
-    public TransferStatus getTransferStatus() {
-        return _ts;
+    public DiskStatus getDiskStatus() {
+        return _status;
     }
 
     public String toString() {
-        return super.toString() + "[transferStatus=" + getTransferStatus() + "]";
+        return getClass().getName() + "[status=" + getDiskStatus() + "]";
     }
 }

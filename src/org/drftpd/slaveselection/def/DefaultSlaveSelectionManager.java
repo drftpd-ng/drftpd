@@ -46,7 +46,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: DefaultSlaveSelectionManager.java,v 1.5 2004/11/09 18:59:59 mog Exp $
+ * @version $Id: DefaultSlaveSelectionManager.java,v 1.6 2004/11/09 21:49:59 zubov Exp $
  */
 public class DefaultSlaveSelectionManager
     implements SlaveSelectionManagerInterface {
@@ -113,7 +113,7 @@ public class DefaultSlaveSelectionManager
                 bestslave = (RemoteSlave) i.next();
 
                 try {
-                    beststatus = bestslave.getStatusAvailable();
+                    beststatus = bestslave.getSlaveStatusAvailable();
 
                     // throws SlaveUnavailableException
                 } catch (SlaveUnavailableException ex) {
@@ -130,7 +130,7 @@ public class DefaultSlaveSelectionManager
                 SlaveStatus status;
 
                 try {
-                    status = slave.getStatusAvailable();
+                    status = slave.getSlaveStatusAvailable();
                 } catch (SlaveUnavailableException ex) {
                     continue;
                 }
@@ -211,7 +211,7 @@ public class DefaultSlaveSelectionManager
         SlaveStatus status = null;
 
         try {
-            status = rslave.getStatusAvailable();
+            status = rslave.getSlaveStatusAvailable();
         } catch (SlaveUnavailableException e) {
             throw new NoAvailableSlaveException();
         }

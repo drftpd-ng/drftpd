@@ -58,7 +58,7 @@ public class ReversebandwidthFilter extends BandwidthFilter {
             SlaveStatus status;
 
             try {
-                status = score.getRSlave().getStatusAvailable();
+                status = score.getRSlave().getSlaveStatusAvailable();
             } catch (Exception e) {
                 iter.remove();
 

@@ -35,14 +35,14 @@ import org.drftpd.slave.TransferStatus;
 /**
  * @author zubov
  * @author mog
- * @version $Id: RemoteTransfer.java,v 1.1 2004/11/09 18:59:54 mog Exp $
+ * @version $Id: RemoteTransfer.java,v 1.2 2004/11/09 21:49:58 zubov Exp $
  */
 public class RemoteTransfer {
     private InetSocketAddress _address;
-    private char _state = Transfer.TRANSFER_UNKNOWN;
     private TransferIndex _transferIndex;
     private RemoteSlave _rslave;
     private TransferStatus _status;
+    private char _state;
 
     public RemoteTransfer(ConnectInfo ci, RemoteSlave rslave) {
         _transferIndex = ci.getTransferIndex();
@@ -145,7 +145,7 @@ public class RemoteTransfer {
         throws IOException, SlaveUnavailableException {
         String index = _rslave.issueReceiveToSlave(path, type, position,
                 getTransferIndex());
-
+        _state = Transfer.TRANSFER_RECEIVING_UPLOAD;
         try {
             _rslave.fetchResponse(index);
         } catch (RemoteIOException e) {
@@ -157,7 +157,7 @@ public class RemoteTransfer {
         throws IOException, SlaveUnavailableException {
         String index = _rslave.issueSendToSlave(path, type, position,
                 getTransferIndex());
-
+        _state = Transfer.TRANSFER_SENDING_DOWNLOAD;
         try {
             _rslave.fetchResponse(index);
         } catch (RemoteIOException e) {

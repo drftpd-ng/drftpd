@@ -50,7 +50,7 @@ import java.util.Iterator;
 
 /*
  * @author iamn
- * @version $Id: MoreStats.java,v 1.8 2004/11/09 18:59:54 mog Exp $
+ * @version $Id: MoreStats.java,v 1.9 2004/11/09 21:49:57 zubov Exp $
  */
 public class MoreStats implements CommandHandlerFactory, CommandHandler {
     public static final int PERIOD_DAILY = Calendar.DAY_OF_MONTH; // = 5
@@ -75,11 +75,7 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
 
     public SlaveStatus getStatusAvailable(RemoteSlave rslave)
         throws SlaveUnavailableException {
-        if (rslave.isAvailable()) {
-            return rslave.getStatus();
-        }
-
-        throw new SlaveUnavailableException("Slave is not online");
+        return rslave.getSlaveStatusAvailable();
     }
 
     public FtpReply execute(BaseFtpConnection conn)

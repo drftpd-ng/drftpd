@@ -37,7 +37,7 @@ import java.util.Properties;
 /**
  * Removes bandwidth * multiplier from the score.
  * @author mog
- * @version $Id: BandwidthFilter.java,v 1.11 2004/11/09 18:59:59 mog Exp $
+ * @version $Id: BandwidthFilter.java,v 1.12 2004/11/09 21:50:00 zubov Exp $
  */
 public class BandwidthFilter extends Filter {
     private static final Logger logger = Logger.getLogger(BandwidthFilter.class);
@@ -113,7 +113,7 @@ public class BandwidthFilter extends Filter {
             SlaveStatus status;
 
             try {
-                status = score.getRSlave().getStatusAvailable();
+                status = score.getRSlave().getSlaveStatusAvailable();
             } catch (Exception e) {
                 iter.remove();
 

@@ -17,40 +17,6 @@
  */
 package org.drftpd.slave;
 
-import com.Ostermiller.util.StringTokenizer;
-
-import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.util.PortRange;
-import net.sf.drftpd.util.SSLGetContext;
-
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
-
-import org.drftpd.Bytes;
-import org.drftpd.LightSFVFile;
-import org.drftpd.PropertyHelper;
-import org.drftpd.id3.ID3Tag;
-import org.drftpd.id3.MP3File;
-import org.drftpd.remotefile.CaseInsensitiveHashtable;
-import org.drftpd.remotefile.LightRemoteFile;
-import org.drftpd.remotefile.RemoteFileInterface;
-
-import org.drftpd.slave.async.AsyncCommand;
-import org.drftpd.slave.async.AsyncCommandArgument;
-import org.drftpd.slave.async.AsyncResponse;
-import org.drftpd.slave.async.AsyncResponseChecksum;
-import org.drftpd.slave.async.AsyncResponseException;
-import org.drftpd.slave.async.AsyncResponseID3Tag;
-import org.drftpd.slave.async.AsyncResponseMaxPath;
-import org.drftpd.slave.async.AsyncResponseRemerge;
-import org.drftpd.slave.async.AsyncResponseSFVFile;
-import org.drftpd.slave.async.AsyncResponseSlaveStatus;
-import org.drftpd.slave.async.AsyncResponseTransfer;
-import org.drftpd.slave.async.AsyncResponseTransferStatus;
-
-import se.mog.io.File;
-import se.mog.io.PermissionDeniedException;
-
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -58,12 +24,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -74,10 +38,43 @@ import java.util.zip.CheckedInputStream;
 
 import javax.net.ssl.SSLContext;
 
+import net.sf.drftpd.FileExistsException;
+import net.sf.drftpd.util.PortRange;
+import net.sf.drftpd.util.SSLGetContext;
+
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
+import org.drftpd.Bytes;
+import org.drftpd.LightSFVFile;
+import org.drftpd.PropertyHelper;
+import org.drftpd.id3.ID3Tag;
+import org.drftpd.id3.MP3File;
+import org.drftpd.master.DiskStatus;
+import org.drftpd.remotefile.CaseInsensitiveHashtable;
+import org.drftpd.remotefile.LightRemoteFile;
+import org.drftpd.remotefile.RemoteFileInterface;
+import org.drftpd.slave.async.AsyncCommand;
+import org.drftpd.slave.async.AsyncCommandArgument;
+import org.drftpd.slave.async.AsyncResponse;
+import org.drftpd.slave.async.AsyncResponseChecksum;
+import org.drftpd.slave.async.AsyncResponseDiskStatus;
+import org.drftpd.slave.async.AsyncResponseException;
+import org.drftpd.slave.async.AsyncResponseID3Tag;
+import org.drftpd.slave.async.AsyncResponseMaxPath;
+import org.drftpd.slave.async.AsyncResponseRemerge;
+import org.drftpd.slave.async.AsyncResponseSFVFile;
+import org.drftpd.slave.async.AsyncResponseTransfer;
+import org.drftpd.slave.async.AsyncResponseTransferStatus;
+
+import se.mog.io.File;
+import se.mog.io.PermissionDeniedException;
+
+import com.Ostermiller.util.StringTokenizer;
+
 
 /**
  * @author mog
- * @version $Id: Slave.java,v 1.10 2004/11/09 18:59:58 mog Exp $
+ * @version $Id: Slave.java,v 1.11 2004/11/09 21:49:59 zubov Exp $
  */
 public class Slave {
     public static final boolean isWin32 = System.getProperty("os.name")
@@ -88,10 +85,8 @@ public class Slave {
     private int _bufferSize;
     private SSLContext _ctx;
     private boolean _downloadChecksums;
-    private long _receivedBytes;
     private RootCollection _roots;
     private Socket _s;
-    private long _sentBytes;
     private ObjectInputStream _sin;
     private ObjectOutputStream _sout;
     private HashMap _transfers;
@@ -208,6 +203,7 @@ public class Slave {
         p.load(new FileInputStream("slave.conf"));
 
         Slave s = new Slave(p);
+        s.sendResponse(new AsyncResponseDiskStatus(s.getDiskStatus()));
         s.listenForCommands();
     }
 
@@ -324,54 +320,9 @@ public class Slave {
 //        return Slave.getDefaultRoot(_roots);
 //    }
 
-    public SlaveStatus getSlaveStatus() {
-        int throughputUp = 0;
-        int throughputDown = 0;
-        int transfersUp = 0;
-        int transfersDown = 0;
-        long bytesReceived;
-        long bytesSent;
-
-        synchronized (_transfers) {
-            bytesReceived = _receivedBytes;
-            bytesSent = _sentBytes;
-
-            for (Iterator i = _transfers.values().iterator(); i.hasNext();) {
-                Transfer transfer = (Transfer) i.next();
-
-                switch (transfer.getState()) {
-                case Transfer.TRANSFER_RECEIVING_UPLOAD:
-                    throughputUp += transfer.getXferSpeed();
-                    transfersUp += 1;
-                    bytesReceived += transfer.getTransfered();
-
-                    break;
-
-                case Transfer.TRANSFER_SENDING_DOWNLOAD:
-                    throughputDown += transfer.getXferSpeed();
-                    transfersDown += 1;
-                    bytesSent += transfer.getTransfered();
-
-                    break;
-
-                case Transfer.TRANSFER_UNKNOWN:
-                case Transfer.TRANSFER_THROUGHPUT:
-                    break;
-
-                default:
-                    throw new RuntimeException("unrecognized direction");
-                }
-            }
-        }
-
-        try {
-            return new SlaveStatus(_roots.getTotalDiskSpaceAvailable(),
-                _roots.getTotalDiskSpaceCapacity(), bytesSent, bytesReceived,
-                throughputUp, transfersUp, throughputDown, transfersDown);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex.toString());
-        }
+    public DiskStatus getDiskStatus() {
+            return new DiskStatus(_roots.getTotalDiskSpaceAvailable(),
+                _roots.getTotalDiskSpaceCapacity());
     }
 
     public Transfer getTransfer(TransferIndex index) {
@@ -394,10 +345,6 @@ public class Slave {
     }
 
     private AsyncResponse handleCommand(AsyncCommand ac) {
-        if (ac.getName().equals("status")) {
-            return handleStatus(ac);
-        }
-
         if (ac.getName().equals("remerge")) {
             return handleRemerge((AsyncCommandArgument) ac);
         }
@@ -498,7 +445,7 @@ public class Slave {
     private AsyncResponse handleDelete(AsyncCommandArgument ac) {
         try {
             delete(ac.getArgs());
-
+            sendResponse(new AsyncResponseDiskStatus(getDiskStatus()));
             return new AsyncResponse(ac.getIndex());
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);
@@ -653,10 +600,6 @@ public class Slave {
         }
     }
 
-    private AsyncResponse handleStatus(AsyncCommand ac) {
-        return new AsyncResponseSlaveStatus(ac.getIndex(), getSlaveStatus());
-    }
-
     private void listenForCommands() throws IOException {
         while (true) {
             AsyncCommand ac;
@@ -694,21 +637,6 @@ public class Slave {
 
     public void removeTransfer(Transfer transfer) {
         synchronized (_transfers) {
-            switch (transfer.getState()) {
-            case Transfer.TRANSFER_RECEIVING_UPLOAD:
-                _receivedBytes += transfer.getTransfered();
-
-                break;
-
-            case Transfer.TRANSFER_SENDING_DOWNLOAD:
-                _sentBytes += transfer.getTransfered();
-
-                break;
-
-            default:
-                throw new IllegalArgumentException();
-            }
-
             if (_transfers.remove(transfer.getTransferIndex()) == null) {
                 throw new IllegalStateException();
             }

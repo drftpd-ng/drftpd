@@ -41,7 +41,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Slaves.java,v 1.19 2004/11/09 18:59:45 mog Exp $
+ * @version $Id: Slaves.java,v 1.20 2004/11/09 21:49:56 zubov Exp $
  */
 public class Slaves extends GenericAutoService implements IRCPluginInterface {
     private static final int LEN2 = "!slave ".length();
@@ -69,7 +69,7 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
             SlaveStatus status;
 
             try {
-                status = rslave.getStatusAvailable();
+                status = rslave.getSlaveStatusAvailable();
             } catch (SlaveUnavailableException e1) {
                 return ReplacerUtils.jprintf("slaves.offline", env, Slaves.class);
             }

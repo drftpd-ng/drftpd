@@ -17,32 +17,30 @@
  */
 package org.drftpd.slave;
 
-import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.util.AddAsciiOutputStream;
-
-import org.apache.log4j.Logger;
-
-import org.drftpd.slave.async.AsyncResponseTransferStatus;
-
-import se.mog.io.File;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import java.net.Socket;
-
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 
+import net.sf.drftpd.FileExistsException;
+import net.sf.drftpd.util.AddAsciiOutputStream;
+
+import org.apache.log4j.Logger;
+import org.drftpd.slave.async.AsyncResponseDiskStatus;
+import org.drftpd.slave.async.AsyncResponseTransferStatus;
+
+import se.mog.io.File;
+
 
 /**
  * @author zubov
- * @version $Id: Transfer.java,v 1.4 2004/11/09 18:59:58 mog Exp $
+ * @version $Id: Transfer.java,v 1.5 2004/11/09 21:49:59 zubov Exp $
  */
 public class Transfer {
     private static final Logger logger = Logger.getLogger(Transfer.class);
@@ -195,7 +193,9 @@ public class Transfer {
         System.out.println("UL:" + dirname + File.separator + filename);
 
         try {
-            return transfer();
+            TransferStatus status = transfer();
+            _slave.sendResponse(new AsyncResponseDiskStatus(_slave.getDiskStatus()));
+            return status;
         } catch (IOException e) {
             // TODO really delete on IOException ?
             //_slave.delete(root + File.separator + filename);
