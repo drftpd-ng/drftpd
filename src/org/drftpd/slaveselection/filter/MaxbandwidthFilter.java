@@ -68,7 +68,6 @@ public class MaxbandwidthFilter extends Filter {
 				iter.remove();
 				continue;
 			}
-			logger.debug(slavescore.getRSlave().getName() + " is using " + status.getThroughputDirection(direction));
 			if (status.getThroughputDirection(direction) > _maxBandwidth) {
 				iter.remove();
 				logger.debug(

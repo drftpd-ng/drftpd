@@ -35,7 +35,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.34 2004/03/01 05:17:21 zubov Exp $
+ * @version $Id: JobManager.java,v 1.35 2004/03/01 06:11:50 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -347,15 +347,15 @@ public class JobManager implements Runnable {
 			}
 			logger.debug("After transfer for " + job.getFile());
 		} catch (IOException e) {
+			logger.debug(
+				"Caught IOException in sending "
+					+ job.getFile().getName()
+					+ " from "
+					+ sourceSlave.getName()
+					+ " to "
+					+ destSlave.getName(),
+				e);
 			if (!e.getMessage().equals("File exists")) {
-				logger.debug(
-					"Uncaught IOException in sending "
-						+ job.getFile().getName()
-						+ " from "
-						+ sourceSlave.getName()
-						+ " to "
-						+ destSlave.getName(),
-					e);
 				addJob(job);
 				return false;
 			} else

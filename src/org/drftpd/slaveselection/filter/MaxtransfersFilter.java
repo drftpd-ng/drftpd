@@ -73,7 +73,6 @@ public class MaxtransfersFilter extends Filter {
 			else if ( direction == Transfer.TRANSFER_SENDING_DOWNLOAD)
 					transfers = status.getTransfersSending();
 			else throw new IllegalArgumentException("Direction was not one of download or upload");
-			logger.debug(slavescore.getRSlave().getName() + " is using " + transfers);
 			if (transfers > _maxTransfers) {
 				iter.remove();
 				logger.debug(
