@@ -5,16 +5,15 @@ import java.rmi.RemoteException;
 import java.io.Serializable;
 
 import net.sf.drftpd.master.SlaveManager;
-import net.sf.drftpd.master.SlaveManagerImpl;
 
 /**
  * 
  */
-public class RemoteSlave implements Serializable {
+public class RemoteSlave {
 	protected long statusTime;
 	protected SlaveStatus status;
 	protected SlaveManagerImpl manager;
-	
+	protected String name="mog";
 	public void setManager(SlaveManagerImpl manager) {
 		this.manager = manager;
 	}
@@ -52,4 +51,12 @@ public class RemoteSlave implements Serializable {
 	public String toString() {
 		return slave.toString();
 	}
+	/**
+	 * Returns the name.
+	 * @return String
+	 */
+	public String getName() {
+		return name;
+	}
+
 }

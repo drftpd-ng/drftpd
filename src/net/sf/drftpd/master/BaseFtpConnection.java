@@ -17,6 +17,8 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
 import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.remotefile.*;
+import net.sf.drftpd.slave.*;
 
 //import ranab.util.Message;
 /*import ranab.io.StreamConnectorObserver;*/

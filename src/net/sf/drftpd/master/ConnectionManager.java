@@ -1,6 +1,7 @@
 package net.sf.drftpd.master;
 
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -12,23 +13,35 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
+import org.jdom.Document;
+import org.jdom.input.SAXBuilder;
+
 import net.sf.drftpd.master.usermanager.GlftpdUserManager;
 import net.sf.drftpd.master.usermanager.UserManager;
+import net.sf.drftpd.remotefile.*;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.RemoteFileTree;
+import net.sf.drftpd.slave.*;
 import net.sf.drftpd.slave.RemoteSlave;
 import net.sf.drftpd.slave.SlaveImpl;
 
 public class ConnectionManager {
 	private Vector connections = new Vector();
 	private UserManager usermanager;
-	private LinkedRemoteFile root;
 	private SlaveManagerImpl slavemanager;
 	private Timer timer;
 
 	public ConnectionManager(Properties cfg) {
 
 		/** register slavemanager **/
+		try {
+		Document doc = new SAXBuilder().build(new FileReader("files.xml"));
+		
+		LinkedRemoteFile root = new LinkedRemoteFile(new JDOMRemoteFileTree("", doc.getRootElement()));
+		} catch(Exception ex) {
+			System.err.println("Error loading \"files.xml\"");
+			ex.printStackTrace();
+		}
 		try {
 			slavemanager =
 				new SlaveManagerImpl(cfg.getProperty("slavemanager.url"));
@@ -37,7 +50,8 @@ public class ConnectionManager {
 			return;
 		}
 
-		if (cfg.getProperty("master.localslave").equalsIgnoreCase("true")) {
+		String localslave = cfg.getProperty("master.localslave");
+		if (localslave != null && localslave.equalsIgnoreCase("true")) {
 			RemoteSlave slave;
 			try {
 				slave = new RemoteSlave(new SlaveImpl(cfg));
@@ -49,13 +63,14 @@ public class ConnectionManager {
 			}
 			
 			try {
-				LinkedRemoteFile root = SlaveImpl.getDefaultRoot(cfg.getProperty("slave.root"), slave);
-				slavemanager.addSlave(slave, root);
+				LinkedRemoteFile slaveroot = SlaveImpl.getDefaultRoot(cfg.getProperty("slave.root"), slave);
+				slavemanager.addSlave(slave, slaveroot);
 			} catch (RemoteException ex) {
 				ex.printStackTrace();
 				return;
 			} catch(IOException ex) {
 				ex.printStackTrace();
+				System.exit(-1);
 				return;
 			}
 		}

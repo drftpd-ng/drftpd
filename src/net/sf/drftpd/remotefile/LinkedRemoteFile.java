@@ -9,6 +9,7 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Stack;
@@ -104,9 +105,13 @@ public class LinkedRemoteFile extends RemoteFileTree {
 	/**
 	 * The slave argument may be null, if it is null, no slaves will be added.
 	 */
-	public LinkedRemoteFile(RemoteSlave slave, RemoteFile file)
+	public LinkedRemoteFile(RemoteSlave slave, RemoteFileTree file)
 		throws IOException {
 		this(slave, null, file);
+	}
+
+	public LinkedRemoteFile(RemoteFileTree file) throws IOException {
+		this(null, null, file);
 	}
 
 	/**
@@ -116,11 +121,11 @@ public class LinkedRemoteFile extends RemoteFileTree {
 	public LinkedRemoteFile(
 		RemoteSlave slave,
 		LinkedRemoteFile parent,
-		RemoteFile file)
+		RemoteFileTree file)
 		throws InvalidDirectoryException {
 
 		RemoteFileTree treefile = null;
-		if (file instanceof RemoteFileTree)
+//		if (file instanceof RemoteFileTree)
 			treefile = (RemoteFileTree) file;
 
 		canRead = file.canRead();
@@ -171,11 +176,11 @@ public class LinkedRemoteFile extends RemoteFileTree {
 			/* END get existing file entries*/
 
 			//			File dir[] = treefile.listFiles(new DrftpdFileFilter());
-			RemoteFile dir[] = treefile.listFiles();
+			RemoteFileTree dir[] = treefile.listFiles();
 			files = new Hashtable(dir.length);
 			Stack dirstack = new Stack();
 			for (int i = 0; i < dir.length; i++) {
-				RemoteFile file2 = dir[i];
+				RemoteFileTree file2 = dir[i];
 				//				System.out.println("III " + file2);
 				if (file2.isDirectory()) {
 					dirstack.push(file2);
@@ -210,7 +215,7 @@ public class LinkedRemoteFile extends RemoteFileTree {
 			// OK, now the Object is saved, continue with serializing the dir's
 			Iterator i = dirstack.iterator();
 			while (i.hasNext()) {
-				RemoteFile file2 = (RemoteFile) i.next();
+				RemoteFileTree file2 = (RemoteFileTree) i.next();
 				String filename = file2.getName();
 				//				System.out.println(">>> " + file2.getName());
 				/*
@@ -259,7 +264,7 @@ public class LinkedRemoteFile extends RemoteFileTree {
 		System.out.println("Created directory " + file.getPath());
 	}
 
-	public void addFile(RemoteFile file) throws InvalidDirectoryException {
+	public void addFile(RemoteFileTree file) throws InvalidDirectoryException {
 		LinkedRemoteFile linkedfile = new LinkedRemoteFile(null, this, file);
 		files.put(linkedfile.getName(), linkedfile);
 	}
@@ -458,7 +463,7 @@ public class LinkedRemoteFile extends RemoteFileTree {
 	}
 
 	/////////////////////// SLAVES
-	protected Collection slaves;
+	protected List slaves;
 	public void addSlave(RemoteSlave slave) {
 		slaves.add(slave);
 	}
@@ -469,11 +474,12 @@ public class LinkedRemoteFile extends RemoteFileTree {
 		slaves.addAll(addslaves);
 		System.out.println("slaves.size() is now " + slaves.size());
 	}
-	public Collection getSlaves() {
+	public List getSlaves() {
 		return slaves;
 	}
 	private Random rand = new Random();
 	public RemoteSlave getASlave() throws NoAvailableSlaveException {
+		if(slaves.size() == 0) throw new NoAvailableSlaveException(getPath()+" has no slaves available");
 		RemoteSlave myslaves[] =
 			(RemoteSlave[]) slaves.toArray(new RemoteSlave[0]);
 		int num = rand.nextInt(myslaves.length);

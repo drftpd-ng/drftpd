@@ -3,6 +3,8 @@ package net.sf.drftpd.remotefile;
 import java.io.File;
 import java.io.IOException;
 
+import net.sf.drftpd.InvalidDirectoryException;
+
 /**
  * @author <a href="mailto:mog@linux.nu">Morgan Christiansson</a>
  */
@@ -19,9 +21,9 @@ public class FileRemoteFile extends RemoteFileTree {
 		if (!file.getCanonicalPath().equals(file.getAbsolutePath())) {
 			isDirectory = false;
 			isFile = false;
-			System.out.println(
-				"NOT following possible symlink: " + file.getAbsolutePath());
-			//throw new InvalidDirectoryException("Not following symlink");
+//			System.out.println(
+//				"NOT following possible symlink: " + file.getAbsolutePath());
+			throw new InvalidDirectoryException("Not following symlink: "+file.getAbsolutePath());
 		}
 	}
 
@@ -29,6 +31,11 @@ public class FileRemoteFile extends RemoteFileTree {
 	 * @see net.sf.drftpd.RemoteFile#getName()
 	 */
 	public String getName() {
+/*
+		String name = file.getName();
+		if(name.equals("")) name = "/";
+		return name;
+*/
 		return file.getName();
 	}
 

@@ -23,9 +23,10 @@ import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.RemoteFile;
+import net.sf.drftpd.remotefile.RemoteFileTree;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 import net.sf.drftpd.slave.RemoteSlave;
+import net.sf.drftpd.slave.SlaveManagerImpl;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.slave.TransferImpl;
 import socks.server.Ident;
@@ -629,10 +630,10 @@ public class FtpConnection extends BaseFtpConnection {
 
 	public void doSITELIST(FtpRequest request, PrintWriter out) {
 		resetState();
-		RemoteFile files[] =
+		RemoteFileTree files[] =
 			getVirtualDirectory().getCurrentDirectoryFile().listFiles();
 		for (int i = 0; i < files.length; i++) {
-			RemoteFile file = files[i];
+			RemoteFileTree file = files[i];
 			out.write("200- " + file.toString() + "\r\n");
 		}
 		out.write(mFtpStatus.getResponse(200, request, user, null));
@@ -1187,7 +1188,7 @@ public class FtpConnection extends BaseFtpConnection {
 		//String physicalName = mUser.getVirtualDirectory().getPhysicalName(fileName);
 		//File requestedFile = new File(physicalName);
 		LinkedRemoteFile remoteFile;
-		RemoteFile staticRemoteFile;
+		RemoteFileTree staticRemoteFile;
 		try {
 			remoteFile = getVirtualDirectory().getAbsoluteFile(fileName);
 		} catch (FileNotFoundException ex) {
@@ -1421,7 +1422,7 @@ public class FtpConnection extends BaseFtpConnection {
 			out.write(mFtpStatus.getResponse(501, request, user, null));
 			return;
 		}
-		RemoteFile file;
+		RemoteFileTree file;
 		try {
 			file = getVirtualDirectory().getAbsoluteFile(request.getArgument());
 		} catch (FileNotFoundException ex) {
@@ -1552,7 +1553,7 @@ public class FtpConnection extends BaseFtpConnection {
 		} finally {
 			try {
 				long transferedBytes = transfer.getTransfered();
-				RemoteFile file = new StaticRemoteFile(fileName, user, transferedBytes, System.currentTimeMillis());
+				RemoteFileTree file = new StaticRemoteFile(fileName, user, transferedBytes, System.currentTimeMillis());
 				directory.addFile(file);
 				user.updateCredits( (long)(user.getRatio() * transferedBytes) );
 				user.updateUploadedBytes(transferedBytes);

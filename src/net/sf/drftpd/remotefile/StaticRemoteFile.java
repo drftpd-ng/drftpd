@@ -10,10 +10,10 @@ import net.sf.drftpd.master.usermanager.User;
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-public class StaticRemoteFile extends RemoteFile {
+public class StaticRemoteFile extends RemoteFileTree {
 	private String path;
 
-	public StaticRemoteFile(RemoteFile file) {
+	public StaticRemoteFile(RemoteFileTree file) {
 		canRead = file.canRead();
 		canWrite = file.canWrite();
 		lastModified = file.lastModified();
@@ -59,8 +59,8 @@ public class StaticRemoteFile extends RemoteFile {
 	 * @see java.lang.Object#equals(Object)
 	 */
 	public boolean equals(Object file) {
-		if(!(file instanceof RemoteFile)) return false;
-		return getPath().equals(((RemoteFile)file).getPath());
+		if(!(file instanceof RemoteFileTree)) return false;
+		return getPath().equals(((RemoteFileTree)file).getPath());
 	}
 
 	/**
@@ -83,6 +83,13 @@ public class StaticRemoteFile extends RemoteFile {
 	 */
 	public String getPath() {
 		return path;
+	}
+
+	/**
+	 * @see net.sf.drftpd.remotefile.RemoteFileTree#listFiles()
+	 */
+	public RemoteFileTree[] listFiles() {
+		throw new NoSuchMethodError("listFiles() does not exist in StaticRemoteFile");
 	}
 
 }

@@ -3,7 +3,7 @@ package net.sf.drftpd.slave;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.remotefile.RemoteFile;
+import net.sf.drftpd.remotefile.RemoteFileTree;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -23,7 +23,7 @@ public interface Slave extends Remote {
 	 * Argument should be a StaticRemoteFile so that the whole directory structure doesn't get serialized and sent.
 	 */
 	public Transfer doConnectSend(
-		RemoteFile file,
+		RemoteFileTree file,
 		char mode,
 		long offset,
 		InetAddress addr,
@@ -33,7 +33,7 @@ public interface Slave extends Remote {
 	/**
 	 * Listen on any port and send 'file' when connection is receieved.
 	 */
-	public Transfer doListenSend(RemoteFile file, char mode, long offset)
+	public Transfer doListenSend(RemoteFileTree file, char mode, long offset)
 		throws RemoteException, IOException;
 
 	/**
@@ -45,7 +45,7 @@ public interface Slave extends Remote {
 	 * Connect to 'addr':'port' and receive file.
 	 */
 	public Transfer doConnectReceive(
-		RemoteFile dir,
+		RemoteFileTree dir,
 		String file,
 		User owner,
 		long offset,
@@ -57,7 +57,7 @@ public interface Slave extends Remote {
 	 * Listen on any port and receive 'file' when connection is received.
 	 */
 	public Transfer doListenReceive(
-		RemoteFile dir,
+		RemoteFileTree dir,
 		String file,
 		User owner,
 		long offset)

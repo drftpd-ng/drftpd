@@ -10,7 +10,6 @@ import java.util.StringTokenizer;
 
 import net.sf.drftpd.InvalidDirectoryException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.RemoteFile;
 import net.sf.drftpd.remotefile.RemoteFileTree;
 
 /**
@@ -293,7 +292,7 @@ public class VirtualDirectory {
 		}
 
 		// get file list
-		RemoteFile flLst[];
+		RemoteFileTree flLst[];
 		//if ( (pattern == null) || pattern.equals("*") || pattern.equals("") ) {
 		//    flLst = lstDirObj.listFiles();
 		//} else {
@@ -371,7 +370,7 @@ public class VirtualDirectory {
 		}
 
 		// get file list
-		RemoteFile flLst[];
+		RemoteFileTree flLst[];
 		if ((pattern == null) || pattern.equals("*") || pattern.equals("")) {
 			flLst = lstDirObj.listFiles();
 		} else {
@@ -397,21 +396,21 @@ public class VirtualDirectory {
 	/**
 	 * Get file owner.
 	 */
-	private static String getOwner(RemoteFile fl) {
+	private static String getOwner(RemoteFileTree fl) {
 		return fl.getUser();
 	}
 
 	/**
 	 * Get group name
 	 */
-	private static String getGroup(RemoteFile fl) {
+	private static String getGroup(RemoteFileTree fl) {
 		return fl.getGroup();
 	}
 
 	/**
 	 * Get link count
 	 */
-	private static String getLinkCount(RemoteFile fl) {
+	private static String getLinkCount(RemoteFileTree fl) {
 		if (fl.isDirectory()) {
 			return String.valueOf(3);
 		} else {
@@ -422,7 +421,7 @@ public class VirtualDirectory {
 	/**
 	 * Get size
 	 */
-	private static String getLength(RemoteFile fl) {
+	private static String getLength(RemoteFileTree fl) {
 		String initStr = "            ";
 		long sz = 0;
 		if (fl.isFile()) {
@@ -438,7 +437,7 @@ public class VirtualDirectory {
 	/**
 	 * Get last modified date string.
 	 */
-	private static String getLastModified(RemoteFile fl) {
+	private static String getLastModified(RemoteFileTree fl) {
 		long modTime = fl.lastModified();
 		Date date = new Date(modTime);
 		return DateUtils.getUnixDate(date);
@@ -447,7 +446,7 @@ public class VirtualDirectory {
 	/**
 	 * Get file name.
 	 */
-	private static String getName(RemoteFile fl) {
+	private static String getName(RemoteFileTree fl) {
 		String flName = fl.getName();
 		flName = normalizeSeparateChar(flName);
 
@@ -465,7 +464,7 @@ public class VirtualDirectory {
 	/**
 	 * Get permission string.
 	 */
-	private static String getPermission(RemoteFile fl) {
+	private static String getPermission(RemoteFileTree fl) {
 
 		StringBuffer sb = new StringBuffer(13);
 		if (fl.isDirectory()) {
@@ -569,7 +568,7 @@ public class VirtualDirectory {
 	/**
 	 * Get each directory line.
 	 */
-	public void printLine(RemoteFile fl, Writer out) throws IOException {
+	public void printLine(RemoteFileTree fl, Writer out) throws IOException {
 		out.write(getPermission(fl));
 		out.write(DELIM);
 		out.write(DELIM);
