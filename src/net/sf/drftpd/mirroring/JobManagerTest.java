@@ -34,7 +34,7 @@ import junit.framework.TestCase;
 
 /**
  * @author zubov
- * @version $Id: JobManagerTest.java,v 1.3 2004/03/26 00:16:35 mog Exp $
+ * @version $Id: JobManagerTest.java,v 1.4 2004/04/01 05:29:41 zubov Exp $
  */
 public class JobManagerTest extends TestCase {
 
@@ -81,11 +81,11 @@ public class JobManagerTest extends TestCase {
 		}
 
 	}
-	
+
 	class SM extends SlaveManagerImpl {
 		protected SM() throws RemoteException {
 		}
-		
+
 		public Collection getAvailableSlaves()
 			throws NoAvailableSlaveException {
 			return slaveList;
@@ -111,7 +111,7 @@ public class JobManagerTest extends TestCase {
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(JobManagerTest.class);
 	}
-	
+
 	public static class LinkedRemoteFilePath extends AbstractLinkedRemoteFile {
 		private String _path;
 		private boolean isDeleted = false;
@@ -122,7 +122,7 @@ public class JobManagerTest extends TestCase {
 		public String getPath() {
 			return _path;
 		}
-		
+
 		public void addSlave(RemoteSlave slave) {
 			slaves.add(slave);
 		}
@@ -133,7 +133,8 @@ public class JobManagerTest extends TestCase {
 
 		public Collection getAvailableSlaves()
 			throws NoAvailableSlaveException {
-			if (getSlaves().isEmpty()) throw new NoAvailableSlaveException();
+			if (getSlaves().isEmpty())
+				throw new NoAvailableSlaveException();
 			return getSlaves();
 		}
 
@@ -155,7 +156,9 @@ public class JobManagerTest extends TestCase {
 
 		public String toString() {
 			String string = "[file=" + getPath() + "][availableSlaves[";
-			for (Iterator iter = this.getSlaves().iterator(); iter.hasNext();) {
+			for (Iterator iter = this.getSlaves().iterator();
+				iter.hasNext();
+				) {
 				RemoteSlave rslave = (RemoteSlave) iter.next();
 				string = string + rslave + ",";
 			}
@@ -173,11 +176,11 @@ public class JobManagerTest extends TestCase {
 		ArrayList slaveList = new ArrayList();
 		slaveList.add(null);
 		slaveList.add(null);
-		Job job = new Job(file,slaveList,null,null,0);
+		Job job = new Job(file, slaveList, null, null, 0);
 		jm.addJob(job);
 		assertEquals(sizebefore, jm.getAllJobs().size() - 1);
 		jm.addJob(job);
-		assertEquals(jm.getAllJobs().size(),jm.getAllJobs().size());
+		assertEquals(jm.getAllJobs().size(), jm.getAllJobs().size());
 	}
 
 	/*
@@ -187,29 +190,36 @@ public class JobManagerTest extends TestCase {
 		ArrayList slaveList = new ArrayList();
 		slaveList.add(null);
 		slaveList.add(null);
-		Job job = new Job(file,slaveList,null,null,0);
+		Job job = new Job(file, slaveList, null, null, 0);
 		jm.addJob(job);
 		ArrayList usedSlaveList = new ArrayList();
-		assertSame(job,jm.getNextJob(usedSlaveList));
+		ArrayList skipJobs = new ArrayList();
+		assertSame(job, jm.getNextJob(usedSlaveList, skipJobs));
+		skipJobs.add(job);
+		assertNull(jm.getNextJob(usedSlaveList, skipJobs));
+		skipJobs.clear();
 		slaveList.clear();
-		slaveList.add(rslave1);
-		file.getSlaves().clear();
-		file.addSlave(rslave1);
-		job = new Job(file,slaveList,null,null,5);
-		Job returnedJob = jm.getNextJob(usedSlaveList);
-		assertSame(null,returnedJob);
-		assertTrue(job.isDone());
+		slaveList.add(rslave2);
+		jm.removeJob(job);
+		job = new Job(file, slaveList, null, null, 5);
+		jm.addJob(job);
+		assertSame(job, jm.getNextJob(usedSlaveList, skipJobs));
+		skipJobs.add(job);
+		assertNull(jm.getNextJob(usedSlaveList, skipJobs));
+		skipJobs.clear();
+		usedSlaveList.add(rslave1);
+		assertNull(jm.getNextJob(usedSlaveList, skipJobs));
 	}
 
 	public void testRemoveJob() {
 		ArrayList slaveList = new ArrayList();
 		slaveList.add(null);
 		slaveList.add(null);
-		Job job = new Job(file,slaveList,null,null,0);
+		Job job = new Job(file, slaveList, null, null, 0);
 		int sizebefore = jm.getAllJobs().size();
 		jm.addJob(job);
-		assertEquals(sizebefore+1,jm.getAllJobs().size());
+		assertEquals(sizebefore + 1, jm.getAllJobs().size());
 		jm.removeJob(job);
-		assertEquals(sizebefore,jm.getAllJobs().size());
+		assertEquals(sizebefore, jm.getAllJobs().size());
 	}
 }

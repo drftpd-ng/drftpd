@@ -36,7 +36,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.39 2004/03/31 04:43:51 zubov Exp $
+ * @version $Id: JobManager.java,v 1.40 2004/04/01 05:29:41 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -57,53 +57,48 @@ public class JobManager implements Runnable {
 		if (thread != null) {
 			stopJobs();
 			thread.interrupt();
-			while(thread.isAlive()) {
+			while (thread.isAlive()) {
 				logger.debug("thread is still alive");
 				Thread.yield();
 			}
 		}
 		_isStopped = false;
-		thread = new Thread(this,"JobTransferStarter");
+		thread = new Thread(this, "JobTransferStarter");
 		thread.start();
 	}
-	
+
 	public void stopJobs() {
 		_isStopped = true;
 	}
-	
+
 	public boolean isStopped() {
 		return _isStopped;
 	}
 
 	public synchronized void addJob(Job job) {
 		Collection slaves = job.getFile().getSlaves();
-		for (Iterator iter = job.getDestinationSlaves().iterator(); iter.hasNext();) {
-		RemoteSlave slave = (RemoteSlave) iter.next();
-		if(slaves.contains(slave)) {
-			iter.remove();
-			if (job.isDone()) {
-				return;
+		for (Iterator iter = job.getDestinationSlaves().iterator();
+			iter.hasNext();
+			) {
+			RemoteSlave slave = (RemoteSlave) iter.next();
+			if (slaves.contains(slave)) {
+				iter.remove();
+				if (job.isDone()) {
+					return;
+				}
 			}
-		}
 		}
 		_jobList.add(job);
 		Collections.sort(_jobList, new JobComparator());
 	}
 	/**
 	 * Gets all jobs.
-	 * 
-	 * @return All jobs.
 	 */
 	public synchronized List getAllJobs() {
 		return Collections.unmodifiableList(_jobList);
 	}
 	/**
 	 * Get all jobs for a specific LinkedRemoteFile.
-	 * 
-	 * @param lrf
-	 *            The LinkedRemoteFile to return all jobs for.
-	 * @return A <code>java.util.List</code> of all jobs for the specific
-	 *         LinkedRemoteFile
 	 */
 	public synchronized List getAllJobs(LinkedRemoteFileInterface lrf) {
 		ArrayList tempList = new ArrayList();
@@ -116,11 +111,7 @@ public class JobManager implements Runnable {
 		return tempList;
 	}
 	/**
-	 * Get all jobs where Job#getSource() is source
-	 * 
-	 * @param source
-	 *            The source of all objects to get.
-	 * @return List of all <code>Job</code> s
+	 * Get all jobs where Job.getSource() is source
 	 */
 	public synchronized List getAllJobs(Object source) {
 		ArrayList tempList = new ArrayList();
@@ -131,63 +122,18 @@ public class JobManager implements Runnable {
 		}
 		return tempList;
 	}
-	/**
-	 * Gets the next job suitable for the slave
-	 * @deprecated
-	 */
-	public synchronized Job getNextJob(RemoteSlave slave) {
-		Job jobToReturn = null;
+	
+	public synchronized Job getNextJob(List busySlaves, List skipJobs) {
+		logger.debug("getNextJob ran with busyslavesdown - " + busySlaves);
+		logger.debug("getNextJob ran with skipjobs - " + skipJobs);
 		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
 			Job tempJob = (Job) iter.next();
 			if (tempJob.getFile().isDeleted() || tempJob.isDone()) {
 				iter.remove();
 				continue;
 			}
-			Collection availableSlaves = null;
-			try {
-				availableSlaves = tempJob.getFile().getAvailableSlaves();
-			} catch (NoAvailableSlaveException e) {
-				continue; // can't transfer what isn't online
-			}
-			if (jobToReturn == null) {
-				if (tempJob.getDestinationSlaves().contains(null)) {
-					// mirror job
-					if (!availableSlaves.contains(slave)) {
-						System.out.println("jobToReturn is set to " + tempJob);
-						jobToReturn = tempJob;
-					} else
-						System.out.println("slave already has file " + tempJob);
-				} else
-					System.out.println(
-						"job did not contain null as a destination slave "
-							+ tempJob);
-			}
-			if (tempJob.getDestinationSlaves().contains(slave)) {
-				if (availableSlaves.contains(slave)) {
-					tempJob.removeDestinationSlave(slave);
-					if (tempJob.isDone())
-						//removeJob(tempJob);
-						iter.remove();
-					continue;
-				}
-				//removeJob(tempJob);
-				iter.remove();
-				return tempJob;
-			}
-		}
-		if (jobToReturn != null) {
-			// outside of jobList iterator, allowed to remove
-			removeJob(jobToReturn);
-		}
-		return jobToReturn;
-	}
-	public synchronized Job getNextJob(List busySlaves) {
-		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
-			Job tempJob = (Job) iter.next();
-			if (tempJob.getFile().isDeleted() || tempJob.isDone()) {
-				iter.remove();
+			if (skipJobs.contains(tempJob))
 				continue;
-			}
 			Collection availableSlaves = null;
 			try {
 				availableSlaves = tempJob.getFile().getAvailableSlaves();
@@ -195,27 +141,12 @@ public class JobManager implements Runnable {
 				continue; // can't transfer what isn't online
 			}
 			if (!busySlaves.containsAll(availableSlaves)) {
-					return tempJob;
+				return tempJob;
 			}
 		}
 		return null;
 	}
 
-//	public void init(ConnectionManager mgr) {
-//		_cm = mgr;
-//		Collection slaveList;
-//		try {
-//			slaveList = _cm.getSlaveManager().getAvailableSlaves();
-//		} catch (NoAvailableSlaveException e) {
-//			return;
-//		}
-//		for (Iterator iter = slaveList.iterator(); iter.hasNext();) {
-//			RemoteSlave rslave = (RemoteSlave) iter.next();
-//			JobManagerThread newThread = new JobManagerThread(rslave, this);
-//			_threadList.add(newThread);
-//			newThread.start();
-//		}
-//	}
 	/**
 	 * Returns true if the file was sent okay
 	 */
@@ -234,32 +165,59 @@ public class JobManager implements Runnable {
 				// can't transfer with no slaves
 			}
 			ArrayList busySlavesDown = new ArrayList();
+			ArrayList skipJobs = new ArrayList();
 			while (!busySlavesDown.containsAll(availableSlaves)) {
-				job = getNextJob(busySlavesDown);
+				job = getNextJob(busySlavesDown, skipJobs);
 				if (job == null) {
 					logger.debug(
 						"There are no jobs to process for non busy slaves - "
 							+ busySlavesDown);
 					return false;
 				}
+				if (job.getFile().getSlaves().containsAll(_cm.getSlaveManager().getSlaves())) {
+					stopJob(job);
+					continue;
+				}
 				logger.debug("looking up slave for job " + job);
 				try {
-					sourceSlave = _cm.getSlaveManager().getSlaveSelectionManager().getASlaveForJobDownload(job);
-					break; // we have a download slave!
+					sourceSlave =
+						_cm
+							.getSlaveManager()
+							.getSlaveSelectionManager()
+							.getASlaveForJobDownload(
+							job);
 				} catch (NoAvailableSlaveException e) {
 					busySlavesDown.addAll(job.getFile().getSlaves());
+					continue;
+				}
+				if (sourceSlave == null) {
+					logger.debug(
+						"JobManager was unable to find a suitable job for transfer");
+					return false;
+				}
+				logger.debug("source slave = " + sourceSlave.getName());
+				try {
+					destSlave =
+						_cm
+							.getSlaveManager()
+							.getSlaveSelectionManager()
+							.getASlaveForJobUpload(
+							job);
+					break; // we have a source slave and a destination slave, transfer!
+				} catch (NoAvailableSlaveException e) {
+					// job was ready to be sent, but it had no slave that was ready to accept it
+					skipJobs.add(job);
+					logger.debug("added job to skipJobs - " + job);
+					continue;
 				}
 			}
-			if (sourceSlave == null) {
-				logger.debug(
-					"JobManager was unable to find a suitable job for transfer");
-				return false;
-			}
-			try {
-				destSlave = _cm.getSlaveManager().getSlaveSelectionManager().getASlaveForJobUpload(job);
-			} catch (NoAvailableSlaveException e) {
-				return false;
-			}
+			logger.debug(
+				"ready to transfer "
+					+ job
+					+ " from "
+					+ sourceSlave.getName()
+					+ " to "
+					+ destSlave.getName());
 			time = System.currentTimeMillis();
 			difference = 0;
 			removeJob(job);
@@ -304,7 +262,7 @@ public class JobManager implements Runnable {
 					+ " to "
 					+ destSlave.getName(),
 				e);
-			if (!(e instanceof ObjectExistsException )) {
+			if (!(e instanceof ObjectExistsException)) {
 				try {
 					destSlave.getSlave().delete(job.getFile().getPath());
 				} catch (SlaveUnavailableException e3) {
@@ -324,8 +282,7 @@ public class JobManager implements Runnable {
 					== job.getFile().getCheckSum()) {
 					logger.debug("Accepting file because the crc's match");
 					job.getFile().addSlave(destSlave);
-				}
-				else {
+				} else {
 					try {
 						destSlave.getSlave().delete(job.getFile().getPath());
 					} catch (SlaveUnavailableException e3) {
@@ -395,77 +352,25 @@ public class JobManager implements Runnable {
 			throw new FatalException(e);
 		}
 		_useCRC = FtpConfig.getProperty(p, "useCRC").equals("true");
-		_sleepSeconds = 1000*Integer.parseInt(FtpConfig.getProperty(p,"sleepSeconds"));
+		_sleepSeconds =
+			1000 * Integer.parseInt(FtpConfig.getProperty(p, "sleepSeconds"));
 	}
 	public synchronized void removeJob(Job job) {
 		_jobList.remove(job);
 		Collections.sort(_jobList, new JobComparator());
 	}
-	/**
-	 * @throws NoAvailableSlaveException
-	 * @deprecated
-	 */
-//	public void startAllSlaves() throws NoAvailableSlaveException {
-//		stopAllSlaves();
-//		_isStopped = false;
-//		for (Iterator iter =
-//			_cm.getSlaveManager().getAvailableSlaves().iterator();
-//			iter.hasNext();
-//			) {
-//			startSlave((RemoteSlave) iter.next());
-//		}
-//	}
 
-	/**
-	 * @deprecated
-	 */
-//	public void startSlave(RemoteSlave rslave) {
-//		if (_isStopped)
-//			return;
-//		JobManagerThread newThread = new JobManagerThread(rslave, this);
-//		_threadList.add(newThread);
-//		newThread.start();
-//		logger.debug("Started slave thread for " + rslave.getName());
-//	}
-	/**
-	 * @deprecated
-	 */
-//	public void stopAllSlaves() {
-//		_isStopped = true;
-//		//synchronized (_threadList) { // does not need to be synchronized if
-//		// only one thread handles SlaveEvents
-//		for (Iterator iter = _threadList.iterator(); iter.hasNext();) {
-//			JobManagerThread tempThread = (JobManagerThread) iter.next();
-//			tempThread.stopme();
-//			iter.remove();
-//			logger.debug(
-//				"Stopped slave thread for " + tempThread.getRSlave().getName());
-//		}
-//	}
-	/**
-	 * @deprecated
-	 */
-//	public void stopSlave(RemoteSlave rslave) {
-//		//synchronized (_threadList) { // does not need to be synchronized if
-//		// only one thread handles SlaveEvents
-//		for (Iterator iter = _threadList.iterator(); iter.hasNext();) {
-//			JobManagerThread tempThread = (JobManagerThread) iter.next();
-//			if (tempThread.getRSlave() == rslave) {
-//				tempThread.stopme();
-//				iter.remove();
-//				logger.debug(
-//					"Sending stop signal to "
-//						+ tempThread.getRSlave().getName());
-//				return;
-//			}
-//		}
-//	}
 	private boolean useCRC() {
 		return _useCRC;
 	}
+	
+	public void stopJob(Job job) {
+		removeJob(job);
+		job._destSlaves.clear();
+	}
 
 	public void run() {
-		while(true) {
+		while (true) {
 			if (isStopped()) {
 				logger.debug("Stopping JobTransferStarter thread");
 				return;

@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.tanesha.replacer.ReplacerEnvironment;
+
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -37,7 +39,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
  * CommandHandler plugin for viewing and manipulating the JobManager queue.
  * 
  * @author mog
- * @version $Id: JobManagerCommandHandler.java,v 1.11 2004/03/30 14:16:35 mog Exp $
+ * @version $Id: JobManagerCommandHandler.java,v 1.12 2004/04/01 05:29:41 zubov Exp $
  */
 public class JobManagerCommandHandler implements CommandHandler {
 
@@ -55,12 +57,13 @@ public class JobManagerCommandHandler implements CommandHandler {
 		if (!conn.getRequest().hasArgument()) {
 			return new FtpReply(
 				501,
-				conn.jprintf(JobManager.class.getName(), "addjob.usage"));
+				conn.jprintf(
+					JobManagerCommandHandler.class.getName(),
+					"addjob.usage"));
 		}
 		StringTokenizer st =
 			new StringTokenizer(conn.getRequest().getArgument());
 		LinkedRemoteFileInterface lrf;
-		FtpReply reply = new FtpReply(200);
 		try {
 			lrf = conn.getCurrentDirectory().lookupFile(st.nextToken());
 		} catch (FileNotFoundException e) {
@@ -68,6 +71,7 @@ public class JobManagerCommandHandler implements CommandHandler {
 		}
 		int priority = Integer.parseInt(st.nextToken());
 		ArrayList destSlaves = new ArrayList();
+		FtpReply reply = new FtpReply(200);
 		while (st.hasMoreTokens()) {
 			String slaveName = st.nextToken();
 			if (slaveName.equals("null"))
@@ -86,13 +90,19 @@ public class JobManagerCommandHandler implements CommandHandler {
 			}
 		}
 		if (destSlaves.size() == 0) {
-			reply.addComment(
-				"You must specify at least one destination slave, use null for any slave");
-			return reply;
+			return new FtpReply(
+				501,
+				conn.jprintf(JobManagerCommandHandler.class, "addjob.usage"));
 		}
 		Job job = new Job(lrf, destSlaves, this, conn.getUserNull(), priority);
 		conn.getConnectionManager().getJobManager().addJob(job);
-		reply.addComment("Added job to queue");
+		ReplacerEnvironment env = new ReplacerEnvironment();
+		env.add("job", job);
+		reply.addComment(
+			conn.jprintf(
+				JobManagerCommandHandler.class,
+				"addjob.success",
+				env));
 		return reply;
 	}
 
@@ -101,19 +111,56 @@ public class JobManagerCommandHandler implements CommandHandler {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		FtpReply reply = new FtpReply(200);
 		int count = 0;
-		List jobs = new ArrayList(conn.getConnectionManager().getJobManager().getAllJobs());
+		List jobs =
+			new ArrayList(
+				conn.getConnectionManager().getJobManager().getAllJobs());
+		ReplacerEnvironment env = new ReplacerEnvironment();
 		for (Iterator iter = jobs.iterator(); iter.hasNext();) {
-			reply.addComment(((Job) iter.next()).toString());
-			count ++;
+			count++;
+			env.add("job", (Job) iter.next());
+			env.add("count", new Integer(count));
+			reply.addComment(
+				conn.jprintf(JobManagerCommandHandler.class, "listjob", env));
 		}
-		reply.addComment("There are " + count + " jobs in all");
 		return reply;
 	}
 
 	private FtpReply doREMOVEJOB(BaseFtpConnection conn) {
 		if (!conn.getUserNull().isAdmin())
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
-		return FtpReply.RESPONSE_502_COMMAND_NOT_IMPLEMENTED;
+		if (!conn.getRequest().hasArgument()) {
+			return new FtpReply(
+				501,
+				conn.jprintf(
+					JobManagerCommandHandler.class.getName(),
+					"removejob.usage"));
+		}
+		String filename = conn.getRequest().getArgument();
+		Job job = null;
+		List jobs =
+			new ArrayList(
+				conn.getConnectionManager().getJobManager().getAllJobs());
+		ReplacerEnvironment env = new ReplacerEnvironment();
+		env.add("filename", filename);
+		for (Iterator iter = jobs.iterator(); iter.hasNext();) {
+			job = (Job) iter.next();
+			if (job.getFile().getName().equals(filename)) {
+				env.add("job", job);
+				conn.getConnectionManager().getJobManager().stopJob(job);
+				return new FtpReply(
+					200,
+					conn.jprintf(
+						JobManagerCommandHandler.class.getName(),
+						"removejob.success",
+						env));
+			}
+		}
+		return new FtpReply(
+			200,
+			conn.jprintf(
+				JobManagerCommandHandler.class.getName(),
+				"removejob.fail",
+				env));
 	}
 
 	private FtpReply doSTARTJOBS(BaseFtpConnection conn) {
