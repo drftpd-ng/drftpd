@@ -1327,7 +1327,7 @@ public class SiteBot extends FtpListener implements Observer {
 				Object[] objects = _methodMap.get(trigger);
 				IrcPermission perm = (IrcPermission) objects[2];
 				String scope = msgc.isPrivateToUs(_conn.getClientState()) ? "private"
-						: msgc.getSource().getNick();
+						: msgc.getDest();
 				logger.debug("here1");
 				if (perm.checkScope(scope)) { // not a recognized command on this channel or through privmsg
 					return;
