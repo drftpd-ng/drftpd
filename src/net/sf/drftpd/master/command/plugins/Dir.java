@@ -34,10 +34,9 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.UploaderPosition;
-import net.sf.drftpd.master.command.CommandHandler;
+import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
@@ -49,6 +48,8 @@ import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.plugins.SiteBot;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -56,9 +57,9 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.28 2004/05/31 02:47:16 mog Exp $
+ * @version $Id: Dir.java,v 1.29 2004/06/01 15:40:30 mog Exp $
  */
-public class Dir implements CommandHandler, Cloneable {
+public class Dir implements CommandHandlerBundle, Cloneable {
 	private final static SimpleDateFormat DATE_FMT =
 		new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 

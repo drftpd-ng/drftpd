@@ -22,19 +22,18 @@ import java.util.Iterator;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
-import net.sf.drftpd.master.command.CommandHandler;
+import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.command.UnhandledCommandException;
 
 import org.drftpd.sections.SectionInterface;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: Sections.java,v 1.1 2004/03/01 00:21:09 mog Exp $
+ * @version $Id: Sections.java,v 1.2 2004/06/01 15:40:34 mog Exp $
  */
-public class Sections implements CommandHandler {
+public class Sections implements CommandHandlerBundle {
 
 	public Sections() {
 		super();

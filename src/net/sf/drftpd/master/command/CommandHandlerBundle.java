@@ -17,34 +17,12 @@
  */
 package net.sf.drftpd.master.command;
 
-import net.sf.drftpd.master.FtpRequest;
+import org.drftpd.commands.CommandHandlerFactory;
 
 /**
  * @author mog
- * @version $Id: UnhandledCommandException.java,v 1.5 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: CommandHandlerBundle.java,v 1.1 2004/06/01 15:40:29 mog Exp $
+ * @deprecated
  */
-public class UnhandledCommandException extends Exception {
-	public UnhandledCommandException() {
-		super();
-	}
-
-	public static UnhandledCommandException create(Class clazz, FtpRequest req) {
-		return create(clazz, req.getCommand());
-	}
-	
-	public UnhandledCommandException(String message) {
-		super(message);
-	}
-
-	public UnhandledCommandException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public UnhandledCommandException(Throwable cause) {
-		super(cause);
-	}
-
-	public static UnhandledCommandException create(Class clazz, String command) {
-		return new UnhandledCommandException(clazz.getName()+" doesn't know how to handle "+command);
-	}
+public interface CommandHandlerBundle extends CommandHandlerFactory, org.drftpd.commands.CommandHandler  {
 }

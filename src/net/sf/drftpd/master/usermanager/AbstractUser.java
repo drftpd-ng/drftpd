@@ -42,7 +42,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.43 2004/03/26 00:16:33 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.44 2004/06/01 15:40:31 mog Exp $
  */
 public abstract class AbstractUser implements User {
 	private static final Logger logger = Logger.getLogger(AbstractUser.class);
@@ -552,26 +552,36 @@ public abstract class AbstractUser implements User {
 	}
 
 	public void reset(ConnectionManager cmgr) throws UserFileException {
+		reset(cmgr, Calendar.getInstance());
+	}
+	protected void reset(ConnectionManager cmgr, Calendar cal)
+		throws UserFileException {
 		//ignore reset() if we are called from userfileconverter or the like
 		if (cmgr == null)
 			return;
 
 		Date lastResetDate = new Date(this.lastReset);
-		this.lastReset = System.currentTimeMillis();
+		this.lastReset = cal.getTimeInMillis();
 
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.DAY_OF_MONTH, -1);
-		CalendarUtils.ceilAllLessThanDay(cal);
+		//cal = Calendar.getInstance();
+		Calendar calTmp = (Calendar)cal.clone();
+		calTmp.add(Calendar.DAY_OF_MONTH, -1);
+		CalendarUtils.ceilAllLessThanDay(calTmp);
 
 		//has not been reset since midnight
-		if (lastResetDate.before(cal.getTime())) {
+		logger.debug("day1 "+calTmp.getTime());
+		logger.debug("day2 "+lastResetDate);
+		if (lastResetDate.before(calTmp.getTime())) {
 			resetDay(cmgr, cal.getTime());
 
 			//floorDayOfWeek could go into the previous month
-			Calendar cal2 = (Calendar) cal.clone();
-			CalendarUtils.floorDayOfWeek(cal2);
-			if (lastResetDate.before(cal2.getTime()))
-				resetWeek(cmgr, cal2.getTime());
+			calTmp = (Calendar) cal.clone();
+			//calTmp.add(Calendar.WEEK_OF_YEAR, 1);
+			CalendarUtils.floorDayOfWeek(calTmp);
+			logger.debug("week1 "+calTmp.getTime());
+			logger.debug("week2 "+lastResetDate);
+			if (lastResetDate.before(calTmp.getTime()))
+				resetWeek(cmgr, calTmp.getTime());
 
 			CalendarUtils.floorDayOfMonth(cal);
 			if (lastResetDate.before(cal.getTime()))

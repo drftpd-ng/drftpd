@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- $Id: build.xml,v 1.36 2004/04/20 04:11:36 mog Exp $ -->
+<!-- $Id: build.xml,v 1.37 2004/06/01 15:40:25 mog Exp $ -->
 <project name="drftpd" basedir="." default="compile">
 
   <target name="all" depends="compile"/>
@@ -23,9 +23,15 @@
     <mkdir dir="${outputDir}" />
   </target>
 
+  <target name="compile-jfreechart">
+  </target>
+  <target name="compile-jsx">
+  </target>
   <target name="compile" depends="init, prepare">
     <javac srcdir="${sourceDir}" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.4">
       <exclude name="**/*Test.java"/>
+      <exclude name="org/drftpd/friendly/**"/>
+      <exclude name="net/sf/drftpd/master/usermanager/jsx/**"/>
     </javac>
     <rmic base="${outputDir}" debug="true" stubversion="1.2">
 	  <include name="**/*Impl.class"/>

@@ -1,12 +1,7 @@
-# do not remove any entries, it can result
-# in NullPointerException's
-
 #######################
 ### Master settings ###
 #######################
 
-#This is the name of the master to register to.
-master.bindname=slavemanager
 #Port to accept Slave connections on
 master.bindport=1099
 

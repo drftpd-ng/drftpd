@@ -34,10 +34,9 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
-import net.sf.drftpd.master.command.CommandHandler;
+import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.queues.NukeLog;
 import net.sf.drftpd.master.usermanager.AbstractUser;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -47,6 +46,8 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.UnhandledCommandException;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -56,9 +57,9 @@ import org.jdom.input.SAXBuilder;
  * amount -> amount before multiplier
  * 
  * @author mog
- * @version $Id: Nuke.java,v 1.17 2004/05/31 02:47:16 mog Exp $
+ * @version $Id: Nuke.java,v 1.18 2004/06/01 15:40:30 mog Exp $
  */
-public class Nuke implements CommandHandler {
+public class Nuke implements CommandHandlerBundle {
 
 	private static final Logger logger = Logger.getLogger(Nuke.class);
 

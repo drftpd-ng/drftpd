@@ -33,10 +33,11 @@ import net.sf.drftpd.util.SafeFileWriter;
 import org.apache.log4j.Logger;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 
 /**
  * @author mog
- * @version $Id: XStreamUser.java,v 1.3 2004/05/10 02:53:59 mog Exp $
+ * @version $Id: XStreamUser.java,v 1.4 2004/06/01 15:40:31 mog Exp $
  */
 public class XStreamUser
 	extends AbstractUser
@@ -93,7 +94,7 @@ public class XStreamUser
 			return;
 
 		try {
-                        XStream xst = new XStream();
+                        XStream xst = new XStream(new DomDriver());
 			SafeFileWriter out = new SafeFileWriter(
                             usermanager.getUserFile(this.getUsername())
                         );

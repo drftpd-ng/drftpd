@@ -54,7 +54,7 @@ public class AsyncCommand {
     public void waitForComplete() {
         while (!_done) {
             try { 
-                java.lang.Thread.currentThread().sleep(100); 
+                Thread.sleep(100); 
             } catch (Exception e) {}
         }
     }   

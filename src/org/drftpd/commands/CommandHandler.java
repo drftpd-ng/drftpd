@@ -15,21 +15,18 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.master.command;
+package org.drftpd.commands;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 
 /**
  * @author mog
- *
- * @version $Id: CommandHandler.java,v 1.4 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: CommandHandler.java,v 1.1 2004/06/01 15:40:34 mog Exp $
  */
 public interface CommandHandler {
 	public abstract FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException;
-	public abstract CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer);
 	public String[] getFeatReplies();
-	public void load(CommandManagerFactory initializer);
 	public void unload();
 }

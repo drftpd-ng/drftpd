@@ -30,22 +30,23 @@ import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
-import net.sf.drftpd.master.command.CommandHandler;
+import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.UnhandledCommandException;
 
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagment.java,v 1.18 2004/05/12 00:45:07 mog Exp $
+ * @version $Id: SiteManagment.java,v 1.19 2004/06/01 15:40:30 mog Exp $
  */
-public class SiteManagment implements CommandHandler {
+public class SiteManagment implements CommandHandlerBundle {
 
 	private static final Logger logger = Logger.getLogger(SiteManagment.class);
 

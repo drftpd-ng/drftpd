@@ -1,3 +1,13 @@
+2004/06/01 Morgan Christiansson <drftpd@mog.se>
+* Refactored net.sf.drftpd.master.command.CommandHandler to
+  org.drftpd.command.CommandHandlerFactory and
+  org.drftpd.command.CommandHandler
+* Wrote a testcase for stats reset, and fixed reset code.
+  Also added a workaround for a Calendar bug in CalendarUtils.
+* Fixed bug with MLST/MLSD that caused it to work only for the last logged in user.
+  Refactored net.sf.drftpd.master.command.MLST to org.drftpd.command.MLST,
+  deprecated stub for backward compatibility is in place for now.
+
 2004/05/31 Morgan Christiansson <drftpd@mog.se>
 * Users hostmask wasn't checked when user wasn't running an
   ident server and wasn't connecting through an ftp-bnc.

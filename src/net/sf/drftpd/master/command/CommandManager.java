@@ -23,24 +23,30 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.drftpd.commands.*;
+
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 
 /**
  * @author mog
- * @version $Id: CommandManager.java,v 1.7 2004/05/12 00:45:06 mog Exp $
+ * @version $Id: CommandManager.java,v 1.8 2004/06/01 15:40:29 mog Exp $
  */
 public class CommandManager {
 	//TODO reload me
 
 	private CommandManagerFactory _factory;
+	
 	/**
 	 * String => CommandHandler
+	 * Mapping commands to commandhandlers.
 	 */
 	private Map commands = new Hashtable();
+	
 	/**
 	 * Class => CommandHandler
+	 * Kept so that CommandHandlers can look up each other.
 	 */
 	private Hashtable hnds = new Hashtable();
 
@@ -54,7 +60,7 @@ public class CommandManager {
 			Map.Entry entry = (Map.Entry) iter.next();
 			hnds.put(
 				entry.getKey(),
-				((CommandHandler) entry.getValue()).initialize(conn, this));
+				((CommandHandlerFactory) entry.getValue()).initialize(conn, this));
 		}
 		for (Iterator iter = _factory.getCommandsMap().entrySet().iterator();
 			iter.hasNext();

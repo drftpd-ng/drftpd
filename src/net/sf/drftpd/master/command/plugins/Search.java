@@ -24,18 +24,19 @@ import java.util.Iterator;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.command.CommandHandler;
+import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
+import org.drftpd.commands.CommandHandler;
 
 /**
  * @author mog
- * @version $Id: Search.java,v 1.10 2004/03/01 00:21:08 mog Exp $
+ * @version $Id: Search.java,v 1.11 2004/06/01 15:40:30 mog Exp $
  */
-public class Search implements CommandHandler {
+public class Search implements CommandHandlerBundle {
 	public void unload() {}
 	public void load(CommandManagerFactory initializer) {}
 

@@ -28,14 +28,14 @@ import net.sf.drftpd.Bytes;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.event.listeners.Trial.Limit;
 import net.sf.drftpd.master.config.Permission;
-import net.sf.drftpd.master.usermanager.StaticUser;
 import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.BasicConfigurator;
+import org.drftpd.tests.DummyUser;
 
 /**
  * @author mog
- * @version $Id: TrialTest.java,v 1.6 2004/02/10 00:03:06 mog Exp $
+ * @version $Id: TrialTest.java,v 1.7 2004/06/01 15:40:26 mog Exp $
  */
 public class TrialTest extends TestCase {
 	/**
@@ -52,7 +52,7 @@ public class TrialTest extends TestCase {
 	private Calendar cal;
 	private int period;
 	private Trial trial;
-	private StaticUser user;
+	private DummyUser user;
 
 	public TrialTest(String fName) {
 		super(fName);
@@ -106,8 +106,8 @@ public class TrialTest extends TestCase {
 	 * Returns a fresh user object.
 	 * @return a fresh user object.
 	 */
-	private StaticUser getJUnitUser() {
-		StaticUser user = new StaticUser("junit", RESETTIME);
+	private DummyUser getJUnitUser() {
+		DummyUser user = new DummyUser("junit", RESETTIME);
 		user.setLastReset(cal.getTimeInMillis());
 		return user;
 	}

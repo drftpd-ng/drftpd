@@ -19,11 +19,15 @@ package net.sf.drftpd.util;
 
 import java.util.Calendar;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author mog
- * @version $Id: CalendarUtils.java,v 1.5 2004/02/10 00:03:32 mog Exp $
+ * @version $Id: CalendarUtils.java,v 1.6 2004/06/01 15:40:33 mog Exp $
  */
 public class CalendarUtils {
+	private static final Logger logger = Logger.getLogger(CalendarUtils.class);
+
 	private CalendarUtils() {
 	}
 
@@ -46,7 +50,14 @@ public class CalendarUtils {
 	}
 
 	public static void floorDayOfWeek(Calendar cal) {
+		// workaround for bug in Calendar
+		// see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4967383
+		cal.get(Calendar.WEEK_OF_MONTH);
+
 		cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+
+		if(cal.get(Calendar.DAY_OF_WEEK) != cal.getFirstDayOfWeek())
+			logger.error("cal.set(DAY_OF_WEEK) didn't work! " + cal.getTime());
 	}
 
 	public static void floorDayOfMonth(Calendar cal) {
@@ -80,8 +91,9 @@ public class CalendarUtils {
 		cal.add(Calendar.DAY_OF_MONTH, 1);
 	}
 	public static int getLastDayOfWeek(Calendar cal) {
-		int dow = cal.getFirstDayOfWeek()-1;
-		if(dow == 0) dow = Calendar.SATURDAY;
+		int dow = cal.getFirstDayOfWeek() - 1;
+		if (dow == 0)
+			dow = Calendar.SATURDAY;
 		return dow;
 	}
 }

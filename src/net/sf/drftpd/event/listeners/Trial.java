@@ -35,17 +35,15 @@ import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.Permission;
-import net.sf.drftpd.master.usermanager.StaticUser;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.util.CalendarUtils;
 
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.drftpd.plugins.SiteBot;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.24 2004/05/12 00:45:05 mog Exp $
+ * @version $Id: Trial.java,v 1.25 2004/06/01 15:40:26 mog Exp $
  */
 public class Trial implements FtpListener {
 	public static class Limit {
@@ -287,43 +285,6 @@ public class Trial implements FtpListener {
 
 	public static boolean isInFirstPeriod(User user, int period, long time) {
 		return time <= getCalendarForEndOfBonus(user, period).getTimeInMillis();
-	}
-
-	public static void main(String args[])
-		throws FileNotFoundException, IOException {
-		BasicConfigurator.configure();
-		Trial trial = new Trial();
-		trial.init(null);
-		StaticUser user = new StaticUser("test");
-		user.setCredits(0L);
-
-		long reset;
-		{
-			Calendar cal = Calendar.getInstance();
-			reset = System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 8;
-			cal.setTimeInMillis(reset);
-			CalendarUtils.floorAllLessThanDay(cal);
-			reset = cal.getTimeInMillis();
-		}
-
-		Calendar calToday = Calendar.getInstance();
-		calToday.add(Calendar.DAY_OF_MONTH, -1);
-		CalendarUtils.ceilAllLessThanDay(calToday);
-		user.setCreated(reset);
-
-		user.setLastReset(calToday.getTimeInMillis());
-		logger.debug("lastReset\t" + new Date(reset));
-		logger.debug("now\t" + new Date());
-		logger.debug("reset timestamp\t" + calToday.getTime());
-		{
-			user.setUploadedBytes(Bytes.parseBytes("100m"));
-			user.setUploadedBytesDay(Bytes.parseBytes("100m"));
-			user.setUploadedBytesWeek(Bytes.parseBytes("100m"));
-			user.setUploadedBytesMonth(Bytes.parseBytes("100m"));
-		}
-
-		trial.actionPerformed(
-			new UserEvent(user, "RESETDAY", calToday.getTimeInMillis()));
 	}
 
 	public static Calendar moveCalendarToEndOfPeriod(

@@ -28,24 +28,25 @@ import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.command.CommandHandler;
+import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 
 import org.apache.log4j.Logger;
+import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.UnhandledCommandException;
 
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.27 2004/05/31 13:47:26 mog Exp $
+ * @version $Id: Login.java,v 1.28 2004/06/01 15:40:30 mog Exp $
  */
-public class Login implements CommandHandler, Cloneable {
+public class Login implements CommandHandlerBundle, Cloneable {
 
-	private static final Logger logger = Logger.getLogger(CommandHandler.class);
+	private static final Logger logger = Logger.getLogger(CommandHandlerBundle.class);
 	/**
 	 * If _idntAddress == null, IDNT hasn't been used.
 	 */

@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: PortRange.java,v 1.8 2004/05/12 00:45:12 mog Exp $
+ * @version $Id: PortRange.java,v 1.9 2004/06/01 15:40:33 mog Exp $
  */
 public class PortRange {
 	private static final Logger logger = Logger.getLogger(PortRange.class);
@@ -79,8 +79,8 @@ public class PortRange {
 
 	public void releasePort(int port) {
 		synchronized (_ports) {
-			assert _ports[port - _minPort]
-				== true : "releasePort() on unused port";
+			if(_ports[port - _minPort]
+				!= true) throw new RuntimeException("releasePort() on unused port");
 			_ports[port - _minPort] = false;
 		}
 	}

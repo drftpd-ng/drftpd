@@ -31,20 +31,20 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserManager;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.tests.DummyBaseFtpConnection;
 import org.drftpd.tests.DummyUser;
 import org.drftpd.tests.DummyUserManager;
 
 /**
  * @author mog
- * @version $Id: LoginTest.java,v 1.4 2004/05/31 12:36:31 mog Exp $
+ * @version $Id: LoginTest.java,v 1.5 2004/06/01 15:40:30 mog Exp $
  */
 public class LoginTest extends TestCase {
 	private DummyUser _user;

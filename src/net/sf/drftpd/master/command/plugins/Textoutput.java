@@ -25,11 +25,12 @@ import java.io.InputStreamReader;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
-import net.sf.drftpd.master.command.CommandHandler;
+import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.command.UnhandledCommandException;
 
+import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.UnhandledCommandException;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
@@ -39,9 +40,9 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Textoutput.java,v 1.11 2004/04/23 00:47:23 mog Exp $
+ * @version $Id: Textoutput.java,v 1.12 2004/06/01 15:40:30 mog Exp $
  */
-public class Textoutput implements CommandHandler {
+public class Textoutput implements CommandHandlerBundle {
 
 	public static void addTextToResponse(FtpReply reply, String file)
 		throws FileNotFoundException, IOException {

@@ -33,10 +33,8 @@ import net.sf.drftpd.HostMask;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.Permission;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -49,6 +47,9 @@ import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.UnhandledCommandException;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
@@ -56,9 +57,9 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.38 2004/05/31 02:47:16 mog Exp $
+ * @version $Id: UserManagment.java,v 1.39 2004/06/01 15:40:30 mog Exp $
  */
-public class UserManagment implements CommandHandler {
+public class UserManagment implements CommandHandler, CommandHandlerFactory {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
 
 	private FtpReply doSITE_ADDIP(BaseFtpConnection conn) {
@@ -562,7 +563,7 @@ public class UserManagment implements CommandHandler {
 					+ "'");
 			myUser.setCredits(credits);
 
-			env.add("credits", Bytes.formatBytes(myUser.getCredits()));
+			env.add("newcredits", Bytes.formatBytes(myUser.getCredits()));
 			response.addComment(
 				conn.jprintf(
 					UserManagment.class.getName(),

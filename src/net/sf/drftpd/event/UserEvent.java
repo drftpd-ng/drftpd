@@ -18,7 +18,6 @@
 package net.sf.drftpd.event;
 
 import net.sf.drftpd.event.listeners.Trial;
-import net.sf.drftpd.master.usermanager.StaticUser;
 import net.sf.drftpd.master.usermanager.User;
 
 /**
@@ -27,7 +26,7 @@ import net.sf.drftpd.master.usermanager.User;
  * Dispatched for LOGIN, LOGOUT and RELOAD.
  * 
  * Subclassed for events that are paired with a user object.
- * @version $Id: UserEvent.java,v 1.9 2004/02/10 00:03:05 mog Exp $
+ * @version $Id: UserEvent.java,v 1.10 2004/06/01 15:40:26 mog Exp $
  */
 public class UserEvent extends Event {
 	public static String getCommandFromPeriod(int period) {
@@ -43,7 +42,7 @@ public class UserEvent extends Event {
 		}
 	}
 	User user;
-	public UserEvent(StaticUser user, int period, long time) {
+	public UserEvent(User user, int period, long time) {
 		this(user, getCommandFromPeriod(period), time);
 	}
 	public UserEvent(User user, String command) {

@@ -76,8 +76,8 @@ public class MaxbandwidthFilterTest extends TestCase {
 			super();
 		}
 		public RemoteSlave getSlave(String s) throws ObjectNotFoundException {
-			assert s != null;
-			assert rslaves[0] != null;
+			if(s == null) throw new RuntimeException();
+			if(rslaves[0] == null) throw new RuntimeException();
 			if (s.equals(rslaves[0].getName()))
 				return rslaves[0];
 			if (s.equals(rslaves[1].getName()))

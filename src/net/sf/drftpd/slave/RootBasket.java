@@ -37,7 +37,7 @@ import se.mog.io.File;
 //TODO SECURITY: verify so that we never get outside of a rootbasket root
 /**
  * @author mog
- * @version $Id: RootBasket.java,v 1.27 2004/05/17 11:27:25 mog Exp $
+ * @version $Id: RootBasket.java,v 1.28 2004/06/01 15:40:33 mog Exp $
  */
 public class RootBasket {
 	private static final Logger logger = Logger.getLogger(RootBasket.class);
@@ -75,20 +75,22 @@ public class RootBasket {
 		Root bestRoot = (Root) iter.next();
 		while (iter.hasNext()) {
 			Root root = (Root) iter.next();
-			if(bestRoot.isFull()) {
+			if (bestRoot.isFull()) {
 				bestRoot = root;
 				continue;
 			}
-			if(root.lastModified() > bestRoot.lastModified()) {
-				if(root.isFull() && !bestRoot.isFull()) continue;
+			if (root.lastModified() > bestRoot.lastModified()) {
+				if (root.isFull() && !bestRoot.isFull())
+					continue;
 				bestRoot = root;
 			}
 		}
 		bestRoot.touch();
 		File file = bestRoot.getFile(dir);
-		if(!file.exists()) {
-			if(!file.mkdirs()) {
-				throw new PermissionDeniedException("mkdirs failed on "+file.getPath());
+		if (!file.exists()) {
+			if (!file.mkdirs()) {
+				throw new PermissionDeniedException(
+					"mkdirs failed on " + file.getPath());
 			}
 		}
 		return file;
@@ -104,7 +106,9 @@ public class RootBasket {
 	 */
 	public List getMultipleFiles(String path) throws FileNotFoundException {
 		ArrayList files = new ArrayList();
-		for (Iterator iter = getMultipleRootsForFile(path).iterator(); iter.hasNext();) {
+		for (Iterator iter = getMultipleRootsForFile(path).iterator();
+			iter.hasNext();
+			) {
 			files.add(((Root) iter.next()).getFile(path));
 		}
 		return files;
@@ -130,8 +134,7 @@ public class RootBasket {
 			if (file.exists())
 				return root;
 		}
-		throw new FileNotFoundException(
-			path + " wasn't found in any root");
+		throw new FileNotFoundException(path + " wasn't found in any root");
 	}
 
 	public long getTotalDiskSpaceAvailable() {
@@ -175,7 +178,6 @@ public class RootBasket {
 				return getClass().hashCode();
 			}
 
-
 			public int compare(Object o1, Object o2) {
 				return compare((File) o1, (File) o2);
 			}
@@ -192,8 +194,8 @@ public class RootBasket {
 		Hashtable usedMounts = new Hashtable();
 		for (Iterator iter = roots.iterator(); iter.hasNext();) {
 			Object o = iter.next();
-			assert o instanceof Root;
-
+			if (!(o instanceof Root))
+				throw new RuntimeException();
 			Root root = (Root) o;
 			File rootFile = root.getFile();
 			if (!rootFile.exists()) {
@@ -204,9 +206,7 @@ public class RootBasket {
 			}
 			if (!rootFile.exists())
 				throw new FileNotFoundException("Invalid root: " + rootFile);
-
 			String fullpath = rootFile.getAbsolutePath();
-
 			for (Iterator iterator = mounts.iterator(); iterator.hasNext();) {
 				File mount = (File) iterator.next();
 				if (fullpath.startsWith(mount.getPath())) {
@@ -236,16 +236,15 @@ public class RootBasket {
 	}
 
 	public int getMaxPath() {
-		if(SlaveImpl.isWin32) {
-			int maxPath=0;
+		if (SlaveImpl.isWin32) {
+			int maxPath = 0;
 			for (Iterator iter = iterator(); iter.hasNext();) {
 				Root root = (Root) iter.next();
 				maxPath = Math.max(root.getPath().length(), maxPath);
-			}
-			//constant for win32, see
+			} //constant for win32, see
 			//http://support.microsoft.com/default.aspx?scid=http://support.microsoft.com:80/support/kb/articles/Q177/6/65.ASP&NoWebContent=1
 			// for more info
-			return 256-maxPath;
+			return 256 - maxPath;
 		}
 		return -1;
 	}

@@ -19,58 +19,56 @@ package net.sf.drftpd.master.command.plugins;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
-import net.sf.drftpd.master.command.CommandHandler;
+import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.command.UnhandledCommandException;
+
+import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.UnhandledCommandException;
 
 /**
  * returns 200 Command OK on all commands
  * 
  * @author mog
- * @version $Id: Dummy.java,v 1.4 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: Dummy.java,v 1.5 2004/06/01 15:40:30 mog Exp $
  */
-public class Dummy implements CommandHandler {
+public class Dummy implements CommandHandlerFactory {
 
-	private CommandManager _cmdmgr;
+	static class DummyHandler implements CommandHandler {
+		private CommandManager _cmdmgr;
+
+		/**
+		 * @param initializer
+		 */
+		public DummyHandler(CommandManager initializer) {
+			_cmdmgr = initializer;
+		}
+
+		public FtpReply execute(BaseFtpConnection conn)
+			throws UnhandledCommandException {
+			return FtpReply.RESPONSE_200_COMMAND_OK;
+		}
+
+		public String[] getFeatReplies() {
+			return (String[]) _cmdmgr.getHandledCommands(getClass()).toArray(
+				new String[0]);
+		}
+		public void unload() {
+		}
+	}
+
+	//private CommandManager _cmdmgr;
 
 	public Dummy() {
 		super();
 	}
-
-	public FtpReply execute(BaseFtpConnection conn) throws UnhandledCommandException {
-		return FtpReply.RESPONSE_200_COMMAND_OK;
+	public CommandHandler initialize(
+		BaseFtpConnection conn,
+		CommandManager initializer) {
+		//_cmdmgr = initializer;
+		return new DummyHandler(initializer);
 	}
-
-	public CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer) {
-		_cmdmgr = initializer;
-		return this;
+	public void load(CommandManagerFactory initializer) {
 	}
-
-	public String[] getFeatReplies() {
-		return (String[])_cmdmgr.getHandledCommands(getClass()).toArray(new String[0]);
-	}
-	/**
-	 * <code>NOOP &lt;CRLF&gt;</code><br>
-	 *
-	 * This command does not affect any parameters or previously
-	 * entered commands. It specifies no action other than that the
-	 * server send an OK reply.
-	 */
-//DUMMY
-//	public void doNOOP(FtpRequest request, PrintWriter out) {
-//
-//		// reset state variables
-//		resetState();
-//
-//		out.print(FtpReply.RESPONSE_200_COMMAND_OK);
-//	}
-//	DUMMY
-//	  public void doCLNT(FtpRequest request, PrintWriter out) {
-//		  out.print(FtpReply.RESPONSE_200_COMMAND_OK);
-//		  return;
-//	  }
-	public void load(CommandManagerFactory initializer) {}
-	public void unload() {}
-
 }

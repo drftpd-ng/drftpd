@@ -36,7 +36,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.20 2004/04/23 01:55:02 mog Exp $
+ * @version $Id: ListUtils.java,v 1.21 2004/06/01 15:40:33 mog Exp $
  */
 public class ListUtils {
 
@@ -45,7 +45,7 @@ public class ListUtils {
 	public static final String PADDING = "          ";
 
 	public static boolean isLegalFileName(String fileName) {
-		assert fileName != null;
+		if(fileName == null) throw new RuntimeException();
 		return fileName.indexOf("/") == -1
 			&& fileName.indexOf('*') == -1
 			&& !fileName.equals(".")
@@ -197,7 +197,7 @@ public class ListUtils {
 	public static String padToLength(String value, int length) {
 		if (value.length() >= length)
 			return value;
-		assert PADDING.length() > length : "padding must be longer than length";
+		if(PADDING.length() < length) throw new RuntimeException("padding must be longer than length");
 		return PADDING.substring(0, length - value.length()) + value;
 	}
 

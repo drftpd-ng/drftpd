@@ -45,13 +45,13 @@ import com.thoughtworks.xstream.XStream;
 
 /**
  * @author mog
- * @version $Id: XStreamUserManager.java,v 1.2 2004/05/31 02:47:18 mog Exp $
+ * @version $Id: XStreamUserManager.java,v 1.3 2004/06/01 15:40:31 mog Exp $
  */
 public class XStreamUserManager implements UserManager {
 	private ConnectionManager _connManager;
 	private static final Logger logger =
 		Logger.getLogger(XStreamUserManager.class.getName());
-	String userpath = "users/";
+	String userpath = "users/xstream/";
 	File userpathFile = new File(userpath);
 
 	Hashtable users = new Hashtable();

@@ -15,12 +15,20 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.master.command.plugins;
+package org.drftpd.commands;
+
+import net.sf.drftpd.master.BaseFtpConnection;
+import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
 
 /**
  * @author mog
- * @version $Id: MLST.java,v 1.12 2004/06/01 15:40:30 mog Exp $
- * @deprecated backwards compatibility, pending removal
+ * @version $Id: CommandHandlerFactory.java,v 1.1 2004/06/01 15:40:34 mog Exp $
  */
-public class MLST extends org.drftpd.commands.MLST {
+public interface CommandHandlerFactory {
+	public abstract CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer);
+	/**
+	 * @deprecated switch to using constructor & reflection
+	 */
+	public void load(CommandManagerFactory initializer);
 }

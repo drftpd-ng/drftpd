@@ -58,7 +58,7 @@ import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.slave.socket.SocketSlaveManager;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.108 2004/05/31 02:47:15 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.109 2004/06/01 15:40:27 mog Exp $
  */
 public class ConnectionManager {
 
@@ -367,13 +367,13 @@ public class ConnectionManager {
 	}
 
 	public void dispatchFtpEvent(Event event) {
-		logger.debug("Dispatching " + event + " to " + getFtpListeners());
+		logger.debug("Dispatching " + event);
 		for (Iterator iter = getFtpListeners().iterator(); iter.hasNext();) {
 			try {
 				FtpListener handler = (FtpListener) iter.next();
 				handler.actionPerformed(event);
 			} catch (RuntimeException e) {
-				logger.log(Level.WARN, "RuntimeException dispatching event", e);
+				logger.warn("RuntimeException dispatching event", e);
 			}
 		}
 	}

@@ -91,8 +91,8 @@ SITE\ VERS=net.sf.drftpd.master.command.plugins.Misc
 SITE\ DUPE=net.sf.drftpd.master.command.plugins.Search
 SITE\ SEARCH=net.sf.drftpd.master.command.plugins.Search
 
-MLST=net.sf.drftpd.master.command.plugins.MLST
-MLSD=net.sf.drftpd.master.command.plugins.MLST
+MLST=org.drftpd.commands.MLST
+MLSD=org.drftpd.commands.MLST
 
 SITE\ REQUEST=net.sf.drftpd.master.command.plugins.Request
 SITE\ REQFILLED=net.sf.drftpd.master.command.plugins.Request

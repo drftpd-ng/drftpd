@@ -36,7 +36,7 @@ import java.util.StringTokenizer;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.command.CommandHandler;
+import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -45,13 +45,14 @@ import net.sf.drftpd.remotefile.RemoteFileInterface;
 import net.sf.drftpd.util.ListUtils;
 
 import org.apache.log4j.Logger;
+import org.drftpd.commands.CommandHandler;
 
 /**
  * @author mog
  *
- * @version $Id: LIST.java,v 1.18 2004/05/16 18:07:30 mog Exp $
+ * @version $Id: LIST.java,v 1.19 2004/06/01 15:40:30 mog Exp $
  */
-public class LIST implements CommandHandler {
+public class LIST implements CommandHandlerBundle {
 
 	private final static DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
 

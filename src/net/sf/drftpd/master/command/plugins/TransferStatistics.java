@@ -29,10 +29,9 @@ import net.sf.drftpd.event.listeners.Trial;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.command.CommandHandler;
+import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.Permission;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -43,12 +42,14 @@ import net.sf.drftpd.util.UserComparator;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.UnhandledCommandException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
- * @version $Id: TransferStatistics.java,v 1.20 2004/05/31 02:47:16 mog Exp $
+ * @version $Id: TransferStatistics.java,v 1.21 2004/06/01 15:40:30 mog Exp $
  */
-public class TransferStatistics implements CommandHandler {
+public class TransferStatistics implements CommandHandlerBundle {
 
 	private static final Logger logger =
 		Logger.getLogger(TransferStatistics.class);

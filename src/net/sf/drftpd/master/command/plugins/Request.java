@@ -24,21 +24,22 @@ import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
-import net.sf.drftpd.master.command.CommandHandler;
+import net.sf.drftpd.master.command.CommandHandlerBundle;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
+import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.UnhandledCommandException;
 
 /**
  * @author mog
- * @version $Id: Request.java,v 1.14 2004/04/20 04:11:48 mog Exp $
+ * @version $Id: Request.java,v 1.15 2004/06/01 15:40:30 mog Exp $
  */
-public class Request implements CommandHandler {
+public class Request implements CommandHandlerBundle {
 	private static final String FILLEDPREFIX = "FILLED-for.";
 
 	private static final Logger logger = Logger.getLogger(Request.class);
