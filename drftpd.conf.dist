@@ -33,7 +33,7 @@ use.ident=true
 #JobManager is required for Mirror and/or Archive
 
 #plugins.1=net.sf.drftpd.event.irc.IRCListener
-#plugins.2=net.sf.drftpd.event.Trial
+#plugins.2=net.sf.drftpd.event.listeners.Trial
 #plugins.3=net.sf.drftpd.event.listeners.PreTime
 #plugins.4=net.sf.drftpd.mirroring.JobManager
 #plugins.5=net.sf.drftpd.event.listeners.Mirror
