@@ -10,3 +10,7 @@ archiveAfter=10080
 
 # AutoFreeSpace will try to keep each slave above this number
 keepFree=1000MB
+
+# do not delete releases under these directorys
+#exclude.1=/exempt/*
+#exclude.2=/alsoexempt/*

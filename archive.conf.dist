@@ -12,3 +12,7 @@ cycleTime=30
 
 # do not archive releases younger than
 archiveAfter=10080
+
+# do not archive releases under these directorys
+#exclude.1=/exempt/*
+#exclude.2=/alsoexempt/*

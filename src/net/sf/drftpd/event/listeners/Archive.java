@@ -21,20 +21,20 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.12 2004/01/15 20:37:08 zubov Exp $
+ * @version $Id: Archive.java,v 1.13 2004/01/20 04:18:41 zubov Exp $
  */
 
 public class Archive implements FtpListener {
-	private long _archiveAfter;
-	private boolean _archiveToFreeSlave;
-	private ConnectionManager _cm;
-	private long _cycleTime;
-	private long _lastchecked;
-	private long _moveFullSlaves;
-	private ArrayList _archivingList = new ArrayList();
-	private ArrayList _exemptList = new ArrayList();
 
 	private static final Logger logger = Logger.getLogger(Archive.class);
+	private long _archiveAfter;
+	private boolean _archiveToFreeSlave;
+	private ArrayList _archivingList = new ArrayList();
+	private ConnectionManager _cm;
+	private long _cycleTime;
+	private ArrayList _exemptList = new ArrayList();
+	private long _lastchecked;
+	private long _moveFullSlaves;
 
 	/**
 	 * 
@@ -63,6 +63,19 @@ public class Archive implements FtpListener {
 	 */
 	public synchronized void addToArchivingList(String dir) {
 		_archivingList.add(dir);
+	}
+
+	/**
+	 * @param lrf
+	 * Returns true if lrf.getPath() is excluded
+	 */
+	public boolean checkExclude(LinkedRemoteFile lrf) {
+		for (Iterator iter = _exemptList.iterator(); iter.hasNext();) {
+			ExcludePath ep = (ExcludePath) iter.next();
+			if (ep.checkPath(lrf))
+				return true;
+		}
+		return false;
 	}
 	/**
 	 * Returns the archiveAfter setting
@@ -126,8 +139,8 @@ public class Archive implements FtpListener {
 		_lastchecked = System.currentTimeMillis();
 		_exemptList = new ArrayList();
 		for (int i = 1;; i++) {
-			String path = FtpConfig.getProperty(props, "exclude." + i);
-			if ( path == null )
+			String path = props.getProperty("exclude." + i);
+			if (path == null)
 				break;
 			try {
 				ExcludePath.makePermission(_exemptList, path);
@@ -136,20 +149,7 @@ public class Archive implements FtpListener {
 			}
 		}
 	}
-	
-	/**
-	 * @param lrf
-	 * Returns true if lrf.getPath() is excluded
-	 */
-	public boolean checkExclude(LinkedRemoteFile lrf) {
-		for ( Iterator iter = _exemptList.iterator(); iter.hasNext(); ) {
-			ExcludePath ep = (ExcludePath) iter.next();
-			if ( ep.checkPath(lrf) )
-				return true;
-		}
-		return false;
-	}
-	
+
 	/**
 	 * Removes directories from the list
 	 */

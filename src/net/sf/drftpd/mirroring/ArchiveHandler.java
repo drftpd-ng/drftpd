@@ -21,7 +21,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.11 2004/01/15 20:37:08 zubov Exp $
+ * @version $Id: ArchiveHandler.java,v 1.12 2004/01/20 04:18:41 zubov Exp $
  */
 public class ArchiveHandler extends Thread {
 
@@ -170,8 +170,10 @@ public class ArchiveHandler extends Thread {
 	}
 
 	private LinkedRemoteFile getOldestNonArchivedDir(LinkedRemoteFile lrf) {
-		if ( _parent.checkExclude(lrf) )
+		if (_parent.checkExclude(lrf)) {
+			logger.debug(lrf.getPath() + " is excluded");
 			return null;
+		}
 		if (lrf.getDirectories().size() == 0) {
 			if (System.currentTimeMillis() - lrf.lastModified()
 				< _parent.getArchiveAfter()) {
