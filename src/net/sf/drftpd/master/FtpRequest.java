@@ -36,13 +36,15 @@ public class FtpRequest {
 				spInd = line.indexOf(' ', spInd+1);
 				if(spInd != -1) {
 					command = line.substring(0, spInd).toUpperCase();
-					argument = line.substring(spInd + 1);					
+					argument = line.substring(spInd + 1);
 				} else {
 					command = line.toUpperCase();
+					argument = null;
 				}
 			}
 		} else {
 			command = line.toUpperCase();
+			argument = null;
 		}
 
 		if ((command.length() > 0) && (command.charAt(0) == 'X')) {

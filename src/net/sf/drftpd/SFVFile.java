@@ -2,9 +2,8 @@ package net.sf.drftpd;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
@@ -15,13 +14,18 @@ import java.util.Set;
  * Window>Preferences>Java>Code Generation.
  */
 public class SFVFile {
-	Map entries = new HashMap();
+	/**
+	 * String fileName as key
+	 * Long checkSum as value
+	 */
+	Map entries = new Hashtable();
 	/**
 	 * Constructor for SFVFile.
 	 */
 	public SFVFile(BufferedReader in) throws IOException {
 		String line;
 		while ((line = in.readLine()) != null) {
+			if(line.length() == 0) continue;
 			if (line.charAt(0) == ';')
 				continue;
 			int separator = line.indexOf(" ");
@@ -34,7 +38,14 @@ public class SFVFile {
 		}
 	}
 	
-	public Set entrySet() {
-		return entries.entrySet();
+	public Map getEntries() {
+		return entries;
 	}
+	
+	public long get(String fileName) throws ObjectNotFoundException {
+		Long checksum = (Long)entries.get(fileName);
+		if(checksum == null) throw new ObjectNotFoundException();
+		return checksum.longValue();
+	}
+
 }

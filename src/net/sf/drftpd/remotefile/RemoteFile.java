@@ -58,7 +58,7 @@ public abstract class RemoteFile {
 	
 	public String getOwner() {
 		if (owner == null)
-			return "<unknown>";
+			return "drftpd";
 		return owner;
 	}
 	/**

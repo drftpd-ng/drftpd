@@ -1,1036 +1,551 @@
+/*
+ * Created on 2003-jul-26
+ *
+ * To change the template for this generated file go to
+ * Window>Preferences>Java>Code Generation>Code and Comments
+ */
 package net.sf.drftpd.master.usermanager;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.Iterator;
 
-import org.apache.oro.text.GlobCompiler;
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.Perl5Matcher;
+import net.sf.drftpd.DuplicateElementException;
+import net.sf.drftpd.ObjectExistsException;
 
 /**
- * Generic user class. 
+ * @author mog
  *
- * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
+ * To change the template for this generated type comment go to
+ * Window>Preferences>Java>Code Generation>Code and Comments
  */
-
-// subclasses can add serializable themselves?
 public abstract class User {
-
-	private String username;
-	
-	private String comment;
-	private String root;
-	private String homeDirectory;
-	private String tagline;
-
-	//collections - initalized when usermanager load():s
-	protected Vector groups;
-	protected Vector ipMasks;
-
-	//limits
-	private int maxUploadRate;
-	private int maxDownloadRate;
-	private int maxSimUploads;
-	private int maxSimDownloads;
-
-	// time limits
-	private int idleTime = 0; // no limit
-	private int loginTime = 0;
-	private int lastAccessTime = 0;
-	private int timelimit;
-
-	private float ratio;
-	private long credits;
-
-	//flags
-	private boolean admin;
-	private boolean groupadmin;
-	private boolean nuker;
-	private boolean deleted;
-	private boolean anonymous;
-
-	/**
-	 * Time last nuked specified in seconds since 1970
-	 */
-	private int lastNuked;
-
-	//limits
-	private int maxLogins;
-	private int maxLoginsPerIP;
-
-	//misc counters
-	private int timeToday;
-
-	//action counters
-	private int logins;
-	private int timesNuked;
-
-	//transfer counters
-	private long nukedBytes;
-	
-	private long uploadedBytes;
-	private int uploadedFiles;
-	private int uploadedSeconds;
-	
-	private long downloadedBytes;
-	private int downloadedFiles;
-	private int downloadedSeconds;
-	
-	private long uploadedBytesWeek;
-	private int uploadedFilesWeek;
-	private int uploadedSecondsWeek;
-	
-	private long downloadedBytesWeek;
-	private int downloadedFilesWeek;
-	private int downloadedSecondsWeek;
-	
-	private long uploadedBytesMonth;
-	private int uploadedFilesMonth;
-	private int uploadedSecondsMonth;
-	
-	private long downloadedBytesMonth;
-	private int downloadedFilesMonth;
-	private int downloadedSecondsMonth;
-	
-	private long downloadedBytesDay;
-	private int downloadedFilesDay;
-	private int downloadedSecondsDay;
-
-	private long uploadedBytesDay;
-	private int uploadedFilesDay;
-	private int uploadedSecondsDay;
-		
-	/**
-	 * Constructor, set session id and default virtual directory object.
-	 */
-	public User(String username) {
-		this.username = username;
-	}
-
 	/**
 	 * authenticates and logs in the user.
 	 * @param user given password
 	 */
-	public abstract boolean login(String password);
+	
+	public abstract boolean checkPassword(String password);
 	public abstract void setPassword(String password);
-
-	public boolean checkIP(String masks[]) {
-
-		Perl5Matcher m = new Perl5Matcher();
-
-		Enumeration e2 = ipMasks.elements();
-		while (e2.hasMoreElements()) {
-			String mask = (String) e2.nextElement();
-
-			Pattern p;
-			try {
-				p = new GlobCompiler().compile(mask);
-			} catch (MalformedPatternException ex) {
-				ex.printStackTrace();
-				return false;
-			}
-
-			for (int i = 0; i < masks.length; i++) {
-				String subject = masks[i];
-
-				if (m.matches(subject, p)) {
-					return true;
-				}
-			}
-		}
-		System.out.println(getClass().getName()+".checkIP(): no match");
-		return false;
-	}
-
 	//////////////////////////////// generic getters & setters ///////////////////////
-
-	public void addIPMask(String mask) {
-		ipMasks.add(mask);
-	}
-	public void addGroup(String group) {
-		if(groups.contains(group)) return;
-		groups.add(group);
-	}
-
-	//
-	public String getGroup() {
-		return "<unknown>";
-		//return (String)groups.get(0);
-	}
-
-	public void updateCredits(long credits) throws IOException {
-		this.credits += credits;
-	}
-	
-	public void updateUploadedBytes(long bytes) throws IOException {
-		this.uploadedBytes += bytes;
-		this.uploadedBytesDay += bytes;
-		this.uploadedBytesWeek += bytes;
-		this.uploadedBytesMonth += bytes;
-	}
-	
-	public void updateDownloadedBytes(long bytes) throws IOException {
-		this.downloadedBytes += bytes;
-		this.downloadedBytesDay += bytes;
-		this.downloadedBytesWeek += bytes;
-		this.downloadedBytesMonth += bytes;
-	}
+	public abstract void updateCredits(long credits) throws IOException;
+	public abstract void updateDownloadedBytes(long bytes) throws IOException;
+	public abstract void updateUploadedBytes(long bytes) throws IOException;
 	
 	////////////////////////////////// autogenerated getters & setters below /////////////////////////////
-	/**
-	 * Get the user name.
-	 */
-	public String getUsername() {
-		return username;
-	}
+	public abstract String getUsername();
+	public abstract void rename(String username) throws ObjectExistsException, IOException;
 
-	public String getComment() {
-		return comment;
-	}
-	public void setComment(String comment) {
-		this.comment = comment;
-	}
-
-	public String getRoot() {
-		return root;
-	}
-	public void setRoot(String root) {
-		this.root = root;
-	}
-
-	public int getMaxSimDownloads() {
-		return maxSimDownloads;
-	}
-	public void setMaxSimDownloads(int maxSimDownloads) {
-		this.maxSimDownloads = maxSimDownloads;
-	}
-
+	public abstract String getComment();
+	public abstract void setComment(String comment);
+	public abstract int getMaxSimDownloads();
+	public abstract void setMaxSimDownloads(int maxSimDownloads);
 	/**
 	 * Returns the maxSimUploads.
 	 * @return int
 	 */
-	public int getMaxSimUploads() {
-		return maxSimUploads;
-	}
-
+	public abstract int getMaxSimUploads();
 	/**
 	 * Sets the maxSimUploads.
 	 * @param maxSimUploads The maxSimUploads to set
 	 */
-	public void setMaxSimUploads(int maxSimUploads) {
-		this.maxSimUploads = maxSimUploads;
-	}
-
+	public abstract void setMaxSimUploads(int maxSimUploads);
 	/**
 	 * Get the maximum idle time in second.
 	 */
-	public int getMaxIdleTime() {
-		return idleTime;
-	}
-
+	public abstract int getMaxIdleTime();
 	/**
 	 * Set the maximum idle time in second.
 	 */
-	public void setMaxIdleTime(int idleTime) {
-		this.idleTime = idleTime;
-	}
-
+	public abstract void setMaxIdleTime(int idleTime);
 	/**
 	 * Get maximum user upload rate in bytes/sec.
 	 */
-	public int getMaxUploadRate() {
-		return maxUploadRate;
-	}
-
+	public abstract int getMaxUploadRate();
 	/**
 	 * Set user maximum upload rate limit.
 	 * Less than or equal to zero means no limit.
 	 */
-	public void setMaxUploadRate(int rate) {
-		maxUploadRate = rate;
-	}
-
+	public abstract void setMaxUploadRate(int rate);
 	/**
 	 * Get maximum user download rate in bytes/sec
 	 */
-	public int getMaxDownloadRate() {
-		return maxDownloadRate;
-	}
-
+	public abstract int getMaxDownloadRate();
 	/**
 	 * Set user maximum download rate limit.
 	 * Less than or equal to zero means no limit.
 	 */
-	public void setMaxDownloadRate(int rate) {
-		maxDownloadRate = rate;
-	}
-
+	public abstract void setMaxDownloadRate(int rate);
 	/**
 	 * Get user loglin time.
 	 */
-	public int getLoginTime() {
-		return loginTime;
-	}
-
+	public abstract int getLoginTime();
 	/**
 	 * Get last access time
 	 */
-	public long getLastAccessTime() {
-		return lastAccessTime;
-	}
-
+	public abstract long getLastAccessTime();
 	/**
 	 * User login.
 	 */
-	public void login() {
-		logins += 1;
-		loginTime = (int) System.currentTimeMillis() / 1000;
-		lastAccessTime = loginTime;
-//		loggedIn = true;
-	}
-
+	public abstract void login();
 	/**
 	 * User logout
 	 */
-	public void logout() {
-		loginTime = 0;
-//		loggedIn = false;
-	}
-
+	public abstract void logout();
 	/**
 	 * Is an active user (is removable)?
 	 * Compares the last access time with the specified time.
 	 */
-	public boolean isActive(long currTime) {
-		boolean bActive = true;
-		long maxIdleTime = getMaxIdleTime() * 1000; // milliseconds
-		if (maxIdleTime != 0L) {
-			long idleTime = currTime - lastAccessTime;
-			bActive = maxIdleTime > idleTime;
-		}
-		return bActive;
-	}
-
+	public abstract boolean isActive(long currTime);
 	/**
 	 * Is still active. Compares the last access time with the
 	 * current time.
 	 */
-	public boolean isActive() {
-		return isActive(System.currentTimeMillis());
-	}
-
+	public abstract boolean isActive();
 	/**
 	 * Hit user - update last access time
 	 */
-	public void hitUser() {
-		lastAccessTime = (int) System.currentTimeMillis() * 1000;
+	public abstract void hitUser();
+	/**
+	 * Returns the maxLogins.
+	 * @return int
+	 */
+	public abstract int getMaxLogins();
+	/**
+	 * Returns the maxLoginsPerIP.
+	 * @return int
+	 */
+	public abstract int getMaxLoginsPerIP();
+	/**
+	 * Sets the maxLogins.
+	 * @param maxLogins The maxLogins to set
+	 */
+	public abstract void setMaxLogins(int maxLogins);
+	/**
+	 * Sets the maxLoginsPerIP.
+	 * @param maxLoginsPerIP The maxLoginsPerIP to set
+	 */
+	public abstract void setMaxLoginsPerIP(int maxLoginsPerIP);
+	/**
+	 * Returns the admin.
+	 * @return boolean
+	 */
+	public boolean isAdmin() {
+		return isMemberOf("admin");
 	}
+	public boolean isMemberOf(String group) {
+		for (Iterator iter = this.getGroups().iterator(); iter.hasNext();) {
+			if(group.equals((String)iter.next())) return true;
+		}
+		return false;
+	}
+	/**
+	 * Returns the nuker.
+	 * @return boolean
+	 */
+	public boolean isNuker() {
+		return isMemberOf("nuker");
+	}
+	/**
+	 * Returns the tagline.
+	 * @return String
+	 */
+	public abstract String getTagline();
+	
+	/**
+	 * Sets the tagline.
+	 * @param tagline The tagline to set
+	 */
+	public abstract void setTagline(String tagline);
+	/**
+	 * Returns the credits.
+	 * @return long
+	 */
+	public abstract long getCredits();
+	/**
+	 * Returns the idleTime.
+	 * @return long
+	 */
+	public abstract long getIdleTime();
+	/**
+	 * Returns the logins.
+	 * @return int
+	 */
+	public abstract int getLogins();
+	/**
+	 * Returns the ratio.
+	 * @return float
+	 */
+	public abstract float getRatio();
+	/**
+	 * Sets the credits.
+	 * @param credits The credits to set
+	 */
+	public abstract void setCredits(long credits);
+	/**
+	 * Sets the idleTime.
+	 * @param idleTime The idleTime to set
+	 */
+	public abstract void setIdleTime(int idleTime);
+	/**
+	 * Sets the ratio.
+	 * @param ratio The ratio to set
+	 */
+	public abstract void setRatio(float ratio);
+	/**
+	 * Returns the downloadedBytes.
+	 * @return long
+	 */
+	public abstract long getDownloadedBytes();
+	/**
+	 * Returns the downloadedBytesMonth.
+	 * @return long
+	 */
+	public abstract long getDownloadedBytesMonth();
+	/**
+	 * Returns the downloadedBytesWeek.
+	 * @return long
+	 */
+	public abstract long getDownloadedBytesWeek();
+	/**
+	 * Returns the uploadedBytes.
+	 * @return long
+	 */
+	public abstract long getUploadedBytes();
+	/**
+	 * Returns the uploadedBytesMonth.
+	 * @return long
+	 */
+	public abstract long getUploadedBytesMonth();
+	/**
+	 * Returns the uploadedBytesWeek.
+	 * @return long
+	 */
+	public abstract long getUploadedBytesWeek();
+	/**
+	 * Sets the downloadedBytes.
+	 * @param downloadedBytes The downloadedBytes to set
+	 */
+	public abstract void setDownloadedBytes(long downloadedBytes);
+	/**
+	 * Sets the downloadedBytesMonth.
+	 * @param downloadedBytesMonth The downloadedBytesMonth to set
+	 */
+	public abstract void setDownloadedBytesMonth(long downloadedBytesMonth);
+	/**
+	 * Sets the downloadedBytesWeek.
+	 * @param downloadedBytesWeek The downloadedBytesWeek to set
+	 */
+	public abstract void setDownloadedBytesWeek(long downloadedBytesWeek);
+	/**
+	 * Sets the uploadedBytes.
+	 * @param uploadedBytes The uploadedBytes to set
+	 */
+	public abstract void setUploadedBytes(long uploadedBytes);
+	/**
+	 * Sets the uploadedBytesMonth.
+	 * @param uploadedBytesMonth The uploadedBytesMonth to set
+	 */
+	public abstract void setUploadedBytesMonth(long uploadedBytesMonth);
+	/**
+	 * Sets the uploadedBytesWeek.
+	 * @param uploadedBytesWeek The uploadedBytesWeek to set
+	 */
+	public abstract void setUploadedBytesWeek(long uploadedBytesWeek);
+	/**
+	 * Returns the downloadedBytesDay.
+	 * @return long
+	 */
+	public abstract long getDownloadedBytesDay();
+	/**
+	 * Returns the uploadedBytesDay.
+	 * @return long
+	 */
+	public abstract long getUploadedBytesDay();
+	/**
+	 * Sets the downloadedBytesDay.
+	 * @param downloadedBytesDay The downloadedBytesDay to set
+	 */
+	public abstract void setDownloadedBytesDay(long downloadedBytesDay);
+	/**
+	 * Sets the uploadedBytesDay.
+	 * @param uploadedBytesDay The uploadedBytesDay to set
+	 */
+	public abstract void setUploadedBytesDay(long uploadedBytesDay);
+	/**
+	 * Returns the deleted.
+	 * @return boolean
+	 */
+	public abstract boolean isDeleted();
+	/**
+	 * Sets the deleted.
+	 * @param deleted The deleted to set
+	 */
+	public abstract void setDeleted(boolean deleted);
+	
+	public abstract void purge();
+	/**
+	 * Returns the lastNuked.
+	 * @return long
+	 */
+	public abstract long getLastNuked();
+	/**
+	 * Sets the lastNuked.
+	 * @param lastNuked The lastNuked to set
+	 */
+	public abstract void setLastNuked(long lastNuked);
+	/**
+	 * Returns the nuked.
+	 * @return int
+	 */
+	public abstract int getTimesNuked();
+	/**
+	 * Sets the nuked.
+	 * @param nuked The nuked to set
+	 */
+	public abstract void setTimesNuked(int nuked);
+	public abstract void updateTimesNuked(int timesNuked);
 
 	/**
-	 * Equality check.
+	 * Returns the nukedBytes.
+	 * @return long
 	 */
+	public abstract long getNukedBytes();
+	public abstract void updateNukedBytes(long bytes);
+	/**
+	 * Sets the nukedBytes.
+	 * @param nukedBytes The nukedBytes to set
+	 */
+	public abstract void setNukedBytes(long nukedBytes);
+
+	/**
+	 * Returns the anonymous.
+	 * @return boolean
+	 */
+	public abstract boolean isAnonymous();
+	/**
+	 * Sets the anonymous.
+	 * @param anonymous The anonymous to set
+	 */
+	public abstract void setAnonymous(boolean anonymous);
+
+	/**
+	 * Sets the lastAccessTime.
+	 * @param lastAccessTime The lastAccessTime to set
+	 */
+	public abstract void setLastAccessTime(int lastAccessTime);
+	/**
+	 * Returns the timeToday.
+	 * @return long
+	 */
+	public abstract long getTimeToday();
+	/**
+	 * Sets the timeToday.
+	 * @param timeToday The timeToday to set
+	 */
+	public abstract void setTimeToday(int timeToday);
+	/**
+	 * Returns the timelimit.
+	 * @return int
+	 */
+	public abstract int getTimelimit();
+	/**
+	 * Sets the timelimit.
+	 * @param timelimit The timelimit to set
+	 */
+	public abstract void setTimelimit(int timelimit);
+	
+
+	public abstract void addGroup(String group) throws DuplicateElementException;
+	public abstract String getGroup();
+	public abstract Collection getGroups();
+	public abstract void removeGroup(String group) throws NoSuchFieldException;
+	
+	public abstract void addIPMask(String mask) throws DuplicateElementException;
+	public abstract boolean checkIP(String masks[]);
+	public abstract Collection getIpMasks();
+	public abstract void removeIpMask(String mask) throws NoSuchFieldException;
+
+	/**
+	 * Returns the downloadedFiles.
+	 * @return int
+	 */
+	public abstract int getDownloadedFiles();
+	/**
+	 * Returns the downloadedFilesDay.
+	 * @return int
+	 */
+	public abstract int getDownloadedFilesDay();
+	/**
+	 * Returns the downloadedFilesMonth.
+	 * @return int
+	 */
+	public abstract int getDownloadedFilesMonth();
+	/**
+	 * Returns the downloadedFilesWeek.
+	 * @return int
+	 */
+	public abstract int getDownloadedFilesWeek();
+	/**
+	 * Returns the downloadedSeconds.
+	 * @return int
+	 */
+	public abstract int getDownloadedSeconds();
+	/**
+	 * Returns the downloadedSecondsDay.
+	 * @return int
+	 */
+	public abstract int getDownloadedSecondsDay();
+	/**
+	 * Returns the downloadedSecondsMonth.
+	 * @return int
+	 */
+	public abstract int getDownloadedSecondsMonth();
+	/**
+	 * Returns the downloadedSecondsWeek.
+	 * @return int
+	 */
+	public abstract int getDownloadedSecondsWeek();
+	/**
+	 * Returns the uploadedFiles.
+	 * @return int
+	 */
+	public abstract int getUploadedFiles();
+	/**
+	 * Returns the uploadedFilesDay.
+	 * @return int
+	 */
+	public abstract int getUploadedFilesDay();
+	/**
+	 * Returns the uploadedFilesMonth.
+	 * @return int
+	 */
+	public abstract int getUploadedFilesMonth();
+	/**
+	 * Returns the uploadedFilesWeek.
+	 * @return int
+	 */
+	public abstract int getUploadedFilesWeek();
+	/**
+	 * Returns the uploadedSeconds.
+	 * @return int
+	 */
+	public abstract int getUploadedSeconds();
+	/**
+	 * Returns the uploadedSecondsDay.
+	 * @return int
+	 */
+	public abstract int getUploadedSecondsDay();
+	/**
+	 * Returns the uploadedSecondsMonth.
+	 * @return int
+	 */
+	public abstract int getUploadedSecondsMonth();
+	/**
+	 * Returns the uploadedSecondsWeek.
+	 * @return int
+	 */
+	public abstract int getUploadedSecondsWeek();
+	/**
+	 * Sets the downloadedFiles.
+	 * @param downloadedFiles The downloadedFiles to set
+	 */
+	public abstract void setDownloadedFiles(int downloadedFiles);
+	/**
+	 * Sets the downloadedFilesDay.
+	 * @param downloadedFilesDay The downloadedFilesDay to set
+	 */
+	public abstract void setDownloadedFilesDay(int downloadedFilesDay);
+	/**
+	 * Sets the downloadedFilesMonth.
+	 * @param downloadedFilesMonth The downloadedFilesMonth to set
+	 */
+	public abstract void setDownloadedFilesMonth(int downloadedFilesMonth);
+	/**
+	 * Sets the downloadedFilesWeek.
+	 * @param downloadedFilesWeek The downloadedFilesWeek to set
+	 */
+	public abstract void setDownloadedFilesWeek(int downloadedFilesWeek);
+	/**
+	 * Sets the downloadedSeconds.
+	 * @param downloadedSeconds The downloadedSeconds to set
+	 */
+	public abstract void setDownloadedSeconds(int downloadedSeconds);
+	/**
+	 * Sets the downloadedSecondsDay.
+	 * @param downloadedSecondsDay The downloadedSecondsDay to set
+	 */
+	public abstract void setDownloadedSecondsDay(int downloadedSecondsDay);
+	/**
+	 * Sets the downloadedSecondsMonth.
+	 * @param downloadedSecondsMonth The downloadedSecondsMonth to set
+	 */
+	public abstract void setDownloadedSecondsMonth(int downloadedSecondsMonth);
+	/**
+	 * Sets the downloadedSecondsWeek.
+	 * @param downloadedSecondsWeek The downloadedSecondsWeek to set
+	 */
+	public abstract void setDownloadedSecondsWeek(int downloadedSecondsWeek);
+	/**
+	 * Sets the uploadedFiles.
+	 * @param uploadedFiles The uploadedFiles to set
+	 */
+	public abstract void setUploadedFiles(int uploadedFiles);
+	/**
+	 * Sets the uploadedFilesDay.
+	 * @param uploadedFilesDay The uploadedFilesDay to set
+	 */
+	public abstract void setUploadedFilesDay(int uploadedFilesDay);
+	/**
+	 * Sets the uploadedFilesMonth.
+	 * @param uploadedFilesMonth The uploadedFilesMonth to set
+	 */
+	public abstract void setUploadedFilesMonth(int uploadedFilesMonth);
+	/**
+	 * Sets the uploadedFilesWeek.
+	 * @param uploadedFilesWeek The uploadedFilesWeek to set
+	 */
+	public abstract void setUploadedFilesWeek(int uploadedFilesWeek);
+	/**
+	 * Sets the uploadedSeconds.
+	 * @param uploadedSeconds The uploadedSeconds to set
+	 */
+	public abstract void setUploadedSeconds(int uploadedSeconds);
+	/**
+	 * Sets the uploadedSecondsDay.
+	 * @param uploadedSecondsDay The uploadedSecondsDay to set
+	 */
+	public abstract void setUploadedSecondsDay(int uploadedSecondsDay);
+	/**
+	 * Sets the uploadedSecondsMonth.
+	 * @param uploadedSecondsMonth The uploadedSecondsMonth to set
+	 */
+	public abstract void setUploadedSecondsMonth(int uploadedSecondsMonth);
+	/**
+	 * Sets the uploadedSecondsWeek.
+	 * @param uploadedSecondsWeek The uploadedSecondsWeek to set
+	 */
+	public abstract void setUploadedSecondsWeek(int uploadedSecondsWeek);
+	/**
+	 * Sets the logins.
+	 * @param logins The logins to set
+	 */
+	public abstract void setLogins(int logins);
+	
+	/**
+	 * Saves the changes to the underlying medium
+	 */
+	public abstract void commit() throws IOException;
+	/**
+		 * Equality check.
+		 */
 	public boolean equals(Object obj) {
 		if (obj instanceof User) {
 			return ((User) obj).getUsername().equals(this.getUsername());
 		}
 		return false;
 	}
-
-	/** 
-	 * String representation
-	 */
-	public String toString() {
-		return username;
-	}
-
-	/**
-	 * Returns the maxLogins.
-	 * @return int
-	 */
-	public int getMaxLogins() {
-		return maxLogins;
-	}
-
-	/**
-	 * Returns the maxLoginsPerIP.
-	 * @return int
-	 */
-	public int getMaxLoginsPerIP() {
-		return maxLoginsPerIP;
-	}
-
-	/**
-	 * Sets the maxLogins.
-	 * @param maxLogins The maxLogins to set
-	 */
-	public void setMaxLogins(int maxLogins) {
-		this.maxLogins = maxLogins;
-	}
-
-	/**
-	 * Sets the maxLoginsPerIP.
-	 * @param maxLoginsPerIP The maxLoginsPerIP to set
-	 */
-	public void setMaxLoginsPerIP(int maxLoginsPerIP) {
-		this.maxLoginsPerIP = maxLoginsPerIP;
-	}
-
-	/**
-	 * Returns the admin.
-	 * @return boolean
-	 */
-	public boolean isAdmin() {
-		return admin;
-	}
-
-	/**
-	 * Returns the nuker.
-	 * @return boolean
-	 */
-	public boolean isNuker() {
-		return nuker;
-	}
-
-	/**
-	 * Returns the tagline.
-	 * @return String
-	 */
-	public String getTagline() {
-		return tagline;
-	}
-
-	/**
-	 * Sets the admin.
-	 * @param admin The admin to set
-	 */
-	public void setAdmin(boolean admin) {
-		this.admin = admin;
-	}
-
-	/**
-	 * Sets the nuker.
-	 * @param nuker The nuker to set
-	 */
-	public void setNuker(boolean nuker) {
-		this.nuker = nuker;
-	}
-
-	/**
-	 * Sets the tagline.
-	 * @param tagline The tagline to set
-	 */
-	public void setTagline(String tagline) {
-		this.tagline = tagline;
-	}
-
-	/**
-	 * Returns the homeDirectory.
-	 * @return String
-	 */
-	public String getHomeDirectory() {
-		return homeDirectory;
-	}
-
-	/**
-	 * Sets the homeDirectory.
-	 * @param homeDirectory The homeDirectory to set
-	 */
-	public void setHomeDirectory(String homeDirectory) {
-		this.homeDirectory = homeDirectory;
-	}
-
-	/**
-	 * Returns the credits.
-	 * @return long
-	 */
-	public long getCredits() {
-		return credits;
-	}
-
-	/**
-	 * Returns the idleTime.
-	 * @return long
-	 */
-	public long getIdleTime() {
-		return idleTime;
-	}
-
-	/**
-	 * Returns the logins.
-	 * @return int
-	 */
-	public int getLogins() {
-		return logins;
-	}
-
-	/**
-	 * Returns the ratio.
-	 * @return float
-	 */
-	public float getRatio() {
-		return ratio;
-	}
-
-	/**
-	 * Sets the credits.
-	 * @param credits The credits to set
-	 */
-	public void setCredits(long credits) {
-		this.credits = credits;
-	}
-
-	/**
-	 * Sets the idleTime.
-	 * @param idleTime The idleTime to set
-	 */
-	public void setIdleTime(int idleTime) {
-		this.idleTime = idleTime;
-	}
-
-	/**
-	 * Sets the ratio.
-	 * @param ratio The ratio to set
-	 */
-	public void setRatio(float ratio) {
-		this.ratio = ratio;
-	}
-
-	/**
-	 * Returns the downloadedBytes.
-	 * @return long
-	 */
-	public long getDownloadedBytes() {
-		return downloadedBytes;
-	}
-
-	/**
-	 * Returns the downloadedBytesMonth.
-	 * @return long
-	 */
-	public long getDownloadedBytesMonth() {
-		return downloadedBytesMonth;
-	}
-
-	/**
-	 * Returns the downloadedBytesWeek.
-	 * @return long
-	 */
-	public long getDownloadedBytesWeek() {
-		return downloadedBytesWeek;
-	}
-
-	/**
-	 * Returns the uploadedBytes.
-	 * @return long
-	 */
-	public long getUploadedBytes() {
-		return uploadedBytes;
-	}
-
-	/**
-	 * Returns the uploadedBytesMonth.
-	 * @return long
-	 */
-	public long getUploadedBytesMonth() {
-		return uploadedBytesMonth;
-	}
-
-	/**
-	 * Returns the uploadedBytesWeek.
-	 * @return long
-	 */
-	public long getUploadedBytesWeek() {
-		return uploadedBytesWeek;
-	}
-
-	/**
-	 * Sets the downloadedBytes.
-	 * @param downloadedBytes The downloadedBytes to set
-	 */
-	public void setDownloadedBytes(long downloadedBytes) {
-		this.downloadedBytes = downloadedBytes;
-	}
-
-	/**
-	 * Sets the downloadedBytesMonth.
-	 * @param downloadedBytesMonth The downloadedBytesMonth to set
-	 */
-	public void setDownloadedBytesMonth(long downloadedBytesMonth) {
-		this.downloadedBytesMonth = downloadedBytesMonth;
-	}
-
-	/**
-	 * Sets the downloadedBytesWeek.
-	 * @param downloadedBytesWeek The downloadedBytesWeek to set
-	 */
-	public void setDownloadedBytesWeek(long downloadedBytesWeek) {
-		this.downloadedBytesWeek = downloadedBytesWeek;
-	}
-
-	/**
-	 * Sets the uploadedBytes.
-	 * @param uploadedBytes The uploadedBytes to set
-	 */
-	public void setUploadedBytes(long uploadedBytes) {
-		this.uploadedBytes = uploadedBytes;
-	}
-
-	/**
-	 * Sets the uploadedBytesMonth.
-	 * @param uploadedBytesMonth The uploadedBytesMonth to set
-	 */
-	public void setUploadedBytesMonth(long uploadedBytesMonth) {
-		this.uploadedBytesMonth = uploadedBytesMonth;
-	}
-
-	/**
-	 * Sets the uploadedBytesWeek.
-	 * @param uploadedBytesWeek The uploadedBytesWeek to set
-	 */
-	public void setUploadedBytesWeek(long uploadedBytesWeek) {
-		this.uploadedBytesWeek = uploadedBytesWeek;
-	}
-
-	/**
-	 * Returns the downloadedBytesDay.
-	 * @return long
-	 */
-	public long getDownloadedBytesDay() {
-		return downloadedBytesDay;
-	}
-
-	/**
-	 * Returns the uploadedBytesDay.
-	 * @return long
-	 */
-	public long getUploadedBytesDay() {
-		return uploadedBytesDay;
-	}
-
-	/**
-	 * Sets the downloadedBytesDay.
-	 * @param downloadedBytesDay The downloadedBytesDay to set
-	 */
-	public void setDownloadedBytesDay(long downloadedBytesDay) {
-		this.downloadedBytesDay = downloadedBytesDay;
-	}
-
-	/**
-	 * Sets the uploadedBytesDay.
-	 * @param uploadedBytesDay The uploadedBytesDay to set
-	 */
-	public void setUploadedBytesDay(long uploadedBytesDay) {
-		this.uploadedBytesDay = uploadedBytesDay;
-	}
-
-	/**
-	 * Returns the deleted.
-	 * @return boolean
-	 */
-	public boolean isDeleted() {
-		return deleted;
-	}
-
-	/**
-	 * Sets the deleted.
-	 * @param deleted The deleted to set
-	 */
-	public void setDeleted(boolean deleted) {
-		this.deleted = deleted;
-	}
-
-	/**
-	 * Returns the lastNuked.
-	 * @return long
-	 */
-	public int getLastNuked() {
-		return lastNuked;
-	}
-
-	/**
-	 * Returns the nuked.
-	 * @return int
-	 */
-	public int getTimesNuked() {
-		return timesNuked;
-	}
-
-	/**
-	 * Returns the nukedBytes.
-	 * @return long
-	 */
-	public long getNukedBytes() {
-		return nukedBytes;
-	}
-
-	/**
-	 * Sets the lastNuked.
-	 * @param lastNuked The lastNuked to set
-	 */
-	public void setLastNuked(int lastNuked) {
-		this.lastNuked = lastNuked;
-	}
-
-	/**
-	 * Sets the nuked.
-	 * @param nuked The nuked to set
-	 */
-	public void setTimesNuked(int nuked) {
-		this.timesNuked = nuked;
-	}
-
-	/**
-	 * Sets the nukedBytes.
-	 * @param nukedBytes The nukedBytes to set
-	 */
-	public void setNukedBytes(long nukedBytes) {
-		this.nukedBytes = nukedBytes;
-	}
-
-	/**
-	 * Returns the anonymous.
-	 * @return boolean
-	 */
-	public boolean isAnonymous() {
-		return anonymous;
-	}
-
-	/**
-	 * Sets the anonymous.
-	 * @param anonymous The anonymous to set
-	 */
-	public void setAnonymous(boolean anonymous) {
-		this.anonymous = anonymous;
-	}
-
-	/**
-	 * Sets the lastAccessTime.
-	 * @param lastAccessTime The lastAccessTime to set
-	 */
-	public void setLastAccessTime(int lastAccessTime) {
-		this.lastAccessTime = lastAccessTime;
-	}
-
-	/**
-	 * Returns the timeToday.
-	 * @return long
-	 */
-	public long getTimeToday() {
-		return timeToday;
-	}
-
-	/**
-	 * Sets the timeToday.
-	 * @param timeToday The timeToday to set
-	 */
-	public void setTimeToday(int timeToday) {
-		this.timeToday = timeToday;
-	}
-
-	/**
-	 * Returns the timelimit.
-	 * @return int
-	 */
-	public int getTimelimit() {
-		return timelimit;
-	}
-
-	/**
-	 * Sets the timelimit.
-	 * @param timelimit The timelimit to set
-	 */
-	public void setTimelimit(int timelimit) {
-		this.timelimit = timelimit;
-	}
-
-	/**
-	 * Returns the groups.
-	 * @return Vector
-	 */
-	public Collection getGroups() {
-		return groups;
-	}
-
-	/**
-	 * Returns the ipMasks.
-	 * @return Vector
-	 */
-	public Collection getIpMasks() {
-		return ipMasks;
-	}
-
-	/**
-	 * Returns the downloadedFiles.
-	 * @return int
-	 */
-	public int getDownloadedFiles() {
-		return downloadedFiles;
-	}
-
-	/**
-	 * Returns the downloadedFilesDay.
-	 * @return int
-	 */
-	public int getDownloadedFilesDay() {
-		return downloadedFilesDay;
-	}
-
-	/**
-	 * Returns the downloadedFilesMonth.
-	 * @return int
-	 */
-	public int getDownloadedFilesMonth() {
-		return downloadedFilesMonth;
-	}
-
-	/**
-	 * Returns the downloadedFilesWeek.
-	 * @return int
-	 */
-	public int getDownloadedFilesWeek() {
-		return downloadedFilesWeek;
-	}
-
-	/**
-	 * Returns the downloadedSeconds.
-	 * @return int
-	 */
-	public int getDownloadedSeconds() {
-		return downloadedSeconds;
-	}
-
-	/**
-	 * Returns the downloadedSecondsDay.
-	 * @return int
-	 */
-	public int getDownloadedSecondsDay() {
-		return downloadedSecondsDay;
-	}
-
-	/**
-	 * Returns the downloadedSecondsMonth.
-	 * @return int
-	 */
-	public int getDownloadedSecondsMonth() {
-		return downloadedSecondsMonth;
-	}
-
-	/**
-	 * Returns the downloadedSecondsWeek.
-	 * @return int
-	 */
-	public int getDownloadedSecondsWeek() {
-		return downloadedSecondsWeek;
-	}
-
-	/**
-	 * Returns the uploadedFiles.
-	 * @return int
-	 */
-	public int getUploadedFiles() {
-		return uploadedFiles;
-	}
-
-	/**
-	 * Returns the uploadedFilesDay.
-	 * @return int
-	 */
-	public int getUploadedFilesDay() {
-		return uploadedFilesDay;
-	}
-
-	/**
-	 * Returns the uploadedFilesMonth.
-	 * @return int
-	 */
-	public int getUploadedFilesMonth() {
-		return uploadedFilesMonth;
-	}
-
-	/**
-	 * Returns the uploadedFilesWeek.
-	 * @return int
-	 */
-	public int getUploadedFilesWeek() {
-		return uploadedFilesWeek;
-	}
-
-	/**
-	 * Returns the uploadedSeconds.
-	 * @return int
-	 */
-	public int getUploadedSeconds() {
-		return uploadedSeconds;
-	}
-
-	/**
-	 * Returns the uploadedSecondsDay.
-	 * @return int
-	 */
-	public int getUploadedSecondsDay() {
-		return uploadedSecondsDay;
-	}
-
-	/**
-	 * Returns the uploadedSecondsMonth.
-	 * @return int
-	 */
-	public int getUploadedSecondsMonth() {
-		return uploadedSecondsMonth;
-	}
-
-	/**
-	 * Returns the uploadedSecondsWeek.
-	 * @return int
-	 */
-	public int getUploadedSecondsWeek() {
-		return uploadedSecondsWeek;
-	}
-
-	/**
-	 * Sets the downloadedFiles.
-	 * @param downloadedFiles The downloadedFiles to set
-	 */
-	public void setDownloadedFiles(int downloadedFiles) {
-		this.downloadedFiles = downloadedFiles;
-	}
-
-	/**
-	 * Sets the downloadedFilesDay.
-	 * @param downloadedFilesDay The downloadedFilesDay to set
-	 */
-	public void setDownloadedFilesDay(int downloadedFilesDay) {
-		this.downloadedFilesDay = downloadedFilesDay;
-	}
-
-	/**
-	 * Sets the downloadedFilesMonth.
-	 * @param downloadedFilesMonth The downloadedFilesMonth to set
-	 */
-	public void setDownloadedFilesMonth(int downloadedFilesMonth) {
-		this.downloadedFilesMonth = downloadedFilesMonth;
-	}
-
-	/**
-	 * Sets the downloadedFilesWeek.
-	 * @param downloadedFilesWeek The downloadedFilesWeek to set
-	 */
-	public void setDownloadedFilesWeek(int downloadedFilesWeek) {
-		this.downloadedFilesWeek = downloadedFilesWeek;
-	}
-
-	/**
-	 * Sets the downloadedSeconds.
-	 * @param downloadedSeconds The downloadedSeconds to set
-	 */
-	public void setDownloadedSeconds(int downloadedSeconds) {
-		this.downloadedSeconds = downloadedSeconds;
-	}
-
-	/**
-	 * Sets the downloadedSecondsDay.
-	 * @param downloadedSecondsDay The downloadedSecondsDay to set
-	 */
-	public void setDownloadedSecondsDay(int downloadedSecondsDay) {
-		this.downloadedSecondsDay = downloadedSecondsDay;
-	}
-
-	/**
-	 * Sets the downloadedSecondsMonth.
-	 * @param downloadedSecondsMonth The downloadedSecondsMonth to set
-	 */
-	public void setDownloadedSecondsMonth(int downloadedSecondsMonth) {
-		this.downloadedSecondsMonth = downloadedSecondsMonth;
-	}
-
-	/**
-	 * Sets the downloadedSecondsWeek.
-	 * @param downloadedSecondsWeek The downloadedSecondsWeek to set
-	 */
-	public void setDownloadedSecondsWeek(int downloadedSecondsWeek) {
-		this.downloadedSecondsWeek = downloadedSecondsWeek;
-	}
-
-	/**
-	 * Sets the uploadedFiles.
-	 * @param uploadedFiles The uploadedFiles to set
-	 */
-	public void setUploadedFiles(int uploadedFiles) {
-		this.uploadedFiles = uploadedFiles;
-	}
-
-	/**
-	 * Sets the uploadedFilesDay.
-	 * @param uploadedFilesDay The uploadedFilesDay to set
-	 */
-	public void setUploadedFilesDay(int uploadedFilesDay) {
-		this.uploadedFilesDay = uploadedFilesDay;
-	}
-
-	/**
-	 * Sets the uploadedFilesMonth.
-	 * @param uploadedFilesMonth The uploadedFilesMonth to set
-	 */
-	public void setUploadedFilesMonth(int uploadedFilesMonth) {
-		this.uploadedFilesMonth = uploadedFilesMonth;
-	}
-
-	/**
-	 * Sets the uploadedFilesWeek.
-	 * @param uploadedFilesWeek The uploadedFilesWeek to set
-	 */
-	public void setUploadedFilesWeek(int uploadedFilesWeek) {
-		this.uploadedFilesWeek = uploadedFilesWeek;
-	}
-
-	/**
-	 * Sets the uploadedSeconds.
-	 * @param uploadedSeconds The uploadedSeconds to set
-	 */
-	public void setUploadedSeconds(int uploadedSeconds) {
-		this.uploadedSeconds = uploadedSeconds;
-	}
-
-	/**
-	 * Sets the uploadedSecondsDay.
-	 * @param uploadedSecondsDay The uploadedSecondsDay to set
-	 */
-	public void setUploadedSecondsDay(int uploadedSecondsDay) {
-		this.uploadedSecondsDay = uploadedSecondsDay;
-	}
-
-	/**
-	 * Sets the uploadedSecondsMonth.
-	 * @param uploadedSecondsMonth The uploadedSecondsMonth to set
-	 */
-	public void setUploadedSecondsMonth(int uploadedSecondsMonth) {
-		this.uploadedSecondsMonth = uploadedSecondsMonth;
-	}
-
-	/**
-	 * Sets the uploadedSecondsWeek.
-	 * @param uploadedSecondsWeek The uploadedSecondsWeek to set
-	 */
-	public void setUploadedSecondsWeek(int uploadedSecondsWeek) {
-		this.uploadedSecondsWeek = uploadedSecondsWeek;
-	}
-
-	/**
-	 * Sets the logins.
-	 * @param logins The logins to set
-	 */
-	public void setLogins(int logins) {
-		this.logins = logins;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	public int hashCode() {
 		return getUsername().hashCode();
 	}
-
 }

@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.AlreadyBoundException;
@@ -23,15 +24,16 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.drftpd.FatalException;
+import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.GlftpdLog;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.master.queues.NukeLog;
-import net.sf.drftpd.master.usermanager.GlftpdUserManager;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.remotefile.JDOMRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.slave.*;
+import net.sf.drftpd.slave.RemoteSlave;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveImpl;
 
@@ -55,9 +57,7 @@ public class ConnectionManager {
 		logger.setLevel(Level.FINEST);
 	}
 
-	public ConnectionManager(Properties cfg) {
-		LinkedRemoteFile root = null;
-
+	public List loadRemoteSlaves() {
 		List rslaves = new ArrayList();
 		try {
 			Document doc = new SAXBuilder().build(new FileReader("slaves.xml"));
@@ -73,11 +73,25 @@ public class ConnectionManager {
 					new RemoteSlave(slaveElement.getChildText("name"), masks));
 			}
 		} catch (Exception ex) {
-			logger.log(Level.INFO, "Error reading masks from slaves.xml", ex);
+			//logger.log(Level.INFO, "Error reading masks from slaves.xml", ex);
+			throw new FatalException(ex);
+		}
+		return rslaves;
+	}
+	
+	public ConnectionManager(Properties cfg) {
+		LinkedRemoteFile root = null;
+		
+		List rslaves = loadRemoteSlaves();
+		/** END: load XML file database **/
+		
+		nukelog = new NukeLog();
+		try {
+			addFtpListener(new GlftpdLog(new File("glftpd.log")));
+		} catch (IOException e1) {
+			logger.log(Level.SEVERE, "Error writing to glftpd.log", e1);
 		}
 		
-		/** END: load XML file database **/
-		nukelog = new NukeLog();
 		try {
 			Document doc =
 				new SAXBuilder().build(new FileReader("nukelog.xml"));
@@ -105,6 +119,8 @@ public class ConnectionManager {
 				
 				nukelog.add(new NukeEvent(user, command, directory, time, multiplier, reason, nukees));
 			}
+		} catch(FileNotFoundException ex) {
+			logger.log(Level.FINE, "Couldn't open nukelog.xml - will create it later", ex);
 		} catch (Exception ex) {
 			logger.log(
 				Level.INFO,
@@ -175,8 +191,12 @@ public class ConnectionManager {
 				return;
 			}
 		}
-
-		usermanager = new GlftpdUserManager(cfg);
+		
+		try {
+			usermanager = (UserManager) Class.forName(cfg.getProperty("master.usermanager")).newInstance();
+		} catch (Exception e) {
+			throw new FatalException("Cannot create instance of usermanager, check master.usermanager in drftpd.conf", e);
+		}
 
 		timer = new Timer();
 		TimerTask timerLogoutIdle = new TimerTask() {
@@ -239,12 +259,16 @@ public class ConnectionManager {
 				slavemanager.getRoot(),
 				this,
 				this.nukelog);
-
-		conn.addFtpListener(new GlftpdLog(new File("glftpd.log")));
+		conn.ftpListeners = this.ftpListeners;
 		connections.add(conn);
 		conn.start();
 	}
-
+	
+	private ArrayList ftpListeners = new ArrayList();
+	public void addFtpListener(FtpListener listener) {
+		ftpListeners.add(listener);
+	}
+	
 	public void remove(BaseFtpConnection conn) {
 		if (!connections.remove(conn)) {
 			throw new RuntimeException("connections.remove() returned false.");
@@ -258,8 +282,13 @@ public class ConnectionManager {
 		return connections;
 	}
 
+	public void killConnection(BaseFtpConnection conn, String message) {
+		conn.stop(message);
+	}
+	
+	public static final String VERSION = "drftpd alpha master server CVS";
 	public static void main(String args[]) {
-		System.out.println("drftpd alpha master server starting.");
+		System.out.println(VERSION+" starting.");
 		System.out.println("http://drftpd.sourceforge.net");
 		try {
 			Handler handlers[] = Logger.getLogger("").getHandlers();
@@ -292,8 +321,10 @@ public class ConnectionManager {
 				while (true) {
 					mgr.start(server.accept());
 				}
+			} catch(BindException e) {
+				throw new FatalException("Couldn't bind on port "+cfg.getProperty("master.port"), e);
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.log(Level.SEVERE, "", e);
 			}
 		} catch (Throwable th) {
 			logger.log(Level.SEVERE, "", th);

@@ -6,7 +6,7 @@ import java.net.InetAddress;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import net.sf.drftpd.FileExistsException;
+import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
@@ -44,7 +44,7 @@ public interface Slave extends Remote {
 	 * Connect to 'addr':'port' and receive file.
 	 */
 	public Transfer doConnectReceive(
-		StaticRemoteFile dir,
+		String dirname,
 		String file,
 		User owner,
 		long offset,
@@ -56,7 +56,7 @@ public interface Slave extends Remote {
 	 * Listen on any port and receive 'file' when connection is received.
 	 */
 	public Transfer doListenReceive(
-		StaticRemoteFile dir,
+		String dirname,
 		String file,
 		User owner,
 		long offset)
@@ -88,7 +88,7 @@ public interface Slave extends Remote {
 	 * Rename files.
 	 */
 	public void rename(String from, String to)
-		throws RemoteException, FileNotFoundException, FileExistsException;
+		throws RemoteException, FileNotFoundException, ObjectExistsException;
 		
 	/**
 	 * Delete files.

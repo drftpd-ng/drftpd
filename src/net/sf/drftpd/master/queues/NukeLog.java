@@ -6,12 +6,13 @@
  */
 package net.sf.drftpd.master.queues;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.NukeEvent;
 
 import org.jdom.Element;
@@ -24,14 +25,25 @@ import org.jdom.output.XMLOutputter;
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 public class NukeLog {
-	Vector nukes = new Vector();
+	ArrayList nukes = new ArrayList();
 	
-	public NukeEvent get(String path) throws FileNotFoundException {
+	public NukeEvent get(String path) throws ObjectNotFoundException {
 		for (Iterator iter = nukes.iterator(); iter.hasNext();) {
 			NukeEvent nuke= (NukeEvent) iter.next();
 			if(nuke.getDirectory().equals(path)) return nuke;
 		}
-		throw new FileNotFoundException("No nukelog for: "+path);
+		throw new ObjectNotFoundException("No nukelog for: "+path);
+	}
+	
+	public void remove(String path) throws ObjectNotFoundException {
+		for (Iterator iter = nukes.iterator(); iter.hasNext();) {
+			NukeEvent nuke= (NukeEvent) iter.next();
+			if(nuke.getDirectory().equals(path)) {
+				iter.remove();
+				return;
+			} 
+		}
+		throw new ObjectNotFoundException("No nukelog for: "+path);
 	}
 	
 	public void add(NukeEvent nuke) {
@@ -43,7 +55,7 @@ public class NukeLog {
 			e.printStackTrace();
 		}
 	}
-	public Vector getAll() {
+	public List getAll() {
 		return nukes;
 	}
 	public Element toXML() {

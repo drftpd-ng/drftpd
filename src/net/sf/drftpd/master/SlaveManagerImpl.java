@@ -176,16 +176,16 @@ public class SlaveManagerImpl
 
 	public static void saveFilesXML(Element root) {
 		File filesDotXml = new File("files.xml");
-		if (filesDotXml.exists()
-			|| !filesDotXml.renameTo(new File("files.xml.bak"))) {
-			logger.log(
-				Level.WARNING,
-				"Error renaming "
-					+ filesDotXml.getPath()
-					+ " to files.xml.bak");
-		}
+//		if (filesDotXml.exists()
+//			|| !filesDotXml.renameTo(new File("files.xml.bak"))) {
+//			logger.log(
+//				Level.WARNING,
+//				"Error renaming "
+//					+ filesDotXml.getPath()
+//					+ " to files.xml.bak");
+//		}
 		try {
-			new XMLOutputter("    ", true).output(
+			new XMLOutputter("  ", true).output(
 				root,
 				new FileWriter(filesDotXml));
 		} catch (IOException ex) {

@@ -94,7 +94,7 @@ public class VirtualDirectory {
 
 		// print file list
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			RemoteFile file = (RemoteFile) iter.next();
 			printLine(file, out);
 		}
 //		if (fileList != null) {

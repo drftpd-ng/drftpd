@@ -14,7 +14,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Iterator;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,10 +34,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
  */
 public class BaseFtpConnection implements Runnable {
 
-	private Vector ftpListeners = new Vector();
-	public void addFtpListener(FtpListener listener) {
-		ftpListeners.add(listener);
-	}
+	java.util.List ftpListeners;
 
 	protected void dispatchFtpListenerEvent(FtpEvent event) {
 		for (Iterator iter = ftpListeners.iterator(); iter.hasNext();) {
@@ -64,7 +60,6 @@ public class BaseFtpConnection implements Runnable {
 	protected boolean executing;
 
 	protected FtpStatus ftpStatus;
-	//protected FtpDataConnection mDataConnection = null;
 	protected User user;
 	/**
 	 * Is the current password authenticated?
@@ -399,7 +394,6 @@ public class BaseFtpConnection implements Runnable {
 	protected int miPort = 0;
 
 	protected boolean mbPort = false;
-	//protected boolean mbPasv = false;
 
 	/**
 	 * Reset all the member variables. Close all sockets.

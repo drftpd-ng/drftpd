@@ -178,7 +178,7 @@ public class FtpStatus extends Properties {
 	public String getResponse(
 		int status,
 		FtpRequest cmd,
-		User user,
+		AbstractUser user,
 		String[] args) {
 		String strRes = getMessage(status, cmd, args);
 		return processNewLine(strRes, status);

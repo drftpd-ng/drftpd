@@ -6,19 +6,28 @@
  */
 package net.sf.drftpd.master;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  *
  */
 public class FtpResponse implements Cloneable {
+	private static Logger logger =
+		Logger.getLogger(FtpResponse.class.getName());
+	static {
+		logger.setLevel(Level.FINEST);
+	}
 
 	/** 150 File status okay; about to open data connection. */
 	public static final String RESPONSE_150_OK =
 		"150 File status okay; about to open data connection.\r\n";
-	
+
 	/** 200 Command okay */
 	public static final FtpResponse RESPONSE_200_COMMAND_OK =
 		new FtpResponse(200, "Command okay");
@@ -48,25 +57,27 @@ public class FtpResponse implements Cloneable {
 	/** 250 Requested file action okay, completed. */
 	public static final FtpResponse RESPONSE_250_ACTION_OKAY =
 		new FtpResponse(250, "Requested file action okay, completed.");
-	
+
 	/** 331 User name okay, need password. */
 	public static final FtpResponse RESPONSE_331_USERNAME_OK_NEED_PASS =
 		new FtpResponse(331, "User name okay, need password.");
-	
+
 	/** 350 Requested file action pending further information. */
 	public static final FtpResponse RESPONSE_350_PENDING_FURTHER_INFORMATION =
-		new FtpResponse(350, "Requested file action pending further information.");
-	
+		new FtpResponse(
+			350,
+			"Requested file action pending further information.");
+
 	/** 425 Can't open data connection. */
-	public static final String RESPONSE_425_CANT_OPEN_DATA_CONNECTION = 
+	public static final String RESPONSE_425_CANT_OPEN_DATA_CONNECTION =
 		"425 Can't open data connection.\r\n";
-	
+
 	/** 450 No transfer-slave(s) available
 	 * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
 	 */
 	public static final FtpResponse RESPONSE_450_SLAVE_UNAVAILABLE =
 		new FtpResponse(450, "No transfer-slave(s) available");
-		
+
 	/** 500 Syntax error, command unrecognized. */
 	public static final FtpResponse RESPONSE_500_SYNTAX_ERROR =
 		new FtpResponse(500, "Syntax error, command unrecognized.");
@@ -74,19 +85,19 @@ public class FtpResponse implements Cloneable {
 	/** 501 Syntax error in parameters or arguments */
 	public static final FtpResponse RESPONSE_501_SYNTAX_ERROR =
 		new FtpResponse(501, "Syntax error in parameters or arguments");
-	
+
 	/** 502 Command not implemented. */
 	public static final FtpResponse RESPONSE_502_COMMAND_NOT_IMPLEMENTED =
 		new FtpResponse(502, "Command not implemented.");
-	
+
 	/** 503 Bad sequence of commands. */
 	public static final FtpResponse RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS =
 		new FtpResponse(503, "Bad sequence of commands.");
-	
+
 	/** 504 Command not implemented for that parameter. */
 	public static final FtpResponse RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM =
 		new FtpResponse(504, "Command not implemented for that parameter.");
-	
+
 	/** 530 Access denied */
 	public static final FtpResponse RESPONSE_530_ACCESS_DENIED =
 		new FtpResponse(530, "Access denied");
@@ -121,10 +132,18 @@ public class FtpResponse implements Cloneable {
 		setMessage(response);
 	}
 
-	public void addComment(Object response) {
+	public FtpResponse addComment(Object response) {
 		lines.add(String.valueOf(response));
+		return this;
 	}
 
+	public FtpResponse addComment(BufferedReader in) throws IOException {
+		String line;
+		while ((line = in.readLine()) != null) { //throws IOException
+			this.addComment(line);
+		}
+		return this;
+	}
 	public void setMessage(String response) {
 		if (response.indexOf('\n') != -1)
 			throw new IllegalArgumentException("newlines not allowed in the response");
@@ -137,15 +156,17 @@ public class FtpResponse implements Cloneable {
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		//sb.append(code + "-");
+		if(lines.size() == 0 && message == null) setMessage("No text specified");
 		for (Iterator iter = lines.iterator(); iter.hasNext();) {
-			String comment = (String)iter.next();
-			if(!iter.hasNext() && message == null) {
-				sb.append(code + "  "+ comment+ "\r\n");
+			String comment = (String) iter.next();
+			if (!iter.hasNext() && message == null) {
+				sb.append(code + "  " + comment + "\r\n");
 			} else {
 				sb.append(code + "- " + comment + "\r\n");
 			}
 		}
-		if(message != null) sb.append(code + " " + message + "\r\n");
+		if (message != null)
+			sb.append(code + " " + message + "\r\n");
 		return sb.toString();
 	}
 
@@ -155,7 +176,7 @@ public class FtpResponse implements Cloneable {
 	protected Object clone() {
 		try {
 			FtpResponse r = (FtpResponse) super.clone();
-			r.lines = (Vector)this.lines.clone();
+			r.lines = (Vector) this.lines.clone();
 			return r;
 		} catch (CloneNotSupportedException ex) {
 			throw new RuntimeException(ex);

@@ -9,6 +9,28 @@ package net.sf.drftpd.master.usermanager;
  * Window>Preferences>Java>Code Generation.
  */
 public class NoSuchUserException extends Exception {
+	/**
+	 * 
+	 */
+	public NoSuchUserException() {
+		super();
+	}
+
+	/**
+	 * @param message
+	 * @param cause
+	 */
+	public NoSuchUserException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	/**
+	 * @param cause
+	 */
+	public NoSuchUserException(Throwable cause) {
+		super(cause);
+	}
+
 	public NoSuchUserException(String message) {
 		super(message);
 	}

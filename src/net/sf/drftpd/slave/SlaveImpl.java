@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
-import net.sf.drftpd.FileExistsException;
+import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.SlaveManager;
@@ -229,15 +229,16 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	 * Generic receive method.
 	 */
 	private Transfer doReceive(
-		StaticRemoteFile dir,
+		String dirname,
 		String filename,
 		User user,
 		long offset,
 		Connection conn)
 		throws IOException {
+		
 		String root = roots.getARoot().getPath();
-		new File(root + dir.getPath()).mkdirs();
-		File file = new File(root + dir.getPath() + "/" + filename);
+		new File(root + dirname).mkdirs();
+		File file = new File(root + File.separator + dirname + File.separator + filename);
 		System.out.println("Will write " + file);
 		FileOutputStream out = new FileOutputStream(file);
 
@@ -255,7 +256,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	 * @see net.sf.drftpd.slave.Slave#doConnectReceive(RemoteFile, long, InetAddress, int)
 	 */
 	public Transfer doConnectReceive(
-		StaticRemoteFile dir,
+		String dirname,
 		String filename,
 		User user,
 		long offset,
@@ -265,7 +266,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 		//Socket sock = new Socket(addr, port);
 		return doReceive(
-			dir,
+			dirname,
 			filename,
 			user,
 			offset,
@@ -276,7 +277,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	 * @see net.sf.drftpd.slave.Slave#doListenReceive(RemoteFile, long, int)
 	 */
 	public Transfer doListenReceive(
-		StaticRemoteFile dir,
+		String dirname,
 		String filename,
 		User user,
 		long offset)
@@ -285,7 +286,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		//server.setSoTimeout(xxx);
 		//		Socket sock = server.accept();
 		//		server.close();
-		return doReceive(dir, filename, user, offset, new PassiveConnection());
+		return doReceive(dirname, filename, user, offset, new PassiveConnection());
 	}
 
 	/**
@@ -308,7 +309,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	/**
 	 * @see net.sf.drftpd.slave.Slave#rename(String, String)
 	 */
-	public void rename(String from, String to) throws FileNotFoundException, FileExistsException {
+	public void rename(String from, String to) throws FileNotFoundException, ObjectExistsException {
 		System.out.println("rename from "+from+ " to "+to);
 		File fromfile = roots.getFile(from); // throws FileNotFoundException
 		if (!fromfile.exists())
@@ -316,7 +317,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 				"cannot rename from " + from + ", file does not exist");
 		File tofile = new File(roots.getARoot() + to);
 		if (tofile.exists())
-			throw new FileExistsException(
+			throw new ObjectExistsException(
 				"cannot rename from "
 					+ from
 					+ " to "

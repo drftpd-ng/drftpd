@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.slave.RemoteSlave;
 
 /**
  * Creates a single RemoteFile object that is not linked to any other objects.
@@ -64,6 +63,11 @@ public class StaticRemoteFile extends RemoteFile {
 		this.lastModified = lastModified;
 	}
 	
+	public StaticRemoteFile(Collection rslaves, String path, User owner, long size, long lastModified, long checkSum) {
+		this(rslaves, path, owner, size, lastModified);
+		this.checkSum = checkSum;
+	}
+	
 	/**
 	 * @see java.lang.Object#equals(Object)
 	 */
@@ -86,14 +90,14 @@ public class StaticRemoteFile extends RemoteFile {
 	public String getParent() {
 		throw new NoSuchMethodError("getParent() does not exist in StaticRemoteFile");
 	}
-
+	
 	/**
 	 * @see net.sf.drftpd.RemoteFile#getPath()
 	 */
 	public String getPath() {
 		return path;
 	}
-
+	
 	/**
 	 * @see net.sf.drftpd.remotefile.RemoteFileTree#listFiles()
 	 */

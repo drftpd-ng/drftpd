@@ -31,31 +31,31 @@ public class Test {
 
 		test(queue);
 		//System.out.println(((WeakReference)table.get("mog")).);
-		System.gc();
+		//System.gc();
 		//while(true) {
 		System.out.println("waiting for queue");
 		while (true) {
-			Reference ref;
-			try {
-				ref = queue.remove(10000L);
-			} catch (InterruptedException e) {
-				System.out.println("continue");
-				//System.gc();
-				continue;
-			}
-			if (ref == null) {
-				System.out.println("continue2");
-				System.gc();
-				continue;
-			}
-
-			System.out.println("ref.get(): " + ref.get());
 
 			for (Iterator iter = table.values().iterator(); iter.hasNext();) {
 				WeakReference refff = (WeakReference) iter.next();
 				MyObject obj = (MyObject)refff.get();
 				System.out.println("table: "+obj);
 			}
+
+			Reference ref = null;
+			try {
+				ref = queue.remove(2500L);
+			} catch (InterruptedException e) {
+				System.out.println("continue");
+			}
+			if (ref == null) {
+				System.out.println("continue2");
+				System.gc();
+				continue;
+			} else {
+				System.out.println("ref.get(): " + ref.get());
+			}
+
 		}
 		//}
 		/*
