@@ -2271,7 +2271,7 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 		RemoteSlave rslave;
 		try {
-			rslave = connManager.getSlavemanager().getSlave(request.getArgument());
+			rslave = connManager.getSlaveManager().getSlave(request.getArgument());
 		} catch (ObjectNotFoundException e) {
 			out.print(new FtpResponse(200, "No such slave"));
 			return;
@@ -4014,7 +4014,7 @@ public class FtpConnection extends BaseFtpConnection {
 			+ Bytes.formatBytes(_user.getCredits())
 			+ "] [Ratio: 1:"
 			+ _user.getRatio()
-			+ "] [Disk free: "+slaveManager.getAllStatus().getDiskSpaceAvailable()+"]";
+			+ "] [Disk free: "+Bytes.formatBytes(slaveManager.getAllStatus().getDiskSpaceAvailable())+"]";
 	}
 
 	/**

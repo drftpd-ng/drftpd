@@ -51,7 +51,7 @@ public class UpdateHosts implements FtpListener {
 			for (Iterator iter =
 				this
 					.connManager
-					.getSlavemanager()
+					.getSlaveManager()
 					.getSlaves()
 					.iterator();
 				iter.hasNext();

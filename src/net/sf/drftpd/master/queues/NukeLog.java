@@ -30,7 +30,7 @@ public class NukeLog {
 	public NukeEvent get(String path) throws ObjectNotFoundException {
 		for (Iterator iter = nukes.iterator(); iter.hasNext();) {
 			NukeEvent nuke= (NukeEvent) iter.next();
-			if(nuke.getDirectory().equals(path)) return nuke;
+			if(nuke.getPath().equals(path)) return nuke;
 		}
 		throw new ObjectNotFoundException("No nukelog for: "+path);
 	}
@@ -38,7 +38,7 @@ public class NukeLog {
 	public void remove(String path) throws ObjectNotFoundException {
 		for (Iterator iter = nukes.iterator(); iter.hasNext();) {
 			NukeEvent nuke= (NukeEvent) iter.next();
-			if(nuke.getDirectory().equals(path)) {
+			if(nuke.getPath().equals(path)) {
 				iter.remove();
 				return;
 			} 

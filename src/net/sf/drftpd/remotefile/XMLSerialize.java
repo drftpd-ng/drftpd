@@ -35,6 +35,7 @@ public class XMLSerialize {
 			Element slaves = new Element("slaves");
 			for (Iterator i = file.getSlaves().iterator(); i.hasNext();) {
 				RemoteSlave rslave = (RemoteSlave) i.next();
+				assert rslave != null;
 				slaves.addContent(new Element("slave").setText(rslave.getName()));
 			}
 			element.addContent(slaves);

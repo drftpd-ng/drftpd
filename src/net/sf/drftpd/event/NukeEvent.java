@@ -20,9 +20,10 @@ import org.jdom.Element;
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 public class NukeEvent extends UserEvent {
-
-	public NukeEvent(User user, String command, String directory, int multiplier, String reason, Map nukees) {
-		this(user, command, directory, System.currentTimeMillis(), multiplier, reason, nukees);
+	private String path;
+	
+	public NukeEvent(User user, String command, String path, int multiplier, String reason, Map nukees) {
+		this(user, command, path, System.currentTimeMillis(), multiplier, reason, nukees);
 	}
 	/**
 	 * @param user
@@ -30,18 +31,17 @@ public class NukeEvent extends UserEvent {
 	 * @param multiplier
 	 * @param nukees
 	 */
-	public NukeEvent(User user, String command, String directory, long time, int multiplier, String reason, Map nukees) {
-		super(user, command, time);
+	public NukeEvent(User user, String command, String path, long time, int multiplier, String reason, Map nukees) {
+		super(user, command,  time);
 		this.multiplier = multiplier;
 		this.reason = reason;
-		this.directory = directory;
+		this.path = path;
 		this.nukees = nukees;
 	}
 	
-	String directory;
-	String reason;
-	int multiplier;
-	Map nukees;
+	private String reason;
+	private int multiplier;
+	private Map nukees;
 	/**
 	 * @return
 	 */
@@ -76,13 +76,13 @@ public class NukeEvent extends UserEvent {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		return "["+getDirectory()+",multiplier="+getMultiplier()+"]";
+		return "[NUKE:"+getPath()+",multiplier="+getMultiplier()+"]";
 	}
 
 	public Element toXML() {
 		Element element = new Element("nuke");
 		element.addContent(new Element("user").setText(this.getUser().getUsername()));
-		element.addContent(new Element("path").setText(this.getDirectory()));
+		element.addContent(new Element("path").setText(this.getPath()));
 		element.addContent(new Element("multiplier").setText(Integer.toString(this.getMultiplier())));
 		element.addContent(new Element("reason").setText(this.getReason()));
 		element.addContent(new Element("time").setText(Long.toString(this.getTime())));
@@ -103,8 +103,8 @@ public class NukeEvent extends UserEvent {
 	/**
 	 * @return
 	 */
-	public String getDirectory() {
-		return directory;
+	public String getPath() {
+		return path;
 	}
 
 }

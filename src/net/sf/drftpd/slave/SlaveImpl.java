@@ -183,12 +183,12 @@ public class SlaveImpl
 			TransferImpl transfer = (TransferImpl) i.next();
 			if (transfer.getDirection()
 				== Transfer.TRANSFER_RECEIVING_UPLOAD) {
-				throughputUp += transfer.getTransferSpeed();
+				throughputUp += transfer.getXferSpeed();
 				transfersUp += 1;
 			} else if (
 				transfer.getDirection()
 					== Transfer.TRANSFER_SENDING_DOWNLOAD) {
-				throughputDown += transfer.getTransferSpeed();
+				throughputDown += transfer.getXferSpeed();
 				transfersDown += 1;
 			} else {
 				throw new FatalException("unrecognized direction");

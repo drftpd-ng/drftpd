@@ -134,7 +134,7 @@ public class FtpConfig {
 	}
 
 	public SlaveManagerImpl getSlaveManager() {
-		return this.connManager.getSlavemanager();
+		return this.connManager.getSlaveManager();
 	}
 
 	/**

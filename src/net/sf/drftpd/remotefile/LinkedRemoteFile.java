@@ -439,8 +439,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				break;
 			}
 		}
-		if (isDirectory())
-			path.append("/");
+		//if (isDirectory())
+		//	path.append("/");
 
 		return path.toString();
 	}
@@ -462,7 +462,9 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	public boolean hasOfflineSlaves() {
 		if (isFile()) {
 			for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
-				if (!((RemoteSlave) iter.next()).isAvailable())
+				RemoteSlave rslave = (RemoteSlave)iter.next();
+				assert rslave != null;
+				if (!rslave.isAvailable())
 					return false;
 			}
 		} else if (isDirectory()) {
@@ -542,7 +544,9 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		if (isDirectory())
 			return true;
 		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
-			if (((RemoteSlave) iter.next()).isAvailable())
+			RemoteSlave rslave = (RemoteSlave)iter.next();
+			assert rslave != null;
+			if (rslave.isAvailable())
 				return true;
 		}
 		return false;
@@ -974,7 +978,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		return this.lastModified;
 	}
 	/**
-	 * @return
+	 * @return xfertime in milliseconds
 	 */
 	public long getXfertime() {
 		return this.xfertime;
@@ -1050,6 +1054,13 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		});
 		t.run();
 		fromtransfer.downloadFile(getPath(), 'I', 0);
+	}
+
+	/**
+	 * @return
+	 */
+	public long getXferspeed() {
+		return length() / (getXfertime()/1000);
 	}
 
 }

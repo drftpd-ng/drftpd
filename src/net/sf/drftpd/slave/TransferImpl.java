@@ -172,7 +172,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		return direction == TRANSFER_RECEIVING_UPLOAD;
 	}
 
-	public int getTransferSpeed() {
+	public int getXferSpeed() {
 		long elapsed = getTransferTime();
 		
 		if (this.transfered == 0) {

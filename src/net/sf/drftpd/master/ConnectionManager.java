@@ -51,7 +51,7 @@ public class ConnectionManager {
 	private UserManager usermanager;
 	private NukeLog nukelog;
 	//allow package classes for inner classes without use of synthetic methods
-	private SlaveManagerImpl slavemanager;
+	private SlaveManagerImpl slaveManager;
 	private String shutdownMessage = null;
 	private Timer timer;
 
@@ -148,7 +148,7 @@ public class ConnectionManager {
 			new GlobRMIServerSocketFactory(rslaves);
 		/** register slavemanager **/
 		try {
-			slavemanager = new SlaveManagerImpl(cfg, rslaves, ssf, this);
+			slaveManager = new SlaveManagerImpl(cfg, rslaves, ssf, this);
 		} catch (RemoteException e) {
 			throw new FatalException(e);
 		}
@@ -188,7 +188,7 @@ public class ConnectionManager {
 
 		TimerTask timerSave = new TimerTask() {
 			public void run() {
-				getSlavemanager().saveFilesXML();
+				getSlaveManager().saveFilesXML();
 				try {
 					getUsermanager().saveAll();
 				} catch (UserFileException e) {
@@ -242,8 +242,8 @@ public class ConnectionManager {
 			new FtpConnection(
 				sock,
 				usermanager,
-				slavemanager,
-				slavemanager.getRoot(),
+				slaveManager,
+				slaveManager.getRoot(),
 				this,
 				this.nukelog,
 				this.commandDebug);
@@ -269,7 +269,7 @@ public class ConnectionManager {
 			throw new RuntimeException("connections.remove() returned false.");
 		}
 		if (isShutdown() && connections.isEmpty()) {
-			slavemanager.saveFilesXML();
+			slaveManager.saveFilesXML();
 			try {
 				getUsermanager().saveAll();
 			} catch (UserFileException e) {
@@ -355,8 +355,8 @@ public class ConnectionManager {
 	/**
 	 * @return
 	 */
-	public SlaveManagerImpl getSlavemanager() {
-		return slavemanager;
+	public SlaveManagerImpl getSlaveManager() {
+		return slaveManager;
 	}
 
 	/**

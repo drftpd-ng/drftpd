@@ -36,6 +36,7 @@ public class MLSTSerialize {
 					iterator.hasNext();
 					) {
 					RemoteSlave rslave = (RemoteSlave) iterator.next();
+					assert rslave != null;
 					buf.append("x.slave="+rslave.getName()+";");
 				}
 			}

@@ -17,7 +17,7 @@ public interface Transfer extends Remote {
 	public long getChecksum() throws RemoteException;
 	public int getLocalPort() throws RemoteException;
 	public long getTransfered() throws RemoteException;
-	public int getTransferSpeed() throws RemoteException;
+	public int getXferSpeed() throws RemoteException;
 	
 	public void uploadFile(String dirname, String filename, long offset) throws RemoteException, IOException;
 	public void downloadFile(String path, char mode, long resumePosition) throws RemoteException, IOException;
