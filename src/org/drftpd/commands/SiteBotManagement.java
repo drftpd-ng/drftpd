@@ -36,10 +36,10 @@ import org.drftpd.usermanager.NoSuchUserException;
  * @author mog
  * @version $Id$
  */
-public class SiteBotManagment implements CommandHandler, CommandHandlerFactory {
-    private static final Logger logger = Logger.getLogger(SiteBotManagment.class);
+public class SiteBotManagement implements CommandHandler, CommandHandlerFactory {
+    private static final Logger logger = Logger.getLogger(SiteBotManagement.class);
 
-    public SiteBotManagment() {
+    public SiteBotManagement() {
         super();
     }
 
@@ -103,7 +103,7 @@ public class SiteBotManagment implements CommandHandler, CommandHandlerFactory {
         }
 
         return new Reply(501,
-            conn.jprintf(SiteBotManagment.class, "sitebot.usage"));
+            conn.jprintf(SiteBotManagement.class, "sitebot.usage"));
     }
 
     private Reply doSITE_BLOWFISH(BaseFtpConnection conn, SiteBot sitebot) {

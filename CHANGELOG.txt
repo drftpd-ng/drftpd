@@ -302,7 +302,7 @@
   which will improve navigation and ease of implementing testcases.
 * Removed _self var from SlaveManagerImpl, breaking FileListConverter.
 * Moved net.sf.drftpd.master.command.plugins.IRC to
-  org.drftpd.commands.SiteBotManagment
+  org.drftpd.commands.SiteBotManagement
 * Added SITE IRC RAW command for sending RAW IRC commands.
 
 2004/07/09 Matthew Zimmerman <zubov@users.sourceforge.net>

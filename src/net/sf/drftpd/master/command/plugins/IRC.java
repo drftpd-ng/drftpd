@@ -17,12 +17,12 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import org.drftpd.commands.SiteBotManagment;
+import org.drftpd.commands.SiteBotManagement;
 
 
 /**
  * @author mog
- * @version $Id: IRC.java,v 1.7 2004/08/03 20:13:57 zubov Exp $
+ * @version $Id$
  */
-public class IRC extends SiteBotManagment {
+public class IRC extends SiteBotManagement {
 }

@@ -19,15 +19,15 @@ package org.drftpd.plugins;
 
 import junit.framework.TestCase;
 
-import org.drftpd.plugins.AffilManagment.AffilPermission;
+import org.drftpd.plugins.AffilManagement.AffilPermission;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.StaticRemoteFile;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: AffilManagementTest.java 879 2004-12-29 03:39:22Z mog $
  */
-public class AffilManagmentTest extends TestCase {
+public class AffilManagementTest extends TestCase {
 
 	private LinkedRemoteFile _root;
 
@@ -54,7 +54,7 @@ public class AffilManagmentTest extends TestCase {
 	}
 	public void testAffilMangment() {
 		buildRoot();
-		AffilPermission mg = new AffilManagment.AffilPermission("thegroup");
+		AffilPermission mg = new AffilManagement.AffilPermission("thegroup");
 		assertTrue(mg.checkPath(_release));
 		assertTrue(!mg.checkPath(_othergroup));
 	}

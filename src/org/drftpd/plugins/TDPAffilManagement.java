@@ -40,9 +40,9 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author Teflon
  */
-public class TDPAffilManagment implements CommandHandler, CommandHandlerFactory {
+public class TDPAffilManagement implements CommandHandler, CommandHandlerFactory {
 	private static final Logger logger = Logger
-			.getLogger(TDPAffilManagment.class);
+			.getLogger(TDPAffilManagement.class);
 
 	String _affilsRoot;
 	HashSet<String> _affils = new HashSet<String>();
@@ -55,7 +55,7 @@ public class TDPAffilManagment implements CommandHandler, CommandHandlerFactory 
 
 	//HashMap<String, String> _template;
 
-	public TDPAffilManagment() throws FileNotFoundException {
+	public TDPAffilManagement() throws FileNotFoundException {
 		super();
 		readPerms();
 	}
@@ -261,7 +261,7 @@ public class TDPAffilManagment implements CommandHandler, CommandHandlerFactory 
 			return doSITE_ADDAFFIL(conn);
 		if ("SITE DELAFFIL".equals(cmd))
 			return doSITE_DELAFFIL(conn);
-		throw UnhandledCommandException.create(TDPAffilManagment.class, conn
+		throw UnhandledCommandException.create(TDPAffilManagement.class, conn
 				.getRequest());
 	}
 
@@ -294,7 +294,7 @@ public class TDPAffilManagment implements CommandHandler, CommandHandlerFactory 
 		//_template = new HashMap<String, String>();
 		_allowedGroups = new HashMap<String, String>();
 		ResourceBundle bundle = ResourceBundle
-				.getBundle(TDPAffilManagment.class.getName());
+				.getBundle(TDPAffilManagement.class.getName());
 		try {
 			_allowedGroups
 					.put("affils.allow", bundle.getString("affils.allow"));

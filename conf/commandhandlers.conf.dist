@@ -132,8 +132,8 @@ SITE\ STOPJOBS=net.sf.drftpd.mirroring.JobManagerCommandHandler
 SITE\ ADDJOB=net.sf.drftpd.mirroring.JobManagerCommandHandler
 SITE\ REMOVEJOB=net.sf.drftpd.mirroring.JobManagerCommandHandler
 
-SITE\ IRC=org.drftpd.commands.SiteBotManagment
-SITE\ BLOWFISH=org.drftpd.commands.SiteBotManagment
+SITE\ IRC=org.drftpd.commands.SiteBotManagement
+SITE\ BLOWFISH=org.drftpd.commands.SiteBotManagement
 
 SITE\ SECTIONS=org.drftpd.commands.Sections
 

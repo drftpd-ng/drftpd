@@ -33,9 +33,9 @@ import org.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: AffilManagement.java 879 2004-12-29 03:39:22Z mog $
  */
-public class AffilManagment extends FtpListener {
+public class AffilManagement extends FtpListener {
 
 	public static class AffilPermission extends PathPermission {
 		private String _group;
