@@ -273,7 +273,18 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
 				.getRequest());
 	}
 
-	public String[] getFeatReplies() {
+    public String getHelp(String cmd) {
+        ResourceBundle bundle = ResourceBundle.getBundle(SiteManagement.class.getName());
+        if ("".equals(cmd))
+            return bundle.getString("help.general")+"\n";
+        else if("list".equals(cmd) || "plugins".equals(cmd) || "loadplugin".equals(cmd) ||
+                "unloadplugin".equals(cmd) || "shutdown".equals(cmd) || "reload".equals(cmd))
+            return bundle.getString("help."+cmd)+"\n";
+        else
+            return "";
+    }
+    
+    public String[] getFeatReplies() {
 		return null;
 	}
 

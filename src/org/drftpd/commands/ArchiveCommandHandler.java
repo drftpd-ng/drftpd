@@ -263,6 +263,10 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
         return reply;
     }
 
+    public String getHelp(String cmd) {
+        return this.toString()+"\n";
+    }
+    
     public String[] getFeatReplies() {
         return null;
     }

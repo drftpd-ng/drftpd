@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 
 /**
@@ -413,6 +414,22 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         return this;
     }
 
+    public String getHelp(String cmd) {
+        ResourceBundle bundle = ResourceBundle.getBundle(SlaveManagement.class.getName());
+        if ("".equals(cmd))
+            return bundle.getString("help.general")+"\n";
+        else if("slave".equals(cmd) ||
+                "slaves".equals(cmd) ||
+                "addslave".equals(cmd) ||
+                "delslave".equals(cmd) ||
+                "kickslave".equals(cmd) ||
+                "checkslaves".equals(cmd) ||
+                "remerge".equals(cmd))
+            return bundle.getString("help."+cmd)+"\n";
+        else
+            return "";
+    }
+    
     public String[] getFeatReplies() {
         return null;
     }

@@ -20,6 +20,7 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
+import net.sf.drftpd.master.command.plugins.Misc;
 
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
@@ -42,6 +43,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 
@@ -263,6 +265,20 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
             conn.getRequest());
     }
 
+    public String getHelp(String cmd) {
+        ResourceBundle bundle = ResourceBundle.getBundle(Misc.class.getName());
+        if ("".equals(cmd))
+            return bundle.getString("help.general")+"\n";
+        else if("listjobs".equals(cmd) ||
+                "addjob".equals(cmd) ||
+                "removejob".equals(cmd) ||
+                "startjob".equals(cmd) ||
+                "stopjob".equals(cmd))
+            return bundle.getString("help."+cmd)+"\n";
+        else
+            return "";
+    }
+    
     public String[] getFeatReplies() {
         return null;
     }

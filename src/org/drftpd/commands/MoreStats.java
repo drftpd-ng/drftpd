@@ -68,6 +68,10 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
         return this;
     }
 
+    public String getHelp(String cmd) {
+        return this.toString()+"\n";
+    }
+    
     public String[] getFeatReplies() {
         return null;
     }

@@ -486,6 +486,10 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
         throw UnhandledCommandException.create(Nuke.class, conn.getRequest());
     }
 
+    public String getHelp(String cmd) {
+        return this.toString()+"\n";
+    }
+    
     public String[] getFeatReplies() {
         return null;
     }

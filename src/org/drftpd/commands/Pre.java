@@ -147,6 +147,10 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
         return Reply.RESPONSE_200_COMMAND_OK;
     }
 
+    public String getHelp(String cmd) {
+        return this.toString()+"\n";
+    }
+    
     public String[] getFeatReplies() {
         return null;
     }

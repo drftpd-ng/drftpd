@@ -29,4 +29,5 @@ public interface CommandHandler {
         throws ReplyException;
 
     public String[] getFeatReplies();
+    public String getHelp(String cmd);
 }

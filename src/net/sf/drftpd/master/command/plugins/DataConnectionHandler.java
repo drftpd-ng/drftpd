@@ -24,6 +24,8 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
+import net.sf.drftpd.util.ReplacerUtils;
+
 import org.apache.log4j.Logger;
 
 import org.drftpd.Bytes;
@@ -68,6 +70,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import javax.net.ServerSocketFactory;
@@ -788,6 +791,16 @@ public class DataConnectionHandler implements CommandHandlerFactory,
         }
 
         return new String[] { "PRET" };
+    }
+    
+    public String getHelp(String cmd) {
+        ResourceBundle bundle = ResourceBundle.getBundle(DataConnectionHandler.class.getName());
+        if ("".equals(cmd))
+            return bundle.getString("help.general")+"\n";
+        else if("rescan".equals(cmd))
+            return bundle.getString("help.rescan")+"\n";
+        else
+            return "";
     }
 
     public RemoteSlave getTranferSlave() {

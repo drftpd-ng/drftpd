@@ -17,6 +17,8 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
+import java.util.ResourceBundle;
+
 import net.sf.drftpd.event.InviteEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
@@ -58,6 +60,16 @@ public class Invite implements CommandHandlerFactory, CommandHandler {
         return new Reply(200, "Inviting " + user);
     }
 
+    public String getHelp(String cmd) {
+        ResourceBundle bundle = ResourceBundle.getBundle(Invite.class.getName());
+        if ("".equals(cmd))
+            return bundle.getString("help.general")+"\n";
+        else if ("invite".equals(cmd))
+            return bundle.getString("help.invite")+"\n";
+        else
+            return "";
+    }
+    
     public String[] getFeatReplies() {
         return null;
     }

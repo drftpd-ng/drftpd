@@ -252,6 +252,10 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
         throw UnhandledCommandException.create(Login.class, conn.getRequest());
     }
 
+    public String getHelp(String cmd) {
+        return "";
+    }
+    
     public String[] getFeatReplies() {
         return null;
     }

@@ -395,6 +395,10 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
         //conn.reset();
     }
 
+    public String getHelp(String cmd) {
+        return "";
+    }
+    
     public String[] getFeatReplies() {
         return null;
     }

@@ -149,6 +149,10 @@ public class Request implements CommandHandlerFactory, CommandHandler {
         throw UnhandledCommandException.create(Request.class, conn.getRequest());
     }
 
+    public String getHelp(String cmd) {
+        return this.toString()+"\n";
+    }
+    
     public String[] getFeatReplies() {
         return null;
     }

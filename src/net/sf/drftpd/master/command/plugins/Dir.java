@@ -934,6 +934,16 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         throw UnhandledCommandException.create(Dir.class, request);
     }
 
+    public String getHelp(String cmd) {
+        ResourceBundle bundle = ResourceBundle.getBundle(Dir.class.getName());
+        if ("".equals(cmd))
+            return bundle.getString("help.general")+"\n";
+        else if("link".equals(cmd) || "link".equals(cmd) || "wipe".equals(cmd))
+            return bundle.getString("help."+cmd)+"\n";
+        else
+            return "";
+    }
+    
     public String[] getFeatReplies() {
         return null;
     }

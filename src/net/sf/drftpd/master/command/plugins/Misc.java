@@ -30,8 +30,12 @@ import org.drftpd.slave.Slave;
 
 import java.io.PrintWriter;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 
 /**
@@ -144,10 +148,29 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
         return new Reply(200, "Server time is: " + new Date());
     }
 
+    private Reply doSITE_HELP(BaseFtpConnection conn) {
+        String cmd = "";
+        String msg = "";
+        if (conn.getRequest().hasArgument()) {
+            cmd = conn.getRequest().getArgument();
+        }
+        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
+        Map handlers = conn.getCommandManager().getCommandHandlersMap();
+        for (Iterator iter = handlers.keySet().iterator(); iter.hasNext();) {
+            CommandHandler hnd = (CommandHandler) handlers.get(iter.next());
+            msg += hnd.getHelp(cmd.toLowerCase());
+        }
+        if ("".equals(msg))
+            return new Reply(200,"No help for site "+ cmd);
+        
+        response.addComment(msg);
+        return response;
+    }
+
     private Reply doSITE_VERS(BaseFtpConnection conn) {
         return new Reply(200, Slave.VERSION);
     }
-
+    
     public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         String cmd = conn.getRequest().getCommand();
@@ -172,6 +195,10 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
             return doSITE_VERS(conn);
         }
 
+        if ("SITE HELP".equals(cmd)) {
+            return doSITE_HELP(conn);
+        }
+
         throw UnhandledCommandException.create(Misc.class, conn.getRequest());
     }
 
@@ -180,6 +207,16 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
         return this;
     }
 
+    public String getHelp(String cmd) {
+        ResourceBundle bundle = ResourceBundle.getBundle(Misc.class.getName());
+        if ("".equals(cmd))
+            return bundle.getString("help.general")+"\n";
+        else if("help".equals(cmd))
+            return bundle.getString("help.help")+"\n";
+        else
+            return "";
+    }
+    
     public String[] getFeatReplies() {
         return null;
     }

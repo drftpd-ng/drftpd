@@ -265,6 +265,10 @@ public class TDPAffilManagment implements CommandHandlerFactory, CommandHandler 
 				.getRequest());
 	}
 
+    public String getHelp(String cmd) {
+        return this.toString()+"\n";
+    }
+    
 	public String[] getFeatReplies() {
 		return null;
 	}

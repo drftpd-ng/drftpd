@@ -390,6 +390,10 @@ public class TransferStatistics implements CommandHandlerFactory,
         return Bytes.formatBytes((long) rate) + "/s";
     }
 
+    public String getHelp(String cmd) {
+        return this.toString()+"\n";
+    }
+    
     public String[] getFeatReplies() {
         return null;
     }

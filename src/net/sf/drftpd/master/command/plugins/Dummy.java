@@ -68,6 +68,9 @@ public class Dummy implements CommandHandlerFactory {
             return Reply.RESPONSE_200_COMMAND_OK;
         }
 
+        public String getHelp(String cmd) {
+            return "";
+        }
         public String[] getFeatReplies() {
             return (String[]) _cmdmgr.getHandledCommands(getClass()).toArray(new String[0]);
         }

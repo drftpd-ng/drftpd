@@ -32,6 +32,7 @@ import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.ResourceBundle;
 
 
 /**
@@ -121,6 +122,16 @@ public class Search implements CommandHandlerFactory, CommandHandler {
         return this;
     }
 
+    public String getHelp(String cmd) {
+        ResourceBundle bundle = ResourceBundle.getBundle(Search.class.getName());
+        if ("".equals(cmd))
+            return bundle.getString("help.general")+"\n";
+        else if("search".equals(cmd) || "dupe".equals(cmd))
+            return bundle.getString("help."+cmd)+"\n";
+        else
+            return "";
+    }
+    
     public String[] getFeatReplies() {
         return null;
     }

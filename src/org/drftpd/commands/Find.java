@@ -847,6 +847,10 @@ public class Find implements CommandHandlerFactory, CommandHandler {
 		return null;
 	}
 
+    public String getHelp(String cmd) {
+        return this.toString()+"\n";
+    }
+    
 	public String[] getFeatReplies() {
 		return null;
 	}
