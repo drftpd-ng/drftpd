@@ -55,7 +55,7 @@ import de.hampelratte.id3.ID3v1Tag;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.156 2004/07/14 12:41:37 teflon114 Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.157 2004/07/14 12:52:00 teflon114 Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {

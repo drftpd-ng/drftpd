@@ -49,10 +49,11 @@ import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.Logger;
+import de.hampelratte.id3.ID3v1Tag;
 
 /**
  * @author mog
- * @version $Id: AsyncSlave.java,v 1.3 2004/07/12 20:37:39 mog Exp $
+ * @version $Id: AsyncSlave.java,v 1.4 2004/07/14 12:52:01 teflon114 Exp $
  */
 public class AsyncSlave extends Thread implements Slave, Unreferenced {
     private static final Logger logger =
@@ -198,7 +199,7 @@ public class AsyncSlave extends Thread implements Slave, Unreferenced {
             if (!spass.toLowerCase().equals(hash.toLowerCase())) {
                 AsyncSlaveListener.invalidSlave("INITFAIL BadKey", _sock);
             }
-            _cman.getGlobalContext().getSlaveManager().addSlave(_name, this, getSlaveStatus(), -1);
+            _cman.getSlaveManager().addSlave(_name, this, getSlaveStatus(), -1);
             start();
         } catch (IOException e) {
             if (e instanceof ConnectIOException
@@ -296,7 +297,7 @@ public class AsyncSlave extends Thread implements Slave, Unreferenced {
         // fatal error occured, close it all down
         // notify SlaveManager that we are dead
         try {
-            _cman.getGlobalContext().getSlaveManager().delSlave(_name, "Connection lost");
+            _cman.getSlaveManager().delSlave(_name, "Connection lost");
         } catch (Exception e) {
         }
     }
@@ -494,9 +495,9 @@ public class AsyncSlave extends Thread implements Slave, Unreferenced {
                 try {
                     LinkedRemoteFile root =
                     MLSTSerialize.unserialize(
-                    _cman.getGlobalContext().getConfig(),
+                    _cman.getConfig(),
                     new StringReader(buf.toString()),
-                    _cman.getGlobalContext().getSlaveManager().getSlaves());
+                    _cman.getSlaveManager().getSlaveList());
                     _root = root;
                 } catch (Exception e) {
                     logger.info("LIST Exception from " + getName(), e);
@@ -577,6 +578,10 @@ public class AsyncSlave extends Thread implements Slave, Unreferenced {
         return new SFVFile(new BufferedReader(new StringReader(sfv)));
     }
     
+	public ID3v1Tag getID3v1Tag(String path) throws IOException {
+		return null;
+	}
+
     public Transfer connect(InetSocketAddress addr, boolean encrypted) {
         AsyncCommand cmd = sendCommand("conn", addr.getAddress().getHostAddress());
         waitForCommand(cmd);
