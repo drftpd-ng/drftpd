@@ -93,11 +93,14 @@ public class DIZFile {
 		return _total;
 	}
 
-	public String fetchDiz() throws NoAvailableSlaveException {
+	public String fetchDiz() throws NoAvailableSlaveException, FileNotFoundException {
 		RemoteSlave aSlave = _file.getAvailableSlaves().iterator().next();
 		try {
 			return aSlave.fetchDIZFileFromIndex(aSlave.issueDIZFileToSlave(_file));
 		} catch (RemoteIOException e) {
+			if (e.getCause() instanceof FileNotFoundException) {
+				throw (FileNotFoundException) e.getCause();
+			}
 			aSlave.setOffline(e);
 			throw new NoAvailableSlaveException();
 		} catch (SlaveUnavailableException e) {
