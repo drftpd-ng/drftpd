@@ -674,18 +674,17 @@ public class FtpConnection extends BaseFtpConnection {
 		} finally {
 			try {
 				if(!request.getCommand().equals("STAT")) {
+					os.flush();
 					os.close();
 					dataSocket.close();
+					response.addComment(status());
+					out.print(response);
 				} else {
 					out.println("213 End of Status");
 				}
 			} catch (IOException e1) {
 				logger.error("", e1);
 			}
-		}
-		if(!request.getCommand().equals("STAT")) {
-			response.addComment(status());
-			out.print(response);
 		}
 		reset();
 	}
