@@ -17,6 +17,17 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
@@ -27,20 +38,7 @@ import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UnhandledCommandException;
-
 import org.drftpd.slave.Slave;
-import org.tanesha.replacer.ReplacerEnvironment;
-
-import java.io.PrintWriter;
-
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 
 
 /**
@@ -182,13 +180,7 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
     		throw new ReplyException("the " + cmd + " command does not exist");
     	}
     	// global list of commands with help
-    	Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
-    	try {
-    		response.addComment(ResourceBundle.getBundle(Misc.class.getName())
-    				.getString("help.header"));
-    	} catch (MissingResourceException e) {
-    		response.addComment("Help has no footer");
-    	}
+    	HashMap<String, String> helpInfo = new HashMap<String, String>();
     	for (Iterator iter = handlers.keySet().iterator(); iter.hasNext();) {
     		CommandHandler hnd = (CommandHandler) handlers.get(iter.next());
     		List<String> handledCmds = conn.getCommandManager()
@@ -203,16 +195,28 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
     					continue;
     				}
     				try {
-    					response.addComment(ResourceBundle.getBundle(
+    					helpInfo.put(cmd, ResourceBundle.getBundle(
     							hnd.getClass().getName()).getString(
     									"help." + cmd));
     				} catch (MissingResourceException e) {
-    					response.addComment(cmd
+    					helpInfo.put(cmd, cmd
     							+ " does not have any help, bug your siteop");
     				}
     			} catch (java.lang.StringIndexOutOfBoundsException e) {
     			}
     		}
+    	}
+    	ArrayList<String> sortedList = new ArrayList<String>(helpInfo.keySet());
+    	Collections.sort(sortedList);
+    	Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
+    	try {
+    		response.addComment(ResourceBundle.getBundle(Misc.class.getName())
+    				.getString("help.header"));
+    	} catch (MissingResourceException e) {
+    		response.addComment("Help has no footer");
+    	}
+    	for (Iterator i = sortedList.iterator(); i.hasNext();) {
+    		response.addComment(helpInfo.get(i.next()));
     	}
     	try {
     		response.addComment(ResourceBundle.getBundle(Misc.class.getName())
