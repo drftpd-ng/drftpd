@@ -1362,7 +1362,7 @@ public class SiteBot extends FtpListener implements Observer {
         disconnect();
     }
 
-    public synchronized void update(Observable observer, Object updated) {
+    public void update(Observable observer, Object updated) {
     	// add ident for those who use site invite
 		if (updated instanceof WhoisUserReply) {
 			WhoisUserReply whor = (WhoisUserReply) updated;
@@ -1391,55 +1391,72 @@ public class SiteBot extends FtpListener implements Observer {
 			// clear the queue to avoid excessive memory usage
 			_identWhoisQueue.clear();
 		} else if ((updated instanceof MessageCommand)) {
-			MessageCommand msgc = (MessageCommand) updated;
+			synchronized (this) {
+				MessageCommand msgc = (MessageCommand) updated;
 
-			// recreate the MessageCommand with the decrypted text
-			if (!msgc.isPrivateToUs(_conn.getClientState())) {
-				try {
-					msgc = _channelMap.get(msgc.getDest()).decrypt(msgc);
-				} catch (UnsupportedEncodingException e) {
-					logger.warn("Unable to decrypt '" + msgc.getSourceString()
-							+ "'");
-					return; // should not accept plaintext messages encrypted channels
-				}
-			}
-			int index = msgc.getMessage().indexOf(" ");
-			String args = "";
-			String trigger = "";
-			if (index == -1) {
-				trigger = msgc.getMessage().toLowerCase();
-			} else {
-				trigger = msgc.getMessage().substring(0, index);
-				args = msgc.getMessage().substring(index+1).trim();
-			}
-			if (_methodMap.containsKey(trigger)) { // is a recognized command
-				Object[] objects = _methodMap.get(trigger);
-				IRCPermission perm = (IRCPermission) objects[2];
-				String scope = msgc.isPrivateToUs(_conn.getClientState()) ? "private"
-						: msgc.getDest();
-				if (!perm.checkScope(scope)) { // not a recognized command on this channel or through privmsg
-					logger.warn(trigger + " is not in scope - " + scope);
-					return;
-				}
-				if (!perm.checkPermission(msgc.getSource())) {
-				    ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-				    env.add("ircnick", msgc.getSource().getNick());
-				    say(msgc.getDest(), ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
-					logger.warn("Not enough permissions for user to execute " + trigger + " to " + msgc.getDest());
-					return;
-				}
-				try {
-					ArrayList<String> list = (ArrayList) ((Method) objects[0]).invoke(objects[1],new Object[] {args, msgc});
-					if (list == null || list.isEmpty()) {
-						logger.debug("There is no direct output to return for command " + trigger + " by " + msgc.getSource().getNick());
-					} else {
-						for (String output : list) {
-							say(getSource(msgc),output);
-						}
+				// recreate the MessageCommand with the decrypted text
+				if (!msgc.isPrivateToUs(_conn.getClientState())) {
+					try {
+						msgc = _channelMap.get(msgc.getDest()).decrypt(msgc);
+					} catch (UnsupportedEncodingException e) {
+						logger.warn("Unable to decrypt '"
+								+ msgc.getSourceString() + "'");
+						return; // should not accept plaintext messages
+								// encrypted channels
 					}
-				} catch (Exception e) {
-					logger.error("Error in method invocation on IRCCommand " + trigger, e);
-					say(getSource(msgc), e.getMessage());
+				}
+				int index = msgc.getMessage().indexOf(" ");
+				String args = "";
+				String trigger = "";
+				if (index == -1) {
+					trigger = msgc.getMessage().toLowerCase();
+				} else {
+					trigger = msgc.getMessage().substring(0, index);
+					args = msgc.getMessage().substring(index + 1).trim();
+				}
+				if (_methodMap.containsKey(trigger)) { // is a recognized
+														// command
+					Object[] objects = _methodMap.get(trigger);
+					IRCPermission perm = (IRCPermission) objects[2];
+					String scope = msgc.isPrivateToUs(_conn.getClientState()) ? "private"
+							: msgc.getDest();
+					if (!perm.checkScope(scope)) { // not a recognized command
+													// on this channel or
+													// through privmsg
+						logger.warn(trigger + " is not in scope - " + scope);
+						return;
+					}
+					if (!perm.checkPermission(msgc.getSource())) {
+						ReplacerEnvironment env = new ReplacerEnvironment(
+								SiteBot.GLOBAL_ENV);
+						env.add("ircnick", msgc.getSource().getNick());
+						say(msgc.getDest(), ReplacerUtils.jprintf(
+								"ident.denymsg", env, SiteBot.class));
+						logger
+								.warn("Not enough permissions for user to execute "
+										+ trigger + " to " + msgc.getDest());
+						return;
+					}
+					try {
+						ArrayList<String> list = (ArrayList) ((Method) objects[0])
+								.invoke(objects[1], new Object[] { args, msgc });
+						if (list == null || list.isEmpty()) {
+							logger
+									.debug("There is no direct output to return for command "
+											+ trigger
+											+ " by "
+											+ msgc.getSource().getNick());
+						} else {
+							for (String output : list) {
+								say(getSource(msgc), output);
+							}
+						}
+					} catch (Exception e) {
+						logger.error(
+								"Error in method invocation on IRCCommand "
+										+ trigger, e);
+						say(getSource(msgc), e.getMessage());
+					}
 				}
 			}
 		}
