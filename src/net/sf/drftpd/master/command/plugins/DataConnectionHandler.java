@@ -51,7 +51,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.35 2004/01/31 15:26:44 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.36 2004/02/02 11:59:40 flowman Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -1366,7 +1366,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 							//				getUser().updateCredits(
 							//					- ((long) getUser().getRatio() * transferedBytes));
 							//				getUser().updateUploadedBytes(-transferedBytes);
-							response.addComment(conn.status());
+							// response.addComment(conn.status());
 							return response;
 							//				String badtargetFilename = targetFilename + ".bad";
 							//

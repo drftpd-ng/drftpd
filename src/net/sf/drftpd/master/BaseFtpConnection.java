@@ -41,7 +41,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.70 2004/01/30 14:56:08 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.71 2004/02/02 12:01:06 flowman Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -262,7 +262,6 @@ public class BaseFtpConnection implements Runnable {
 		String baseName,
 		String key,
 		ReplacerEnvironment env) {
-
 		return jprintf(baseName, key, env, getUserNull());
 	}
 
@@ -270,12 +269,15 @@ public class BaseFtpConnection implements Runnable {
 		ReplacerEnvironment env,
 		User user) {
 		env = new ReplacerEnvironment(env);
-
+				
 		if (user != null) {
 			env.add("user", user.getUsername());
 			env.add("credits", Bytes.formatBytes(user.getCredits()));
 			env.add("ratio", "" + user.getRatio());
 			env.add("tagline", user.getTagline());
+			env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
+			env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
+			env.add("avragespeed", Bytes.formatBytes(user.getUploadedMilliseconds() + user.getDownloadedMilliseconds() / 2));
 		} else {
 			env.add("user", "<unknown>");
 		}
@@ -498,7 +500,7 @@ public class BaseFtpConnection implements Runnable {
 	}
 
 	/**
-	 *  returns a one-line status
+	 *  returns a two-line status
 	 */
 	public String status() {
 		return jprintf(BaseFtpConnection.class.getName(), "statusline");

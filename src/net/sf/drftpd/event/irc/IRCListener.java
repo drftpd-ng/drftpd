@@ -46,6 +46,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.util.ReplacerUtils;
+import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -68,7 +69,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.76 2004/01/31 02:32:06 zubov Exp $
+ * @version $Id: IRCListener.java,v 1.77 2004/02/02 12:00:17 flowman Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -277,9 +278,6 @@ public class IRCListener implements FtpListener, Observer {
 			if (file.lastModified() < starttime)
 				starttime = file.lastModified();
 		}
-		env.add(
-			"secondstocomplete",
-			Long.toString((starttime - direvent.getTime()) / 1000));
 
 		if (!sfvfile.hasFile(direvent.getDirectory().getName()))
 			return;
@@ -346,6 +344,9 @@ public class IRCListener implements FtpListener, Observer {
 			env.add("files", Integer.toString(sfvfile.size()));
 			env.add("size", Bytes.formatBytes(sfvfile.getTotalBytes()));
 			env.add("speed", Bytes.formatBytes(sfvfile.getXferspeed()) + "/s");
+			env.add(
+				"secondstocomplete",
+				Time.formatTime((direvent.getTime() - starttime)));
 			say(SimplePrintf.jprintf(format, env));
 
 			Ret ret2 = getPropertyFileSuffix("store.complete.racer", dir);

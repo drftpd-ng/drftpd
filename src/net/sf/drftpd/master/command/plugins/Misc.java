@@ -19,7 +19,7 @@ import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.slave.SlaveImpl;
 
 /**
- * @version $Id: Misc.java,v 1.4 2003/12/23 13:38:19 mog Exp $
+ * @version $Id: Misc.java,v 1.5 2004/02/02 11:59:40 flowman Exp $
  */
 public class Misc implements CommandHandler {
 	/**
@@ -108,7 +108,10 @@ public class Misc implements CommandHandler {
 		if (conn.getRequest().hasArgument()) {
 			return FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
 		}
-		return new FtpReply(200, conn.status());
+		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+		
+		response.addComment(conn.status());
+		return response;
 	}
 
 	private FtpReply doSITE_TIME(BaseFtpConnection conn) {
