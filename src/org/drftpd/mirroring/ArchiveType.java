@@ -156,9 +156,9 @@ public abstract class ArchiveType {
             LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
 
             HashSet<RemoteSlave> destSlaves = new HashSet<RemoteSlave>(getRSlaves());
-            destSlaves.removeAll(src.getSlaves());
-            if(destSlaves.isEmpty()) continue;
             if (src.isFile()) {
+                destSlaves.removeAll(src.getSlaves());
+                if(destSlaves.isEmpty()) continue;
                 logger.info("Adding " + src.getPath() + " to the job queue");
 
                 Job job = new Job(src, destSlaves, 3, destSlaves.size());
