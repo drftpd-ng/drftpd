@@ -377,6 +377,11 @@ public class SlaveImpl
 				continue;
 			if (!file.delete())
 				throw new PermissionDeniedException("delete failed on " + path);
+			File dir = new File(file.getParentFile());
+			while(dir != null && dir.list().length == 0) {
+				file.delete();
+				dir = new File(dir.getParentFile());
+			}
 		}
 	}
 

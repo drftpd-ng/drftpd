@@ -56,8 +56,8 @@ import f00f.net.irc.martyr.Debug;
 import f00f.net.irc.martyr.IRCConnection;
 import f00f.net.irc.martyr.clientstate.Channel;
 import f00f.net.irc.martyr.clientstate.ClientState;
+import f00f.net.irc.martyr.commands.InviteCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
-import f00f.net.irc.martyr.commands.RawCommand;
 
 /**
  * @author mog
@@ -79,7 +79,6 @@ public class IRCListener implements FtpListener, Observer {
 	private String _server;
 	private int _port;
 	private String _channelName;
-	Channel _mainChannel;
 	private String _key;
 
 	private ClientState _clientState;
@@ -147,7 +146,6 @@ public class IRCListener implements FtpListener, Observer {
 						if (!conn.isExecuting())
 							idlers++;
 					}
-					//[ total: 1 of 32 / 297kb/sec ] - [ up: 1 / 297kb/sec | dn: 0 / 0kb/sec | idle: 0 ]
 					ReplacerEnvironment env =
 						new ReplacerEnvironment(globalEnv);
 
@@ -375,11 +373,7 @@ public class IRCListener implements FtpListener, Observer {
 					User user = _cm.getUsermanager().getUserByName(args[1]);
 					if (user.checkPassword(args[2])) {
 						_ircConnection.sendCommand(
-							new RawCommand(
-								"INVITE "
-									+ msgc.getSource().getNick()
-									+ " "
-									+ _channelName));
+							new InviteCommand(msgc.getSource(), _channelName));
 					} else {
 						logger.log(
 							Level.WARNING,
@@ -717,6 +711,17 @@ public class IRCListener implements FtpListener, Observer {
 					Integer.toString(stat.getFiles() * 100 / sfvfile.size())
 						+ "%");
 				env.add("filesleft", Integer.toString(sfvfile.filesLeft()));
+				User leaduser;
+				try {
+					leaduser =
+						_cm.getUsermanager().getUserByName(stat.getUsername());
+					env.add("leaduser", leaduser.getUsername());
+					env.add("leadgroup", leaduser.getGroup());
+				} catch (NoSuchUserException e3) {
+					logger.log(Level.WARNING, "", e3);
+				} catch (IOException e3) {
+					logger.log(Level.WARNING, "", e3);
+				}
 
 				Object obj[] = getPropertyFileSuffix("store.halfway", dir);
 				String format = (String) obj[0];

@@ -183,14 +183,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		}
 		slaves.add(slave);
 	}
-	private void addSlaves(Collection addslaves) {
-		if (addslaves == null)
-			throw new IllegalArgumentException("addslaves cannot be null");
-		for (Iterator iter = addslaves.iterator(); iter.hasNext();) {
-			RemoteSlave rslave = (RemoteSlave) iter.next();
-			addSlave(rslave);
-		}
-	}
 
 	public LinkedRemoteFile createDirectory(
 		String owner,
@@ -656,6 +648,11 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		for (Iterator i = mergedir.getFiles().iterator(); i.hasNext();) {
 			LinkedRemoteFile mergefile = (LinkedRemoteFile) i.next();
 
+			if(mergefile.isDirectory() && mergefile.length() == 0) {
+				logger.log(Level.SEVERE, "Attempt to add empty directory: "+mergefile+" from "+rslave.getName());
+				continue;
+			}
+
 			LinkedRemoteFile file =
 				(LinkedRemoteFile) files.get(mergefile.getName());
 			// two scenarios:, local file [does not] exists
@@ -664,6 +661,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				if (!mergefile.isDirectory()) {
 					mergefile.addSlave(rslave);
 				}
+				
 				mergefile.ftpConfig = this.ftpConfig;
 				map.put(mergefile.getName(), mergefile);
 			} else {
@@ -889,8 +887,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		}
 		if (isDirectory())
 			ret.append("[directory(" + files.size() + ")]");
-		if (isDeleted())
-			ret.append("[deleted]");
 		ret.append("]");
 		return ret.toString();
 	}
