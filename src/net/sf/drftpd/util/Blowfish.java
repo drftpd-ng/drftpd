@@ -45,9 +45,6 @@ public class Blowfish {
 	 * */
 
 	public Blowfish(String key) {
-
-		byte[]	gkey = (key).getBytes();
-
 		skeySpec = new SecretKeySpec(key.getBytes(), "Blowfish");
 		// Preparing Blowfish mode
 		try { ecipher = Cipher.getInstance("Blowfish/ECB/NoPadding");} 

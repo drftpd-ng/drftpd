@@ -53,20 +53,16 @@ public class SiteBotManagment implements CommandHandler, CommandHandlerFactory {
         } catch (ObjectNotFoundException e) {
             return new Reply(500, "SiteBot not loaded");
         }
+        
+        if (conn.getRequest().getCommand().startsWith("SITE BLOWFISH")) {
+        	return doSITE_BLOWFISH(conn, sitebot);
+        }
 
         if (!conn.getRequest().hasArgument()) {
             throw new ImproperUsageException();
         }
 
         FtpRequest req2 = new FtpRequest(conn.getRequest().getArgument());
-
-        if (req2.getCommand().equals("BLOWFISH")) {
-            String _key = sitebot.getBlowfishKey();
-            if (_key != null)
-                return new Reply(200, "Blowfish key is: " + _key);
-            else
-                return new Reply(200, "Blowfish is not enabled.");
-        }
 
         try {
             if (!conn.getUser().isAdmin()) {
@@ -110,7 +106,25 @@ public class SiteBotManagment implements CommandHandler, CommandHandlerFactory {
             conn.jprintf(SiteBotManagment.class, "sitebot.usage"));
     }
 
-    public CommandHandler initialize(BaseFtpConnection conn,
+    private Reply doSITE_BLOWFISH(BaseFtpConnection conn, SiteBot sitebot) {
+    	if (!conn.isSecure()) {
+    		return new Reply(200,
+    		"Will not transfer an encrypted key over a non-encrypted socket.");
+    	}
+    	try {
+    		String _key = null;
+    		if (conn.getRequest().hasArgument()) {
+    			_key = sitebot.getBlowfishKey(conn.getRequest().getArgument(), conn.getUserNull());
+    		} else {
+    			_key = sitebot.getBlowfishKey(conn.getUserNull());
+    		}
+    		return new Reply(200, "Blowfish key is: " + _key);
+    	} catch (ObjectNotFoundException e) {
+    		return new Reply(200, "Blowfish is not enabled.");
+    	}
+    }
+
+	public CommandHandler initialize(BaseFtpConnection conn,
         CommandManager initializer) {
         return this;
     }

@@ -4,20 +4,14 @@ irc.port=6667
 # [ true | false ]
 irc.ssl=false
 
-# use blowfish
-# [ true | false ]
-irc.blowfish=false
-irc.blowkey=drftpd
-
 # channels to autojoin on successful connection
 # to irc.server
 irc.channel.1=#drftpd-test
+irc.channel.blowkey.1=drftpd
+irc.channel.perms.1=*
 #irc.channel.2=#drftpd-test2
-#irc.channel.2.key=
-
-#Command prefixes for public channel and private message
-irc.chanprefix=!
-irc.msgprefix=!
+#irc.channel.blowkey.2=drftpd2
+#irc.channel.perms.2=!=iND *
 
 # general format:
 # irc.nick!irc.user@ipaddress.would.be.here irc.name

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.net.UnknownHostException;
@@ -57,6 +58,7 @@ import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.event.TransferEvent;
+import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.config.FtpConfig;
@@ -127,20 +129,19 @@ public class SiteBot extends FtpListener implements Observer {
     private AutoRegister _autoRegister;
     // Object<Method, IRCCommand, IRCPermission>[3]
 	private HashMap<String,Object[]> _methodMap;
-	private String _blowfishKey;
-	private Blowfish _fish;
-    private String _channelName;
-    private String _msgprefix;
     protected IRCConnection _conn;
     private boolean _enableAnnounce;
     private int _maxUserAnnounce;
     private int _maxGroupAnnounce;
+    private HashMap<String,ChannelConfig> _channelMap;
 
     //private String _key;
-    protected int _port;
     private Hashtable<String,SectionSettings> _sections;
     protected String _server;
+    protected int _port;
     private Hashtable<String,User> _identWhoisQueue;
+
+	private String _primaryChannelName;
 
     public SiteBot() throws IOException {
         new File("logs").mkdirs();
@@ -233,6 +234,20 @@ public class SiteBot extends FtpListener implements Observer {
     }
 
     public void actionPerformed(Event event) {
+    	if (event.getCommand().equals("RELOAD")) {
+			try {
+				reload();
+			} catch (IOException e) {
+				logger.log(Level.WARN, "", e);
+			}
+		} else if (event.getCommand().equals("SHUTDOWN")) {
+			MessageEvent mevent = (MessageEvent) event;
+			ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
+			env.add("message", mevent.getMessage());
+
+			sayGlobal(ReplacerUtils.jprintf("shutdown", env, SiteBot.class));
+		}
+
         if (_enableAnnounce) {
             try {
                 if (event instanceof DirectoryFtpEvent) {
@@ -243,19 +258,6 @@ public class SiteBot extends FtpListener implements Observer {
                     actionPerformedSlave((SlaveEvent) event);
                 } else if (event instanceof InviteEvent) {
                     actionPerformedInvite((InviteEvent) event);
-                } else if (event.getCommand().equals("RELOAD")) {
-                    try {
-                        reload();
-                    } catch (IOException e) {
-                        logger.log(Level.WARN, "", e);
-                    }
-                } else if (event.getCommand().equals("SHUTDOWN")) {
-                    MessageEvent mevent = (MessageEvent) event;
-                    ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
-                    env.add("message", mevent.getMessage());
-
-                    sayGlobal(ReplacerUtils.jprintf("shutdown", env,
-                            SiteBot.class));
                 }
             } catch (FormatterException ex) {
                 logger.warn("", ex);
@@ -818,7 +820,57 @@ public class SiteBot extends FtpListener implements Observer {
         logger.info("connecting to " + _server + ":" + _port);
         _conn.connect(_server, _port);
     }
+    
+    public class ChannelConfig {
+    	private String _blowKey = null;
+    	private WeakReference<Blowfish> _blowFish = null;
+		private String _permissions = null;
+    	private ChannelConfig(String blowKey, String permissions) {
+    		_blowKey = blowKey;
+    		_permissions = (permissions == null) ? "*" : permissions;
+    		logger.debug("permissions = " + _permissions);
+    		if (_blowKey != null) {
+    			_blowFish = new WeakReference<Blowfish>(new Blowfish(_blowKey));
+    		}
+    	}
+    	public String getKey(User user) throws ObjectNotFoundException {
+    		Permission p = new Permission(FtpConfig.makeUsers(new StringTokenizer(_permissions)));
+    		if (p.check(user)) {
+    			return _blowKey;
+    		}
+    		throw new ObjectNotFoundException("No Permissions");
+    	}
+    	
+    	private Blowfish getBlowFish() {
+    		if (_blowFish.get() == null) {
+    			_blowFish = new WeakReference<Blowfish>(new Blowfish(_blowKey));
+    		}
+    		return _blowFish.get();
+    	}
+    	
+    	public MessageCommand decrypt(MessageCommand cmd)
+				throws UnsupportedEncodingException {
+    		if (_blowKey == null) {
+    			return cmd;
+    		}
+    		try {
+    			return new MessageCommand(cmd.getSource(), cmd.getDest(), getBlowFish().Decrypt(cmd.getMessage()));
+    		} catch (StringIndexOutOfBoundsException e) {
+    			throw new UnsupportedEncodingException();
+    		}
+		}
+    	
+    	public String encrypt(String message) {
+    		if (_blowKey == null) {
+    			return message;
+    		}
+    		return getBlowFish().Encrypt(message);
+    	}
+    }
 
+    /**
+     * Loads settings that require the IRCConnection _conn
+     */
     private void connect(Properties ircCfg)
         throws UnknownHostException, IOException {
         if (_conn != null) {
@@ -834,32 +886,13 @@ public class SiteBot extends FtpListener implements Observer {
         } catch (NumberFormatException e1) {
             logger.warn("irc.sendDelay not set, defaulting to 300ms");
         }
+        for (String channelName : _channelMap.keySet()) {
+        	new AutoJoin(_conn, channelName);
+        }
+        
         _autoReconnect = new AutoReconnect(_conn);
         _autoRegister = addAutoRegister(ircCfg);
-
-        for (int i = 1;; i++) {
-            String channelName = ircCfg.getProperty("irc.channel." + i);
-            String key;
-
-            if (channelName == null) {
-                if (i == 1) {
-                    channelName = PropertyHelper.getProperty(ircCfg, "irc.channel");
-                    key = ircCfg.getProperty("irc.key");
-                } else {
-                    break;
-                }
-            } else {
-                key = ircCfg.getProperty("irc.channel." + i + ".key");
-            }
-
-            if (i == 1) {
-                _channelName = channelName;
-            }
-
-            new AutoJoin(_conn, channelName, key);
-        }
-
-        //_autoJoin = new AutoJoin(_conn, _channelName, _key);
+        
         new AutoResponder(_conn);
         _conn.addCommandObserver(this);
 
@@ -1004,13 +1037,9 @@ public class SiteBot extends FtpListener implements Observer {
             env.add("slaves", "0");
         }
     }
-
-    public Blowfish getBlowfish() {
-        return _fish;
-    }
     
-    public String getChannelName() {
-        return _channelName;
+    public String getPrimaryChannel() {
+        return _primaryChannelName;
     }
 
     public IRCConnection getIRCConnection() {
@@ -1106,20 +1135,36 @@ public class SiteBot extends FtpListener implements Observer {
 		}
 	}
 
+	/**
+	 * Loads irc settings, then passes it off to connect(Properties)
+	 */
 	protected void reload(Properties ircCfg) throws IOException {
         _server = PropertyHelper.getProperty(ircCfg, "irc.server");
         _port = Integer.parseInt(PropertyHelper.getProperty(ircCfg, "irc.port"));
 
-        //String oldchannel = _channelName;
-        //_channelName = FtpConfig.getProperty(ircCfg, "irc.channel");
-        //_key = ircCfg.getProperty("irc.key");
         _enableAnnounce = ircCfg.getProperty("irc.enable.announce", "false")
                                 .equals("true");
+        
+        _channelMap = new HashMap<String,ChannelConfig>();
 
-        //if (_key.equals(""))
-        //	_key = null;
-        Hashtable<String,SectionSettings> sections = new Hashtable<String,SectionSettings>();
+        for (int i = 1;; i++) {
+            String channelName = ircCfg.getProperty("irc.channel." + i);
+            String key = ircCfg.getProperty("irc.channel.blowkey." + i);
+            String permissions = ircCfg.getProperty("irc.channel.perms." + i);
+            if (channelName == null) {
+            	break;
+            }
+            if (i == 1) {
+            	_primaryChannelName = channelName;
+            }
+            
+        	_channelMap.put(channelName,new ChannelConfig(key, permissions));
+        }
+        if (_channelMap.size() < 1) {
+        	throw new IllegalStateException("SiteBot loaded with no channels, check your config");
+        }
 
+        Hashtable<String,SectionSettings> _sections = new Hashtable<String,SectionSettings>();
         for (int i = 1;; i++) {
             String name = ircCfg.getProperty("irc.section." + i);
 
@@ -1130,13 +1175,11 @@ public class SiteBot extends FtpListener implements Observer {
             String chan = ircCfg.getProperty("irc.section." + i + ".channel");
 
             if (chan == null) {
-                chan = _channelName;
+                chan = _primaryChannelName;
             }
 
-            sections.put(name, new SectionSettings(ircCfg, i, chan));
+            _sections.put(name, new SectionSettings(ircCfg, i, chan));
         }
-
-        _sections = sections;
 
         if ((_conn == null) ||
                 !_conn.getClientState().getServer().equals(_server) ||
@@ -1150,28 +1193,17 @@ public class SiteBot extends FtpListener implements Observer {
                 _autoRegister.disable();
                 _autoRegister = addAutoRegister(ircCfg);
                 _conn.sendCommand(new NickCommand(ircCfg.getProperty("irc.nick")));
+                
+                //if (!_conn.getClientState().isOnChannel(_channelName)) {
+				// _autoJoin.disable();
+				// _conn.removeCommandObserver(_autoJoin);
+				// _conn.sendCommand(new PartCommand(oldchannel));
+				// _autoJoin = new AutoJoin(_conn, _channelName, _key);
+				//}
             }
-
-            //if (!_conn.getClientState().isOnChannel(_channelName)) {
-            //	_autoJoin.disable();
-            //	_conn.removeCommandObserver(_autoJoin);
-            //	_conn.sendCommand(new PartCommand(oldchannel));
-            //	_autoJoin = new AutoJoin(_conn, _channelName, _key);
-            //}
         }
         
         _identWhoisQueue = new Hashtable<String,User>();
-                
-        //Blowfish stuff
-		if (ircCfg.getProperty("irc.blowfish", "false")
-				.equalsIgnoreCase("true")) {
-			_blowfishKey = ircCfg.getProperty("irc.blowkey");
-			if (_blowfishKey == null) {
-				throw new RuntimeException(
-						"You need to define irc.blowkey in irc.conf");
-			}
-			_fish = new Blowfish(_blowfishKey);
-		}
 		
         //maximum announcements for race results
 		try {
@@ -1188,18 +1220,17 @@ public class SiteBot extends FtpListener implements Observer {
         }
    }
 
-    public String getBlowfishKey() {
-        return _blowfishKey;
-    }
-
     public void say(SectionInterface section, String message) {
         SectionSettings sn = null;
 
         if (section != null) {
             sn = (SectionSettings) _sections.get(section.getName());
         }
-
-        say((sn != null) ? sn.getChannel() : _channelName, message);
+        say((sn != null) ? sn.getChannel() : _primaryChannelName, message);
+    }
+    
+    public void say(String message) {
+    	say(_primaryChannelName,message);
     }
 
     public void say(String dest, String message) {
@@ -1209,10 +1240,12 @@ public class SiteBot extends FtpListener implements Observer {
         boolean isChan = dest.startsWith("#");
         String[] lines = message.split("\n");
         for (String line : lines) {
-        	// don't encrypt private messages, at least not yet :)
-            line = ((_fish != null) && isChan) ? _fish.Encrypt(line) : line;
-            _conn.sendCommand(new MessageCommand(dest, line));
-        }
+			// don't encrypt private messages, at least not yet :)
+			if (isChan) {
+				line = _channelMap.get(dest).encrypt(line);
+			}
+			_conn.sendCommand(new MessageCommand(dest, line));
+		}
     }
 
     private void sayDirectorySection(DirectoryFtpEvent direvent, String string)
@@ -1278,16 +1311,14 @@ public class SiteBot extends FtpListener implements Observer {
 		if ((updated instanceof MessageCommand)) {
 			MessageCommand msgc = (MessageCommand) updated;
 
-			// recreate the MessageCommand with the encrypted text
-			if (_fish != null && !msgc.isPrivateToUs(_conn.getClientState())) {
+			// recreate the MessageCommand with the decrypted text
+			if (!msgc.isPrivateToUs(_conn.getClientState())) {
 				try {
-					MessageCommand decmsgc = new MessageCommand(msgc
-							.getSource(), msgc.getDest(), _fish.Decrypt(msgc
-							.getMessage()));
-					msgc = decmsgc;
+					msgc = _channelMap.get(msgc.getDest()).decrypt(msgc); 
 				} catch (UnsupportedEncodingException e) {
 					logger.warn("Unable to decrypt '" + msgc.getSourceString()
-							+ "'", e);
+							+ "'");
+					return; // should not accept plaintext messages encrypted channels
 				}
 			}
 			int index = msgc.getMessage().indexOf(" ");
@@ -1423,6 +1454,21 @@ public class SiteBot extends FtpListener implements Observer {
             return _env;
         }
     }
+
+	/**
+	 * Returns the blowfish key for the channel specified
+	 */
+	public String getBlowfishKey(String channel, User user) throws ObjectNotFoundException {
+		
+		if (_channelMap.containsKey(channel)) {
+			return _channelMap.get(channel).getKey(user);
+		}
+		throw new ObjectNotFoundException();
+	}
+
+	public String getBlowfishKey(User user) throws ObjectNotFoundException {
+		return getBlowfishKey(_primaryChannelName, user);
+	}
 }
 
 
