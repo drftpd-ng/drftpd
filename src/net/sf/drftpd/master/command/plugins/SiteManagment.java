@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagment.java,v 1.6 2003/12/13 12:42:48 zubov Exp $
+ * @version $Id: SiteManagment.java,v 1.7 2004/01/11 23:11:54 mog Exp $
  */
 public class SiteManagment implements CommandHandler {
 
@@ -36,8 +36,8 @@ public class SiteManagment implements CommandHandler {
 	private FtpReply doSITE_LIST(BaseFtpConnection conn) {
 		conn.resetState();
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
-		//Map files = currentDirectory.getMap();
-		ArrayList files = new ArrayList(conn.getCurrentDirectory().getFiles());
+		//.getMap().values() to get the .isDeleted files as well.
+		ArrayList files = new ArrayList(conn.getCurrentDirectory().getMap().values());
 		Collections.sort(files);
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
@@ -65,12 +65,13 @@ public class SiteManagment implements CommandHandler {
 		conn.getConnectionManager().addFtpListener(ftpListener);
 		return new FtpReply(200, "Successfully loaded your plugin");
 	}
+	
 	private FtpReply doSITE_PLUGINS(BaseFtpConnection conn) {
 		if (!conn.getUserNull().isAdmin()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		FtpReply ftpReply = new FtpReply(200, "Command ok");
-		ftpReply.addComment("Plugins loaded :");
+		ftpReply.addComment("Plugins loaded:");
 		for (Iterator iter =
 			conn.getConnectionManager().getFtpListeners().iterator();
 			iter.hasNext();

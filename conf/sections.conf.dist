@@ -1,0 +1,8 @@
+1.path=/movies
+1.name=MOViES
+
+2.type=dated
+2.path=/mp3
+2.name=MP3
+2.dated='/mp3/'MMdd
+2.now=/mp3/today

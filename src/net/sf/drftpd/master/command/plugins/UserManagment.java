@@ -33,7 +33,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.16 2004/01/05 02:20:08 mog Exp $
+ * @version $Id: UserManagment.java,v 1.17 2004/01/11 23:11:54 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	private Logger logger = Logger.getLogger(UserManagment.class);
@@ -191,7 +191,10 @@ public class UserManagment implements CommandHandler {
 		env.add("targetuser", newUsername);
 
 		response.addComment(
-			conn.jprintf(UserManagment.class.getName(), "adduser.success", env));
+			conn.jprintf(
+				UserManagment.class.getName(),
+				"adduser.success",
+				env));
 		try {
 			newUser = conn.getUserManager().create(newUsername);
 			newUser.setPassword(pass);
@@ -211,12 +214,14 @@ public class UserManagment implements CommandHandler {
 					response.addComment(
 						conn.jprintf(
 							UserManagment.class.getName(),
-							"addip.success", env));
+							"addip.success",
+							env));
 				} catch (DuplicateElementException e1) {
 					response.addComment(
 						conn.jprintf(
 							UserManagment.class.getName(),
-							"addip.dupe", env));
+							"addip.dupe",
+							env));
 				}
 			}
 			newUser.commit();
@@ -529,7 +534,9 @@ public class UserManagment implements CommandHandler {
 		}
 
 		if (!request.hasArgument()) {
-			return new FtpReply(501, conn.jprintf(UserManagment.class.getName(), "chgrp.usage"));
+			return new FtpReply(
+				501,
+				conn.jprintf(UserManagment.class.getName(), "chgrp.usage"));
 		}
 
 		String args[] = request.getArgument().split("[ ,]");
@@ -581,7 +588,9 @@ public class UserManagment implements CommandHandler {
 		}
 
 		if (!request.hasArgument()) {
-			return new FtpReply(501, conn.jprintf(UserManagment.class.getName(), "chpass.usage"));
+			return new FtpReply(
+				501,
+				conn.jprintf(UserManagment.class.getName(), "chpass.usage"));
 		}
 
 		String args[] = request.getArgument().split(" ");
@@ -618,7 +627,9 @@ public class UserManagment implements CommandHandler {
 		}
 
 		if (!request.hasArgument()) {
-			return new FtpReply(501, conn.jprintf(UserManagment.class.getName(), "delip.usage"));
+			return new FtpReply(
+				501,
+				conn.jprintf(UserManagment.class.getName(), "delip.usage"));
 		}
 
 		String args[] = request.getArgument().split(" ");
@@ -661,7 +672,9 @@ public class UserManagment implements CommandHandler {
 		FtpRequest request = conn.getRequest();
 		conn.resetState();
 		if (!request.hasArgument()) {
-			return new FtpReply(501, conn.jprintf(UserManagment.class.getName(), "deluser.usage"));
+			return new FtpReply(
+				501,
+				conn.jprintf(UserManagment.class.getName(), "deluser.usage"));
 		}
 
 		if (!conn.getUserNull().isAdmin()
@@ -701,7 +714,9 @@ public class UserManagment implements CommandHandler {
 
 		//syntax
 		if (!request.hasArgument()) {
-			return new FtpReply(501, conn.jprintf(UserManagment.class.getName(), "ginfo.usage"));
+			return new FtpReply(
+				501,
+				conn.jprintf(UserManagment.class.getName(), "ginfo.usage"));
 		}
 
 		//gadmin
@@ -739,7 +754,9 @@ public class UserManagment implements CommandHandler {
 		conn.resetState();
 
 		if (!request.hasArgument()) {
-			return new FtpReply(501, conn.jprintf(UserManagment.class.getName(), "give.usage"));
+			return new FtpReply(
+				501,
+				conn.jprintf(UserManagment.class.getName(), "give.usage"));
 		}
 
 		StringTokenizer st = new StringTokenizer(request.getArgument());
@@ -798,7 +815,9 @@ public class UserManagment implements CommandHandler {
 		}
 
 		if (!request.hasArgument()) {
-			return new FtpReply(501, conn.jprintf(UserManagment.class.getName(), "kick.usage"));
+			return new FtpReply(
+				501,
+				conn.jprintf(UserManagment.class.getName(), "kick.usage"));
 		}
 		String arg = request.getArgument();
 		int pos = arg.indexOf(' ');
@@ -833,7 +852,9 @@ public class UserManagment implements CommandHandler {
 		FtpRequest request = conn.getRequest();
 		conn.resetState();
 		if (!request.hasArgument()) {
-			return new FtpReply(501, conn.jprintf(UserManagment.class.getName(), "passwd.usage"));
+			return new FtpReply(
+				501,
+				conn.jprintf(UserManagment.class.getName(), "passwd.usage"));
 		}
 		conn.getUserNull().setPassword(request.getArgument());
 		return FtpReply.RESPONSE_200_COMMAND_OK;
@@ -849,9 +870,10 @@ public class UserManagment implements CommandHandler {
 		}
 
 		if (!request.hasArgument()) {
-			return new FtpReply(501, conn.jprintf(UserManagment.class.getName(), "purge.usage"));
+			return new FtpReply(
+				501,
+				conn.jprintf(UserManagment.class.getName(), "purge.usage"));
 		}
-
 
 		String delUsername = request.getArgument();
 		User delUser;
@@ -884,7 +906,9 @@ public class UserManagment implements CommandHandler {
 		}
 
 		if (!request.hasArgument()) {
-			return new FtpReply(501, conn.jprintf(UserManagment.class.getName(), "readd.usage"));
+			return new FtpReply(
+				501,
+				conn.jprintf(UserManagment.class.getName(), "readd.usage"));
 		}
 
 		User myUser;
@@ -909,8 +933,7 @@ public class UserManagment implements CommandHandler {
 		myUser.setDeleted(false);
 		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
-	
-	
+
 	private FtpReply doSITE_RENUSER(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
 		conn.resetState();
@@ -919,7 +942,9 @@ public class UserManagment implements CommandHandler {
 		}
 
 		if (!request.hasArgument()) {
-			return new FtpReply(501, conn.jprintf(UserManagment.class.getName(), "renuser.usage"));
+			return new FtpReply(
+				501,
+				conn.jprintf(UserManagment.class.getName(), "renuser.usage"));
 		}
 
 		String args[] = request.getArgument().split(" ");
@@ -942,7 +967,9 @@ public class UserManagment implements CommandHandler {
 	private FtpReply doSITE_SEEN(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
 		if (!request.hasArgument()) {
-			return new FtpReply(501, conn.jprintf(UserManagment.class.getName(), "seen.usage"));
+			return new FtpReply(
+				501,
+				conn.jprintf(UserManagment.class.getName(), "seen.usage"));
 		}
 
 		User user;
@@ -966,7 +993,9 @@ public class UserManagment implements CommandHandler {
 		conn.resetState();
 
 		if (!request.hasArgument()) {
-			return new FtpReply(501, conn.jprintf(UserManagment.class.getName(), "tagline.usage"));
+			return new FtpReply(
+				501,
+				conn.jprintf(UserManagment.class.getName(), "tagline.usage"));
 		}
 
 		conn.getUserNull().setTagline(request.getArgument());
@@ -987,7 +1016,9 @@ public class UserManagment implements CommandHandler {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		if (!request.hasArgument()) {
-			return new FtpReply(501, conn.jprintf(UserManagment.class.getName(), "take.usage"));
+			return new FtpReply(
+				501,
+				conn.jprintf(UserManagment.class.getName(), "take.usage"));
 		}
 		StringTokenizer st = new StringTokenizer(request.getArgument());
 		if (!st.hasMoreTokens()) {
@@ -1035,7 +1066,9 @@ public class UserManagment implements CommandHandler {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		if (!request.hasArgument()) {
-			return new FtpReply(501, conn.jprintf(UserManagment.class.getName(), "user.usage"));
+			return new FtpReply(
+				501,
+				conn.jprintf(UserManagment.class.getName(), "user.usage"));
 		}
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
 
@@ -1068,11 +1101,19 @@ public class UserManagment implements CommandHandler {
 		response.addComment("ratio: " + myUser.getRatio());
 		response.addComment(
 			"credits: " + Bytes.formatBytes(myUser.getCredits()));
-		response.addComment("group: " + myUser.getGroupName());
-		response.addComment("groups: " + myUser.getGroups());
+		response.addComment(
+			"group slots: "
+				+ myUser.getGroupSlots()
+				+ " "
+				+ myUser.getGroupLeechSlots());
+		response.addComment("primary group: " + myUser.getGroupName());
+		response.addComment("extra groups: " + myUser.getGroups());
 		response.addComment("ip masks: " + myUser.getIpMasks());
-		response.addComment("total bytes up: " + Bytes.formatBytes(myUser.getUploadedBytes()));
-		response.addComment("total bytes dn: " + Bytes.formatBytes(myUser.getDownloadedBytes()));
+		response.addComment(
+			"total bytes up: " + Bytes.formatBytes(myUser.getUploadedBytes()));
+		response.addComment(
+			"total bytes dn: "
+				+ Bytes.formatBytes(myUser.getDownloadedBytes()));
 		return response;
 	}
 

@@ -6,7 +6,7 @@ import java.net.Socket;
 
 /**
  * @author mog
- * @version $Id: Connection.java,v 1.7 2003/12/07 22:31:46 mog Exp $
+ * @version $Id: Connection.java,v 1.8 2004/01/11 23:11:54 mog Exp $
  */
 public abstract class Connection implements Serializable {
 	public static final int TIMEOUT = 10000;
@@ -20,6 +20,6 @@ public abstract class Connection implements Serializable {
 		 * IPTOS_LOWDELAY (0x10)
 		 */
 		sock.setTrafficClass(0x08);
-		sock.setSoTimeout(TIMEOUT); // 30 second timeout
+		sock.setSoTimeout(TIMEOUT);
 	}
 }

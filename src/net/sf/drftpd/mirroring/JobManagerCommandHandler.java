@@ -20,7 +20,7 @@ import net.sf.drftpd.master.command.UnhandledCommandException;
  * CommandHandler plugin for viewing and manipulating the JobManager queue.
  * 
  * @author mog
- * @version $Id: JobManagerCommandHandler.java,v 1.1 2004/01/05 00:14:20 mog Exp $
+ * @version $Id: JobManagerCommandHandler.java,v 1.2 2004/01/11 23:11:54 mog Exp $
  */
 public class JobManagerCommandHandler implements CommandHandler {
 
@@ -57,20 +57,13 @@ public class JobManagerCommandHandler implements CommandHandler {
 	}
 
 	public String[] getFeatReplies() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public void load(CommandManagerFactory initializer) {
-
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.command.CommandHandler#unload()
-	 */
 	public void unload() {
-		// TODO Auto-generated method stub
-
 	}
 
 }
