@@ -42,3 +42,6 @@ sectionmanager=org.drftpd.sections.def.SectionManager
 # 300 milliseconds works well for low latency conditions
 # Reloadable by SITE RELOAD
 slaveStatusUpdateTime=3000
+
+#hide ips in logs?
+hideips=false

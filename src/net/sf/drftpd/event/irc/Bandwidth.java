@@ -45,7 +45,7 @@ import java.util.Iterator;
 
 /**
  * @author flowman
- * @version $Id: Bandwidth.java,v 1.9 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: Bandwidth.java,v 1.10 2004/10/11 22:57:52 mog Exp $
  */
 public class Bandwidth extends GenericCommandAutoService
     implements IRCPluginInterface {
@@ -87,7 +87,7 @@ public class Bandwidth extends GenericCommandAutoService
             SiteBot.fillEnvSlaveStatus(env, status, _listener.getSlaveManager());
 
             _listener.sayChannel(msgc.getDest(),
-                ReplacerUtils.jprintf("bw", env, SiteBot.class));
+                ReplacerUtils.jprintf("bw", env, Bandwidth.class));
         } else if (msg.startsWith("!speed ")) {
             String username;
 
@@ -107,10 +107,10 @@ public class Bandwidth extends GenericCommandAutoService
             env.add("user", username);
 
             String status = ReplacerUtils.jprintf("speed.pre", env,
-                    SiteBot.class);
+                    Bandwidth.class);
 
             String separator = ReplacerUtils.jprintf("speed.separator", env,
-                    SiteBot.class);
+                    Bandwidth.class);
 
             boolean first = true;
 
@@ -142,7 +142,7 @@ public class Bandwidth extends GenericCommandAutoService
 
                         if (!conn.isExecuting()) {
                             status += ReplacerUtils.jprintf("speed.idle", env,
-                                SiteBot.class);
+                                Bandwidth.class);
                         } else if (conn.getDataConnectionHandler()
                                            .isTransfering()) {
                             try {
@@ -164,10 +164,10 @@ public class Bandwidth extends GenericCommandAutoService
 
                             if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
                                 status += ReplacerUtils.jprintf("speed.up",
-                                    env, SiteBot.class);
+                                    env, Bandwidth.class);
                             } else if (conn.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
                                 status += ReplacerUtils.jprintf("speed.down",
-                                    env, SiteBot.class);
+                                    env, Bandwidth.class);
                             }
                         }
                     }
@@ -176,10 +176,10 @@ public class Bandwidth extends GenericCommandAutoService
                 }
             } // for
 
-            status += ReplacerUtils.jprintf("speed.post", env, SiteBot.class);
+            status += ReplacerUtils.jprintf("speed.post", env, Bandwidth.class);
 
             if (first) {
-                status = ReplacerUtils.jprintf("speed.error", env, SiteBot.class);
+                status = ReplacerUtils.jprintf("speed.error", env, Bandwidth.class);
             }
 
             _listener.sayChannel(msgc.getDest(), status);

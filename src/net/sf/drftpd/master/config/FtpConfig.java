@@ -52,7 +52,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.60 2004/09/12 00:43:27 zubov Exp $
+ * @version $Id: FtpConfig.java,v 1.61 2004/10/11 22:57:53 mog Exp $
  */
 public class FtpConfig {
     private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -203,12 +203,7 @@ public class FtpConfig {
 
     private boolean checkPermission(String key, User user) {
         Permission perm = (Permission) _permissions.get(key);
-
-        if (perm == null) {
-            return false;
-        }
-
-        return perm.check(user);
+        return perm == null ? false : perm.check(user);
     }
 
     /**
