@@ -32,18 +32,17 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: PassiveConnection.java,v 1.13 2004/11/05 04:06:34 zubov Exp $
+ * @version $Id: PassiveConnection.java,v 1.14 2004/11/05 20:51:15 zubov Exp $
  */
 public class PassiveConnection extends Connection {
     private static final Logger logger = Logger.getLogger(PassiveConnection.class);
-    private PortRange _portRange;
     private ServerSocket _serverSocket;
 
     public PassiveConnection(SSLContext ctx, PortRange portRange) throws IOException {
         if (ctx != null) {
             _serverSocket = portRange.getPort(ctx.getServerSocketFactory());
         } else {
-            _serverSocket = ServerSocketFactory.getDefault().createServerSocket();
+            _serverSocket = portRange.getPort(ServerSocketFactory.getDefault());
         }
         _serverSocket.setSoTimeout(TIMEOUT);
     }
@@ -52,7 +51,6 @@ public class PassiveConnection extends Connection {
         Socket sock = _serverSocket.accept();
         _serverSocket.close();
         _serverSocket = null;
-        _portRange = null;
 
         setSockOpts(sock);
 
@@ -78,5 +76,6 @@ public class PassiveConnection extends Connection {
         } catch (IOException e) {
             logger.warn("failed to close() server socket", e);
         }
+        _serverSocket = null;
     }
 }

@@ -85,7 +85,7 @@ import javax.net.ssl.SSLContext;
 
 /**
  * @author mog
- * @version $Id: Slave.java,v 1.5 2004/11/05 19:16:19 zubov Exp $
+ * @version $Id: Slave.java,v 1.6 2004/11/05 20:51:15 zubov Exp $
  */
 public class Slave {
     public static final boolean isWin32 = System.getProperty("os.name")
@@ -454,6 +454,9 @@ public class Slave {
             handleAbort((AsyncCommandArgument) ac);
 
             return null;
+        }
+        if (ac.getName().equals("error")) {
+            throw new RuntimeException("error - " + ac);
         }
 
         return new AsyncResponseException(ac.getIndex(),

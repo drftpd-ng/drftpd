@@ -28,7 +28,7 @@ import javax.net.ServerSocketFactory;
 
 /**
  * @author mog
- * @version $Id: PortRange.java,v 1.14 2004/11/05 13:13:41 zubov Exp $
+ * @version $Id: PortRange.java,v 1.15 2004/11/05 20:51:15 zubov Exp $
  */
 public class PortRange {
     private static final Logger logger = Logger.getLogger(PortRange.class);
@@ -44,12 +44,15 @@ public class PortRange {
     }
 
     public PortRange(int minPort, int maxPort) {
+        if (_minPort > _maxPort) {
+            throw new RuntimeException("maxPort must be > minPort");
+        }
         _maxPort = maxPort;
         _minPort = minPort;
     }
     
     public ServerSocket getPort(ServerSocketFactory ssf) {
-        if (_minPort == 0 && _maxPort == 0) {
+        if (_minPort == 0 || _maxPort == 0) {
             try {
                 return ssf.createServerSocket(0,1);
             } catch (IOException e) {
