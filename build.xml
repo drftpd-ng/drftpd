@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- $Id: build.xml,v 1.46 2004/11/06 06:09:07 zubov Exp $ -->
+<!-- $Id: build.xml,v 1.47 2004/11/07 19:46:34 mog Exp $ -->
 <project name="drftpd" basedir="." default="compile">
 
   <target name="all" depends="compile"/>
@@ -87,6 +87,7 @@
       <manifest>
         <attribute name="Main-Class" value="org.drftpd.slave.Slave" />
       </manifest>
+      <include name="com/Ostmiller/util/StringTokenizer.class"/>
       <include name="se/mog/io/**/*.class" />
       <include name="net/sf/drftpd/*" />
       <include name="net/sf/drftpd/slave/*" />

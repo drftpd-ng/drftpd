@@ -16,32 +16,29 @@
  */
 package org.drftpd.usermanager.xstream2;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
-
-import net.sf.drftpd.DuplicateElementException;
-import net.sf.drftpd.FatalException;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
-import org.drftpd.usermanager.AbstractUserManager;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import net.sf.drftpd.FatalException;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.drftpd.usermanager.AbstractUserManager;
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
+
 /**
  * @author mog
- * @version $Id: XStreamUserManager.java,v 1.2 2004/11/06 07:55:36 mog Exp $
+ * @version $Id: XStreamUserManager.java,v 1.3 2004/11/07 19:46:34 mog Exp $
  */
 public class XStreamUserManager extends AbstractUserManager {
 	private static final Logger logger = Logger
@@ -61,7 +58,7 @@ public class XStreamUserManager extends AbstractUserManager {
 					"Error creating folders: " + _userpathFile));
 		}
 
-		if (!createIfNoUser) {
+		if (createIfNoUser) {
 			String[] userfilenames = _userpathFile.list();
 			boolean hasUsers = false;
 

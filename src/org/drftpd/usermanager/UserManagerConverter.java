@@ -17,18 +17,15 @@
  */
 package org.drftpd.usermanager;
 
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.util.Iterator;
+
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.event.listeners.Trial;
-import net.sf.drftpd.master.command.plugins.Nuke;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.drftpd.commands.UserManagment;
-
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-
-import java.util.Iterator;
 
 /**
  * Usage: java net.sf.drftpd.master.usermanager.UserManagerConverter
@@ -36,7 +33,7 @@ import java.util.Iterator;
  * net.sf.drftpd.master.usermanager.JSXUserManager
  * 
  * @author mog
- * @version $Id: UserManagerConverter.java,v 1.3 2004/11/06 07:55:35 mog Exp $
+ * @version $Id: UserManagerConverter.java,v 1.4 2004/11/07 19:46:34 mog Exp $
  */
 public class UserManagerConverter {
 	private static final Logger logger = Logger
@@ -60,7 +57,7 @@ public class UserManagerConverter {
 			Constructor c = Class.forName(args[1]).getConstructor(
 					new Class[] { boolean.class });
 			to = (UserManager) c
-					.newInstance(new Object[] { new Boolean(true) });
+					.newInstance(new Object[] { new Boolean(false) });
 
 		} catch (Exception e) {
 			throw new RuntimeException(e);

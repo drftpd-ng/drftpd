@@ -85,7 +85,7 @@ import javax.net.ssl.SSLContext;
 
 /**
  * @author mog
- * @version $Id: Slave.java,v 1.6 2004/11/05 20:51:15 zubov Exp $
+ * @version $Id: Slave.java,v 1.7 2004/11/07 19:46:34 mog Exp $
  */
 public class Slave {
     public static final boolean isWin32 = System.getProperty("os.name")
@@ -105,7 +105,7 @@ public class Slave {
     private HashMap _transfers;
     private boolean _uploadChecksums;
     private PortRange _portRange;
-    private InetAddress _externalAddress;
+    private InetAddress _externalAddress = null;
 
     public Slave(Properties p) throws IOException {
         InetSocketAddress addr = new InetSocketAddress(FtpConfig.getProperty(
@@ -115,8 +115,13 @@ public class Slave {
 
         String slavename = FtpConfig.getProperty(p, "slave.name");
 
+        try {
         _externalAddress = InetAddress.getByName(FtpConfig.getProperty(p,
                     "slave.interface"));
+        } catch(NullPointerException e) {
+        	//value is already null
+        	//_externalAddress = null;
+        }
         _s = new Socket();
         _s.connect(addr);
 
