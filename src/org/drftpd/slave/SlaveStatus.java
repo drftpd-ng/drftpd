@@ -17,14 +17,12 @@
  */
 package org.drftpd.slave;
 
-import org.drftpd.master.RemoteTransfer;
-
 import java.io.Serializable;
 
 
 /**
  * @author mog
- * @version $Id: SlaveStatus.java,v 1.1 2004/11/09 18:59:58 mog Exp $
+ * @version $Id: SlaveStatus.java,v 1.2 2004/11/09 20:23:50 mog Exp $
  */
 public class SlaveStatus implements Serializable {
     static final long serialVersionUID = -5171512270937436414L;
