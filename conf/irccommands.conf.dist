@@ -13,6 +13,8 @@
 !df org.drftpd.sitebot.Diskfree.doDiskfree public *
 !invite org.drftpd.sitebot.Invite.doInvite private *
 !ident org.drftpd.sitebot.Ident.doIdent private *
+!bnc org.drftpd.sitebot.GenericTextOutput.doText public *
+!affils org.drftpd.sitebot.GenericTextOutput.doText public *
 
 !alup org.drftpd.sitebot.Stats.doALUP public *
 !aldn org.drftpd.sitebot.Stats.doALDN public *
