@@ -15,8 +15,6 @@
  * Suite 330, Boston, MA 02111-1307 USA
  */
 package org.drftpd.mirroring.archivetypes;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -29,12 +27,13 @@ import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+
 import org.apache.log4j.Logger;
 import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.sections.SectionInterface;
 /**
  * @author zubov
- * @version $Id: MoveReleaseOffSlavesToMostFreeSlaves.java,v 1.2 2004/07/04 05:40:57 zubov Exp $
+ * @version $Id: MoveReleaseOffSlavesToMostFreeSlaves.java,v 1.3 2004/07/09 17:08:38 zubov Exp $
  */
 public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 	private static final Logger logger = Logger

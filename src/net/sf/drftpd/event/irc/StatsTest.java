@@ -28,7 +28,7 @@ import org.drftpd.tests.DummyUser;
 
 /**
  * @author zubov
- * @version $Id: StatsTest.java,v 1.5 2004/05/16 18:07:29 mog Exp $
+ * @version $Id: StatsTest.java,v 1.6 2004/07/09 17:08:36 zubov Exp $
  */
 public class StatsTest extends TestCase {
 
@@ -45,9 +45,9 @@ public class StatsTest extends TestCase {
 
 	public void testStats() throws UnknownHostException, IOException {
 		ArrayList users = new ArrayList();
-		users.add(new DummyUser("user1"));
-		users.add(new DummyUser("user2"));
-		users.add(new DummyUser("user3"));
+		users.add(new DummyUser("user1",null));
+		users.add(new DummyUser("user2",null));
+		users.add(new DummyUser("user3",null));
 		assertEquals(Stats.fixNumberAndUserlist("!alup 2",users),2);
 		assertEquals(3,users.size());
 		assertEquals(2,Stats.fixNumberAndUserlist("!alup 2 !-user1 *",users));

@@ -36,7 +36,7 @@ import org.drftpd.tests.DummyUser;
 
 /**
  * @author mog
- * @version $Id: AbstractUserTest.java,v 1.3 2004/07/02 19:58:54 mog Exp $
+ * @version $Id: AbstractUserTest.java,v 1.4 2004/07/09 17:08:37 zubov Exp $
  */
 public class AbstractUserTest extends TestCase {
 
@@ -95,7 +95,7 @@ public class AbstractUserTest extends TestCase {
 	public void resetSetUp() {
 		_cm = new CM();
 
-		_user = new DummyUser("junit");
+		_user = new DummyUser("junit",null);
 		_user.setLastReset(RESETTIME - 10000);
 
 		_resetCal = Calendar.getInstance();

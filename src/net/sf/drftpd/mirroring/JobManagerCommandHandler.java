@@ -22,8 +22,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
+import net.sf.drftpd.Bytes;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -41,7 +43,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * CommandHandler plugin for viewing and manipulating the JobManager queue.
  * 
  * @author mog
- * @version $Id: JobManagerCommandHandler.java,v 1.18 2004/07/09 06:11:57 zubov Exp $
+ * @version $Id: JobManagerCommandHandler.java,v 1.19 2004/07/09 17:08:38 zubov Exp $
  */
 public class JobManagerCommandHandler implements CommandHandlerFactory, CommandHandler {
 
@@ -112,7 +114,7 @@ public class JobManagerCommandHandler implements CommandHandlerFactory, CommandH
 				conn.jprintf(JobManagerCommandHandler.class, "addjob.usage"));
 		}
 		Job job = new Job(lrf, destSlaves, priority, timesToMirror);
-		conn.getConnectionManager().getJobManager().addJob(job);
+		conn.getConnectionManager().getJobManager().addJobToWaitingQueue(job);
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		env.add("job", job);
 		reply.addComment(
@@ -128,16 +130,26 @@ public class JobManagerCommandHandler implements CommandHandlerFactory, CommandH
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		FtpReply reply = new FtpReply(200);
 		int count = 0;
-		List jobs =
-			new ArrayList(
-				conn.getConnectionManager().getJobManager().getAllJobs());
+		List waitingJobs = conn.getConnectionManager().getJobManager().getAllJobsFromWaitingQueue();
 		ReplacerEnvironment env = new ReplacerEnvironment();
-		for (Iterator iter = jobs.iterator(); iter.hasNext();) {
+		for (Iterator iter = waitingJobs.iterator(); iter.hasNext();) {
 			count++;
 			env.add("job", (Job) iter.next());
 			env.add("count", new Integer(count));
 			reply.addComment(
-				conn.jprintf(JobManagerCommandHandler.class, "listjob", env));
+				conn.jprintf(JobManagerCommandHandler.class, "listjobwaiting", env));
+		}
+		Map runningJobs = conn.getConnectionManager().getJobManager().getAllJobsFromRunningQueue();
+		for (Iterator iter = runningJobs.keySet().iterator(); iter.hasNext();) {
+			count++;
+			Job job = (Job) iter.next();
+			env.add("job", job);
+			env.add("count", new Integer(count));
+			env.add("speed", Bytes.formatBytes(((SlaveTransfer) runningJobs.get(job)).getXferSpeed()));
+			env.add("progress", Bytes.formatBytes(((SlaveTransfer) runningJobs.get(job)).getTransfered()));
+			env.add("total", Bytes.formatBytes(job.getFile().length()));
+			reply.addComment(
+				conn.jprintf(JobManagerCommandHandler.class, "listjobrunning", env));
 		}
 		return reply;
 	}
@@ -156,7 +168,7 @@ public class JobManagerCommandHandler implements CommandHandlerFactory, CommandH
 		Job job = null;
 		List jobs =
 			new ArrayList(
-				conn.getConnectionManager().getJobManager().getAllJobs());
+				conn.getConnectionManager().getJobManager().getAllJobsFromWaitingQueue());
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		env.add("filename", filename);
 		for (Iterator iter = jobs.iterator(); iter.hasNext();) {

@@ -30,7 +30,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.25 2004/07/09 06:16:18 zubov Exp $
+ * @version $Id: Job.java,v 1.26 2004/07/09 17:08:37 zubov Exp $
  */
 public class Job {
 	private int _transferNum;
@@ -53,7 +53,7 @@ public class Job {
 		_transferNum = transferNum;
 		if (_transferNum > destSlaves.size())
 			throw new IllegalArgumentException("transferNum cannot be greater than destSlaves.size()");
-		if (_transferNum > 0)
+		if (_transferNum <= 0)
 			throw new IllegalArgumentException("transferNum must be greater than 0");
 
 	}

@@ -34,7 +34,7 @@ import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 /**
  * @author zubov
- * @version $Id: GenericTextOutput.java,v 1.1 2004/07/08 16:09:52 zubov Exp $
+ * @version $Id: GenericTextOutput.java,v 1.2 2004/07/09 17:08:36 zubov Exp $
  */
 public class GenericTextOutput extends GenericCommandAutoService
 		implements
@@ -49,7 +49,7 @@ public class GenericTextOutput extends GenericCommandAutoService
 		for (Iterator iter = _commands.keySet().iterator(); iter.hasNext();) {
 			toReturn = toReturn + (String) iter.next() + " ";
 		}
-		return toReturn;
+		return toReturn.trim();
 	}
 	private void reload() {
 		_commands = new HashMap();

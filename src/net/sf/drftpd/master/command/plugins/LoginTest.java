@@ -41,7 +41,7 @@ import org.drftpd.tests.DummyUserManager;
 
 /**
  * @author mog
- * @version $Id: LoginTest.java,v 1.7 2004/06/09 22:49:16 mog Exp $
+ * @version $Id: LoginTest.java,v 1.8 2004/07/09 17:08:37 zubov Exp $
  */
 public class LoginTest extends TestCase {
 	private DummyUser _user;
@@ -77,7 +77,7 @@ public class LoginTest extends TestCase {
 			}
 		});
 		_userManager = new DummyUserManager();
-		_user = new DummyUser("myuser");
+		_user = new DummyUser("myuser",_userManager);
 		_userManager.setUser(_user);
 		_conn.setUserManager(_userManager);
 	}

@@ -15,12 +15,11 @@
  * Suite 330, Boston, MA 02111-1307 USA
  */
 package org.drftpd.mirroring.archivetypes;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
+
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.listeners.Archive;
@@ -29,12 +28,13 @@ import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+
 import org.apache.log4j.Logger;
 import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.sections.SectionInterface;
 /**
  * @author zubov
- * @version $Id: StripeFilesOffSpecificSlaves.java,v 1.10 2004/07/09 06:43:33 zubov Exp $
+ * @version $Id: StripeFilesOffSpecificSlaves.java,v 1.11 2004/07/09 17:08:38 zubov Exp $
  */
 public class StripeFilesOffSpecificSlaves extends ArchiveType {
 	private static final Logger logger = Logger
@@ -158,7 +158,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 			} else {
 				logger.info("Adding " + file.getPath() + " to the job queue with numOfSlaves = " + _numOfSlaves);
 				Job job = new Job(file, getRSlaves(), 3, _numOfSlaves);
-				jm.addJob(job);
+				jm.addJobToWaitingQueue(job);
 				jobQueue.add(job);
 			}
 		}

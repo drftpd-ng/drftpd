@@ -24,6 +24,7 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
@@ -61,7 +62,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.91 2004/07/02 19:58:52 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.92 2004/07/09 17:08:36 zubov Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -136,7 +137,7 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	protected long _lastActive;
 
-	private PrintWriter _out;
+	protected PrintWriter _out;
 
 	protected FtpRequest _request;
 

@@ -19,19 +19,18 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
-
+import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.Transfer;
-
 import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveTransfer.java,v 1.16 2004/07/07 23:34:31 zubov Exp $
+ * @version $Id: SlaveTransfer.java,v 1.17 2004/07/09 17:08:38 zubov Exp $
  */
 public class SlaveTransfer {
 	class DstXfer extends Thread {
@@ -78,7 +77,9 @@ public class SlaveTransfer {
 	private RemoteSlave _destSlave;
 	private LinkedRemoteFileInterface _file;
 	private RemoteSlave _sourceSlave;
+	private DstXfer dstxfer;
 	private boolean finished = false;
+	private SrcXfer srcxfer;
 	private Throwable stackTrace;
 	/**
 	 * Slave to Slave Transfers
@@ -89,7 +90,45 @@ public class SlaveTransfer {
 		_sourceSlave = sourceSlave;
 		_destSlave = destSlave;
 	}
-	public void interruptibleSleepUntilFinished() throws Throwable {
+	public int getXferSpeed() {
+		if (srcxfer == null || srcxfer.srcxfer == null || dstxfer == null || dstxfer.dstxfer == null )
+			return 0;
+		int srcspeed;
+		try {
+			srcspeed = srcxfer.srcxfer.getXferSpeed();
+		} catch (RemoteException e) {
+			_sourceSlave.handleRemoteException(e);
+			srcspeed = 0;
+		}
+		int dstspeed;
+		try {
+			dstspeed = dstxfer.dstxfer.getXferSpeed();
+		} catch (RemoteException e1) {
+			_destSlave.handleRemoteException(e1);
+			dstspeed = 0;
+		}
+		return (srcspeed + dstspeed) / 2;
+	}
+	public long getTransfered() {
+		if (srcxfer == null || srcxfer.srcxfer == null || dstxfer == null || dstxfer.dstxfer == null )
+			return 0;
+		long srctransfered;
+		try {
+			srctransfered = srcxfer.srcxfer.getTransfered();
+		} catch (RemoteException e) {
+			_sourceSlave.handleRemoteException(e);
+			srctransfered = 0;
+		}
+		long dsttransfered;
+		try {
+			dsttransfered = dstxfer.dstxfer.getTransfered();
+		} catch (RemoteException e1) {
+			_destSlave.handleRemoteException(e1);
+			dsttransfered = 0;
+		}
+		return (srctransfered + dsttransfered) / 2;
+	}
+	private void interruptibleSleepUntilFinished() throws Throwable {
 		while (!finished) {
 			try {
 				Thread.sleep(1000); // 1 sec
@@ -109,7 +148,6 @@ public class SlaveTransfer {
 	 */
 	public boolean transfer(boolean checkCRC) throws DestinationSlaveException,
 			SourceSlaveException, FileNotFoundException, FileExistsException {
-		DstXfer dstxfer;
 		try {
 			dstxfer = new DstXfer(_destSlave.getSlave().listen(false));
 		} catch (SlaveUnavailableException e) {
@@ -122,7 +160,6 @@ public class SlaveTransfer {
 			throw new DestinationSlaveException(_destSlave.getName()
 					+ " had an error listening for slave2slave transfer");
 		}
-		SrcXfer srcxfer;
 		try {
 			srcxfer = new SrcXfer(_sourceSlave.getSlave().connect(
 					new InetSocketAddress(_destSlave.getInetAddress(), dstxfer

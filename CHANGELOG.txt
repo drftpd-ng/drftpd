@@ -1,3 +1,8 @@
+2004/07/09 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Fixed JUnit tests, all pass
+* Implemented "site listjobs" to show transfer status on jobs that are 
+  currently transferring
+
 2004/07/08 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Changes in JobManager to check for deleted files in the job queue
 * Fixed small bug in ConstantMirroring

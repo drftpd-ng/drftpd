@@ -27,7 +27,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import junit.framework.TestCase;
-import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
@@ -37,7 +36,7 @@ import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: JobManagerTest.java,v 1.9 2004/07/09 06:11:57 zubov Exp $
+ * @version $Id: JobManagerTest.java,v 1.10 2004/07/09 17:08:38 zubov Exp $
  */
 public class JobManagerTest extends TestCase {
 
@@ -195,14 +194,14 @@ public class JobManagerTest extends TestCase {
 		slaveSet.add(rslave2);
 		slaveSet.add(rslave3);
 		Job job = new Job(file, slaveSet, 0,slaveSet.size());
-		jm.addJob(job);
+		jm.addJobToWaitingQueue(job);
 		Set usedSlaveList = new HashSet();
 		Set skipJobs = new HashSet();
 		assertSame(job, jm.getNextJob(usedSlaveList, skipJobs));
 		skipJobs.add(job);
 		assertNull(jm.getNextJob(usedSlaveList, skipJobs));
 		Job job2 = new Job(file2, slaveSet, 5, 2);
-		jm.addJob(job2);
+		jm.addJobToWaitingQueue(job2);
 		assertSame(job2, jm.getNextJob(usedSlaveList, skipJobs));
 		skipJobs.add(job2);
 		assertNull(jm.getNextJob(usedSlaveList, skipJobs));

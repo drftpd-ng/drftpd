@@ -3,14 +3,15 @@ package org.drftpd.tests;
 import net.sf.drftpd.event.listeners.Trial;
 import net.sf.drftpd.master.usermanager.AbstractUser;
 import net.sf.drftpd.master.usermanager.UserFileException;
+import net.sf.drftpd.master.usermanager.UserManager;
 
 public class DummyUser extends AbstractUser {
-	public DummyUser(String name) {
-		super(name);
+	public DummyUser(String name, UserManager um) {
+		super(name,um);
 	}
 
 	public DummyUser(String username, long time) {
-		this(username);
+		this(username,null);
 		setCreated(time);
 	}
 

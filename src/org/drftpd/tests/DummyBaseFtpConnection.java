@@ -35,7 +35,6 @@ import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
-import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserManager;
@@ -44,7 +43,7 @@ import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 /**
  * @author mog
- * @version $Id: DummyBaseFtpConnection.java,v 1.5 2004/06/09 22:49:16 mog Exp $
+ * @version $Id: DummyBaseFtpConnection.java,v 1.6 2004/07/09 17:08:39 zubov Exp $
  */
 public class DummyBaseFtpConnection extends BaseFtpConnection {
 
@@ -52,21 +51,22 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 	private UserManager _userManager;
 	private DummyServerSocketFactory _serverSocketFactory;
 	private DummySocketFactory _socketFactory;
-	private StringWriter _out;
-	private DataConnectionHandler _dch;
+	private StringWriter _stringWriter;
+	private PrintWriter _printWriter;
+	private DataConnectionHandler _dch;	
 
 	public DummyBaseFtpConnection(DataConnectionHandler dch) {
 		_dch = dch;
 		_socketFactory = new DummySocketFactory();
 		_serverSocketFactory = new DummyServerSocketFactory(_socketFactory);
 		
-		currentDirectory = new LinkedRemoteFile(null);
-		currentDirectory.addFile(new StaticRemoteFile(Collections.EMPTY_LIST, "testfile", "drftpd", "drftpd", Bytes.parseBytes("10M"), System.currentTimeMillis()));
-		_out = new StringWriter();
-		out = new PrintWriter(_out);
+		_currentDirectory = new LinkedRemoteFile(null);
+		_currentDirectory.addFile(new StaticRemoteFile(Collections.EMPTY_LIST, "testfile", "drftpd", "drftpd", Bytes.parseBytes("10M"), System.currentTimeMillis()));
+		_stringWriter = new StringWriter();
+		_out = new PrintWriter(_stringWriter);
 	}
 	public void setRequest(FtpRequest request) {
-		this.request = request;
+		_request = request;
 	}
 	/**
 	 * @deprecated
@@ -245,7 +245,7 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 	}
 
 	public StringWriter getDummyOut() {
-		return _out;
+		return _stringWriter;
 	}
 
 	public SocketFactory getSocketFactory() {
