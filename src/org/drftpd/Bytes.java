@@ -25,7 +25,7 @@ import java.text.DecimalFormatSymbols;
  * See http://physics.nist.gov/cuu/Units/binary.html for an explanation of binary multiples.
  *
  * @author mog
- * @version $Id: Bytes.java,v 1.1 2004/11/09 18:59:53 mog Exp $
+ * @version $Id$
  */
 public class Bytes {
     private static final DecimalFormat FORMAT;
@@ -57,7 +57,7 @@ public class Bytes {
 
     public static String formatBytes(long bytes) {
         return formatBytes(bytes,
-            Boolean.getBoolean(System.getProperty("bytes.binary", "false")));
+            System.getProperty("bytes.binary", "false").equals("true"));
     }
 
     public static String formatBytes(long bytes, boolean binary) {

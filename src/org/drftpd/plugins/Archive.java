@@ -56,7 +56,7 @@ public class Archive implements FtpListener, Runnable {
 
     public Archive() {
         logger.info("Archive plugin loaded successfully");
-        _archiveHandlers = new ArrayList();
+        _archiveHandlers = new ArrayList<ArchiveHandler>();
     }
 
     public Properties getProperties() {
@@ -80,7 +80,6 @@ public class Archive implements FtpListener, Runnable {
         ArchiveType archiveType = null;
         String name = null;
 
-        
         try {
             name = PropertyHelper.getProperty(_props,
                     section.getName() + ".archiveType");
@@ -100,7 +99,6 @@ public class Archive implements FtpListener, Runnable {
         }
 
         Object[] objectParams = { this, section, _props };
-
         try {
             archiveType = (ArchiveType) constructor.newInstance(objectParams);
         } catch (Exception e2) {
