@@ -568,7 +568,6 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 			setOffline(e);
 			addQueueRename(from, simplePath);
 		} catch (SlaveUnavailableException e) {
-			setOffline(e);
 			addQueueRename(from, simplePath);
 		}
 	}
@@ -960,17 +959,6 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	}
 
 	public final synchronized void setOfflineReal(String reason) {
-		if (_socket != null) {
-			try {
-				sendCommand(new AsyncCommand("error", reason));
-			} catch (SlaveUnavailableException e) {
-			}
-			try {
-				_socket.close();
-			} catch (IOException e) {
-			}
-		}
-
 		_socket = null;
 		_sin = null;
 		_sout = null;
