@@ -130,8 +130,11 @@ public abstract class AbstractLinkedRemoteFile
         throw new UnsupportedOperationException();
     }
 
-    public Collection getFiles() {
+    public Collection getFiles2() {
         throw new UnsupportedOperationException();
+    }
+    public Collection getFiles() {
+    	return getFiles2();
     }
 
     public String getGroupname() {

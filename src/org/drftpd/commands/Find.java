@@ -16,6 +16,22 @@
  */
 package org.drftpd.commands;
 
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
@@ -33,24 +49,6 @@ import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-
-import java.io.FileNotFoundException;
-
-import java.text.SimpleDateFormat;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * SITE FIND <options>-action <action>Options: -user <user>-group
@@ -484,7 +482,7 @@ public class Find implements CommandHandlerFactory, CommandHandler {
 		}
 
 		for (Iterator<LinkedRemoteFileInterface> iter = new ArrayList<LinkedRemoteFileInterface>(
-				dir.getFiles()).iterator(); iter.hasNext();) {
+				dir.getFiles2()).iterator(); iter.hasNext();) {
 			LinkedRemoteFileInterface file = iter.next();
 
 			if (file.isDirectory()) {

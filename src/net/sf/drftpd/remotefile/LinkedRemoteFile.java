@@ -61,6 +61,8 @@ public class LinkedRemoteFile implements Serializable, Comparable,
     private static final Logger logger = Logger.getLogger(LinkedRemoteFile.class.getName());
     static final long serialVersionUID = 3585958839961835107L;
     private long _checkSum;
+    //cannot be generic cause CaseInsensitiveHashtable isn't generic
+    //it's used by slave when sending commands.
     private CaseInsensitiveHashtable _files;
     private transient FtpConfig _ftpConfig;
     private String _group;
@@ -378,7 +380,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
         if (isDirectory()) {
             // need to use a copy of getFiles() for recursive delete to avoid ConcurrentModificationErrors
-            for (Iterator iter = new ArrayList<LinkedRemoteFileInterface>(getFiles()).iterator();
+            for (Iterator iter = new ArrayList<LinkedRemoteFileInterface>(getFiles2()).iterator();
                     iter.hasNext();) {
                 LinkedRemoteFileInterface myFile = (LinkedRemoteFileInterface) iter.next();
                 myFile.delete();
@@ -603,11 +605,18 @@ public class LinkedRemoteFile implements Serializable, Comparable,
      * @return a Collection of all the LinkedRemoteFile objects in this
      *         directory.
      */
-    public Collection<LinkedRemoteFileInterface> getFiles() {
+    public Collection<LinkedRemoteFileInterface> getFiles2() {
         if (_files == null) {
             throw new IllegalStateException("Isn't a directory");
         }
         return getFilesMap().values();
+    }
+
+    public Collection<RemoteFileInterface> getFiles() {
+    	if(_files == null) {
+    		throw new IllegalStateException("Isn't a directory");
+    	}
+    	return getFilesMap().values();
     }
 
     /**
@@ -1533,7 +1542,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
         boolean shouldDelete = !_files.isEmpty();
 
-        for (Iterator iter = new ArrayList<LinkedRemoteFileInterface>(getFiles()).iterator();
+        for (Iterator iter = new ArrayList<LinkedRemoteFileInterface>(getFiles2()).iterator();
                 iter.hasNext();) {
             LinkedRemoteFile lrf = (LinkedRemoteFile) iter.next();
 

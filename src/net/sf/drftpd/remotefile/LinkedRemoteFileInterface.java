@@ -216,6 +216,6 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
     public abstract void cleanSlaveFromMerging(RemoteSlave slave);
 
 	public abstract void deleteFromSlave(RemoteSlave rslave);
-	// override generic type
-	public abstract Collection<LinkedRemoteFileInterface> getFiles();
+
+	public abstract Collection<LinkedRemoteFileInterface> getFiles2();
 }
