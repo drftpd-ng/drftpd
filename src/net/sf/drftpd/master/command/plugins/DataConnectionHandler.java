@@ -230,10 +230,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                 String index = _preTransferRSlave.issueListenToSlave(_encryptedDataChannel);
                 ConnectInfo ci = _preTransferRSlave.fetchTransferResponseFromIndex(index);
                 _transfer = _preTransferRSlave.getTransfer(ci.getTransferIndex());
-                address = new InetSocketAddress(_preTransferRSlave.getProperty(
-						"pasv_addr", _preTransferRSlave.getInetAddress()
-								.getHostAddress()), _transfer.getAddress()
-						.getPort());
+                address = new InetSocketAddress(_preTransferRSlave.getIP(),_transfer.getAddress().getPort());
                 _isPasv = true;
             } catch (SlaveUnavailableException e) {
             	reset();
@@ -1234,8 +1231,9 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             // setup _transfer
             if (isPort()) {
                 try {
-                    String index = _rslave.issueConnectToSlave(_portAddress,
-                            _encryptedDataChannel);
+                    String index = _rslave.issueConnectToSlave(_portAddress
+							.getAddress().getHostAddress(), _portAddress
+							.getPort(), _encryptedDataChannel);
                     ConnectInfo ci = _rslave.fetchTransferResponseFromIndex(index);
                     synchronized (this) {
                     	_transfer = _rslave.getTransfer(ci.getTransferIndex());

@@ -46,9 +46,9 @@ public class RemoteTransfer {
     private char _state = Transfer.TRANSFER_UNKNOWN;
 	private String _path;
 
-    public RemoteTransfer(ConnectInfo ci, RemoteSlave rslave) {
+    public RemoteTransfer(ConnectInfo ci, RemoteSlave rslave) throws SlaveUnavailableException {
         _transferIndex = ci.getTransferIndex();
-        _address = new InetSocketAddress(ci.getAddress(), ci.getPort());
+        _address = new InetSocketAddress(rslave.getIP(), ci.getPort());
         _rslave = rslave;
         _status = ci.getTransferStatus();
     }

@@ -737,9 +737,9 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		return ((AsyncResponseSFVFile) fetchResponse(index)).getSFV();
 	}
 
-	public InetAddress getInetAddress() throws SlaveUnavailableException {
+	public synchronized String getIP() throws SlaveUnavailableException {
 		if(_socket == null) throw new SlaveUnavailableException();
-		return _socket.getInetAddress();
+        return getProperty("pasv_addr", _socket.getInetAddress().getHostAddress());
 	}
 
 	public int getPort() {
@@ -758,12 +758,11 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		return index;
 	}
 
-	public String issueConnectToSlave(InetSocketAddress address,
+	public String issueConnectToSlave(String ip, int port, 
 			boolean encryptedDataChannel) throws SlaveUnavailableException {
 		String index = fetchIndex();
-		sendCommand(new AsyncCommandArgument(index, "connect", address
-				.getAddress().getHostAddress()
-				+ ":" + address.getPort() + "," + encryptedDataChannel));
+		sendCommand(new AsyncCommandArgument(index, "connect", ip
+				+ ":" + port + "," + encryptedDataChannel));
 
 		return index;
 	}
@@ -859,7 +858,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 
 	public String moreInfo() {
 		try {
-			return getName() + ":address=[" + getInetAddress() + "]port=["
+			return getName() + ":address=[" + getIP() + "]port=["
 					+ Integer.toString(getPort()) + "]";
 		} catch (SlaveUnavailableException e) {
 			return getName()+":offline";

@@ -81,9 +81,9 @@ public class SlaveTransfer {
         }
 
         try {
-            String srcIndex = _srcSlave.issueConnectToSlave(new InetSocketAddress(
-                        _destSlave.getInetAddress(),
-                        _destTransfer.getLocalPort()), false);
+            String srcIndex = _srcSlave.issueConnectToSlave(_destTransfer
+					.getAddress().getAddress().getHostAddress(), _destTransfer
+					.getLocalPort(), false);
             ConnectInfo ci = _srcSlave.fetchTransferResponseFromIndex(srcIndex);
             _srcTransfer = _srcSlave.getTransfer(ci.getTransferIndex());
         } catch (SlaveUnavailableException e) {

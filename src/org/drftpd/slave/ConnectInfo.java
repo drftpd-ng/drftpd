@@ -25,24 +25,18 @@ import java.net.InetAddress;
 
 /**
  * @author zubov
- * @version $Id: ConnectInfo.java,v 1.4 2004/11/09 18:59:58 mog Exp $
+ * @version $Id$
  */
 public class ConnectInfo implements Serializable {
-    private InetAddress _address;
     private int _port;
     private TransferIndex _transferIndex;
     private TransferStatus _transferStatus;
 
     public ConnectInfo(InetAddress address, int port,
         TransferIndex transferIndex, TransferStatus ts) {
-        _address = address;
         _port = port;
         _transferIndex = transferIndex;
         _transferStatus = ts;
-    }
-
-    public InetAddress getAddress() {
-        return _address;
     }
 
     public int getPort() {

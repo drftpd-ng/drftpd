@@ -33,11 +33,6 @@ public class DummyRemoteSlave extends RemoteSlave {
         super(name, gctx);
     }
 
-    public InetAddress getInetAddress() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 	public int getPort() {
 		return 10;
 	}
