@@ -323,7 +323,7 @@ public abstract class AbstractUser extends User {
 		_data.setObject(Request.REQUESTS, requests);
 		_data.setObject(Request.REQUESTSFILLED, requestsFilled);
 
-		_data.setObject(UserManagement.COMMENT, comment);
+		_data.setObject(UserManagement.COMMENT, getComment());
 		_data.setObject(UserManagement.CREATED, new Date(created));
 		_data.setObject(UserManagement.RATIO, new Float(ratio));
 		_data.setObject(UserManagement.TAGLINE, tagline);
@@ -342,6 +342,13 @@ public abstract class AbstractUser extends User {
 
 		_data.setObject(Statistics.LOGINS, logins);
 		return _data;
+	}
+
+	public String getComment() {
+		if (comment == null) {
+			return "no comment";
+		}
+		return comment;
 	}
 
 	public long getLastAccessTime() {

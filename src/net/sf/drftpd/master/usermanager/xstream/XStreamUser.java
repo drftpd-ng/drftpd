@@ -93,26 +93,7 @@ public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
     }
 
     public void commit() throws UserFileException {
-        if (this.purged) {
-            return;
-        }
-
-        try {
-            XStream xst = new XStream(new DomDriver());
-            SafeFileWriter out = new SafeFileWriter(_usermanager.getUserFile(
-                        this.getName()));
-
-            try {
-                out.write(xst.toXML(this));
-            } finally {
-                out.close();
-            }
-
-            Logger.getLogger(XStreamUser.class).debug("wrote " + getName());
-        } catch (IOException ex) {
-            throw new UserFileException("Error writing userfile for " +
-                this.getName() + ": " + ex.getMessage(), ex);
-        }
+    	throw new UnsupportedOperationException();
     }
 
     public void purge() {

@@ -874,6 +874,9 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		if (isDirectory()) {
 			return true;
 		}
+		if (isLink()) {
+			return true;
+		}
 
 		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
@@ -891,7 +894,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 	}
 
 	public boolean isDirectory() {
-		return (_files != null);
+		return (_files != null) && !isLink();
 	}
 
 	/**
@@ -906,7 +909,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 	}
 
 	public boolean isFile() {
-		return (_files == null) && (_slaves != null);
+		return (_files == null) && (_slaves != null) && !isLink();
 	}
 
 	/**
@@ -1425,8 +1428,6 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
 	public void remerge(CaseInsensitiveHashtable lightRemoteFiles,
 			RemoteSlave rslave) throws IOException {
-		logger.debug("calling remerge on " + this);
-		logger.debug("list of files are -- " + lightRemoteFiles);
 		if (!isDirectory()) {
 			throw new RuntimeException(getPath() + " is not a directory");
 		}
@@ -1472,7 +1473,10 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 					}
 				}
 			} else {
-				if (lrf.isFile()) {
+				if (lrf.isLink()) {
+					continue;
+				}
+				else if (lrf.isFile()) {
 					lrf.removeSlave(rslave);
 				} else if (lrf.isDirectory()) {
 					boolean wasEmpty = lrf.isEmpty();

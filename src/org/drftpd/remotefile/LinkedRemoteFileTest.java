@@ -295,4 +295,20 @@ public class LinkedRemoteFileTest extends TestCase {
     	_root.getFile("DontRemoveMe").remerge(new CaseInsensitiveHashtable(), rslave);
     	assertEquals(0,_root.getFiles().size());
     }
+    
+    public void testRemergeRemoveLink() throws IOException, SlaveFileException {
+    	setUp();
+    	internalSetUp();
+    	DummyFtpConfig dfc = new DummyFtpConfig();
+    	DummyGlobalContext dgc = new DummyGlobalContext();
+    	dgc.setSlaveManager(new DummySlaveManager());
+    	dfc.setGlobalContext(dgc);
+    	RemoteSlave rslave = new DummyRemoteSlave("testslave",null);
+    	_root = new LinkedRemoteFile(dfc);
+    	_root.addFile(new StaticRemoteFile(null, "TargetForLink", 0));
+    	_root.addFile(new StaticRemoteFile("Link", null, "TargetForLink"));
+    	_root.remerge(new CaseInsensitiveHashtable(), rslave);
+    	_root.getFile("TargetForLink").remerge(new CaseInsensitiveHashtable(), rslave);
+    	assertNotNull(_root.getFile("Link"));
+    }
 }
