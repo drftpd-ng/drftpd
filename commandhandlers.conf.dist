@@ -102,3 +102,5 @@ SITE\ PRE=net.sf.drftpd.master.command.plugins.Pre
 SITE\ SLAVES=net.sf.drftpd.master.command.plugins.SlaveManagment
 SITE\ CHECKSLAVES=net.sf.drftpd.master.command.plugins.SlaveManagment
 SITE\ KICKSLAVE=net.sf.drftpd.master.command.plugins.SlaveManagment
+
+SITE\ INVITE=net.sf.drftpd.master.command.plugins.Invite
