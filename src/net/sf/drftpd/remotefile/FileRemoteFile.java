@@ -34,7 +34,7 @@ import net.sf.drftpd.slave.RootBasket;
  * A wrapper for java.io.File to the net.sf.drftpd.RemoteFile structure.
  * 
  * @author mog
- * @version $Id: FileRemoteFile.java,v 1.37 2004/05/31 02:47:19 mog Exp $
+ * @version $Id: FileRemoteFile.java,v 1.38 2004/06/02 22:47:15 mog Exp $
  */
 public class FileRemoteFile extends AbstractRemoteFile {
 	RootBasket rootBasket;
@@ -211,7 +211,7 @@ public class FileRemoteFile extends AbstractRemoteFile {
 				}
 			}
 		}
-		if(!getName().equals("") && filefiles.isEmpty()) throw new RuntimeException();
+		if(!getName().equals("") && filefiles.isEmpty()) throw new RuntimeException("Empty (not-root) directory, shouldn't happen");
 	}
 	/**
 	 * @see net.sf.drftpd.remotefile.AbstractRemoteFile#getFiles()
