@@ -27,7 +27,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: RemoteFileInterface.java,v 1.2 2004/11/15 01:12:15 mog Exp $
+ * @version $Id$
  */
 public interface RemoteFileInterface {
     /**
@@ -40,7 +40,7 @@ public interface RemoteFileInterface {
     /**
      * Returns a Collection of RemoteFileInterface objects.
      */
-    public Collection<LinkedRemoteFileInterface> getFiles();
+    public Collection getFiles();
 
     /**
      * Get the group owner of the file as a String.
@@ -67,7 +67,7 @@ public interface RemoteFileInterface {
 
     public abstract String getPath();
 
-    public Collection<RemoteSlave> getSlaves();
+    public Collection getSlaves();
 
     /**
      * Returns string representation of the owner of this file.
