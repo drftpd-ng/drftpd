@@ -18,9 +18,10 @@
  */
 package net.sf.drftpd.remotefile;
 
-import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.io.Writer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -40,7 +41,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: MLSTSerialize.java,v 1.22 2004/02/03 20:03:14 mog Exp $
+ * @version $Id: MLSTSerialize.java,v 1.23 2004/02/03 20:57:15 mog Exp $
  */
 public class MLSTSerialize {
 	private static final Logger logger = Logger.getLogger(MLSTSerialize.class);
@@ -115,7 +116,7 @@ public class MLSTSerialize {
 	}
 
 	private static void unserialize(
-		BufferedReader in,
+		LineNumberReader in,
 		LinkedRemoteFile dir,
 		Hashtable allRslaves,
 		String path)
@@ -140,6 +141,7 @@ public class MLSTSerialize {
 			while (st.hasMoreElements()) {
 				String entry = st.nextToken();
 				pos = entry.indexOf('=');
+				if(pos == -1) throw new CorruptFileListException("\""+entry+" is corrupt, line "+in.getLineNumber());
 				String k = entry.substring(0, pos);
 				String v = entry.substring(pos + 1);
 				if ("type".equals(k)) {
@@ -180,10 +182,12 @@ public class MLSTSerialize {
 					ArrayList rslaves = new ArrayList();
 					StringTokenizer st2 = new StringTokenizer(v, ",");
 					while (st2.hasMoreTokens()) {
+						String slavename = st2.nextToken();
 						RemoteSlave rslave =
-							(RemoteSlave) allRslaves.get(st2.nextToken());
+							(RemoteSlave) allRslaves.get(slavename);
 						if (rslave == null)
-							throw new NullPointerException();
+							throw new NullPointerException(
+								slavename + " not found");
 						rslaves.add(rslave);
 					}
 					file.setRSlaves(rslaves);
@@ -202,16 +206,20 @@ public class MLSTSerialize {
 
 	public static LinkedRemoteFile unserialize(
 		FtpConfig conf,
-		BufferedReader in,
+		Reader in,
 		List rslaves)
 		throws IOException, CorruptFileListException {
 		LinkedRemoteFile root = new LinkedRemoteFile(conf);
 
-		for (String line = in.readLine(); line != null; line = in.readLine()) {
+		LineNumberReader in2 = new LineNumberReader(in);
+
+		for (String line = in2.readLine();
+			line != null;
+			line = in2.readLine()) {
 
 			if (!line.endsWith(":"))
 				throw new CorruptFileListException(
-					"expecting path, not " + line);
+					"expecting path, not \"" + line+"\" line "+in2.getLineNumber());
 
 			String path = line.substring(0, line.length() - 1);
 			NonExistingFile ret = root.lookupNonExistingFile(path, true);
@@ -225,7 +233,7 @@ public class MLSTSerialize {
 				//				 }
 			}
 
-			unserialize(in, dir, RemoteSlave.rslavesToHashtable(rslaves), path);
+			unserialize(in2, dir, RemoteSlave.rslavesToHashtable(rslaves), path);
 		}
 		return root;
 	}

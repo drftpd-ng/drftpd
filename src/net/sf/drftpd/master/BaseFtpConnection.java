@@ -41,7 +41,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.71 2004/02/02 12:01:06 flowman Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.72 2004/02/03 20:57:14 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -516,6 +516,7 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	public void stop() {
 		stopRequest = true;
+		//TODO _sock.close() as well?
 	}
 
 	public void stop(String message) {

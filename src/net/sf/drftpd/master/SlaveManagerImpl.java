@@ -45,7 +45,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 /**
- * @version $Id: SlaveManagerImpl.java,v 1.64 2004/02/03 20:03:13 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.65 2004/02/03 20:57:14 mog Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -201,7 +201,7 @@ public class SlaveManagerImpl
 		throws IOException {
 		return MLSTSerialize.unserialize(
 			cm != null ? cm.getConfig() : null,
-			new BufferedReader(new FileReader("files.mlst")),
+			new FileReader("files.mlst"),
 			rslaves);
 	}
 	public static RemoteSlave loadRSlave(Element slaveElement) {
