@@ -374,11 +374,11 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 				transfersUp, throughputDown, transfersDown);
 	}
 
-	private long getSentBytes() {
+	private synchronized long getSentBytes() {
 		return _sentBytes;
 	}
 
-	private long getReceivedBytes() {
+	private synchronized long getReceivedBytes() {
 		return _receivedBytes;
 	}
 
@@ -500,7 +500,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		return ret;
 	}
 
-	public final void setAvailable(boolean available) {
+	public synchronized void setAvailable(boolean available) {
 		_isAvailable = available;
 	}
 
@@ -911,6 +911,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 						try {
 							rt = getTransfer(ats.getTransferIndex());
 						} catch (SlaveUnavailableException e1) {
+							
 							// no reason for slave thread to be running if the
 							// slave is not online
 							return;
@@ -933,7 +934,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		}
 	}
 
-	private void removeTransfer(TransferIndex transferIndex) {
+	private synchronized void removeTransfer(TransferIndex transferIndex) {
 		synchronized (_transfers) {
 			RemoteTransfer transfer = _transfers.remove(transferIndex);
 			if (transfer == null) {
@@ -1146,12 +1147,6 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	}
 	public void setRenameQueue(LinkedList<QueuedOperation> renameQueue) {
 		_renameQueue = renameQueue;
-	}
-	public void setReceivedBytes(long receivedBytes) {
-		_receivedBytes = receivedBytes;
-	}
-	public void setSentBytes(long sentBytes) {
-		_sentBytes = sentBytes;
 	}
 	
 	public void shutdown() {
