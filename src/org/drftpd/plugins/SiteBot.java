@@ -332,6 +332,7 @@ public class SiteBot extends FtpListener implements Observer {
         env.add("title", id3tag.getTitle().trim());
 
         Ret ret = getPropertyFileSuffix("id3tag", dir);
+        fillEnvSection( env, direvent, ret.getSection(), direvent.getDirectory());
         say(ret.getSection(), SimplePrintf.jprintf(ret.getFormat(), env));
     }
 
@@ -447,7 +448,7 @@ public class SiteBot extends FtpListener implements Observer {
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
-
+            
             env.add("racers", Integer.toString(racers.size()));
             env.add("groups", Integer.toString(groups.size()));
             env.add("files", Integer.toString(sfvfile.size()));
@@ -489,7 +490,8 @@ public class SiteBot extends FtpListener implements Observer {
                 }
 
                 ReplacerEnvironment raceenv = new ReplacerEnvironment(GLOBAL_ENV);
-
+                
+                raceenv.add("section", ret.getSection().getName());
                 raceenv.add("user", raceuser.getName());
                 raceenv.add("group", raceuser.getGroup());
 
@@ -546,6 +548,7 @@ public class SiteBot extends FtpListener implements Observer {
 
                 ReplacerEnvironment raceenv = new ReplacerEnvironment(GLOBAL_ENV);
 
+                raceenv.add("section", ret.getSection().getName());
                 raceenv.add("group", stat.getGroupname());
 
                 raceenv.add("position", new Integer(position++));

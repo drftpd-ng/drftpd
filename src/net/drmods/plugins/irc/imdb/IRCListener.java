@@ -73,20 +73,14 @@ public class IRCListener extends IRCCommand {
         ArrayList<String> out = new ArrayList<String>();
         ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		env.add("ircnick", msgc.getSource().getNick());	
+        env.add("searchstr", args);
         
-       	try { 
-            IMDBParser imdb = new IMDBParser(args, _filters);
-            if (!imdb.foundFilm()) {
-                env.add("searchstr", args);
-                out.add(ReplacerUtils.jprintf("imdb.notfound", env, IMDBParser.class));
-            } else {
-                out.add(ReplacerUtils.jprintf("imdb.announce", imdb.getEnv(), IMDBParser.class));
-            }
-            return out;
-       	} catch (StringIndexOutOfBoundsException e) { 
-       		logger.warn("", e); 
-       		out.add("what??");
-       		return out; 
-       	}       
+        IMDBParser imdb = new IMDBParser(args, _filters);
+        if (!imdb.foundFilm()) {
+            out.add(ReplacerUtils.jprintf("imdb.notfound", env, IMDBParser.class));
+        } else {
+            out.add(ReplacerUtils.jprintf("imdb.announce", imdb.getEnv(), IMDBParser.class));
+        }
+        return out;
     }
 }

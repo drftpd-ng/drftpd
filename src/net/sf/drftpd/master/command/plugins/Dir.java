@@ -217,7 +217,7 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
                 Collection groups = SiteBot.topFileGroup(sfvfile.getFiles());
 
                 String racerline = bundle.getString("cwd.racers.body");
-                logger.debug("racerline = " + racerline);
+                //logger.debug("racerline = " + racerline);
                 String groupline = bundle.getString("cwd.groups.body");
 
                 ReplacerEnvironment env = BaseFtpConnection.getReplacerEnvironment(null,
