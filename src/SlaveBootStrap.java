@@ -22,11 +22,11 @@ import java.net.URLClassLoader;
 
 
 /**
- * Starts DrFTPD slave (net.sf.drftpd.slave.SlaveImpl) by loading a .jar file over the network.
- * Takes URL as first argument and passes the rest of the arguments to SlaveImpl.main()
+ * Starts DrFTPD slave (org.drftpd.slave.Slave) by loading a .jar file over the network.
+ * Takes URL as first argument and passes the rest of the arguments to Slave.main()
  *
  * @author mog
- * @version $Id: SlaveBootStrap.java,v 1.6 2004/08/03 20:13:53 zubov Exp $
+ * @version $Id: SlaveBootStrap.java,v 1.7 2004/11/03 14:00:37 zubov Exp $
  */
 public class SlaveBootStrap {
     public static void main(String[] args) throws Throwable {

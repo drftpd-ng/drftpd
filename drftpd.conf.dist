@@ -12,20 +12,13 @@ master.port=2121
 # [ true | false ]
 master.localslave=false
 
-#Allow SocketSlaves to connect to the server
-# Port to accept SocketSlave connections on, comment out to disable socket slaves
-master.socketport=1100
-# Passkey for allowing slaves to automatically register with the master
-# Default: "", comment out if you dont want to allow autoregister
-master.autoregister=autopass
-
 #User manager to use.
 #XStream is default for >=1.1, but JSX is still supported for <1.1 users
 master.usermanager=net.sf.drftpd.master.usermanager.xstream.XStreamUserManager
 #master.usermanager=net.sf.drftpd.master.usermanager.jsx.JSXUserManager
 
 #Slave manager to use, just leave it for now.
-master.slavemanager=net.sf.drftpd.master.SlaveManagerImpl
+master.slavemanager=net.sf.drftpd.master.SlaveManager
 
 #loaded plugins must use in sequential numbering
 #plugins.1=org.drftpd.plugins.SiteBotSSL
@@ -35,13 +28,6 @@ master.slavemanager=net.sf.drftpd.master.SlaveManagerImpl
 
 slaveselection=org.drftpd.slaveselection.filter.SlaveSelectionManager
 sectionmanager=org.drftpd.sections.def.SectionManager
-
-# the interval at which the slave's status are recached on the master
-# value is in milliseconds
-# the lower it is, the more accurate it will be
-# 300 milliseconds works well for low latency conditions
-# Reloadable by SITE RELOAD
-slaveStatusUpdateTime=3000
 
 #hide ips in logs?
 hideips=false

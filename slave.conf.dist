@@ -2,7 +2,7 @@
 ### Slave settings ###
 ######################
 
-#What you set <name>drftpd</name> to in conf/slaves.xml.dist
+#What you set the name as with "site addslave <slavename>" on the master
 slave.name=drftpd
 
 #root to serve contents from, is automatically created
