@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
+import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -152,6 +153,8 @@ public class New extends IRCCommand {
             env.add("owner", dir.getUsername());
             env.add("group", dir.getGroupname());
             env.add("section", getGlobalContext().getSectionManager().lookup(dir.getPath()).getName());
+            env.add("size", Bytes.formatBytes(dir.length()));
+            env.add("pos", ""+(index+1));
             out.add(ReplacerUtils.jprintf("announce", env, New.class));
             index++;
         }

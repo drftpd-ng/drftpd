@@ -39,3 +39,4 @@
 !nukes net.drmods.plugins.irc.IRCNuke.doNukes public =nuke
 !rank net.drmods.plugins.irc.Rank.doRank public *
 !find net.drmods.plugins.irc.Find.doFind public *
+!new net.drmods.plugins.irc.New.doNew public *
