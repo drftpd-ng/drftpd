@@ -66,22 +66,24 @@
   </target>
   
   <target name="dist" depends="compile">
-    <zip destfile="drftpd-0.7.0.zip" basedir=".">
-      <include name="INSTALL.*"/>
-      <include name="drftpd.conf.dist"/>
-      <include name="perms.conf.dist"/>
-      <include name="slaves.xml.dist"/>
-      <include name="irc.conf.dist"/>
-      <include name="slaves.dtd"/>
-      <include name="build.xml"/>
-      <include name="slave.bat"/>
-      <include name="slave.sh"/>
-      <include name="master.sh"/>
-      <include name="master.bat"/>
-      <include name="lib/*"/>
-      <include name="src/**"/>
-      <include name="classes/**"/>
-      <include name="ftp-data/text/**"/>
+    <zip destfile="drftpd-0.9.0.zip" >
+      <zipfileset  prefix="drftpd-0.9.0" dir=".">
+    	<include name="INSTALL.txt"/>
+    	<include name="drftpd.conf.dist"/>
+    	<include name="perms.conf.dist"/>
+    	<include name="slaves.xml.dist"/>
+    	<include name="irc.conf.dist"/>
+    	<include name="slaves.dtd"/>
+    	<include name="build.xml"/>
+    	<include name="slave.bat"/>
+    	<include name="slave.sh"/>
+    	<include name="master.sh"/>
+    	<include name="master.bat"/>
+    	<include name="lib/*"/>
+    	<include name="src/**"/>
+    	<include name="classes/**"/>
+    	<include name="ftp-data/text/**"/>
+	  </zipfileset>
     </zip>
   </target>
   

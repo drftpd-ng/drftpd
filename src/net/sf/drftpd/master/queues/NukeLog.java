@@ -7,7 +7,6 @@
 package net.sf.drftpd.master.queues;
 
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -20,8 +19,6 @@ import net.sf.drftpd.event.NukeEvent;
 import org.apache.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.output.XMLOutputter;
-
-import JSX.ObjOut;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>

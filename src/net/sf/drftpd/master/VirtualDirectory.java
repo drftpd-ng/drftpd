@@ -28,40 +28,11 @@ public class VirtualDirectory {
 	 */
 	public static void printList(Collection files, Writer out) throws IOException {
 
-		// check pattern
-		//directoryName = replaceDots(directoryName);
-//		int slashIndex = directoryName.lastIndexOf('/');
-//		if ((slashIndex != -1)
-//			&& (slashIndex != (directoryName.length() - 1))) {
-//			pattern = directoryName.substring(slashIndex + 1);
-//			directoryName = directoryName.substring(0, slashIndex + 1);
-//		}
-
-		/*
-		Map lstDirObj = filesystem;
-		StringTokenizer st = new StringTokenizer(lsDirName, "/");
-		while(st.hasMoreTokens()) {
-		String nextToken = st.nextToken();
-		System.out.println(nextToken);
-		Object obj = lstDirObj.get(nextToken);
-		if(lstDirObj==null) return false;
-		if(!(lstDirObj instanceof Map)) return false;
-		lstDirObj = (Map)obj;
-		}*/
-
-		
-		//}
-
 		// print file list
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
 			RemoteFileInterface file = (RemoteFileInterface) iter.next();
 			printLine(file, out);
 		}
-//		if (fileList != null) {
-//			for (int i = 0; i < fileList.length; i++) {
-//				printLine(fileList[i], out);
-//			}
-//		}
 	}
 
 	/**
@@ -122,7 +93,7 @@ public class VirtualDirectory {
 	 * @deprecated
 	 */
 	private static String getLength(RemoteFileInterface fl) {
-		String initStr = "            ";
+		String initStr = "             ";
 		String szStr = Long.toString(fl.length());
 		if (szStr.length() > initStr.length()) {
 			return szStr;
@@ -150,11 +121,12 @@ public class VirtualDirectory {
 	private static String getPermission(RemoteFileInterface fl) {
 
 		StringBuffer sb = new StringBuffer(13);
-		if (fl.isDirectory()) {
-			sb.append('d');
-		} else {
-			sb.append('-');
-		}
+		sb.append(fl.isDirectory() ? 'd' : '-');
+//		if (fl.isDirectory()) {
+//			sb.append('d');
+//		} else {
+//			sb.append('-');
+//		}
 
 		//		if (fl.canRead()) {
 		sb.append('r');
@@ -191,8 +163,6 @@ public class VirtualDirectory {
 			out.write(getPermission(fl));
 		}
 		out.write(DELIM);
-		out.write(DELIM);
-		out.write(DELIM);
 		out.write((fl.isDirectory() ? "3" : "1"));
 		out.write(DELIM);
 		out.write(fl.getUsername());
@@ -203,7 +173,6 @@ public class VirtualDirectory {
 		out.write(DELIM);
 		out.write(DateUtils.getUnixDate(fl.lastModified()));
 		out.write(DELIM);
-		//out.write(getName(fl));
 		if(fl instanceof LinkedRemoteFile && !((LinkedRemoteFile)fl).isAvailable())  {
 			out.write(fl.getName() + "-OFFLINE");
 		} else {

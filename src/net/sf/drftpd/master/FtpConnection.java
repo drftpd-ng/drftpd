@@ -1,6 +1,7 @@
 package net.sf.drftpd.master;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -652,7 +653,7 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		try {
-			os = new OutputStreamWriter(dataSocket.getOutputStream());
+			os = new BufferedWriter(new OutputStreamWriter(dataSocket.getOutputStream()));
 			try {
 				if (request.getCommand().equals("LIST")) {
 					VirtualDirectory.printList(listFiles, os);
@@ -1183,8 +1184,8 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(
 				new FtpResponse(
 					200,
-					"You're FXPing baby! If you're not, RTFM and set your IP to "
-						+ controlSocket.getInetAddress().getHostAddress()));
+					"FXP allowed. If you're not FXPing and set your IP to "
+						+ controlSocket.getInetAddress().getHostAddress()+" (usually in firewall settings)"));
 			return;
 		}
 		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
