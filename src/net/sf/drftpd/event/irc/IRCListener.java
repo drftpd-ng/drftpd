@@ -67,7 +67,6 @@ import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.util.ReplacerUtils;
@@ -95,7 +94,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.86 2004/02/22 16:19:21 mog Exp $
+ * @version $Id: IRCListener.java,v 1.87 2004/02/22 16:40:46 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -126,8 +125,8 @@ public class IRCListener implements FtpListener, Observer {
 	public static Collection topFileUploaders(Collection files) {
 		ArrayList ret = new ArrayList();
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			LinkedRemoteFileInterface file =
-				(LinkedRemoteFileInterface) iter.next();
+			LinkedRemoteFile file =
+				(LinkedRemoteFile) iter.next();
 			String username = file.getUsername();
 
 			UploaderPosition stat = null;
@@ -159,8 +158,8 @@ public class IRCListener implements FtpListener, Observer {
 	public static Collection topFileGroup(Collection files) {
 		ArrayList ret = new ArrayList();
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			LinkedRemoteFileInterface file =
-				(LinkedRemoteFileInterface) iter.next();
+			LinkedRemoteFile file =
+				(LinkedRemoteFile) iter.next();
 			String groupname = file.getGroupname();
 
 			GroupPosition stat = null;
@@ -275,7 +274,7 @@ public class IRCListener implements FtpListener, Observer {
 	private void actionPerformedDirectorySTOR(DirectoryFtpEvent direvent)
 		throws FormatterException {
 		ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
-		LinkedRemoteFileInterface dir;
+		LinkedRemoteFile dir;
 		try {
 			dir = direvent.getDirectory().getParentFile();
 		} catch (FileNotFoundException e) {
@@ -301,8 +300,8 @@ public class IRCListener implements FtpListener, Observer {
 
 		long starttime = Long.MAX_VALUE;
 		for (Iterator iter = sfvfile.getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFileInterface file =
-				(LinkedRemoteFileInterface) iter.next();
+			LinkedRemoteFile file =
+				(LinkedRemoteFile) iter.next();
 			if (file.lastModified() < starttime)
 				starttime = file.lastModified();
 		}
@@ -320,8 +319,8 @@ public class IRCListener implements FtpListener, Observer {
 			for (Iterator iter = sfvfile.getFiles().iterator();
 				iter.hasNext();
 				) {
-				LinkedRemoteFileInterface sfvFileEntry =
-					(LinkedRemoteFileInterface) iter.next();
+				LinkedRemoteFile sfvFileEntry =
+					(LinkedRemoteFile) iter.next();
 				if (sfvFileEntry == direvent.getDirectory())
 					continue;
 				if (sfvFileEntry.getUsername().equals(username))
@@ -668,7 +667,7 @@ public class IRCListener implements FtpListener, Observer {
 		env.add("group", direvent.getUser().getGroupName());
 		env.add("section", strippath(section.getPath()));
 
-		LinkedRemoteFileInterface dir = file;
+		LinkedRemoteFile dir = file;
 		if (dir.isFile())
 			dir = dir.getParentFileNull();
 
@@ -762,7 +761,7 @@ public class IRCListener implements FtpListener, Observer {
 
 	public Ret getPropertyFileSuffix(
 		String prefix,
-		LinkedRemoteFileInterface dir) {
+		LinkedRemoteFile dir) {
 		Section sectionObj =
 			getConnectionManager().getSectionManager().lookup(dir.getPath());
 		logger.debug("section = " + sectionObj.getName());
