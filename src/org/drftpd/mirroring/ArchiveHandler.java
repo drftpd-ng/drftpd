@@ -52,6 +52,7 @@ public class ArchiveHandler extends Thread {
 	}
 
 	public void run() {
+		try {
 		synchronized (_archiveType) {
 			if (_archiveType.getDirectory() == null) {
 				_archiveType.setDirectory(_archiveType.getOldestNonArchivedDir());
@@ -74,6 +75,8 @@ public class ArchiveHandler extends Thread {
 			"Done archiving " + getArchiveType().getDirectory().getPath());
 		_archiveType.setDirectory(null);
 		_archiveType.setRSlaves(null);
+		} catch (Exception e) {
+			logger.debug("",e);
+		}
 	}
-
 }

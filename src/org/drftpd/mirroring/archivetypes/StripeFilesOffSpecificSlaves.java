@@ -121,13 +121,19 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 		}
 		return true;
 	}
-	public ArrayList send() {
+	private void reset() {
 		_destSlavesArray = new RemoteSlave[getRSlaves().size()];
 		_destSlavesIndex = 0;
 		for (Iterator iter = getRSlaves().iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
 			_destSlavesArray[_destSlavesIndex] = rslave;
+			_destSlavesIndex++;
 		}
+		_destSlavesIndex = 0;
+	}
+	
+	public ArrayList send() {
+		reset();
 		return recursiveSend(getDirectory());
 	}
 	private HashSet getNextSlaves() {
