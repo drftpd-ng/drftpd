@@ -29,7 +29,7 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author mog
- * @version $Id: PlainSection.java,v 1.3 2004/03/01 00:21:09 mog Exp $
+ * @version $Id: PlainSection.java,v 1.4 2004/03/26 12:24:05 mog Exp $
  */
 public class PlainSection implements SectionInterface {
 
@@ -45,7 +45,7 @@ public class PlainSection implements SectionInterface {
 		_mgr = mgr;
 		_name = name;
 		_dir = path;
-		getFile();
+		//getFile();
 	}
 
 	public LinkedRemoteFileInterface getFile() {
