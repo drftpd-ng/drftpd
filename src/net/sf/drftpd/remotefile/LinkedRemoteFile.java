@@ -30,7 +30,8 @@ import net.sf.drftpd.slave.RemoteSlave;
  */
 public class LinkedRemoteFile extends RemoteFile implements Serializable {
 
-	private static Category logger = Category.getInstance(LinkedRemoteFile.class);
+	//private static Logger logger = Logger.getLogger(LinkedRemoteFile.class.getName());
+//	private static Category logger = Category.getInstance(LinkedRemoteFile.class);
 	/**
 	 * @author mog
 	 *

@@ -2,12 +2,9 @@ package net.sf.drftpd.remotefile;
 import java.io.IOException;
 import java.util.Iterator;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.output.XMLOutputter;
-
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.RemoteSlave;
+
+import org.jdom.Element;
 
 public class XMLSerialize {
 	/*

@@ -16,16 +16,20 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import net.sf.drftpd.master.usermanager.GlftpdUserManager;
 import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.remotefile.JDOMRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.RemoteSlave;
 import net.sf.drftpd.slave.SlaveImpl;
-import org.apache.log4j.Category;
+
+//import org.apache.log4j.Category;
+
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.Namespace;
 import org.jdom.input.SAXBuilder;
 
 public class ConnectionManager {
@@ -34,9 +38,10 @@ public class ConnectionManager {
 	private SlaveManagerImpl slavemanager;
 	private Timer timer;
 
-//	private static Logger logger =
-//		Logger.getLogger("net.sf.drftpd.master.ConnectionManager");
-	private static Category logger = Category.getInstance(ConnectionManager.class);
+	private static Logger logger =
+		Logger.getLogger(ConnectionManager.class.getName());
+
+//	private static Category logger = Category.getInstance(ConnectionManager.class);
 
 	public ConnectionManager(Properties cfg) {
 		LinkedRemoteFile root = null;
@@ -193,7 +198,8 @@ public class ConnectionManager {
 		try {
 			cfg.load(new FileInputStream("drftpd.conf"));
 		} catch (Exception ex) {
-			logger.error("Error loading drftpd.conf", ex);
+			//logger.error("Error loading drftpd.conf", ex);
+			logger.log(Level.SEVERE, "Error loading drftpd.conf", ex);
 		}
 
 		logger.info("Starting ConnectionManager");

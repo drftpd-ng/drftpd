@@ -1,17 +1,19 @@
 package net.sf.drftpd.slave;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+
 import java.net.InetAddress;
+
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
@@ -27,6 +29,8 @@ import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.RemoteFile;
+
+import se.mog.io.File;
 
 /**
  * @author <a href="mailto:mog@linux.nu">Morgan Christiansson</a>
@@ -95,22 +99,23 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		}
 	}
 
-	public static void checkInited() {
-		if (!FileRegistry.isInited()) {
-			System.out.println(
-				"Initalizing using " + System.getProperty("user.dir"));
-
-			/* START jconfig */
-			FileRegistry.initialize(
-				new File(System.getProperty("user.dir")),
-				0);
-			if (!FileRegistry.isInited()) {
-				System.out.println("Please check your configuration.");
-				return;
-			}
-			/* END jconfig */
-		}
-	}
+//	public static void checkInited() {
+//		
+//		if (!FileRegistry.isInited()) {
+//			System.out.println(
+//				"Initalizing using " + System.getProperty("user.dir"));
+//
+//			/* START jconfig */
+//			FileRegistry.initialize(
+//				new File(System.getProperty("user.dir")),
+//				0);
+//			if (!FileRegistry.isInited()) {
+//				System.out.println("Please check your configuration.");
+//				return;
+//			}
+//			/* END jconfig */
+//		}
+//	}
 	
 	/**
 	 * returns the {LinkedRemoteFile} directory that will be serialized and registered at the master.
@@ -131,7 +136,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	}
 
 	public SlaveStatus getSlaveStatus() {
-		checkInited();
+		//checkInited();
 		float throughputUp = 0, throughputDown = 0;
 		int transfersUp = 0, transfersDown = 0;
 
@@ -147,14 +152,17 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			//			throughput += transfer.getTransferSpeed();
 		}
 		try {
+			/*
 			DiskObject dobject =
 				FileRegistry.createDiskObject(new File(root), 0);
 			if (!(dobject instanceof DiskFile)) {
 				throw new RuntimeException("slave.root is not a DiskFile");
 			}
 			DiskVolume dvolume = ((DiskFile) dobject).getVolume();
+			*/
 			return new SlaveStatus(
-				dvolume.getFreeSpace(),
+				//dvolume.getFreeSpace(),
+				new File(root).getAvailableDiskSpace(),
 				throughputUp,
 				transfersUp,
 				throughputDown,
