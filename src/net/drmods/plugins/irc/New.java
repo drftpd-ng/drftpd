@@ -155,6 +155,7 @@ public class New extends IRCCommand {
             env.add("section", getGlobalContext().getSectionManager().lookup(dir.getPath()).getName());
             env.add("size", Bytes.formatBytes(dir.length()));
             env.add("pos", ""+(index+1));
+            env.add("files",""+dir.getFiles().size());
             out.add(ReplacerUtils.jprintf("announce", env, New.class));
             index++;
         }
