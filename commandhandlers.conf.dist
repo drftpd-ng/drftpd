@@ -23,6 +23,9 @@ RMD=net.sf.drftpd.master.command.plugins.Dir
 RNFR=net.sf.drftpd.master.command.plugins.Dir
 RNTO=net.sf.drftpd.master.command.plugins.Dir
 SITE\ WIPE=net.sf.drftpd.master.command.plugins.Dir
+SITE\ CHOWN=net.sf.drftpd.master.command.plugins.Dir
+#collides with SITE CHGRP defined by UserManagment
+#SITE\ CHGRP=net.sf.drftpd.master.command.plugins.Dir
 
 LIST=net.sf.drftpd.master.command.plugins.LIST
 NLST=net.sf.drftpd.master.command.plugins.LIST

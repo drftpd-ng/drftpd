@@ -496,13 +496,10 @@ public class Dir implements CommandHandler, Cloneable {
 		} catch (FileNotFoundException ex) {
 			return new FtpReply(550, "File not found: " + ex.getMessage());
 		}
-		logger.debug("owner: " + requestedFile.getUsername());
-		logger.debug("user: " + conn.getUserNull().getUsername());
 		// check permission
 		if (requestedFile
 			.getUsername()
 			.equals(conn.getUserNull().getUsername())) {
-				logger.debug("deleteown");
 			if (!conn
 				.getConfig()
 				.checkDeleteOwn(conn.getUserNull(), requestedFile)) {

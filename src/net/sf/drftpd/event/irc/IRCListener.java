@@ -1087,23 +1087,23 @@ public class IRCListener implements FtpListener, Observer {
 							status.append(
 								SimplePrintf.jprintf(formatidle, env));
 
-						} else if (conn.isTransfering()) {
-							if (conn.isTransfering()) {
+						} else if (conn.getDataConnectionHandler().isTransfering()) {
+							if (conn.getDataConnectionHandler().isTransfering()) {
 								try {
 									env.add(
 										"speed",
 										Bytes.formatBytes(
-											conn.getTransfer().getXferSpeed())
+											conn.getDataConnectionHandler().getTransfer().getXferSpeed())
 											+ "/s");
 								} catch (RemoteException e2) {
 									logger.warn("", e2);
 								}
 								env.add(
 									"file",
-									conn.getTransferFile().getName());
+									conn.getDataConnectionHandler().getTransferFile().getName());
 								env.add(
 									"slave",
-									conn.getTranferSlave().getName());
+									conn.getDataConnectionHandler().getTranferSlave().getName());
 							}
 
 							if (conn.getTransferDirection()
@@ -1177,23 +1177,23 @@ public class IRCListener implements FtpListener, Observer {
 							+ "s");
 					env.add("user", user.getUsername());
 
-					if (!conn.isExecuting()) {
+					if (!conn.getDataConnectionHandler().isTransfering()) {
 						if (idle)
 							status.append(
 								SimplePrintf.jprintf(formatidle, env));
 
-					} else if (conn.isTransfering()) {
+					} else if (conn.getDataConnectionHandler().isTransfering()) {
 						try {
 							env.add(
 								"speed",
 								Bytes.formatBytes(
-									conn.getTransfer().getXferSpeed())
+									conn.getDataConnectionHandler().getTransfer().getXferSpeed())
 									+ "/s");
 						} catch (RemoteException e2) {
 							logger.warn("", e2);
 						}
-						env.add("file", conn.getTransferFile().getName());
-						env.add("slave", conn.getTranferSlave().getName());
+						env.add("file", conn.getDataConnectionHandler().getTransferFile().getName());
+						env.add("slave", conn.getDataConnectionHandler().getTranferSlave().getName());
 
 						if (conn.getTransferDirection()
 							== Transfer.TRANSFER_RECEIVING_UPLOAD) {

@@ -65,12 +65,6 @@ public class BaseFtpConnection implements Runnable {
 	protected ConnectionManager _cm;
 	protected Socket _controlSocket;
 
-	//	protected final static Class[] METHOD_INPUT_SIG =
-	//		new Class[] { FtpRequest.class, PrintWriter.class };
-	protected RemoteSlave _rslave;
-	protected Transfer _transfer;
-	protected LinkedRemoteFile _transferFile;
-
 	protected User _user;
 	protected InetAddress clientAddress = null;
 
@@ -81,7 +75,7 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	protected boolean executing;
 
-	BufferedReader in;
+	private BufferedReader in;
 	/**
 	 * time when last command from the client finished execution
 	 */
@@ -183,14 +177,21 @@ public class BaseFtpConnection implements Runnable {
 	public SlaveManagerImpl getSlaveManager() {
 		return getConnectionManager().getSlaveManager();
 	}
+
+	/**
+	 * @deprecated
+	 */
 	public RemoteSlave getTranferSlave() {
 		if (!isTransfering())
 			throw new IllegalStateException("can only call getTransferSlave() during transfer");
-		return _rslave;
+		return getDataConnectionHandler().getRSlave();
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public Transfer getTransfer() {
-		return _transfer;
+		return getDataConnectionHandler().getTransfer();
 	}
 
 	public char getTransferDirection() {
@@ -204,8 +205,11 @@ public class BaseFtpConnection implements Runnable {
 		}
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public LinkedRemoteFile getTransferFile() {
-		return _transferFile;
+		return getDataConnectionHandler().getTransferFile();
 	}
 
 	/**
@@ -258,6 +262,9 @@ public class BaseFtpConnection implements Runnable {
 	public boolean isExecuting() {
 		return executing;
 	}
+	/**
+	 * @deprecated
+	 */
 	public boolean isTransfering() {
 		//return _transfer != null;
 		try {
@@ -505,12 +512,20 @@ public class BaseFtpConnection implements Runnable {
 		stopRequestMessage = message;
 		if (isTransfering()) {
 			try {
-				_transfer.abort();
+				getDataConnectionHandler().getTransfer().abort();
 			} catch (RemoteException e) {
-				_rslave.handleRemoteException(e);
+				getDataConnectionHandler().getTranferSlave().handleRemoteException(e);
 			}
 		}
 		stop();
+	}
+	
+	public DataConnectionHandler getDataConnectionHandler() {
+		try {
+			return (DataConnectionHandler) getCommandManager().getCommandHandler(DataConnectionHandler.class);
+		} catch (ObjectNotFoundException e) {
+			throw new RuntimeException("DataConnectionHandler must be available", e);
+		}
 	}
 
 	public String toString() {

@@ -9,6 +9,7 @@ import java.util.Iterator;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.ConnectionManager;
+import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.Logger;
 import org.apache.oro.text.GlobCompiler;
@@ -618,34 +619,31 @@ public abstract class AbstractUser implements User {
 		Date lastResetDate = new Date(this.lastReset);
 
 		Calendar cal = Calendar.getInstance();
-
-		cal.set(Calendar.MILLISECOND, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.HOUR_OF_DAY, 0);
+		
+		CalendarUtils.floorAllLessThanDay(cal);
 
 		//has not been reset since midnight
 		if (lastResetDate.before(cal.getTime()))
-			resetDay(cmgr);
+			resetDay(cmgr, cal.getTime());
 
-		//week could go into the previous month
+		//floorDayOfWeek could go into the previous month
 		Calendar cal2 = (Calendar)cal.clone();
-		cal2.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+		CalendarUtils.floorDayOfWeek(cal2);
 		if (lastResetDate.before(cal2.getTime()))
-			resetWeek(cmgr);
-
-		cal.set(Calendar.DAY_OF_MONTH, 1);
+			resetWeek(cmgr, cal.getTime());
+			
+		CalendarUtils.floorDayOfMonth(cal);
 		if (lastResetDate.before(cal.getTime()))
-			resetMonth(cmgr);
+			resetMonth(cmgr, cal.getTime());
 
 		lastReset = System.currentTimeMillis();
 	}
 	/**
 	 * 
 	 */
-	private void resetDay(ConnectionManager cm) {
+	private void resetDay(ConnectionManager cm, Date resetDate) {
 		logger.info("Reset daily stats for " + getUsername());
-		cm.dispatchFtpEvent(new UserEvent(this, "RESETDAY"));
+		cm.dispatchFtpEvent(new UserEvent(this, "RESETDAY", resetDate.getTime()));
 
 		this.downloadedFilesDay = 0;
 		this.uploadedBytesDay = 0;
@@ -660,8 +658,8 @@ public abstract class AbstractUser implements User {
 	/**
 	 * 
 	 */
-	private void resetMonth(ConnectionManager cm) {
-		cm.dispatchFtpEvent(new UserEvent(this, "RESETMONTH"));
+	private void resetMonth(ConnectionManager cm, Date resetDate) {
+		cm.dispatchFtpEvent(new UserEvent(this, "RESETMONTH", resetDate.getTime()));
 		logger.info("Reset monthly stats for " + getUsername());
 
 		this.downloadedFilesMonth = 0;
@@ -676,8 +674,8 @@ public abstract class AbstractUser implements User {
 	/**
 	 * 
 	 */
-	private void resetWeek(ConnectionManager cm) {
-		cm.dispatchFtpEvent(new UserEvent(this, "RESETWEEK"));
+	private void resetWeek(ConnectionManager cm, Date resetDate) {
+		cm.dispatchFtpEvent(new UserEvent(this, "RESETWEEK", resetDate.getTime()));
 		logger.info("Reset weekly stats for " + getUsername());
 
 		this.downloadedFilesWeek = 0;

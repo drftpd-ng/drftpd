@@ -370,23 +370,23 @@ public class UserManagment implements CommandHandler {
 							response.addComment(
 								SimplePrintf.jprintf(formatidle, env));
 
-						} else if (conn2.isTransfering()) {
-							if (conn2.isTransfering()) {
+						} else if (conn2.getDataConnectionHandler().isTransfering()) {
+							if (conn2.getDataConnectionHandler().isTransfering()) {
 								try {
 									env.add(
 										"speed",
 										Bytes.formatBytes(
-											conn2.getTransfer().getXferSpeed())
+											conn2.getDataConnectionHandler().getTransfer().getXferSpeed())
 											+ "/s");
 								} catch (RemoteException e2) {
 									logger.warn("", e2);
 								}
 								env.add(
 									"file",
-									conn2.getTransferFile().getName());
+									conn2.getDataConnectionHandler().getTransferFile().getName());
 								env.add(
 									"slave",
-									conn2.getTranferSlave().getName());
+									conn2.getDataConnectionHandler().getTranferSlave().getName());
 							}
 
 							if (conn2.getTransferDirection()
@@ -1232,31 +1232,6 @@ public class UserManagment implements CommandHandler {
 		}
 		return response;
 	}
-	//	private static final ArrayList handledCommands = new ArrayList();
-	//	static {
-	//		handledCommands.add("SITE ADDIP");
-	//		handledCommands.add("SITE ADDUSER");
-	//		handledCommands.add("SITE CHANGE");
-	//		handledCommands.add("SITE CHGRP");
-	//		handledCommands.add("SITE CHPASS");
-	//		handledCommands.add("SITE DELIP");
-	//		handledCommands.add("SITE DELUSER");
-	//		handledCommands.add("SITE GADDUSER");
-	//		handledCommands.add("SITE GINFO");
-	//		handledCommands.add("SITE GIVE");
-	//		handledCommands.add("SITE GROUPS");
-	//		handledCommands.add("SITE KICK");
-	//		handledCommands.add("SITE PASSWD");
-	//		handledCommands.add("SITE PURGE");
-	//		handledCommands.add("SITE READD");
-	//		handledCommands.add("SITE RENUSER");
-	//		handledCommands.add("SITE SEEN");
-	//		handledCommands.add("SITE TAGLINE");
-	//		handledCommands.add("SITE TAKE");
-	//		handledCommands.add("SITE USER");
-	//		handledCommands.add("SITE USERS");
-	//		handledCommands.add("SITE WHO");
-	//	}
 
 	public CommandHandler initialize(
 		BaseFtpConnection conn,

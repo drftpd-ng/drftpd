@@ -1147,6 +1147,10 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		_dataSocket = null;
 		return sock;
 	}
+
+	public String[] getFeatReplies() {
+		return new String[] { "PRET" };
+	}
 	/**
 	 * Get client address from PORT command.
 	 */
@@ -1172,6 +1176,28 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private int getPort() {
 		return miPort;
 	}
+
+	/**
+	 * @deprecated use getTransferSlave()
+	 */
+	public RemoteSlave getRSlave() {
+		return _rslave;
+	}
+
+	/**
+	 * 
+	 */
+	public RemoteSlave getTranferSlave() {
+		return _rslave;
+	}
+
+	public Transfer getTransfer() {
+		return _transfer;
+	}
+
+	public LinkedRemoteFile getTransferFile() {
+		return _transferFile;
+	}
 	/**
 		 * Get the user data type.
 		 */
@@ -1187,6 +1213,12 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public boolean isTransfering() {
+		return _transfer != null;
+	}
+	public void load(CommandManagerFactory initializer) {
 	}
 
 	/**
@@ -1232,20 +1264,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		this.type = type;
 		return true;
 	}
-
-	public String[] getFeatReplies() {
-		return new String[] { "PRET" };
-	}
-	public void load(CommandManagerFactory initializer) {
-	}
 	public void unload() {
-	}
-
-	/**
-	 * @return
-	 */
-	public boolean isTransfering() {
-		return _transfer != null;
 	}
 
 }

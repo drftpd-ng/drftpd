@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -20,6 +21,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.Permission;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.Logger;
 
@@ -145,10 +147,36 @@ public class Trial implements FtpListener {
 	private static final short PERIOD_DAILY = 0;
 	private static final short PERIOD_MONTHLY = 2;
 	private static final short PERIOD_WEEKLY = 1;
-	
+
 	//TODO use "ALLUP" for first period
-//	public static boolean firstPeriod(User user, short period) {
-//	}
+	public static boolean isInFirstPeriod(User user, short period) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date(user.getCreated()));
+		CalendarUtils.floorAllLessThanDay(cal);
+
+		switch (period) {
+			case PERIOD_DAILY :
+				//user added on monday @ 15:00, trial ends on tuesday with reset at 24:00
+				//bonus ends at wednsday 00:00
+				CalendarUtils.incrementDay(cal);
+				break;
+			case PERIOD_WEEKLY :
+				//user added on week 1, wednsday @ 15:00, trial
+				//trial ends with a reset at week 2, wednsday 24:00
+				//bonus ends on week 3, monday 00:00
+				CalendarUtils.incrementWeek(cal);
+				break;
+			case PERIOD_MONTHLY :
+				//user added on january 31 15:00
+				//trial ends on feb 28 24:00
+				//bonus ends on mar 1 00:00
+				CalendarUtils.incrementMonth(cal);
+				break;
+			default :
+				throw new IllegalArgumentException("Can't handle " + period);
+		}
+		return new Date().before(cal.getTime());
+	}
 
 	public static Calendar getCalendarForEndOfPeriod(short period) {
 		Calendar cal = Calendar.getInstance();
@@ -231,20 +259,19 @@ public class Trial implements FtpListener {
 				if (bytesleft > 0) {
 					logger.info(
 						user.getUsername()
-							+ " failed passed by "
-							+ bytesleft
-							+ " bytes ("
-							+ Bytes.formatBytes(bytesleft)
-							+ ")");
+							+ " failed "
+							+ limit.name
+							+ " by "
+							+ Bytes.formatBytes(bytesleft));
 					//TODO take action: disable, delete
 				} else {
 					logger.info(
 						user.getUsername()
-							+ " passed passed with "
-							+ (-bytesleft)
-							+ " extra ("
+							+ " passed "
+							+ limit.name
+							+ " with "
 							+ Bytes.formatBytes(-bytesleft)
-							+ ")");
+							+ " extra");
 				}
 			}
 		}

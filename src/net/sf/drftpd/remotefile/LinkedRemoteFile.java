@@ -215,7 +215,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		LinkedRemoteFile file =
 			new LinkedRemoteFile(
 				this,
-				new DirectoryRemoteFile(this, owner, group, fileName),
+				//new DirectoryRemoteFile(this, owner, group, fileName),
+				new StaticRemoteFile(null, fileName, owner, group, 0L, System.currentTimeMillis()),
 				_ftpConfig);
 		//file.addSlaves(getSlaves());
 		_files.put(file.getName(), file);
