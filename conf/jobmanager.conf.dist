@@ -1,4 +1,4 @@
-# maximum time to allowed for a release to sit in the queue and wait
+# maximum time to allowed for a file to sit in the queue and wait
 # for a better time to transfer(one when the source and dest slave are
 # more free in their respective transfer directions (according to maxTransfers)
 # (setting is in minutes)
