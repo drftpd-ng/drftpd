@@ -3562,43 +3562,8 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
-		//FtpResponse response = new FtpResponse(200);
 		FtpResponse response =
 			(FtpResponse) FtpResponse.RESPONSE_200_COMMAND_OK.clone();
-		//		for (Iterator i = _cm.getConnections().iterator();
-		//			i.hasNext();
-		//			) {
-		//			FtpConnection conn = (FtpConnection) i.next();
-		//			if (!conn.isAuthenticated()) {
-		//				response.addComment("Not yet authenticated");
-		//				continue;
-		//			}
-		//			User user;
-		//			try {
-		//				user = conn.getUser();
-		//			} catch (NoSuchUserException e) {
-		//				throw new FatalException(e);
-		//			}
-		//			String command = conn.getRequest().getCommand();
-		//			String username = user.getUsername();
-		//
-		//			if (getConfig().checkHideInWho(user, conn.getCurrentDirectory())) {
-		//				continue;
-		//			}
-		//			if (conn.isExecuting()) {
-		//				if (conn.getRequest().getCommand().equals("RETR")) {
-		//					response.addComment(username + "    DL");
-		//				} else if (command.equals("STOR")) {
-		//					response.addComment(username + "    UL");
-		//				} else {
-		//					response.addComment(
-		//						username + "    " + conn.getRequest().getCommand());
-		//				}
-		//
-		//			} else {
-		//				response.addComment(username + "    IDLE");
-		//			}
-		//		}
 
 		try {
 			ReplacerFormat formatup = getConfig().getReplacerFormat("who.up");
@@ -3606,6 +3571,8 @@ public class FtpConnection extends BaseFtpConnection {
 				getConfig().getReplacerFormat("who.down");
 			ReplacerFormat formatidle =
 				getConfig().getReplacerFormat("who.idle");
+			ReplacerFormat formatcommand =
+				getConfig().getReplacerFormat("who.command");
 
 			ReplacerEnvironment env = new ReplacerEnvironment();
 
@@ -3625,7 +3592,7 @@ public class FtpConnection extends BaseFtpConnection {
 					if (getConfig()
 						.checkHideInWho(user, conn.getCurrentDirectory()))
 						continue;
-					StringBuffer status = new StringBuffer();
+					//StringBuffer status = new StringBuffer();
 					env.add(
 						"idle",
 						(System.currentTimeMillis() - conn.getLastActive())
@@ -3634,7 +3601,7 @@ public class FtpConnection extends BaseFtpConnection {
 					env.add("user", user.getUsername());
 
 					if (!conn.isExecuting()) {
-						status.append(SimplePrintf.jprintf(formatidle, env));
+						response.addComment(SimplePrintf.jprintf(formatidle, env));
 
 					} else if (conn.isTransfering()) {
 						if (conn.isTransfering()) {
@@ -3662,8 +3629,10 @@ public class FtpConnection extends BaseFtpConnection {
 							response.addComment(
 								SimplePrintf.jprintf(formatdown, env));
 						}
+					} else {
+						env.add("command", conn.getRequest().getCommand());
+						response.addComment(SimplePrintf.jprintf(formatcommand, env));
 					}
-					response.addComment(status.toString());
 				}
 			}
 			out.print(response.toString());

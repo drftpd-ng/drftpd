@@ -317,6 +317,7 @@ public class BaseFtpConnection implements Runnable {
 	 * Server one FTP connection.
 	 */
 	public void run() {
+		lastActive = System.currentTimeMillis();
 		clientAddress = controlSocket.getInetAddress();
 		logger.info(
 			"Handling new request from " + clientAddress.getHostAddress());

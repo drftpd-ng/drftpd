@@ -1,3 +1,4 @@
-who.up=${user,11} -> UP ${file} @ ${speed,9} to   ${slave}
-who.down=${user,11} -> DN ${file} @ ${speed,9} from ${slave}
-who.idle=${user,11} -> Idle for ${idle}
+who.up=${user,-11} -> UP ${speed,9} to   ${slave} - ${file}
+who.down=${user,-11} -> DN ${speed,9} from ${slave} - ${file}
+who.idle=${user,-11} -> Idle for ${idle}
+who.command=${user,-11} -> ${command}

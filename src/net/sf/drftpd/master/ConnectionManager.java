@@ -47,34 +47,83 @@ import org.jdom.input.SAXBuilder;
 
 public class ConnectionManager {
 	public static final int idleTimeout = 300;
-	private Vector _conns = new Vector();
-	private UserManager usermanager;
-	private NukeLog nukelog;
-	//allow package classes for inner classes without use of synthetic methods
-	private SlaveManagerImpl slaveManager;
-	private String shutdownMessage = null;
-	private Timer timer;
-
-	private FtpConfig config;
 
 	private static Logger logger =
 		Logger.getLogger(ConnectionManager.class.getName());
-	static {
-		logger.setLevel(Level.ALL);
-	}
-	private Writer commandDebug;
-	protected void dispatchFtpEvent(Event event) {
-		System.out.println("Dispatching "+event.getCommand()+" to "+ftpListeners);
-		for (Iterator iter = ftpListeners.iterator(); iter.hasNext();) {
-			try {
-				FtpListener handler = (FtpListener) iter.next();
-				handler.actionPerformed(event);
-			} catch (RuntimeException t) {
-				logger.log(Level.WARN, "Exception dispatching event", t);
+
+	public static final String VERSION = "drftpd 0.7.0-CVS";
+	public static void main(String args[]) {
+		BasicConfigurator.configure();
+		System.out.println(VERSION + " master server starting.");
+		System.out.println("http://drftpd.sourceforge.net");
+
+		try {
+//			Handler handlers[] = Logger.getLogger("").getHandlers();
+//			if (handlers.length == 1) {
+//				handlers[0].setLevel(Level.ALL);
+//			} else {
+//				logger.WARN(
+//					"handlers.length != 1, can't setLevel() on root element");
+//			}
+
+			String cfgFileName;
+			if (args.length >= 1) {
+				cfgFileName = args[0];
+			} else {
+				cfgFileName = "drftpd.conf";
 			}
+			if (new File(cfgFileName).exists()) {
+				System.out.println(cfgFileName + " does not exist.");
+			}
+			/** load config **/
+			Properties cfg = new Properties();
+			try {
+				cfg.load(new FileInputStream(cfgFileName));
+			} catch (IOException e) {
+				logger.fatal(
+					"Error reading " + cfgFileName + ": " + e.getMessage());
+				return;
+			}
+
+			logger.info("Starting ConnectionManager");
+			ConnectionManager mgr = new ConnectionManager(cfg, cfgFileName);
+			System.setProperty("line.separator", "\r\n");
+			/** listen for connections **/
+			try {
+				ServerSocket server =
+					new ServerSocket(
+						Integer.parseInt(cfg.getProperty("master.port")));
+				logger.info("Listening on port " + server.getLocalPort());
+				while (true) {
+					mgr.start(server.accept());
+				}
+			} catch (BindException e) {
+				throw new FatalException(
+					"Couldn't bind on port " + cfg.getProperty("master.port"),
+					e);
+			} catch (Exception e) {
+				logger.log(Level.FATAL, "", e);
+			}
+		} catch (Throwable th) {
+			logger.log(Level.FATAL, "", th);
+			System.exit(0);
+			return;
 		}
+		System.gc();
 	}
+	private Vector _conns = new Vector();
+	private Writer commandDebug;
+
+	private FtpConfig config;
+
+	private ArrayList ftpListeners = new ArrayList();
+	private NukeLog nukelog;
 	private Properties propertiesConfig;
+	private String shutdownMessage = null;
+	//allow package classes for inner classes without use of synthetic methods
+	private SlaveManagerImpl slaveManager;
+	private Timer timer;
+	private UserManager usermanager;
 	public ConnectionManager(Properties cfg, String cfgFileName) {
 		this.propertiesConfig = cfg;
 		try {
@@ -214,6 +263,99 @@ public class ConnectionManager {
 		timer.schedule(timerSave, 60*60 * 1000, 60*60 * 1000);
 
 	}
+	public void addFtpListener(FtpListener listener) {
+		ftpListeners.add(listener);
+	}
+	protected void dispatchFtpEvent(Event event) {
+		System.out.println("Dispatching "+event.getCommand()+" to "+ftpListeners);
+		for (Iterator iter = ftpListeners.iterator(); iter.hasNext();) {
+			try {
+				FtpListener handler = (FtpListener) iter.next();
+				handler.actionPerformed(event);
+			} catch (RuntimeException t) {
+				logger.log(Level.WARN, "Exception dispatching event", t);
+			}
+		}
+	}
+	/**
+	 * @return
+	 */
+	public FtpConfig getConfig() {
+		return config;
+	}
+
+	/**
+	 * returns a <code>Collection</code> of current connections
+	 */
+	public Collection getConnections() {
+		return this._conns;
+	}
+	/**
+	 * @return
+	 */
+	public Properties getPropertiesConfig() {
+		return propertiesConfig;
+	}
+	public String getShutdownMessage() {
+		return this.shutdownMessage;
+	}
+
+	/**
+	 * @return
+	 */
+	public SlaveManagerImpl getSlaveManager() {
+		return slaveManager;
+	}
+
+	/**
+	 * @return
+	 */
+	public UserManager getUsermanager() {
+		return usermanager;
+	}
+	public boolean isShutdown() {
+		return this.shutdownMessage != null;
+	}
+
+	public void remove(BaseFtpConnection conn) {
+		if (!_conns.remove(conn)) {
+			throw new RuntimeException("connections.remove() returned false.");
+		}
+		if (isShutdown() && _conns.isEmpty()) {
+			slaveManager.saveFilesXML();
+			try {
+				getUsermanager().saveAll();
+			} catch (UserFileException e) {
+				logger.log(Level.WARN, "Failed to save all userfiles", e);
+			}
+			System.exit(0);
+		}
+	}
+	public void shutdown(String message) {
+		this.shutdownMessage = message;
+		Collection conns = getConnections();
+		synchronized (conns) {
+			for (Iterator iter = getConnections().iterator(); iter.hasNext();) {
+				((FtpConnection) iter.next()).stop(message);
+			}
+		}
+		dispatchFtpEvent(new MessageEvent("SHUTDOWN", message));
+	}
+
+	public void start(Socket sock) throws IOException {
+		FtpConnection conn =
+			new FtpConnection(
+				sock,
+				usermanager,
+				slaveManager,
+				slaveManager.getRoot(),
+				this,
+				this.nukelog,
+				this.commandDebug);
+		conn.ftpListeners = this.ftpListeners;
+		_conns.add(conn);
+		conn.start();
+	}
 
 	public void timerLogoutIdle() {
 		long currTime = System.currentTimeMillis();
@@ -239,151 +381,6 @@ public class ConnectionManager {
 				}
 			}
 		}
-	}
-
-	public void start(Socket sock) throws IOException {
-		FtpConnection conn =
-			new FtpConnection(
-				sock,
-				usermanager,
-				slaveManager,
-				slaveManager.getRoot(),
-				this,
-				this.nukelog,
-				this.commandDebug);
-		conn.ftpListeners = this.ftpListeners;
-		_conns.add(conn);
-		conn.start();
-	}
-	public void shutdown(String message) {
-		this.shutdownMessage = message;
-		Collection conns = getConnections();
-		synchronized (conns) {
-			for (Iterator iter = getConnections().iterator(); iter.hasNext();) {
-				((FtpConnection) iter.next()).stop(message);
-			}
-		}
-		dispatchFtpEvent(new MessageEvent("SHUTDOWN", message));
-	}
-
-	private ArrayList ftpListeners = new ArrayList();
-	public void addFtpListener(FtpListener listener) {
-		ftpListeners.add(listener);
-	}
-
-	public void remove(BaseFtpConnection conn) {
-		if (!_conns.remove(conn)) {
-			throw new RuntimeException("connections.remove() returned false.");
-		}
-		if (isShutdown() && _conns.isEmpty()) {
-			slaveManager.saveFilesXML();
-			try {
-				getUsermanager().saveAll();
-			} catch (UserFileException e) {
-				logger.log(Level.WARN, "Failed to save all userfiles", e);
-			}
-			System.exit(0);
-		}
-	}
-
-	/**
-	 * returns a <code>Collection</code> of current connections
-	 */
-	public Collection getConnections() {
-		return this._conns;
-	}
-	public boolean isShutdown() {
-		return this.shutdownMessage != null;
-	}
-	public String getShutdownMessage() {
-		return this.shutdownMessage;
-	}
-
-	public static final String VERSION = "drftpd 0.7.0-CVS";
-	public static void main(String args[]) {
-		BasicConfigurator.configure();
-		System.out.println(VERSION + " master server starting.");
-		System.out.println("http://drftpd.sourceforge.net");
-
-		try {
-//			Handler handlers[] = Logger.getLogger("").getHandlers();
-//			if (handlers.length == 1) {
-//				handlers[0].setLevel(Level.ALL);
-//			} else {
-//				logger.WARN(
-//					"handlers.length != 1, can't setLevel() on root element");
-//			}
-
-			String cfgFileName;
-			if (args.length >= 1) {
-				cfgFileName = args[0];
-			} else {
-				cfgFileName = "drftpd.conf";
-			}
-			if (new File(cfgFileName).exists()) {
-				System.out.println(cfgFileName + " does not exist.");
-			}
-			/** load config **/
-			Properties cfg = new Properties();
-			try {
-				cfg.load(new FileInputStream(cfgFileName));
-			} catch (IOException e) {
-				logger.fatal(
-					"Error reading " + cfgFileName + ": " + e.getMessage());
-				return;
-			}
-
-			logger.info("Starting ConnectionManager");
-			ConnectionManager mgr = new ConnectionManager(cfg, cfgFileName);
-			System.setProperty("line.separator", "\r\n");
-			/** listen for connections **/
-			try {
-				ServerSocket server =
-					new ServerSocket(
-						Integer.parseInt(cfg.getProperty("master.port")));
-				logger.info("Listening on port " + server.getLocalPort());
-				while (true) {
-					mgr.start(server.accept());
-				}
-			} catch (BindException e) {
-				throw new FatalException(
-					"Couldn't bind on port " + cfg.getProperty("master.port"),
-					e);
-			} catch (Exception e) {
-				logger.log(Level.FATAL, "", e);
-			}
-		} catch (Throwable th) {
-			logger.log(Level.FATAL, "", th);
-			System.exit(0);
-			return;
-		}
-		System.gc();
-	}
-
-	/**
-	 * @return
-	 */
-	public SlaveManagerImpl getSlaveManager() {
-		return slaveManager;
-	}
-
-	/**
-	 * @return
-	 */
-	public UserManager getUsermanager() {
-		return usermanager;
-	}
-	/**
-	 * @return
-	 */
-	public FtpConfig getConfig() {
-		return config;
-	}
-	/**
-	 * @return
-	 */
-	public Properties getPropertiesConfig() {
-		return propertiesConfig;
 	}
 
 }
