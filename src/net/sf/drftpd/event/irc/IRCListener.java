@@ -907,6 +907,8 @@ public class IRCListener implements FtpListener, Observer {
 
 	private void updateBw(Observable observer, MessageCommand command)
 		throws FormatterException {
+		assert _cm != null;
+		assert _cm.getSlaveManager() != null;
 		SlaveStatus status = _cm.getSlaveManager().getAllStatus();
 
 		ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);

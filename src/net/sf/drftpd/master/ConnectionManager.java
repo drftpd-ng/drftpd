@@ -31,7 +31,6 @@ import net.sf.drftpd.slave.SlaveImpl;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.DailyRollingFileAppender;
-import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
@@ -200,7 +199,12 @@ public class ConnectionManager {
 		_timer.schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
 
 	}
+
+	/**
+	 * Calls init(this) on the argument
+	 */
 	public void addFtpListener(FtpListener listener) {
+		listener.init(this);
 		_ftpListeners.add(listener);
 	}
 	public FtpListener getFtpListener(Class clazz)
