@@ -146,21 +146,18 @@ public class SlaveTransfer {
 			// crc passes if we're not using it
 			return true;
 		}
-		//		logger.debug("_file checksum = " + Checksum.formatChecksum(_file.getCheckSum()));
-		//		logger.debug("srcxfer checksum = " + Checksum.formatChecksum(srcxfer.getChecksum()));
-		//		logger.debug("dstxfer checksum = " + Checksum.formatChecksum(dstxfer.getChecksum()));
-		if (_file.getCheckSumCached() == dstxfer.getChecksum()) {
-			_file.addSlave(_destSlave);
-			//logger.info("Checksum passed for file " + _file.getName());
-			return true;
-		}
 		if (dstxfer.getChecksum() == 0) {
 			_file.addSlave(_destSlave);
-			//logger.info("Checksum for slave " + _destSlave + " is disabled, assuming " + _file.getName() + " is good");
 			return true;
 		}
-		//logger.debug("Checksum for file " + _file.getName() + " : " + _file.getCheckSum());
-		//logger.debug("Checksum from slave " + _destSlave.getName() + " : " + dstxfer.getChecksum());
+		if (_file.getCheckSumCached() == dstxfer.getChecksum()) {
+			_file.addSlave(_destSlave);
+			return true;
+		}
+		if (_file.getCheckSumCached() == _destSlave.getSlave().checkSum(_file.getPath())) {
+			_file.addSlave(_destSlave);
+			return true;
+		}
 		return false;
 	}
 }

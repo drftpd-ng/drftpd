@@ -35,12 +35,13 @@ import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.slave.SlaveStatus;
 
 import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.27 2004/02/12 21:52:31 zubov Exp $
+ * @version $Id: JobManager.java,v 1.28 2004/02/14 03:14:54 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -51,6 +52,7 @@ public class JobManager implements FtpListener {
 	private long _maxWait;
 	private ArrayList _threadList = new ArrayList();
 	private boolean _useCRC;
+	//private long _maxBandwidth;
 
 	/**
 	 * Keeps track of all jobs and controls them
@@ -217,9 +219,11 @@ public class JobManager implements FtpListener {
 			if (System.currentTimeMillis() - temp.getTimeCreated()
 				< _maxWait) {
 				// check to see if we should transfer it
-				if (sourceSlave.getStatus().getTransfersSending()
+				SlaveStatus sourceStatus = sourceSlave.getStatus();
+				SlaveStatus destStatus = slave.getStatus();
+				if (sourceStatus.getTransfersSending()
 					> _maxTransfers
-					|| slave.getStatus().getTransfersReceiving()
+					|| destStatus.getTransfersReceiving()
 						> _maxTransfers) {
 					logger.debug(
 						"One of the slaves, "
@@ -231,7 +235,7 @@ public class JobManager implements FtpListener {
 					return false;
 				}
 			} // job has been in the queue too long or 
-			//the sourceSlave and destSlave are both idle, send it now!
+			//the sourceSlave and destSlave are both <= maxTransfers, send it now!
 			else {
 				logger.debug(
 					temp.getFile()
@@ -296,7 +300,6 @@ public class JobManager implements FtpListener {
 				+ sourceSlave.getName());
 		temp.addTimeSpent(difference);
 		if (temp.removeDestinationSlave(slave)) {
-			// if it's there, remove it from the destinationList
 			if (!temp.isDone()) {
 				addJob(temp);
 			}
@@ -331,6 +334,7 @@ public class JobManager implements FtpListener {
 			60000 * Long.parseLong(FtpConfig.getProperty(jobManCfg, "maxWait"));
 		_maxTransfers =
 			Integer.parseInt(FtpConfig.getProperty(jobManCfg, "maxTransfers"));
+		//_maxBandwidth = Bytes.parseBytes(FtpConfig.getProperty(jobManCfg, "maxBandwidth"));
 	}
 
 	public synchronized void removeJob(Job job) {
