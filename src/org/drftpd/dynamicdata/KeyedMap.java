@@ -33,6 +33,10 @@ import org.apache.log4j.Logger;
 public class KeyedMap<K, V> extends Hashtable {
 	private static final Logger logger = Logger.getLogger(KeyedMap.class);
 
+	public synchronized Object put(K key, V value) {
+		remove(key);
+		return super.put(key, value);
+	}
 	public KeyedMap() {
 		super();
 	}
