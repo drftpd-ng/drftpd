@@ -19,6 +19,7 @@
     <include name="org/drftpd/AbstractSFVFile*" />
     <include name="org/drftpd/remotefile/CaseInsensitiveHashtable*" />
     <include name="org/drftpd/remotefile/*LightRemoteFile*" />
+    <include name="org/drftpd/master/QueuedOperation*" />
     <include name="se/mog/io/*"/>
   </patternset>
   <target name="all" depends="compile"/>

@@ -49,6 +49,7 @@ import org.drftpd.PropertyHelper;
 import org.drftpd.SSLGetContext;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.id3.MP3File;
+import org.drftpd.master.QueuedOperation;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.remotefile.LightRemoteFile;
 import org.drftpd.slave.async.AsyncCommand;
@@ -91,6 +92,7 @@ public class Slave {
     private HashMap _transfers;
     private boolean _uploadChecksums;
     private PortRange _portRange;
+    private ArrayList _renameQueue = null;
     private InetAddress _externalAddress = null;
     
     protected Slave() {
@@ -104,6 +106,10 @@ public class Slave {
         logger.info("Connecting to master at " + addr);
 
         String slavename = PropertyHelper.getProperty(p, "slave.name");
+        
+        if (isWin32) {
+        	_renameQueue = new ArrayList();
+        }
 
         try {
             _externalAddress = InetAddress.getByName(PropertyHelper.getProperty(p,
@@ -206,15 +212,78 @@ public class Slave {
         p.load(new FileInputStream("slave.conf"));
 
         Slave s = new Slave(p);
+        if (isWin32) {
+        	s.startFileLockThread();
+        }
         s.sendResponse(new AsyncResponseDiskStatus(s.getDiskStatus()));
         s.listenForCommands();
     }
+    
+    public class FileLockRunnable implements Runnable {
 
-    public void addTransfer(Transfer transfer) {
-        synchronized (_transfers) {
-            _transfers.put(transfer.getTransferIndex(), transfer);
-        }
-    }
+		public void run() {
+			while (true) {
+				synchronized (_transfers) {
+					try {
+						_transfers.wait(300000);
+					} catch (InterruptedException e) {
+					}
+					synchronized (_renameQueue) {
+						for (Iterator iter = _renameQueue.iterator(); iter
+								.hasNext();) {
+							QueuedOperation qo = (QueuedOperation) iter.next();
+							if (qo.getDestination() == null) { // delete
+								try {
+									delete(qo.getSource());
+									// delete successfull
+									iter.remove();
+								} catch (PermissionDeniedException e) {
+									// keep it in the queue
+								} catch (FileNotFoundException e) {
+									iter.remove();
+								} catch (IOException e) {
+									throw new RuntimeException("Win32 stinks",
+											e);
+								}
+							} else { // rename
+								String fileName = qo.getDestination()
+										.substring(
+												qo.getDestination()
+														.lastIndexOf("/") + 1);
+								String destDir = qo.getDestination()
+										.substring(
+												0,
+												qo.getDestination()
+														.lastIndexOf("/"));
+								try {
+									rename(qo.getSource(), destDir, fileName);
+									// rename successfull
+									iter.remove();
+								} catch (PermissionDeniedException e) {
+									// keep it in the queue
+								} catch (FileNotFoundException e) {
+									iter.remove();
+								} catch (IOException e) {
+									throw new RuntimeException("Win32 stinks",
+											e);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private void startFileLockThread() {
+		new Thread(new FileLockRunnable()).start();
+	}
+
+	public void addTransfer(Transfer transfer) {
+		synchronized (_transfers) {
+			_transfers.put(transfer.getTransferIndex(), transfer);
+		}
+	}
 
     public long checkSum(String path) throws IOException {
         logger.debug("Checksumming: " + path);
@@ -250,7 +319,7 @@ public class Slave {
             }
 
             if (!file.delete()) {
-                throw new PermissionDeniedException("delete failed on " + path);
+            	throw new PermissionDeniedException("delete failed on " + path);
             }
 
             File dir = new File(file.getParentFile());
@@ -448,7 +517,17 @@ public class Slave {
 
     private AsyncResponse handleDelete(AsyncCommandArgument ac) {
         try {
-            delete(ac.getArgs());
+        	try {
+        		delete(ac.getArgs());
+            } catch (PermissionDeniedException e) {
+            	if (isWin32) {
+            		synchronized (_renameQueue) {
+            			_renameQueue.add(new QueuedOperation(ac.getArgs(), null));
+            		}
+            	} else {
+            		throw e;
+            	}
+            }
             sendResponse(new AsyncResponseDiskStatus(getDiskStatus()));
             return new AsyncResponse(ac.getIndex());
         } catch (IOException e) {
@@ -560,7 +639,23 @@ public class Slave {
         String toFile = st.nextToken();
 
         try {
+        	try {
             rename(from, toDir, toFile);
+        	} catch (PermissionDeniedException e) {
+        		if (isWin32) {
+        			String simplePath = null;
+        			if (toDir.endsWith("/")) {
+        				simplePath = toDir + toFile;
+        			} else {
+        				simplePath = toDir + "/" + toFile;
+        			}
+        			synchronized (_renameQueue) {
+        				_renameQueue.add(new QueuedOperation(from, simplePath));
+        			}
+        		} else {
+        			throw e;
+        		}
+        	}
 
             return new AsyncResponse(ac.getIndex());
         } catch (IOException e) {
@@ -640,6 +735,7 @@ public class Slave {
             if (_transfers.remove(transfer.getTransferIndex()) == null) {
                 throw new IllegalStateException();
             }
+            _transfers.notifyAll();
         }
     }
 
@@ -668,7 +764,7 @@ public class Slave {
             }
 
             if (!fromfile.renameTo(tofile)) {
-                throw new IOException("renameTo(" + fromfile + ", " + tofile +
+                throw new PermissionDeniedException("renameTo(" + fromfile + ", " + tofile +
                     ") failed");
             }
         }
