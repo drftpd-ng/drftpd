@@ -252,9 +252,15 @@ public class Transfer {
     		transfer();
     		return getTransferStatus();
     	} finally {
-    		_in.close();
-    		_out.close();
-    		_sock.close();
+			if (_out != null) {
+				_out.close();
+			}
+			if (_in != null) {
+				_in.close();
+			}
+			if (_sock != null) {
+				_sock.close();
+			}
     	}
     }
 

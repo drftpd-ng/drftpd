@@ -160,11 +160,13 @@ public class SlaveManager implements Runnable {
 			rslave = (RemoteSlave) in.readObject();
 			in.close();
 			rslave.init(getGlobalContext());
-
-			//throws RuntimeException
-			_rslaves.add(rslave);
-
-			return rslave;
+			
+			if (rslave.getName().equals(slavename)) {
+				_rslaves.add(rslave);
+				return rslave;
+			}
+			logger.warn("Tried to lookup a slave with the same name, different case", new Throwable());
+			throw new ObjectNotFoundException();
 		} catch (FileNotFoundException e) {
 			throw new ObjectNotFoundException(e);
 		} catch (Exception e) {
