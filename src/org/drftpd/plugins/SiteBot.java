@@ -1249,9 +1249,10 @@ public class SiteBot extends FtpListener implements Observer {
 				_conn.sendCommand(new NickCommand(ircCfg
 						.getProperty("irc.nick")));
 			}
-			for (Enumeration e = _conn.getClientState().getChannelNames(); e
-					.hasMoreElements();) {
-				String currentChannel = (String) e.nextElement();
+			for (Iterator iter = new ArrayList(
+					Collections.list(getIRCConnection().getClientState()
+							.getChannelNames())).iterator(); iter.hasNext();) {
+				String currentChannel = (String) iter.next();
 				if (_channelMap.containsKey(currentChannel)) { // still in
 					// channel
 					ChannelConfig newCC = _channelMap.get(currentChannel);
@@ -1371,11 +1372,12 @@ public class SiteBot extends FtpListener implements Observer {
     }
 
     public void sayGlobal(String string) {
-        for (Enumeration e = getIRCConnection().getClientState()
-                                 .getChannelNames(); e.hasMoreElements();) {
-            say((String) e.nextElement(), string);
-        }
-    }
+		for (Iterator iter = new ArrayList(Collections.list(getIRCConnection()
+				.getClientState().getChannelNames())).iterator(); iter
+				.hasNext();) {
+			say((String) iter.next(), string);
+		}
+	}
 
     // why the hell is this here? don't we already have 10 methods that do this?
     private String strippath(String path) {
