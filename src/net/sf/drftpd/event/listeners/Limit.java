@@ -8,7 +8,7 @@ import net.sf.drftpd.master.usermanager.User;
 
 /**
  * @author mog
- * @version $Id: Limit.java,v 1.2 2004/01/03 23:50:53 mog Exp $
+ * @version $Id: Limit.java,v 1.3 2004/01/22 21:48:22 mog Exp $
  */
 class Limit {
 	public Limit() {
@@ -92,10 +92,15 @@ class Limit {
 		if (!st.hasMoreTokens())
 			return;
 		String cmd = st.nextToken();
-		if (!("deluser".equals(action)
+		if (!("delete".equals(action)
 			|| "purge".equals(action)
-			|| "chgrp".equals(cmd))) {
-			throw new IllegalArgumentException();
+			|| "chgrp".equals(cmd))
+			|| "setgrp".equals(cmd)) {
+			throw new IllegalArgumentException(cmd+" is not a valid action");
+		}
+		if("setgrp".equals(cmd)) {
+			st.nextToken();
+			if(st.hasMoreTokens()) throw new IllegalArgumentException("extra tokens in \""+action+"\"");
 		}
 	}
 

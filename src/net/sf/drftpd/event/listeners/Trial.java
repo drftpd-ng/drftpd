@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.17 2004/01/20 06:59:00 mog Exp $
+ * @version $Id: Trial.java,v 1.18 2004/01/22 21:48:22 mog Exp $
  */
 public class Trial implements FtpListener {
 	public static final int PERIOD_ALL = 0;
@@ -40,19 +40,34 @@ public class Trial implements FtpListener {
 	public static final short PERIOD_MONTHLY = Calendar.MONTH; // = 2
 	public static final short PERIOD_WEEKLY = Calendar.WEEK_OF_YEAR; // = 3
 	public static void doAction(String action, User user) {
-		if (action == null)
-			return;
-		StringTokenizer st = new StringTokenizer(action);
-		String cmd = st.nextToken().toLowerCase();
-		if ("chgrp".equals(cmd)) {
-			while (st.hasMoreTokens()) {
-				user.toggleGroup(st.nextToken());
+		try {
+			if (action == null)
+				return;
+			StringTokenizer st = new StringTokenizer(action);
+			if (!st.hasMoreTokens()) {
+				logger.info(user.getUsername() + " no action specified");
 			}
-		} else if ("deluser".equals(cmd)) {
-			user.setDeleted(true);
-		} else if ("purge".equals(cmd)) {
-			user.setDeleted(true);
-			user.purge();
+			String cmd = st.nextToken().toLowerCase();
+			if ("chgrp".equals(cmd)) {
+				while (st.hasMoreTokens()) {
+					user.toggleGroup(st.nextToken());
+				}
+			} else if ("setgrp".equals(cmd)) {
+				user.setGroup(st.nextToken(""));
+				logger.info(
+					user.getUsername()
+						+ " primary group set to "
+						+ user.getGroupName());
+			} else if ("delete".equals(cmd)) {
+				user.setDeleted(true);
+				logger.info(user.getUsername() + " deleted");
+			} else if ("purge".equals(cmd)) {
+				user.setDeleted(true);
+				user.purge();
+				logger.info(user.getUsername() + " purged");
+			}
+		} catch (java.util.NoSuchElementException e) {
+			logger.info("Error parsing \"" + action + "\"", e);
 		}
 	}
 
@@ -330,7 +345,7 @@ public class Trial implements FtpListener {
 	private void checkPassed(User user, long bytes, int period) {
 		for (Iterator iter = _limits.iterator(); iter.hasNext();) {
 			Limit limit = (Limit) iter.next();
-			if (limit.getPeriod() == period) {
+			if (limit.getPeriod() == period && limit.getPerm().check(user)) {
 				long bytesleft = limit.getBytes() - bytes;
 				if (bytesleft > 0) {
 					logger.info(
@@ -381,11 +396,19 @@ public class Trial implements FtpListener {
 			if (props.getProperty(i + ".quota") == null)
 				break;
 			Limit limit = new Limit();
-			limit.setActionPassed(
-				props.getProperty(i + ".actionpassed", "").toLowerCase());
-			limit.setActionFailed(
-				props.getProperty(i + ".actionfail", "").toLowerCase());
 			limit.setName(FtpConfig.getProperty(props, i + ".name"));
+			limit.setActionPassed(
+				props.getProperty(i + ".passed", "").toLowerCase());
+			limit.setActionFailed(
+				props.getProperty(i + ".fail", "").toLowerCase());
+			if (limit.getActionFailed().equals("")
+				&& limit.getActionPassed().equals(""))
+				throw new IllegalArgumentException(
+					"Both .passed and .fail cannot be empty for "
+						+ i
+						+ " ("
+						+ limit.getName()
+						+ ")");
 			String period =
 				FtpConfig.getProperty(props, i + ".period").toLowerCase();
 			if ("monthly".equals(period)) {

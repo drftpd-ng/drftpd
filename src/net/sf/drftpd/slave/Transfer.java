@@ -6,7 +6,7 @@ import java.rmi.RemoteException;
 
 /**
  * @author mog
- * @version $Id: Transfer.java,v 1.20 2003/12/01 04:43:44 mog Exp $
+ * @version $Id: Transfer.java,v 1.21 2004/01/22 21:50:14 mog Exp $
  */
 public interface Transfer extends Remote {
 	public static final char TRANSFER_RECEIVING_UPLOAD='R';
@@ -16,6 +16,10 @@ public interface Transfer extends Remote {
 	
 	public void abort() throws RemoteException;
 	public long getChecksum() throws RemoteException;
+
+	/**
+	 * Returns how long this transfer has been running in milliseconds.
+	 */
 	public long getElapsed() throws RemoteException;
 	
 	/**

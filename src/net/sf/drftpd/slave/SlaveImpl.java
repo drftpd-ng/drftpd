@@ -45,17 +45,17 @@ import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.77 2004/01/13 20:30:55 mog Exp $
+ * @version $Id: SlaveImpl.java,v 1.78 2004/01/22 21:49:55 mog Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
 	implements Slave, Unreferenced {
-	private PortRange _portRange = new PortRange();
-	private SSLContext _ctx;
 	private static final boolean isWin32 =
 		System.getProperty("os.name").startsWith("Windows");
 	private static final Logger logger =
 		Logger.getLogger(SlaveImpl.class.getName());
+	
+	public static final String VERSION = "DrFTPD 0.9.0-CVS";
 
 	/**
 	 * returns the {LinkedRemoteFile} directory that will be serialized and registered at the master.
@@ -149,15 +149,17 @@ public class SlaveImpl
 			return;
 		}
 	}
+	private SSLContext _ctx;
+	private boolean _downloadChecksums;
 	private String _name;
+	private PortRange _portRange = new PortRange();
+	private long _receivedBytes = 0;
 	//private String root;
 	private RootBasket _roots;
+	private long _sentBytes = 0;
 
 	private Vector _transfers = new Vector();
-	private long _sentBytes = 0;
-	private long _receivedBytes = 0;
-
-	public static final String VERSION = "DrFTPD 0.9.0-CVS";
+	private boolean _uploadChecksums;
 
 	public SlaveImpl(Properties cfg) throws RemoteException {
 		super(0);
@@ -166,6 +168,8 @@ public class SlaveImpl
 		} catch (Exception e) {
 			logger.warn("Error loading SSLContext", e);
 		}
+		_uploadChecksums = Boolean.getBoolean(cfg.getProperty("enableuploadchecksums", "true"));
+		_downloadChecksums = Boolean.getBoolean(cfg.getProperty("enabledownloadchecksums", "false"));
 		String slavemanagerurl;
 		slavemanagerurl =
 			"//"
@@ -207,6 +211,12 @@ public class SlaveImpl
 			logger.warn("", e);
 		}
 		System.gc();
+	}
+
+	public void addTransfer(TransferImpl transfer) {
+		synchronized (_transfers) {
+			_transfers.add(transfer);
+		}
 	}
 
 	/**
@@ -267,6 +277,14 @@ public class SlaveImpl
 		}
 	}
 
+	public boolean getDownloadChecksums() {
+		return _downloadChecksums;
+	}
+
+	public RootBasket getRoots() {
+		return _roots;
+	}
+
 	public SFVFile getSFVFile(String path) throws IOException {
 		return new SFVFile(
 			new BufferedReader(new FileReader(_roots.getFile(path))));
@@ -313,6 +331,10 @@ public class SlaveImpl
 		}
 	}
 
+	public boolean getUploadChecksums() {
+		return _uploadChecksums;
+	}
+
 	public Transfer listen(boolean encrypted)
 		throws RemoteException, IOException {
 		return new TransferImpl(
@@ -324,6 +346,23 @@ public class SlaveImpl
 	}
 
 	public void ping() {
+	}
+
+	public void removeTransfer(TransferImpl transfer) {
+		synchronized (_transfers) {
+			switch (transfer.getDirection()) {
+				case Transfer.TRANSFER_RECEIVING_UPLOAD :
+					_receivedBytes += transfer.getTransfered();
+					break;
+				case Transfer.TRANSFER_SENDING_DOWNLOAD :
+					_sentBytes += transfer.getTransfered();
+					break;
+				default :
+					throw new IllegalArgumentException();
+			}
+			if (!_transfers.remove(transfer))
+				throw new IllegalStateException();
+		}
 	}
 
 	public void rename(String from, String toDirPath, String toName)
@@ -360,33 +399,6 @@ public class SlaveImpl
 	public void unreferenced() {
 		logger.info("unreferenced");
 		System.exit(0);
-	}
-
-	public RootBasket getRoots() {
-		return _roots;
-	}
-
-	public void addTransfer(TransferImpl transfer) {
-		synchronized (_transfers) {
-			_transfers.add(transfer);
-		}
-	}
-
-	public void removeTransfer(TransferImpl transfer) {
-		synchronized (_transfers) {
-			switch (transfer.getDirection()) {
-				case Transfer.TRANSFER_RECEIVING_UPLOAD :
-					_receivedBytes += transfer.getTransfered();
-					break;
-				case Transfer.TRANSFER_SENDING_DOWNLOAD :
-					_sentBytes += transfer.getTransfered();
-					break;
-				default :
-					throw new IllegalArgumentException();
-			}
-			if (!_transfers.remove(transfer))
-				throw new IllegalStateException();
-		}
 	}
 
 }

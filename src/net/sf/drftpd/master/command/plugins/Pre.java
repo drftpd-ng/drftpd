@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * @version $Id: Pre.java,v 1.5 2004/01/13 20:30:54 mog Exp $
+ * @version $Id: Pre.java,v 1.6 2004/01/22 21:49:10 mog Exp $
  */
 public class Pre implements CommandHandler {
 
@@ -70,25 +70,21 @@ public class Pre implements CommandHandler {
 
 		FtpReply response = new FtpReply(200);
 
-		if (preDir.hasOfflineSlaves()) {
-			response.setMessage(
-				"Sorry, release has offline files. You don't want to PRE an incomplete release, do you? :(");
-			response.setCode(550);
-			return response;
-		}
 		//AWARD CREDITS
 		Hashtable awards = new Hashtable();
 		preAwardCredits(conn, preDir, awards);
 		for (Iterator iter = awards.entrySet().iterator(); iter.hasNext();) {
 			Map.Entry entry = (Map.Entry) iter.next();
 			User owner = (User) entry.getKey();
-			Long award = (Long) entry.getValue();
-			response.addComment(
-				"Awarded "
-					+ Bytes.formatBytes(award.longValue())
-					+ " to "
-					+ owner.getUsername());
-			owner.updateCredits(award.longValue());
+			if (conn.getConfig().getCreditCheckRatio(preDir, owner) == 0) {
+				Long award = (Long) entry.getValue();
+				owner.updateCredits(award.longValue());
+				response.addComment(
+					"Awarded "
+						+ Bytes.formatBytes(award.longValue())
+						+ " to "
+						+ owner.getUsername());
+			}
 		}
 
 		//RENAME

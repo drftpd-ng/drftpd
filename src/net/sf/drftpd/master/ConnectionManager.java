@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.82 2004/01/13 20:30:53 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.83 2004/01/22 21:48:22 mog Exp $
  */
 public class ConnectionManager {
 	public static final int idleTimeout = 300;
@@ -335,6 +335,7 @@ public class ConnectionManager {
 	}
 
 	public JobManager getJobManager() {
+		if(_jm == null) throw new IllegalStateException("JobManager not loaded");
 		return _jm;
 	}
 

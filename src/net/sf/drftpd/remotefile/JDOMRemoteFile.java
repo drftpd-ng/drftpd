@@ -16,7 +16,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: JDOMRemoteFile.java,v 1.25 2004/01/13 20:30:55 mog Exp $
+ * @version $Id: JDOMRemoteFile.java,v 1.26 2004/01/22 21:49:14 mog Exp $
  */
 public class JDOMRemoteFile implements RemoteFileInterface {
 
@@ -113,6 +113,10 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 	}
 
 	public RemoteFileInterface getLink() {
+		throw new UnsupportedOperationException();
+	}
+
+	public String getLinkPath() {
 		throw new UnsupportedOperationException();
 	}
 

@@ -6,35 +6,19 @@ import java.util.List;
 /**
  * Creates a single RemoteFile object that is not linked to any other objects.
  * 
- * Useful when doing RMI call and you do not want to send the entire
- * linked directory structure to the remote VM.
- * 
  * @author mog
- * @version $Id: StaticRemoteFile.java,v 1.23 2004/01/13 20:30:55 mog Exp $
+ * @version $Id: StaticRemoteFile.java,v 1.24 2004/01/22 21:49:44 mog Exp $
  */
 public class StaticRemoteFile extends RemoteFile {
 	private boolean _isDeleted;
 	private long _lastModified;
 	private long _length;
+	private String _link = null;
 	private String _name;
 	private List _rslaves;
 	private long _xfertime;
 
-	//	//no longer used
-	//	public StaticRemoteFile(RemoteFile file) {
-	//		this.lastModified = file.lastModified();
-	//		this.length = file.length();
-	//		//isHidden = file.isHidden();
-	//		this.isDirectory = file.isDirectory();
-	//		this.isFile = file.isFile();
-	//		this.path = file.getPath();
-	//		this.slaves = new ArrayList(0);
-	//		/* serialize directory*/
-	//		//slaves = file.getSlaves();
-	//	}
-
 	/**
-	 * 
 	 * @param rslaves null indicates that this is a directory.
 	 */
 	public StaticRemoteFile(
@@ -64,7 +48,7 @@ public class StaticRemoteFile extends RemoteFile {
 		long lastModified,
 		long checkSum) {
 		this(rslaves, name, owner, group, size, lastModified);
-		this._checkSum = checkSum;
+		_checkSum = checkSum;
 	}
 
 	public StaticRemoteFile(String name) {
@@ -73,6 +57,10 @@ public class StaticRemoteFile extends RemoteFile {
 
 	public Collection getFiles() {
 		throw new UnsupportedOperationException("getFiles() does not exist in StaticRemoteFile");
+	}
+
+	public String getLinkPath() {
+		return _link;
 	}
 
 	public String getName() {
@@ -107,6 +95,10 @@ public class StaticRemoteFile extends RemoteFile {
 		return _rslaves != null;
 	}
 
+	public boolean isLink() {
+		return _link != null;
+	}
+
 	public long lastModified() {
 		return _lastModified;
 	}
@@ -123,32 +115,36 @@ public class StaticRemoteFile extends RemoteFile {
 		return new RemoteFileInterface[0];
 	}
 
-	public void setDeleted(boolean b) {
-		_isDeleted = b;
+	public void setDeleted(boolean isDeleted) {
+		_isDeleted = isDeleted;
 	}
 
-	public void setGroupname(String v) {
-		_groupname = v;
+	public void setGroupname(String groupname) {
+		_groupname = groupname;
 	}
 
-	public void setLastModified(long l) {
-		_lastModified = l;
+	public void setLastModified(long lastmodified) {
+		_lastModified = lastmodified;
 	}
 
-	public void setLength(long l) {
-		_length = l;
+	public void setLength(long length) {
+		_length = length;
+	}
+
+	public void setLink(String link) {
+		_link = link;
 	}
 
 	public void setRSlaves(List rslaves) {
 		_rslaves = rslaves;
 	}
 
-	public void setUsername(String v) {
-		_username = v;
+	public void setUsername(String username) {
+		_username = username;
 	}
 
-	public void setXfertime(long l) {
-		_xfertime = l;
+	public void setXfertime(long xfertime) {
+		_xfertime = xfertime;
 	}
 
 	public String toString() {

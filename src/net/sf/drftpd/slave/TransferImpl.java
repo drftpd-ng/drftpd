@@ -18,11 +18,11 @@ import net.sf.drftpd.util.AddAsciiOutputStream;
 
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.36 2004/01/13 21:36:31 mog Exp $
+ * @version $Id: TransferImpl.java,v 1.37 2004/01/22 21:50:21 mog Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private boolean _abort = false;
-	private CRC32 _checksum;
+	private CRC32 _checksum = null;
 	private Connection _conn;
 	private char _direction;
 
@@ -47,24 +47,6 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		_conn = conn;
 	}
 
-	/**
-	 * Send/Download, reading from 'in' and write to 'conn' using transfer type 'mode'.
-	 * @deprecated
-	 */
-	//	public TransferImpl(RMIServerSocketFactory factory,
-	//		Collection transfers,
-	//		InputStream in,
-	//		Connection conn,
-	//		char mode)
-	//		throws RemoteException {
-	//		super(0, RMISocketFactory.getDefaultSocketFactory(), factory);
-	//		_direction = TRANSFER_SENDING_DOWNLOAD;
-	//		_in = in;
-	//		_conn = conn;
-	//		_mode = mode;
-	//		_transfers = transfers;
-	//	}
-
 	public void abort() throws RemoteException {
 		_abort = true;
 	}
@@ -78,7 +60,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		_direction = TRANSFER_SENDING_DOWNLOAD;
 
 		_in = new FileInputStream(_slave.getRoots().getFile(path));
-		if (doChecksum) {
+		if (doChecksum && _slave.getDownloadChecksums()) {
 			_checksum = new CRC32();
 			_in = new CheckedInputStream(_in, _checksum);
 		}
@@ -90,6 +72,8 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	}
 
 	public long getChecksum() {
+		if (_checksum == null)
+			return 0;
 		return _checksum.getValue();
 	}
 
@@ -97,9 +81,6 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		return _direction;
 	}
 
-	/**
-	 * @see net.sf.drftpd.slave.Transfer#getLocalPort()
-	 */
 	public int getLocalPort() throws RemoteException {
 		if (_conn instanceof PassiveConnection) {
 			return ((PassiveConnection) _conn).getLocalPort();
@@ -112,9 +93,6 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		return _transfered;
 	}
 
-	/**
-	 * Returns how long this transfer has been running in milliseconds.
-	 */
 	public long getElapsed() {
 		if (_finished == 0) {
 			return System.currentTimeMillis() - _started;
@@ -135,9 +113,11 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		}
 		return (int) (_transfered / ((float) elapsed / (float) 1000));
 	}
+
 	public TransferStatus getStatus() {
 		return new TransferStatus(getElapsed(), getTransfered(), getChecksum());
 	}
+
 	public boolean isReceivingUploading() {
 		return _direction == TRANSFER_RECEIVING_UPLOAD;
 	}
@@ -145,7 +125,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	public boolean isSendingUploading() {
 		return _direction == Transfer.TRANSFER_SENDING_DOWNLOAD;
 	}
-	
+
 	/**
 	 * Call sock.connect() and start sending.
 	 */
@@ -195,7 +175,6 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		long offset)
 		throws IOException {
 		_direction = TRANSFER_RECEIVING_UPLOAD;
-		_checksum = new CRC32();
 		try {
 			_slave.getRoots().getFile(dirname + File.separator + filename);
 			throw new IOException("File exists");
@@ -206,7 +185,10 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 
 		_out = new FileOutputStream(root + File.separator + filename);
 
-		_out = new CheckedOutputStream(_out, _checksum);
+		if (_slave.getUploadChecksums()) {
+			_checksum = new CRC32();
+			_out = new CheckedOutputStream(_out, _checksum);
+		}
 		System.out.println("UL:" + dirname + File.separator + filename);
 		transfer();
 		return getStatus();

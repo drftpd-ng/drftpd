@@ -3,6 +3,7 @@ package net.sf.drftpd.master.command.plugins;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.BindException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -50,7 +51,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.32 2004/01/13 21:36:31 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.33 2004/01/22 21:48:27 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -262,9 +263,13 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				//						_serverSocket.getInetAddress(),
 				//						_serverSocket.getLocalPort());
 				isPasv = true;
+			} catch(BindException ex) {
+				_serverSocket = null;
+				logger.warn("", ex);
+				return new FtpReply(550, ex.getMessage());
 			} catch (Exception ex) {
 				logger.log(Level.WARN, "", ex);
-				return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+				return new FtpReply(550, ex.getMessage());
 			}
 		} else {
 			try {

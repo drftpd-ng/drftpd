@@ -2,7 +2,7 @@ package net.sf.drftpd.remotefile;
 
 /**
  * @author mog
- * @version $Id: RemoteFile.java,v 1.22 2004/01/13 20:30:55 mog Exp $
+ * @version $Id: RemoteFile.java,v 1.23 2004/01/22 21:49:42 mog Exp $
  */
 public abstract class RemoteFile implements RemoteFileInterface {
 	/**
@@ -79,4 +79,7 @@ public abstract class RemoteFile implements RemoteFileInterface {
 		return ret.toString();
 	}
 
+	public String getLinkPath() {
+		return getLink().getPath();
+	}
 }

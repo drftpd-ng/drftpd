@@ -40,7 +40,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: MLSTSerialize.java,v 1.20 2004/01/20 06:59:01 mog Exp $
+ * @version $Id: MLSTSerialize.java,v 1.21 2004/01/22 21:49:41 mog Exp $
  */
 public class MLSTSerialize {
 	private static final Logger logger = Logger.getLogger(MLSTSerialize.class);
@@ -63,10 +63,15 @@ public class MLSTSerialize {
 	}
 	public static String toMLST(RemoteFileInterface file) {
 		StringBuffer ret = new StringBuffer();
-		if (file.isFile())
+		if(file.isLink()) {
+			ret.append("type=unix.slink:"+file.getLinkPath());
+		} else if (file.isFile()) {
 			ret.append("type=file;");
-		if (file.isDirectory())
+		} else if (file.isDirectory()) {
 			ret.append("type=dir;");
+		} else {
+			throw new RuntimeException("type");
+		}
 
 		if (file.getCheckSumCached() != 0)
 			ret.append(
@@ -128,9 +133,14 @@ public class MLSTSerialize {
 				String k = entry.substring(0, pos);
 				String v = entry.substring(pos + 1);
 				if ("type".equals(k)) {
-					assert v.equals("file") || v.equals("dir") : v;
+					//assert v.equals("file") || v.equals("dir") : v;
 					isFile = "file".equals(v);
 					isDir = "dir".equals(v);
+					if(v.startsWith("os.unix=slink:")) {
+						file.setLink(v.substring("os.unix=slink:".length()));
+					} else {
+						if(!(isFile || isDir)) throw new RuntimeException("type");
+					}
 				} else if ("modify".equals(k)) {
 					try {
 						file.setLastModified(timeval.parse(v).getTime());
@@ -144,6 +154,9 @@ public class MLSTSerialize {
 				} else if ("unix.group".equals(k)) {
 					file.setGroupname(v);
 				} else if ("x.deleted".equals(k)) {
+					if(file.isLink()) {
+						isFile = true;
+					}
 					file.setDeleted(true);
 				} else if ("size".equals(k)) {
 					file.setLength(Long.parseLong(v));

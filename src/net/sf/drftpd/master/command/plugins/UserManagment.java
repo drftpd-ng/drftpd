@@ -35,7 +35,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.22 2004/01/20 22:12:02 zubov Exp $
+ * @version $Id: UserManagment.java,v 1.23 2004/01/22 21:49:10 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -482,8 +482,8 @@ public class UserManagment implements CommandHandler {
 			} catch (NumberFormatException ex) {
 				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 			}
-		} else if ("num_logins".equalsIgnoreCase(command)) {
-			myUser.setMaxLoginsPerIP(Integer.parseInt(commandArgument));
+			//		} else if ("num_logins".equalsIgnoreCase(command)) {
+			//			myUser.setMaxLoginsPerIP(Integer.parseInt(commandArgument));
 
 			//} else if ("max_dlspeed".equalsIgnoreCase(command)) {
 			//	myUser.setMaxDownloadRate(Integer.parseInt(commandArgument));
@@ -516,6 +516,7 @@ public class UserManagment implements CommandHandler {
 		try {
 			myUser.commit();
 		} catch (UserFileException e) {
+			logger.warn("", e);
 			response.addComment(e.getMessage());
 		}
 		return response;

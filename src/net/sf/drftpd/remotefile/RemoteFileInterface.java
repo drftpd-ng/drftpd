@@ -5,7 +5,7 @@ import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: RemoteFileInterface.java,v 1.6 2004/01/13 20:30:55 mog Exp $
+ * @version $Id: RemoteFileInterface.java,v 1.7 2004/01/22 21:49:44 mog Exp $
  */
 public interface RemoteFileInterface {
 	public long getCheckSumCached();
@@ -27,7 +27,9 @@ public interface RemoteFileInterface {
 	 * @return target of the link.
 	 * @see #isLink()
 	 */
-	public RemoteFileInterface getLink();
+	public RemoteFileInterface getLink() throws FileNotFoundException;
+
+	public String getLinkPath();
 
 	/**
 	 * @see java.io.File#getName()

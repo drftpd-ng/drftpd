@@ -45,7 +45,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 /**
- * @version $Id: SlaveManagerImpl.java,v 1.60 2004/01/20 21:29:45 zubov Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.61 2004/01/22 21:48:22 mog Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -597,6 +597,7 @@ public class SlaveManagerImpl
 				}
 			} // rslaves.iterator()
 			RemoteSlave rslave = loadRSlave(slaveElement);
+			rslave.setManager(this);
 			this.rslaves.add(rslave);
 			logger.log(Level.INFO, "Added " + rslave.getName() + " to slaves");
 		}

@@ -33,14 +33,17 @@ import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 import net.sf.drftpd.util.ListUtils;
+import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
+import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.12 2004/01/13 20:30:54 mog Exp $
+ * @version $Id: Dir.java,v 1.13 2004/01/22 21:48:31 mog Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
 	protected LinkedRemoteFile _renameFrom = null;
@@ -86,7 +89,7 @@ public class Dir implements CommandHandler, Cloneable {
 		}
 		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
-	
+
 	/**
 	 * <code>CDUP &lt;CRLF&gt;</code><br>
 	 *
@@ -162,13 +165,23 @@ public class Dir implements CommandHandler, Cloneable {
 		try {
 			Collection uploaders =
 				IRCListener.topFileUploaders(newCurrentDirectory.getFiles());
+
+			ReplacerFormat format = null;
+			try {
+				format = ReplacerUtils.finalFormat(Dir.class, "cwd.uploaders");
+			} catch (FormatterException e1) {
+			}
+			ReplacerEnvironment env =
+				BaseFtpConnection.getReplacerEnvironment(
+					null,
+					conn.getUserNull());
 			for (Iterator iter = uploaders.iterator(); iter.hasNext();) {
 				UploaderPosition stat = (UploaderPosition) iter.next();
 
 				User user;
 				try {
-					user = conn.getUserManager().getUserByName(
-								stat.getUsername());
+					user =
+						conn.getUserManager().getUserByName(stat.getUsername());
 				} catch (NoSuchUserException e2) {
 					continue;
 				} catch (UserFileException e2) {
@@ -176,12 +189,21 @@ public class Dir implements CommandHandler, Cloneable {
 					continue;
 				}
 
-				ReplacerEnvironment env = new ReplacerEnvironment();
 				env.add("targetuser", stat.getUsername());
 				env.add("targetgroup", user.getGroupName());
-				env.add("files", ""+stat.getFiles());
+				env.add("files", "" + stat.getFiles());
 				env.add("bytes", Bytes.formatBytes(stat.getBytes()));
-				response.addComment(conn.jprintf(Dir.class.getName(), "cwd.uploaders"));
+				//response.addComment(conn.jprintf(Dir.class.getName(), "cwd.uploaders"));
+				try {
+					if (format == null) {
+						response.addComment("cwd.uploaders");
+					} else {
+						response.addComment(
+							ReplacerUtils.finalJprintf(format, env));
+					}
+				} catch (FormatterException e) {
+					response.addComment("cwd.uploaders");
+				}
 
 			}
 		} catch (RuntimeException ex) {
@@ -250,11 +272,8 @@ public class Dir implements CommandHandler, Cloneable {
 					createdDirName);
 
 			//if (conn.getConfig().checkDirLog(conn.getUserNull(), createdDir)) {
-				conn.getConnectionManager().dispatchFtpEvent(
-					new DirectoryFtpEvent(
-						conn.getUserNull(),
-						"MKD",
-						createdDir));
+			conn.getConnectionManager().dispatchFtpEvent(
+				new DirectoryFtpEvent(conn.getUserNull(), "MKD", createdDir));
 			//}
 			return new FtpReply(
 				257,
@@ -288,7 +307,7 @@ public class Dir implements CommandHandler, Cloneable {
 				+ conn.getCurrentDirectory().getPath()
 				+ "\" is current directory");
 	}
-	
+
 	/**
 	 * <code>RMD  &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
 	 *
@@ -338,11 +357,8 @@ public class Dir implements CommandHandler, Cloneable {
 
 		// now delete
 		//if (conn.getConfig().checkDirLog(conn.getUserNull(), requestedFile)) {
-			conn.getConnectionManager().dispatchFtpEvent(
-				new DirectoryFtpEvent(
-					conn.getUserNull(),
-					"RMD",
-					requestedFile));
+		conn.getConnectionManager().dispatchFtpEvent(
+			new DirectoryFtpEvent(conn.getUserNull(), "RMD", requestedFile));
 		//}
 		requestedFile.delete();
 		return FtpReply.RESPONSE_250_ACTION_OKAY;
@@ -402,10 +418,6 @@ public class Dir implements CommandHandler, Cloneable {
 			conn.resetState();
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
-		if (_renameFrom.hasOfflineSlaves()) {
-			conn.resetState();
-			return new FtpReply(450, "Cannot rename, file has offline slaves");
-		}
 		return new FtpReply(350, "File exists, ready for destination name");
 	}
 
@@ -431,13 +443,6 @@ public class Dir implements CommandHandler, Cloneable {
 		if (_renameFrom == null) {
 			conn.resetState();
 			return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
-		}
-
-		if (_renameFrom.hasOfflineSlaves()) {
-			conn.resetState();
-			return new FtpReply(
-				450,
-				"Cannot rename, source has offline slaves");
 		}
 
 		NonExistingFile ret =
@@ -478,7 +483,7 @@ public class Dir implements CommandHandler, Cloneable {
 			250,
 			request.getCommand() + " command successfull.");
 	}
-	
+
 	/**
 	 * <code>DELE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
 	 *
@@ -539,7 +544,7 @@ public class Dir implements CommandHandler, Cloneable {
 		requestedFile.delete();
 		return reply;
 	}
-	
+
 	/**
 	 * http://www.southrivertech.com/support/titanftp/webhelp/xcrc.htm
 	 * 
@@ -614,7 +619,7 @@ public class Dir implements CommandHandler, Cloneable {
 		//	out.write(ftpStatus.getResponse(550, request, user, null));
 		//}
 	}
-	
+
 	/**
 	 * <code>SIZE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
 	 *
@@ -703,8 +708,8 @@ public class Dir implements CommandHandler, Cloneable {
 			return new FtpReply(200, "Can't wipe, directory not empty");
 		}
 		//if (conn.getConfig().checkDirLog(conn.getUserNull(), wipeFile)) {
-			conn.getConnectionManager().dispatchFtpEvent(
-				new DirectoryFtpEvent(conn.getUserNull(), "WIPE", wipeFile));
+		conn.getConnectionManager().dispatchFtpEvent(
+			new DirectoryFtpEvent(conn.getUserNull(), "WIPE", wipeFile));
 		//}
 		wipeFile.delete();
 		return FtpReply.RESPONSE_200_COMMAND_OK;
