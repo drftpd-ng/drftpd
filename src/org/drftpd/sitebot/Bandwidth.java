@@ -47,7 +47,7 @@ import java.util.Iterator;
 
 /**
  * @author flowman
- * @version $Id: Bandwidth.java 820 2004-11-26 04:54:18Z mog $
+ * @version $Id$
  */
 public class Bandwidth extends GenericCommandAutoService
     implements IRCPluginInterface {

@@ -46,7 +46,7 @@ import java.util.Set;
 
 /**
  * @author mog
- * @version $Id: RemoteSlaveTest.java 781 2004-11-09 19:00:01Z mog $
+ * @version $Id$
  */
 public class RemoteSlaveTest extends TestCase {
     public RemoteSlaveTest(String fName) {

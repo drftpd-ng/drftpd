@@ -34,7 +34,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author zubov
- * @version $Id: Diskfree.java 808 2004-11-18 15:58:39Z mog $
+ * @version $Id$
  */
 public class Diskfree extends GenericCommandAutoService
     implements IRCPluginInterface {

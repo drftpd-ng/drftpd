@@ -35,7 +35,7 @@ import java.util.Properties;
 
 /*
  * @author zubov
- * @version $Id
+ * @version $Id$
  */
 public class ReversebandwidthFilter extends BandwidthFilter {
     public ReversebandwidthFilter(FilterChain ssm, int i, Properties p) {

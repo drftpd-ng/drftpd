@@ -26,7 +26,7 @@ import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: PatternPathPermission.java 847 2004-12-02 03:32:41Z mog $
+ * @version $Id$
  */
 public class GlobPathPermission extends PathPermission {
     Pattern _pat;

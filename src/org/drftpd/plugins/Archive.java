@@ -39,7 +39,7 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author zubov
- * @version $Id: Archive.java 814 2004-11-22 02:38:00Z mog $
+ * @version $Id$
  */
 public class Archive extends FtpListener implements Runnable {
     private static final Logger logger = Logger.getLogger(Archive.class);

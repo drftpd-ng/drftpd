@@ -37,7 +37,7 @@ import java.util.Iterator;
 
 /**
  * @author zubov
- * @version $Id: GenericTextOutput.java 808 2004-11-18 15:58:39Z mog $
+ * @version $Id$
  */
 public class GenericTextOutput extends GenericCommandAutoService
     implements IRCPluginInterface {

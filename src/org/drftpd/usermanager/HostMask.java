@@ -29,7 +29,7 @@ import java.net.InetAddress;
 
 /**
  * @author mog
- * @version $Id: HostMask.java 808 2004-11-18 15:58:39Z mog $
+ * @version $Id$
  */
 public class HostMask {
     private static final Logger logger = Logger.getLogger(HostMask.class);

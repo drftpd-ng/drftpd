@@ -2,10 +2,14 @@
 The reasons it's 2.0 and not 1.2
 * File list is now case insensitive.
 * Changed usermanager to javabeans (use UserManagerConverter to convert).
+  UserManager now supports adding dynamic properties (with runtime type checking).
 * Dropped slaves.xml, use site [add|del]slave etc. commands.
+  Uses javabeans for storage.
 * Changed keys in .properties formatting, now using dynamic user data as keys.
 * Added symlinks.
 * Dropped RMI in favor of our own master<->slave protocol which will scale
   much better.
 In progress:
 * Dropped glob-style path permissions in favor of ants pattern path expressions.
+* Now requires java 5.0
+* Includes Teflon's ircusermanager which now uses dynamic user data.

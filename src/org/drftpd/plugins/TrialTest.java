@@ -36,7 +36,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: TrialTest.java 781 2004-11-09 19:00:01Z mog $
+ * @version $Id$
  */
 public class TrialTest extends TestCase {
     /**

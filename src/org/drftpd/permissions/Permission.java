@@ -24,7 +24,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Permission.java 820 2004-11-26 04:54:18Z mog $
+ * @version $Id$
  */
 public class Permission {
     private Collection<String> _users;

@@ -23,7 +23,7 @@ import java.io.IOException;
 /**
  * @author mog
  *
- * @version $Id: CorruptFileListException.java 690 2004-08-03 20:14:12Z zubov $
+ * @version $Id$
  */
 public class CorruptFileListException extends IOException {
     /**

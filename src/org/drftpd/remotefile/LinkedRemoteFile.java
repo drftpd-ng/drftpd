@@ -50,7 +50,7 @@ import org.drftpd.slave.RemoteIOException;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java 840 2004-12-01 05:00:54Z mog $
+ * @version $Id$
  */
 public class LinkedRemoteFile implements Serializable, Comparable,
 		LinkedRemoteFileInterface {

@@ -31,7 +31,7 @@ import java.util.ArrayList;
 
 /**
  * @author zubov
- * @version $Id: StatsTest.java 690 2004-08-03 20:14:12Z zubov $
+ * @version $Id$
  */
 public class StatsTest extends TestCase {
     /**

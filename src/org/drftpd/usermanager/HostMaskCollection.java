@@ -36,7 +36,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: HostMaskCollection.java 810 2004-11-21 22:33:38Z mog $
+ * @version $Id$
  */
 public class HostMaskCollection extends ArrayList {
     private static final Logger logger = Logger.getLogger(HostMaskCollection.class);

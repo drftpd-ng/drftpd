@@ -41,7 +41,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Slaves.java 806 2004-11-17 22:29:13Z mog $
+ * @version $Id$
  */
 public class Slaves extends GenericAutoService implements IRCPluginInterface {
     private static final int LEN2 = "!slave ".length();

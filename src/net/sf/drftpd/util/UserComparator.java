@@ -27,7 +27,7 @@ import java.util.Comparator;
 /**
  * @author mog
  * @author zubov
- * @version $Id
+ * @version $Id$
  */
 public class UserComparator implements Comparator {
     private String _type;

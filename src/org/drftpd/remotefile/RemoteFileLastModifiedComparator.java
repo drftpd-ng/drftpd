@@ -22,7 +22,7 @@ import java.util.Comparator;
 
 /**
  * @author mog
- * @version $Id: RemoteFileLastModifiedComparator.java 690 2004-08-03 20:14:12Z zubov $
+ * @version $Id$
  */
 public class RemoteFileLastModifiedComparator implements Comparator {
     private boolean _reverse;

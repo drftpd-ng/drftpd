@@ -49,7 +49,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author zubov
-  * @version $Id: Stats.java 828 2004-11-29 22:58:58Z mog $
+  * @version $Id$
  */
 public class Stats extends GenericCommandAutoService
     implements IRCPluginInterface {

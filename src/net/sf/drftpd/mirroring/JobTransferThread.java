@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id
+ * @version $Id$
  */
 public class JobTransferThread extends Thread {
     private static final Logger logger = Logger.getLogger(JobTransferThread.class);

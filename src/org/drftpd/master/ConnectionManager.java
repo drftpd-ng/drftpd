@@ -53,7 +53,7 @@ import org.drftpd.usermanager.UserFileException;
 
 
 /**
- * @version $Id: ConnectionManager.java 787 2004-11-11 14:58:35Z mog $
+ * @version $Id$
  */
 public class ConnectionManager {
     public static final int idleTimeout = 300;

@@ -32,7 +32,7 @@ import org.drftpd.commands.Reply;
 /**
  * @author mog
  *
- * @version $Id: MessagePathPermission.java 820 2004-11-26 04:54:18Z mog $
+ * @version $Id$
  */
 public class MessagePathPermission extends StringPathPermission {
     private ArrayList<String> _message;

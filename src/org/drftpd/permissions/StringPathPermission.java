@@ -25,7 +25,7 @@ import org.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: StringPathPermission.java 847 2004-12-02 03:32:41Z mog $
+ * @version $Id$
  */
 public class StringPathPermission extends PathPermission {
     private String _path;

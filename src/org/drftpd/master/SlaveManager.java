@@ -69,7 +69,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author mog
- * @version $Id: SlaveManager.java 788 2004-11-12 14:22:19Z mog $
+ * @version $Id$
  */
 public class SlaveManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(SlaveManager.class

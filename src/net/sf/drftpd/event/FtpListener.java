@@ -35,12 +35,6 @@ public abstract class FtpListener {
     	_gctx = gctx;
     }
 
-    /**
-     * @deprecated
-     */
-    public final void init(ConnectionManager cm) {
-    	throw new UnsupportedOperationException("deprecated");
-    }
     public final GlobalContext getGlobalContext() {
     	assert _gctx != null;
     	return _gctx;

@@ -25,7 +25,7 @@ import java.io.OutputStream;
  * AddAsciiOutputStream that ensures that there's an \r before every \n.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
- * @version $Id: AddAsciiOutputStream.java 711 2004-09-25 03:48:43Z mog $
+ * @version $Id$
  */
 public class AddAsciiOutputStream extends OutputStream {
     private OutputStream _out;

@@ -47,7 +47,7 @@ import com.Ostermiller.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: Trial.java 823 2004-11-29 01:36:22Z mog $
+ * @version $Id$
  */
 public class Trial extends FtpListener {
     private static final Logger logger = Logger.getLogger(Trial.class);

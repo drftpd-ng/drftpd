@@ -25,7 +25,7 @@ import java.io.InputStream;
  * Not thread-safe (is any-In/OutputStream thread-safe?).
  *
  * @author mog
- * @version $Id: StripAsciiInputStream.java 750 2004-11-03 05:43:25Z zubov $
+ * @version $Id$
  */
 public class StripAsciiInputStream extends InputStream {
     private InputStream _in;

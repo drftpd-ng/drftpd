@@ -26,7 +26,7 @@ import org.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: PathPermission.java 847 2004-12-02 03:32:41Z mog $
+ * @version $Id$
  */
 public abstract class PathPermission extends Permission {
     public PathPermission(Collection<String> users) {

@@ -47,9 +47,9 @@ import java.util.Properties;
 import java.util.Set;
 
 
-/*
+/**
  * @author zubov
- * @version $Id
+ * @version $Id$
  */
 public class MaxbandwidthFilterTest extends TestCase {
     RemoteSlave[] rslaves = {

@@ -22,7 +22,7 @@ import java.io.Serializable;
 
 /**
  * @author mog
- * @version $Id: Key.java 756 2004-11-05 13:27:23Z mog $
+ * @version $Id$
  */
 public class Key implements Serializable {
     private String _key;

@@ -35,7 +35,7 @@ import f00f.net.irc.martyr.errors.ChannelWrongKeyError;
 
 /**
  * @author mog
- * @version $Id: OnConnect.java 847 2004-12-02 03:32:41Z mog $
+ * @version $Id$
  */
 public class OnConnect extends GenericAutoService implements IRCPluginInterface {
     private State _state;

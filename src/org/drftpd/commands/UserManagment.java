@@ -55,7 +55,7 @@ import org.tanesha.replacer.SimplePrintf;
 /**
  * @author mog
  * @author zubov
- * @version $Id: UserManagement.java 877 2004-12-27 02:33:36Z zubov $
+ * @version $Id$
  */
 public class UserManagment implements CommandHandler, CommandHandlerFactory {
     public static final Key TAGLINE = new Key(UserManagment.class, "tagline",

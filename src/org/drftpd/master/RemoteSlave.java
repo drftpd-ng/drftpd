@@ -76,7 +76,7 @@ import org.drftpd.usermanager.HostMaskCollection;
 /**
  * @author mog
  * @author zubov
- * @version $Id: RemoteSlave.java 789 2004-11-12 18:24:30Z mog $
+ * @version $Id$
  */
 public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	private static final long serialVersionUID = -6973935289361817125L;

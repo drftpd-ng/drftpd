@@ -46,7 +46,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: MLSTSerialize.java 806 2004-11-17 22:29:13Z mog $
+ * @version $Id$
  */
 public class MLSTSerialize {
     private static final Logger logger = Logger.getLogger(MLSTSerialize.class);

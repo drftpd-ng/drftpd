@@ -18,9 +18,9 @@
 package org.drftpd.mirroring.archivetypes;
 
 
-/*
+/**
  * @author zubov
- * @version $Id
+ * @version $Id$
  */
 public class IncompleteDirectoryException extends Exception {
     public IncompleteDirectoryException() {

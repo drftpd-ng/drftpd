@@ -28,7 +28,7 @@ import java.io.Writer;
 
 /**
  * @author mog
- * @version $Id: SafeFileWriter.java 690 2004-08-03 20:14:12Z zubov $
+ * @version $Id$
  */
 public class SafeFileWriter extends Writer {
     private File _actualFile;

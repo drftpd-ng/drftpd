@@ -124,7 +124,7 @@ public class GlobalContext {
     * Calls init(this) on the argument
     */
     public void addFtpListener(FtpListener listener) {
-        listener.init(_cm);
+        listener.init(this);
         _ftpListeners.add(listener);
     }
 

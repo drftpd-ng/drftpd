@@ -25,7 +25,7 @@ import java.io.OutputStream;
  * OutputStream filter that strips the \r from \r\n sequences.
  *
  * @author mog
- * @version $Id: StripAsciiOutputStream.java 690 2004-08-03 20:14:12Z zubov $
+ * @version $Id$
  */
 public class StripAsciiOutputStream extends OutputStream {
     private OutputStream _out;

@@ -38,7 +38,7 @@ import org.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
  * Abstract class for overriding only a subset of LinkedRemoteFile's methods.
  * Can be used for testing.
  * @author mog
- * @version $Id
+ * @version $Id$
  */
 public abstract class AbstractLinkedRemoteFile
     implements LinkedRemoteFileInterface {

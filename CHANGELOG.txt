@@ -1,3 +1,9 @@
+2003/12/29 Morgan Christiansson <drftpd@mog.se>
+* Fixed commandhandlers that were broken while refactoring.
+  Thanks to M3ta for stacktrace.
+* Added MAJORCHANGES.txt which will contain a summary of changes
+  instead of a just a detailed changelog.
+
 2004/12/23 Morgan Christiansson <drftpd@mog.se>
   Commiting stuff i did while on vacation.
 * Added pattern path expressions from ant. makedir2 in perms.conf for now.

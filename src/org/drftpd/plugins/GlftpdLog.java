@@ -62,7 +62,7 @@ import org.tanesha.replacer.FormatterException;
 
 /**
  * @author flowman
- * @version $Id: GlftpdLog.java 823 2004-11-29 01:36:22Z mog $
+ * @version $Id$
  */
 public class GlftpdLog extends FtpListener {
     private static Logger logger = Logger.getLogger(GlftpdLog.class);

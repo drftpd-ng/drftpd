@@ -33,7 +33,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Invite.java 820 2004-11-26 04:54:18Z mog $
+ * @version $Id$
  */
 public class Invite extends GenericCommandAutoService
     implements IRCPluginInterface {

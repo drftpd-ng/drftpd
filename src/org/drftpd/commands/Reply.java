@@ -29,7 +29,7 @@ import java.util.Vector;
 
 /**
  * @author mog
- * @version $Id: FtpReply.java 713 2004-10-03 16:13:58Z mog $
+ * @version $Id$
  */
 public class Reply implements Cloneable {
     private static final Logger logger = Logger.getLogger(Reply.class.getName());

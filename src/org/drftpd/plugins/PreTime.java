@@ -42,7 +42,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author zubov
- * @version $Id: PreTime.java 806 2004-11-17 22:29:13Z mog $
+ * @version $Id$
  */
 public class PreTime extends FtpListener {
     private static final Logger logger = Logger.getLogger(PreTime.class);

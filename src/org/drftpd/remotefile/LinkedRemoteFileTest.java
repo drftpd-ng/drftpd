@@ -38,7 +38,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: LinkedRemoteFileTest.java 806 2004-11-17 22:29:13Z mog $
+ * @version $Id$
  */
 public class LinkedRemoteFileTest extends TestCase {
     private LinkedRemoteFile _root;

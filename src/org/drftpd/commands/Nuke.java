@@ -59,7 +59,7 @@ import java.util.StringTokenizer;
  * amount -> amount before multiplier
  *
  * @author mog
- * @version $Id: Nuke.java 823 2004-11-29 01:36:22Z mog $
+ * @version $Id$
  */
 public class Nuke implements CommandHandlerFactory, CommandHandler {
     public static final Key NUKED = new Key(Nuke.class, "nuked", Integer.class);

@@ -37,6 +37,7 @@ import java.util.Properties;
 
 /**
  * @author zubov
+ * @version $Id$
  */
 public class MaxbandwidthFilter extends Filter {
     private static final Logger logger = Logger.getLogger(MaxbandwidthFilter.class);

@@ -20,7 +20,7 @@ package org.drftpd.sitebot;
 
 /**
  * @author zubov
- * @version $Id: IRCPluginInterface.java 808 2004-11-18 15:58:39Z mog $
+ * @version $Id$
  */
 public interface IRCPluginInterface {
     public String getCommands();

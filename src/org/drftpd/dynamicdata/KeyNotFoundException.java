@@ -20,7 +20,7 @@ package org.drftpd.dynamicdata;
 
 /**
  * @author mog
- * @version $Id: KeyNotFoundException.java 756 2004-11-05 13:27:23Z mog $
+ * @version $Id$
  */
 public class KeyNotFoundException extends Exception {
     public KeyNotFoundException() {

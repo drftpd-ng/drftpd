@@ -36,9 +36,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 
-/*
+/**
  * @author zubov
- * @version $Id
+ * @version $Id$
  */
 public class TextoutputTest extends TestCase {
     /**
