@@ -955,6 +955,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getGroupname()
 	 */
 	public String getGroupname() {
+		if(this.group == null || this.group.equals("")) return "drftpd";
 		return this.group;
 	}
 
@@ -962,6 +963,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getUsername()
 	 */
 	public String getUsername() {
+		if(this.owner == null || this.owner.equals("")) return "drftpd";
 		return this.owner;
 	}
 
