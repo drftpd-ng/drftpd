@@ -132,11 +132,11 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         conn.getControlWriter().write(new Reply(234,
                 conn.getRequest().getCommandLine() + " successful").toString());
         conn.getControlWriter().flush();
-
+        SSLSocket s2 = null;
         try {
-            SSLSocket s2;
             s2 = (SSLSocket) _ctx.getSocketFactory().createSocket(s,
                     s.getInetAddress().getHostAddress(), s.getPort(), true);
+            conn.setControlSocket(s2);
             s2.setUseClientMode(false);
             s2.addHandshakeCompletedListener(this);
             s2.startHandshake();
@@ -145,6 +145,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             		try {
             			wait(10000);
             		} catch (InterruptedException e) {
+            			s2.close();
             			conn.stop("Took too long to negotiate SSL");
             			return new Reply(400, "Took too long to negotiate SSL");
             		}
@@ -152,13 +153,20 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             }
             // reset for possible auth later
             _handshakeCompleted = false;
-            conn.setControlSocket(s2);
         } catch (IOException e) {
             logger.warn("", e);
+            if (s2 != null) {
+            	try {
+            		s2.close();
+            	} catch (IOException e2){
+            		logger.debug("error closing SSLSocket connection");
+            	}
+            }
             conn.stop(e.getMessage());
 
             return null;
 		}
+        s2 = null;
 
         return null;
     }
