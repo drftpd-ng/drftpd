@@ -28,4 +28,6 @@ public interface FtpListener {
     public void actionPerformed(Event event);
 
     public void unload();
-    public void init(ConnectionManager connectionManager);}
+
+    public void init(ConnectionManager connectionManager);
+}

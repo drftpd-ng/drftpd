@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.master.command.plugins;
+package org.drftpd.commands;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.Nukee;
@@ -31,11 +31,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.drftpd.Bytes;
-import org.drftpd.commands.CommandHandler;
-import org.drftpd.commands.CommandHandlerFactory;
-import org.drftpd.commands.Reply;
-import org.drftpd.commands.UnhandledCommandException;
-import org.drftpd.commands.UserManagment;
 import org.drftpd.dynamicdata.Key;
 
 import org.drftpd.usermanager.AbstractUser;
@@ -59,13 +54,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-
 /**
  * nukedamount -> amount after multiplier
  * amount -> amount before multiplier
  *
  * @author mog
- * @version $Id$
+ * @version $Id: Nuke.java 823 2004-11-29 01:36:22Z mog $
  */
 public class Nuke implements CommandHandlerFactory, CommandHandler {
     public static final Key NUKED = new Key(Nuke.class, "nuked", Integer.class);
@@ -283,7 +277,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
 
             //nukee.updateNukedBytes(debt);
             nukee.incrementObjectLong(NUKED);
-            nukee.putObject(Nuke.LASTNUKED, new Long(System.currentTimeMillis()));
+            nukee.getKeyedMap().setObject(Nuke.LASTNUKED, new Long(System.currentTimeMillis()));
 
             try {
                 nukee.commit();

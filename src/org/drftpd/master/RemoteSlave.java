@@ -107,7 +107,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 
 	private HashMap<String, String> _renameQueue;
 
-	private Stack<String> _indexPool;
+	private transient Stack<String> _indexPool;
 
 	private transient HashMap<String, AsyncResponse> _indexWithCommands;
 
@@ -221,6 +221,10 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 
 	public Properties getProperties() {
 		return _keysAndValues;
+	}
+
+	public void setProperties(Properties keysAndValues) {
+		_keysAndValues = keysAndValues;
 	}
 
 	public void commit() {
@@ -1093,5 +1097,18 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 
 	public void init(GlobalContext globalContext) {
 		_gctx = globalContext;
+	}
+
+	public HashMap<String, String> getRenameQueue() {
+		return _renameQueue;
+	}
+	public void setRenameQueue(HashMap<String, String> renameQueue) {
+		_renameQueue = renameQueue;
+	}
+	public void setReceivedBytes(long receivedBytes) {
+		_receivedBytes = receivedBytes;
+	}
+	public void setSentBytes(long sentBytes) {
+		_sentBytes = sentBytes;
 	}
 }
