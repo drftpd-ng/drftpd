@@ -112,6 +112,8 @@ public class Approve extends GenericCommandAutoService implements IRCPluginInter
     					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
     			return;
             }
+            env.add("ftpuser",user.getName());
+            
             LinkedRemoteFileInterface dir = findDir(getGlobalContext(),
 													 getGlobalContext().getRoot(),
 													 user,
