@@ -22,7 +22,6 @@ import net.sf.drftpd.Nukee;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.queues.NukeLog;
@@ -34,11 +33,12 @@ import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.commands.UserManagment;
+import org.drftpd.dynamicdata.Key;
 
 import org.drftpd.usermanager.AbstractUser;
-import org.drftpd.usermanager.Key;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -65,7 +65,7 @@ import java.util.StringTokenizer;
  * amount -> amount before multiplier
  *
  * @author mog
- * @version $Id: Nuke.java,v 1.28 2004/11/09 18:59:48 mog Exp $
+ * @version $Id$
  */
 public class Nuke implements CommandHandlerFactory, CommandHandler {
     public static final Key NUKED = new Key(Nuke.class, "nuked", Integer.class);
@@ -130,20 +130,20 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
      *     so the additional penalty in this case is the size of nuked files. If the
      *     multiplier is 3, user loses size * ratio + size * 2, etc.
      */
-    private FtpReply doSITE_NUKE(BaseFtpConnection conn) {
+    private Reply doSITE_NUKE(BaseFtpConnection conn) {
         if (!conn.getUserNull().isNuker()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!conn.getRequest().hasArgument()) {
-            return new FtpReply(501, conn.jprintf(Nuke.class, "nuke.usage"));
+            return new Reply(501, conn.jprintf(Nuke.class, "nuke.usage"));
         }
 
         StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument(),
                 " ");
 
         if (!st.hasMoreTokens()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         int multiplier;
@@ -154,13 +154,13 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
             nukeDirName = st.nextToken();
             nukeDir = conn.getCurrentDirectory().getFile(nukeDirName);
         } catch (FileNotFoundException e) {
-            FtpReply response = new FtpReply(550, e.getMessage());
+            Reply response = new Reply(550, e.getMessage());
 
             return response;
         }
 
         if (!nukeDir.isDirectory()) {
-            FtpReply response = new FtpReply(550,
+            Reply response = new Reply(550,
                     nukeDirName + ": not a directory");
 
             return response;
@@ -169,7 +169,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
         String nukeDirPath = nukeDir.getPath();
 
         if (!st.hasMoreTokens()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         try {
@@ -177,7 +177,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
         } catch (NumberFormatException ex) {
             logger.warn("", ex);
 
-            return new FtpReply(501, "Invalid multiplier: " + ex.getMessage());
+            return new Reply(501, "Invalid multiplier: " + ex.getMessage());
         }
 
         String reason;
@@ -192,7 +192,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
         Hashtable nukees = new Hashtable();
         nukeRemoveCredits(nukeDir, nukees);
 
-        FtpReply response = new FtpReply(200, "NUKE suceeded");
+        Reply response = new Reply(200, "NUKE suceeded");
 
         //// convert key from String to User ////
         HashMap nukees2 = new HashMap(nukees.size());
@@ -242,7 +242,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
         } catch (FileNotFoundException ex) {
             logger.fatal("", ex);
 
-            return FtpReply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
+            return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
         }
 
         try {
@@ -305,8 +305,8 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
         return response;
     }
 
-    private FtpReply doSITE_NUKES(BaseFtpConnection conn) {
-        FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+    private Reply doSITE_NUKES(BaseFtpConnection conn) {
+        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
 
         for (Iterator iter = getNukeLog().getAll().iterator(); iter.hasNext();) {
             response.addComment(iter.next());
@@ -329,15 +329,15 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
      *         You need to configure glftpd to keep nuked files if you want to unnuke.
      *         See the section about glftpd.conf.
      */
-    private FtpReply doSITE_UNNUKE(BaseFtpConnection conn) {
+    private Reply doSITE_UNNUKE(BaseFtpConnection conn) {
         if (!conn.getUserNull().isNuker()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument());
 
         if (!st.hasMoreTokens()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         String toName = st.nextToken();
@@ -371,11 +371,11 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
         try {
             nukeDir = conn.getCurrentDirectory().getFile(nukeName);
         } catch (FileNotFoundException e2) {
-            return new FtpReply(200,
+            return new Reply(200,
                 nukeName + " doesn't exist: " + e2.getMessage());
         }
 
-        FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
         NukeEvent nuke;
 
         try {
@@ -471,10 +471,10 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
         return response;
     }
 
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         if (_nukelog == null) {
-            return new FtpReply(500, "You must reconnect to use NUKE");
+            return new Reply(500, "You must reconnect to use NUKE");
         }
 
         String cmd = conn.getRequest().getCommand();

@@ -19,7 +19,6 @@ package org.drftpd.commands;
 
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
@@ -44,12 +43,12 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: MLST.java,v 1.7 2004/11/09 18:59:54 mog Exp $
+ * @version $Id$
  */
 public class MLST implements CommandHandlerFactory, CommandHandler {
     private static final Logger logger = Logger.getLogger(MLST.class);
 
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         String command = conn.getRequest().getCommand();
 
@@ -59,13 +58,13 @@ public class MLST implements CommandHandlerFactory, CommandHandler {
             try {
                 dir = dir.lookupFile(conn.getRequest().getArgument());
             } catch (FileNotFoundException e) {
-                return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+                return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
             }
         }
 
         if (!conn.getGlobalContext().getConnectionManager().getGlobalContext()
                      .getConfig().checkPrivPath(conn.getUserNull(), dir)) {
-            return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+            return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
         }
 
         PrintWriter out = conn.getControlWriter();
@@ -83,10 +82,10 @@ public class MLST implements CommandHandlerFactory, CommandHandler {
                 dataConnHnd = (DataConnectionHandler) conn.getCommandManager()
                                                           .getCommandHandler(DataConnectionHandler.class);
             } catch (ObjectNotFoundException e) {
-                return new FtpReply(500, e.getMessage());
+                return new Reply(500, e.getMessage());
             }
 
-            out.print(FtpReply.RESPONSE_150_OK);
+            out.print(Reply.RESPONSE_150_OK);
             out.flush();
 
             try {
@@ -104,13 +103,13 @@ public class MLST implements CommandHandlerFactory, CommandHandler {
                 logger.warn("", e1);
 
                 //425 Can't open data connection
-                return new FtpReply(425, e1.getMessage());
+                return new Reply(425, e1.getMessage());
             }
 
-            return FtpReply.RESPONSE_226_CLOSING_DATA_CONNECTION;
+            return Reply.RESPONSE_226_CLOSING_DATA_CONNECTION;
         }
 
-        return FtpReply.RESPONSE_500_SYNTAX_ERROR;
+        return Reply.RESPONSE_500_SYNTAX_ERROR;
     }
 
     public String[] getFeatReplies() {

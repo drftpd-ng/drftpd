@@ -34,8 +34,10 @@ import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 
-import org.drftpd.commands.UnhandledCommandException;
+import org.drftpd.commands.Reply;
+import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UserManagment;
+import org.drftpd.dynamicdata.Key;
 
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -54,10 +56,12 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Map;
 
 import javax.net.ssl.SSLSocket;
 
@@ -67,7 +71,7 @@ import javax.net.ssl.SSLSocket;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.106 2004/11/11 14:58:31 mog Exp $
+ * @version $Id$
  */
 public class BaseFtpConnection implements Runnable {
     private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() +
@@ -125,20 +129,23 @@ public class BaseFtpConnection implements Runnable {
         env = new ReplacerEnvironment(env);
 
         if (user != null) {
-            env.add("user", user.getUsername());
+        	for(Map.Entry<Key, Object> o : user.getAllObjects().entrySet()) {
+        		env.add(o.getKey().toString(), o.getKey().toString(o.getValue()));
+        		logger.debug("Added "+o.getKey().toString()+" "+o.getKey().toString(o.getValue()));
+        	}
+//            env.add("user", user.getUsername());
             env.add("credits", Bytes.formatBytes(user.getCredits()));
-            env.add("ratio", "" + user.getObjectFloat(UserManagment.RATIO));
-            env.add("tagline", user.getObjectString(UserManagment.TAGLINE));
+//            env.add("ratio", "" + user.getObjectFloat(UserManagment.RATIO));
+//            env.add("tagline", user.getObjectString(UserManagment.TAGLINE));
             env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
             env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
-            env.add("group", user.getGroupName());
-            env.add("avragespeed",
+//            env.add("group", user.getGroupName());
+            env.add("averagespeed",
                 Bytes.formatBytes(user.getUploadedTime() +
                     (user.getDownloadedTime() / 2)));
-        } else {
-            env.add("user", "<unknown>");
+//        } else {
+//            env.add("user", "<unknown>");
         }
-
         return env;
     }
 
@@ -346,7 +353,7 @@ public class BaseFtpConnection implements Runnable {
                 stop(getGlobalContext().getConnectionManager().getGlobalContext()
                          .getShutdownMessage());
             } else {
-                FtpReply response = new FtpReply(220,
+                Reply response = new Reply(220,
                         getGlobalContext().getConnectionManager()
                             .getGlobalContext().getConfig().getLoginPrompt());
                 _out.print(response);
@@ -385,7 +392,7 @@ public class BaseFtpConnection implements Runnable {
                 }
 
                 if (!hasPermission(_request)) {
-                    _out.print(FtpReply.RESPONSE_530_NOT_LOGGED_IN);
+                    _out.print(Reply.RESPONSE_530_NOT_LOGGED_IN);
 
                     continue;
                 }
@@ -398,7 +405,7 @@ public class BaseFtpConnection implements Runnable {
             }
 
             if (_stopRequestMessage != null) {
-                _out.print(new FtpReply(421, _stopRequestMessage));
+                _out.print(new Reply(421, _stopRequestMessage));
             } else {
                 _out.println("421 Connection closing");
             }
@@ -432,15 +439,18 @@ public class BaseFtpConnection implements Runnable {
      */
     public void service(FtpRequest request, PrintWriter out)
         throws IOException {
-        FtpReply reply;
+        Reply reply;
 
         try {
             reply = _commandManager.execute(this);
-        } catch (UnhandledCommandException e) {
-            reply = new FtpReply(500, e.getMessage());
-            logger.warn("", e);
         } catch (Throwable e) {
-            reply = new FtpReply(500, e.toString());
+        	int replycode = e instanceof ReplyException ? ((ReplyException)e).getReplyCode() : 500;
+    		reply = new Reply(replycode, e.getMessage());
+        	if(getUserNull().getObjectBoolean(UserManagment.DEBUG)) {
+        		StringWriter sw = new StringWriter();
+        		e.printStackTrace(new PrintWriter(sw));
+        		reply.addComment(sw.toString());
+        	}
             logger.warn("", e);
         }
 

@@ -8,11 +8,11 @@ package net.sf.drftpd.master.command.plugins;
 
 import junit.framework.TestCase;
 
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 
 import org.apache.log4j.BasicConfigurator;
 
+import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.commands.UserManagment;
 
@@ -26,7 +26,7 @@ import java.util.ArrayList;
 
 /**
  * @author mog
- * @version $Id: UserManagmentTest.java,v 1.2 2004/11/05 13:27:20 mog Exp $
+ * @version $Id$
  */
 public class UserManagmentTest extends TestCase {
     public void testGAdmin() throws UnhandledCommandException {
@@ -54,7 +54,7 @@ public class UserManagmentTest extends TestCase {
                     "site adduser testadd1 testpass1 *@*");
             conn.setRequest(req);
 
-            FtpReply r = cmdmgr.execute(conn);
+            Reply r = cmdmgr.execute(conn);
             assertEquals(r.toString(), r.getCode(), 200);
         }
 
@@ -63,7 +63,7 @@ public class UserManagmentTest extends TestCase {
                     "site adduser testadd2 testpass2 *@*");
             conn.setRequest(req);
 
-            FtpReply r = cmdmgr.execute(conn);
+            Reply r = cmdmgr.execute(conn);
             assertEquals(r.toString(), r.getMessage(),
                 "Sorry, no more open slots available");
         }

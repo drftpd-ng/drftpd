@@ -35,7 +35,6 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.SlaveFileException;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.mirroring.JobManager;
@@ -46,6 +45,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
+import org.drftpd.commands.Reply;
 import org.drftpd.plugins.RaceStatistics;
 import org.drftpd.slave.Slave;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -150,7 +150,7 @@ public class ConnectionManager {
         }
     }
 
-    public FtpReply canLogin(BaseFtpConnection baseconn, User user) {
+    public Reply canLogin(BaseFtpConnection baseconn, User user) {
         int count = getGlobalContext().getConfig().getMaxUsersTotal();
 
         //Math.max if the integer wraps
@@ -164,7 +164,7 @@ public class ConnectionManager {
 
         // not >= because baseconn is already included
         if (_conns.size() > count) {
-            return new FtpReply(550, "The site is full, try again later.");
+            return new Reply(550, "The site is full, try again later.");
         }
 
         synchronized (_conns) {
@@ -189,23 +189,23 @@ public class ConnectionManager {
 
         if ((user.getMaxLoginsPerIP() > 0) &&
                 (ipCount > user.getMaxLoginsPerIP())) {
-            return new FtpReply(530,
+            return new Reply(530,
                 "Sorry, your maximum number of connections from this IP (" +
                 user.getMaxLoginsPerIP() + ") has been reached.");
         }
 
         if ((user.getMaxLogins() > 0) && (userCount >= user.getMaxLogins())) {
-            return new FtpReply(530,
+            return new Reply(530,
                 "Sorry, your account is restricted to " + user.getMaxLogins() +
                 " simultaneous logins.");
         }
 
         if (!baseconn.isSecure() &&
                 getGlobalContext().getConfig().checkUserRejectInsecure(user)) {
-            return new FtpReply(530, "USE SECURE CONNECTION");
+            return new Reply(530, "USE SECURE CONNECTION");
         } else if (baseconn.isSecure() &&
                 getGlobalContext().getConfig().checkUserRejectSecure(user)) {
-            return new FtpReply(530, "USE INSECURE CONNECTION");
+            return new Reply(530, "USE INSECURE CONNECTION");
         }
 
         return null; // everything passed

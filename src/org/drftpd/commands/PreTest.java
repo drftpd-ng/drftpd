@@ -19,7 +19,6 @@ package org.drftpd.commands;
 
 import junit.framework.TestCase;
 
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.SlaveFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -50,7 +49,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: PreTest.java,v 1.8 2004/11/03 16:46:44 mog Exp $
+ * @version $Id$
  */
 public class PreTest extends TestCase {
     private DummyConnectionManager _cm;
@@ -127,7 +126,7 @@ public class PreTest extends TestCase {
         slavem.setSlaves(Collections.EMPTY_LIST);
         gctx.setSlaveManager(slavem);
 
-        FtpReply reply;
+        Reply reply;
         reply = pre.execute(conn);
         MLSTSerialize.serialize(_root, new PrintWriter(System.err, true));
         assertEquals(reply.getCode(), 200);

@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.usermanager.jsx2;
+package org.drftpd.usermanager.jsx3;
 
 import JSX.ObjIn;
 
@@ -41,7 +41,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: JSXUserManager.java 806 2004-11-17 22:29:13Z mog $
  */
 public class JSXUserManager extends AbstractUserManager {
     private static final Logger logger = Logger.getLogger(JSXUserManager.class.getName());

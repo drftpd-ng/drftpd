@@ -22,7 +22,6 @@ import net.sf.drftpd.NoSFVEntryException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
@@ -39,6 +38,7 @@ import org.drftpd.SFVFile;
 import org.drftpd.SSLGetContext;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.commands.UserManagment;
 
@@ -117,15 +117,15 @@ public class DataConnectionHandler implements CommandHandlerFactory,
         }
     }
 
-    private FtpReply doAUTH(BaseFtpConnection conn) {
+    private Reply doAUTH(BaseFtpConnection conn) {
         if (_ctx == null) {
-            return new FtpReply(500, "TLS not configured");
+            return new Reply(500, "TLS not configured");
         }
 
         Socket s = conn.getControlSocket();
 
         //reply success
-        conn.getControlWriter().write(new FtpReply(234,
+        conn.getControlWriter().write(new Reply(234,
                 conn.getRequest().getCommandLine() + " successfull").toString());
         conn.getControlWriter().flush();
 
@@ -199,19 +199,19 @@ public class DataConnectionHandler implements CommandHandlerFactory,
      * The argument is a single Telnet character code specifying the data
      * transfer modes described in the Section on Transmission Modes.
      */
-    private FtpReply doMODE(BaseFtpConnection conn) {
+    private Reply doMODE(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         // argument check
         if (!request.hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         if (request.getArgument().equalsIgnoreCase("S")) {
-            return FtpReply.RESPONSE_200_COMMAND_OK;
+            return Reply.RESPONSE_200_COMMAND_OK;
         }
 
-        return FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+        return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
     }
 
     /**
@@ -222,9 +222,9 @@ public class DataConnectionHandler implements CommandHandlerFactory,
      * initiate one upon receipt of a transfer command. The response to this
      * command includes the host and port address this server is listening on.
      */
-    private FtpReply doPASV(BaseFtpConnection conn) {
+    private Reply doPASV(BaseFtpConnection conn) {
         if (!_preTransfer) {
-            return new FtpReply(500,
+            return new Reply(500,
                 "You need to use a client supporting PRET (PRE Transfer) to use PASV");
         }
 
@@ -248,7 +248,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             } catch (Exception ex) {
                 logger.warn(ex);
 
-                return new FtpReply(550, ex.getMessage());
+                return new Reply(550, ex.getMessage());
             }
         } else {
             try {
@@ -259,13 +259,13 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                         _transfer.getAddress().getPort());
                 _isPasv = true;
             } catch (SlaveUnavailableException e) {
-                return FtpReply.RESPONSE_530_SLAVE_UNAVAILABLE;
+                return Reply.RESPONSE_530_SLAVE_UNAVAILABLE;
             } catch (RemoteIOException e) {
                 _preTransferRSlave.setOffline(
                     "Slave could not listen for a connection");
                 logger.error("Slave could not listen for a connection", e);
 
-                return new FtpReply(500,
+                return new Reply(500,
                     "Slave could not listen for a connection");
             }
         }
@@ -273,18 +273,18 @@ public class DataConnectionHandler implements CommandHandlerFactory,
         String addrStr = address.getAddress().getHostAddress().replace('.', ',') +
             ',' + (address.getPort() >> 8) + ',' + (address.getPort() & 0xFF);
 
-        return new FtpReply(227, "Entering Passive Mode (" + addrStr + ").");
+        return new Reply(227, "Entering Passive Mode (" + addrStr + ").");
     }
 
-    private FtpReply doPBSZ(BaseFtpConnection conn)
+    private Reply doPBSZ(BaseFtpConnection conn)
         throws UnhandledCommandException {
         String cmd = conn.getRequest().getArgument();
 
         if ((cmd == null) || !cmd.equals("0")) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
-        return FtpReply.RESPONSE_200_COMMAND_OK;
+        return Reply.RESPONSE_200_COMMAND_OK;
     }
 
     /**
@@ -303,7 +303,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
      *
      * where h1 is the high order 8 bits of the internet host address.
      */
-    private FtpReply doPORT(BaseFtpConnection conn) {
+    private Reply doPORT(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
         reset();
 
@@ -312,13 +312,13 @@ public class DataConnectionHandler implements CommandHandlerFactory,
         // argument check
         if (!request.hasArgument()) {
             //Syntax error in parameters or arguments
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument(), ",");
 
         if (st.countTokens() != 6) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         // get data server
@@ -328,7 +328,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
         try {
             clientAddr = InetAddress.getByName(dataSrvName);
         } catch (UnknownHostException ex) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         String portHostAddress = clientAddr.getHostAddress();
@@ -339,7 +339,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                 !clientHostAddress.startsWith("192.168.")) ||
                 (portHostAddress.startsWith("10.") &&
                 !clientHostAddress.startsWith("10."))) {
-            FtpReply response = new FtpReply(501);
+            Reply response = new Reply(501);
             response.addComment("==YOU'RE BEHIND A NAT ROUTER==");
             response.addComment(
                 "Configure the firewall settings of your FTP client");
@@ -361,7 +361,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             int lo = Integer.parseInt(st.nextToken());
             clientPort = (hi << 8) | lo;
         } catch (NumberFormatException ex) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
 
             //out.write(ftpStatus.getResponse(552, request, user, null));
         }
@@ -370,23 +370,23 @@ public class DataConnectionHandler implements CommandHandlerFactory,
         _portAddress = new InetSocketAddress(clientAddr, clientPort);
 
         if (portHostAddress.startsWith("127.")) {
-            return new FtpReply(200,
+            return new Reply(200,
                 "Ok, but distributed transfers won't work with local addresses");
         }
 
         //Notify the user that this is not his IP.. Good for NAT users that
         // aren't aware that their IP has changed.
         if (!clientAddr.equals(conn.getControlSocket().getInetAddress())) {
-            return new FtpReply(200,
+            return new Reply(200,
                 "FXP allowed. If you're not FXPing and set your IP to " +
                 conn.getControlSocket().getInetAddress().getHostAddress() +
                 " (usually in firewall settings)");
         }
 
-        return FtpReply.RESPONSE_200_COMMAND_OK;
+        return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    private FtpReply doPRET(BaseFtpConnection conn) {
+    private Reply doPRET(BaseFtpConnection conn) {
         reset();
 
         FtpRequest request = conn.getRequest();
@@ -397,7 +397,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             _preTransferRSlave = null;
             _preTransfer = true;
 
-            return new FtpReply(200, "OK, will use master for upcoming transfer");
+            return new Reply(200, "OK, will use master for upcoming transfer");
         } else if (cmd.equals("RETR")) {
             try {
                 LinkedRemoteFileInterface downFile = conn.getCurrentDirectory()
@@ -407,24 +407,24 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                         Transfer.TRANSFER_SENDING_DOWNLOAD, conn, downFile);
                 _preTransfer = true;
 
-                return new FtpReply(200,
+                return new Reply(200,
                     "OK, will use " + _preTransferRSlave.getName() +
                     " for upcoming transfer");
             } catch (NoAvailableSlaveException e) {
-                return FtpReply.RESPONSE_530_SLAVE_UNAVAILABLE;
+                return Reply.RESPONSE_530_SLAVE_UNAVAILABLE;
             } catch (FileNotFoundException e) {
-                return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+                return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
             }
         } else if (cmd.equals("STOR")) {
             LinkedRemoteFile.NonExistingFile nef = conn.getCurrentDirectory()
                                                        .lookupNonExistingFile(ghostRequest.getArgument());
 
             if (nef.exists()) {
-                return FtpReply.RESPONSE_530_ACCESS_DENIED;
+                return Reply.RESPONSE_530_ACCESS_DENIED;
             }
 
             if (!ListUtils.isLegalFileName(nef.getPath())) {
-                return FtpReply.RESPONSE_530_ACCESS_DENIED;
+                return Reply.RESPONSE_530_ACCESS_DENIED;
             }
 
             try {
@@ -436,21 +436,21 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                         nef.getFile());
                 _preTransfer = true;
 
-                return new FtpReply(200,
+                return new Reply(200,
                     "OK, will use " + _preTransferRSlave.getName() +
                     " for upcoming transfer");
             } catch (NoAvailableSlaveException e) {
-                return FtpReply.RESPONSE_530_SLAVE_UNAVAILABLE;
+                return Reply.RESPONSE_530_SLAVE_UNAVAILABLE;
             }
         } else {
-            return FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+            return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
         }
     }
 
-    private FtpReply doPROT(BaseFtpConnection conn)
+    private Reply doPROT(BaseFtpConnection conn)
         throws UnhandledCommandException {
         if (_ctx == null) {
-            return new FtpReply(500, "TLS not configured");
+            return new Reply(500, "TLS not configured");
         }
 
         FtpRequest req = conn.getRequest();
@@ -459,11 +459,11 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             //clear
             _encryptedDataChannel = false;
 
-            return FtpReply.RESPONSE_200_COMMAND_OK;
+            return Reply.RESPONSE_200_COMMAND_OK;
         }
 
         if (!req.hasArgument() || (req.getArgument().length() != 1)) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         switch (Character.toUpperCase(req.getArgument().charAt(0))) {
@@ -472,17 +472,17 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             //clear
             _encryptedDataChannel = false;
 
-            return FtpReply.RESPONSE_200_COMMAND_OK;
+            return Reply.RESPONSE_200_COMMAND_OK;
 
         case 'P':
 
             //private
             _encryptedDataChannel = true;
 
-            return FtpReply.RESPONSE_200_COMMAND_OK;
+            return Reply.RESPONSE_200_COMMAND_OK;
 
         default:
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
     }
 
@@ -495,12 +495,12 @@ public class DataConnectionHandler implements CommandHandlerFactory,
      * immediately followed by the appropriate FTP service command which shall
      * cause file transfer to resume.
      */
-    private FtpReply doREST(BaseFtpConnection conn) {
+    private Reply doREST(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         // argument check
         if (!request.hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         String skipNum = request.getArgument();
@@ -508,19 +508,19 @@ public class DataConnectionHandler implements CommandHandlerFactory,
         try {
             _resumePosition = Long.parseLong(skipNum);
         } catch (NumberFormatException ex) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         if (_resumePosition < 0) {
             _resumePosition = 0;
 
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
-        return FtpReply.RESPONSE_350_PENDING_FURTHER_INFORMATION;
+        return Reply.RESPONSE_350_PENDING_FURTHER_INFORMATION;
     }
 
-    private FtpReply doSITE_RESCAN(BaseFtpConnection conn) {
+    private Reply doSITE_RESCAN(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
         boolean forceRescan = (request.hasArgument() &&
             request.getArgument().equalsIgnoreCase("force"));
@@ -530,7 +530,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
         try {
             sfv = conn.getCurrentDirectory().lookupSFVFile();
         } catch (Exception e) {
-            return new FtpReply(200, "Error getting SFV File: " +
+            return new Reply(200, "Error getting SFV File: " +
                 e.getMessage());
         }
 
@@ -590,11 +590,11 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             continue;
         }
 
-        return FtpReply.RESPONSE_200_COMMAND_OK;
+        return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    private FtpReply doSITE_XDUPE(BaseFtpConnection conn) {
-        return FtpReply.RESPONSE_502_COMMAND_NOT_IMPLEMENTED;
+    private Reply doSITE_XDUPE(BaseFtpConnection conn) {
+        return Reply.RESPONSE_502_COMMAND_NOT_IMPLEMENTED;
 
         //		resetState();
         //
@@ -630,19 +630,19 @@ public class DataConnectionHandler implements CommandHandlerFactory,
      *
      * The argument is a single Telnet character code specifying file structure.
      */
-    private FtpReply doSTRU(BaseFtpConnection conn) {
+    private Reply doSTRU(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         // argument check
         if (!request.hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         if (request.getArgument().equalsIgnoreCase("F")) {
-            return FtpReply.RESPONSE_200_COMMAND_OK;
+            return Reply.RESPONSE_200_COMMAND_OK;
         }
 
-        return FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+        return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
     }
 
     /**
@@ -651,14 +651,14 @@ public class DataConnectionHandler implements CommandHandlerFactory,
      * This command is used to find out the type of operating system at the
      * server.
      */
-    private FtpReply doSYST(BaseFtpConnection conn) {
+    private Reply doSYST(BaseFtpConnection conn) {
         /*
          * String systemName = System.getProperty("os.name"); if(systemName ==
          * null) { systemName = "UNKNOWN"; } else { systemName =
          * systemName.toUpperCase(); systemName = systemName.replace(' ', '-'); }
          * String args[] = {systemName};
          */
-        return FtpReply.RESPONSE_215_SYSTEM_TYPE;
+        return Reply.RESPONSE_215_SYSTEM_TYPE;
 
         //String args[] = { "UNIX" };
         //out.write(ftpStatus.getResponse(215, request, user, args));
@@ -669,23 +669,23 @@ public class DataConnectionHandler implements CommandHandlerFactory,
      *
      * The argument specifies the representation type.
      */
-    private FtpReply doTYPE(BaseFtpConnection conn) {
+    private Reply doTYPE(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         // get type from argument
         if (!request.hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         // set it
         if (setType(request.getArgument().charAt(0))) {
-            return FtpReply.RESPONSE_200_COMMAND_OK;
+            return Reply.RESPONSE_200_COMMAND_OK;
         }
 
-        return FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+        return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
     }
 
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         String cmd = conn.getRequest().getCommand();
 
@@ -995,11 +995,11 @@ public class DataConnectionHandler implements CommandHandlerFactory,
      */
 
     //TODO add APPE support
-    private FtpReply transfer(BaseFtpConnection conn)
+    private Reply transfer(BaseFtpConnection conn)
         throws UnhandledCommandException {
         if (!_encryptedDataChannel &&
                 conn.getGlobalContext().getConfig().checkDenyDataUnencrypted(conn.getUserNull())) {
-            return new FtpReply(530, "USE SECURE DATA CONNECTION");
+            return new Reply(530, "USE SECURE DATA CONNECTION");
         }
 
         try {
@@ -1019,7 +1019,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
             // argument check
             if (!request.hasArgument()) {
-                return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+                return Reply.RESPONSE_501_SYNTAX_ERROR;
             }
 
             // get filenames
@@ -1031,13 +1031,13 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                     _transferFile = conn.getCurrentDirectory().lookupFile(request.getArgument());
 
                     if (!_transferFile.isFile()) {
-                        return new FtpReply(550, "Not a plain file");
+                        return new Reply(550, "Not a plain file");
                     }
 
                     targetDir = _transferFile.getParentFileNull();
                     targetFileName = _transferFile.getName();
                 } catch (FileNotFoundException ex) {
-                    return new FtpReply(550, ex.getMessage());
+                    return new Reply(550, ex.getMessage());
                 }
             } else if (isStor) {
                 LinkedRemoteFile.NonExistingFile ret = conn.getCurrentDirectory()
@@ -1050,7 +1050,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                 if (ret.exists()) {
                     // target exists, this could be overwrite or resume
                     //TODO overwrite & resume files.
-                    return new FtpReply(550,
+                    return new Reply(550,
                         "Requested action not taken. File exists.");
 
                     //_transferFile = targetDir;
@@ -1067,7 +1067,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                 if (!ListUtils.isLegalFileName(targetFileName) ||
                         !conn.getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(),
                             targetDir)) {
-                    return new FtpReply(553,
+                    return new Reply(553,
                         "Requested action not taken. File name not allowed.");
                 }
             } else {
@@ -1078,7 +1078,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             //check access
             if (!conn.getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(),
                         targetDir)) {
-                return new FtpReply(550,
+                return new Reply(550,
                     request.getArgument() + ": No such file");
             }
 
@@ -1087,7 +1087,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
                 if (!conn.getGlobalContext().getConfig().checkDownload(conn.getUserNull(),
                             targetDir)) {
-                    return FtpReply.RESPONSE_530_ACCESS_DENIED;
+                    return Reply.RESPONSE_530_ACCESS_DENIED;
                 }
 
                 break;
@@ -1096,7 +1096,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
                 if (!conn.getGlobalContext().getConfig().checkUpload(conn.getUserNull(),
                             targetDir)) {
-                    return FtpReply.RESPONSE_530_ACCESS_DENIED;
+                    return Reply.RESPONSE_530_ACCESS_DENIED;
                 }
 
                 break;
@@ -1110,7 +1110,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             if (isRetr) {
                 if ((conn.getUserNull().getObjectFloat(UserManagment.RATIO) != 0) &&
                         (conn.getUserNull().getCredits() < _transferFile.length())) {
-                    return new FtpReply(550, "Not enough credits.");
+                    return new Reply(550, "Not enough credits.");
                 }
             }
 
@@ -1122,7 +1122,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                 //check pretransfer
                 if (isRetr &&
                         !_transferFile.getSlaves().contains(_preTransferRSlave)) {
-                    return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
+                    return Reply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
                 }
 
                 _rslave = _preTransferRSlave;
@@ -1148,7 +1148,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                         throw new RuntimeException();
                     }
                 } catch (NoAvailableSlaveException ex) {
-                    return FtpReply.RESPONSE_530_SLAVE_UNAVAILABLE;
+                    return Reply.RESPONSE_530_SLAVE_UNAVAILABLE;
                 }
             }
 
@@ -1176,14 +1176,14 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                 } catch (Exception ex) {
                     logger.fatal("rslave=" + _rslave, ex);
 
-                    return new FtpReply(450,
+                    return new Reply(450,
                         ex.getClass().getName() + " from slave: " +
                         ex.getMessage());
                 }
             } else if (isPasv()) {
                 //_transfer is already set up by doPASV()
             } else {
-                return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
+                return Reply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
             }
 
             if (_transfer == null) {
@@ -1192,7 +1192,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
             {
                 PrintWriter out = conn.getControlWriter();
-                out.write(new FtpReply(150,
+                out.write(new Reply(150,
                         "File status okay; about to open data connection " +
                         (isRetr ? "from " : "to ") + _rslave.getName() + ".").toString());
                 out.flush();
@@ -1251,33 +1251,33 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                     }
                 }
 
-                FtpReply reply = null;
+                Reply reply = null;
 
                 if (isStor) {
                     _transferFile.delete();
                     logger.error("IOException during transfer, deleting file",
                         ex);
-                    reply = new FtpReply(426, "Transfer failed, deleting file");
+                    reply = new Reply(426, "Transfer failed, deleting file");
                 } else {
                     logger.error("IOException during transfer", ex);
-                    reply = new FtpReply(426, ex.getMessage());
+                    reply = new Reply(426, ex.getMessage());
                 }
 
                 reply.addComment(ex.getLocalizedMessage());
 
                 return reply;
             } catch (SlaveUnavailableException e) {
-                FtpReply reply = null;
+                Reply reply = null;
 
                 if (isStor) {
                     _transferFile.delete();
                     logger.error("Slave went offline during transfer, deleting file",
                         e);
-                    reply = new FtpReply(426,
+                    reply = new Reply(426,
                             "Slave went offline during transfer, deleting file");
                 } else {
                     logger.error("Slave went offline during transfer", e);
-                    reply = new FtpReply(426,
+                    reply = new Reply(426,
                             "Slave went offline during transfer");
                 }
 
@@ -1301,7 +1301,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             env.add("seconds", "" + ((float)status.getElapsed() / 1000F));
             env.add("checksum", Checksum.formatChecksum(status.getChecksum()));
 
-            FtpReply response = new FtpReply(226,
+            Reply response = new Reply(226,
                     conn.jprintf(DataConnectionHandler.class,
                         "transfer.complete", env));
 
@@ -1391,7 +1391,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
      *            altered
      */
     private boolean zipscript(boolean isRetr, boolean isStor, long checksum,
-        FtpReply response, String targetFileName,
+        Reply response, String targetFileName,
         LinkedRemoteFileInterface targetDir) {
         //zipscript
         logger.debug("Running zipscript on file " + targetFileName +

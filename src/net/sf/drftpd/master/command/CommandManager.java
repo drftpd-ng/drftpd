@@ -19,7 +19,6 @@ package net.sf.drftpd.master.command;
 
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 
 import org.drftpd.commands.*;
 
@@ -32,7 +31,7 @@ import java.util.Map;
 
 /**
  * @author mog
- * @version $Id: CommandManager.java,v 1.12 2004/10/05 02:11:22 mog Exp $
+ * @version $Id$
  */
 public class CommandManager {
     private CommandManagerFactory _factory;
@@ -68,8 +67,8 @@ public class CommandManager {
         }
     }
 
-    public FtpReply execute(BaseFtpConnection conn)
-        throws UnhandledCommandException {
+    public Reply execute(BaseFtpConnection conn)
+        throws ReplyException {
         String command = conn.getRequest().getCommand();
         CommandHandler handler = (CommandHandler) commands.get(command);
 
@@ -84,7 +83,7 @@ public class CommandManager {
             if (!conn.getGlobalContext().getConfig().checkPathPermission(command,
                         conn.getUserNull(), conn.getCurrentDirectory(), true)) {
                 //logger.debug("Blocking access to execute : SITE "+command);
-                return FtpReply.RESPONSE_530_ACCESS_DENIED;
+                return Reply.RESPONSE_530_ACCESS_DENIED;
             }
         } catch (java.lang.StringIndexOutOfBoundsException e) {
         }

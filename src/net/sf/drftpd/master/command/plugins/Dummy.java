@@ -18,12 +18,12 @@
 package net.sf.drftpd.master.command.plugins;
 
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 
 
@@ -31,7 +31,7 @@ import org.drftpd.commands.UnhandledCommandException;
  * returns 200 Command OK on all commands
  *
  * @author mog
- * @version $Id: Dummy.java,v 1.7 2004/08/03 20:13:57 zubov Exp $
+ * @version $Id$
  */
 public class Dummy implements CommandHandlerFactory {
     public Dummy() {
@@ -60,9 +60,9 @@ public class Dummy implements CommandHandlerFactory {
             _cmdmgr = initializer;
         }
 
-        public FtpReply execute(BaseFtpConnection conn)
+        public Reply execute(BaseFtpConnection conn)
             throws UnhandledCommandException {
-            return FtpReply.RESPONSE_200_COMMAND_OK;
+            return Reply.RESPONSE_200_COMMAND_OK;
         }
 
         public String[] getFeatReplies() {

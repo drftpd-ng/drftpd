@@ -19,7 +19,6 @@ package net.sf.drftpd.master.command.plugins;
 
 import net.sf.drftpd.event.ConnectionEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
@@ -30,6 +29,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 
 import org.drftpd.usermanager.NoSuchUserException;
@@ -59,30 +59,30 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
      * Syntax: IDNT ident@ip:dns
      * Returns nothing on success.
      */
-    private FtpReply doIDNT(BaseFtpConnection conn) {
+    private Reply doIDNT(BaseFtpConnection conn) {
         if (_idntAddress != null) {
             logger.error("Multiple IDNT commands");
 
-            return new FtpReply(530, "Multiple IDNT commands");
+            return new Reply(530, "Multiple IDNT commands");
         }
 
         if (!conn.getGlobalContext().getConfig().getBouncerIps().contains(conn.getClientAddress())) {
             logger.warn("IDNT from non-bnc");
 
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         String arg = conn.getRequest().getArgument();
         int pos1 = arg.indexOf('@');
 
         if (pos1 == -1) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         int pos2 = arg.indexOf(':', pos1 + 1);
 
         if (pos2 == -1) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         try {
@@ -93,7 +93,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
 
             //this will most likely cause control connection to become unsynchronized
             //but give error anyway, this error is unlikely to happen
-            return new FtpReply(501, "IDNT FAILED: " + e.getMessage());
+            return new Reply(501, "IDNT FAILED: " + e.getMessage());
         }
 
         // bnc doesn't expect any reply
@@ -107,9 +107,9 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
      * password.  This command must be immediately preceded by the
      * user name command.
      */
-    private FtpReply doPASS(BaseFtpConnection conn) {
+    private Reply doPASS(BaseFtpConnection conn) {
         if (conn.getUserNull() == null) {
-            return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
+            return Reply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
         }
 
         FtpRequest request = conn.getRequest();
@@ -124,7 +124,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
             conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new ConnectionEvent(
                     conn, "LOGIN"));
 
-            FtpReply response = new FtpReply(230,
+            Reply response = new Reply(230,
                     conn.jprintf(Login.class, "pass.success"));
 
             try {
@@ -136,7 +136,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
             return response;
         }
 
-        return new FtpReply(530, conn.jprintf(Login.class, "pass.fail"));
+        return new Reply(530, conn.jprintf(Login.class, "pass.fail"));
     }
 
     /**
@@ -145,10 +145,10 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
      * This command terminates a USER and if file transfer is not
      * in progress, the server closes the control connection.
      */
-    private FtpReply doQUIT(BaseFtpConnection conn) {
+    private Reply doQUIT(BaseFtpConnection conn) {
         conn.stop();
 
-        return new FtpReply(221, conn.jprintf(Login.class, "quit.success"));
+        return new Reply(221, conn.jprintf(Login.class, "quit.success"));
     }
 
     /**
@@ -160,14 +160,14 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
      * normally be the first command transmitted by the user after
      * the control connections are made.
      */
-    private FtpReply doUSER(BaseFtpConnection conn) {
+    private Reply doUSER(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
         conn.setAuthenticated(false);
         conn.setUser(null);
 
         // argument check
         if (!request.hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         User newUser;
@@ -175,20 +175,20 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
         try {
             newUser = conn.getGlobalContext().getUserManager().getUserByName(request.getArgument());
         } catch (NoSuchUserException ex) {
-            return new FtpReply(530, ex.getMessage());
+            return new Reply(530, ex.getMessage());
         } catch (UserFileException ex) {
             logger.warn("", ex);
 
-            return new FtpReply(530, "IOException: " + ex.getMessage());
+            return new Reply(530, "IOException: " + ex.getMessage());
         } catch (RuntimeException ex) {
             logger.error("", ex);
 
-            return new FtpReply(530, ex.getMessage());
+            return new Reply(530, ex.getMessage());
         }
 
         if (newUser.isDeleted() ||
                 !conn.getGlobalContext().getConfig().isLoginAllowed(newUser)) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         try {
@@ -200,7 +200,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
                         conn.getClientAddress(), conn.getControlSocket())))) {
                 //success
                 // max_users and num_logins restriction
-                FtpReply response = conn.getGlobalContext()
+                Reply response = conn.getGlobalContext()
                                         .getConnectionManager().canLogin(conn,
                         newUser);
 
@@ -212,20 +212,20 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
 
                 conn.setUser(newUser);
 
-                return new FtpReply(331,
+                return new Reply(331,
                     conn.jprintf(Login.class, "user.success"));
             }
         } catch (MalformedPatternException e) {
-            return new FtpReply(530, e.getMessage());
+            return new Reply(530, e.getMessage());
         }
 
         //fail
         logger.warn("Failed hostmask check");
 
-        return FtpReply.RESPONSE_530_ACCESS_DENIED;
+        return Reply.RESPONSE_530_ACCESS_DENIED;
     }
 
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         String cmd = conn.getRequest().getCommand();
 

@@ -19,25 +19,25 @@ package net.sf.drftpd.master.command.plugins;
 
 import net.sf.drftpd.event.InviteEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 
 
 /**
  * @author mog
  *
- * @version $Id: Invite.java,v 1.13 2004/11/09 03:08:25 zubov Exp $
+ * @version $Id$
  */
 public class Invite implements CommandHandlerFactory, CommandHandler {
     public Invite() {
     }
 
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         String cmd = conn.getRequest().getCommand();
 
@@ -47,7 +47,7 @@ public class Invite implements CommandHandlerFactory, CommandHandler {
         }
 
         if (!conn.getRequest().hasArgument()) {
-            return new FtpReply(501, conn.jprintf(Invite.class, "invite.usage"));
+            return new Reply(501, conn.jprintf(Invite.class, "invite.usage"));
         }
 
         String user = conn.getRequest().getArgument();
@@ -55,7 +55,7 @@ public class Invite implements CommandHandlerFactory, CommandHandler {
         InviteEvent invite = new InviteEvent(cmd, user, conn.getUserNull());
         conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(invite);
 
-        return new FtpReply(200, "Inviting " + user);
+        return new Reply(200, "Inviting " + user);
     }
 
     public String[] getFeatReplies() {

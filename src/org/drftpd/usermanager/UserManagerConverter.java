@@ -36,7 +36,7 @@ import java.util.Iterator;
  * net.sf.drftpd.master.usermanager.JSXUserManager
  *
  * @author mog
- * @version $Id: UserManagerConverter.java,v 1.5 2004/11/08 18:39:32 mog Exp $
+ * @version $Id$
  */
 public class UserManagerConverter {
     private static final Logger logger = Logger.getLogger(UserManagerConverter.class);
@@ -52,7 +52,7 @@ public class UserManagerConverter {
             }
         }
 
-        to.putAllObjects(from.getAllObjects());
+        to.putAllObjects(from.getKeyedMap());
         to.addAllMasks(from.getHostMaskCollection());
 
         to.setCredits(from.getCredits());

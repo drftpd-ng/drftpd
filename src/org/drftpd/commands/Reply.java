@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.master;
+package org.drftpd.commands;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -29,125 +29,125 @@ import java.util.Vector;
 
 /**
  * @author mog
- * @version $Id: FtpReply.java,v 1.14 2004/10/03 16:13:52 mog Exp $
+ * @version $Id: FtpReply.java 713 2004-10-03 16:13:58Z mog $
  */
-public class FtpReply implements Cloneable {
-    private static final Logger logger = Logger.getLogger(FtpReply.class.getName());
+public class Reply implements Cloneable {
+    private static final Logger logger = Logger.getLogger(Reply.class.getName());
 
     /** 150 File status okay; about to open data connection. */
     public static final String RESPONSE_150_OK = "150 File status okay; about to open data connection.\r\n";
 
     /** 200 Command okay */
-    public static final FtpReply RESPONSE_200_COMMAND_OK = new FtpReply(200,
+    public static final Reply RESPONSE_200_COMMAND_OK = new Reply(200,
             "Command okay");
 
     /** 202 Command not implemented, superfluous at this site. */
-    public static final FtpReply RESPONSE_202_COMMAND_NOT_IMPLEMENTED = new FtpReply(202,
+    public static final Reply RESPONSE_202_COMMAND_NOT_IMPLEMENTED = new Reply(202,
             "Command not implemented, superfluous at this site.");
 
     /** 215 NAME system type. */
-    public static final FtpReply RESPONSE_215_SYSTEM_TYPE = new FtpReply(215,
+    public static final Reply RESPONSE_215_SYSTEM_TYPE = new Reply(215,
             "UNIX system type.");
 
     /** 221 Service closing control connection. */
-    public static final FtpReply RESPONSE_221_SERVICE_CLOSING = new FtpReply(221,
+    public static final Reply RESPONSE_221_SERVICE_CLOSING = new Reply(221,
             "Service closing control connection.");
 
     /** 226 Closing data connection */
-    public static final FtpReply RESPONSE_226_CLOSING_DATA_CONNECTION = new FtpReply(226,
+    public static final Reply RESPONSE_226_CLOSING_DATA_CONNECTION = new Reply(226,
             "Closing data connection");
 
     /** 230 User logged in, proceed. */
-    public static final FtpReply RESPONSE_230_USER_LOGGED_IN = new FtpReply(230,
+    public static final Reply RESPONSE_230_USER_LOGGED_IN = new Reply(230,
             "User logged in, proceed.");
 
     /** 250 Requested file action okay, completed. */
-    public static final FtpReply RESPONSE_250_ACTION_OKAY = new FtpReply(250,
+    public static final Reply RESPONSE_250_ACTION_OKAY = new Reply(250,
             "Requested file action okay, completed.");
 
     /** 331 User name okay, need password. */
-    public static final FtpReply RESPONSE_331_USERNAME_OK_NEED_PASS = new FtpReply(331,
+    public static final Reply RESPONSE_331_USERNAME_OK_NEED_PASS = new Reply(331,
             "User name okay, need password.");
 
     /** 350 Requested file action pending further information. */
-    public static final FtpReply RESPONSE_350_PENDING_FURTHER_INFORMATION = new FtpReply(350,
+    public static final Reply RESPONSE_350_PENDING_FURTHER_INFORMATION = new Reply(350,
             "Requested file action pending further information.");
 
     /** 425 Can't open data connection. */
     public static final String RESPONSE_425_CANT_OPEN_DATA_CONNECTION = "425 Can't open data connection.\r\n";
 
     /** 426 Connection closed; transfer aborted. */
-    public static final FtpReply RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED =
-        new FtpReply(426, "Connection closed; transfer aborted.");
+    public static final Reply RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED =
+        new Reply(426, "Connection closed; transfer aborted.");
 
     /** 450 Requested file action not taken. */
-    public static final FtpReply RESPONSE_450_REQUESTED_ACTION_NOT_TAKEN = new FtpReply(450,
+    public static final Reply RESPONSE_450_REQUESTED_ACTION_NOT_TAKEN = new Reply(450,
             "Requested file action not taken.");
 
     /** 450 No transfer-slave(s) available
      * author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
      */
-    public static final FtpReply RESPONSE_450_SLAVE_UNAVAILABLE = new FtpReply(450,
+    public static final Reply RESPONSE_450_SLAVE_UNAVAILABLE = new Reply(450,
             "No transfer-slave(s) available");
 
     /** 500 Syntax error, command unrecognized. */
-    public static final FtpReply RESPONSE_500_SYNTAX_ERROR = new FtpReply(500,
+    public static final Reply RESPONSE_500_SYNTAX_ERROR = new Reply(500,
             "Syntax error, command unrecognized.");
 
     /** 501 Syntax error in parameters or arguments */
-    public static final FtpReply RESPONSE_501_SYNTAX_ERROR = new FtpReply(501,
+    public static final Reply RESPONSE_501_SYNTAX_ERROR = new Reply(501,
             "Syntax error in parameters or arguments");
 
     /** 502 Command not implemented. */
-    public static final FtpReply RESPONSE_502_COMMAND_NOT_IMPLEMENTED = new FtpReply(502,
+    public static final Reply RESPONSE_502_COMMAND_NOT_IMPLEMENTED = new Reply(502,
             "Command not implemented.");
 
     /** 503 Bad sequence of commands. */
-    public static final FtpReply RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS = new FtpReply(503,
+    public static final Reply RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS = new Reply(503,
             "Bad sequence of commands.");
 
     /** 504 Command not implemented for that parameter. */
-    public static final FtpReply RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM = new FtpReply(504,
+    public static final Reply RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM = new Reply(504,
             "Command not implemented for that parameter.");
 
     /** 530 Access denied */
-    public static final FtpReply RESPONSE_530_ACCESS_DENIED = new FtpReply(530,
+    public static final Reply RESPONSE_530_ACCESS_DENIED = new Reply(530,
             "Access denied");
 
     /** 530 Not logged in. */
-    public static final FtpReply RESPONSE_530_NOT_LOGGED_IN = new FtpReply(530,
+    public static final Reply RESPONSE_530_NOT_LOGGED_IN = new Reply(530,
             "Not logged in.");
-    public static final FtpReply RESPONSE_530_SLAVE_UNAVAILABLE = new FtpReply(530,
+    public static final Reply RESPONSE_530_SLAVE_UNAVAILABLE = new Reply(530,
             "No transfer-slave(s) available");
 
     /** 550 Requested action not taken. File unavailable.
      * File unavailable (e.g., file not found, no access).
      */
-    public static final FtpReply RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN = new FtpReply(550,
+    public static final Reply RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN = new Reply(550,
             "Requested action not taken. File unavailable.");
 
     /** 553 Requested action not taken.
      * File name not allowed.
      */
-    public static final FtpReply RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN = new FtpReply(553,
+    public static final Reply RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN = new Reply(553,
             "Requested action not taken.");
     protected int _code;
-    protected Vector _lines = new Vector();
+    protected Vector<String> _lines = new Vector<String>();
     protected String _message;
 
-    public FtpReply() {
+    public Reply() {
     }
 
-    public FtpReply(int code) {
+    public Reply(int code) {
         setCode(code);
     }
 
-    public FtpReply(int code, String response) {
+    public Reply(int code, String response) {
         setCode(code);
         setMessage(response);
     }
 
-    public FtpReply addComment(BufferedReader in) throws IOException {
+    public Reply addComment(BufferedReader in) throws IOException {
         String line;
 
         while ((line = in.readLine()) != null) { //throws IOException
@@ -157,7 +157,7 @@ public class FtpReply implements Cloneable {
         return this;
     }
 
-    public FtpReply addComment(Object response) {
+    public Reply addComment(Object response) {
         String resp = String.valueOf(response);
 
         if (resp.indexOf('\n') != -1) {
@@ -169,13 +169,12 @@ public class FtpReply implements Cloneable {
         } else {
             _lines.add(resp);
         }
-
         return this;
     }
 
     public Object clone() {
         try {
-            FtpReply r = (FtpReply) super.clone();
+            Reply r = (Reply) super.clone();
             r._lines = (Vector) _lines.clone();
 
             return r;
@@ -193,6 +192,7 @@ public class FtpReply implements Cloneable {
     }
 
     public void setMessage(String response) {
+    	if(response == null) response = "No text";
         int pos = response.indexOf('\n');
 
         if (pos != -1) {

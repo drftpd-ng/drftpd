@@ -20,7 +20,6 @@ package org.drftpd.commands;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -28,7 +27,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 
-import org.drftpd.usermanager.Key;
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.usermanager.NoSuchUserException;
 
 import java.io.IOException;
@@ -38,7 +37,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Request.java,v 1.1 2004/11/05 13:27:21 mog Exp $
+ * @version $Id$
  */
 public class Request implements CommandHandlerFactory, CommandHandler {
     public static final Key REQUESTSFILLED = new Key(Request.class,
@@ -49,9 +48,9 @@ public class Request implements CommandHandlerFactory, CommandHandler {
     private static final Logger logger = Logger.getLogger(Request.class);
     private static final String REQPREFIX = "REQUEST-by.";
 
-    private FtpReply doSITE_REQFILLED(BaseFtpConnection conn) {
+    private Reply doSITE_REQFILLED(BaseFtpConnection conn) {
         if (!conn.getRequest().hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         LinkedRemoteFileInterface currdir = conn.getCurrentDirectory();
@@ -78,7 +77,7 @@ public class Request implements CommandHandlerFactory, CommandHandler {
                 } catch (IOException e) {
                     logger.warn("", e);
 
-                    return new FtpReply(200, e.getMessage());
+                    return new Reply(200, e.getMessage());
                 }
 
                 //if (conn.getConfig().checkDirLog(conn.getUserNull(), file)) {
@@ -94,22 +93,22 @@ public class Request implements CommandHandlerFactory, CommandHandler {
                     e.printStackTrace();
                 }
 
-                return new FtpReply(200,
+                return new Reply(200,
                     "OK, renamed " + myreqname + " to " + filledname);
             }
         }
 
-        return new FtpReply(200, "Couldn't find a request named " + reqname);
+        return new Reply(200, "Couldn't find a request named " + reqname);
     }
 
-    private FtpReply doSITE_REQUEST(BaseFtpConnection conn) {
+    private Reply doSITE_REQUEST(BaseFtpConnection conn) {
         if (!conn.getGlobalContext().getConfig().checkPathPermission("request",
                     conn.getUserNull(), conn.getCurrentDirectory())) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!conn.getRequest().hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         String createdDirName = REQPREFIX + conn.getUserNull().getUsername() +
@@ -129,15 +128,15 @@ public class Request implements CommandHandlerFactory, CommandHandler {
             conn.getUserNull().incrementObjectLong(REQUESTS);
 
             //conn.getUser().addRequests();
-            return new FtpReply(257, "\"" + createdDir.getPath() +
+            return new Reply(257, "\"" + createdDir.getPath() +
                 "\" created.");
         } catch (FileExistsException ex) {
-            return new FtpReply(550,
+            return new Reply(550,
                 "directory " + createdDirName + " already exists");
         }
     }
 
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         String cmd = conn.getRequest().getCommand();
 

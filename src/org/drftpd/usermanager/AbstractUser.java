@@ -16,6 +16,13 @@
  */
 package org.drftpd.usermanager;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMaskCollection;
 import net.sf.drftpd.event.UserEvent;
@@ -24,16 +31,8 @@ import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
+import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.master.ConnectionManager;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -46,18 +45,23 @@ import java.util.Map;
 public abstract class AbstractUser extends User {
     private static final Logger logger = Logger.getLogger(AbstractUser.class);
     public static final int P_ALL = 0;
-    public static final int P_MONTH = 1;
-    public static final int P_WEEK = 2;
     public static final int P_DAY = 3;
-    public static final int P_SIZE = 4;
     public static final int P_MAX = 3;
+    public static final int P_MONTH = 1;
+    public static final int P_SIZE = 4;
+    public static final int P_WEEK = 2;
+
+    public static void checkValidGroupName(String group) {
+        if ((group.indexOf(' ') != -1) || (group.indexOf(';') != -1)) {
+            throw new IllegalArgumentException(
+                "Groups cannot contain space or other illegal characters");
+        }
+    }
     private String _comment;
     protected long _created;
     private long _credits;
-    protected HashMap _data = new HashMap();
-
-    //private long _downloadedBytes, _downloadedBytes[P_DAY],
-    // _downloadedBytes[P_MONTH], _downloadedBytes[P_WEEK];
+    protected KeyedMap _data = new KeyedMap();
+   
     private long[] _downloadedBytes = new long[P_SIZE];
 
     //private int _downloadedFiles, _downloadedFiles[P_DAY],
@@ -68,9 +72,9 @@ public abstract class AbstractUser extends User {
     //protected long _downloadedMilliSeconds,
     // _downloadedMilliSeconds[P_DAY],_downloadedMilliSeconds[P_MONTH],_downloadedMilliSeconds[P_WEEK];
     private String _group = "nogroup";
+    private short _groupLeechSlots;
     private ArrayList _groups = new ArrayList();
     private short _groupSlots;
-    private short _groupLeechSlots;
     private HostMaskCollection _hostMasks = new HostMaskCollection();
     private int _idleTime = 0; // no limit
     private long _lastAccessTime = 0;
@@ -126,29 +130,6 @@ public abstract class AbstractUser extends User {
     public AbstractUser(String username) {
         _username = username;
         _created = System.currentTimeMillis();
-    }
-
-    public Map getAllObjects() {
-        return Collections.unmodifiableMap(_data);
-    }
-
-    public void putAllObjects(Map m) {
-        _data.putAll(m);
-    }
-
-    public int getObjectInt(Key key) {
-        try {
-            return ((Integer) getObject(key)).intValue();
-        } catch (KeyNotFoundException e) {
-            return 0;
-        }
-    }
-
-    public static void checkValidGroupName(String group) {
-        if ((group.indexOf(' ') != -1) || (group.indexOf(';') != -1)) {
-            throw new IllegalArgumentException(
-                "Groups cannot contain space or other illegal characters");
-        }
     }
 
     public void addAllMasks(HostMaskCollection hostMaskCollection) {
@@ -217,6 +198,11 @@ public abstract class AbstractUser extends User {
         return (obj instanceof User)
         ? ((User) obj).getUsername().equals(getUsername()) : false;
     }
+
+    /**
+     * To avoid casting to AbstractUserManager
+     */
+    public abstract AbstractUserManager getAbstractUserManager();
 
     public long getCredits() {
         return _credits;
@@ -290,6 +276,10 @@ public abstract class AbstractUser extends User {
         return _downloadedFiles[P_WEEK];
     }
 
+    public long getDownloadedMillisecondsWeek() {
+        return _downloadedMilliSeconds[P_WEEK];
+    }
+
     public long getDownloadedTime() {
         return _downloadedMilliSeconds[P_ALL];
     }
@@ -310,10 +300,6 @@ public abstract class AbstractUser extends User {
         }
 
         throw new RuntimeException();
-    }
-
-    public long getDownloadedMillisecondsWeek() {
-        return _downloadedMilliSeconds[P_WEEK];
     }
 
     public short getGroupLeechSlots() {
@@ -344,6 +330,10 @@ public abstract class AbstractUser extends User {
         return _idleTime;
     }
 
+    public KeyedMap getKeyedMap() {
+    	return _data;
+    }
+
     public long getLastAccessTime() {
         return _lastAccessTime;
     }
@@ -364,55 +354,6 @@ public abstract class AbstractUser extends User {
         return _maxLoginsPerIP;
     }
 
-    public Object getObject(Key key) throws KeyNotFoundException {
-        if (_data == null) {
-            _data = new HashMap();
-        }
-
-        Object ret = _data.get(key.toString());
-
-        if (ret == null) {
-            throw new KeyNotFoundException();
-        }
-
-        return ret;
-    }
-
-    public Object getObject(Key key, Object def) {
-        try {
-            return getObject(key);
-        } catch (KeyNotFoundException e) {
-            return def;
-        }
-    }
-
-    public String getObjectString(Key key) {
-        return (String) getObject(key, "");
-    }
-
-    public long getObjectLong(Key key) {
-        return ((Long) getObject(key, new Long(0))).longValue();
-    }
-
-    //    public int getRacesLost() {
-    //        return _racesLost;
-    //    }
-    //
-    //    public int getRacesParticipated() {
-    //        return _racesParticipated;
-    //    }
-    //
-    //    public int getRacesWon() {
-    //        return _racesWon;
-    //    }
-
-    /**
-     * @param ratio
-     * @return
-     */
-    public float getObjectFloat(Key key) {
-        return ((Float) getObject(key, new Float(0))).floatValue();
-    }
 
     //    public int getRequests() {
     //        return _requests;
@@ -525,46 +466,6 @@ public abstract class AbstractUser extends User {
         return getUsername().hashCode();
     }
 
-    public void incrementObjectLong(Key key, long amount) {
-        if (!key.getType().equals(Long.class)) {
-            throw new ClassCastException();
-        }
-
-        synchronized (_data) {
-            Long i;
-
-            try {
-                i = (Long) getObject(key);
-            } catch (KeyNotFoundException e) {
-                i = new Long(0);
-            }
-
-            putObject(key, new Long(i.longValue() + amount));
-        }
-    }
-
-    public void incrementObjectInt(Key key, int amount) {
-        if (!key.getType().equals(Integer.class)) {
-            throw new ClassCastException();
-        }
-
-        synchronized (_data) {
-            Integer i;
-
-            try {
-                i = (Integer) getObject(key);
-            } catch (KeyNotFoundException e) {
-                i = new Integer(0);
-            }
-
-            putObject(key, new Integer(i.intValue() + amount));
-        }
-    }
-
-    public void incrementObjectLong(Key key) {
-        incrementObjectInt(key, 1);
-    }
-
     public boolean isAdmin() {
         return isMemberOf("siteop");
     }
@@ -606,18 +507,6 @@ public abstract class AbstractUser extends User {
     public void logout() {
     }
 
-    public void putObject(Key key, Object obj) {
-        if (obj == null) {
-            throw new NullPointerException(key + " - " + obj);
-        }
-
-        if (!key.getType().isInstance(obj)) {
-            throw new ClassCastException();
-        }
-
-        _data.put(key.getOwner().getName() + '@' + key.getKey(), obj);
-    }
-
     public void removeIpMask(String mask) throws NoSuchFieldException {
         if (!_hostMasks.removeMask(mask)) {
             throw new NoSuchFieldException("User has no such ip mask");
@@ -637,11 +526,6 @@ public abstract class AbstractUser extends User {
         _username = username;
         commit(); // throws IOException
     }
-
-    /**
-     * To avoid casting to AbstractUserManager
-     */
-    public abstract AbstractUserManager getAbstractUserManager();
 
     public void reset(ConnectionManager cmgr) throws UserFileException {
         reset(cmgr, Calendar.getInstance());
@@ -828,6 +712,22 @@ public abstract class AbstractUser extends User {
         _downloadedFiles[P_WEEK] = files;
     }
 
+    public void setDownloadedSeconds(int millis) {
+        _downloadedMilliSeconds[P_ALL] = millis;
+    }
+
+    public void setDownloadedSecondsDay(int millis) {
+        _downloadedMilliSeconds[P_DAY] = millis;
+    }
+
+    public void setDownloadedSecondsMonth(int millis) {
+        _downloadedMilliSeconds[P_MONTH] = millis;
+    }
+
+    public void setDownloadedSecondsWeek(int millis) {
+        _downloadedMilliSeconds[P_WEEK] = millis;
+    }
+
     public void setDownloadedTime(long millis) {
         _downloadedMilliSeconds[P_ALL] = millis;
     }
@@ -870,28 +770,9 @@ public abstract class AbstractUser extends User {
         _downloadedMilliSeconds[P_WEEK] = millis;
     }
 
-    public void setDownloadedSeconds(int millis) {
-        _downloadedMilliSeconds[P_ALL] = millis;
-    }
-
-    public void setDownloadedSecondsDay(int millis) {
-        _downloadedMilliSeconds[P_DAY] = millis;
-    }
-
-    public void setDownloadedSecondsMonth(int millis) {
-        _downloadedMilliSeconds[P_MONTH] = millis;
-    }
-
-    public void setDownloadedSecondsWeek(int millis) {
-        _downloadedMilliSeconds[P_WEEK] = millis;
-    }
-
     public void setGroup(String g) {
         checkValidGroupName(g);
         _group = g;
-    }
-
-    public void setLastNuked(long lastNuked) {
     }
 
     public void setGroupLeechSlots(short s) {
@@ -908,6 +789,9 @@ public abstract class AbstractUser extends User {
 
     public void setLastAccessTime(long lastAccessTime) {
         _lastAccessTime = lastAccessTime;
+    }
+
+    public void setLastNuked(long lastNuked) {
     }
 
     public void setLogins(int logins) {
@@ -1006,8 +890,16 @@ public abstract class AbstractUser extends User {
         _uploadedFiles[P_WEEK] = files;
     }
 
+    public void setUploadedTime(int millis) {
+        _uploadedMilliSeconds[P_ALL] = millis;
+    }
+
     public void setUploadedTime(long millis) {
         _uploadedMilliSeconds[P_ALL] = millis;
+    }
+
+    public void setUploadedTimeDay(int millis) {
+        _uploadedMilliSeconds[P_DAY] = millis;
     }
 
     public void setUploadedTimeDay(long millis) {
@@ -1040,27 +932,19 @@ public abstract class AbstractUser extends User {
         throw new RuntimeException();
     }
 
-    public void setUploadedTimeMonth(long millis) {
-        _uploadedMilliSeconds[P_MONTH] = millis;
-    }
-
-    public void setUploadedTimeWeek(long millis) {
-        _uploadedMilliSeconds[P_WEEK] = millis;
-    }
-
-    public void setUploadedTime(int millis) {
-        _uploadedMilliSeconds[P_ALL] = millis;
-    }
-
-    public void setUploadedTimeDay(int millis) {
-        _uploadedMilliSeconds[P_DAY] = millis;
-    }
-
     public void setUploadedTimeMonth(int millis) {
         _uploadedMilliSeconds[P_MONTH] = millis;
     }
 
+    public void setUploadedTimeMonth(long millis) {
+        _uploadedMilliSeconds[P_MONTH] = millis;
+    }
+
     public void setUploadedTimeWeek(int millis) {
+        _uploadedMilliSeconds[P_WEEK] = millis;
+    }
+
+    public void setUploadedTimeWeek(long millis) {
         _uploadedMilliSeconds[P_WEEK] = millis;
     }
 
@@ -1147,4 +1031,5 @@ public abstract class AbstractUser extends User {
         _uploadedMilliSeconds[P_WEEK] += millis;
         _uploadedMilliSeconds[P_MONTH] += millis;
     }
+
 }

@@ -177,7 +177,7 @@ public class Transfer {
         String filename, long offset) throws IOException {
         try {
             _slave.getRoots().getFile(dirname + File.separator + filename);
-            throw new FileExistsException("File exists");
+            throw new FileExistsException("File "+dirname+File.separatorChar+filename+" exists");
         } catch (FileNotFoundException ex) {
         }
 

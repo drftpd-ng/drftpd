@@ -22,13 +22,13 @@ import junit.framework.TestSuite;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
+import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 
 import org.drftpd.tests.DummyBaseFtpConnection;
@@ -51,7 +51,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: LoginTest.java,v 1.15 2004/11/08 18:39:25 mog Exp $
+ * @version $Id$
  */
 public class LoginTest extends TestCase {
     private static final Logger logger = Logger.getLogger(LoginTest.class);
@@ -81,7 +81,7 @@ public class LoginTest extends TestCase {
         gctx.setUserManager(_userManager);
 
         DummyConnectionManager cm = new DummyConnectionManager() {
-                public FtpReply canLogin(BaseFtpConnection baseconn, User user) {
+                public Reply canLogin(BaseFtpConnection baseconn, User user) {
                     return null;
                 }
             };
@@ -103,7 +103,7 @@ public class LoginTest extends TestCase {
         internalSetUp();
         _conn.setClientAddress(InetAddress.getByName("127.0.0.1"));
 
-        FtpReply reply;
+        Reply reply;
         _conn.setRequest(new FtpRequest("USER myuser"));
         reply = _login.execute(_conn);
         assertEquals(530, reply.getCode());
@@ -127,7 +127,7 @@ public class LoginTest extends TestCase {
         _conn.setClientAddress(InetAddress.getByName("10.0.0.2"));
         _conn.setRequest(new FtpRequest("IDNT user@127.0.0.1:localhost"));
 
-        FtpReply reply;
+        Reply reply;
         reply = _login.execute(_conn);
         assertNotNull(reply);
         assertEquals(530, reply.getCode());

@@ -18,12 +18,12 @@
 package net.sf.drftpd.master.command.plugins;
 
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 
 import org.drftpd.slave.Slave;
@@ -35,7 +35,7 @@ import java.util.Iterator;
 
 
 /**
- * @version $Id: Misc.java,v 1.12 2004/11/03 16:46:40 mog Exp $
+ * @version $Id$
  */
 public class Misc implements CommandHandlerFactory, CommandHandler {
     /**
@@ -50,12 +50,12 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
      * Current implementation does not do anything. As here data
      * transfers are not multi-threaded.
      */
-    private FtpReply doABOR(BaseFtpConnection conn) {
-        return FtpReply.RESPONSE_226_CLOSING_DATA_CONNECTION;
+    private Reply doABOR(BaseFtpConnection conn) {
+        return Reply.RESPONSE_226_CLOSING_DATA_CONNECTION;
     }
 
     // LIST;NLST;RETR;STOR
-    private FtpReply doFEAT(BaseFtpConnection conn) {
+    private Reply doFEAT(BaseFtpConnection conn) {
         PrintWriter out = conn.getControlWriter();
         out.print("211-Extensions supported:\r\n");
 
@@ -124,31 +124,31 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
     //		out.write(ftpStatus.getResponse(214, tempRequest, user, args));
     //		return;
     //	}
-    private FtpReply doSITE_STAT(BaseFtpConnection conn) {
+    private Reply doSITE_STAT(BaseFtpConnection conn) {
         if (conn.getRequest().hasArgument()) {
-            return FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+            return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
         }
 
-        FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
 
         response.addComment(conn.status());
 
         return response;
     }
 
-    private FtpReply doSITE_TIME(BaseFtpConnection conn) {
+    private Reply doSITE_TIME(BaseFtpConnection conn) {
         if (conn.getRequest().hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
-        return new FtpReply(200, "Server time is: " + new Date());
+        return new Reply(200, "Server time is: " + new Date());
     }
 
-    private FtpReply doSITE_VERS(BaseFtpConnection conn) {
-        return new FtpReply(200, Slave.VERSION);
+    private Reply doSITE_VERS(BaseFtpConnection conn) {
+        return new Reply(200, Slave.VERSION);
     }
 
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         String cmd = conn.getRequest().getCommand();
 

@@ -22,7 +22,6 @@ import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
@@ -42,6 +41,7 @@ import org.drftpd.Bytes;
 import org.drftpd.SFVFile;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.commands.UserManagment;
 import org.drftpd.id3.ID3Tag;
@@ -70,7 +70,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.46 2004/11/15 01:12:11 mog Exp $
+ * @version $Id$
  */
 public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
     private final static SimpleDateFormat DATE_FMT = new SimpleDateFormat(
@@ -91,14 +91,14 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
      * syntaxes for naming the parent directory.  The reply codes
      * shall be identical to the reply codes of CWD.
      */
-    private FtpReply doCDUP(BaseFtpConnection conn) {
+    private Reply doCDUP(BaseFtpConnection conn) {
         // change directory
         try {
             conn.setCurrentDirectory(conn.getCurrentDirectory().getParentFile());
         } catch (FileNotFoundException ex) {
         }
 
-        return new FtpReply(200,
+        return new Reply(200,
             "Directory changed to " + conn.getCurrentDirectory().getPath());
     }
 
@@ -111,11 +111,11 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
      * parameters are similarly unchanged.  The argument is a
      * pathname specifying a directory.
      */
-    private FtpReply doCWD(BaseFtpConnection conn) {
+    private Reply doCWD(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!request.hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         LinkedRemoteFile newCurrentDirectory;
@@ -123,24 +123,24 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         try {
             newCurrentDirectory = conn.getCurrentDirectory().lookupFile(request.getArgument());
         } catch (FileNotFoundException ex) {
-            return new FtpReply(550, ex.getMessage());
+            return new Reply(550, ex.getMessage());
         }
 
         if (!conn.getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(),
                     newCurrentDirectory)) {
-            return new FtpReply(550, request.getArgument() + ": Not found");
+            return new Reply(550, request.getArgument() + ": Not found");
 
             // reply identical to FileNotFoundException.getMessage() above
         }
 
         if (!newCurrentDirectory.isDirectory()) {
-            return new FtpReply(550, request.getArgument() +
+            return new Reply(550, request.getArgument() +
                 ": Not a directory");
         }
 
         conn.setCurrentDirectory(newCurrentDirectory);
 
-        FtpReply response = new FtpReply(250,
+        Reply response = new Reply(250,
                 "Directory changed to " + newCurrentDirectory.getPath());
         conn.getGlobalContext().getConfig().directoryMessage(response,
             conn.getUserNull(), newCurrentDirectory);
@@ -360,13 +360,13 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
      * This command causes the file specified in the pathname to be
      * deleted at the server site.
      */
-    private FtpReply doDELE(BaseFtpConnection conn) {
+    private Reply doDELE(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         // argument check
         if (!request.hasArgument()) {
             //out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         // get filenames
@@ -377,21 +377,21 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
             //requestedFile = getVirtualDirectory().lookupFile(fileName);
             requestedFile = conn.getCurrentDirectory().lookupFile(fileName);
         } catch (FileNotFoundException ex) {
-            return new FtpReply(550, "File not found: " + ex.getMessage());
+            return new Reply(550, "File not found: " + ex.getMessage());
         }
 
         // check permission
         if (requestedFile.getUsername().equals(conn.getUserNull().getUsername())) {
             if (!conn.getGlobalContext().getConfig().checkDeleteOwn(conn.getUserNull(),
                         requestedFile)) {
-                return FtpReply.RESPONSE_530_ACCESS_DENIED;
+                return Reply.RESPONSE_530_ACCESS_DENIED;
             }
         } else if (!conn.getGlobalContext().getConfig().checkDelete(conn.getUserNull(),
                     requestedFile)) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        FtpReply reply = (FtpReply) FtpReply.RESPONSE_250_ACTION_OKAY.clone();
+        Reply reply = (Reply) Reply.RESPONSE_250_ACTION_OKAY.clone();
 
         User uploader;
 
@@ -418,12 +418,12 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
      *
      * Returns the date and time of when a file was modified.
      */
-    private FtpReply doMDTM(BaseFtpConnection conn) {
+    private Reply doMDTM(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         // argument check
         if (!request.hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         // get filenames
@@ -433,7 +433,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         try {
             reqFile = conn.getCurrentDirectory().lookupFile(fileName);
         } catch (FileNotFoundException ex) {
-            return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+            return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
         }
 
         //fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
@@ -442,7 +442,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         //File reqFile = new File(physicalName);
         // now print date
         //if (reqFile.exists()) {
-        return new FtpReply(213,
+        return new Reply(213,
             DATE_FMT.format(new Date(reqFile.lastModified())));
 
         //out.print(ftpStatus.getResponse(213, request, user, args));
@@ -464,16 +464,16 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
      *                   257
      *                   500, 501, 502, 421, 530, 550
      */
-    private FtpReply doMKD(BaseFtpConnection conn) {
+    private Reply doMKD(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         // argument check
         if (!request.hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         if (!conn.getGlobalContext().getSlaveManager().hasAvailableSlaves()) {
-            return FtpReply.RESPONSE_450_SLAVE_UNAVAILABLE;
+            return Reply.RESPONSE_450_SLAVE_UNAVAILABLE;
         }
 
         LinkedRemoteFile.NonExistingFile ret = conn.getCurrentDirectory()
@@ -481,7 +481,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         LinkedRemoteFile dir = ret.getFile();
 
         if (ret.exists()) {
-            return new FtpReply(550,
+            return new Reply(550,
                 "Requested action not taken. " + request.getArgument() +
                 " already exists");
         }
@@ -489,12 +489,12 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         String createdDirName = conn.getGlobalContext().getConfig().getDirName(ret.getPath());
 
         if (!ListUtils.isLegalFileName(createdDirName)) {
-            return FtpReply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
+            return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
         }
 
         if (!conn.getGlobalContext().getConfig().checkMakeDir(conn.getUserNull(),
                     dir)) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         try {
@@ -505,10 +505,10 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
             conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
                     conn, "MKD", createdDir));
 
-            return new FtpReply(257, "\"" + createdDir.getPath() +
+            return new Reply(257, "\"" + createdDir.getPath() +
                 "\" created.");
         } catch (FileExistsException ex) {
-            return new FtpReply(550,
+            return new Reply(550,
                 "directory " + createdDirName + " already exists");
         }
     }
@@ -519,8 +519,8 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
      * This command causes the name of the current working
      * directory to be returned in the reply.
      */
-    private FtpReply doPWD(BaseFtpConnection conn) {
-        return new FtpReply(257,
+    private Reply doPWD(BaseFtpConnection conn) {
+        return new Reply(257,
             "\"" + conn.getCurrentDirectory().getPath() +
             "\" is current directory");
     }
@@ -533,12 +533,12 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
      * or as a subdirectory of the current working directory (if
      * the pathname is relative).
      */
-    private FtpReply doRMD(BaseFtpConnection conn) {
+    private Reply doRMD(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         // argument check
         if (!request.hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         // get file names
@@ -548,25 +548,25 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         try {
             requestedFile = conn.getCurrentDirectory().lookupFile(fileName);
         } catch (FileNotFoundException e) {
-            return new FtpReply(550, fileName + ": " + e.getMessage());
+            return new Reply(550, fileName + ": " + e.getMessage());
         }
 
         if (requestedFile.getUsername().equals(conn.getUserNull().getUsername())) {
             if (!conn.getGlobalContext().getConfig().checkDeleteOwn(conn.getUserNull(),
                         requestedFile)) {
-                return FtpReply.RESPONSE_530_ACCESS_DENIED;
+                return Reply.RESPONSE_530_ACCESS_DENIED;
             }
         } else if (!conn.getGlobalContext().getConfig().checkDelete(conn.getUserNull(),
                     requestedFile)) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!requestedFile.isDirectory()) {
-            return new FtpReply(550, fileName + ": Not a directory");
+            return new Reply(550, fileName + ": Not a directory");
         }
 
         if (requestedFile.dirSize() != 0) {
-            return new FtpReply(550, fileName + ": Directory not empty");
+            return new Reply(550, fileName + ": Directory not empty");
         }
 
         // now delete
@@ -577,7 +577,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         //}
         requestedFile.delete();
 
-        return FtpReply.RESPONSE_250_ACTION_OKAY;
+        return Reply.RESPONSE_250_ACTION_OKAY;
     }
 
     /**
@@ -593,12 +593,12 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
                               350
 
      */
-    private FtpReply doRNFR(BaseFtpConnection conn) {
+    private Reply doRNFR(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         // argument check
         if (!request.hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         // set state variable
@@ -609,21 +609,21 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         try {
             _renameFrom = conn.getCurrentDirectory().lookupFile(request.getArgument());
         } catch (FileNotFoundException e) {
-            return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+            return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
         }
 
         //check permission
         if (_renameFrom.getUsername().equals(conn.getUserNull().getUsername())) {
             if (!conn.getGlobalContext().getConfig().checkRenameOwn(conn.getUserNull(),
                         _renameFrom)) {
-                return FtpReply.RESPONSE_530_ACCESS_DENIED;
+                return Reply.RESPONSE_530_ACCESS_DENIED;
             }
         } else if (!conn.getGlobalContext().getConfig().checkRename(conn.getUserNull(),
                     _renameFrom)) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        return new FtpReply(350, "File exists, ready for destination name");
+        return new Reply(350, "File exists, ready for destination name");
     }
 
     /**
@@ -634,17 +634,17 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
      * command.  Together the two commands cause a file to be
      * renamed.
      */
-    private FtpReply doRNTO(BaseFtpConnection conn) {
+    private Reply doRNTO(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         // argument check
         if (!request.hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         // set state variables
         if (_renameFrom == null) {
-            return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
+            return Reply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
         }
 
         NonExistingFile ret = conn.getCurrentDirectory().lookupNonExistingFile(request.getArgument());
@@ -660,11 +660,11 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         if (_renameFrom.getUsername().equals(conn.getUserNull().getUsername())) {
             if (!conn.getGlobalContext().getConfig().checkRenameOwn(conn.getUserNull(),
                         toDir)) {
-                return FtpReply.RESPONSE_530_ACCESS_DENIED;
+                return Reply.RESPONSE_530_ACCESS_DENIED;
             }
         } else if (!conn.getGlobalContext().getConfig().checkRename(conn.getUserNull(),
                     toDir)) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         try {
@@ -672,19 +672,19 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         } catch (FileNotFoundException e) {
             logger.info("FileNotFoundException on renameTo()", e);
 
-            return new FtpReply(500, "FileNotFound - " + e.getMessage());
+            return new Reply(500, "FileNotFound - " + e.getMessage());
         } catch (IOException e) {
             logger.info("IOException on renameTo()", e);
 
-            return new FtpReply(500, "IOException - " + e.getMessage());
+            return new Reply(500, "IOException - " + e.getMessage());
         }
 
         //out.write(FtpResponse.RESPONSE_250_ACTION_OKAY.toString());
-        return new FtpReply(250, request.getCommand() +
+        return new Reply(250, request.getCommand() +
             " command successfull.");
     }
 
-    private FtpReply doSITE_CHOWN(BaseFtpConnection conn)
+    private Reply doSITE_CHOWN(BaseFtpConnection conn)
         throws UnhandledCommandException {
         FtpRequest req = conn.getRequest();
         StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument());
@@ -702,7 +702,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
             throw UnhandledCommandException.create(Dir.class, req);
         }
 
-        FtpReply reply = new FtpReply(200);
+        Reply reply = new Reply(200);
 
         while (st.hasMoreTokens()) {
             try {
@@ -721,23 +721,23 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
             }
         }
 
-        return FtpReply.RESPONSE_200_COMMAND_OK;
+        return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    private FtpReply doSITE_LINK(BaseFtpConnection conn) {
+    private Reply doSITE_LINK(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!conn.getRequest().hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument(),
                 " ");
 
         if (st.countTokens() != 2) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         String targetName = st.nextToken();
@@ -747,17 +747,17 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         try {
             target = conn.getCurrentDirectory().lookupFile(targetName);
         } catch (FileNotFoundException e) {
-            return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+            return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
         }
 
         if (!target.isDirectory()) {
-            return new FtpReply(501, "Only link to directories for now.");
+            return new Reply(501, "Only link to directories for now.");
         }
 
         StaticRemoteFile link = new StaticRemoteFile(linkName, null, targetName);
         conn.getCurrentDirectory().addFile(link);
 
-        return FtpReply.RESPONSE_200_COMMAND_OK;
+        return Reply.RESPONSE_200_COMMAND_OK;
     }
 
     /**
@@ -795,13 +795,13 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
      * @param request
      * @param out
      */
-    private FtpReply doSITE_WIPE(BaseFtpConnection conn) {
+    private Reply doSITE_WIPE(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!conn.getRequest().hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         String arg = conn.getRequest().getArgument();
@@ -820,13 +820,13 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         try {
             wipeFile = conn.getCurrentDirectory().lookupFile(arg);
         } catch (FileNotFoundException e) {
-            return new FtpReply(200,
+            return new Reply(200,
                 "Can't wipe: " + arg +
                 " does not exist or it's not a plain file/directory");
         }
 
         if (wipeFile.isDirectory() && (wipeFile.dirSize() != 0) && !recursive) {
-            return new FtpReply(200, "Can't wipe, directory not empty");
+            return new Reply(200, "Can't wipe, directory not empty");
         }
 
         //if (conn.getConfig().checkDirLog(conn.getUserNull(), wipeFile)) {
@@ -836,7 +836,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         //}
         wipeFile.delete();
 
-        return FtpReply.RESPONSE_200_COMMAND_OK;
+        return Reply.RESPONSE_200_COMMAND_OK;
     }
 
     /**
@@ -844,11 +844,11 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
      *
      * Returns the size of the file in bytes.
      */
-    private FtpReply doSIZE(BaseFtpConnection conn) {
+    private Reply doSIZE(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!request.hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         LinkedRemoteFile file;
@@ -856,10 +856,10 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         try {
             file = conn.getCurrentDirectory().lookupFile(request.getArgument());
         } catch (FileNotFoundException ex) {
-            return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+            return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
         }
 
-        return new FtpReply(213, Long.toString(file.length()));
+        return new Reply(213, Long.toString(file.length()));
     }
 
     /**
@@ -867,11 +867,11 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
      *
      * Originally implemented by CuteFTP Pro and Globalscape FTP Server
      */
-    private FtpReply doXCRC(BaseFtpConnection conn) {
+    private Reply doXCRC(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!request.hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
@@ -880,29 +880,29 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         try {
             myFile = conn.getCurrentDirectory().lookupFile(st.nextToken());
         } catch (FileNotFoundException e) {
-            return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+            return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
         }
 
         if (st.hasMoreTokens()) {
             if (!st.nextToken().equals("0") ||
                     !st.nextToken().equals(Long.toString(myFile.length()))) {
-                return FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+                return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
             }
         }
 
         try {
-            return new FtpReply(250,
+            return new Reply(250,
                 "XCRC Successful. " +
                 Checksum.formatChecksum(myFile.getCheckSum()));
         } catch (NoAvailableSlaveException e1) {
             logger.warn("", e1);
 
-            return new FtpReply(550,
+            return new Reply(550,
                 "NoAvailableSlaveException: " + e1.getMessage());
         }
     }
 
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         FtpRequest request = conn.getRequest();
         String cmd = request.getCommand();

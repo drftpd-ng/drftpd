@@ -1,3 +1,10 @@
+2004/11/24 Morgan Christiansson <drftpd@mog.se>
+* Added SITE DEBUG for displaying stacktraces in control connection.
+* Changed keys in .properties formatting.
+* Made FinishReleaseOnSlaves ignore whether slave is online or offline
+* Made FinishReleaseOnSlaves ignore slaves with keyword incoming.
+* Added site find -action sendtoslaves and -action deletefromslaves
+
 2004/11/21 Morgan Christiansson <drftpd@mog.se>
 * Fixed shutdown in perms.conf to behave like it does in glftpd.
 * Added site find -incomplete [min % incomplete] and fixed

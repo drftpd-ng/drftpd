@@ -255,19 +255,18 @@ public class Slave {
             logger.debug("DELETE: " + path);
 
             while (dir.list().length == 0) {
-                file.delete();
-                logger.debug("rmdir: " + file.getPath());
+                if (dir.getPath().length() <= root.getPath().length()) {
+                    break;
+                }
 
                 java.io.File tmpFile = dir.getParentFile();
+                
+                dir.delete();
+                logger.debug("rmdir: " + dir.getPath());
 
                 if (tmpFile == null) {
                     break;
                 }
-
-                if (tmpFile.getPath().length() < root.getPath().length()) {
-                    throw new SecurityException("Attempt to break out of root");
-                }
-
                 dir = new File(tmpFile);
             }
         }

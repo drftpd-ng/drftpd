@@ -20,7 +20,6 @@ package net.sf.drftpd.master.command.plugins;
 import net.sf.drftpd.event.ConnectionEvent;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -30,6 +29,7 @@ import org.apache.log4j.Logger;
 
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 
 import java.io.FileNotFoundException;
@@ -47,17 +47,17 @@ import java.util.ResourceBundle;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagement.java,v 1.5 2004/11/03 16:46:40 mog Exp $
+ * @version $Id$
  */
 public class SiteManagement implements CommandHandlerFactory, CommandHandler {
     private static final Logger logger = Logger.getLogger(SiteManagement.class);
 
-    private FtpReply doSITE_LIST(BaseFtpConnection conn) {
+    private Reply doSITE_LIST(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
 
         //.getMap().values() to get the .isDeleted files as well.
         LinkedRemoteFileInterface dir = conn.getCurrentDirectory();
@@ -68,7 +68,7 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
             } catch (FileNotFoundException e) {
                 logger.debug("", e);
 
-                return new FtpReply(200, e.getMessage());
+                return new Reply(200, e.getMessage());
             }
         }
 
@@ -88,33 +88,33 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
         return response;
     }
 
-    private FtpReply doSITE_LOADPLUGIN(BaseFtpConnection conn) {
+    private Reply doSITE_LOADPLUGIN(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!conn.getRequest().hasArgument()) {
-            return new FtpReply(500, "Usage: site load className");
+            return new Reply(500, "Usage: site load className");
         }
 
         FtpListener ftpListener = getFtpListener(conn.getRequest().getArgument());
 
         if (ftpListener == null) {
-            return new FtpReply(500,
+            return new Reply(500,
                 "Was not able to find the class you are trying to load");
         }
 
         conn.getGlobalContext().addFtpListener(ftpListener);
 
-        return new FtpReply(200, "Successfully loaded your plugin");
+        return new Reply(200, "Successfully loaded your plugin");
     }
 
-    private FtpReply doSITE_PLUGINS(BaseFtpConnection conn) {
+    private Reply doSITE_PLUGINS(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        FtpReply ftpReply = new FtpReply(200, "Command ok");
+        Reply ftpReply = new Reply(200, "Command ok");
         ftpReply.addComment("Plugins loaded:");
 
         for (Iterator iter = conn.getGlobalContext().getConnectionManager()
@@ -125,9 +125,9 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
         return ftpReply;
     }
 
-    private FtpReply doSITE_RELOAD(BaseFtpConnection conn) {
+    private Reply doSITE_RELOAD(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         try {
@@ -150,7 +150,7 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
         } catch (IOException e) {
             logger.log(Level.FATAL, "Error reloading config", e);
 
-            return new FtpReply(200, e.getMessage());
+            return new Reply(200, e.getMessage());
         }
 
         conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new ConnectionEvent(
@@ -167,12 +167,12 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
             logger.error("", e);
         }
 
-        return FtpReply.RESPONSE_200_COMMAND_OK;
+        return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    private FtpReply doSITE_SHUTDOWN(BaseFtpConnection conn) {
+    private Reply doSITE_SHUTDOWN(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         String message;
@@ -186,16 +186,16 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
 
         conn.getGlobalContext().getConnectionManager().shutdown(message);
 
-        return FtpReply.RESPONSE_200_COMMAND_OK;
+        return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    private FtpReply doSITE_UNLOADPLUGIN(BaseFtpConnection conn) {
+    private Reply doSITE_UNLOADPLUGIN(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!conn.getRequest().hasArgument()) {
-            return new FtpReply(500, "Usage: site unload className");
+            return new Reply(500, "Usage: site unload className");
         }
 
         for (Iterator iter = conn.getGlobalContext().getConnectionManager()
@@ -209,20 +209,20 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
                 try {
                     ftpListener.unload();
                 } catch (RuntimeException e) {
-                    return new FtpReply(200,
+                    return new Reply(200,
                         "Exception unloading plugin, plugin removed");
                 }
 
                 iter.remove();
 
-                return new FtpReply(200, "Successfully unloaded your plugin");
+                return new Reply(200, "Successfully unloaded your plugin");
             }
         }
 
-        return new FtpReply(500, "Could not find your plugin on the site");
+        return new Reply(500, "Could not find your plugin on the site");
     }
 
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         String cmd = conn.getRequest().getCommand();
 

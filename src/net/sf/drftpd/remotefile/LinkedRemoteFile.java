@@ -273,7 +273,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
     /**
      * Updates lastModified() on this directory, use putFile() to avoid it.
      */
-    public LinkedRemoteFile addFile(AbstractRemoteFile file) {
+    public LinkedRemoteFile addFile(RemoteFileInterface file) {
         _lastModified = System.currentTimeMillis();
 
         return putFile(file);
@@ -432,7 +432,13 @@ public class LinkedRemoteFile implements Serializable, Comparable,
         }
     }
 
-    /*
+	public void deleteFromSlave(RemoteSlave rslave) {
+		if(!_slaves.contains((rslave)))
+			throw new IllegalArgumentException("Cannot delete file from "+rslave.getName()+" as it's not on it");
+		rslave.simpleDelete(getPath());
+	}
+
+	/**
      * This method should only be called by Archive and ArchiveType's as it has no usage anywhere else
      */
     public void deleteOthers(Set<RemoteSlave> destSlaves) {

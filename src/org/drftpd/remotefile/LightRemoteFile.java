@@ -18,49 +18,34 @@
 package org.drftpd.remotefile;
 
 
-import java.io.FileNotFoundException;
 import java.io.Serializable;
-
-import java.util.Collection;
 
 
 /**
  * @author zubov
- * @version $Id: LightRemoteFile.java,v 1.4 2004/11/09 18:59:57 mog Exp $
+ * @version $Id$
  * For use in sending the filelist from the slave to the master
  */
-public final class LightRemoteFile extends AbstractRemoteFile
+public final class LightRemoteFile extends AbstractLightRemoteFile
     implements Serializable {
     private String _filename;
     private long _lastModified;
     private long _length;
 
-    public LightRemoteFile(RemoteFileInterface file) {
-        this._filename = file.getName();
-        this._lastModified = file.lastModified();
-        this._length = file.length();
+    private boolean _isFile;
+    private boolean _isDirectory;
+    public LightRemoteFile(LightRemoteFileInterface file) {
+        _filename = file.getName();
+        _lastModified = file.lastModified();
+        _length = file.length();
+        _isFile = file.isFile();
+        _isDirectory = file.isDirectory();
     }
 
     public LightRemoteFile(String filename, long lastModified, long length) {
         _filename = filename;
         _lastModified = lastModified;
         _length = length;
-    }
-
-    public Collection getFiles() {
-        throw new UnsupportedOperationException();
-    }
-
-    public String getParent() throws FileNotFoundException {
-        throw new UnsupportedOperationException();
-    }
-
-    public String getPath() {
-        throw new UnsupportedOperationException();
-    }
-
-    public Collection getSlaves() {
-        throw new UnsupportedOperationException();
     }
 
     public boolean isDirectory() {

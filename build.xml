@@ -18,7 +18,7 @@
     <include name="org/drftpd/AbstractSFVFile*" />
     <include name="org/drftpd/AbstractSFVFile*" />
     <include name="org/drftpd/remotefile/CaseInsensitiveHashtable*" />
-    <include name="org/drftpd/remotefile/LightRemoteFile*" />
+    <include name="org/drftpd/remotefile/*LightRemoteFile*" />
     <include name="org/drftpd/remotefile/AbstractRemoteFile*" />
     <include name="org/drftpd/remotefile/RemoteFileInterface*" />
     <include name="se/mog/io/*"/>
@@ -66,6 +66,7 @@
   <target name="compile-jsx">
     <javac srcdir="${sourceDir}" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.4">
       <include  name="net/sf/drftpd/master/usermanager/jsx/**"/>
+      <include name="org/drftpd/usermanager/jsx3/**"/>
     </javac>
   </target>
 
@@ -73,7 +74,7 @@
     <exclude name="**/*Test.java"/>
     <exclude name="org/drftpd/friendly/**"/>
     <exclude name="net/sf/drftpd/master/usermanager/jsx/**"/>
-    <exclude name="org/drftpd/usermanager/jsx2/**"/>
+    <exclude name="org/drftpd/usermanager/jsx3/**"/>
   </patternset>
 
   <target name="compile" depends="prepare">

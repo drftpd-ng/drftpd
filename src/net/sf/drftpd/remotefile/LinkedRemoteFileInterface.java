@@ -17,21 +17,19 @@
  */
 package net.sf.drftpd.remotefile;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-
 import org.drftpd.SFVFile;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.AbstractRemoteFile;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.remotefile.RemoteFileInterface;
 
@@ -45,7 +43,7 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
     /**
      * Updates lastMofidied() on this directory, use putFile() to avoid it.
      */
-    public abstract LinkedRemoteFile addFile(AbstractRemoteFile file);
+    public abstract LinkedRemoteFile addFile(RemoteFileInterface file);
 
     public abstract void addSlave(RemoteSlave slave);
 
@@ -216,4 +214,6 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
     public abstract void resetSlaveForMerging(RemoteSlave slave);
 
     public abstract void cleanSlaveFromMerging(RemoteSlave slave);
+
+	public abstract void deleteFromSlave(RemoteSlave rslave);
 }

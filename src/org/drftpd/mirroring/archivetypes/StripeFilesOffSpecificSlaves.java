@@ -19,7 +19,6 @@ package org.drftpd.mirroring.archivetypes;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.listeners.Archive;
-import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -37,21 +36,20 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 
-
 /**
  * @author zubov
  * @version $Id$
  */
 public class StripeFilesOffSpecificSlaves extends ArchiveType {
     private static final Logger logger = Logger.getLogger(StripeFilesOffSpecificSlaves.class);
-    private HashSet _destSlaves;
-    private HashSet _offOfSlaves;
+    private HashSet<RemoteSlave> _destSlaves;
+    private HashSet<RemoteSlave> _offOfSlaves;
     int _numOfSlaves = 1;
 
     public StripeFilesOffSpecificSlaves(Archive archive,
         SectionInterface section, Properties props) {
         super(archive, section, props);
-        _offOfSlaves = new HashSet();
+        _offOfSlaves = new HashSet<RemoteSlave>();
 
         for (int i = 1;; i++) {
             String slavename = null;
@@ -87,7 +85,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
                 "numOfSlaves has to be > 0 for section " + section.getName());
         }
 
-        _destSlaves = new HashSet();
+        _destSlaves = new HashSet<RemoteSlave>();
 
         for (int i = 1;; i++) {
             String slavename = null;
@@ -130,12 +128,12 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
         }
     }
 
-    public HashSet findDestinationSlaves() {
+    public HashSet<RemoteSlave> findDestinationSlaves() {
         if (_destSlaves != null) {
             return _destSlaves;
         }
 
-        HashSet availableSlaves = new HashSet(_parent.getConnectionManager()
+        HashSet<RemoteSlave> availableSlaves = new HashSet<RemoteSlave>(_parent.getConnectionManager()
                                                      .getGlobalContext()
                                                      .getSlaveManager()
                                                      .getSlaves());
@@ -181,8 +179,8 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
         return recursiveSend(getDirectory());
     }
 
-    private ArrayList recursiveSend(LinkedRemoteFileInterface lrf) {
-        ArrayList jobQueue = new ArrayList();
+    private ArrayList<Job> recursiveSend(LinkedRemoteFileInterface lrf) {
+        ArrayList<Job> jobQueue = new ArrayList<Job>();
         JobManager jm = _parent.getConnectionManager().getJobManager();
 
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {

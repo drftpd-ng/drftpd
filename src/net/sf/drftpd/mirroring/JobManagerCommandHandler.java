@@ -18,7 +18,6 @@ package net.sf.drftpd.mirroring;
 
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -26,6 +25,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.Bytes;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.master.RemoteSlave;
 
@@ -59,13 +59,13 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
      * @param conn
      * @return
      */
-    private FtpReply doADDJOB(BaseFtpConnection conn) {
+    private Reply doADDJOB(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!conn.getRequest().hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(JobManagerCommandHandler.class, "addjob.usage"));
         }
 
@@ -75,7 +75,7 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
         try {
             lrf = conn.getCurrentDirectory().lookupFile(st.nextToken());
         } catch (FileNotFoundException e) {
-            return new FtpReply(500, "File does not exist");
+            return new Reply(500, "File does not exist");
         }
 
         int priority;
@@ -83,7 +83,7 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
         try {
             priority = Integer.parseInt(st.nextToken());
         } catch (NumberFormatException e) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(JobManagerCommandHandler.class, "addjob.usage"));
         }
 
@@ -92,12 +92,12 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
         try {
             timesToMirror = Integer.parseInt(st.nextToken());
         } catch (NumberFormatException e) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(JobManagerCommandHandler.class, "addjob.usage"));
         }
 
-        HashSet destSlaves = new HashSet();
-        FtpReply reply = new FtpReply(200);
+        HashSet<RemoteSlave> destSlaves = new HashSet<RemoteSlave>();
+        Reply reply = new Reply(200);
 
         while (st.hasMoreTokens()) {
             String slaveName = st.nextToken();
@@ -117,7 +117,7 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
         }
 
         if (destSlaves.size() == 0) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(JobManagerCommandHandler.class, "addjob.usage"));
         }
 
@@ -133,23 +133,23 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
         return reply;
     }
 
-    private FtpReply doLISTJOBS(BaseFtpConnection conn) {
+    private Reply doLISTJOBS(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        FtpReply reply = new FtpReply(200);
+        Reply reply = new Reply(200);
         int count = 0;
         ReplacerEnvironment env = new ReplacerEnvironment();
 
-        for (Iterator iter = new ArrayList(conn.getGlobalContext()
+        for (Iterator<Job> iter = new ArrayList<Job>(conn.getGlobalContext()
                                                .getConnectionManager()
                                                .getJobManager()
                                                .getAllJobsFromQueue()).iterator();
                 iter.hasNext();) {
             count++;
 
-            Job job = (Job) iter.next();
+            Job job = iter.next();
             env.add("job", job);
             env.add("count", new Integer(count));
 
@@ -170,19 +170,19 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
         return reply;
     }
 
-    private FtpReply doREMOVEJOB(BaseFtpConnection conn) {
+    private Reply doREMOVEJOB(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!conn.getRequest().hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(JobManagerCommandHandler.class, "removejob.usage"));
         }
 
         String filename = conn.getRequest().getArgument();
         Job job = null;
-        List jobs = new ArrayList(conn.getGlobalContext().getConnectionManager()
+        List jobs = new ArrayList<Job>(conn.getGlobalContext().getConnectionManager()
                                       .getJobManager().getAllJobsFromQueue());
         ReplacerEnvironment env = new ReplacerEnvironment();
         env.add("filename", filename);
@@ -195,39 +195,39 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
                 conn.getGlobalContext().getConnectionManager().getJobManager()
                     .stopJob(job);
 
-                return new FtpReply(200,
+                return new Reply(200,
                     conn.jprintf(JobManagerCommandHandler.class,
                         "removejob.success", env));
             }
         }
 
-        return new FtpReply(200,
+        return new Reply(200,
             conn.jprintf(JobManagerCommandHandler.class, "removejob.fail", env));
     }
 
-    private FtpReply doSTARTJOBS(BaseFtpConnection conn) {
+    private Reply doSTARTJOBS(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         conn.getGlobalContext().getConnectionManager().getJobManager()
             .startJobs();
 
-        return new FtpReply(200, "JobTransfers will now start");
+        return new Reply(200, "JobTransfers will now start");
     }
 
-    private FtpReply doSTOPJOBS(BaseFtpConnection conn) {
+    private Reply doSTOPJOBS(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         conn.getGlobalContext().getConnectionManager().getJobManager().stopJobs();
 
-        return new FtpReply(200,
+        return new Reply(200,
             "All JobTransfers will stop after their current transfer");
     }
 
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         String cmd = conn.getRequest().getCommand();
 

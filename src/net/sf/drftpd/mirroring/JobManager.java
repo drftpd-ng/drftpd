@@ -68,10 +68,10 @@ public class JobManager implements Runnable {
     }
 
     public synchronized void addJobToQueue(Job job) {
-        Collection slaves = job.getFile().getSlaves();
+        Collection<RemoteSlave> slaves = job.getFile().getSlaves();
 
-        for (Iterator iter = slaves.iterator(); iter.hasNext();) {
-            RemoteSlave slave = (RemoteSlave) iter.next();
+        for (Iterator<RemoteSlave> iter = slaves.iterator(); iter.hasNext();) {
+            RemoteSlave slave = iter.next();
 
             if (job.getDestinationSlaves().contains(slave)) {
                 job.sentToSlave(slave);
@@ -89,11 +89,11 @@ public class JobManager implements Runnable {
     /**
      * Gets all jobs.
      */
-    public synchronized List getAllJobsFromQueue() {
+    public synchronized List<Job> getAllJobsFromQueue() {
         return Collections.unmodifiableList(_jobList);
     }
 
-    public synchronized Job getNextJob(Set busySlaves, Set skipJobs) {
+    public synchronized Job getNextJob(Set<RemoteSlave> busySlaves, Set skipJobs) {
         for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
             Job tempJob = (Job) iter.next();
 
@@ -155,8 +155,8 @@ public class JobManager implements Runnable {
                 // can't transfer with no slaves
             }
 
-            Set busySlavesDown = new HashSet();
-            Set skipJobs = new HashSet();
+            Set<RemoteSlave> busySlavesDown = new HashSet<RemoteSlave>();
+            Set<Job> skipJobs = new HashSet<Job>();
 
             while (!busySlavesDown.containsAll(availableSlaves)) {
                 job = getNextJob(busySlavesDown, skipJobs);

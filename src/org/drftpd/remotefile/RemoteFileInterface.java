@@ -25,7 +25,8 @@ import java.util.Collection;
  * @author mog
  * @version $Id$
  */
-public interface RemoteFileInterface {
+public interface RemoteFileInterface extends LightRemoteFileInterface {
+
     /**
      * Returns the cached checksum or 0 if no checksum was cached.
      * <p>
@@ -54,15 +55,9 @@ public interface RemoteFileInterface {
     //    public RemoteFileInterface getLink() throws FileNotFoundException;
     public String getLinkPath();
 
-    /**
-     * @see java.io.File#getName()
-     */
-    public String getName();
-
     public abstract String getParent() throws FileNotFoundException;
 
     public abstract String getPath();
-
     public Collection getSlaves();
 
     /**
@@ -76,28 +71,8 @@ public interface RemoteFileInterface {
     public long getXfertime();
 
     /**
-     * @see java.io.File#isDirectory()
-     */
-    public boolean isDirectory();
-
-    /**
-     * @see java.io.File#isFile()
-     */
-    public boolean isFile();
-
-    /**
      * boolean flag whether this file is a 'link', it can be linked to another file.
      * This is for the moment used for "ghost files".
      */
     public boolean isLink();
-
-    /**
-     * @see java.io.File#lastModified()
-     */
-    public long lastModified();
-
-    /**
-     * @see java.io.File#length()
-     */
-    public long length();
 }

@@ -26,8 +26,8 @@ import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.SFVFile;
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.master.ConnectionManager;
-import org.drftpd.usermanager.Key;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;

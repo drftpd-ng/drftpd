@@ -17,20 +17,21 @@
  */
 package org.drftpd.mirroring;
 
-import net.sf.drftpd.event.listeners.Archive;
-
-import org.apache.log4j.Logger;
-
-import org.drftpd.sections.SectionInterface;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 
+import net.sf.drftpd.event.listeners.Archive;
+import net.sf.drftpd.mirroring.Job;
+
+import org.apache.log4j.Logger;
+import org.drftpd.master.RemoteSlave;
+import org.drftpd.sections.SectionInterface;
+
 
 /**
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.11 2004/11/03 16:46:45 mog Exp $
+ * @version $Id$
  */
 public class ArchiveHandler extends Thread {
     protected final static Logger logger = Logger.getLogger(ArchiveHandler.class);
@@ -65,7 +66,7 @@ public class ArchiveHandler extends Thread {
             }
 
             if (_archiveType.getRSlaves() == null) {
-                Set destSlaves = _archiveType.findDestinationSlaves();
+                Set<RemoteSlave> destSlaves = _archiveType.findDestinationSlaves();
 
                 if (destSlaves == null) {
                     _archiveType.setDirectory(null);
@@ -76,8 +77,8 @@ public class ArchiveHandler extends Thread {
                 _archiveType.setRSlaves(Collections.unmodifiableSet(destSlaves));
             }
 
-            ArrayList jobs = _archiveType.send();
-            _archiveType.waitForSendOfFiles(new ArrayList(jobs));
+            ArrayList<Job> jobs = _archiveType.send();
+            _archiveType.waitForSendOfFiles(new ArrayList<Job>(jobs));
             _archiveType.cleanup(jobs);
             logger.info("Done archiving " +
                 getArchiveType().getDirectory().getPath());

@@ -18,7 +18,6 @@
 package net.sf.drftpd.master.command.plugins;
 
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
@@ -28,6 +27,7 @@ import org.apache.log4j.Logger;
 
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.Reply;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,7 +36,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Search.java,v 1.16 2004/10/05 02:11:22 mog Exp $
+ * @version $Id$
  */
 public class Search implements CommandHandlerFactory, CommandHandler {
     public void unload() {
@@ -45,7 +45,7 @@ public class Search implements CommandHandlerFactory, CommandHandler {
     public void load(CommandManagerFactory initializer) {
     }
 
-    private static void findFile(BaseFtpConnection conn, FtpReply response,
+    private static void findFile(BaseFtpConnection conn, Reply response,
         LinkedRemoteFileInterface dir, Collection searchstrings, boolean files,
         boolean dirs) {
         //TODO optimize me, checking using regexp for all dirs is possibly slow
@@ -95,21 +95,21 @@ public class Search implements CommandHandlerFactory, CommandHandler {
         }
     }
 
-    public FtpReply execute(BaseFtpConnection conn) {
+    public Reply execute(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!request.hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         String[] args = request.getArgument().toLowerCase().split(" ");
 
         if (args.length == 0) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         Collection searchstrings = Arrays.asList(args);
-        FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
         findFile(conn, response, conn.getCurrentDirectory(), searchstrings,
             "SITE DUPE".equals(request.getCommand()),
             "SITE SEARCH".equals(request.getCommand()));

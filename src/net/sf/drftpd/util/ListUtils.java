@@ -19,7 +19,6 @@ package net.sf.drftpd.util;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
@@ -27,6 +26,7 @@ import net.sf.drftpd.remotefile.StaticRemoteFile;
 import org.apache.log4j.Logger;
 import org.drftpd.SFVFile;
 import org.drftpd.SFVFile.SFVStatus;
+import org.drftpd.commands.Reply;
 import org.drftpd.id3.ID3Tag;
 
 import java.io.FileNotFoundException;
@@ -40,7 +40,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.31 2004/11/09 18:59:52 mog Exp $
+ * @version $Id$
  */
 public class ListUtils {
     private static final Logger logger = Logger.getLogger(ListUtils.class);
@@ -64,7 +64,7 @@ public class ListUtils {
     }
 
     public static List list(LinkedRemoteFileInterface dir,
-        BaseFtpConnection conn, FtpReply response) {
+        BaseFtpConnection conn, Reply response) {
         ArrayList tempFileList = new ArrayList(dir.getFiles());
         ArrayList listFiles = new ArrayList();
         int numOnline = 0;

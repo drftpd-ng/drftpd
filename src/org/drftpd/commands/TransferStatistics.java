@@ -19,7 +19,6 @@ package org.drftpd.commands;
 
 import net.sf.drftpd.event.listeners.Trial;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
@@ -50,7 +49,7 @@ import java.util.StringTokenizer;
 
 
 /**
- * @version $Id: TransferStatistics.java,v 1.4 2004/11/09 18:59:54 mog Exp $
+ * @version $Id$
  */
 public class TransferStatistics implements CommandHandlerFactory,
     CommandHandler {
@@ -177,11 +176,11 @@ public class TransferStatistics implements CommandHandlerFactory,
      * USAGE: site stats [<user>]
      *        Display a user's upload/download statistics.
      */
-    public FtpReply doSITE_STATS(BaseFtpConnection conn) {
+    public Reply doSITE_STATS(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!request.hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         User user;
@@ -192,23 +191,23 @@ public class TransferStatistics implements CommandHandlerFactory,
             try {
                 user = conn.getGlobalContext().getUserManager().getUserByName(request.getArgument());
             } catch (NoSuchUserException e) {
-                return new FtpReply(200, "No such user: " + e.getMessage());
+                return new Reply(200, "No such user: " + e.getMessage());
             } catch (UserFileException e) {
                 logger.log(Level.WARN, "", e);
 
-                return new FtpReply(200, e.getMessage());
+                return new Reply(200, e.getMessage());
             }
         }
 
         if (conn.getUserNull().isGroupAdmin() &&
                 !conn.getUserNull().getGroupName().equals(user.getGroupName())) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         } else if (!conn.getUserNull().isAdmin() &&
                 !user.equals(conn.getUserNull())) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
         AbstractUserManager userman = conn.getGlobalContext().getUserManager();
         response.addComment("created: " +
             new Date(user.getObjectLong(UserManagment.CREATED)));
@@ -253,7 +252,7 @@ public class TransferStatistics implements CommandHandlerFactory,
         return response;
     }
 
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         FtpRequest request = conn.getRequest();
 
@@ -268,7 +267,7 @@ public class TransferStatistics implements CommandHandlerFactory,
         } catch (UserFileException e) {
             logger.warn("", e);
 
-            return new FtpReply(200, "IO error: " + e.getMessage());
+            return new Reply(200, "IO error: " + e.getMessage());
         }
 
         int count = 10; // default # of users to list
@@ -297,7 +296,7 @@ public class TransferStatistics implements CommandHandlerFactory,
         }
 
         final String command = request.getCommand();
-        FtpReply response = new FtpReply(200);
+        Reply response = new Reply(200);
         String type = command.substring("SITE ".length()).toLowerCase();
         ArrayList users2 = new ArrayList(users);
         Collections.sort(users2, new UserComparator(type));

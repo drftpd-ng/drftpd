@@ -15,38 +15,42 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands;
+package org.drftpd.dynamicdata;
 
-import net.sf.drftpd.master.FtpRequest;
-
+import java.io.Serializable;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: Key.java 756 2004-11-05 13:27:23Z mog $
  */
-public class UnhandledCommandException extends ReplyException {
-    public UnhandledCommandException() {
-        super();
+public class Key implements Serializable {
+    private String _key;
+    private Class _owner;
+    private Class _type;
+
+    public Key(Class owner, String key, Class type) {
+        _owner = owner;
+        _key = key;
+        _type = type;
     }
 
-    public UnhandledCommandException(String message) {
-        super(message);
+    public String getKey() {
+        return _key;
     }
 
-    public UnhandledCommandException(String message, Throwable cause) {
-        super(message, cause);
+    public Class getOwner() {
+        return _owner;
     }
 
-    public UnhandledCommandException(Throwable cause) {
-        super(cause);
+    public Class getType() {
+        return _type;
     }
 
-    public static UnhandledCommandException create(Class clazz, FtpRequest req) {
-        return create(clazz, req.getCommand());
+    public String toString() {
+        return getOwner().getName() + '@' + getKey();
     }
 
-    public static UnhandledCommandException create(Class clazz, String command) {
-        return new UnhandledCommandException(clazz.getName() +
-            " doesn't know how to handle " + command);
-    }
+	public String toString(Object value) {
+		return value.toString();
+	}
 }

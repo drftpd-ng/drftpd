@@ -17,7 +17,6 @@
  */
 package net.sf.drftpd.master.config;
 
-import net.sf.drftpd.master.FtpReply;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -27,11 +26,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.drftpd.commands.Reply;
+
 
 /**
  * @author mog
  *
- * @version $Id: MessagePathPermission.java,v 1.7 2004/08/03 20:13:58 zubov Exp $
+ * @version $Id$
  */
 public class MessagePathPermission extends StringPathPermission {
     private ArrayList message;
@@ -55,7 +56,7 @@ public class MessagePathPermission extends StringPathPermission {
         message.trimToSize();
     }
 
-    public void printMessage(FtpReply response) {
+    public void printMessage(Reply response) {
         for (Iterator iter = message.iterator(); iter.hasNext();) {
             String line = (String) iter.next();
             response.addComment(line);

@@ -20,7 +20,6 @@ package org.drftpd.commands;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.listeners.Archive;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -58,7 +57,7 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
         super();
     }
 
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         String cmd = conn.getRequest().getCommand();
 
@@ -74,8 +73,8 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
             conn.getRequest());
     }
 
-    private FtpReply doARCHIVE(BaseFtpConnection conn) {
-        FtpReply reply = new FtpReply(200);
+    private Reply doARCHIVE(BaseFtpConnection conn) {
+        Reply reply = new Reply(200);
         ReplacerEnvironment env = new ReplacerEnvironment();
 
         if (!conn.getRequest().hasArgument()) {
@@ -241,8 +240,8 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
         props.put(section.getName() + "." + data[0], data[1]);
     }
 
-    private FtpReply doLISTARCHIVETYPES(BaseFtpConnection conn) {
-        FtpReply reply = new FtpReply(200);
+    private Reply doLISTARCHIVETYPES(BaseFtpConnection conn) {
+        Reply reply = new Reply(200);
         int x = 0;
         ReplacerEnvironment env = new ReplacerEnvironment();
         Archive archive;

@@ -18,7 +18,6 @@
 package org.drftpd.commands;
 
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.plugins.Textoutput;
@@ -41,7 +40,7 @@ import java.util.TreeSet;
 
 
 /**
- * @version $Id: New.java,v 1.9 2004/11/09 18:59:54 mog Exp $
+ * @version $Id$
  * @author zubov
  */
 public class New implements CommandHandlerFactory, CommandHandler {
@@ -51,9 +50,9 @@ public class New implements CommandHandlerFactory, CommandHandler {
         super();
     }
 
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
-        FtpReply reply = new FtpReply(200);
+        Reply reply = new Reply(200);
         Collection sections = conn.getGlobalContext().getConnectionManager()
                                   .getGlobalContext().getSectionManager()
                                   .getSections();

@@ -20,12 +20,12 @@ package net.sf.drftpd.master.command.plugins;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.BasicConfigurator;
 
+import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 
 import org.drftpd.tests.DummyBaseFtpConnection;
@@ -46,7 +46,7 @@ import javax.net.SocketFactory;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandlerTest.java,v 1.13 2004/11/08 18:39:25 mog Exp $
+ * @version $Id$
  */
 public class DataConnectionHandlerTest extends TestCase {
     private DummyGlobalContext gctx;
@@ -75,7 +75,7 @@ public class DataConnectionHandlerTest extends TestCase {
 
         conn.setRequest(new FtpRequest("LIST"));
 
-        FtpReply reply = list.execute(conn);
+        Reply reply = list.execute(conn);
         String replystr = conn.getDummyOut().getBuffer().toString();
         assertEquals(150, Integer.parseInt(replystr.substring(0, 3)));
         assertEquals(226, reply.getCode());
@@ -89,7 +89,7 @@ public class DataConnectionHandlerTest extends TestCase {
     private String pasvList() throws UnhandledCommandException {
         conn.setRequest(new FtpRequest("PRET LIST"));
 
-        FtpReply reply;
+        Reply reply;
         reply = dch.execute(conn);
         assertEquals(reply.toString(), 200, reply.getCode());
 
@@ -143,7 +143,7 @@ public class DataConnectionHandlerTest extends TestCase {
     public void testPASVWithoutPRET() throws UnhandledCommandException {
         conn.setRequest(new FtpRequest("PASV"));
 
-        FtpReply reply = dch.execute(conn);
+        Reply reply = dch.execute(conn);
         assertBetween(reply.getCode(), 500, 599);
     }
 

@@ -17,7 +17,6 @@
  */
 package net.sf.drftpd.master.config;
 
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.util.PortRange;
 
@@ -27,6 +26,7 @@ import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.commands.Reply;
 import org.drftpd.commands.UserManagment;
 
 import org.drftpd.master.ConnectionManager;
@@ -235,7 +235,7 @@ public class FtpConfig {
         return checkPermission("userrejectsecure", user);
     }
 
-    public void directoryMessage(FtpReply response, User user,
+    public void directoryMessage(Reply response, User user,
         LinkedRemoteFileInterface dir) {
         for (Iterator iter = _msgpath.iterator(); iter.hasNext();) {
             MessagePathPermission perm = (MessagePathPermission) iter.next();

@@ -22,8 +22,8 @@ import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.event.UserEvent;
 
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.master.ConnectionManager;
-import org.drftpd.usermanager.Key;
 
 
 /**

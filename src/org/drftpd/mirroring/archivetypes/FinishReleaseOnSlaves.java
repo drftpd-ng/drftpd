@@ -18,7 +18,6 @@
 package org.drftpd.mirroring.archivetypes;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -38,6 +37,8 @@ import org.drftpd.sections.SectionInterface;
 
 
 /**
+ * Moves a "release" so that it resides only on the .numOfSlaves slaves with most files.
+ * 
  * @author zubov
  * @version $Id$
  */
@@ -71,14 +72,13 @@ public class FinishReleaseOnSlaves extends ArchiveType {
             for (Iterator iter2 = file.getSlaves().iterator(); iter2.hasNext();) {
                 RemoteSlave rslave = (RemoteSlave) iter2.next();
 
-                if (rslave.isAvailable()) {
-                    SlaveCount i = (SlaveCount) slaveMap.get(rslave);
-                    if (i == null) {
-                        slaveMap.put(rslave, new SlaveCount());
-                    } else {
-                        i.addOne();
-                    }
-                }
+                if(rslave.hasKeyword("incoming")) continue;
+                SlaveCount i = (SlaveCount) slaveMap.get(rslave);
+                if (i == null) {
+                	slaveMap.put(rslave, new SlaveCount());
+                } else {
+                	i.addOne();
+        		}
             }
         }
     }

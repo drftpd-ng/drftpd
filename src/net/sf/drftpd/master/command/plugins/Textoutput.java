@@ -21,12 +21,12 @@ import f00f.net.irc.martyr.IRCConnection;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 
 import org.tanesha.replacer.FormatterException;
@@ -42,10 +42,10 @@ import java.io.InputStreamReader;
 
 /**
  * @author mog
- * @version $Id: Textoutput.java,v 1.17 2004/11/02 07:32:41 zubov Exp $
+ * @version $Id$
  */
 public class Textoutput implements CommandHandlerFactory, CommandHandler {
-    public static void addTextToResponse(FtpReply reply, String file)
+    public static void addTextToResponse(Reply reply, String file)
         throws FileNotFoundException, IOException {
         reply.addComment(new BufferedReader(
                 new InputStreamReader(
@@ -108,21 +108,21 @@ public class Textoutput implements CommandHandlerFactory, CommandHandler {
         }
     }
 
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         if (conn.getRequest().hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         try {
-            FtpReply reply = new FtpReply(200);
+            Reply reply = new Reply(200);
             addTextToResponse(reply,
                 conn.getRequest().getCommand().substring("SITE ".length())
                     .toLowerCase());
 
             return reply;
         } catch (IOException e) {
-            return new FtpReply(200, "IO Error: " + e.getMessage());
+            return new Reply(200, "IO Error: " + e.getMessage());
         }
     }
 

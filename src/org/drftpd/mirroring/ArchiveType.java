@@ -78,7 +78,7 @@ public abstract class ArchiveType {
      * If no such directory exists, it returns null
      */
     public final LinkedRemoteFileInterface getOldestNonArchivedDir() {
-        ArrayList oldDirs = new ArrayList();
+        ArrayList<LinkedRemoteFileInterface> oldDirs = new ArrayList<LinkedRemoteFileInterface>();
 
         for (Iterator iter = getSection().getFile().getFiles().iterator();
                 iter.hasNext();) {
@@ -143,12 +143,12 @@ public abstract class ArchiveType {
     /**
      * Adds relevant Jobs to the JobManager and returns an ArrayList of those Job's
      */
-    public ArrayList send() {
+    public ArrayList<Job> send() {
         return recursiveSend(getDirectory());
     }
 
-    private ArrayList recursiveSend(LinkedRemoteFileInterface lrf) {
-        ArrayList jobQueue = new ArrayList();
+    private ArrayList<Job> recursiveSend(LinkedRemoteFileInterface lrf) {
+        ArrayList<Job> jobQueue = new ArrayList<Job>();
         JobManager jm = _parent.getConnectionManager().getJobManager();
 
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
@@ -167,9 +167,9 @@ public abstract class ArchiveType {
         return jobQueue;
     }
 
-    public final boolean isArchivedToXSlaves(LinkedRemoteFileInterface lrf,
+    protected final boolean isArchivedToXSlaves(LinkedRemoteFileInterface lrf,
         int x) throws IncompleteDirectoryException, OfflineSlaveException {
-        HashSet slaveSet = null;
+        HashSet<RemoteSlave> slaveSet = null;
 
         if (lrf.getFiles().isEmpty()) {
             return true;
@@ -195,10 +195,10 @@ public abstract class ArchiveType {
                 }
             } else { // if (file.isFile())
 
-                Collection availableSlaves = file.getSlaves();
+                Collection<RemoteSlave> availableSlaves = file.getSlaves();
 
                 if (slaveSet == null) {
-                    slaveSet = new HashSet(availableSlaves);
+                    slaveSet = new HashSet<RemoteSlave>(availableSlaves);
                 } else {
                     if (!(slaveSet.containsAll(availableSlaves) &&
                             availableSlaves.containsAll(slaveSet))) {
@@ -253,7 +253,7 @@ public abstract class ArchiveType {
         _lrf = lrf;
     }
 
-    public final void setRSlaves(Set slaveList) {
+    public final void setRSlaves(Set<RemoteSlave> slaveList) {
         _slaveList = slaveList;
     }
 

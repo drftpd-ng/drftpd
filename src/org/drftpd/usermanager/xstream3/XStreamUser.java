@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.usermanager.xstream2;
+package org.drftpd.usermanager.xstream3;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
@@ -37,7 +37,7 @@ import java.io.IOException;
 
 /**
  * @author mog
- * @version $Id: XStreamUser.java,v 1.3 2004/11/08 18:39:32 mog Exp $
+ * @version $Id: XStreamUser.java 776 2004-11-08 18:39:32Z mog $
  */
 public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
     UnixPassword {

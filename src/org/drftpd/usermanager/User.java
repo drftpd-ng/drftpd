@@ -22,6 +22,10 @@ import net.sf.drftpd.HostMaskCollection;
 import java.util.List;
 import java.util.Map;
 
+import javax.naming.OperationNotSupportedException;
+
+import org.drftpd.dynamicdata.Key;
+import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.master.ConnectionManager;
 
 
@@ -30,14 +34,21 @@ import org.drftpd.master.ConnectionManager;
  * @version $Id$
  */
 public abstract class User {
-    public abstract float getObjectFloat(Key key);
+    public final float getObjectFloat(Key key) {
+    	return getKeyedMap().getObjectFloat(key);
+    }
 
     public abstract UserManager getUserManager();
 
-    public abstract Map getAllObjects();
+    public final Map<Key, Object> getAllObjects() {
+    	return getKeyedMap().getAllObjects();
+    }
 
-    public abstract void putAllObjects(Map m);
+    public final void putAllObjects(KeyedMap m) {
+    	getKeyedMap().putAllObjects(m);
+    }
 
+    public abstract KeyedMap getKeyedMap();
     public abstract void addAllMasks(HostMaskCollection hostMaskCollection);
 
     public abstract void addIPMask(String mask)
@@ -430,28 +441,52 @@ public abstract class User {
      */
     public abstract void updateLastAccessTime();
 
-    //    public abstract void updateNukedBytes(long bytes);
-    //
-    //    public abstract void updateTimesNuked(int timesNuked);
     public abstract void updateUploadedBytes(long bytes);
 
     public abstract void updateUploadedFiles(int i);
 
     public abstract void updateUploadedTime(long millis);
 
-    public abstract void putObject(Key key, Object obj);
+    public final void putObject(Key key, Object obj) {
+    	getKeyedMap().putObject(key, obj);
+    }
 
-    public abstract Object getObject(Key key) throws KeyNotFoundException;
+    public final Object getObject(Key key) throws KeyNotFoundException {
+    	return getKeyedMap().getObject(key);
+    }
 
-    public abstract Object getObject(Key key, Object def);
+    public final Object getObject(Key key, Object def) {
+    	return getKeyedMap().getObject(key, def);
+    }
 
-    public abstract void incrementObjectLong(Key key);
+    public final void incrementObjectLong(Key key, long value) {
+    	getKeyedMap().incrementObjectLong(key, value);
+    }
 
-    public abstract String getObjectString(Key key);
+    public final void incrementObjectLong(Key nuked) {
+		getKeyedMap().incrementObjectLong(nuked);
+	}
 
-    public abstract int getObjectInt(Key key);
+    public final String getObjectString(Key key) {
+    	return getKeyedMap().getObjectString(key);
+    }
 
-    public abstract void incrementObjectInt(Key nuked, int i);
+    public final int getObjectInt(Key key) {
+    	return getKeyedMap().getObjectInt(key);
+    }
 
-    public abstract long getObjectLong(Key key);
+    public final void incrementObjectInt(Key key, int i) {
+    	getKeyedMap().incrementObjectInt(key, i);
+    }
+
+    public final long getObjectLong(Key key) {
+    	return getKeyedMap().getObjectLong(key);
+    }
+
+	public final boolean getObjectBoolean(Key key) {
+		return getKeyedMap().getObjectBoolean(key);
+	}
+	private final void putObject(Key k, int v) {
+		getKeyedMap().putObject(k, v);
+	}
 }

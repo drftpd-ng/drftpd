@@ -47,6 +47,7 @@ SITE\ ADDUSER=org.drftpd.commands.UserManagment
 SITE\ CHANGE=org.drftpd.commands.UserManagment
 SITE\ CHGRP=org.drftpd.commands.UserManagment
 SITE\ CHPASS=org.drftpd.commands.UserManagment
+SITE\ DEBUG=org.drftpd.commands.UserManagment
 SITE\ DELIP=org.drftpd.commands.UserManagment
 SITE\ DELUSER=org.drftpd.commands.UserManagment
 SITE\ GADDUSER=org.drftpd.commands.UserManagment

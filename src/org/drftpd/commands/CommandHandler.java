@@ -18,16 +18,15 @@
 package org.drftpd.commands;
 
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 
 
 /**
  * @author mog
- * @version $Id: CommandHandler.java,v 1.3 2004/08/03 20:14:04 zubov Exp $
+ * @version $Id$
  */
 public interface CommandHandler {
-    public abstract FtpReply execute(BaseFtpConnection conn)
-        throws UnhandledCommandException;
+    public abstract Reply execute(BaseFtpConnection conn)
+        throws ReplyException;
 
     public String[] getFeatReplies();
 }

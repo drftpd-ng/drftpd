@@ -17,37 +17,14 @@
  */
 package org.drftpd.remotefile;
 
-
-
 /**
  * @author mog
  * @version $Id$
  */
-public abstract class AbstractRemoteFile extends AbstractLightRemoteFile implements RemoteFileInterface {
-    public String getGroupname() {
-        return "drftpd";
-    }
-
-    public String getUsername() {
-        return "drftpd";
-    }
-
-    public long getXfertime() {
-        return 0;
-    }
-
-    public boolean isLink() {
-        return false;
-    }
-
-    public String getLinkPath() {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean equals(Object file) {
-        if (!(file instanceof RemoteFileInterface)) {
-            return false;
-        }
-        return getPath().equals(((AbstractRemoteFile) file).getPath());
-    }
+public interface LightRemoteFileInterface {
+	public String getName();
+	public boolean isDirectory();
+	public boolean isFile();
+	public long lastModified();
+	public long length();
 }

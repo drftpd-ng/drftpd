@@ -28,7 +28,6 @@ import java.util.StringTokenizer;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMask;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
@@ -40,8 +39,8 @@ import net.sf.drftpd.util.Time;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.slave.Transfer;
-import org.drftpd.usermanager.Key;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserExistsException;
@@ -60,35 +59,37 @@ import org.tanesha.replacer.SimplePrintf;
 public class UserManagment implements CommandHandler, CommandHandlerFactory {
     public static final Key TAGLINE = new Key(UserManagment.class, "tagline",
             String.class);
+    public static final Key DEBUG = new Key(UserManagment.class, "debug",
+            Boolean.class);
     private static final Logger logger = Logger.getLogger(UserManagment.class);
     public static final Key RATIO = new Key(UserManagment.class, "ratio",
             Float.class);
     public static final Key CREATED = new Key(UserManagment.class, "created",
-            Long.class);
+            Date.class);
     public static final Key COMMENT = new Key(UserManagment.class, "comment",
             String.class);
 
-    private FtpReply doSITE_ADDIP(BaseFtpConnection conn) {
+    private Reply doSITE_ADDIP(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin() &&
                 !conn.getUserNull().isGroupAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!request.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "addip.usage"));
         }
 
         String[] args = request.getArgument().split(" ");
 
         if (args.length < 2) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "addip.specify"));
         }
 
-        FtpReply response = new FtpReply(200);
+        Reply response = new Reply(200);
         User myUser;
 
         try {
@@ -96,7 +97,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 
             if (conn.getUserNull().isGroupAdmin() &&
                     !conn.getUserNull().getGroupName().equals(myUser.getGroupName())) {
-                return FtpReply.RESPONSE_530_ACCESS_DENIED;
+                return Reply.RESPONSE_530_ACCESS_DENIED;
             }
 
             ReplacerEnvironment env = new ReplacerEnvironment();
@@ -123,7 +124,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 
             //userManager.save(user2);
         } catch (NoSuchUserException ex) {
-            return new FtpReply(200, "No such user: " + args[0]);
+            return new Reply(200, "No such user: " + args[0]);
         } catch (UserFileException ex) {
             response.addComment(ex.getMessage());
 
@@ -169,7 +170,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
      *
      * Only public groups can be used as <group>.
      */
-    private FtpReply doSITE_ADDUSER(BaseFtpConnection conn) {
+    private Reply doSITE_ADDUSER(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
         boolean isGAdduser = request.getCommand().equals("SITE GADDUSER");
 
@@ -182,14 +183,14 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                 key = "adduser.usage";
             }
 
-            return new FtpReply(501, conn.jprintf(UserManagment.class, key));
+            return new Reply(501, conn.jprintf(UserManagment.class, key));
         }
 
         String newGroup = null;
 
         if (conn.getUserNull().isGroupAdmin()) {
             if (isGAdduser) {
-                return FtpReply.RESPONSE_530_ACCESS_DENIED;
+                return Reply.RESPONSE_530_ACCESS_DENIED;
             }
 
             int users;
@@ -204,23 +205,23 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                                                                                     .getGroupName()));
 
                 if (users >= conn.getUserNull().getGroupSlots()) {
-                    return new FtpReply(200,
+                    return new Reply(200,
                         conn.jprintf(UserManagment.class, "adduser.noslots"));
                 }
             } catch (UserFileException e1) {
                 logger.warn("", e1);
 
-                return new FtpReply(200, e1.getMessage());
+                return new Reply(200, e1.getMessage());
             }
 
             newGroup = conn.getUserNull().getGroupName();
         } else if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
         User newUser;
-        FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
         ReplacerEnvironment env = new ReplacerEnvironment();
 
         try {
@@ -236,6 +237,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             //action, no more NoSuchElementException below here
             newUser = conn.getGlobalContext().getUserManager().create(newUsername);
             newUser.setPassword(pass);
+            newUser.getKeyedMap().putObject(UserManagment.CREATED, new Date());
             response.addComment(conn.jprintf(UserManagment.class,
                     "adduser.success", env));
             newUser.putObject(UserManagment.COMMENT,
@@ -254,10 +256,10 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                     "' added '" + newUser.getUsername() + "'");
             }
         } catch (NoSuchElementException ex) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "adduser.missingpass"));
         } catch (UserFileException ex) {
-            return new FtpReply(200, ex.getMessage());
+            return new Reply(200, ex.getMessage());
         }
 
         try {
@@ -283,7 +285,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         } catch (UserFileException ex) {
             logger.warn("", ex);
 
-            return new FtpReply(200, ex.getMessage());
+            return new Reply(200, ex.getMessage());
         }
 
         return response;
@@ -389,15 +391,15 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
      * NOTE: The flag DELETED can not be changed with site change, it will
      * change when someone does a site deluser/readd.
      */
-    private FtpReply doSITE_CHANGE(BaseFtpConnection conn) {
-        FtpReply usage = (FtpReply) FtpReply.RESPONSE_501_SYNTAX_ERROR.clone();
+    private Reply doSITE_CHANGE(BaseFtpConnection conn) {
+        Reply usage = (Reply) Reply.RESPONSE_501_SYNTAX_ERROR.clone();
         usage.addComment(conn.jprintf(UserManagment.class, "change.usage"));
 
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin() &&
                 !conn.getUserNull().isGroupAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!request.hasArgument()) {
@@ -405,7 +407,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         }
 
         User userToChange;
-        FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
         ReplacerEnvironment env = new ReplacerEnvironment();
 
         StringTokenizer arguments = new StringTokenizer(request.getArgument());
@@ -420,12 +422,12 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             userToChange = conn.getGlobalContext().getUserManager()
                                .getUserByName(username);
         } catch (NoSuchUserException e) {
-            return new FtpReply(550,
+            return new Reply(550,
                 "User " + username + " not found: " + e.getMessage());
         } catch (UserFileException e) {
             logger.log(Level.ERROR, "Error loading user", e);
 
-            return new FtpReply(550, "Error loading user: " + e.getMessage());
+            return new Reply(550, "Error loading user: " + e.getMessage());
         }
 
         if (!arguments.hasMoreTokens()) {
@@ -435,7 +437,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         String command = arguments.nextToken().toLowerCase();
 
         if (conn.getUserNull().isGroupAdmin() && !command.equals("ratio")) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         env.add("targetuser", userToChange.getUsername());
@@ -468,7 +470,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                     !conn.getUserNull().isAdmin()) {
                 ////// Group Admin Ratio //////
                 if (!conn.getUserNull().getGroupName().equals(userToChange.getGroupName())) {
-                    return FtpReply.RESPONSE_530_ACCESS_DENIED;
+                    return Reply.RESPONSE_530_ACCESS_DENIED;
                 }
 
                 if (ratio == 0F) {
@@ -486,17 +488,17 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                             }
                         }
                     } catch (UserFileException e1) {
-                        return new FtpReply(200,
+                        return new Reply(200,
                             "IO error reading userfiles: " + e1.getMessage());
                     }
 
                     if (usedleechslots >= conn.getUserNull().getGroupLeechSlots()) {
-                        return new FtpReply(200,
+                        return new Reply(200,
                             conn.jprintf(UserManagment.class,
                                 "changeratio.nomoreslots"));
                     }
                 } else if (ratio != 0F) {
-                    return new FtpReply(200,
+                    return new Reply(200,
                         conn.jprintf(UserManagment.class,
                             "changeratio.invalidratio"));
                 }
@@ -573,7 +575,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 
                 if ((commandArguments.length < 1) ||
                         (commandArguments.length > 2)) {
-                    return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+                    return Reply.RESPONSE_501_SYNTAX_ERROR;
                 }
 
                 numLogins = Integer.parseInt(commandArguments[0]);
@@ -597,7 +599,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                 response.addComment(conn.jprintf(UserManagment.class,
                         "changenumlogins.success", env));
             } catch (NumberFormatException ex) {
-                return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+                return Reply.RESPONSE_501_SYNTAX_ERROR;
             }
 
             //} else if ("max_dlspeed".equalsIgnoreCase(command)) {
@@ -626,7 +628,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             try {
                 if ((commandArguments.length < 1) ||
                         (commandArguments.length > 2)) {
-                    return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+                    return Reply.RESPONSE_501_SYNTAX_ERROR;
                 }
 
                 short groupSlots = Short.parseShort(commandArguments[0]);
@@ -651,33 +653,32 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                 response.addComment(conn.jprintf(UserManagment.class,
                         "changegroupslots.success", env));
             } catch (NumberFormatException ex) {
-                return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+                return Reply.RESPONSE_501_SYNTAX_ERROR;
             }
         } else if ("created".equals(command)) {
-            long myDate;
+            Date myDate;
 
             if (commandArguments.length == 0) {
                 try {
-                    myDate = new SimpleDateFormat("yyyy-MM-dd").parse(commandArguments[0])
-                                                               .getTime();
+                    myDate = new SimpleDateFormat("yyyy-MM-dd").parse(commandArguments[0]);
                 } catch (ParseException e1) {
                     logger.log(Level.INFO, e1);
 
-                    return new FtpReply(200, e1.getMessage());
+                    return new Reply(200, e1.getMessage());
                 }
             } else {
-                myDate = System.currentTimeMillis();
+                myDate = new Date();
             }
 
             logger.info("'" + conn.getUserNull().getUsername() +
                 "' changed created for '" + userToChange.getUsername() +
                 "' from '" +
                 new Date(userToChange.getObjectLong(UserManagment.CREATED)) +
-                "' to '" + new Date(myDate) + "'");
-            userToChange.putObject(UserManagment.CREATED, new Long(myDate));
-            env.add("created", new Date(myDate));
+                "' to '" + myDate + "'");
+            userToChange.putObject(UserManagment.CREATED, myDate);
+            //env.add("created", myDate);
 
-            response = new FtpReply(200,
+            response = new Reply(200,
                     conn.jprintf(UserManagment.class, "changecreated.success",
                         env));
         } else if ("wkly_allotment".equals(command)) {
@@ -692,7 +693,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                 weeklyAllotment + "'");
             userToChange.setWeeklyAllotment(weeklyAllotment);
 
-            response = FtpReply.RESPONSE_200_COMMAND_OK;
+            response = Reply.RESPONSE_200_COMMAND_OK;
         } else if ("tagline".equals(command)) {
             if (commandArguments.length < 1) {
                 return usage;
@@ -704,7 +705,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                 fullCommandArgument + "'");
             userToChange.putObject(UserManagment.TAGLINE, fullCommandArgument);
 
-            response = FtpReply.RESPONSE_200_COMMAND_OK;
+            response = Reply.RESPONSE_200_COMMAND_OK;
         } else {
             return usage;
         }
@@ -732,22 +733,22 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
      * ex2. site chgrp archimede ftp eleet This moves archimede from ftp group
      * to eleet group.
      */
-    private FtpReply doSITE_CHGRP(BaseFtpConnection conn) {
+    private Reply doSITE_CHGRP(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!request.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "chgrp.usage"));
         }
 
         String[] args = request.getArgument().split("[ ,]");
 
         if (args.length < 2) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         User myUser;
@@ -755,15 +756,15 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         try {
             myUser = conn.getGlobalContext().getUserManager().getUserByName(args[0]);
         } catch (NoSuchUserException e) {
-            return new FtpReply(200, "User not found: " + e.getMessage());
+            return new Reply(200, "User not found: " + e.getMessage());
         } catch (UserFileException e) {
             logger.log(Level.FATAL, "IO error reading user", e);
 
-            return new FtpReply(200, "IO error reading user: " +
+            return new Reply(200, "IO error reading user: " +
                 e.getMessage());
         }
 
-        FtpReply response = new FtpReply(200);
+        Reply response = new Reply(200);
 
         for (int i = 1; i < args.length; i++) {
             String string = args[i];
@@ -806,22 +807,22 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
      *  @ Denotes any email-like password, ex. site chpass arch @ This will
      * allow arch to login with a@b.com but not ab.com
      */
-    private FtpReply doSITE_CHPASS(BaseFtpConnection conn) {
+    private Reply doSITE_CHPASS(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!request.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "chpass.usage"));
         }
 
         String[] args = request.getArgument().split(" ");
 
         if (args.length != 2) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         try {
@@ -831,13 +832,13 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             logger.info("'" + conn.getUserNull().getUsername() +
                 "' changed password for '" + myUser.getUsername() + "'");
 
-            return FtpReply.RESPONSE_200_COMMAND_OK;
+            return Reply.RESPONSE_200_COMMAND_OK;
         } catch (NoSuchUserException e) {
-            return new FtpReply(200, "User not found: " + e.getMessage());
+            return new Reply(200, "User not found: " + e.getMessage());
         } catch (UserFileException e) {
             logger.log(Level.FATAL, "Error reading userfile", e);
 
-            return new FtpReply(200, "Error reading userfile: " +
+            return new Reply(200, "Error reading userfile: " +
                 e.getMessage());
         }
     }
@@ -848,23 +849,23 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
      * @param request
      * @param out
      */
-    private FtpReply doSITE_DELIP(BaseFtpConnection conn) {
+    private Reply doSITE_DELIP(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin() &&
                 !conn.getUserNull().isGroupAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!request.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "delip.usage"));
         }
 
         String[] args = request.getArgument().split(" ");
 
         if (args.length < 2) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         User myUser;
@@ -872,19 +873,19 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         try {
             myUser = conn.getGlobalContext().getUserManager().getUserByName(args[0]);
         } catch (NoSuchUserException e) {
-            return new FtpReply(200, e.getMessage());
+            return new Reply(200, e.getMessage());
         } catch (UserFileException e) {
             logger.log(Level.FATAL, "IO error", e);
 
-            return new FtpReply(200, "IO error: " + e.getMessage());
+            return new Reply(200, "IO error: " + e.getMessage());
         }
 
         if (conn.getUserNull().isGroupAdmin() &&
                 !conn.getUserNull().getGroupName().equals(myUser.getGroupName())) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        FtpReply response = new FtpReply(200);
+        Reply response = new Reply(200);
 
         for (int i = 1; i < args.length; i++) {
             String string = args[i];
@@ -905,17 +906,17 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         return response;
     }
 
-    private FtpReply doSITE_DELUSER(BaseFtpConnection conn) {
+    private Reply doSITE_DELUSER(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!request.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "deluser.usage"));
         }
 
         if (!conn.getUserNull().isAdmin() &&
                 !conn.getUserNull().isGroupAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         String delUsername = request.getArgument();
@@ -924,35 +925,35 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         try {
             myUser = conn.getGlobalContext().getUserManager().getUserByName(delUsername);
         } catch (NoSuchUserException e) {
-            return new FtpReply(200, e.getMessage());
+            return new Reply(200, e.getMessage());
         } catch (UserFileException e) {
-            return new FtpReply(200, "Couldn't getUser: " + e.getMessage());
+            return new Reply(200, "Couldn't getUser: " + e.getMessage());
         }
 
         if (conn.getUserNull().isGroupAdmin() &&
                 !conn.getUserNull().getGroupName().equals(myUser.getGroupName())) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         myUser.setDeleted(true);
         logger.info("'" + conn.getUserNull().getUsername() +
             "' deleted user '" + myUser.getUsername() + "'");
 
-        return FtpReply.RESPONSE_200_COMMAND_OK;
+        return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    private FtpReply doSITE_GINFO(BaseFtpConnection conn) {
+    private Reply doSITE_GINFO(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         //security
         if (!conn.getUserNull().isAdmin() &&
                 !conn.getUserNull().isGroupAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         //syntax
         if (!request.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "ginfo.usage"));
         }
 
@@ -961,7 +962,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 
         if (conn.getUserNull().isGroupAdmin() &&
                 !conn.getUserNull().getGroupName().equals(group)) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         Collection users;
@@ -969,10 +970,10 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         try {
             users = conn.getGlobalContext().getUserManager().getAllUsersByGroup(group);
         } catch (UserFileException e) {
-            return new FtpReply(200, "IO error: " + e.getMessage());
+            return new Reply(200, "IO error: " + e.getMessage());
         }
 
-        FtpReply response = new FtpReply(200);
+        Reply response = new Reply(200);
 
         for (Iterator iter = users.iterator(); iter.hasNext();) {
             User user = (User) iter.next();
@@ -992,22 +993,22 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         return response;
     }
 
-    private FtpReply doSITE_GIVE(BaseFtpConnection conn) {
+    private Reply doSITE_GIVE(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getGlobalContext().getConfig().checkGive(conn.getUserNull())) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!request.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "give.usage"));
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
 
         if (!st.hasMoreTokens()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         User myUser;
@@ -1017,22 +1018,22 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         } catch (Exception e) {
             logger.warn("", e);
 
-            return new FtpReply(200, e.getMessage());
+            return new Reply(200, e.getMessage());
         }
 
         if (!st.hasMoreTokens()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         long credits = Bytes.parseBytes(st.nextToken());
 
         if (0 > credits) {
-            return new FtpReply(200, credits + " is not a positive number.");
+            return new Reply(200, credits + " is not a positive number.");
         }
 
         if (!conn.getUserNull().isAdmin()) {
             if (credits > conn.getUserNull().getCredits()) {
-                return new FtpReply(200,
+                return new Reply(200,
                     "You cannot give more credits than you have.");
             }
 
@@ -1044,12 +1045,12 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             myUser.getUsername() + "'");
         myUser.updateCredits(credits);
 
-        return new FtpReply(200,
+        return new Reply(200,
             "OK, gave " + Bytes.formatBytes(credits) + " of your credits to " +
             myUser.getUsername());
     }
 
-    private FtpReply doSITE_GROUPS(BaseFtpConnection conn) {
+    private Reply doSITE_GROUPS(BaseFtpConnection conn) {
         Collection groups;
 
         try {
@@ -1057,10 +1058,10 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         } catch (UserFileException e) {
             logger.log(Level.FATAL, "IO error from getAllGroups()", e);
 
-            return new FtpReply(200, "IO error: " + e.getMessage());
+            return new Reply(200, "IO error: " + e.getMessage());
         }
 
-        FtpReply response = new FtpReply(200);
+        Reply response = new Reply(200);
         response.addComment("All groups:");
 
         for (Iterator iter = groups.iterator(); iter.hasNext();) {
@@ -1071,29 +1072,29 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         return response;
     }
 
-    private FtpReply doSITE_GRPREN(BaseFtpConnection conn) {
+    private Reply doSITE_GRPREN(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!request.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "grpren.usage"));
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
 
         if (!st.hasMoreTokens()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "grpren.usage"));
         }
 
         String oldGroup = st.nextToken();
 
         if (!st.hasMoreTokens()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "grpren.usage"));
         }
 
@@ -1103,7 +1104,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         try {
             if (!conn.getGlobalContext().getUserManager()
                          .getAllUsersByGroup(newGroup).isEmpty()) {
-                return new FtpReply(500, newGroup + " already exists");
+                return new Reply(500, newGroup + " already exists");
             }
 
             users = conn.getGlobalContext().getUserManager().getAllUsersByGroup(oldGroup);
@@ -1111,10 +1112,10 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             logger.log(Level.FATAL,
                 "IO error from getAllUsersByGroup(" + oldGroup + ")", e);
 
-            return new FtpReply(200, "IO error: " + e.getMessage());
+            return new Reply(200, "IO error: " + e.getMessage());
         }
 
-        FtpReply response = new FtpReply(200);
+        Reply response = new Reply(200);
         response.addComment("Renaming group " + oldGroup + " to " + newGroup);
 
         for (Iterator iter = users.iterator(); iter.hasNext();) {
@@ -1144,15 +1145,15 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         return response;
     }
 
-    private FtpReply doSITE_KICK(BaseFtpConnection conn) {
+    private Reply doSITE_KICK(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!request.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "kick.usage"));
         }
 
@@ -1168,7 +1169,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             message = arg.substring(pos + 1);
         }
 
-        FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
         ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(conn.getGlobalContext()
                                             .getConnectionManager()
                                             .getConnections());
@@ -1187,11 +1188,11 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         return response;
     }
 
-    private FtpReply doSITE_PASSWD(BaseFtpConnection conn) {
+    private Reply doSITE_PASSWD(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!request.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "passwd.usage"));
         }
 
@@ -1199,19 +1200,19 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             "' changed his password");
         conn.getUserNull().setPassword(request.getArgument());
 
-        return FtpReply.RESPONSE_200_COMMAND_OK;
+        return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    private FtpReply doSITE_PURGE(BaseFtpConnection conn) {
+    private Reply doSITE_PURGE(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin() &&
                 !conn.getUserNull().isGroupAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!request.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "purge.usage"));
         }
 
@@ -1222,37 +1223,37 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             myUser = conn.getGlobalContext().getUserManager()
                          .getUserByNameUnchecked(delUsername);
         } catch (NoSuchUserException e) {
-            return new FtpReply(200, e.getMessage());
+            return new Reply(200, e.getMessage());
         } catch (UserFileException e) {
-            return new FtpReply(200, "Couldn't getUser: " + e.getMessage());
+            return new Reply(200, "Couldn't getUser: " + e.getMessage());
         }
 
         if (!myUser.isDeleted()) {
-            return new FtpReply(200, "User isn't deleted");
+            return new Reply(200, "User isn't deleted");
         }
 
         if (conn.getUserNull().isGroupAdmin() &&
                 !conn.getUserNull().getGroupName().equals(myUser.getGroupName())) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         myUser.purge();
         logger.info("'" + conn.getUserNull().getUsername() + "' purged '" +
             myUser.getUsername() + "'");
 
-        return FtpReply.RESPONSE_200_COMMAND_OK;
+        return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    private FtpReply doSITE_READD(BaseFtpConnection conn) {
+    private Reply doSITE_READD(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin() &&
                 !conn.getUserNull().isGroupAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!request.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "readd.usage"));
         }
 
@@ -1262,43 +1263,43 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             myUser = conn.getGlobalContext().getUserManager()
                          .getUserByNameUnchecked(request.getArgument());
         } catch (NoSuchUserException e) {
-            return new FtpReply(200, e.getMessage());
+            return new Reply(200, e.getMessage());
         } catch (UserFileException e) {
-            return new FtpReply(200, "IO error: " + e.getMessage());
+            return new Reply(200, "IO error: " + e.getMessage());
         }
 
         if (conn.getUserNull().isGroupAdmin() &&
                 !conn.getUserNull().getGroupName().equals(myUser.getGroupName())) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!myUser.isDeleted()) {
-            return new FtpReply(200, "User wasn't deleted");
+            return new Reply(200, "User wasn't deleted");
         }
 
         myUser.setDeleted(false);
         logger.info("'" + conn.getUserNull().getUsername() + "' readded '" +
             myUser.getUsername() + "'");
 
-        return FtpReply.RESPONSE_200_COMMAND_OK;
+        return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    private FtpReply doSITE_RENUSER(BaseFtpConnection conn) {
+    private Reply doSITE_RENUSER(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!request.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "renuser.usage"));
         }
 
         String[] args = request.getArgument().split(" ");
 
         if (args.length != 2) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         try {
@@ -1309,21 +1310,21 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             logger.info("'" + conn.getUserNull().getUsername() + "' renamed '" +
                 oldUsername + "' to '" + myUser.getUsername() + "'");
         } catch (NoSuchUserException e) {
-            return new FtpReply(200, "No such user: " + e.getMessage());
+            return new Reply(200, "No such user: " + e.getMessage());
         } catch (UserExistsException e) {
-            return new FtpReply(200, "Target username is already taken");
+            return new Reply(200, "Target username is already taken");
         } catch (UserFileException e) {
-            return new FtpReply(200, e.getMessage());
+            return new Reply(200, e.getMessage());
         }
 
-        return FtpReply.RESPONSE_200_COMMAND_OK;
+        return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    private FtpReply doSITE_SEEN(BaseFtpConnection conn) {
+    private Reply doSITE_SEEN(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!request.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "seen.usage"));
         }
 
@@ -1332,23 +1333,23 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         try {
             user = conn.getGlobalContext().getUserManager().getUserByName(request.getArgument());
         } catch (NoSuchUserException e) {
-            return new FtpReply(200, e.getMessage());
+            return new Reply(200, e.getMessage());
         } catch (UserFileException e) {
             logger.log(Level.FATAL, "", e);
 
-            return new FtpReply(200, "Error reading userfile: " +
+            return new Reply(200, "Error reading userfile: " +
                 e.getMessage());
         }
 
-        return new FtpReply(200,
+        return new Reply(200,
             "User was last seen: " + new Date(user.getLastAccessTime()));
     }
 
-    private FtpReply doSITE_TAGLINE(BaseFtpConnection conn) {
+    private Reply doSITE_TAGLINE(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!request.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "tagline.usage"));
         }
 
@@ -1359,7 +1360,20 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         conn.getUserNull().putObject(UserManagment.TAGLINE,
             request.getArgument());
 
-        return FtpReply.RESPONSE_200_COMMAND_OK;
+        return Reply.RESPONSE_200_COMMAND_OK;
+    }
+
+    private Reply doSITE_DEBUG(BaseFtpConnection conn) {
+    	User user = conn.getUserNull();
+    	if(!conn.getRequest().hasArgument()) {
+    		user.putObject(UserManagment.DEBUG,
+				new Boolean(!user.getObjectBoolean(UserManagment.DEBUG)));
+    	} else {
+    		String arg = conn.getRequest().getArgument();
+    		user.putObject(UserManagment.DEBUG,
+				new Boolean(arg.equals("true") || arg.equals("on")));
+    	}
+    	return new Reply(200, conn.jprintf(UserManagment.class, "debug"));
     }
 
     /**
@@ -1370,22 +1384,22 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
      * This will remove 100mb of credits from the user 'Archimede' and send the
      * message haha to him.
      */
-    private FtpReply doSITE_TAKE(BaseFtpConnection conn) {
+    private Reply doSITE_TAKE(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getGlobalContext().getConfig().checkTake(conn.getUserNull())) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!request.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "take.usage"));
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
 
         if (!st.hasMoreTokens()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         User myUser;
@@ -1395,13 +1409,13 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             myUser = conn.getGlobalContext().getUserManager().getUserByName(st.nextToken());
 
             if (!st.hasMoreTokens()) {
-                return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+                return Reply.RESPONSE_501_SYNTAX_ERROR;
             }
 
             credits = Bytes.parseBytes(st.nextToken()); // B, not KiB
 
             if (0 > credits) {
-                return new FtpReply(200, "Credits must be a positive number.");
+                return new Reply(200, "Credits must be a positive number.");
             }
 
             logger.info("'" + conn.getUserNull().getUsername() + "' took " +
@@ -1409,10 +1423,10 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                 myUser.getUsername() + "'");
             myUser.updateCredits(-credits);
         } catch (Exception ex) {
-            return new FtpReply(200, ex.getMessage());
+            return new Reply(200, ex.getMessage());
         }
 
-        return new FtpReply(200,
+        return new Reply(200,
             "OK, removed " + credits + "b from " + myUser.getUsername() + ".");
     }
 
@@ -1428,20 +1442,20 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
      *
      * This will show detailed information about user 'Archimede'.
      */
-    private FtpReply doSITE_USER(BaseFtpConnection conn) {
+    private Reply doSITE_USER(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin() &&
                 !conn.getUserNull().isGroupAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!request.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(UserManagment.class, "user.usage"));
         }
 
-        FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
         User myUser;
 
         try {
@@ -1454,12 +1468,12 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 
             //return FtpResponse.RESPONSE_200_COMMAND_OK);
         } catch (UserFileException ex) {
-            return new FtpReply(200, ex.getMessage());
+            return new Reply(200, ex.getMessage());
         }
 
         if (conn.getUserNull().isGroupAdmin() &&
                 !conn.getUserNull().getGroupName().equals(myUser.getGroupName())) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         //int i = (int) (myUser.getTimeToday() / 1000);
@@ -1496,14 +1510,14 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         return response;
     }
 
-    private FtpReply doSITE_USERS(BaseFtpConnection conn) {
+    private Reply doSITE_USERS(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        FtpReply response = new FtpReply(200);
+        Reply response = new Reply(200);
         Collection myUsers;
 
         try {
@@ -1511,7 +1525,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         } catch (UserFileException e) {
             logger.log(Level.FATAL, "IO error reading all users", e);
 
-            return new FtpReply(200, "IO error: " + e.getMessage());
+            return new Reply(200, "IO error: " + e.getMessage());
         }
 
         if (request.hasArgument()) {
@@ -1540,8 +1554,8 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
     /**
      * Lists currently connected users.
      */
-    private FtpReply doSITE_WHO(BaseFtpConnection conn) {
-        FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+    private Reply doSITE_WHO(BaseFtpConnection conn) {
+        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
         long users = 0;
         long speedup = 0;
         long speeddn = 0;
@@ -1632,7 +1646,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 
             return response;
         } catch (FormatterException e) {
-            return new FtpReply(200, e.getMessage());
+            return new Reply(200, e.getMessage());
         }
     }
 
@@ -1641,7 +1655,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
      *
      * @see net.sf.drftpd.master.command.CommandHandler#execute(net.sf.drftpd.master.BaseFtpConnection)
      */
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         String cmd = conn.getRequest().getCommand();
 
@@ -1660,6 +1674,9 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         if ("SITE CHPASS".equals(cmd)) {
             return doSITE_CHPASS(conn);
         }
+
+        if("SITE DEBUG".equals(cmd))
+        	return doSITE_DEBUG(conn);
 
         if ("SITE DELIP".equals(cmd)) {
             return doSITE_DELIP(conn);

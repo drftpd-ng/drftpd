@@ -15,38 +15,38 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands;
-
-import net.sf.drftpd.master.FtpRequest;
-
+package org.drftpd.remotefile;
 
 /**
  * @author mog
  * @version $Id$
  */
-public class UnhandledCommandException extends ReplyException {
-    public UnhandledCommandException() {
-        super();
+public abstract class AbstractLightRemoteFile implements LightRemoteFileInterface {
+
+    public int hashCode() {
+        return getName().hashCode();
     }
 
-    public UnhandledCommandException(String message) {
-        super(message);
+    public String toString() {
+        StringBuffer ret = new StringBuffer();
+        ret.append(getClass().getName() + "[");
+
+        if (isDirectory()) {
+            ret.append("[directory: true]");
+        }
+
+        if (isFile()) {
+            ret.append("[file: true]");
+        }
+
+        ret.append("[length(): " + this.length() + "]");
+        ret.append(getName());
+        ret.append("]");
+
+        return ret.toString();
     }
 
-    public UnhandledCommandException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public UnhandledCommandException(Throwable cause) {
-        super(cause);
-    }
-
-    public static UnhandledCommandException create(Class clazz, FtpRequest req) {
-        return create(clazz, req.getCommand());
-    }
-
-    public static UnhandledCommandException create(Class clazz, String command) {
-        return new UnhandledCommandException(clazz.getName() +
-            " doesn't know how to handle " + command);
+    public long getCheckSumCached() {
+        return 0;
     }
 }

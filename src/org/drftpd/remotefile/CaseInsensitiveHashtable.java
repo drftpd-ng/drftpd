@@ -20,7 +20,11 @@ package org.drftpd.remotefile;
 import java.util.Hashtable;
 import java.util.Map;
 
-
+/**
+ * Cannot be generic until JDK 1.4 support is dropped.
+ * @author mog
+ * @version $Id$
+ */
 public class CaseInsensitiveHashtable extends Hashtable {
     public CaseInsensitiveHashtable() {
         super();

@@ -19,7 +19,6 @@ package org.drftpd.commands;
 
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
@@ -47,7 +46,7 @@ import java.util.Map;
 /**
  * @author mog
  *
- * @version $Id: Pre.java,v 1.7 2004/11/09 18:59:54 mog Exp $
+ * @version $Id$
  */
 public class Pre implements CommandHandlerFactory, CommandHandler {
     private static final Logger logger = Logger.getLogger(Pre.class);
@@ -66,7 +65,7 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
     /**
      * Syntax: SITE PRE <RELEASEDIR> <SECTION>
      */
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         FtpRequest request = conn.getRequest();
 
@@ -75,13 +74,13 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
         }
 
         if (!request.hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         String[] args = request.getArgument().split(" ");
 
         if (args.length != 2) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         SectionInterface section = conn.getGlobalContext().getConnectionManager()
@@ -89,7 +88,7 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
                                        .getSection(args[1]);
 
         if (section.getName().equals("")) {
-            return new FtpReply(200,
+            return new Reply(200,
                 "Invalid section, see SITE SECTIONS for a list of available sections");
         }
 
@@ -98,16 +97,16 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
         try {
             preDir = conn.getCurrentDirectory().lookupFile(args[0]);
         } catch (FileNotFoundException e) {
-            return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+            return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
         }
 
         if (!conn.getGlobalContext().getConnectionManager().getGlobalContext()
                      .getConfig().checkPathPermission("pre",
                     conn.getUserNull(), preDir)) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        FtpReply response = new FtpReply(200);
+        Reply response = new Reply(200);
 
         //AWARD CREDITS
         Hashtable awards = new Hashtable();
@@ -137,14 +136,14 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
         } catch (IOException ex) {
             logger.warn("", ex);
 
-            return new FtpReply(200, ex.getMessage());
+            return new Reply(200, ex.getMessage());
         }
 
         //ANNOUNCE
         conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
                 conn, "PRE", toDir));
 
-        return FtpReply.RESPONSE_200_COMMAND_OK;
+        return Reply.RESPONSE_200_COMMAND_OK;
     }
 
     public String[] getFeatReplies() {

@@ -18,7 +18,6 @@
 package org.drftpd.commands;
 
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
@@ -32,16 +31,16 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Sections.java,v 1.6 2004/11/03 16:46:44 mog Exp $
+ * @version $Id$
  */
 public class Sections implements CommandHandlerFactory, CommandHandler {
     public Sections() {
         super();
     }
 
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
-        FtpReply reply = new FtpReply(200);
+        Reply reply = new Reply(200);
         Collection sections = conn.getGlobalContext().getConnectionManager()
                                   .getGlobalContext().getSectionManager()
                                   .getSections();

@@ -17,44 +17,41 @@
  */
 package org.drftpd.remotefile;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
+
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 
 /**
  * @author mog
- * @version $Id: LinkedRemoteFileUtils.java,v 1.2 2004/08/03 20:14:06 zubov Exp $
+ * @version $Id$
  */
 public class LinkedRemoteFileUtils {
     protected LinkedRemoteFileUtils() {
         super();
     }
 
-    public static void getAllDirectories(LinkedRemoteFileInterface dir,
-        Collection directories) {
-        for (Iterator iter = dir.getDirectories().iterator(); iter.hasNext();) {
-            LinkedRemoteFile subdir = (LinkedRemoteFile) iter.next();
-            getAllDirectories(subdir, directories);
-        }
+//    public static void getAllDirectories(LinkedRemoteFileInterface dir,
+//        Collection directories) {
+//        for (Iterator iter = dir.getDirectories().iterator(); iter.hasNext();) {
+//            LinkedRemoteFile subdir = (LinkedRemoteFile) iter.next();
+//            getAllDirectories(subdir, directories);
+//        }
+//
+//        directories.add(dir);
+//    }
 
-        directories.add(dir);
-    }
-
-    public static void getAllSFVFiles(LinkedRemoteFile dir, Collection sfvFiles) {
-        for (Iterator iter = dir.getDirectories().iterator(); iter.hasNext();) {
-            LinkedRemoteFile subdir = (LinkedRemoteFile) iter.next();
-            getAllSFVFiles(subdir, sfvFiles);
-        }
-
-        sfvFiles.add(dir);
-    }
+//    public static void getAllSFVFiles(LinkedRemoteFile dir, Collection sfvFiles) {
+//        for (Iterator iter = dir.getDirectories().iterator(); iter.hasNext();) {
+//            LinkedRemoteFile subdir = (LinkedRemoteFile) iter.next();
+//            getAllSFVFiles(subdir, sfvFiles);
+//        }
+//        sfvFiles.add(dir);
+//    }
 
     private static void getAllFilesInternal(LinkedRemoteFileInterface dir,
-        ArrayList files) {
+        ArrayList<LinkedRemoteFileInterface> files) {
         for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
 
@@ -69,9 +66,9 @@ public class LinkedRemoteFileUtils {
     }
 
     public static ArrayList getAllFiles(LinkedRemoteFileInterface dir) {
-        ArrayList files = new ArrayList();
+        ArrayList<LinkedRemoteFileInterface> files=
+        	new ArrayList<LinkedRemoteFileInterface>();
         getAllFilesInternal(dir, files);
-
         return files;
     }
 }

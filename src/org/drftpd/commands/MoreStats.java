@@ -19,7 +19,6 @@ package org.drftpd.commands;
 
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.command.CommandManager;
@@ -78,7 +77,7 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
         return rslave.getSlaveStatusAvailable();
     }
 
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         String cmd = conn.getRequest().getCommand();
 
@@ -165,10 +164,10 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
                 MoreStats.class, command));
     }
 
-    private FtpReply doSITE_GROUPSTATS(BaseFtpConnection conn) {
+    private Reply doSITE_GROUPSTATS(BaseFtpConnection conn) {
         //if (!conn.getConfig().checkPermission("groupstats",conn.getUserNull())) {
         FtpRequest request = conn.getRequest();
-        FtpReply response = new FtpReply(200, "OK");
+        Reply response = new Reply(200, "OK");
         final String command = request.getCommand();
         String type = command.substring("SITE G".length()).toUpperCase();
 
@@ -181,7 +180,7 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
         } catch (UserFileException e) {
             logger.warn("", e);
 
-            return new FtpReply(200, "IO error: " + e.getMessage());
+            return new Reply(200, "IO error: " + e.getMessage());
         }
 
         MyGroupPosition stat = null;
@@ -295,7 +294,7 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
     }
 
     private void AddTrafficComment(String type, double avrage, long megs,
-        int files, FtpReply response) {
+        int files, Reply response) {
         double s = avrage / (double) 1000.0;
 
         if (s <= 0) {
@@ -313,8 +312,8 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
                 env, MoreStats.class));
     }
 
-    private FtpReply doSITE_TRAFFIC(BaseFtpConnection conn) {
-        FtpReply response = new FtpReply(200, "OK");
+    private Reply doSITE_TRAFFIC(BaseFtpConnection conn) {
+        Reply response = new Reply(200, "OK");
 
         Collection users;
 
@@ -324,7 +323,7 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
         } catch (UserFileException e) {
             logger.warn("", e);
 
-            return new FtpReply(200, "IO error: " + e.getMessage());
+            return new Reply(200, "IO error: " + e.getMessage());
         }
 
         double MonthUpAvrage = 0;

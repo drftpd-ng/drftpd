@@ -22,13 +22,13 @@ import com.Ostermiller.util.StringTokenizer;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 
 import org.drftpd.master.RemoteSlave;
@@ -56,19 +56,19 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
     public void load(CommandManagerFactory initializer) {
     }
 
-    private FtpReply doSITE_CHECKSLAVES(BaseFtpConnection conn) {
-        return new FtpReply(200,
+    private Reply doSITE_CHECKSLAVES(BaseFtpConnection conn) {
+        return new Reply(200,
             "Ok, " + conn.getGlobalContext().getSlaveManager().verifySlaves() +
             " stale slaves removed");
     }
 
-    private FtpReply doSITE_KICKSLAVE(BaseFtpConnection conn) {
+    private Reply doSITE_KICKSLAVE(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!conn.getRequest().hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         RemoteSlave rslave;
@@ -77,33 +77,33 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
             rslave = conn.getGlobalContext().getSlaveManager().getRemoteSlave(conn.getRequest()
                                                                                   .getArgument());
         } catch (ObjectNotFoundException e) {
-            return new FtpReply(200, "No such slave");
+            return new Reply(200, "No such slave");
         }
 
         if (!rslave.isOnline()) {
-            return new FtpReply(200, "Slave is already offline");
+            return new Reply(200, "Slave is already offline");
         }
 
         rslave.setOffline("Slave kicked by " +
             conn.getUserNull().getUsername());
 
-        return FtpReply.RESPONSE_200_COMMAND_OK;
+        return Reply.RESPONSE_200_COMMAND_OK;
     }
 
     /** Lists all slaves used by the master
      * USAGE: SITE SLAVES
      *
      */
-    private FtpReply doSITE_SLAVES(BaseFtpConnection conn) {
+    private Reply doSITE_SLAVES(BaseFtpConnection conn) {
         boolean showMore = conn.getRequest().hasArgument() &&
             (conn.getRequest().getArgument().equalsIgnoreCase("more"));
 
         if (showMore && !conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         Collection slaves = conn.getGlobalContext().getSlaveManager().getSlaves();
-        FtpReply response = new FtpReply(200,
+        Reply response = new Reply(200,
                 "OK, " + slaves.size() + " slaves listed.");
 
         for (Iterator iter = conn.getGlobalContext().getSlaveManager()
@@ -132,13 +132,13 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         return response;
     }
 
-    private FtpReply doSITE_REMERGE(BaseFtpConnection conn) {
+    private Reply doSITE_REMERGE(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (!conn.getRequest().hasArgument()) {
-            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+            return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
         RemoteSlave rslave;
@@ -147,11 +147,11 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
             rslave = conn.getGlobalContext().getSlaveManager().getRemoteSlave(conn.getRequest()
                                                                                   .getArgument());
         } catch (ObjectNotFoundException e) {
-            return new FtpReply(200, "No such slave");
+            return new Reply(200, "No such slave");
         }
 
         if (!rslave.isAvailable()) {
-            return new FtpReply(200,
+            return new Reply(200,
                 "Slave is still merging from initial connect");
         }
 
@@ -163,30 +163,30 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         } catch (IOException e) {
             rslave.setOffline("IOException during remerge()");
 
-            return new FtpReply(200, "IOException during remerge()");
+            return new Reply(200, "IOException during remerge()");
         } catch (SlaveUnavailableException e) {
             rslave.setOffline("Slave Unavailable during remerge()");
 
-            return new FtpReply(200, "Slave Unavailable during remerge()");
+            return new Reply(200, "Slave Unavailable during remerge()");
         }
 
-        return FtpReply.RESPONSE_200_COMMAND_OK;
+        return Reply.RESPONSE_200_COMMAND_OK;
     }
 
     /**
      * Usage: site slave slavename [set,addmask,delmask]
      */
-    private FtpReply doSITE_SLAVE(BaseFtpConnection conn) {
+    private Reply doSITE_SLAVE(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        FtpReply response = new FtpReply(200);
+        Reply response = new Reply(200);
         ReplacerEnvironment env = new ReplacerEnvironment();
         FtpRequest ftpRequest = conn.getRequest();
 
         if (!ftpRequest.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(SlaveManagement.class, "slave.usage"));
         }
 
@@ -194,7 +194,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         StringTokenizer arguments = new StringTokenizer(argument);
 
         if (!arguments.hasMoreTokens()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(SlaveManagement.class, "slave.usage"));
         }
 
@@ -240,7 +240,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
 
         if (command.equalsIgnoreCase("set")) {
             if (arguments.countTokens() != 2) {
-                return new FtpReply(501,
+                return new Reply(501,
                     conn.jprintf(SlaveManagement.class, "slave.set.usage"));
             }
 
@@ -255,7 +255,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
             return response;
         } else if (command.equalsIgnoreCase("addmask")) {
             if (arguments.countTokens() != 1) {
-                return new FtpReply(501,
+                return new Reply(501,
                     conn.jprintf(SlaveManagement.class, "slave.addmask.usage"));
             }
 
@@ -269,11 +269,11 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
                 return response;
             }
 
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(SlaveManagement.class, "slave.addmask.failed"));
         } else if (command.equalsIgnoreCase("delmask")) {
             if (arguments.countTokens() != 1) {
-                return new FtpReply(501,
+                return new Reply(501,
                     conn.jprintf(SlaveManagement.class, "slave.delmask.usage"));
             }
 
@@ -281,18 +281,18 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
             env.add("mask", mask);
 
             if (rslave.removeMask(mask)) {
-                return new FtpReply(200, conn.jprintf(SlaveManagement.class,
+                return new Reply(200, conn.jprintf(SlaveManagement.class,
                         "slave.delmask.success", env));
             }
-            return new FtpReply(501, conn.jprintf(SlaveManagement.class,
+            return new Reply(501, conn.jprintf(SlaveManagement.class,
                         "slave.delmask.failed", env));
         }
 
-        return new FtpReply(501,
+        return new Reply(501,
             conn.jprintf(SlaveManagement.class, "slave.usage"));
     }
 
-    public FtpReply execute(BaseFtpConnection conn)
+    public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         String cmd = conn.getRequest().getCommand();
 
@@ -328,17 +328,17 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
             conn.getRequest());
     }
 
-    private FtpReply doSITE_DELSLAVE(BaseFtpConnection conn) {
+    private Reply doSITE_DELSLAVE(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        FtpReply response = new FtpReply(200);
+        Reply response = new Reply(200);
         ReplacerEnvironment env = new ReplacerEnvironment();
         FtpRequest ftpRequest = conn.getRequest();
 
         if (!ftpRequest.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(SlaveManagement.class, "delslave.usage"));
         }
 
@@ -346,7 +346,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         StringTokenizer arguments = new StringTokenizer(argument);
 
         if (!arguments.hasMoreTokens()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(SlaveManagement.class, "delslave.usage"));
         }
 
@@ -369,17 +369,17 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         return response;
     }
 
-    private FtpReply doSITE_ADDSLAVE(BaseFtpConnection conn) {
+    private Reply doSITE_ADDSLAVE(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
-            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+            return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        FtpReply response = new FtpReply(200);
+        Reply response = new Reply(200);
         ReplacerEnvironment env = new ReplacerEnvironment();
         FtpRequest ftpRequest = conn.getRequest();
 
         if (!ftpRequest.hasArgument()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(SlaveManagement.class, "addslave.usage"));
         }
 
@@ -387,7 +387,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         StringTokenizer arguments = new StringTokenizer(argument);
 
         if (!arguments.hasMoreTokens()) {
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(SlaveManagement.class, "addslave.usage"));
         }
 
@@ -397,7 +397,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         try {
             conn.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
 
-            return new FtpReply(501,
+            return new Reply(501,
                 conn.jprintf(SlaveManagement.class, "addslave.exists"));
         } catch (ObjectNotFoundException e) {
         }

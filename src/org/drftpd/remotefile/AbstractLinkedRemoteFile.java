@@ -47,7 +47,7 @@ public abstract class AbstractLinkedRemoteFile
         super();
     }
 
-    public LinkedRemoteFile addFile(AbstractRemoteFile file) {
+    public LinkedRemoteFile addFile(RemoteFileInterface file) {
         throw new UnsupportedOperationException();
     }
 
@@ -74,6 +74,10 @@ public abstract class AbstractLinkedRemoteFile
     }
 
     public void delete() {
+        throw new UnsupportedOperationException();
+    }
+
+    public void deleteFromSlave(RemoteSlave slave) {
         throw new UnsupportedOperationException();
     }
 

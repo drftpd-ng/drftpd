@@ -18,7 +18,6 @@
 package net.sf.drftpd.master.command.plugins;
 
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
@@ -30,6 +29,7 @@ import org.apache.log4j.Logger;
 
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.Reply;
 import org.drftpd.remotefile.RemoteFileInterface;
 
 import java.io.FileNotFoundException;
@@ -55,7 +55,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  *
- * @version $Id: LIST.java,v 1.28 2004/11/09 18:59:48 mog Exp $
+ * @version $Id$
  */
 public class LIST implements CommandHandlerFactory, CommandHandler {
     private final static DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
@@ -260,7 +260,7 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
      *                   450
      *                   500, 501, 502, 421, 530
      */
-    public FtpReply execute(BaseFtpConnection conn) {
+    public Reply execute(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
         String directoryName = null;
@@ -303,7 +303,7 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
             dataconn = conn.getDataConnectionHandler();
 
             if (!dataconn.isPasv() && !dataconn.isPort()) {
-                return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
+                return Reply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
             }
         }
 
@@ -313,12 +313,12 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
             try {
                 directoryFile = conn.getCurrentDirectory().lookupFile(directoryName);
             } catch (FileNotFoundException ex) {
-                return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+                return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
             }
 
             if (!conn.getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(),
                         directoryFile)) {
-                return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+                return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
             }
         } else {
             directoryFile = conn.getCurrentDirectory();
@@ -335,10 +335,10 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
         } else {
             if (!dataconn.isEncryptedDataChannel() &&
                     conn.getGlobalContext().getConfig().checkDenyDirUnencrypted(conn.getUserNull())) {
-                return new FtpReply(550, "Secure Listing Required");
+                return new Reply(550, "Secure Listing Required");
             }
 
-            out.write(FtpReply.RESPONSE_150_OK);
+            out.write(Reply.RESPONSE_150_OK);
             out.flush();
 
             try {
@@ -350,7 +350,7 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
             } catch (IOException ex) {
                 logger.warn("from master", ex);
 
-                return new FtpReply(425, ex.getMessage());
+                return new Reply(425, ex.getMessage());
             }
         }
 
@@ -366,7 +366,7 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
                 printNList(listFiles, detailOption, os);
             }
 
-            FtpReply response = (FtpReply) FtpReply.RESPONSE_226_CLOSING_DATA_CONNECTION.clone();
+            Reply response = (Reply) Reply.RESPONSE_226_CLOSING_DATA_CONNECTION.clone();
 
             try {
                 if (!request.getCommand().equals("STAT")) {
@@ -377,16 +377,16 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
                     return response;
                 }
 
-                return new FtpReply(213, "End of Status");
+                return new Reply(213, "End of Status");
             } catch (IOException ioe) {
                 logger.error("", ioe);
 
-                return new FtpReply(450, ioe.getMessage());
+                return new Reply(450, ioe.getMessage());
             }
         } catch (IOException ex) {
             logger.warn("from master", ex);
 
-            return new FtpReply(450, ex.getMessage());
+            return new Reply(450, ex.getMessage());
         }
 
         //redo connection handling
