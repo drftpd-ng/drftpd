@@ -53,6 +53,7 @@ speed.separator=\n
 speed.up=${color}15${bold}${user}${coloroff}: UP: ${file} @ ${speed} to ${slave}.
 speed.down=${color}15${bold}${user}${coloroff}: DN: ${file} @ ${speed} from ${slave}.
 speed.idle=${color}15${bold}${user}${coloroff}: IDLE: User has been idle for ${idle}.
+speed.error=${color}15${bold}${user}${coloroff}: is not currently logged into the site
 
 who.up=${color}15${bold}WHO${coloroff}: ${user} -> UP: ${file} @ ${speed} to ${slave}.
 who.down=${color}15${bold}WHO${coloroff}: ${user} -> DN: ${file} @ ${speed} from ${slave}.

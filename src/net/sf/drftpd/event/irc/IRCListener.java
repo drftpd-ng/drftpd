@@ -1030,32 +1030,19 @@ public class IRCListener implements FtpListener, Observer {
 		}
 		ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
 		env.add("user", username);
-
-		StringBuffer status =
-			new StringBuffer(
-				SimplePrintf.jprintf(
+		String status = new String();
+		status =
+			new String(SimplePrintf.jprintf(
 					_ircCfg.getProperty("speed.pre", ""),
 					env));
 
-		ReplacerFormat formatup;
-		try {
-			formatup =
-				ReplacerFormat.createFormat(_ircCfg.getProperty("speed.up"));
-		} catch (Throwable e) {
-			logger.debug("", e);
-			return;
-		}
-		ReplacerFormat formatdown =
-			ReplacerFormat.createFormat(_ircCfg.getProperty("speed.down"));
-
-		ReplacerFormat formatidle =
-			ReplacerFormat.createFormat(_ircCfg.getProperty("speed.idle"));
 		String separator =
 			SimplePrintf.jprintf(
 				_ircCfg.getProperty("speed.separator", ""),
 				env);
-		boolean first = true;
 
+		boolean first = true;
+		
 		Collection conns = getConnectionManager().getConnections();
 		synchronized (conns) {
 			for (Iterator iter = conns.iterator(); iter.hasNext();) {
@@ -1063,7 +1050,7 @@ public class IRCListener implements FtpListener, Observer {
 				try {
 					User connUser = conn.getUser();
 					if (!first) {
-						status.append(separator);
+						status = status + separator;
 					}
 					if (connUser.getUsername().equals(username)) {
 
@@ -1081,38 +1068,36 @@ public class IRCListener implements FtpListener, Observer {
 							continue;
 						first = false;
 						if (!conn.isExecuting()) {
-							status.append(
-								SimplePrintf.jprintf(formatidle, env));
+							status = status +
+								SimplePrintf.jprintf(_ircCfg.getProperty("speed.idle"), env);
 
 						} else if (conn.getDataConnectionHandler().isTransfering()) {
-							if (conn.getDataConnectionHandler().isTransfering()) {
-								try {
-									env.add(
-										"speed",
-										Bytes.formatBytes(
-											conn.getDataConnectionHandler().getTransfer().getXferSpeed())
-											+ "/s");
-								} catch (RemoteException e2) {
-									logger.warn("", e2);
-								}
+							try {
 								env.add(
-									"file",
-									conn.getDataConnectionHandler().getTransferFile().getName());
-								env.add(
-									"slave",
-									conn.getDataConnectionHandler().getTranferSlave().getName());
+									"speed",
+									Bytes.formatBytes(
+										conn.getDataConnectionHandler().getTransfer().getXferSpeed())
+										+ "/s");
+							} catch (RemoteException e2) {
+								logger.warn("", e2);
 							}
+							env.add(
+								"file",
+								conn.getDataConnectionHandler().getTransferFile().getName());
+							env.add(
+								"slave",
+								conn.getDataConnectionHandler().getTranferSlave().getName());
 
 							if (conn.getTransferDirection()
 								== Transfer.TRANSFER_RECEIVING_UPLOAD) {
-								status.append(
-									SimplePrintf.jprintf(formatup, env));
+								status = status +
+									SimplePrintf.jprintf(_ircCfg.getProperty("speed.up"), env);
 
 							} else if (
 								conn.getTransferDirection()
 									== Transfer.TRANSFER_SENDING_DOWNLOAD) {
-								status.append(
-									SimplePrintf.jprintf(formatdown, env));
+								status = status +
+									SimplePrintf.jprintf(_ircCfg.getProperty("speed.down"), env);
 							}
 						}
 					}
@@ -1123,10 +1108,16 @@ public class IRCListener implements FtpListener, Observer {
 				}
 			} // for
 		}
-
-		status.append(
-			SimplePrintf.jprintf(_ircCfg.getProperty("speed.post", ""), env));
-		say(status.toString());
+		status = status +
+			SimplePrintf.jprintf(_ircCfg.getProperty("speed.post", ""), env);
+		if ( first ) {
+			try {
+				status = SimplePrintf.jprintf(_ircCfg.getProperty("speed.error"), env);
+			} catch (FormatterException e) {
+				say("speed: formatterexception: " + e.getMessage());
+			}
+		}
+		say(status);
 	}
 
 	/**
