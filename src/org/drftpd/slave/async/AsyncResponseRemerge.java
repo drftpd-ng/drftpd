@@ -18,7 +18,7 @@ public class AsyncResponseRemerge extends AsyncResponse {
         super("Remerge");
         _files = files;
        	if (File.separatorChar == '\\') { // stupid win32 hack
-       		directory = directory.replace('\\', '/');
+       		directory = directory.replace("\\", "/");
        	}
         if (directory.indexOf('\\') != -1) {
         	throw new RuntimeException("\\ is not an acceptable character in a directory path");
