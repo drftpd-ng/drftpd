@@ -178,6 +178,7 @@ public class VirtualDirectory {
 	}
 
 	public static boolean isLegalFileName(String fileName) {
+		assert fileName != null;
 		return !(fileName.indexOf("/") != -1) && !fileName.equals(".") && !fileName.equals("..");
 	}
 	/**

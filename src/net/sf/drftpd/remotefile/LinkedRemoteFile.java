@@ -614,14 +614,14 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	 * @see net.sf.drftpd.remotefile.RemoteFile#length()
 	 */
 	public long length() {
-		if (isDirectory()) {
-			long length = 0;
-			for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
-				LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
-				length += element.length();
-			}
-			return length;
-		}
+//		if (isDirectory()) {
+//			long length = 0;
+//			for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+//				LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
+//				length += element.length();
+//			}
+//			return length;
+//		}
 		return this.length;
 	}
 

@@ -229,9 +229,8 @@ public class SlaveManagerImpl
 		} catch (Exception ex) {
 			logger.log(Level.FATAL, "Error loading \"files.xml\"", ex);
 			throw new FatalException(ex);
-			//root = new LinkedRemoteFile(cm);
 		}
-		System.gc();
+		// System.gc(); done after loading is complete
 		return root;
 	}
 

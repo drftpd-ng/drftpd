@@ -466,8 +466,10 @@ public class BaseFtpConnection implements Runnable {
 			} catch (Exception ex2) {
 				logger.log(Level.WARN, "Exception closing stream", ex2);
 			}
-			if (isAuthenticated())
+			if (isAuthenticated()) {
+				_user.updateLastAccessTime();
 				dispatchFtpEvent(new UserEvent(_user, "LOGOUT"));
+			}
 			connManager.remove(this);
 		}
 	}

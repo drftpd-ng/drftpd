@@ -125,7 +125,8 @@ public class JSXUserManager extends UserManager {
 		for (int i = 0; i < userpaths.length; i++) {
 			String userpath = userpaths[i];
 			System.out.println(userpath);
-			String username = userpath.substring(0, userpath.lastIndexOf('.'));
+			if(!userpath.endsWith(".xml")) continue;
+			String username = userpath.substring(0, userpath.length()-".xml".length());
 			try {
 				users.add((JSXUser) getUserByName(username));
 				// throws IOException

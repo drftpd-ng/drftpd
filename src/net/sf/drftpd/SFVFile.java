@@ -68,21 +68,22 @@ public class SFVFile implements Serializable {
 	}
 	
 	public int finishedFiles() {
-		int good = 0;
-		
-		Map sfventries = getEntriesFiles();
-		for (Iterator iter = sfventries.entrySet().iterator();
-			iter.hasNext();
-			) {
-			Map.Entry element = (Map.Entry) iter.next();
-			LinkedRemoteFile file = (LinkedRemoteFile) element.getKey();
-			Long checksum = (Long) element.getValue();
-
-			if (file.getCheckSum() == checksum.longValue()) {
-				good++;
-			}
-		}
-		return good;
+		return getEntriesFiles().size();
+//		int good = 0;
+//		
+//		Map sfventries = getEntriesFiles();
+//		for (Iterator iter = sfventries.entrySet().iterator();
+//			iter.hasNext();
+//			) {
+//			Map.Entry element = (Map.Entry) iter.next();
+//			LinkedRemoteFile file = (LinkedRemoteFile) element.getKey();
+//			Long checksum = (Long) element.getValue();
+//
+//			if (file.getCheckSum() == checksum.longValue()) {
+//				good++;
+//			}
+//		}
+//		return good;
 	}
 	
 	public Map getEntriesFiles() {

@@ -449,6 +449,11 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
+		if(!getConfig().checkDelete(_user, requestedFile)) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
+		
 		FtpResponse response =
 			(FtpResponse) FtpResponse.RESPONSE_250_ACTION_OKAY.clone();
 
@@ -606,7 +611,8 @@ public class FtpConnection extends BaseFtpConnection {
 		try {
 			dataSocket = getDataSocket();
 		} catch (IOException ex) {
-			out.print(FtpResponse.RESPONSE_425_CANT_OPEN_DATA_CONNECTION);
+			out.print(new FtpResponse(425, ex.getMessage()));
+			logger.info("", ex);
 			return;
 		}
 
@@ -999,6 +1005,7 @@ public class FtpConnection extends BaseFtpConnection {
 
 		// login failure - close connection
 		if (_user.checkPassword(pass)) {
+			_user.updateLastAccessTime();
 			FtpResponse response =
 				(FtpResponse) FtpResponse.RESPONSE_230_USER_LOGGED_IN.clone();
 			try {
@@ -1532,7 +1539,7 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		if (!connManager.getConfig().checkDelete(_user, requestedFile)) {
-			out.print(new FtpResponse(550, fileName + ": Not found"));
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
 
@@ -2008,6 +2015,11 @@ public class FtpConnection extends BaseFtpConnection {
 			myUser.setMaxUploadRate(Integer.parseInt(commandArgument));
 		} else if ("group".equals(command)) {
 			myUser.setGroup(commandArgument);
+
+//			group_slots	Number of users a GADMIN is allowed to add.
+//					If you specify a second argument, it will be the
+//					number of leech accounts the gadmin can give (done by
+//					"site change user ratio 0") (2nd arg = leech slots)
 		} else if ("group_slots".equals(command)) {
 			try {
 				String args[] = commandArgument.split(" ");
@@ -3095,28 +3107,28 @@ public class FtpConnection extends BaseFtpConnection {
 		response.addComment(
 			"total: "
 				+ Bytes.formatBytes(user.getUploadedBytes())
-				+ "b "
-				+ Bytes.formatBytes(user.getUploadedFiles())
+				+ " "
+				+ user.getUploadedFiles()
 				+ "f "
 				+ Bytes.formatBytes(user.getDownloadedBytes())
-				+ "b "
+				+ " "
 				+ Bytes.formatBytes(user.getDownloadedFiles())
 				+ "f ");
 		response.addComment(
 			"month: "
 				+ Bytes.formatBytes(user.getUploadedBytesMonth())
-				+ "b "
-				+ Bytes.formatBytes(user.getUploadedFilesMonth())
+				+ " "
+				+ user.getUploadedFilesMonth()
 				+ "f "
 				+ Bytes.formatBytes(user.getDownloadedBytesMonth())
-				+ "b "
-				+ Bytes.formatBytes(user.getDownloadedFilesMonth())
+				+ " "
+				+ user.getDownloadedFilesMonth()
 				+ "f ");
 		response.addComment(
 			"week: "
 				+ Bytes.formatBytes(user.getUploadedBytesWeek())
-				+ "b "
-				+ Bytes.formatBytes(user.getUploadedFilesWeek())
+				+ " "
+				+ user.getUploadedFilesWeek()
 				+ "f "
 				+ Bytes.formatBytes(user.getDownloadedBytesWeek())
 				+ "b "
@@ -3126,11 +3138,11 @@ public class FtpConnection extends BaseFtpConnection {
 			"day: "
 				+ Bytes.formatBytes(user.getUploadedBytesDay())
 				+ "b "
-				+ Bytes.formatBytes(user.getUploadedFilesDay())
+				+ user.getUploadedFilesDay()
 				+ "f "
 				+ Bytes.formatBytes(user.getDownloadedBytesDay())
 				+ "b "
-				+ Bytes.formatBytes(user.getDownloadedFilesDay())
+				+ user.getDownloadedFilesDay()
 				+ "f ");
 
 		out.print(response);
@@ -3673,19 +3685,6 @@ public class FtpConnection extends BaseFtpConnection {
 		LinkedRemoteFile targetDir = (LinkedRemoteFile) ret[0];
 		String targetFilename = (String) ret[1];
 
-		if (!VirtualDirectory.isLegalFileName(targetFilename) || !getConfig().checkPrivPath(targetDir, _user)) {
-			out.print(
-				new FtpResponse(
-					553,
-					"Requested action not taken. File name not allowed."));
-			return;
-		}
-
-		if (!getConfig().checkUpload(targetDir, _user)) {
-			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
-			return;
-		}
-
 		if (targetFilename == null) {
 			// target exists, this could be overwrite or resume
 			// if(resumePosition != 0) {} // resume
@@ -3704,6 +3703,19 @@ public class FtpConnection extends BaseFtpConnection {
 			//			if(directory.isDirectory()) {
 			//				out.print(FtpResponse.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN);
 			//			}
+		}
+
+		if (!VirtualDirectory.isLegalFileName(targetFilename) || !getConfig().checkPrivPath(targetDir, _user)) {
+			out.print(
+				new FtpResponse(
+					553,
+					"Requested action not taken. File name not allowed."));
+			return;
+		}
+
+		if (!getConfig().checkUpload(targetDir, _user)) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
 		}
 
 		//SETUP rslave

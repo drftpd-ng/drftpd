@@ -271,7 +271,7 @@ public abstract class User {
 	/**
 	 * Hit user - update last access time
 	 */
-	public abstract void hitUser();
+	public abstract void updateLastAccessTime();
 	/**
 	 * Is still active. Compares the last access time with the
 	 * current time.
@@ -280,6 +280,7 @@ public abstract class User {
 	/**
 	 * Is an active user (is removable)?
 	 * Compares the last access time with the specified time.
+	 * @deprecated
 	 */
 	public abstract boolean isActive(long currTime);
 	/**

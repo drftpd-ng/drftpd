@@ -30,7 +30,7 @@
 	<src path="${sourceDir}"/>
 	<classpath refid="classpath"/>
     </javac>
-    <rmic base="${outputDir}" stubversion="1.2">
+    <rmic base="${outputDir}" debug="true" stubversion="1.2">
 	<include name="**/*Impl.class"/>
 	<classpath refid="classpath"/>
     </rmic>

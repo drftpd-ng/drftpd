@@ -52,7 +52,7 @@ public abstract class AbstractUser extends User {
 	// time limits
 	protected int idleTime = 0; // no limit
 	protected ArrayList ipMasks = new ArrayList();
-	protected int lastAccessTime = 0;
+	protected long lastAccessTime = 0;
 
 	/**
 	 * Time last nuked specified in seconds since 1970
@@ -530,8 +530,8 @@ public abstract class AbstractUser extends User {
 	/**
 	 * Hit user - update last access time
 	 */
-	public void hitUser() {
-		lastAccessTime = (int) System.currentTimeMillis() * 1000;
+	public void updateLastAccessTime() {
+		lastAccessTime = System.currentTimeMillis();
 	}
 
 	/**
@@ -545,6 +545,7 @@ public abstract class AbstractUser extends User {
 	/**
 	 * Is an active user (is removable)?
 	 * Compares the last access time with the specified time.
+	 * @deprecated
 	 */
 	public boolean isActive(long currTime) {
 		boolean bActive = true;

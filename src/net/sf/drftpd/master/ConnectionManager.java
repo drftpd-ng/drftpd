@@ -184,7 +184,7 @@ public class ConnectionManager {
 			}
 		};
 		//run every 10 seconds
-		timer.schedule(timerLogoutIdle, 0, 10 * 1000);
+		timer.schedule(timerLogoutIdle, 10*1000, 10 * 1000);
 
 		TimerTask timerSave = new TimerTask() {
 			public void run() {
@@ -196,8 +196,8 @@ public class ConnectionManager {
 				}
 			}
 		};
-		//run every 5 minutes
-		timer.schedule(timerSave, 0, 600 * 1000);
+		//run every hour 
+		timer.schedule(timerSave, 60*60 * 1000, 60*60 * 1000);
 
 		if (cfg.getProperty("irc.enabled", "false").equals("true")) {
 			try {
@@ -350,6 +350,7 @@ public class ConnectionManager {
 			System.exit(0);
 			return;
 		}
+		System.gc();
 	}
 
 	/**
