@@ -131,6 +131,7 @@
 
   <target name="compile">
     <mkdir dir="${outputDir}"/>
+    <mkdir dir="src-archive" />
     <echo>Compiling 1.4 compatible slave files</echo>
   	<javac sourcepath="" srcdir="${sourceDir}" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.4">
   		<patternset refid="excludes"/>
@@ -178,8 +179,8 @@
     </junit>
   </target>
 
-  <target name="slavejar">
-    <jar destfile="slave.jar" basedir="classes">
+  <target name="slavejar" depends="compile">
+    <jar destfile="lib/slave.jar" basedir="classes">
       <manifest>
         <attribute name="Main-Class" value="org.drftpd.slave.Slave" />
       </manifest>
@@ -187,13 +188,25 @@
     </jar>
     
     <zip destfile="slave.zip" basedir=".">
-      <include name="slave.jar"/>
+      <include name="lib/slave.jar"/>
       <include name="slave.conf.dist"/>
       <include name="slave.sh" />
       <include name="slave.bat" />
       <include name="conf/wrapper-slave.conf.dist"/>
-      <zipfileset dir="." includes="lib/libFileSystem.so" fullpath="libFileSystem.so" />
-      <zipfileset dir="." includes="lib/FileSystem.dll" fullpath="FileSystem.dll" />
+      <include name="drftpd.key" />
+      <include name="lib/FileSystem.dll" />
+      <include name="lib/libFileSystem.so" />
+      <include name="lib/libwrapper.so" />
+      <include name="lib/log4j-1.2.8.jar" />
+      <include name="lib/slave.jar" />
+      <include name="lib/wrapper.dll" />
+      <include name="lib/wrapper.jar" />
+      <include name="bin/wrapper" />
+      <include name="bin/wrapper.exe" />
+      <include name="bin/InstallSlave.bat" />
+      <include name="bin/UninstallSlave.bat" />
+      <include name="conf/log4j-debug.properties" />
+      <include name="conf/log4j-default.properties" />
     </zip>
   </target>
 
@@ -206,7 +219,7 @@
     </jar>
   </target>
 
-  <target name="dist" depends="compile">
+  <target name="dist" depends="slavejar">
     <fail unless="version">
       You need to specify version to build.
       Example: ant dist -Dversion=2.0-SVN 
