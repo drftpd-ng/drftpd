@@ -332,14 +332,7 @@ public class BaseFtpConnection implements Runnable {
 			if (getConnectionManager().isShutdown()) {
 				stop(getConnectionManager().getShutdownMessage());
 			} else {
-				FtpReply response = new FtpReply(220);
-				response.addComment(
-					"This program is free software; you can redistribute it and/or");
-				response.addComment(
-					" modify it under the terms of the GNU General Public License");
-				response.addComment(
-					"Distributed FTP Daemon http://drftpd.mog.se");
-				response.addComment("Service ready for new user.");
+				FtpReply response = new FtpReply(220,getConfig().getLoginPrompt());
 				out.print(response);
 			}
 			while (!stopRequest) {

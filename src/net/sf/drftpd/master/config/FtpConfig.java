@@ -42,6 +42,11 @@ import org.tanesha.replacer.ReplacerFormat;
 public class FtpConfig {
 	private int _maxUsersExempt;
 	private int _maxUsersTotal = Integer.MAX_VALUE;
+	private String loginPrompt = 
+		"This program is free software; you can redistribute it and/or" +
+		" modify it under the terms of the GNU General Public License.  " +
+		"Distributed FTP Daemon http://drftpd.mog.se" +
+		" : Service ready for new user.";
 	private static Logger logger = Logger.getLogger(FtpConfig.class);
 	private ArrayList _creditcheck;
 
@@ -131,6 +136,9 @@ public class FtpConfig {
 	}
 	public int getMaxUsersExempt() {
 		return _maxUsersExempt;
+	}
+	public String getLoginPrompt() {
+		return loginPrompt;
 	}
 	private boolean checkPathPermssion(
 		User fromUser,
@@ -280,6 +288,10 @@ public class FtpConfig {
 						new PatternPathPermission(
 							globComiler.compile(st.nextToken()),
 							makeUsers(st)));
+				}
+				// login_prompt <string>
+				else if (command.equals("login_prompt")) {
+					loginPrompt = line.substring(13);
 				}
 				//max_users <maxUsersTotal> <maxUsersExempt>
 				else if (command.equals("max_users")) {
