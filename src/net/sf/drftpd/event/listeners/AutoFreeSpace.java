@@ -1,8 +1,19 @@
 /*
- * Created on Jan 3, 2004
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This file is part of DrFTPD, Distributed FTP Daemon.
+ * 
+ * DrFTPD is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * DrFTPD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with DrFTPD; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package net.sf.drftpd.event.listeners;
 
@@ -33,7 +44,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author zubov
- * @version $Id: AutoFreeSpace.java,v 1.8 2004/02/03 01:04:05 mog Exp $
+ * @version $Id: AutoFreeSpace.java,v 1.9 2004/02/10 00:03:06 mog Exp $
  */
 public class AutoFreeSpace implements FtpListener {
 	private static final Logger logger = Logger.getLogger(AutoFreeSpace.class);

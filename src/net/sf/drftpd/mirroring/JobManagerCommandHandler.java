@@ -1,8 +1,19 @@
 /*
- * Created on 2004-jan-04
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * This file is part of DrFTPD, Distributed FTP Daemon.
+ * 
+ * DrFTPD is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * DrFTPD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with DrFTPD; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package net.sf.drftpd.mirroring;
 
@@ -27,7 +38,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
  * CommandHandler plugin for viewing and manipulating the JobManager queue.
  * 
  * @author mog
- * @version $Id: JobManagerCommandHandler.java,v 1.4 2004/01/21 20:34:29 zubov Exp $
+ * @version $Id: JobManagerCommandHandler.java,v 1.5 2004/02/10 00:03:14 mog Exp $
  */
 public class JobManagerCommandHandler implements CommandHandler {
 
