@@ -161,7 +161,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 				jobQueue.addAll(recursiveSend(file));
 			} else {
 				logger.info("Adding " + file.getPath() + " to the job queue with numOfSlaves = " + _numOfSlaves);
-				Job job = new Job(file, _destSlaves, this, null, 3, _numOfSlaves);
+				Job job = new Job(file, getRSlaves(), this, null, 3, _numOfSlaves);
 				jm.addJob(job);
 				jobQueue.add(job);
 			}
