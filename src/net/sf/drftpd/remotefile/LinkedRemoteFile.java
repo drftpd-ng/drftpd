@@ -42,6 +42,7 @@ import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.slave.TransferStatus;
+import net.sf.drftpd.util.ListUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -50,7 +51,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.148 2004/06/11 03:45:51 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.149 2004/06/12 03:02:35 mog Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -246,7 +247,7 @@ public class LinkedRemoteFile
 	}
 
 	/**
-	 * Creates a RemoteFile from file or creates a directory tree
+	 * Creates a LinkedRemoteFile from file or creates a directory tree
 	 * representation.
 	 * 
 	 * Used by DirectoryRemoteFile. Called by other constructor,
@@ -272,8 +273,8 @@ public class LinkedRemoteFile
 		String name,
 		FtpConfig cfg) {
 
-		if (name.indexOf('*') != -1 || name.indexOf('?') != -1)
-			throw new IllegalArgumentException("Illegal character (*?) in filename");
+		if (!ListUtils.isLegalFileName(name))
+			throw new IllegalArgumentException("Illegal filename");
 
 		if (!file.isFile() && !file.isDirectory())
 			throw new IllegalArgumentException(
@@ -1072,7 +1073,7 @@ public class LinkedRemoteFile
 	private LinkedRemoteFile putFile(RemoteFileInterface file, String toName) {
 		if (_files.containsKey(toName)) {
 			throw new IllegalStateException(
-				"Don't overwrite! " + getPath() + " " + toName);
+				getPath() + "/" + toName + " already exists.");
 		}
 		//validate
 		if (file.isFile()) {
