@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.14 2004/01/13 05:06:27 zubov Exp $
+ * @version $Id: JobManager.java,v 1.15 2004/01/13 06:36:59 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -37,7 +37,7 @@ public class JobManager implements FtpListener {
 		if (!(event instanceof SlaveEvent))
 			return;
 		SlaveEvent slaveEvent = (SlaveEvent) event;
-		if (slaveEvent.getCommand() == "DELSLAVE") {
+		if (slaveEvent.getCommand().equals("DELSLAVE")) {
 			//synchronized (_threadList) { // does not need to be synchronized if only one thread handles events 
 			for (Iterator iter = _threadList.iterator(); iter.hasNext();) {
 				JobManagerThread tempThread = (JobManagerThread) iter.next();
@@ -53,7 +53,7 @@ public class JobManager implements FtpListener {
 				}
 			}
 			//}
-		} else if (slaveEvent.getCommand() == "ADDSLAVE") {
+		} else if (slaveEvent.getCommand().equals("ADDSLAVE")) {
 			JobManagerThread newThread =
 				new JobManagerThread(slaveEvent.getRSlave(), this);
 			_threadList.add(newThread);
