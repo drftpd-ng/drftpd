@@ -881,7 +881,12 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         	}
         }
         _transfer = null;
-        _transferFile = null;
+        if (_transferFile != null) {
+        	if (_transferFile.getXfertime() == -1) { // if transfer failed on STOR
+        		_transferFile.setXfertime(0);
+        	}
+        	_transferFile = null;
+        }
         _preTransfer = false;
         _preTransferRSlave = null;
 
