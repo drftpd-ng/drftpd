@@ -35,7 +35,7 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 /**
  * @author mog
- * @version $Id: XStreamUserManager.java,v 1.5 2004/07/01 16:07:51 zubov Exp $
+ * @version $Id: XStreamUserManager.java,v 1.6 2004/07/06 00:55:34 zubov Exp $
  */
 public class XStreamUserManager extends UserManager {
 	private static final Logger logger = Logger
@@ -57,7 +57,7 @@ public class XStreamUserManager extends UserManager {
 			}
 		}
 		if (numUsers == 0) {
-			User user = create("drftpd");
+			User user = createUser("drftpd");
 			user.setGroup("drftpd");
 			user.setPassword("drftpd");
 			try {

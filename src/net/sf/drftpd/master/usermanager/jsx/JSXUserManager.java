@@ -34,7 +34,7 @@ import net.sf.drftpd.master.usermanager.UserManager;
 import JSX.ObjIn;
 /**
  * @author mog
- * @version $Id: JSXUserManager.java,v 1.32 2004/07/01 16:07:50 zubov Exp $
+ * @version $Id: JSXUserManager.java,v 1.33 2004/07/06 00:55:34 zubov Exp $
  */
 public class JSXUserManager extends UserManager {
 	private static final Logger logger = Logger.getLogger(JSXUserManager.class
@@ -56,7 +56,7 @@ public class JSXUserManager extends UserManager {
 			}
 		}
 		if (numUsers == 0) {
-			User user = create("drftpd");
+			User user = createUser("drftpd");
 			user.setGroup("drftpd");
 			user.setPassword("drftpd");
 			user.setRatio(0);

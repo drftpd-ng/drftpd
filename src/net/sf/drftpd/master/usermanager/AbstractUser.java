@@ -37,7 +37,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  * 
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya </a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.46 2004/07/01 16:07:49 zubov Exp $
+ * @version $Id: AbstractUser.java,v 1.47 2004/07/06 00:55:33 zubov Exp $
  */
 public abstract class AbstractUser implements User {
 	private static final Logger logger = Logger.getLogger(AbstractUser.class);
@@ -101,8 +101,9 @@ public abstract class AbstractUser implements User {
 	protected int uploadedFilesWeek;
 	protected String username;
 	protected long weeklyAllotment;
-	public AbstractUser(String username) {
+	public AbstractUser(String username, UserManager usermanager) {
 		this.username = username;
+		_usermanager = usermanager;
 	}
 	public void addIPMask(String mask) throws DuplicateElementException {
 		if (ipMasks.contains(mask))

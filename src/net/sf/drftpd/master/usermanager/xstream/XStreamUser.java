@@ -31,7 +31,7 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 /**
  * @author mog
- * @version $Id: XStreamUser.java,v 1.5 2004/07/01 16:07:51 zubov Exp $
+ * @version $Id: XStreamUser.java,v 1.6 2004/07/06 00:55:34 zubov Exp $
  */
 public class XStreamUser extends AbstractUser
 		implements
@@ -40,7 +40,7 @@ public class XStreamUser extends AbstractUser
 	private String password;
 	private String unixPassword;
 	public XStreamUser(XStreamUserManager usermanager, String username) {
-		super(username);
+		super(username,usermanager);
 		created = System.currentTimeMillis();
 		this._usermanager = usermanager;
 	}

@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import net.sf.drftpd.master.usermanager.AbstractUser;
 import net.sf.drftpd.master.usermanager.PlainTextPasswordUser;
 import net.sf.drftpd.master.usermanager.UnixPassword;
-import net.sf.drftpd.master.usermanager.UserExistsException;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.util.Crypt;
 import net.sf.drftpd.util.SafeFileWriter;
@@ -30,7 +29,7 @@ import org.apache.log4j.Logger;
 import JSX.ObjOut;
 /**
  * @author mog
- * @version $Id: JSXUser.java,v 1.14 2004/07/01 16:07:50 zubov Exp $
+ * @version $Id: JSXUser.java,v 1.15 2004/07/06 00:55:34 zubov Exp $
  */
 public class JSXUser extends AbstractUser
 		implements
@@ -40,7 +39,7 @@ public class JSXUser extends AbstractUser
 	private transient boolean purged;
 	private String unixPassword;
 	public JSXUser(JSXUserManager usermanager, String username) {
-		super(username);
+		super(username,usermanager);
 		created = System.currentTimeMillis();
 	}
 	public boolean checkPassword(String password) {
