@@ -99,7 +99,7 @@ public class FtpConnection extends BaseFtpConnection {
 					iterator.hasNext();
 					) {
 					String searchstring = (String) iterator.next();
-					if (file.getName().indexOf(searchstring) != -1) {
+					if (file.getName().toLowerCase().indexOf(searchstring) != -1) {
 						response.addComment(file.getPath());
 						break;
 					}
@@ -125,7 +125,7 @@ public class FtpConnection extends BaseFtpConnection {
 	private NukeLog _nukelog;
 	// just set mstRenFr to null instead of this extra boolean?
 	//private boolean mbRenFr = false;
-	private LinkedRemoteFile renameFrom = null;
+	private LinkedRemoteFile _renameFrom = null;
 
 	// command state specific temporary variables
 
@@ -1640,7 +1640,7 @@ public class FtpConnection extends BaseFtpConnection {
 		//mstRenFr = user.getVirtualDirectory().getPhysicalName(fileName);
 
 		try {
-			this.renameFrom =
+			_renameFrom =
 				currentDirectory.lookupFile(request.getArgument());
 		} catch (FileNotFoundException e) {
 			out.print(FtpResponse.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN);
@@ -1648,7 +1648,7 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		if (this.renameFrom.hasOfflineSlaves()) {
+		if (_renameFrom.hasOfflineSlaves()) {
 			out.print(
 				new FtpResponse(450, "Cannot rename, file has offline slaves"));
 			resetState();
@@ -1678,13 +1678,13 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		// set state variables
-		if (renameFrom == null) {
+		if (_renameFrom == null) {
 			resetState();
 			out.print(FtpResponse.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS);
 			return;
 		}
 
-		if (renameFrom.hasOfflineSlaves()) {
+		if (_renameFrom.hasOfflineSlaves()) {
 			out.print(
 				new FtpResponse(450, "Cannot rename, file has offline slaves"));
 			resetState();
@@ -1696,7 +1696,7 @@ public class FtpConnection extends BaseFtpConnection {
 		LinkedRemoteFile toDir = (LinkedRemoteFile) ret[0];
 		String name = (String) ret[1];
 
-		LinkedRemoteFile fromFile = renameFrom;
+		LinkedRemoteFile fromFile = _renameFrom;
 		resetState();
 
 		if (name == null)
@@ -1728,7 +1728,7 @@ public class FtpConnection extends BaseFtpConnection {
 	public void doSITE_ADDIP(FtpRequest request, PrintWriter out) {
 		resetState();
 
-		if (!_user.isAdmin()) {
+		if (!_user.isAdmin() && !_user.isGroupAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -1748,6 +1748,10 @@ public class FtpConnection extends BaseFtpConnection {
 		User myUser;
 		try {
 			myUser = userManager.getUserByName(args[0]);
+			if(_user.isGroupAdmin() && !_user.getGroupName().equals(myUser.getGroupName())) {
+				out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+				return;
+			}
 			response.addComment("Adding masks");
 			for (int i = 1; i < args.length; i++) {
 				String string = args[i];
@@ -1819,6 +1823,11 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
+		if(_user.isGroupAdmin() && request.getCommand().equals("SITE GADDUSER")) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
+
 		if (_user.isGroupAdmin()) {
 			int users;
 			try {
@@ -1838,13 +1847,17 @@ public class FtpConnection extends BaseFtpConnection {
 			}
 		}
 
-		String args[] = request.getArgument().split(" ");
-		if (args.length < 2) {
+		StringTokenizer st = new StringTokenizer(request.getArgument());
+		if (!st.hasMoreTokens()) {
 			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
 		}
-		String newUsername = args[0];
-		String pass = args[1];
+		String newUsername = st.nextToken();
+		if (!st.hasMoreTokens()) {
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			return;
+		}
+		String pass = st.nextToken();
 		User newUser;
 		FtpResponse response = new FtpResponse(200);
 		response.addComment(newUsername + " created");
@@ -1855,8 +1868,12 @@ public class FtpConnection extends BaseFtpConnection {
 			if (_user.isGroupAdmin()) {
 				newUser.setGroup(_user.getGroupName());
 			}
-			for (int i = 2; i < args.length; i++) {
-				String string = args[i];
+			if(request.getCommand().equals("SITE GADDUSER")) {
+				newUser.setGroup(st.nextToken());
+				response.addComment("Primary group set to "+newUser.getGroupName());
+			}
+			while(st.hasMoreTokens()) {
+				String string = st.nextToken();
 				try {
 					newUser.addIPMask(string);
 					response.addComment("Added IP mask " + string);
@@ -1999,7 +2016,7 @@ public class FtpConnection extends BaseFtpConnection {
 		usageResponse.addComment(
 			"              tagline max_sim_down max_sim_up");
 
-		if (!_user.isAdmin()) {
+		if (!_user.isAdmin() || !_user.isGroupAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2024,7 +2041,7 @@ public class FtpConnection extends BaseFtpConnection {
 				out.print(
 					new FtpResponse(
 						550,
-						"User " + username + " found: " + e.getMessage()));
+						"User " + username + " not found: " + e.getMessage()));
 				return;
 			} catch (IOException e) {
 				out.print(
@@ -2032,6 +2049,10 @@ public class FtpConnection extends BaseFtpConnection {
 						550,
 						"Error loading user: " + e.getMessage()));
 				logger.log(Level.FATAL, "Error loading user", e);
+				return;
+			}
+			if(_user.isGroupAdmin() && _user.getGroupName().equals(myUser.getGroupName())) {
+				out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 				return;
 			}
 
@@ -2240,7 +2261,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 */
 	public void doSITE_DELIP(FtpRequest request, PrintWriter out) {
 		resetState();
-		if (!_user.isAdmin()) {
+		if (!_user.isAdmin() && !_user.isGroupAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2269,6 +2290,10 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(new FtpResponse(200, "IO error: " + e.getMessage()));
 			return;
 		}
+		if(_user.isGroupAdmin() && !_user.getGroupName().equals(myUser.getGroupName())) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
 
 		FtpResponse response = new FtpResponse(200);
 		for (int i = 1; i < args.length; i++) {
@@ -2293,7 +2318,7 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		if (!_user.isAdmin()) {
+		if (!_user.isAdmin() && !_user.isGroupAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2308,6 +2333,11 @@ public class FtpConnection extends BaseFtpConnection {
 		} catch (IOException e) {
 			out.print(
 				new FtpResponse(200, "Couldn't getUser: " + e.getMessage()));
+			return;
+		}
+
+		if(_user.isGroupAdmin() && !_user.getGroupName().equals(delUser.getGroupName())) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
 
@@ -2330,7 +2360,7 @@ public class FtpConnection extends BaseFtpConnection {
 		FtpResponse response =
 			(FtpResponse) FtpResponse.RESPONSE_200_COMMAND_OK.clone();
 		for (int i = 0; i < args.length; i++) {
-			searchstrings.add(args[i]);
+			searchstrings.add(args[i].toLowerCase());
 		}
 		findFile(
 			response,
@@ -2350,9 +2380,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 * Only public groups can be used as <group>.
 	 */
 	public void doSITE_GADDUSER(FtpRequest request, PrintWriter out) {
-
-		out.print(FtpResponse.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
-		return;
+		doSITE_ADDUSER(request, out);
 	}
 
 	public void doSITE_GIVE(FtpRequest request, PrintWriter out) {
@@ -2768,7 +2796,7 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(response);
 			return;
 		}
-		//TODO AWARD CREDITS
+		//AWARD CREDITS
 		Hashtable awards = new Hashtable();
 		preAwardCredits(preDir, awards);
 		for (Iterator iter = awards.entrySet().iterator(); iter.hasNext();) {
@@ -2806,7 +2834,7 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		if (!_user.isAdmin()) {
+		if (!_user.isAdmin() && !_user.isGroupAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2823,7 +2851,15 @@ public class FtpConnection extends BaseFtpConnection {
 				new FtpResponse(200, "Couldn't getUser: " + e.getMessage()));
 			return;
 		}
-
+		if(!delUser.isDeleted()) {
+			out.print(new FtpResponse(200, "User isn't deleted"));
+			return;
+		}
+		
+		if(_user.isGroupAdmin() && !_user.getGroupName().equals(delUser.getGroupName())) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
 		delUser.purge();
 		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
 		return;
@@ -2831,7 +2867,7 @@ public class FtpConnection extends BaseFtpConnection {
 
 	public void doSITE_READD(FtpRequest request, PrintWriter out) {
 		resetState();
-		if (!_user.isAdmin()) {
+		if (!_user.isAdmin() && !_user.isGroupAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2851,7 +2887,12 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(new FtpResponse(200, "IO error: " + e.getMessage()));
 			return;
 		}
-
+		
+		if(_user.isGroupAdmin() && !_user.getGroupName().equals(myUser.getGroupName())) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
+		
 		if (!myUser.isDeleted()) {
 			out.print(new FtpResponse(200, "User wasn't deleted"));
 			return;
@@ -4368,7 +4409,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 * mstRenFr and resumePosition
 	 */
 	private void resetState() {
-		renameFrom = null;
+		_renameFrom = null;
 
 		//		mbReset = false;
 		resumePosition = 0;

@@ -919,8 +919,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 
 		String fromName = getName();
 		assert ftpConfig != null;
+		if(hasOfflineSlaves()) throw new IOException("File has offline slaves");
 		if (isDirectory()) {
-			if(hasOfflineSlaves()) throw new IOException("queued renames not yet supported");
 			for (Iterator iter =
 				ftpConfig.getSlaveManager().getSlaves().iterator();
 				iter.hasNext();
@@ -930,7 +930,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				try {
 					slave = rslave.getSlave();
 				} catch (NoAvailableSlaveException e) {
-					throw new FatalException("hasOfflineSlaves() said we were good to go!");
+					//trust that hasOfflineSlaves() did a good job and no files are present on offline slaves
+					continue;
 				}
 				try {
 					slave.rename(getPath(), toDirPath, toName);

@@ -980,7 +980,7 @@ public class IRCListener implements FtpListener, Observer {
 				_ircCfg.getProperty("speed.separator", ""),
 				env);
 		boolean first = true;
-		//TODO synchronized access to conns?
+		//TODO synchronized read-only access to conns? or clone?
 		for (Iterator iter = _cm.getConnections().iterator();
 			iter.hasNext();
 			) {
@@ -1066,7 +1066,7 @@ public class IRCListener implements FtpListener, Observer {
 			ReplacerFormat.createFormat(_ircCfg.getProperty("who.idle"));
 
 		ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
-		//TODO synchronized access to conns?
+		//TODO synchronized read-only access to conns? or clone?
 		for (Iterator iter = _cm.getConnections().iterator();
 			iter.hasNext();
 			) {

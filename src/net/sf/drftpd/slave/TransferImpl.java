@@ -53,11 +53,11 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		OutputStream out)
 		throws RemoteException {
 		super();
-		this._direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
-		this._checksum = new CRC32();
-		this._conn = conn;
-		this._out = new CheckedOutputStream(out, this._checksum);
-		this._transfers = transfers;
+		_direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
+		_checksum = new CRC32();
+		_conn = conn;
+		_out = new CheckedOutputStream(out, _checksum);
+		_transfers = transfers;
 	}
 	/**
 	 * Start undefined passive transfer.
@@ -82,10 +82,10 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		throws RemoteException {
 		super();
 		_direction = TRANSFER_SENDING_DOWNLOAD;
-		this._in = in;
-		this._conn = conn;
-		this._mode = mode;
-		this._transfers = transfers;
+		_in = in;
+		_conn = conn;
+		_mode = mode;
+		_transfers = transfers;
 	}
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.slave.Transfer#abort()
@@ -95,7 +95,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	}
 	
 	public void downloadFile(String path, char type, long resumePosition, boolean doChecksum) throws IOException {
-		this._direction = TRANSFER_SENDING_DOWNLOAD;
+		_direction = TRANSFER_SENDING_DOWNLOAD;
 		
 		_in = new FileInputStream(_roots.getFile(path));
 		if(doChecksum) {
@@ -109,7 +109,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	}
 
 	public long getChecksum() {
-		return this._checksum.getValue();
+		return _checksum.getValue();
 	}
 
 	public char getDirection() {
@@ -139,7 +139,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	 * @return long
 	 */
 	public long getTransfered() {
-		return this._transfered;
+		return _transfered;
 	}
 
 	/* (non-Javadoc)
@@ -156,14 +156,14 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	public int getXferSpeed() {
 		long elapsed = getTransferTime();
 		
-		if (this._transfered == 0) {
+		if (_transfered == 0) {
 			return 0;
 		}
 
 		if (elapsed == 0) {
 			return 0;
 		}
-		return (int) (this._transfered / ((float) elapsed / (float) 1000));
+		return (int) (_transfered / ((float) elapsed / (float) 1000));
 	}
 
 	public boolean isReceivingUploading() {
@@ -178,12 +178,12 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	 * @deprecated
 	 */
 	public void transfer() throws IOException {
-		this._started = System.currentTimeMillis();
-		this._sock = _conn.connect();
+		_started = System.currentTimeMillis();
+		_sock = _conn.connect();
 		if (_in == null) {
-			this._in = _sock.getInputStream();
+			_in = _sock.getInputStream();
 		} else if (_out == null) {
-			if (this._mode == 'A') {
+			if (_mode == 'A') {
 				_out = new AsciiOutputStream(_sock.getOutputStream());
 			} else {
 				_out = _sock.getOutputStream();
@@ -197,7 +197,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 			byte[] buff = new byte[4096];
 			int count;
 			while ((count = _in.read(buff)) != -1 && !_abort) {
-				this._transfered += count;
+				_transfered += count;
 				_out.write(buff, 0, count);
 			}
 			_out.close();
@@ -224,7 +224,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 
 		_out = new FileOutputStream(root + File.separator + filename);
 
-		_out = new CheckedOutputStream(_out, this._checksum);
+		_out = new CheckedOutputStream(_out, _checksum);
 		System.out.println("UL:"+dirname+File.separator+filename);
 		transfer();
 	}
