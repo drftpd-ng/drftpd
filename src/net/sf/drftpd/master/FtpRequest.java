@@ -63,6 +63,7 @@ public class FtpRequest {
 	 * Get ftp input argument.  
 	 */
 	public String getArgument() {
+		if(argument == null) throw new IllegalStateException();
 		return argument;
 	}
 
@@ -77,7 +78,7 @@ public class FtpRequest {
 	 * Has argument.
 	 */
 	public boolean hasArgument() {
-		return getArgument() != null;
+		return argument != null;
 	}
 
 }

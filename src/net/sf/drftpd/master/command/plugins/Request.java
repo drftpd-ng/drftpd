@@ -90,7 +90,7 @@ public class Request implements CommandHandler {
 			String myreqname = username.substring(username.indexOf('-')+1);
 			username = username.substring(0, username.indexOf('-'));
 			if(myreqname.equals(reqname)) {
-				String filledname = FILLEDPREFIX+username+myreqname;
+				String filledname = FILLEDPREFIX+username+"-"+myreqname;
 				try {
 					file.renameTo(file.getParentFile().getPath(), filledname);
 				} catch (IOException e) {

@@ -68,9 +68,14 @@ public class CommandManager {
 		throws UnhandledCommandException {
 		String command = conn.getRequest().getCommand();
 		CommandHandler handler = (CommandHandler) commands.get(command);
-		if (handler == null)
+		if (handler == null) {
+			for (int i = 0; i < command.length(); i++) {
+				System.out.println(
+					"" + command.charAt(i) + "=" + (int) command.charAt(i));
+			}
 			throw new UnhandledCommandException(
 				"No command handler for " + command);
+		}
 		return handler.execute(conn);
 	}
 
@@ -89,8 +94,8 @@ public class CommandManager {
 		ArrayList list = new ArrayList();
 		for (Iterator iter = commands.entrySet().iterator(); iter.hasNext();) {
 			Map.Entry element = (Map.Entry) iter.next();
-			if(element.getValue().getClass().equals(class1)) {
-				list.add((String)element.getKey());
+			if (element.getValue().getClass().equals(class1)) {
+				list.add((String) element.getKey());
 			}
 		}
 		return list;

@@ -268,7 +268,9 @@ public class BaseFtpConnection implements Runnable {
 	public boolean isTransfering() {
 		//return _transfer != null;
 		try {
-			DataConnectionHandler dataconn = (DataConnectionHandler) getCommandManager().getCommandHandler(DataConnectionHandler.class);
+			DataConnectionHandler dataconn =
+				(DataConnectionHandler) getCommandManager().getCommandHandler(
+					DataConnectionHandler.class);
 			return dataconn.isTransfering();
 		} catch (ObjectNotFoundException e) {
 			throw new RuntimeException(e);
@@ -347,7 +349,8 @@ public class BaseFtpConnection implements Runnable {
 			if (getConnectionManager().isShutdown()) {
 				stop(getConnectionManager().getShutdownMessage());
 			} else {
-				FtpReply response = new FtpReply(220,getConfig().getLoginPrompt());
+				FtpReply response =
+					new FtpReply(220, getConfig().getLoginPrompt());
 				out.print(response);
 			}
 			while (!stopRequest) {
@@ -470,6 +473,14 @@ public class BaseFtpConnection implements Runnable {
 
 	public void setAuthenticated(boolean authenticated) {
 		_authenticated = authenticated;
+		if (authenticated)
+			thread.setName(
+				"FtpConn from "
+					+ clientAddress.getHostAddress()
+					+ " "
+					+ _user.getUsername()
+					+ "/"
+					+ _user.getGroupName());
 	}
 
 	/**
@@ -514,17 +525,24 @@ public class BaseFtpConnection implements Runnable {
 			try {
 				getDataConnectionHandler().getTransfer().abort();
 			} catch (RemoteException e) {
-				getDataConnectionHandler().getTranferSlave().handleRemoteException(e);
+				getDataConnectionHandler()
+					.getTranferSlave()
+					.handleRemoteException(
+					e);
 			}
 		}
 		stop();
 	}
-	
+
 	public DataConnectionHandler getDataConnectionHandler() {
 		try {
-			return (DataConnectionHandler) getCommandManager().getCommandHandler(DataConnectionHandler.class);
+			return (DataConnectionHandler) getCommandManager()
+				.getCommandHandler(
+				DataConnectionHandler.class);
 		} catch (ObjectNotFoundException e) {
-			throw new RuntimeException("DataConnectionHandler must be available", e);
+			throw new RuntimeException(
+				"DataConnectionHandler must be available",
+				e);
 		}
 	}
 

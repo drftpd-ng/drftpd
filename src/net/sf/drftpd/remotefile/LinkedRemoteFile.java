@@ -92,7 +92,9 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		LinkedRemoteFile parent,
 		RemoteFileInterface file,
 		FtpConfig cfg) {
-
+		if(file.getName().indexOf('*') != -1) {
+			throw new IllegalArgumentException("Illegal character in filename");
+		}
 		_ftpConfig = cfg;
 		_lastModified = file.lastModified();
 		_length = file.length();
@@ -432,6 +434,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	}
 
 	/**
+	 * @return getParentFile().getPath()
 	 * @see java.io.File#getParent()
 	 * @see net.sf.drftpd.remotefile.RemoteFile#getParent()
 	 */
@@ -556,6 +559,10 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		}
 		return false;
 	}
+	
+	public boolean hasSlave(RemoteSlave slave) {
+		return _slaves.contains(slave);
+	}
 
 	/**
 	 * Does file have online slaves?
@@ -642,7 +649,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 
 		//logger.info("ret[0] = " + ret[0] + " ret[1] = " + ret[1]);
 		if (ret[1] != null)
-			throw new FileNotFoundException(path + ": Not found");
+			throw new FileNotFoundException(path + ": File not found");
 		return (LinkedRemoteFile) ret[0];
 	}
 
@@ -727,6 +734,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	public LinkedRemoteFile putFile(RemoteFile file) {
 		//validate
 		if (!file.isDirectory()) {
+			//isFile() that is
 			assert file.getSlaves() != null : file.toString();
 			for (Iterator iter = file.getSlaves().iterator();
 				iter.hasNext();

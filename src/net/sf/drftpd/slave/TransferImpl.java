@@ -2,6 +2,7 @@ package net.sf.drftpd.slave;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,7 +44,8 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	/**
 	 * Start undefined passive transfer.
 	 */
-	public TransferImpl(Connection conn, SlaveImpl slave) throws RemoteException {
+	public TransferImpl(Connection conn, SlaveImpl slave)
+		throws RemoteException {
 		super(0);
 		_slave = slave;
 		_direction = Transfer.TRANSFER_UNKNOWN;
@@ -54,35 +56,40 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	 * Send/Download, reading from 'in' and write to 'conn' using transfer type 'mode'.
 	 * @deprecated
 	 */
-//	public TransferImpl(RMIServerSocketFactory factory,
-//		Collection transfers,
-//		InputStream in,
-//		Connection conn,
-//		char mode)
-//		throws RemoteException {
-//		super(0, RMISocketFactory.getDefaultSocketFactory(), factory);
-//		_direction = TRANSFER_SENDING_DOWNLOAD;
-//		_in = in;
-//		_conn = conn;
-//		_mode = mode;
-//		_transfers = transfers;
-//	}
+	//	public TransferImpl(RMIServerSocketFactory factory,
+	//		Collection transfers,
+	//		InputStream in,
+	//		Connection conn,
+	//		char mode)
+	//		throws RemoteException {
+	//		super(0, RMISocketFactory.getDefaultSocketFactory(), factory);
+	//		_direction = TRANSFER_SENDING_DOWNLOAD;
+	//		_in = in;
+	//		_conn = conn;
+	//		_mode = mode;
+	//		_transfers = transfers;
+	//	}
 
 	public void abort() throws RemoteException {
 		_abort = true;
 	}
-	
-	public void sendFile(String path, char type, long resumePosition, boolean doChecksum) throws IOException {
+
+	public void sendFile(
+		String path,
+		char type,
+		long resumePosition,
+		boolean doChecksum)
+		throws IOException {
 		_direction = TRANSFER_SENDING_DOWNLOAD;
-		
+
 		_in = new FileInputStream(_slave.getRoots().getFile(path));
-		if(doChecksum) {
+		if (doChecksum) {
 			_checksum = new CRC32();
 			_in = new CheckedInputStream(_in, _checksum);
 		}
 		_in.skip(resumePosition);
-		
-		System.out.println("DL:"+path);
+
+		System.out.println("DL:" + path);
 		transfer();
 	}
 
@@ -124,7 +131,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	 * @see net.sf.drftpd.slave.Transfer#getTransferTime()
 	 */
 	public long getTransferTime() {
-		if(_finished == 0) {
+		if (_finished == 0) {
 			return System.currentTimeMillis() - _started;
 		} else {
 			return _finished - _started;
@@ -133,7 +140,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 
 	public int getXferSpeed() {
 		long elapsed = getTransferTime();
-		
+
 		if (_transfered == 0) {
 			return 0;
 		}
@@ -154,7 +161,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	/**
 	 * Call sock.connect() and start sending.
 	 */
-	public void transfer() throws IOException {
+	private void transfer() throws IOException {
 		_started = System.currentTimeMillis();
 		_sock = _conn.connect();
 		if (_in == null) {
@@ -191,18 +198,24 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 			_conn = null;
 		}
 	}
-	
+
 	//TODO char mode for uploads?
-	public void receiveFile(String dirname, String filename, long offset) throws IOException {
+	public void receiveFile(String dirname, String filename, long offset)
+		throws IOException {
 		_direction = TRANSFER_RECEIVING_UPLOAD;
 		_checksum = new CRC32();
+		try {
+			_slave.getRoots().getFile(dirname + File.separator + filename);
+			throw new IOException("File exists");
+		} catch (FileNotFoundException ex) {
+		}
 
 		String root = _slave.getRoots().getARootFileDir(dirname).getPath();
 
 		_out = new FileOutputStream(root + File.separator + filename);
 
 		_out = new CheckedOutputStream(_out, _checksum);
-		System.out.println("UL:"+dirname+File.separator+filename);
+		System.out.println("UL:" + dirname + File.separator + filename);
 		transfer();
 	}
 }

@@ -86,7 +86,8 @@ public class ConnectionManager {
 			while (true) {
 				mgr.start(server.accept());
 			}
-		} catch (Exception th) {
+			//catches subclasses of Error and Exception
+		} catch (Throwable th) {
 			logger.error("", th);
 			System.exit(0);
 			return;

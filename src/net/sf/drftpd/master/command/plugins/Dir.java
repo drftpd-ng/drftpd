@@ -158,27 +158,35 @@ public class Dir implements CommandHandler, Cloneable {
 			response,
 			conn.getUserNull(),
 			newCurrentDirectory);
+		try {
+			Collection uploaders =
+				IRCListener.topFileUploaders(newCurrentDirectory.getFiles());
+			for (Iterator iter = uploaders.iterator(); iter.hasNext();) {
+				UploaderPosition stat = (UploaderPosition) iter.next();
 
-		Collection uploaders =
-			IRCListener.topFileUploaders(newCurrentDirectory.getFiles());
-		for (Iterator iter = uploaders.iterator(); iter.hasNext();) {
-			UploaderPosition stat = (UploaderPosition) iter.next();
+				String str1;
+				try {
+					str1 =
+						IRCListener.formatUser(
+							conn.getUserManager().getUserByName(
+								stat.getUsername()));
+				} catch (NoSuchUserException e2) {
+					continue;
+				} catch (IOException e2) {
+					logger.log(Level.FATAL, "Error reading userfile", e2);
+					continue;
+				}
 
-			String str1;
-			try {
-				str1 =
-					IRCListener.formatUser(
-						conn.getUserManager().getUserByName(
-							stat.getUsername()));
-			} catch (NoSuchUserException e2) {
-				continue;
-			} catch (IOException e2) {
-				logger.log(Level.FATAL, "Error reading userfile", e2);
-				continue;
+				response.addComment(
+					str1
+						+ " ["
+						+ stat.getFiles()
+						+ "f/"
+						+ stat.getBytes()
+						+ "b]");
 			}
-
-			response.addComment(
-				str1 + " [" + stat.getFiles() + "f/" + stat.getBytes() + "b]");
+		} catch (RuntimeException ex) {
+			logger.error("", ex);
 		}
 		return response;
 	}

@@ -97,17 +97,16 @@ public class LIST implements CommandHandler {
 		// reset state variables
 		conn.resetState();
 
-		String argument = request.getArgument();
 		String directoryName = null;
 		String options = "";
 		//String pattern = "*";
 
 		// get options, directory name and pattern
 		//argument == null if there was no argument for LIST
-		if (argument != null) {
+		if (request.hasArgument()) {
 			//argument = argument.trim();
 			StringBuffer optionsSb = new StringBuffer(4);
-			StringTokenizer st = new StringTokenizer(argument, " ");
+			StringTokenizer st = new StringTokenizer(request.getArgument(), " ");
 			while (st.hasMoreTokens()) {
 				String token = st.nextToken();
 				if (token.charAt(0) == '-') {

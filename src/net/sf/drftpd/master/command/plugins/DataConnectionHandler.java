@@ -235,6 +235,10 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 
 		setPortCommand(conn, clientAddr, clientPort);
 
+		if(portHostAddress.startsWith("127.")) {
+			return new FtpReply(200, "Ok, but distributed transfers won't work with local addresses");
+		}
+
 		//Notify the user that this is not his IP.. Good for NAT users that aren't aware that their IP has changed.
 		if (!clientAddr.equals(conn.getControlSocket().getInetAddress())) {
 			return new FtpReply(
@@ -1192,6 +1196,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	}
 
 	public Transfer getTransfer() {
+		if(_transfer == null) throw new IllegalStateException();
 		return _transfer;
 	}
 

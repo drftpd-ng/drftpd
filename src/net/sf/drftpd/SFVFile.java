@@ -153,6 +153,7 @@ public class SFVFile implements Serializable {
 	 * @return
 	 */
 	public long getXferspeed() {
+		if(getTotalXfertime() == 0) return 0;
 		return getTotalBytes() / (getTotalXfertime() / 1000);
 	}
 

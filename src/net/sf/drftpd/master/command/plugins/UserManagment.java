@@ -926,7 +926,7 @@ public class UserManagment implements CommandHandler {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
 
-		String args[] = request.getArgument().split(" ");
+		String args[] = request.getArgument().split("[ ,]");
 		if (args.length < 2) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}

@@ -24,6 +24,7 @@ import java.io.PrintStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -101,6 +102,9 @@ public class MLSTSerialize {
 		throws IOException {
 
 		for (String line = in.readLine();; line = in.readLine()) {
+			boolean isFile = false;
+			boolean isDir = false;
+
 			if (line == null)
 				throw new CorruptFileListException("Unexpected EOF");
 			if (line.equals(""))
@@ -117,8 +121,8 @@ public class MLSTSerialize {
 				String v = entry.substring(pos + 1);
 				if ("type".equals(k)) {
 					assert v.equals("file") || v.equals("dir") : v;
-					//file.setIsFile("file".equals(v));
-					//file.setIsDirectory("dir".equals(v));
+					isFile = "file".equals(v);
+					isDir = "dir".equals(v);
 				} else if ("modify".equals(k)) {
 					try {
 						file.setLastModified(timeval.parse(v).getTime());
@@ -139,7 +143,7 @@ public class MLSTSerialize {
 
 					ArrayList rslaves = new ArrayList();
 					StringTokenizer st2 = new StringTokenizer(v, ",");
-					while(st2.hasMoreTokens()) {
+					while (st2.hasMoreTokens()) {
 						RemoteSlave rslave =
 							(RemoteSlave) allRslaves.get(st2.nextToken());
 						if (rslave == null)
@@ -151,6 +155,10 @@ public class MLSTSerialize {
 					file.setXfertime(Long.parseLong(v));
 				}
 			}
+			//if(isFile && !file.isFile()) file.setRSlaves(Collections.EMPTY_LIST);
+			if (isFile != file.isFile() && isDir != file.isDirectory())
+				throw new CorruptFileListException("entry is a file but had no x.slaves entry");
+
 			dir.putFile(file);
 		}
 	}
@@ -179,11 +187,7 @@ public class MLSTSerialize {
 				//				 }
 			}
 
-			unserialize(
-				in,
-				dir,
-				RemoteSlave.rslavesToHashtable(rslaves),
-				path);
+			unserialize(in, dir, RemoteSlave.rslavesToHashtable(rslaves), path);
 		}
 		return root;
 	}

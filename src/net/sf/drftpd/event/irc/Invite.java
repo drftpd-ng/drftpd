@@ -32,17 +32,11 @@ public class Invite extends GenericCommandAutoService {
 
 	private ConnectionManager _cm;
 
-	/**
-	 * @param connection
-	 */
 	public Invite(IRCListener ircListener) {
 		super(ircListener.getIRCConnection());
 		_cm = ircListener.getConnectionManager();
 	}
 
-	/* (non-Javadoc)
-	 * @see f00f.net.irc.martyr.GenericCommandAutoService#updateCommand(f00f.net.irc.martyr.InCommand)
-	 */
 	protected void updateCommand(InCommand command) {
 		if(command instanceof MessageCommand) {
 			MessageCommand msgc = (MessageCommand)command;
@@ -65,9 +59,9 @@ public class Invite extends GenericCommandAutoService {
 				}
 				if (user.checkPassword(args[2])) {
 					logger.info(
-						"Invited "
+						"Invited \""
 							+ msgc.getSourceString()
-							+ " as user "
+							+ "\" as user "
 							+ user.getUsername());
 					//_conn.sendCommand(
 					//	new InviteCommand(msgc.getSource(), _channelName));

@@ -116,32 +116,23 @@ public class StaticRemoteFile extends RemoteFile {
 	}
 
 	public boolean isDirectory() {
-		return (_rslaves == null);
+		return _rslaves == null;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#isFile()
-	 */
 	public boolean isFile() {
-		return (_rslaves != null);
+		return _rslaves != null;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#lastModified()
-	 */
 	public long lastModified() {
 		return _lastModified;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#length()
-	 */
 	public long length() {
 		return _length;
 	}
 	
 	/**
-	 * @see net.sf.drftpd.remotefile.RemoteFileTree#listFiles()
+	 * StaticRemoteFile cannot be linked, returns new RemoteFileInterface[0] 
 	 */
 	public RemoteFileInterface[] listFiles() {
 		return new RemoteFileInterface[0];
@@ -198,12 +189,13 @@ public class StaticRemoteFile extends RemoteFile {
 		StringBuffer ret = new StringBuffer();
 		ret.append(getClass().getName()+"[");
 		if (isDirectory())
-			ret.append("[directory: true]");
+			ret.append("[isDirectory(): true]");
 		if(isFile())
-			ret.append("[file: true]");
+			ret.append("[isFile(): true]");
 		ret.append("[length(): "+length()+"]");
 		ret.append(getName());
 		ret.append("]");
+		ret.append("[rslaves:"+_rslaves+"]");
 		return ret.toString();
 	}
 

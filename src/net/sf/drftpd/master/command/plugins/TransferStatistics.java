@@ -24,10 +24,9 @@ import org.apache.log4j.Logger;
 public class TransferStatistics implements CommandHandler {
 
 	private static Logger logger = Logger.getLogger(TransferStatistics.class);
-	private FtpRequest request;
-
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {
+		FtpRequest request = conn.getRequest();
 		List users;
 		try {
 			users = conn.getUserManager().getAllUsers();
@@ -150,7 +149,9 @@ public class TransferStatistics implements CommandHandler {
 				TransferStatistics.class,
 				command));
 	}
-	public CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer) {
+	public CommandHandler initialize(
+		BaseFtpConnection conn,
+		CommandManager initializer) {
 		return this;
 	}
 
@@ -158,8 +159,10 @@ public class TransferStatistics implements CommandHandler {
 		return null;
 	}
 
-	public void unload() {}
-	public void load(CommandManagerFactory initializer) {}
+	public void unload() {
+	}
+	public void load(CommandManagerFactory initializer) {
+	}
 
 }
 class UserComparator implements Comparator {

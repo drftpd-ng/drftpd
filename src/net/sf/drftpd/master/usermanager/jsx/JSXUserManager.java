@@ -151,6 +151,7 @@ public class JSXUserManager implements UserManager {
 	}
 	
 	public User getUserByNameUnchecked(String username) throws NoSuchUserException, IOException {
+		try {
 		JSXUser user = (JSXUser) users.get(username);
 		if (user != null) {
 			return user;
@@ -172,6 +173,10 @@ public class JSXUserManager implements UserManager {
 		} catch (ClassNotFoundException e) {
 			throw new FatalException(e);
 		}		
+		} catch(Throwable ex) {
+			if(ex instanceof NoSuchUserException) throw (NoSuchUserException)ex;
+			throw (IOException)new IOException("Error loading "+username).initCause(ex);
+		}
 	}
 	
 	public User getUserByName(String username)
