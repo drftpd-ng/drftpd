@@ -50,11 +50,7 @@
       <include name="se/mog/io/**/*.class" />
       <include name="net/sf/drftpd/*" />
       <include name="net/sf/drftpd/slave/*" />
-      <include name="net/sf/drftpd/remotefile/RemoteFile.class" />
-      <include name="net/sf/drftpd/remotefile/LinkedRemoteFile.class" />
-      <include name="net/sf/drftpd/remotefile/FileRemoteFile.class" />
-      <include name="net/sf/drftpd/remotefile/DirectoryRemoteFile.class" />
-      <include name="net/sf/drftpd/remotefile/StaticRemoteFile.class" />
+      <include name="net/sf/drftpd/remotefile/*" />
       <include name="net/sf/drftpd/master/RemoteSlave.class" />
       <include name="net/sf/drftpd/master/SlaveManager.class" />
       <include name="net/sf/drftpd/master/SlaveManagerImpl_Stub.class" />
