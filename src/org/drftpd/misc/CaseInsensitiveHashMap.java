@@ -23,30 +23,23 @@ import java.util.Set;
 /**
  * @author zubov
  * @version $Id$
+ * Must be CaseInsensitiveHashMap <String,V>
  */
-public class CaseInsensitiveHashMap<K, V> extends HashMap {
+public class CaseInsensitiveHashMap<K, V> extends HashMap<K, V> {
 
 	public CaseInsensitiveHashMap() {
 		super();
 	}
 
-	/*
-	 * public void putAll(Map <K,V> arg0) { for (K key : arg0.keySet()) {
-	 * put(key,arg0.get(key)); } }
-	 */
-	public boolean containsKey(K arg0) {
-		return super.containsKey(((String) arg0).toLowerCase());
+	public boolean containsKey(String arg0) {
+		return super.containsKey(arg0.toLowerCase());
 	}
 
-	public V get(K arg0) {
-		return (V) super.get(((String) arg0).toLowerCase());
-	}
-
-	public Set<K> keySet() {
-		return super.keySet();
+	public V get(String arg0) {
+		return (V) super.get(arg0.toLowerCase());
 	}
 
 	public V put(K arg0, V arg1) {
-		return (V) super.put(((String) arg0).toLowerCase(), arg1);
+		return (V) super.put(((K) ((String) arg0).toLowerCase()), arg1);
 	}
 }
