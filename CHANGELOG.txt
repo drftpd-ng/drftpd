@@ -2,3 +2,283 @@
 * Fixed shutdown in perms.conf to behave like it does in glftpd.
 * Added site find -incomplete [min % incomplete] and fixed
   site find -action wipe with multiple entries to wipe.
+* Fixed FinishReleaseOnSlaves ArchiveType
+
+2004/11/14 Morgan Christiansson <drftpd@mog.se>
+* Changed DELE to update stats aswell as credits.
+* Changed SiteBot to use correct section when dated section was used but
+  the current dir wasn't used for the upload.
+
+2004/11/12 Morgan Christiansson <drftpd@mog.se>
+* Made empty filterchains valid.
+
+2004/11/09 Morgan Christiansson <drftpd@mog.se>
+* Added getUser() to InviteEvent at request from beepboop.
+* Added BINVITE event that is dispatched on /msg !invite with bad pass.
+* Started using generics on master which breaks pre-5.0 JDK compatibility.
+* slave.jar is more lightweight now, and keeps 1.3/1.4 compatibility.
+* net.sf.drftpd.slave is no more, welcome org.drftpd.slave.
+
+2004/11/08 Morgan Christiansson <drftpd@mog.se>
+* Added better handling of file collisions, files are now checksummed 
+  in multiple threads and if checksums are identical all but one file is deleted.
+
+2004/11/06 Morgan Christiansson <drftpd@mog.se>
+* Continued usermanager cleanup/rewrite.
+* Fixed UserManagerConverter with support for converting from 1.1.4 userfiles.
+
+2004/11/03 Morgan Christiansson <drftpd@mog.se>
+* Changed userfile directories from {jsx,xstream} to {jsx,xstream}2.
+* Renamed usermanagers.
+* Integrated and rewrote iamn's dynamic user data plugin.
+
+2004/11/02 Morgan Christiansson <drftpd@mog.se>
+* Improved security in SITE CHANGE.
+* Revived Mirror plugin, needed for instant mirroring which Archive can't provide.
+
+2004/10/06  Teflon <teflon114@@users.sourceforge.net>
+* Fixed root cause of "group= iND" bug in files.mlst
+
+2004/10/05 Morgan Christiansson <drftpd@mog.se>
+* Fixed purge with JSXUserManager.
+* Added wkly_allotment to SITE USER environment and rewrote .properties format
+  for SITE USER output.
+* Fixed time to complete output in SiteBot and reviewed all other elapsed outputs.
+* Changed default permission in SITE USERS permission handling.
+  Defaults to the inverse of the last permission.
+  Ex: SITE USERS =deleted has !* as default
+      SITE USERS !=deleted has * as default
+
+2004/10/03 Morgan Christiansson <drftpd@mog.se>
+* Fixed SiteBot to use section name instead of section path when announcing.
+  Thanks to N3m3Sis.
+* Fixed SITE SEARCH to require all arguments to match instead of requiring any
+  argument to match. Thanks to succo.
+* Fixed LinkedRemoteFile.createDirectories()
+  Added automatic creation of <sectionname>-NOW symlink.
+
+2004/09/24 Morgan Christiansson <drftpd@mog.se>
+* Changed decimal format for bytes formatting to always use dot (.).
+  This fixes broken testcase, some ppl might not want . however.
+  Feedback?
+* Added SITE LINK command, same syntax as ln in GNU fileutils.
+  i.e. SITE LINK <target> <link>
+* Fixed relative links, added more testcases.
+
+2004/09/24 Morgan Christiansson <drftpd@mog.se>
+* Added testcase for symlinks that passes.
+
+2004/09/22 Morgan Christiansson <drftpd@mog.se>
+* Added BufferedOutputStream to control socket output stream,
+  should speed up the slowness (mostly noticed when logging in with long welcome message)
+  introduced by AddAsciiOutputStream.
+
+2004/08/24 Teflon <teflon114@@users.sourceforge.net>
+* Added MP3 ID3Tag support
+* Fixed bug where file xfertime would reset to 0 on daemon restart.
+* Fixed NullPointerException bug when mp3 file does not have an id3 tag
+* Rebuilt id3 support to no longer need yalil library. Put new MP3 classes into net.sf.drftpd
+* Made CWD message more customizable and added id3 info to it
+* Added Idle Kick IRC plugin
+
+2004/07/29 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Removed slaves.xml in favor of storing seperate slave config files in slaves/
+* You can no longer add/remove slaves through editing slaves.xml and issuing
+  "site reload"  This now has to be done through "site addslave" and "site delslave"
+* Issue "site slave" for more help on slave management
+* Fixed a bug that could cause slave2slave transfers to stall
+* Changed ArchiveType's so more than one could execute in a given section at a time
+
+2004/07/13 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Fixed JUnit tests again as they were broken when slaves were
+  set to only be available after remerge()
+
+2004/07/09 Morgan Christiansson <drftpd@mog.se>
+* Refactored source to use GlobalContext class,
+  which will improve navigation and ease of implementing testcases.
+* Removed _self var from SlaveManagerImpl, breaking FileListConverter.
+* Moved net.sf.drftpd.master.command.plugins.IRC to
+  org.drftpd.commands.SiteBotManagment
+* Added SITE IRC RAW command for sending RAW IRC commands.
+
+2004/07/09 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Fixed JUnit tests, all pass
+* Implemented "site listjobs" to show transfer status on jobs that are 
+  currently transferring
+
+2004/07/08 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Changes in JobManager to check for deleted files in the job queue
+* Fixed small bug in ConstantMirroring
+* Implemented GenericTextOutput irc plugin instead of Affils and Bnc
+  checkout conf/generictextoutput.conf.dist
+
+2004/07/07 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Integrated "site give" and "site take" with FtpConfig so give and take permissions
+  can be defined in perms.conf
+* Fixed the double announce error with the sitebot
+* Refactored JobManager and SlaveTransfer's and added functionality that will result
+  in better error control and output
+
+2004/07/04 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Slightly refactored ArchiveType's
+* site archive command now takes, Properties parameters
+  try "site archive" for help
+* Implemented ConstantMirroring which will keep X # of copies of files 
+  at all times
+
+2004/07/01 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Implemented SITE GRPREN <oldgroup> <newgroup>
+* Heavily refactored UserManager(s), UserManager is now an abstract class
+* Refactoring on User and AbstractUser also
+
+2004/06/30 Morgan Christiansson <drftpd@mog.se>
+* Now using AddAsciiOutputStream on controlconnection so that a single \n
+  will never appear alone which is not what the FTP RFC says and breaks
+  RaidenFTPD.
+
+2004/06/29 Morgan Christiansson <drftpd@mog.se>
+* Added ListUtils to "ant slavejar" target.
+
+2004/6/28 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Fixed a minor bug in ArchiveType's where directories without files 
+  could cause a NullPointerException, Thanks to akrog for the report
+* Fixed rename(), it would leave old directories behind, thanks Cy8er
+* Fixed gadmin's being able to give a leech slot when they are not allowed, thanks wikd
+
+2004/06/27 Morgan Christiansson <drftpd@mog.se>
+* Added org.drftpd.plugins.Exec per request of darcangel.
+  See http://drftpd.org/modules.php?name=Forums&file=viewtopic&t=49
+* Refactored events to use subclasses of the new ConnectionEvent
+  instead of UserEvent where approperiate.
+* Fixed permission on SITE UNNUKE command.
+* Renamed .passed to .pass in trial.conf, .passed will still work for now.
+* Added .pass=setgrp iND as example in trial.conf.dist.
+* Actions in trial must now be in lowercase.
+* Made PRE commandhandler set user owner to drftpd on PRE.
+
+2004/06/09 Morgan Christiansson <drftpd@mog.se>
+* Added hideIps=true setting in drftpd.conf for disabling logging of ips.
+  Ips might still be logged in some places.
+
+2004/06/02 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Updated LinkedRemoteFileTest to include a test for remerge()
+* Rewrote remerge() and parts of filesystem that used isDeleted()
+  Queued Renames/Deletes are no longer kept in the filesystem but
+  in a Hashmap in the RemoteSlave object
+
+2004/06/04 Morgan Christiansson <drftpd@mog.se>
+* Verified and updated TestCases.
+* Fixed infinite loop in Stats martyr plugin..
+* Fixed SITE RELOAD which was broken since
+  CommandHandlerBundle refactoring from 2004/06/01
+* Added !slave <slavename> command.
+
+2004/06/02 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Added UPGRADING.txt, use it!
+* Changed default bufferSize to 0 in slaves.conf, if bufferSize is kept 
+  at 0, default kernel tcp values are used
+* Released 1.1.2
+
+2004/06/01 Morgan Christiansson <drftpd@mog.se>
+* Refactored net.sf.drftpd.master.command.CommandHandler to
+  org.drftpd.command.CommandHandlerFactory and
+  org.drftpd.command.CommandHandler
+* Wrote a testcase for stats reset, and fixed reset code.
+  Also added a workaround for a Calendar bug in CalendarUtils.
+* Fixed bug with MLST/MLSD that caused it to work only for the last logged in user.
+  Refactored net.sf.drftpd.master.command.MLST to org.drftpd.command.MLST,
+  deprecated stub for backward compatibility is in place for now.
+* Changed XStream usermanager to use DomDriver() instead of the default XPP3
+  which is an optional download.
+* Location which JSX and XStream changed from users/
+  to users/jsx/ and users/xstream/ respectively.
+* Added org.drftpd.usermanager.ResetMonthlyStats for resetting monthly stats
+  and dispatching events to any plugins (such as Trial)
+* Changed filelist (LinkedRemoteFile) to be case insensitive.
+
+2004/05/31 Morgan Christiansson <drftpd@mog.se>
+* Users hostmask wasn't checked when user wasn't running an
+  ident server and wasn't connecting through an ftp-bnc.
+  This behaviour was introcued when IDNT support was added.
+
+2004/05/22 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Implemented MoveReleaseOffSlavesToMostFreeSlaves
+* Fixed MoveReleaseToMostFreeSlaves returning the most full slaves, 
+  Thanks Tranon
+
+2004/05/21 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Fixed Bad Sequence of Commands bug in 1.1
+* Fixed "SITE NEW"
+
+2004/05/17 Morgan Christiansson <drftpd@mog.se>
+* Added IDNT support with accompanying LoginTest JUnit tetscase.
+* Removed use.ident support, ident protocol is used if it is significant in users hostmasks.
+
+2004/05/16 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Refactored ArchiveType(s) to accept multiple destination slaves
+* There are four ArchiveType(s) now available, MoveReleaseToMostFreeSlaves
+  MoveReleaseToSpecificSlaves, FinishReleaseOnSlaves, and StripeFilesOffSpecificSlave
+* Settings in archive.conf have changed
+
+2004/05/11 Morgan Christiansson <drftpd@mog.se>
+* Began adding MAX_PATH checking so that PATH_MAX which is 256 on win32 isn't exceeded.
+* Made SITE SLAVES plain available to non-siteops, SITE SLAVES now takes 2 arguments:
+  SITE SLAVES [rmi] [plain]
+* Found and fixed a slave synchronization error when an upload failed.
+* Fixed error checking on mkdirs().
+
+2004/04/26 Morgan Christiansson <drftpd@mog.se>
+* Added userrejectsecure, userrejectinsecure, denydiruncrypted
+  and denydatauncrypted that behave the same was as in glftpd to perms.conf.
+  Initial patch by mutiger.
+* Fixed trial log appender in log4j-default.conf.
+
+2004/04/26 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Fixed SlaveTransfer so that the destination slave would get added to 
+  the file's slave list when not using CRC checking
+* Added Section support for ArchiveType's
+
+2004/04/26 Morgan Christiansson <drftpd@mog.se>
+* Implemented reason dir in nuked directory after a lot whining.
+  Creates a directory in the filelist, should problably be changed
+  to ListUtils at some point.
+
+2004/04/25 Morgan Christiansson <drftpd@mog.se>
+* Fixed getPlugin() so that it uses instanceof, was giving problems
+  TrialSitebot and SiteBotSSL
+  Thanks to mutiger for the report.
+
+2004/04/23 Morgan Christiansson <drftpd@mog.se>
+* When parsing files.mlst, non-existing slaves are now ignored.
+
+2004/04/22 Morgan Christiansson <drftpd@mog.se>
+* Fixed racejoin SiteBot announcement.
+* Automatically add missing trailing / to configureable section paths.
+* Fixed SiteBotSSL.
+* Changed [ 100% complete ] folders to not use / and cleaned up it's code.
+
+2004/04/21 Morgan Christiansson <drftpd@mog.se>
+* Improved transfer logging in DataConnectionHandler.
+* DatedSection.getPath() now calls .getFile() which creates dated directories.
+
+2004/04/20 Morgan Christiansson <drftpd@mog.se>
+* Fixed byte[] buffer so that it will always be at least 65535.
+  Thanks to hgr_ for the report.
+* Updated OnConnect.
+
+2004/04/19 Morgan Christiansson <drftpd@mog.se>
+* Changed default send/receive-buffersize behaviour, if buffersize is 0,
+  no setXxxBufferSize() call is made and the O/S can do it's own automatic tuning.
+* Added IDNT support as well as bouncer_ip setting in drftpd.conf, untested as of yet.
+* MKD now resurrects queued for deletion folders if a folder already exists
+  but is queued for deletion.
+* Made SafeFileWriter use UTF-8 charset instead of default charset, this should solve
+  ??? being replaced with ??? in files.mlst etc.
+* PRE now gives error if destination section has empty name (default section)
+* Fixed HALFWAY/COMPLETE average speed and elapsed time messages.
+
+2004/04/18 Morgan Christiansson <drftpd@mog.se>
+* Created CHANGELOG.txt
+* Improved default logging configuration,
+  now logging to slave.log, filelist.log, sysop.log.
+* Changed build.xml classpath to *.jar instead of *.

@@ -94,6 +94,7 @@ public class ConnectionManager {
     public static void main(String[] args) {
         System.out.println(Slave.VERSION + " master server starting.");
         System.out.println("http://drftpd.org/");
+        System.out.println("Further logging will be done using (mostly) log4j, check logs/");
 
         try {
             String cfgFileName;

@@ -17,27 +17,24 @@
  */
 package org.drftpd.mirroring.archivetypes;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Map.Entry;
+
 import net.sf.drftpd.event.listeners.Archive;
-import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
-
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.ArchiveType;
-
 import org.drftpd.sections.SectionInterface;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.Properties;
 
 
 /**
@@ -61,7 +58,7 @@ public class FinishReleaseOnSlaves extends ArchiveType {
     }
 
     public void findDestinationSlavesRecursive(LinkedRemoteFileInterface lrf,
-        HashMap slaveMap) {
+        HashMap<RemoteSlave, SlaveCount> slaveMap) {
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface file = null;
             file = (LinkedRemoteFileInterface) iter.next();
@@ -81,7 +78,7 @@ public class FinishReleaseOnSlaves extends ArchiveType {
                     SlaveCount i = (SlaveCount) slaveMap.get(rslave);
 
                     if (i == null) {
-                        slaveMap.put(new SlaveCount(), rslave);
+                        slaveMap.put(rslave, new SlaveCount());
                     } else {
                         i.addOne();
                     }
@@ -90,25 +87,64 @@ public class FinishReleaseOnSlaves extends ArchiveType {
         }
     }
 
-    public HashSet findDestinationSlaves() {
-        HashMap slaveMap = new HashMap();
+    public HashSet<RemoteSlave> findDestinationSlaves() {
+        HashMap<RemoteSlave, SlaveCount> slaveMap = new HashMap<RemoteSlave, SlaveCount>();
         findDestinationSlavesRecursive(getDirectory(), slaveMap);
 
-        ArrayList sorted = new ArrayList(slaveMap.keySet());
-        Collections.sort(sorted);
+        HashSet<RemoteSlave> returnMe = new HashSet<RemoteSlave>();
+        
+        RemoteSlave minslave = null;
+        // the value of the lowest count in the ret HashSet
+        int mincount = 0;
+    	Map.Entry<RemoteSlave,SlaveCount> entry;
+    	Iterator<Map.Entry<RemoteSlave,SlaveCount>> iter = slaveMap.entrySet().iterator();
 
-        HashSet returnMe = new HashSet();
-
-        for (ListIterator iter = sorted.listIterator(); iter.hasNext();) {
-            if (iter.nextIndex() == _numOfSlaves) {
-                break;
-            }
-
-            RemoteSlave rslave = (RemoteSlave) slaveMap.get(iter.next());
-            returnMe.add(rslave);
+        for(int i=0; i >= _numOfSlaves; i++) {
+        	entry = iter.next();
+    		returnMe.add(entry.getKey());
+        	// overwrite mincount if count of added is lower.
+        	if(minslave == null || mincount > entry.getValue().getValue()) {
+        		minslave = entry.getKey();
+        		mincount = entry.getValue().getValue();
+        	}
         }
 
+        while(iter.hasNext()) {
+        	entry = iter.next();
+        	// has higher value, replace
+        	if(mincount < entry.getValue().getValue()) {
+        		returnMe.remove(minslave);
+        		minslave = entry.getKey();
+        		mincount = Integer.MAX_VALUE;
+
+        		//calculated new minCount
+        		//could have the returnMe sorted so that lowest value is always at bottom.
+        		for (RemoteSlave rslave : returnMe) {
+        			int count = slaveMap.get(rslave).getValue();
+        			//if count is less than mincount, we have a new minslave
+					if(count < mincount) {
+						mincount = count;
+						minslave = rslave;
+					}
+				}
+        	}
+        }
         return returnMe;
+//        ArrayList<SlaveCount> sorted = new ArrayList<SlaveCount>(slaveMap.values());
+//        Collections.sort(sorted);
+//
+//        HashSet returnMe = new HashSet();
+//
+//        for (ListIterator iter = sorted.listIterator(); iter.hasNext();) {
+//            if (iter.nextIndex() == _numOfSlaves) {
+//                break;
+//            }
+//
+//            RemoteSlave rslave = (RemoteSlave) slaveMap.get(iter.next());
+//            returnMe.add(rslave);
+//        }
+//
+//        return returnMe;
     }
 
     public void cleanup(ArrayList jobList) {

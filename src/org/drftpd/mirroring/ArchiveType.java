@@ -53,7 +53,7 @@ public abstract class ArchiveType {
     private LinkedRemoteFileInterface _lrf;
     protected Archive _parent;
     protected SectionInterface _section;
-    private Set _slaveList;
+    private Set<RemoteSlave> _slaveList;
 
     public ArchiveType(Archive archive, SectionInterface section, Properties p) {
         _parent = archive;
@@ -67,7 +67,7 @@ public abstract class ArchiveType {
      */
     public abstract void cleanup(ArrayList jobList);
 
-    public abstract HashSet findDestinationSlaves();
+    public abstract HashSet<RemoteSlave> findDestinationSlaves();
 
     public final LinkedRemoteFileInterface getDirectory() {
         return _lrf;
@@ -136,7 +136,7 @@ public abstract class ArchiveType {
     protected abstract boolean isArchivedDir(LinkedRemoteFileInterface lrf)
         throws IncompleteDirectoryException, OfflineSlaveException;
 
-    public final Set getRSlaves() {
+    public final Set<RemoteSlave> getRSlaves() {
         return _slaveList;
     }
 

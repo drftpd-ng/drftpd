@@ -837,7 +837,7 @@ public class SiteBot implements FtpListener, Observer {
         long elapsed = (direvent.getTime() - starttime);
 
         env.add("secondstocomplete",
-            Time.formatTime(System.currentTimeMillis() - elapsed));
+            Time.formatTime(elapsed));
 
         long elapsedSeconds = elapsed / 1000;
         env.add("averagespeed",

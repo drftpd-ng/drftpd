@@ -246,6 +246,7 @@ public class GlobalContext {
     private void loadRSlavesAndRoot() {
         try {
             List rslaves = _slaveManager.getSlaves();
+            logger.info("Loading files.mlst");
             _root = MLSTSerialize.loadMLSTFileDatabase(rslaves, _cm);
         } catch (FileNotFoundException e) {
             logger.info("files.mlst not found, creating a new filelist", e);
