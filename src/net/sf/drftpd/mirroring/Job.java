@@ -30,7 +30,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.24 2004/07/09 06:11:56 zubov Exp $
+ * @version $Id: Job.java,v 1.25 2004/07/09 06:16:18 zubov Exp $
  */
 public class Job {
 	private int _transferNum;
@@ -101,7 +101,7 @@ public class Job {
 	 * returns true if this job has nothing more to send
 	 */
 	public boolean isDone() {
-		return _transferNum < 1 || _destSlaves.isEmpty();
+		return ((_transferNum < 1) || (_destSlaves.isEmpty()));
 	}
 
 	public synchronized void sentToSlave(RemoteSlave slave) {
