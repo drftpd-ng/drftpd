@@ -44,7 +44,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author kolor & Teflon
- * 
+ * @version $Id$
  */
 public class Rank extends GenericCommandAutoService implements
         IRCPluginInterface {

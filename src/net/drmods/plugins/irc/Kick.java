@@ -43,7 +43,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author Teflon
- * @version $Id: Kick.java,v 1.2 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id$
  */
 public class Kick extends GenericAutoService implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Kick.class);
