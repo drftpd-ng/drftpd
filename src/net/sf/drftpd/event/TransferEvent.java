@@ -19,14 +19,21 @@ package net.sf.drftpd.event;
 
 import java.net.InetAddress;
 
+import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: TransferEvent.java,v 1.8 2004/04/17 02:24:35 mog Exp $
+ * @version $Id: TransferEvent.java,v 1.9 2004/04/22 02:10:10 mog Exp $
  */
 public class TransferEvent extends DirectoryFtpEvent {
+	private boolean _complete;
+	private InetAddress _peer;
+
+	private RemoteSlave _rslave;
+	private char _type;
+	private InetAddress _clientHost;
 
 	/**
 	 * @param user
@@ -37,16 +44,18 @@ public class TransferEvent extends DirectoryFtpEvent {
 		User user,
 		String command,
 		LinkedRemoteFileInterface directory,
-		InetAddress userHost,
-		InetAddress xferHost,
+		InetAddress clientHost,
+		RemoteSlave rslave,
+		InetAddress peer,
 		char type,
 		boolean complete) {
 		this(
 			user,
 			command,
 			directory,
-			userHost,
-			xferHost,
+			clientHost,
+			rslave,
+			peer,
 			type,
 			complete,
 			System.currentTimeMillis());
@@ -56,34 +65,41 @@ public class TransferEvent extends DirectoryFtpEvent {
 		User user,
 		String command,
 		LinkedRemoteFileInterface directory,
-		InetAddress userHost,
-		InetAddress xferHost,
+		InetAddress clientHost,
+		RemoteSlave rslave,
+		InetAddress peer,
 		char type,
 		boolean complete,
 		long time) {
 		super(user, command, directory, time);
-		_userHost = userHost;
-		_xferHost = xferHost;
+		_clientHost = clientHost;
+		_rslave = rslave;
+		if(peer == null) throw new NullPointerException();
+		_peer = peer;
 		_complete = complete;
 		_type = type;
 	}
-	private InetAddress _userHost;
-	private InetAddress _xferHost;
-	private boolean _complete;
-	private char _type;
 
 	public char getType() {
 		return _type;
 	}
+
+	public InetAddress getClientHost() {
+		return _clientHost;
+	}
+
+	public InetAddress getXferHost() {
+		return _peer;
+	}
+
+	/**
+	 * @return Whether this transfer finished successfully.
+	 */
 	public boolean isComplete() {
 		return _complete;
 	}
 
-	public InetAddress getUserHost() {
-		return _userHost;
-	}
-
-	public InetAddress getXferHost() {
-		return _xferHost;
+	public InetAddress getPeer() {
+		return _peer;
 	}
 }

@@ -22,14 +22,12 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.drftpd.plugins.SiteBot;
-
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SFVFile;
-import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
+import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -37,9 +35,11 @@ import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.drftpd.plugins.SiteBot;
+
 /**
  * @author zubov
- * @version $Id: RaceStatistics.java,v 1.11 2004/03/26 00:16:33 mog Exp $
+ * @version $Id: RaceStatistics.java,v 1.12 2004/04/22 02:10:11 mog Exp $
  */
 public class RaceStatistics implements FtpListener {
 
@@ -49,11 +49,9 @@ public class RaceStatistics implements FtpListener {
 	}
 
 	public void actionPerformed(Event event) {
-		if (!(event instanceof DirectoryFtpEvent))
+		if (!event.getCommand().equals("STOR"))
 			return;
-		DirectoryFtpEvent direvent = (DirectoryFtpEvent) event;
-		if (!direvent.getCommand().equals("STOR"))
-			return;
+		TransferEvent direvent = (TransferEvent) event;
 		LinkedRemoteFileInterface dir;
 		try {
 			dir = direvent.getDirectory().getParentFile();

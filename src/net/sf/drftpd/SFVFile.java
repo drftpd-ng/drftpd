@@ -31,7 +31,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: SFVFile.java,v 1.30 2004/02/26 13:56:46 mog Exp $
+ * @version $Id: SFVFile.java,v 1.31 2004/04/22 02:10:10 mog Exp $
  */
 public class SFVFile implements Serializable {
 
@@ -158,10 +158,10 @@ public class SFVFile implements Serializable {
 		return new SFVStatus(size(), offline, present);
 	}
 
-	public long getChecksum(String fileName) throws ObjectNotFoundException {
+	public long getChecksum(String fileName) throws NoSFVEntryException {
 		Long checksum = (Long) _entries.get(fileName);
 		if (checksum == null)
-			throw new ObjectNotFoundException();
+			throw new NoSFVEntryException();
 		return checksum.longValue();
 	}
 

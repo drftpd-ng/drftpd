@@ -42,7 +42,7 @@ import net.sf.drftpd.Bytes;
 import net.sf.drftpd.Checksum;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.NoSFVEntryException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.TransferEvent;
@@ -59,6 +59,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 import net.sf.drftpd.slave.Transfer;
+import net.sf.drftpd.slave.TransferFailedException;
 import net.sf.drftpd.slave.TransferStatus;
 import net.sf.drftpd.util.ListUtils;
 import net.sf.drftpd.util.PortRange;
@@ -70,7 +71,8 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.51 2004/04/20 04:11:48 mog Exp $
+ * @author zubov
+ * @version $Id: DataConnectionHandler.java,v 1.52 2004/04/22 02:10:11 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -1020,6 +1022,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			boolean isRetr = cmd.equals("RETR");
 			boolean isAppe = cmd.equals("APPE");
 			boolean isStou = cmd.equals("STOU");
+			String eventType = isRetr ? "RETR" : "STOR";
+			
 			if (isAppe || isStou)
 				throw UnhandledCommandException.create(
 					DataConnectionHandler.class,
@@ -1241,6 +1245,13 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				logger.warn("Slave is unsynchronized", ex);
 				return new FtpReply(426, "FileExistsException, slave is unsynchronized: "+ex.getMessage());
 			} catch (IOException ex) {
+				if(ex instanceof TransferFailedException) {
+					status = ((TransferFailedException)ex).getStatus();
+					conn.getConnectionManager().dispatchFtpEvent(new TransferEvent(conn.getUserNull(), eventType, _transferFile, conn.getClientAddress(), _rslave, status.getPeer(), type, false));
+					if(isRetr) {
+						conn.getUserNull().updateCredits(-status.getTransfered());
+					}
+				}
 				FtpReply reply = null;
 				if (isStor) {
 					_transferFile.removeSlave(_rslave);
@@ -1278,46 +1289,38 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 						env));
 
 			if (isStor) {
-				long transferedBytes;
-				try {
-					transferedBytes = _transfer.getTransfered();
-					// throws RemoteException
-					if (_resumePosition == 0) {
-						_transferFile.setCheckSum(status.getChecksum());
-					} else {
-						//						try {
-						//							checksum = _transferFile.getCheckSumFromSlave();
-						//						} catch (NoAvailableSlaveException e) {
-						//							response.addComment(
-						//								"No available slaves when getting checksum from slave: "
-						//									+ e.getMessage());
-						//							logger.warn("", e);
-						//							checksum = 0;
-						//						} catch (IOException e) {
-						//							response.addComment(
-						//								"IO error getting checksum from slave: "
-						//									+ e.getMessage());
-						//							logger.warn("", e);
-						//							checksum = 0;
-						//						}
-					}
-					_transferFile.setLastModified(System.currentTimeMillis());
-					_transferFile.setLength(transferedBytes);
-					_transferFile.setXfertime(status.getElapsed());
-				} catch (RemoteException ex) {
-					_rslave.handleRemoteException(ex);
-					return new FtpReply(
-						426,
-						"Error communicationg with slave: " + ex.getMessage());
+				// throws RemoteException
+				if (_resumePosition == 0) {
+					_transferFile.setCheckSum(status.getChecksum());
+				} else {
+					//						try {
+					//							checksum = _transferFile.getCheckSumFromSlave();
+					//						} catch (NoAvailableSlaveException e) {
+					//							response.addComment(
+					//								"No available slaves when getting checksum from slave: "
+					//									+ e.getMessage());
+					//							logger.warn("", e);
+					//							checksum = 0;
+					//						} catch (IOException e) {
+					//							response.addComment(
+					//								"IO error getting checksum from slave: "
+					//									+ e.getMessage());
+					//							logger.warn("", e);
+					//							checksum = 0;
+					//						}
 				}
+				_transferFile.setLastModified(System.currentTimeMillis());
+				_transferFile.setLength(status.getTransfered());
+				_transferFile.setXfertime(status.getElapsed());
 			}
 
-			if (zipscript(isRetr,
+			boolean zipscript = zipscript(isRetr,
 				isStor,
 				status.getChecksum(),
 				response,
 				targetFileName,
-				targetDir)) {
+				targetDir);
+			if(zipscript) {
 
 				//transferstatistics
 				if (isRetr) {
@@ -1351,19 +1354,18 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				} catch (UserFileException e) {
 					logger.warn("", e);
 				}
-
-				if (isStor) {
-					conn.getConnectionManager().dispatchFtpEvent(
-						new TransferEvent(
-							conn.getUserNull(),
-							"STOR",
-							_transferFile,
-							conn.getClientAddress(),
-							_rslave.getInetAddress(),
-							getType(),
-							true));
-				}
 			}
+			//Dispatch for both STOR and RETR
+			conn.getConnectionManager().dispatchFtpEvent(
+				new TransferEvent(
+					conn.getUserNull(),
+					eventType,
+					_transferFile,
+					conn.getClientAddress(),
+					_rslave,
+					status.getPeer(),
+					getType(),
+					zipscript));
 			return response;
 		} finally {
 			reset();
@@ -1444,7 +1446,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 						"slave with .sfv offline, checksum not verified");
 				} catch (FileNotFoundException e1) {
 					//continue without verification
-				} catch (ObjectNotFoundException e1) {
+				} catch (NoSFVEntryException e1) {
 					//file not found in .sfv, continue
 				} catch (IOException e1) {
 					logger.info(e1);
@@ -1501,10 +1503,10 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 					}
 				} catch (NoAvailableSlaveException e) {
 					response.addComment(
-						"zipscript - SFV unavailable, slave with .sfv file is offline");
-				} catch (ObjectNotFoundException e) {
+						"zipscript - SFV unavailable, slave(s) with .sfv file is offline");
+				} catch (NoSFVEntryException e) {
 					response.addComment(
-						"zipscript - SFV unavailable, no .sfv file in directory");
+						"zipscript - no entry in sfv for file");
 				} catch (IOException e) {
 					response.addComment(
 						"zipscript - SFV unavailable, IO error: "

@@ -1,3 +1,7 @@
+2004/04/21 Morgan Christiansson <drftpd@mog.se>
+* Improved transfer logging in DataConnectionHandler.
+* DatedSection.getPath() now calls .getFile() which creates dated directories.
+
 2004/04/20 Morgan Christiansson <drftpd@mog.se>
 * Fixed byte[] buffer so that it will always be at least 65535.
   Thanks to hgr_ for the report.

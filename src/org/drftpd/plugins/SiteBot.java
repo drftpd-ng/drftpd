@@ -52,6 +52,7 @@ import net.sf.drftpd.event.InviteEvent;
 import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.SlaveEvent;
+import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.event.irc.IRCPluginInterface;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.GroupPosition;
@@ -91,7 +92,7 @@ import f00f.net.irc.martyr.commands.NickCommand;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.7 2004/04/20 04:11:51 mog Exp $
+ * @version $Id: SiteBot.java,v 1.8 2004/04/22 02:10:13 mog Exp $
  */
 public class SiteBot implements FtpListener, Observer {
 
@@ -306,13 +307,14 @@ public class SiteBot implements FtpListener, Observer {
 			}
 		} else if ("PRE".equals(direvent.getCommand())) {
 			sayDirectorySection(direvent, "pre");
-		} else if (direvent.getCommand().equals("STOR")) {
-			actionPerformedDirectorySTOR(direvent);
+		} else if ("STOR".equals(direvent.getCommand())) {
+			actionPerformedDirectorySTOR((TransferEvent)direvent);
 		}
 	}
 
-	private void actionPerformedDirectorySTOR(DirectoryFtpEvent direvent)
+	private void actionPerformedDirectorySTOR(TransferEvent direvent)
 		throws FormatterException {
+		if(!direvent.isComplete()) return;
 		ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
 		LinkedRemoteFile dir;
 		try {

@@ -36,7 +36,7 @@ import org.drftpd.sections.SectionInterface;
 /**
  * @author zubov
  *
- * @version $Id: Mirror.java,v 1.20 2004/04/18 21:02:27 zubov Exp $
+ * @version $Id: Mirror.java,v 1.21 2004/04/22 02:10:11 mog Exp $
  */
 public class Mirror implements FtpListener {
 
@@ -53,13 +53,18 @@ public class Mirror implements FtpListener {
 	}
 
 	public void actionPerformed(Event event) {
-		if (event.getCommand().equals("RELOAD"))
+		if (event.getCommand().equals("RELOAD")) {
 			reload();
-		if (!(event instanceof TransferEvent))
 			return;
+		}
+
+		if (!event.getCommand().equals("STOR")) {
+			return;
+		}
 		TransferEvent transevent = (TransferEvent) event;
-		if (!transevent.getCommand().equals("STOR"))
+		if(!transevent.isComplete()) {
 			return;
+		}
 		LinkedRemoteFileInterface dir = transevent.getDirectory();
 		if (checkExclude(_cm.getSectionManager().lookup(dir.getPath()))) {
 			return;

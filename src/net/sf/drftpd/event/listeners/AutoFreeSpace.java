@@ -45,7 +45,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author zubov
- * @version $Id: AutoFreeSpace.java,v 1.11 2004/03/30 14:16:34 mog Exp $
+ * @version $Id: AutoFreeSpace.java,v 1.12 2004/04/22 02:10:10 mog Exp $
  */
 public class AutoFreeSpace implements FtpListener {
 	private static final Logger logger = Logger.getLogger(AutoFreeSpace.class);
@@ -74,11 +74,10 @@ public class AutoFreeSpace implements FtpListener {
 	public void actionPerformed(Event event) {
 		if (event.getCommand().equals("RELOAD"))
 			reload();
-		if (!(event instanceof TransferEvent))
+		if (!(event instanceof TransferEvent) || !event.getCommand().equals("STOR"))
 			return;
 		TransferEvent transevent = (TransferEvent) event;
-		if (!transevent.getCommand().equals("STOR"))
-			return;
+		if(!transevent.isComplete()) return;
 		if (System.currentTimeMillis() - _lastchecked <= _cycleTime) {
 			return;
 		}

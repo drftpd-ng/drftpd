@@ -59,7 +59,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.80 2004/04/20 04:11:47 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.81 2004/04/22 02:10:11 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -78,7 +78,6 @@ public class BaseFtpConnection implements Runnable {
 	protected Socket _controlSocket;
 
 	protected User _user;
-	protected InetAddress clientAddress = null;
 
 	protected LinkedRemoteFile currentDirectory;
 
@@ -131,7 +130,7 @@ public class BaseFtpConnection implements Runnable {
 	 * Get client address
 	 */
 	public InetAddress getClientAddress() {
-		return clientAddress;
+		return _controlSocket.getInetAddress();
 	}
 
 	public CommandManager getCommandManager() {
@@ -321,10 +320,9 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	public void run() {
 		lastActive = System.currentTimeMillis();
-		clientAddress = _controlSocket.getInetAddress();
 		logger.info(
-			"Handling new request from " + clientAddress.getHostAddress());
-		thread.setName("FtpConn from " + clientAddress.getHostAddress());
+			"Handling new request from " + getClientAddress().getHostAddress());
+		thread.setName("FtpConn from " + getClientAddress().getHostAddress());
 
 		try {
 			//			in =
@@ -345,8 +343,6 @@ public class BaseFtpConnection implements Runnable {
 				out.print(response);
 			}
 			while (!stopRequest) {
-				thread.setName(
-					"FtpConn from " + clientAddress.getHostAddress());
 
 				out.flush();
 				//notifyObserver();
@@ -376,7 +372,7 @@ public class BaseFtpConnection implements Runnable {
 						+ ",cwd="
 						+ currentDirectory.getPath()
 						+ ",host="
-						+ clientAddress
+						+ getClientAddress()
 						+ "]");
 				if (!hasPermission(request)) {
 					out.print(FtpReply.RESPONSE_530_NOT_LOGGED_IN);
@@ -442,7 +438,7 @@ public class BaseFtpConnection implements Runnable {
 		if (authenticated)
 			thread.setName(
 				"FtpConn from "
-					+ clientAddress.getHostAddress()
+					+ getClientAddress().getHostAddress()
 					+ " "
 					+ _user.getUsername()
 					+ "/"

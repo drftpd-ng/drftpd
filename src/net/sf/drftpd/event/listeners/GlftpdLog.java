@@ -47,6 +47,7 @@ import net.sf.drftpd.event.InviteEvent;
 import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.SlaveEvent;
+import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
@@ -65,7 +66,7 @@ import org.tanesha.replacer.FormatterException;
 
 /**
  * @author flowman
- * @version $Id: GlftpdLog.java,v 1.5 2004/03/04 01:41:27 zubov Exp $
+ * @version $Id: GlftpdLog.java,v 1.6 2004/04/22 02:10:11 mog Exp $
  */
 public class GlftpdLog implements FtpListener {
 	PrintWriter out;
@@ -135,7 +136,7 @@ public class GlftpdLog implements FtpListener {
 			say(SimplePrintf.jprintf(format, env));
 */
 		} else if (direvent.getCommand().equals("STOR")) {
-			actionPerformedDirectorySTOR(direvent);
+			actionPerformedDirectorySTOR((TransferEvent)direvent);
 		} else {
 			// Unhandled DirectoryEvent:
 		}
@@ -160,9 +161,10 @@ public class GlftpdLog implements FtpListener {
 				+ "\"");
 	}
 		
-	private void actionPerformedDirectorySTOR(DirectoryFtpEvent direvent)
+	private void actionPerformedDirectorySTOR(TransferEvent direvent)
 		throws FormatterException {
 
+		if(!direvent.isComplete()) return;
 		LinkedRemoteFileInterface dir;
 		try {
 			dir = direvent.getDirectory().getParentFile();

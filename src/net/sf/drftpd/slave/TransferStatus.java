@@ -18,18 +18,23 @@
 package net.sf.drftpd.slave;
 
 import java.io.Serializable;
+import java.net.InetAddress;
 
 /**
  * @author mog
- * @version $Id: TransferStatus.java,v 1.4 2004/02/10 00:03:31 mog Exp $
+ * @version $Id: TransferStatus.java,v 1.5 2004/04/22 02:10:12 mog Exp $
  */
 public class TransferStatus implements Serializable {
 	private long _checksum;
 	private long _elapsed, _transfered;
-	public TransferStatus(long elapsed, long transfered, long checksum) {
+	private InetAddress _peer;
+
+	public TransferStatus(long elapsed, long transfered, long checksum, InetAddress peer) {
 		_elapsed = elapsed;
 		_transfered = transfered;
 		_checksum = checksum;
+		if(peer == null) throw new NullPointerException();
+		_peer = peer;
 	}
 
 	public long getChecksum() {
@@ -59,6 +64,10 @@ public class TransferStatus implements Serializable {
 		if (_elapsed == 0)
 			return 0;
 		return (int) (_transfered / ((float) _elapsed / (float) 1000));
+	}
+
+	public InetAddress getPeer() {
+		return _peer;
 	}
 
 }

@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.event.listeners;
+package org.drftpd.plugins;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,18 +32,18 @@ import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.ConnectionManager;
 
 /**
+ * @see http://www.wu-ftpd.org/man/xferlog.html
  * @author mog
- *
- * @version $Id: XferLogListener.java,v 1.5 2004/02/26 13:56:48 mog Exp $
+ * @version $Id: XferLog.java,v 1.1 2004/04/22 02:10:13 mog Exp $
  */
-public class XferLogListener implements FtpListener {
+public class XferLog implements FtpListener {
 
-	public XferLogListener() {
+	public XferLog() {
 		super();
-		new File("ftp-data/logs").mkdirs();
+		new File("logs").mkdirs();
 		try {
 			//APPEND
-			this.out = new PrintStream(new FileOutputStream("logs/xferlog", true));
+			_out = new PrintStream(new FileOutputStream("logs/xferlog", true));
 		} catch (IOException e) {
 			throw new FatalException(e);
 		}
@@ -70,13 +70,13 @@ public class XferLogListener implements FtpListener {
 	          user-id   completion-status
 	
 	example lines:
-	Mon Aug 11 14:03:30 2003 20 as1-2-3.ld.bonet.se 15000000 /site/tv-dvdrip/Babylon.5.S03E01.DVDRip.XviD-SFM/babylon5.s03e01.dvdrip.xvid-sfm.r16 b _ i r jh iND 0 *
-	Mon Aug 11 14:03:31 2003 33 c-d2b470d5.012-16-67766c2.cust.bredbandsbolaget.se 15000000 /site/tv-dvdrip/Babylon.5.S03E01.DVDRip.XviD-SFM/babylon5.s03e01.dvdrip.xvid-sfm.r15 b _ i r void0 GUD 1 void0
-	Mon Aug 11 14:03:44 2003 13 as1-2-3.ld.bonet.se 15000000 /site/tv-dvdrip/Babylon.5.S03E01.DVDRip.XviD-SFM/babylon5.s03e01.dvdrip.xvid-sfm.r17 b _ i r jh iND 0 *
+	Mon Aug 11 14:03:30 2003 20 hostname 15000000 /path/to/file b _ i r user group 0 *
+	Mon Aug 11 14:03:31 2003 33 hostname 15000000 /path/to/file b _ i r user group 1 user
+	Mon Aug 11 14:03:44 2003 13 hostname 15000000 /path/to/file b _ i r user group 0 *
 	 */
 	static SimpleDateFormat DATE_FMT =
-		new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy ", Locale.ENGLISH);
-	private PrintStream out;
+		new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy", Locale.ENGLISH);
+	private PrintStream _out;
 
 	public void actionPerformed(TransferEvent event) {
 		char direction;
@@ -98,13 +98,12 @@ public class XferLogListener implements FtpListener {
 		}
 
 		char completed = event.isComplete() ? 'c' : 'i';
-
-		out.println(
+		_out.println(
 			DATE_FMT.format(new Date(event.getTime()))
 				+ " "
 				+ event.getDirectory().getXfertime() / 1000
 				+ " "
-				+ event.getUserHost()
+				+ event.getPeer().getHostName()
 				+ " "
 				+ event.getDirectory().length()
 				+ " "
@@ -117,7 +116,7 @@ public class XferLogListener implements FtpListener {
 				+ event.getUser().getUsername()
 				+ " "
 				+ event.getUser().getGroupName()
-				+ " 0 * "
+				+ " 0 * " // authentication-method   authenticated-user-id
 				+ completed);
 	}
 

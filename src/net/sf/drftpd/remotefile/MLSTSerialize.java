@@ -19,7 +19,6 @@ package net.sf.drftpd.remotefile;
 
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
@@ -41,7 +40,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: MLSTSerialize.java,v 1.26 2004/04/20 04:11:50 mog Exp $
+ * @version $Id: MLSTSerialize.java,v 1.27 2004/04/22 02:10:12 mog Exp $
  */
 public class MLSTSerialize {
 	private static final Logger logger = Logger.getLogger(MLSTSerialize.class);
@@ -227,10 +226,6 @@ public class MLSTSerialize {
 			dir = ret.getFile();
 			if (!ret.exists()) {
 				throw new CorruptFileListException(path + " doesn't exist");
-				//				 StringTokenizer st = new StringTokenizer((String)ret[1], "/");
-				//				 while(st.hasMoreTokens()) {
-				//				 	dir.createDirectory()
-				//				 }
 			}
 
 			unserialize(in2, dir, RemoteSlave.rslavesToHashtable(rslaves), path);

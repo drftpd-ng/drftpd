@@ -38,7 +38,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.46 2004/04/21 03:35:53 mog Exp $
+ * @version $Id: TransferImpl.java,v 1.47 2004/04/22 02:10:12 mog Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private static final Logger logger = Logger.getLogger(TransferImpl.class);
@@ -145,7 +145,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	}
 
 	public TransferStatus getStatus() {
-		return new TransferStatus(getElapsed(), getTransfered(), getChecksum());
+		return new TransferStatus(getElapsed(), getTransfered(), getChecksum(), _sock.getInetAddress());
 	}
 
 	public boolean isReceivingUploading() {
@@ -183,7 +183,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	 *  on the line).  (The idea is to get the ack before you have to stop
 	 *  transmitting.)
 	 */
-	private void transfer() throws IOException {
+	private TransferStatus transfer() throws IOException {
 		_started = System.currentTimeMillis();
 		_sock = _conn.connect();
 		_conn = null;
@@ -202,16 +202,22 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		}
 
 		_slave.addTransfer(this);
+		TransferStatus status;
 		try {
 			byte[] buff = new byte[Math.max(_slave.getBufferSize(), 65535)];
 			int count;
-			while ((count = _in.read(buff)) != -1 && !_abort) {
-				_transfered += count;
-				_out.write(buff, 0, count);
+			try {
+				while ((count = _in.read(buff)) != -1 && !_abort) {
+					_transfered += count;
+					_out.write(buff, 0, count);
+				}
+				_out.flush();
+			} catch (IOException e) {
+				throw new TransferFailedException(e, getStatus());
 			}
-			_out.flush();
 		} finally {
 			_finished = System.currentTimeMillis();
+			status = getStatus();
 			_slave.removeTransfer(this);
 
 			_in.close();
@@ -220,10 +226,11 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 
 			_in = null;
 			_out = null;
-			_sock = null;
+			//_sock = null;
 		}
 		if (_abort)
-			throw new IOException("Transfer was aborted");
+			throw new TransferFailedException("Transfer was aborted", getStatus());
+		return status;
 	}
 
 	public TransferStatus receiveFile(
@@ -249,11 +256,11 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		}
 		System.out.println("UL:" + dirname + File.separator + filename);
 		try {
-			transfer();
+			return transfer();
 		} catch (IOException e) {
+			// TODO really delete on IOException ?
 			_slave.delete(root + File.separator + filename);
 			throw e; // so the Master can still handle the exception
 		}
-		return getStatus();
 	}
 }
