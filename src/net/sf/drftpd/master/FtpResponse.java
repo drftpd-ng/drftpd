@@ -38,7 +38,7 @@ public class FtpResponse {
 		for (Iterator iter = lines.iterator(); iter.hasNext();) {
 			sb.append((String) iter.next()+"\r\n");
 		}
-		sb.append(code+" "+response);
+		sb.append(code+" "+response+"\n");
 		return sb.toString();
 	}
 

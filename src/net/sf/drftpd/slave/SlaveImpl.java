@@ -137,13 +137,15 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		for (Iterator iter = roots.iterator(); iter.hasNext();) {
 			File root = (File) iter.next();
 			RemoteSlave rslave = new RemoteSlave(slave, root.getPath());
-		LinkedRemoteFile linkedroot =
-			new LinkedRemoteFile(rslave, new FileRemoteFile(root, rootfile));
+			LinkedRemoteFile linkedroot =
+				new LinkedRemoteFile(
+					rslave,
+					new FileRemoteFile(root, rootfile));
 
 		}
-//		/* DEBUG */
-//		if (!linkedroot.isDirectory())
-//			throw new RuntimeException("LinkedRemoteFile root is not a directory while FileRemoteRoot was.");
+		//		/* DEBUG */
+		//		if (!linkedroot.isDirectory())
+		//			throw new RuntimeException("LinkedRemoteFile root is not a directory while FileRemoteRoot was.");
 		return linkedroot;
 	}
 

@@ -32,11 +32,6 @@ import net.sf.drftpd.slave.Slave;
  * @author Morgan Christiansson <mog@linux.nu>
  */
 public class LinkedRemoteFile extends RemoteFile implements Serializable {
-
-	private static Logger logger = Logger.getLogger(LinkedRemoteFile.class.getName());
-	static {
-		logger.setLevel(Level.FINE);
-	}
 	//private static Category logger = Category.getInstance(LinkedRemoteFile.class);
 	/**
 	 * @author mog
@@ -48,6 +43,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 */
 	public class DirectoryRemoteFile extends RemoteFile {
 
+		protected String name;
+
 		public DirectoryRemoteFile(User owner, String name) {
 			this.name = name;
 			isDirectory = true;
@@ -58,14 +55,6 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			user = owner.getUsername();
 			group = owner.getGroup();
 		}
-		/**
-		 * @see net.sf.drftpd.remotefile.RemoteFileTree#listFiles()
-		 */
-		public RemoteFile[] listFiles() {
-			return new RemoteFile[0];
-		}
-
-		protected String name;
 		/**
 		 * @see net.sf.drftpd.remotefile.RemoteFile#getName()
 		 */
@@ -86,8 +75,31 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		public String getPath() {
 			throw new UnsupportedOperationException("getParent() is not implemented on LinkedRemoteFile.DirectoryRemoteFile");
 		}
+		/**
+		 * @see net.sf.drftpd.remotefile.RemoteFileTree#listFiles()
+		 */
+		public RemoteFile[] listFiles() {
+			return new RemoteFile[0];
+		}
 
 	}
+
+	private static Logger logger = Logger.getLogger(LinkedRemoteFile.class.getName());
+	static {
+		logger.setLevel(Level.FINE);
+	}
+
+	private Map files;
+	private String name;
+
+	private LinkedRemoteFile parent;
+	private Random rand = new Random();
+
+	//private String path;
+	private String root;
+
+	/////////////////////// SLAVES
+	protected List slaves;
 
 	/**
 	 * Creates an empty RemoteFile directory, usually used as an empty root directory that
@@ -107,14 +119,6 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		// there _should_ always be at least 1 RemoteSlave.
 	}
 
-	/**
-	 * The slave argument may be null, if it is null, no slaves will be added.
-	 */
-	public LinkedRemoteFile(RemoteSlave slave, RemoteFile file)
-		throws IOException {
-		this(slave, null, file);
-	}
-
 	public LinkedRemoteFile(RemoteFile file) throws IOException {
 		this(null, null, file);
 	}
@@ -124,13 +128,14 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 * @param file file that this RemoteFile object should represent.
 	 */
 	public LinkedRemoteFile(
-		RemoteSlave slave,
+		RemoteSlave remoteSlave,
 		LinkedRemoteFile parent,
 		RemoteFile file)
 		throws InvalidDirectoryException {
-		logger.finest("creating linkedRemoteFile from " + file);
+		logger.finest("creating LinkedRemoteFile from " + file);
 		lastModified = file.lastModified();
 		length = file.length();
+		logger.info(file.getPath()+":length = "+file.length);
 		//isHidden = file.isHidden();
 		isDirectory = file.isDirectory();
 		isFile = file.isFile();
@@ -147,8 +152,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		this.parent = parent;
 
 		slaves = new Vector();
-		if (slave != null) {
-			slaves.add(slave);
+		if (remoteSlave != null) {
+			slaves.add(remoteSlave);
 		}
 
 		if (file.isDirectory()) {
@@ -164,50 +169,178 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 				}
 				files.put(
 					file2.getName(),
-					new LinkedRemoteFile(slave, this, file2));
+					new LinkedRemoteFile(remoteSlave, this, file2));
 			}
 
 			Iterator i = dirstack.iterator();
 			while (i.hasNext()) {
 				RemoteFile file2 = (RemoteFile) i.next();
 				String filename = file2.getName();
-				files.put(filename, new LinkedRemoteFile(slave, this, file2));
+				files.put(filename, new LinkedRemoteFile(remoteSlave, this, file2));
 			}
 		}
 	}
 
-	public void mkdir(User owner, String fileName) throws IOException {
-		LinkedRemoteFile existingfile = (LinkedRemoteFile) files.get(fileName);
-		if (existingfile != null) {
-			throw new FileExistsException(
-				fileName + " already exists in this directory");
-		}
-		for (Iterator i = slaves.iterator(); i.hasNext();) {
-			RemoteSlave slave = (RemoteSlave) i.next();
-			try {
-				slave.getSlave().mkdir(owner, getPath() + "/" + fileName);
-			} catch (RemoteException ex) {
-				slave.getManager().handleRemoteException(ex, slave);
-			}
-		}
-
-		LinkedRemoteFile file =
-			new LinkedRemoteFile(
-				null, // remoteslave
-				this, // parent
-				new DirectoryRemoteFile(owner, fileName)); //file
-		file.addSlaves(getSlaves());
-		files.put(file.getName(), file);
-		logger.fine("Created directory " + file.getPath());
+	/**
+	 * The slave argument may be null, if it is null, no slaves will be added.
+	 */
+	public LinkedRemoteFile(RemoteSlave slave, RemoteFile file)
+		throws IOException {
+		this(slave, null, file);
 	}
 
 	public void addFile(RemoteFile file) throws InvalidDirectoryException {
 		LinkedRemoteFile linkedfile = new LinkedRemoteFile(null, this, file);
 		files.put(linkedfile.getName(), linkedfile);
 	}
+	public void addSlave(RemoteSlave slave) {
+		slaves.add(slave);
+	}
+	private void addSlaves(Collection addslaves) {
+		if (addslaves == null)
+			throw new IllegalArgumentException("addslaves cannot be null");
+		System.out.println("Adding " + addslaves + " to " + slaves);
+		slaves.addAll(addslaves);
+		System.out.println("slaves.size() is now " + slaves.size());
+	}
+	public void delete() {
+		Vector removed = new Vector(slaves.size());
+		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
+			Slave slave = rslave.getSlave();
+			try {
+				//TODO: prefixes
+				slave.delete(getPath());
+			} catch(RemoteException ex) {
+				rslave.getManager().handleRemoteException(ex, rslave);
+				continue;
+			} catch(IOException ex) {
+				logger.log(Level.WARNING, "IOException deleting file on slave.", ex);
+				continue;
+			}
+			removed.add(rslave);
+		}
+		slaves.remove(removed);
+		if(slaves.size() == 0) {
+			getParentFile().getHashtable().remove(this);
+		}
+	}
 
+	public boolean equals(Object obj) {
+		if (obj instanceof LinkedRemoteFile
+			&& ((LinkedRemoteFile) obj).getPath().equals(getPath())) {
+			return true;
+		}
+		return false;
+	}
+	public RemoteSlave getASlave() throws NoAvailableSlaveException {
+		if (slaves.size() == 0)
+			throw new NoAvailableSlaveException(
+				getPath() + " has no slaves available");
+		RemoteSlave myslaves[] =
+			(RemoteSlave[]) slaves.toArray(new RemoteSlave[0]);
+		int num = rand.nextInt(myslaves.length);
+		return (RemoteSlave) myslaves[num];
+	}
+
+	/**
+	 * @see net.sf.drftpd.remotefile.RemoteFile#getCheckSum()
+	 * @throws net.sf.drftpd.master.NoAvailableSlaveException
+	 */
+	public long getCheckSum() {
+		return getCheckSum(false);
+	}
+
+	/**
+	 * @throws net.sf.drftpd.master.NoAvailableSlaveException
+	 */
+	public long getCheckSum(boolean scan) {
+		if (scan == false)
+			return checkSum;
+		if (checkSum != 0)
+			return checkSum;
+		
+		RemoteSlave slave;
+		while (true) {
+			try {
+				slave = getASlave();
+			} catch(NoAvailableSlaveException ex) {
+				logger.log(Level.WARNING, "NoAvailableSlaveException", ex);
+				return 0L;
+			}
+			try {
+				checkSum = slave.getSlave().checkSum(getPath());
+			} catch (RemoteException ex) {
+				slave.getManager().handleRemoteException(ex, slave);
+				continue;
+			} catch (IOException ex) {
+				logger.log(Level.WARNING, "IOException", ex);
+				continue;
+			}
+			return checkSum;
+		}
+	}
+
+	public LinkedRemoteFile getFile(String fileName) throws FileNotFoundException {
+		LinkedRemoteFile file = (LinkedRemoteFile)files.get(fileName);
+		if(file == null) throw new FileNotFoundException(fileName+" does not exist in "+getPath());
+		return file;
+	}
+	
 	public Map getFiles() {
 		return files;
+	}
+	public Map getHashtable() {
+		return files;
+	}
+	public String getName() {
+		//return path.substring(path.lastIndexOf(separatorChar) + 1);
+		return name;
+	}
+	public String getParent() {
+		if (getParentFile() == null)
+			return null;
+		return getParentFile().getPath();
+	}
+	public LinkedRemoteFile getParentFile() {
+		return parent;
+	}
+
+	public String getPath() {
+		//return path;
+		StringBuffer path = new StringBuffer("/" + getName());
+		LinkedRemoteFile parent = getParentFile();
+		while (parent != null && parent.getParentFile() != null) {
+			path.insert(0, "/" + parent.getName());
+			parent = parent.getParentFile();
+		}
+		return path.toString();
+	}
+	/**
+	 * @see net.sf.drftpd.remotefile.RemoteFileTree#getSFVFile()
+	 */
+	public SFVFile getSFVFile() throws IOException {
+		if (sfvFile == null) {
+			while (true) {
+				RemoteSlave slave = getASlave();
+				try {
+					sfvFile = slave.getSlave().getSFVFile(getPath());
+					break;
+				} catch (RemoteException ex) {
+					slave.getManager().handleRemoteException(ex, slave);
+				}
+			}
+		}
+		return sfvFile;
+	}
+	public List getSlaves() {
+		return slaves;
+	}
+	/**
+	 * @see net.sf.drftpd.remotefile.RemoteFile#isDirectory()
+	 */
+	public boolean isDirectory() {
+		return files != null;
 	}
 
 	public RemoteFile[] listFiles() {
@@ -238,48 +371,6 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 				throw new FileNotFoundException(currfile.getPath()+"/"+nextToken+": Not found");
 		}
 		return currfile;
-	}
-
-	private Map files;
-	public Map getHashtable() {
-		return files;
-	}
-
-	private LinkedRemoteFile parent;
-	public LinkedRemoteFile getParentFile() {
-		return parent;
-	}
-	public String getParent() {
-		if (getParentFile() == null)
-			return null;
-		return getParentFile().getPath();
-	}
-
-	//private String path;
-	private String root;
-	private String name;
-	public String getName() {
-		//return path.substring(path.lastIndexOf(separatorChar) + 1);
-		return name;
-	}
-
-	public String getPath() {
-		//return path;
-		StringBuffer path = new StringBuffer("/" + getName());
-		LinkedRemoteFile parent = getParentFile();
-		while (parent != null && parent.getParentFile() != null) {
-			path.insert(0, "/" + parent.getName());
-			parent = parent.getParentFile();
-		}
-		return path.toString();
-	}
-
-	public boolean equals(Object obj) {
-		if (obj instanceof LinkedRemoteFile
-			&& ((LinkedRemoteFile) obj).getPath().equals(getPath())) {
-			return true;
-		}
-		return false;
 	}
 
 	/**
@@ -363,17 +454,29 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		}
 	}
 
-	public void unmerge(RemoteSlave slave) {
-		//LinkedRemoteFile files[] = listFiles();
-		if (!getSlaves().remove(slave)) {
-			System.out.println("Slave already removed from " + this);
+	public void mkdir(User owner, String fileName) throws IOException {
+		LinkedRemoteFile existingfile = (LinkedRemoteFile) files.get(fileName);
+		if (existingfile != null) {
+			throw new FileExistsException(
+				fileName + " already exists in this directory");
 		}
-		recursiveUmerge(slave);
-	}
+//		for (Iterator i = slaves.iterator(); i.hasNext();) {
+//			RemoteSlave slave = (RemoteSlave) i.next();
+//			try {
+//				slave.getSlave().mkdir(owner, getPath() + "/" + fileName);
+//			} catch (RemoteException ex) {
+//				slave.getManager().handleRemoteException(ex, slave);
+//			}
+//		}
 
-	public void unmerge(RemoteSlave slave, Iterator i) {
-		i.remove();
-		recursiveUmerge(slave);
+		LinkedRemoteFile file =
+			new LinkedRemoteFile(
+				null, // remoteslave
+				this, // parent
+				new DirectoryRemoteFile(owner, fileName)); //file
+		file.addSlaves(getSlaves());
+		files.put(file.getName(), file);
+		logger.fine("Created directory " + file.getPath());
 	}
 
 	private void recursiveUmerge(RemoteSlave slave) {
@@ -394,34 +497,12 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		}
 	}
 
-	/////////////////////// SLAVES
-	protected List slaves;
-	public void addSlave(RemoteSlave slave) {
-		slaves.add(slave);
-	}
-	private void addSlaves(Collection addslaves) {
-		if (addslaves == null)
-			throw new IllegalArgumentException("addslaves cannot be null");
-		System.out.println("Adding " + addslaves + " to " + slaves);
-		slaves.addAll(addslaves);
-		System.out.println("slaves.size() is now " + slaves.size());
-	}
-	public List getSlaves() {
-		return slaves;
-	}
-	private Random rand = new Random();
-	public RemoteSlave getASlave() throws NoAvailableSlaveException {
-		if (slaves.size() == 0)
-			throw new NoAvailableSlaveException(
-				getPath() + " has no slaves available");
-		RemoteSlave myslaves[] =
-			(RemoteSlave[]) slaves.toArray(new RemoteSlave[0]);
-		int num = rand.nextInt(myslaves.length);
-		return (RemoteSlave) myslaves[num];
-	}
-
 	public void removeSlave(RemoteSlave slave) {
 		slaves.remove(slave);
+	}
+
+	public void renameTo(String to) {
+		throw new NoSuchMethodError("renameTo() not implemented");
 	}
 	/**
 	 * @see java.lang.Object#toString()
@@ -458,92 +539,18 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		ret.append("]]");
 		return ret.toString();
 	}
-	/**
-	 * @see net.sf.drftpd.remotefile.RemoteFileTree#getSFVFile()
-	 */
-	public SFVFile getSFVFile() throws IOException {
-		if (sfvFile == null) {
-			while (true) {
-				RemoteSlave slave = getASlave();
-				try {
-					sfvFile = slave.getSlave().getSFVFile(getPath());
-					break;
-				} catch (RemoteException ex) {
-					slave.getManager().handleRemoteException(ex, slave);
-				}
-			}
+
+	public void unmerge(RemoteSlave slave) {
+		//LinkedRemoteFile files[] = listFiles();
+		if (!getSlaves().remove(slave)) {
+			System.out.println("Slave already removed from " + this);
 		}
-		return sfvFile;
+		recursiveUmerge(slave);
 	}
 
-	/**
-	 * @throws net.sf.drftpd.master.NoAvailableSlaveException
-	 */
-	public long getCheckSum(boolean scan) {
-		if (scan == false)
-			return checkSum;
-		if (checkSum != 0)
-			return checkSum;
-		
-		RemoteSlave slave;
-		while (true) {
-			try {
-				slave = getASlave();
-			} catch(NoAvailableSlaveException ex) {
-				logger.log(Level.WARNING, "NoAvailableSlaveException", ex);
-				return 0L;
-			}
-			try {
-				checkSum = slave.getSlave().checkSum(getPath());
-			} catch (RemoteException ex) {
-				slave.getManager().handleRemoteException(ex, slave);
-				continue;
-			} catch (IOException ex) {
-				logger.log(Level.WARNING, "IOException", ex);
-				continue;
-			}
-			return checkSum;
-		}
-	}
-
-	/**
-	 * @see net.sf.drftpd.remotefile.RemoteFile#getCheckSum()
-	 * @throws net.sf.drftpd.master.NoAvailableSlaveException
-	 */
-	public long getCheckSum() {
-		return getCheckSum(false);
-	}
-
-	public void renameTo(String to) {
-		throw new NoSuchMethodError("renameTo() not implemented");
-	}
-	public void delete() {
-		Vector removed = new Vector(slaves.size());
-		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
-			RemoteSlave rslave = (RemoteSlave) iter.next();
-			Slave slave = rslave.getSlave();
-			try {
-				//TODO: prefixes
-				slave.delete(getPath());
-			} catch(RemoteException ex) {
-				rslave.getManager().handleRemoteException(ex, rslave);
-				continue;
-			} catch(IOException ex) {
-				logger.log(Level.WARNING, "IOException deleting file on slave.", ex);
-				continue;
-			}
-			removed.add(rslave);
-		}
-		slaves.remove(removed);
-		if(slaves.size() == 0) {
-			getParentFile().getHashtable().remove(this);
-		}
-	}
-	/**
-	 * @see net.sf.drftpd.remotefile.RemoteFile#isDirectory()
-	 */
-	public boolean isDirectory() {
-		return files != null;
+	public void unmerge(RemoteSlave slave, Iterator i) {
+		i.remove();
+		recursiveUmerge(slave);
 	}
 
 }

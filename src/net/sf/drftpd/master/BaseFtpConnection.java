@@ -151,14 +151,10 @@ public class BaseFtpConnection implements Runnable {
 				}
 				if(stopRequest) break;
 				// test command line
-				if (commandLine == null) {
-					break;
-				}
+				if (commandLine == null) break;
 
 				//spyRequest(commandLine);
-				if (commandLine.equals("")) {
-					continue;
-				}
+				if (commandLine.equals("")) continue;
 
 				request = new FtpRequest(commandLine);
 				logger.fine("<< " + request.getCommandLine());
@@ -189,7 +185,7 @@ public class BaseFtpConnection implements Runnable {
 				in.close();
 				out.close();
 			} catch (Exception ex2) {
-				logger.log(Level.WARNING, "Exception closikng stream", ex2);
+				logger.log(Level.WARNING, "Exception closing stream", ex2);
 			}
 			/*
 			ConnectionService conService = mConfig.getConnectionService();
@@ -216,7 +212,6 @@ public class BaseFtpConnection implements Runnable {
 		} catch (InvocationTargetException ex) {
 			ex.printStackTrace();
 			out.println("500 Server error. "+ex.getCause().toString());
-			//out.write(ftpStatus.getResponse(500, request, user, null));
 			Throwable th = ex.getTargetException();
 			th.printStackTrace();
 		} catch (Exception ex) {

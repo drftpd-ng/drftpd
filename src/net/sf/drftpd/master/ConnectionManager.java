@@ -26,6 +26,7 @@ import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.remotefile.JDOMRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.RemoteSlave;
+import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveImpl;
 
 import org.jdom.Document;
@@ -102,9 +103,10 @@ public class ConnectionManager {
 
 		String localslave = cfg.getProperty("master.localslave");
 		if (localslave != null && localslave.equalsIgnoreCase("true")) {
-			RemoteSlave slave;
+			RemoteSlave remoteSlave;
+			Slave slave = new SlaveImpl(cfg);
 			try {
-				slave = new RemoteSlave(new SlaveImpl(cfg));
+				remoteSlave = new RemoteSlave(slave);
 			} catch (RemoteException ex) {
 				ex.printStackTrace();
 				System.exit(0);
@@ -116,9 +118,10 @@ public class ConnectionManager {
 			try {
 				LinkedRemoteFile slaveroot =
 					SlaveImpl.getDefaultRoot(
+						//TODO: RootBasket instead of string
 						cfg.getProperty("slave.root"),
-						slave);
-				slavemanager.addSlave(slave, slaveroot);
+						remoteSlave);
+				slavemanager.addSlave(remoteSlave, slaveroot);
 			} catch (RemoteException ex) {
 				ex.printStackTrace();
 				return;
@@ -137,22 +140,23 @@ public class ConnectionManager {
 				timerTask();
 			}
 		};
+		//run every 10 seconds
 		timer.schedule(timerTask, 0, 10000);
 	}
 
 	public void timerTask() {
 		long currTime = System.currentTimeMillis();
 		synchronized (connections) {
-			//		for(Iterator i = ((Vector)connections.clone()).iterator(); i.hasNext(); ) {
+			//for(Iterator i = ((Vector)connections.clone()).iterator(); i.hasNext(); ) {
 			for (Iterator i = connections.iterator(); i.hasNext();) {
 				FtpConnection conn = (FtpConnection) i.next();
 
 				int idle = (int) ((currTime - conn.getLastActive()) / 1000);
 				if (conn.getUser() == null) {
-					System.out.println(conn + " not logged in");
+					logger.finer(conn + " not logged in");
 					continue;
 				}
-				System.out.println(
+				logger.finer(
 					"User has been idle for "
 						+ idle
 						+ "s, max "

@@ -46,13 +46,16 @@ import socks.server.Ident;
  */
 
 public class FtpConnection extends BaseFtpConnection {
-	private static Logger logger =
-		Logger.getLogger(FtpConnection.class.getName());
 	static {
 		logger.setLevel(Level.FINEST);
 	}
 	private final static SimpleDateFormat DATE_FMT =
 		new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	private static Logger logger =
+		Logger.getLogger(FtpConnection.class.getName());
+
+	private boolean mbRenFr = false;
+	private String mstRenFr = null;
 
 	// command state specific temporary variables
 
@@ -60,35 +63,15 @@ public class FtpConnection extends BaseFtpConnection {
 	//private boolean mbReset = false;
 	private long resumePosition = 0;
 
-	private boolean mbRenFr = false;
-	private String mstRenFr = null;
+	//	public final static String ANONYMOUS = "anonymous";
+
+	private char type = 'A';
 
 	//	private boolean mbUser = false;
 	//private boolean mbPass = false;
 	private UserManager usermanager;
 
-	//private FtpDataConnection mDataConnection;
-	/**
-	 * Set configuration file and the control socket. 
-	 */
-	/*
-	public FtpConnection(FtpConfig cfg, Socket soc) {
-	    super(cfg, soc);
-	}
-	*/
-
-	/**
-	 * prints a few lines of status such as credits, ratio, disk free, to the user.s
-	 */
-	protected void printStatus(PrintWriter out, String prefix) {
-		out.println(
-			prefix
-				+ " [Credits: "
-				+ user.getCredits()
-				+ "B] [Ratio: 1:"
-				+ user.getRatio()
-				+ "]");
-	}
+	private VirtualDirectory virtualDirectory;
 
 	public FtpConnection(
 		Socket soc,
@@ -101,84 +84,6 @@ public class FtpConnection extends BaseFtpConnection {
 		this.usermanager = usermanager;
 		this.slaveManager = slavemanager;
 		this.virtualDirectory = new VirtualDirectory(root);
-	}
-
-	private VirtualDirectory virtualDirectory;
-	/**
-	 * get user filesystem view
-	 */
-	public VirtualDirectory getVirtualDirectory() {
-		return virtualDirectory;
-	}
-
-	//	public final static String ANONYMOUS = "anonymous";
-
-	private char type = 'A';
-
-	/**
-	 * Get the user data type.
-	 */
-	public char getType() {
-		return type;
-	}
-
-	/**
-	 * Set the data type. Supported types are A (ascii) and I (binary).
-	 * @return true if success
-	 */
-	public boolean setType(char type) {
-		type = Character.toUpperCase(type);
-		if ((type != 'A') && (type != 'I')) {
-			return false;
-		}
-		this.type = type;
-		return true;
-	}
-
-	/**
-	 * Get output stream. Returns <code>ftpserver.util.AsciiOutputStream</code>
-	 * if the transfer type is ASCII.
-	 */
-	public OutputStream getOutputStream(OutputStream os) {
-		//os = IoUtils.getBufferedOutputStream(os);
-		if (type == 'A') {
-			os = new AsciiOutputStream(os);
-		}
-		return os;
-	}
-
-	/**
-	 * Is an anonymous user?
-	 */
-	//	public boolean getIsAnonymous() {
-	//		return ANONYMOUS.equals(getUsername());
-	//
-	//	}
-
-	/**
-	 * Check the user permission to execute this command.
-	 */
-	/*
-	protected boolean hasPermission(FtpRequest request) {
-		String cmd = request.getCommand();
-		return user.hasLoggedIn()
-			|| cmd.equals("USER")
-			|| cmd.equals("PASS")
-			|| cmd.equals("HELP");
-	}
-	*/
-	/**
-	 * Reset temporary state variables.
-	 */
-	private void resetState() {
-		mbRenFr = false;
-		mstRenFr = null;
-
-		//		mbReset = false;
-		resumePosition = 0;
-
-		//mbUser = false;
-		//mbPass = false;
 	}
 
 	////////////////////////////////////////////////////////////
@@ -460,350 +365,6 @@ public class FtpConnection extends BaseFtpConnection {
 			reset();
 		}
 	}
-
-	public void doNLST(FtpRequest request, PrintWriter out) {
-		// reset state variables
-		resetState();
-
-		out.write(ftpStatus.getResponse(150, request, user, null));
-		Writer os = null;
-		try {
-			Socket dataSoc = getDataSocket();
-			if (dataSoc == null) {
-				out.write(ftpStatus.getResponse(550, request, user, null));
-				return;
-			}
-
-			if (!mbPasv) {
-				os = new OutputStreamWriter(dataSoc.getOutputStream());
-
-				if (!getVirtualDirectory()
-					.printNList(request.getArgument(), os)) {
-					out.write(ftpStatus.getResponse(501, request, user, null));
-				} else {
-					os.flush();
-					out.write(ftpStatus.getResponse(226, request, user, null));
-				}
-			}
-		} catch (IOException ex) {
-			ex.printStackTrace();
-			out.write(ftpStatus.getResponse(425, request, user, null));
-		} finally {
-			if (os != null) {
-				try {
-					os.close();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
-			reset();
-		}
-	}
-
-	/*
-		public void doSITECHANGE(FtpRequest request, PrintWriter out) {
-			if (!request.hasArgument() || !user.isAdmin()) {
-				out.write(ftpStatus.getResponse(530, request, user, null));
-				return;
-			}
-	
-			Pattern p = new Perl5Compiler().compile("^(\\w+) (\\w+) (.*)$");
-			request.getArgument()
-			Matcher m = new Matcher();
-			m.
-	
-			String command, arg;
-			User user2;
-			{
-				String argument = request.getArgument();
-				int l1 = argument.indexOf(" ");
-	
-				user2 = usermanager.getUserByName(argument.substring(0, l1));
-				if (user2 == null) {
-					out.write(ftpStatus.getResponse(200, request, user, null));
-					return;
-				}
-				
-				int i2 = argument.indexOf(" ", l1+1);
-				
-				
-				
-			}
-	
-	//		String args[] = request.getArgument().split(" ");
-	//		String command = args[1].toLowerCase();
-			// 0 = user
-			// 1 = command
-			// 2- = argument
-			if (args[1] == null) {
-				out.println("200- Fields:  ratio");
-				out.println("200-  max_dlspeed, max_ulspeed");
-				out.println("200-  max_sim_down, max_sim_up");
-				out.println("200-  timeframe # #, credits, flags, homedir");
-				out.println("200- idle_time, startup_dir, num_logins # [#]");
-				out.println("200-  time_limit, tagline, comment, group_slots # [#]");
-				return;
-			} else if ("ratio".equalsIgnoreCase(command)) {
-				user.setRatio(Float.parseFloat(args[2]));
-			} else if ("max_dlspeed".equalsIgnoreCase(command)) {
-				user.setRatio(Long.parseLong(command));
-			} else if ("max_ulspeed".equals(command)) {
-				user.setMaxUploadRate(Integer.parseInt(args[2]));
-			}
-		}
-	*/
-	public void doSITE_RESCAN(FtpRequest request, PrintWriter out) {
-		LinkedRemoteFile directory =
-			getVirtualDirectory().getCurrentDirectoryFile();
-		LinkedRemoteFile sfvFile = null;
-		Map files = directory.getFiles();
-		for (Iterator i = files.keySet().iterator(); i.hasNext();) {
-			String fileName = (String) i.next();
-			if (fileName.endsWith(".sfv")) {
-				try {
-					if (sfvFile != null) {
-						logger.warning(
-							"Multiple SFV files in " + directory.getName());
-						out.println(
-							"200- Multiple SFV files found, using " + fileName);
-					}
-					sfvFile = directory.lookupFile(fileName);
-				} catch (FileNotFoundException e) {
-					out.println("550 " + e.getMessage());
-					return;
-				}
-			}
-		}
-		if (sfvFile == null) {
-			out.println("550 Sorry! no .sfv file found!");
-			return;
-		}
-		SFVFile sfv;
-		try {
-			sfv = sfvFile.getSFVFile();
-		} catch (IOException e) {
-			out.println("550 " + e.getMessage());
-			return;
-		}
-		for (Iterator i = sfv.entrySet().iterator(); i.hasNext();) {
-			Map.Entry entry = (Map.Entry) i.next();
-			String fileName = (String) entry.getKey();
-			Long checkSum = (Long) entry.getValue();
-			LinkedRemoteFile file;
-			try {
-				file = directory.lookupFile(fileName);
-			} catch (FileNotFoundException ex) {
-				out.println("200- " + fileName + " MISSING");
-				continue;
-			}
-			boolean ok;
-			ok = checkSum.longValue() == file.getCheckSum();
-			out.println("200- " + fileName + (ok ? " OK" : " FAILED"));
-			out.flush();
-		}
-		out.println("200 Command ok.");
-	}
-
-	public void doSITE_ADDIP(FtpRequest request, PrintWriter out) {
-		resetState();
-		String args[] = request.getArgument().split(" ");
-		if (args.length < 2) {
-			out.println("200 USAGE: SITE ADDIP <username> <ident@ip>");
-			return;
-		}
-		User user2;
-		try {
-			user2 = usermanager.getUserByName(args[0]);
-			user2.addIPMask(args[1]);
-			usermanager.save(user2);
-		} catch (NoSuchUserException ex) {
-			out.println("200 No such user: " + args[0]);
-			return;
-		} catch (IOException ex) {
-			out.println("200 Caught IOException: " + ex.getMessage());
-			return;
-		}
-		out.write(ftpStatus.getResponse(200, request, user, null));
-	}
-
-	/**
-	 * Lists currently connected users.
-	 */
-	public void doSITE_WHO(FtpRequest request, PrintWriter out) {
-		resetState();
-		if (!user.isAdmin()) {
-			out.write(ftpStatus.getResponse(530, request, user, null));
-			return;
-		}
-		for (Iterator i = connManager.getConnections().iterator();
-			i.hasNext();
-			) {
-			out.println("200- " + i.next());
-		}
-		out.write(ftpStatus.getResponse(200, request, user, null));
-	}
-
-	public void doSITE_WIPE(FtpRequest request, PrintWriter out) {
-		resetState();
-		if (!user.isAdmin())
-			out.write("200 You need admin privileges to use SITE WIPE");
-		String arg = request.getArgument();
-
-		if (arg.charAt(0) == '-') {
-			int pos = arg.indexOf(' ');
-		}
-
-	}
-	public void doSITE_LIST(FtpRequest request, PrintWriter out) {
-		resetState();
-		RemoteFile files[] =
-			getVirtualDirectory().getCurrentDirectoryFile().listFiles();
-		for (int i = 0; i < files.length; i++) {
-			RemoteFile file = files[i];
-			out.write("200- " + file.toString() + "\r\n");
-		}
-		out.println(
-			"200 "
-				+ getVirtualDirectory().getCurrentDirectoryFile().getPath()
-				+ " contained "
-				+ files.length
-				+ " entries listed");
-	}
-
-	/**
-	 * USAGE: site take <user> <kbytes> [<message>]
-	 *        Removes credit from user
-	 *
-	 *        ex. site take Archimede 100000 haha
-	 *
-	 *        This will remove 100mb of credits from the user 'Archimede' and 
-	 *        send the message haha to him.
-	 */
-	public void doSITE_TAKE(FtpRequest request, PrintWriter out) {
-		GlftpdUserManager.GlftpdUser gluser = null;
-		if (user instanceof GlftpdUserManager.GlftpdUser)
-			gluser = (GlftpdUserManager.GlftpdUser) user;
-
-		if (!user.isAdmin()
-			&& !(gluser != null && gluser.getFlags().indexOf("F") != -1)) {
-			out.println("200 Access denied.");
-			return;
-		}
-
-		String args[] = request.getArgument().split(" ");
-		User user2;
-		long credits;
-
-		try {
-			user2 = usermanager.getUserByName(args[0]);
-			credits = Long.parseLong(args[1]) * 1000; // B, not KiB
-			//			String message = args[3];
-			user2.updateCredits(0 - credits); // adds - credits
-		} catch (Exception ex) {
-			out.println("200 " + ex.getMessage());
-			return;
-		}
-		out.println(
-			"200 OK, removed "
-				+ credits
-				+ "b from "
-				+ user2.getUsername()
-				+ ".");
-	}
-	public void doSITE_USER(FtpRequest request, PrintWriter out) {
-		resetState();
-		if (!user.isAdmin()) {
-			out.write(ftpStatus.getResponse(530, request, user, null));
-			return;
-		}
-		//int pos = request.getArgument().indexOf(" ") + 1;
-		try {
-			User user = usermanager.getUserByName(request.getArgument());
-		} catch (NoSuchUserException ex) {
-			out.println("200- user " + request.getArgument() + " not found");
-			out.write(ftpStatus.getResponse(200, request, user, null));
-			return;
-		} catch (IOException ex) {
-			out.println("200 " + ex.getMessage());
-		}
-		GlftpdUserManager.GlftpdUser gluser = null;
-		if (user instanceof GlftpdUserManager.GlftpdUser) {
-			gluser = (GlftpdUserManager.GlftpdUser) user;
-		}
-		out.write("200- " + user.getComment());
-		out.write(
-			"200- +=======================================================================+\r\n");
-		out.write(
-			"200- | Username: "
-				+ user.getUsername()
-				+ " Created: UNKNOWN \r\n");
-		int i = (int) (user.getTimeToday() / 1000);
-		int hours = i / 60;
-		int minutes = i - hours * 60;
-		out.write(
-			"200- | Time On Today: "
-				+ hours
-				+ ":"
-				+ minutes
-				+ " Last seen: Wed Jul 17 13:19:56 2002\r\n");
-
-		out.write(
-			"200- | Flags: "
-				+ (gluser != null ? gluser.getFlags() : "")
-				+ "   Idle time: 10                      \r\n");
-		out.write(
-			"200- | Ratio: 1:3                         Credits:    2868.8 MB              \r\n");
-		out.write(
-			"200- | Total Logins: 680                  Current Logins: 0                  \r\n");
-		out.write(
-			"200- | Max Logins: 3                      From same IP: Unlimited            \r\n");
-		out.write(
-			"200- | Max Sim Uploads: Unlimited         Max Sim Downloads: Unlimited       \r\n");
-		out.write(
-			"200- | Max Upload Speed:"
-				+ (user.getMaxUploadRate() / 1000F)
-				+ " K/s      Max Download Speed:"
-				+ (user.getMaxDownloadRate() / 1000F)
-				+ " K/s    \r\n");
-		out.write(
-			"200- | Times Nuked: "
-				+ user.getTimesNuked()
-				+ "    Bytes Nuked:    568 MB             \r\n");
-		out.write(
-			"200- | Weekly Allotment:     0 MB         Messages Waiting: Not implemented            \r\n");
-		out.write(
-			"200- | Time Limit: "
-				+ user.getTimelimit()
-				+ " minutes.          (0 = Unlimited)                    \r\n");
-		if (gluser != null) {
-			out.write("200- | " + gluser.getSlots() + " \r\n");
-		}
-		out.write(
-			"200- | Gadmin/Leech Slots: -1 -1          (-1 = Unlimited, None)             \r\n");
-		out.write("200- | Tagline: " + user.getTagline() + " \r\n");
-		out.write("200- | Groups: " + user.getGroups() + " \r\n");
-		if (user instanceof GlftpdUserManager.GlftpdUser) {
-			out.write(
-				"200- | Priv Groups: "
-					+ ((GlftpdUserManager.GlftpdUser) user).getPrivateGroups()
-					+ " \r\n");
-		}
-		out.write(
-			"200- +-----------------------------------------------------------------------+\r\n");
-		out.write("200- | IP0: IP1: \r\n");
-		out.write("200- | IP2: IP3: \r\n");
-		out.write("200- | IP4: IP5: \r\n");
-		out.write("200- | IP6: IP7: \r\n");
-		out.write("200- | IP8: IP9: \r\n");
-		out.write(
-			"200- +=======================================================================+\r\n");
-		out.write(ftpStatus.getResponse(200, request, user, null));
-	}
-
-	public void doSITE_CHECKSLAVES(FtpRequest request, PrintWriter out) {
-		out.println(
-			"200 Ok, " + slaveManager.verifySlaves() + " stale slaves removed");
-	}
 	/**
 	 * <code>MDTM &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
 	 * 
@@ -931,6 +492,45 @@ public class FtpConnection extends BaseFtpConnection {
 			out.write(ftpStatus.getResponse(200, request, user, null));
 		} else {
 			out.write(ftpStatus.getResponse(504, request, user, null));
+		}
+	}
+
+	public void doNLST(FtpRequest request, PrintWriter out) {
+		// reset state variables
+		resetState();
+
+		out.write(ftpStatus.getResponse(150, request, user, null));
+		Writer os = null;
+		try {
+			Socket dataSoc = getDataSocket();
+			if (dataSoc == null) {
+				out.write(ftpStatus.getResponse(550, request, user, null));
+				return;
+			}
+
+			if (!mbPasv) {
+				os = new OutputStreamWriter(dataSoc.getOutputStream());
+
+				if (!getVirtualDirectory()
+					.printNList(request.getArgument(), os)) {
+					out.write(ftpStatus.getResponse(501, request, user, null));
+				} else {
+					os.flush();
+					out.write(ftpStatus.getResponse(226, request, user, null));
+				}
+			}
+		} catch (IOException ex) {
+			ex.printStackTrace();
+			out.write(ftpStatus.getResponse(425, request, user, null));
+		} finally {
+			if (os != null) {
+				try {
+					os.close();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+			reset();
 		}
 	}
 
@@ -1321,6 +921,320 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 		out.write(ftpStatus.getResponse(226, request, user, null));
 		reset();
+	}
+
+	public void doSITE_ADDIP(FtpRequest request, PrintWriter out) {
+		resetState();
+		String args[] = request.getArgument().split(" ");
+		if (args.length < 2) {
+			out.println("200 USAGE: SITE ADDIP <username> <ident@ip>");
+			return;
+		}
+		User user2;
+		try {
+			user2 = usermanager.getUserByName(args[0]);
+			user2.addIPMask(args[1]);
+			usermanager.save(user2);
+		} catch (NoSuchUserException ex) {
+			out.println("200 No such user: " + args[0]);
+			return;
+		} catch (IOException ex) {
+			out.println("200 Caught IOException: " + ex.getMessage());
+			return;
+		}
+		out.write(ftpStatus.getResponse(200, request, user, null));
+	}
+
+	public void doSITE_CHECKSLAVES(FtpRequest request, PrintWriter out) {
+		out.println(
+			"200 Ok, " + slaveManager.verifySlaves() + " stale slaves removed");
+	}
+	public void doSITE_LIST(FtpRequest request, PrintWriter out) {
+		resetState();
+		RemoteFile files[] =
+			getVirtualDirectory().getCurrentDirectoryFile().listFiles();
+		for (int i = 0; i < files.length; i++) {
+			RemoteFile file = files[i];
+			out.write("200- " + file.toString() + "\r\n");
+		}
+		out.println(
+			"200 "
+				+ getVirtualDirectory().getCurrentDirectoryFile().getPath()
+				+ " contained "
+				+ files.length
+				+ " entries listed");
+	}
+	public void doSITE_NUKE(FtpRequest request, PrintWriter out) {
+		FtpResponse response = new FtpResponse();
+		LinkedRemoteFile thisDir = getVirtualDirectory().getCurrentDirectoryFile();
+		LinkedRemoteFile nukeDir = thisDir.getFile(request.getArgument());
+		
+		
+		response.setCode(200);
+		out.print(response.toString());
+	}
+
+	/*
+		public void doSITECHANGE(FtpRequest request, PrintWriter out) {
+			if (!request.hasArgument() || !user.isAdmin()) {
+				out.write(ftpStatus.getResponse(530, request, user, null));
+				return;
+			}
+	
+			Pattern p = new Perl5Compiler().compile("^(\\w+) (\\w+) (.*)$");
+			request.getArgument()
+			Matcher m = new Matcher();
+			m.
+	
+			String command, arg;
+			User user2;
+			{
+				String argument = request.getArgument();
+				int l1 = argument.indexOf(" ");
+	
+				user2 = usermanager.getUserByName(argument.substring(0, l1));
+				if (user2 == null) {
+					out.write(ftpStatus.getResponse(200, request, user, null));
+					return;
+				}
+				
+				int i2 = argument.indexOf(" ", l1+1);
+				
+				
+				
+			}
+	
+	//		String args[] = request.getArgument().split(" ");
+	//		String command = args[1].toLowerCase();
+			// 0 = user
+			// 1 = command
+			// 2- = argument
+			if (args[1] == null) {
+				out.println("200- Fields:  ratio");
+				out.println("200-  max_dlspeed, max_ulspeed");
+				out.println("200-  max_sim_down, max_sim_up");
+				out.println("200-  timeframe # #, credits, flags, homedir");
+				out.println("200- idle_time, startup_dir, num_logins # [#]");
+				out.println("200-  time_limit, tagline, comment, group_slots # [#]");
+				return;
+			} else if ("ratio".equalsIgnoreCase(command)) {
+				user.setRatio(Float.parseFloat(args[2]));
+			} else if ("max_dlspeed".equalsIgnoreCase(command)) {
+				user.setRatio(Long.parseLong(command));
+			} else if ("max_ulspeed".equals(command)) {
+				user.setMaxUploadRate(Integer.parseInt(args[2]));
+			}
+		}
+	*/
+	public void doSITE_RESCAN(FtpRequest request, PrintWriter out) {
+		LinkedRemoteFile directory =
+			getVirtualDirectory().getCurrentDirectoryFile();
+		LinkedRemoteFile sfvFile = null;
+		Map files = directory.getFiles();
+		for (Iterator i = files.keySet().iterator(); i.hasNext();) {
+			String fileName = (String) i.next();
+			if (fileName.endsWith(".sfv")) {
+				try {
+					if (sfvFile != null) {
+						logger.warning(
+							"Multiple SFV files in " + directory.getName());
+						out.println(
+							"200- Multiple SFV files found, using " + fileName);
+					}
+					sfvFile = directory.lookupFile(fileName);
+				} catch (FileNotFoundException e) {
+					out.println("550 " + e.getMessage());
+					return;
+				}
+			}
+		}
+		if (sfvFile == null) {
+			out.println("550 Sorry! no .sfv file found!");
+			return;
+		}
+		SFVFile sfv;
+		try {
+			sfv = sfvFile.getSFVFile();
+		} catch (IOException e) {
+			out.println("550 " + e.getMessage());
+			return;
+		}
+		for (Iterator i = sfv.entrySet().iterator(); i.hasNext();) {
+			Map.Entry entry = (Map.Entry) i.next();
+			String fileName = (String) entry.getKey();
+			Long checkSum = (Long) entry.getValue();
+			LinkedRemoteFile file;
+			try {
+				file = directory.lookupFile(fileName);
+			} catch (FileNotFoundException ex) {
+				out.println("200- " + fileName + " MISSING");
+				continue;
+			}
+			boolean ok;
+			ok = checkSum.longValue() == file.getCheckSum();
+			out.println("200- " + fileName + (ok ? " OK" : " FAILED"));
+			out.flush();
+		}
+		out.println("200 Command ok.");
+	}
+
+	/**
+	 * USAGE: site take <user> <kbytes> [<message>]
+	 *        Removes credit from user
+	 *
+	 *        ex. site take Archimede 100000 haha
+	 *
+	 *        This will remove 100mb of credits from the user 'Archimede' and 
+	 *        send the message haha to him.
+	 */
+	public void doSITE_TAKE(FtpRequest request, PrintWriter out) {
+		GlftpdUserManager.GlftpdUser gluser = null;
+		if (user instanceof GlftpdUserManager.GlftpdUser)
+			gluser = (GlftpdUserManager.GlftpdUser) user;
+
+		if (!user.isAdmin()
+			&& !(gluser != null && gluser.getFlags().indexOf("F") != -1)) {
+			out.println("200 Access denied.");
+			return;
+		}
+
+		String args[] = request.getArgument().split(" ");
+		User user2;
+		long credits;
+
+		try {
+			user2 = usermanager.getUserByName(args[0]);
+			credits = Long.parseLong(args[1]) * 1000; // B, not KiB
+			//			String message = args[3];
+			user2.updateCredits(0 - credits); // adds - credits
+		} catch (Exception ex) {
+			out.println("200 " + ex.getMessage());
+			return;
+		}
+		out.println(
+			"200 OK, removed "
+				+ credits
+				+ "b from "
+				+ user2.getUsername()
+				+ ".");
+	}
+	public void doSITE_USER(FtpRequest request, PrintWriter out) {
+		resetState();
+		if (!user.isAdmin()) {
+			out.write(ftpStatus.getResponse(530, request, user, null));
+			return;
+		}
+		//int pos = request.getArgument().indexOf(" ") + 1;
+		try {
+			User user = usermanager.getUserByName(request.getArgument());
+		} catch (NoSuchUserException ex) {
+			out.println("200- user " + request.getArgument() + " not found");
+			out.write(ftpStatus.getResponse(200, request, user, null));
+			return;
+		} catch (IOException ex) {
+			out.println("200 " + ex.getMessage());
+		}
+		GlftpdUserManager.GlftpdUser gluser = null;
+		if (user instanceof GlftpdUserManager.GlftpdUser) {
+			gluser = (GlftpdUserManager.GlftpdUser) user;
+		}
+		out.write("200- " + user.getComment());
+		out.write(
+			"200- +=======================================================================+\r\n");
+		out.write(
+			"200- | Username: "
+				+ user.getUsername()
+				+ " Created: UNKNOWN \r\n");
+		int i = (int) (user.getTimeToday() / 1000);
+		int hours = i / 60;
+		int minutes = i - hours * 60;
+		out.write(
+			"200- | Time On Today: "
+				+ hours
+				+ ":"
+				+ minutes
+				+ " Last seen: Wed Jul 17 13:19:56 2002\r\n");
+
+		out.write(
+			"200- | Flags: "
+				+ (gluser != null ? gluser.getFlags() : "")
+				+ "   Idle time: 10                      \r\n");
+		out.write(
+			"200- | Ratio: 1:3                         Credits:    2868.8 MB              \r\n");
+		out.write(
+			"200- | Total Logins: 680                  Current Logins: 0                  \r\n");
+		out.write(
+			"200- | Max Logins: 3                      From same IP: Unlimited            \r\n");
+		out.write(
+			"200- | Max Sim Uploads: Unlimited         Max Sim Downloads: Unlimited       \r\n");
+		out.write(
+			"200- | Max Upload Speed:"
+				+ (user.getMaxUploadRate() / 1000F)
+				+ " K/s      Max Download Speed:"
+				+ (user.getMaxDownloadRate() / 1000F)
+				+ " K/s    \r\n");
+		out.write(
+			"200- | Times Nuked: "
+				+ user.getTimesNuked()
+				+ "    Bytes Nuked:    568 MB             \r\n");
+		out.write(
+			"200- | Weekly Allotment:     0 MB         Messages Waiting: Not implemented            \r\n");
+		out.write(
+			"200- | Time Limit: "
+				+ user.getTimelimit()
+				+ " minutes.          (0 = Unlimited)                    \r\n");
+		if (gluser != null) {
+			out.write("200- | " + gluser.getSlots() + " \r\n");
+		}
+		out.write(
+			"200- | Gadmin/Leech Slots: -1 -1          (-1 = Unlimited, None)             \r\n");
+		out.write("200- | Tagline: " + user.getTagline() + " \r\n");
+		out.write("200- | Groups: " + user.getGroups() + " \r\n");
+		if (user instanceof GlftpdUserManager.GlftpdUser) {
+			out.write(
+				"200- | Priv Groups: "
+					+ ((GlftpdUserManager.GlftpdUser) user).getPrivateGroups()
+					+ " \r\n");
+		}
+		out.write(
+			"200- +-----------------------------------------------------------------------+\r\n");
+		out.write("200- | IP0: IP1: \r\n");
+		out.write("200- | IP2: IP3: \r\n");
+		out.write("200- | IP4: IP5: \r\n");
+		out.write("200- | IP6: IP7: \r\n");
+		out.write("200- | IP8: IP9: \r\n");
+		out.write(
+			"200- +=======================================================================+\r\n");
+		out.write(ftpStatus.getResponse(200, request, user, null));
+	}
+
+	/**
+	 * Lists currently connected users.
+	 */
+	public void doSITE_WHO(FtpRequest request, PrintWriter out) {
+		resetState();
+		if (!user.isAdmin()) {
+			out.write(ftpStatus.getResponse(530, request, user, null));
+			return;
+		}
+		for (Iterator i = connManager.getConnections().iterator();
+			i.hasNext();
+			) {
+			out.println("200- " + i.next());
+		}
+		out.write(ftpStatus.getResponse(200, request, user, null));
+	}
+
+	public void doSITE_WIPE(FtpRequest request, PrintWriter out) {
+		resetState();
+		if (!user.isAdmin())
+			out.write("200 You need admin privileges to use SITE WIPE");
+		String arg = request.getArgument();
+
+		if (arg.charAt(0) == '-') {
+			int pos = arg.indexOf(' ');
+		}
+
 	}
 
 	/**
@@ -1857,5 +1771,100 @@ public class FtpConnection extends BaseFtpConnection {
 			        }
 			    }
 			*/
+	}
+
+	/**
+	 * Get output stream. Returns <code>ftpserver.util.AsciiOutputStream</code>
+	 * if the transfer type is ASCII.
+	 */
+	public OutputStream getOutputStream(OutputStream os) {
+		//os = IoUtils.getBufferedOutputStream(os);
+		if (type == 'A') {
+			os = new AsciiOutputStream(os);
+		}
+		return os;
+	}
+
+	/**
+	 * Get the user data type.
+	 */
+	public char getType() {
+		return type;
+	}
+	/**
+	 * get user filesystem view
+	 */
+	public VirtualDirectory getVirtualDirectory() {
+		return virtualDirectory;
+	}
+
+	//private FtpDataConnection mDataConnection;
+	/**
+	 * Set configuration file and the control socket. 
+	 */
+	/*
+	public FtpConnection(FtpConfig cfg, Socket soc) {
+	    super(cfg, soc);
+	}
+	*/
+
+	/**
+	 * prints a few lines of status such as credits, ratio, disk free, to the user.s
+	 */
+	protected void printStatus(PrintWriter out, String prefix) {
+		out.println(
+			prefix
+				+ " [Credits: "
+				+ user.getCredits()
+				+ "B] [Ratio: 1:"
+				+ user.getRatio()
+				+ "]");
+	}
+
+	/**
+	 * Is an anonymous user?
+	 */
+	//	public boolean getIsAnonymous() {
+	//		return ANONYMOUS.equals(getUsername());
+	//
+	//	}
+
+	/**
+	 * Check the user permission to execute this command.
+	 */
+	/*
+	protected boolean hasPermission(FtpRequest request) {
+		String cmd = request.getCommand();
+		return user.hasLoggedIn()
+			|| cmd.equals("USER")
+			|| cmd.equals("PASS")
+			|| cmd.equals("HELP");
+	}
+	*/
+	/**
+	 * Reset temporary state variables.
+	 */
+	private void resetState() {
+		mbRenFr = false;
+		mstRenFr = null;
+
+		//		mbReset = false;
+		resumePosition = 0;
+
+		//mbUser = false;
+		//mbPass = false;
+	}
+
+	/**
+	 * Set the data type. Supported types are A (ascii) and I (binary).
+	 * @return true if success
+	 */
+	public boolean setType(char type) {
+		type = Character.toUpperCase(type);
+		if ((type != 'A') && (type != 'I')) {
+			return false;
+		}
+		this.type = type;
+		return true;
 	}
 }
