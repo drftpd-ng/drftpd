@@ -1,33 +1,31 @@
 <?xml version="1.0"?>
 <project name="drftpd" basedir="." default="compile">
 
-    <target name="all" depends="compile"/>
+  <target name="all" depends="compile"/>
 
-    <target name="init">
-        <!-- You might like to set up some overridable paths, etc.: -->
-        <!-- <property name="mylib" value="../lib/mylib.jar"/> -->
-        <property name="sourceDir" value="src/"/>
-        <property name="outputDir" value="classes/"/>
+  <target name="init">
+    <property name="sourceDir" value="src/"/>
+    <property name="outputDir" value="classes/"/>
 
-	<path id="classpath">
-	    <fileset dir=".">
-	        <include name="lib/*"/>
-	    </fileset>
-	</path>
-    </target>
+    <path id="classpath">
+	  <fileset dir=".">
+	    <include name="lib/*"/>
+	  </fileset>
+    </path>
+  </target>
 
 
-    <target name="clean" depends="init">
-        <delete dir="${outputDir}" />
-    </target>
+  <target name="clean" depends="init">
+    <delete dir="${outputDir}" />
+  </target>
 
-   <target name="prepare" depends="init">
-      <mkdir dir="${outputDir}" />
-   </target>
+  <target name="prepare" depends="init">
+    <mkdir dir="${outputDir}" />
+  </target>
 
-   <target name="compile" depends="init, prepare">
+  <target name="compile" depends="init, prepare">
     <javac srcdir="${sourceDir}" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.4">
-        <exclude name="**/*Test.java"/>
+      <exclude name="**/*Test.java"/>
     </javac>
     <rmic base="${outputDir}" debug="true" stubversion="1.2">
 	<include name="**/*Impl.class"/>
@@ -35,12 +33,21 @@
     </rmic>
   </target>
   
-  <target name="tests">
-  	<javac destdir="${outputDir}" debug="true" source="1.4">
-  	    <include name="**/*Test.java"/>
+  <target name="tests" depends="init, prepare">
+  	 <javac srcdir="${sourceDir}" destdir="${outputDir}" debug="true" source="1.4">
+      <include name="**/*Test.java"/>
   	</javac>
+    <junit printsummary="on" haltonfailure="yes">
+      <classpath refid="classpath"/>
+      <classpath path="${outputDir}"/>
+      <batchtest>
+      	<fileset dir="${outputDir}">
+      	  <include name="**/*Test.class"/>
+        </fileset>
+      </batchtest>
+    </junit>
   </target>
- 
+
   <target name="slavejar">
     <jar destfile="slave.jar" basedir="classes">
       <manifest>
