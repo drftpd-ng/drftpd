@@ -12,7 +12,7 @@ public class Main {
 	/** load config **/
 	Properties cfg= new Properties();
 	try {
-	    cfg.load(new FileInputStream("dftpd.conf"));
+	    cfg.load(new FileInputStream("drftpd.conf"));
 	} catch(Exception ex) {
 	    ex.printStackTrace();
 	}

@@ -409,14 +409,14 @@ public class VirtualDirectory {
 	 * Get file owner.
 	 */
 	private static String getOwner(RemoteFile fl) {
-		return "dftpd";
+		return fl.getUser();
 	}
 
 	/**
 	 * Get group name
 	 */
 	private static String getGroup(RemoteFile fl) {
-		return "dftpd";
+		return fl.getGroup();
 	}
 
 	/**

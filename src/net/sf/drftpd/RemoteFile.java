@@ -37,16 +37,30 @@ public class RemoteFile implements Serializable {
 		length = 0;
 		isDirectory = true;
 		isFile = false;
-		path = "/";
+		//path = "/";
+		parent = null;
+		/*
+		 * is this the right name to set? maybe null or "/" is more approperiate?
+		 * if name is / the filename splitting methods will get wierd results.
+		 * if name is null NullPointerException might occur
+		 */
+		name = "";
 		files = new Hashtable();
 		slaves = new Vector(1); // there will always be at least 1 RemoteSlave.
 	}
 
 	/**
-	 * Creates a RemoteFile from file.
-	 * @param file file that this RemoteFile object should represent.
+	 * The slave argument may be null, if it is null, no slaves will be added.
 	 */
 	public RemoteFile(RemoteSlave slave, File file) {
+		this(slave, (RemoteFile) null, file);
+	}
+
+	/**
+	 * Creates a RemoteFile from file or creates a directory tree representation.
+	 * @param file file that this RemoteFile object should represent.
+	 */
+	public RemoteFile(RemoteSlave slave, RemoteFile parent, File file) {
 		canRead = file.canRead();
 		canWrite = file.canWrite();
 		lastModified = file.lastModified();
@@ -54,13 +68,29 @@ public class RemoteFile implements Serializable {
 		//isHidden = file.isHidden();
 		isDirectory = file.isDirectory();
 		isFile = file.isFile();
-		path = file.getPath();
+		if(parent == null) {
+			name = "";
+		} else {	
+			name = file.getName();
+		}
+		//path = file.getPath();
 		/* serialize directory*/
+		this.parent = parent;
 
 		slaves = new Vector(1);
-		slaves.add(slave);
-
+		if (slave != null) {
+			slaves.add(slave);
+		}
 		if (isDirectory()) {
+			try {
+				if (!file.getCanonicalPath().equals(file.getAbsolutePath())) {
+					System.out.println(
+						"NOT following possible symlink: " + file.getAbsolutePath());
+					return;
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 			/* get existing file entries */
 			File cache = new File(file.getPath() + "/.drftpd");
 			Hashtable oldtable = null;
@@ -84,7 +114,7 @@ public class RemoteFile implements Serializable {
 			Stack dirstack = new Stack();
 			for (int i = 0; i < dir.length; i++) {
 				File file2 = dir[i];
-				System.out.println("III " + file2);
+//				System.out.println("III " + file2);
 				if (file2.isDirectory()) {
 					dirstack.push(file2);
 					continue;
@@ -95,7 +125,9 @@ public class RemoteFile implements Serializable {
 				if (oldfile != null) {
 					files.put(file2.getName(), oldfile);
 				} else {
-					files.put(file2.getName(), new RemoteFile(slave, file2));
+					files.put(
+						file2.getName(),
+						new RemoteFile(slave, this, file2));
 				}
 			}
 
@@ -116,20 +148,20 @@ public class RemoteFile implements Serializable {
 			while (e.hasMoreElements()) {
 				File file2 = (File) e.nextElement();
 				String filename = file2.getName();
-				System.out.println(">>> " + file2.getName());
+//				System.out.println(">>> " + file2.getName());
 				if (oldtable != null) {
 					RemoteFile oldfile = (RemoteFile) oldtable.get(filename);
 					if (oldfile != null) {
 						files.put(filename, oldfile);
 					} else {
-						files.put(filename, new RemoteFile(slave, file2));
+						files.put(filename, new RemoteFile(slave, this, file2));
 					}
 				} else {
-					files.put(filename, new RemoteFile(slave, file2));
+					files.put(filename, new RemoteFile(slave, this, file2));
 				}
 			}
 			System.out.println(
-				"<<< " + getPath() + " " + files.size() + " entries");
+				"<< finished adding " + getPath() + " [" + files.size() + " entries]");
 		} /* serialize directory */
 	}
 
@@ -150,7 +182,7 @@ public class RemoteFile implements Serializable {
 	}
 
 	/**
-	 * For compatibility with java.io.File, always returns true.
+	 * For compatibility with java.io.File.
 	 */
 	public boolean exists() {
 		return true;
@@ -161,10 +193,11 @@ public class RemoteFile implements Serializable {
 		slaves.add(slave);
 	}
 	public void addSlaves(Collection addslaves) {
-		if(addslaves == null) throw new IllegalArgumentException("addslaves cannot be null");
-		System.out.println("Adding "+addslaves+" to "+slaves);
+		if (addslaves == null)
+			throw new IllegalArgumentException("addslaves cannot be null");
+		System.out.println("Adding " + addslaves + " to " + slaves);
 		slaves.addAll(addslaves);
-		System.out.println("slaves.size() is now "+slaves.size());
+		System.out.println("slaves.size() is now " + slaves.size());
 	}
 	public Collection getSlaves() {
 		return slaves;
@@ -172,43 +205,52 @@ public class RemoteFile implements Serializable {
 	private Random rand = new Random();
 	public RemoteSlave getAnySlave() {
 		int num = rand.nextInt(slaves.size());
-		System.out.println("Returning slave "+num+" out of "+slaves.size()+" possible slaves");
-		return (RemoteSlave)slaves.get(num);
+		System.out.println(
+			"Returning slave "
+				+ num
+				+ " out of "
+				+ slaves.size()
+				+ " possible slaves");
+		return (RemoteSlave) slaves.get(num);
 	}
-/*
-	public void removeSlave(RemoteSlave slave) {
-		slaves.remove(slave);
-	}
-*/
+	/*
+		public void removeSlave(RemoteSlave slave) {
+			slaves.remove(slave);
+		}
+	*/
 
 	private String user;
 	public String getUser() {
-		if (user == null) {
+		if (user == null)
 			return "drftpd";
-		}
 		return user;
 	}
 
 	private String group;
 	public String getGroup() {
-		if (group == null) {
+		if (group == null)
 			return "drftpd";
-		} else {
-			return group;
-		}
+		return group;
 	}
 
+	/**
+	 * separatorChar is always "/" as "/" is always used in FTP.
+	 */
 	private static final char separatorChar = '/';
 
 	private Hashtable files;
 	public Hashtable getHashtable() {
 		return files;
 	}
-	public void emptyHashtable() {
-		files = null;
+
+	private RemoteFile parent;
+	public RemoteFile getParentFile() {
+		return parent;
 	}
-	public void setHashtable(Hashtable map) {
-		files = map;
+	public String getParent() {
+		if (getParentFile() == null)
+			return null;
+		return getParentFile().getPath();
 	}
 
 	protected boolean isDirectory;
@@ -243,18 +285,27 @@ public class RemoteFile implements Serializable {
 		return lastModified;
 	}
 
-	long length;
+	private long length;
 	public long length() {
 		return length;
 	}
 
-	private String path;
+	//private String path;
+	private String name;
 	public String getName() {
-		return path.substring(path.lastIndexOf(separatorChar) + 1);
+		//return path.substring(path.lastIndexOf(separatorChar) + 1);
+		return name;
 	}
 
 	public String getPath() {
-		return path;
+		//return path;
+		StringBuffer path = new StringBuffer("/"+getName());
+		RemoteFile parent = getParentFile();
+		while (parent != null && parent.getParentFile() != null) {
+			path.insert(0, "/"+parent.getName());
+			parent = parent.getParentFile();
+		}
+		return path.toString();
 	}
 
 	public boolean equals(Object obj) {
@@ -265,12 +316,15 @@ public class RemoteFile implements Serializable {
 		return false;
 	}
 
-	public void merge(RemoteFile dir) {
+	/**
+	 * Merges two RemoteFile directories.
+	 * If duplicates exist, the slaves are added to this object and the file-attributes of the oldest file (lastModified) are kept.
+	 */
+	public synchronized void merge(RemoteFile dir) {
 		if (!isDirectory())
 			throw new IllegalArgumentException("merge() called on a non-directory");
 		if (!dir.isDirectory())
-			throw new IllegalArgumentException(
-				"argument is not a directory (" + dir + ")");
+			throw new IllegalArgumentException("argument is not a directory");
 
 		Hashtable map = getHashtable();
 		Hashtable mergemap = dir.getHashtable();
@@ -286,20 +340,28 @@ public class RemoteFile implements Serializable {
 			RemoteFile file = (RemoteFile) files.get(filename);
 			RemoteFile mergefile = (RemoteFile) entry.getValue();
 			//RemoteFile mergefile = (RemoteFile) mergemap.get(getName());
-			
+
 			// two scenarios:, local file [does not] exists
 			if (file == null) {
 				// local file does not exist, just put it in the hashtable
 				map.put(mergefile.getName(), mergefile);
 			} else {
-				
+
 				if (lastModified() > mergefile.lastModified()) {
-					System.out.println("Last modified changed from "+lastModified()+" to "+mergefile.lastModified());
+					System.out.println(
+						"Last modified changed from "
+							+ lastModified()
+							+ " to "
+							+ mergefile.lastModified());
 					lastModified = mergefile.lastModified();
 				} else {
-					System.out.println("Last modified NOT changed from "+lastModified()+" to "+mergefile.lastModified());
+					System.out.println(
+						"Last modified NOT changed from "
+							+ lastModified()
+							+ " to "
+							+ mergefile.lastModified());
 				}
-				
+
 				// 4 scenarios: new/existing file/directory
 				if (mergefile.isDirectory()) {
 					if (!file.isDirectory())
@@ -310,13 +372,13 @@ public class RemoteFile implements Serializable {
 					if (file.isDirectory())
 						System.out.println(
 							"!!! WARNING: File/Directory conflict!!");
-					System.out.println("merge "+mergefile+" to "+file);
+					System.out.println("merge " + mergefile + " to " + file);
 					Collection slaves2 = mergefile.getSlaves();
 					//System.out.println("adding slaves: "+slaves2);
-					System.out.println(slaves2.size()+" slaves to add");
+					System.out.println(slaves2.size() + " slaves to add");
 					file.addSlaves(slaves2);
 				}
-				System.out.println("Result file: "+file);
+				System.out.println("Result file: " + file);
 				/*
 				System.out.println("Old file: "+map.get(filename));
 				map.put(filename, file);
@@ -339,19 +401,20 @@ public class RemoteFile implements Serializable {
 		//ret.append(slaves);
 		Enumeration e = slaves.elements();
 		ret.append("slaves:[");
-		while(e.hasMoreElements()) {
+		while (e.hasMoreElements()) {
 			//[endpoint:[213.114.146.44:2012](remote),objID:[2b6651:ef0b3c7162:-8000, 0]]]]]
 			Pattern p = Pattern.compile("endpoint:\\[(.*?):.*?\\]");
 			Matcher m = p.matcher(e.nextElement().toString());
 			m.find();
 			ret.append(m.group(1));
 			//ret.append(e.nextElement());
-			if(e.hasMoreElements()) ret.append(",");
+			if (e.hasMoreElements())
+				ret.append(",");
 		}
 		ret.append("]");
 		//ret.append("isDirectory(): " + isDirectory() + " ");
-		//if (isDirectory())
-		//	ret.append("[directory contains " + files.size() + " files] ");
+		if (isDirectory())
+			ret.append("[directory: true]");
 		//ret.append("isFile(): " + isFile() + " ");
 		ret.append(getPath());
 		ret.append("]]");

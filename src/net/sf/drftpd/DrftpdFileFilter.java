@@ -5,7 +5,7 @@ import java.io.File;
 
 public class DrftpdFileFilter implements FileFilter {
     public boolean accept(File file) {
-	if(file.getName().equals(".dftpd") || file.getName().equals(".placeholder")) {
+	if(file.getName().equals(".drftpd")) {
 	    return false;
 	}
 	return true;

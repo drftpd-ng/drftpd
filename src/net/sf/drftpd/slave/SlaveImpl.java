@@ -15,6 +15,8 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Stack;
 import java.util.EmptyStackException;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedOutputStream;
 
 import java.io.InputStream;
 import java.io.File;
@@ -32,7 +34,7 @@ import java.net.ConnectException;
 import java.net.Socket;
 import java.net.InetAddress;
 
-public class SlaveImpl extends UnicastRemoteObject implements Slave {
+public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 	Properties cfg = new Properties();
 	SlaveManager manager;
@@ -41,7 +43,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		super();
 
 		try {
-			cfg.load(new FileInputStream("dftpd.conf"));
+			cfg.load(new FileInputStream("drftpd.conf"));
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
@@ -136,7 +138,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	
 	Stack stack = new Stack();
 	
-	File cache = new File(dir.getPath()+"/.dftpd");
+	File cache = new File(dir.getPath()+"/.drftpd");
 	//System.out.println(dir.getPath().substring(cfg.getProperty("slave.root").length()));
 	Hashtable oldtable=null;
 	if(cache.exists()) {
@@ -218,6 +220,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	*/
 	/**
 	 * @see net.sf.drftpd.slave.Slave#doConnectReceive(String, InetAddress, int)
+	 * @author mog
 	 */
 	public void doConnectReceive(String path, InetAddress addr, int port)
 		throws RemoteException, PermissionDeniedException {
@@ -229,10 +232,13 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			throw new PermissionDeniedException(ex.toString());
 		}
 
+		CRC32 checksum = new CRC32();
+		CheckedOutputStream cos = new CheckedOutputStream(os, checksum);
+
 		try {
 			Socket socket = new Socket(addr, port);
 			InputStream is = socket.getInputStream();
-			transfer(is, os);
+			transfer(is, cos);
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}

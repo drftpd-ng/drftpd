@@ -47,7 +47,7 @@
      </rmic>
      <copy file="${sourceDir}/net/sf/drftpd/master/FtpStatus.properties" todir="${outputDir}/net/sf/distributedftpd/master"/>
      <!--
-     <jar jarfile="dftpd.jar">
+     <jar jarfile="drftpd.jar">
        <fileset dir="${outputDir}">
          <include name="**"/>
        </fileset>
