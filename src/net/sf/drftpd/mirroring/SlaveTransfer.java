@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveTransfer.java,v 1.19 2004/07/12 04:27:52 zubov Exp $
+ * @version $Id: SlaveTransfer.java,v 1.20 2004/07/12 14:05:37 zubov Exp $
  */
 public class SlaveTransfer {
 	class DstXfer extends Thread {
@@ -141,6 +141,28 @@ public class SlaveTransfer {
 		if (stackTrace != null)
 			throw stackTrace;
 	}
+	private void abort() throws DestinationSlaveException, SourceSlaveException {
+		logger.debug("running abort()");
+		if (dstxfer != null && dstxfer.dstxfer != null) {
+			try {
+				logger.debug("running dstxfer abort()");
+				dstxfer.dstxfer.abort();
+				logger.debug("ran dstxfer abort()");
+			} catch (RemoteException e) {
+				throw new DestinationSlaveException(e);
+			}
+		}
+		if (srcxfer != null && srcxfer.srcxfer != null) {
+			try {
+				logger.debug("running srcxfer abort()");
+				srcxfer.srcxfer.abort();
+				logger.debug("ran srcxfer abort()");
+			} catch (RemoteException e1) {
+				throw new SourceSlaveException(e1);
+			}
+		}
+	}
+	
 	/**
 	 * Returns true if the crc passed, false otherwise
 	 * 
@@ -152,12 +174,15 @@ public class SlaveTransfer {
 		try {
 			dstxfer = new DstXfer(_destSlave.getSlave().listen(false));
 		} catch (SlaveUnavailableException e) {
+			abort();
 			throw new DestinationSlaveException(e);
 		} catch (RemoteException e1) {
 			_destSlave.handleRemoteException(e1);
+			abort();
 			throw new DestinationSlaveException(
 					"Slave was unavailable to tell to listen for slave2slave transfer");
 		} catch (IOException e) {
+			abort();
 			throw new DestinationSlaveException(_destSlave.getName()
 					+ " had an error listening for slave2slave transfer");
 		}
@@ -166,9 +191,11 @@ public class SlaveTransfer {
 					new InetSocketAddress(_destSlave.getInetAddress(), dstxfer
 							.getLocalPort()), false));
 		} catch (SlaveUnavailableException e) {
+			abort();
 			throw new SourceSlaveException(e);
 		} catch (RemoteException e2) {
 			_sourceSlave.handleRemoteException(e2);
+			abort();
 			throw new SourceSlaveException(
 					"Slave could not connect for slave2slave transfer");
 		}
@@ -182,12 +209,15 @@ public class SlaveTransfer {
 		}
 		if (srcxfer.e != null) {
 			logger.info("Problem with " + _sourceSlave.getName(), srcxfer.e);
-			if (srcxfer.e instanceof FileNotFoundException)
+			abort();
+			if (srcxfer.e instanceof FileNotFoundException) {
 				throw (FileNotFoundException) srcxfer.e;
+			}
 			throw new SourceSlaveException(srcxfer.e.getMessage());
 		}
 		if (dstxfer.e != null) {
 			logger.info("Problem with " + _destSlave.getName(), dstxfer.e);
+			abort();
 			if (dstxfer.e instanceof FileExistsException)
 				throw (FileExistsException) dstxfer.e;
 			throw new DestinationSlaveException(dstxfer.e.getMessage());

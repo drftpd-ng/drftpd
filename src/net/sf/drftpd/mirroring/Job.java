@@ -29,7 +29,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.27 2004/07/12 04:27:51 zubov Exp $
+ * @version $Id: Job.java,v 1.28 2004/07/12 14:05:37 zubov Exp $
  */
 public class Job {
 	private RemoteSlave _destSlave;
@@ -148,7 +148,12 @@ public class Job {
 					"Job cannot have a destSlaveSet of size 0 with transferNum > 0");
 		}
 	}
-	public void setDone() {
+	private synchronized void reset() {
+		_slaveTransfer = null;
+		_destSlave = null;
+		_sourceSlave = null;
+	}
+ 	public void setDone() {
 		_transferNum = 0;
 	}
 	public String toString() {
@@ -169,11 +174,21 @@ public class Job {
 			_slaveTransfer = new SlaveTransfer(getFile(), _sourceSlave,
 					_destSlave);
 		}
-		boolean result = _slaveTransfer.transfer(checkCRC);
-		synchronized (this) {
-			_slaveTransfer = null;
-			_destSlave = null;
-			_sourceSlave = null;
+		boolean result = false;
+		try {
+			result = _slaveTransfer.transfer(checkCRC);
+		} catch (DestinationSlaveException e) {
+			reset();
+			throw e;
+		} catch (SourceSlaveException e) {
+			reset();
+			throw e;
+		} catch (FileNotFoundException e) {
+			reset();
+			throw e;
+		} catch (FileExistsException e) {
+			reset();
+			throw e;
 		}
 		return result;
 	}
