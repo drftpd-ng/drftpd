@@ -131,8 +131,6 @@ public class SlaveManagerImpl
 			RemoteSlave rslave2 = (RemoteSlave) iter.next();
 			masks.addAll(rslave2.getMasks());
 		}
-		//TODO debug output
-		System.out.println("masks: "+masks);
 		return masks;
 	}
 

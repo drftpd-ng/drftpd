@@ -3555,7 +3555,7 @@ public class FtpConnection extends BaseFtpConnection {
 		try {
 			_transfer.uploadFile(targetDir.getPath(), targetFilename, resumePosition);
 		} catch (RemoteException ex) {
-			out.print(new FtpResponse(426, ex.getMessage()));
+			out.print(new FtpResponse(426,"Remote error: "+ex.getMessage()));
 			_rslave.handleRemoteException(ex);
 			_transferFile.delete();
 			return;
@@ -3566,7 +3566,8 @@ public class FtpConnection extends BaseFtpConnection {
 				ex);
 			//TODO let user resume
 			_transferFile.delete();
-			out.print(new FtpResponse(426, ex.getMessage()));
+			out.print(new FtpResponse(426, "IO Error: "+ex.getMessage()));
+			logger.log(Level.WARNING, "IO Error", ex);
 			return;
 		}
 		
