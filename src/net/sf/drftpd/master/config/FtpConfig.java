@@ -43,7 +43,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.48 2004/04/27 19:57:20 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.49 2004/04/29 03:57:53 zombiewoof64 Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -102,6 +102,9 @@ public class FtpConfig {
 
 	private boolean _useIdent;
 	private String newConf = "conf/perms.conf";
+        
+        private String _serverName;
+        private int _socketPort;
 
 	/**
 	 * Constructor that allows reusing of cfg object
@@ -342,8 +345,9 @@ public class FtpConfig {
 		loadConfig2();
 		_connManager = connManager;
 		_useIdent = cfg.getProperty("use.ident", "true").equals("true");
-		_slaveStatusUpdateTime =
-			Long.parseLong(cfg.getProperty("slaveStatusUpdateTime", "3000"));
+		_slaveStatusUpdateTime = Long.parseLong(cfg.getProperty("slaveStatusUpdateTime", "3000"));
+		_serverName = cfg.getProperty("master.bindname", "slavemaster");
+		_socketPort = Integer.parseInt(cfg.getProperty("master.socketport", "1100"));
 
 		String bouncerHost = cfg.getProperty("bouncer_ip");
 		_bouncerIp =

@@ -63,7 +63,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.99 2004/04/27 22:40:24 zombiewoof64 Exp $
+ * @version $Id: ConnectionManager.java,v 1.100 2004/04/29 03:57:53 zombiewoof64 Exp $
  */
 public class ConnectionManager {
 
@@ -157,8 +157,11 @@ public class ConnectionManager {
 	private SlaveManagerImpl _slaveManager;
 	private Timer _timer;
 	private UserManager _usermanager;
+        private SocketSlaveManager _socketmanager;
+        
 	protected ConnectionManager() {
 	}
+        
 	public ConnectionManager(
 		Properties cfg,
 		Properties slaveCfg,
@@ -193,7 +196,7 @@ public class ConnectionManager {
 		}
 
             // start socket slave manager
-            SocketSlaveManager smgr = new SocketSlaveManager(this);
+            SocketSlaveManager smgr = new SocketSlaveManager(this, cfg);
 
 		if (slaveCfg != null) {
 			try {
