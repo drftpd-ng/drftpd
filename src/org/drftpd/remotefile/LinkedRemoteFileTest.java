@@ -35,6 +35,7 @@ import org.drftpd.tests.DummySlaveManager;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -273,5 +274,25 @@ public class LinkedRemoteFileTest extends TestCase {
     	_root.getFile("SourceDir").addFile(new StaticRemoteFile(null, "test", 0));
     	_root.getFile("SourceDir").getFile("test").renameTo("/DestDir", "test2");
     	assertEquals("/DestDir/test2",_root.getFile("DestDir").getFile("test2").getPath());
+    }
+    
+    public void testRemergeRemoveDir() throws IOException, SlaveFileException {
+    	setUp();
+    	internalSetUp();
+    	DummyFtpConfig dfc = new DummyFtpConfig();
+    	DummyGlobalContext dgc = new DummyGlobalContext();
+    	dgc.setSlaveManager(new DummySlaveManager());
+    	dfc.setGlobalContext(dgc);
+    	RemoteSlave rslave = new DummyRemoteSlave("testslave",null);
+    	ArrayList<RemoteSlave> slaveList = new ArrayList();
+    	slaveList.add(rslave);
+    	_root = new LinkedRemoteFile(dfc);
+    	_root.addFile(new StaticRemoteFile(null, "DontRemoveMe", 0));
+    	_root.getFile("DontRemoveMe").addFile(new StaticRemoteFile(null, "empty", 0));
+    	_root.remerge(new CaseInsensitiveHashtable(), rslave);
+    	assertNotNull(_root.getFile("DontRemoveMe"));
+    	_root.getFile("DontRemoveMe").getFile("empty").addFile(new StaticRemoteFile(slaveList, "file", 100));
+    	_root.getFile("DontRemoveMe").remerge(new CaseInsensitiveHashtable(), rslave);
+    	assertEquals(0,_root.getFiles().size());
     }
 }

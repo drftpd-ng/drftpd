@@ -1377,14 +1377,14 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
 		for (Iterator i = new ArrayList(_files.values()).iterator(); i
 				.hasNext();) {
-			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) i
-					.next();
-
+			LinkedRemoteFile file = (LinkedRemoteFile) i.next();
+			
 			if (file.isDirectory()) {
+				boolean wasEmpty = file.isEmpty();
 				file.unmergeDir(rslave);
-
-				// remove empty deleted directories
-				if (file.dirSize() == 0) {
+				
+				// remove empty directories that used to be non-empty
+				if (file.isEmpty() && !wasEmpty) {
 					file.delete();
 				}
 			} else {
@@ -1415,11 +1415,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			return false;
 		}
 
-		if (_slaves.isEmpty()) {
-			return true;
-		}
-
-		return false;
+		return _slaves.isEmpty();
 	}
 
 	public void remerge(CaseInsensitiveHashtable lightRemoteFiles,

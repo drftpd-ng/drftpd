@@ -146,8 +146,7 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
     public abstract boolean isAvailable();
 
     /**
-     * Does file have slaves at all?
-     *
+     * Is file removed from all slaves?
      * @return Always false for directories
      */
     public abstract boolean isDeleted();
