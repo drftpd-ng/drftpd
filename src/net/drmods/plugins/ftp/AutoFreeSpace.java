@@ -156,15 +156,7 @@ public class AutoFreeSpace extends FtpListener {
                     continue;
                 }
                 try {
-                    LinkedRemoteFileInterface sectionRoot = _cm.getGlobalContext().getRoot().lookupFile(si.getPath());
-                    //logger.info("Checking under " + sectionRoot.getPath());
-                    LinkedRemoteFileInterface file = null;
-                    if (si instanceof DatedSection) {
-                        file = getOldestFile(sectionRoot.getParentFileNull());
-                    } else {
-                        file = getOldestFile(sectionRoot);
-                    }
-                    //logger.info(file.getPath());
+                    LinkedRemoteFileInterface file = getOldestFile(si.getBaseFile());
                     if (file == null)
                         continue;
                     long age = System.currentTimeMillis() - file.lastModified();
