@@ -17,6 +17,7 @@ import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
+import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 import org.apache.log4j.Logger;
@@ -59,6 +60,11 @@ public class Request implements CommandHandler {
 				conn.getConnectionManager().dispatchFtpEvent(
 					new DirectoryFtpEvent(conn.getUserNull(), "REQUEST", createdDir));
 			}
+			try {
+				conn.getUser().addRequests();
+			} catch (NoSuchUserException e) {
+				e.printStackTrace();
+			}
 			return new FtpReply(257, "\"" + createdDir.getPath() + "\" created.");
 		} catch (ObjectExistsException ex) {
 			return new FtpReply(550, "directory " + createdDirName + " already exists");
@@ -100,6 +106,11 @@ public class Request implements CommandHandler {
 				if (conn.getConfig().checkDirLog(conn.getUserNull(), file)) {
 					conn.getConnectionManager().dispatchFtpEvent(
 						new DirectoryFtpEvent(conn.getUserNull(), "REQFILLED", file));
+				}
+				try {
+					conn.getUser().addRequestsFilled();
+				} catch (NoSuchUserException e) {
+					e.printStackTrace();
 				}
 				return new FtpReply(200, "OK, renamed "+ myreqname+ " to "+filledname);
 			}

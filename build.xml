@@ -57,7 +57,7 @@
     
     <zip destfile="slave.zip" basedir=".">
       <include name="slave.jar"/>
-      <include name="drftpd.conf.dist"/>
+      <include name="slave.conf.dist"/>
       <include name="slave.sh" />
       <include name="slave.bat" />
       <zipfileset dir="." includes="lib/libFileSystem.so" fullpath="libFileSystem.so" />

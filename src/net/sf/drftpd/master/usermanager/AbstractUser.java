@@ -22,7 +22,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.25 2003/11/26 01:17:03 zubov Exp $
+ * @version $Id: AbstractUser.java,v 1.26 2003/11/26 09:53:30 zubov Exp $
  */
 public abstract class AbstractUser implements User {
 	private static Logger logger = Logger.getLogger(AbstractUser.class);
@@ -52,6 +52,12 @@ public abstract class AbstractUser implements User {
 	protected int downloadedSecondsMonth;
 	protected int downloadedSecondsWeek;
 	protected short groupLeechSlots;
+	
+	protected int racesWon;
+	protected int racesLost;
+	protected int racesParticipated;
+	protected int requests;
+	protected int requestsFilled;
 
 	protected ArrayList groups = new ArrayList();
 
@@ -360,6 +366,27 @@ public abstract class AbstractUser implements User {
 	public long getWeeklyAllotment() {
 		return this.weeklyAllotment;
 	}
+	
+	public int getRacesWon() {
+		return racesWon;
+	}
+	
+	public int getRacesLost() {
+		return racesLost;
+	}
+	
+	public int getRacesParticipated() {
+		return racesParticipated;
+	}
+	
+	public int getRequests() {
+		return requests;
+	}
+	
+	public int getRequestsFilled() {
+		return requestsFilled;
+	}
+	
 	public int hashCode() {
 		return getUsername().hashCode();
 	}
@@ -653,6 +680,22 @@ public abstract class AbstractUser implements User {
 		this.uploadedFilesDay += i;
 		this.uploadedFilesWeek += i;
 		this.uploadedFilesMonth += i;
+	}
+	
+	public void addRacesWon() {
+		racesWon++;
+	}
+
+	public void addRacesLost() {
+		racesLost++;
+	}
+	
+	public void addRequests() {
+		requests++;
+	}
+
+	public void addRequestsFilled() {
+		requestsFilled++;
 	}
 
 	public boolean equals(Object obj) {

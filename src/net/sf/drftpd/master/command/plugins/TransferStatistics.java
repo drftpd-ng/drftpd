@@ -2,6 +2,7 @@ package net.sf.drftpd.master.command.plugins;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -29,8 +30,9 @@ public class TransferStatistics implements CommandHandler {
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {
 		FtpRequest request = conn.getRequest();
-		if (request.getCommand().equals("SITE STATS"))
+		if (request.getCommand().equals("SITE STATS")) {
 			return doSITE_STATS(conn);
+		}
 		List users;
 		try {
 			users = conn.getUserManager().getAllUsers();
@@ -69,7 +71,7 @@ public class TransferStatistics implements CommandHandler {
 			response.addComment(
 				user.getUsername()
 					+ " "
-					+ Bytes.formatBytes(getStats(command, user)));
+					+ Bytes.formatBytes(getStats(command.substring("SITE ".length()), user)));
 			//			// AL MONTH WK DAY
 			//			String period =
 			//				command.substring("SITE ".length(), command.length() - 2);
@@ -155,60 +157,41 @@ public class TransferStatistics implements CommandHandler {
 				&& !user.equals(conn.getUserNull())) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
-
-		FtpReply response = new FtpReply(200);
-		response.addComment("bytes up, files up, bytes down, files down");
-		response.addComment(
-			"total: "
-				+ Bytes.formatBytes(user.getUploadedBytes())
-				+ " "
-				+ user.getUploadedFiles()
-				+ "f "
-				+ Bytes.formatBytes(user.getDownloadedBytes())
-				+ " "
-				+ user.getDownloadedFiles()
-				+ "f ");
-		response.addComment(
-			"month: "
-				+ Bytes.formatBytes(user.getUploadedBytesMonth())
-				+ " "
-				+ user.getUploadedFilesMonth()
-				+ "f "
-				+ Bytes.formatBytes(user.getDownloadedBytesMonth())
-				+ " "
-				+ user.getDownloadedFilesMonth()
-				+ "f ");
-		response.addComment(
-			"week: "
-				+ Bytes.formatBytes(user.getUploadedBytesWeek())
-				+ " "
-				+ user.getUploadedFilesWeek()
-				+ "f "
-				+ Bytes.formatBytes(user.getDownloadedBytesWeek())
-				+ "b "
-				+ user.getDownloadedFilesWeek()
-				+ "f ");
-		response.addComment(
-			"day: "
-				+ Bytes.formatBytes(user.getUploadedBytesDay())
-				+ "b "
-				+ user.getUploadedFilesDay()
-				+ "f "
-				+ Bytes.formatBytes(user.getDownloadedBytesDay())
-				+ "b "
-				+ user.getDownloadedFilesDay()
-				+ "f ");
+		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+		response.addComment("created: " + new Date(user.getCreated()));
+		response.addComment("time on today: " + new Date(user.getTimeToday()));
+		response.addComment("rank alup: " + getStatsPlace("ALUP",user,conn));
+		response.addComment("rank aldn: " + getStatsPlace("ALDN",user,conn));
+		response.addComment("rank monthup: " + getStatsPlace("MONTHUP",user,conn));
+		response.addComment("rank monthdn: " + getStatsPlace("MONTHDN",user,conn));
+		response.addComment("rank wkup: " + getStatsPlace("WKUP",user,conn));
+		response.addComment("rank wkdn: " + getStatsPlace("WKDN",user,conn));
+		response.addComment("races won: " + user.getRacesWon());
+		response.addComment("races lost: " + user.getRacesLost());
+		response.addComment("races helped: " + user.getRacesParticipated());
+		response.addComment("requests made: " + user.getRequests());
+		response.addComment("requests filled: " + user.getRequestsFilled());
+		response.addComment("nuked " + user.getTimesNuked() + " times for " +
+							user.getNukedBytes() + " bytes");
+		response.addComment("        FILES		BYTES");
+		response.addComment("ALUP   " + user.getUploadedFiles() + "	" + user.getUploadedBytes());
+		response.addComment("ALDN   " + user.getDownloadedFiles() + "	" + user.getDownloadedBytes());
+		response.addComment("MNUP   " + user.getUploadedFilesMonth() + "	" + user.getUploadedBytesMonth());
+		response.addComment("MNDN   " + user.getDownloadedFilesMonth() + "	" + user.getDownloadedBytesMonth());
+		response.addComment("WKUP   " + user.getUploadedFilesWeek() + "	" + user.getUploadedBytesWeek());
+		response.addComment("WKDN   " + user.getDownloadedFilesWeek() + "	" + user.getDownloadedBytesWeek());
 		return response;
 	}
 
 	static long getStats(String command, User user) {
 		// AL MONTH WK DAY
 		String period =
-			command.substring("SITE ".length(), command.length() - 2);
+			command.substring(0, command.length() - 2);
 		// UP DN
 		String updn = command.substring(command.length() - 2);
-		System.out.println("updn = " + updn);
-		System.out.println("period = " + period);
+//		System.out.println("getstats");
+//		System.out.println("updn = " + updn);
+//		System.out.println("period = " + period);
 		if (updn.equals("UP")) {
 			if (period.equals("AL"))
 				return user.getUploadedBytes();
@@ -233,6 +216,34 @@ public class TransferStatistics implements CommandHandler {
 				TransferStatistics.class,
 				command));
 	}
+	
+	static int getStatsPlace(String command, User user, BaseFtpConnection conn) {
+		// AL MONTH WK DAY
+		String period =
+			command.substring(0, command.length() - 2);
+		// UP DN
+		String updn = command.substring(command.length() - 2);
+//		System.out.println("getstatsplace");
+//		System.out.println("period = " + period);
+//		System.out.println("updn = " + updn);
+		int place = 1;
+		long bytes = getStats(command,user);
+		List users;
+		try {
+			users = conn.getUserManager().getAllUsers();
+		} catch (UserFileException e) {
+			logger.error("IO error:", e);
+			return 0;
+		}
+		for (Iterator iter = users.iterator(); iter.hasNext();) {
+			User tempUser = (User) iter.next();
+			long tempBytes = getStats(command,tempUser);
+			if ( tempBytes > bytes )
+				place++;
+		}
+		return place;
+	}
+	
 	public CommandHandler initialize(
 		BaseFtpConnection conn,
 		CommandManager initializer) {
@@ -261,8 +272,8 @@ class UserComparator implements Comparator {
 		User u1 = (User) o1;
 		User u2 = (User) o2;
 
-		long thisVal = TransferStatistics.getStats(_command, u1);
-		long anotherVal = TransferStatistics.getStats(_command, u2);
+		long thisVal = TransferStatistics.getStats(_command.substring("SITE ".length()), u1);
+		long anotherVal = TransferStatistics.getStats(_command.substring("SITE ".length()), u2);
 		return (thisVal > anotherVal ? -1 : (thisVal == anotherVal ? 0 : 1));
 	}
 

@@ -13,7 +13,7 @@ import net.sf.drftpd.ObjectExistsException;
 
 /**
  * @author mog
- * @version $Id: User.java,v 1.24 2003/11/26 01:17:03 zubov Exp $
+ * @version $Id: User.java,v 1.25 2003/11/26 09:53:30 zubov Exp $
  */
 public interface User {
 
@@ -102,6 +102,13 @@ public interface User {
 	 * Returns the downloadedSecondsWeek.
 	 * @return int
 	 */
+	
+	public int getRacesWon();
+	public int getRacesLost();
+	public int getRacesParticipated();
+	public int getRequests();
+	public int getRequestsFilled();
+	
 	public int getDownloadedSecondsWeek();
 	public short getGroupLeechSlots();
 	public String getGroupName();
@@ -294,6 +301,12 @@ public interface User {
 	public void removeIpMask(String mask) throws NoSuchFieldException;
 	public void rename(String username)
 		throws ObjectExistsException, UserFileException;
+		
+	public void addRacesWon();
+	public void addRacesLost();
+	public void addRequests();
+	public void addRequestsFilled();
+	
 	public void setComment(String comment);
 	/**
 	 * Sets the credits.

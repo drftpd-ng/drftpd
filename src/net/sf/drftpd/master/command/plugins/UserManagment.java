@@ -33,7 +33,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.10 2003/11/19 00:20:52 mog Exp $
+ * @version $Id: UserManagment.java,v 1.11 2003/11/26 09:53:30 zubov Exp $
  */
 public class UserManagment implements CommandHandler {
 	public void load(CommandManagerFactory initializer) {
@@ -268,6 +268,7 @@ public class UserManagment implements CommandHandler {
 		int i = (int) (myUser.getTimeToday() / 1000);
 		int hours = i / 60;
 		int minutes = i - hours * 60;
+		response.addComment("created: " + new Date(myUser.getCreated()));
 		response.addComment(
 			"last seen: " + new Date(myUser.getLastAccessTime()));
 		response.addComment("time on today: " + hours + ":" + minutes);
@@ -277,8 +278,11 @@ public class UserManagment implements CommandHandler {
 		response.addComment("group: " + myUser.getGroupName());
 		response.addComment("groups: " + myUser.getGroups());
 		response.addComment("ip masks: " + myUser.getIpMasks());
+		response.addComment("total bytes up: " + myUser.getUploadedBytes());
+		response.addComment("total bytes dn: " + myUser.getDownloadedBytes());
 		return response;
 	}
+
 	private FtpReply doSITE_USERS(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
 		conn.resetState();
