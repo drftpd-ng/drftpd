@@ -1,0 +1,85 @@
+MODE=net.sf.drftpd.master.command.plugins.DataConnectionHandler
+PASV=net.sf.drftpd.master.command.plugins.DataConnectionHandler
+PORT=net.sf.drftpd.master.command.plugins.DataConnectionHandler
+PRET=net.sf.drftpd.master.command.plugins.DataConnectionHandler
+STRU=net.sf.drftpd.master.command.plugins.DataConnectionHandler
+SYST=net.sf.drftpd.master.command.plugins.DataConnectionHandler
+TYPE=net.sf.drftpd.master.command.plugins.DataConnectionHandler
+RETR=net.sf.drftpd.master.command.plugins.DataConnectionHandler
+REST=net.sf.drftpd.master.command.plugins.DataConnectionHandler
+SITE\ RESCAN=net.sf.drftpd.master.command.plugins.DataConnectionHandler
+SITE\ XDUPE=net.sf.drftpd.master.command.plugins.DataConnectionHandler
+STOR=net.sf.drftpd.master.command.plugins.DataConnectionHandler
+
+USER=net.sf.drftpd.master.command.plugins.Login
+PASS=net.sf.drftpd.master.command.plugins.Login
+QUIT=net.sf.drftpd.master.command.plugins.Login
+
+CDUP=net.sf.drftpd.master.command.plugins.Dir
+CWD=net.sf.drftpd.master.command.plugins.Dir
+MKD=net.sf.drftpd.master.command.plugins.Dir
+PWD=net.sf.drftpd.master.command.plugins.Dir
+RMD=net.sf.drftpd.master.command.plugins.Dir
+RNFR=net.sf.drftpd.master.command.plugins.Dir
+RNTO=net.sf.drftpd.master.command.plugins.Dir
+SITE\ WIPE=net.sf.drftpd.master.command.plugins.Dir
+
+LIST=net.sf.drftpd.master.command.plugins.List
+NLST=net.sf.drftpd.master.command.plugins.List
+STAT=net.sf.drftpd.master.command.plugins.List
+
+SITE\ NUKE=net.sf.drftpd.master.command.plugins.Nuke
+SITE\ NUKES=net.sf.drftpd.master.command.plugins.Nuke
+SITE\ UNNUKE=net.sf.drftpd.master.command.plugins.Nuke
+
+SITE\ ADDIP=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ ADDUSER=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ CHANGE=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ CHGRP=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ CHPASS=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ DELIP=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ DELUSER=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ GADDUSER=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ GINFO=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ GIVE=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ GROUPS=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ KICK=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ PASSWD=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ PURGE=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ READD=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ RENUSER=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ SEEN=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ TAGLINE=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ TAKE=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ USER=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ USERS=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ WHO=net.sf.drftpd.master.command.plugins.UserManagment
+
+SITE\ RELOAD=net.sf.drftpd.master.command.plugins.SiteManagment
+SITE\ SHUTDOWN=net.sf.drftpd.master.command.plugins.SiteManagment
+
+XCRC=net.sf.drftpd.master.command.plugins.Dir
+DELE=net.sf.drftpd.master.command.plugins.Dir
+MDTM=net.sf.drftpd.master.command.plugins.Dir
+SIZE=net.sf.drftpd.master.command.plugins.Dir
+
+SITE\ RULES=net.sf.drftpd.master.command.plugins.Textoutput
+SITE\ WELCOME=net.sf.drftpd.master.command.plugins.Textoutput
+
+CLNT=net.sf.drftpd.master.command.plugins.Dummy
+NOOP=net.sf.drftpd.master.command.plugins.Dummy
+
+ABOR=net.sf.drftpd.master.command.plugins.Misc
+FEAT=net.sf.drftpd.master.command.plugins.Misc
+SITE\ STAT=net.sf.drftpd.master.command.plugins.Misc
+SITE\ TIME=net.sf.drftpd.master.command.plugins.Misc
+SITE\ VERS=net.sf.drftpd.master.command.plugins.Misc
+
+SITE\ DUPE=net.sf.drftpd.master.command.plugins.Search
+SITE\ SEARCH=net.sf.drftpd.master.command.plugins.Search
+
+MLST=net.sf.drftpd.master.command.plugins.MLST
+MLSD=net.sf.drftpd.master.command.plugins.MLST
+
+SITE\ REQUEST=net.sf.drftpd.master.command.plugins.Request
+SITE\ REQFILLED=net.sf.drftpd.master.command.plugins.Request
