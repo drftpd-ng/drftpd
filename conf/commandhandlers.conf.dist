@@ -91,6 +91,7 @@ FEAT=net.sf.drftpd.master.command.plugins.Misc
 SITE\ STAT=net.sf.drftpd.master.command.plugins.Misc
 SITE\ TIME=net.sf.drftpd.master.command.plugins.Misc
 SITE\ VERS=net.sf.drftpd.master.command.plugins.Misc
+SITE\ HELP=net.sf.drftpd.master.command.plugins.Misc
 
 SITE\ DUPE=net.sf.drftpd.master.command.plugins.Search
 SITE\ SEARCH=net.sf.drftpd.master.command.plugins.Search
