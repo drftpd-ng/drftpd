@@ -69,7 +69,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.79 2004/02/03 01:04:05 mog Exp $
+ * @version $Id: IRCListener.java,v 1.80 2004/02/04 21:16:57 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -405,7 +405,7 @@ public class IRCListener implements FtpListener, Observer {
 
 				raceenv.add("group", stat.getGroupname());
 
-				raceenv.add("position", new Integer(position));
+				raceenv.add("position", new Integer(position++));
 				raceenv.add("size", Bytes.formatBytes(stat.getBytes()));
 				raceenv.add("files", Integer.toString(stat.getFiles()));
 				raceenv.add(
