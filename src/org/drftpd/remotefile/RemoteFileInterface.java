@@ -18,11 +18,7 @@
 package org.drftpd.remotefile;
 
 import java.io.FileNotFoundException;
-
 import java.util.Collection;
-
-import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 
 /**

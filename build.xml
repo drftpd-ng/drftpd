@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
-<!-- $Id: build.xml,v 1.52 2004/11/12 14:22:16 mog Exp $ -->
+<!-- $Id$ -->
 <project name="drftpd" basedir="." default="compile">
 
   <patternset id="slaveclasses">
     <include name="com/Ostermiller/util/StringTokenizer.*"/>
-    <include name="net/sf/drftpd/util/PortRange.class" />
-    <include name="net/sf/drftpd/util/AddAsciiOutputStream.class" />
+    <include name="net/sf/drftpd/util/PortRange*" />
+    <include name="net/sf/drftpd/util/AddAsciiOutputStream*" />
     <include name="net/sf/drftpd/FileExistsException*" />
     <include name="org/drftpd/bootstrap/*" />
     <include name="org/drftpd/id3/*" />
