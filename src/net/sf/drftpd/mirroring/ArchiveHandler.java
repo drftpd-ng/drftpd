@@ -21,7 +21,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.6 2004/01/12 08:24:24 zubov Exp $
+ * @version $Id: ArchiveHandler.java,v 1.7 2004/01/13 05:06:27 zubov Exp $
  */
 public class ArchiveHandler extends Thread {
 
@@ -169,7 +169,7 @@ public class ArchiveHandler extends Thread {
 		if (lrf.getDirectories().size() == 0) {
 			if (System.currentTimeMillis() - lrf.lastModified()
 				< _parent.getArchiveAfter()) {
-				logger.debug(lrf.getPath() + " is too young to archive");
+				//logger.debug(lrf.getPath() + " is too young to archive");
 				return null;
 			}
 			Collection files = lrf.getFiles();
@@ -336,32 +336,31 @@ public class ArchiveHandler extends Thread {
 	 * waits until the LinkedRemoteFiles in the ArrayList jobQueue are sent and deletes them from the non-archived slave
 	 */
 	private void waitForSendOfFiles(
-		ArrayList jobQueue, RemoteSlave destSlave) {
-		while (true) {
-			logger.debug("About to check jobQueue again");
-			for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
-				Job job = (Job) iter.next();
-				logger.debug("Checking job " + job);
-				if (job.isDone()) {
-					logger.debug(
-						"File "
-							+ job.getFile().getPath()
-							+ " is done being sent");
-					job.getFile().deleteOthers(destSlave);
-					iter.remove();
-				} else {
-					logger.debug("Going to sleep now");
-					try {
-						sleep(10000);
-					} catch (InterruptedException e) {
+		ArrayList jobQueue,
+		RemoteSlave destSlave) {
+		try {
+			while (true) {
+				for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
+					Job job = (Job) iter.next();
+					if (job.isDone()) {
+						logger.debug(
+							"File "
+								+ job.getFile().getPath()
+								+ " is done being sent");
+						job.getFile().deleteOthers(destSlave);
+						iter.remove();
 					}
-					logger.debug("Waking up now");
+				}
+				try {
+					sleep(10000);
+				} catch (InterruptedException e) {
+				}
+				if (jobQueue.isEmpty()) {
+					break;
 				}
 			}
-			if (jobQueue.isEmpty()) {
-				logger.debug("jobQueue is empty, exiting");
-				break;
-			}
+		} catch (Exception e) {
+			logger.debug("Exception in waitForSendOfFiles()", e);
 		}
 	}
 }

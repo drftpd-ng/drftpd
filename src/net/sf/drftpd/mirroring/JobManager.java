@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.13 2004/01/12 08:24:24 zubov Exp $
+ * @version $Id: JobManager.java,v 1.14 2004/01/13 05:06:27 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -75,8 +75,8 @@ public class JobManager implements FtpListener {
 			}
 		}
 		_jobList.add(job);
-		logger.debug(
-			"Added job " + job.getFile().getPath() + " to the jobQueue");
+		//		logger.debug(
+		//			"Added job " + job.getFile().getPath() + " to the jobQueue");
 		Collections.sort(_jobList, new JobComparator());
 	}
 
@@ -141,8 +141,8 @@ public class JobManager implements FtpListener {
 							.getFile()
 							.getAvailableSlaves()
 							.contains(slave)) {
-							logger.debug(
-								"jobToReturn is assigned - " + slave.getName());
+							//							logger.debug(
+							//								"jobToReturn is assigned - " + slave.getName());
 							jobToReturn = tempJob;
 						}
 					}
@@ -156,17 +156,17 @@ public class JobManager implements FtpListener {
 				continue;
 			}
 			if (tempJob.getDestinationSlaves().contains(slave)) {
-				logger.debug(
-					"an Archive job is being returned - " + slave.getName());
+				//				logger.debug(
+				//					"an Archive job is being returned - " + slave.getName());
 				removeJob(tempJob);
 				return tempJob;
 			}
 		}
 		if (jobToReturn != null) {
 			removeJob(jobToReturn);
-			logger.info(
-				"jobToReturn is returning a mirror job for - "
-					+ slave.getName());
+			//			logger.info(
+			//				"jobToReturn is returning a mirror job for - "
+			//					+ slave.getName());
 		}
 		return jobToReturn;
 	}
@@ -194,18 +194,18 @@ public class JobManager implements FtpListener {
 		Job temp = getNextJob(slave);
 
 		if (temp == null) { // nothing to process for this slave
-			logger.debug("Nothing to process for slave " + slave.getName());
+			//			logger.debug("Nothing to process for slave " + slave.getName());
 			return false;
 		}
 		if (temp.getFile().getSlaves().contains(slave)) {
 			if (temp.removeDestinationSlave(slave)) {
-				logger.debug(
-					"Removed "
-						+ slave.getName()
-						+ " from the destination list ("
-						+ temp.getDestinationSlaves().size()
-						+ " left) of the job "
-						+ temp);
+				//				logger.debug(
+				//					"Removed "
+				//						+ slave.getName()
+				//						+ " from the destination list ("
+				//						+ temp.getDestinationSlaves().size()
+				//						+ " left) of the job "
+				//						+ temp);
 				// if it's already there, remove it from the destinationList
 				if (temp.getDestinationSlaves().size() > 0) {
 					addJob(temp);
@@ -215,13 +215,13 @@ public class JobManager implements FtpListener {
 				return true;
 			}
 			if (temp.removeDestinationSlave(null)) {
-				logger.debug(
-					"Removed "
-						+ slave.getName()
-						+ " from the destination list ("
-						+ temp.getDestinationSlaves().size()
-						+ " left) of the job "
-						+ temp);
+				//				logger.debug(
+				//					"Removed "
+				//						+ slave.getName()
+				//						+ " from the destination list ("
+				//						+ temp.getDestinationSlaves().size()
+				//						+ " left) of the job "
+				//						+ temp);
 				if (temp.getDestinationSlaves().size() > 0) {
 					addJob(temp);
 				} else {
@@ -285,16 +285,16 @@ public class JobManager implements FtpListener {
 				+ " from "
 				+ sourceSlave.getName());
 		temp.addTimeSpent(difference);
-		logger.info(
-			"Done Sending "
-				+ temp.getFile().getName()
-				+ " from "
-				+ sourceSlave.getName()
-				+ " to "
-				+ slave.getName()
-				+ " in "
-				+ difference / 1000
-				+ " seconds");
+		//		logger.info(
+		//			"Done Sending "
+		//				+ temp.getFile().getName()
+		//				+ " from "
+		//				+ sourceSlave.getName()
+		//				+ " to "
+		//				+ slave.getName()
+		//				+ " in "
+		//				+ difference / 1000
+		//				+ " seconds");
 		if (!temp.removeDestinationSlave(slave)) {
 			if (!temp.removeDestinationSlave(null))
 				logger.debug(
@@ -308,7 +308,7 @@ public class JobManager implements FtpListener {
 			addJob(temp); // job still has more places to transfer
 		} else {
 			temp.setDone();
-			logger.debug("Setting job " + temp + " to be done");
+			//			logger.debug("Setting job " + temp + " to be done");
 		}
 		return true;
 	}

@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.101 2004/01/13 00:38:55 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.102 2004/01/13 05:06:27 zubov Exp $
  */
 public class LinkedRemoteFile
 	implements RemoteFileInterface, Serializable, Comparable {
@@ -362,28 +362,31 @@ public class LinkedRemoteFile
 	}
 
 	public void deleteOthers(RemoteSlave slave) {
-		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
-			RemoteSlave tempSlave = (RemoteSlave) iter.next();
-			if (tempSlave == slave)
-				continue; // do not want to delete the archived file
-			// delete other files
-			try {
-				tempSlave.getSlave().delete(getPath());
-				removeSlave(tempSlave);
-			} catch (RemoteException e) {
-				tempSlave.handleRemoteException(e);
-			} catch (FileNotFoundException ex) {
-				logger.warn(
-					getPath()
-						+ " missing on "
-						+ tempSlave.getName()
-						+ " during delete, assumed deleted");
-			} catch (NoAvailableSlaveException e) {
-				logger.debug("Probably run from Archive", e);
-				continue;
-			} catch (IOException e) {
-				logger.debug("Probably run from Archive", e);
-				continue;
+		synchronized (getSlaves()) {
+			for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
+				RemoteSlave tempSlave = (RemoteSlave) iter.next();
+				if (tempSlave == slave)
+					continue; // do not want to delete the archived file
+				// delete other files
+				try {
+					tempSlave.getSlave().delete(getPath());
+					//removeSlave(tempSlave);
+					iter.remove();
+				} catch (RemoteException e) {
+					tempSlave.handleRemoteException(e);
+				} catch (FileNotFoundException ex) {
+					logger.warn(
+						getPath()
+							+ " missing on "
+							+ tempSlave.getName()
+							+ " during delete, assumed deleted");
+				} catch (NoAvailableSlaveException e) {
+					logger.debug("Probably run from Archive", e);
+					continue;
+				} catch (IOException e) {
+					logger.debug("Probably run from Archive", e);
+					continue;
+				}
 			}
 		}
 	}
@@ -622,7 +625,7 @@ public class LinkedRemoteFile
 	 */
 	public Collection getSlaves() {
 		if (_slaves == null)
-			throw new IllegalStateException("getSlaves() on non-directory");
+			throw new IllegalStateException("getSlaves() called on a directory");
 		return _slaves;
 	}
 
