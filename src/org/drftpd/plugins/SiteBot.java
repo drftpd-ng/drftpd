@@ -124,6 +124,7 @@ public class SiteBot extends FtpListener implements Observer {
         GLOBAL_ENV.add("bold", "\u0002");
         GLOBAL_ENV.add("coloroff", "\u000f");
         GLOBAL_ENV.add("color", "\u0003");
+        GLOBAL_ENV.add("underline", "\u001f");
     }
 
     private static final Logger logger = Logger.getLogger(SiteBot.class);
