@@ -53,7 +53,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.128 2004/03/26 11:22:21 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.129 2004/03/28 16:34:41 zubov Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -286,7 +286,7 @@ public class LinkedRemoteFile
 			Stack dirstack = new Stack();
 			//for (int i = 0; i < dir.length; i++) {
 			for (Iterator iter = file.getFiles().iterator(); iter.hasNext();) {
-				LinkedRemoteFileInterface file2 = (LinkedRemoteFileInterface) iter.next();
+				RemoteFileInterface file2 = (RemoteFileInterface) iter.next();
 				//RemoteFileInterface file2 = dir[i];
 				if (file2.isDirectory()) {
 					dirstack.push(file2);
@@ -527,12 +527,11 @@ public class LinkedRemoteFile
 							+ tempSlave.getName()
 							+ " during delete, assumed deleted",
 						ex);
+						iter.remove();
 				} catch (SlaveUnavailableException e) {
-					logger.debug("Probably run from Archive", e);
-					continue;
+					logger.debug("Unable to delete file on offline slave", e);
 				} catch (IOException e) {
-					logger.debug("Probably run from Archive", e);
-					continue;
+					logger.debug("IOException deleting file from slave", e);
 				}
 			}
 		}

@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
 import org.apache.log4j.Logger;
+
+import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.listeners.Archive;
 import net.sf.drftpd.master.RemoteSlave;
@@ -32,7 +34,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.18 2004/03/15 13:53:05 zubov Exp $
+ * @version $Id: ArchiveHandler.java,v 1.19 2004/03/28 16:34:41 zubov Exp $
  */
 public class ArchiveHandler extends Thread {
 	private static final Logger logger = Logger.getLogger(ArchiveHandler.class);
@@ -140,12 +142,12 @@ public class ArchiveHandler extends Thread {
 	}
 	private LinkedRemoteFile getOldestNonArchivedDir(LinkedRemoteFile lrf) {
 		if (_parent.checkExclude(lrf)) {
-			logger.debug(lrf.getPath() + " is excluded");
+//			logger.debug(lrf.getPath() + " is excluded");
 			return null;
 		}
 		if (_parent.getArchivingList().contains(lrf.getPath())) {
-			logger.debug(lrf.getPath()
-					+ " is already being handled by another ArchiveHandler");
+//			logger.debug(lrf.getPath()
+//					+ " is already being handled by another ArchiveHandler");
 			return null;
 		}
 		if (lrf.getDirectories().size() == 0) {
@@ -155,18 +157,12 @@ public class ArchiveHandler extends Thread {
 			}
 			Collection files = lrf.getFiles();
 			if (files.size() == 0) {
-				logger
-						.debug(lrf.getPath()
-								+ " does not have any files in it, it is already archived");
+//				logger
+//						.debug(lrf.getPath()
+//								+ " does not have any files in it, it is already archived");
 				return null;
 			}
 			try {
-				if (lrf.lookupSFVFile().getStatus().getOffline() > 0) {
-					logger
-							.debug(lrf.getPath()
-									+ " does not have all files online, will not archive it");
-					return null;
-				}
 				if (lrf.lookupSFVFile().getStatus().getMissing() > 0) {
 					logger
 							.info(lrf.getPath()
@@ -179,6 +175,14 @@ public class ArchiveHandler extends Thread {
 			ArrayList slaveList = new ArrayList();
 			for (Iterator iter = files.iterator(); iter.hasNext();) {
 				LinkedRemoteFile temp = (LinkedRemoteFile) iter.next();
+				try {
+					if (!temp.getAvailableSlaves().containsAll(temp.getSlaves())) {
+//						logger.debug(lrf.getPath() + " contains " + temp.getName() + " which is on an offline slave, will not archive it");
+						return null;
+					}
+				} catch (NoAvailableSlaveException e1) {
+					return null;
+				}
 				for (Iterator iter2 = temp.getSlaves().iterator(); iter2
 						.hasNext();) {
 					RemoteSlave tempSlave = (RemoteSlave) iter2.next();
