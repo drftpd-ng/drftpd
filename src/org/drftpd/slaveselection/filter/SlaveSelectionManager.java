@@ -38,7 +38,7 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.13 2004/05/20 14:09:00 zubov Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.14 2004/06/29 04:02:24 zubov Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 	private SlaveManagerImpl _sm;
@@ -169,6 +169,9 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 				new FilterChain(this, "conf/slaveselection-jobup.conf");
 			_ssmiJobDown =
 				new FilterChain(this, "conf/slaveselection-jobdown.conf");			
+		} else {
+			_ssmiJobUp = null;
+			_ssmiJobDown = null;
 		}
 	}
 }
