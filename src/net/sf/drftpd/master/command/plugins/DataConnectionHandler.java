@@ -72,6 +72,8 @@ import java.util.StringTokenizer;
 
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
+import javax.net.ssl.HandshakeCompletedEvent;
+import javax.net.ssl.HandshakeCompletedListener;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 
@@ -82,7 +84,7 @@ import javax.net.ssl.SSLSocket;
  * @version $Id$
  */
 public class DataConnectionHandler implements CommandHandlerFactory,
-    CommandHandler, Cloneable {
+    CommandHandler, Cloneable, HandshakeCompletedListener {
     private static final Logger logger = Logger.getLogger(DataConnectionHandler.class);
     private SSLContext _ctx;
     private boolean _encryptedDataChannel;
@@ -105,10 +107,11 @@ public class DataConnectionHandler implements CommandHandlerFactory,
     private RemoteTransfer _transfer;
     private LinkedRemoteFileInterface _transferFile;
     private char _type = 'A';
+	private boolean _handshakeCompleted;
 
     public DataConnectionHandler() {
         super();
-
+        _handshakeCompleted = false;
         try {
             _ctx = SSLGetContext.getSSLContext();
         } catch (FileNotFoundException e) {
@@ -137,14 +140,23 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             s2 = (SSLSocket) _ctx.getSocketFactory().createSocket(s,
                     s.getInetAddress().getHostAddress(), s.getPort(), true);
             s2.setUseClientMode(false);
+            s2.addHandshakeCompletedListener(this);
             s2.startHandshake();
+            while(!_handshakeCompleted) {
+            	try {
+            		Thread.sleep(100);
+            	} catch (InterruptedException e) {
+            	}
+            }
+            // reset for possible auth later
+            _handshakeCompleted = false;
             conn.setControlSocket(s2);
         } catch (IOException e) {
             logger.warn("", e);
             conn.stop(e.getMessage());
 
             return null;
-        }
+		}
 
         return null;
     }
@@ -1458,4 +1470,8 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
         return true; // modify credits, transfer was okay
     }
+
+	public void handshakeCompleted(HandshakeCompletedEvent arg0) {
+		_handshakeCompleted = true;
+	}
 }
