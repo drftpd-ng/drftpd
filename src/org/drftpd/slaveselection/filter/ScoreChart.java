@@ -30,7 +30,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: ScoreChart.java,v 1.7 2004/09/25 03:48:42 mog Exp $
+ * @version $Id: ScoreChart.java,v 1.8 2004/10/03 16:13:57 mog Exp $
  */
 public class ScoreChart {
     private static final Logger logger = Logger.getLogger(ScoreChart.class);
@@ -49,7 +49,6 @@ public class ScoreChart {
 
         for (Iterator iter = slaves.iterator(); iter.hasNext();) {
             RemoteSlave rslave = (RemoteSlave) iter.next();
-            System.out.println("added slave " + rslave.getName());
             _scoreChart.add(new SlaveScore(rslave));
         }
     }

@@ -36,7 +36,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: SectionManager.java,v 1.9 2004/09/25 03:48:41 mog Exp $
+ * @version $Id: SectionManager.java,v 1.10 2004/10/03 16:13:57 mog Exp $
  */
 public class SectionManager implements SectionManagerInterface {
     private ConnectionManager _cm;
@@ -116,6 +116,10 @@ public class SectionManager implements SectionManagerInterface {
 
         public String getPath() {
             return _lrf.getPath();
+        }
+
+        public LinkedRemoteFileInterface getBaseFile() {
+            return getFile();
         }
     }
 }

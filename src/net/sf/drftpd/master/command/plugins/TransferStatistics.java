@@ -43,15 +43,16 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.IOException;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.StringTokenizer;
 
 
 /**
- * @version $Id: TransferStatistics.java,v 1.24 2004/08/03 20:13:57 zubov Exp $
+ * @version $Id: TransferStatistics.java,v 1.25 2004/10/03 16:13:52 mog Exp $
  */
 public class TransferStatistics implements CommandHandlerFactory,
     CommandHandler {
@@ -152,7 +153,7 @@ public class TransferStatistics implements CommandHandlerFactory,
         // AL MONTH WK DAY
         int place = 1;
         long bytes = getStats(command, user);
-        List users;
+        Collection users;
 
         try {
             users = userman.getAllUsers();
@@ -258,7 +259,7 @@ public class TransferStatistics implements CommandHandlerFactory,
             return doSITE_STATS(conn);
         }
 
-        List users;
+        Collection users;
 
         try {
             users = conn.getConnectionManager().getGlobalContext()
@@ -297,7 +298,8 @@ public class TransferStatistics implements CommandHandlerFactory,
         final String command = request.getCommand();
         FtpReply response = new FtpReply(200);
         String type = command.substring("SITE ".length()).toLowerCase();
-        Collections.sort(users, new UserComparator(type));
+        ArrayList users2 = new ArrayList(users);
+        Collections.sort(users2, new UserComparator(type));
 
         try {
             Textoutput.addTextToResponse(response, type + "_header");
@@ -307,7 +309,7 @@ public class TransferStatistics implements CommandHandlerFactory,
 
         int i = 0;
 
-        for (Iterator iter = users.iterator(); iter.hasNext();) {
+        for (Iterator iter = users2.iterator(); iter.hasNext();) {
             if (++i > count) {
                 break;
             }

@@ -33,7 +33,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: PlainSection.java,v 1.8 2004/08/03 20:14:07 zubov Exp $
+ * @version $Id: PlainSection.java,v 1.9 2004/10/03 16:13:56 mog Exp $
  */
 public class PlainSection implements SectionInterface {
     private String _dir;
@@ -86,5 +86,9 @@ public class PlainSection implements SectionInterface {
 
     public String getPath() {
         return _dir;
+    }
+
+    public LinkedRemoteFileInterface getBaseFile() {
+        return getFile();
     }
 }

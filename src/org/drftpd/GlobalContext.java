@@ -45,11 +45,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Timer;
 
 
 /**
  * @author mog
- * @version $Id: GlobalContext.java,v 1.3 2004/08/03 20:14:04 zubov Exp $
+ * @version $Id: GlobalContext.java,v 1.4 2004/10/03 16:13:55 mog Exp $
  */
 public class GlobalContext {
     private static final Logger logger = Logger.getLogger(GlobalContext.class);
@@ -62,6 +63,7 @@ public class GlobalContext {
     private String _shutdownMessage = null;
     protected SlaveManagerImpl _slaveManager;
     protected UserManager _usermanager;
+    private Timer _timer = new Timer();
 
     protected GlobalContext() {
     }
@@ -71,7 +73,6 @@ public class GlobalContext {
         _cm = cm;
         _cm.setGlobalContext(this);
         loadUserManager(cfg, cfgFileName);
-        loadSectionManager(cfg);
 
         try {
             _config = new FtpConfig(cfg, cfgFileName, _cm);
@@ -80,7 +81,8 @@ public class GlobalContext {
         }
 
         loadSlaveManager(cfg, cfgFileName);
-        loadRSlaves();
+        loadRSlavesAndRoot();
+        loadSectionManager(cfg);
         loadPlugins(cfg);
     }
 
@@ -137,6 +139,10 @@ public class GlobalContext {
     }
 
     public LinkedRemoteFileInterface getRoot() {
+        if (_root == null) {
+            throw new NullPointerException();
+        }
+
         return _root;
     }
 
@@ -208,7 +214,7 @@ public class GlobalContext {
         }
     }
 
-    private void loadRSlaves() {
+    private void loadRSlavesAndRoot() {
         try {
             List rslaves = _slaveManager.getSlaves();
             _root = MLSTSerialize.loadMLSTFileDatabase(rslaves, _cm);
@@ -283,5 +289,9 @@ public class GlobalContext {
     public void shutdown(String message) {
         _shutdownMessage = message;
         dispatchFtpEvent(new MessageEvent("SHUTDOWN", message));
+    }
+
+    public Timer getTimer() {
+        return _timer;
     }
 }

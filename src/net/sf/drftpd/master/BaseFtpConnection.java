@@ -34,6 +34,8 @@ import net.sf.drftpd.util.Time;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.GlobalContext;
+
 import org.drftpd.commands.UnhandledCommandException;
 
 import org.tanesha.replacer.FormatterException;
@@ -66,7 +68,7 @@ import javax.net.ssl.SSLSocket;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.95 2004/09/25 03:48:35 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.96 2004/10/03 16:13:51 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
     private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() +
@@ -78,7 +80,8 @@ public class BaseFtpConnection implements Runnable {
      * Is the current password authenticated?
      */
     protected boolean _authenticated = false;
-    protected ConnectionManager _cm;
+
+    //protected ConnectionManager _cm;
     private CommandManager _commandManager;
     protected Socket _controlSocket;
     protected User _user;
@@ -103,17 +106,19 @@ public class BaseFtpConnection implements Runnable {
     protected boolean _stopRequest = false;
     protected String _stopRequestMessage;
     protected Thread _thread;
+    protected GlobalContext _gctx;
 
     protected BaseFtpConnection() {
     }
 
-    public BaseFtpConnection(ConnectionManager connManager, Socket soc)
+    public BaseFtpConnection(GlobalContext gctx, Socket soc)
         throws IOException {
-        _commandManager = connManager.getCommandManagerFactory().initialize(this);
-        _cm = connManager;
+        _gctx = gctx;
+        _commandManager = getGlobalContext().getConnectionManager()
+                              .getCommandManagerFactory().initialize(this);
         setControlSocket(soc);
         _lastActive = System.currentTimeMillis();
-        setCurrentDirectory(connManager.getGlobalContext().getRoot());
+        setCurrentDirectory(getGlobalContext().getRoot());
     }
 
     public static ReplacerEnvironment getReplacerEnvironment(
@@ -170,12 +175,12 @@ public class BaseFtpConnection implements Runnable {
         return _commandManager;
     }
 
-    public ConnectionManager getConnectionManager() {
-        if (_cm == null) {
-            throw new NullPointerException();
-        }
+    public GlobalContext getGlobalContext() {
+        return _gctx;
+    }
 
-        return _cm;
+    public ConnectionManager getConnectionManager() {
+        return getGlobalContext().getConnectionManager();
     }
 
     public BufferedReader getControlReader() {

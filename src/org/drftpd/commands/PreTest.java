@@ -49,7 +49,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: PreTest.java,v 1.4 2004/08/03 20:14:04 zubov Exp $
+ * @version $Id: PreTest.java,v 1.5 2004/10/03 16:13:56 mog Exp $
  */
 public class PreTest extends TestCase {
     private DummyConnectionManager _cm;
@@ -100,7 +100,6 @@ public class PreTest extends TestCase {
         _cm = new DummyConnectionManager();
 
         _config.setConnectionManager(_cm);
-        conn.setConnectionManager(_cm);
 
         SectionManager sm = new SectionManager(_cm);
         conn.setCurrentDirectory(_root);
@@ -113,8 +112,12 @@ public class PreTest extends TestCase {
         gctx.setSectionManager(sm);
         gctx.setFtpConfig(_config);
         gctx.setRoot(_root);
+        gctx.setConnectionManager(_cm);
         _cm.setGlobalContext(gctx);
 
+        conn.setGlobalConext(gctx);
+
+        //conn.setConnectionManager(_cm);
         DummySlaveManager slavem = new DummySlaveManager();
         slavem.setSlaves(Collections.EMPTY_LIST);
         gctx.setSlaveManager(slavem);

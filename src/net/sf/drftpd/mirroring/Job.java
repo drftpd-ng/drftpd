@@ -16,13 +16,8 @@
  */
 package net.sf.drftpd.mirroring;
 
-import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-
-import java.io.FileNotFoundException;
-
-import java.net.SocketException;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,7 +28,7 @@ import java.util.Set;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.32 2004/08/03 20:14:01 zubov Exp $
+ * @version $Id: Job.java,v 1.33 2004/10/03 16:13:54 mog Exp $
  */
 public class Job {
     private RemoteSlave _destSlave;

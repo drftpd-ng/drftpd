@@ -43,7 +43,6 @@ public class DummyUser extends AbstractUser {
     }
 
     public void setPassword(String password) {
-        throw new UnsupportedOperationException();
     }
 
     public void setUploadedBytes(long bytes) {

@@ -29,7 +29,7 @@ import java.util.Vector;
 
 /**
  * @author mog
- * @version $Id: FtpReply.java,v 1.13 2004/08/03 20:13:56 zubov Exp $
+ * @version $Id: FtpReply.java,v 1.14 2004/10/03 16:13:52 mog Exp $
  */
 public class FtpReply implements Cloneable {
     private static final Logger logger = Logger.getLogger(FtpReply.class.getName());
@@ -232,5 +232,9 @@ public class FtpReply implements Cloneable {
         }
 
         return sb.toString();
+    }
+
+    public String getMessage() {
+        return _message;
     }
 }

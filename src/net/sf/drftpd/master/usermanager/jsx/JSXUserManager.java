@@ -35,13 +35,13 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 
 /**
  * @author mog
- * @version $Id: JSXUserManager.java,v 1.34 2004/08/03 20:14:00 zubov Exp $
+ * @version $Id: JSXUserManager.java,v 1.35 2004/10/03 16:13:53 mog Exp $
  */
 public class JSXUserManager extends UserManager {
     private static final Logger logger = Logger.getLogger(JSXUserManager.class.getName());
@@ -97,7 +97,7 @@ public class JSXUserManager extends UserManager {
         getUserFile(username).delete();
     }
 
-    public List getAllUsers() throws UserFileException {
+    public Collection getAllUsers() throws UserFileException {
         ArrayList users = new ArrayList();
         String[] userpaths = userpathFile.list();
 

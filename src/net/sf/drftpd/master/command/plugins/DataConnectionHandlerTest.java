@@ -41,7 +41,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandlerTest.java,v 1.10 2004/08/03 20:13:57 zubov Exp $
+ * @version $Id: DataConnectionHandlerTest.java,v 1.11 2004/10/03 16:13:52 mog Exp $
  */
 public class DataConnectionHandlerTest extends TestCase {
     private DummyGlobalContext gctx;
@@ -113,8 +113,8 @@ public class DataConnectionHandlerTest extends TestCase {
         conn = new DummyBaseFtpConnection(dch);
         cm = new DummyConnectionManager();
         cm.setGlobalContext(gctx);
-
-        conn.setConnectionManager(cm);
+        conn.setGlobalConext(gctx);
+        gctx.setConnectionManager(cm);
     }
 
     protected void tearDown() throws Exception {

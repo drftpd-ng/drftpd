@@ -38,6 +38,8 @@ import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -46,7 +48,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author zubov
-  * @version $Id: Stats.java,v 1.8 2004/08/03 20:13:55 zubov Exp $
+  * @version $Id: Stats.java,v 1.9 2004/10/03 16:13:51 mog Exp $
  */
 public class Stats extends GenericCommandAutoService
     implements IRCPluginInterface {
@@ -106,7 +108,7 @@ public class Stats extends GenericCommandAutoService
             destination = msgc.getDest();
         }
 
-        List users = null;
+        Collection users = null;
 
         try {
             users = _cm.getGlobalContext().getUserManager().getAllUsers();
@@ -119,11 +121,12 @@ public class Stats extends GenericCommandAutoService
 
         int number = fixNumberAndUserlist(msgc.getMessage(), users);
 
-        Collections.sort(users, new UserComparator(type));
+        ArrayList users2 = new ArrayList(users);
+        Collections.sort(users2, new UserComparator(type));
 
         int i = 0;
 
-        for (Iterator iter = users.iterator(); iter.hasNext();) {
+        for (Iterator iter = users2.iterator(); iter.hasNext();) {
             if (++i > number) {
                 break;
             }
@@ -187,7 +190,7 @@ public class Stats extends GenericCommandAutoService
         }
     }
 
-    public static int fixNumberAndUserlist(String params, List userList) {
+    public static int fixNumberAndUserlist(String params, Collection userList) {
         int number = 10;
         com.Ostermiller.util.StringTokenizer st = new com.Ostermiller.util.StringTokenizer(params);
         st.nextToken(); // !alup

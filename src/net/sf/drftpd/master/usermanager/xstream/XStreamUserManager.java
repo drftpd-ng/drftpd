@@ -36,13 +36,13 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 
 /**
  * @author mog
- * @version $Id: XStreamUserManager.java,v 1.7 2004/08/03 20:14:01 zubov Exp $
+ * @version $Id: XStreamUserManager.java,v 1.8 2004/10/03 16:13:54 mog Exp $
  */
 public class XStreamUserManager extends UserManager {
     private static final Logger logger = Logger.getLogger(XStreamUserManager.class.getName());
@@ -97,7 +97,7 @@ public class XStreamUserManager extends UserManager {
         getUserFile(username).delete();
     }
 
-    public List getAllUsers() throws UserFileException {
+    public Collection getAllUsers() throws UserFileException {
         ArrayList users = new ArrayList();
         String[] userpaths = userpathFile.list();
 

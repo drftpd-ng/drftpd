@@ -23,12 +23,12 @@ import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.master.usermanager.UserManager;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 
 
 /**
  * @author mog
- * @version $Id: DummyUserManager.java,v 1.3 2004/08/03 20:14:10 zubov Exp $
+ * @version $Id: DummyUserManager.java,v 1.4 2004/10/03 16:13:58 mog Exp $
  */
 public class DummyUserManager extends UserManager {
     private User _user;
@@ -41,6 +41,13 @@ public class DummyUserManager extends UserManager {
         throw new UnsupportedOperationException();
     }
 
+    public User create(String username) throws UserFileException {
+        DummyUser u = new DummyUser(username, this);
+        add(u);
+
+        return u;
+    }
+
     public void delete(String string) {
         throw new UnsupportedOperationException();
     }
@@ -49,23 +56,17 @@ public class DummyUserManager extends UserManager {
         throw new UnsupportedOperationException();
     }
 
-    public List getAllUsers() throws UserFileException {
-        throw new UnsupportedOperationException();
-    }
-
-    public Collection getAllUsersByGroup(String group)
-        throws UserFileException {
-        throw new UnsupportedOperationException();
-    }
-
-    public User getUserByName(String name)
-        throws NoSuchUserException, UserFileException {
-        return _user;
+    public void add(User user) {
+        _users.put(user.getUsername(), user);
     }
 
     public User getUserByNameUnchecked(String username)
         throws NoSuchUserException, UserFileException {
         throw new UnsupportedOperationException();
+    }
+
+    public User getUserByName(String username) {
+        return _user;
     }
 
     public void init(ConnectionManager mgr) {
@@ -78,5 +79,9 @@ public class DummyUserManager extends UserManager {
 
     public void setUser(User user) {
         _user = user;
+    }
+
+    public Collection getAllUsers() throws UserFileException {
+        return Collections.unmodifiableCollection(_users.values());
     }
 }

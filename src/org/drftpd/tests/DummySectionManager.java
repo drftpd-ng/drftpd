@@ -67,6 +67,10 @@ public class DummySectionManager implements SectionManagerInterface {
                     return dir;
                 }
             }
+
+            public LinkedRemoteFileInterface getBaseFile() {
+                return getFile();
+            }
         };
 
     public DummySectionManager(LinkedRemoteFileInterface sectionDir) {

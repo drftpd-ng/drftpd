@@ -23,10 +23,8 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 
 
 /**
@@ -34,7 +32,7 @@ import java.util.List;
  * new user manager, we have to override this class.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya </a>
- * @version $Id: UserManager.java,v 1.23 2004/08/03 20:13:59 zubov Exp $
+ * @version $Id: UserManager.java,v 1.24 2004/10/03 16:13:53 mog Exp $
  */
 public abstract class UserManager {
     protected ConnectionManager _connManager;
@@ -94,7 +92,7 @@ public abstract class UserManager {
     /**
      * Get all user names in the system.
      */
-    public abstract List getAllUsers() throws UserFileException;
+    public abstract Collection getAllUsers() throws UserFileException;
 
     public Collection getAllUsersByGroup(String group)
         throws UserFileException {

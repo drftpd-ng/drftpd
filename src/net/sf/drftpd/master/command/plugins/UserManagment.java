@@ -62,7 +62,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  * @author zubov
- * @version $Id: UserManagment.java,v 1.46 2004/08/03 20:13:57 zubov Exp $
+ * @version $Id: UserManagment.java,v 1.47 2004/10/03 16:13:52 mog Exp $
  */
 public class UserManagment implements CommandHandler, CommandHandlerFactory {
     private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -196,10 +196,13 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             int users;
 
             try {
-                users = conn.getConnectionManager().getGlobalContext()
-                            .getUserManager()
+                users = conn.getGlobalContext().getUserManager()
                             .getAllUsersByGroup(conn.getUserNull().getGroupName())
                             .size();
+                logger.debug("Group " + conn.getUserNull().getGroupName() +
+                    " is " +
+                    conn.getGlobalContext().getUserManager().getAllUsersByGroup(conn.getUserNull()
+                                                                                    .getGroupName()));
 
                 if (users >= conn.getUserNull().getGroupSlots()) {
                     return new FtpReply(200,
@@ -233,8 +236,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             String pass = st.nextToken();
 
             //action, no more NoSuchElementException below here
-            newUser = conn.getConnectionManager().getGlobalContext()
-                          .getUserManager().create(newUsername);
+            newUser = conn.getGlobalContext().getUserManager().create(newUsername);
             newUser.setPassword(pass);
             response.addComment(conn.jprintf(UserManagment.class.getName(),
                     "adduser.success", env));

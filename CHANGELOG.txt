@@ -1,3 +1,9 @@
+2004/10/03 Morgan Christiansson <drftpd@mog.se>
+* Fixed SITE SEARCH to require all arguments to match instead of requiring any
+  argument to match.
+* Fixed LinkedRemoteFile.createDirectories()
+  Added automatic creation of <sectionname>-NOW symlink.
+
 2004/09/24 Morgan Christiansson <drftpd@mog.se>
 * Changed decimal format for bytes formatting to always use dot (.).
   This fixes broken testcase, some ppl might not want . however.

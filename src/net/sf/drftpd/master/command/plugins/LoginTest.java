@@ -47,7 +47,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: LoginTest.java,v 1.10 2004/08/03 20:13:57 zubov Exp $
+ * @version $Id: LoginTest.java,v 1.11 2004/10/03 16:13:52 mog Exp $
  */
 public class LoginTest extends TestCase {
     private static final Logger logger = Logger.getLogger(LoginTest.class);
@@ -83,7 +83,10 @@ public class LoginTest extends TestCase {
             };
 
         cm.setGlobalContext(gctx);
-        _conn.setConnectionManager(cm);
+        gctx.setConnectionManager(cm);
+        _conn.setGlobalConext(gctx);
+
+        //_conn.setConnectionManager(cm);
     }
 
     public void setUp() {

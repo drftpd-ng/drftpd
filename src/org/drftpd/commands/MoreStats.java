@@ -44,6 +44,7 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -51,7 +52,7 @@ import java.util.List;
 
 /*
  * @author iamn
- * @version $Id: MoreStats.java,v 1.2 2004/09/12 01:24:39 zubov Exp $
+ * @version $Id: MoreStats.java,v 1.3 2004/10/03 16:13:56 mog Exp $
  */
 public class MoreStats implements CommandHandlerFactory, CommandHandler {
     public static final int PERIOD_DAILY = Calendar.DAY_OF_MONTH; // = 5
@@ -178,7 +179,7 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
         String type = command.substring("SITE G".length()).toUpperCase();
 
         ArrayList grpList = new ArrayList();
-        List users;
+        Collection users;
 
         try {
             users = conn.getConnectionManager().getGlobalContext()
@@ -321,7 +322,7 @@ public class MoreStats implements CommandHandlerFactory, CommandHandler {
     private FtpReply doSITE_TRAFFIC(BaseFtpConnection conn) {
         FtpReply response = new FtpReply(200, "OK");
 
-        List users;
+        Collection users;
 
         try {
             users = conn.getConnectionManager().getGlobalContext()

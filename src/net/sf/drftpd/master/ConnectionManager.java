@@ -54,7 +54,7 @@ import java.util.TimerTask;
 
 
 /**
- * @version $Id: ConnectionManager.java,v 1.116 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: ConnectionManager.java,v 1.117 2004/10/03 16:13:51 mog Exp $
  */
 public class ConnectionManager {
     public static final int idleTimeout = 300;
@@ -62,7 +62,6 @@ public class ConnectionManager {
     private CommandManagerFactory _commandManagerFactory;
     private List _conns = Collections.synchronizedList(new ArrayList());
     protected GlobalContext _gctx;
-    private Timer _timer;
 
     protected ConnectionManager() {
     }
@@ -71,7 +70,6 @@ public class ConnectionManager {
         String cfgFileName, String slaveCfgFileName) {
         _gctx = new GlobalContext(cfg, slaveCfg, cfgFileName, slaveCfgFileName,
                 this);
-        _timer = new Timer();
 
         // start socket slave manager
 
@@ -265,7 +263,7 @@ public class ConnectionManager {
     }
 
     public Timer getTimer() {
-        return _timer;
+        return getGlobalContext().getTimer();
     }
 
     private void loadTimer() {
@@ -276,7 +274,7 @@ public class ConnectionManager {
             };
 
         //run every 10 seconds
-        _timer.schedule(timerLogoutIdle, 10 * 1000, 10 * 1000);
+        getTimer().schedule(timerLogoutIdle, 10 * 1000, 10 * 1000);
 
         TimerTask timerSave = new TimerTask() {
                 public void run() {
@@ -291,7 +289,7 @@ public class ConnectionManager {
             };
 
         //run every hour 
-        _timer.schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
+        getTimer().schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
     }
 
     public void reload() {
@@ -358,7 +356,7 @@ public class ConnectionManager {
             return;
         }
 
-        BaseFtpConnection conn = new BaseFtpConnection(this, sock);
+        BaseFtpConnection conn = new BaseFtpConnection(getGlobalContext(), sock);
         _conns.add(conn);
         conn.start();
     }

@@ -79,7 +79,7 @@ import javax.net.ssl.SSLSocketFactory;
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.62 2004/08/03 20:13:57 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.63 2004/10/03 16:13:52 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandlerFactory,
     CommandHandler, Cloneable {
@@ -1264,10 +1264,10 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                     _transferFile.delete();
                     logger.error("IOException during transfer, deleting file",
                         ex);
-                    reply = new FtpReply(426, "IOException, deleting file");
+                    reply = new FtpReply(426, "Transfer failed, deleting file");
                 } else {
                     logger.error("IOException during transfer", ex);
-                    reply = new FtpReply(426, "IOException during transfer");
+                    reply = new FtpReply(426, ex.getMessage());
                 }
 
                 reply.addComment(ex.getLocalizedMessage());

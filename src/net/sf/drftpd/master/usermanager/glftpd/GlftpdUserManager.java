@@ -31,6 +31,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -39,7 +40,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  * @author zubov
- * @version $Id: GlftpdUserManager.java,v 1.18 2004/08/03 20:14:00 zubov Exp $
+ * @version $Id: GlftpdUserManager.java,v 1.19 2004/10/03 16:13:53 mog Exp $
  */
 public class GlftpdUserManager extends UserManager {
     private static final Logger logger = Logger.getLogger(GlftpdUserManager.class.getName());
@@ -83,7 +84,7 @@ public class GlftpdUserManager extends UserManager {
         throw new UnsupportedOperationException();
     }
 
-    public List getAllUsers() throws UserFileException {
+    public Collection getAllUsers() throws UserFileException {
         if (!userpathFile.exists()) {
             throw new UserFileException(userpathFile + " not found");
         }

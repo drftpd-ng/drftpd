@@ -45,7 +45,7 @@ import javax.net.SocketFactory;
 
 /**
  * @author mog
- * @version $Id: DummyBaseFtpConnection.java,v 1.8 2004/08/03 20:14:10 zubov Exp $
+ * @version $Id: DummyBaseFtpConnection.java,v 1.9 2004/10/03 16:13:58 mog Exp $
  */
 public class DummyBaseFtpConnection extends BaseFtpConnection {
     private InetAddress _clientAddress;
@@ -96,14 +96,6 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 
     public CommandManager getCommandManager() {
         throw new UnsupportedOperationException();
-    }
-
-    public ConnectionManager getConnectionManager() {
-        if (_cm == null) {
-            throw new NullPointerException();
-        }
-
-        return _cm;
     }
 
     public Socket getControlSocket() {
@@ -205,10 +197,6 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
         _clientAddress = clientAddress;
     }
 
-    public void setConnectionManager(ConnectionManager manager) {
-        _cm = manager;
-    }
-
     /* (non-Javadoc)
      * @see net.sf.drftpd.master.BaseFtpConnection#setControlSocket(java.net.Socket)
      */
@@ -257,5 +245,9 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
      */
     public String toString() {
         throw new UnsupportedOperationException();
+    }
+
+    public void setGlobalConext(DummyGlobalContext gctx) {
+        _gctx = gctx;
     }
 }

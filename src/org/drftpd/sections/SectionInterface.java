@@ -24,11 +24,16 @@ import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: SectionInterface.java,v 1.4 2004/08/03 20:14:06 zubov Exp $
+ * @version $Id: SectionInterface.java,v 1.5 2004/10/03 16:13:56 mog Exp $
  */
 public interface SectionInterface {
     /**
-     * @return the (current) directory for this section
+     * @return the base directory for this section.
+     */
+    public LinkedRemoteFileInterface getBaseFile();
+
+    /**
+     * @return the (current) directory for this section.
      */
     public LinkedRemoteFileInterface getFile();
 

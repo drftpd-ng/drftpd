@@ -21,6 +21,8 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.drftpd.GlobalContext;
+
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
 
@@ -36,7 +38,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: SectionManager.java,v 1.6 2004/09/25 03:48:41 mog Exp $
+ * @version $Id: SectionManager.java,v 1.7 2004/10/03 16:13:57 mog Exp $
  */
 public class SectionManager implements SectionManagerInterface {
     private static final Class[] CONSTRUCTOR_SIG = new Class[] {
@@ -126,5 +128,9 @@ public class SectionManager implements SectionManagerInterface {
 
     public SectionInterface lookup(LinkedRemoteFileInterface file) {
         return lookup(file.getPath());
+    }
+
+    public GlobalContext getGlobalContext() {
+        return _mgr.getGlobalContext();
     }
 }
