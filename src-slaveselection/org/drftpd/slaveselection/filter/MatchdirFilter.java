@@ -39,7 +39,7 @@ import org.drftpd.usermanager.User;
  * Example slaveselection entry:
  * <pre>
  * <n>.filter=matchdir
- * <n>.assignslave=<slavename>+100000
+ * <n>.assign=<slavename>+100000
  * <n>.match=<path glob match>
  * </pre>
  *
