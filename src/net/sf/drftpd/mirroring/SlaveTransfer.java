@@ -19,13 +19,10 @@ package net.sf.drftpd.mirroring;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
-
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.Transfer;
-
 import org.apache.log4j.Logger;
-
 /**
  * @author mog
  * @author zubov
@@ -38,7 +35,6 @@ public class SlaveTransfer {
 		public DstXfer(Transfer dstxfer) {
 			this.dstxfer = dstxfer;
 		}
-
 		public long getChecksum() throws RemoteException {
 			return dstxfer.getChecksum();
 		}
@@ -48,34 +44,26 @@ public class SlaveTransfer {
 		public int getLocalPort() throws RemoteException {
 			return dstxfer.getLocalPort();
 		}
-
 		public void run() {
 			try {
-				dstxfer.receiveFile(
-					_file.getParent(),
-					'I',
-					_file.getName(),
-					0L);
+				_file.receiveFile(dstxfer, 'I', 0L);
 			} catch (Throwable e) {
 				this.e = e;
 			}
 		}
 	}
-
 	class SrcXfer extends Thread {
 		private Throwable e;
 		private Transfer srcxfer;
 		public SrcXfer(Transfer srcxfer) {
 			this.srcxfer = srcxfer;
 		}
-
 		public long getChecksum() throws RemoteException {
 			return srcxfer.getChecksum();
 		}
-
 		public void run() {
 			try {
-				srcxfer.sendFile(_file.getPath(), 'I', 0L, true);
+				_file.sendFile(srcxfer, 'I', 0L);
 			} catch (Throwable e) {
 				this.e = e;
 			}
@@ -90,10 +78,8 @@ public class SlaveTransfer {
 	/**
 	 * Slave to Slave Transfers
 	 */
-	public SlaveTransfer(
-		LinkedRemoteFile file,
-		RemoteSlave sourceSlave,
-		RemoteSlave destSlave) {
+	public SlaveTransfer(LinkedRemoteFile file, RemoteSlave sourceSlave,
+			RemoteSlave destSlave) {
 		_file = file;
 		_sourceSlave = sourceSlave;
 		_destSlave = destSlave;
@@ -112,20 +98,17 @@ public class SlaveTransfer {
 	}
 	/**
 	 * Returns true if the crc passed, false otherwise
-	 * @return
-	 * @throws IOException
+	 * 
+	 * @return @throws
+	 *         IOException
 	 */
 	public boolean transfer(boolean checkCRC) throws IOException {
 		DstXfer dstxfer = new DstXfer(_destSlave.getSlave().listen(false));
-		SrcXfer srcxfer =
-			new SrcXfer(
-				_sourceSlave.getSlave().connect(
-					new InetSocketAddress(
-						_destSlave.getInetAddress(),
-						dstxfer.getLocalPort()),
-					false));
+		SrcXfer srcxfer = new SrcXfer(_sourceSlave.getSlave().connect(
+				new InetSocketAddress(_destSlave.getInetAddress(), dstxfer
+						.getLocalPort()), false));
 		dstxfer.start();
-		srcxfer.run();
+		srcxfer.start();
 		while (srcxfer.isAlive() && dstxfer.isAlive()) {
 			try {
 				Thread.sleep(100);
@@ -146,15 +129,10 @@ public class SlaveTransfer {
 			// crc passes if we're not using it
 			return true;
 		}
-		if (dstxfer.getChecksum() == 0) {
-			_file.addSlave(_destSlave);
-			return true;
-		}
-		if (_file.getCheckSumCached() == dstxfer.getChecksum()) {
-			_file.addSlave(_destSlave);
-			return true;
-		}
-		if (_file.getCheckSumCached() == _destSlave.getSlave().checkSum(_file.getPath())) {
+		if (dstxfer.getChecksum() == 0
+				|| _file.getCheckSumCached() == dstxfer.getChecksum()
+				|| _file.getCheckSumCached() == _destSlave.getSlave().checkSum(
+						_file.getPath())) {
 			_file.addSlave(_destSlave);
 			return true;
 		}

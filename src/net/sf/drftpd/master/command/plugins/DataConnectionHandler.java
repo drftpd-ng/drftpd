@@ -67,7 +67,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.43 2004/02/16 14:41:43 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.44 2004/02/21 05:28:20 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -1226,18 +1226,9 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				//TODO ABORtable transfers
 				if (isRetr) {
 					status =
-						_transfer.sendFile(
-							_transferFile.getPath(),
-							getType(),
-							_resumePosition,
-							true);
+					_transferFile.sendFile(_transfer,getType(),_resumePosition);
 				} else if (isStor) {
-					status =
-						_transfer.receiveFile(
-							targetDir.getPath(),
-							getType(),
-							targetFileName,
-							_resumePosition);
+					status = _transferFile.receiveFile(_transfer,getType(),_resumePosition);
 				} else {
 					throw new RuntimeException();
 				}

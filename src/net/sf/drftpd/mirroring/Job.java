@@ -26,7 +26,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: Job.java,v 1.7 2004/02/11 03:58:37 zubov Exp $
+ * @version $Id: Job.java,v 1.8 2004/02/21 05:28:21 zubov Exp $
  */
 public class Job {
 	protected ArrayList _destSlaves;
@@ -132,7 +132,7 @@ public class Job {
 	public String toString() {
 		String toReturn =
 			"Job[file="
-				+ getFile().getPath()
+				+ getFile()
 				+ ",dest="
 				+ getDestinationSlaves()
 				+ ",owner=";

@@ -16,53 +16,44 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package net.sf.drftpd.mirroring;
-
 import org.apache.log4j.Logger;
-
 import net.sf.drftpd.master.RemoteSlave;
-
 /**
  * @author zubov
- * @version $Id: JobManagerThread.java,v 1.9 2004/02/10 00:03:14 mog Exp $
+ * @version $Id: JobManagerThread.java,v 1.10 2004/02/21 05:28:21 zubov Exp $
  */
 public class JobManagerThread extends Thread {
-	private static final Logger logger =
-		Logger.getLogger(JobManagerThread.class);
+	private static final Logger logger = Logger
+			.getLogger(JobManagerThread.class);
 	private JobManager _jm;
-
 	private RemoteSlave _rslave;
 	private boolean stopped = false;
-
-	public JobManagerThread() {
-	}
-
 	/**
-	 * This class repeatedly calls JobManager.processJob() for its respective RemoteSlave
+	 * This class repeatedly calls JobManager.processJob() for its respective
+	 * RemoteSlave
 	 */
 	public JobManagerThread(RemoteSlave rslave, JobManager jm) {
 		_rslave = rslave;
 		_jm = jm;
 	}
-
 	public RemoteSlave getRSlave() {
 		return _rslave;
 	}
-
 	public void run() {
 		logger.debug("JobManagerThread started for " + _rslave.getName());
+		setName("JobManagerThread for " + _rslave.getName());
 		while (true) {
 			if (stopped) {
-				logger.debug(
-					"JobManagerThread stopped for " + _rslave.getName());
+				logger.debug("JobManagerThread stopped for "
+						+ _rslave.getName());
 				return;
 			}
+			logger.debug("About to run processJob() loop");
 			try {
 				while (_jm.processJob(_rslave));
 			} catch (RuntimeException e1) {
-				logger.debug(
-					"Caught RunTimeException in processJob for "
-						+ _rslave.getName(),
-					e1);
+				logger.debug("Caught RunTimeException in processJob for "
+						+ _rslave.getName(), e1);
 			}
 			try {
 				Thread.sleep(60000);
@@ -70,7 +61,6 @@ public class JobManagerThread extends Thread {
 			}
 		}
 	}
-
 	public void stopme() {
 		stopped = true;
 	}

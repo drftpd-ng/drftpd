@@ -38,7 +38,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
  * CommandHandler plugin for viewing and manipulating the JobManager queue.
  * 
  * @author mog
- * @version $Id: JobManagerCommandHandler.java,v 1.6 2004/02/12 21:52:31 zubov Exp $
+ * @version $Id: JobManagerCommandHandler.java,v 1.7 2004/02/21 05:28:21 zubov Exp $
  */
 public class JobManagerCommandHandler implements CommandHandler {
 
@@ -97,10 +97,13 @@ public class JobManagerCommandHandler implements CommandHandler {
 		if (!conn.getUserNull().isAdmin())
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		FtpReply reply = new FtpReply(200);
+		int count = 0;
 		List jobs = new ArrayList(conn.getConnectionManager().getJobManager().getAllJobs());
 		for (Iterator iter = jobs.iterator(); iter.hasNext();) {
 			reply.addComment(((Job) iter.next()).toString());
+			count ++;
 		}
+		reply.addComment("There are " + count + " jobs in all");
 		return reply;
 	}
 

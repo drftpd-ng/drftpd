@@ -42,6 +42,7 @@ import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.Transfer;
+import net.sf.drftpd.slave.TransferStatus;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -50,7 +51,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.117 2004/02/18 01:27:30 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.118 2004/02/21 05:28:21 zubov Exp $
  */
 public class LinkedRemoteFile
 	implements RemoteFileInterface, Serializable, Comparable {
@@ -224,6 +225,12 @@ public class LinkedRemoteFile
 			throw new RuntimeException();
 		}
 		//parent == null if creating root dir
+	}
+	public TransferStatus receiveFile(Transfer transfer, char type, long offset) throws IOException {
+		return transfer.receiveFile(getParent(),type,getName(),offset);
+	}
+	public TransferStatus sendFile(Transfer transfer, char type, long offset) throws IOException {
+		return transfer.sendFile(getPath(),type,offset);
 	}
 
 	/**

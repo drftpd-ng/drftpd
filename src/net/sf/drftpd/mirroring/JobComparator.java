@@ -21,7 +21,7 @@ import java.util.Comparator;
 
 /**
  * @author zubov
- * @version $Id: JobComparator.java,v 1.3 2004/02/10 00:03:14 mog Exp $
+ * @version $Id: JobComparator.java,v 1.4 2004/02/21 05:28:21 zubov Exp $
  *
  */
 public class JobComparator implements Comparator {
@@ -38,12 +38,17 @@ public class JobComparator implements Comparator {
 	public int compare(Object arg0, Object arg1) {
 		Job job1 = (Job) arg0;
 		Job job2 = (Job) arg1;
+		if (job1.getPriority() > job2.getPriority())
+			return -1;
+		if (job1.getPriority() < job2.getPriority())
+			return 1;
 		if (job1.getTimeCreated() < job2.getTimeCreated()) { //older
 			return -1;
 		}
 		if (job1.getTimeCreated() > job2.getTimeCreated()) { //younger
 			return 1;
 		}
+		// same priority, and same time
 		return 0;
 	}
 

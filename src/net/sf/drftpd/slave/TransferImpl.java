@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.41 2004/02/18 14:24:05 zubov Exp $
+ * @version $Id: TransferImpl.java,v 1.42 2004/02/21 05:28:22 zubov Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private static final Logger logger = Logger.getLogger(TransferImpl.class);
@@ -57,7 +57,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private long _transfered = 0;
 	private SlaveImpl _slave;
 	/**
-	 * Start undefined passive transfer.
+	 * Start undefined transfer.
 	 */
 	public TransferImpl(Connection conn, SlaveImpl slave)
 		throws RemoteException {
@@ -84,13 +84,12 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	public TransferStatus sendFile(
 		String path,
 		char type,
-		long resumePosition,
-		boolean doChecksum)
+		long resumePosition)
 		throws IOException {
 		_direction = TRANSFER_SENDING_DOWNLOAD;
 
 		_in = new FileInputStream(_slave.getRoots().getFile(path));
-		if (doChecksum && _slave.getDownloadChecksums()) {
+		if (_slave.getDownloadChecksums()) {
 			_checksum = new CRC32();
 			_in = new CheckedInputStream(_in, _checksum);
 		}
