@@ -2,6 +2,7 @@ package net.sf.drftpd;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Vector;
 import java.util.Hashtable;
@@ -11,7 +12,6 @@ import java.util.Enumeration;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-import net.sf.drftpd.RemoteSlave;
 
 /**
  * @author mog
@@ -21,12 +21,8 @@ import net.sf.drftpd.RemoteSlave;
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-public abstract class RemoteFile {
+public abstract class RemoteFile implements Serializable {
 
-	public RemoteFile() {
-		
-	}
-	
 	protected Vector slaves;
 	public void addSlave(RemoteSlave slave) {
 		slaves.add(slave);
@@ -115,20 +111,21 @@ public abstract class RemoteFile {
 		StringBuffer ret = new StringBuffer();
 		ret.append("[net.sf.drftpd.RemoteFile[");
 		//ret.append(slaves);
-		Enumeration e = slaves.elements();
-		ret.append("slaves:[");
-		while (e.hasMoreElements()) {
-			//[endpoint:[213.114.146.44:2012](remote),objID:[2b6651:ef0b3c7162:-8000, 0]]]]]
-			Pattern p = Pattern.compile("endpoint:\\[(.*?):.*?\\]");
-			Matcher m = p.matcher(e.nextElement().toString());
-			m.find();
-			ret.append(m.group(1));
-			//ret.append(e.nextElement());
-			if (e.hasMoreElements())
-				ret.append(",");
+		if (slaves != null) {
+			Enumeration e = slaves.elements();
+			ret.append("slaves:[");
+			while (e.hasMoreElements()) {
+				//[endpoint:[213.114.146.44:2012](remote),objID:[2b6651:ef0b3c7162:-8000, 0]]]]]
+				Pattern p = Pattern.compile("endpoint:\\[(.*?):.*?\\]");
+				Matcher m = p.matcher(e.nextElement().toString());
+				m.find();
+				ret.append(m.group(1));
+				//ret.append(e.nextElement());
+				if (e.hasMoreElements())
+					ret.append(",");
+			}
+			ret.append("]");
 		}
-		ret.append("]");
-		//ret.append("isDirectory(): " + isDirectory() + " ");
 		if (isDirectory())
 			ret.append("[directory: true]");
 		//ret.append("isFile(): " + isFile() + " ");
@@ -141,15 +138,6 @@ public abstract class RemoteFile {
 	 * separatorChar is always "/" as "/" is always used in FTP.
 	 */
 	public static final char separatorChar = '/';
-
-	/**
-	 * A remote file never exists locally, therefore we return false.
-	 * If the current RemoteSlave has the file this call could return true
-	 * but as we don't know the root directory it's not possible right now.
-	 */
-	public boolean exists() {
-		return false;
-	}
 
 	/////////////////////// abstract ////////////////////////////
 	/**

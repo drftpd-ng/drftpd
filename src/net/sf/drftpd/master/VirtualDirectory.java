@@ -172,7 +172,7 @@ public class VirtualDirectory {
 			ex.printStackTrace();
 			return false;
 		}
-		if (dirFl.exists() && dirFl.isDirectory()) {
+		if (dirFl.isDirectory()) {
 			mstCurrDir = physicalDir.substring(mstRoot.length() - 1).trim();
 			mstCurrDir = removeLastSlash(mstCurrDir);
 			return true;

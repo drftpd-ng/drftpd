@@ -23,18 +23,15 @@ import java.util.regex.Matcher;
 import org.apache.oro.text.regex.Perl5Compiler;
 import socks.server.Ident;
 
+import net.sf.drftpd.RemoteFile;
 import net.sf.drftpd.RemoteSlave;
 import net.sf.drftpd.LinkedRemoteFile;
+import net.sf.drftpd.StaticRemoteFile;
 import net.sf.drftpd.master.usermanager.*;
-
-/*
-import ranab.io.IoUtils;
-import ranab.io.StreamConnector;
-*/
 
 /**
  * This class handles each ftp connection. Here all the ftp command
- * methods take two arguments - a ftp request and a writer object. 
+ * methods take two arguments - a FtpRequest and a PrintWriter object. 
  * This is the main backbone of the ftp server.
  * <br>
  * The ftp command method signature is: 
@@ -56,7 +53,6 @@ public class FtpConnection extends BaseFtpConnection {
 	private boolean mbRenFr = false;
 	private String mstRenFr = null;
 
-	private LinkedRemoteFile root;
 	//	private boolean mbUser = false;
 	private boolean mbPass = false;
 	private UserManager usermanager;
@@ -1054,11 +1050,12 @@ public class FtpConnection extends BaseFtpConnection {
 		//fileName = mUser.getVirtualDirectory().getAbsoluteName(fileName);
 		//String physicalName = mUser.getVirtualDirectory().getPhysicalName(fileName);
 		//File requestedFile = new File(physicalName);
-		LinkedRemoteFile requestedFile =
-			getVirtualDirectory().getAbsoluteFile(fileName);
+		RemoteFile requestedFile =
+			new StaticRemoteFile(getVirtualDirectory().getAbsoluteFile(fileName));
 		//String args[] = { fileName };
 		if(user.getCredits() < requestedFile.length()) {
-			
+			out.write(mFtpStatus.getResponse(550, request, user, null));
+			return;
 		}
 		// check permission
 		/*

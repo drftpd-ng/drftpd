@@ -77,6 +77,7 @@ public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 			return;
 		}
 		try {
+			System.out.println("manager.addSlave() root: "+root);
 			manager.addSlave(slave, root);
 		} catch(RemoteException ex) {
 			ex.printStackTrace();
@@ -84,35 +85,28 @@ public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 	}
 
 	public static LinkedRemoteFile getDefaultRoot(Properties cfg, RemoteSlave slave) {
-			File lroot = new File(cfg.getProperty("slave.root"));
-			if (!lroot.isDirectory()) {
+			File root = new File(cfg.getProperty("slave.root"));
+			if (!root.isDirectory()) {
 				System.out.println(
-					"slave.root = " + lroot.getPath() + " is not a directory!");
+					"slave.root = " + root.getPath() + " is not a directory!");
 				System.exit(-1);
 				return null;
 			}
-			return new LinkedRemoteFile(slave, lroot);		
+			LinkedRemoteFile rroot = new LinkedRemoteFile(slave, root);
+			return rroot;
 	}
 	//public void doPassiveTransfer(RemoteFile file) {}
 
 	public void doConnectSend(
-		RemoteFile file,
+		RemoteFile rfile,
 		long offset,
 		InetAddress address,
 		int port)
 		throws FileNotFoundException, ConnectException {
-		doConnectSend(file.getPath(), offset, address, port);
-	}
+//		doConnectSend(file.getPath(), offset, address, port);
 
-	public void doConnectSend(
-		String path,
-		long offset,
-		InetAddress address,
-		int port)
-		throws FileNotFoundException, ConnectException {
-		//cfg.getProperty("slave.root") +
-		File file = new File(path);
-		//System.out.println("SEND "+cfg.getProperty("slave.root")+path);
+		File file = new File(cfg.getProperty("slave.root") + rfile.getPath());
+		if(!file.exists()) throw new FileNotFoundException("File "+file+" not found, Remotefile: "+rfile);
 		try {
 			Socket sock;
 			sock = new Socket(address, port);
@@ -133,6 +127,15 @@ public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 		} catch (Throwable ex) {
 			ex.printStackTrace();
 		}
+	}
+
+	public void doConnectSend(
+		String path,
+		long offset,
+		InetAddress address,
+		int port)
+		throws FileNotFoundException, ConnectException {
+
 	}
 
 	private long transfer(InputStream is, OutputStream os) throws IOException {

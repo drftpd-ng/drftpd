@@ -37,13 +37,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		length = 0;
 		isDirectory = true;
 		isFile = false;
-		//path = "/";
 		parent = null;
-		/*
-		 * is this the right name to set? maybe null or "/" is more approperiate?
-		 * if name is / the filename splitting methods will get wierd results.
-		 * if name is null NullPointerException might occur
-		 */
 		name = "";
 		files = new Hashtable();
 		slaves = new Vector(1); // there will always be at least 1 RemoteSlave.
@@ -60,7 +54,10 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 * Creates a RemoteFile from file or creates a directory tree representation.
 	 * @param file file that this RemoteFile object should represent.
 	 */
-	public LinkedRemoteFile(RemoteSlave slave, LinkedRemoteFile parent, File file) {
+	public LinkedRemoteFile(
+		RemoteSlave slave,
+		LinkedRemoteFile parent,
+		File file) {
 		canRead = file.canRead();
 		canWrite = file.canWrite();
 		lastModified = file.lastModified();
@@ -68,9 +65,9 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		//isHidden = file.isHidden();
 		isDirectory = file.isDirectory();
 		isFile = file.isFile();
-		if(parent == null) {
+		if (parent == null) {
 			name = "";
-		} else {	
+		} else {
 			name = file.getName();
 		}
 		//path = file.getPath();
@@ -85,7 +82,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			try {
 				if (!file.getCanonicalPath().equals(file.getAbsolutePath())) {
 					System.out.println(
-						"NOT following possible symlink: " + file.getAbsolutePath());
+						"NOT following possible symlink: "
+							+ file.getAbsolutePath());
 					return;
 				}
 			} catch (Exception ex) {
@@ -114,7 +112,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			Stack dirstack = new Stack();
 			for (int i = 0; i < dir.length; i++) {
 				File file2 = dir[i];
-//				System.out.println("III " + file2);
+				//				System.out.println("III " + file2);
 				if (file2.isDirectory()) {
 					dirstack.push(file2);
 					continue;
@@ -148,33 +146,39 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			while (e.hasMoreElements()) {
 				File file2 = (File) e.nextElement();
 				String filename = file2.getName();
-//				System.out.println(">>> " + file2.getName());
+				//				System.out.println(">>> " + file2.getName());
 				if (oldtable != null) {
-					LinkedRemoteFile oldfile = (LinkedRemoteFile) oldtable.get(filename);
+					LinkedRemoteFile oldfile =
+						(LinkedRemoteFile) oldtable.get(filename);
 					if (oldfile != null) {
 						files.put(filename, oldfile);
 					} else {
-						files.put(filename, new LinkedRemoteFile(slave, this, file2));
+						files.put(
+							filename,
+							new LinkedRemoteFile(slave, this, file2));
 					}
 				} else {
-					files.put(filename, new LinkedRemoteFile(slave, this, file2));
+					files.put(
+						filename,
+						new LinkedRemoteFile(slave, this, file2));
 				}
 			}
-			System.out.println(
-				"<< finished adding " + getPath() + " [" + files.size() + " entries]");
 		} /* serialize directory */
 	}
 
 	public LinkedRemoteFile[] listFiles() {
-		return (LinkedRemoteFile[]) files.values().toArray(new LinkedRemoteFile[0]);
+		return (LinkedRemoteFile[]) files.values().toArray(
+			new LinkedRemoteFile[0]);
 	}
 
-	public LinkedRemoteFile lookupFile(String path) throws FileNotFoundException {
+	public LinkedRemoteFile lookupFile(String path)
+		throws FileNotFoundException {
 		StringTokenizer st = new StringTokenizer(path, "/");
 		LinkedRemoteFile currfile = this;
 		while (st.hasMoreTokens()) {
 			String nextToken = st.nextToken();
-			currfile = (LinkedRemoteFile) currfile.getHashtable().get(nextToken);
+			currfile =
+				(LinkedRemoteFile) currfile.getHashtable().get(nextToken);
 			if (currfile == null)
 				throw new FileNotFoundException();
 		}
@@ -214,10 +218,10 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 
 	public String getPath() {
 		//return path;
-		StringBuffer path = new StringBuffer("/"+getName());
+		StringBuffer path = new StringBuffer("/" + getName());
 		LinkedRemoteFile parent = getParentFile();
 		while (parent != null && parent.getParentFile() != null) {
-			path.insert(0, "/"+parent.getName());
+			path.insert(0, "/" + parent.getName());
 			parent = parent.getParentFile();
 		}
 		return path.toString();
@@ -237,12 +241,20 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 */
 	public synchronized void merge(LinkedRemoteFile dir) {
 		if (!isDirectory())
-			throw new IllegalArgumentException("merge() called on a non-directory");
+			throw new IllegalArgumentException(
+				"merge() called on a non-directory: "
+					+ this
+					+ " argument: "
+					+ dir);
 		if (!dir.isDirectory())
-			throw new IllegalArgumentException("argument is not a directory");
+			throw new IllegalArgumentException(
+				"argument is not a directory: " + dir + " this: " + this);
 
 		Hashtable map = getHashtable();
 		Hashtable mergemap = dir.getHashtable();
+		if (mergemap == null)
+			return;
+		// remote directory wasn't added, it might have been a symlink.
 
 		System.out.println(
 			"Adding " + dir.getPath() + " with " + mergemap.size() + " files");
@@ -280,19 +292,14 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 				// 4 scenarios: new/existing file/directory
 				if (mergefile.isDirectory()) {
 					if (!file.isDirectory())
-						System.out.println(
-							"!!! WARNING: File/Directory conflict!!");
+						throw new RuntimeException("!!! WARNING: File/Directory conflict!!");
 					file.merge(mergefile);
 				} else {
 					if (file.isDirectory())
-						System.out.println(
-							"!!! WARNING: File/Directory conflict!!");
-					System.out.println("merge " + mergefile + " to " + file);
-					Collection slaves2 = mergefile.getSlaves();
-					//System.out.println("adding slaves: "+slaves2);
-					System.out.println(slaves2.size() + " slaves to add");
-					file.addSlaves(slaves2);
+						throw new RuntimeException("!!! WARNING: File/Directory conflict!!");
 				}
+				Collection slaves2 = mergefile.getSlaves();
+				file.addSlaves(slaves2);
 				System.out.println("Result file: " + file);
 				/*
 				System.out.println("Old file: "+map.get(filename));
