@@ -462,7 +462,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         // 1 = command
         // 2- = argument
         String[] commandArguments = new String[arguments.countTokens()];
-        String fullCommandArgument = new String();
+        String fullCommandArgument = "";
 
         for (int x = 0; arguments.hasMoreTokens(); x++) {
             commandArguments[x] = arguments.nextToken();
@@ -1459,10 +1459,10 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
     private Reply doSITE_DEBUG(BaseFtpConnection conn) throws ReplyException {
     	User user = conn.getUserNull();
     	if(!conn.getRequest().hasArgument()) {
-    		user.getKeyedMap().setObject(UserManagement.DEBUG, new Boolean(!user.getKeyedMap().getObjectBoolean(UserManagement.DEBUG)));
+    		user.getKeyedMap().setObject(UserManagement.DEBUG, Boolean.valueOf(!user.getKeyedMap().getObjectBoolean(UserManagement.DEBUG)));
     	} else {
     		String arg = conn.getRequest().getArgument();
-    		user.getKeyedMap().setObject(UserManagement.DEBUG, new Boolean(arg.equals("true") || arg.equals("on")));
+    		user.getKeyedMap().setObject(UserManagement.DEBUG, Boolean.valueOf(arg.equals("true") || arg.equals("on")));
     	}
     	try {
     		user.commit();

@@ -219,9 +219,9 @@ public class FtpConfig extends Observable implements ConfigInterface {
         String temp = null;
 
         if (_isLowerDir) {
-            temp = temp.toLowerCase();
+            temp = name.toLowerCase();
         } else {
-            temp = temp.toUpperCase();
+            temp = name.toUpperCase();
         }
 
         if (_capFirstDir) {
