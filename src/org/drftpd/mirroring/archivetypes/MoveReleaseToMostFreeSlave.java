@@ -30,9 +30,9 @@ import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
-/*
+/**
  * @author zubov
- * @version $Id
+ * @version $Id: MoveReleaseToMostFreeSlave.java,v 1.2 2004/04/23 00:47:24 mog Exp $
  */
 public class MoveReleaseToMostFreeSlave extends ArchiveType {
 

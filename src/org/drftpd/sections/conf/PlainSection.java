@@ -29,7 +29,7 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author mog
- * @version $Id: PlainSection.java,v 1.4 2004/03/26 12:24:05 mog Exp $
+ * @version $Id: PlainSection.java,v 1.5 2004/04/23 00:47:26 mog Exp $
  */
 public class PlainSection implements SectionInterface {
 
@@ -45,6 +45,7 @@ public class PlainSection implements SectionInterface {
 		_mgr = mgr;
 		_name = name;
 		_dir = path;
+		if(!_dir.endsWith("/")) _dir += "/";
 		//getFile();
 	}
 

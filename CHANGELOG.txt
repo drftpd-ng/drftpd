@@ -1,3 +1,8 @@
+2004/04/22 Morgan Christiansson <drftpd@mog.se>
+* Fixed racejoin SiteBot announcement.
+* Automatically add missing trailing / to configureable section paths.
+* Fixed SiteBotSSL.
+
 2004/04/21 Morgan Christiansson <drftpd@mog.se>
 * Improved transfer logging in DataConnectionHandler.
 * DatedSection.getPath() now calls .getFile() which creates dated directories.

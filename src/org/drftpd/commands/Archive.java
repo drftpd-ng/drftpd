@@ -21,12 +21,6 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import org.drftpd.mirroring.ArchiveHandler;
-import org.drftpd.mirroring.ArchiveType;
-import org.drftpd.plugins.SiteBot;
-import org.drftpd.sections.SectionInterface;
-import org.tanesha.replacer.ReplacerEnvironment;
-
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -36,6 +30,11 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+
+import org.drftpd.mirroring.ArchiveHandler;
+import org.drftpd.mirroring.ArchiveType;
+import org.drftpd.sections.SectionInterface;
+import org.tanesha.replacer.ReplacerEnvironment;
 
 /*
  * @author zubov
@@ -50,7 +49,7 @@ public class Archive implements CommandHandler {
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {
 		FtpReply reply = new FtpReply(200);
-		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		ReplacerEnvironment env = new ReplacerEnvironment();
 		if (!conn.getRequest().hasArgument()) {
 			reply.addComment(conn.jprintf(Archive.class, "archive.usage", env));
 			return reply;

@@ -25,9 +25,9 @@ import java.util.Iterator;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
-/*
+/**
  * @author zubov
- * @version $Id
+ * @version $Id: FinishReleaseOnSlave.java,v 1.2 2004/04/23 00:47:24 mog Exp $
  */
 public class FinishReleaseOnSlave extends MoveReleaseToMostFreeSlave {
 

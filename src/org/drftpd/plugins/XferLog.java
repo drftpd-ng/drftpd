@@ -34,7 +34,7 @@ import net.sf.drftpd.master.ConnectionManager;
 /**
  * @see http://www.wu-ftpd.org/man/xferlog.html
  * @author mog
- * @version $Id: XferLog.java,v 1.1 2004/04/22 02:10:13 mog Exp $
+ * @version $Id: XferLog.java,v 1.2 2004/04/23 00:47:25 mog Exp $
  */
 public class XferLog implements FtpListener {
 
@@ -74,7 +74,7 @@ public class XferLog implements FtpListener {
 	Mon Aug 11 14:03:31 2003 33 hostname 15000000 /path/to/file b _ i r user group 1 user
 	Mon Aug 11 14:03:44 2003 13 hostname 15000000 /path/to/file b _ i r user group 0 *
 	 */
-	static SimpleDateFormat DATE_FMT =
+	public static SimpleDateFormat DATE_FMT =
 		new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy", Locale.ENGLISH);
 	private PrintStream _out;
 

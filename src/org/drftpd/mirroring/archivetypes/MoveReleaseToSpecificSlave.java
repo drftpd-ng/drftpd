@@ -25,9 +25,9 @@ import java.util.Properties;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.config.FtpConfig;
 
-/*
+/**
  * @author zubov
- * @version $Id
+ * @version $Id: MoveReleaseToSpecificSlave.java,v 1.2 2004/04/23 00:47:24 mog Exp $
  */
 public class MoveReleaseToSpecificSlave extends MoveReleaseToMostFreeSlave {
 

@@ -23,14 +23,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import org.drftpd.plugins.SiteBot;
-import org.tanesha.replacer.FormatterException;
-import org.tanesha.replacer.ReplacerEnvironment;
-import org.tanesha.replacer.SimplePrintf;
-
-import f00f.net.irc.martyr.IRCConnection;
-import f00f.net.irc.martyr.commands.MessageCommand;
-
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandHandler;
@@ -38,9 +30,16 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 
+import org.tanesha.replacer.FormatterException;
+import org.tanesha.replacer.ReplacerEnvironment;
+import org.tanesha.replacer.SimplePrintf;
+
+import f00f.net.irc.martyr.IRCConnection;
+import f00f.net.irc.martyr.commands.MessageCommand;
+
 /**
  * @author mog
- * @version $Id: Textoutput.java,v 1.10 2004/04/17 02:24:37 mog Exp $
+ * @version $Id: Textoutput.java,v 1.11 2004/04/23 00:47:23 mog Exp $
  */
 public class Textoutput implements CommandHandler {
 
@@ -65,7 +64,7 @@ public class Textoutput implements CommandHandler {
 						new FileInputStream("text/" + file + ".txt")));
 			while (fileReader.ready()) {
 				String line = fileReader.readLine();
-				ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+				ReplacerEnvironment env = new ReplacerEnvironment();
 				try {
 					conn.sendCommand(new MessageCommand(destination,SimplePrintf.jprintf(line,env)));
 				} catch (FormatterException e1) {

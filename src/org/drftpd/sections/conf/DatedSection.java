@@ -31,7 +31,7 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author mog
- * @version $Id: DatedSection.java,v 1.5 2004/04/22 02:10:13 mog Exp $
+ * @version $Id: DatedSection.java,v 1.6 2004/04/23 00:47:26 mog Exp $
  */
 public class DatedSection implements SectionInterface {
 
@@ -44,6 +44,7 @@ public class DatedSection implements SectionInterface {
 		_mgr = mgr;
 		_name = FtpConfig.getProperty(p, i + ".name");
 		_basePath = FtpConfig.getProperty(p, i + ".path");
+		if(!_basePath.endsWith("/")) _basePath += "/";
 		_dateFormat =
 			new SimpleDateFormat(FtpConfig.getProperty(p, i + ".dated"));
 		getBaseFile();

@@ -92,7 +92,7 @@ import f00f.net.irc.martyr.commands.NickCommand;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.8 2004/04/22 02:10:13 mog Exp $
+ * @version $Id: SiteBot.java,v 1.9 2004/04/23 00:47:24 mog Exp $
  */
 public class SiteBot implements FtpListener, Observer {
 
@@ -112,8 +112,8 @@ public class SiteBot implements FtpListener, Observer {
 		public SectionInterface getSection() {
 			return _section;
 		}
-
 	}
+
 	public static class SectionSettings {
 		private String _channel;
 		private ReplacerEnvironment _env = new ReplacerEnvironment();
@@ -245,7 +245,7 @@ public class SiteBot implements FtpListener, Observer {
 	public SiteBot() throws IOException {
 		new File("logs").mkdirs();
 		Debug.setOutputStream(
-			new PrintStream(new FileOutputStream("logs/sitebot.log")));
+			new PrintStream(new FileOutputStream("logs/sitebot.log", true)));
 		//Debug.setDebugLevel(Debug.BAD);
 	}
 
@@ -851,7 +851,7 @@ public class SiteBot implements FtpListener, Observer {
 				strippath(dir.getPath().substring(section.getPath().length())));
 			env.add("file", file.getName());
 		if (file.isFile()) {
-			env.add("speed", Bytes.formatBytes(file.getXferspeed()) + "/s");
+			env.add("speed", Bytes.formatBytes(file.getXferspeed()*1000) + "/s");
 			file = file.getParentFileNull(); // files always have parent dirs.
 		}
 
@@ -976,12 +976,13 @@ public class SiteBot implements FtpListener, Observer {
 		_conn.disconnect();
 	}
 
-	private void reload() throws FileNotFoundException, IOException {
+	protected void reload() throws FileNotFoundException, IOException {
 		Properties ircCfg = new Properties();
 		ircCfg.load(new FileInputStream("conf/irc.conf"));
 		reload(ircCfg);
 	}
-	private void reload(Properties ircCfg) throws IOException {
+
+	protected void reload(Properties ircCfg) throws IOException {
 		_server = FtpConfig.getProperty(ircCfg, "irc.server");
 		_port = Integer.parseInt(FtpConfig.getProperty(ircCfg, "irc.port"));
 		//String oldchannel = _channelName;

@@ -43,11 +43,10 @@ import net.sf.drftpd.util.UserComparator;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.drftpd.plugins.SiteBot;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
- * @version $Id: TransferStatistics.java,v 1.18 2004/03/26 00:16:33 mog Exp $
+ * @version $Id: TransferStatistics.java,v 1.19 2004/04/23 00:47:24 mog Exp $
  */
 public class TransferStatistics implements CommandHandler {
 
@@ -275,7 +274,7 @@ public class TransferStatistics implements CommandHandler {
 			if (++i > count)
 				break;
 			User user = (User) iter.next();
-			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+			ReplacerEnvironment env = new ReplacerEnvironment();
 			env.add("pos", "" + i);
 
 			env.add(
