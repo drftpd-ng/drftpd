@@ -11,15 +11,18 @@ import java.io.Serializable;
  * Window>Preferences>Java>Code Generation.
  */
 public class SlaveStatus implements Serializable {
-	private long diskFree;
+	private long diskSpaceAvailable;
+	private long diskSpaceCapacity;
+	
 	private float throughputReceiving;
 	private float throughputSending;
 	
 	private int transfersSending;
 	private int transfersReceiving;
 	
-	public SlaveStatus(long diskFree, float throughputReceiving, int transfersReceiving, float throughputSending, int transfersSending) {
-		this.diskFree = diskFree;
+	public SlaveStatus(long diskFree, long diskTotal, float throughputReceiving, int transfersReceiving, float throughputSending, int transfersSending) {
+		this.diskSpaceAvailable = diskFree;
+		this.diskSpaceCapacity = diskTotal;
 		
 		this.throughputReceiving = throughputReceiving;
 		this.throughputSending = throughputSending;
@@ -27,21 +30,25 @@ public class SlaveStatus implements Serializable {
 		this.transfersSending = transfersSending;
 		this.transfersReceiving = transfersReceiving;
 	}
+	
 	public float getThroughput() {
 		return throughputReceiving+throughputSending;
 	}
+	
 	public int getTransfers() {
 		return transfersReceiving+transfersSending;
 	}
+	
 	public String toString() {
-		return "[SlaveStatus [diskFree: "+diskFree+"][receiving: "+throughputReceiving+"bps in "+transfersSending+"][sending "+throughputSending+"bps in "+transfersReceiving+"]]";
+		return "[SlaveStatus [diskSpaceAvailable: "+diskSpaceAvailable+"][receiving: "+throughputReceiving+"bps in "+transfersSending+"][sending "+throughputSending+"bps in "+transfersReceiving+"]]";
 	}
+	
 	/**
 	 * Returns the diskFree.
 	 * @return long
 	 */
-	public long getDiskFree() {
-		return diskFree;
+	public long getDiskSpaceAvailable() {
+		return diskSpaceAvailable;
 	}
 
 	/**
@@ -74,6 +81,13 @@ public class SlaveStatus implements Serializable {
 	 */
 	public int getTransfersSending() {
 		return transfersSending;
+	}
+
+	/**
+	 * @return
+	 */
+	public long getDiskSpaceCapacity() {
+		return diskSpaceCapacity;
 	}
 
 }

@@ -5,9 +5,6 @@ import java.rmi.RemoteException;
 
 import net.sf.drftpd.master.SlaveManagerImpl;
 
-/**
- * 
- */
 public class RemoteSlave implements Serializable {
 	protected long statusTime;
 	protected SlaveStatus status;
@@ -30,8 +27,9 @@ public class RemoteSlave implements Serializable {
 		return status;
 	}
 
-	public RemoteSlave(Slave slave) {
+	public RemoteSlave(Slave slave, String prefix) {
 		this.slave = slave;
+		this.prefix = prefix;
 	}
 
 	protected Slave slave;

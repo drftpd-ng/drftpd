@@ -11,7 +11,13 @@ import net.sf.drftpd.InvalidDirectoryException;
 public class FileRemoteFile extends RemoteFile {
 	private File file;
 	private String root;
-
+	
+	/**
+	 * Creates 
+	 * @param root
+	 * @param file
+	 * @throws IOException
+	 */
 	public FileRemoteFile(String root, File file) throws IOException {
 		this.root = root;
 		this.file = file;

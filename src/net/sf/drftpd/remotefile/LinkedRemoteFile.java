@@ -518,10 +518,12 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		throw new NoSuchMethodError("renameTo() not implemented");
 	}
 	public void delete() {
+		Vector removed = new Vector(slaves.size());
 		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
 			Slave slave = rslave.getSlave();
 			try {
+				//TODO: prefixes
 				slave.delete(getPath());
 			} catch(RemoteException ex) {
 				rslave.getManager().handleRemoteException(ex, rslave);
@@ -530,7 +532,11 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 				logger.log(Level.WARNING, "IOException deleting file on slave.", ex);
 				continue;
 			}
-			slaves.remove(rslave);
+			removed.add(rslave);
+		}
+		slaves.remove(removed);
+		if(slaves.size() == 0) {
+			getParentFile().getHashtable().remove(this);
 		}
 	}
 	/**

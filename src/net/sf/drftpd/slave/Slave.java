@@ -7,7 +7,7 @@ import java.rmi.RemoteException;
 
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.remotefile.RemoteFile;
+import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 /**
  * Slave interface, this interface is used to initate transfers to and from remote slaves.
@@ -17,10 +17,10 @@ public interface Slave extends Remote {
 	/**
 	 * Connect to 'addr':'port'. and send 'file'.
 	 * 
-	 * Argument should be a StaticRemoteFile so that the whole directory structure doesn't get serialized and sent.
+	 * Argument should be a StaticStaticRemoteFile so that the whole directory structure doesn't get serialized and sent.
 	 */
 	public Transfer doConnectSend(
-		RemoteFile file,
+		StaticRemoteFile file,
 		char mode,
 		long offset,
 		InetAddress addr,
@@ -30,7 +30,7 @@ public interface Slave extends Remote {
 	/**
 	 * Listen on any port and send 'file' when connection is receieved.
 	 */
-	public Transfer doListenSend(RemoteFile file, char mode, long offset)
+	public Transfer doListenSend(StaticRemoteFile file, char mode, long offset)
 		throws RemoteException, IOException;
 
 	/**
@@ -42,7 +42,7 @@ public interface Slave extends Remote {
 	 * Connect to 'addr':'port' and receive file.
 	 */
 	public Transfer doConnectReceive(
-		RemoteFile dir,
+		StaticRemoteFile dir,
 		String file,
 		User owner,
 		long offset,
@@ -54,7 +54,7 @@ public interface Slave extends Remote {
 	 * Listen on any port and receive 'file' when connection is received.
 	 */
 	public Transfer doListenReceive(
-		RemoteFile dir,
+		StaticRemoteFile dir,
 		String file,
 		User owner,
 		long offset)
@@ -68,11 +68,11 @@ public interface Slave extends Remote {
 	 * Get statistics for this slave, usefull when deciding which slave to use when transferring files.
 	 */
 	public SlaveStatus getSlaveStatus() throws RemoteException;
-	/**
-	 * Attempt to create the directory 'path'.
-	 */
-	public void mkdir(User user, String path)
-		throws RemoteException, IOException;
+//	/**
+//	 * Attempt to create the directory 'path'.
+//	 */
+//	public void mkdir(User user, String path)
+//		throws RemoteException, IOException;
 
 	/**
 	 * Check to see if slave is still up.

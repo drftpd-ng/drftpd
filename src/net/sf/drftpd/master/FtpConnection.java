@@ -1277,6 +1277,7 @@ public class FtpConnection extends BaseFtpConnection {
 			// get socket depending on the selection
 			if (mbPort) {
 				try {
+					//TODO: prefixes
 					transfer =
 						slave.getSlave().doConnectSend(
 							new StaticRemoteFile(remoteFile),
@@ -1574,6 +1575,7 @@ public class FtpConnection extends BaseFtpConnection {
 				return;
 			}
 			try {
+				//TODO: prefixes
 				transfer =
 					slave.getSlave().doConnectReceive(
 						new StaticRemoteFile(directory),

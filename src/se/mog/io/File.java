@@ -59,7 +59,7 @@ public class File extends java.io.File {
 		return fs.getDiskFreeSpace(this).freeBytes;
 	}
 
-	public long getDiskSpaceFree() {
+	public long getDiskSpaceCapacity() {
 		return fs.getDiskFreeSpace(this).totalBytes;	
 	}
 }
