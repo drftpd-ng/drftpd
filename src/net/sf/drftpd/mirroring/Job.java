@@ -17,10 +17,10 @@
  */
 package net.sf.drftpd.mirroring;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.usermanager.User;
@@ -29,10 +29,10 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.16 2004/05/18 12:02:47 zubov Exp $
+ * @version $Id: Job.java,v 1.17 2004/05/18 18:16:17 zubov Exp $
  */
 public class Job {
-	protected HashSet _destSlaves;
+	protected List _destSlaves;
 	protected LinkedRemoteFileInterface _file;
 	protected User _owner;
 	protected int _priority;
@@ -42,12 +42,12 @@ public class Job {
 
 	public Job(
 		LinkedRemoteFileInterface file,
-		Set destSlaves,
+		Collection destSlaves,
 		Object source,
 		User owner,
 		int priority) {
 		super();
-		_destSlaves = new HashSet(destSlaves);
+		_destSlaves = new ArrayList(destSlaves);
 		_file = file;
 		_source = source;
 		_owner = owner;
@@ -69,7 +69,7 @@ public class Job {
 	/**
 	 * Returns a List of slaves that can be used with {@see net.sf.drftpd.master.SlaveManagerImpl#getASlave(Collection, char, FtpConfig)}
 	 */
-	public Set getDestinationSlaves() {
+	public List getDestinationSlaves() {
 		return _destSlaves;
 	}
 

@@ -20,7 +20,6 @@ package net.sf.drftpd.event.listeners;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Properties;
 
 import net.sf.drftpd.event.Event;
@@ -37,7 +36,7 @@ import org.drftpd.sections.SectionInterface;
 /**
  * @author zubov
  *
- * @version $Id: Mirror.java,v 1.22 2004/05/16 05:44:52 zubov Exp $
+ * @version $Id: Mirror.java,v 1.23 2004/05/18 18:16:16 zubov Exp $
  */
 public class Mirror implements FtpListener {
 
@@ -70,7 +69,7 @@ public class Mirror implements FtpListener {
 		if (checkExclude(_cm.getSectionManager().lookup(dir.getPath()))) {
 			return;
 		}
-		HashSet slaveToMirror = new HashSet();
+		ArrayList slaveToMirror = new ArrayList();
 		int numToMirror = _numberOfMirrors;
 		if (_mirrorAllSFV && dir.getName().toLowerCase().endsWith(".sfv")) {
 			numToMirror = _cm.getSlaveManager().getSlaveList().size();

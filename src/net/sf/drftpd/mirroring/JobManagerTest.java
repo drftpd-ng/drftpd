@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
@@ -36,7 +35,7 @@ import junit.framework.TestCase;
 
 /**
  * @author zubov
- * @version $Id: JobManagerTest.java,v 1.5 2004/05/16 05:44:53 zubov Exp $
+ * @version $Id: JobManagerTest.java,v 1.6 2004/05/18 18:16:17 zubov Exp $
  */
 public class JobManagerTest extends TestCase {
 
@@ -178,7 +177,7 @@ public class JobManagerTest extends TestCase {
 
 	public void testAddJob() {
 		int sizebefore = jm.getAllJobs().size();
-		HashSet slaveSet = new HashSet();
+		ArrayList slaveSet = new ArrayList();
 		slaveSet.add(null);
 		slaveSet.add(null);
 		Job job = new Job(file, slaveSet, null, null, 0);
@@ -192,7 +191,7 @@ public class JobManagerTest extends TestCase {
 	 * Test for Job getNextJob(List)
 	 */
 	public void testGetNextJobList() {
-		HashSet slaveSet = new HashSet();
+		ArrayList slaveSet = new ArrayList();
 		slaveSet.add(null);
 		slaveSet.add(null);
 		Job job = new Job(file, slaveSet, null, null, 0);
@@ -217,7 +216,7 @@ public class JobManagerTest extends TestCase {
 	}
 
 	public void testRemoveJob() {
-		HashSet slaveSet = new HashSet();
+		ArrayList slaveSet = new ArrayList();
 		slaveSet.add(null);
 		slaveSet.add(null);
 		Job job = new Job(file, slaveSet, null, null, 0);

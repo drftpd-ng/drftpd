@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -41,7 +42,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
- * @version $Id: ArchiveType.java,v 1.5 2004/05/16 20:37:50 zubov Exp $
+ * @version $Id: ArchiveType.java,v 1.6 2004/05/18 18:16:17 zubov Exp $
  */
 public abstract class ArchiveType {
 	private long _archiveAfter;
