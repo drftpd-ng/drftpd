@@ -41,7 +41,7 @@ import org.apache.log4j.Logger;
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.23 2004/05/17 12:01:00 mog Exp $
+ * @version $Id: Login.java,v 1.24 2004/05/17 12:54:27 mog Exp $
  */
 public class Login implements CommandHandler, Cloneable {
 
@@ -60,7 +60,7 @@ public class Login implements CommandHandler, Cloneable {
 		if (_idntAddress != null
 			|| !conn.getConnectionManager().getConfig().getBouncerIps().contains(
 				conn.getClientAddress())) {
-			logger.warn("IDNT from non-bnc "+conn.getClientAddress());
+			logger.warn("IDNT from non-bnc " + conn.getClientAddress());
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		String arg = conn.getRequest().getArgument();
@@ -181,6 +181,9 @@ public class Login implements CommandHandler, Cloneable {
 		}
 
 		List masks = newUser.getIpMasks2();
+		/**
+		 * ident is null if ident hasn't been queried yet.
+		 */
 		String ident = null;
 		for (Iterator iter = masks.iterator(); iter.hasNext();) {
 			HostMask mask = (HostMask) iter.next();
@@ -199,10 +202,12 @@ public class Login implements CommandHandler, Cloneable {
 					ident = "";
 				}
 			}
+
 			if ((_idntAddress != null
 				&& mask.matches(_idntIdent, _idntAddress))
 				|| (_idntAddress == null
-					&& mask.matches(ident, conn.getClientAddress()))) {
+					&& (ident == null
+						|| mask.matches(ident, conn.getClientAddress())))) {
 				//success
 				// max_users and num_logins restriction
 				FtpReply response =
