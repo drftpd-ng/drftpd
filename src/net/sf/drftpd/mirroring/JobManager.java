@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.16 2004/01/21 20:34:29 zubov Exp $
+ * @version $Id: JobManager.java,v 1.17 2004/01/21 21:12:58 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -26,6 +26,7 @@ public class JobManager implements FtpListener {
 	private ArrayList _jobList = new ArrayList();
 	private ArrayList _slaveSendingList = new ArrayList();
 	private ArrayList _threadList = new ArrayList();
+	private boolean _isStopped = false;
 
 	/**
 	 * Keeps track of all jobs and controls them
@@ -295,6 +296,7 @@ public class JobManager implements FtpListener {
 	}
 	public void startAllSlaves() throws NoAvailableSlaveException {
 		stopAllSlaves();
+		_isStopped = false;
 		for (Iterator iter =
 			_cm.getSlaveManager().getAvailableSlaves().iterator();
 			iter.hasNext();
@@ -304,12 +306,15 @@ public class JobManager implements FtpListener {
 	}
 
 	public void startSlave(RemoteSlave rslave) {
+		if (_isStopped)
+			return;
 		JobManagerThread newThread = new JobManagerThread(rslave, this);
 		_threadList.add(newThread);
 		newThread.start();
 		logger.debug("Started slave thread for " + rslave.getName());
 	}
 	public void stopAllSlaves() {
+		_isStopped = true;
 		//synchronized (_threadList) { // does not need to be synchronized if only one thread handles SlaveEvents 
 		for (Iterator iter = _threadList.iterator(); iter.hasNext();) {
 			JobManagerThread tempThread = (JobManagerThread) iter.next();
