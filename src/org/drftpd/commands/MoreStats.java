@@ -51,7 +51,7 @@ import java.util.Iterator;
  * @author iamn
  * @version $Id$
  */
-public class MoreStats implements CommandHandlerFactory, CommandHandler {
+public class MoreStats extends CommandHandler implements CommandHandlerFactory {
     public static final int PERIOD_DAILY = Calendar.DAY_OF_MONTH; // = 5
     public static final short PERIOD_MONTHLY = Calendar.MONTH; // = 2
     public static final short PERIOD_WEEKLY = Calendar.WEEK_OF_YEAR; // = 3

@@ -50,7 +50,7 @@ public class Dummy implements CommandHandlerFactory {
     public void unload() {
     }
 
-    static class DummyHandler implements CommandHandler {
+    static class DummyHandler extends CommandHandler {
         private CommandManager _cmdmgr;
 
         /**

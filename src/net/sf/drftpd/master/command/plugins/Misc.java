@@ -41,7 +41,7 @@ import java.util.ResourceBundle;
 /**
  * @version $Id$
  */
-public class Misc implements CommandHandlerFactory, CommandHandler {
+public class Misc extends CommandHandler implements CommandHandlerFactory {
     /**
      * <code>ABOR &lt;CRLF&gt;</code><br>
      *
@@ -158,12 +158,22 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
         Map handlers = conn.getCommandManager().getCommandHandlersMap();
         for (Iterator iter = handlers.keySet().iterator(); iter.hasNext();) {
             CommandHandler hnd = (CommandHandler) handlers.get(iter.next());
+            if (hnd.getHelp(cmd.toLowerCase()).indexOf("org.dr") < 0)
             msg += hnd.getHelp(cmd.toLowerCase());
         }
         if ("".equals(msg))
             return new Reply(200,"No help for site "+ cmd);
         
-        response.addComment(msg);
+        ResourceBundle bundle = ResourceBundle.getBundle(Misc.class.getName());
+        
+        if ("".equals(cmd)) {
+            response.addComment(bundle.getString("help.header"));
+            response.addComment(msg);
+            response.addComment(bundle.getString("help.footer"));
+        } else {
+            response.addComment(msg);
+        }
+        
         return response;
     }
 
@@ -208,7 +218,7 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
     }
 
     public String getHelp(String cmd) {
-        ResourceBundle bundle = ResourceBundle.getBundle(Misc.class.getName());
+        ResourceBundle bundle = ResourceBundle.getBundle(getClass().getName());
         if ("".equals(cmd))
             return bundle.getString("help.general")+"\n";
         else if("help".equals(cmd))

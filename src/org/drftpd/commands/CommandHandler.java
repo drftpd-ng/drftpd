@@ -17,6 +17,9 @@
  */
 package org.drftpd.commands;
 
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+
 import net.sf.drftpd.master.BaseFtpConnection;
 
 
@@ -24,10 +27,21 @@ import net.sf.drftpd.master.BaseFtpConnection;
  * @author mog
  * @version $Id$
  */
-public interface CommandHandler {
+public abstract class CommandHandler {
     public abstract Reply execute(BaseFtpConnection conn)
         throws ReplyException;
 
-    public String[] getFeatReplies();
-    public String getHelp(String cmd);
+    public String[] getFeatReplies(){ return null; }
+    
+    public String getHelp(String cmd) {
+        try {
+            ResourceBundle bundle = ResourceBundle.getBundle(getClass().getName());
+            if ("".equals(cmd))
+                return bundle.getString("help.general")+"\n";
+            else
+                return bundle.getString("help."+cmd)+"\n";
+        } catch (MissingResourceException e) { 
+            return "";
+        }
+    }
 }

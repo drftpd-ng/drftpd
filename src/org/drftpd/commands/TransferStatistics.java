@@ -48,8 +48,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @version $Id$
  */
-public class TransferStatistics implements CommandHandlerFactory,
-    CommandHandler {
+public class TransferStatistics extends CommandHandler implements CommandHandlerFactory  {
     private static final Logger logger = Logger.getLogger(TransferStatistics.class);
 
     public static long getStats(String command, User user) {

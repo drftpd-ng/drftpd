@@ -54,8 +54,9 @@ import java.util.StringTokenizer;
  * @version $Id: JobManagerCommandHandler.java,v 1.19 2004/07/09 17:08:38 zubov
  *          Exp $
  */
-public class JobManagerCommandHandler implements CommandHandlerFactory,
-    CommandHandler {
+public class JobManagerCommandHandler extends CommandHandler 
+	implements CommandHandlerFactory {
+    
     public JobManagerCommandHandler() {
         super();
     }
@@ -265,19 +266,19 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
             conn.getRequest());
     }
 
-    public String getHelp(String cmd) {
-        ResourceBundle bundle = ResourceBundle.getBundle(Misc.class.getName());
-        if ("".equals(cmd))
-            return bundle.getString("help.general")+"\n";
-        else if("listjobs".equals(cmd) ||
-                "addjob".equals(cmd) ||
-                "removejob".equals(cmd) ||
-                "startjob".equals(cmd) ||
-                "stopjob".equals(cmd))
-            return bundle.getString("help."+cmd)+"\n";
-        else
-            return "";
-    }
+//    public String getHelp(String cmd) {
+//        ResourceBundle bundle = ResourceBundle.getBundle(Misc.class.getName());
+//        if ("".equals(cmd))
+//            return bundle.getString("help.general")+"\n";
+//        else if("listjobs".equals(cmd) ||
+//                "addjob".equals(cmd) ||
+//                "removejob".equals(cmd) ||
+//                "startjob".equals(cmd) ||
+//                "stopjob".equals(cmd))
+//            return bundle.getString("help."+cmd)+"\n";
+//        else
+//            return "";
+//    }
     
     public String[] getFeatReplies() {
         return null;

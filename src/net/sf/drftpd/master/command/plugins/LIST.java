@@ -57,7 +57,7 @@ import java.util.StringTokenizer;
  *
  * @version $Id$
  */
-public class LIST implements CommandHandlerFactory, CommandHandler {
+public class LIST extends CommandHandler implements CommandHandlerFactory {
     private final static DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
     private final static DateFormat BEFORE_SIX = new SimpleDateFormat("HH:mm");
     private final static String DELIM = " ";

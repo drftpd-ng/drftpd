@@ -40,7 +40,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author Teflon
  */
-public class TDPAffilManagment implements CommandHandlerFactory, CommandHandler {
+public class TDPAffilManagment extends CommandHandler implements CommandHandlerFactory {
 	private static final Logger logger = Logger
 			.getLogger(TDPAffilManagment.class);
 
@@ -265,10 +265,6 @@ public class TDPAffilManagment implements CommandHandlerFactory, CommandHandler 
 				.getRequest());
 	}
 
-    public String getHelp(String cmd) {
-        return this.toString()+"\n";
-    }
-    
 	public String[] getFeatReplies() {
 		return null;
 	}

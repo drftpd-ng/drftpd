@@ -47,7 +47,7 @@ import java.util.Map;
  *
  * @version $Id$
  */
-public class Pre implements CommandHandlerFactory, CommandHandler {
+public class Pre extends CommandHandler implements CommandHandlerFactory {
     private static final Logger logger = Logger.getLogger(Pre.class);
 
     private static void recursiveRemoveOwnership(LinkedRemoteFileInterface dir, long lastModified) {
@@ -147,10 +147,6 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
         return Reply.RESPONSE_200_COMMAND_OK;
     }
 
-    public String getHelp(String cmd) {
-        return this.toString()+"\n";
-    }
-    
     public String[] getFeatReplies() {
         return null;
     }

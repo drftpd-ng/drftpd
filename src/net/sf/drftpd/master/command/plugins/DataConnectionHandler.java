@@ -86,8 +86,8 @@ import javax.net.ssl.SSLSocket;
  * @author zubov
  * @version $Id$
  */
-public class DataConnectionHandler implements CommandHandlerFactory,
-    CommandHandler, Cloneable, HandshakeCompletedListener {
+public class DataConnectionHandler extends CommandHandler implements CommandHandlerFactory,
+    Cloneable, HandshakeCompletedListener {
     private static final Logger logger = Logger.getLogger(DataConnectionHandler.class);
     private SSLContext _ctx;
     private boolean _encryptedDataChannel;

@@ -49,8 +49,7 @@ import java.util.StringTokenizer;
  * @author zubov
  * @version $Id$
  */
-public class ArchiveCommandHandler implements CommandHandlerFactory,
-    CommandHandler {
+public class ArchiveCommandHandler extends CommandHandler implements CommandHandlerFactory {
     private static final Logger logger = Logger.getLogger(ArchiveCommandHandler.class);
 
     public ArchiveCommandHandler() {

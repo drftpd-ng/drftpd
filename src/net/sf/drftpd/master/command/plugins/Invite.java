@@ -35,7 +35,7 @@ import org.drftpd.commands.UnhandledCommandException;
  *
  * @version $Id$
  */
-public class Invite implements CommandHandlerFactory, CommandHandler {
+public class Invite extends CommandHandler implements CommandHandlerFactory {
     public Invite() {
     }
 
@@ -60,15 +60,15 @@ public class Invite implements CommandHandlerFactory, CommandHandler {
         return new Reply(200, "Inviting " + user);
     }
 
-    public String getHelp(String cmd) {
-        ResourceBundle bundle = ResourceBundle.getBundle(Invite.class.getName());
-        if ("".equals(cmd))
-            return bundle.getString("help.general")+"\n";
-        else if ("invite".equals(cmd))
-            return bundle.getString("help.invite")+"\n";
-        else
-            return "";
-    }
+//    public String getHelp(String cmd) {
+//        ResourceBundle bundle = ResourceBundle.getBundle(Invite.class.getName());
+//        if ("".equals(cmd))
+//            return bundle.getString("help.general")+"\n";
+//        else if ("invite".equals(cmd))
+//            return bundle.getString("help.invite")+"\n";
+//        else
+//            return "";
+//    }
     
     public String[] getFeatReplies() {
         return null;

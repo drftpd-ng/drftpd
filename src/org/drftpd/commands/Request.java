@@ -39,7 +39,7 @@ import java.util.Iterator;
  * @author mog
  * @version $Id$
  */
-public class Request implements CommandHandlerFactory, CommandHandler {
+public class Request extends CommandHandler implements CommandHandlerFactory {
     public static final Key REQUESTSFILLED = new Key(Request.class,
             "requestsFilled", Integer.class);
     public static final Key REQUESTS = new Key(Request.class, "requests",
@@ -149,10 +149,6 @@ public class Request implements CommandHandlerFactory, CommandHandler {
         throw UnhandledCommandException.create(Request.class, conn.getRequest());
     }
 
-    public String getHelp(String cmd) {
-        return this.toString()+"\n";
-    }
-    
     public String[] getFeatReplies() {
         return null;
     }

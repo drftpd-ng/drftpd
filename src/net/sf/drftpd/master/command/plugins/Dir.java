@@ -75,7 +75,7 @@ import java.util.StringTokenizer;
  * @author mog
  * @version $Id$
  */
-public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
+public class Dir extends CommandHandler implements CommandHandlerFactory, Cloneable {
     private final static SimpleDateFormat DATE_FMT = new SimpleDateFormat(
             "yyyyMMddHHmmss.SSS");
     private static final Logger logger = Logger.getLogger(Dir.class);
@@ -934,15 +934,15 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         throw UnhandledCommandException.create(Dir.class, request);
     }
 
-    public String getHelp(String cmd) {
-        ResourceBundle bundle = ResourceBundle.getBundle(Dir.class.getName());
-        if ("".equals(cmd))
-            return bundle.getString("help.general")+"\n";
-        else if("link".equals(cmd) || "link".equals(cmd) || "wipe".equals(cmd))
-            return bundle.getString("help."+cmd)+"\n";
-        else
-            return "";
-    }
+//    public String getHelp(String cmd) {
+//        ResourceBundle bundle = ResourceBundle.getBundle(Dir.class.getName());
+//        if ("".equals(cmd))
+//            return bundle.getString("help.general")+"\n";
+//        else if("link".equals(cmd) || "link".equals(cmd) || "wipe".equals(cmd))
+//            return bundle.getString("help."+cmd)+"\n";
+//        else
+//            return "";
+//    }
     
     public String[] getFeatReplies() {
         return null;

@@ -61,7 +61,7 @@ import java.util.StringTokenizer;
  * @author mog
  * @version $Id$
  */
-public class Nuke implements CommandHandlerFactory, CommandHandler {
+public class Nuke extends CommandHandler implements CommandHandlerFactory {
     public static final Key NUKED = new Key(Nuke.class, "nuked", Integer.class);
     public static final Key NUKEDBYTES = new Key(Nuke.class, "nukedBytes",
             Long.class);
@@ -484,10 +484,6 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
         }
 
         throw UnhandledCommandException.create(Nuke.class, conn.getRequest());
-    }
-
-    public String getHelp(String cmd) {
-        return this.toString()+"\n";
     }
     
     public String[] getFeatReplies() {

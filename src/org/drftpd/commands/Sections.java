@@ -33,7 +33,7 @@ import java.util.Iterator;
  * @author mog
  * @version $Id$
  */
-public class Sections implements CommandHandlerFactory, CommandHandler {
+public class Sections extends CommandHandler implements CommandHandlerFactory {
     public Sections() {
         super();
     }
