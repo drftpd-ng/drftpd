@@ -24,7 +24,6 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -34,8 +33,8 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.FatalException;
-import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.FileExistsException;
+import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
@@ -55,7 +54,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.140 2004/05/16 18:07:30 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.141 2004/05/17 12:01:00 mog Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {

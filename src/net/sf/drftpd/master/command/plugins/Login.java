@@ -41,7 +41,7 @@ import org.apache.log4j.Logger;
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.22 2004/05/17 11:27:24 mog Exp $
+ * @version $Id: Login.java,v 1.23 2004/05/17 12:01:00 mog Exp $
  */
 public class Login implements CommandHandler, Cloneable {
 
@@ -60,6 +60,7 @@ public class Login implements CommandHandler, Cloneable {
 		if (_idntAddress != null
 			|| !conn.getConnectionManager().getConfig().getBouncerIps().contains(
 				conn.getClientAddress())) {
+			logger.warn("IDNT from non-bnc "+conn.getClientAddress());
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		String arg = conn.getRequest().getArgument();

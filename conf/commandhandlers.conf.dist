@@ -16,6 +16,7 @@ STOR=net.sf.drftpd.master.command.plugins.DataConnectionHandler
 #EPSV=net.sf.drftpd.master.command.plugins.DataConnectionHandler
 #EPRT=net.sf.drftpd.master.command.plugins.DataConnectionHandler
 
+IDNT=net.sf.drftpd.master.command.plugins.Login
 USER=net.sf.drftpd.master.command.plugins.Login
 PASS=net.sf.drftpd.master.command.plugins.Login
 QUIT=net.sf.drftpd.master.command.plugins.Login

@@ -62,7 +62,7 @@ import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.92 2004/05/17 11:27:26 mog Exp $
+ * @version $Id: SlaveImpl.java,v 1.93 2004/05/17 12:01:01 mog Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
@@ -288,7 +288,7 @@ public class SlaveImpl
 				java.io.File tmpFile = dir.getParentFile();
 				if (tmpFile == null)
 					break;
-				if (tmpFile.getPath().length() <= root.getPath().length()) {
+				if (tmpFile.getPath().length() < root.getPath().length()) {
 					throw new SecurityException("Attempt to break out of root");
 				}
 				dir = new File(tmpFile);
