@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.event;
+package net.sf.drftpd.event.listeners;
 
 // import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -40,6 +40,12 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.Nukee;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.SFVFile.SFVStatus;
+import net.sf.drftpd.event.DirectoryFtpEvent;
+import net.sf.drftpd.event.Event;
+import net.sf.drftpd.event.FtpListener;
+import net.sf.drftpd.event.MessageEvent;
+import net.sf.drftpd.event.NukeEvent;
+import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
@@ -59,7 +65,7 @@ import org.tanesha.replacer.FormatterException;
 
 /**
  * @author mog
- * @version $Id: GlftpdLog.java,v 1.1 2004/02/26 16:23:05 flowman Exp $
+ * @version $Id: GlftpdLog.java,v 1.2 2004/02/26 16:34:41 flowman Exp $
  */
 public class GlftpdLog implements FtpListener {
 	PrintWriter out;
