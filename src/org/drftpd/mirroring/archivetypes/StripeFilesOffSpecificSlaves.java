@@ -123,7 +123,8 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 	}
 	public ArrayList send() {
 		_destSlavesArray = new RemoteSlave[getRSlaves().size()];
-		for (Iterator iter = _offOfSlaves.iterator(); iter.hasNext();) {
+		_destSlavesIndex = 0;
+		for (Iterator iter = getRSlaves().iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
 			_destSlavesArray[_destSlavesIndex] = rslave;
 		}
@@ -132,12 +133,15 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 	private HashSet getNextSlaves() {
 		HashSet destSlaves = new HashSet();
 		for (int x = 0; x < _numOfSlaves; x++) {
+			logger.debug("adding " + _destSlavesArray[_destSlavesIndex% _destSlavesArray.length].getName() + " to getNextSlaves()");
 			destSlaves.add(_destSlavesArray[_destSlavesIndex
 					% _destSlavesArray.length]);
 			_destSlavesIndex++;
 		}
+		logger.debug("returning getNextSlaves()");
 		return destSlaves;
 	}
+	
 	private ArrayList recursiveSend(LinkedRemoteFileInterface lrf) {
 		ArrayList jobQueue = new ArrayList();
 		JobManager jm = _parent.getConnectionManager().getJobManager();
@@ -155,6 +159,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 		}
 		return jobQueue;
 	}
+	
 	public void waitForSendOfFiles(ArrayList jobQueue) {
 		while (true) {
 			for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {

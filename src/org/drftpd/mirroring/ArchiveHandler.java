@@ -19,6 +19,7 @@ package org.drftpd.mirroring;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 
 import net.sf.drftpd.event.listeners.Archive;
 
@@ -59,7 +60,12 @@ public class ArchiveHandler extends Thread {
 		if (_archiveType.getDirectory() == null)
 			return; // all done
 		if (_archiveType.getRSlaves() == null) {
-			_archiveType.setRSlaves(Collections.unmodifiableSet(_archiveType.findDestinationSlaves()));
+			HashSet destSlaves = _archiveType.findDestinationSlaves();
+			if ( destSlaves == null ) {
+				_archiveType.setDirectory(null);
+				return; // no available slaves to use
+			}
+			_archiveType.setRSlaves(Collections.unmodifiableSet(destSlaves));
 		}
 		ArrayList jobs = _archiveType.send();
 		_archiveType.waitForSendOfFiles(new ArrayList(jobs));
