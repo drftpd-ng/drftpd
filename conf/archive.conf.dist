@@ -29,6 +29,15 @@ cycleTime=30
 #sixthsectionname.archiveType=ConstantMirroring
 #sixthsectionname.numOfSlaves=2
 
+#This will first to drftpd1-3, after one week (slowAfter) will mirror to two slaves not in fastHost list.
+#seventhsectionname.archiveType=ConstantMirroringAndArchive
+#seventhsectionname.archiveAfter=0
+#seventhsectionname.numOfSlaves=2
+#seventhsectionname.slowAfter=10080
+#seventhsectionname.fastHost.1=drftpd1
+#seventhsectionname.fastHost.2=drftpd2
+#seventhsectionname.fastHost.3=drftpd3
+
 # If a section is not defined an archiveType, that section is excluded 
 # from automatic archiving.  You may still manually archive releases 
 # with the "site archive" command
