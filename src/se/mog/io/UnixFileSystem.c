@@ -2,7 +2,7 @@
 #include "se_mog_io_FileSystem.h"
 #include "se_mog_io_UnixFileSystem.h"
 
-#ifdef __FreeBSD__
+#if defined (__FreeBSD__) || defined (__MACH__)
 #include <sys/param.h>
 #include <sys/mount.h>
 #else /* LINUX */
