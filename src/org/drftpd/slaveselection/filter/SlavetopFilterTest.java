@@ -33,9 +33,10 @@ import org.apache.log4j.BasicConfigurator;
 
 import org.drftpd.GlobalContext;
 
+import org.drftpd.master.RemoteTransfer;
 import org.drftpd.sections.def.SectionManager;
+import org.drftpd.slave.Transfer;
 
-import org.drftpd.slave.RemoteTransfer;
 
 import org.drftpd.tests.DummyConnectionManager;
 import org.drftpd.tests.DummyGlobalContext;
@@ -51,7 +52,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilterTest.java,v 1.9 2004/11/02 07:33:12 zubov Exp $
+ * @version $Id: SlavetopFilterTest.java,v 1.10 2004/11/09 19:00:00 mog Exp $
  */
 public class SlavetopFilterTest extends TestCase {
     private LinkedRemoteFile dir1;
@@ -125,7 +126,7 @@ public class SlavetopFilterTest extends TestCase {
         fc.setSlaveManager(sm);
 
         Filter f = new SlavetopFilter(fc, 1, p);
-        f.process(sc, null, null, RemoteTransfer.TRANSFER_UNKNOWN, dir2);
+        f.process(sc, null, null, Transfer.TRANSFER_UNKNOWN, dir2);
         assertEquals(100, sc.getSlaveScore(rslaves[0]).getScore());
         assertEquals(0, sc.getSlaveScore(rslaves[1]).getScore());
         assertEquals(100, sc.getSlaveScore(rslaves[2]).getScore());

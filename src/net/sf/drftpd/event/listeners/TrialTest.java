@@ -20,13 +20,13 @@ package net.sf.drftpd.event.listeners;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
+import org.drftpd.Bytes;
 import org.drftpd.tests.DummyUser;
 
 import java.util.Calendar;
@@ -36,7 +36,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: TrialTest.java,v 1.10 2004/11/05 13:27:18 mog Exp $
+ * @version $Id: TrialTest.java,v 1.11 2004/11/09 18:59:46 mog Exp $
  */
 public class TrialTest extends TestCase {
     /**

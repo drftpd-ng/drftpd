@@ -17,7 +17,6 @@
  */
 package org.drftpd.commands;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -27,13 +26,14 @@ import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.plugins.Textoutput;
-import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.Bytes;
 import org.drftpd.plugins.RaceStatistics;
 
+import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 
@@ -50,7 +50,7 @@ import java.util.Iterator;
 
 /*
  * @author iamn
- * @version $Id: MoreStats.java,v 1.7 2004/11/06 07:55:34 mog Exp $
+ * @version $Id: MoreStats.java,v 1.8 2004/11/09 18:59:54 mog Exp $
  */
 public class MoreStats implements CommandHandlerFactory, CommandHandler {
     public static final int PERIOD_DAILY = Calendar.DAY_OF_MONTH; // = 5

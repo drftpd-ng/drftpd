@@ -28,6 +28,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.PropertyHelper;
 import org.drftpd.mirroring.ArchiveType;
 
 import org.drftpd.sections.SectionInterface;
@@ -42,7 +43,7 @@ import java.util.Properties;
 /*
  * @author iamn
  * @author zubov
- * @version $Id: ConstantMirroringAndArchive.java,v 1.5 2004/11/08 18:39:30 mog Exp $
+ * @version $Id: ConstantMirroringAndArchive.java,v 1.6 2004/11/09 18:59:55 mog Exp $
  */
 public class ConstantMirroringAndArchive extends ArchiveType {
     private static final Logger logger = Logger.getLogger(ConstantMirroringAndArchive.class);
@@ -53,7 +54,7 @@ public class ConstantMirroringAndArchive extends ArchiveType {
     public ConstantMirroringAndArchive(Archive archive,
         SectionInterface section, Properties p) {
         super(archive, section, p);
-        _numOfSlaves = Integer.parseInt(FtpConfig.getProperty(p,
+        _numOfSlaves = Integer.parseInt(PropertyHelper.getProperty(p,
                     section.getName() + ".numOfSlaves"));
 
         if (_numOfSlaves < 2) {
@@ -62,7 +63,7 @@ public class ConstantMirroringAndArchive extends ArchiveType {
         }
 
         try {
-            _slowAfter = 60000 * Long.parseLong(FtpConfig.getProperty(p,
+            _slowAfter = 60000 * Long.parseLong(PropertyHelper.getProperty(p,
                         getSection().getName() + ".slowAfter"));
         } catch (NullPointerException e) {
             _slowAfter = 0;
@@ -75,7 +76,7 @@ public class ConstantMirroringAndArchive extends ArchiveType {
             String slavename = null;
 
             try {
-                slavename = FtpConfig.getProperty(p,
+                slavename = PropertyHelper.getProperty(p,
                         getSection().getName() + ".fastHost." + i);
             } catch (NullPointerException e) {
                 break; // done

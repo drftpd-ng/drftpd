@@ -22,12 +22,12 @@ import junit.framework.TestSuite;
 
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.Event;
-import net.sf.drftpd.remotefile.LinkedRemoteFile.CaseInsensitiveHashtable;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
 
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
+import org.drftpd.remotefile.CaseInsensitiveHashtable;
 
 import org.drftpd.slave.async.AsyncResponse;
 
@@ -44,7 +44,7 @@ import java.util.Set;
 
 /**
  * @author mog
- * @version $Id: RemoteSlaveTest.java,v 1.16 2004/11/08 18:39:24 mog Exp $
+ * @version $Id: RemoteSlaveTest.java,v 1.17 2004/11/09 18:59:47 mog Exp $
  */
 public class RemoteSlaveTest extends TestCase {
     public RemoteSlaveTest(String fName) {

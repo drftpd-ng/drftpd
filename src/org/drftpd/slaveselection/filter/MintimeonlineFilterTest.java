@@ -25,8 +25,9 @@ import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.BasicConfigurator;
 
-import org.drftpd.slave.RemoteTransfer;
+import org.drftpd.master.RemoteTransfer;
 
+import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyRemoteSlave;
 
 import java.util.Arrays;
@@ -35,7 +36,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: MintimeonlineFilterTest.java,v 1.7 2004/11/02 07:33:12 zubov Exp $
+ * @version $Id: MintimeonlineFilterTest.java,v 1.8 2004/11/09 18:59:59 mog Exp $
  */
 public class MintimeonlineFilterTest extends TestCase {
     public MintimeonlineFilterTest(String name) {
@@ -55,7 +56,7 @@ public class MintimeonlineFilterTest extends TestCase {
         RemoteSlave[] rslaves = { new RS("slave1", time) };
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
         MintimeonlineFilter f = new MintimeonlineFilter(null, 1, p);
-        f.process(sc, null, null, RemoteTransfer.TRANSFER_UNKNOWN, null, time);
+        f.process(sc, null, null, Transfer.TRANSFER_UNKNOWN, null, time);
         assertEquals(-Time.parseTime("1m"), sc.getBestSlaveScore().getScore());
     }
 

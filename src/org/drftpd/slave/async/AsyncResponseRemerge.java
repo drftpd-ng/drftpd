@@ -1,18 +1,18 @@
 package org.drftpd.slave.async;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import org.drftpd.remotefile.CaseInsensitiveHashtable;
 
 
 /**
  * @author zubov
- * @version $Id: AsyncResponseRemerge.java,v 1.3 2004/11/08 18:39:31 mog Exp $
+ * @version $Id: AsyncResponseRemerge.java,v 1.4 2004/11/09 18:59:58 mog Exp $
  */
 public class AsyncResponseRemerge extends AsyncResponse {
-    private LinkedRemoteFile.CaseInsensitiveHashtable _files;
+    private CaseInsensitiveHashtable _files;
     private String _directory;
 
     public AsyncResponseRemerge(String directory,
-        LinkedRemoteFile.CaseInsensitiveHashtable files) {
+        CaseInsensitiveHashtable files) {
         super("Remerge");
         _files = files;
         _directory = directory;
@@ -22,7 +22,7 @@ public class AsyncResponseRemerge extends AsyncResponse {
         return _directory;
     }
 
-    public LinkedRemoteFile.CaseInsensitiveHashtable getFiles() {
+    public CaseInsensitiveHashtable getFiles() {
         return _files;
     }
 

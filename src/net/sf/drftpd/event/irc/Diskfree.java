@@ -22,17 +22,17 @@ import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.drftpd.plugins.SiteBot;
+import org.drftpd.slave.SlaveStatus;
 
 import org.tanesha.replacer.ReplacerEnvironment;
 
 
 /**
  * @author zubov
- * @version $Id: Diskfree.java,v 1.8 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: Diskfree.java,v 1.9 2004/11/09 18:59:44 mog Exp $
  */
 public class Diskfree extends GenericCommandAutoService
     implements IRCPluginInterface {

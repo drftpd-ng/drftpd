@@ -24,6 +24,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.PropertyHelper;
 
 import org.drftpd.remotefile.LinkedRemoteFileUtils;
 
@@ -45,7 +46,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilter.java,v 1.13 2004/11/03 16:46:48 mog Exp $
+ * @version $Id: SlavetopFilter.java,v 1.14 2004/11/09 19:00:00 mog Exp $
  */
 public class SlavetopFilter extends Filter {
     private GlobalContext _gctx;
@@ -54,9 +55,9 @@ public class SlavetopFilter extends Filter {
 
     public SlavetopFilter(FilterChain fc, int i, Properties p) {
         _gctx = fc.getGlobalContext();
-        _topslaves = Integer.parseInt(FtpConfig.getProperty(p, i +
+        _topslaves = Integer.parseInt(PropertyHelper.getProperty(p, i +
                     ".topslaves"));
-        _assign = Long.parseLong(FtpConfig.getProperty(p, i + ".assign"));
+        _assign = Long.parseLong(PropertyHelper.getProperty(p, i + ".assign"));
     }
 
     public SlavetopFilter(GlobalContext gctx, int topslaves, long assign) {

@@ -18,10 +18,6 @@
 package org.drftpd.slave;
 
 import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.slave.Connection;
-import net.sf.drftpd.slave.PassiveConnection;
-import net.sf.drftpd.slave.TransferFailedException;
-import net.sf.drftpd.slave.TransferStatus;
 import net.sf.drftpd.util.AddAsciiOutputStream;
 
 import org.apache.log4j.Logger;
@@ -46,7 +42,7 @@ import java.util.zip.CheckedOutputStream;
 
 /**
  * @author zubov
- * @version $Id: Transfer.java,v 1.3 2004/11/03 16:46:46 mog Exp $
+ * @version $Id: Transfer.java,v 1.4 2004/11/09 18:59:58 mog Exp $
  */
 public class Transfer {
     private static final Logger logger = Logger.getLogger(Transfer.class);
@@ -64,6 +60,10 @@ public class Transfer {
     private long _transfered = 0;
     private TransferIndex _transferIndex;
     private boolean _transferIsFinished = false;
+	public static final char TRANSFER_RECEIVING_UPLOAD = 'R';
+	public static final char TRANSFER_SENDING_DOWNLOAD = 'S';
+	public static final char TRANSFER_THROUGHPUT = 'A';
+	public static final char TRANSFER_UNKNOWN = 'U';
 
     /**
      * Start undefined transfer.
@@ -83,7 +83,7 @@ public class Transfer {
 
         _slave = slave;
         _conn = conn;
-        _direction = RemoteTransfer.TRANSFER_UNKNOWN;
+        _direction = Transfer.TRANSFER_UNKNOWN;
         _transferIndex = transferIndex;
     }
 
@@ -168,11 +168,11 @@ public class Transfer {
     }
 
     public boolean isReceivingUploading() {
-        return _direction == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD;
+        return _direction == Transfer.TRANSFER_RECEIVING_UPLOAD;
     }
 
     public boolean isSendingUploading() {
-        return _direction == RemoteTransfer.TRANSFER_SENDING_DOWNLOAD;
+        return _direction == Transfer.TRANSFER_SENDING_DOWNLOAD;
     }
 
     public TransferStatus receiveFile(String dirname, char mode,
@@ -257,14 +257,14 @@ public class Transfer {
             }
 
             _in = _sock.getInputStream();
-            _direction = RemoteTransfer.TRANSFER_RECEIVING_UPLOAD;
+            _direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
         } else if (_out == null) {
             if (bufsize > 0) {
                 _sock.setSendBufferSize(bufsize);
             }
 
             _out = _sock.getOutputStream();
-            _direction = RemoteTransfer.TRANSFER_SENDING_DOWNLOAD;
+            _direction = Transfer.TRANSFER_SENDING_DOWNLOAD;
         } else {
             throw new IllegalStateException("neither in or out was null");
         }

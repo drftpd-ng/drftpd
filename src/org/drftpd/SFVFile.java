@@ -15,8 +15,10 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd;
+package org.drftpd;
 
+import net.sf.drftpd.FatalException;
+import net.sf.drftpd.NoSFVEntryException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
@@ -34,58 +36,19 @@ import java.util.Map;
 
 /**
  * @author mog
- * @version $Id: SFVFile.java,v 1.34 2004/11/02 07:32:37 zubov Exp $
+ * @version $Id: SFVFile.java,v 1.1 2004/11/09 18:59:53 mog Exp $
  */
-public class SFVFile implements Serializable {
-    static final long serialVersionUID = 5381510163578487722L;
+public class SFVFile extends AbstractSFVFile {
     private transient LinkedRemoteFileInterface _companion;
 
     /**
-     * String fileName as key.
-     * Long checkSum as value.
-     */
-    private HashMap _entries = new HashMap();
+	 * @param file
+	 */
+	public SFVFile(LightSFVFile file) {
+		_entries = new HashMap(file.getEntries());
+	}
 
-    /**
-     * Constructor for SFVFile.
-     */
-    public SFVFile(BufferedReader in) throws IOException {
-        String line;
-
-        try {
-            while ((line = in.readLine()) != null) {
-                if (line.length() == 0) {
-                    continue;
-                }
-
-                if (line.charAt(0) == ';') {
-                    continue;
-                }
-
-                int separator = line.indexOf(" ");
-
-                if (separator == -1) {
-                    continue;
-                }
-
-                String fileName = line.substring(0, separator);
-                String checkSumString = line.substring(separator + 1);
-                Long checkSum;
-
-                try {
-                    checkSum = Long.valueOf(checkSumString, 16);
-                } catch (NumberFormatException e) {
-                    continue;
-                }
-
-                _entries.put(fileName, checkSum);
-            }
-        } finally {
-            in.close();
-        }
-    }
-
-    /**
+	/**
      * @deprecated use getStatus().getMissing()
      */
     public int filesLeft() {
@@ -123,7 +86,6 @@ public class SFVFile implements Serializable {
                 }
             }
         }
-
         return new SFVStatus(size(), offline, present);
     }
 
@@ -135,14 +97,6 @@ public class SFVFile implements Serializable {
         }
 
         return checksum.longValue();
-    }
-
-    /**
-     * Returns a map having <code>String filename</code> as key and <code>Long checksum</code> as value.
-     * @return a map having <code>String filename</code> as key and <code>Long checksum</code> as value.
-     */
-    public Map getEntries() {
-        return _entries;
     }
 
     public Map getEntriesFiles() {
@@ -179,13 +133,6 @@ public class SFVFile implements Serializable {
         return getEntriesFiles().keySet();
     }
 
-    /**
-     * Returns the names of the files in this .sfv file
-     */
-    public Collection getNames() {
-        return getEntries().keySet();
-    }
-
     public long getTotalBytes() {
         long totalBytes = 0;
 
@@ -214,23 +161,12 @@ public class SFVFile implements Serializable {
         return getTotalBytes() / (getTotalXfertime() / 1000);
     }
 
-    public boolean hasFile(String name) {
-        return getEntries().containsKey(name);
-    }
-
     public void setCompanion(LinkedRemoteFileInterface companion) {
         if (_companion != null) {
             throw new IllegalStateException("Can't overwrite companion");
         }
 
         _companion = companion;
-    }
-
-    /**
-     * @return Number of file entries in the .sfv
-     */
-    public int size() {
-        return _entries.size();
     }
 
     public static class SFVStatus {

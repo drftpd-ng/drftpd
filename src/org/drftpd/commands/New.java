@@ -17,7 +17,6 @@
  */
 package org.drftpd.commands;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
@@ -28,6 +27,7 @@ import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.Bytes;
 import org.drftpd.sections.SectionInterface;
 
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -41,7 +41,7 @@ import java.util.TreeSet;
 
 
 /**
- * @version $Id: New.java,v 1.8 2004/11/03 16:46:44 mog Exp $
+ * @version $Id: New.java,v 1.9 2004/11/09 18:59:54 mog Exp $
  * @author zubov
  */
 public class New implements CommandHandlerFactory, CommandHandler {

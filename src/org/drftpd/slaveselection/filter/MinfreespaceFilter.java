@@ -17,11 +17,12 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.drftpd.Bytes;
+import org.drftpd.PropertyHelper;
 import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;
@@ -43,7 +44,7 @@ import java.util.Properties;
  *   addScore((minfreespace - diskfree) * multiplier)
  * }
  * @author mog
- * @version $Id: MinfreespaceFilter.java,v 1.9 2004/11/03 16:46:48 mog Exp $
+ * @version $Id: MinfreespaceFilter.java,v 1.10 2004/11/09 18:59:59 mog Exp $
  */
 public class MinfreespaceFilter extends Filter {
     private long _minfreespace;
@@ -51,9 +52,9 @@ public class MinfreespaceFilter extends Filter {
 
     public MinfreespaceFilter(FilterChain ssm, int i, Properties p) {
         //_multiplier = -Integer.parseInt(FtpConfig.getProperty(p, i + ".multiplier"));
-        _multiplier = BandwidthFilter.parseMultiplier(FtpConfig.getProperty(p,
+        _multiplier = BandwidthFilter.parseMultiplier(PropertyHelper.getProperty(p,
                     i + ".multiplier"));
-        _minfreespace = Bytes.parseBytes(FtpConfig.getProperty(p,
+        _minfreespace = Bytes.parseBytes(PropertyHelper.getProperty(p,
                     i + ".minfreespace"));
     }
 

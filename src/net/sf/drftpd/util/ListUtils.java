@@ -17,10 +17,7 @@
  */
 package net.sf.drftpd.util;
 
-import net.sf.drftpd.ID3Tag;
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.SFVFile;
-import net.sf.drftpd.SFVFile.SFVStatus;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -28,6 +25,9 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 import org.apache.log4j.Logger;
+import org.drftpd.SFVFile;
+import org.drftpd.SFVFile.SFVStatus;
+import org.drftpd.id3.ID3Tag;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -40,7 +40,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.30 2004/11/03 16:46:44 mog Exp $
+ * @version $Id: ListUtils.java,v 1.31 2004/11/09 18:59:52 mog Exp $
  */
 public class ListUtils {
     private static final Logger logger = Logger.getLogger(ListUtils.class);

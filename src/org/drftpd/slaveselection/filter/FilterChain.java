@@ -24,6 +24,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
 
+import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.User;
 
 import java.io.FileInputStream;
@@ -33,42 +34,43 @@ import java.io.IOException;
 import java.net.InetAddress;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Properties;
 
 
 /**
  * @author mog
- * @version $Id: FilterChain.java,v 1.11 2004/11/03 16:46:48 mog Exp $
+ * @version $Id: FilterChain.java,v 1.12 2004/11/09 18:59:59 mog Exp $
  */
 public class FilterChain {
-    private SlaveSelectionManager _ssm;
+    private SlaveSelectionManagerInterface _ssm;
     private String _cfgfileName;
-    private ArrayList _filters;
+    private ArrayList<Filter> _filters;
 
     protected FilterChain() {
     }
 
-    public FilterChain(SlaveSelectionManager ssm, Properties p) {
+    public FilterChain(SlaveSelectionManagerInterface ssm, Properties p) {
         _ssm = ssm;
         reload(p);
     }
 
-    public FilterChain(SlaveSelectionManager ssm, String cfgFileName)
+    public FilterChain(SlaveSelectionManagerInterface ssm, String cfgFileName)
         throws FileNotFoundException, IOException {
         _ssm = ssm;
         _cfgfileName = cfgFileName;
         reload();
     }
 
+    public void filter(ScoreChart sc, User user, InetAddress peer, char direction, LinkedRemoteFileInterface file) throws NoAvailableSlaveException {
+    	for (Filter filter : _filters) {
+    		filter.process(sc, user, peer, direction, file);
+        }
+	}
+
     public RemoteSlave getBestSlave(ScoreChart sc, User user, InetAddress peer,
         char direction, LinkedRemoteFileInterface file)
         throws NoAvailableSlaveException {
-        for (Iterator iter = _filters.iterator(); iter.hasNext();) {
-            Filter filter = (Filter) iter.next();
-            filter.process(sc, user, peer, direction, file);
-        }
-
+    	filter(sc,user,peer,direction,file);
         RemoteSlave rslave = sc.getBestSlave();
         rslave.setLastDirection(direction, System.currentTimeMillis());
 
@@ -82,7 +84,7 @@ public class FilterChain {
     }
 
     public void reload(Properties p) {
-        ArrayList filters = new ArrayList();
+        ArrayList<Filter> filters = new ArrayList<Filter>();
         int i = 1;
 
         for (;; i++) {

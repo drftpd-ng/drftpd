@@ -17,12 +17,12 @@
  */
 package org.drftpd.slave.async;
 
-import net.sf.drftpd.ID3Tag;
+import org.drftpd.id3.ID3Tag;
 
 
 /**
  * @author zubov
- * @version $Id: AsyncResponseID3Tag.java,v 1.3 2004/11/03 16:46:47 mog Exp $
+ * @version $Id: AsyncResponseID3Tag.java,v 1.4 2004/11/09 18:59:58 mog Exp $
  */
 public class AsyncResponseID3Tag extends AsyncResponse {
     ID3Tag _id3;

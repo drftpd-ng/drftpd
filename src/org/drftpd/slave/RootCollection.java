@@ -15,16 +15,13 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.slave;
-
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.PermissionDeniedException;
+package org.drftpd.slave;
 
 import org.apache.log4j.Logger;
 
-import org.drftpd.slave.Slave;
 
 import se.mog.io.File;
+import se.mog.io.PermissionDeniedException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -42,13 +39,13 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: RootBasket.java,v 1.32 2004/11/08 18:39:28 mog Exp $
+ * @version $Id: RootCollection.java,v 1.1 2004/11/09 18:59:58 mog Exp $
  */
-public class RootBasket {
-    private static final Logger logger = Logger.getLogger(RootBasket.class);
+public class RootCollection {
+    private static final Logger logger = Logger.getLogger(RootCollection.class);
     private Collection _roots;
 
-    public RootBasket(Collection roots) throws IOException {
+    public RootCollection(Collection roots) throws IOException {
         /** sanity checks **/
         validateRoots(roots);
         _roots = new ArrayList(roots);
@@ -106,12 +103,7 @@ public class RootBasket {
 
         File file = bestRoot.getFile(dir);
 
-        if (!file.exists()) {
-            if (!file.mkdirs()) {
-                throw new PermissionDeniedException("mkdirs failed on " +
-                    file.getPath());
-            }
-        }
+        file.mkdirs2();
 
         return file;
     }
@@ -280,7 +272,7 @@ public class RootBasket {
                 }
 
                 if (root2.getPath().startsWith(root.getPath())) {
-                    throw new FatalException("Overlapping roots: " +
+                    throw new RuntimeException("Overlapping roots: " +
                         root.getPath() + " and " + root2.getPath());
                 }
             }

@@ -20,10 +20,11 @@ package org.drftpd.slaveselection.filter;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.slave.SlaveStatus;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.PropertyHelper;
+import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;
@@ -36,14 +37,14 @@ import java.util.Properties;
 /**
  * Removes bandwidth * multiplier from the score.
  * @author mog
- * @version $Id: BandwidthFilter.java,v 1.10 2004/11/03 16:46:48 mog Exp $
+ * @version $Id: BandwidthFilter.java,v 1.11 2004/11/09 18:59:59 mog Exp $
  */
 public class BandwidthFilter extends Filter {
     private static final Logger logger = Logger.getLogger(BandwidthFilter.class);
     protected float _multiplier;
 
     public BandwidthFilter(FilterChain ssm, int i, Properties p) {
-        setMultiplier(parseMultiplier(FtpConfig.getProperty(p, i +
+        setMultiplier(parseMultiplier(PropertyHelper.getProperty(p, i +
                     ".multiplier")));
     }
 

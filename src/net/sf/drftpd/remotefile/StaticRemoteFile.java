@@ -21,12 +21,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.drftpd.remotefile.AbstractRemoteFile;
+
 
 /**
  * Creates a single RemoteFile object that is not linked to any other objects.
  *
  * @author mog
- * @version $Id: StaticRemoteFile.java,v 1.32 2004/09/25 03:48:37 mog Exp $
+ * @version $Id: StaticRemoteFile.java,v 1.33 2004/11/09 18:59:52 mog Exp $
  */
 public class StaticRemoteFile extends AbstractRemoteFile {
     private long _checkSum;

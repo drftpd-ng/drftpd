@@ -20,20 +20,19 @@ package org.drftpd.remotefile;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.remotefile.AbstractRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.remotefile.RemoteFileInterface;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import java.util.Collection;
 import java.util.Map;
+
+import org.drftpd.SFVFile;
 
 
 /**

@@ -17,7 +17,6 @@
  */
 package org.drftpd.commands;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.event.listeners.Trial;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -32,6 +31,7 @@ import net.sf.drftpd.util.UserComparator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.Bytes;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -50,7 +50,7 @@ import java.util.StringTokenizer;
 
 
 /**
- * @version $Id: TransferStatistics.java,v 1.3 2004/11/08 18:39:29 mog Exp $
+ * @version $Id: TransferStatistics.java,v 1.4 2004/11/09 18:59:54 mog Exp $
  */
 public class TransferStatistics implements CommandHandlerFactory,
     CommandHandler {

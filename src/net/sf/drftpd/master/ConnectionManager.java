@@ -31,6 +31,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.PropertyHelper;
 
 import org.drftpd.plugins.RaceStatistics;
 
@@ -57,7 +58,7 @@ import java.util.TimerTask;
 
 
 /**
- * @version $Id: ConnectionManager.java,v 1.122 2004/11/05 13:27:18 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.123 2004/11/09 18:59:47 mog Exp $
  */
 public class ConnectionManager {
     public static final int idleTimeout = 300;
@@ -136,7 +137,7 @@ public class ConnectionManager {
 
             /** listen for connections **/
             ServerSocket server = new ServerSocket(Integer.parseInt(
-                        FtpConfig.getProperty(cfg, "master.port")));
+                        PropertyHelper.getProperty(cfg, "master.port")));
             logger.info("Listening on port " + server.getLocalPort());
 
             while (true) {

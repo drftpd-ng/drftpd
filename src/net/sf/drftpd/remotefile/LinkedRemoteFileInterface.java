@@ -20,7 +20,6 @@ package net.sf.drftpd.remotefile;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 
@@ -31,10 +30,15 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import org.drftpd.SFVFile;
+import org.drftpd.remotefile.AbstractRemoteFile;
+import org.drftpd.remotefile.CaseInsensitiveHashtable;
+import org.drftpd.remotefile.RemoteFileInterface;
+
 
 /**
  * @author mog
- * @version $Id: LinkedRemoteFileInterface.java,v 1.15 2004/11/08 18:39:28 mog Exp $
+ * @version $Id: LinkedRemoteFileInterface.java,v 1.16 2004/11/09 18:59:52 mog Exp $
  *
  */
 public interface LinkedRemoteFileInterface extends RemoteFileInterface {
@@ -177,7 +181,7 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
      * If duplicates exist, the slaves are added to this object and the file-attributes of the oldest file (lastModified) are kept.
      */
     public abstract void remerge(
-        LinkedRemoteFile.CaseInsensitiveHashtable lightRemoteFiles,
+        CaseInsensitiveHashtable lightRemoteFiles,
         RemoteSlave rslave) throws IOException;
 
     public abstract boolean removeSlave(RemoteSlave slave);

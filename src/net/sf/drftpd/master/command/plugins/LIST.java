@@ -24,13 +24,13 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.remotefile.RemoteFileInterface;
 import net.sf.drftpd.util.ListUtils;
 
 import org.apache.log4j.Logger;
 
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.remotefile.RemoteFileInterface;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -55,7 +55,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  *
- * @version $Id: LIST.java,v 1.27 2004/11/05 04:06:34 zubov Exp $
+ * @version $Id: LIST.java,v 1.28 2004/11/09 18:59:48 mog Exp $
  */
 public class LIST implements CommandHandlerFactory, CommandHandler {
     private final static DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");

@@ -15,14 +15,12 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.remotefile;
+package org.drftpd.slave;
 
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.InvalidDirectoryException;
-import net.sf.drftpd.slave.Root;
-import net.sf.drftpd.slave.RootBasket;
 
 import org.apache.log4j.Logger;
+import org.drftpd.remotefile.AbstractRemoteFile;
+import org.drftpd.remotefile.RemoteFileInterface;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,23 +39,23 @@ import java.util.zip.CheckedInputStream;
  * A wrapper for java.io.File to the net.sf.drftpd.RemoteFile structure.
  *
  * @author mog
- * @version $Id: FileRemoteFile.java,v 1.43 2004/11/09 15:20:16 mog Exp $
+ * @version $Id: FileRemoteFile.java,v 1.1 2004/11/09 18:59:58 mog Exp $
  */
 public class FileRemoteFile extends AbstractRemoteFile {
     private static final Logger logger = Logger.getLogger(FileRemoteFile.class);
     Hashtable _filefiles;
     String _path;
-    RootBasket _roots;
+    RootCollection _roots;
     private boolean isDirectory;
     private boolean isFile;
     private long lastModified;
     private long length;
 
-    public FileRemoteFile(RootBasket rootBasket) throws IOException {
+    public FileRemoteFile(RootCollection rootBasket) throws IOException {
         this(rootBasket, "");
     }
 
-    public FileRemoteFile(RootBasket roots, String path)
+    public FileRemoteFile(RootCollection roots, String path)
         throws IOException {
         _path = path;
         _roots = roots;
@@ -178,7 +176,7 @@ public class FileRemoteFile extends AbstractRemoteFile {
         File[] listfiles = dir.listFiles();
 
         if (listfiles == null) {
-            throw new FatalException("Not a directory or IO error: " + dir);
+            throw new RuntimeException("Not a directory or IO error: " + dir);
         }
 
         for (int i = 0; i < listfiles.length; i++) {
@@ -227,12 +225,12 @@ public class FileRemoteFile extends AbstractRemoteFile {
             }
 
             if (!file.isDirectory()) {
-                throw new FatalException(file.getPath() +
+                throw new RuntimeException(file.getPath() +
                     " is not a directory, attempt to getFiles() on it");
             }
 
             if (!file.canRead()) {
-                throw new FatalException("Cannot read: " + file);
+                throw new RuntimeException("Cannot read: " + file);
             }
 
             File[] tmpFiles = file.listFiles();
@@ -331,6 +329,22 @@ public class FileRemoteFile extends AbstractRemoteFile {
      */
     public RemoteFileInterface[] listFiles() {
         return (RemoteFileInterface[]) getFiles().toArray(new FileRemoteFile[0]);
+    }
+    public static class InvalidDirectoryException extends IOException {
+        /**
+         * Constructor for InvalidDirectoryException.
+         */
+        public InvalidDirectoryException() {
+            super();
+        }
+
+        /**
+         * Constructor for InvalidDirectoryException.
+         * @param arg0
+         */
+        public InvalidDirectoryException(String arg0) {
+            super(arg0);
+        }
     }
 }
 

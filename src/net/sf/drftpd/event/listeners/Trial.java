@@ -17,7 +17,15 @@
  */
 package net.sf.drftpd.event.listeners;
 
-import net.sf.drftpd.Bytes;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Properties;
+
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
@@ -28,28 +36,18 @@ import net.sf.drftpd.master.config.Permission;
 import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.Logger;
-
+import org.drftpd.Bytes;
+import org.drftpd.PropertyHelper;
 import org.drftpd.commands.UserManagment;
-
 import org.drftpd.plugins.SiteBot;
-
 import org.drftpd.usermanager.User;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.StringTokenizer;
+import com.Ostermiller.util.StringTokenizer;
 
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.32 2004/11/08 18:39:24 mog Exp $
+ * @version $Id: Trial.java,v 1.33 2004/11/09 18:59:46 mog Exp $
  */
 public class Trial implements FtpListener {
     private static final Logger logger = Logger.getLogger(Trial.class);
@@ -434,7 +432,7 @@ public class Trial implements FtpListener {
             }
 
             Limit limit = new Limit();
-            limit.setName(FtpConfig.getProperty(props, i + ".name"));
+            limit.setName(PropertyHelper.getProperty(props, i + ".name"));
             limit.setActionPassed(props.getProperty(i + ".pass",
                     props.getProperty(i + ".passed", "")));
             limit.setActionFailed(props.getProperty(i + ".fail", ""));
@@ -446,7 +444,7 @@ public class Trial implements FtpListener {
                     limit.getName() + ")");
             }
 
-            String period = FtpConfig.getProperty(props, i + ".period")
+            String period = PropertyHelper.getProperty(props, i + ".period")
                                      .toLowerCase();
 
             if ("monthly".equals(period)) {
@@ -468,7 +466,7 @@ public class Trial implements FtpListener {
 
             limit.setPerm(new Permission(FtpConfig.makeUsers(
                         new StringTokenizer(perm))));
-            limit.setBytes(Bytes.parseBytes(FtpConfig.getProperty(props,
+            limit.setBytes(Bytes.parseBytes(PropertyHelper.getProperty(props,
                         i + ".quota")));
             limits.add(limit);
             logger.debug("Limit: " + limit);

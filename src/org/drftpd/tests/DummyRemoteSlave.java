@@ -1,16 +1,17 @@
 package org.drftpd.tests;
 
-import net.sf.drftpd.ID3Tag;
-import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.slave.SlaveStatus;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.LightSFVFile;
+import org.drftpd.SFVFile;
 
+import org.drftpd.id3.ID3Tag;
+import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.RemoteIOException;
-import org.drftpd.slave.RemoteTransfer;
+import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.TransferIndex;
 import org.drftpd.slave.async.AsyncResponse;
 
@@ -25,7 +26,7 @@ import java.net.Socket;
 
 /**
  * @author zubov
- * @version $Id: DummyRemoteSlave.java,v 1.7 2004/11/08 18:39:31 mog Exp $
+ * @version $Id: DummyRemoteSlave.java,v 1.8 2004/11/09 19:00:00 mog Exp $
  */
 public class DummyRemoteSlave extends RemoteSlave {
     public DummyRemoteSlave(String name, GlobalContext gctx) {
@@ -105,7 +106,7 @@ public class DummyRemoteSlave extends RemoteSlave {
         return null;
     }
 
-    public SFVFile fetchSFVFileFromIndex(String index)
+    public LightSFVFile fetchSFVFileFromIndex(String index)
         throws RemoteIOException, SlaveUnavailableException {
         // TODO Auto-generated method stub
         return null;

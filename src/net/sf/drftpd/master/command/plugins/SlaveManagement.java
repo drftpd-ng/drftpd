@@ -27,13 +27,13 @@ import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.slave.SlaveStatus;
 
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 
 import org.drftpd.plugins.SiteBot;
+import org.drftpd.slave.SlaveStatus;
 
 import org.tanesha.replacer.ReplacerEnvironment;
 
@@ -47,7 +47,7 @@ import java.util.Map;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveManagement.java,v 1.10 2004/11/08 18:39:25 mog Exp $
+ * @version $Id: SlaveManagement.java,v 1.11 2004/11/09 18:59:48 mog Exp $
  */
 public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
     public void unload() {

@@ -15,21 +15,33 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd;
+package org.drftpd.slave;
 
 import java.io.IOException;
+import java.io.Serializable;
+
+import java.net.Socket;
 
 
 /**
  * @author mog
- * @version $Id: PermissionDeniedException.java,v 1.6 2004/08/03 20:13:54 zubov Exp $
+ * @version $Id: Connection.java,v 1.1 2004/11/09 18:59:58 mog Exp $
  */
-public class PermissionDeniedException extends IOException {
-    public PermissionDeniedException() {
-        super();
+public abstract class Connection implements Serializable {
+    public static final int TIMEOUT = 10000;
+
+    public abstract Socket connect() throws IOException;
+
+    protected void setSockOpts(Socket sock) throws IOException {
+        /*
+         * IPTOS_LOWCOST (0x02)
+         * IPTOS_RELIABILITY (0x04)
+         * IPTOS_THROUGHPUT (0x08)
+         * IPTOS_LOWDELAY (0x10)
+         */
+        sock.setTrafficClass(0x08);
+        sock.setSoTimeout(TIMEOUT);
     }
 
-    public PermissionDeniedException(String message) {
-        super(message);
-    }
+    public abstract void abort();
 }

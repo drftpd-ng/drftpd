@@ -20,8 +20,6 @@ package net.sf.drftpd.event.listeners;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.Nukee;
-import net.sf.drftpd.SFVFile;
-import net.sf.drftpd.SFVFile.SFVStatus;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.Event;
@@ -36,15 +34,17 @@ import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.command.plugins.Nuke;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.slave.SlaveStatus;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.SFVFile;
+import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.UserManagment;
 
 import org.drftpd.plugins.SiteBot;
 
+import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -71,7 +71,7 @@ import java.util.Locale;
 
 /**
  * @author flowman
- * @version $Id: GlftpdLog.java,v 1.16 2004/11/08 18:39:23 mog Exp $
+ * @version $Id: GlftpdLog.java,v 1.17 2004/11/09 18:59:46 mog Exp $
  */
 public class GlftpdLog implements FtpListener {
     private static Logger logger = Logger.getLogger(GlftpdLog.class);

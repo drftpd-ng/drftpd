@@ -15,16 +15,16 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.slave;
+package org.drftpd.slave;
 
-import org.drftpd.slave.RemoteTransfer;
+import org.drftpd.master.RemoteTransfer;
 
 import java.io.Serializable;
 
 
 /**
  * @author mog
- * @version $Id: SlaveStatus.java,v 1.13 2004/11/02 07:32:48 zubov Exp $
+ * @version $Id: SlaveStatus.java,v 1.1 2004/11/09 18:59:58 mog Exp $
  */
 public class SlaveStatus implements Serializable {
     static final long serialVersionUID = -5171512270937436414L;
@@ -129,13 +129,13 @@ public class SlaveStatus implements Serializable {
 
     public int getThroughputDirection(char c) {
         switch (c) {
-        case RemoteTransfer.TRANSFER_RECEIVING_UPLOAD:
+        case Transfer.TRANSFER_RECEIVING_UPLOAD:
             return getThroughputReceiving();
 
-        case RemoteTransfer.TRANSFER_SENDING_DOWNLOAD:
+        case Transfer.TRANSFER_SENDING_DOWNLOAD:
             return getThroughputSending();
 
-        case RemoteTransfer.TRANSFER_THROUGHPUT:
+        case Transfer.TRANSFER_THROUGHPUT:
             return getThroughput();
 
         default:

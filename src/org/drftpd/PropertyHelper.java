@@ -15,33 +15,27 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.slave;
 
-import java.io.IOException;
-import java.io.Serializable;
+package org.drftpd;
 
-import java.net.Socket;
-
+import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: Connection.java,v 1.14 2004/11/03 16:46:43 mog Exp $
+ * @version $Id: PropertyHelper.java,v 1.1 2004/11/09 18:59:53 mog Exp $
  */
-public abstract class Connection implements Serializable {
-    public static final int TIMEOUT = 10000;
+public class PropertyHelper {
+	private PropertyHelper() {
+	}
 
-    public abstract Socket connect() throws IOException;
-
-    protected void setSockOpts(Socket sock) throws IOException {
-        /*
-         * IPTOS_LOWCOST (0x02)
-         * IPTOS_RELIABILITY (0x04)
-         * IPTOS_THROUGHPUT (0x08)
-         * IPTOS_LOWDELAY (0x10)
-         */
-        sock.setTrafficClass(0x08);
-        sock.setSoTimeout(TIMEOUT);
-    }
-
-    public abstract void abort();
+	public static String getProperty(Properties p, String name)
+	    throws NullPointerException {
+	    String result = p.getProperty(name);
+	
+	    if (result == null) {
+	        throw new NullPointerException("Error getting setting " + name);
+	    }
+	
+	    return result;
+	}
 }

@@ -27,6 +27,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.PropertyHelper;
 import org.drftpd.mirroring.ArchiveType;
 
 import org.drftpd.sections.SectionInterface;
@@ -39,7 +40,7 @@ import java.util.Properties;
 
 /**
  * @author zubov
- * @version $Id: StripeFilesOffSpecificSlaves.java,v 1.15 2004/11/02 07:32:51 zubov Exp $
+ * @version $Id: StripeFilesOffSpecificSlaves.java,v 1.16 2004/11/09 18:59:55 mog Exp $
  */
 public class StripeFilesOffSpecificSlaves extends ArchiveType {
     private static final Logger logger = Logger.getLogger(StripeFilesOffSpecificSlaves.class);
@@ -56,7 +57,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
             String slavename = null;
 
             try {
-                slavename = FtpConfig.getProperty(props,
+                slavename = PropertyHelper.getProperty(props,
                         getSection().getName() + ".offOfSlave." + i);
             } catch (NullPointerException e) {
                 break; // done
@@ -78,7 +79,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
                 getSection().getName());
         }
 
-        _numOfSlaves = Integer.parseInt(FtpConfig.getProperty(props,
+        _numOfSlaves = Integer.parseInt(PropertyHelper.getProperty(props,
                     getSection().getName() + ".numOfSlaves"));
 
         if (_numOfSlaves < 1) {
@@ -92,7 +93,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
             String slavename = null;
 
             try {
-                slavename = FtpConfig.getProperty(props,
+                slavename = PropertyHelper.getProperty(props,
                         getSection().getName() + ".slavename." + i);
             } catch (NullPointerException e) {
                 break; // done

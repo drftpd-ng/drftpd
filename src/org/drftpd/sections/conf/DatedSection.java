@@ -25,6 +25,7 @@ import net.sf.drftpd.remotefile.StaticRemoteFile;
 import org.apache.log4j.Logger;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.PropertyHelper;
 
 import org.drftpd.remotefile.FileUtils;
 
@@ -46,7 +47,7 @@ import java.util.TimerTask;
 
 /**
  * @author mog
- * @version $Id: DatedSection.java,v 1.11 2004/10/03 16:13:56 mog Exp $
+ * @version $Id: DatedSection.java,v 1.12 2004/11/09 18:59:57 mog Exp $
  */
 public class DatedSection implements SectionInterface {
     // The code assumes that the following constants are in a increasing
@@ -70,14 +71,14 @@ public class DatedSection implements SectionInterface {
 
     public DatedSection(SectionManager mgr, int i, Properties p) {
         _mgr = mgr;
-        _name = FtpConfig.getProperty(p, i + ".name");
-        _basePath = FtpConfig.getProperty(p, i + ".path");
+        _name = PropertyHelper.getProperty(p, i + ".name");
+        _basePath = PropertyHelper.getProperty(p, i + ".path");
 
         if (!_basePath.endsWith("/")) {
             _basePath += "/";
         }
 
-        _dateFormat = new SimpleDateFormat(FtpConfig.getProperty(p, i +
+        _dateFormat = new SimpleDateFormat(PropertyHelper.getProperty(p, i +
                     ".dated"), Locale.getDefault());
 
         //rollingcalendar...

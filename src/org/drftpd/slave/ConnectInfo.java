@@ -17,7 +17,6 @@
  */
 package org.drftpd.slave;
 
-import net.sf.drftpd.slave.TransferStatus;
 
 import java.io.Serializable;
 
@@ -26,7 +25,7 @@ import java.net.InetAddress;
 
 /**
  * @author zubov
- * @version $Id: ConnectInfo.java,v 1.3 2004/11/03 16:46:46 mog Exp $
+ * @version $Id: ConnectInfo.java,v 1.4 2004/11/09 18:59:58 mog Exp $
  */
 public class ConnectInfo implements Serializable {
     private InetAddress _address;

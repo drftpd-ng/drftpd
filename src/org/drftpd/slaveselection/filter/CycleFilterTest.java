@@ -23,8 +23,9 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.RemoteSlave;
 
-import org.drftpd.slave.RemoteTransfer;
+import org.drftpd.master.RemoteTransfer;
 
+import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyRemoteSlave;
 
 import java.util.Arrays;
@@ -32,7 +33,7 @@ import java.util.Arrays;
 
 /**
  * @author zubov
- * @version $Id: CycleFilterTest.java,v 1.5 2004/11/02 07:33:12 zubov Exp $
+ * @version $Id: CycleFilterTest.java,v 1.6 2004/11/09 18:59:59 mog Exp $
  */
 public class CycleFilterTest extends TestCase {
     /**
@@ -56,7 +57,7 @@ public class CycleFilterTest extends TestCase {
             };
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
         Filter f = new CycleFilter(null, 0, null);
-        f.process(sc, null, null, RemoteTransfer.TRANSFER_SENDING_DOWNLOAD, null);
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null);
         assertEquals(1, sc.getSlaveScore(rslaves[0]).getScore());
         assertEquals(0, sc.getSlaveScore(rslaves[1]).getScore());
         assertEquals(0, sc.getSlaveScore(rslaves[2]).getScore());

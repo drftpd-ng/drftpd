@@ -18,14 +18,14 @@
 package org.drftpd.master;
 
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.remotefile.LinkedRemoteFile.CaseInsensitiveHashtable;
 
+import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.slave.async.AsyncResponseRemerge;
 
 
 /**
  * @author mog
- * @version $Id: RemergeMessage.java,v 1.2 2004/11/09 15:20:18 mog Exp $
+ * @version $Id: RemergeMessage.java,v 1.3 2004/11/09 18:59:54 mog Exp $
  */
 public class RemergeMessage {
     private RemoteSlave _rslave;

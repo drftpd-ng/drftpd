@@ -17,7 +17,6 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.Nukee;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -32,6 +31,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.Bytes;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
@@ -65,7 +65,7 @@ import java.util.StringTokenizer;
  * amount -> amount before multiplier
  *
  * @author mog
- * @version $Id: Nuke.java,v 1.27 2004/11/08 18:39:25 mog Exp $
+ * @version $Id: Nuke.java,v 1.28 2004/11/09 18:59:48 mog Exp $
  */
 public class Nuke implements CommandHandlerFactory, CommandHandler {
     public static final Key NUKED = new Key(Nuke.class, "nuked", Integer.class);

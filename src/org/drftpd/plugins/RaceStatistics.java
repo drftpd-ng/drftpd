@@ -19,7 +19,6 @@ package org.drftpd.plugins;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
@@ -27,6 +26,7 @@ import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.drftpd.SFVFile;
 import org.drftpd.usermanager.Key;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -41,7 +41,7 @@ import java.util.Iterator;
 
 /**
  * @author zubov
- * @version $Id: RaceStatistics.java,v 1.1 2004/11/05 13:27:22 mog Exp $
+ * @version $Id: RaceStatistics.java,v 1.2 2004/11/09 18:59:56 mog Exp $
  */
 public class RaceStatistics implements FtpListener {
     public static final Key RACESWON = new Key(RaceStatistics.class,

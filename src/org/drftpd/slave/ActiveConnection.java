@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.slave;
+package org.drftpd.slave;
 
 import org.apache.log4j.Logger;
 
@@ -31,7 +31,7 @@ import javax.net.ssl.SSLSocket;
 
 /**
  * @author mog
- * @version $Id: ActiveConnection.java,v 1.10 2004/11/03 16:46:43 mog Exp $
+ * @version $Id: ActiveConnection.java,v 1.1 2004/11/09 18:59:58 mog Exp $
  */
 public class ActiveConnection extends Connection {
     private static final Logger logger = Logger.getLogger(ActiveConnection.class);

@@ -27,6 +27,7 @@ import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Matcher;
 
+import org.drftpd.PropertyHelper;
 import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;
@@ -46,10 +47,10 @@ import java.util.StringTokenizer;
  * </pre>
  *
  * @author mog
- * @version $Id: MatchdirFilter.java,v 1.7 2004/11/03 16:46:48 mog Exp $
+ * @version $Id: MatchdirFilter.java,v 1.8 2004/11/09 18:59:59 mog Exp $
  */
 public class MatchdirFilter extends Filter {
-    private ArrayList _assigns;
+    private ArrayList<AssignSlave> _assigns;
     private FilterChain _ssm;
     private Pattern _p;
     private Perl5Matcher _m = new Perl5Matcher();
@@ -58,8 +59,8 @@ public class MatchdirFilter extends Filter {
         _ssm = ssm;
 
         try {
-            parseAssign(FtpConfig.getProperty(p, i + ".assign"));
-            _p = new GlobCompiler().compile(FtpConfig.getProperty(p,
+            parseAssign(PropertyHelper.getProperty(p, i + ".assign"));
+            _p = new GlobCompiler().compile(PropertyHelper.getProperty(p,
                         i + ".match"));
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
@@ -72,7 +73,7 @@ public class MatchdirFilter extends Filter {
 
     private void parseAssign(String assign) throws ObjectNotFoundException {
         StringTokenizer st = new StringTokenizer(assign, ", ");
-        ArrayList assigns = new ArrayList();
+        ArrayList<AssignSlave> assigns = new ArrayList<AssignSlave>();
 
         while (st.hasMoreTokens()) {
             assigns.add(new AssignSlave(st.nextToken(),
@@ -83,9 +84,7 @@ public class MatchdirFilter extends Filter {
     }
 
     private void doAssign(ScoreChart scorechart) {
-        for (Iterator iter = _assigns.iterator(); iter.hasNext();) {
-            AssignSlave assign = (AssignSlave) iter.next();
-
+    	for(AssignSlave assign : _assigns) {
             if (assign.isAll()) {
                 for (Iterator iterator = scorechart.getSlaveScores().iterator();
                         iterator.hasNext();) {

@@ -21,7 +21,6 @@ import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.event.listeners.Trial;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
@@ -29,6 +28,7 @@ import net.sf.drftpd.master.config.Permission;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.UserComparator;
 
+import org.drftpd.Bytes;
 import org.drftpd.commands.TransferStatistics;
 
 import org.drftpd.plugins.SiteBot;
@@ -49,7 +49,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author zubov
-  * @version $Id: Stats.java,v 1.15 2004/11/08 18:39:23 mog Exp $
+  * @version $Id: Stats.java,v 1.16 2004/11/09 18:59:45 mog Exp $
  */
 public class Stats extends GenericCommandAutoService
     implements IRCPluginInterface {

@@ -17,7 +17,6 @@
  */
 package org.drftpd.slaveselection.def;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -25,12 +24,15 @@ import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.slave.SlaveStatus;
 
+import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
+import org.drftpd.PropertyHelper;
 
-import org.drftpd.slave.RemoteTransfer;
+import org.drftpd.master.RemoteTransfer;
 
+import org.drftpd.slave.SlaveStatus;
+import org.drftpd.slave.Transfer;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 import java.io.FileInputStream;
@@ -44,7 +46,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: DefaultSlaveSelectionManager.java,v 1.4 2004/11/03 16:46:47 mog Exp $
+ * @version $Id: DefaultSlaveSelectionManager.java,v 1.5 2004/11/09 18:59:59 mog Exp $
  */
 public class DefaultSlaveSelectionManager
     implements SlaveSelectionManagerInterface {
@@ -62,13 +64,13 @@ public class DefaultSlaveSelectionManager
     public void reload() throws FileNotFoundException, IOException {
         Properties p = new Properties();
         p.load(new FileInputStream("conf/slaveselection-old.conf"));
-        _minfreespace = Bytes.parseBytes(FtpConfig.getProperty(p, "minfreespace"));
+        _minfreespace = Bytes.parseBytes(PropertyHelper.getProperty(p, "minfreespace"));
 
         try {
             if (getGlobalContext().getConnectionManager().getJobManager() != null) {
-                _maxTransfers = Integer.parseInt(FtpConfig.getProperty(p,
+                _maxTransfers = Integer.parseInt(PropertyHelper.getProperty(p,
                             "maxTransfers"));
-                _maxBandwidth = Bytes.parseBytes(FtpConfig.getProperty(p,
+                _maxBandwidth = Bytes.parseBytes(PropertyHelper.getProperty(p,
                             "maxBandwidth"));
             }
         } catch (IllegalStateException e) {
@@ -85,13 +87,13 @@ public class DefaultSlaveSelectionManager
     public RemoteSlave getASlaveForMaster(LinkedRemoteFileInterface file,
         FtpConfig cfg) throws NoAvailableSlaveException {
         return getASlaveInternal(file.getAvailableSlaves(),
-            RemoteTransfer.TRANSFER_SENDING_DOWNLOAD);
+            Transfer.TRANSFER_SENDING_DOWNLOAD);
     }
 
     public RemoteSlave getASlaveForJobDownload(Job job)
         throws NoAvailableSlaveException {
         return getASlaveInternal(job.getFile().getAvailableSlaves(),
-            RemoteTransfer.TRANSFER_SENDING_DOWNLOAD);
+            Transfer.TRANSFER_SENDING_DOWNLOAD);
     }
 
     private RemoteSlave getASlaveInternal(Collection slaves, char direction)
@@ -153,19 +155,19 @@ public class DefaultSlaveSelectionManager
                 }
 
                 if (throughput == bestthroughput) {
-                    if (direction == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
+                    if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
                         if (bestslave.getLastUploadReceiving() > slave.getLastUploadReceiving()) {
                             bestslave = slave;
                             bestthroughput = throughput;
                             beststatus = status;
                         }
-                    } else if (direction == RemoteTransfer.TRANSFER_SENDING_DOWNLOAD) {
+                    } else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
                         if (bestslave.getLastDownloadSending() > slave.getLastDownloadSending()) {
                             bestslave = slave;
                             bestthroughput = throughput;
                             beststatus = status;
                         }
-                    } else if (direction == RemoteTransfer.TRANSFER_THROUGHPUT) {
+                    } else if (direction == Transfer.TRANSFER_THROUGHPUT) {
                         if (bestslave.getLastTransfer() > slave.getLastTransfer()) {
                             bestslave = slave;
                             bestthroughput = throughput;
@@ -182,9 +184,9 @@ public class DefaultSlaveSelectionManager
             }
         }
 
-        if (direction == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
+        if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
             bestslave.setLastUploadReceiving(System.currentTimeMillis());
-        } else if (direction == RemoteTransfer.TRANSFER_SENDING_DOWNLOAD) {
+        } else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
             bestslave.setLastDownloadSending(System.currentTimeMillis());
         } else {
             bestslave.setLastUploadReceiving(System.currentTimeMillis());
@@ -200,7 +202,7 @@ public class DefaultSlaveSelectionManager
                                 .getAvailableSlaves();
         slaves.removeAll(job.getFile().getAvailableSlaves());
 
-        return getASlaveForJob(slaves, RemoteTransfer.TRANSFER_RECEIVING_UPLOAD);
+        return getASlaveForJob(slaves, Transfer.TRANSFER_RECEIVING_UPLOAD);
     }
 
     public RemoteSlave getASlaveForJob(Collection slaves, char direction)
@@ -218,13 +220,13 @@ public class DefaultSlaveSelectionManager
             throw new NoAvailableSlaveException();
         }
 
-        if (direction == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
+        if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
             if (status.getTransfersReceiving() > _maxTransfers) {
                 throw new NoAvailableSlaveException();
             }
         }
 
-        if (direction == RemoteTransfer.TRANSFER_SENDING_DOWNLOAD) {
+        if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
             if (status.getTransfersSending() > _maxTransfers) {
                 throw new NoAvailableSlaveException();
             }

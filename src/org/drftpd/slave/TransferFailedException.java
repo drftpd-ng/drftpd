@@ -15,29 +15,32 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd;
+package org.drftpd.slave;
 
 import java.io.IOException;
 
 
+
 /**
- * @author mog
  *
- * @version $Id: InvalidDirectoryException.java,v 1.5 2004/08/03 20:13:54 zubov Exp $
+ * @author mog
+ * @version $Id: TransferFailedException.java,v 1.1 2004/11/09 18:59:58 mog Exp $
  */
-public class InvalidDirectoryException extends IOException {
-    /**
-     * Constructor for InvalidDirectoryException.
-     */
-    public InvalidDirectoryException() {
-        super();
+public class TransferFailedException extends IOException {
+    private TransferStatus _status;
+
+    public TransferFailedException(IOException e, TransferStatus status) {
+        super(e.getMessage());
+        initCause(e);
+        _status = status;
     }
 
-    /**
-     * Constructor for InvalidDirectoryException.
-     * @param arg0
-     */
-    public InvalidDirectoryException(String arg0) {
-        super(arg0);
+    public TransferFailedException(String message, TransferStatus status) {
+        super(message);
+        _status = status;
+    }
+
+    public TransferStatus getStatus() {
+        return _status;
     }
 }

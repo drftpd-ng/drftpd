@@ -25,8 +25,9 @@ import net.sf.drftpd.master.RemoteSlave;
 
 import org.apache.log4j.BasicConfigurator;
 
-import org.drftpd.slave.RemoteTransfer;
+import org.drftpd.master.RemoteTransfer;
 
+import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyRemoteSlave;
 
 import java.util.Arrays;
@@ -35,7 +36,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManagerTest.java,v 1.7 2004/11/02 07:33:12 zubov Exp $
+ * @version $Id: SlaveSelectionManagerTest.java,v 1.8 2004/11/09 19:00:00 mog Exp $
  */
 public class SlaveSelectionManagerTest extends TestCase {
     public SlaveSelectionManagerTest(String fName) {
@@ -71,7 +72,7 @@ public class SlaveSelectionManagerTest extends TestCase {
 
         try {
             ssm.getBestSlave(new ScoreChart(Arrays.asList(rslaves)), null,
-                null, RemoteTransfer.TRANSFER_SENDING_DOWNLOAD,
+                null, Transfer.TRANSFER_SENDING_DOWNLOAD,
                 new MatchdirFilterTest.LinkedRemoteFilePath("/blabla/file.txt"));
             fail(); // no slaves are online
         } catch (NoAvailableSlaveException pass) {

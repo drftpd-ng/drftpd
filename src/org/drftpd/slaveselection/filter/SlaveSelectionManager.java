@@ -27,8 +27,9 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
 
-import org.drftpd.slave.RemoteTransfer;
+import org.drftpd.master.RemoteTransfer;
 
+import org.drftpd.slave.Transfer;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 import org.drftpd.usermanager.User;
@@ -45,7 +46,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.21 2004/11/03 16:46:48 mog Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.22 2004/11/09 19:00:00 mog Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     private GlobalContext _gctx;
@@ -70,9 +71,9 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
         InetAddress source = ((conn != null) ? conn.getClientAddress() : null);
         String status;
 
-        if (direction == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
+        if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
             status = "up";
-        } else if (direction == RemoteTransfer.TRANSFER_SENDING_DOWNLOAD) {
+        } else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
             status = "down";
         } else {
             throw new IllegalArgumentException();
@@ -92,7 +93,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
         }
 
         return process("jobdown", new ScoreChart(slaves), null, null,
-            RemoteTransfer.TRANSFER_SENDING_DOWNLOAD, job.getFile());
+            Transfer.TRANSFER_SENDING_DOWNLOAD, job.getFile());
     }
 
     public RemoteSlave getASlaveForJobUpload(Job job)
@@ -110,7 +111,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
         }
 
         return process("jobup", new ScoreChart(slaves), null, null,
-            RemoteTransfer.TRANSFER_SENDING_DOWNLOAD, job.getFile());
+            Transfer.TRANSFER_SENDING_DOWNLOAD, job.getFile());
     }
 
     /**
@@ -119,7 +120,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     public RemoteSlave getASlaveForMaster(LinkedRemoteFileInterface file,
         FtpConfig cfg) throws NoAvailableSlaveException {
         return process("master", new ScoreChart(file.getAvailableSlaves()),
-            null, null, RemoteTransfer.TRANSFER_SENDING_DOWNLOAD, file);
+            null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, file);
     }
 
     public SlaveManager getSlaveManager() {

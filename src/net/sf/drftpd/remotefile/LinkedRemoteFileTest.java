@@ -24,6 +24,7 @@ import net.sf.drftpd.master.RemoteSlave;
 
 import org.apache.log4j.BasicConfigurator;
 
+import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.remotefile.LightRemoteFile;
 
 import org.drftpd.tests.DummyFtpConfig;
@@ -39,7 +40,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: LinkedRemoteFileTest.java,v 1.13 2004/11/03 16:46:43 mog Exp $
+ * @version $Id: LinkedRemoteFileTest.java,v 1.14 2004/11/09 18:59:52 mog Exp $
  */
 public class LinkedRemoteFileTest extends TestCase {
     private LinkedRemoteFile _root;
@@ -70,7 +71,7 @@ public class LinkedRemoteFileTest extends TestCase {
 
     private static void internalRemergeSlave1(LinkedRemoteFile root,
         RemoteSlave slave1) throws IOException {
-        LinkedRemoteFile.CaseInsensitiveHashtable slaveroot = new LinkedRemoteFile.CaseInsensitiveHashtable();
+        CaseInsensitiveHashtable slaveroot = new CaseInsensitiveHashtable();
         slaveroot.put("ConflictTest",
             new LightRemoteFile("ConflictTest", System.currentTimeMillis(), 1000));
         slaveroot.put("AddSlaveTest",
@@ -92,7 +93,7 @@ public class LinkedRemoteFileTest extends TestCase {
 
     private static void internalRemergeSlave2(LinkedRemoteFile root,
         RemoteSlave slave2) throws IOException {
-        LinkedRemoteFile.CaseInsensitiveHashtable slaveroot = new LinkedRemoteFile.CaseInsensitiveHashtable();
+        CaseInsensitiveHashtable slaveroot = new CaseInsensitiveHashtable();
         slaveroot.put("ConflictTest",
             new LightRemoteFile("ConflictTest", System.currentTimeMillis(), 1001));
         slaveroot.put("AddSlaveTest",
@@ -124,11 +125,11 @@ public class LinkedRemoteFileTest extends TestCase {
 
         List bothSlaves = Arrays.asList(new RemoteSlave[] { _slave1, _slave2 });
 
-        LinkedRemoteFile.CaseInsensitiveHashtable files = new LinkedRemoteFile.CaseInsensitiveHashtable();
+        CaseInsensitiveHashtable files = new CaseInsensitiveHashtable();
         files.put("AddSlaveTest",
             new LightRemoteFile("AddSlaveTest", 1000, System.currentTimeMillis()));
 
-        LinkedRemoteFile.CaseInsensitiveHashtable files2 = new LinkedRemoteFile.CaseInsensitiveHashtable();
+        CaseInsensitiveHashtable files2 = new CaseInsensitiveHashtable();
         files2.put("AddSlaveTest",
             new LightRemoteFile("AddSlaveTest", 1000, System.currentTimeMillis()));
         _root.setSlaveForMerging(_slave1);

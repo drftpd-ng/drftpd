@@ -26,13 +26,13 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.drftpd.plugins.SiteBot;
+import org.drftpd.slave.SlaveStatus;
 
 import org.tanesha.replacer.ReplacerEnvironment;
 
@@ -41,7 +41,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Slaves.java,v 1.18 2004/11/02 07:32:38 zubov Exp $
+ * @version $Id: Slaves.java,v 1.19 2004/11/09 18:59:45 mog Exp $
  */
 public class Slaves extends GenericAutoService implements IRCPluginInterface {
     private static final int LEN2 = "!slave ".length();

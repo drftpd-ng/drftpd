@@ -17,17 +17,17 @@
  */
 package org.drftpd.slave.async;
 
-import net.sf.drftpd.SFVFile;
+import org.drftpd.LightSFVFile;
 
 
 /**
  * @author zubov
- * @version $Id: AsyncResponseSFVFile.java,v 1.3 2004/11/03 16:46:47 mog Exp $
-**/
+ * @version $Id: AsyncResponseSFVFile.java,v 1.4 2004/11/09 18:59:58 mog Exp $
+ */
 public class AsyncResponseSFVFile extends AsyncResponse {
-    private SFVFile _sfv;
+    private LightSFVFile _sfv;
 
-    public AsyncResponseSFVFile(String index, SFVFile sfv) {
+    public AsyncResponseSFVFile(String index, LightSFVFile sfv) {
         super(index);
 
         if (sfv == null) {
@@ -37,7 +37,7 @@ public class AsyncResponseSFVFile extends AsyncResponse {
         _sfv = sfv;
     }
 
-    public SFVFile getSFV() {
+    public LightSFVFile getSFV() {
         return _sfv;
     }
 }

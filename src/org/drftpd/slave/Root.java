@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.slave;
+package org.drftpd.slave;
 
 import se.mog.io.File;
 
@@ -24,7 +24,7 @@ import java.io.IOException;
 
 /**
  * @author mog
- * @version $Id: Root.java,v 1.10 2004/11/02 07:32:48 zubov Exp $
+ * @version $Id: Root.java,v 1.1 2004/11/09 18:59:58 mog Exp $
  */
 public class Root {
     private File _rootFile;

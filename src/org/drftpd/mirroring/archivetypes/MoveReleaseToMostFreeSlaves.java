@@ -24,6 +24,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.PropertyHelper;
 import org.drftpd.mirroring.ArchiveType;
 
 import org.drftpd.sections.SectionInterface;
@@ -36,7 +37,7 @@ import java.util.Properties;
 
 /**
  * @author zubov
- * @version $Id: MoveReleaseToMostFreeSlaves.java,v 1.6 2004/08/03 20:14:05 zubov Exp $
+ * @version $Id: MoveReleaseToMostFreeSlaves.java,v 1.7 2004/11/09 18:59:55 mog Exp $
  */
 public class MoveReleaseToMostFreeSlaves extends ArchiveType {
     private static final Logger logger = Logger.getLogger(MoveReleaseToMostFreeSlaves.class);
@@ -45,7 +46,7 @@ public class MoveReleaseToMostFreeSlaves extends ArchiveType {
     public MoveReleaseToMostFreeSlaves(Archive archive,
         SectionInterface section, Properties props) {
         super(archive, section, props);
-        _numOfSlaves = Integer.parseInt(FtpConfig.getProperty(props,
+        _numOfSlaves = Integer.parseInt(PropertyHelper.getProperty(props,
                     getSection().getName() + ".numOfSlaves"));
 
         if (_numOfSlaves < 1) {

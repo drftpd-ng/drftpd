@@ -22,6 +22,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.util.Time;
 
+import org.drftpd.PropertyHelper;
 import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;
@@ -32,15 +33,15 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: MintimeonlineFilter.java,v 1.4 2004/11/03 16:46:48 mog Exp $
+ * @version $Id: MintimeonlineFilter.java,v 1.5 2004/11/09 18:59:59 mog Exp $
  */
 public class MintimeonlineFilter extends Filter {
     private long _minTime;
     private float _multiplier;
 
     public MintimeonlineFilter(FilterChain fc, int i, Properties p) {
-        _minTime = Time.parseTime(FtpConfig.getProperty(p, i + ".mintime"));
-        _multiplier = BandwidthFilter.parseMultiplier(FtpConfig.getProperty(p,
+        _minTime = Time.parseTime(PropertyHelper.getProperty(p, i + ".mintime"));
+        _multiplier = BandwidthFilter.parseMultiplier(PropertyHelper.getProperty(p,
                     i + ".multiplier"));
     }
 

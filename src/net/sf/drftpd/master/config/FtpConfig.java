@@ -27,12 +27,13 @@ import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
 
 import org.drftpd.GlobalContext;
-
 import org.drftpd.commands.UserManagment;
 
 import org.drftpd.slave.Slave;
 
 import org.drftpd.usermanager.User;
+
+import com.Ostermiller.util.StringTokenizer;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -51,16 +52,15 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.StringTokenizer;
 
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.67 2004/11/08 18:39:25 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.68 2004/11/09 18:59:49 mog Exp $
  */
 public class FtpConfig {
     private static final Logger logger = Logger.getLogger(FtpConfig.class);
-    private ArrayList _bouncerIps;
+    private ArrayList<InetAddress> _bouncerIps;
     private boolean _capFirstDir;
     private boolean _capFirstFile;
     private String _cfgFileName;
@@ -74,8 +74,8 @@ public class FtpConfig {
     private int _maxUsersExempt;
     private int _maxUsersTotal = Integer.MAX_VALUE;
     private ArrayList _msgpath;
-    private Hashtable _patternPaths;
-    private Hashtable _permissions;
+    private Hashtable<String, Collection> _patternPaths;
+    private Hashtable<String, Permission> _permissions;
     private StringTokenizer _replaceDir;
     private StringTokenizer _replaceFile;
     private long _slaveStatusUpdateTime;
@@ -95,18 +95,7 @@ public class FtpConfig {
         loadConfig(cfg, connManager);
     }
 
-    public static String getProperty(Properties p, String name)
-        throws NullPointerException {
-        String result = p.getProperty(name);
-
-        if (result == null) {
-            throw new NullPointerException("Error getting setting " + name);
-        }
-
-        return result;
-    }
-
-    private static ArrayList makeRatioPermission(ArrayList arr,
+    private static ArrayList makeRatioPermission(ArrayList<RatioPathPermission> arr,
         StringTokenizer st) throws MalformedPatternException {
         arr.add(new RatioPathPermission(new GlobCompiler().compile(
                     st.nextToken()), Float.parseFloat(st.nextToken()),
@@ -116,10 +105,10 @@ public class FtpConfig {
     }
 
     public static ArrayList makeUsers(Enumeration st) {
-        ArrayList users = new ArrayList();
+        ArrayList<String> users = new ArrayList<String>();
 
         while (st.hasMoreElements()) {
-            users.add(st.nextElement());
+            users.add((String) st.nextElement());
         }
 
         return users;
@@ -204,7 +193,7 @@ public class FtpConfig {
     }
 
     private boolean checkPermission(String key, User user) {
-        Permission perm = (Permission) _permissions.get(key);
+        Permission perm = _permissions.get(key);
 
         return (perm == null) ? false : perm.check(user);
     }
@@ -389,11 +378,10 @@ public class FtpConfig {
         StringTokenizer st = new StringTokenizer(cfg.getProperty("bouncer_ip",
                     ""), " ");
 
-        ArrayList bouncerIps = new ArrayList();
+        ArrayList<InetAddress> bouncerIps = new ArrayList<InetAddress>();
 
         while (st.hasMoreTokens()) {
             bouncerIps.add(InetAddress.getByName(st.nextToken()));
-
             // throws UnknownHostException
         }
 
@@ -402,10 +390,10 @@ public class FtpConfig {
 
     protected void loadConfig2(Reader in2) throws IOException {
         Hashtable patternPathPermissions = new Hashtable();
-        Hashtable permissions = new Hashtable();
+        Hashtable<String,Permission> permissions = new Hashtable<String,Permission>();
         ArrayList creditcheck = new ArrayList();
-        ArrayList creditloss = new ArrayList();
-        ArrayList msgpath = new ArrayList();
+        ArrayList<RatioPathPermission> creditloss = new ArrayList<RatioPathPermission>();
+        ArrayList<MessagePathPermission> msgpath = new ArrayList<MessagePathPermission>();
         _useFileNames = false;
         _replaceFile = null;
         _useDirNames = false;

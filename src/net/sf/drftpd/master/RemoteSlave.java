@@ -22,13 +22,9 @@ import com.thoughtworks.xstream.io.StreamException;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.HostMaskCollection;
-import net.sf.drftpd.ID3Tag;
-import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.slave.SlaveStatus;
-import net.sf.drftpd.slave.TransferStatus;
 import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Logger;
@@ -36,13 +32,19 @@ import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.LightSFVFile;
+import org.drftpd.SFVFile;
 
+import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.RemergeMessage;
+import org.drftpd.master.RemoteTransfer;
 
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
-import org.drftpd.slave.RemoteTransfer;
+import org.drftpd.slave.SlaveStatus;
+import org.drftpd.slave.Transfer;
 import org.drftpd.slave.TransferIndex;
+import org.drftpd.slave.TransferStatus;
 import org.drftpd.slave.async.AsyncCommand;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
@@ -80,7 +82,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  * @author zubov
- * @version $Id: RemoteSlave.java,v 1.73 2004/11/09 15:20:12 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.74 2004/11/09 18:59:47 mog Exp $
  */
 public class RemoteSlave implements Runnable, Comparable, Serializable {
     private static final long serialVersionUID = -6973935289361817125L;
@@ -97,13 +99,13 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     private transient SlaveStatus _status;
     private HostMaskCollection _ipMasks;
     private Properties _keysAndValues;
-    private HashMap _renameQueue;
-    private Stack _indexPool;
-    private transient HashMap _indexWithCommands;
+    private HashMap<String, String> _renameQueue;
+    private Stack<String> _indexPool;
+    private transient HashMap<String, AsyncResponse> _indexWithCommands;
     private transient ObjectInputStream _sin;
     private transient Socket _socket;
     private transient ObjectOutputStream _sout;
-    private transient HashMap _transfers;
+    private transient HashMap<TransferIndex,RemoteTransfer> _transfers;
 
     /**
      * Used by everything including tests
@@ -112,12 +114,12 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         init(name, gctx);
         _keysAndValues = new Properties();
         _ipMasks = new HostMaskCollection();
-        _renameQueue = new HashMap();
+        _renameQueue = new HashMap<String,String>();
         commit();
     }
 
     public final static Hashtable rslavesToHashtable(Collection rslaves) {
-        Hashtable map = new Hashtable(rslaves.size());
+        Hashtable<String, RemoteSlave> map = new Hashtable<String, RemoteSlave>(rslaves.size());
 
         for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
             RemoteSlave rslave = (RemoteSlave) iter.next();
@@ -242,11 +244,11 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     }
 
     public long getLastTransferForDirection(char dir) {
-        if (dir == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
+        if (dir == Transfer.TRANSFER_RECEIVING_UPLOAD) {
             return getLastUploadReceiving();
-        } else if (dir == RemoteTransfer.TRANSFER_SENDING_DOWNLOAD) {
+        } else if (dir == Transfer.TRANSFER_SENDING_DOWNLOAD) {
             return getLastDownloadSending();
-        } else if (dir == RemoteTransfer.TRANSFER_THROUGHPUT) {
+        } else if (dir == Transfer.TRANSFER_THROUGHPUT) {
             return getLastTransfer();
         } else {
             throw new IllegalArgumentException();
@@ -324,11 +326,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
 
         String remergeIndex = issueRemergeToSlave("/");
         fetchRemergeResponseFromIndex(remergeIndex);
-        try {
-			getGlobalContext().getSlaveManager().getRemergeQueue().put(new RemergeMessage(this));
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
+			getGlobalContext().getSlaveManager().putRemergeQueue(new RemergeMessage(this));
         setAvailable(true);
         logger.info("Slave added: '" + getName() + "' status: " + _status);
         getGlobalContext().getConnectionManager().dispatchFtpEvent(new SlaveEvent(
@@ -366,6 +364,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     }
 
     public void processQueue() throws IOException, SlaveUnavailableException {
+    	//no for-each loop, needs iter.remove()
         for (Iterator iter = _renameQueue.keySet().iterator(); iter.hasNext();) {
             String sourceFile = (String) iter.next();
             String destFile = (String) _renameQueue.get(sourceFile);
@@ -420,12 +419,12 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
 
     public final void setLastDirection(char direction, long l) {
         switch (direction) {
-        case RemoteTransfer.TRANSFER_RECEIVING_UPLOAD:
+        case Transfer.TRANSFER_RECEIVING_UPLOAD:
             setLastUploadReceiving(l);
 
             return;
 
-        case RemoteTransfer.TRANSFER_SENDING_DOWNLOAD:
+        case Transfer.TRANSFER_SENDING_DOWNLOAD:
             setLastDownloadSending(l);
 
             return;
@@ -501,7 +500,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         _socket = socket;
         _sout = out;
         _sin = in;
-        _indexPool = new Stack();
+        _indexPool = new Stack<String>();
 
         for (int i = 0; i < 256; i++) {
             String key = Integer.toHexString(i);
@@ -513,8 +512,8 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
             _indexPool.push(key);
         }
 
-        _indexWithCommands = new HashMap();
-        _transfers = new HashMap();
+        _indexWithCommands = new HashMap<String, AsyncResponse>();
+        _transfers = new HashMap<TransferIndex, RemoteTransfer>();
         _errors = 0;
         _lastNetworkError = System.currentTimeMillis();
         start();
@@ -636,7 +635,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         return rar;
     }
 
-    public SFVFile fetchSFVFileFromIndex(String index)
+    public LightSFVFile fetchSFVFileFromIndex(String index)
         throws RemoteIOException, SlaveUnavailableException {
         return ((AsyncResponseSFVFile) fetchResponse(index)).getSFV();
     }
@@ -793,8 +792,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
                     }
 
                     if (ar.getIndex().equals("Remerge")) {
-                        getGlobalContext().getSlaveManager().getRemergeQueue()
-                            .put(new RemergeMessage((AsyncResponseRemerge) ar,
+                        getGlobalContext().getSlaveManager().putRemergeQueue(new RemergeMessage((AsyncResponseRemerge) ar,
                                 this));
                     } else if (ar.getIndex().equals("SlaveStatus")) {
                         _status = ((AsyncResponseSlaveStatus) ar).getSlaveStatus();

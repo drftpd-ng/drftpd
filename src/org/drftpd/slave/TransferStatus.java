@@ -15,16 +15,15 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.slave;
+package org.drftpd.slave;
 
-import org.drftpd.slave.TransferIndex;
 
 import java.io.Serializable;
 
 
 /**
  * @author mog
- * @version $Id: TransferStatus.java,v 1.8 2004/11/03 16:46:44 mog Exp $
+ * @version $Id: TransferStatus.java,v 1.1 2004/11/09 18:59:58 mog Exp $
  */
 public class TransferStatus implements Serializable {
     private long _checksum;

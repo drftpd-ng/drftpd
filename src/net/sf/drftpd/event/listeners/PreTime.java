@@ -31,6 +31,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.PropertyHelper;
 import org.drftpd.plugins.SiteBot;
 
 import java.io.FileInputStream;
@@ -44,7 +45,7 @@ import java.util.Properties;
 
 /**
  * @author zubov
- * @version $Id: PreTime.java,v 1.19 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: PreTime.java,v 1.20 2004/11/09 18:59:46 mog Exp $
  */
 public class PreTime implements FtpListener {
     private static final Logger logger = Logger.getLogger(PreTime.class);
@@ -139,7 +140,7 @@ public class PreTime implements FtpListener {
             throw new RuntimeException(e);
         }
 
-        prebot = FtpConfig.getProperty(props, "prebot");
+        prebot = PropertyHelper.getProperty(props, "prebot");
 
         if (prebot == null) {
             throw new FatalException("prebot not set in prebot.conf");
@@ -151,7 +152,7 @@ public class PreTime implements FtpListener {
             String temp = null;
 
             try {
-                temp = FtpConfig.getProperty(props, "DatedDir." + i);
+                temp = PropertyHelper.getProperty(props, "DatedDir." + i);
             } catch (NullPointerException e2) {
                 break;
             }

@@ -22,7 +22,6 @@ import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.State;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
@@ -30,10 +29,12 @@ import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.Bytes;
+import org.drftpd.master.RemoteTransfer;
 import org.drftpd.plugins.SiteBot;
 
-import org.drftpd.slave.RemoteTransfer;
 
+import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 
@@ -48,7 +49,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Who.java,v 1.10 2004/11/03 16:46:38 mog Exp $
+ * @version $Id: Who.java,v 1.11 2004/11/09 18:59:45 mog Exp $
  */
 public class Who extends GenericAutoService implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Who.class);
@@ -149,13 +150,13 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
                         conn.getDataConnectionHandler().getTranferSlave()
                             .getName());
 
-                    if (conn.getTransferDirection() == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
+                    if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
                         if (up) {
                             _listener.sayChannel(msgc.getDest(),
                                 SimplePrintf.jprintf(formatup, env));
                             i++;
                         }
-                    } else if (conn.getTransferDirection() == RemoteTransfer.TRANSFER_SENDING_DOWNLOAD) {
+                    } else if (conn.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
                         if (dn) {
                             _listener.sayChannel(msgc.getDest(),
                                 SimplePrintf.jprintf(formatdown, env));

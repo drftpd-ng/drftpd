@@ -19,10 +19,8 @@ package net.sf.drftpd.remotefile;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.ID3Tag;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
@@ -31,7 +29,12 @@ import net.sf.drftpd.util.ListUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.SFVFile;
+import org.drftpd.id3.ID3Tag;
+import org.drftpd.remotefile.AbstractRemoteFile;
+import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.remotefile.LightRemoteFile;
+import org.drftpd.remotefile.RemoteFileInterface;
 
 import org.drftpd.slave.RemoteIOException;
 
@@ -55,7 +58,7 @@ import java.util.StringTokenizer;
  * Represents the file attributes of a remote file.
  *
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.175 2004/11/09 04:13:53 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.176 2004/11/09 18:59:51 mog Exp $
  */
 public class LinkedRemoteFile implements Serializable, Comparable,
     LinkedRemoteFileInterface {
@@ -748,7 +751,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
                 try {
                     String index = rslave.issueSFVFileToSlave(getPath());
-                    sfvFile = rslave.fetchSFVFileFromIndex(index);
+                    sfvFile = new SFVFile(rslave.fetchSFVFileFromIndex(index));
                     sfvFile.setCompanion(this);
 
                     break;
@@ -1667,40 +1670,6 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
         if (_slaves.isEmpty()) {
             _slaves = null;
-        }
-    }
-
-    public static class CaseInsensitiveHashtable extends Hashtable {
-        public CaseInsensitiveHashtable() {
-            super();
-        }
-
-        public CaseInsensitiveHashtable(int initialCapacity) {
-            super(initialCapacity);
-        }
-
-        public CaseInsensitiveHashtable(int initialCapacity, float loadFactor) {
-            super(initialCapacity, loadFactor);
-        }
-
-        public CaseInsensitiveHashtable(Map t) {
-            super(t);
-        }
-
-        public synchronized boolean containsKey(Object key) {
-            return super.containsKey(((String) key).toLowerCase());
-        }
-
-        public synchronized Object get(Object key) {
-            return super.get(((String) key).toLowerCase());
-        }
-
-        public synchronized Object put(Object key, Object value) {
-            return super.put(((String) key).toLowerCase(), value);
-        }
-
-        public synchronized Object remove(Object key) {
-            return super.remove(((String) key).toLowerCase());
         }
     }
 

@@ -17,7 +17,6 @@
  */
 package org.drftpd.commands;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -30,6 +29,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.Bytes;
 import org.drftpd.sections.SectionInterface;
 
 import org.drftpd.usermanager.NoSuchUserException;
@@ -47,7 +47,7 @@ import java.util.Map;
 /**
  * @author mog
  *
- * @version $Id: Pre.java,v 1.6 2004/11/08 18:39:29 mog Exp $
+ * @version $Id: Pre.java,v 1.7 2004/11/09 18:59:54 mog Exp $
  */
 public class Pre implements CommandHandlerFactory, CommandHandler {
     private static final Logger logger = Logger.getLogger(Pre.class);

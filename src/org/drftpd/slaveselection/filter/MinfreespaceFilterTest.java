@@ -20,14 +20,15 @@ package org.drftpd.slaveselection.filter;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.slave.SlaveStatus;
 
-import org.drftpd.slave.RemoteTransfer;
+import org.drftpd.Bytes;
+import org.drftpd.master.RemoteTransfer;
 
+import org.drftpd.slave.SlaveStatus;
+import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyRemoteSlave;
 
 import java.util.Arrays;
@@ -38,7 +39,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: MinfreespaceFilterTest.java,v 1.10 2004/11/02 07:33:12 zubov Exp $
+ * @version $Id: MinfreespaceFilterTest.java,v 1.11 2004/11/09 18:59:59 mog Exp $
  */
 public class MinfreespaceFilterTest extends TestCase {
     public MinfreespaceFilterTest(String fName) {
@@ -63,7 +64,7 @@ public class MinfreespaceFilterTest extends TestCase {
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
         Filter f = new MinfreespaceFilter(null, 1, p);
-        f.process(sc, null, null, RemoteTransfer.TRANSFER_SENDING_DOWNLOAD, null);
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null);
 
         assertEquals(Bytes.parseBytes("-50MB"),
             sc.getSlaveScore(rslaves[0]).getScore());

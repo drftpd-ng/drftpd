@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.remotefile;
+package org.drftpd.remotefile;
 
 import java.io.FileNotFoundException;
 
@@ -24,7 +24,7 @@ import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: RemoteFileInterface.java,v 1.14 2004/11/02 07:32:47 zubov Exp $
+ * @version $Id: RemoteFileInterface.java,v 1.1 2004/11/09 18:59:57 mog Exp $
  */
 public interface RemoteFileInterface {
     /**

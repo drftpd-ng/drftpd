@@ -17,14 +17,15 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.slave.SlaveStatus;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.Bytes;
+import org.drftpd.PropertyHelper;
+import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;
@@ -41,7 +42,7 @@ public class MaxbandwidthFilter extends Filter {
     private long _maxBandwidth;
 
     public MaxbandwidthFilter(FilterChain ssm, int i, Properties p) {
-        _maxBandwidth = Bytes.parseBytes(FtpConfig.getProperty(p,
+        _maxBandwidth = Bytes.parseBytes(PropertyHelper.getProperty(p,
                     i + ".maxbandwidth"));
     }
 

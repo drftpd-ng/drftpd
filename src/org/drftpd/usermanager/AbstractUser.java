@@ -16,7 +16,6 @@
  */
 package org.drftpd.usermanager;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMaskCollection;
 import net.sf.drftpd.event.UserEvent;
@@ -25,6 +24,7 @@ import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.Logger;
+import org.drftpd.Bytes;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -41,7 +41,7 @@ import java.util.Map;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya </a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.4 2004/11/08 18:39:32 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.5 2004/11/09 19:00:00 mog Exp $
  */
 public abstract class AbstractUser extends User {
     private static final Logger logger = Logger.getLogger(AbstractUser.class);

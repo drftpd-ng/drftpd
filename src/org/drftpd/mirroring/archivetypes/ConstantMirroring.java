@@ -27,6 +27,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.PropertyHelper;
 import org.drftpd.mirroring.ArchiveType;
 
 import org.drftpd.sections.SectionInterface;
@@ -48,7 +49,7 @@ public class ConstantMirroring extends ArchiveType {
     public ConstantMirroring(Archive archive, SectionInterface section,
         Properties p) {
         super(archive, section, p);
-        _numOfSlaves = Integer.parseInt(FtpConfig.getProperty(p,
+        _numOfSlaves = Integer.parseInt(PropertyHelper.getProperty(p,
                     section.getName() + ".numOfSlaves"));
 
         if (_numOfSlaves < 2) {

@@ -27,6 +27,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.PropertyHelper;
 import org.drftpd.sections.SectionInterface;
 
 import java.io.FileInputStream;
@@ -39,7 +40,7 @@ import java.util.Properties;
 /**
  * @author zubov
  *
- * @version $Id: Mirror.java,v 1.1 2004/11/05 13:27:22 mog Exp $
+ * @version $Id: Mirror.java,v 1.2 2004/11/09 18:59:56 mog Exp $
  */
 public class Mirror implements FtpListener {
     private static final Logger logger = Logger.getLogger(Mirror.class);
@@ -111,9 +112,9 @@ public class Mirror implements FtpListener {
             throw new RuntimeException(e);
         }
 
-        _numberOfMirrors = Integer.parseInt(FtpConfig.getProperty(props,
+        _numberOfMirrors = Integer.parseInt(PropertyHelper.getProperty(props,
                     "numberOfMirrors"));
-        _mirrorAllSFV = FtpConfig.getProperty(props, "mirrorAllSFV").equals("true");
+        _mirrorAllSFV = PropertyHelper.getProperty(props, "mirrorAllSFV").equals("true");
         _exemptList = new ArrayList();
 
         for (int i = 1;; i++) {

@@ -25,10 +25,10 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.MLSTSerialize;
-import net.sf.drftpd.remotefile.RemoteFileInterface;
 import net.sf.drftpd.util.ListUtils;
 
 import org.apache.log4j.Logger;
+import org.drftpd.remotefile.RemoteFileInterface;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -44,7 +44,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: MLST.java,v 1.6 2004/11/05 04:06:35 zubov Exp $
+ * @version $Id: MLST.java,v 1.7 2004/11/09 18:59:54 mog Exp $
  */
 public class MLST implements CommandHandlerFactory, CommandHandler {
     private static final Logger logger = Logger.getLogger(MLST.class);

@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd;
+package org.drftpd;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -25,7 +25,7 @@ import java.text.DecimalFormatSymbols;
  * See http://physics.nist.gov/cuu/Units/binary.html for an explanation of binary multiples.
  *
  * @author mog
- * @version $Id: Bytes.java,v 1.16 2004/09/25 03:48:34 mog Exp $
+ * @version $Id: Bytes.java,v 1.1 2004/11/09 18:59:53 mog Exp $
  */
 public class Bytes {
     private static final DecimalFormat FORMAT;

@@ -26,6 +26,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.PropertyHelper;
 import org.drftpd.slave.RemoteIOException;
 
 import java.io.FileInputStream;
@@ -46,7 +47,7 @@ import java.util.Set;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.63 2004/11/08 18:39:27 mog Exp $
+ * @version $Id: JobManager.java,v 1.64 2004/11/09 18:59:50 mog Exp $
  */
 public class JobManager implements Runnable {
     private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -321,7 +322,7 @@ public class JobManager implements Runnable {
         }
 
         _useCRC = p.getProperty("useCRC", "true").equals("true");
-        _sleepSeconds = 1000 * Integer.parseInt(FtpConfig.getProperty(p,
+        _sleepSeconds = 1000 * Integer.parseInt(PropertyHelper.getProperty(p,
                     "sleepSeconds"));
     }
 

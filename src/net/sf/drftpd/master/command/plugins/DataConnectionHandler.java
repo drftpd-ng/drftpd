@@ -16,11 +16,9 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.Checksum;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.NoSFVEntryException;
-import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -32,22 +30,25 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
-import net.sf.drftpd.slave.TransferFailedException;
-import net.sf.drftpd.slave.TransferStatus;
 import net.sf.drftpd.util.ListUtils;
 import net.sf.drftpd.util.PortRange;
 import net.sf.drftpd.util.SSLGetContext;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.Bytes;
+import org.drftpd.SFVFile;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.commands.UserManagment;
 
+import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
-import org.drftpd.slave.RemoteTransfer;
+import org.drftpd.slave.Transfer;
+import org.drftpd.slave.TransferFailedException;
+import org.drftpd.slave.TransferStatus;
 
 import org.drftpd.usermanager.UserFileException;
 
@@ -78,7 +79,7 @@ import javax.net.ssl.SSLSocket;
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.74 2004/11/09 15:20:14 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.75 2004/11/09 18:59:47 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandlerFactory,
     CommandHandler, Cloneable {
@@ -404,7 +405,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                                                          .lookupFile(ghostRequest.getArgument());
                 _preTransferRSlave = conn.getGlobalContext().getSlaveManager()
                                          .getSlaveSelectionManager().getASlave(downFile.getAvailableSlaves(),
-                        RemoteTransfer.TRANSFER_SENDING_DOWNLOAD, conn, downFile);
+                        Transfer.TRANSFER_SENDING_DOWNLOAD, conn, downFile);
                 _preTransfer = true;
 
                 return new FtpReply(200,
@@ -432,7 +433,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                                          .getSlaveSelectionManager().getASlave(conn.getGlobalContext()
                                                                                    .getSlaveManager()
                                                                                    .getAvailableSlaves(),
-                        RemoteTransfer.TRANSFER_RECEIVING_UPLOAD, conn,
+                        Transfer.TRANSFER_RECEIVING_UPLOAD, conn,
                         nef.getFile());
                 _preTransfer = true;
 
@@ -1083,7 +1084,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             }
 
             switch (direction) {
-            case RemoteTransfer.TRANSFER_SENDING_DOWNLOAD:
+            case Transfer.TRANSFER_SENDING_DOWNLOAD:
 
                 if (!conn.getGlobalContext().getConfig().checkDownload(conn.getUserNull(),
                             targetDir)) {
@@ -1092,7 +1093,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
                 break;
 
-            case RemoteTransfer.TRANSFER_RECEIVING_UPLOAD:
+            case Transfer.TRANSFER_RECEIVING_UPLOAD:
 
                 if (!conn.getGlobalContext().getConfig().checkUpload(conn.getUserNull(),
                             targetDir)) {
@@ -1132,17 +1133,17 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                 //code above to be handled by reset()
             } else {
                 try {
-                    if (direction == RemoteTransfer.TRANSFER_SENDING_DOWNLOAD) {
+                    if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
                         _rslave = conn.getGlobalContext().getSlaveManager()
                                       .getSlaveSelectionManager().getASlave(_transferFile.getAvailableSlaves(),
-                                RemoteTransfer.TRANSFER_SENDING_DOWNLOAD, conn,
+                                Transfer.TRANSFER_SENDING_DOWNLOAD, conn,
                                 _transferFile);
-                    } else if (direction == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
+                    } else if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
                         _rslave = conn.getGlobalContext().getSlaveManager()
                                       .getSlaveSelectionManager().getASlave(conn.getGlobalContext()
                                                                                 .getSlaveManager()
                                                                                 .getAvailableSlaves(),
-                                RemoteTransfer.TRANSFER_RECEIVING_UPLOAD, conn,
+                                Transfer.TRANSFER_RECEIVING_UPLOAD, conn,
                                 targetDir);
                     } else {
                         throw new RuntimeException();

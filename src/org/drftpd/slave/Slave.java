@@ -19,30 +19,21 @@ package org.drftpd.slave;
 
 import com.Ostermiller.util.StringTokenizer;
 
-import net.sf.drftpd.Bytes;
-import net.sf.drftpd.FatalException;
 import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.ID3Tag;
-import net.sf.drftpd.MP3File;
-import net.sf.drftpd.PermissionDeniedException;
-import net.sf.drftpd.SFVFile;
-import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.remotefile.FileRemoteFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.RemoteFileInterface;
-import net.sf.drftpd.slave.ActiveConnection;
-import net.sf.drftpd.slave.PassiveConnection;
-import net.sf.drftpd.slave.Root;
-import net.sf.drftpd.slave.RootBasket;
-import net.sf.drftpd.slave.SlaveStatus;
-import net.sf.drftpd.slave.TransferStatus;
 import net.sf.drftpd.util.PortRange;
 import net.sf.drftpd.util.SSLGetContext;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
+import org.drftpd.Bytes;
+import org.drftpd.LightSFVFile;
+import org.drftpd.PropertyHelper;
+import org.drftpd.id3.ID3Tag;
+import org.drftpd.id3.MP3File;
+import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.remotefile.LightRemoteFile;
+import org.drftpd.remotefile.RemoteFileInterface;
 
 import org.drftpd.slave.async.AsyncCommand;
 import org.drftpd.slave.async.AsyncCommandArgument;
@@ -58,6 +49,7 @@ import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
 
 import se.mog.io.File;
+import se.mog.io.PermissionDeniedException;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -85,7 +77,7 @@ import javax.net.ssl.SSLContext;
 
 /**
  * @author mog
- * @version $Id: Slave.java,v 1.9 2004/11/08 18:39:31 mog Exp $
+ * @version $Id: Slave.java,v 1.10 2004/11/09 18:59:58 mog Exp $
  */
 public class Slave {
     public static final boolean isWin32 = System.getProperty("os.name")
@@ -97,7 +89,7 @@ public class Slave {
     private SSLContext _ctx;
     private boolean _downloadChecksums;
     private long _receivedBytes;
-    private RootBasket _roots;
+    private RootCollection _roots;
     private Socket _s;
     private long _sentBytes;
     private ObjectInputStream _sin;
@@ -108,15 +100,15 @@ public class Slave {
     private InetAddress _externalAddress = null;
 
     public Slave(Properties p) throws IOException {
-        InetSocketAddress addr = new InetSocketAddress(FtpConfig.getProperty(
+        InetSocketAddress addr = new InetSocketAddress(PropertyHelper.getProperty(
                     p, "master.host"),
-                Integer.parseInt(FtpConfig.getProperty(p, "master.bindport")));
+                Integer.parseInt(PropertyHelper.getProperty(p, "master.bindport")));
         logger.info("Connecting to master at " + addr);
 
-        String slavename = FtpConfig.getProperty(p, "slave.name");
+        String slavename = PropertyHelper.getProperty(p, "slave.name");
 
         try {
-            _externalAddress = InetAddress.getByName(FtpConfig.getProperty(p,
+            _externalAddress = InetAddress.getByName(PropertyHelper.getProperty(p,
                         "slave.interface"));
         } catch (NullPointerException e) {
             //value is already null
@@ -157,17 +149,17 @@ public class Slave {
         }
     }
 
-    public static LinkedRemoteFile getDefaultRoot(RootBasket rootBasket)
-        throws IOException {
-        LinkedRemoteFile linkedroot = new LinkedRemoteFile(new FileRemoteFile(
-                    rootBasket), null);
+//    public static LinkedRemoteFile getDefaultRoot(RootCollection rootBasket)
+//        throws IOException {
+//        LinkedRemoteFile linkedroot = new LinkedRemoteFile(new FileRemoteFile(
+//                    rootBasket), null);
+//
+//        return linkedroot;
+//    }
 
-        return linkedroot;
-    }
-
-    public static RootBasket getDefaultRootBasket(Properties cfg)
+    public static RootCollection getDefaultRootBasket(Properties cfg)
         throws IOException {
-        RootBasket roots;
+        RootCollection roots;
 
         // START: RootBasket
         long defaultMinSpaceFree = Bytes.parseBytes(cfg.getProperty(
@@ -199,11 +191,7 @@ public class Slave {
             rootStrings.add(new Root(rootString));
         }
 
-        try {
-            roots = new RootBasket(rootStrings);
-        } catch (IOException e) {
-            throw new FatalException(e);
-        }
+        roots = new RootCollection(rootStrings);
 
         // END: RootBasket
         System.gc();
@@ -323,18 +311,18 @@ public class Slave {
         return null;
     }
 
-    public RootBasket getRoots() {
+    public RootCollection getRoots() {
         return _roots;
     }
 
-    public SFVFile getSFVFile(String path) throws IOException {
-        return new SFVFile(new BufferedReader(
+    public LightSFVFile getSFVFile(String path) throws IOException {
+        return new LightSFVFile(new BufferedReader(
                 new FileReader(_roots.getFile(path))));
     }
 
-    public LinkedRemoteFile getSlaveRoot() throws IOException {
-        return Slave.getDefaultRoot(_roots);
-    }
+//    public LinkedRemoteFile getSlaveRoot() throws IOException {
+//        return Slave.getDefaultRoot(_roots);
+//    }
 
     public SlaveStatus getSlaveStatus() {
         int throughputUp = 0;
@@ -352,26 +340,26 @@ public class Slave {
                 Transfer transfer = (Transfer) i.next();
 
                 switch (transfer.getState()) {
-                case RemoteTransfer.TRANSFER_RECEIVING_UPLOAD:
+                case Transfer.TRANSFER_RECEIVING_UPLOAD:
                     throughputUp += transfer.getXferSpeed();
                     transfersUp += 1;
                     bytesReceived += transfer.getTransfered();
 
                     break;
 
-                case RemoteTransfer.TRANSFER_SENDING_DOWNLOAD:
+                case Transfer.TRANSFER_SENDING_DOWNLOAD:
                     throughputDown += transfer.getXferSpeed();
                     transfersDown += 1;
                     bytesSent += transfer.getTransfered();
 
                     break;
 
-                case RemoteTransfer.TRANSFER_UNKNOWN:
-                case RemoteTransfer.TRANSFER_THROUGHPUT:
+                case Transfer.TRANSFER_UNKNOWN:
+                case Transfer.TRANSFER_THROUGHPUT:
                     break;
 
                 default:
-                    throw new FatalException("unrecognized direction");
+                    throw new RuntimeException("unrecognized direction");
                 }
             }
         }
@@ -593,7 +581,7 @@ public class Slave {
     private void handleRemergeRecursive(RemoteFileInterface dir) {
         //sendResponse(new AsyncResponseRemerge(file.getPath(),
         // file.getFiles()));
-        LinkedRemoteFile.CaseInsensitiveHashtable mergeFiles = new LinkedRemoteFile.CaseInsensitiveHashtable();
+        CaseInsensitiveHashtable mergeFiles = new CaseInsensitiveHashtable();
 
         Collection files = dir.getFiles();
 
@@ -669,7 +657,7 @@ public class Slave {
         return new AsyncResponseSlaveStatus(ac.getIndex(), getSlaveStatus());
     }
 
-    private void listenForCommands() {
+    private void listenForCommands() throws IOException {
         while (true) {
             AsyncCommand ac;
 
@@ -681,9 +669,6 @@ public class Slave {
                 }
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
-            } catch (IOException e) {
-                logger.debug("IOException - " + e.getMessage());
-                throw new FatalException(e);
             }
 
             logger.debug("Slave fetched " + ac);
@@ -710,12 +695,12 @@ public class Slave {
     public void removeTransfer(Transfer transfer) {
         synchronized (_transfers) {
             switch (transfer.getState()) {
-            case RemoteTransfer.TRANSFER_RECEIVING_UPLOAD:
+            case Transfer.TRANSFER_RECEIVING_UPLOAD:
                 _receivedBytes += transfer.getTransfered();
 
                 break;
 
-            case RemoteTransfer.TRANSFER_SENDING_DOWNLOAD:
+            case Transfer.TRANSFER_SENDING_DOWNLOAD:
                 _sentBytes += transfer.getTransfered();
 
                 break;

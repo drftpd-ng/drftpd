@@ -15,30 +15,31 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slave;
+package org.drftpd.master;
 
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.slave.TransferFailedException;
-import net.sf.drftpd.slave.TransferStatus;
 
 import java.io.IOException;
 
 import java.net.InetSocketAddress;
 
+import org.drftpd.slave.ConnectInfo;
+import org.drftpd.slave.RemoteIOException;
+import org.drftpd.slave.Transfer;
+import org.drftpd.slave.TransferFailedException;
+import org.drftpd.slave.TransferIndex;
+import org.drftpd.slave.TransferStatus;
+
 
 /**
  * @author zubov
  * @author mog
- * @version $Id: RemoteTransfer.java,v 1.5 2004/11/08 18:39:31 mog Exp $
+ * @version $Id: RemoteTransfer.java,v 1.1 2004/11/09 18:59:54 mog Exp $
  */
 public class RemoteTransfer {
-    public static final char TRANSFER_RECEIVING_UPLOAD = 'R';
-    public static final char TRANSFER_SENDING_DOWNLOAD = 'S';
-    public static final char TRANSFER_THROUGHPUT = 'A';
-    public static final char TRANSFER_UNKNOWN = 'U';
     private InetSocketAddress _address;
-    private char _state = TRANSFER_UNKNOWN;
+    private char _state = Transfer.TRANSFER_UNKNOWN;
     private TransferIndex _transferIndex;
     private RemoteSlave _rslave;
     private TransferStatus _status;

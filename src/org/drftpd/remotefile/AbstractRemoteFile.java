@@ -15,12 +15,13 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.remotefile;
+package org.drftpd.remotefile;
+
 
 
 /**
  * @author mog
- * @version $Id: AbstractRemoteFile.java,v 1.4 2004/09/25 03:48:36 mog Exp $
+ * @version $Id: AbstractRemoteFile.java,v 1.1 2004/11/09 18:59:57 mog Exp $
  */
 public abstract class AbstractRemoteFile implements RemoteFileInterface {
     public boolean equals(Object file) {

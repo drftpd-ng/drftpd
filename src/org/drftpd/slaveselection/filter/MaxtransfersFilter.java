@@ -20,10 +20,12 @@ package org.drftpd.slaveselection.filter;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.slave.SlaveStatus;
 
-import org.drftpd.slave.RemoteTransfer;
+import org.drftpd.PropertyHelper;
+import org.drftpd.master.RemoteTransfer;
 
+import org.drftpd.slave.SlaveStatus;
+import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;
@@ -39,7 +41,7 @@ public class MaxtransfersFilter extends Filter {
     private long _maxTransfers;
 
     public MaxtransfersFilter(FilterChain ssm, int i, Properties p) {
-        _maxTransfers = Long.parseLong(FtpConfig.getProperty(p,
+        _maxTransfers = Long.parseLong(PropertyHelper.getProperty(p,
                     i + ".maxtransfers"));
     }
 
@@ -61,9 +63,9 @@ public class MaxtransfersFilter extends Filter {
 
             int transfers = 0;
 
-            if (direction == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
+            if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
                 transfers = status.getTransfersReceiving();
-            } else if (direction == RemoteTransfer.TRANSFER_SENDING_DOWNLOAD) {
+            } else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
                 transfers = status.getTransfersSending();
             } else {
                 throw new IllegalArgumentException(

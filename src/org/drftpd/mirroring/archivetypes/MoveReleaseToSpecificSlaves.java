@@ -25,6 +25,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.PropertyHelper;
 import org.drftpd.mirroring.ArchiveType;
 
 import org.drftpd.sections.SectionInterface;
@@ -37,7 +38,7 @@ import java.util.Properties;
 
 /**
  * @author zubov
- * @version $Id: MoveReleaseToSpecificSlaves.java,v 1.7 2004/11/02 07:32:50 zubov Exp $
+ * @version $Id: MoveReleaseToSpecificSlaves.java,v 1.8 2004/11/09 18:59:55 mog Exp $
  */
 public class MoveReleaseToSpecificSlaves extends ArchiveType {
     private static final Logger logger = Logger.getLogger(MoveReleaseToSpecificSlaves.class);
@@ -53,7 +54,7 @@ public class MoveReleaseToSpecificSlaves extends ArchiveType {
             String slavename = null;
 
             try {
-                slavename = FtpConfig.getProperty(props,
+                slavename = PropertyHelper.getProperty(props,
                         getSection().getName() + ".slavename." + i);
             } catch (NullPointerException e) {
                 break; // done

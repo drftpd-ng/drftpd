@@ -21,19 +21,20 @@ import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.Bytes;
+import org.drftpd.master.RemoteTransfer;
 import org.drftpd.plugins.SiteBot;
 
-import org.drftpd.slave.RemoteTransfer;
 
+import org.drftpd.slave.SlaveStatus;
+import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 
@@ -45,7 +46,7 @@ import java.util.Iterator;
 
 /**
  * @author flowman
- * @version $Id: Bandwidth.java,v 1.13 2004/11/03 16:46:38 mog Exp $
+ * @version $Id: Bandwidth.java,v 1.14 2004/11/09 18:59:44 mog Exp $
  */
 public class Bandwidth extends GenericCommandAutoService
     implements IRCPluginInterface {
@@ -157,10 +158,10 @@ public class Bandwidth extends GenericCommandAutoService
                                 conn.getDataConnectionHandler().getTranferSlave()
                                     .getName());
 
-                            if (conn.getTransferDirection() == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
+                            if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
                                 status += ReplacerUtils.jprintf("speed.up",
                                     env, Bandwidth.class);
-                            } else if (conn.getTransferDirection() == RemoteTransfer.TRANSFER_SENDING_DOWNLOAD) {
+                            } else if (conn.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
                                 status += ReplacerUtils.jprintf("speed.down",
                                     env, Bandwidth.class);
                             }

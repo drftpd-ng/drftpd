@@ -17,7 +17,6 @@
  */
 package net.sf.drftpd.master;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.ConnectionEvent;
@@ -32,13 +31,15 @@ import net.sf.drftpd.util.Time;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.commands.UserManagment;
 
-import org.drftpd.slave.RemoteTransfer;
+import org.drftpd.master.RemoteTransfer;
 
+import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 
@@ -69,7 +70,7 @@ import javax.net.ssl.SSLSocket;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.104 2004/11/08 18:39:24 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.105 2004/11/09 18:59:46 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
     private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() +
@@ -217,14 +218,14 @@ public class BaseFtpConnection implements Runnable {
         String cmd = getRequest().getCommand();
 
         if ("RETR".equals(cmd)) {
-            return RemoteTransfer.TRANSFER_SENDING_DOWNLOAD;
+            return Transfer.TRANSFER_SENDING_DOWNLOAD;
         }
 
         if ("STOR".equals(cmd) || "APPE".equals(cmd)) {
-            return RemoteTransfer.TRANSFER_RECEIVING_UPLOAD;
+            return Transfer.TRANSFER_RECEIVING_UPLOAD;
         }
 
-        return RemoteTransfer.TRANSFER_UNKNOWN;
+        return Transfer.TRANSFER_UNKNOWN;
     }
 
     /**
@@ -250,9 +251,9 @@ public class BaseFtpConnection implements Runnable {
         String cmd = getRequest().getCommand();
 
         if (cmd.equals("RETR")) {
-            return RemoteTransfer.TRANSFER_SENDING_DOWNLOAD;
+            return Transfer.TRANSFER_SENDING_DOWNLOAD;
         } else if (cmd.equals("STOR")) {
-            return RemoteTransfer.TRANSFER_RECEIVING_UPLOAD;
+            return Transfer.TRANSFER_RECEIVING_UPLOAD;
         } else {
             throw new IllegalStateException("Not transfering");
         }

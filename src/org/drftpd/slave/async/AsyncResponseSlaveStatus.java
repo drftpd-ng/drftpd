@@ -17,12 +17,12 @@
  */
 package org.drftpd.slave.async;
 
-import net.sf.drftpd.slave.SlaveStatus;
+import org.drftpd.slave.SlaveStatus;
 
 
 /**
  * @author zubov
- * @version $Id: AsyncResponseSlaveStatus.java,v 1.4 2004/11/08 18:39:31 mog Exp $
+ * @version $Id: AsyncResponseSlaveStatus.java,v 1.5 2004/11/09 18:59:58 mog Exp $
  */
 public class AsyncResponseSlaveStatus extends AsyncResponse {
     private SlaveStatus _status;

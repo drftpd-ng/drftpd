@@ -20,6 +20,7 @@ package org.drftpd.sections.conf;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.drftpd.PropertyHelper;
 import org.drftpd.remotefile.FileUtils;
 
 import org.drftpd.sections.SectionInterface;
@@ -33,7 +34,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: PlainSection.java,v 1.9 2004/10/03 16:13:56 mog Exp $
+ * @version $Id: PlainSection.java,v 1.10 2004/11/09 18:59:57 mog Exp $
  */
 public class PlainSection implements SectionInterface {
     private String _dir;
@@ -41,8 +42,8 @@ public class PlainSection implements SectionInterface {
     private String _name;
 
     public PlainSection(SectionManager mgr, int i, Properties p) {
-        this(mgr, FtpConfig.getProperty(p, i + ".name"),
-            FtpConfig.getProperty(p, i + ".path"));
+        this(mgr, PropertyHelper.getProperty(p, i + ".name"),
+            PropertyHelper.getProperty(p, i + ".path"));
     }
 
     public PlainSection(SectionManager mgr, String name, String path) {

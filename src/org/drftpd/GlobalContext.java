@@ -52,7 +52,7 @@ import java.util.Timer;
 
 /**
  * @author mog
- * @version $Id: GlobalContext.java,v 1.9 2004/11/09 15:20:17 mog Exp $
+ * @version $Id: GlobalContext.java,v 1.10 2004/11/09 18:59:53 mog Exp $
  */
 public class GlobalContext {
     private static final Logger logger = Logger.getLogger(GlobalContext.class);
@@ -273,7 +273,7 @@ public class GlobalContext {
 
     protected void loadUserManager(Properties cfg, String cfgFileName) {
         try {
-            _usermanager = (AbstractUserManager) Class.forName(FtpConfig.getProperty(
+            _usermanager = (AbstractUserManager) Class.forName(PropertyHelper.getProperty(
                         cfg, "master.usermanager")).newInstance();
 
             // if the below method is not run, JSXUserManager fails when trying to do a reset() on the user logging in

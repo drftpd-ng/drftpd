@@ -17,12 +17,12 @@
  */
 package org.drftpd.slave.async;
 
-import net.sf.drftpd.slave.TransferStatus;
+import org.drftpd.slave.TransferStatus;
 
 
 /**
  * @author zubov
- * @version $Id: AsyncResponseTransferStatus.java,v 1.3 2004/11/03 16:46:47 mog Exp $
+ * @version $Id: AsyncResponseTransferStatus.java,v 1.4 2004/11/09 18:59:58 mog Exp $
  */
 public class AsyncResponseTransferStatus extends AsyncResponse {
     private TransferStatus _ts;

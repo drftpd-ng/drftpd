@@ -16,7 +16,6 @@
  */
 package org.drftpd.commands;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMask;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -32,8 +31,10 @@ import net.sf.drftpd.util.Time;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import org.drftpd.slave.RemoteTransfer;
+import org.drftpd.Bytes;
+import org.drftpd.master.RemoteTransfer;
 
+import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.Key;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -59,7 +60,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  * @author zubov
- * @version $Id: UserManagment.java,v 1.3 2004/11/08 18:39:29 mog Exp $
+ * @version $Id: UserManagment.java,v 1.4 2004/11/09 18:59:54 mog Exp $
  */
 public class UserManagment implements CommandHandler, CommandHandlerFactory {
     public static final Key TAGLINE = new Key(UserManagment.class, "tagline",
@@ -1605,11 +1606,11 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                                      .getTranferSlave().getName());
                         }
 
-                        if (conn2.getTransferDirection() == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
+                        if (conn2.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
                             response.addComment(SimplePrintf.jprintf(formatup,
                                     env));
                             speedup += speed;
-                        } else if (conn2.getTransferDirection() == RemoteTransfer.TRANSFER_SENDING_DOWNLOAD) {
+                        } else if (conn2.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
                             response.addComment(SimplePrintf.jprintf(
                                     formatdown, env));
                             speeddn += speed;

@@ -22,6 +22,7 @@ import net.sf.drftpd.master.RemoteSlave;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.remotefile.RemoteFileInterface;
 
 import org.jdom.Element;
 
@@ -36,7 +37,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: JDOMRemoteFile.java,v 1.30 2004/08/03 20:14:02 zubov Exp $
+ * @version $Id: JDOMRemoteFile.java,v 1.31 2004/11/09 18:59:51 mog Exp $
  */
 public class JDOMRemoteFile implements RemoteFileInterface {
     private static final Logger logger = Logger.getLogger(JDOMRemoteFile.class.getName());

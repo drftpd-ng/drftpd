@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.slave;
+package org.drftpd.slave;
 
 import net.sf.drftpd.util.PortRange;
 
@@ -33,7 +33,7 @@ import javax.net.ssl.SSLSocket;
 
 /**
  * @author mog
- * @version $Id: PassiveConnection.java,v 1.15 2004/11/08 18:39:28 mog Exp $
+ * @version $Id: PassiveConnection.java,v 1.1 2004/11/09 18:59:58 mog Exp $
  */
 public class PassiveConnection extends Connection {
     private static final Logger logger = Logger.getLogger(PassiveConnection.class);

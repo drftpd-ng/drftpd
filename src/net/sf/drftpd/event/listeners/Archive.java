@@ -23,6 +23,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.PropertyHelper;
 import org.drftpd.mirroring.ArchiveHandler;
 import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.mirroring.DuplicateArchiveException;
@@ -43,7 +44,7 @@ import java.util.Properties;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.33 2004/11/03 16:46:38 mog Exp $
+ * @version $Id: Archive.java,v 1.34 2004/11/09 18:59:45 mog Exp $
  */
 public class Archive implements FtpListener, Runnable {
     private static final Logger logger = Logger.getLogger(Archive.class);
@@ -82,7 +83,7 @@ public class Archive implements FtpListener, Runnable {
         String name = null;
 
         try {
-            name = FtpConfig.getProperty(_props,
+            name = PropertyHelper.getProperty(_props,
                     section.getName() + ".archiveType");
         } catch (NullPointerException e) {
             return null; // excluded, not setup
@@ -146,7 +147,7 @@ public class Archive implements FtpListener, Runnable {
             throw new RuntimeException(e);
         }
 
-        _cycleTime = 60000 * Long.parseLong(FtpConfig.getProperty(_props,
+        _cycleTime = 60000 * Long.parseLong(PropertyHelper.getProperty(_props,
                     "cycleTime"));
     }
 

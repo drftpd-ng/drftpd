@@ -27,15 +27,16 @@ import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.MLSTSerialize;
-import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Logger;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.PropertyHelper;
 
 import org.drftpd.master.RemergeMessage;
 
+import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.async.AsyncCommandArgument;
 
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
@@ -68,7 +69,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author mog
- * @version $Id: SlaveManager.java,v 1.25 2004/11/09 15:20:13 mog Exp $
+ * @version $Id: SlaveManager.java,v 1.26 2004/11/09 18:59:47 mog Exp $
  */
 public class SlaveManager implements Runnable {
     private static final Logger logger = Logger.getLogger(SlaveManager.class.getName());
@@ -86,7 +87,7 @@ public class SlaveManager implements Runnable {
         throws SlaveFileException {
     	this();
         _gctx = gctx;
-        _port = Integer.parseInt(FtpConfig.getProperty(p, "master.bindport"));
+        _port = Integer.parseInt(PropertyHelper.getProperty(p, "master.bindport"));
         loadSlaves();
     }
 
@@ -502,12 +503,23 @@ public class SlaveManager implements Runnable {
     }
 
     public BlockingQueue<RemergeMessage> getRemergeQueue() {
-        if (_remergeThread == null) {
-            _remergeThread = new RemergeThread(getGlobalContext());
-            _remergeThread.start();
-        }
         return _remergeQueue;
     }
+
+	/**
+	 * @param message
+	 */
+	public void putRemergeQueue(RemergeMessage message) {
+		try {
+			_remergeQueue.put(message);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+        if (_remergeThread == null || !_remergeThread.isAlive()) {
+            _remergeThread = new RemergeThread(getGlobalContext());
+            _remergeThread.start();
+        }		
+	}
 }
 
 

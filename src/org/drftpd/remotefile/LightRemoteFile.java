@@ -17,8 +17,6 @@
  */
 package org.drftpd.remotefile;
 
-import net.sf.drftpd.remotefile.AbstractRemoteFile;
-import net.sf.drftpd.remotefile.RemoteFileInterface;
 
 import java.io.FileNotFoundException;
 import java.io.Serializable;
@@ -28,7 +26,7 @@ import java.util.Collection;
 
 /**
  * @author zubov
- * @version $Id: LightRemoteFile.java,v 1.3 2004/11/08 18:39:30 mog Exp $
+ * @version $Id: LightRemoteFile.java,v 1.4 2004/11/09 18:59:57 mog Exp $
  * For use in sending the filelist from the slave to the master
  */
 public final class LightRemoteFile extends AbstractRemoteFile

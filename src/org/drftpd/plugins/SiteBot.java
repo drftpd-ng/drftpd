@@ -28,14 +28,10 @@ import f00f.net.irc.martyr.services.AutoReconnect;
 import f00f.net.irc.martyr.services.AutoRegister;
 import f00f.net.irc.martyr.services.AutoResponder;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
-import net.sf.drftpd.ID3Tag;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.Nukee;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.SFVFile;
-import net.sf.drftpd.SFVFile.SFVStatus;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.Event;
@@ -54,17 +50,22 @@ import net.sf.drftpd.master.command.plugins.Nuke;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.Bytes;
+import org.drftpd.PropertyHelper;
+import org.drftpd.SFVFile;
+import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.TransferStatistics;
 import org.drftpd.commands.UserManagment;
+import org.drftpd.id3.ID3Tag;
 
 import org.drftpd.sections.SectionInterface;
+import org.drftpd.slave.SlaveStatus;
 
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -100,7 +101,7 @@ import java.util.ResourceBundle;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.26 2004/11/08 18:39:30 mog Exp $
+ * @version $Id: SiteBot.java,v 1.27 2004/11/09 18:59:56 mog Exp $
  */
 public class SiteBot implements FtpListener, Observer {
     public static final ReplacerEnvironment GLOBAL_ENV = new ReplacerEnvironment();
@@ -709,9 +710,9 @@ public class SiteBot implements FtpListener, Observer {
 
     private AutoRegister addAutoRegister(Properties ircCfg) {
         return new AutoRegister(_conn,
-            FtpConfig.getProperty(ircCfg, "irc.nick"),
-            FtpConfig.getProperty(ircCfg, "irc.user"),
-            FtpConfig.getProperty(ircCfg, "irc.name"));
+            PropertyHelper.getProperty(ircCfg, "irc.nick"),
+            PropertyHelper.getProperty(ircCfg, "irc.user"),
+            PropertyHelper.getProperty(ircCfg, "irc.name"));
     }
 
     public void connect() throws UnknownHostException, IOException {
@@ -737,7 +738,7 @@ public class SiteBot implements FtpListener, Observer {
 
             if (channelName == null) {
                 if (i == 1) {
-                    channelName = FtpConfig.getProperty(ircCfg, "irc.channel");
+                    channelName = PropertyHelper.getProperty(ircCfg, "irc.channel");
                     key = ircCfg.getProperty("irc.key");
                 } else {
                     break;
@@ -967,8 +968,8 @@ public class SiteBot implements FtpListener, Observer {
     }
 
     protected void reload(Properties ircCfg) throws IOException {
-        _server = FtpConfig.getProperty(ircCfg, "irc.server");
-        _port = Integer.parseInt(FtpConfig.getProperty(ircCfg, "irc.port"));
+        _server = PropertyHelper.getProperty(ircCfg, "irc.server");
+        _port = Integer.parseInt(PropertyHelper.getProperty(ircCfg, "irc.port"));
 
         //String oldchannel = _channelName;
         //_channelName = FtpConfig.getProperty(ircCfg, "irc.channel");
@@ -1004,7 +1005,7 @@ public class SiteBot implements FtpListener, Observer {
             logger.info("Reconnecting due to server change");
             connect(ircCfg);
         } else {
-            if (!_conn.getClientState().getNick().getNick().equals(FtpConfig.getProperty(
+            if (!_conn.getClientState().getNick().getNick().equals(PropertyHelper.getProperty(
                             ircCfg, "irc.nick"))) {
                 logger.info("Switching to new nick");
                 _autoRegister.disable();

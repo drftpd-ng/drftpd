@@ -15,31 +15,21 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.slave;
+package se.mog.io;
 
 import java.io.IOException;
 
 
 /**
- *
  * @author mog
- * @version $Id: TransferFailedException.java,v 1.2 2004/08/03 20:14:03 zubov Exp $
+ * @version $Id: PermissionDeniedException.java,v 1.1 2004/11/09 19:00:01 mog Exp $
  */
-public class TransferFailedException extends IOException {
-    private TransferStatus _status;
-
-    public TransferFailedException(IOException e, TransferStatus status) {
-        super(e.getMessage());
-        initCause(e);
-        _status = status;
+public class PermissionDeniedException extends IOException {
+    public PermissionDeniedException() {
+        super();
     }
 
-    public TransferFailedException(String message, TransferStatus status) {
+    public PermissionDeniedException(String message) {
         super(message);
-        _status = status;
-    }
-
-    public TransferStatus getStatus() {
-        return _status;
     }
 }

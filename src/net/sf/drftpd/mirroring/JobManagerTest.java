@@ -23,9 +23,9 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveFileException;
-import net.sf.drftpd.remotefile.LinkedRemoteFile.CaseInsensitiveHashtable;
 
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
+import org.drftpd.remotefile.CaseInsensitiveHashtable;
 
 import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyRemoteSlave;
@@ -46,7 +46,7 @@ import java.util.Set;
 
 /**
  * @author zubov
- * @version $Id: JobManagerTest.java,v 1.16 2004/11/03 16:46:42 mog Exp $
+ * @version $Id: JobManagerTest.java,v 1.17 2004/11/09 18:59:50 mog Exp $
  */
 public class JobManagerTest extends TestCase {
     private Properties p;

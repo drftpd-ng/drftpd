@@ -23,12 +23,13 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManager;
-import net.sf.drftpd.remotefile.LinkedRemoteFile.CaseInsensitiveHashtable;
-import net.sf.drftpd.slave.SlaveStatus;
 
+import org.drftpd.master.RemoteTransfer;
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
+import org.drftpd.remotefile.CaseInsensitiveHashtable;
+import org.drftpd.slave.SlaveStatus;
+import org.drftpd.slave.Transfer;
 
-import org.drftpd.slave.RemoteTransfer;
 
 import org.drftpd.tests.DummyRemoteSlave;
 
@@ -73,7 +74,7 @@ public class MaxbandwidthFilterTest extends TestCase {
         Filter f = new MaxbandwidthFilter(new FC(), 1, p);
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
-        f.process(sc, null, null, RemoteTransfer.TRANSFER_SENDING_DOWNLOAD,
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD,
             new LinkedRemoteFilePath("/"));
         assertEquals(sc.getBestSlave(), rslaves[1]);
     }

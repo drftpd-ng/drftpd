@@ -17,12 +17,9 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.Checksum;
 import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.ID3Tag;
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -41,10 +38,13 @@ import net.sf.drftpd.util.ReplacerUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.Bytes;
+import org.drftpd.SFVFile;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.commands.UserManagment;
+import org.drftpd.id3.ID3Tag;
 
 import org.drftpd.plugins.SiteBot;
 
@@ -70,7 +70,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.44 2004/11/08 18:39:25 mog Exp $
+ * @version $Id: Dir.java,v 1.45 2004/11/09 18:59:48 mog Exp $
  */
 public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
     private final static SimpleDateFormat DATE_FMT = new SimpleDateFormat(

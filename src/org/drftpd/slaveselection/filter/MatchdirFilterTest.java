@@ -24,13 +24,14 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveFileException;
-import net.sf.drftpd.remotefile.LinkedRemoteFile.CaseInsensitiveHashtable;
 
 import org.drftpd.GlobalContext;
 
+import org.drftpd.master.RemoteTransfer;
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
+import org.drftpd.remotefile.CaseInsensitiveHashtable;
+import org.drftpd.slave.Transfer;
 
-import org.drftpd.slave.RemoteTransfer;
 
 import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyRemoteSlave;
@@ -45,7 +46,7 @@ import java.util.Set;
 
 /**
  * @author mog
- * @version $Id: MatchdirFilterTest.java,v 1.11 2004/11/02 07:33:12 zubov Exp $
+ * @version $Id: MatchdirFilterTest.java,v 1.12 2004/11/09 18:59:59 mog Exp $
  */
 public class MatchdirFilterTest extends TestCase {
     RemoteSlave[] rslaves = {
@@ -71,19 +72,19 @@ public class MatchdirFilterTest extends TestCase {
         Filter f = new MatchdirFilter(new FC(), 1, p);
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
-        f.process(sc, null, null, RemoteTransfer.TRANSFER_SENDING_DOWNLOAD,
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD,
             new LinkedRemoteFilePath("/path2/dir/file.txt"));
         assertEquals(0, sc.getSlaveScore(rslaves[0]).getScore());
         assertEquals(0, sc.getSlaveScore(rslaves[1]).getScore());
         assertEquals(0, sc.getSlaveScore(rslaves[2]).getScore());
 
-        f.process(sc, null, null, RemoteTransfer.TRANSFER_SENDING_DOWNLOAD,
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD,
             new LinkedRemoteFilePath("/"));
         assertEquals(0, sc.getSlaveScore(rslaves[0]).getScore());
         assertEquals(0, sc.getSlaveScore(rslaves[1]).getScore());
         assertEquals(0, sc.getSlaveScore(rslaves[2]).getScore());
 
-        f.process(sc, null, null, RemoteTransfer.TRANSFER_SENDING_DOWNLOAD,
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD,
             new LinkedRemoteFilePath("/path1/dir/file.txt"));
         assertEquals(100, sc.getSlaveScore(rslaves[0]).getScore());
         assertEquals(-100, sc.getSlaveScore(rslaves[1]).getScore());
@@ -99,13 +100,13 @@ public class MatchdirFilterTest extends TestCase {
         Filter f = new MatchdirFilter(new FC(), 1, p);
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
-        f.process(sc, null, null, RemoteTransfer.TRANSFER_SENDING_DOWNLOAD,
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD,
             new LinkedRemoteFilePath("/path1/dir/file.txt"));
         assertEquals(0, sc.getSlaveScore(rslaves[0]).getScore());
         assertEquals(0, sc.getSlaveScore(rslaves[1]).getScore());
         assertEquals(0, sc.getSlaveScore(rslaves[2]).getScore());
 
-        f.process(sc, null, null, RemoteTransfer.TRANSFER_SENDING_DOWNLOAD,
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD,
             new LinkedRemoteFilePath("/path2/dir/file.txt"));
         assertEquals(100, sc.getSlaveScore(rslaves[0]).getScore());
         assertEquals(100, sc.getSlaveScore(rslaves[1]).getScore());
@@ -121,7 +122,7 @@ public class MatchdirFilterTest extends TestCase {
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
         Filter f = new MatchdirFilter(new FC(), 1, p);
-        f.process(sc, null, null, RemoteTransfer.TRANSFER_SENDING_DOWNLOAD,
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD,
             new LinkedRemoteFilePath("/path1/dir/file.txt"));
 
         assertEquals(0, sc.getSlaveScore(rslaves[0]).getScore());

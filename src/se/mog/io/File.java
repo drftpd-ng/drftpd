@@ -22,9 +22,10 @@ import java.io.IOException;
 import java.net.URI;
 
 
+
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- * @version $Id: File.java,v 1.10 2004/10/29 02:45:22 mog Exp $
+ * @version $Id: File.java,v 1.11 2004/11/09 19:00:01 mog Exp $
  */
 public class File extends java.io.File {
     private static FileSystem fs = FileSystem.getFileSystem();
@@ -101,9 +102,18 @@ public class File extends java.io.File {
         return super.delete();
     }
 
-    public void delete2() throws IOException {
+    public void delete2() throws PermissionDeniedException {
         if (!super.delete()) {
-            throw new IOException("Failed to delete: " + toString());
+            throw new PermissionDeniedException("Failed to delete: " + toString());
         }
     }
+
+	public void mkdirs2() throws PermissionDeniedException {
+        if (!exists()) {
+            if (!mkdirs()) {
+                throw new PermissionDeniedException("mkdirs failed on " +
+                    getPath());
+            }
+        }
+	}
 }

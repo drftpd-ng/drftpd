@@ -27,6 +27,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.PropertyHelper;
 import org.drftpd.mirroring.archivetypes.IncompleteDirectoryException;
 import org.drftpd.mirroring.archivetypes.OfflineSlaveException;
 
@@ -45,7 +46,7 @@ import java.util.Set;
 
 /**
  * @author zubov
- * @version $Id: ArchiveType.java,v 1.16 2004/09/13 15:05:01 zubov Exp $
+ * @version $Id: ArchiveType.java,v 1.17 2004/11/09 18:59:55 mog Exp $
  */
 public abstract class ArchiveType {
     private static final Logger logger = Logger.getLogger(ArchiveType.class);
@@ -243,7 +244,7 @@ public abstract class ArchiveType {
      */
     private void setProperties(Properties properties) {
         try {
-            _archiveAfter = 60000 * Long.parseLong(FtpConfig.getProperty(
+            _archiveAfter = 60000 * Long.parseLong(PropertyHelper.getProperty(
                         properties, getSection().getName() + ".archiveAfter"));
         } catch (NullPointerException e) {
             _archiveAfter = 0;

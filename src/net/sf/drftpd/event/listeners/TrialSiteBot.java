@@ -21,12 +21,12 @@ import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.event.listeners.Trial.Limit;
 import net.sf.drftpd.master.BaseFtpConnection;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.Bytes;
 import org.drftpd.plugins.SiteBot;
 
 import org.drftpd.usermanager.NoSuchUserException;
