@@ -1,3 +1,35 @@
 Up to date documentation is available here:
 http://drftpd.org/
 http://drftpd.mog.se/ (mirror)
+
+WIN32 INSTALL FOR DRFTPD 1.0
+
+1 Download and install JAVA Runtime Environment (JRE) on all master and all salves -- http://java.sun.com/j2se/downloads.html
+	:: NOTE: If you encounter problems like "'JAVA' is not recognized as an internal or external command, operable program or batch file." You also need to add the java binary to your PATH environment variable. You can do this in WindowsXP in your System Properties under the Advanced Tab, there is a button Environment Variables, edit your PATH variable accordingly.
+
+2 Download DrFTPD -- http://sourceforge.net/project/showfiles.php?group_id=56385
+3 Unpack zip, keeping drftpd\ directory structure
+4 Master Configuration -- all configuration files are kept in subdirectory \conf\
+	:: NOTE: If you put \ in your paths, you need to escape it like this: \\. Alternatively, you can use / which doesn't need escaping
+	** Rename drftpd.conf.dist -> drftpd.conf and edit accordingly
+	** Rename slaves.xml.dist -> slaves.xml and edit accordingly
+	** Rename perms.conf.dist -> perms.conf
+4a Plugins -- There are multiple plugins included with DrFTPD and each plugin has its own settings. 
+	:: NOTE: instructions for plugins are in their respective configuration files.
+	:: NOTE: the numers of the plugins have to be sequential.
+	plugins.2=net.sf.drftpd.event.irc.IRCListener
+	plugins.3=net.sf.drftpd.event.listeners.Trial
+
+	This will NOT work. There has to be a plugins.1=..., otherwise no plugin will be loaded. The order can be random, but numbers have to be sequential.
+	plugins.2=net.sf.drftpd.event.irc.IRCListener
+	plugins.1=net.sf.drftpd.event.listeners.Trial 
+5 Slave Installation
+	:: If you just want to test drftpd with a local slave, set master.localslave=true in drftpd.conf.
+	:: If you want to run slaves you need to copy the files classes/ lib/FileSystem.dll drftpd.conf to all slaves.
+	** Edit slave.conf on each slave
+6 Finished
+	** Login at: ftp://drftpd:drftpd@localhost:2121/ (or the port you specified as master.port in drftpd.conf)
+	** Sign up to the drftpd-discuss mailing list (http://lists.sourceforge.net/lists/listinfo/drftpd-discuss)
+	** Visit us on EFnet (www.efnet.net) and join #drftpd
+
+More Documentation can be found here: http://drftpd.mog.se/wiki/wiki.phtml?title=Documentation
