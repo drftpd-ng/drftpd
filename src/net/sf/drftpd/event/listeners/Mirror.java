@@ -20,25 +20,23 @@ package net.sf.drftpd.event.listeners;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Properties;
 
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.config.ExcludePath;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
-import org.apache.oro.text.regex.MalformedPatternException;
+import org.drftpd.sections.SectionInterface;
 
 /**
  * @author zubov
  *
- * @version $Id: Mirror.java,v 1.18 2004/04/17 02:24:36 mog Exp $
+ * @version $Id: Mirror.java,v 1.19 2004/04/18 08:46:28 zubov Exp $
  */
 public class Mirror implements FtpListener {
 
@@ -63,7 +61,7 @@ public class Mirror implements FtpListener {
 		if (!transevent.getCommand().equals("STOR"))
 			return;
 		LinkedRemoteFileInterface dir = transevent.getDirectory();
-		if (checkExclude(dir)) {
+		if (checkExclude(_cm.getSectionManager().lookup(dir.getPath()))) {
 			logger.debug(dir.getPath() + " is exempt");
 			return;
 		}
@@ -86,13 +84,8 @@ public class Mirror implements FtpListener {
 	 * @param lrf
 	 * Returns true if lrf.getPath() is excluded
 	 */
-	public boolean checkExclude(LinkedRemoteFileInterface lrf) {
-		for (Iterator iter = _exemptList.iterator(); iter.hasNext();) {
-			ExcludePath ep = (ExcludePath) iter.next();
-			if (ep.checkPath(lrf))
-				return true;
-		}
-		return false;
+	public boolean checkExclude(SectionInterface section) {
+		return _exemptList.contains(section.getName());
 	}
 
 	public void init(ConnectionManager connectionManager) {
@@ -117,11 +110,7 @@ public class Mirror implements FtpListener {
 			String path = props.getProperty("exclude." + i);
 			if (path == null)
 				break;
-			try {
-				ExcludePath.makePermission(_exemptList, path);
-			} catch (MalformedPatternException e1) {
-				throw new RuntimeException(e1);
-			}
+			_exemptList.add(path);
 		}
 	}
 

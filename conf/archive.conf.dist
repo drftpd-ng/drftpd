@@ -8,7 +8,7 @@ cycleTime=30
 # do not archive releases younger than
 archiveAfter=10080
 
-# do not archive releases under these directorys
+# do not archive releases under these sections
 #exclude.1=sectiona
 #exclude.2=sectionb
 
