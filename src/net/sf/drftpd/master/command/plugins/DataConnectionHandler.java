@@ -51,7 +51,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.33 2004/01/22 21:48:27 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.34 2004/01/28 08:15:20 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -1347,6 +1347,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 							response.addComment(
 								"checksum match: SLAVE/SFV:"
 									+ Long.toHexString(status.getChecksum()));
+						} else if (status.getChecksum() == 0 ){
+							response.addComment("checksum match: SLAVE/SFV: DISABLED"); 
 						} else {
 							response.addComment(
 								"checksum mismatch: SLAVE: "

@@ -45,7 +45,7 @@ import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.78 2004/01/22 21:49:55 mog Exp $
+ * @version $Id: SlaveImpl.java,v 1.79 2004/01/28 08:15:21 zubov Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
@@ -168,8 +168,8 @@ public class SlaveImpl
 		} catch (Exception e) {
 			logger.warn("Error loading SSLContext", e);
 		}
-		_uploadChecksums = Boolean.getBoolean(cfg.getProperty("enableuploadchecksums", "true"));
-		_downloadChecksums = Boolean.getBoolean(cfg.getProperty("enabledownloadchecksums", "false"));
+		_uploadChecksums = cfg.getProperty("enableuploadchecksums", "true").equals("true");
+		_downloadChecksums = cfg.getProperty("enabledownloadchecksums", "false").equals("true");
 		String slavemanagerurl;
 		slavemanagerurl =
 			"//"
