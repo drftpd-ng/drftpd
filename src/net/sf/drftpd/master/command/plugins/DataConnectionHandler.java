@@ -230,7 +230,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                 String index = _preTransferRSlave.issueListenToSlave(_encryptedDataChannel);
                 ConnectInfo ci = _preTransferRSlave.fetchTransferResponseFromIndex(index);
                 _transfer = _preTransferRSlave.getTransfer(ci.getTransferIndex());
-                address = new InetSocketAddress(_preTransferRSlave.getInetAddress(),
+                address = new InetSocketAddress(_preTransferRSlave.getProperty("outsideip", _preTransferRSlave.getInetAddress().getHostAddress()),
                         _transfer.getAddress().getPort());
                 _isPasv = true;
             } catch (SlaveUnavailableException e) {
