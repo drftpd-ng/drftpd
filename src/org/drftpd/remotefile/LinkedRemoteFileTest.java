@@ -21,12 +21,16 @@ import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 
+import net.sf.drftpd.master.SlaveFileException;
+
 import org.apache.log4j.BasicConfigurator;
 
 import org.drftpd.master.RemoteSlave;
 
 import org.drftpd.tests.DummyFtpConfig;
+import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyRemoteSlave;
+import org.drftpd.tests.DummySlaveManager;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -255,5 +259,19 @@ public class LinkedRemoteFileTest extends TestCase {
             assertEquals(masterdir.getFile("TestFileInDir").getSlaves(),
                 slaveBothList);
         }
+    }
+    public void testRename() throws IOException, SlaveFileException {
+    	setUp();
+    	internalSetUp();
+    	DummyFtpConfig dfc = new DummyFtpConfig();
+    	DummyGlobalContext dgc = new DummyGlobalContext();
+    	dgc.setSlaveManager(new DummySlaveManager());
+    	dfc.setGlobalContext(dgc);
+    	_root = new LinkedRemoteFile(dfc);
+    	_root.addFile(new StaticRemoteFile(null, "SourceDir", 0));
+    	_root.addFile(new StaticRemoteFile(null, "DestDir", 0));
+    	_root.getFile("SourceDir").addFile(new StaticRemoteFile(null, "test", 0));
+    	_root.getFile("SourceDir").getFile("test").renameTo("/DestDir", "test2");
+    	assertEquals("/DestDir/test2",_root.getFile("DestDir").getFile("test2").getPath());
     }
 }

@@ -1289,6 +1289,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			}
 		}
 		_name = toName;
+		_parent = toDir;
 		toDir._files.put(getName(),this);
 		toDir.addSize(length());
 	}
