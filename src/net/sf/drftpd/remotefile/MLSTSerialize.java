@@ -104,7 +104,7 @@ public class MLSTSerialize {
 
 		for (String line = in.readLine();; line = in.readLine()) {
 			if (line == null)
-				throw new CorruptFileException("Unexpected EOF");
+				throw new CorruptFileListException("Unexpected EOF");
 			if (line.equals(""))
 				return;
 			int pos = line.indexOf(' ');
@@ -126,7 +126,7 @@ public class MLSTSerialize {
 						file.setLastModified(
 							timeval.parse(v).getTime());
 					} catch (ParseException e) {
-						throw new CorruptFileException(e);
+						throw new CorruptFileListException(e);
 					}
 				} else if ("x.crc32".equals(k)) {
 					file.setChecksum(Long.parseLong(v, 16));
@@ -162,20 +162,20 @@ public class MLSTSerialize {
 		FtpConfig conf,
 		BufferedReader in,
 		List rslaves)
-		throws IOException, CorruptFileException {
+		throws IOException, CorruptFileListException {
 		LinkedRemoteFile root = new LinkedRemoteFile(conf);
 
 		for (String line = in.readLine(); line != null; line = in.readLine()) {
 
 			if (!line.endsWith(":"))
-				throw new CorruptFileException("expecting path, not " + line);
+				throw new CorruptFileListException("expecting path, not " + line);
 
 			String path = line.substring(0, line.length() - 1);
 			Object ret[] = root.lookupNonExistingFile(path);
 			LinkedRemoteFile dir;
 			dir = (LinkedRemoteFile) ret[0];
 			if (ret[1] != null) {
-				throw new CorruptFileException(path + " doesn't exist");
+				throw new CorruptFileListException(path + " doesn't exist");
 				//				 StringTokenizer st = new StringTokenizer((String)ret[1], "/");
 				//				 while(st.hasMoreTokens()) {
 				//				 	dir.createDirectory()

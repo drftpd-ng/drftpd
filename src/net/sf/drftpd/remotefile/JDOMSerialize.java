@@ -5,7 +5,7 @@ import net.sf.drftpd.master.RemoteSlave;
 
 import org.jdom.Element;
 
-public class XMLSerialize {
+public class JDOMSerialize {
 
 	public static Element serialize(LinkedRemoteFile file) {
 		Element element =

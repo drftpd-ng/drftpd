@@ -26,7 +26,7 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.remotefile.CorruptFileException;
+import net.sf.drftpd.remotefile.CorruptFileListException;
 import net.sf.drftpd.remotefile.JDOMSerialize;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.MLSTSerialize;
@@ -214,7 +214,7 @@ public class SlaveManagerImpl
 
 	public static LinkedRemoteFile loadFileDatabase(
 		List rslaves,
-		ConnectionManager cm) throws FileNotFoundException, IOException, CorruptFileException {
+		ConnectionManager cm) throws FileNotFoundException, IOException, CorruptFileListException {
 		/** load XML file database **/
 //		LinkedRemoteFile root;
 //		try {

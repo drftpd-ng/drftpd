@@ -1,7 +1,6 @@
 package net.sf.drftpd.master.usermanager;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Hashtable;
 import java.util.List;
 
 /**
