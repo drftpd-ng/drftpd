@@ -15,10 +15,10 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
 package org.drftpd.mirroring.archivetypes;
 
 import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.listeners.Archive;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
@@ -36,20 +36,19 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 
-import net.sf.drftpd.ObjectNotFoundException;
+
 /*
  * @author iamn
  * @author zubov
- * @version $Id: ConstantMirroringAndArchive.java,v 1.1 2004/09/12 01:23:08 zubov Exp $
+ * @version $Id: ConstantMirroringAndArchive.java,v 1.2 2004/09/12 01:24:39 zubov Exp $
  */
-
 public class ConstantMirroringAndArchive extends ArchiveType {
     private int _numOfSlaves;
     private long _slowAfter;
     private ArrayList _fastHosts;
 
-    public ConstantMirroringAndArchive(Archive archive, SectionInterface section,
-        Properties p) {
+    public ConstantMirroringAndArchive(Archive archive,
+        SectionInterface section, Properties p) {
         super(archive, section, p);
         _numOfSlaves = Integer.parseInt(FtpConfig.getProperty(p,
                     section.getName() + ".numOfSlaves"));
@@ -58,17 +57,17 @@ public class ConstantMirroringAndArchive extends ArchiveType {
             throw new IllegalArgumentException(
                 "numOfSlaves has to be > 1 for section " + section.getName());
         }
-	
+
         try {
-            _slowAfter = 60000 * Long.parseLong(FtpConfig.getProperty(
-                        p, getSection().getName() + ".slowAfter"));
+            _slowAfter = 60000 * Long.parseLong(FtpConfig.getProperty(p,
+                        getSection().getName() + ".slowAfter"));
         } catch (NullPointerException e) {
             _slowAfter = 0;
-	    Archive.getLogger().error("Unable to get slowafter!!");
+            Archive.getLogger().error("Unable to get slowafter!!");
         }
-        
+
         _fastHosts = new ArrayList();
-	
+
         for (int i = 1;; i++) {
             String slavename = null;
 
@@ -81,10 +80,9 @@ public class ConstantMirroringAndArchive extends ArchiveType {
 
             try {
                 _fastHosts.add(_parent.getConnectionManager().getGlobalContext()
-                                        .getSlaveManager()
-                                        .getSlave(slavename));
+                                      .getSlaveManager().getSlave(slavename));
             } catch (ObjectNotFoundException e) {
-	        Archive.getLogger().error("Unable to get slave " + slavename +
+                Archive.getLogger().error("Unable to get slave " + slavename +
                     " from the SlaveManager");
             }
         }
@@ -149,92 +147,95 @@ public class ConstantMirroringAndArchive extends ArchiveType {
     }
 
     public HashSet findDestinationSlaves() {
-    	HashSet allHosts = new HashSet(_parent.getConnectionManager().getGlobalContext()
-                                                     .getSlaveManager()
-                                                     .getSlaves());	
-						     
+        HashSet allHosts = new HashSet(_parent.getConnectionManager()
+                                              .getGlobalContext()
+                                              .getSlaveManager().getSlaves());
+
         HashSet returnMe = new HashSet();
-	
-	/*if ((System.currentTimeMillis() - getDirectory().lastModified()) > _slowAfter) {
-		Archive.getLogger().debug("Returning list of slowhosts");
-	}
-	else {
-		Archive.getLogger().debug("Returning list of fasthosts");
-	}*/
-	
-	for (Iterator iter2 = allHosts.iterator(); iter2.hasNext();) {
-		RemoteSlave rslave = (RemoteSlave) iter2.next();
-		if (rslave.isAvailable()) {
-			if ((System.currentTimeMillis() - getDirectory().lastModified()) > _slowAfter) {
-				if (!_fastHosts.contains(rslave)) {
-					returnMe.add(rslave);
-				}
-			}
-			else {
-				if (_fastHosts.contains(rslave)) {
-					returnMe.add(rslave);
-				}
-			}
-		}
-	}
-	return returnMe;
+
+        /*if ((System.currentTimeMillis() - getDirectory().lastModified()) > _slowAfter) {
+                Archive.getLogger().debug("Returning list of slowhosts");
+        }
+        else {
+                Archive.getLogger().debug("Returning list of fasthosts");
+        }*/
+        for (Iterator iter2 = allHosts.iterator(); iter2.hasNext();) {
+            RemoteSlave rslave = (RemoteSlave) iter2.next();
+
+            if (rslave.isAvailable()) {
+                if ((System.currentTimeMillis() -
+                        getDirectory().lastModified()) > _slowAfter) {
+                    if (!_fastHosts.contains(rslave)) {
+                        returnMe.add(rslave);
+                    }
+                } else {
+                    if (_fastHosts.contains(rslave)) {
+                        returnMe.add(rslave);
+                    }
+                }
+            }
+        }
+
+        return returnMe;
+
         /*return new HashSet(_parent.getConnectionManager().getGlobalContext()
                                   .getSlaveManager().getSlaves());*/
     }
 
     protected boolean isArchivedDir(LinkedRemoteFileInterface lrf)
         throws IncompleteDirectoryException, OfflineSlaveException {
-    	
         boolean shouldBeFast;
-        
+
         if ((System.currentTimeMillis() - lrf.lastModified()) > _slowAfter) {
-        	shouldBeFast = false;
-        	//Archive.getLogger().debug("DBG File " + lrf.getPath() + " should be on slowhost");
+            shouldBeFast = false;
+
+            //Archive.getLogger().debug("DBG File " + lrf.getPath() + " should be on slowhost");
+        } else {
+            shouldBeFast = true;
+
+            //Archive.getLogger().debug("DBG File " + lrf.getPath() + " should be on fasthost");
         }
-        else {
-        	shouldBeFast = true;
-        	//Archive.getLogger().debug("DBG File " + lrf.getPath() + " should be on fasthost");
-        }
-        
+
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
-            
+
             if (src.isFile()) {
-            	
-            	
-            	/* Custom stuff: */
-            	for (Iterator iter2 = _fastHosts.iterator(); iter2.hasNext();) {
-            		RemoteSlave fasthost = (RemoteSlave) iter2.next();
-            		if (fasthost == null)
-            			continue;
-            		if (!src.getSlaves().contains(fasthost) && shouldBeFast) {
-               			//Archive.getLogger().debug("DBG File " + src.getName() + " is on slowhost, moving to fasthost");
-               			return false;	
-            		}
-            		if (src.getSlaves().contains(fasthost) && !shouldBeFast) {
-               			//Archive.getLogger().debug("DBG File " + src.getName() + " is on fasthost, moving to slowhost");
-               			return false;	
-            		}
-            	}
-            	
-            	
-            	
-            	/*if (!shouldBeFast) {
-            		if (!src.getSlaves().contains(_fastHosts)) {
-            			//Archive.getLogger().debug("DBG File is on fasthost, moving to slowhost");
-            			return false;	
-            		}
-            	}
-            	else {
-            		if (src.getSlaves().contains(_fastHosts)) {
-            			//Archive.getLogger().debug("DBG File is on slowhost, moving to fasthost");
-            			return false;	
-            		}
-            	}*/
-	    
+                /* Custom stuff: */
+                for (Iterator iter2 = _fastHosts.iterator(); iter2.hasNext();) {
+                    RemoteSlave fasthost = (RemoteSlave) iter2.next();
+
+                    if (fasthost == null) {
+                        continue;
+                    }
+
+                    if (!src.getSlaves().contains(fasthost) && shouldBeFast) {
+                        //Archive.getLogger().debug("DBG File " + src.getName() + " is on slowhost, moving to fasthost");
+                        return false;
+                    }
+
+                    if (src.getSlaves().contains(fasthost) && !shouldBeFast) {
+                        //Archive.getLogger().debug("DBG File " + src.getName() + " is on fasthost, moving to slowhost");
+                        return false;
+                    }
+                }
+
+                /*if (!shouldBeFast) {
+                            if (!src.getSlaves().contains(_fastHosts)) {
+                                    //Archive.getLogger().debug("DBG File is on fasthost, moving to slowhost");
+                                    return false;
+                            }
+                    }
+                    else {
+                            if (src.getSlaves().contains(_fastHosts)) {
+                                    //Archive.getLogger().debug("DBG File is on slowhost, moving to fasthost");
+                                    return false;
+                            }
+                    }*/
                 try {
                     if (src.getAvailableSlaves().size() != _numOfSlaves) {
-                    	Archive.getLogger().debug(src.getPath() + " is on too few hosts, mirroring.");
+                        Archive.getLogger().debug(src.getPath() +
+                            " is on too few hosts, mirroring.");
+
                         return false;
                     }
                 } catch (NoAvailableSlaveException e) {
@@ -243,7 +244,9 @@ public class ConstantMirroringAndArchive extends ArchiveType {
                 }
 
                 if (src.getSlaves().size() > _numOfSlaves) {
-                	Archive.getLogger().debug(src.getPath() + " is on too many hosts, cleaning up.");
+                    Archive.getLogger().debug(src.getPath() +
+                        " is on too many hosts, cleaning up.");
+
                     return false;
                 }
             } else { // src.isDirectory()
@@ -285,8 +288,8 @@ public class ConstantMirroringAndArchive extends ArchiveType {
     }
 
     public String toString() {
-        return "ConstantMirroringAndArchive=[directory=[" + getDirectory().getPath() +
-        "]dest=[" + outputSlaves(getRSlaves()) + "]numOfSlaves=[" +
-        _numOfSlaves + "]slowAfter=[" + _slowAfter + "]]";
+        return "ConstantMirroringAndArchive=[directory=[" +
+        getDirectory().getPath() + "]dest=[" + outputSlaves(getRSlaves()) +
+        "]numOfSlaves=[" + _numOfSlaves + "]slowAfter=[" + _slowAfter + "]]";
     }
 }
