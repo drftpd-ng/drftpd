@@ -55,7 +55,7 @@ import java.util.StringTokenizer;
  * Represents the file attributes of a remote file.
  *
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.166 2004/09/13 15:04:58 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.167 2004/09/25 03:48:36 mog Exp $
  */
 public class LinkedRemoteFile implements Serializable, Comparable,
     LinkedRemoteFileInterface {
@@ -645,11 +645,15 @@ public class LinkedRemoteFile implements Serializable, Comparable,
         return _group;
     }
 
-    public RemoteFileInterface getLink() throws FileNotFoundException {
-        return lookupFile(getLinkPath());
+    public LinkedRemoteFile getLink() throws FileNotFoundException {
+        return getParentFile().lookupFile(getLinkPath());
     }
 
     public String getLinkPath() {
+        if (_link == null) {
+            throw new NullPointerException();
+        }
+
         return _link;
     }
 
@@ -1040,6 +1044,12 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
             try {
                 nextFile = (LinkedRemoteFile) currFile.getFile(currFileName);
+
+                if (nextFile.isLink()) {
+                    currFile = currFile.lookupFile(nextFile.getLinkPath());
+                } else {
+                    currFile = nextFile;
+                }
             } catch (FileNotFoundException ex) {
                 StringBuffer remaining = new StringBuffer(currFileName);
 
@@ -1049,8 +1059,6 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
                 return new NonExistingFile(currFile, remaining.toString());
             }
-
-            currFile = nextFile;
         }
 
         return new NonExistingFile(currFile, null);

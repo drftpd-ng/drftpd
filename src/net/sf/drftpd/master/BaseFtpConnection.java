@@ -40,6 +40,7 @@ import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -65,7 +66,7 @@ import javax.net.ssl.SSLSocket;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.94 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.95 2004/09/25 03:48:35 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
     private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() +
@@ -475,7 +476,8 @@ public class BaseFtpConnection implements Runnable {
 
             _out = new PrintWriter(new OutputStreamWriter(
                         new AddAsciiOutputStream(
-                            _controlSocket.getOutputStream()), "ISO-8859-1"));
+                            new BufferedOutputStream(
+                                _controlSocket.getOutputStream())), "ISO-8859-1"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

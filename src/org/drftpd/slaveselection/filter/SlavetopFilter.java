@@ -24,6 +24,8 @@ import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.drftpd.GlobalContext;
+
 import org.drftpd.remotefile.LinkedRemoteFileUtils;
 
 import org.drftpd.sections.SectionInterface;
@@ -42,18 +44,24 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilter.java,v 1.10 2004/08/03 20:14:10 zubov Exp $
+ * @version $Id: SlavetopFilter.java,v 1.11 2004/09/25 03:48:42 mog Exp $
  */
 public class SlavetopFilter extends Filter {
+    private GlobalContext _gctx;
     private long _assign;
-    private FilterChain _fc;
     private int _topslaves;
 
     public SlavetopFilter(FilterChain fc, int i, Properties p) {
-        _fc = fc;
+        _gctx = fc.getSlaveManager().getGlobalContext();
         _topslaves = Integer.parseInt(FtpConfig.getProperty(p, i +
                     ".topslaves"));
         _assign = Long.parseLong(FtpConfig.getProperty(p, i + ".assign"));
+    }
+
+    public SlavetopFilter(GlobalContext gctx, int topslaves, long assign) {
+        _gctx = gctx;
+        _topslaves = topslaves;
+        _assign = assign;
     }
 
     public void process(ScoreChart scorechart, User user, InetAddress peer,
@@ -62,9 +70,7 @@ public class SlavetopFilter extends Filter {
         String path = dir.getPath();
 
         //// find the section part of the path name
-        SectionInterface section = _fc.getSlaveManager().getGlobalContext()
-                                      .getConnectionManager().getGlobalContext()
-                                      .getSectionManager().lookup(path);
+        SectionInterface section = _gctx.getSectionManager().lookup(path);
 
         LinkedRemoteFileInterface rls = section.getFirstDirInSection(dir);
 

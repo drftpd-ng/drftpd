@@ -1,3 +1,19 @@
+2004/09/24 Morgan Christiansson <drftpd@mog.se>
+* Changed decimal format for bytes formatting to always use dot (.).
+  This fixes broken testcase, some ppl might not want . however.
+  Feedback?
+* Added SITE LINK command, same syntax as ln in GNU fileutils.
+  i.e. SITE LINK <target> <link>
+* Fixed relative links, added more testcases.
+
+2004/09/24 Morgan Christiansson <drftpd@mog.se>
+* Added testcase for symlinks that passes.
+
+2004/09/22 Morgan Christiansson <drftpd@mog.se>
+* Added BufferedOutputStream to control socket output stream,
+  should speed up the slowness (mostly noticed when logging in with long welcome message)
+  introduced by AddAsciiOutputStream.
+
 2004/08/24 Teflon <teflon114@@users.sourceforge.net>
 * Added MP3 ID3Tag support
 * Fixed bug where file xfertime would reset to 0 on daemon restart.

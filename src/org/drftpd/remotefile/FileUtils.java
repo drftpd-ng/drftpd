@@ -21,10 +21,12 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import java.io.FileNotFoundException;
 
+import java.util.Stack;
+
 
 /**
  * @author mog
- * @version $Id: FileUtils.java,v 1.2 2004/08/03 20:14:06 zubov Exp $
+ * @version $Id: FileUtils.java,v 1.3 2004/09/25 03:48:39 mog Exp $
  */
 public class FileUtils {
     /**
@@ -44,5 +46,17 @@ public class FileUtils {
         }
 
         return dir2;
+    }
+
+    public LinkedRemoteFileInterface getSubDirOfDirectoryLevel(
+        LinkedRemoteFileInterface baseDir, LinkedRemoteFileInterface dir,
+        int level) throws FileNotFoundException {
+        Stack s = new Stack();
+
+        while (s.peek() != baseDir) {
+            s.push(((LinkedRemoteFileInterface) s.peek()).getParentFile());
+        }
+
+        return (LinkedRemoteFileInterface) s.peek();
     }
 }

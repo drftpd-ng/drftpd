@@ -33,16 +33,16 @@ import java.util.Properties;
  * Example slaveselection.conf entry:
  * <pre>
  * <n>.filter=minfreespace
- * <n>.remove=10000
+ * <n>.multiplier=1
  * <n>.minfreespace=1GB
  * </pre>
  *
  * Works like this:
  * if(diskfree > minfreespace) {
- *   addScore(minfreespace - diskfree * multiplier)
+ *   addScore((minfreespace - diskfree) * multiplier)
  * }
  * @author mog
- * @version $Id: MinfreespaceFilter.java,v 1.7 2004/08/03 20:14:10 zubov Exp $
+ * @version $Id: MinfreespaceFilter.java,v 1.8 2004/09/25 03:48:42 mog Exp $
  */
 public class MinfreespaceFilter extends Filter {
     private long _minfreespace;

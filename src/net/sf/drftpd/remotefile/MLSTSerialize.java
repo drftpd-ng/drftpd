@@ -45,7 +45,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: MLSTSerialize.java,v 1.33 2004/08/03 20:14:02 zubov Exp $
+ * @version $Id: MLSTSerialize.java,v 1.34 2004/09/25 03:48:37 mog Exp $
  */
 public class MLSTSerialize {
     private static final Logger logger = Logger.getLogger(MLSTSerialize.class);
@@ -70,7 +70,7 @@ public class MLSTSerialize {
         for (Iterator iter = dir.getMap().values().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
 
-            if (file.isDirectory()) {
+            if (file.isDirectory() && !file.isLink()) {
                 serialize(file, out);
             }
         }
@@ -188,12 +188,13 @@ public class MLSTSerialize {
                     file.setUsername(v);
                 } else if ("unix.group".equals(k)) {
                     file.setGroupname(v);
-                } else if ("x.deleted".equals(k)) {
-                    if (file.isLink()) {
-                        isFile = true;
-                    }
 
-                    file.setDeleted(true);
+                    //                } else if ("x.deleted".equals(k)) {
+                    //                    if (file.isLink()) {
+                    //                        isFile = true;
+                    //                    }
+                    //
+                    //                    file.setDeleted(true);
                 } else if ("size".equals(k)) {
                     file.setLength(Long.parseLong(v));
                 } else if ("x.slaves".equals(k)) {

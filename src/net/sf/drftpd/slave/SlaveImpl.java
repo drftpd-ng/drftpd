@@ -68,13 +68,13 @@ import javax.net.ssl.SSLContext;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.104 2004/09/13 15:04:59 zubov Exp $
+ * @version $Id: SlaveImpl.java,v 1.105 2004/09/25 03:48:37 mog Exp $
  */
 public class SlaveImpl extends UnicastRemoteObject implements Slave,
     Unreferenced {
     static final boolean isWin32 = System.getProperty("os.name").startsWith("Windows");
     private static final Logger logger = Logger.getLogger(SlaveImpl.class.getName());
-    public static final String VERSION = "DrFTPD 1.1.2";
+    public static final String VERSION = "DrFTPD 1.2-cvs";
     private int _bufferSize;
     private SSLContext _ctx;
     private boolean _downloadChecksums;

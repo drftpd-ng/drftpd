@@ -20,10 +20,11 @@ package org.drftpd.slaveselection;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+
+import org.drftpd.GlobalContext;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -33,30 +34,30 @@ import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManagerInterface.java,v 1.5 2004/08/03 20:14:09 zubov Exp $
+ * @version $Id: SlaveSelectionManagerInterface.java,v 1.6 2004/09/25 03:48:41 mog Exp $
  */
 public interface SlaveSelectionManagerInterface {
-    public abstract void reload() throws FileNotFoundException, IOException;
+    public abstract void reload() throws IOException;
 
     /**
      * Checksums call us with null BaseFtpConnection.
      */
-    public abstract RemoteSlave getASlave(Collection rslaves, char direction,
+    public RemoteSlave getASlave(Collection rslaves, char direction,
         BaseFtpConnection conn, LinkedRemoteFileInterface file)
         throws NoAvailableSlaveException;
 
     /**
      * Get slave for transfer to master.
      */
-    public abstract RemoteSlave getASlaveForMaster(
-        LinkedRemoteFileInterface file, FtpConfig cfg)
+    public RemoteSlave getASlaveForMaster(LinkedRemoteFileInterface file,
+        FtpConfig cfg) throws NoAvailableSlaveException;
+
+    //    public SlaveManagerImpl getSlaveManager();
+    public GlobalContext getGlobalContext();
+
+    public RemoteSlave getASlaveForJobDownload(Job job)
         throws NoAvailableSlaveException;
 
-    public abstract SlaveManagerImpl getSlaveManager();
-
-    public abstract RemoteSlave getASlaveForJobDownload(Job job)
-        throws NoAvailableSlaveException;
-
-    public abstract RemoteSlave getASlaveForJobUpload(Job job)
+    public RemoteSlave getASlaveForJobUpload(Job job)
         throws NoAvailableSlaveException;
 }

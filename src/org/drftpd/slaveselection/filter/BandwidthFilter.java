@@ -17,6 +17,7 @@
  */
 package org.drftpd.slaveselection.filter;
 
+import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -36,7 +37,7 @@ import java.util.Properties;
 /**
  * Removes bandwidth * multiplier from the score.
  * @author mog
- * @version $Id: BandwidthFilter.java,v 1.6 2004/08/03 20:14:09 zubov Exp $
+ * @version $Id: BandwidthFilter.java,v 1.7 2004/09/25 03:48:42 mog Exp $
  */
 public class BandwidthFilter extends Filter {
     private static final Logger logger = Logger.getLogger(BandwidthFilter.class);
@@ -44,6 +45,10 @@ public class BandwidthFilter extends Filter {
 
     public BandwidthFilter(FilterChain ssm, int i, Properties p) {
         setMultiplier(FtpConfig.getProperty(p, i + ".multiplier"));
+    }
+
+    public BandwidthFilter(float multiplier) {
+        _multiplier = multiplier;
     }
 
     protected void setMultiplier(String s) {
@@ -115,7 +120,12 @@ public class BandwidthFilter extends Filter {
                 continue;
             }
 
-            score.addScore(-(long) (status.getThroughputDirection(direction) * _multiplier));
+            score.addScore(-(long) (status.getThroughputDirection(direction) * getMultiplier(
+                    score.getRSlave())));
         }
+    }
+
+    protected float getMultiplier(RemoteSlave slave) {
+        return _multiplier;
     }
 }

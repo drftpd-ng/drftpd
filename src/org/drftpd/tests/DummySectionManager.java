@@ -91,4 +91,8 @@ public class DummySectionManager implements SectionManagerInterface {
     public SectionInterface lookup(String string) {
         return _section;
     }
+
+    public SectionInterface lookup(LinkedRemoteFileInterface file) {
+        return _section;
+    }
 }

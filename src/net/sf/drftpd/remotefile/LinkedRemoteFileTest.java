@@ -36,7 +36,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: LinkedRemoteFileTest.java,v 1.10 2004/08/03 20:14:02 zubov Exp $
+ * @version $Id: LinkedRemoteFileTest.java,v 1.11 2004/09/25 03:48:37 mog Exp $
  */
 public class LinkedRemoteFileTest extends TestCase {
     private LinkedRemoteFile _root;
@@ -136,6 +136,41 @@ public class LinkedRemoteFileTest extends TestCase {
         _root.getFile("Test1").delete();
 
         assertEquals(10000, _root.length());
+    }
+
+    public void internalBuildLinks() {
+        _root = new LinkedRemoteFile(null);
+        _root.addFile(new StaticRemoteFile("dir", null));
+        _root.addFile(new StaticRemoteFile("link", null, "/"));
+        _root.addFile(new StaticRemoteFile("dirlinkrel", null, "dir"));
+        _root.addFile(new StaticRemoteFile("dirlinkabs", null, "/dir"));
+    }
+
+    public void testLinkRecursive() throws FileNotFoundException {
+        internalBuildLinks();
+
+        LinkedRemoteFile lrf = _root.lookupFile("/link/link/link");
+        assertEquals(lrf, _root);
+    }
+
+    public void testLinkRelativeRel() throws FileNotFoundException {
+        internalBuildLinks();
+
+        LinkedRemoteFile lrf = _root.lookupFile("dirlinkrel");
+        assertEquals(lrf, _root.getFile("dir"));
+    }
+
+    public void testLinkRelativeAbs() throws FileNotFoundException {
+        internalBuildLinks();
+
+        LinkedRemoteFile lrf = _root.lookupFile("dirlinkabs");
+        assertEquals(lrf, _root.getFile("dir"));
+    }
+
+    public void testLookup() throws FileNotFoundException {
+        internalBuildLinks();
+        assertNotSame(_root, _root.lookupFile("/dir"));
+        assertNotSame(_root, _root.lookupFile("dir"));
     }
 
     public void testRemerge() throws IOException {

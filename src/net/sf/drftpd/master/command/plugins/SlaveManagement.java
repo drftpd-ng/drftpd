@@ -47,7 +47,7 @@ import java.util.Map;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveManagement.java,v 1.2 2004/08/03 20:13:57 zubov Exp $
+ * @version $Id: SlaveManagement.java,v 1.3 2004/09/25 03:48:36 mog Exp $
  */
 public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
     public void unload() {
@@ -176,6 +176,9 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         return FtpReply.RESPONSE_200_COMMAND_OK;
     }
 
+    /**
+     * Usage: site slave slavename [set,addmask,delmask]
+     */
     private FtpReply doSITE_SLAVE(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
             return FtpReply.RESPONSE_530_ACCESS_DENIED;

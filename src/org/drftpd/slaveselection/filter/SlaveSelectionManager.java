@@ -27,6 +27,8 @@ import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.Transfer;
 
+import org.drftpd.GlobalContext;
+
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 import java.io.FileNotFoundException;
@@ -41,19 +43,19 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.16 2004/08/03 20:14:10 zubov Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.17 2004/09/25 03:48:42 mog Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
-    private SlaveManagerImpl _sm;
+    private GlobalContext _gctx;
     private FilterChain _ssmiDown;
     private FilterChain _ssmiJobDown;
     private FilterChain _ssmiJobUp;
     private FilterChain _ssmiMaster;
     private FilterChain _ssmiUp;
 
-    public SlaveSelectionManager(SlaveManagerImpl sm)
+    public SlaveSelectionManager(GlobalContext gctx)
         throws FileNotFoundException, IOException {
-        _sm = sm;
+        _gctx = gctx;
         reload();
     }
 
@@ -96,9 +98,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
         ArrayList slaves = new ArrayList(job.getDestinationSlaves());
 
         for (Iterator iter = slaves.iterator(); iter.hasNext();) {
-            RemoteSlave rslave = (RemoteSlave) iter.next();
-
-            if (!rslave.isAvailable()) {
+            if (!((RemoteSlave) iter.next()).isAvailable()) {
                 iter.remove();
             }
         }
@@ -120,8 +120,12 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
             null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, file);
     }
 
+    /**
+     * @deprecated
+     * @return
+     */
     public SlaveManagerImpl getSlaveManager() {
-        return _sm;
+        return getGlobalContext().getSlaveManager();
     }
 
     private RemoteSlave process(String filterchain, ScoreChart sc, User user,
@@ -151,8 +155,8 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
         _ssmiMaster = new FilterChain(this, "conf/slaveselection-master.conf");
         _ssmiUp = new FilterChain(this, "conf/slaveselection-up.conf");
 
-        if (_sm.getGlobalContext().getConnectionManager().getGlobalContext()
-                   .isJobManagerLoaded()) {
+        if (getGlobalContext().getConnectionManager().getGlobalContext()
+                    .isJobManagerLoaded()) {
             _ssmiJobUp = new FilterChain(this, "conf/slaveselection-jobup.conf");
             _ssmiJobDown = new FilterChain(this,
                     "conf/slaveselection-jobdown.conf");
@@ -160,5 +164,13 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
             _ssmiJobUp = null;
             _ssmiJobDown = null;
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.drftpd.slaveselection.SlaveSelectionManagerInterface#getGlobalContext()
+     */
+    public GlobalContext getGlobalContext() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

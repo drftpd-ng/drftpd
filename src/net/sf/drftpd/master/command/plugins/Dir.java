@@ -37,6 +37,7 @@ import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+import net.sf.drftpd.remotefile.StaticRemoteFile;
 import net.sf.drftpd.util.ListUtils;
 import net.sf.drftpd.util.ReplacerUtils;
 
@@ -66,7 +67,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.38 2004/09/13 15:04:57 zubov Exp $
+ * @version $Id: Dir.java,v 1.39 2004/09/25 03:48:35 mog Exp $
  */
 public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
     private final static SimpleDateFormat DATE_FMT = new SimpleDateFormat(
@@ -814,6 +815,42 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         return FtpReply.RESPONSE_200_COMMAND_OK;
     }
 
+    private FtpReply doSITE_LINK(BaseFtpConnection conn) {
+        if (!conn.getUserNull().isAdmin()) {
+            return FtpReply.RESPONSE_530_ACCESS_DENIED;
+        }
+
+        if (!conn.getRequest().hasArgument()) {
+            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+        }
+
+        StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument(),
+                " ");
+
+        if (st.countTokens() != 2) {
+            return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+        }
+
+        String targetName = st.nextToken();
+        String linkName = st.nextToken();
+        LinkedRemoteFile target;
+
+        try {
+            target = conn.getCurrentDirectory().lookupFile(targetName);
+        } catch (FileNotFoundException e) {
+            return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+        }
+
+        if (!target.isDirectory()) {
+            return new FtpReply(501, "Only link to directories for now.");
+        }
+
+        StaticRemoteFile link = new StaticRemoteFile(linkName, null, targetName);
+        conn.getCurrentDirectory().addFile(link);
+
+        return FtpReply.RESPONSE_200_COMMAND_OK;
+    }
+
     /**
      * USAGE: site wipe [-r] <file/directory>
      *
@@ -987,6 +1024,10 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 
         if ("RNTO".equals(cmd)) {
             return doRNTO(conn);
+        }
+
+        if ("SITE LINK".equals(cmd)) {
+            return doSITE_LINK(conn);
         }
 
         if ("SITE WIPE".equals(cmd)) {

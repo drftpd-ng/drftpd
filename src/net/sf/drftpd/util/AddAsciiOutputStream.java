@@ -22,10 +22,10 @@ import java.io.OutputStream;
 
 
 /**
- * AddAsciiOutputStream that ignores \r and adds an \r before every \n.
+ * AddAsciiOutputStream that ensures that there's an \r before every \n.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
- * @version $Id: AddAsciiOutputStream.java,v 1.6 2004/08/03 20:14:03 zubov Exp $
+ * @version $Id: AddAsciiOutputStream.java,v 1.7 2004/09/25 03:48:38 mog Exp $
  */
 public class AddAsciiOutputStream extends OutputStream {
     private OutputStream _out;

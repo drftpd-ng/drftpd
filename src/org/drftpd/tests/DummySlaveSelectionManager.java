@@ -8,6 +8,8 @@ import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.drftpd.GlobalContext;
+
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 import java.io.FileNotFoundException;
@@ -18,47 +20,39 @@ import java.util.Collection;
 
 /**
  * @author zubov
- * @version $Id: DummySlaveSelectionManager.java,v 1.2 2004/08/03 20:14:10 zubov Exp $
+ * @version $Id: DummySlaveSelectionManager.java,v 1.3 2004/09/25 03:48:43 mog Exp $
  */
 public class DummySlaveSelectionManager
     implements SlaveSelectionManagerInterface {
     public DummySlaveSelectionManager() {
         super();
-
-        // TODO Auto-generated constructor stub
     }
 
     public void reload() throws FileNotFoundException, IOException {
-        // TODO Auto-generated method stub
     }
 
     public RemoteSlave getASlave(Collection rslaves, char direction,
         BaseFtpConnection conn, LinkedRemoteFileInterface file)
         throws NoAvailableSlaveException {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     public RemoteSlave getASlaveForMaster(LinkedRemoteFileInterface file,
         FtpConfig cfg) throws NoAvailableSlaveException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public SlaveManagerImpl getSlaveManager() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     public RemoteSlave getASlaveForJobDownload(Job job)
         throws NoAvailableSlaveException {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     public RemoteSlave getASlaveForJobUpload(Job job)
         throws NoAvailableSlaveException {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
+    }
+
+    public GlobalContext getGlobalContext() {
+        throw new UnsupportedOperationException();
     }
 }

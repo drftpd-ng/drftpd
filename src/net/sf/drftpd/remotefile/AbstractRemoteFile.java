@@ -20,7 +20,7 @@ package net.sf.drftpd.remotefile;
 
 /**
  * @author mog
- * @version $Id: AbstractRemoteFile.java,v 1.3 2004/08/09 20:54:51 teflon114 Exp $
+ * @version $Id: AbstractRemoteFile.java,v 1.4 2004/09/25 03:48:36 mog Exp $
  */
 public abstract class AbstractRemoteFile implements RemoteFileInterface {
     public boolean equals(Object file) {
@@ -45,10 +45,6 @@ public abstract class AbstractRemoteFile implements RemoteFileInterface {
 
     public long getXfertime() {
         return 0;
-    }
-
-    public boolean isDeleted() {
-        return false;
     }
 
     public int hashCode() {

@@ -47,11 +47,12 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.StringTokenizer;
 
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.55 2004/09/15 04:44:36 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.56 2004/09/25 03:48:35 mog Exp $
  */
 public class RemoteSlave implements Comparable, Serializable {
     private static final Logger logger = Logger.getLogger(RemoteSlave.class);
@@ -535,5 +536,18 @@ public class RemoteSlave implements Comparable, Serializable {
     protected void init(String name, SlaveManagerImpl impl) {
         _name = name;
         _manager = impl;
+    }
+
+    public boolean hasKeyword(String string) {
+        StringTokenizer st = new StringTokenizer(getProperty("keywords", ""),
+                " ");
+
+        while (st.hasMoreElements()) {
+            if (st.nextToken().equals(string)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

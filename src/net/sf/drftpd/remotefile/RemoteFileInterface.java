@@ -24,7 +24,7 @@ import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: RemoteFileInterface.java,v 1.12 2004/08/03 20:14:02 zubov Exp $
+ * @version $Id: RemoteFileInterface.java,v 1.13 2004/09/25 03:48:37 mog Exp $
  */
 public interface RemoteFileInterface {
     /**
@@ -47,13 +47,12 @@ public interface RemoteFileInterface {
      */
     public String getGroupname();
 
-    /**
-     * Returns the target of the link.
-     * @return target of the link.
-     * @see #isLink()
-     */
-    public RemoteFileInterface getLink() throws FileNotFoundException;
-
+    //    /**
+    //     * Returns the target of the link.
+    //     * @return target of the link.
+    //     * @see #isLink()
+    //     */
+    //    public RemoteFileInterface getLink() throws FileNotFoundException;
     public String getLinkPath();
 
     /**

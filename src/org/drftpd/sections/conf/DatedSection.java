@@ -36,7 +36,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: DatedSection.java,v 1.9 2004/08/03 20:14:07 zubov Exp $
+ * @version $Id: DatedSection.java,v 1.10 2004/09/25 03:48:40 mog Exp $
  */
 public class DatedSection implements SectionInterface {
     private String _basePath;
@@ -58,6 +58,7 @@ public class DatedSection implements SectionInterface {
         getBaseFile();
     }
 
+    //TODO schedule nightly/weekly/etc. creation of dated dirs
     public LinkedRemoteFile getBaseFile() {
         try {
             return _mgr.getConnectionManager().getGlobalContext().getRoot()

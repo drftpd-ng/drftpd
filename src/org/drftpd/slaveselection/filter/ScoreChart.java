@@ -30,10 +30,14 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: ScoreChart.java,v 1.6 2004/08/03 20:14:10 zubov Exp $
+ * @version $Id: ScoreChart.java,v 1.7 2004/09/25 03:48:42 mog Exp $
  */
 public class ScoreChart {
     private static final Logger logger = Logger.getLogger(ScoreChart.class);
+
+    /**
+     * Contains {@link SlaveScore} elements.
+     */
     private ArrayList _scoreChart;
 
     /**
@@ -81,6 +85,10 @@ public class ScoreChart {
         return bestscore;
     }
 
+    /**
+     * Returns the {@link SlaveScore} entry for the RemoteSlave rslave.
+     * @param rslave The RemoteSlave to get the SlaveScore for.
+     */
     public SlaveScore getSlaveScore(RemoteSlave rslave)
         throws ObjectNotFoundException {
         for (Iterator iter = _scoreChart.iterator(); iter.hasNext();) {
@@ -95,6 +103,9 @@ public class ScoreChart {
             " not in ScoreChart");
     }
 
+    /**
+     * Returns the Collection holding the {@link SlaveScore} elements.
+     */
     public Collection getSlaveScores() {
         return _scoreChart;
     }

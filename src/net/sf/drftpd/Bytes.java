@@ -25,15 +25,14 @@ import java.text.DecimalFormatSymbols;
  * See http://physics.nist.gov/cuu/Units/binary.html for an explanation of binary multiples.
  *
  * @author mog
- * @version $Id: Bytes.java,v 1.15 2004/08/03 20:13:54 zubov Exp $
+ * @version $Id: Bytes.java,v 1.16 2004/09/25 03:48:34 mog Exp $
  */
 public class Bytes {
     private static final DecimalFormat FORMAT;
 
     static {
         DecimalFormatSymbols formatsymbols = new DecimalFormatSymbols();
-
-        //formatsymbols.setDecimalSeparator('.');
+        formatsymbols.setDecimalSeparator('.');
         FORMAT = new DecimalFormat("0.0", formatsymbols);
         FORMAT.setDecimalSeparatorAlwaysShown(true);
     }

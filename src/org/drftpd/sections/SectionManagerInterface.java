@@ -18,13 +18,14 @@
 package org.drftpd.sections;
 
 import net.sf.drftpd.master.ConnectionManager;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import java.util.Collection;
 
 
 /**
  * @author mog
- * @version $Id: SectionManagerInterface.java,v 1.5 2004/08/03 20:14:06 zubov Exp $
+ * @version $Id: SectionManagerInterface.java,v 1.6 2004/09/25 03:48:40 mog Exp $
  */
 public interface SectionManagerInterface {
     public ConnectionManager getConnectionManager();
@@ -43,4 +44,6 @@ public interface SectionManagerInterface {
     public SectionInterface getSection(String string);
 
     public void reload();
+
+    public SectionInterface lookup(LinkedRemoteFileInterface file);
 }

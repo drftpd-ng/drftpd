@@ -43,7 +43,7 @@ import java.util.List;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya </a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.49 2004/08/03 20:13:59 zubov Exp $
+ * @version $Id: AbstractUser.java,v 1.50 2004/09/25 03:48:36 mog Exp $
  */
 public abstract class AbstractUser implements User {
     private static final Logger logger = Logger.getLogger(AbstractUser.class);
@@ -152,6 +152,7 @@ public abstract class AbstractUser implements User {
                 "User is already a member of that group");
         }
 
+        checkValidGroupName(group);
         groups.add(group);
     }
 
@@ -845,7 +846,15 @@ public abstract class AbstractUser implements User {
         _downloadedMillisecondsWeek = millis;
     }
 
+    public static void checkValidGroupName(String group) {
+        if ((group.indexOf(' ') != -1) || (group.indexOf(';') != -1)) {
+            throw new IllegalArgumentException(
+                "Groups cannot contain space or other illegal characters");
+        }
+    }
+
     public void setGroup(String group) {
+        checkValidGroupName(group);
         _group = group;
     }
 

@@ -17,8 +17,6 @@
  */
 package net.sf.drftpd.master;
 
-import de.hampelratte.id3.ID3v1Tag;
-
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
@@ -47,7 +45,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: RemoteSlaveTest.java,v 1.9 2004/09/13 15:04:55 zubov Exp $
+ * @version $Id: RemoteSlaveTest.java,v 1.10 2004/09/25 03:48:35 mog Exp $
  */
 public class RemoteSlaveTest extends TestCase {
     public RemoteSlaveTest(String fName) {

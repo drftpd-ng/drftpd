@@ -24,7 +24,7 @@ import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
-import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
+import org.drftpd.GlobalContext;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -39,24 +39,24 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: FilterChain.java,v 1.6 2004/08/03 20:14:10 zubov Exp $
+ * @version $Id: FilterChain.java,v 1.7 2004/09/25 03:48:42 mog Exp $
  */
 public class FilterChain {
+    private SlaveSelectionManager _ssm;
     private String _cfgfileName;
     private ArrayList _filters;
-    protected SlaveSelectionManagerInterface _sm;
 
     protected FilterChain() {
     }
 
-    public FilterChain(SlaveSelectionManagerInterface sm, Properties p) {
-        _sm = sm;
+    public FilterChain(SlaveSelectionManager ssm, Properties p) {
+        _ssm = ssm;
         reload(p);
     }
 
-    public FilterChain(SlaveSelectionManagerInterface sm, String cfgFileName)
+    public FilterChain(SlaveSelectionManager ssm, String cfgFileName)
         throws FileNotFoundException, IOException {
-        _sm = sm;
+        _ssm = ssm;
         _cfgfileName = cfgFileName;
         reload();
     }
@@ -127,10 +127,10 @@ public class FilterChain {
     }
 
     public SlaveManagerImpl getSlaveManager() {
-        if (_sm == null) {
-            throw new NullPointerException();
-        }
+        return getGlobalContext().getSlaveManager();
+    }
 
-        return _sm.getSlaveManager();
+    private GlobalContext getGlobalContext() {
+        return _ssm.getGlobalContext();
     }
 }

@@ -71,7 +71,7 @@ import java.util.Set;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.104 2004/08/03 20:13:56 zubov Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.105 2004/09/25 03:48:35 mog Exp $
  */
 public class SlaveManagerImpl extends UnicastRemoteObject
     implements SlaveManager {
@@ -264,11 +264,9 @@ public class SlaveManagerImpl extends UnicastRemoteObject
         try {
             Constructor c = Class.forName(cfg.getProperty("slaveselection",
                         "org.drftpd.slaveselection.def.SlaveSelectionManager"))
-                                 .getConstructor(new Class[] {
-                        SlaveManagerImpl.class
-                    });
+                                 .getConstructor(new Class[] { GlobalContext.class });
             _slaveSelectionManager = (SlaveSelectionManagerInterface) c.newInstance(new Object[] {
-                        this
+                        getGlobalContext()
                     });
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
@@ -290,8 +288,7 @@ public class SlaveManagerImpl extends UnicastRemoteObject
                     saveFilelist();
 
                     try {
-                        getGlobalContext().getConnectionManager()
-                            .getGlobalContext().getUserManager().saveAll();
+                        getGlobalContext().getUserManager().saveAll();
                     } catch (UserFileException e) {
                         logger.warn("", e);
                     }
