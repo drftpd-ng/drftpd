@@ -3,7 +3,12 @@
  */
 package org.drftpd.plugins;
 
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,6 +16,8 @@ import java.util.Iterator;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+
+import javax.imageio.stream.FileImageInputStream;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -21,7 +28,9 @@ import org.apache.log4j.Logger;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
+import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UnhandledCommandException;
+import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.usermanager.User;
@@ -46,11 +55,21 @@ public class TDPAffilManagment implements CommandHandlerFactory, CommandHandler 
 
 	//HashMap<String, String> _template;
 
-	public TDPAffilManagment() {
+	public TDPAffilManagment() throws FileNotFoundException {
 		super();
+		readPerms();
 	}
 
-	public Reply doSITE_ADDAFFIL(BaseFtpConnection conn) {
+	/**
+	 * @throws FileNotFoundException
+	 * 
+	 */
+	private void readPerms() throws FileNotFoundException {
+		XMLDecoder in = new XMLDecoder(new FileInputStream("affils.xml"));
+		_affils =  (HashSet<String>) in.readObject();
+	}
+
+	public Reply doSITE_ADDAFFIL(BaseFtpConnection conn) throws ReplyException {
 		if (!conn.getRequest().hasArgument()) {
 			return new Reply(202, "Usage: site addaffil <group>");
 		}
@@ -95,8 +114,13 @@ public class TDPAffilManagment implements CommandHandlerFactory, CommandHandler 
 //		}
 //		permsData.add(AM_END + group);
 //		writePerms(permsData);
-//		response.addComment("Added " + group + " to perms.conf");
-//
+		try {
+			writePerms();
+		} catch(IOException e) {
+			throw new ReplyException(e);
+		}
+		response.addComment("Added " + group + " to perms.conf");
+
 		try {
 			LinkedRemoteFile aRoot = conn.getGlobalContext().getRoot()
 					.lookupFile(_affilsRoot);
@@ -122,6 +146,12 @@ public class TDPAffilManagment implements CommandHandlerFactory, CommandHandler 
 		// response.addComment(ret);
 
 		return response;
+	}
+
+	private void writePerms() throws IOException {
+		XMLEncoder out = new XMLEncoder(new SafeFileOutputStream("affils.xml"));
+		out.writeObject(_affils);
+		out.close();
 	}
 
 	public Reply doSITE_AFFILS(BaseFtpConnection conn) {
@@ -219,7 +249,7 @@ public class TDPAffilManagment implements CommandHandlerFactory, CommandHandler 
 	}
 
 	public Reply execute(BaseFtpConnection conn)
-			throws UnhandledCommandException {
+			throws ReplyException {
 
 		if (!isAllowed(conn))
 			return Reply.RESPONSE_530_ACCESS_DENIED;
