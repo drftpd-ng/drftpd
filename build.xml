@@ -88,6 +88,7 @@
       <include name="lib/*"/>
       <include name="src/**"/>
       <include name="classes/**"/>
+      <include name="ftp-data/text/**"/>
     </zip>
   </target>
   
