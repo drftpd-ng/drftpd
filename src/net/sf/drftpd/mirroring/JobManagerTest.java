@@ -33,6 +33,7 @@ import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.tests.DummySlaveManager;
 import org.drftpd.tests.DummySlaveSelectionManager;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import java.rmi.RemoteException;
@@ -211,5 +212,9 @@ public class JobManagerTest extends TestCase {
             RemoteSlave rslave) throws IOException {
             // TODO Auto-generated method stub
         }
+
+		public boolean isValid() {
+			return true;
+		}
     }
 }

@@ -153,6 +153,10 @@ public class MatchdirFilterTest extends TestCase {
         public void remerge(CaseInsensitiveHashtable lightRemoteFiles,
             RemoteSlave rslave) throws IOException {
         }
+
+		public boolean isValid() {
+			return true;
+		}
     }
 
     public class FC extends FilterChain {

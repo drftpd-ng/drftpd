@@ -143,6 +143,10 @@ public class RemoteSlaveTest extends TestCase {
             RemoteSlave rslave) throws IOException {
             // TODO Auto-generated method stub
         }
+
+		public boolean isValid() {
+			return true;
+		}
     }
 
     public class GC extends GlobalContext {
