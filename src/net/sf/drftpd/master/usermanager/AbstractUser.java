@@ -253,16 +253,16 @@ public abstract class AbstractUser extends User {
 		return downloadedSecondsWeek;
 	}
 
-	public String getGroupName() {
-		if(_group == null) return "nogroup";
-		return _group;
-	}
-
 	/**
 	 * @return
 	 */
 	public short getGroupLeechSlots() {
 		return groupLeechSlots;
+	}
+
+	public String getGroupName() {
+		if(_group == null) return "nogroup";
+		return _group;
 	}
 
 	/**
@@ -589,6 +589,9 @@ public abstract class AbstractUser extends User {
 			if(group.equals((String)iter.next())) return true;
 		}
 		return false;
+	}
+	public boolean isNuker() {
+		return isMemberOf("nuke");
 	}
 
 	/**

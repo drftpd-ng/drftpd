@@ -304,9 +304,7 @@ public abstract class User {
 	 * Returns the nuker.
 	 * @return boolean
 	 */
-	public boolean isNuker() {
-		return isMemberOf("nuker");
-	}
+	public abstract boolean isNuker();
 	/**
 	 * User login.
 	 */

@@ -3298,6 +3298,7 @@ public class FtpConnection extends BaseFtpConnection {
 		response.addComment("ratio: " + myUser.getRatio());
 		response.addComment(
 			"credits: " + Bytes.formatBytes(myUser.getCredits()));
+		response.addComment("group: "+myUser.getGroupName());
 		response.addComment("groups: " + myUser.getGroups());
 		response.addComment("ip masks: " + myUser.getIpMasks());
 		out.print(response);
@@ -3386,7 +3387,7 @@ public class FtpConnection extends BaseFtpConnection {
 			String command = conn.getRequest().getCommand();
 			String username = user.getUsername();
 
-			if (!getConfig()
+			if (getConfig()
 				.checkHideInWho(conn.getCurrentDirectory(), user)) {
 				continue;
 			}

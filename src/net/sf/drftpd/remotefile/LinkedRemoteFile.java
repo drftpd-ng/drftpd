@@ -722,13 +722,24 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 
 	}
 
+	private void setRSlaveAndConfig(LinkedRemoteFile dir, FtpConfig cfg, RemoteSlave rslave) {
+		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			file.ftpConfig = cfg;
+			if(file.isDirectory()) {
+				setRSlaveAndConfig(file, cfg, rslave);
+			} else {
+				file.addSlave(rslave);
+			}			
+		}
+	}
 	//TODO: remerge, delete files not in the merging slaves tree
 	/**
 	 * Merges two RemoteFile directories.
 	 * If duplicates exist, the slaves are added to this object and the file-attributes of the oldest file (lastModified) are kept.
 	 */
 	public void remerge(LinkedRemoteFile mergedir, RemoteSlave rslave) {
-		assert ftpConfig != null;
+		assert ftpConfig != null : this;
 		
 		if (!isDirectory()) {
 			throw new IllegalArgumentException(
@@ -768,6 +779,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				// local file does not exist, just put it in the hashtable
 				if (!mergefile.isDirectory()) {
 					mergefile.addSlave(rslave);
+				} else {
+					setRSlaveAndConfig(mergefile, this.ftpConfig, rslave);
 				}
 				// TODO if this is a directory, the parent files will have no slaves
 				mergefile.ftpConfig = this.ftpConfig;

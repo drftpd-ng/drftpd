@@ -207,6 +207,8 @@ public class IRCListener implements FtpListener, Observer {
 		throws FormatterException {
 		SlaveEvent sevent = (SlaveEvent) event;
 		ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
+		env.add("slave", sevent.getRSlave().getName());
+		env.add("message", sevent.getMessage());
 		if (event.getCommand().equals("ADDSLAVE")) {
 			SlaveStatus status;
 			try {
@@ -217,12 +219,10 @@ public class IRCListener implements FtpListener, Observer {
 			} catch (NoAvailableSlaveException e) {
 				return;
 			}
-			env.add("slave", sevent.getRSlave().getName());
 			fillEnvSpace(env, status);
 
 			say(SimplePrintf.jprintf(_ircCfg.getProperty("addslave"), env));
 		} else if (event.getCommand().equals("DELSLAVE")) {
-			env.add("slave", sevent.getRSlave().getName());
 			say(SimplePrintf.jprintf(_ircCfg.getProperty("delslave"), env));
 		}
 	}
