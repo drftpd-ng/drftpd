@@ -45,6 +45,7 @@ public class BaseFtpConnection implements Runnable {
 	protected LinkedRemoteFile _transferFile;
 
 	protected User _user;
+
 	/**
 	 * Is the current password authenticated?
 	 */
@@ -55,27 +56,6 @@ public class BaseFtpConnection implements Runnable {
 
 	protected LinkedRemoteFile currentDirectory;
 
-	/**
-	 * Set client address
-	 */
-	/*
-	public void setClientAddress(InetAddress clientAddress) {
-		clientAddress = clientAddress;
-	}
-	*/
-
-	/**
-	 * Set configuration file and the control socket.
-	 */
-	/*
-	public BaseFtpConnection(FtpConfig ftpConfig, Socket soc) {
-	    //mConfig = ftpConfig;
-	    //mFtpStatus = mConfig.getStatus();
-	mFtpStatus = new FtpStatus();
-	    mControlSocket = soc;
-	    mUser = new FtpUser();
-	}
-	*/
 	private Writer debugLog;
 	/**
 	 * Is the client running a command?
@@ -98,41 +78,6 @@ public class BaseFtpConnection implements Runnable {
 
 	protected boolean mbPort = false;
 
-	/**
-	 * Get connection spy object
-	 */
-	/*
-	public SpyConnectionInterface getSpyObject() {
-	    return mSpy;
-	}
-	*/
-
-	/**
-	 * Set spy object
-	 */
-	/*
-	public void setSpyObject(SpyConnectionInterface spy) {
-	    mWriter.setSpyObject(spy);
-	    mSpy = spy;
-	}
-	*/
-
-	/**
-	 * Get observer
-	 */
-	/*
-	public FtpConnectionObserver getObserver() {
-	    return mObserver;
-	}
-	*/
-	/**
-	 * Set observer
-	 */
-	/*
-	public void setObserver(FtpConnectionObserver obsr) {
-	    mObserver = obsr;
-	}
-	*/
 
 	/////////// DATA CONNECTION ///////////
 	protected Socket mDataSoc;
@@ -235,20 +180,6 @@ public class BaseFtpConnection implements Runnable {
 			if (mDataSoc == null)
 				acceptPasvConnection();
 		}
-
-		/* else if (!mbPasv) {
-			if (mDataSoc != null) {
-				try {
-					mDataSoc.close();
-				} catch (Exception ex) {
-					//mConfig.getLogger().warn(ex);
-					ex.printStackTrace();
-				}
-				mDataSoc = null;
-			}
-		}*/
-
-		// result check
 		return mDataSoc;
 	}
 

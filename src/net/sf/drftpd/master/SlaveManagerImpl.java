@@ -367,7 +367,8 @@ public class SlaveManagerImpl
 		getConnectionManager().dispatchFtpEvent(
 			new SlaveEvent("ADDSLAVE", rslave));
 
-		saveFilesXML();
+		// BAD idea...
+		//saveFilesXML();
 	}
 
 	//TODO cache!

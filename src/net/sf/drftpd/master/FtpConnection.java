@@ -4157,6 +4157,10 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
+		
+//		if(connManager.isShutdown() && !_user.isAdmin()) {
+//			out.print(new FtpResponse(421, ))
+//		}
 
 		String masks[] =
 			{
