@@ -33,7 +33,7 @@ import java.util.Map;
 
 /**
  * @author mog
- * @version $Id: SFVFile.java,v 1.32 2004/08/03 20:13:54 zubov Exp $
+ * @version $Id: SFVFile.java,v 1.33 2004/09/11 23:57:16 zubov Exp $
  */
 public class SFVFile implements Serializable {
     static final long serialVersionUID = 5381510163578487722L;
@@ -51,32 +51,36 @@ public class SFVFile implements Serializable {
     public SFVFile(BufferedReader in) throws IOException {
         String line;
 
-        while ((line = in.readLine()) != null) {
-            if (line.length() == 0) {
-                continue;
+        try {
+            while ((line = in.readLine()) != null) {
+                if (line.length() == 0) {
+                    continue;
+                }
+
+                if (line.charAt(0) == ';') {
+                    continue;
+                }
+
+                int separator = line.indexOf(" ");
+
+                if (separator == -1) {
+                    continue;
+                }
+
+                String fileName = line.substring(0, separator);
+                String checkSumString = line.substring(separator + 1);
+                Long checkSum;
+
+                try {
+                    checkSum = Long.valueOf(checkSumString, 16);
+                } catch (NumberFormatException e) {
+                    continue;
+                }
+
+                _entries.put(fileName, checkSum);
             }
-
-            if (line.charAt(0) == ';') {
-                continue;
-            }
-
-            int separator = line.indexOf(" ");
-
-            if (separator == -1) {
-                continue;
-            }
-
-            String fileName = line.substring(0, separator);
-            String checkSumString = line.substring(separator + 1);
-            Long checkSum;
-
-            try {
-                checkSum = Long.valueOf(checkSumString, 16);
-            } catch (NumberFormatException e) {
-                continue;
-            }
-
-            _entries.put(fileName, checkSum);
+        } finally {
+            in.close();
         }
     }
 
