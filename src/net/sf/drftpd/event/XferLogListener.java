@@ -108,7 +108,7 @@ public class XferLogListener implements FtpListener {
 				+ " r "
 				+ event.getUser().getUsername()
 				+ " "
-				+ event.getUser().getGroup()
+				+ event.getUser().getGroupName()
 				+ " 0 * "
 				+ completed);
 	}

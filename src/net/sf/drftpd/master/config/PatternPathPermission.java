@@ -31,7 +31,8 @@ public class PatternPathPermission extends PathPermission {
 	 */
 	public boolean checkPath(LinkedRemoteFile path) {
 		Perl5Matcher m = new Perl5Matcher();
-		return m.matches(path.getPath(), _pat);
+		assert path.isDirectory() : "Not a dir PatternPermission";
+		return m.matches(path.getPath()+"/", _pat);
 	}
 
 }

@@ -21,7 +21,9 @@ import org.apache.oro.text.regex.Perl5Matcher;
  */
 
 public abstract class AbstractUser extends User {
+
 	private static Logger logger = Logger.getLogger(AbstractUser.class);
+	private String _group = "nogroup";
 
 	protected boolean anonymous;
 	protected String comment;
@@ -41,8 +43,11 @@ public abstract class AbstractUser extends User {
 	protected int downloadedSecondsDay;
 	protected int downloadedSecondsMonth;
 	protected int downloadedSecondsWeek;
-
+	protected short groupLeechSlots;
+	
 	protected ArrayList groups = new ArrayList();
+
+	protected short groupSlots;
 
 	// time limits
 	protected int idleTime = 0; // no limit
@@ -248,10 +253,16 @@ public abstract class AbstractUser extends User {
 		return downloadedSecondsWeek;
 	}
 
-	public String getGroup() {
-		if (groups.size() == 0)
-			return "nogroup";
-		return (String) groups.get(0);
+	public String getGroupName() {
+		if(_group == null) return "nogroup";
+		return _group;
+	}
+
+	/**
+	 * @return
+	 */
+	public short getGroupLeechSlots() {
+		return groupLeechSlots;
 	}
 
 	/**
@@ -260,6 +271,13 @@ public abstract class AbstractUser extends User {
 	 */
 	public Collection getGroups() {
 		return groups;
+	}
+
+	/**
+	 * @return
+	 */
+	public short getGroupSlots() {
+		return groupSlots;
 	}
 
 	/**
@@ -538,6 +556,9 @@ public abstract class AbstractUser extends User {
 		return bActive;
 	}
 
+	public boolean isAdmin() {
+		return isMemberOf("siteop") || isMemberOf("admin");
+	}
 	/**
 	 * Returns the anonymous.
 	 * @return boolean
@@ -552,6 +573,22 @@ public abstract class AbstractUser extends User {
 	 */
 	public boolean isDeleted() {
 		return isMemberOf("deleted");
+	}
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.master.usermanager.User#isGroupAdmin()
+	 */
+	public boolean isGroupAdmin() {
+		return isMemberOf("gadmin");
+	}
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.master.usermanager.User#isMemberOf(java.lang.String)
+	 */
+	public boolean isMemberOf(String group) {
+		if(getGroupName().equals(group)) return true;
+		for (Iterator iter = getGroups().iterator(); iter.hasNext();) {
+			if(group.equals((String)iter.next())) return true;
+		}
+		return false;
 	}
 
 	/**
@@ -683,6 +720,26 @@ public abstract class AbstractUser extends User {
 			} catch (NoSuchFieldException e) {
 			}
 		}
+	}
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.master.usermanager.User#setGroup(java.lang.String)
+	 */
+	public void setGroup(String group) {
+		_group = group;
+	}
+
+	/**
+	 * @param s
+	 */
+	public void setGroupLeechSlots(short s) {
+		groupLeechSlots = s;
+	}
+
+	/**
+	 * @param s
+	 */
+	public void setGroupSlots(short s) {
+		groupSlots = s;
 	}
 
 	/**
@@ -838,6 +895,15 @@ public abstract class AbstractUser extends User {
 		this.downloadedBytesMonth += bytes;
 	}
 	/* (non-Javadoc)
+	 * @see net.sf.drftpd.master.usermanager.User#updateDownloadedFiles(int)
+	 */
+	public void updateDownloadedFiles(int i) {
+		this.downloadedFiles += i;
+		this.downloadedFilesDay += i;
+		this.downloadedFilesWeek += i;
+		this.downloadedFilesMonth += i;
+	}
+	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.usermanager.User#updateNukedBytes(long)
 	 */
 	public void updateNukedBytes(long bytes) {
@@ -855,15 +921,6 @@ public abstract class AbstractUser extends User {
 		this.uploadedBytesWeek += bytes;
 		this.uploadedBytesMonth += bytes;
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.User#updateDownloadedFiles(int)
-	 */
-	public void updateDownloadedFiles(int i) {
-		this.downloadedFiles += i;
-		this.downloadedFilesDay += i;
-		this.downloadedFilesWeek += i;
-		this.downloadedFilesMonth += i;
-	}
 
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.usermanager.User#updateUploadedFiles(int)
@@ -874,5 +931,4 @@ public abstract class AbstractUser extends User {
 		this.uploadedFilesWeek += i;
 		this.uploadedFilesMonth += i;
 	}
-
 }

@@ -602,8 +602,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 			if (currFileName.equals("..")) {
 				try {
 					currFile = currFile.getParentFile();
-				} catch (FileNotFoundException ex) {
-				}
+				} catch (FileNotFoundException ex) {}
 				continue;
 			}
 			LinkedRemoteFile nextFile;
@@ -611,8 +610,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				nextFile = (LinkedRemoteFile) currFile.getFile(currFileName);
 			} catch (FileNotFoundException ex) {
 				StringBuffer remaining = new StringBuffer(currFileName);
-				while (st.hasMoreElements()) {
-					remaining.append('/').append((String) st.nextElement());
+				if (st.hasMoreElements()) {
+					remaining.append('/').append(st.nextToken(""));
 				}
 				return new Object[] { currFile, remaining.toString()};
 			}
@@ -632,9 +631,17 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		return (LinkedRemoteFile) ret[0];
 	}
 
+	/**
+	 * Returns path for a non-existing file. Performs path normalization and returns an absolute path
+	 * @param path
+	 * @return
+	 */
 	public String lookupPath(String path) {
 		Object[] ret = lookupNonExistingFile(path);
-		return ((LinkedRemoteFile) ret[0]).getPath() + ((String) ret[1]);
+		if(ret[1] == null) {
+			return ((LinkedRemoteFile)ret[0]).getPath();
+		}
+		return ((LinkedRemoteFile) ret[0]).getPath()+"/"+((String)ret[1]);
 	}
 
 	//TODO: remerge, delete files not in the merging slaves tree
@@ -737,11 +744,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 						//rename file...
 						try {
 							rslave.getSlave().rename(
-								getPath() + mergefile.getName(),
-								getPath()
-									+ mergefile.getName()
-									+ "."
-									+ rslave.getName());
+								getPath()+"/"+mergefile.getName(),
+								getPath()+"/"+mergefile.getName()+"."+rslave.getName());
 							mergefile.name =
 								mergefile.getName() + "." + rslave.getName();
 							mergefile.addSlave(rslave);

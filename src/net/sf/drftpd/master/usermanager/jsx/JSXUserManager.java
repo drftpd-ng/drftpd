@@ -68,7 +68,7 @@ public class JSXUserManager extends UserManager {
 			} catch (DuplicateElementException e) {
 			}
 			try {
-				user.addGroup("admin");
+				user.addGroup("siteop");
 			} catch (DuplicateElementException e1) {
 			}
 			user.commit();

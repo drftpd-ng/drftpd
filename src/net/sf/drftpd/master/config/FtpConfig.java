@@ -107,15 +107,15 @@ public class FtpConfig {
 		}
 		return true;
 	}
+	
 	public void directoryMessage(
 		FtpResponse response,
 		User user,
 		LinkedRemoteFile dir) {
-		String path = dir.getPath();
 
 		for (Iterator iter = _msgpaths.iterator(); iter.hasNext();) {
 			MessagePathPermission perm = (MessagePathPermission) iter.next();
-			if (perm.getPath().equals(path)) {
+			if (perm.checkPath(dir)) {
 				if (perm.check(user)) {
 					perm.printMessage(response);
 				}

@@ -46,7 +46,7 @@ public class StaticRemoteFile extends RemoteFile {
 	 * @deprecated
 	 */
 	public StaticRemoteFile(Collection rslaves, String path, User owner, long size, long lastModified) {
-		this(rslaves, path, owner.getUsername(), owner.getGroup(), size, lastModified);
+		this(rslaves, path, owner.getUsername(), owner.getGroupName(), size, lastModified);
 	}
 	
 	public StaticRemoteFile(Collection rslaves, String path, String owner, String group, long size, long lastModified) {
@@ -75,7 +75,7 @@ public class StaticRemoteFile extends RemoteFile {
 	 * @param checkSum
 	 */
 	public StaticRemoteFile(Collection rslaves, String path, User owner, long size, long lastModified, long checkSum) {
-		this(rslaves, path, owner.getUsername(), owner.getGroup(), size, lastModified);
+		this(rslaves, path, owner.getUsername(), owner.getGroupName(), size, lastModified);
 		this.checkSum = checkSum;
 	}
 

@@ -93,5 +93,4 @@ public class JSXUser extends AbstractUser {
 		//an update was made, but commit() should be called from all places so we don't need to do anything.
 		//if we do, make sure it's implemented in all set and update methods in AbstractUser
 	}
-
 }

@@ -20,10 +20,11 @@ import org.jdom.Element;
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 public class NukeEvent extends UserEvent {
+	private long size;
 	private String path;
 	
-	public NukeEvent(User user, String command, String path, int multiplier, String reason, Map nukees) {
-		this(user, command, path, System.currentTimeMillis(), multiplier, reason, nukees);
+	public NukeEvent(User user, String command, String path, long size, int multiplier, String reason, Map nukees) {
+		this(user, command, path, System.currentTimeMillis(), size, multiplier, reason, nukees);
 	}
 	/**
 	 * @param user
@@ -31,12 +32,13 @@ public class NukeEvent extends UserEvent {
 	 * @param multiplier
 	 * @param nukees
 	 */
-	public NukeEvent(User user, String command, String path, long time, int multiplier, String reason, Map nukees) {
+	public NukeEvent(User user, String command, String path, long time, long size, int multiplier, String reason, Map nukees) {
 		super(user, command,  time);
 		this.multiplier = multiplier;
 		this.reason = reason;
 		this.path = path;
 		this.nukees = nukees;
+		this.size = size;
 	}
 	
 	private String reason;
@@ -107,4 +109,10 @@ public class NukeEvent extends UserEvent {
 		return path;
 	}
 
+	/**
+	 * @return
+	 */
+	public long getSize() {
+		return size;
+	}
 }
