@@ -19,8 +19,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
@@ -35,6 +33,8 @@ import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.slave.TransferImpl;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -48,7 +48,7 @@ public class SlaveManagerImpl
 	private static Logger logger =
 		Logger.getLogger(SlaveManagerImpl.class.getName());
 	static {
-		logger.setLevel(Level.FINEST);
+		logger.setLevel(Level.ALL);
 	}
 	public static void setRSlavesManager(
 		Collection rslaves,
@@ -113,13 +113,11 @@ public class SlaveManagerImpl
 		filesDotXml.renameTo(filesxmlbak);
 		try {
 			FileWriter out = new FileWriter(filesDotXml);
-			new XMLOutputter("  ", true).output(
-				root, out
-				);
+			new XMLOutputter("  ", true).output(root, out);
 			out.flush();
 		} catch (IOException ex) {
 			logger.log(
-				Level.WARNING,
+				Level.WARN,
 				"Error saving to " + filesDotXml.getPath(),
 				ex);
 		}
@@ -158,13 +156,13 @@ public class SlaveManagerImpl
 						.getName()
 						.equals(slaveElement.getChildText("name"))) {
 						logger.log(
-							Level.FINE,
+							Level.DEBUG,
 							rslave.getName() + " still in slaves.xml");
 						continue nextslave;
 					}
 				}
 				logger.log(
-					Level.WARNING,
+					Level.WARN,
 					rslave.getName() + " no longer in slaves.xml, unmerging");
 				rslave.setSlave(null, null);
 				root.unmerge(rslave);
@@ -211,17 +209,15 @@ public class SlaveManagerImpl
 		try {
 			Document doc = new SAXBuilder().build(new FileReader("files.xml"));
 			System.out.flush();
-			JDOMRemoteFile xmlroot = new JDOMRemoteFile(doc.getRootElement(), rslaves);
-			root =
-				new LinkedRemoteFile(
-					xmlroot,
-					cm.getConfig());
+			JDOMRemoteFile xmlroot =
+				new JDOMRemoteFile(doc.getRootElement(), rslaves);
+			root = new LinkedRemoteFile(xmlroot, cm.getConfig());
 			System.out.println("FINISHED");
 		} catch (FileNotFoundException ex) {
 			logger.info("files.xml not found, new file will be created.");
 			root = new LinkedRemoteFile(cm.getConfig());
 		} catch (Exception ex) {
-			logger.log(Level.SEVERE, "Error loading \"files.xml\"", ex);
+			logger.log(Level.FATAL, "Error loading \"files.xml\"", ex);
 			throw new FatalException(ex);
 			//root = new LinkedRemoteFile(cm);
 		}
@@ -257,7 +253,7 @@ public class SlaveManagerImpl
 		// throws RemoteException
 		try {
 			registry.bind(cfg.getProperty("master.bindname"), this);
-		} catch(Exception t) {
+		} catch (Exception t) {
 			throw new FatalException(t);
 		}
 	}
@@ -269,7 +265,7 @@ public class SlaveManagerImpl
 		throws RemoteException {
 
 		slave.ping();
-		
+
 		RemoteSlave rslave = null;
 		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
 			RemoteSlave rslave2 = (RemoteSlave) iter.next();
@@ -281,7 +277,7 @@ public class SlaveManagerImpl
 		if (rslave == null) {
 			throw new IllegalArgumentException("rejected");
 		}
-		if (rslave.isAvailable()) {
+		if (rslave.isAvailablePing()) {
 			throw new IllegalArgumentException(
 				rslave.getName() + " is already online");
 		}
@@ -296,8 +292,8 @@ public class SlaveManagerImpl
 
 		try {
 			root.remerge(slaveroot, rslave);
-		} catch(RuntimeException t) {
-			logger.log(Level.SEVERE, "", t);
+		} catch (RuntimeException t) {
+			logger.log(Level.FATAL, "", t);
 			rslave.setSlave(null, null);
 			throw t;
 		}
@@ -313,10 +309,10 @@ public class SlaveManagerImpl
 				"SlaveStatus: " + rslave.getSlave().getSlaveStatus());
 			// throws RemoteException
 		} catch (NoAvailableSlaveException e) {
-			logger.log(Level.SEVERE, "", e);
+			logger.log(Level.FATAL, "", e);
 		} catch (RemoteException e) {
 			logger.log(
-				Level.SEVERE,
+				Level.FATAL,
 				"RemoteException from getSlaveStatus()",
 				e);
 		}
@@ -498,7 +494,8 @@ public class SlaveManagerImpl
 			bestslave.setLastUploadReceiving(System.currentTimeMillis());
 			bestslave.setLastDownloadSending(System.currentTimeMillis());
 		}
-		if(bestslave == null) throw new NoAvailableSlaveException("Object had no slaves!");
+		if (bestslave == null)
+			throw new NoAvailableSlaveException("Object had no slaves!");
 		return bestslave;
 	}
 
@@ -550,11 +547,12 @@ public class SlaveManagerImpl
 	public boolean hasAvailableSlaves() {
 		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
-			if(rslave.isAvailable()) return true;
+			if (rslave.isAvailable())
+				return true;
 		}
 		return false;
 	}
-	
+
 	/** ping's all slaves, returns number of slaves removed */
 	public int verifySlaves() {
 		int removed = 0;

@@ -22,12 +22,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import net.sf.drftpd.AsciiOutputStream;
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.DuplicateElementException;
+import net.sf.drftpd.FatalException;
 import net.sf.drftpd.IllegalTargetException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectExistsException;
@@ -49,6 +48,10 @@ import net.sf.drftpd.remotefile.DirectoryRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 import net.sf.drftpd.slave.Transfer;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 import socks.server.Ident;
 
 /**
@@ -71,7 +74,7 @@ public class FtpConnection extends BaseFtpConnection {
 	private static Logger logger =
 		Logger.getLogger(FtpConnection.class.getName());
 	static {
-		logger.setLevel(Level.FINEST);
+		logger.setLevel(Level.ALL);
 	}
 
 	private NukeLog nukelog;
@@ -280,7 +283,8 @@ public class FtpConnection extends BaseFtpConnection {
 		// change directory
 		try {
 			setCurrentDirectory(currentDirectory.getParentFile());
-		} catch (FileNotFoundException ex) {}
+		} catch (FileNotFoundException ex) {
+		}
 
 		FtpResponse response =
 			new FtpResponse(
@@ -356,7 +360,7 @@ public class FtpConnection extends BaseFtpConnection {
 			} catch (NoSuchUserException e2) {
 				continue;
 			} catch (IOException e2) {
-				logger.log(Level.SEVERE, "Error reading userfile", e2);
+				logger.log(Level.FATAL, "Error reading userfile", e2);
 				continue;
 			}
 
@@ -435,7 +439,12 @@ public class FtpConnection extends BaseFtpConnection {
 	}
 	// LIST;NLST;RETR;STOR
 	public void doFEAT(FtpRequest request, PrintWriter out) {
-		out.print("211-Extensions supported:\r\n" +			" PRET\r\n" +			" MDTM\r\n" +			" SIZE\r\n" +			"211 End\r\n");
+		out.print(
+			"211-Extensions supported:\r\n"
+				+ " PRET\r\n"
+				+ " MDTM\r\n"
+				+ " SIZE\r\n"
+				+ "211 End\r\n");
 		return;
 	}
 
@@ -509,32 +518,32 @@ public class FtpConnection extends BaseFtpConnection {
 
 		// get options, directory name and pattern
 		//argument == null if there was no argument for LIST
-//		if (argument != null) {
-//			//argument = argument.trim();
-//			StringBuffer optionsSb = new StringBuffer(4);
-//			StringTokenizer st = new StringTokenizer(argument, " ");
-//			while (st.hasMoreTokens()) {
-//				String token = st.nextToken();
-//				if (token.charAt(0) == '-') {
-//					if (token.length() > 1) {
-//						optionsSb.append(token.substring(1));
-//					}
-//				} else {
-//					directoryName = token;
-//				}
-//			}
-//			options = optionsSb.toString();
-//		}
+		//		if (argument != null) {
+		//			//argument = argument.trim();
+		//			StringBuffer optionsSb = new StringBuffer(4);
+		//			StringTokenizer st = new StringTokenizer(argument, " ");
+		//			while (st.hasMoreTokens()) {
+		//				String token = st.nextToken();
+		//				if (token.charAt(0) == '-') {
+		//					if (token.length() > 1) {
+		//						optionsSb.append(token.substring(1));
+		//					}
+		//				} else {
+		//					directoryName = token;
+		//				}
+		//			}
+		//			options = optionsSb.toString();
+		//		}
 
 		// check options
-//		boolean allOption = options.indexOf('a') != -1;
-//		boolean detailOption = options.indexOf('l') != -1;
-//		boolean directoryOption = options.indexOf("d") != -1;
-		if(!mbPasv && !mbPort) {
+		//		boolean allOption = options.indexOf('a') != -1;
+		//		boolean detailOption = options.indexOf('l') != -1;
+		//		boolean directoryOption = options.indexOf("d") != -1;
+		if (!mbPasv && !mbPort) {
 			out.print(FtpResponse.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS);
 			return;
 		}
-		
+
 		LinkedRemoteFile directoryFile;
 		if (directoryName != null) {
 			try {
@@ -582,14 +591,14 @@ public class FtpConnection extends BaseFtpConnection {
 					"drftpd",
 					statusDirName));
 		} catch (NoAvailableSlaveException e) {
-			logger.log(Level.WARNING, "No available slaves for SFV file");
+			logger.log(Level.WARN, "No available slaves for SFV file");
 		} catch (IOException e) {
-			logger.log(Level.WARNING, "IO error loading SFV file", e);
+			logger.log(Level.WARN, "IO error loading SFV file", e);
 		} catch (ObjectNotFoundException e) {
 			// no sfv file in directory - just skip it
 		} catch (Throwable e) {
 			response.addComment("zipscript error: " + e.getMessage());
-			logger.log(Level.WARNING, "zipscript error", e);
+			logger.log(Level.WARN, "zipscript error", e);
 		}
 
 		try {
@@ -940,7 +949,7 @@ public class FtpConnection extends BaseFtpConnection {
 				connManager.getConfig().welcomeMessage(response);
 			} catch (IOException e) {
 				logger.log(
-					Level.WARNING,
+					Level.WARN,
 					"Error reading ftp-data/text/welcome.txt",
 					e);
 			}
@@ -999,7 +1008,7 @@ public class FtpConnection extends BaseFtpConnection {
 				return;
 			} catch (IOException e) {
 				out.print(new FtpResponse(450, e.getMessage()));
-				logger.log(Level.SEVERE, "", e);
+				logger.log(Level.FATAL, "", e);
 				return;
 			}
 		}
@@ -1122,7 +1131,8 @@ public class FtpConnection extends BaseFtpConnection {
 			}
 		} else if (cmd.equals("STOR")) {
 			try {
-				preTransferRSlave = slaveManager.getASlave(Transfer.TRANSFER_RECEIVING_UPLOAD);
+				preTransferRSlave =
+					slaveManager.getASlave(Transfer.TRANSFER_RECEIVING_UPLOAD);
 				preTransfer = true;
 				out.print(
 					new FtpResponse(
@@ -1266,9 +1276,7 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		if (!connManager
-			.getConfig()
-			.hasReadPermission(_user, _transferFile)) {
+		if (!connManager.getConfig().hasReadPermission(_user, _transferFile)) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -1310,7 +1318,7 @@ public class FtpConnection extends BaseFtpConnection {
 						ex.getClass().getName()
 							+ " from slave: "
 							+ ex.getMessage()));
-				logger.log(Level.SEVERE, "rslave=" + _rslave, ex);
+				logger.log(Level.FATAL, "rslave=" + _rslave, ex);
 				return;
 			}
 		} else if (mbPasv) {
@@ -1337,7 +1345,7 @@ public class FtpConnection extends BaseFtpConnection {
 			//						ex.getClass().getName()
 			//							+ " from slave: "
 			//							+ ex.getMessage()));
-			//				logger.log(Level.SEVERE, "rslave=" + rslave, ex);
+			//				logger.log(Level.FATAL, "rslave=" + rslave, ex);
 			//				return;
 			//			}
 		} else {
@@ -1353,7 +1361,10 @@ public class FtpConnection extends BaseFtpConnection {
 					+ "."));
 		out.flush();
 		try {
-			_transfer.downloadFile(_transferFile.getPath(), getType(), resumePosition);
+			_transfer.downloadFile(
+				_transferFile.getPath(),
+				getType(),
+				resumePosition);
 		} catch (RemoteException ex) {
 			_rslave.handleRemoteException(ex);
 			out.print(
@@ -1362,7 +1373,7 @@ public class FtpConnection extends BaseFtpConnection {
 		} catch (IOException ex) {
 			out.print(
 				FtpResponse.RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED);
-			logger.log(Level.WARNING, "", ex);
+			logger.log(Level.WARN, "", ex);
 			return;
 		}
 
@@ -1382,16 +1393,17 @@ public class FtpConnection extends BaseFtpConnection {
 
 		try {
 			long transferedBytes = _transfer.getTransfered();
-			User user = getUser();
+
 			//TODO creditloss
-			if (user.getRatio() != 0) {
-				user.updateCredits(-transferedBytes);
+			if (_user.getRatio() != 0) {
+				_user.updateCredits(-transferedBytes);
 			}
-			user.updateDownloadedBytes(transferedBytes);
-			user.commit();
+			_user.updateDownloadedBytes(transferedBytes);
+			_user.commit();
 		} catch (RemoteException ex) {
 			_rslave.handleRemoteException(ex);
-		} catch (UserFileException e) {}
+		} catch (UserFileException e) {
+		}
 		out.print(response);
 		reset();
 	}
@@ -1425,9 +1437,7 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		if (!connManager
-			.getConfig()
-			.hasReadPermission(_user, requestedFile)) {
+		if (!connManager.getConfig().hasReadPermission(_user, requestedFile)) {
 			out.print(new FtpResponse(550, fileName + ": Not found"));
 			return;
 		}
@@ -1850,7 +1860,7 @@ public class FtpConnection extends BaseFtpConnection {
 					new FtpResponse(
 						550,
 						"Error loading user: " + e.getMessage()));
-				logger.log(Level.WARNING, "Error loading user", e);
+				logger.log(Level.FATAL, "Error loading user", e);
 				return;
 			}
 
@@ -1950,7 +1960,7 @@ public class FtpConnection extends BaseFtpConnection {
 				new FtpResponse(
 					200,
 					"Error reading userfile: " + e.getMessage()));
-			logger.log(Level.SEVERE, "Error reading userfile", e);
+			logger.log(Level.FATAL, "Error reading userfile", e);
 			return;
 		}
 
@@ -1999,7 +2009,7 @@ public class FtpConnection extends BaseFtpConnection {
 				new FtpResponse(200, "User not found: " + e.getMessage()));
 			return;
 		} catch (IOException e) {
-			logger.log(Level.SEVERE, "IO error reading user", e);
+			logger.log(Level.FATAL, "IO error reading user", e);
 			out.print(
 				new FtpResponse(
 					200,
@@ -2019,7 +2029,7 @@ public class FtpConnection extends BaseFtpConnection {
 					myUser.addGroup(string);
 				} catch (DuplicateElementException e2) {
 					logger.log(
-						Level.SEVERE,
+						Level.FATAL,
 						"Error, user was not a member before",
 						e2);
 				}
@@ -2063,7 +2073,7 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(new FtpResponse(200, e.getMessage()));
 			return;
 		} catch (IOException e) {
-			logger.log(Level.SEVERE, "IO error", e.getMessage());
+			logger.log(Level.FATAL, "IO error", e);
 			out.print(new FtpResponse(200, "IO error: " + e.getMessage()));
 			return;
 		}
@@ -2113,10 +2123,37 @@ public class FtpConnection extends BaseFtpConnection {
 		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
 		return;
 	}
+	
+	public static void findFile(FtpResponse response, LinkedRemoteFile dir, Collection searchstrings) {
+		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			if(file.isDirectory()) {
+				findFile(response, dir, searchstrings);
+			} else {
+				String name = file.getName();
+				for (Iterator iterator = searchstrings.iterator();
+					iterator.hasNext();
+					) {
+					String searchstring = (String) iterator.next();
+					if(searchstring.indexOf(searchstring) != -1) {
+						response.addComment(file.getPath());
+						break;
+					}
+				}
+			}
+			
+		}
+	}
 
 	public void doSITE_DUPE(FtpRequest request, PrintWriter out) {
-		//TODO implement SITE DUPE
-		out.print(FtpResponse.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
+		FtpResponse response = (FtpResponse)FtpResponse.RESPONSE_200_COMMAND_OK.clone();
+		String args[] = request.getArgument().split(" ");
+		ArrayList searchstrings = new ArrayList(args.length);
+		for (int i = 0; i < args.length; i++) {
+			searchstrings.add(args[i]);
+		}
+		findFile(response, currentDirectory.getRoot(), searchstrings);
+		out.print(response);
 		return;
 	}
 
@@ -2140,7 +2177,7 @@ public class FtpConnection extends BaseFtpConnection {
 		try {
 			groups = userManager.getAllGroups();
 		} catch (IOException e) {
-			logger.log(Level.SEVERE, "IO error from getAllGroups()", e);
+			logger.log(Level.FATAL, "IO error from getAllGroups()", e);
 			out.print(new FtpResponse(200, "IO error: " + e.getMessage()));
 			return;
 		}
@@ -2187,7 +2224,8 @@ public class FtpConnection extends BaseFtpConnection {
 				if (conn.getUser().getUsername().equals(username)) {
 					conn.stop(message);
 				}
-			} catch (NoSuchObjectException e) {}
+			} catch (ObjectNotFoundException e) {
+			}
 		}
 		out.print(response);
 		return;
@@ -2202,7 +2240,7 @@ public class FtpConnection extends BaseFtpConnection {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
 			//if (!key.equals(file.getName()))
 			//	response.addComment(
-			//		"WARNING: " + key + " not equals to " + file.getName());
+			//		"WARN: " + key + " not equals to " + file.getName());
 			//response.addComment(key);
 			response.addComment(file.toString());
 		}
@@ -2233,7 +2271,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 *     multiplier is 3, user loses size * ratio + size * 2, etc.
 	 */
 	public void doSITE_NUKE(FtpRequest request, PrintWriter out) {
-		if(!this._user.isNuker()) {
+		if (!this._user.isNuker()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
@@ -2261,12 +2299,12 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		String reason;
-		if(!st.hasMoreTokens()) {
-			reason  = "";
+		if (!st.hasMoreTokens()) {
+			reason = "";
 		} else {
 			reason = st.nextToken("");
 		}
-		
+
 		if (!nukeDir.isDirectory()) {
 			FtpResponse response =
 				new FtpResponse(550, nukeDir.getName() + " is not a directory");
@@ -2362,7 +2400,7 @@ public class FtpConnection extends BaseFtpConnection {
 			} catch (UserFileException e1) {
 				response.addComment(
 					"Error writing userfile: " + e1.getMessage());
-				logger.log(Level.WARNING, "Error writing userfile", e1);
+				logger.log(Level.WARN, "Error writing userfile", e1);
 			}
 			response.addComment(nukee.getUsername() + " -" + debt + " bytes");
 		}
@@ -2444,9 +2482,10 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		FtpResponse response = new FtpResponse(200);
-		
-		if(preDir.hasOfflineSlaves()) {
-			response.setMessage("Sorry, release has offline files. You don't want to PRE an incomplete release, do you? :(");
+
+		if (preDir.hasOfflineSlaves()) {
+			response.setMessage(
+				"Sorry, release has offline files. You don't want to PRE an incomplete release, do you? :(");
 			response.setCode(550);
 			out.print(response);
 			return;
@@ -2458,7 +2497,11 @@ public class FtpConnection extends BaseFtpConnection {
 			Map.Entry entry = (Map.Entry) iter.next();
 			User owner = (User) entry.getKey();
 			Long award = (Long) entry.getValue();
-			response.addComment("Awarded "+Bytes.formatBytes(award.longValue())+" to "+owner.getUsername());
+			response.addComment(
+				"Awarded "
+					+ Bytes.formatBytes(award.longValue())
+					+ " to "
+					+ owner.getUsername());
 			owner.updateCredits(award.longValue());
 		}
 
@@ -2474,10 +2517,8 @@ public class FtpConnection extends BaseFtpConnection {
 		} catch (IllegalTargetException ex) {
 			out.print(
 				new FtpResponse(200, "Illegal arguments: " + ex.getMessage()));
-			logger.log(Level.WARNING, "illegal arguments", ex);
+			logger.log(Level.WARN, "illegal arguments", ex);
 		}
-
-		
 
 		//ANNOUNCE
 		connManager.dispatchFtpEvent(
@@ -2498,16 +2539,22 @@ public class FtpConnection extends BaseFtpConnection {
 			try {
 				owner = userManager.getUserByName(file.getUsername());
 			} catch (NoSuchUserException e) {
-				logger.log(Level.FINE, "PRE: Cannot award credits to non-existing user", e);
+				logger.log(
+					Level.INFO,
+					"PRE: Cannot award credits to non-existing user",
+					e);
 				continue;
 			} catch (IOException e) {
-				logger.log(Level.WARNING, "", e);
+				logger.log(Level.WARN, "", e);
 				continue;
 			}
 			Long total = (Long) awards.get(owner);
 			if (total == null)
 				total = new Long(0);
-			total = new Long(total.longValue() + (long)(file.length() * owner.getRatio()));
+			total =
+				new Long(
+					total.longValue()
+						+ (long) (file.length() * owner.getRatio()));
 			awards.put(owner, total);
 		}
 	}
@@ -2555,7 +2602,7 @@ public class FtpConnection extends BaseFtpConnection {
 			slaveManager.saveFilesXML();
 		} catch (IOException e) {
 			out.print(new FtpResponse(200, e.getMessage()));
-			logger.log(Level.SEVERE, "Error reloading config", e);
+			logger.log(Level.FATAL, "Error reloading config", e);
 		}
 		connManager.dispatchFtpEvent(new UserEvent(_user, "RELOAD"));
 		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
@@ -2707,7 +2754,7 @@ public class FtpConnection extends BaseFtpConnection {
 		//			String fileName = file.getName();
 		//			if (fileName.endsWith(".sfv")) {
 		//				if (sfvFile != null) {
-		//					logger.warning(
+		//					logger.WARN(
 		//						"Multiple SFV files in " + directory.getName());
 		//					out.println(
 		//						"200- Multiple SFV files found, using " + fileName);
@@ -2725,7 +2772,7 @@ public class FtpConnection extends BaseFtpConnection {
 		//			sfv = sfvFile.getSFVFile();
 		//		} catch (IOException e) {
 		//			out.print(new FtpResponse(550, e.getMessage()));
-		//			logger.log(Level.SEVERE, "", e);
+		//			logger.log(Level.FATAL, "", e);
 		//			return;
 		//		}
 		SFVFile sfv;
@@ -2840,7 +2887,7 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(new FtpResponse(200, e.getMessage()));
 			return;
 		} catch (IOException e) {
-			logger.log(Level.SEVERE, "", e);
+			logger.log(Level.FATAL, "", e);
 			out.print(
 				new FtpResponse(
 					200,
@@ -2879,7 +2926,7 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(new FtpResponse(200, "No such user: " + e.getMessage()));
 			return;
 		} catch (IOException e) {
-			logger.log(Level.WARNING, "", e);
+			logger.log(Level.WARN, "", e);
 			out.print(new FtpResponse(200, e.getMessage()));
 			return;
 		}
@@ -3055,7 +3102,7 @@ public class FtpConnection extends BaseFtpConnection {
 				continue;
 			} catch (IOException e) {
 				response.addComment(nukeeName + ": error reading userfile");
-				logger.log(Level.SEVERE, "error reading userfile", e);
+				logger.log(Level.FATAL, "error reading userfile", e);
 				continue;
 			}
 
@@ -3065,7 +3112,7 @@ public class FtpConnection extends BaseFtpConnection {
 				nukee.commit();
 			} catch (UserFileException e3) {
 				logger.log(
-					Level.SEVERE,
+					Level.FATAL,
 					"Eroror saveing userfile for " + nukee.getUsername(),
 					e3);
 				response.addComment(
@@ -3087,7 +3134,7 @@ public class FtpConnection extends BaseFtpConnection {
 		} catch (IllegalTargetException e1) {
 			response.addComment("Error: " + e1.getMessage());
 			logger.log(
-				Level.SEVERE,
+				Level.FATAL,
 				"Illegaltargetexception: means parent doesn't exist",
 				e1);
 		}
@@ -3165,7 +3212,7 @@ public class FtpConnection extends BaseFtpConnection {
 			myUsers = userManager.getAllUsers();
 		} catch (IOException e) {
 			out.print(new FtpResponse(200, "IO error: " + e.getMessage()));
-			logger.log(Level.SEVERE, "IO error reading all users", e);
+			logger.log(Level.FATAL, "IO error reading all users", e);
 			return;
 		}
 		for (Iterator iter = myUsers.iterator(); iter.hasNext();) {
@@ -3228,13 +3275,15 @@ public class FtpConnection extends BaseFtpConnection {
 			User user;
 			try {
 				user = conn.getUser();
-			} catch (NoSuchObjectException e) {
-				throw new RuntimeException(e);
+			} catch (ObjectNotFoundException e) {
+				throw new FatalException(e);
 			}
 			String command = conn.getRequest().getCommand();
 			String username = user.getUsername();
 
-			if(connManager.getConfig().checkHideInWho(conn.getCurrentDirectory(), _user)) {
+			if (connManager
+				.getConfig()
+				.checkHideInWho(conn.getCurrentDirectory(), _user)) {
 				continue;
 			}
 			if (conn.isExecuting()) {
@@ -3244,9 +3293,7 @@ public class FtpConnection extends BaseFtpConnection {
 					response.addComment(username + "    UL");
 				} else {
 					response.addComment(
-						username
-							+ "    "
-							+ conn.getRequest().getCommand());
+						username + "    " + conn.getRequest().getCommand());
 				}
 
 			} else {
@@ -3438,8 +3485,7 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
 		}
-		
-		
+
 		//SETUP targetDir and targetFilename
 		Object ret[] =
 			currentDirectory.lookupNonExistingFile(request.getArgument());
@@ -3482,13 +3528,13 @@ public class FtpConnection extends BaseFtpConnection {
 				_rslave =
 					slaveManager.getASlave(Transfer.TRANSFER_RECEIVING_UPLOAD);
 			} catch (NoAvailableSlaveException ex) {
-				logger.log(Level.SEVERE, ex.getMessage());
+				logger.log(Level.FATAL, ex.getMessage());
 				out.print(FtpResponse.RESPONSE_450_SLAVE_UNAVAILABLE);
 				return;
 			}
 		}
 		assert _rslave != null;
-		
+
 		List rslaves = Collections.singletonList(_rslave);
 		//		ArrayList rslaves = new ArrayList();
 		//		rslaves.add(rslave);
@@ -3504,9 +3550,10 @@ public class FtpConnection extends BaseFtpConnection {
 		_transferFile = targetDir.addFile(uploadFile);
 
 		//SETUP transfer
-		if(mbPort) {
+		if (mbPort) {
 			try {
-				_transfer = _rslave.getSlave().connect(getInetAddress(),getPort());
+				_transfer =
+					_rslave.getSlave().connect(getInetAddress(), getPort());
 			} catch (RemoteException e1) {
 				_rslave.handleRemoteException(e1);
 				out.print(new FtpResponse(451, e1.getMessage()));
@@ -3519,27 +3566,27 @@ public class FtpConnection extends BaseFtpConnection {
 			assert mbPasv;
 			// this.transfer is already set up
 		}
-//		try {
-//			transfer =
-//				rslave.getSlave().doConnectReceive(
-//					targetDir.getPath(),
-//					targetFilename,
-//					getType(),
-//					resumePosition,
-//					mAddress,
-//					miPort);
-//
-//		} catch (RemoteException ex) {
-//			rslave.handleRemoteException(ex);
-//			targetFile.delete();
-//			out.print(new FtpResponse(451, ex.getMessage()));
-//			return;
-//		} catch (IOException ex) {
-//			logger.log(Level.SEVERE, "Error getting transfer", ex);
-//			targetFile.delete();
-//			out.println(new FtpResponse(451, "IO error: " + ex.getMessage()));
-//			return;
-//		}
+		//		try {
+		//			transfer =
+		//				rslave.getSlave().doConnectReceive(
+		//					targetDir.getPath(),
+		//					targetFilename,
+		//					getType(),
+		//					resumePosition,
+		//					mAddress,
+		//					miPort);
+		//
+		//		} catch (RemoteException ex) {
+		//			rslave.handleRemoteException(ex);
+		//			targetFile.delete();
+		//			out.print(new FtpResponse(451, ex.getMessage()));
+		//			return;
+		//		} catch (IOException ex) {
+		//			logger.log(Level.FATAL, "Error getting transfer", ex);
+		//			targetFile.delete();
+		//			out.println(new FtpResponse(451, "IO error: " + ex.getMessage()));
+		//			return;
+		//		}
 
 		// say we are ready to start sending
 
@@ -3553,32 +3600,33 @@ public class FtpConnection extends BaseFtpConnection {
 
 		// connect and start transfer
 		try {
-			_transfer.uploadFile(targetDir.getPath(), targetFilename, resumePosition);
+			_transfer.uploadFile(
+				targetDir.getPath(),
+				targetFilename,
+				resumePosition);
 		} catch (RemoteException ex) {
-			out.print(new FtpResponse(426,"Remote error: "+ex.getMessage()));
+			out.print(new FtpResponse(426, "Remote error from "+_rslave+": " + ex.getMessage()));
 			_rslave.handleRemoteException(ex);
 			_transferFile.delete();
 			return;
 		} catch (IOException ex) {
-			logger.log(
-				Level.WARNING,
-				"Transfer aborted, credits were not removed",
-				ex);
 			//TODO let user resume
 			_transferFile.delete();
-			out.print(new FtpResponse(426, "IO Error: "+ex.getMessage()));
-			logger.log(Level.WARNING, "IO Error", ex);
+			out.print(new FtpResponse(426, "IO Error from "+_rslave.getName()+": " + ex.getMessage()));
+			logger.log(Level.WARN, "IO Error from "+_rslave.getName(), ex);
 			return;
 		}
-		
-		
 
 		long transferedBytes;
+		long checksum;
 		try {
 			transferedBytes = _transfer.getTransfered();
 			// throws RemoteException
 			if (resumePosition == 0) {
-				_transferFile.setCheckSum(_transfer.getChecksum());
+				checksum = _transfer.getChecksum();
+				_transferFile.setCheckSum(checksum);
+			} else {
+				checksum = _transferFile.getCheckSum();
 			}
 			_transferFile.setLastModified(System.currentTimeMillis());
 			_transferFile.setLength(transferedBytes);
@@ -3597,26 +3645,21 @@ public class FtpConnection extends BaseFtpConnection {
 				.RESPONSE_226_CLOSING_DATA_CONNECTION
 				.clone();
 		try {
-			long checksum;
-			checksum = targetDir.lookupSFVFile().getChecksum(targetFilename);
-			if (checksum == _transferFile.getCheckSum(true)) {
-				response.addComment("zipscript - checksum match");
-
-				User user = getUser();
-				//TODO creditcheck
-				user.updateCredits(
-					(long) (getUser().getRatio() * transferedBytes));
-				user.updateUploadedBytes(transferedBytes);
-				try {
-					user.commit();
-				} catch (UserFileException e1) {
-					response.addComment(
-						"Error saving userfile: " + e1.getMessage());
-				}
+			long sfvChecksum =
+				targetDir.lookupSFVFile().getChecksum(targetFilename);
+			if (checksum == sfvChecksum) {
+				response.addComment(
+					"zipscript - checksum match: "
+						+ Long.toHexString(checksum));
 
 			} else {
 				response.addComment(
-					"zipscript - checksum mismatch, deleting file");
+					"zipscript - checksum mismatch: "
+						+ Long.toHexString(checksum)
+						+ " != "
+						+ Long.toHexString(sfvChecksum));
+				response.addComment(" deleting file");
+				response.setMessage("Checksum mismatch, deleting file");
 				_transferFile.delete();
 
 				//				getUser().updateCredits(
@@ -3649,7 +3692,18 @@ public class FtpConnection extends BaseFtpConnection {
 			response.addComment("zipscript - no .sfv file in directory");
 		} catch (IOException e) {
 			response.addComment(
-				"zipscript - IO error parsing sfv file: " + e.getMessage());
+				"zipscript - IO error: " + e.getMessage());
+		}
+
+		//TODO creditcheck
+		_user.updateCredits(
+			(long) (_user.getRatio() * transferedBytes));
+		_user.updateUploadedBytes(transferedBytes);
+		try {
+			_user.commit();
+		} catch (UserFileException e1) {
+			response.addComment(
+				"Error saving userfile: " + e1.getMessage());
 		}
 
 		connManager.dispatchFtpEvent(
@@ -3880,9 +3934,11 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		_user = newUser;
-		out.write(new FtpResponse(
+		out.write(
+			new FtpResponse(
 				331,
-				"Password required for " + _user.getUsername()).toString());
+				"Password required for " + _user.getUsername())
+				.toString());
 	}
 
 	/**

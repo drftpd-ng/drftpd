@@ -17,10 +17,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
+
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectExistsException;
@@ -38,20 +40,17 @@ import se.mog.io.File;
 public class SlaveImpl
 	extends UnicastRemoteObject
 	implements Slave, Unreferenced {
-	private SlaveManager _manager;
 	/**
 	 * @param cfg
 	 * @param inetAddress
 	 * @param b
+	 * @deprecated
 	 */
 	public SlaveImpl(
 		Properties cfg,
-		InetAddress inetAddress,
-		SlaveManager slavemanager)
+		InetAddress inetAddress)
 		throws RemoteException {
 		super(0);
-		_manager = slavemanager;
-		System.out.println("SlaveImpl() called with "+slavemanager);
 
 		this.slavemanagerurl =
 			"//"
@@ -70,17 +69,12 @@ public class SlaveImpl
 	private Vector transfers = new Vector();
 	private static Logger logger = Logger.getLogger(SlaveImpl.class.getName());
 	static {
-		logger.setLevel(Level.FINEST);
+		logger.setLevel(Level.ALL);
 	}
 	//private String root;
 	private RootBasket roots;
 	private String slavemanagerurl;
 	private String name;
-
-	public SlaveImpl(Properties cfg, InetAddress inetAddress)
-		throws RemoteException {
-		this(cfg, inetAddress, null);
-	}
 
 	public void register() {
 		while (true) {
@@ -108,7 +102,7 @@ public class SlaveImpl
 							"java.rmi.dgc.leaseValue",
 							"600000"));
 				logger.log(
-					Level.SEVERE,
+					Level.FATAL,
 					"Failed to register slave, will retry in "
 						+ retry / 1000
 						+ " seconds",
@@ -124,6 +118,7 @@ public class SlaveImpl
 		return;
 	}
 	public static void main(String args[]) {
+		BasicConfigurator.configure();
 		System.out.println(
 			ConnectionManager.VERSION + " slave server starting");
 		String drftpdconf;
@@ -155,18 +150,6 @@ public class SlaveImpl
 			System.exit(0);
 			return;
 		}
-	}
-
-	/**
-	 * @deprecated
-	 * @param rootString
-	 * @return
-	 * @throws IOException
-	 */
-	public static LinkedRemoteFile getDefaultRoot(String rootString)
-		throws IOException {
-		return getDefaultRoot(new RootBasket(rootString));
-		//RootBasket  throws FileNotFoundException
 	}
 
 	public static RootBasket getDefaultRootBasket(Properties cfg) {
@@ -211,6 +194,7 @@ public class SlaveImpl
 
 	/**
 	 * returns the {LinkedRemoteFile} directory that will be serialized and registered at the master.
+	 * they all end up here
 	 */
 	public static LinkedRemoteFile getDefaultRoot(RootBasket rootBasket)
 		throws IOException {
@@ -264,7 +248,7 @@ public class SlaveImpl
 	 * @see net.sf.drftpd.slave.Slave#checkSum(String)
 	 */
 	public long checkSum(String path) throws IOException {
-		logger.fine("Checksumming: " + path);
+		logger.debug("Checksumming: " + path);
 		CRC32 crc32 = new CRC32();
 		InputStream in =
 			//			new CheckedInputStream(new FileInputStream(root + path), crc32);
@@ -323,7 +307,7 @@ public class SlaveImpl
 	 */
 	public void unreferenced() {
 		logger.log(
-			Level.WARNING,
+			Level.WARN,
 			"Lost master, trying to re-register with master.");
 		register();
 		System.gc();

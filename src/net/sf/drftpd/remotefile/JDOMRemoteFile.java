@@ -5,12 +5,12 @@ import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.master.RemoteSlave;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.output.XMLOutputter;
 
@@ -27,7 +27,7 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 	private static Logger logger =
 		Logger.getLogger(JDOMRemoteFile.class.getName());
 	static {
-		logger.setLevel(Level.FINEST);
+		logger.setLevel(Level.ALL);
 	}
 	protected List files = null;
 	protected Collection slaves;
@@ -84,7 +84,7 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 				RemoteSlave rslave = (RemoteSlave) this.allSlaves.get(slaveName);
 				if (rslave == null) {
 					logger.log(
-						Level.WARNING,
+						Level.WARN,
 						slaveName
 							+ " not in slavelist, not adding file: "
 							+ getName());

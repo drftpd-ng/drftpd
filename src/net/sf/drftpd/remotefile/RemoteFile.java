@@ -101,7 +101,7 @@ public abstract class RemoteFile implements RemoteFileInterface {
 		StringBuffer ret = new StringBuffer();
 		ret.append(getClass().getName()+"[");
 		if (isDirectory())
-			ret.append("[directory: "+listFiles().length+"]");
+			ret.append("[directory: true]");
 		if(isFile())
 			ret.append("[file: true]");
 		ret.append("[length(): "+this.length()+"]");

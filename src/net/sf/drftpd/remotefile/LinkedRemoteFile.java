@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.rmi.ConnectException;
+import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,8 +14,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.IllegalTargetException;
@@ -44,7 +46,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	private static Logger logger =
 		Logger.getLogger(LinkedRemoteFile.class.getName());
 	static {
-		logger.setLevel(Level.FINE);
+		logger.setLevel(Level.ALL);
 	}
 
 	private Map files;
@@ -97,6 +99,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	 * Used by DirectoryRemoteFile.
 	 * Called by other constructor, ConnectionManager is null if called from SlaveImpl.
 	 * 
+	 * They all end up here.
 	 * @param parent the parent of this file
 	 * @param file file that this RemoteFile object should represent.
 	 */
@@ -111,7 +114,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 			throw new IllegalArgumentException("length() == -1 for " + file);
 		if (!file.isFile() && !file.isDirectory()) {
 			logger.log(
-				Level.SEVERE,
+				Level.FATAL,
 				"File is not a file nor a directory: " + file,
 				new Throwable());
 		}
@@ -134,7 +137,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		} else {
 			name = file.getName();
 		}
-		//path = file.getPath();
+
 		/* serialize directory*/
 		this.parent = parent;
 
@@ -144,6 +147,9 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 
 		if (file.isDirectory()) {
 			RemoteFileInterface dir[] = file.listFiles();
+			if (name != "" && dir.length == 0)
+				throw new FatalException(
+					"Constructor called with empty dir: " + file);
 			this.files = Collections.synchronizedMap(new Hashtable(dir.length));
 			Stack dirstack = new Stack();
 			for (int i = 0; i < dir.length; i++) {
@@ -177,8 +183,13 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	public void addSlave(RemoteSlave slave) {
 		if (slaves == null)
 			throw new IllegalStateException("Cannot addSlave() on a directory");
+		if (slave == null)
+			throw new IllegalArgumentException("slave can't be null");
 		if (slaves.contains(slave)) {
-			//logger.log(Level.WARNING, this+" already contained "+slave, new Throwable());
+			logger.log(
+				Level.WARN,
+				this +" already contains " + slave,
+				new Throwable());
 			return;
 		}
 		slaves.add(slave);
@@ -209,7 +220,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				ftpConfig);
 		//file.addSlaves(getSlaves());
 		files.put(file.getName(), file);
-		logger.fine("Created directory " + file);
+		logger.debug("Created directory " + file);
 		return file;
 	}
 
@@ -226,7 +237,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				}
 			} catch (FileNotFoundException ex) {
 				logger.log(
-					Level.SEVERE,
+					Level.FATAL,
 					"FileNotFoundException on getParentFile()",
 					ex);
 			}
@@ -255,7 +266,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 						continue;
 					} catch (IOException ex) {
 						logger.log(
-							Level.SEVERE,
+							Level.FATAL,
 							"IOException deleting file on slave " + rslave,
 							ex);
 						continue;
@@ -268,7 +279,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 					getParentFile().getMap().remove(getName());
 				} catch (FileNotFoundException ex) {
 					logger.log(
-						Level.SEVERE,
+						Level.FATAL,
 						"FileNotFoundException on getParentFile()",
 						ex);
 				}
@@ -343,7 +354,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				continue;
 			} catch (IOException ex) {
 				// severe exception.. but we can still try to get the checksum from another slave
-				logger.log(Level.SEVERE, "IOException", ex);
+				logger.log(Level.FATAL, "IOException", ex);
 				continue;
 			}
 			return checkSum;
@@ -479,7 +490,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		throw new ObjectNotFoundException("no sfv file in directory");
 
 	}
-	public SFVFile getSFVFile() throws IOException, NoAvailableSlaveException {
+	public SFVFile getSFVFile()
+		throws IOException, ObjectNotFoundException, NoAvailableSlaveException {
 		if (sfvFile != null)
 			return sfvFile;
 		synchronized (this) {
@@ -497,6 +509,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				}
 				throw new NoAvailableSlaveException("No available slaves");
 			}
+			if (sfvFile.size() == 0)
+				throw new ObjectNotFoundException("sfv file contains no checksum entries");
 			return sfvFile;
 		}
 	}
@@ -648,8 +662,13 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		for (Iterator i = mergedir.getFiles().iterator(); i.hasNext();) {
 			LinkedRemoteFile mergefile = (LinkedRemoteFile) i.next();
 
-			if(mergefile.isDirectory() && mergefile.length() == 0) {
-				logger.log(Level.SEVERE, "Attempt to add empty directory: "+mergefile+" from "+rslave.getName());
+			if (mergefile.isDirectory() && mergefile.length() == 0) {
+				logger.log(
+					Level.FATAL,
+					"Attempt to add empty directory: "
+						+ mergefile
+						+ " from "
+						+ rslave.getName());
 			}
 
 			LinkedRemoteFile file =
@@ -660,19 +679,20 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				if (!mergefile.isDirectory()) {
 					mergefile.addSlave(rslave);
 				}
-				
+
 				mergefile.ftpConfig = this.ftpConfig;
 				map.put(mergefile.getName(), mergefile);
 			} else {
 				if (file.isDeleted()) {
 					//TODO mergefile has no RemoteSlave object!
 					logger.log(
-						Level.WARNING,
+						Level.WARN,
 						"Queued delete on "
 							+ rslave
 							+ " for file "
 							+ mergefile);
-					if(!mergefile.isDirectory()) mergefile.addSlave(rslave);
+					if (!mergefile.isDirectory())
+						mergefile.addSlave(rslave);
 					mergefile.delete();
 					continue;
 				}
@@ -702,7 +722,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 							rslave.getSlave().delete(mergefile.getPath());
 						} catch (PermissionDeniedException ex) {
 							logger.log(
-								Level.SEVERE,
+								Level.FATAL,
 								"Error deleting 0byte file on " + rslave,
 								ex);
 						} catch (Exception e) {
@@ -723,7 +743,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 							mergefile.addSlave(rslave);
 							files.put(mergefile.getName(), mergefile);
 							logger.log(
-								Level.WARNING,
+								Level.WARN,
 								"2 or more slaves contained same file with different sizes, renamed to "
 									+ mergefile.getName());
 							continue;
@@ -818,7 +838,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				rslave.handleRemoteException(ex);
 			} catch (FileNotFoundException ex) {
 				logger.log(
-					Level.SEVERE,
+					Level.FATAL,
 					"FileNotFoundException from slave on a file in LinkedRemoteFile",
 					ex);
 			}
@@ -828,7 +848,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 			getParentFile().files.remove(fromName);
 		} catch (FileNotFoundException ex) {
 			logger.log(
-				Level.SEVERE,
+				Level.FATAL,
 				"FileNotFoundException on getParentFile() on this in rename",
 				ex);
 		}
@@ -863,6 +883,9 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	public String toString() {
 		StringBuffer ret = new StringBuffer();
 		ret.append("LinkedRemoteFile[\"" + this.getName() + "\",");
+		if(isFile()) {
+			ret.append("xfertime:"+xfertime);
+		}
 		if (this.isDeleted())
 			ret.append("deleted,");
 		//ret.append(slaves);
@@ -994,6 +1017,40 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	 */
 	public void setCheckSum(long l) {
 		this.checkSum = l;
+	}
+
+	/**
+	 * @param torslave RemoteSlave to replicate to.
+	 */
+	public void replicate(final RemoteSlave torslave)
+		throws NoAvailableSlaveException, IOException {
+		// TODO Auto-generated method stub
+
+		final RemoteSlave fromslave = getASlaveForDownload();
+		Transfer fromtransfer = fromslave.getSlave().listen();
+		final Transfer totransfer =
+			torslave.getSlave().connect(
+				fromslave.getInetAddress(),
+				fromtransfer.getLocalPort());
+
+
+		Thread t = new Thread(new Runnable() {
+			private Exception exception = null;
+			public void run() {
+				try {
+					totransfer.uploadFile(getParentFile().getPath(), getName(), 0L);
+				} catch (RemoteException e) {
+					torslave.handleRemoteException(e);
+					logger.warn("", e);
+				} catch (FileNotFoundException e) {
+					throw new FatalException(e);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		});
+		t.run();
+		fromtransfer.downloadFile(getPath(), 'I', 0);
 	}
 
 }

@@ -5,8 +5,9 @@ import java.net.InetAddress;
 import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.SlaveEvent;
@@ -25,7 +26,7 @@ public class RemoteSlave implements Serializable, Comparable {
 	private static Logger logger =
 		Logger.getLogger(RemoteSlave.class.getName());
 	static {
-		logger.setLevel(Level.FINE);
+		logger.setLevel(Level.ALL);
 	}
 
 	private SlaveManagerImpl manager;
@@ -104,10 +105,10 @@ public class RemoteSlave implements Serializable, Comparable {
 	 */
 	public boolean handleRemoteException(RemoteException ex) {
 		logger.log(
-			Level.WARNING,
+			Level.FATAL,
 			"Caught exception when trying to communicate with " + this, ex);
 		if (!isFatalRemoteException(ex)) {
-			logger.log(Level.WARNING, ". Non-fatal exception, not removing");
+			logger.log(Level.FATAL, ". Non-fatal exception, not removing");
 			return false;
 		}
 		System.out.println(". Fatal exception, removing");
@@ -136,13 +137,19 @@ public class RemoteSlave implements Serializable, Comparable {
 			getSlave().ping();
 		}
 	}
+	
+	public boolean isAvailablePing() {
+		try {
+			getSlave().ping();
+		} catch (RemoteException e) {
+			handleRemoteException(e);
+			return false;
+		} catch (NoAvailableSlaveException e) {
+			return false;
+		}
+		return isAvailable();
+	}
 	public boolean isAvailable() {
-		//try {
-		//	ping();
-		//} catch (RemoteException e) {
-		//	handleRemoteException(e);
-		//} catch (NoAvailableSlaveException e) {
-		//}
 		return slave != null;
 	}
 

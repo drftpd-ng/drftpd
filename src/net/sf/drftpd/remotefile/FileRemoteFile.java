@@ -19,6 +19,7 @@ import net.sf.drftpd.slave.RootBasket;
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
 public class FileRemoteFile extends RemoteFile {
+	private static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(FileRemoteFile.class.getName());
 //	private File file;
 //	private String root;
 
@@ -146,6 +147,10 @@ public class FileRemoteFile extends RemoteFile {
 	 * @see net.sf.drftpd.RemoteFile#length()
 	 */
 	public long length() {
+		if(isDirectory()) {
+			buildFileFiles();
+			return filefiles.size();
+		}
 		return this.getFile().length();
 	}
 
@@ -175,7 +180,10 @@ public class FileRemoteFile extends RemoteFile {
 			if(tmpFiles == null) throw new NullPointerException("list() on "+file+" returned null");
 			for (int i = 0; i < tmpFiles.length; i++) {
 				try {
-					if(tmpFiles[i].isDirectory() && isEmptyDeleted(tmpFiles[i])) continue;
+					if(tmpFiles[i].isDirectory() && isEmptyDeleted(tmpFiles[i])) {
+						logger.info(tmpFiles[i]+".isEmptyDeleted()");
+						continue;
+					}
 					FileRemoteFile listfile = new FileRemoteFile(rootBasket, path+File.separatorChar+tmpFiles[i].getName());
 					filefiles.put(tmpFiles[i].getName(), listfile);
 				} catch (IOException e) {
@@ -183,6 +191,7 @@ public class FileRemoteFile extends RemoteFile {
 				}
 			}
 		}
+		assert !filefiles.isEmpty();
 	}
 	/**
 	 * @see net.sf.drftpd.remotefile.RemoteFile#getFiles()
@@ -205,7 +214,8 @@ public class FileRemoteFile extends RemoteFile {
 		
 		for (int i = 0; i < listfiles.length; i++) {
 			File file = listfiles[i];
-			if(isEmptyDeleted(file)) return false;
+			// parent directory not empty
+			if(!isEmptyDeleted(file)) return false;
 		}
 		dir.delete();
 		return true;

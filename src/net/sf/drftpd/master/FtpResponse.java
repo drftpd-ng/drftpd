@@ -10,8 +10,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
@@ -21,7 +22,7 @@ public class FtpResponse implements Cloneable {
 	private static Logger logger =
 		Logger.getLogger(FtpResponse.class.getName());
 	static {
-		logger.setLevel(Level.FINEST);
+		logger.setLevel(Level.ALL);
 	}
 
 	/** 150 File status okay; about to open data connection. */
@@ -154,7 +155,7 @@ public class FtpResponse implements Cloneable {
 	public void setMessage(String response) {
 		if (response.indexOf('\n') != -1) {
 			response = response.substring(0, response.indexOf('\n'));
-			logger.log(Level.WARNING, "Truncated response message with multiple lines: "+response);
+			logger.log(Level.DEBUG, "Truncated response message with multiple lines: "+response);
 		}
 		this.message = response;
 	}

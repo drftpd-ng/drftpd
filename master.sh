@@ -6,6 +6,6 @@ export VMARGS="
 	-Djava.rmi.server.disableHttp=true \
 	-Djava.rmi.server.hostname=wfa.mine.nu"
 
-export CLASSPATH="classes:lib/jdom.jar:lib/martyr.jar:lib/oro.jar:lib/JSX1.0.7.4.jar:lib/replacer.jar"
+export CLASSPATH="classes:lib/jdom.jar:lib/martyr.jar:lib/oro.jar:lib/JSX1.0.7.4.jar:lib/replacer.jar:lib/log4j-1.2.8.jar"
 
 exec java ${VMARGS} $@ net.sf.drftpd.master.ConnectionManager 2>&1 | tee drftpd.out

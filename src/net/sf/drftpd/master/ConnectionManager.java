@@ -24,11 +24,9 @@ import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import net.sf.drftpd.FatalException;
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.MessageEvent;
@@ -43,12 +41,15 @@ import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
 import net.sf.drftpd.slave.SlaveImpl;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 
 public class ConnectionManager {
-	public static final int idleTimeout = 600;
+	public static final int idleTimeout = 300;
 	private Vector connections = new Vector();
 	private UserManager usermanager;
 	private NukeLog nukelog;
@@ -62,7 +63,7 @@ public class ConnectionManager {
 	private static Logger logger =
 		Logger.getLogger(ConnectionManager.class.getName());
 	static {
-		logger.setLevel(Level.FINEST);
+		logger.setLevel(Level.ALL);
 	}
 	private Writer commandDebug;
 	protected void dispatchFtpEvent(Event event) {
@@ -72,7 +73,7 @@ public class ConnectionManager {
 				FtpListener handler = (FtpListener) iter.next();
 				handler.actionPerformed(event);
 			} catch (Throwable t) {
-				logger.log(Level.WARNING, "Exception dispatching event", t);
+				logger.log(Level.WARN, "Exception dispatching event", t);
 			}
 		}
 	}
@@ -137,7 +138,7 @@ public class ConnectionManager {
 			}
 		} catch (FileNotFoundException ex) {
 			logger.log(
-				Level.FINE,
+				Level.DEBUG,
 				"nukelog.xml not found, will create it after first nuke.");
 		} catch (Exception ex) {
 			logger.log(
@@ -202,7 +203,7 @@ public class ConnectionManager {
 				try {
 					getUsermanager().saveAll();
 				} catch (UserFileException e) {
-					logger.log(Level.SEVERE, "Error saving all users", e);
+					logger.log(Level.FATAL, "Error saving all users", e);
 				}
 			}
 		};
@@ -214,7 +215,7 @@ public class ConnectionManager {
 				addFtpListener(
 					new IRCListener(this, getConfig(), new String[0]));
 			} catch (Exception e2) {
-				logger.log(Level.WARNING, "Error starting IRC bot", e2);
+				logger.log(Level.WARN, "Error starting IRC bot", e2);
 			}
 		}
 		addFtpListener(new XferLogListener());
@@ -232,7 +233,7 @@ public class ConnectionManager {
 					try {
 						maxIdleTime = conn.getUser().getMaxIdleTime();
 						if(maxIdleTime == 0) maxIdleTime = idleTimeout;
-					} catch (NoSuchObjectException e) {
+					} catch (ObjectNotFoundException e) {
 						maxIdleTime = idleTimeout;
 					}
 
@@ -283,7 +284,7 @@ public class ConnectionManager {
 			try {
 				getUsermanager().saveAll();
 			} catch (UserFileException e) {
-				logger.log(Level.WARNING, "Failed to save all userfiles", e);
+				logger.log(Level.WARN, "Failed to save all userfiles", e);
 			}
 			System.exit(0);
 		}
@@ -304,17 +305,18 @@ public class ConnectionManager {
 
 	public static final String VERSION = "drftpd v0.7.0";
 	public static void main(String args[]) {
+		BasicConfigurator.configure();
 		System.out.println(VERSION + " master server starting.");
 		System.out.println("http://drftpd.sourceforge.net");
 
 		try {
-			Handler handlers[] = Logger.getLogger("").getHandlers();
-			if (handlers.length == 1) {
-				handlers[0].setLevel(Level.FINEST);
-			} else {
-				logger.warning(
-					"handlers.length != 1, can't setLevel() on root element");
-			}
+//			Handler handlers[] = Logger.getLogger("").getHandlers();
+//			if (handlers.length == 1) {
+//				handlers[0].setLevel(Level.ALL);
+//			} else {
+//				logger.WARN(
+//					"handlers.length != 1, can't setLevel() on root element");
+//			}
 
 			String cfgFileName;
 			if (args.length >= 1) {
@@ -330,7 +332,7 @@ public class ConnectionManager {
 			try {
 				cfg.load(new FileInputStream(cfgFileName));
 			} catch (IOException e) {
-				logger.severe(
+				logger.fatal(
 					"Error reading " + cfgFileName + ": " + e.getMessage());
 				return;
 			}
@@ -352,10 +354,10 @@ public class ConnectionManager {
 					"Couldn't bind on port " + cfg.getProperty("master.port"),
 					e);
 			} catch (Exception e) {
-				logger.log(Level.SEVERE, "", e);
+				logger.log(Level.FATAL, "", e);
 			}
 		} catch (Throwable th) {
-			logger.log(Level.SEVERE, "", th);
+			logger.log(Level.FATAL, "", th);
 			System.exit(0);
 			return;
 		}

@@ -2,6 +2,7 @@ package net.sf.drftpd.master.usermanager;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 
 import net.sf.drftpd.DuplicateElementException;
@@ -18,6 +19,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  */
 
 public abstract class AbstractUser extends User {
+	Date lastReset;
 
 	protected String username;
 	protected String comment;
@@ -43,7 +45,6 @@ public abstract class AbstractUser extends User {
 	protected float ratio = 3.0F;
 	protected long credits;
 
-	protected boolean deleted;
 	protected boolean anonymous;
 
 	/**
@@ -563,7 +564,7 @@ public abstract class AbstractUser extends User {
 	 * @return boolean
 	 */
 	public boolean isDeleted() {
-		return deleted;
+		return isMemberOf("deleted");
 	}
 
 	/**
@@ -571,7 +572,15 @@ public abstract class AbstractUser extends User {
 	 * @param deleted The deleted to set
 	 */
 	public void setDeleted(boolean deleted) {
-		this.deleted = deleted;
+		if(deleted) {
+			try {
+				addGroup("deleted");
+			} catch (DuplicateElementException e) {}
+		} else {
+			try {
+				removeGroup("deleted");
+			} catch (NoSuchFieldException e) {} 
+		}
 	}
 
 	/**

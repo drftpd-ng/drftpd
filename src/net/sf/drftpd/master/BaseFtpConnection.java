@@ -14,19 +14,17 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.rmi.NoSuchObjectException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.Transfer;
 
-//import ranab.util.Message;
-/*import ranab.io.StreamConnectorObserver;*/
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 /**
  * This is a generic ftp connection handler. It delegates 
@@ -51,7 +49,7 @@ public class BaseFtpConnection implements Runnable {
 	private static Logger logger =
 		Logger.getLogger(BaseFtpConnection.class.getName());
 	static {
-		logger.setLevel(Level.FINEST);
+		logger.setLevel(Level.ALL);
 	}
 	/**
 	 * time when last command from the client finished execution
@@ -175,7 +173,7 @@ public class BaseFtpConnection implements Runnable {
 
 				request = new FtpRequest(commandLine);
 				//TODO write to this.debugLog
-				logger.fine(
+				logger.debug(
 					"<< "
 						+ request.getCommandLine()
 						+ " [user="
@@ -210,7 +208,7 @@ public class BaseFtpConnection implements Runnable {
 				in.close();
 				out.close();
 			} catch (Exception ex2) {
-				logger.log(Level.WARNING, "Exception closing stream", ex2);
+				logger.log(Level.WARN, "Exception closing stream", ex2);
 			}
 			if (isAuthenticated())
 				dispatchFtpEvent(new UserEvent(_user, "LOGOUT"));
@@ -233,7 +231,7 @@ public class BaseFtpConnection implements Runnable {
 			out.print(FtpResponse.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
 			//out.write(ftpStatus.getResponse(502, request, user, null));
 		} catch (InvocationTargetException ex) {
-			logger.log(Level.SEVERE, "Error", ex);
+			logger.log(Level.ERROR, "Error", ex);
 			out.print(
 				new FtpResponse(
 					500,
@@ -282,9 +280,9 @@ public class BaseFtpConnection implements Runnable {
 	/**
 	 * Get user object
 	 */
-	public User getUser() throws NoSuchObjectException {
+	public User getUser() throws ObjectNotFoundException {
 		if (_user == null)
-			throw new NoSuchObjectException("no user logged in for connection");
+			throw new ObjectNotFoundException("no user logged in for connection");
 		return _user;
 	}
 
@@ -346,7 +344,7 @@ public class BaseFtpConnection implements Runnable {
 			try {
 				mDataSoc.close();
 			} catch (Exception ex) {
-				logger.log(Level.WARNING, "Error closing data socket", ex);
+				logger.log(Level.WARN, "Error closing data socket", ex);
 			}
 			mDataSoc = null;
 		}
@@ -393,7 +391,7 @@ public class BaseFtpConnection implements Runnable {
 			mbPasv = true;
 			return true;
 		} catch (Exception ex) {
-			logger.log(Level.WARNING, "", ex);
+			logger.log(Level.WARN, "", ex);
 			return false;
 		}
 	}
@@ -453,7 +451,7 @@ public class BaseFtpConnection implements Runnable {
 				mDataSoc.setSoTimeout(30000); // 30 seconds timeout
 			} catch (IOException ex) {
 				//mConfig.getLogger().warn(ex);
-				logger.log(Level.WARNING, "Error opening data socket", ex);
+				logger.log(Level.WARN, "Error opening data socket", ex);
 				mDataSoc = null;
 				throw ex;
 			}

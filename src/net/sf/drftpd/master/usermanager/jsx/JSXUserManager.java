@@ -14,8 +14,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.ObjectExistsException;
@@ -42,7 +43,7 @@ public class JSXUserManager extends UserManager {
 	private static Logger logger =
 		Logger.getLogger(JSXUserManager.class.getName());
 	static {
-		logger.setLevel(Level.FINEST);
+		logger.setLevel(Level.ALL);
 	}
 
 	public JSXUserManager() throws UserFileException {
@@ -171,11 +172,9 @@ public class JSXUserManager extends UserManager {
 		logger.log(Level.INFO, "Saving userfiles: "+users);
 		for (Iterator iter = users.values().iterator(); iter.hasNext();) {
 			Object obj = iter.next();
-			if(!(obj instanceof JSXUser)) {
-				logger.log(Level.SEVERE, "upcominClassCastException:"+obj+" not instanceof JSUser, class: "+obj.getClass()+" "+obj.getClass().getName());
-			}
+			assert obj instanceof JSXUser;
 			JSXUser user = (JSXUser)obj;
-				user.commit();
+			user.commit();
 		}
 	}
 }

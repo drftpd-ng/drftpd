@@ -17,8 +17,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.FtpResponse;
@@ -35,7 +36,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 public class FtpConfig {
 	private static Logger logger = Logger.getLogger(FtpConfig.class.getName());
 	static {
-		logger.setLevel(Level.FINEST);
+		logger.setLevel(Level.ALL);
 	}
 
 	String cfgFileName;
@@ -146,7 +147,7 @@ public class FtpConfig {
 					Object obj = met.newInstance(new Object[] {this, connManager, args});
 					eventplugins.add(obj);
 				} catch (Throwable e) {
-					logger.log(Level.SEVERE, "Error loading "+clazz, e);
+					logger.log(Level.FATAL, "Error loading "+clazz, e);
 				}
 			}
 		}
