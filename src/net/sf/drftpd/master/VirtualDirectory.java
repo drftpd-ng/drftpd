@@ -26,49 +26,30 @@ public class VirtualDirectory {
 	private String mstRoot = "/";
 	private String mstCurrDir = "/";
 
-	private LinkedRemoteFile root;
-
+	private LinkedRemoteFile fileSystem;
+	private LinkedRemoteFile currentDirectory;
 	/**
 	 * Default constructor does nothing
 	 */
 	public VirtualDirectory(LinkedRemoteFile root) {
-		this.root = root;
+		this.fileSystem = root;
 	}
-
-	/**
-	 * Set root directory. Root directory string will always
-	 * end with '/'.
-	 */
-	/*
-	public void setRootDirectory(String root) {
-	   if(root == null) {
-	       root = new File("/");
-	   }
-	   mstRoot = normalizeSeparateChar(root.getAbsolutePath());
-	    
-	   // if not ends with '/' - add one
-	   if(mstRoot.charAt(mstRoot.length()-1) != '/') {
-	       mstRoot = mstRoot + '/';
-	   }
-	   mstCurrDir = "/";
-	}
-	*/
 
 	/**
 	 * Set root directory.
 	 */
-	public void setRootDirectory(String root) throws IOException {
-		//File rootFile = new File(root).getCanonicalFile();
-		//setRootDirectory(rootFile);
-
-		mstRoot = normalizeSeparateChar(root);
-
-		// if not ends with '/' - add one
-		if (mstRoot.charAt(mstRoot.length() - 1) != '/') {
-			mstRoot = mstRoot + '/';
-		}
-		mstCurrDir = "/";
-	}
+	//	public void setRootDirectory(String root) throws IOException {
+	//		//File rootFile = new File(root).getCanonicalFile();
+	//		//setRootDirectory(rootFile);
+	//
+	//		//mstRoot = normalizeSeparateChar(root);
+	//
+	//		// if not ends with '/' - add one
+	//		if (mstRoot.charAt(mstRoot.length() - 1) != '/') {
+	//			mstRoot = mstRoot + '/';
+	//		}
+	//		mstCurrDir = "/";
+	//	}
 
 	/**
 	 * Get current working directory.
@@ -79,8 +60,8 @@ public class VirtualDirectory {
 
 	public LinkedRemoteFile getCurrentDirectoryFile() {
 		try {
-			return root.lookupFile(mstCurrDir);
-		} catch(FileNotFoundException ex) {
+			return fileSystem.lookupFile(mstCurrDir);
+		} catch (FileNotFoundException ex) {
 			throw new RuntimeException(ex.toString());
 		}
 	}
@@ -88,34 +69,13 @@ public class VirtualDirectory {
 	/**
 	 * Get root directory.
 	 */
-	public String getRootDirectory() {
-		return mstRoot;
-	}
+	//	public String getRootDirectory() {
+	//		return mstRoot;
+	//	}
 
-	/**
-	 * Get physical name (wrt the machine root).
-	 * @deprecated everything is virtual
-	 */
-	public String getPhysicalName(String virtualName) {
-		virtualName = normalizeSeparateChar(virtualName);
-		return replaceDots(virtualName);
-	}
-
-	/**
-	 * Get virtual name (wrt the virtual root). 
-	 * The return value will never end with '/' unless it is '/'. 
-	 */
-	public String getAbsoluteName(String virtualName) {
-		virtualName = normalizeSeparateChar(virtualName);
-		String physicalName = replaceDots(virtualName);
-
-//		String absoluteName =
-//			physicalName.substring(mstRoot.length() - 1).trim();
-		return removeLastSlash(physicalName);
-	}
-
-	public LinkedRemoteFile getAbsoluteFile(String virtualName) throws FileNotFoundException {
-		return root.lookupFile(getAbsoluteName(virtualName));
+	public LinkedRemoteFile lookupFile(String virtualName)
+		throws FileNotFoundException {
+		return fileSystem.lookupFile(virtualName);
 	}
 
 	/**
@@ -123,16 +83,16 @@ public class VirtualDirectory {
 	 * name will never end with '/' unless it is '/'. 
 	 * @deprecated everything is virtual
 	 */
-	public String getVirtualName(String physicalName) {
-		physicalName = normalizeSeparateChar(physicalName);
-		if (!physicalName.startsWith(mstRoot)) {
-			return null;
-		}
-
-		String virtualName =
-			physicalName.substring(mstRoot.length() - 1).trim();
-		return removeLastSlash(virtualName);
-	}
+	//	public String getVirtualName(String physicalName) {
+	//		physicalName = normalizeSeparateChar(physicalName);
+	//		if (!physicalName.startsWith(mstRoot)) {
+	//			return null;
+	//		}
+	//
+	//		String virtualName =
+	//			physicalName.substring(mstRoot.length() - 1).trim();
+	//		return removeLastSlash(virtualName);
+	//	}
 
 	/**
 	 * Change directory. The current directory will never have '/'
@@ -140,69 +100,39 @@ public class VirtualDirectory {
 	 * @param dirName change the current working directory.
 	 * @return true if success
 	 */
-	public boolean changeDirectory(String virtualDir) {
+	public void changeDirectory(String virtualDir)
+		throws FileNotFoundException {
 
-		String physicalDir = getPhysicalName(virtualDir);
+		String physicalDir = replaceDots(virtualDir);
 		if (physicalDir.equals("")) {
+			//TODO: does replaceDots return "" sometimes?
 			physicalDir = "/";
 		}
 
-		StringTokenizer st = new StringTokenizer(physicalDir, "/");
-		LinkedRemoteFile dirFl;
-		try {
-			dirFl = root.lookupFile(physicalDir);
-		} catch (FileNotFoundException ex) {
-			ex.printStackTrace();
-			return false;
+		LinkedRemoteFile directory = fileSystem.lookupFile(physicalDir);
+
+		if (!directory.isDirectory()) {
+			throw new FileNotFoundException("Not a directory");
 		}
-		if (dirFl.isDirectory()) {
-			mstCurrDir = physicalDir.substring(mstRoot.length() - 1).trim();
-			mstCurrDir = removeLastSlash(mstCurrDir);
-			return true;
-		}
-		return false;
+		this.currentDirectory = directory;
+		mstCurrDir = physicalDir;
+		mstCurrDir = removeLastSlash(mstCurrDir);
 	}
 
 	/**
 	 * Check read permission.
 	 * @deprecated use RemoteFile methods instead.
 	 */
-	public boolean hasReadPermission(String fileName, boolean bPhysical) {
-		/*
-		    if(bPhysical) {
-		        fileName = normalizeSeparateChar(fileName);
-		    }
-		    else {
-		        fileName = getPhysicalName(fileName);
-		    }
-		
-		    if(!fileName.startsWith(mstRoot)) {
-		        return false;
-		    }
-		
-		    return new File(fileName).canRead();
-		*/
+	public boolean hasReadPermission(String fileName) {
 		return true;
 	}
 
 	/**
-	 * Chech file write/delete permission.
+	 * Check file write/delete permission.
 	 * @deprecated use RemoteFile methods instead.
 	 */
-	public boolean hasWritePermission(String fileName, boolean bPhysical) {
-
-		// if virtual name - get the physical name
-		if (bPhysical) {
-			fileName = normalizeSeparateChar(fileName);
-		} else {
-			fileName = getPhysicalName(fileName);
-		}
-
-		if (!fileName.startsWith(mstRoot)) {
-			return false;
-		}
-
-		return new File(fileName).canWrite();
+	public boolean hasWritePermission(String fileName) {
+		return true;
 	}
 
 	/**
@@ -210,15 +140,7 @@ public class VirtualDirectory {
 	 * @deprecated use RemoteFile methods instead.
 	 */
 	public boolean hasCreatePermission(String fileName, boolean bPhysical) {
-
-		// if virtual name - get the physical name
-		if (bPhysical) {
-			fileName = normalizeSeparateChar(fileName);
-		} else {
-			fileName = getPhysicalName(fileName);
-		}
-
-		return fileName.startsWith(mstRoot);
+		return true;
 	}
 
 	/**
@@ -250,16 +172,17 @@ public class VirtualDirectory {
 			}
 			options = optionsSb.toString();
 		}
-		
+
 		// check options
 		boolean bAll = options.indexOf('a') != -1;
 		boolean bDetail = options.indexOf('l') != -1;
 		boolean directory = options.indexOf("d") != -1;
 
 		// check pattern
-		directoryName = getPhysicalName(directoryName);
+		directoryName = replaceDots(directoryName);
 		int slashIndex = directoryName.lastIndexOf('/');
-		if ((slashIndex != -1) && (slashIndex != (directoryName.length() - 1))) {
+		if ((slashIndex != -1)
+			&& (slashIndex != (directoryName.length() - 1))) {
 			pattern = directoryName.substring(slashIndex + 1);
 			directoryName = directoryName.substring(0, slashIndex + 1);
 		}
@@ -275,7 +198,7 @@ public class VirtualDirectory {
 		if(!(lstDirObj instanceof Map)) return false;
 		lstDirObj = (Map)obj;
 		}*/
-		LinkedRemoteFile directoryFile = root.lookupFile(directoryName);
+		LinkedRemoteFile directoryFile = fileSystem.lookupFile(directoryName);
 		if (directoryFile == null) {
 			return false;
 		}
@@ -296,12 +219,14 @@ public class VirtualDirectory {
 		//if ( (pattern == null) || pattern.equals("*") || pattern.equals("") ) {
 		//    flLst = lstDirObj.listFiles();
 		//} else {
-		if(directory) {
-			flLst = new LinkedRemoteFile[] {directoryFile};
+		if (directory) {
+			flLst = new LinkedRemoteFile[] { directoryFile };
 		} else {
-			if(!(directoryFile instanceof RemoteFile)) throw new InvalidDirectoryException("lstDirObj is not an instance of RemoteFileTree");
+			if (!(directoryFile instanceof RemoteFile))
+				throw new InvalidDirectoryException("lstDirObj is not an instance of RemoteFileTree");
 			RemoteFile directoryFileTree = (RemoteFile) directoryFile;
-			flLst = directoryFileTree.listFiles(); //new FileRegularFilter(pattern));
+			flLst = directoryFileTree.listFiles();
+			//new FileRegularFilter(pattern));
 		}
 		//}
 		//Iterator i = lstDirObj.entrySet().iterator();
@@ -354,7 +279,7 @@ public class VirtualDirectory {
 		boolean bDetail = options.indexOf('l') != -1;
 
 		// check pattern
-		lsDirName = getPhysicalName(lsDirName);
+		lsDirName = replaceDots(lsDirName);
 		int slashIndex = lsDirName.lastIndexOf('/');
 		if ((slashIndex != -1) && (slashIndex != (lsDirName.length() - 1))) {
 			pattern = lsDirName.substring(slashIndex + 1);
@@ -363,7 +288,7 @@ public class VirtualDirectory {
 
 		// check directory
 		//File lstDirObj = new File(lsDirName);
-		LinkedRemoteFile lstDirObj = root.lookupFile(lsDirName);
+		LinkedRemoteFile lstDirObj = fileSystem.lookupFile(lsDirName);
 
 		if (!lstDirObj.isDirectory()) {
 			return false;
@@ -448,7 +373,7 @@ public class VirtualDirectory {
 	 */
 	private static String getName(RemoteFile fl) {
 		String flName = fl.getName();
-		flName = normalizeSeparateChar(flName);
+		//flName = normalizeSeparateChar(flName);
 
 		int lastIndex = flName.lastIndexOf("/");
 		if (lastIndex == -1) {
@@ -472,19 +397,19 @@ public class VirtualDirectory {
 		} else {
 			sb.append('-');
 		}
-		
-//		if (fl.canRead()) {
+
+		//		if (fl.canRead()) {
 		sb.append('r');
-//		} else {
-//			sb.append('-');
-//		}
-		
-//		if (fl.canWrite()) {
+		//		} else {
+		//			sb.append('-');
+		//		}
+
+		//		if (fl.canWrite()) {
 		sb.append('w');
-//		} else {
-//			sb.append('-');
-//		}
-		
+		//		} else {
+		//			sb.append('-');
+		//		}
+
 		if (fl.isDirectory()) {
 			sb.append("x");
 		} else {
@@ -497,14 +422,14 @@ public class VirtualDirectory {
 	/**
 	 * Normalize separate characher. Separate character should be '/' always.
 	 */
-	private static String normalizeSeparateChar(String pathName) {
-		pathName = pathName.replace(File.separatorChar, '/');
-		pathName = pathName.replace('\\', '/');
-		return pathName;
-	}
+	//	private static String normalizeSeparateChar(String pathName) {
+	//		pathName = pathName.replace(File.separatorChar, '/');
+	//		pathName = pathName.replace('\\', '/');
+	//		return pathName;
+	//	}
 
 	/**
-	 * Replace dots. Returns physical name.
+	 * Replace dots.
 	 * @param inArg the virtaul name
 	 */
 	private String replaceDots(String inArg) {
@@ -566,6 +491,9 @@ public class VirtualDirectory {
 		return resArg;
 	}
 
+	public static boolean isLegalFileName(String fileName) {
+		return fileName.indexOf("/") != -1 || fileName.equals(".") || fileName.equals("..");
+	}
 	/**
 	 * Get each directory line.
 	 */

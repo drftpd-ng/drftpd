@@ -234,18 +234,9 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			currfile =
 				(LinkedRemoteFile) currfile.getHashtable().get(nextToken);
 			if (currfile == null)
-				throw new FileNotFoundException();
+				throw new FileNotFoundException(currfile.getPath()+"/"+nextToken+": Not found");
 		}
 		return currfile;
-	}
-
-	/**
-	 * A remote file never exists locally, therefore we return false.
-	 * If the current RemoteSlave has the file this call could return true
-	 * but as we don't know the root directory it's not possible right now.
-	 */
-	public boolean exists() {
-		return false;
 	}
 
 	private Map files;

@@ -4,6 +4,95 @@
     <group>drftpd</group>
     <lastModified>1052521096000</lastModified>
     <contents>
+        <directory name="SIMCITY_4_1.0.272.0_UPDATE_NORDIC-VIGOR">
+            <user>drftpd</user>
+            <group>drftpd</group>
+            <lastModified>1052746571000</lastModified>
+            <contents>
+                <directory name="[COMPLETE - 4F - 17M]">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <lastModified>1049831610000</lastModified>
+                    <contents />
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </directory>
+                <file name="vgr-sc27.004">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1049824426000</lastModified>
+                    <checksum>0</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="vgr-sc27.003">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1049824423000</lastModified>
+                    <checksum>0</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="vgr-sc27.002">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1049824418000</lastModified>
+                    <checksum>0</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="vgr-sc27.001">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1049824413000</lastModified>
+                    <checksum>0</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="vgr-sc27.nfo">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1049824406000</lastModified>
+                    <checksum>0</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+                <file name="vgr-sc27.sfv">
+                    <user>drftpd</user>
+                    <group>drftpd</group>
+                    <size>0</size>
+                    <lastModified>1049824406000</lastModified>
+                    <checksum>0</checksum>
+                    <slaves>
+                        <slave name="mog" />
+                    </slaves>
+                </file>
+            </contents>
+            <slaves>
+                <slave name="mog" />
+            </slaves>
+        </directory>
+        <file name="Legendia - Mechanic Orgasm [DJ Pee Remix].mp3">
+            <user>drftpd</user>
+            <group>drftpd</group>
+            <size>0</size>
+            <lastModified>1052750038000</lastModified>
+            <checksum>0</checksum>
+            <slaves>
+                <slave name="mog" />
+            </slaves>
+        </file>
         <file name="te3.png">
             <user>drftpd</user>
             <group>drftpd</group>

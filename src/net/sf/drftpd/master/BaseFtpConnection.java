@@ -14,6 +14,8 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.sf.drftpd.master.usermanager.User;
 
@@ -30,6 +32,10 @@ public class BaseFtpConnection implements Runnable {
 
 	protected final static Class[] METHOD_INPUT_SIG =
 		new Class[] { FtpRequest.class, PrintWriter.class };
+	private static Logger logger = Logger.getLogger(BaseFtpConnection.class.getName());
+	static {
+		logger.setLevel(Level.FINEST);
+	}
 	/**
 	 * time when last command from the client finished execution
 	 */
@@ -39,30 +45,28 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	protected boolean executing;
 	
-	protected FtpStatus mFtpStatus;
+	protected FtpStatus ftpStatus;
 	//protected FtpDataConnection mDataConnection = null;
 	protected User user;
 	/**
 	 * Is the current password authenticated?
 	 */
 	protected boolean authenticated = false;
-	//protected SpyConnectionInterface mSpy       = null;
-	//protected FtpConnectionObserver mObserver   = null;
-	protected Socket mControlSocket;
+	protected Socket controlSocket;
 	protected PrintWriter out;
 	/**
 	 * Should this thread stop insted of continue looping?
 	 */
 	protected boolean stopRequest = false;
 	protected String stopRequestMessage;
-	protected SlaveManagerImpl slavemanager;
-	private InetAddress clientAddress = null;
-	private Thread t;
+	protected SlaveManagerImpl slaveManager;
+	protected InetAddress clientAddress = null;
+	protected Thread thread;
 	protected ConnectionManager connManager;
 	protected FtpRequest request;
 	public void start() {
-		t = new Thread(this);
-		t.start();
+		thread = new Thread(this);
+		thread.start();
 		// start() calls run() and execution will start in the background.
 	}
 	/**
@@ -97,8 +101,8 @@ public class BaseFtpConnection implements Runnable {
 		//mConfig = ftpConfig;
 		//this.cfg = cfg;
 		//mFtpStatus = mConfig.getStatus();
-		mFtpStatus = new FtpStatus();
-		mControlSocket = soc;
+		ftpStatus = new FtpStatus();
+		controlSocket = soc;
 		this.connManager = connManager;
 		//mUser = new FtpUser();
 	}
@@ -109,10 +113,9 @@ public class BaseFtpConnection implements Runnable {
 	 * Server one FTP connection.
 	 */
 	public void run() {
-		clientAddress = mControlSocket.getInetAddress();
+		clientAddress = controlSocket.getInetAddress();
 		//mConfig.getLogger().info("Handling new request from " + clientAddress.getHostAddress());
-		System.out.println(
-			"Handling new request from " + clientAddress.getHostAddress());
+		logger.info("Handling new request from " + clientAddress.getHostAddress());
 		//mDataConnection = new FtpDataConnection(mConfig);
 		//setClientAddress(clientAddress);
 		//mConfig.getConnectionService().newConnection(this);
@@ -120,16 +123,16 @@ public class BaseFtpConnection implements Runnable {
 		try {
 			in =
 				new BufferedReader(
-					new InputStreamReader(mControlSocket.getInputStream()));
+					new InputStreamReader(controlSocket.getInputStream()));
 
 			out =
 				new PrintWriter(
-					new FtpWriter(
+					//new FtpWriter( no need for spying :P
 						new BufferedWriter(
 							new OutputStreamWriter(
-								mControlSocket.getOutputStream()))));
+								controlSocket.getOutputStream())));
 
-			mControlSocket.setSoTimeout(1000);
+			controlSocket.setSoTimeout(1000);
 			// permission check
 			/*
 			    if( !mConfig.getIpRestrictor().hasPermission(mControlSocket.getInetAddress()) ) {
@@ -137,7 +140,7 @@ public class BaseFtpConnection implements Runnable {
 			        return;
 			    }
 			*/
-			out.write(mFtpStatus.getResponse(220, null, user, null));
+			out.write(ftpStatus.getResponse(220, null, user, null));
 			while(!stopRequest) {
 				out.flush();
 				//notifyObserver();
@@ -159,11 +162,11 @@ public class BaseFtpConnection implements Runnable {
 				}
 
 				request = new FtpRequest(commandLine);
-				System.out.println("<< " + request.getCommandLine());
+				logger.fine("<< " + request.getCommandLine());
 
 				if (!hasPermission(request)) {
 					out.write(
-						mFtpStatus.getResponse(530, request, user, null));
+						ftpStatus.getResponse(530, request, user, null));
 					continue;
 				}
 				// execute command
@@ -187,8 +190,7 @@ public class BaseFtpConnection implements Runnable {
 				in.close();
 				out.close();
 			} catch (Exception ex2) {
-				System.err.println("Warning, exception closing stream");
-				ex2.printStackTrace();
+				logger.log(Level.WARNING, "Exception closikng stream", ex2);
 			}
 			/*
 			ConnectionService conService = mConfig.getConnectionService();
@@ -211,10 +213,10 @@ public class BaseFtpConnection implements Runnable {
 				getClass().getDeclaredMethod(metName, METHOD_INPUT_SIG);
 			actionMet.invoke(this, new Object[] { request, writer });
 		} catch (NoSuchMethodException ex) {
-			writer.write(mFtpStatus.getResponse(502, request, user, null));
+			writer.write(ftpStatus.getResponse(502, request, user, null));
 		} catch (InvocationTargetException ex) {
 			ex.printStackTrace();
-			writer.write(mFtpStatus.getResponse(500, request, user, null));
+			writer.write(ftpStatus.getResponse(500, request, user, null));
 			Throwable th = ex.getTargetException();
 			th.printStackTrace();
 /*
@@ -223,7 +225,7 @@ public class BaseFtpConnection implements Runnable {
 			}
 */
 		} catch (Exception ex) {
-			writer.write(mFtpStatus.getResponse(500, request, user, null));
+			writer.write(ftpStatus.getResponse(500, request, user, null));
 			ex.printStackTrace();
 			if (ex instanceof java.io.IOException) {
 				throw (IOException) ex;

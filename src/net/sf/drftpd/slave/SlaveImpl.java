@@ -169,7 +169,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			*/
 			return new SlaveStatus(
 				//dvolume.getFreeSpace(),
-				new File(root).getAvailableDiskSpace(),
+				new File(root).getDiskSpaceAvailable(),
 				throughputUp,
 				transfersUp,
 				throughputDown,

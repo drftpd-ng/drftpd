@@ -13,6 +13,7 @@ public class RemoteSlave implements Serializable {
 	protected SlaveStatus status;
 	protected SlaveManagerImpl manager;
 	protected String name="mog";
+	protected String prefix="";
 	public void setManager(SlaveManagerImpl manager) {
 		this.manager = manager;
 	}

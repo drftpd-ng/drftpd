@@ -55,11 +55,11 @@ public class File extends java.io.File {
 		return fs.listMounts();
 	}
 	
-	public long getAvailableDiskSpace() {
+	public long getDiskSpaceAvailable() {
 		return fs.getDiskFreeSpace(this).freeBytes;
 	}
 
-	public long getTotalDiskSpace() {
+	public long getDiskSpaceFree() {
 		return fs.getDiskFreeSpace(this).totalBytes;	
 	}
 }
