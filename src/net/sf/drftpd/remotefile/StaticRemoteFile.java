@@ -18,13 +18,14 @@
 package net.sf.drftpd.remotefile;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Creates a single RemoteFile object that is not linked to any other objects.
  * 
  * @author mog
- * @version $Id: StaticRemoteFile.java,v 1.26 2004/03/01 00:21:09 mog Exp $
+ * @version $Id: StaticRemoteFile.java,v 1.27 2004/03/26 12:15:18 mog Exp $
  */
 public class StaticRemoteFile extends RemoteFile {
 	private boolean _isDeleted;
@@ -77,8 +78,12 @@ public class StaticRemoteFile extends RemoteFile {
 		_rslaves = rslaves;
 	}
 	
+	/**
+	 * StaticRemoteFile cannot be linked
+	 * @return java.util.Collections.EMPTY_LIST
+	 */
 	public Collection getFiles() {
-		throw new UnsupportedOperationException("getFiles() does not exist in StaticRemoteFile");
+		return Collections.EMPTY_LIST;
 	}
 
 	public String getLinkPath() {
@@ -127,14 +132,6 @@ public class StaticRemoteFile extends RemoteFile {
 
 	public long length() {
 		return _length;
-	}
-
-	/**
-	 * StaticRemoteFile cannot be linked
-	 * @return new RemoteFileInterface[0] 
-	 */
-	public RemoteFileInterface[] listFiles() {
-		return new RemoteFileInterface[0];
 	}
 
 	public void setDeleted(boolean isDeleted) {

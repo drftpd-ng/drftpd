@@ -56,7 +56,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.23 2004/03/26 00:16:33 mog Exp $
+ * @version $Id: Dir.java,v 1.24 2004/03/26 12:15:17 mog Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
 	private final static SimpleDateFormat DATE_FMT =
@@ -136,7 +136,7 @@ public class Dir implements CommandHandler, Cloneable {
 
 		FtpReply response =
 			new FtpReply(
-				200,
+				250,
 				"Directory changed to " + newCurrentDirectory.getPath());
 		conn.getConfig().directoryMessage(
 			response,
