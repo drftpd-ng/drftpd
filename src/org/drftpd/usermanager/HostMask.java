@@ -56,6 +56,7 @@ public class HostMask {
     }
     
 	public boolean equals(Object obj) {
+		if(obj == null) return false;
 		HostMask h = (HostMask) obj;
 		return h.getIdentMask().equals(getIdentMask()) && h.getHostMask().equals(getHostMask());
 	}
