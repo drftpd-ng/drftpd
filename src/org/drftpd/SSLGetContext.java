@@ -39,7 +39,7 @@ public class SSLGetContext {
     	if (ctx != null)
     		return ctx; // reuse previous SSLContext
     	
-        ctx = SSLContext.getInstance("TLSv1");
+        ctx = SSLContext.getInstance("SSLv3");
 
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
 
