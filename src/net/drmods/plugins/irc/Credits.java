@@ -93,8 +93,7 @@ public class Credits extends GenericCommandAutoService implements IRCPluginInter
 				return;				
 			}
 
-			User ftpuser = user;	
-			String username = "";
+			User ftpuser = user;
 			String args[] = msg.split(" ");
 			if (args.length > 1) {
 				if (args[1].equals("*")){
@@ -104,9 +103,9 @@ public class Credits extends GenericCommandAutoService implements IRCPluginInter
 					try {
 						ftpuser = getConnectionManager().getGlobalContext()
 										.getUserManager()
-											.getUserByName(username);
+											.getUserByName(args[1]);
 					} catch (NoSuchUserException e) {
-						env.add("user", username);
+						env.add("user", args[1]);
 						_listener.sayChannel(msgc.getDest(), 
 							ReplacerUtils.jprintf("credits.error", env, Credits.class));
 						return;
