@@ -58,7 +58,7 @@ import java.util.StringTokenizer;
  * Represents the file attributes of a remote file.
  *
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.177 2004/11/15 01:12:12 mog Exp $
+ * @version $Id$
  */
 public class LinkedRemoteFile implements Serializable, Comparable,
     LinkedRemoteFileInterface {
@@ -595,6 +595,9 @@ public class LinkedRemoteFile implements Serializable, Comparable,
      * <p><b>NOTE:</b>Since DrFTPD 1.2, the collection returned can no longer
      * be directly modified.
      *
+     * <p>Since this method overrides FileRemoteFile which is part of the classes
+     * that keep 1.4 compatibility for the slaves it cannot use generics.</p>
+     *  
      * @return a Collection of all the LinkedRemoteFile objects in this
      *         directory.
      */
@@ -816,6 +819,9 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
     /**
      * returns slaves. returns null if a directory.
+     * 
+     * <p>Since this method overrides FileRemoteFile which is part of the classes
+     * that keep 1.4 compatibility for the slaves it cannot use generics.</p>
      */
     public Collection<RemoteSlave> getSlaves() {
         if (_slaves == null) {
