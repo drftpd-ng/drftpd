@@ -1,5 +1,6 @@
 package net.sf.drftpd.master;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -29,8 +30,10 @@ import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
 import net.sf.drftpd.slave.SlaveImpl;
 
 import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 
 public class ConnectionManager {
 	public static final int idleTimeout = 300;
@@ -39,18 +42,22 @@ public class ConnectionManager {
 		Logger.getLogger(ConnectionManager.class.getName());
 
 	public static void main(String args[]) {
-		BasicConfigurator.configure();
-//		Logger root = Logger.getRootLogger();
-//		new File("ftp-data/logs").mkdirs();
-//		try {
-//			root.addAppender(
-//				new FileAppender(
-//					new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN),
-//					"ftp-data/logs/drftpd.log"));
-//		} catch (IOException e1) {
-//			throw new FatalException(e1);
-//		}
-		System.out.println(SlaveImpl.VERSION + " master server starting.");
+		if (args[0].equals("-nolog")) {
+			BasicConfigurator.configure();
+		} else {
+			Logger root = Logger.getRootLogger();
+			new File("ftp-data/logs").mkdirs();
+			try {
+				root.addAppender(
+					new FileAppender(
+						new PatternLayout(
+							PatternLayout.TTCC_CONVERSION_PATTERN),
+						"ftp-data/logs/drftpd.log"));
+			} catch (IOException e1) {
+				throw new FatalException(e1);
+			}
+		}
+			System.out.println(SlaveImpl.VERSION + " master server starting.");
 		System.out.println("http://drftpd.sourceforge.net");
 
 		System.setProperty("line.separator", "\r\n");
