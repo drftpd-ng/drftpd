@@ -867,10 +867,6 @@ public class SiteBot extends FtpListener implements Observer {
                     _commands = _commands + plugin.getCommands() + " ";
                 }
                 
-                //if (plugin.getCommandsHelp() != null) {
-                //	_commandsHelp = _commandsHelp + plugin.getCommandsHelp() + "\n";
-                //}
-                
                 //add plugin to our list and remove from the IRCCOnnection so we can 
                 //decrypt any messages if needed
                 _commandObservers.add(obs);
@@ -1286,9 +1282,8 @@ public class SiteBot extends FtpListener implements Observer {
                 IRCPluginInterface plugin = (IRCPluginInterface) obs;
                 String help = plugin.getCommandsHelp(ftpuser);
                 if (!"".equals(help))
-                sayPrivMessage(msgc.getSource().getNick(), help);
+                    sayPrivMessage(msgc.getSource().getNick(), help);
             }
-            //sayPrivMessage(msgc.getSource().getNick(), "Available commands: \n" + _commandsHelp);
         }
     }
 
@@ -1301,11 +1296,9 @@ public class SiteBot extends FtpListener implements Observer {
             reload();
         }
         
-        public void reload() {
+        public void reload() throws IOException {
             _permissions = new Hashtable<String,Permission>();
-            try {
-                FileReader fr = new FileReader(cfgFile);
-                LineNumberReader in = new LineNumberReader(fr);
+                LineNumberReader in = new LineNumberReader(new FileReader(cfgFile));
                 try {
                     String line;
                     while ((line = in.readLine()) != null) {
@@ -1325,15 +1318,7 @@ public class SiteBot extends FtpListener implements Observer {
                     logger.warn("Exception when reading " + cfgFile + " line " + in.getLineNumber(), e);
                 } finally {
                     in.close();
-                    fr.close();
                 }
-            } catch (FileNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
         }
         
         public boolean checkIrcPermission(String command, FullNick fn)
