@@ -59,7 +59,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.89 2004/06/02 03:04:47 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.90 2004/06/09 10:56:32 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -338,7 +338,10 @@ public class BaseFtpConnection implements Runnable {
 		lastActive = System.currentTimeMillis();
 		logger.info(
 			"Handling new request from " + getClientAddress().getHostAddress());
-		thread.setName("FtpConn from " + getClientAddress().getHostAddress());
+		if (!getConfig().getHideIps()) {
+			thread.setName(
+				"FtpConn from " + getClientAddress().getHostAddress());
+		}
 
 		try {
 			//			in =
@@ -380,17 +383,8 @@ public class BaseFtpConnection implements Runnable {
 
 				request = new FtpRequest(commandLine);
 
-				if(!request.getCommand().equals("PASS"))
-				debuglogger.debug(
-					"<< "
-						+ request.getCommandLine()
-						+ " [user="
-						+ _user
-						+ ",cwd="
-						+ currentDirectory.getPath()
-						+ ",host="
-						+ getClientAddress()
-						+ "]");
+				if (!request.getCommand().equals("PASS"))
+					debuglogger.debug("<< " + request.getCommandLine());
 				if (!hasPermission(request)) {
 					out.print(FtpReply.RESPONSE_530_NOT_LOGGED_IN);
 					continue;
@@ -452,7 +446,7 @@ public class BaseFtpConnection implements Runnable {
 
 	public void setAuthenticated(boolean authenticated) {
 		_authenticated = authenticated;
-		if (authenticated)
+		if (isAuthenticated() && !getConfig().getHideIps())
 			thread.setName(
 				"FtpConn from "
 					+ getClientAddress().getHostAddress()

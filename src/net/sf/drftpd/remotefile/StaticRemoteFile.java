@@ -25,7 +25,7 @@ import java.util.List;
  * Creates a single RemoteFile object that is not linked to any other objects.
  * 
  * @author mog
- * @version $Id: StaticRemoteFile.java,v 1.28 2004/04/17 02:24:38 mog Exp $
+ * @version $Id: StaticRemoteFile.java,v 1.29 2004/06/09 10:56:40 mog Exp $
  */
 public class StaticRemoteFile extends AbstractRemoteFile {
 	private long _checkSum;
@@ -72,6 +72,9 @@ public class StaticRemoteFile extends AbstractRemoteFile {
 		_checkSum = checkSum;
 	}
 
+	public StaticRemoteFile(List rslaves, String name, long size) {
+		this(rslaves, name, null, null, size, System.currentTimeMillis());
+	}
 	public StaticRemoteFile(String name) {
 		_name = name;
 	}

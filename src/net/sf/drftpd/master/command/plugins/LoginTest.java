@@ -20,6 +20,7 @@ package net.sf.drftpd.master.command.plugins;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -44,7 +45,7 @@ import org.drftpd.tests.DummyUserManager;
 
 /**
  * @author mog
- * @version $Id: LoginTest.java,v 1.5 2004/06/01 15:40:30 mog Exp $
+ * @version $Id: LoginTest.java,v 1.6 2004/06/09 10:56:37 mog Exp $
  */
 public class LoginTest extends TestCase {
 	private DummyUser _user;
@@ -74,16 +75,7 @@ public class LoginTest extends TestCase {
 				return null;
 			}
 			public FtpConfig getConfig() {
-				return new FtpConfig() {
-					public List getBouncerIps() {
-						try {
-							return Collections.singletonList(
-								InetAddress.getByName("10.0.0.1"));
-						} catch (UnknownHostException e) {
-							throw new RuntimeException(e);
-						}
-					}
-				};
+				return new FC();
 			}
 			public UserManager getUserManager() {
 				return _userManager;
@@ -94,7 +86,27 @@ public class LoginTest extends TestCase {
 		_userManager.setUser(_user);
 		_conn.setUserManager(_userManager);
 	}
-
+	public static class FC extends FtpConfig {
+		public FC() {
+			Properties cfg = new Properties();
+			cfg.setProperty("bouncer_ip", "10.0.1.1 10.0.0.1");
+			try {
+				loadConfig1(cfg);
+			} catch (UnknownHostException e) {
+				throw new RuntimeException(e);
+			}
+		}
+//		public List getBouncerIps() {
+//			try {
+//				return Arrays.asList(
+//					new InetAddress[] {
+//						InetAddress.getByName("10.0.1.1"),
+//						InetAddress.getByName("10.0.0.1")});
+//			} catch (UnknownHostException e) {
+//				throw new RuntimeException(e);
+//			}
+//		}
+	}
 	public void testUSER()
 		throws
 			UnknownHostException,
@@ -112,7 +124,7 @@ public class LoginTest extends TestCase {
 		reply = _login.execute(_conn);
 		assertEquals(530, reply.getCode());
 		assertNull(_conn.getUserNull());
-		
+
 		_user.addIPMask("*@127.0.0.1");
 		reply = _login.execute(_conn);
 		assertEquals(331, reply.getCode());

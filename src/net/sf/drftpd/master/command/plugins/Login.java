@@ -42,9 +42,10 @@ import org.drftpd.commands.UnhandledCommandException;
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.30 2004/06/04 14:18:56 mog Exp $
+ * @version $Id: Login.java,v 1.31 2004/06/09 10:56:35 mog Exp $
  */
-public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
+public class Login
+	implements CommandHandlerFactory, CommandHandler, Cloneable {
 
 	private static final Logger logger = Logger.getLogger(Login.class);
 	/**
@@ -55,13 +56,18 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
 
 	/**
 	 * Syntax: IDNT ident@ip:dns
-	 * Returns nothing.
+	 * Returns nothing on success.
 	 */
 	private FtpReply doIDNT(BaseFtpConnection conn) {
-		if (_idntAddress != null
-			|| !conn.getConnectionManager().getConfig().getBouncerIps().contains(
-				conn.getClientAddress())) {
-			logger.warn("IDNT from non-bnc " + conn.getClientAddress());
+		if (_idntAddress != null) {
+			logger.error("Multiple IDNT commands");
+			return new FtpReply(530, "Multiple IDNT commands");
+		}
+		if (!conn
+			.getConfig()
+			.getBouncerIps()
+			.contains(conn.getClientAddress())) {
+			logger.warn("IDNT from non-bnc");
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		String arg = conn.getRequest().getArgument();
@@ -245,13 +251,11 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
 	public CommandHandler initialize(
 		BaseFtpConnection conn,
 		CommandManager initializer) {
-		Login login;
 		try {
-			login = (Login) clone();
+			return (Login) clone();
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException(e);
 		}
-		return login;
 	}
 
 	public void load(CommandManagerFactory initializer) {

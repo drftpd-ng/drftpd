@@ -19,23 +19,21 @@ package net.sf.drftpd.remotefile;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
-import net.sf.drftpd.master.ConnectionManager;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.BasicConfigurator;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 /**
  * @author mog
- * @version $Id: LinkedRemoteFileTest.java,v 1.3 2004/06/06 21:33:47 zubov Exp $
+ * @version $Id: LinkedRemoteFileTest.java,v 1.4 2004/06/09 10:56:39 mog Exp $
  */
 public class LinkedRemoteFileTest extends TestCase {
 	public static TestSuite suite() {
@@ -45,22 +43,20 @@ public class LinkedRemoteFileTest extends TestCase {
 	public LinkedRemoteFileTest(String fName) {
 		super(fName);
 	}
-	
+
 	public void setUp() {
 		BasicConfigurator.configure();
 	}
-	
+
 	public static class FC extends FtpConfig {
-		public FC(Properties cfg,String cfgFileName,ConnectionManager cm) {
-			
+		public FC() {
 		}
 	}
-	
+
 	public void testRemerge() throws IOException {
-		Properties p = new Properties();
-		FC cfg = new FC(p,null,null);
-		RemoteSlave slave1 = new RemoteSlave("slave1",Collections.EMPTY_LIST);
-		RemoteSlave slave2 = new RemoteSlave("slave2",Collections.EMPTY_LIST);
+		FC cfg = new FC();
+		RemoteSlave slave1 = new RemoteSlave("slave1", Collections.EMPTY_LIST);
+		RemoteSlave slave2 = new RemoteSlave("slave2", Collections.EMPTY_LIST);
 		List slave1List = new ArrayList();
 		slave1List.add(slave1);
 		List slave2List = new ArrayList();
@@ -68,66 +64,108 @@ public class LinkedRemoteFileTest extends TestCase {
 		List slaveBothList = new ArrayList();
 		slaveBothList.add(slave1);
 		slaveBothList.add(slave2);
-		LinkedRemoteFile masterroot = new LinkedRemoteFile(cfg);
-		masterroot.addFile(new StaticRemoteFile(slaveBothList,"conflicttest",null,null,1000,System.currentTimeMillis()));
-		masterroot.addFile(new StaticRemoteFile(slave1List,"addslavetest",null,null,1000,System.currentTimeMillis()));
-		masterroot.addFile(new StaticRemoteFile(slaveBothList,"removeslavetest",null,null,1000,System.currentTimeMillis()));
-		masterroot.addFile(new StaticRemoteFile(slave2List,"removefile",null,null,1000,System.currentTimeMillis()));
-		masterroot.addFile(new StaticRemoteFile(null,"dirtest",null,null,0,System.currentTimeMillis()));
-		LinkedRemoteFileInterface masterdir = masterroot.getFile("dirtest");
-		masterdir.addFile(new StaticRemoteFile(slaveBothList, "testfileindir", null, null, 1000, System.currentTimeMillis()));
-		
-		LinkedRemoteFile slaveroot = new LinkedRemoteFile(null);
-		slaveroot.addFile(new StaticRemoteFile(slave2List,"conflicttest",null,null,1001,System.currentTimeMillis()));
-		slaveroot.addFile(new StaticRemoteFile(slave2List,"addslavetest",null,null,1000,System.currentTimeMillis()));
-		slaveroot.addFile(new StaticRemoteFile(null,"dirtest",null,null,0,System.currentTimeMillis()));
-		LinkedRemoteFileInterface slavedir = slaveroot.getFile("dirtest");
-		slavedir.addFile(new StaticRemoteFile(slave2List, "testfileindir", null, null, 1000, System.currentTimeMillis()));
-		
-		masterroot.remerge(slaveroot,slave2);
-		
-		assertNotNull(masterroot.getFile("conflicttest"));
-		assertNotNull(masterroot.getFile("conflicttest.slave2.conflict"));
-		LinkedRemoteFileInterface testfile = masterroot.getFile("addslavetest");
-		System.out.println("testfile = " + testfile);
-		assertTrue(testfile.getSlaves().containsAll(slaveBothList));
-		testfile = masterroot.getFile("removeslavetest");
-		assertFalse(testfile.getSlaves().contains(slave2));
-		assertFalse(masterroot.hasFile("removefile"));
-		testfile = masterdir.getFile("testfileindir");
-		assertTrue(testfile.getSlaves().contains(slave2));
+		_root = new LinkedRemoteFile(cfg);
 
+		// build like files.mlst does
+		buildRoot(_root, slaveBothList, slave1List, slave2List);
+
+		// remerge slave 1
+		remergeSlave1(_root, slave1);
+		// remerge slave 2
+		remergeSlave2(_root, slave2);
+
+		{
+			assertNotNull(_root.getFile("conflicttest"));
+			assertNotNull(_root.getFile("conflicttest.slave2.conflict"));
+			LinkedRemoteFileInterface testfile = _root.getFile("addslavetest");
+			System.out.println("testfile = " + testfile);
+			assertTrue(testfile.getSlaves().containsAll(slaveBothList));
+			testfile = _root.getFile("removeslavetest");
+			assertFalse(testfile.getSlaves().contains(slave2));
+			assertFalse(_root.hasFile("removefile"));
+			LinkedRemoteFileInterface masterdir = _root.getFile("dirtest");
+			testfile = masterdir.getFile("testfileindir");
+			assertTrue(testfile.getSlaves().contains(slave2));
+		}
+		System.out.println("serialize");
+		MLSTSerialize.serialize(_root, new PrintWriter(System.out, true));
+		System.out.println("/serialize");
 	}
-	
-	private LinkedRemoteFile root;
+
+	/**
+	 * @param _root
+	 * @param slave2
+	 */
+	private static void remergeSlave2(
+		LinkedRemoteFile root,
+		RemoteSlave slave2)
+		throws IOException {
+		LinkedRemoteFile slaveroot = new LinkedRemoteFile(null);
+		slaveroot.addFile(
+			new StaticRemoteFile(Collections.EMPTY_LIST, "conflicttest", 1001));
+		slaveroot.addFile(
+			new StaticRemoteFile(Collections.EMPTY_LIST, "addslavetest", 1000));
+		slaveroot.addFile(new StaticRemoteFile(null, "dirtest", 0));
+		LinkedRemoteFileInterface slavedir = slaveroot.getFile("dirtest");
+		slavedir.addFile(
+			new StaticRemoteFile(
+				Collections.EMPTY_LIST,
+				"testfileindir",
+				1000));
+		root.remerge(slaveroot, slave2);
+	}
+
+	private static void buildRoot(
+		LinkedRemoteFile root,
+		List slaveBothList,
+		List slave1List,
+		List slave2List)
+		throws FileNotFoundException {
+		root.addFile(new StaticRemoteFile(slaveBothList, "conflicttest", 1000));
+		root.addFile(new StaticRemoteFile(slave1List, "addslavetest", 1000));
+		root.addFile(
+			new StaticRemoteFile(slaveBothList, "removeslavetest", 1000));
+		root.addFile(new StaticRemoteFile(slave2List, "removefile", 1000));
+		root.addFile(new StaticRemoteFile(null, "dirtest", 0));
+		LinkedRemoteFileInterface masterdir = root.getFile("dirtest");
+		masterdir.addFile(
+			new StaticRemoteFile(slaveBothList, "testfileindir", 1000));
+	}
+
+	private static void remergeSlave1(
+		LinkedRemoteFile masterroot,
+		RemoteSlave slave1)
+		throws IOException {
+		LinkedRemoteFile slaveroot = new LinkedRemoteFile(null);
+		slaveroot.addFile(
+			new StaticRemoteFile(Collections.EMPTY_LIST, "conflicttest", 1000));
+		slaveroot.addFile(
+			new StaticRemoteFile(Collections.EMPTY_LIST, "addslavetest", 1000));
+		slaveroot.addFile(
+			new StaticRemoteFile(
+				Collections.EMPTY_LIST,
+				"removeslavetest",
+				1000));
+		masterroot.remerge(slaveroot, slave1);
+	}
+
+	private LinkedRemoteFile _root;
 	public void testEmptyRoot() throws FileNotFoundException {
-		root = new LinkedRemoteFile(null);
-		assertEquals(0, root.length());
+		_root = new LinkedRemoteFile(null);
+		assertEquals(0, _root.length());
 
-		root.addFile(
-			new StaticRemoteFile(
-				Collections.EMPTY_LIST,
-				"test1",
-				null,
-				null,
-				1000,
-				System.currentTimeMillis()));
+		_root.addFile(
+			new StaticRemoteFile(Collections.EMPTY_LIST, "test1", 1000));
 
-		assertEquals(1000, root.length());
+		assertEquals(1000, _root.length());
 
-		root.addFile(
-			new StaticRemoteFile(
-				Collections.EMPTY_LIST,
-				"test2",
-				null,
-				null,
-				10000,
-				System.currentTimeMillis()));
+		_root.addFile(
+			new StaticRemoteFile(Collections.EMPTY_LIST, "test2", 10000));
 
-		assertEquals(11000, root.length());
-		
-		root.getFile("test1").delete();
-		
-		assertEquals(10000, root.length());
+		assertEquals(11000, _root.length());
+
+		_root.getFile("test1").delete();
+
+		assertEquals(10000, _root.length());
 	}
 }

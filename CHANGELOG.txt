@@ -1,3 +1,7 @@
+2004/06/09 Morgan Christiansson <drftpd@mog.se>
+* Added hideIps=true setting in drftpd.conf for disabling logging of ips.
+  Ips might still be logged in some places.
+
 2004/06/02 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Updated LinkedRemoteFileTest to include a test for remerge()
 * Rewrote remerge() and parts of filesystem that used isDeleted()

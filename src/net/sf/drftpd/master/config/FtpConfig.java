@@ -23,6 +23,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -45,7 +46,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.54 2004/06/04 14:18:56 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.55 2004/06/09 10:56:38 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -84,6 +85,7 @@ public class FtpConfig {
 	private ConnectionManager _connManager;
 	private ArrayList _creditcheck;
 	private ArrayList _creditloss;
+	private boolean _hideIps;
 	private boolean _isLowerDir;
 	private boolean _isLowerFile;
 	private String _loginPrompt = SlaveImpl.VERSION + " http://drftpd.org";
@@ -94,14 +96,17 @@ public class FtpConfig {
 	private Hashtable _permissions;
 	private StringTokenizer _replaceDir;
 	private StringTokenizer _replaceFile;
+
+	private String _serverName;
 	private long _slaveStatusUpdateTime;
+	private int _socketPort;
 	private boolean _useDirNames;
 	private boolean _useFileNames;
 
 	private String newConf = "conf/perms.conf";
 
-	private String _serverName;
-	private int _socketPort;
+	protected FtpConfig() {
+	}
 
 	/**
 	 * Constructor that allows reusing of cfg object
@@ -113,9 +118,6 @@ public class FtpConfig {
 		throws IOException {
 		_cfgFileName = cfgFileName;
 		loadConfig(cfg, connManager);
-	}
-
-	protected FtpConfig() {
 	}
 
 	public boolean checkDelete(User fromUser, LinkedRemoteFileInterface path) {
@@ -323,9 +325,14 @@ public class FtpConfig {
 		return replaceName(temp, _replaceFile);
 	}
 
+	public boolean getHideIps() {
+		return _hideIps;
+	}
+
 	public String getLoginPrompt() {
 		return _loginPrompt;
 	}
+
 	public int getMaxUsersExempt() {
 		return _maxUsersExempt;
 	}
@@ -346,12 +353,18 @@ public class FtpConfig {
 		throws IOException {
 		loadConfig2();
 		_connManager = connManager;
+		loadConfig1(cfg);
+	}
+	
+	protected void loadConfig1(Properties cfg) throws UnknownHostException {
 		_slaveStatusUpdateTime =
 			Long.parseLong(cfg.getProperty("slaveStatusUpdateTime", "3000"));
 		_serverName = cfg.getProperty("master.bindname", "slavemaster");
 		_socketPort =
 			Integer.parseInt(cfg.getProperty("master.socketport", "1100"));
 
+		_hideIps = cfg.getProperty("hideips", "").equalsIgnoreCase("true");
+		
 		StringTokenizer st =
 			new StringTokenizer(cfg.getProperty("bouncer_ip",""), " ");
 

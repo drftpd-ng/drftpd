@@ -36,12 +36,11 @@ import org.jdom.Element;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.44 2004/06/06 21:33:46 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.45 2004/06/09 10:56:35 mog Exp $
  */
 public class RemoteSlave implements Comparable {
 	/**
 	 * Used by JUnit tests
-	 * @deprecated
 	 */
 	public RemoteSlave(String name, Collection list) {
 		Properties p = new Properties();
