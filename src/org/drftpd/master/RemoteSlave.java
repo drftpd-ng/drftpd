@@ -768,7 +768,6 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	 */
 	public String issueDeleteToSlave(String sourceFile)
 			throws SlaveUnavailableException {
-		logger.debug("this delete has been sent -- " + sourceFile,new Throwable());
 		String index = fetchIndex();
 		sendCommand(new AsyncCommandArgument(index, "delete", sourceFile));
 
@@ -872,7 +871,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 				}
 
 				synchronized (this) {
-					if (!(ar instanceof AsyncResponseRemerge) || (ar instanceof AsyncResponseTransferStatus)) {
+					if (!(ar instanceof AsyncResponseRemerge) && !(ar instanceof AsyncResponseTransferStatus)) {
 						logger.debug("Received: " + ar);
 					}
 
