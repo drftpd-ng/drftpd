@@ -83,9 +83,9 @@ public class GlobalContext {
             throw new FatalException(ex);
         }
 
+        loadRSlavesAndRoot();
         loadSlaveManager(cfg);
         loadSlaveSelectionManager(cfg);
-        loadRSlavesAndRoot();
         loadSectionManager(cfg);
         loadPlugins(cfg);
     }
@@ -264,6 +264,9 @@ public class GlobalContext {
         }
     }
 
+    /**
+     * Depends on root loaded if any slaves connect early.
+     */
     private void loadSlaveManager(Properties cfg) throws SlaveFileException {
         /** register slavemanager **/
         _slaveManager = new SlaveManager(cfg, this);

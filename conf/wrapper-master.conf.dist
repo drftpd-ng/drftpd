@@ -35,7 +35,7 @@ wrapper.java.initmemory=3
 wrapper.java.maxmemory=512
 
 # Application parameters.  Add parameters as needed starting from 1
-wrapper.app.parameter.1=net.sf.drftpd.master.ConnectionManager
+wrapper.app.parameter.1=org.drftpd.master.ConnectionManager
 
 #********************************************************************
 # Wrapper Logging Properties
