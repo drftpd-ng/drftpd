@@ -36,7 +36,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.45 2004/04/26 21:41:52 zubov Exp $
+ * @version $Id: JobManager.java,v 1.46 2004/05/18 12:02:48 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -203,6 +203,10 @@ public class JobManager implements Runnable {
 					skipJobs.add(job);
 					continue;
 				}
+			}
+			if (destSlave == null) {
+				logger.debug("destSlave is null, this shouldn't happen.  job = " + job);
+				return false;
 			}
 			logger.debug(
 				"ready to transfer "

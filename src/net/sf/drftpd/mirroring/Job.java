@@ -18,6 +18,7 @@
 package net.sf.drftpd.mirroring;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -28,7 +29,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.15 2004/05/16 05:44:53 zubov Exp $
+ * @version $Id: Job.java,v 1.16 2004/05/18 12:02:47 zubov Exp $
  */
 public class Job {
 	protected HashSet _destSlaves;
@@ -131,12 +132,29 @@ public class Job {
 		else return _destSlaves.remove(null);
 	}
 
+	private String outputDestinationSlaves() {
+		String toReturn = new String();
+		for (Iterator iter = getDestinationSlaves().iterator();iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
+			String name;
+			if (rslave == null) {
+				name = "null";
+			} else {
+				name = rslave.getName();
+			}
+			if (!iter.hasNext())
+				return toReturn + name;
+			toReturn = toReturn + name + ", ";
+		}
+		return toReturn;
+	}
+	
 	public String toString() {
 		String toReturn =
 			"Job[file="
 				+ getFile().getName()
 				+ ",dest="
-				+ getDestinationSlaves()
+				+ outputDestinationSlaves()
 				+ ",owner=";
 		if (getOwner() != null) {
 			toReturn += getOwner().getUsername();
