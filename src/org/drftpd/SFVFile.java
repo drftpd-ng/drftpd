@@ -17,20 +17,16 @@
  */
 package org.drftpd;
 
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.NoSFVEntryException;
-
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+
+import net.sf.drftpd.FatalException;
+import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.NoSFVEntryException;
 
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -83,17 +79,15 @@ public class SFVFile extends AbstractSFVFile {
             
             try {
                 sfvChecksum = getChecksum(file.getName());
-            } catch (NoSFVEntryException e) {
-                continue;
-            }
-            try {
                 fileChecksum = file.getCheckSum();
-            } catch (NoAvailableSlaveException e1) {
-                continue;
+            } catch (NoSFVEntryException e) {
+                continue; 	//file name not found in sfv
+            } catch (NoAvailableSlaveException e) {
+                continue;	//file not available to get checksum
             }
+            
             if (fileChecksum == sfvChecksum) {
                 present++;
-
                 if (!file.isAvailable()) {
                     offline++;
                 }
