@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.sf.drftpd.event.GlftpdLog;
+import net.sf.drftpd.master.queues.NukeLog;
 import net.sf.drftpd.master.usermanager.GlftpdUserManager;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserManager;
@@ -64,18 +65,31 @@ public class ConnectionManager {
 				for (Iterator i2 = maskElements.iterator(); i2.hasNext();) {
 					masks.add(((Element) i2.next()).getText());
 				}
-				rslaves.add(new RemoteSlave(slaveElement.getChildText("name"), masks));
+				rslaves.add(
+					new RemoteSlave(slaveElement.getChildText("name"), masks));
 			}
 		} catch (Exception ex) {
 			logger.log(Level.INFO, "Error reading masks from slaves.xml", ex);
 		}
 		/** END: load XML file database **/
+		NukeLog nukelog;
+		try {
+			Document doc =
+				new SAXBuilder().build(new FileReader("nukelog.xml"));
+			List nukes = doc.getRootElement().getChildren("nuke");
+		} catch (Exception ex) {
+			logger.log(
+				Level.INFO,
+				"Error loading nukelog from nukelog.xml",
+				ex);
+		}
 
 		/** load XML file database **/
 		try {
 			Document doc = new SAXBuilder().build(new FileReader("files.xml"));
 			root =
-				new LinkedRemoteFile(new JDOMRemoteFile(doc.getRootElement(), rslaves));
+				new LinkedRemoteFile(
+					new JDOMRemoteFile(doc.getRootElement(), rslaves));
 		} catch (FileNotFoundException ex) {
 			logger.info("files.xml not found, new file will be created.");
 			root = new LinkedRemoteFile();
@@ -84,7 +98,7 @@ public class ConnectionManager {
 			ex.printStackTrace();
 			root = new LinkedRemoteFile();
 		}
-		
+
 		/** register slavemanager **/
 		try {
 			slavemanager =
@@ -117,7 +131,7 @@ public class ConnectionManager {
 			}
 			RemoteSlave remoteSlave =
 				new RemoteSlave(cfg.getProperty("slave.name"), slave);
-			
+
 			try {
 				LinkedRemoteFile slaveroot =
 					SlaveImpl.getDefaultRoot(
