@@ -182,7 +182,7 @@ public abstract class AbstractUserManager implements UserManager {
     /**
      * Get all user names in the system.
      */
-    public Collection<AbstractUser> getAllUsers() throws UserFileException {
+    public Collection getAllUsers() throws UserFileException {
         ArrayList<AbstractUser> users = new ArrayList<AbstractUser>();
         String[] userpaths = getUserpathFile().list();
 
