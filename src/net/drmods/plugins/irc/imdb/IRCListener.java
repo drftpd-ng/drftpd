@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.drmods.plugins.imdb;
+package net.drmods.plugins.irc.imdb;
 
 import org.drftpd.sitebot.IRCPluginInterface;
 import org.drftpd.usermanager.NoSuchUserException;
