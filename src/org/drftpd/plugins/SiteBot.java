@@ -89,9 +89,11 @@ import f00f.net.irc.martyr.services.AutoReconnect;
 import f00f.net.irc.martyr.services.AutoRegister;
 import f00f.net.irc.martyr.services.AutoResponder;
 
+import de.hampelratte.id3.ID3v1Tag;
+
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.16 2004/07/18 15:22:34 zubov Exp $
+ * @version $Id: SiteBot.java,v 1.17 2004/07/24 01:41:22 teflon114 Exp $
  */
 public class SiteBot implements FtpListener, Observer {
 
@@ -310,6 +312,46 @@ public class SiteBot implements FtpListener, Observer {
 		}
 	}
 
+	private void actionPerformedDirectoryID3(TransferEvent direvent)
+		throws FormatterException {
+		ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
+		LinkedRemoteFile dir;
+		try {
+			dir = direvent.getDirectory().getParentFile();
+			
+		} catch (FileNotFoundException e) {
+			throw new FatalException(e);
+		}
+		
+		ID3v1Tag id3tag;
+		try {
+			id3tag = dir.lookupFile(dir.lookupMP3File()).getID3v1Tag();
+		} catch (FileNotFoundException ex) {
+			logger.info(
+				"No id3tag info for "
+					+ direvent.getDirectory().getPath()
+					+ ", can't publish id3tag info");
+			return;
+		} catch (NoAvailableSlaveException e) {
+			logger.info("No available slave with id3 info");
+			return;
+		} catch (IOException e) {
+			logger.warn("IO error reading id3 info", e);
+			return;
+		}
+		
+		env.add("path",dir.getName());
+		env.add("genre",id3tag.getGenre().trim());
+		env.add("year",id3tag.getYear().trim());
+		env.add("album",id3tag.getAlbum().trim());
+		env.add("artist",id3tag.getArtist().trim());
+		env.add("title",id3tag.getTitle().trim());
+		
+		
+		Ret ret = getPropertyFileSuffix("id3tag", dir);
+		say(ret.getSection(), SimplePrintf.jprintf(ret.getFormat(), env));
+	}
+
 	private void actionPerformedDirectorySTOR(TransferEvent direvent)
 		throws FormatterException {
 		if (!direvent.isComplete())
@@ -343,6 +385,11 @@ public class SiteBot implements FtpListener, Observer {
 			return;
 
 		int halfway = (int) Math.floor((double) sfvfile.size() / 2);
+
+		if (sfvfile.getStatus().getPresent() == 1) {
+			actionPerformedDirectoryID3(direvent);
+		}
+
 		///// start ///// start ////
 
 		//check if new racer

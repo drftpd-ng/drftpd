@@ -32,9 +32,11 @@ import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.Transfer;
 
+import de.hampelratte.id3.ID3v1Tag;
+
 /**
  * @author mog
- * @version $Id: RemoteSlaveTest.java,v 1.4 2004/07/12 20:37:25 mog Exp $
+ * @version $Id: RemoteSlaveTest.java,v 1.5 2004/07/24 01:39:32 teflon114 Exp $
  */
 public class RemoteSlaveTest extends TestCase {
 	public static TestSuite suite() {
@@ -80,6 +82,11 @@ public class RemoteSlaveTest extends TestCase {
 		}
 
 		public SFVFile getSFVFile(String path)
+			throws RemoteException, IOException {
+			throw new NoSuchMethodError();
+		}
+
+		public ID3v1Tag getID3v1Tag(String path)
 			throws RemoteException, IOException {
 			throw new NoSuchMethodError();
 		}

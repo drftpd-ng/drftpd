@@ -34,10 +34,11 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 import org.apache.log4j.Logger;
+import de.hampelratte.id3.ID3v1Tag;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.25 2004/07/18 15:22:33 zubov Exp $
+ * @version $Id: ListUtils.java,v 1.26 2004/07/24 01:37:21 teflon114 Exp $
  */
 public class ListUtils {
 
@@ -67,12 +68,29 @@ public class ListUtils {
 		ArrayList listFiles = new ArrayList();
 		int numOnline = 0;
 		int numTotal = 0;
+		boolean id3found = false;
+		ID3v1Tag mp3tag = null;
 		for (Iterator iter = tempFileList.iterator(); iter.hasNext();) {
 			LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
 			if (conn.getConnectionManager().getGlobalContext().getConfig() != null
 				&& !conn.getConnectionManager().getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(), element)) {
 				// don't add it
 				continue;
+			}
+			if (element.isFile() 
+				&& element.getName().toLowerCase().endsWith(".mp3")
+				&& id3found == false) {
+				try {
+					mp3tag = element.getID3v1Tag();
+					id3found = true;						
+				} catch (FileNotFoundException e) {
+					logger.warn("FileNotFoundException: " + element.getPath(), e);
+				} catch (IOException e) {
+					logger.warn("IOException: " + element.getPath(), e);					
+				} catch (NoAvailableSlaveException e) {
+					logger.warn("NoAvailableSlaveException: " + element.getPath(), e);
+				}
+				
 			}
 			//			if (element.isDirectory()) { // can slow listing
 			//				try {
@@ -139,6 +157,12 @@ public class ListUtils {
 						+ ((sfvstatus.getAvailable() * 100)
 						/ sfvstatus.getPresent())
 						+ "% online";
+				}
+				//mp3tag info added by teflon
+				if (mp3tag != null) {
+					statusDirName += " | id3info - "
+						+ mp3tag.getGenre() + " "
+						+ mp3tag.getYear();
 				}
 				statusDirName += " ]";
 

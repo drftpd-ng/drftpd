@@ -47,11 +47,13 @@ import net.sf.drftpd.util.ListUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import de.hampelratte.id3.ID3v1Tag;
+
 /**
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.158 2004/07/18 15:22:33 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.159 2004/07/24 01:39:10 teflon114 Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -229,6 +231,7 @@ public class LinkedRemoteFile
 	private long _xfertime = 0;
 
 	protected SFVFile sfvFile;
+	protected ID3v1Tag mp3tag;
 	/**
 	 * Creates an empty RemoteFile directory, usually used as an empty root
 	 * directory that <link>{merge()} </link> can be called on.
@@ -790,6 +793,30 @@ public class LinkedRemoteFile
 		return sfvFile;
 	}
 
+	public synchronized ID3v1Tag getID3v1Tag() 
+		throws IOException, FileNotFoundException, NoAvailableSlaveException {
+		logger.warn("getID3v1Tag() : " + getPath());
+			if (mp3tag == null) {
+				while (true) {
+					RemoteSlave rslave =
+						_ftpConfig.getGlobalContext().getSlaveManager()
+							.getSlaveSelectionManager()
+							.getASlaveForMaster(
+							this,
+							_ftpConfig);
+					try {
+						mp3tag = rslave.getSlave().getID3v1Tag(getPath());
+						break;
+					} catch (RemoteException ex) {
+						rslave.handleRemoteException(ex);
+					} catch (SlaveUnavailableException e) {
+						continue;
+					}
+				}
+			}
+			return mp3tag;		
+	}
+
 	/**
 	 * returns slaves. returns null if a directory.
 	 */
@@ -1025,6 +1052,21 @@ public class LinkedRemoteFile
 			}
 		}
 		throw new FileNotFoundException("no sfv file in directory");
+	}
+
+	public String lookupMP3File()
+		throws IOException, FileNotFoundException, NoAvailableSlaveException {
+		if (!isDirectory())
+			throw new IllegalStateException("lookupMP3File must be called on a directory");
+
+		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+			LinkedRemoteFileInterface myFile =
+				(LinkedRemoteFileInterface) iter.next();
+			if (myFile.getName().toLowerCase().endsWith(".mp3")) {
+				return myFile.getPath();
+			}
+		}
+		throw new FileNotFoundException("no mp3 file in directory");
 	}
 
 	/**

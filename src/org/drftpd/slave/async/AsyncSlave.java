@@ -50,9 +50,11 @@ import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.Logger;
 
+import de.hampelratte.id3.ID3v1Tag;
+
 /**
  * @author mog
- * @version $Id: AsyncSlave.java,v 1.5 2004/07/18 15:22:34 zubov Exp $
+ * @version $Id: AsyncSlave.java,v 1.6 2004/07/24 01:40:24 teflon114 Exp $
  */
 public class AsyncSlave extends Thread implements Slave, Unreferenced {
     private static final Logger logger =
@@ -577,6 +579,10 @@ public class AsyncSlave extends Thread implements Slave, Unreferenced {
         return new SFVFile(new BufferedReader(new StringReader(sfv)));
     }
     
+	public ID3v1Tag getID3v1Tag(String path) throws IOException {
+		throw new NoSuchMethodError();
+	}
+
     public Transfer connect(InetSocketAddress addr, boolean encrypted) {
         AsyncCommand cmd = sendCommand("conn", addr.getAddress().getHostAddress());
         waitForCommand(cmd);

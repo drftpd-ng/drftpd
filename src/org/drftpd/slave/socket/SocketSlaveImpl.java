@@ -48,9 +48,11 @@ import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.Logger;
 
+import de.hampelratte.id3.ID3v1Tag;
+
 /**
  * @author mog
- * @version $Id: SocketSlaveImpl.java,v 1.4 2004/07/18 15:22:34 zubov Exp $
+ * @version $Id: SocketSlaveImpl.java,v 1.5 2004/07/24 01:40:56 teflon114 Exp $
  */
 public class SocketSlaveImpl extends Thread implements Slave, Unreferenced {
 	private static final Logger logger =
@@ -752,6 +754,10 @@ public class SocketSlaveImpl extends Thread implements Slave, Unreferenced {
 	public SFVFile getSFVFile(String path) throws IOException {
 		String sfv = dumpfile(path);
 		return new SFVFile(new BufferedReader(new StringReader(sfv)));
+	}
+
+	public ID3v1Tag getID3v1Tag(String path) throws IOException {
+		throw new NoSuchMethodError();
 	}
 
 	public Transfer connect(InetSocketAddress addr, boolean encrypted)

@@ -24,11 +24,12 @@ import java.rmi.RemoteException;
 
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import de.hampelratte.id3.ID3v1Tag;
 
 /**
  * Slave interface, this interface is used to initate transfers to and from remote slaves.
  * @author Morgan Christiansson <mog@linux.nu>
- * @version $Id: Slave.java,v 1.34 2004/07/18 15:22:33 zubov Exp $
+ * @version $Id: Slave.java,v 1.35 2004/07/24 01:38:10 teflon114 Exp $
  */
 public interface Slave extends Remote {
 	public long checkSum(
@@ -50,6 +51,8 @@ public interface Slave extends Remote {
 	public SFVFile getSFVFile(String path)
 		throws RemoteException, IOException;
 	
+	public ID3v1Tag getID3v1Tag(String path) throws IOException;
+
 	/**
 	 * Rename files, should only be called by RemoteSlave
 	 */

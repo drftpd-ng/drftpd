@@ -60,9 +60,12 @@ import org.apache.log4j.Logger;
 
 import se.mog.io.File;
 
+import de.hampelratte.id3.MP3File;
+import de.hampelratte.id3.ID3v1Tag;
+
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.97 2004/07/18 15:22:33 zubov Exp $
+ * @version $Id: SlaveImpl.java,v 1.98 2004/07/24 01:38:24 teflon114 Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
@@ -307,6 +310,21 @@ public class SlaveImpl
 	public SFVFile getSFVFile(String path) throws IOException {
 		return new SFVFile(
 			new BufferedReader(new FileReader(_roots.getFile(path))));
+	}
+
+	public ID3v1Tag getID3v1Tag(String path) throws IOException {
+		logger.warn("Extracting ID3Tag info from: " + _roots.getFile(path).getAbsolutePath());
+		try {
+			MP3File mp3 = new MP3File(_roots.getFile(path).getAbsolutePath(),"r");
+			ID3v1Tag id3tag = mp3.readID3v1Tag();
+			mp3.close();
+			return id3tag;
+		} catch (FileNotFoundException e){
+			logger.warn("FileNotFoundException: ", e);
+		} catch (IOException e) {
+			logger.warn("IOException: ", e);
+		}
+		return null;
 	}
 
 	public SlaveStatus getSlaveStatus() {
