@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 
-import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.UserEvent;
@@ -40,6 +39,7 @@ import org.drftpd.PropertyHelper;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.permissions.Permission;
+import org.drftpd.sitebot.Trials;
 import org.drftpd.usermanager.User;
 
 import com.Ostermiller.util.StringTokenizer;
@@ -56,7 +56,7 @@ public class Trial extends FtpListener {
     public static final short PERIOD_MONTHLY = Calendar.MONTH; // = 2
     public static final short PERIOD_WEEKLY = Calendar.WEEK_OF_YEAR; // = 3
     private ArrayList _limits;
-    private TrialSiteBot _siteBot;
+    private Trials _siteBot;
 
     public Trial() throws FileNotFoundException, IOException {
         super();
@@ -410,20 +410,6 @@ public class Trial extends FtpListener {
 
     public void reload(ArrayList limits) {
         _limits = limits;
-
-        if (_siteBot != null) {
-            _siteBot.disable();
-        }
-
-        if (_gctx != null) {
-            try {
-                SiteBot _irc = (SiteBot) getGlobalContext().getConnectionManager().getGlobalContext().getFtpListener(SiteBot.class);
-                _siteBot = new TrialSiteBot(this, _irc);
-            } catch (ObjectNotFoundException e1) {
-                logger.warn("Error loading sitebot component, sitebot announcements disabled.",
-                    e1);
-            }
-        }
     }
 
     protected void reload(Properties props) {
@@ -479,9 +465,6 @@ public class Trial extends FtpListener {
     }
 
     public void unload() {
-        if (_siteBot != null) {
-            _siteBot.disable();
-        }
     }
 
     public static class Limit {

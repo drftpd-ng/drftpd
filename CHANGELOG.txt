@@ -1,5 +1,6 @@
 2005/03/01 Jamal James <teflon114@gmail.com>
 * Fixed !speed ... i hope
+* Fixed Trails plugin and !passed to work with the new SiteBot
 
 2005/02/27 Jamal James <teflon114@gmail.com>
 * All sitebot plugins converted to work with the new implementation
