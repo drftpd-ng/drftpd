@@ -3,23 +3,17 @@ package net.sf.drftpd.event.listeners;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.ArrayList;
 
-import java.lang.Integer;
-
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.DirectoryFtpEvent;
+import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.config.Permission;
-
 
 import org.apache.log4j.Logger;
 
