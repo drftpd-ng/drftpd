@@ -13,7 +13,7 @@ import net.sf.drftpd.ObjectExistsException;
 
 /**
  * @author mog
- * @version $Id: User.java,v 1.26 2003/12/01 04:43:44 mog Exp $
+ * @version $Id: User.java,v 1.27 2003/12/02 06:30:48 zubov Exp $
  */
 public interface User {
 
@@ -303,6 +303,7 @@ public interface User {
 		throws ObjectExistsException, UserFileException;
 		
 	public void addRacesWon();
+	public void addRacesParticipated();
 	public void addRacesLost();
 	public void addRequests();
 	public void addRequestsFilled();
