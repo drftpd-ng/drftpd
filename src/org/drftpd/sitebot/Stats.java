@@ -123,21 +123,16 @@ public class Stats extends GenericCommandAutoService
         }
 
 
-		String destination = null;
-
-        if (msgc.isPrivateToUs(getConnection().getClientState())) {
-            //destination = msgc.getSource().getNick();
-        } else {
-            destination = msgc.getDest();
+        if (!msgc.isPrivateToUs(getConnection().getClientState())) {
+            return;
         }
 
-        Collection users = null;
+        Collection<User> users = null;
 
         try {
             users = getGlobalContext().getUserManager().getAllUsers();
         } catch (UserFileException e) {
-            getConnection().sendCommand(new MessageCommand(destination,
-                    "Error processing userfiles"));
+            _listener.sayChannel(msgc.getDest(),"Error processing userfiles");
             logger.error("Error processing userfiles", e);
 
             return;
@@ -145,7 +140,7 @@ public class Stats extends GenericCommandAutoService
 
         int number = fixNumberAndUserlist(msgc.getMessage(), users);
 
-        ArrayList users2 = new ArrayList(users);
+        ArrayList<User> users2 = new ArrayList<User>(users);
         Collections.sort(users2, new UserComparator(type));
 
         int i = 0;
@@ -202,13 +197,13 @@ public class Stats extends GenericCommandAutoService
             type = type.toLowerCase();
 
             try {
-                getConnection().sendCommand(new MessageCommand(destination,
+                _listener.sayChannel(msgc.getDest(),
                         SimplePrintf.jprintf(ReplacerUtils.jprintf(
                                 "transferstatistics" + type, env, Stats.class),
-                            env)));
+                            env));
             } catch (FormatterException e) {
-                getConnection().sendCommand(new MessageCommand(destination,
-                        "FormatterException for transferstatistics" + type));
+                _listener.sayChannel(msgc.getDest(),
+                        "FormatterException for transferstatistics" + type);
 
                 break;
             }

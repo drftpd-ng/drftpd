@@ -3,6 +3,7 @@
   See http://www.drftpd.org/phpBB2/viewtopic.php?t=170
 * Added AutoFreeSpace plugin. Thx P
   See http://www.drftpd.org/phpBB2/viewtopic.php?t=57
+* Fixed !{al,wk,month,day}{up,dn} irc plugin to output using blowfish
 
 2005/02/23 Jamal James <teflon114@gmail.com>
 * Fixed OnConnect
