@@ -28,7 +28,7 @@ import javax.net.ServerSocketFactory;
 
 /**
  * @author mog
- * @version $Id: PortRange.java,v 1.13 2004/11/05 04:06:34 zubov Exp $
+ * @version $Id: PortRange.java,v 1.14 2004/11/05 13:13:41 zubov Exp $
  */
 public class PortRange {
     private static final Logger logger = Logger.getLogger(PortRange.class);
@@ -58,7 +58,10 @@ public class PortRange {
             }
         }
         int initPos = rand.nextInt(_maxPort-_minPort+1) + _minPort;
-        int pos = initPos+1;
+        int pos = initPos + 1;
+        if (pos > _maxPort) {
+            pos = _minPort;
+        }
         while(pos != initPos) {
             try {
                 return ssf.createServerSocket(pos,1);
