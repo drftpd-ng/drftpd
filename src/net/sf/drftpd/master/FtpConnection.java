@@ -2219,7 +2219,12 @@ public class FtpConnection extends BaseFtpConnection {
 		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
 		return;
 	}
-
+	
+	/**
+	 * Syntax: SITE PRE <RELEASEDIR> [SECTION]
+	 * @param request
+	 * @param out
+	 */
 	public void doSITE_PRE(FtpRequest request, PrintWriter out) {
 		//TODO implement SITE PRE
 		out.print(FtpResponse.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
