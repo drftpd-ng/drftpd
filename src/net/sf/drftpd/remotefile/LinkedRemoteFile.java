@@ -50,7 +50,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.115 2004/02/15 01:39:27 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.116 2004/02/15 13:00:05 mog Exp $
  */
 public class LinkedRemoteFile
 	implements RemoteFileInterface, Serializable, Comparable {
@@ -273,6 +273,10 @@ public class LinkedRemoteFile
 	 */
 	public int compareTo(Object o) {
 		return getName().compareTo(((RemoteFileInterface) o).getName());
+	}
+
+	public LinkedRemoteFile createDirectory(String fileName) throws ObjectExistsException {
+		return createDirectory(null, null, fileName);
 	}
 
 	public LinkedRemoteFile createDirectory(
@@ -1527,6 +1531,21 @@ public class LinkedRemoteFile
 
 	public String getLinkPath() {
 		return _link;
+	}
+
+	public LinkedRemoteFile createDirectories(String path) {
+		NonExistingFile nef = lookupNonExistingFile(path);
+		if(!nef.hasPath()) throw new RuntimeException("createDirectories called on already existing directory");
+		LinkedRemoteFile dir = nef.getFile();
+		StringTokenizer st = new StringTokenizer(nef.getPath(), "/");
+		while(st.hasMoreTokens()) {
+			try {
+				dir.createDirectory(st.nextToken());
+			} catch (ObjectExistsException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return dir;
 	}
 
 }

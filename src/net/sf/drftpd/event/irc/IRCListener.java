@@ -74,6 +74,7 @@ import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.sections.Section;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
@@ -93,7 +94,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.84 2004/02/15 01:39:26 mog Exp $
+ * @version $Id: IRCListener.java,v 1.85 2004/02/15 13:00:05 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -665,7 +666,7 @@ public class IRCListener implements FtpListener, Observer {
 		env.add("section", strippath(section.getPath()));
 
 		LinkedRemoteFile dir = file;
-		if (dir.isFile())
+		if (dir.isFile()) 
 			dir = dir.getParentFileNull();
 
 		long elapsed;
@@ -747,20 +748,22 @@ public class IRCListener implements FtpListener, Observer {
 	}
 
 	public Ret getPropertyFileSuffix(String prefix, LinkedRemoteFile dir) {
-		LinkedRemoteFile section = null;
-		LinkedRemoteFile tmp2 = dir, tmp1 = dir;
-		try {
-			while (true) {
-				section = tmp2;
-				tmp2 = tmp1;
-				tmp1 = tmp1.getParentFile();
-			}
-		} catch (FileNotFoundException success) {
-		}
+		Section sectionObj = getConnectionManager().getSectionManager().lookup(dir.getPath());
+		logger.debug("section = "+sectionObj.getName());
+//		LinkedRemoteFile section = null;
+//		LinkedRemoteFile tmp2 = dir, tmp1 = dir;
+//		try {
+//			while (true) {
+//				section = tmp2;
+//				tmp2 = tmp1;
+//				tmp1 = tmp1.getParentFile();
+//			}
+//		} catch (FileNotFoundException success) {
+//		}
 		return new Ret(
 			ResourceBundle.getBundle(IRCListener.class.getName()).getString(
 				prefix),
-			section);
+			sectionObj.getFile());
 	}
 
 	public SlaveManagerImpl getSlaveManager() {

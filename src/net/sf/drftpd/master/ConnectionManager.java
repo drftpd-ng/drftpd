@@ -24,7 +24,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -51,11 +50,14 @@ import net.sf.drftpd.slave.SlaveImpl;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.drftpd.sections.SectionManager;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.87 2004/02/15 01:39:27 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.88 2004/02/15 13:00:05 mog Exp $
  */
 public class ConnectionManager {
+	private SectionManager _sections;
+
 	public static final int idleTimeout = 300;
 
 	private static final Logger logger =
@@ -177,7 +179,8 @@ public class ConnectionManager {
 				"Cannot create instance of usermanager, check master.usermanager in drftpd-0.7.conf",
 				e);
 		}
-
+		_sections = new SectionManager(this);
+		
 		for (int i = 1;; i++) {
 			String classname = cfg.getProperty("plugins." + i);
 			if (classname == null)
@@ -407,5 +410,9 @@ public class ConnectionManager {
 
 	public LinkedRemoteFile getRoot() {
 		return getSlaveManager().getRoot();
+	}
+
+	public SectionManager getSectionManager() {
+		return _sections;
 	}
 }
