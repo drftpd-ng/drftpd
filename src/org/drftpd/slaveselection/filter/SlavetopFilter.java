@@ -40,7 +40,7 @@ import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilter.java,v 1.4 2004/04/20 04:11:53 mog Exp $
+ * @version $Id: SlavetopFilter.java,v 1.5 2004/04/21 02:21:34 zubov Exp $
  */
 public class SlavetopFilter extends Filter {
 
@@ -75,8 +75,9 @@ public class SlavetopFilter extends Filter {
 				.getSectionManager()
 				.lookup(
 				path);
-
-		path = path.substring(section.getPath().length());
+		if (section.getPath().endsWith("/")) // section is not the root dir - /
+			path = path.substring(section.getPath().length());
+		else path = path.substring(section.getPath().length()+1);
 		int pos = path.indexOf('/');
 		if (pos != -1)
 			path = path.substring(0, pos);
