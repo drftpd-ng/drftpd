@@ -63,9 +63,11 @@ import se.mog.io.File;
 
 import net.sf.drftpd.tcpslave.Base64;
 
+import java.util.Hashtable;
+
 /**
  * @author mog
- * @version $Id: SocketSlaveImpl.java,v 1.1 2004/04/27 22:05:45 zombiewoof64 Exp $
+ * @version $Id: SocketSlaveImpl.java,v 1.2 2004/04/28 13:00:56 zombiewoof64 Exp $
  */
 public class SocketSlaveImpl
 extends Thread
@@ -102,15 +104,15 @@ implements Slave, Unreferenced {
 
     private LinkedRemoteFile	_root;
 
-    public SocketSlaveImpl(ConnectionManager mgr, Element cfg)
+    public SocketSlaveImpl(ConnectionManager mgr, Hashtable cfg)
         throws RemoteException 
     {
         _cman = mgr;
         try {
-            _name = cfg.getChildText("name");
-            _pass = cfg.getChildText("pkey");
-            _host = cfg.getChildText("addr");
-            _port = Integer.parseInt(cfg.getChildText("port"));
+            _name = (String)cfg.get("name");
+            _pass = (String)cfg.get("pkey");
+            _host = (String)cfg.get("addr");
+            _port = Integer.parseInt((String)cfg.get("port"));
             logger.info("Starting connect");
             logger.info("name = " + _name);
             logger.info("host = " + _host);

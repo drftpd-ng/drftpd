@@ -37,7 +37,7 @@ public class SocketSlaveManager extends java.lang.Thread {
             for (Iterator i=slaves.iterator(); i.hasNext();) {
                 RemoteSlave rslave = (RemoteSlave)i.next();
                 if (rslave.isAvailable()) continue;
-                if (rslave.getConfig().getChildText("addr") != null) {
+                if (rslave.getConfig().get("addr") != null) {
                     // unconnected socket slave, try to connect
                     try {
                         SocketSlaveImpl tmp = new SocketSlaveImpl(_conman, rslave.getConfig());
