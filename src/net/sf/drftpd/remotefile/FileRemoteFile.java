@@ -19,7 +19,7 @@ import net.sf.drftpd.slave.RootBasket;
  * A wrapper for java.io.File to the net.sf.drftpd.RemoteFile structure.
  * 
  * @author mog
- * @version $Id: FileRemoteFile.java,v 1.28 2003/11/18 00:13:24 mog Exp $
+ * @version $Id: FileRemoteFile.java,v 1.29 2003/11/18 00:43:44 mog Exp $
  */
 public class FileRemoteFile extends RemoteFile {
 	private static Logger logger = Logger.getLogger(FileRemoteFile.class.getName());
@@ -74,9 +74,9 @@ public class FileRemoteFile extends RemoteFile {
 					length = file.length();
 				} 
 			} else {
-				throw new IOException("File collision: "+path);
-				//if(file.isDirectory() != isDirectory) throw new IOException("roots are out of sync, dir&file mix: "+path);
-				//if(file.isFile() != isFile) throw new IOException("roots are out of sync, file&dir mix: "+path);
+				if(file.isDirectory() != isDirectory) throw new IOException("roots are out of sync, dir&file mix: "+path);
+				if(file.isFile() != isFile) throw new IOException("roots are out of sync, file&dir mix: "+path);
+				if(isFile) throw new IOException("File collision: "+path);
 				//if(isFile() && file.length() != length) throw new IOException("roots are out of sync, different sizes: "+path);
 			}
 					
