@@ -20,6 +20,7 @@ wrapper.java.classpath.5=lib/martyr.jar
 wrapper.java.classpath.6=lib/jdom.jar
 wrapper.java.classpath.7=lib/JSX1.0.7.4.jar
 wrapper.java.classpath.8=lib/replacer.jar
+wrapper.java.classpath.8=lib/xstream-1.0.jar
 
 # Java Library Path (location of Wrapper.DLL or libwrapper.so)
 wrapper.java.library.path.1=lib
@@ -30,7 +31,7 @@ wrapper.java.additional.2=-Djava.rmi.dgc.leaseValue=300000
 wrapper.java.additional.3=-Djava.rmi.server.disableHttp=true
 wrapper.java.additional.4=-Dlog4j.configuration=file:conf/log4j-default.properties
 #only needed if RMI uses wrong interface(which seems to be in most cases)
-#wrapper.java.additional.5=-Djava.rmi.server.hostname=you_didnt_edit_wrapper-master.conf
+wrapper.java.additional.5=-Djava.rmi.server.hostname=you_didnt_edit_wrapper-master.conf
 
 # Initial Java Heap Size (in MB)
 wrapper.java.initmemory=3
