@@ -27,14 +27,6 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 	private static Logger logger =
 		Logger.getLogger(JDOMRemoteFile.class.getName());
 
-	public static Hashtable rslavesToHashtable(Collection rslaves) {
-		Hashtable map = new Hashtable(rslaves.size());
-		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
-			RemoteSlave rslave = (RemoteSlave) iter.next();
-			map.put(rslave.getName(), rslave);
-		}
-		return map;
-	}
 	Hashtable allSlaves;
 	private long checkSum;
 	protected List files = null;
@@ -53,7 +45,7 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 	 * Constructor for JDOMRemoteFileTree.
 	 */
 	public JDOMRemoteFile(Element element, Collection rslaves) {
-		this(element, rslavesToHashtable(rslaves));
+		this(element, RemoteSlave.rslavesToHashtable(rslaves));
 	}
 
 	public JDOMRemoteFile(Element element, Hashtable allSlaves) {

@@ -182,7 +182,7 @@ public class MLSTSerialize {
 			unserialize(
 				in,
 				dir,
-				JDOMRemoteFile.rslavesToHashtable(rslaves),
+				RemoteSlave.rslavesToHashtable(rslaves),
 				path);
 		}
 		return root;

@@ -6,6 +6,8 @@ import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
 import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.Hashtable;
+import java.util.Iterator;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.SlaveEvent;
@@ -252,6 +254,15 @@ public class RemoteSlave implements Serializable, Comparable {
 			str = getName() + "[slave=offline]";
 		}
 		return str.toString();
+	}
+
+	public static Hashtable rslavesToHashtable(Collection rslaves) {
+		Hashtable map = new Hashtable(rslaves.size());
+		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
+			map.put(rslave.getName(), rslave);
+		}
+		return map;
 	}
 
 }
