@@ -138,7 +138,7 @@ public abstract class ArchiveType {
      * Returns unmodifiable Set<RemoteSlave>.
      */
     public final Set<RemoteSlave> getRSlaves() {
-        return Collections.unmodifiableSet(_slaveList);
+        return _slaveList == null ? null : Collections.unmodifiableSet(_slaveList);
     }
 
     /**

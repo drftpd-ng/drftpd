@@ -681,7 +681,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 
         //out.write(FtpResponse.RESPONSE_250_ACTION_OKAY.toString());
         return new Reply(250, request.getCommand() +
-            " command successfull.");
+            " command successful.");
     }
 
     private Reply doSITE_CHOWN(BaseFtpConnection conn)

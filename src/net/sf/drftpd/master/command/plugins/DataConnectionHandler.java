@@ -126,7 +126,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
         //reply success
         conn.getControlWriter().write(new Reply(234,
-                conn.getRequest().getCommandLine() + " successfull").toString());
+                conn.getRequest().getCommandLine() + " successful").toString());
         conn.getControlWriter().flush();
 
         try {
@@ -378,7 +378,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
         // aren't aware that their IP has changed.
         if (!clientAddr.equals(conn.getControlSocket().getInetAddress())) {
             return new Reply(200,
-                "FXP allowed. If you're not FXPing and set your IP to " +
+                "FXP allowed. If you're not FXPing then set your IP to " +
                 conn.getControlSocket().getInetAddress().getHostAddress() +
                 " (usually in firewall settings)");
         }
