@@ -5,6 +5,7 @@ directives found in the correlating .dist files
 Especially make sure commandhandlers.conf gets updated as new commands 
 won't be recognized if commandhandlers.conf isn't up-to-date.
 
-1.1.1 --> 1.1.2
-* If you're using JSXUserManager, mv users/ to users/jsx/
-* If you're using XStreamUserManager, mv users/ to users/xstream/
+1.1.4 --> 2.0
+run bin/xstream2beans.sh before starting the daemon
+rm slaves.xml (you will need to create them again, described in MAJORCHANGES.txt)
+delete files.mlst(don't worry, it will be recreated)

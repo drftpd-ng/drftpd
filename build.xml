@@ -168,7 +168,10 @@
     <chmod dir="." perm="+x" includes="*.sh" />
     <chmod dir="." perm="+x" includes="bin/wrapper" />
     <patternset id="distfiles">
-    	<include name="INSTALL.txt"/>
+    	<include name="CHANGELOG.txt"/>
+    	<include name="LICENSE.txt"/>
+    	<include name="MAJORCHANGES.txt"/>
+    	<include name="UPGRADING.txt"/>
     	<include name="drftpd.conf.dist"/>
     	<include name="slave.conf.dist"/>
     	<include name="build.xml"/>
