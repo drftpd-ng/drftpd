@@ -36,7 +36,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.19 2004/02/10 00:03:32 mog Exp $
+ * @version $Id: ListUtils.java,v 1.20 2004/04/23 01:55:02 mog Exp $
  */
 public class ListUtils {
 
@@ -121,42 +121,35 @@ public class ListUtils {
 			SFVFile sfvfile = dir.lookupSFVFile();
 			SFVStatus sfvstatus = sfvfile.getStatus();
 			if (sfvfile.size() != 0) {
-				if (sfvstatus.getPresent() != 0) {
-					if (numTotal != numOnline) // list by user config
-						statusDirName =
-							"[ "
-								+ sfvstatus.getPresent()
-								+ "/"
-								+ sfvfile.size()
-								+ " = "
-								+ (sfvstatus.getPresent() * 100) / sfvfile.size()
-								+ "% complete | "
-								+ sfvstatus.getAvailable()
-								+ "/"
-								+ sfvstatus.getPresent()
-								+ " = "
-								+ (sfvstatus.getAvailable() * 100)
-									/ sfvstatus.getPresent()
-								+ "% online ]";
-					else // all files online
-						statusDirName =
-							"[ "
-								+ sfvstatus.getPresent()
-								+ "/"
-								+ sfvfile.size()
-								+ " = "
-								+ (sfvstatus.getPresent() * 100) / sfvfile.size()
-								+ "% complete ]";
-				} else {
-					statusDirName =
-						"[ "
-							+ sfvstatus.getPresent()
-							+ "/"
-							+ sfvfile.size()
-							+ " = "
-							+ (sfvstatus.getPresent() * 100) / sfvfile.size()
-							+ "% complete | 0/0 = 0% online ]";
+				statusDirName = "[ ";
+				if(sfvstatus.getMissing() != 0) {
+					statusDirName += sfvstatus.getMissing()	+ " files missing = ";
 				}
+
+				statusDirName +=
+					(sfvstatus.getPresent() == 0
+							? "0"
+							: ""+(sfvstatus.getPresent() * 100) / sfvfile.size())
+					+ "% complete";
+
+				if(sfvstatus.getOffline() != 0) {
+					statusDirName += " | " +
+						sfvstatus.getOffline()+ " files offline = "
+						+ ((sfvstatus.getAvailable() * 100)
+						/ sfvstatus.getPresent())
+						+ "% online";
+				}
+				statusDirName += " ]";
+
+				if(statusDirName == null) throw new RuntimeException();
+				listFiles.add(
+					new StaticRemoteFile(
+						null,
+						statusDirName,
+						"drftpd",
+						"drftpd",
+						0L,
+						dir.lastModified()));
 
 				for (Iterator iter = sfvfile.getNames().iterator();
 					iter.hasNext();
@@ -186,27 +179,18 @@ public class ListUtils {
 				response.addComment("zipscript error: " + e.getMessage());
 			logger.warn("zipscript error", e);
 		}
-		if (statusDirName == null
-			&& numTotal > 5
-			&& numOnline != numTotal) { // in future list by user settings
-			statusDirName =
-				"[ "
-					+ numOnline
-					+ "/"
-					+ numTotal
-					+ " = "
-					+ (numOnline * 100) / numTotal
-					+ "% online ]";
-		}
-		if (statusDirName != null)
-			listFiles.add(
-				new StaticRemoteFile(
-					null,
-					statusDirName,
-					"drftpd",
-					"drftpd",
-					0L,
-					dir.lastModified()));
+//		if (statusDirName == null
+//			&& numTotal > 5
+//			&& numOnline != numTotal) { // in future list by user settings
+//			statusDirName =
+//				"[ "
+//					+ numOnline
+//					+ "/"
+//					+ numTotal
+//					+ " = "
+//					+ (numOnline * 100) / numTotal
+//					+ "% online ]";
+//		}
 		return listFiles;
 	}
 

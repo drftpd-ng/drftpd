@@ -2,6 +2,7 @@
 * Fixed racejoin SiteBot announcement.
 * Automatically add missing trailing / to configureable section paths.
 * Fixed SiteBotSSL.
+* Changed [ 100% complete ] folders to not use / and cleaned up it's code.
 
 2004/04/21 Morgan Christiansson <drftpd@mog.se>
 * Improved transfer logging in DataConnectionHandler.

@@ -27,14 +27,13 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.log4j.Logger;
-
 import net.sf.drftpd.FatalException;
-import net.sf.drftpd.master.ConnectionManager;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: SiteBotSSL.java,v 1.2 2004/04/23 00:47:25 mog Exp $
+ * @version $Id: SiteBotSSL.java,v 1.3 2004/04/23 01:55:03 mog Exp $
  */
 public class SiteBotSSL extends SiteBot {
 	private static final Logger logger = Logger.getLogger(SiteBot.class);
