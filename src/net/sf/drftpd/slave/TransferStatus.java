@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 /**
  * @author mog
- * @version $Id: TransferStatus.java,v 1.2 2003/11/19 00:20:54 mog Exp $
+ * @version $Id: TransferStatus.java,v 1.3 2004/01/13 21:36:31 mog Exp $
  */
 public class TransferStatus implements Serializable {
 	private long _checksum;
@@ -19,14 +19,23 @@ public class TransferStatus implements Serializable {
 		return _checksum;
 	}
 
+	/**
+	 * @see TransferImpl#getElapsed()
+	 */
 	public long getElapsed() {
 		return _elapsed;
 	}
 
+	/**
+	 * @see TransferImpl#getTransfered()
+	 */
 	public long getTransfered() {
 		return _transfered;
 	}
 
+	/**
+	 * @see TransferImpl#getXferSpeed()
+	 */
 	public int getXferSpeed() {
 		if (_transfered == 0)
 			return 0;

@@ -23,15 +23,25 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.34 2004/01/13 20:30:54 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.35 2004/01/13 21:36:31 mog Exp $
  */
 public abstract class AbstractUser implements User {
 	private static final Logger logger = Logger.getLogger(AbstractUser.class);
+
+	protected long _downloadedMilliseconds;
+	protected long _downloadedMillisecondsDay;
+	protected long _downloadedMillisecondsMonth;
+	protected long _downloadedMillisecondsWeek;
 	/**
 	 * Should problably be named group for consistency,
 	 * this would reset group for JSXUser though. 
 	 */
 	private String _group = "nogroup";
+
+	protected long _uploadedMilliseconds;
+	protected long _uploadedMillisecondsDay;
+	protected long _uploadedMillisecondsMonth;
+	protected long _uploadedMillisecondsWeek;
 
 	protected boolean anonymous;
 	protected String comment;
@@ -48,17 +58,7 @@ public abstract class AbstractUser implements User {
 	protected int downloadedFilesMonth;
 	protected int downloadedFilesWeek;
 
-	protected int downloadedSeconds;
-	protected int downloadedSecondsDay;
-	protected int downloadedSecondsMonth;
-	protected int downloadedSecondsWeek;
 	protected short groupLeechSlots;
-
-	protected int racesWon;
-	protected int racesLost;
-	protected int racesParticipated;
-	protected int requests;
-	protected int requestsFilled;
 
 	protected ArrayList groups = new ArrayList();
 
@@ -85,8 +85,14 @@ public abstract class AbstractUser implements User {
 	protected int maxUploadRate;
 
 	protected long nukedBytes;
+	protected int racesLost;
+	protected int racesParticipated;
+
+	protected int racesWon;
 
 	protected float ratio = 3.0F;
+	protected int requests;
+	protected int requestsFilled;
 	protected String tagline;
 	protected int timelimit;
 	protected int timesNuked;
@@ -102,11 +108,6 @@ public abstract class AbstractUser implements User {
 	protected int uploadedFilesDay;
 	protected int uploadedFilesMonth;
 	protected int uploadedFilesWeek;
-
-	protected int uploadedSeconds;
-	protected int uploadedSecondsDay;
-	protected int uploadedSecondsMonth;
-	protected int uploadedSecondsWeek;
 
 	protected String username;
 
@@ -128,6 +129,26 @@ public abstract class AbstractUser implements User {
 		if (ipMasks.contains(mask))
 			throw new DuplicateElementException("IP mask already added");
 		ipMasks.add(mask);
+	}
+
+	public void addRacesLost() {
+		racesLost++;
+	}
+
+	public void addRacesParticipated() {
+		racesParticipated++;
+	}
+
+	public void addRacesWon() {
+		racesWon++;
+	}
+
+	public void addRequests() {
+		requests++;
+	}
+
+	public void addRequestsFilled() {
+		requestsFilled++;
 	}
 	public boolean checkIP(String masks[], boolean useIdent) {
 
@@ -156,6 +177,12 @@ public abstract class AbstractUser implements User {
 			}
 		}
 		return false;
+	}
+
+	public boolean equals(Object obj) {
+		return obj instanceof User
+			? ((User) obj).getUsername().equals(getUsername())
+			: false;
 	}
 
 	public String getComment() {
@@ -202,20 +229,20 @@ public abstract class AbstractUser implements User {
 		return downloadedFilesWeek;
 	}
 
-	public int getDownloadedSeconds() {
-		return downloadedSeconds;
+	public long getDownloadedMilliseconds() {
+		return _downloadedMilliseconds;
 	}
 
-	public int getDownloadedSecondsDay() {
-		return downloadedSecondsDay;
+	public long getDownloadedMillisecondsDay() {
+		return _downloadedMillisecondsDay;
 	}
 
-	public int getDownloadedSecondsMonth() {
-		return downloadedSecondsMonth;
+	public long getDownloadedMillisecondsMonth() {
+		return _downloadedMillisecondsMonth;
 	}
 
-	public int getDownloadedSecondsWeek() {
-		return downloadedSecondsWeek;
+	public long getDownloadedMillisecondsWeek() {
+		return _downloadedMillisecondsWeek;
 	}
 
 	public short getGroupLeechSlots() {
@@ -301,8 +328,28 @@ public abstract class AbstractUser implements User {
 		return nukedBytes;
 	}
 
+	public int getRacesLost() {
+		return racesLost;
+	}
+
+	public int getRacesParticipated() {
+		return racesParticipated;
+	}
+
+	public int getRacesWon() {
+		return racesWon;
+	}
+
 	public float getRatio() {
 		return ratio;
+	}
+
+	public int getRequests() {
+		return requests;
+	}
+
+	public int getRequestsFilled() {
+		return requestsFilled;
 	}
 
 	public String getTagline() {
@@ -353,20 +400,20 @@ public abstract class AbstractUser implements User {
 		return uploadedFilesWeek;
 	}
 
-	public int getUploadedSeconds() {
-		return uploadedSeconds;
+	public long getUploadedMilliseconds() {
+		return _uploadedMilliseconds;
 	}
 
-	public int getUploadedSecondsDay() {
-		return uploadedSecondsDay;
+	public long getUploadedMillisecondsDay() {
+		return _uploadedMillisecondsDay;
 	}
 
-	public int getUploadedSecondsMonth() {
-		return uploadedSecondsMonth;
+	public long getUploadedMillisecondsMonth() {
+		return _uploadedMillisecondsMonth;
 	}
 
-	public int getUploadedSecondsWeek() {
-		return uploadedSecondsWeek;
+	public long getUploadedMillisecondsWeek() {
+		return _uploadedMillisecondsWeek;
 	}
 
 	public String getUsername() {
@@ -375,26 +422,6 @@ public abstract class AbstractUser implements User {
 
 	public long getWeeklyAllotment() {
 		return this.weeklyAllotment;
-	}
-
-	public int getRacesWon() {
-		return racesWon;
-	}
-
-	public int getRacesLost() {
-		return racesLost;
-	}
-
-	public int getRacesParticipated() {
-		return racesParticipated;
-	}
-
-	public int getRequests() {
-		return requests;
-	}
-
-	public int getRequestsFilled() {
-		return requestsFilled;
 	}
 
 	public int hashCode() {
@@ -487,8 +514,8 @@ public abstract class AbstractUser implements User {
 		this.downloadedFilesDay = 0;
 		this.uploadedBytesDay = 0;
 
-		this.downloadedSecondsDay = 0;
-		this.uploadedSecondsDay = 0;
+		_downloadedMillisecondsDay = 0;
+		_uploadedMillisecondsDay = 0;
 
 		this.downloadedBytesDay = 0;
 		this.uploadedBytesDay = 0;
@@ -503,8 +530,8 @@ public abstract class AbstractUser implements User {
 		this.downloadedFilesMonth = 0;
 		this.uploadedBytesMonth = 0;
 
-		this.downloadedSecondsMonth = 0;
-		this.uploadedSecondsMonth = 0;
+		_downloadedMillisecondsMonth = 0;
+		_uploadedMillisecondsMonth = 0;
 
 		this.downloadedBytesMonth = 0;
 		this.uploadedBytesMonth = 0;
@@ -518,8 +545,8 @@ public abstract class AbstractUser implements User {
 		this.downloadedFilesWeek = 0;
 		this.uploadedBytesWeek = 0;
 
-		this.downloadedSecondsWeek = 0;
-		this.uploadedSecondsWeek = 0;
+		_downloadedMillisecondsWeek = 0;
+		_uploadedMillisecondsWeek = 0;
 
 		this.downloadedBytesWeek = 0;
 		this.uploadedBytesWeek = 0;
@@ -640,6 +667,22 @@ public abstract class AbstractUser implements User {
 		this.weeklyAllotment = weeklyAllotment;
 	}
 
+	public void toggleGroup(String string) {
+		if (isMemberOf(string)) {
+			try {
+				removeGroup(string);
+			} catch (NoSuchFieldException e) {
+				logger.error("isMemberOf() said we were in the group", e);
+			}
+		} else {
+			try {
+				addGroup(string);
+			} catch (DuplicateElementException e) {
+				logger.error("isMemberOf() said we weren't in the group", e);
+			}
+		}
+	}
+
 	public String toString() {
 		return username;
 	}
@@ -660,6 +703,13 @@ public abstract class AbstractUser implements User {
 		this.downloadedFilesDay += i;
 		this.downloadedFilesWeek += i;
 		this.downloadedFilesMonth += i;
+	}
+
+	public void updateDownloadedMilliseconds(long millis) {
+		_downloadedMilliseconds += millis;
+		_downloadedMillisecondsDay += millis;
+		_downloadedMillisecondsWeek += millis;
+		_downloadedMillisecondsMonth += millis;
 	}
 
 	/**
@@ -695,46 +745,10 @@ public abstract class AbstractUser implements User {
 		this.uploadedFilesMonth += i;
 	}
 
-	public void addRacesWon() {
-		racesWon++;
+	public void updateUploadedMilliseconds(long millis) {
+		_uploadedMilliseconds += millis;
+		_uploadedMillisecondsDay += millis;
+		_uploadedMillisecondsWeek += millis;
+		_uploadedMillisecondsMonth += millis;
 	}
-
-	public void addRacesParticipated() {
-		racesParticipated++;
-	}
-
-	public void addRacesLost() {
-		racesLost++;
-	}
-
-	public void addRequests() {
-		requests++;
-	}
-
-	public void addRequestsFilled() {
-		requestsFilled++;
-	}
-
-	public boolean equals(Object obj) {
-		return obj instanceof User
-			? ((User) obj).getUsername().equals(getUsername())
-			: false;
-	}
-
-	public void toggleGroup(String string) {
-		if (isMemberOf(string)) {
-			try {
-				removeGroup(string);
-			} catch (NoSuchFieldException e) {
-				logger.error("isMemberOf() said we were in the group", e);
-			}
-		} else {
-			try {
-				addGroup(string);
-			} catch (DuplicateElementException e) {
-				logger.error("isMemberOf() said we weren't in the group", e);
-			}
-		}
-	}
-
 }

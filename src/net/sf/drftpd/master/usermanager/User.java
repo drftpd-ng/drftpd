@@ -7,7 +7,7 @@ import net.sf.drftpd.ObjectExistsException;
 
 /**
  * @author mog
- * @version $Id: User.java,v 1.30 2003/12/23 13:38:20 mog Exp $
+ * @version $Id: User.java,v 1.31 2004/01/13 21:36:31 mog Exp $
  */
 public interface User {
 
@@ -412,4 +412,6 @@ public interface User {
 	public void updateTimesNuked(int timesNuked);
 	public void updateUploadedBytes(long bytes);
 	public void updateUploadedFiles(int i);
+	public void updateDownloadedMilliseconds(long millis);
+	public void updateUploadedMilliseconds(long millis);
 }

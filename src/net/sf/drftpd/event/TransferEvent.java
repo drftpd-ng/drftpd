@@ -7,8 +7,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author mog
- *
- * @version $Id: TransferEvent.java,v 1.5 2003/12/23 13:38:18 mog Exp $
+ * @version $Id: TransferEvent.java,v 1.6 2004/01/13 21:36:31 mog Exp $
  */
 public class TransferEvent extends DirectoryFtpEvent {
 
@@ -35,12 +34,7 @@ public class TransferEvent extends DirectoryFtpEvent {
 			complete,
 			System.currentTimeMillis());
 	}
-	/**
-	 * @param user
-	 * @param command
-	 * @param directory
-	 * @param time
-	 */
+
 	public TransferEvent(
 		User user,
 		String command,

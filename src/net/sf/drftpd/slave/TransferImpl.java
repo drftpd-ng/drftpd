@@ -18,7 +18,7 @@ import net.sf.drftpd.util.AddAsciiOutputStream;
 
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.35 2004/01/13 00:38:55 mog Exp $
+ * @version $Id: TransferImpl.java,v 1.36 2004/01/13 21:36:31 mog Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private boolean _abort = false;
@@ -112,6 +112,9 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		return _transfered;
 	}
 
+	/**
+	 * Returns how long this transfer has been running in milliseconds.
+	 */
 	public long getElapsed() {
 		if (_finished == 0) {
 			return System.currentTimeMillis() - _started;

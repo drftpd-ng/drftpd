@@ -50,7 +50,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.31 2004/01/13 20:30:54 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.32 2004/01/13 21:36:31 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -1390,9 +1390,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				}
 
 			}
-			//transferstatistics
-			long transferedBytes = status.getTransfered();
 
+			//transferstatistics
 			if (isRetr) {
 				float ratio =
 					conn.getConfig().getCreditLossRatio(
@@ -1400,17 +1399,19 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 						conn.getUserNull());
 				if (ratio != 0) {
 					conn.getUserNull().updateCredits(
-						(long) (-transferedBytes * ratio));
+						(long) (-status.getTransfered() * ratio));
 				}
-				conn.getUserNull().updateDownloadedBytes(transferedBytes);
+				conn.getUserNull().updateDownloadedBytes(status.getTransfered());
+				conn.getUserNull().updateDownloadedMilliseconds(status.getElapsed());
 				conn.getUserNull().updateDownloadedFiles(1);
 			} else {
 				conn.getUserNull().updateCredits(
-					(long) (transferedBytes
+					(long) (status.getTransfered()
 						* conn.getConfig().getCreditCheckRatio(
 							_transferFile,
 							conn.getUserNull())));
-				conn.getUserNull().updateUploadedBytes(transferedBytes);
+				conn.getUserNull().updateUploadedBytes(status.getTransfered());
+				conn.getUserNull().updateUploadedMilliseconds(status.getElapsed());
 				conn.getUserNull().updateUploadedFiles(1);
 			}
 			try {
@@ -1420,9 +1421,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			}
 
 			if (isStor) {
-				//if (conn
-				//	.getConfig()
-				//	.checkDirLog(conn.getUserNull(), _transferFile)) {
 				conn.getConnectionManager().dispatchFtpEvent(
 					new TransferEvent(
 						conn.getUserNull(),
@@ -1432,8 +1430,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 						_rslave.getInetAddress(),
 						getType(),
 						true));
-				//}
-				reset();
 			}
 
 			conn.reset();
