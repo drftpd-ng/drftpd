@@ -723,10 +723,6 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
     }
 
     private Reply doSITE_LINK(BaseFtpConnection conn) {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
-
         if (!conn.getRequest().hasArgument()) {
             return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
@@ -794,10 +790,6 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
      * @param out
      */
     private Reply doSITE_WIPE(BaseFtpConnection conn) {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
-
         if (!conn.getRequest().hasArgument()) {
             return Reply.RESPONSE_501_SYNTAX_ERROR;
         }

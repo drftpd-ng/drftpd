@@ -129,10 +129,6 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
      * @throws ImproperUsageException
      */
     private Reply doSITE_NUKE(BaseFtpConnection conn) throws ImproperUsageException {
-        if (!conn.getUserNull().isNuker()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
-
         if (!conn.getRequest().hasArgument()) {
         	throw new ImproperUsageException();
         }
@@ -328,10 +324,6 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
      *         See the section about glftpd.conf.
      */
     private Reply doSITE_UNNUKE(BaseFtpConnection conn) {
-        if (!conn.getUserNull().isNuker()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
-
         StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument());
 
         if (!st.hasMoreTokens()) {

@@ -78,3 +78,9 @@ denydatauncrypted       !*
 ban 	*	=siteop
 unban	*	=siteop
 bans 	*	=siteop
+
+wipe * =siteop =wipe
+link * =siteop
+nuke * =siteop =nuke
+unnuke * =siteop =nuke
+nukes * *
