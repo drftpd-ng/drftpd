@@ -1,0 +1,10 @@
+* How is it possible to interrupt a read() request so we can shutdown a
+	FtpConnection Thread ?
+	- thread.interrupt() has no effect
+	- outputstream.close() blocks until the read() call has finished.
+	! how will this work with stale connections?
+
+* More fine grained file-permissions?
+	Current permission style:
+		- Can delete if is owner or isAdmin().
+		- Can always create.
