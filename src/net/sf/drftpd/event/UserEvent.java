@@ -19,7 +19,6 @@ import net.sf.drftpd.master.usermanager.User;
  */
 public class UserEvent extends Event {
 	public static String getCommandFromPeriod(int period) {
-		String cmd;
 		switch (period) {
 			case Trial.PERIOD_DAILY :
 				return "RESETDAY";
