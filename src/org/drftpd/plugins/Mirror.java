@@ -61,7 +61,6 @@ public class Mirror implements FtpListener {
     public void actionPerformed(Event event) {
         if (event.getCommand().equals("RELOAD")) {
             reload();
-
             return;
         }
 

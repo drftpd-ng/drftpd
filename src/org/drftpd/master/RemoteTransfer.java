@@ -43,7 +43,7 @@ public class RemoteTransfer {
     private TransferIndex _transferIndex;
     private RemoteSlave _rslave;
     private TransferStatus _status;
-    private char _state;
+    private char _state = Transfer.TRANSFER_UNKNOWN;
 	private String _path;
 
     public RemoteTransfer(ConnectInfo ci, RemoteSlave rslave) {
