@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Hashtable;
 import java.util.ListIterator;
 import java.util.Properties;
+import java.util.Set;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
@@ -68,7 +69,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.92 2004/05/21 18:36:50 zubov Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.93 2004/05/22 15:08:42 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -363,12 +364,14 @@ public class SlaveManagerImpl
 		rslave.setOffline(reason);
 	}
 
-        public HashSet findLargestFreeSlaves(int numOfSlaves) {
+        public HashSet findSlavesBySpace(int numOfSlaves, Set exemptSlaves, boolean ascending) {
 		Collection slaveList =
 			getConnectionManager().getSlaveManager().getSlaveList();
 		HashMap map = new HashMap();
 		for (Iterator iter = slaveList.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
+			if (exemptSlaves.contains(rslave))
+				continue;
 			Long size;
 			try {
 				size = new Long(rslave.getStatus().getDiskSpaceAvailable());
@@ -378,12 +381,17 @@ public class SlaveManagerImpl
 			map.put(size,rslave);
 		}
 		ArrayList sorted = new ArrayList(map.keySet());
-		Collections.sort(sorted);
+		if (ascending) {
+			Collections.sort(sorted);
+		} else {
+			Collections.sort(sorted, Collections.reverseOrder());
+		}
 		HashSet returnMe = new HashSet();
 		for (ListIterator iter = sorted.listIterator(); iter.hasNext();) {
 			if (iter.nextIndex()==numOfSlaves)
 				break;
-			RemoteSlave rslave = (RemoteSlave) map.get(iter.next());
+			Long key = (Long) iter.next();
+			RemoteSlave rslave = (RemoteSlave) map.get(key);
 			returnMe.add(rslave);
 		}
 		return returnMe;

@@ -1,3 +1,8 @@
+2004/05/22 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Implemented MoveReleaseOffSlavesToMostFreeSlaves
+* Fixed MoveReleaseToMostFreeSlaves returning the most full slaves, 
+  Thanks Tranon
+
 2004/05/21 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Fixed Bad Sequence of Commands bug in 1.1
 * Fixed "SITE NEW"

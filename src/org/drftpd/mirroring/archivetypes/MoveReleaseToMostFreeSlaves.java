@@ -35,7 +35,7 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author zubov
- * @version $Id: MoveReleaseToMostFreeSlaves.java,v 1.2 2004/05/20 14:09:00 zubov Exp $
+ * @version $Id: MoveReleaseToMostFreeSlaves.java,v 1.3 2004/05/22 15:08:43 zubov Exp $
  */
 public class MoveReleaseToMostFreeSlaves extends ArchiveType {
 	private static final Logger logger = Logger.getLogger(MoveReleaseToMostFreeSlaves.class);
@@ -64,9 +64,12 @@ public class MoveReleaseToMostFreeSlaves extends ArchiveType {
 	}
 
 	public HashSet findDestinationSlaves() {
-		return _parent.getConnectionManager().getSlaveManager().findLargestFreeSlaves(_numOfSlaves);
+		HashSet set = _parent.getConnectionManager().getSlaveManager().findSlavesBySpace(_numOfSlaves,new HashSet(), false); 
+		if (set.isEmpty())
+			return null;
+		return set;
 	}
-
+	
 	public void waitForSendOfFiles(ArrayList jobQueue) {
 		while (true) {
 			for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
