@@ -1292,7 +1292,7 @@ public class SiteBot extends FtpListener implements Observer {
 			}
 			int index = msgc.getMessage().indexOf(" ");
 			String args = "";
-			String trigger = null;
+			String trigger = "";
 			if (index == -1) {
 				trigger = msgc.getMessage().toLowerCase();
 			} else {

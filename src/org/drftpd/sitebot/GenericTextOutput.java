@@ -85,7 +85,7 @@ public class GenericTextOutput extends IRCCommand {
         }
     }
 
-	public ArrayList<String> doApprove(String args, MessageCommand msgc) {
+	public ArrayList<String> doText(String args, MessageCommand msgc) {
 	    ArrayList<String> out = new ArrayList<String>();
         String msg = msgc.getMessage();
 

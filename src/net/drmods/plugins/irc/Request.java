@@ -19,6 +19,7 @@ package net.drmods.plugins.irc;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
@@ -28,112 +29,44 @@ import net.sf.drftpd.util.ReplacerUtils;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.sitebot.IRCPluginInterface;
-import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.sitebot.IRCCommand;
 import org.drftpd.usermanager.User;
 import org.tanesha.replacer.ReplacerEnvironment;
 
-import f00f.net.irc.martyr.GenericCommandAutoService;
-import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
+import f00f.net.irc.martyr.util.FullNick;
 /**
  * @author Kolor & Teflon
  * @version $Id$
  */
-public class Request extends GenericCommandAutoService implements IRCPluginInterface {
-
+public class Request extends IRCCommand {
 	private static final Logger logger = Logger.getLogger(Request.class);
     public static final Key REQUESTS = new Key(Request.class, "requests", Integer.class);
     public static final Key REQFILLED = new Key(Request.class, "reqfilled", Integer.class);
     public static final Key WEEKREQS = new Key(Request.class, "weekreq", Integer.class);
 
-	private SiteBot _listener;
-	String allow = "";
-	String deny = "";
-
-	public String getCommands() {
-		return _listener.getCommandPrefix() + "requests " +
-				_listener.getCommandPrefix() + "request " + 
-				_listener.getCommandPrefix() + "reqfilled " + 
-				_listener.getCommandPrefix() + "reqdel";
+	public Request(GlobalContext gctx) {
+		super(gctx);
 	}
 
-    public String getCommandsHelp(User user) {
-        String help = "";
-        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "requests", user))
-            help += _listener.getCommandPrefix() 
-            		+ "requests : Displays the current requests ont the site.\n";
-        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "request", user))
-            help += _listener.getCommandPrefix() 
-            		+ "request <reqname> : Request <reqname>.\n";
-        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "reqfilled", user))
-            help += _listener.getCommandPrefix() 
-            		+ "reqfilled <reqname> : Marks the request <reqname> as filled.\n";
-        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "reqdel", user))
-            help += _listener.getCommandPrefix() 
-            		+ "reqdel <reqname> : Deletes the request <reqname>.\n";
-		return help;
-    }  
-	
-	private ConnectionManager getConnectionManager() {
-		return _listener.getGlobalContext().getConnectionManager();
-	}
-
-	public Request(SiteBot listener) {
-		super(listener.getIRCConnection());
-		_listener = listener;
-	}
-
-	protected void updateCommand(InCommand command) {
-		if (!(command instanceof MessageCommand)) {
-			return;
-		}
-		MessageCommand msgc = (MessageCommand) command;
-		if (msgc.isPrivateToUs(_listener.getIRCConnection().getClientState())) {
-			return;
-		}
-		
-		String msg = msgc.getMessage().trim();
-		if (msg.startsWith(_listener.getCommandPrefix() + "requests"))
-		    doREQUESTS(msgc);
-		else if (msg.startsWith(_listener.getCommandPrefix() + "request"))
-		    doREQUEST(msgc);
-		else if (msg.startsWith(_listener.getCommandPrefix() + "reqfilled"))
-		    doREQFILLED(msgc);
-		else if (msg.startsWith(_listener.getCommandPrefix() + "reqdel"))
-		    doREQDEL(msgc);
-	}
-
-    private void doREQUESTS(MessageCommand msgc) {
+    public ArrayList<String> doRequests(String args, MessageCommand msgc) {
+	    ArrayList<String> out = new ArrayList<String>();
         ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-        env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
         env.add("ircnick",msgc.getSource().getNick());
         
-        User user;
-        try {
-            user = _listener.getIRCConfig().lookupUser(msgc.getSource());
-        } catch (NoSuchUserException e) {
-            _listener.say(msgc.getDest(), 
-                    ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-            return;
+        User user = getUser(msgc.getSource());
+        if (user == null) {
+     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+     	    return out;
         }
         env.add("ftpuser",user.getName());
-        env.add("reqfilled",_listener.getCommandPrefix() + "reqfilled");
-        
-        if (!_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "requests",user)) {
-            _listener.say(msgc.getDest(), 
-                    ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
-            return;				
-        }
-        
+        env.add("reqfilled",new StringTokenizer(msgc.getMessage()).nextToken());
         
         try {
-            LinkedRemoteFileInterface rdir = getConnectionManager().getGlobalContext().getRoot().getFile(ReplacerUtils.jprintf("request.dirpath", env, Request.class));
-            _listener.say(msgc.getDest(),
-                    ReplacerUtils.jprintf("requests.header", env, Request.class));
+            LinkedRemoteFileInterface rdir = getGlobalContext().getRoot().getFile(ReplacerUtils.jprintf("request.dirpath", env, Request.class));
+            out.add(ReplacerUtils.jprintf("requests.header", env, Request.class));
             int i=1;
             for (Iterator iter = rdir.getDirectories().iterator(); iter.hasNext();) {
                 LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
@@ -153,59 +86,45 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
                         env.add("requser",byuser.replaceAll("by ",""));
                         env.add("reqrequest",request);
                         i=i+1;
-                        _listener.say(msgc.getDest(),ReplacerUtils.jprintf("requests.list", env, Request.class));	
+                        out.add(ReplacerUtils.jprintf("requests.list", env, Request.class));	
                     }
                 }
             }
-            _listener.say(msgc.getDest(),
-                    ReplacerUtils.jprintf("requests.footer", env, Request.class));
+            out.add(ReplacerUtils.jprintf("requests.footer", env, Request.class));
         }  catch (FileNotFoundException e) {
-            return; 
+            out.add(ReplacerUtils.jprintf("reqfilled.error", env, Request.class));
+            return out; 
         }
-        
+        return out;
     }
 
-    private void doREQFILLED(MessageCommand msgc) {
+    public ArrayList<String> doReqfilled(String args, MessageCommand msgc) {
+	    ArrayList<String> out = new ArrayList<String>();
         ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-        env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
         env.add("ircnick",msgc.getSource().getNick());
         
-        User user;
-        try {
-            user = _listener.getIRCConfig().lookupUser(msgc.getSource());
-        } catch (NoSuchUserException e) {
-            _listener.say(msgc.getDest(), 
-                    ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-            return;
+        User user = getUser(msgc.getSource());
+        if (user == null) {
+     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+     	    return out;
         }
         env.add("ftpuser",user.getName());
         
-        if (!_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "reqfilled",user)) {
-            _listener.say(msgc.getDest(), 
-                    ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
-            return;				
-        }
-        
         String dirName;
         try {
-            dirName = msgc.getMessage().substring((_listener.getCommandPrefix() + "reqfilled ").length()).trim();
-            if (dirName.length()==0) 
-            { 
-                _listener.say(msgc.getDest(), 
-                        ReplacerUtils.jprintf("reqfilled.usage", env, Request.class)); 
-                return; 
+            dirName = args;
+            if (dirName.length()==0){ 
+                out.add(ReplacerUtils.jprintf("reqfilled.usage", env, Request.class)); 
+                return out; 
             } 
-            
         } catch (ArrayIndexOutOfBoundsException e) {
             logger.warn("", e);
-            _listener.say(msgc.getDest(), 
-                    ReplacerUtils.jprintf("reqfilled.usage", env, Request.class));
-            return;
+            out.add(ReplacerUtils.jprintf("reqfilled.usage", env, Request.class));
+            return out;
         } catch (StringIndexOutOfBoundsException e) {
             logger.warn("", e);
-            _listener.say(msgc.getDest(), 
-                    ReplacerUtils.jprintf("reqfilled.usage", env, Request.class));
-            return;
+            out.add(ReplacerUtils.jprintf("reqfilled.usage", env, Request.class));
+            return out;
         }
         
         env.add("fdirname",dirName);	
@@ -216,7 +135,7 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
         boolean fdir = false;
         
         try {
-            LinkedRemoteFileInterface dir = getConnectionManager().getGlobalContext().getRoot().getFile(DirPath);
+            LinkedRemoteFileInterface dir = getGlobalContext().getRoot().getFile(DirPath);
             for (Iterator iter = dir.getDirectories().iterator(); iter.hasNext();) {
                 LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
                 if (file.isDirectory()) {
@@ -229,7 +148,7 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
                         try {
                             file.renameTo(file.getParentFile().getPath(),fdirname);
                             fdir = true;
-                            _listener.sayGlobal(ReplacerUtils.jprintf("reqfilled.success", env, Request.class));
+                            out.add(ReplacerUtils.jprintf("reqfilled.success", env, Request.class));
                             break;
                         } catch (IOException e) {
                             logger.warn("", e);
@@ -240,121 +159,73 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
                 }
             }
             
-            if (nodir && !fdir) _listener.say(msgc.getDest(),ReplacerUtils.jprintf("reqfilled.error", env, Request.class));
+            if (nodir && !fdir) out.add(ReplacerUtils.jprintf("reqfilled.error", env, Request.class));
             
         } catch (FileNotFoundException e) {
-            _listener.say(msgc.getDest(),ReplacerUtils.jprintf("reqfilled.error", env, Request.class));
-            return;
+            out.add(ReplacerUtils.jprintf("reqfilled.error", env, Request.class));
+            return out;
         }
-        
+        return out;
     }
 
-    private void doREQUEST(MessageCommand msgc) {
+    public ArrayList<String> doRequest(String args, MessageCommand msgc) {
+	    ArrayList<String> out = new ArrayList<String>();
         ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-        env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
         env.add("ircnick",msgc.getSource().getNick());
         
-        User user;
-        try {
-            user = _listener.getIRCConfig().lookupUser(msgc.getSource());
-        } catch (NoSuchUserException e) {
-            _listener.say(msgc.getDest(), 
-                    ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-            return;
+        User user = getUser(msgc.getSource());
+        if (user == null) {
+     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+     	    return out;
         }
         env.add("ftpuser",user.getName());
         
-        if (!_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "request",user)) {
-            _listener.say(msgc.getDest(), 
-                    ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
-            return;				
-        }
-        
-        String dirName;
-        try {
-            dirName = msgc.getMessage().substring("!request ".length()).trim();
-            if (dirName.length()==0) 
-            { 
-                _listener.say(msgc.getDest(), 
-                        ReplacerUtils.jprintf("request.usage", env, Request.class)); 
-                return; 
-            } 
+        String dirName = args;
+        if (dirName.length()==0) { 
+            out.add(ReplacerUtils.jprintf("request.usage", env, Request.class)); 
+            return out; 
+        } 
             
-        } catch (ArrayIndexOutOfBoundsException e) {
-            logger.warn("", e);
-            _listener.say(msgc.getDest(), 
-                    ReplacerUtils.jprintf("request.usage", env, Request.class));
-            return;
-        } catch (StringIndexOutOfBoundsException e) {
-            logger.warn("", e);
-            _listener.say(msgc.getDest(), 
-                    ReplacerUtils.jprintf("request.usage", env, Request.class));
-            return;
-        }
         env.add("rdirname",dirName);
         String requser = user.getName();
         
-            String DirPath = ReplacerUtils.jprintf("request.dirpath", env, Request.class);
-            
-            try {
-                LinkedRemoteFileInterface dir = getConnectionManager().getGlobalContext().getRoot().getFile(DirPath);
-                dir.createDirectory("REQUEST-by." + requser + "-" + dirName);
-                LinkedRemoteFileInterface reqdir = dir.getFile("REQUEST-by." + requser + "-" + dirName);
-                reqdir.setOwner(requser);
-                user.getKeyedMap().setObject(Request.REQUESTS, user.getKeyedMap().getObjectInt(Request.REQUESTS)+1);;
-                _listener.sayGlobal(ReplacerUtils.jprintf("request.success", env, Request.class));
-            } catch (FileNotFoundException e) {
-                _listener.say(msgc.getDest(),DirPath + " doesn't exist!");
-                return;
-            } catch (FileExistsException e1) {
-                _listener.say(msgc.getDest(),ReplacerUtils.jprintf("request.exists", env, Request.class));
-            } 	
-        }
+        String DirPath = ReplacerUtils.jprintf("request.dirpath", env, Request.class);
+        
+        try {
+            LinkedRemoteFileInterface dir = getGlobalContext().getRoot().getFile(DirPath);
+            dir.createDirectory("REQUEST-by." + requser + "-" + dirName);
+            LinkedRemoteFileInterface reqdir = dir.getFile("REQUEST-by." + requser + "-" + dirName);
+            reqdir.setOwner(requser);
+            user.getKeyedMap().setObject(Request.REQUESTS, user.getKeyedMap().getObjectInt(Request.REQUESTS)+1);;
+            out.add(ReplacerUtils.jprintf("request.success", env, Request.class));
+        } catch (FileNotFoundException e) {
+            out.add(ReplacerUtils.jprintf("reqfilled.error", env, Request.class));
+            return out;
+        } catch (FileExistsException e1) {
+            out.add(ReplacerUtils.jprintf("request.exists", env, Request.class));
+            return out;
+        } 	
+        return out;
+    }
 
-    private void doREQDEL(MessageCommand msgc) {
+    public ArrayList<String> doReqdel(String args, MessageCommand msgc) {
+	    ArrayList<String> out = new ArrayList<String>();
         ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-        env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
         env.add("ircnick",msgc.getSource().getNick());
         
-        User user;
-        try {
-            user = _listener.getIRCConfig().lookupUser(msgc.getSource());
-        } catch (NoSuchUserException e) {
-            _listener.say(msgc.getDest(), 
-                    ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-            return;
+        User user = getUser(msgc.getSource());
+        if (user == null) {
+     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+     	    return out;
         }
         env.add("ftpuser",user.getName());
         
-        if (!_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "reqdel",user)) {
-            _listener.say(msgc.getDest(), 
-                    ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
-            return;				
-        }
-        
-        
-        String dirName;
-        try {
-            dirName = msgc.getMessage().substring((_listener.getCommandPrefix() + "reqdel ").length()).trim();
-            if (dirName.length()==0) 
-            { 
-                _listener.say(msgc.getDest(), 
-                        ReplacerUtils.jprintf("reqdel.usage", env, Request.class)); 
-                return; 
-            } 
-            
-        } catch (ArrayIndexOutOfBoundsException e) {
-            logger.warn("", e);
-            _listener.say(msgc.getDest(), 
-                    ReplacerUtils.jprintf("reqdel.usage", env, Request.class));
-            return;
-        } catch (StringIndexOutOfBoundsException e) {
-            logger.warn("", e);
-            _listener.say(msgc.getDest(), 
-                    ReplacerUtils.jprintf("reqdel.usage", env, Request.class));
-            return;
-        }
-        
+        String dirName = args;
+        if (dirName.length()==0){ 
+            out.add(ReplacerUtils.jprintf("reqdel.usage", env, Request.class)); 
+            return out; 
+        } 
+
         env.add("ddirname",dirName);	
         
         String DirPath = ReplacerUtils.jprintf("request.dirpath", env, Request.class);
@@ -362,37 +233,33 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
         boolean nodir = false;
         boolean deldir = false;
         try {
-            LinkedRemoteFileInterface dir = getConnectionManager().getGlobalContext().getRoot().getFile(DirPath);
+            LinkedRemoteFileInterface dir = getGlobalContext().getRoot().getFile(DirPath);
             for (Iterator iter = dir.getDirectories().iterator(); iter.hasNext();) {
                 LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
                 if (file.isDirectory()) {
                     if (file.getName().endsWith(dirName)) {
                         nodir = false;
-                        if (file.getUsername().equals(user.getName()))
-                        {
+                        if (file.getUsername().equals(user.getName())) {
                             file.delete();
                             deldir = true;
-                            _listener.sayGlobal(ReplacerUtils.jprintf("reqdel.success", env, Request.class));
+                            out.add(ReplacerUtils.jprintf("reqdel.success", env, Request.class));
                             break;
-                            
                         } else {
-                            _listener.sayGlobal(ReplacerUtils.jprintf("reqdel.notowner", env, Request.class));
+                            out.add(ReplacerUtils.jprintf("reqdel.notowner", env, Request.class));
                             break;
                         }
-                        
-                        
-                        
                     } else nodir = true;
                 }
             }
             
-            if (nodir && !deldir) _listener.say(msgc.getDest(),ReplacerUtils.jprintf("reqdel.error", env, Request.class));
-            
-            
+            if (nodir && !deldir) 
+                out.add(ReplacerUtils.jprintf("reqdel.error", env, Request.class));
+
         } catch (FileNotFoundException e) {
-            _listener.say(msgc.getDest(),ReplacerUtils.jprintf("reqdel.error", env, Request.class));
-            return;
+            out.add(ReplacerUtils.jprintf("reqdel.error", env, Request.class));
+            return out;
         }
+        return out;
     }
 
 	private static LinkedRemoteFileInterface findDir(
@@ -420,5 +287,16 @@ public class Request extends GenericCommandAutoService implements IRCPluginInter
 	        }
 	    }
 	    return null;
+	}
+	
+	private User getUser(FullNick fn) {
+		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
+		User user = null;
+     	try {
+     	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
+     	} catch (Exception e) {
+     	    logger.warn("Could not identify " + ident);
+     	}
+     	return user;
 	}
 }
