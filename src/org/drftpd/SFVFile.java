@@ -73,7 +73,7 @@ public class SFVFile extends AbstractSFVFile {
         int offline = 0;
         int present = 0;
         for (LinkedRemoteFileInterface file : getFiles()) {
-            if (file.length() != 0) {
+            if (file.length() != 0 && file.getXfertime() != -1) {
             	present++;
                 if (!file.isAvailable()) {
                     offline++;

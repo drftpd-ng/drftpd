@@ -1214,9 +1214,10 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                         targetFileName, conn.getUserNull().getName(),
                         conn.getUserNull().getGroup(), 0L,
                         System.currentTimeMillis(), 0L);
-                _transferFile = targetDir.addFile(uploadFile);
-                _transferFile.setXfertime(-1); // used for new files to be
-												// uploaded, see getXfertime()
+                synchronized (this) {
+                	_transferFile = targetDir.addFile(uploadFile);
+                	_transferFile.setXfertime(-1); // used for new files to be
+                }								   // uploaded, see getXfertime()
             }
 
             // setup _transfer
@@ -1277,11 +1278,10 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 
                     while (true) {
                         status = _transfer.getTransferStatus();
-
+                        _transferFile.setLength(status.getTransfered());
                         if (status.isFinished()) {
                             break;
                         }
-                        _transferFile.setLength(status.getTransfered());
                         try {
                             Thread.sleep(100);
                         } catch (InterruptedException e1) {
@@ -1358,7 +1358,8 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             Reply response = new Reply(226,
                     conn.jprintf(DataConnectionHandler.class,
                         "transfer.complete", env));
-
+            synchronized (conn.getGlobalContext()) { // need to synchronize here so only one
+            										 // TransferEvent can be sent at a time
             if (isStor) {
                 if (_resumePosition == 0) {
                     _transferFile.setCheckSum(status.getChecksum());
@@ -1432,8 +1433,8 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                     conn, eventType, _transferFile, conn.getClientAddress(),
                     _rslave, _transfer.getAddress().getAddress(), getType(),
                     zipscript));
-
             return response;
+            }
         } finally {
             reset();
         }
