@@ -69,6 +69,7 @@ public class IMDBParser {
     private boolean getInfo(String searchString) {
         try {
             String urlString = _searchUrl + filterTitle(searchString);
+            
             URL url = new URL(urlString);
             URLConnection urlConn = url.openConnection();
             
@@ -87,7 +88,8 @@ public class IMDBParser {
             if (data.indexOf("<b>No Matches.</b>") > 0)
                 return false;
             
-            if (data.indexOf("<title>IMDb name and title search") >= 0) {
+            if (data.indexOf("<title>IMDb name and title search") >= 0 ||
+                    data.indexOf("<a href=\"/title/tt") >= 0) {
                 int start = data.indexOf("/title/tt");
                 if (start > 0) {
                     int end = data.indexOf("/",start + "/title/tt".length());

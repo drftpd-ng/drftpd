@@ -21,25 +21,20 @@ import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.Iterator;
 
+import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 
 import org.apache.log4j.Logger;
-import org.drftpd.Time;
 import org.drftpd.Bytes;
-import org.drftpd.GlobalContext;
+import org.drftpd.Time;
 import org.drftpd.plugins.SiteBot.Ret;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.slave.RemoteIOException;
+import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
-
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.SlaveUnavailableException;
-
-import org.tanesha.replacer.FormatterException;
 
 public class DIZPlugin extends FtpListener {
 	private static final String _ehdr = "DIZFile exception:";
@@ -156,7 +151,7 @@ public class DIZPlugin extends FtpListener {
 	public static int zipFilesPresent(LinkedRemoteFileInterface dir) {
 		int total = 0;
 		for (LinkedRemoteFileInterface aFile : dir.getFiles2()) {
-			if (aFile.length() != 0) {
+			if (isZipFile(aFile) && aFile.length() != 0) {
 				total++;
 			}
 		}
@@ -166,7 +161,7 @@ public class DIZPlugin extends FtpListener {
 	public static int zipFilesOnline(LinkedRemoteFileInterface dir) {
 		int total = 0;
 		for (LinkedRemoteFileInterface aFile : dir.getFiles2()) {
-			if (aFile.length() != 0 && aFile.isAvailable()) {
+			if (isZipFile(aFile) && aFile.length() != 0 && aFile.isAvailable()) {
 				total++;
 			}
 		}

@@ -65,17 +65,15 @@ public class IRCListener extends IRCCommand {
         }
 	}
 
-    public ArrayList<String> doImdb(String command, MessageCommand msgc) {
+    public ArrayList<String> doImdb(String args, MessageCommand msgc) {
         ArrayList<String> out = new ArrayList<String>();
         ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		env.add("ircnick", msgc.getSource().getNick());	
         
        	try { 
-       		String searchStr = command.substring(command.indexOf(" ") + 1);
-       		
-            IMDBParser imdb = new IMDBParser(searchStr, _filters);
+            IMDBParser imdb = new IMDBParser(args, _filters);
             if (!imdb.foundFilm()) {
-                env.add("searchstr", searchStr);
+                env.add("searchstr", args);
                 out.add(ReplacerUtils.jprintf("imdb.notfound", env, IMDBParser.class));
             } else {
                 out.add(ReplacerUtils.jprintf("imdb.announce", imdb.getEnv(), IMDBParser.class));

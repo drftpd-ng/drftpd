@@ -17,17 +17,16 @@
  */
 package org.drftpd.plugins;
 
-import java.util.Collection;
+import java.io.FileNotFoundException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.SlaveUnavailableException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
-
-import java.io.FileNotFoundException;
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.SlaveUnavailableException;
 import org.drftpd.slave.RemoteIOException;
 
 public class DIZFile {

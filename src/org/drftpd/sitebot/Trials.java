@@ -81,7 +81,6 @@ public class Trials extends IRCCommand {
 		    trial = (Trial) getGlobalContext().getFtpListener(Trial.class);
         } catch (ObjectNotFoundException e) {
             logger.warn("Trial plugin not loaded ... !passed will be disabled.");
-            e.printStackTrace();
             trial = null;
         }
 
