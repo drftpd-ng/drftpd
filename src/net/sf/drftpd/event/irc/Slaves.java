@@ -39,7 +39,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Slaves.java,v 1.5 2004/03/26 00:16:32 mog Exp $
+ * @version $Id: Slaves.java,v 1.6 2004/04/09 19:05:04 mog Exp $
  */
 public class Slaves extends GenericAutoService implements IRCPluginInterface {
 
@@ -66,7 +66,7 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 		MessageCommand msgc = (MessageCommand) inCommand;
 		if (!((MessageCommand) inCommand).getMessage().equals("!slaves"))
 			return;
-		if (msgc.isPrivateToUs(_listener.getClientState()))
+		if (msgc.isPrivateToUs(_listener.getIRCConnection().getClientState()))
 			return;
 		String chan = msgc.getDest();
 

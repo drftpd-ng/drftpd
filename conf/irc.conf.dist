@@ -1,4 +1,4 @@
-irc.server=irc.csbnet.se
+irc.server=localhost
 irc.port=6667
 irc.ssl=false
 irc.channel.1=#drftpd-test
@@ -24,3 +24,4 @@ irc.plugins.5=net.sf.drftpd.event.irc.Bnc
 irc.plugins.6=net.sf.drftpd.event.irc.Stats
 irc.plugins.7=net.sf.drftpd.event.irc.Bandwidth
 irc.plugins.8=net.sf.drftpd.event.irc.Diskfree
+irc.plugins.9=org.drftpd.plugins.OnConnect

@@ -88,7 +88,7 @@ class TrialSiteBot extends GenericCommandAutoService {
 		if (!(command instanceof MessageCommand))
 			return;
 		MessageCommand msgc = (MessageCommand) command;
-		if (msgc.isPrivateToUs(_irc.getClientState()))
+		if (msgc.isPrivateToUs(_irc.getIRCConnection().getClientState()))
 			return;
 		String msg = msgc.getMessage();
 		if (!msg.startsWith("!passed "))

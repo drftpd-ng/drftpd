@@ -32,7 +32,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author zubov
- * @version $Id: Diskfree.java,v 1.2 2004/03/26 00:16:32 mog Exp $
+ * @version $Id: Diskfree.java,v 1.3 2004/04/09 19:05:03 mog Exp $
  */
 
 public class Diskfree
@@ -61,7 +61,7 @@ public class Diskfree
 			return;
 		MessageCommand msgc = (MessageCommand) command;
 		String msg = msgc.getMessage();
-		if (msgc.isPrivateToUs(_listener.getClientState()))
+		if (msgc.isPrivateToUs(_listener.getIRCConnection().getClientState()))
 			return;
 		if (msg.equals("!df")) {
 			SlaveStatus status =

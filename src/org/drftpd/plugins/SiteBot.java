@@ -91,7 +91,7 @@ import f00f.net.irc.martyr.commands.NickCommand;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.2 2004/03/26 13:58:22 mog Exp $
+ * @version $Id: SiteBot.java,v 1.3 2004/04/09 19:05:05 mog Exp $
  */
 public class SiteBot implements FtpListener, Observer {
 
@@ -245,7 +245,7 @@ public class SiteBot implements FtpListener, Observer {
 		new File("logs").mkdirs();
 		Debug.setOutputStream(
 			new PrintStream(new FileOutputStream("logs/sitebot.log")));
-		Debug.setDebugLevel(Debug.BAD);
+		//Debug.setDebugLevel(Debug.BAD);
 	}
 
 	public void actionPerformed(Event event) {
@@ -622,12 +622,12 @@ public class SiteBot implements FtpListener, Observer {
 	private void actionPerformedInvite(InviteEvent event) {
 		String user = event.getUser();
 		logger.info("Invited " + user + " through SITE INVITE");
-		for (Enumeration e = getClientState().getChannels();
+		for (Enumeration e = getIRCConnection().getClientState().getChannels();
 			e.hasMoreElements();
 			) {
 			Channel chan = (Channel) e.nextElement();
 			if (chan
-				.findMember(getClientState().getNick().getNick())
+				.findMember(getIRCConnection().getClientState().getNick().getNick())
 				.hasOps()) {
 				_conn.sendCommand(new InviteCommand(user, _channelName));
 			}
@@ -746,7 +746,7 @@ public class SiteBot implements FtpListener, Observer {
 	}
 
 	public void connect() throws UnknownHostException, IOException {
-		logger.info("IRCListener: connecting to " + _server + ":" + _port);
+		logger.info("connecting to " + _server + ":" + _port);
 		_conn.connect(_server, _port);
 	}
 
@@ -756,8 +756,7 @@ public class SiteBot implements FtpListener, Observer {
 			_autoReconnect.disable();
 			_conn.disconnect();
 		}
-		_clientState = new ClientState();
-		_conn = new IRCConnection(_clientState);
+		_conn = new IRCConnection();
 
 		_autoReconnect = new AutoReconnect(_conn);
 		_autoRegister = addAutoRegister(ircCfg);
@@ -932,10 +931,6 @@ public class SiteBot implements FtpListener, Observer {
 		return _channelName;
 	}
 
-	public ClientState getClientState() {
-		return _clientState;
-	}
-
 	public FtpConfig getConfig() {
 		return _cm.getConfig();
 	}
@@ -1067,7 +1062,7 @@ public class SiteBot implements FtpListener, Observer {
 	}
 
 	public void sayGlobal(String string) {
-		for (Enumeration e = getClientState().getChannelNames();
+		for (Enumeration e = getIRCConnection().getClientState().getChannelNames();
 			e.hasMoreElements();
 			) {
 			sayChannel((String) e.nextElement(), string);
@@ -1090,7 +1085,7 @@ public class SiteBot implements FtpListener, Observer {
 			return;
 
 		MessageCommand msgc = (MessageCommand) updated;
-		if (msgc.isPrivateToUs(getClientState()))
+		if (msgc.isPrivateToUs(getIRCConnection().getClientState()))
 			return;
 		if (!msgc.getDest().equalsIgnoreCase(_channelName))
 			return;

@@ -56,7 +56,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.32 2004/03/30 14:16:35 mog Exp $
+ * @version $Id: UserManagment.java,v 1.33 2004/04/09 19:05:04 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -625,7 +625,7 @@ public class UserManagment implements CommandHandler {
 			long myDate;
 			if (!commandArgument.equals("")) {
 				try {
-					myDate =  new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.Sz").parse(commandArgument).getTime();
+					myDate =  new SimpleDateFormat("yyyy-MM-dd").parse(commandArgument).getTime();
 				} catch (ParseException e1) {
 					logger.log(Level.INFO, e1);
 					return new FtpReply(200, e1.getMessage());
@@ -634,6 +634,7 @@ public class UserManagment implements CommandHandler {
 				myDate = System.currentTimeMillis();
 			}
 			myUser.setCreated(myDate);
+			env.add("created", new Date(myDate));
 			return new FtpReply(
 				200,
 				conn.jprintf(
@@ -642,6 +643,10 @@ public class UserManagment implements CommandHandler {
 					env));
 		} else if("wkly_allotment".equals(command)) {
 			myUser.setWeeklyAllotment(Bytes.parseBytes(commandArgument));
+			return FtpReply.RESPONSE_200_COMMAND_OK;
+		} else if("tagline".equals(command)) {
+			myUser.setTagline(commandArgument);
+			return FtpReply.RESPONSE_200_COMMAND_OK;
 		} else {
 			FtpReply response2 =
 				(FtpReply) FtpReply.RESPONSE_501_SYNTAX_ERROR.clone();

@@ -44,7 +44,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Who.java,v 1.6 2004/03/26 00:16:32 mog Exp $
+ * @version $Id: Who.java,v 1.7 2004/04/09 19:05:04 mog Exp $
  */
 public class Who extends GenericAutoService implements IRCPluginInterface {
 	private static final Logger logger = Logger.getLogger(Who.class);
@@ -72,7 +72,7 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
 		if (!(inCommand instanceof MessageCommand))
 			return;
 		MessageCommand msgc = (MessageCommand) inCommand;
-		if(msgc.isPrivateToUs(_listener.getClientState())) return;
+		if(msgc.isPrivateToUs(_listener.getIRCConnection().getClientState())) return;
 		String cmd = msgc.getMessage();
 		
 		boolean up, dn, idle;

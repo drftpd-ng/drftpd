@@ -41,7 +41,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author flowman
- * @version $Id: Bandwidth.java,v 1.3 2004/03/26 00:16:32 mog Exp $
+ * @version $Id: Bandwidth.java,v 1.4 2004/04/09 19:05:03 mog Exp $
  */
 
 public class Bandwidth
@@ -73,7 +73,7 @@ public class Bandwidth
 			return;
 		}
 		MessageCommand msgc = (MessageCommand) command;
-		if (msgc.isPrivateToUs(_listener.getClientState())) {
+		if (msgc.isPrivateToUs(_listener.getIRCConnection().getClientState())) {
 			return;
 		}
 
