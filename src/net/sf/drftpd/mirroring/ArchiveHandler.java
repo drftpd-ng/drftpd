@@ -21,7 +21,13 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.12 2004/01/20 04:18:41 zubov Exp $
+ *
+ * To change the template for this generated type comment go to
+ * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ */
+/**
+ * @author zubov
+ * @version $Id: ArchiveHandler.java,v 1.13 2004/01/28 04:28:06 zubov Exp $
  */
 public class ArchiveHandler extends Thread {
 
@@ -30,7 +36,8 @@ public class ArchiveHandler extends Thread {
 	private Archive _parent;
 
 	public ArchiveHandler(DirectoryFtpEvent dirEvent, Archive archive) {
-		reload();
+		// does not need to be loaded, it looks up the settings from the Archive class
+//		reload();
 		_dirEvent = dirEvent;
 		_parent = archive;
 	}
@@ -248,18 +255,18 @@ public class ArchiveHandler extends Thread {
 		}
 		return oldestDir;
 	}
+	/**
+	 * @deprecated
+	 */
 	private void reload() {
 		Properties props = new Properties();
 		try {
-			props.load(new FileInputStream("archive.conf"));
+			props.load(new FileInputStream("conf/archive.conf"));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		// archive slave list
 	}
-	/* (non-Javadoc)
-	 * @see java.lang.Runnable#run()
-	 */
+
 	public void run() {
 		LinkedRemoteFile oldDir = _dirEvent.getDirectory();
 		LinkedRemoteFile root = oldDir.getRoot();
