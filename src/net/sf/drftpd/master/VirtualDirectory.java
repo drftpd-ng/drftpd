@@ -156,6 +156,7 @@ public class VirtualDirectory {
 			out.write(fl.getName());
 		}
 		out.write(NEWLINE);
+		out.flush();
 	}
 
 }
