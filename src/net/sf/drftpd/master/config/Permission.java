@@ -48,7 +48,7 @@ public class Permission {
 				}
 			}
 			else {
-				//FLAG, we don't have flags, we have groups and that's the save but multiple letters
+				//FLAG, we don't have flags, we have groups and that's the same but multiple letters
 				if(user.isMemberOf(aclUser)) {
 					return allow;
 				}

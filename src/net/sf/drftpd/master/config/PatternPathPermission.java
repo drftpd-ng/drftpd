@@ -29,10 +29,11 @@ public class PatternPathPermission extends PathPermission {
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.config.PathPermission#checkPath(java.lang.String)
 	 */
-	public boolean checkPath(LinkedRemoteFile path) {
-		Perl5Matcher m = new Perl5Matcher();
-		assert path.isDirectory() : "Not a dir PatternPermission";
-		return m.matches(path.getPath()+"/", _pat);
-	}
+	public boolean checkPath(LinkedRemoteFile file) {
+		String path = file.getPath();
+		if(file.isDirectory()) path = path.concat("/");
 
+		Perl5Matcher m = new Perl5Matcher();
+		return m.matches(path, _pat); 
+	}
 }

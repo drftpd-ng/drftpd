@@ -202,7 +202,7 @@ public class FileRemoteFile extends RemoteFile {
 				}
 			}
 		}
-		assert !filefiles.isEmpty();
+		assert !(!getName().equals("") && filefiles.isEmpty()) : this;
 	}
 	/**
 	 * @see net.sf.drftpd.remotefile.RemoteFile#getFiles()

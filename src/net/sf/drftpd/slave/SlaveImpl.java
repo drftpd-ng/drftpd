@@ -45,8 +45,7 @@ public class SlaveImpl
 	 * @param inetAddress
 	 * @param b
 	 */
-	public SlaveImpl(Properties cfg)
-		throws RemoteException {
+	public SlaveImpl(Properties cfg) throws RemoteException {
 		super(0); // starts RMI accept thread which will keep us from dying
 
 		String slavemanagerurl;
@@ -235,26 +234,31 @@ public class SlaveImpl
 	/**
 	 * @see net.sf.drftpd.slave.Slave#rename(String, String)
 	 */
-	public void rename(String from, String to)
-		throws FileNotFoundException, ObjectExistsException {
-		Root root = roots.getRootForFile(from);
-		File fromfile = new File(root.getPath()+File.separatorChar+from);
-		// throws FileNotFoundException
-		if (!fromfile.exists())
-			throw new FileNotFoundException(
-				"cannot rename from " + from + ", file does not exist");
-		File tofile;
-		try {
-			roots.getFile(to);
-			throw new ObjectExistsException(
-				"cannot rename from "
-					+ from
-					+ " to "
-					+ to
-					+ ", destination exists");
-		} catch(FileNotFoundException ex) {} // good
-		tofile = new File(root.getPath() + to);
-		fromfile.renameTo(tofile);
+	public void rename(String from, String toDirPath, String toName) throws IOException {
+		//Collection files = roots.iterator(from);
+		for (Iterator iter = roots.iterator(); iter.hasNext();) {
+			Root root = (Root) iter.next();
+
+			File fromfile = root.getFile(from);
+			if (!fromfile.exists())
+				continue;
+
+			File toDir = root.getFile(toDirPath);
+			toDir.mkdirs();
+			File tofile = new File(toDir.getPath()+File.separator+toName);
+			if(tofile.exists()) {
+				throw new ObjectExistsException(
+					"cannot rename from "
+						+ fromfile
+						+ " to "
+						+ tofile
+						+ ", destination exists");
+			}
+
+			if (!fromfile.renameTo(tofile)) {
+				throw new IOException("Rename "+fromfile+" to "+tofile+" failed");
+			}
+		}
 	}
 
 	public void delete(String path) throws IOException {

@@ -1,6 +1,8 @@
 package net.sf.drftpd.master;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -26,7 +28,6 @@ import net.sf.drftpd.AsciiOutputStream;
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FatalException;
-import net.sf.drftpd.IllegalTargetException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -608,7 +609,7 @@ public class FtpConnection extends BaseFtpConnection {
 		User user = _user;
 		for (Iterator iter = listFiles.iterator(); iter.hasNext();) {
 			LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
-			if (!connManager.getConfig().isVisible(user, element))
+			if (!connManager.getConfig().checkPrivPath(user, element))
 				iter.remove();
 		}
 		FtpResponse response =
@@ -778,8 +779,10 @@ public class FtpConnection extends BaseFtpConnection {
 					257,
 					"\"" + createdDir.getPath() + "\" created."));
 
-			connManager.dispatchFtpEvent(
-				new DirectoryFtpEvent(_user, "MKD", createdDir));
+			if (!getConfig().checkHideInWho(createdDir, _user)) {
+				connManager.dispatchFtpEvent(
+					new DirectoryFtpEvent(_user, "MKD", createdDir));
+			}
 			return;
 		} catch (ObjectExistsException ex) {
 			out.println("550 directory " + createdDirName + " already exists");
@@ -1099,7 +1102,8 @@ public class FtpConnection extends BaseFtpConnection {
 
 		InetAddress clientAddr = null;
 		int clientPort = 0;
-
+		preTransfer = false;
+		preTransferRSlave = null;
 		// argument check
 		if (!request.hasArgument()) {
 			//Syntax error in parameters or arguments
@@ -1136,11 +1140,16 @@ public class FtpConnection extends BaseFtpConnection {
 			&& clientAddr.getHostAddress().startsWith("192.168.")) {
 			FtpResponse response = new FtpResponse(501);
 			response.addComment("==YOU'RE BEHIND A NAT ROUTER==");
-			response.addComment("Configure the firewall settings of your FTP client");
-			response.addComment("  to use your real IP: "+controlSocket.getInetAddress().getHostAddress());
+			response.addComment(
+				"Configure the firewall settings of your FTP client");
+			response.addComment(
+				"  to use your real IP: "
+					+ controlSocket.getInetAddress().getHostAddress());
 			response.addComment("And set up port forwarding in your router.");
-			response.addComment("Or you can just use a PRET capable client, see");
-			response.addComment("  http://drftpd.mog.se/ for PRET capable clients");
+			response.addComment(
+				"Or you can just use a PRET capable client, see");
+			response.addComment(
+				"  http://drftpd.mog.se/ for PRET capable clients");
 			out.print(response);
 			return;
 		}
@@ -1366,6 +1375,8 @@ public class FtpConnection extends BaseFtpConnection {
 				return;
 			}
 			_rslave = preTransferRSlave;
+			preTransferRSlave = null;
+			preTransfer = false;
 		} else {
 
 			try {
@@ -1529,8 +1540,10 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		// now delete
-		connManager.dispatchFtpEvent(
-			new DirectoryFtpEvent(_user, "RMD", requestedFile));
+		if (!getConfig().checkHideInWho(requestedFile, _user)) {
+			connManager.dispatchFtpEvent(
+				new DirectoryFtpEvent(_user, "RMD", requestedFile));
+		}
 		requestedFile.delete();
 		out.print(FtpResponse.RESPONSE_250_ACTION_OKAY);
 	}
@@ -1619,18 +1632,17 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		Object ret[] = currentDirectory.lookupNonExistingFile(request.getArgument());
-		LinkedRemoteFile toDir = (LinkedRemoteFile)ret[0];
-		String name = (String)ret[1];
-		
+		Object ret[] =
+			currentDirectory.lookupNonExistingFile(request.getArgument());
+		LinkedRemoteFile toDir = (LinkedRemoteFile) ret[0];
+		String name = (String) ret[1];
+
 		LinkedRemoteFile fromFile = renameFrom;
 		resetState();
 
-		if(name == null) name = fromFile.getName();
-		String to = toDir.getPath()+"/"+name;
-		
-		logger.info("argument = " + request.getArgument());
-		logger.info("to = " + to);
+		if (name == null)
+			name = fromFile.getName();
+		//String to = toDir.getPath() + "/" + name;
 
 
 		// check permission
@@ -1640,12 +1652,8 @@ public class FtpConnection extends BaseFtpConnection {
 		//}
 
 		try {
-			fromFile.renameTo(to);
-		} catch (ObjectExistsException e) {
-			out.print(FtpResponse.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN);
-			e.printStackTrace();
-			return;
-		} catch (IllegalTargetException e) {
+			fromFile.renameTo(toDir.getPath(), name);
+		} catch (IOException e) {
 			out.print(FtpResponse.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN);
 			e.printStackTrace();
 			return;
@@ -2480,23 +2488,22 @@ public class FtpConnection extends BaseFtpConnection {
 				nukees2.put(user, nukees.get(username));
 			}
 		}
-		String to;
+		String toDir;
+		String toName = "[NUKED]-"+nukeDir.getName();
 		try {
-			to =
-				nukeDir.getParentFile().getPath()
-					+ "/[NUKED]-"
-					+ nukeDir.getName();
+			toDir =
+				nukeDir.getParentFile().getPath();
 		} catch (FileNotFoundException ex) {
-			ex.printStackTrace();
+			logger.fatal("", ex);
 			out.print(FtpResponse.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN);
 			return;
 		}
 		try {
-			nukeDir.renameTo(to);
-		} catch (IOException e1) {
-			e1.printStackTrace();
+			nukeDir.renameTo(toDir, toName);
+		} catch (IOException ex) {
+			ex.printStackTrace();
 			response.addComment(
-				" cannot rename to \"" + to + "\": " + e1.getMessage());
+				" cannot rename to \"" + toDir+"/"+ toName+ "\": " + ex.getMessage());
 			response.setCode(500);
 			response.setMessage("NUKE failed");
 			out.print(response);
@@ -2565,7 +2572,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 * @param out
 	 */
 	public void doSITE_PRE(FtpRequest request, PrintWriter out) {
-		if(!request.hasArgument()) {
+		if (!request.hasArgument()) {
 			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
 		}
@@ -2590,6 +2597,10 @@ public class FtpConnection extends BaseFtpConnection {
 			preDir = currentDirectory.lookupFile(args[0]);
 		} catch (FileNotFoundException e) {
 			out.print(FtpResponse.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN);
+			return;
+		}
+		if (!getConfig().checkPre(preDir, _user)) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
 
@@ -2619,20 +2630,15 @@ public class FtpConnection extends BaseFtpConnection {
 
 		//RENAME
 		try {
-			preDir.renameTo(section.getPath() + "/"+ preDir.getName());
-		} catch (ObjectExistsException e1) {
+			preDir.renameTo(section.getPath(), preDir.getName());
+		} catch (IOException ex) {
 			out.print(
-				new FtpResponse(
-					200,
-					"release already exists in target section"));
-			return;
-		} catch (IllegalTargetException ex) {
-			out.print(
-				new FtpResponse(200, "Illegal arguments: " + ex.getMessage()));
-			logger.log(Level.WARN, "illegal arguments", ex);
+				new FtpResponse(200, ex.getMessage()));
+			logger.warn("", ex);
 		}
 
 		//ANNOUNCE
+		logger.debug("preDir after rename: "+preDir);
 		connManager.dispatchFtpEvent(
 			new DirectoryFtpEvent(_user, "PRE", preDir));
 
@@ -2899,7 +2905,18 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
 	}
-
+	public void doSITE_RULES(FtpRequest request, PrintWriter out) {
+		try {
+			out.print(
+				new FtpResponse(200).addComment(
+					new BufferedReader(
+						new FileReader("ftp-data/text/rules.txt"))));
+			return;
+		} catch (IOException e) {
+			out.print(new FtpResponse(200, e.getMessage()));
+			return;
+		}
+	}
 	public void doSITE_SEARCH(FtpRequest request, PrintWriter out) {
 		//TODO implement SITE SEARCH
 		out.print(FtpResponse.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
@@ -3134,19 +3151,19 @@ public class FtpConnection extends BaseFtpConnection {
 	public void doSITE_UNNUKE(FtpRequest request, PrintWriter out) {
 		resetState();
 
-
 		StringTokenizer st = new StringTokenizer(request.getArgument());
-		if(!st.hasMoreTokens()) {
+		if (!st.hasMoreTokens()) {
 			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
 		}
-		
+
 		String toName = st.nextToken();
-		String toPath = this.currentDirectory.getPath() +"/"+ toName;
+		String toPath = this.currentDirectory.getPath() + "/" + toName;
+		String toDir = currentDirectory.getPath();
 		String nukeName = "[NUKED]-" + toName;
 
 		String reason;
-		if(st.hasMoreTokens()) {
+		if (st.hasMoreTokens()) {
 			reason = st.nextToken("");
 		} else {
 			reason = "";
@@ -3159,7 +3176,7 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(
 				new FtpResponse(
 					200,
-					nukeName+" doesn't exist: " + e2.getMessage()));
+					nukeName + " doesn't exist: " + e2.getMessage()));
 			return;
 		}
 
@@ -3214,11 +3231,11 @@ public class FtpConnection extends BaseFtpConnection {
 			response.addComment("Error removing nukelog entry");
 		}
 		try {
-			nukeDir.renameTo(toPath);
+			nukeDir.renameTo(toDir, toName);
 		} catch (ObjectExistsException e1) {
 			response.addComment(
 				"Error renaming nuke, target dir already exists");
-		} catch (IllegalTargetException e1) {
+		} catch (IOException e1) {
 			response.addComment("Error: " + e1.getMessage());
 			logger.log(
 				Level.FATAL,
@@ -3369,9 +3386,8 @@ public class FtpConnection extends BaseFtpConnection {
 			String command = conn.getRequest().getCommand();
 			String username = user.getUsername();
 
-			if (connManager
-				.getConfig()
-				.checkHideInWho(conn.getCurrentDirectory(), _user)) {
+			if (!getConfig()
+				.checkHideInWho(conn.getCurrentDirectory(), user)) {
 				continue;
 			}
 			if (conn.isExecuting()) {
@@ -3465,8 +3481,10 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(new FtpResponse(200, "Can't wipe, directory not empty"));
 			return;
 		}
+		if(!getConfig().checkHideInWho(wipeFile, _user)) {
 		connManager.dispatchFtpEvent(
 			new DirectoryFtpEvent(_user, "WIPE", wipeFile));
+		}
 		wipeFile.delete();
 		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
 		return;
@@ -3577,6 +3595,11 @@ public class FtpConnection extends BaseFtpConnection {
 		LinkedRemoteFile targetDir = (LinkedRemoteFile) ret[0];
 		String targetFilename = (String) ret[1];
 
+		if(!getConfig().checkUpload(targetDir, _user)) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
+
 		if (targetFilename == null) {
 			// target exists, this could be overwrite or resume
 			// if(resumePosition != 0) {} // resume
@@ -3604,11 +3627,12 @@ public class FtpConnection extends BaseFtpConnection {
 					"Requested action not taken. File name not allowed."));
 			return;
 		}
-
 		//SETUP rslave
 		if (preTransfer) {
 			assert preTransferRSlave != null;
 			_rslave = preTransferRSlave;
+			preTransferRSlave = null;
+			preTransfer = false;
 		} else {
 			try {
 				_rslave =
@@ -3719,6 +3743,7 @@ public class FtpConnection extends BaseFtpConnection {
 				.RESPONSE_226_CLOSING_DATA_CONNECTION
 				.clone();
 		response.addComment(Bytes.formatBytes(transferedBytes) + " transfered");
+		if(!targetFilename.toLowerCase().endsWith(".sfv")) {
 		try {
 			long sfvChecksum =
 				targetDir.lookupSFVFile().getChecksum(targetFilename);
@@ -3762,13 +3787,13 @@ public class FtpConnection extends BaseFtpConnection {
 			}
 		} catch (NoAvailableSlaveException e) {
 			response.addComment(
-				"zipscript - slave with .sfv file is offline, no checksum matching performed");
+				"zipscript - SFV unavailable, slave with .sfv file is offline");
 		} catch (ObjectNotFoundException e) {
-			response.addComment("zipscript - no .sfv file in directory");
+			response.addComment("zipscript - SFV unavailable, no .sfv file in directory");
 		} catch (IOException e) {
-			response.addComment("zipscript - IO error: " + e.getMessage());
+			response.addComment("zipscript - SFV unavailable, IO error: " + e.getMessage());
 		}
-
+		}
 		//TODO creditcheck
 		_user.updateCredits((long) (_user.getRatio() * transferedBytes));
 		_user.updateUploadedBytes(transferedBytes);
@@ -3779,15 +3804,17 @@ public class FtpConnection extends BaseFtpConnection {
 			response.addComment("Error saving userfile: " + e1.getMessage());
 		}
 
-		connManager.dispatchFtpEvent(
-			new TransferEvent(
-				_user,
-				"STOR",
-				_transferFile,
-				getClientAddress(),
-				_rslave.getInetAddress(),
-				getType(),
-				true));
+		if (!getConfig().checkHideInWho(_transferFile, _user)) {
+			connManager.dispatchFtpEvent(
+				new TransferEvent(
+					_user,
+					"STOR",
+					_transferFile,
+					getClientAddress(),
+					_rslave.getInetAddress(),
+					getType(),
+					true));
+		}
 
 		response.addComment(status());
 		out.print(response);
@@ -4103,7 +4130,7 @@ public class FtpConnection extends BaseFtpConnection {
 
 		//		mbReset = false;
 		resumePosition = 0;
-
+		
 		//mbUser = false;
 		//mbPass = false;
 	}

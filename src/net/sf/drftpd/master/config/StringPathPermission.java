@@ -24,12 +24,8 @@ public class StringPathPermission extends PathPermission {
 		this.path = path;
 	}
 
-	private boolean myCheckPath(String path) {
-		return path.startsWith(this.path);
-	}
-
 	public boolean checkPath(LinkedRemoteFile path) {
 		assert path.isDirectory() : "Should be a directory";
-		return myCheckPath(path.getPath()+"/");
+		return (path.getPath()+"/").startsWith(this.path);
 	}
 }

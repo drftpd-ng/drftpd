@@ -48,5 +48,12 @@ public class Root {
 	public long getDiskSpaceCapacity() {
 		return getFile().getDiskSpaceCapacity();
 	}
+	/**
+	 * @param fromfile
+	 * @return
+	 */
+	public File getFile(String path) {
+		return new File(_root+File.separator+path);
+	}
 
 }

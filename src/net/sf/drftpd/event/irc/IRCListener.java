@@ -8,7 +8,9 @@ package net.sf.drftpd.event.irc;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.UnknownHostException;
 import java.rmi.ConnectException;
 import java.rmi.RemoteException;
@@ -138,7 +140,8 @@ public class IRCListener implements FtpListener, Observer {
 		throws UnknownHostException, IOException {
 
 		_cm = cm;
-		Debug.setDebugLevel(Debug.FAULT);
+		//Debug.setDebugLevel(Debug.FAULT);
+		Debug.setOutputStream(new PrintStream(new FileOutputStream("martyr.out")));
 
 		reload();
 
@@ -226,14 +229,12 @@ public class IRCListener implements FtpListener, Observer {
 
 	private void actionPerformedDirectory(DirectoryFtpEvent direvent)
 		throws FormatterException {
-		if (_cm.getConfig().checkHideInWho(direvent.getDirectory()))
-			return;
 
-		if (direvent.getCommand().equals("MKD")) {
+		if ("MKD".equals(direvent.getCommand())) {
 			sayDirectorySection(direvent, "mkdir");
-		} else if (direvent.getCommand().equals("RMD")) {
+		} else if ("RMD".equals(direvent.getCommand())) {
 			sayDirectorySection(direvent, "rmdir");
-		} else if (direvent.getCommand().equals("WIPE")) {
+		} else if ("WIPE".equals(direvent.getCommand())) {
 			if (direvent.getDirectory().isDirectory()) {
 				sayDirectorySection(direvent, "wipe");
 			}
@@ -246,11 +247,7 @@ public class IRCListener implements FtpListener, Observer {
 			ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
 			fillEnvSection(env, direvent, dir);
 
-			try {
-				say(SimplePrintf.jprintf(format, env));
-			} catch (FormatterException e) {
-				logger.log(Level.WARN, "", e);
-			}
+			say(SimplePrintf.jprintf(format, env));
 
 		} else if (direvent.getCommand().equals("STOR")) {
 			LinkedRemoteFile dir;
@@ -637,12 +634,13 @@ public class IRCListener implements FtpListener, Observer {
 	}
 
 	public String strippath(String path) {
-		if (path.startsWith("/"))
-			path = path.substring(1);
-		if (path.endsWith("/"))
-			path = path.substring(0, path.length() - 1);
-		return path;
+		if(!path.startsWith("/")) {
+			logger.debug("Path didn't start with /, unneeded call to strippath()?", new Throwable());
+			return path;
+		} 
+		return path.substring(1);
 	}
+
 	public void update(Observable observer, Object updated) {
 		try {
 			if (updated instanceof MessageCommand) {
@@ -906,13 +904,11 @@ public class IRCListener implements FtpListener, Observer {
 			iter.hasNext();
 			) {
 			BaseFtpConnection conn = (BaseFtpConnection) iter.next();
-			if (_cm.getConfig().checkHideInWho(conn.getCurrentDirectory()))
-				continue;
+			try {
+				User connUser = conn.getUser();
 			if (!first) {
 				status.append(separator);
-				first = false;
 			}
-			try {
 				if (conn.isAuthenticated()
 					&& conn.getUser().getUsername().equals(username)) {
 
@@ -923,9 +919,15 @@ public class IRCListener implements FtpListener, Observer {
 							+ "s");
 
 					if (!conn.isExecuting()) {
+						if (!getConfig().checkHideInWho(conn.getTransferFile(), connUser))
+							continue;
+						first = false;
 						status.append(SimplePrintf.jprintf(formatidle, env));
 
 					} else if (conn.isTransfering()) {
+						if (_cm.getConfig().checkHideInWho(conn.getCurrentDirectory(), connUser))
+							continue;
+						first = false;
 						if (conn.isTransfering()) {
 							try {
 								env.add(
@@ -965,6 +967,13 @@ public class IRCListener implements FtpListener, Observer {
 	}
 
 	/**
+	 * 
+	 */
+	private FtpConfig getConfig() {
+		return _cm.getConfig();
+	}
+
+	/**
 	 * @param observer
 	 * @param msgc
 	 */
@@ -983,8 +992,6 @@ public class IRCListener implements FtpListener, Observer {
 			iter.hasNext();
 			) {
 			BaseFtpConnection conn = (BaseFtpConnection) iter.next();
-			if (_cm.getConfig().checkHideInWho(conn.getCurrentDirectory()))
-				continue;
 			if (conn.isAuthenticated()) {
 				User user;
 				try {
@@ -992,6 +999,8 @@ public class IRCListener implements FtpListener, Observer {
 				} catch (NoSuchUserException e) {
 					continue;
 				}
+				if (!getConfig().checkHideInWho(conn.getCurrentDirectory(), user))
+					continue;
 				StringBuffer status = new StringBuffer();
 				env.add(
 					"idle",

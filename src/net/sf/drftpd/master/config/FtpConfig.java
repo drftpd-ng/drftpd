@@ -19,15 +19,15 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.oro.text.GlobCompiler;
-
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.FtpResponse;
 import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.oro.text.GlobCompiler;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
@@ -40,11 +40,12 @@ public class FtpConfig {
 	private ArrayList _creditcheck;
 
 	private ArrayList _creditloss;
-	private ArrayList _eventplugins;
-	private ArrayList _hideinwhos;
+	private ArrayList _eventplugin;
+	private ArrayList _hideinwho;
 	private ArrayList _makedir;
-	private ArrayList _msgpaths;
-	private ArrayList _privpaths;
+	private ArrayList _msgpath;
+	private ArrayList _pre;
+	private ArrayList _privpath;
 	private ArrayList _rename;
 	private ArrayList _upload;
 
@@ -65,33 +66,16 @@ public class FtpConfig {
 		loadConfig(cfg, connManager);
 	}
 
-	public FtpConfig(String cfgFileName, ConnectionManager connManager)
-		throws FileNotFoundException, IOException {
-		this.cfgFileName = cfgFileName;
-		this.connManager = connManager;
-		reloadConfig();
-	}
-
-	public boolean checkHideInWho(LinkedRemoteFile path) {
-		for (Iterator iter = _hideinwhos.iterator(); iter.hasNext();) {
-			StringPathPermission perm = (StringPathPermission) iter.next();
-			if (perm.checkPath(path)) {
-				return true;
-			}
-		}
-		return false;
-	}
 	public boolean checkHideInWho(LinkedRemoteFile path, User fromUser) {
-
-		for (Iterator iter = _hideinwhos.iterator(); iter.hasNext();) {
-			StringPathPermission perm = (StringPathPermission) iter.next();
-			if (perm.checkPath(path)) {
-				return !perm.check(fromUser);
-			}
-		}
-		return false;
+		return checkPathPermssion(path, fromUser, _hideinwho.iterator());
+		//		for (Iterator iter = _hideinwhos.iterator(); iter.hasNext();) {
+		//			StringPathPermission perm = (PathPermission) iter.next();
+		//			if (perm.checkPath(path)) {
+		//				return !perm.check(fromUser);
+		//			}
+		//		}
+		//		return false;
 	}
-	
 	/**
 	 * @param path
 	 * @param fromUser
@@ -99,21 +83,57 @@ public class FtpConfig {
 	 * If user matches permission, true, if not, false.
 	 */
 	public boolean checkMakeDir(LinkedRemoteFile path, User fromUser) {
-		for (Iterator iter = _makedir.iterator(); iter.hasNext();) {
+		return checkPathPermssion(path, fromUser, _makedir.iterator());
+		//		for (Iterator iter = _makedir.iterator(); iter.hasNext();) {
+		//			PathPermission perm = (PathPermission) iter.next();
+		//			if(perm.checkPath(path)) {
+		//				return perm.check(fromUser);
+		//			}
+		//		}
+		//		return true;
+	}
+	public boolean checkUpload(LinkedRemoteFile path, User fromUser) {
+		return checkPathPermssion(path, fromUser, _upload.iterator());
+	}
+
+	private boolean checkPathPermssion(
+		LinkedRemoteFile path,
+		User fromUser,
+		Iterator iter) {
+		for (; iter.hasNext();) {
 			PathPermission perm = (PathPermission) iter.next();
-			if(perm.checkPath(path)) {
+			if (perm.checkPath(path)) {
+				logger.debug(
+					"checkPathPermission("
+						+ path.getPath()
+						+ ") ret "
+						+ perm.check(fromUser));
 				return perm.check(fromUser);
+			}
+		}
+		return false;
+	}
+
+	public boolean checkPre(LinkedRemoteFile path, User fromUser) {
+		return checkPathPermssion(path, fromUser, _pre.iterator());
+	}
+
+	public boolean checkPrivPath(User user, LinkedRemoteFile path) {
+		for (Iterator iter = _privpath.iterator(); iter.hasNext();) {
+			PathPermission perm = (PathPermission) iter.next();
+			if (perm.checkPath(path)) {
+				return perm.check(user);
 			}
 		}
 		return true;
 	}
-	
+
 	public void directoryMessage(
 		FtpResponse response,
 		User user,
 		LinkedRemoteFile dir) {
 
-		for (Iterator iter = _msgpaths.iterator(); iter.hasNext();) {
+		for (Iterator iter = _msgpath.iterator(); iter.hasNext();) {
 			MessagePathPermission perm = (MessagePathPermission) iter.next();
 			if (perm.checkPath(dir)) {
 				if (perm.check(user)) {
@@ -141,24 +161,7 @@ public class FtpConfig {
 	 * return true if file is visible + is readable by user
 	 */
 	public boolean hasReadPermission(User user, LinkedRemoteFile directory) {
-		return isVisible(user, directory);
-	}
-
-	public boolean isVisible(User user, LinkedRemoteFile path) {
-		for (Iterator iter = _privpaths.iterator(); iter.hasNext();) {
-			StringPathPermission perm = (StringPathPermission) iter.next();
-			if (perm.checkPath(path)) {
-				System.out.println(
-					"check path "
-						+ path.getPath()
-						+ " for "
-						+ user.getUsername()
-						+ ": "
-						+ perm.check(user));
-				return perm.check(user);
-			}
-		}
-		return true;
+		return checkPrivPath(user, directory);
 	}
 	public void loadConfig(Properties cfg, ConnectionManager connManager)
 		throws IOException {
@@ -166,21 +169,22 @@ public class FtpConfig {
 		this.connManager = connManager;
 		this.freespaceMin = Long.parseLong(cfg.getProperty("freespace.min"));
 	}
-
+	
+	private String newConf = "perms.conf";
 	private void loadConfig2() throws IOException {
-		ArrayList privpaths = new ArrayList();
-		ArrayList msgpaths = new ArrayList();
-		ArrayList hideinwhos = new ArrayList();
+		ArrayList privpath = new ArrayList();
+		ArrayList msgpath = new ArrayList();
+		ArrayList hideinwho = new ArrayList();
 		ArrayList creditloss = new ArrayList();
 		ArrayList creditcheck = new ArrayList();
-		ArrayList eventplugins = new ArrayList();
-
-		//ArrayList upload = new ArrayList();
+		ArrayList eventplugin = new ArrayList();
+		ArrayList pre = new ArrayList();
+		ArrayList upload = new ArrayList();
 		//ArrayList rename = new ArrayList();
 		ArrayList makedirs = new ArrayList();
 
 		LineNumberReader in =
-			new LineNumberReader(new FileReader("drftpd-0.8.conf"));
+			new LineNumberReader(new FileReader(newConf));
 		int lineno = 0;
 		String line;
 		GlobCompiler globComiler = new GlobCompiler();
@@ -195,15 +199,16 @@ public class FtpConfig {
 
 			try {
 				if (command.equals("privpath")) {
-					String path = st.nextToken();
-					privpaths.add(
-						new StringPathPermission(path, makeUsers(st)));
+					privpath.add(
+						new PatternPathPermission(
+							globComiler.compile(st.nextToken()),
+							makeUsers(st)));
 				}
 				//msgpath <path> <filename> <flag/=group/-user>
 				else if (command.equals("msgpath")) {
 					String path = st.nextToken();
 					String messageFile = st.nextToken();
-					msgpaths.add(
+					msgpath.add(
 						new MessagePathPermission(
 							path,
 							messageFile,
@@ -226,11 +231,22 @@ public class FtpConfig {
 					creditloss.add(
 						new RatioPathPermission(multiplier, path, users));
 				} else if (command.equals("hideinwho")) {
-					String path = st.nextToken();
-					hideinwhos.add(
-						new StringPathPermission(path, makeUsers(st)));
+					hideinwho.add(
+						new PatternPathPermission(
+							globComiler.compile(st.nextToken()),
+							makeUsers(st)));
 				} else if (command.equals("makedir")) {
 					makedirs.add(
+						new PatternPathPermission(
+							globComiler.compile(st.nextToken()),
+							makeUsers(st)));
+				} else if (command.equals("pre")) {
+					pre.add(
+						new PatternPathPermission(
+							globComiler.compile(st.nextToken()),
+							makeUsers(st)));
+				} else if (command.equals("upload")) {
+					upload.add(
 						new PatternPathPermission(
 							globComiler.compile(st.nextToken()),
 							makeUsers(st)));
@@ -253,36 +269,45 @@ public class FtpConfig {
 						Object obj =
 							met.newInstance(
 								new Object[] { this, connManager, args });
-						eventplugins.add(obj);
+						eventplugin.add(obj);
 					} catch (Throwable e) {
 						logger.log(Level.FATAL, "Error loading " + clazz, e);
 					}
 				}
 			} catch (Exception e) {
-				logger.warn("Exception when reading drftpd-0.8.conf line "+in.getLineNumber(), e);
+				logger.warn(
+					"Exception when reading "+newConf+" line "
+						+ in.getLineNumber(),
+					e);
 			}
 		}
 
 		makedirs.trimToSize();
 		_makedir = makedirs;
-		
+
 		creditloss.trimToSize();
 		_creditloss = creditloss;
 
 		creditcheck.trimToSize();
 		_creditcheck = creditcheck;
 
-		privpaths.trimToSize();
-		_privpaths = privpaths;
+		privpath.trimToSize();
+		_privpath = privpath;
 
-		msgpaths.trimToSize();
-		_msgpaths = msgpaths;
+		msgpath.trimToSize();
+		_msgpath = msgpath;
 
-		hideinwhos.trimToSize();
-		_hideinwhos = hideinwhos;
+		hideinwho.trimToSize();
+		_hideinwho = hideinwho;
 
-		eventplugins.trimToSize();
-		_eventplugins = eventplugins;
+		eventplugin.trimToSize();
+		_eventplugin = eventplugin;
+
+		pre.trimToSize();
+		_pre = pre;
+		
+		upload.trimToSize();
+		_upload = upload;
 	}
 
 	private ArrayList makeUsers(StringTokenizer st) {
@@ -308,12 +333,4 @@ public class FtpConfig {
 		response.addComment(
 			new BufferedReader(new FileReader("ftp-data/text/welcome.txt")));
 	}
-
-	//	public static void main(String args[]) throws Exception {
-	//		FtpConfig config = new FtpConfig("drftpd-0.7.conf");
-	//		UserManager um = new JSXUserManager();
-	//		User user = um.getUserByName("mog");
-	//		
-	//		System.out.println("isVisible: "+config.isVisible(user, "/test"));
-	//	}
 }

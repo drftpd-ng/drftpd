@@ -311,7 +311,7 @@ public class ConnectionManager {
 			if (args.length >= 1) {
 				cfgFileName = args[0];
 			} else {
-				cfgFileName = "drftpd-0.7.conf";
+				cfgFileName = "drftpd.conf";
 			}
 			if (new File(cfgFileName).exists()) {
 				System.out.println(cfgFileName + " does not exist.");

@@ -159,7 +159,6 @@ public class SFVFile implements Serializable {
 	 * @return
 	 */
 	public long getXferspeed() {
-		// TODO Auto-generated method stub
 		return getTotalBytes() / (getTotalXfertime() / 1000);
 	}
 

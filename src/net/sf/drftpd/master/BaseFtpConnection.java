@@ -139,7 +139,7 @@ public class BaseFtpConnection implements Runnable {
 	protected int miPort = 0;
 	protected ServerSocket mServSoc;
 	protected PrintWriter out;
-	protected boolean preTransfer;
+	protected boolean preTransfer = false;
 
 	/**
 		 * PRE Transfere

@@ -9,10 +9,10 @@ package net.sf.drftpd.event.irc;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import f00f.net.irc.martyr.Command;
 import f00f.net.irc.martyr.Debug;
 import f00f.net.irc.martyr.GenericAutoService;
 import f00f.net.irc.martyr.IRCConnection;
+import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.State;
 import f00f.net.irc.martyr.clientstate.Channel;
 import f00f.net.irc.martyr.commands.JoinCommand;
@@ -59,7 +59,7 @@ protected void updateState( State state )
 		performJoin();
 }
 
-protected void updateCommand( Command command_o )
+protected void updateCommand(InCommand command_o )
 {
 	if( command_o instanceof KickCommand )
 	{
