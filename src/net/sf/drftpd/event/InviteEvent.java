@@ -15,7 +15,7 @@ package net.sf.drftpd.event;
 public class InviteEvent extends Event {
 	private String ircUser;
 	public InviteEvent(String command, String ircUser) {
-		super(command,System.currentTimeMillis());
+		super(command, System.currentTimeMillis());
 		this.ircUser = ircUser;
 	}
 
