@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
+import org.drftpd.master.RemoteTransfer;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
@@ -100,10 +101,9 @@ public class Bandwidth extends IRCCommand {
 						} else if (conn.getDataConnectionHandler()
 								.isTransfering()) {
 							try {
-								env.add("speed", Bytes.formatBytes(conn
-										.getDataConnectionHandler()
-										.getTransfer().getXferSpeed())
-										+ "/s");
+								RemoteTransfer transfer = conn.getDataConnectionHandler().getTransfer();
+								env.add("speed", Bytes.formatBytes(transfer.getXferSpeed()) + "/s");
+								env.add("transfered", Bytes.formatBytes(transfer.getTransfered()));
 							} catch (ObjectNotFoundException e) {
 								logger.debug("This is a bug, please report it",
 										e);

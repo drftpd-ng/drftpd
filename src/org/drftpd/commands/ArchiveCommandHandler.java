@@ -104,7 +104,7 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
         Archive archive;
 
         try {
-            archive = (Archive) conn.getGlobalContext().getConnectionManager().getGlobalContext().getFtpListener(Archive.class);
+            archive = (Archive) conn.getGlobalContext().getFtpListener(Archive.class);
         } catch (ObjectNotFoundException e3) {
             reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
                     "archive.loadarchive", env));
@@ -114,8 +114,7 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
 
         String archiveTypeName = null;
         ArchiveType archiveType = null;
-        SectionInterface section = conn.getGlobalContext().getConnectionManager()
-                                       .getGlobalContext().getSectionManager()
+        SectionInterface section = conn.getGlobalContext().getSectionManager()
                                        .lookup(lrf.getPath());
 
         if (st.hasMoreTokens()) { // load the specific type

@@ -819,14 +819,13 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
     }
 
     public synchronized RemoteTransfer getTransfer() throws ObjectNotFoundException {
-        if (_transfer == null) {
+        if (_transfer == null)
             throw new ObjectNotFoundException();
-        }
-
         return _transfer;
     }
 
     public LinkedRemoteFileInterface getTransferFile() {
+    	if(_transferFile == null) throw new NullPointerException();
         return _transferFile;
     }
 
