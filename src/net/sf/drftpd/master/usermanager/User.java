@@ -334,7 +334,7 @@ public abstract class User {
 	 */
 	public boolean equals(Object obj) {
 		if (obj instanceof User) {
-			return ((User) obj).getUsername().equals(getUsername());
+			return ((User) obj).getUsername().equals(this.getUsername());
 		}
 		return false;
 	}
@@ -1024,6 +1024,13 @@ public abstract class User {
 	 */
 	public void setLogins(int logins) {
 		this.logins = logins;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	public int hashCode() {
+		return getUsername().hashCode();
 	}
 
 }

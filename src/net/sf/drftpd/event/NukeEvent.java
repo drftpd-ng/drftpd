@@ -9,7 +9,6 @@ package net.sf.drftpd.event;
 import java.util.Iterator;
 import java.util.Map;
 
-import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.usermanager.User;
 
 import org.jdom.Element;
@@ -21,14 +20,18 @@ import org.jdom.Element;
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 public class NukeEvent extends FtpEvent {
+
+	public NukeEvent(User user, String command, String directory, int multiplier, String reason, Map nukees) {
+		this(user, command, directory, System.currentTimeMillis(), multiplier, reason, nukees);
+	}
 	/**
 	 * @param user
 	 * @param preNukeName
 	 * @param multiplier
-	 * @param nukees2
+	 * @param nukees
 	 */
-	public NukeEvent(User user, FtpRequest request, String directory, int multiplier, String reason, Map nukees) {
-		super(user, request, directory);
+	public NukeEvent(User user, String command, String directory, long time, int multiplier, String reason, Map nukees) {
+		super(user, command, directory, time);
 		this.multiplier = multiplier;
 		this.nukees = nukees;
 		this.directory = directory;
@@ -77,10 +80,12 @@ public class NukeEvent extends FtpEvent {
 
 	public Element toXML() {
 		Element element = new Element("nuke");
+		element.addContent(new Element("user").setText(this.getUser().getUsername()));
 		element.addContent(new Element("path").setText(this.getDirectory()));
 		element.addContent(new Element("multiplier").setText(Integer.toString(this.getMultiplier())));
 		element.addContent(new Element("reason").setText(this.getReason()));
 		element.addContent(new Element("time").setText(Long.toString(this.getTime())));
+		element.addContent(new Element("command").setText(this.getCommand()));
 		
 		Element nukees = new Element("nukees");
 		for (Iterator iter = this.getNukees().entrySet().iterator(); iter.hasNext();) {

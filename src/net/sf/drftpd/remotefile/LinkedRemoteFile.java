@@ -235,7 +235,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		System.out.println("slaves.size() is now " + slaves.size());
 	}
 
-	public void createDirectory(User owner, String fileName)
+	public LinkedRemoteFile createDirectory(User owner, String fileName)
 		throws FileExistsException {
 		LinkedRemoteFile existingfile = (LinkedRemoteFile) files.get(fileName);
 		if (existingfile != null) {
@@ -257,6 +257,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		//file.addSlaves(getSlaves());
 		files.put(file.getName(), file);
 		logger.fine("Created directory " + file);
+		return file;
 	}
 
 	public void delete() {
@@ -525,7 +526,13 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			new LinkedRemoteFile[0]);
 	}
 
-	private Object[] lookup(String path) {
+	/**
+	 * 
+	 * @param path
+	 * @return new Object[] {LinkedRemoteFile file, String path};
+	 * path is null if path exists
+	 */
+	public Object[] lookupNonExistingFile(String path) {
 		if (path == null)
 			throw new IllegalArgumentException("null path not allowed");
 		LinkedRemoteFile currFile = this;
@@ -572,7 +579,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	public LinkedRemoteFile lookupFile(String path)
 		throws FileNotFoundException {
 
-		Object[] ret = lookup(path);
+		Object[] ret = lookupNonExistingFile(path);
 
 		//logger.info("ret[0] = " + ret[0] + " ret[1] = " + ret[1]);
 		if (ret[1] != null)
@@ -581,7 +588,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	}
 
 	public String lookupPath(String path) {
-		Object[] ret = lookup(path);
+		Object[] ret = lookupNonExistingFile(path);
 		return ((LinkedRemoteFile) ret[0]).getPath() + ((String) ret[1]);
 	}
 
@@ -750,7 +757,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 				ex);
 		}
 
-		Object[] ret = lookup(to);
+		Object[] ret = lookupNonExistingFile(to);
 
 		LinkedRemoteFile toDir = (LinkedRemoteFile) ret[0];
 		String toName = (String) ret[1];

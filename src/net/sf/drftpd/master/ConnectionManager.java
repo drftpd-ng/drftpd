@@ -11,8 +11,10 @@ import java.rmi.RemoteException;
 import java.rmi.StubNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -22,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.sf.drftpd.event.GlftpdLog;
+import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.master.queues.NukeLog;
 import net.sf.drftpd.master.usermanager.GlftpdUserManager;
 import net.sf.drftpd.master.usermanager.User;
@@ -42,6 +45,7 @@ public class ConnectionManager {
 	public static final int idleTimeout = 600;
 	private Vector connections = new Vector();
 	private UserManager usermanager;
+	private NukeLog nukelog;
 	private SlaveManagerImpl slavemanager;
 	private Timer timer;
 
@@ -71,12 +75,36 @@ public class ConnectionManager {
 		} catch (Exception ex) {
 			logger.log(Level.INFO, "Error reading masks from slaves.xml", ex);
 		}
+		
 		/** END: load XML file database **/
-		NukeLog nukelog;
+		nukelog = new NukeLog();
 		try {
 			Document doc =
 				new SAXBuilder().build(new FileReader("nukelog.xml"));
-			List nukes = doc.getRootElement().getChildren("nuke");
+			List nukes = doc.getRootElement().getChildren("nukes");
+			for (Iterator iter = nukes.iterator(); iter.hasNext();) {
+				Element nukeElement = (Element) iter.next();
+				
+				User user = usermanager.getUserByName(nukeElement.getChildText("user"));
+				String command = nukeElement.getChildText("command");
+				String directory = nukeElement.getChildText("directory");
+				long time = Long.parseLong(nukeElement.getChildText("time"));
+				int multiplier = Integer.parseInt(nukeElement.getChildText("multiplier"));
+				String reason = nukeElement.getChildText("reason");
+
+				Map nukees = new Hashtable();
+				List nukeesElement = nukeElement.getChild("nukees").getChildren("nukee");
+				for (Iterator iterator = nukeesElement.iterator();
+					iterator.hasNext();
+					) {
+					Element nukeeElement = (Element) iterator.next();
+					String nukeeUsername = nukeeElement.getChildText("username");
+					Long nukeeAmount = new Long(nukeeElement.getChildText("amount"));
+					nukees.put(nukeeUsername, nukeeAmount);
+				}
+				
+				nukelog.add(new NukeEvent(user, command, directory, time, multiplier, reason, nukees));
+			}
 		} catch (Exception ex) {
 			logger.log(
 				Level.INFO,
@@ -209,7 +237,8 @@ public class ConnectionManager {
 				usermanager,
 				slavemanager,
 				slavemanager.getRoot(),
-				this);
+				this,
+				this.nukelog);
 
 		conn.addFtpListener(new GlftpdLog(new File("glftpd.log")));
 		connections.add(conn);

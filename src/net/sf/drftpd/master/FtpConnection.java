@@ -12,6 +12,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -61,7 +62,7 @@ public class FtpConnection extends BaseFtpConnection {
 		logger.setLevel(Level.FINEST);
 	}
 
-	private NukeLog nukelog = new NukeLog();
+	private NukeLog nukelog;
 	// just set mstRenFr to null instead of this extra boolean?
 	//private boolean mbRenFr = false;
 	private LinkedRemoteFile mstRenFr = null;
@@ -82,21 +83,21 @@ public class FtpConnection extends BaseFtpConnection {
 
 	private VirtualDirectory virtualDirectory;
 
-	private LinkedRemoteFile currentDirectory;
-
 	public FtpConnection(
 		Socket sock,
 		UserManager userManager,
 		SlaveManagerImpl slaveManager,
 		LinkedRemoteFile root,
-		ConnectionManager connManager) {
+		ConnectionManager connManager,
+		NukeLog nukelog) {
 
 		super(connManager, sock);
 		this.userManager = userManager;
 		this.slaveManager = slaveManager;
 
-		currentDirectory = root;
-		virtualDirectory = new VirtualDirectory(root);
+		this.setCurrentDirectory(root);
+		this.virtualDirectory = new VirtualDirectory(root);
+		this.nukelog = nukelog;
 	}
 
 	////////////////////////////////////////////////////////////
@@ -219,9 +220,8 @@ public class FtpConnection extends BaseFtpConnection {
 		resetState();
 
 		// change directory
-		//LinkedRemoteFile newCurrentDirectory;
 		try {
-			currentDirectory = currentDirectory.getParentFile();
+			setCurrentDirectory(currentDirectory.getParentFile());
 		} catch (FileNotFoundException ex) {
 		}
 
@@ -545,56 +545,43 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		// get filenames
-		String dirName = request.getArgument();
+		//String dirName = request.getArgument();
 		//if (!VirtualDirectory.isLegalFileName(fileName)) {
 		//	out.println(
 		//		"553 Requested action not taken. File name not allowed.");
 		//	return;
 		//}
 
-		LinkedRemoteFile file = currentDirectory;
-		try {
-			file.getFile(dirName);
-			//file exists -- bad
+		Object ret[] = currentDirectory.lookupNonExistingFile(request.getArgument());
+		LinkedRemoteFile dir = (LinkedRemoteFile)ret[0];
+		String createdDirName = (String)ret[1];
 
+		if(createdDirName == null) {
 			out.print(
 				new FtpResponse(
 					550,
-					"Requested action not taken. " + dirName + " exists"));
-			return;
-		} catch (FileNotFoundException ex) {
-		} // good
-
-		try {
-			file.createDirectory(user, dirName);
-			new FtpResponse(257, "\"" + file.getPath() + "\" created.");
-			//			out.write(
-			//				ftpStatus.getResponse(
-			//					250,
-			//					request,
-			//					user,
-			//					new String[] { dirName }));
-		} catch (FileExistsException ex) {
-			out.println("550 directory " + dirName + " already exists");
+					"Requested action not taken. " + createdDirName + " exists"));
 			return;
 		}
-		//		String args[] = { fileName };
+		
+		if(!VirtualDirectory.isLegalFileName(createdDirName)) {
+			out.print(FtpResponse.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN);
+			return;
+		}
+		
+		try {
+			LinkedRemoteFile createdDir = dir.createDirectory(user, createdDirName);
+			out.print(new FtpResponse(257, "\"" + createdDir.getPath() + "\" created."));
+		} catch (FileExistsException ex) {
+			out.println("550 directory " + createdDirName + " already exists");
+			return;
+		}
 
 		// check permission
 		//		if (!getVirtualDirectory().hasCreatePermission(physicalName, true)) {
 		//			out.write(ftpStatus.getResponse(450, request, user, args));
 		//			return;
 		//		}
-
-		//getVirtualDirectory()
-
-		/*
-		// now create directory
-		if(new File(physicalName).mkdirs()) {
-		}
-		else {
-		}
-		*/
 	}
 
 	/**
@@ -1730,7 +1717,7 @@ public class FtpConnection extends BaseFtpConnection {
 		NukeEvent nuke =
 			new NukeEvent(
 				user,
-				request,
+				request.getCommand(),
 				preNukePath,
 				multiplier,
 				reason,
@@ -2131,6 +2118,7 @@ public class FtpConnection extends BaseFtpConnection {
 	 * created at the server site if the file specified in the
 	 * pathname does not already exist.
 	 */
+	//TODO absolute filenames for STOR
 	public void doSTOR(FtpRequest request, PrintWriter out) {
 		long resumePosition = this.resumePosition;
 		resetState();
@@ -2215,18 +2203,21 @@ public class FtpConnection extends BaseFtpConnection {
 		try {
 			transfer.transfer();
 		} catch (RemoteException ex) {
-			out.print(new FtpResponse(426, ex.getMessage()).toString());
+			out.print(new FtpResponse(426, ex.getMessage()));
 			rslave.handleRemoteException(ex);
-			return; // does return prevent finally from being run?
+			return;
 		} catch (IOException ex) {
-			out.print(new FtpResponse(426, ex.getMessage()).toString());
+			out.print(new FtpResponse(426, ex.getMessage()));
 			return;
 		}
 
 		try {
 			long transferedBytes = transfer.getTransfered();
+			ArrayList rslaves = new ArrayList();
+			rslaves.add(rslave);
 			StaticRemoteFile file =
 				new StaticRemoteFile(
+					rslaves,
 					fileName,
 					user,
 					transferedBytes,
@@ -2503,6 +2494,7 @@ public class FtpConnection extends BaseFtpConnection {
 	}
 	/**
 	 * get user filesystem view
+	 * @deprecated
 	 */
 	public VirtualDirectory getVirtualDirectory() {
 		return virtualDirectory;

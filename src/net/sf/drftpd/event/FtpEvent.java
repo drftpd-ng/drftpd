@@ -6,7 +6,6 @@
  */
 package net.sf.drftpd.event;
 
-import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.usermanager.User;
 
 /**
@@ -17,33 +16,26 @@ import net.sf.drftpd.master.usermanager.User;
  */
 public class FtpEvent {
 	User user;
-	FtpRequest request;
+	String request;
 	long time;
 	
-	FtpEvent(User user, FtpRequest request, String directory) {
-		this(user, request, directory, System.currentTimeMillis());
+	FtpEvent(User user, String command, String directory) {
+		this(user, command, directory, System.currentTimeMillis());
 	}
-	FtpEvent(User user, FtpRequest request, String directory, long time) {
+	FtpEvent(User user, String command, String directory, long time) {
 		this.user = user;
-		this.request = request;
+		this.request = command;
 		this.time = time;
 	}
 
 	public String getCommand() {
-		return request.getCommand();
+		return request;
 	}
 	/**
 	 * @return
 	 */
 	public User getUser() {
 		return user;
-	}
-
-	/**
-	 * @return
-	 */
-	public FtpRequest getRequest() {
-		return request;
 	}
 
 	/**

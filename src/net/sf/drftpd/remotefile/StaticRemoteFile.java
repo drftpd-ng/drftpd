@@ -1,8 +1,10 @@
 package net.sf.drftpd.remotefile;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.slave.RemoteSlave;
 
 /**
  * Creates a single RemoteFile object that is not linked to any other objects.
@@ -16,6 +18,7 @@ public class StaticRemoteFile extends RemoteFile {
 	private String path;
 	private long length;
 	private long lastModified;
+	private Collection slaves;
 	
 	public StaticRemoteFile(RemoteFile file) {
 //		canRead = file.canRead();
@@ -26,6 +29,7 @@ public class StaticRemoteFile extends RemoteFile {
 		this.isDirectory = file.isDirectory();
 		this.isFile = file.isFile();
 		this.path = file.getPath();
+		this.slaves = new ArrayList(0);
 		/* serialize directory*/
 		//slaves = file.getSlaves();
 	}
@@ -39,7 +43,8 @@ public class StaticRemoteFile extends RemoteFile {
 	 * 
 	 * If lastModified is 0 it will be set to the currentTimeMillis.
 	 */
-	public StaticRemoteFile(String path, User owner, long size, long lastModified) {
+	public StaticRemoteFile(Collection rslaves, String path, User owner, long size, long lastModified) {
+		this.slaves = rslaves;
 		this.path = path;
 		if(path.endsWith("/")) {
 			isDirectory = true;
@@ -107,7 +112,7 @@ public class StaticRemoteFile extends RemoteFile {
 	 * @see net.sf.drftpd.remotefile.RemoteFile#getSlaves()
 	 */
 	public Collection getSlaves() {
-		throw new NoSuchMethodError("getSlaves() does not exist in StaticRemoteFile");
+		return slaves;
 	}
 
 	/* (non-Javadoc)
