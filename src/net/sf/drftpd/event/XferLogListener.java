@@ -31,7 +31,8 @@ public class XferLogListener implements FtpListener {
 		super();
 		new File("ftp-data/logs").mkdirs();
 		try {
-			this.out = new PrintStream(new FileOutputStream("ftp-data/logs/xferlog"));
+			//APPEND
+			this.out = new PrintStream(new FileOutputStream("ftp-data/logs/xferlog", true));
 		} catch (IOException e) {
 			throw new FatalException(e);
 		}

@@ -180,7 +180,7 @@ public class IRCListener implements FtpListener, Observer {
 								new Integer(status.getTransfers()));
 							env.add(
 								"totalthroughput",
-								Bytes.formatBytes(status.getThroughput()));
+								Bytes.formatBytes(status.getThroughput())+"/s");
 
 							env.add(
 								"upxfers",
@@ -188,7 +188,7 @@ public class IRCListener implements FtpListener, Observer {
 							env.add(
 								"upthroughput",
 								Bytes.formatBytes(
-									status.getThroughputReceiving()));
+									status.getThroughputReceiving())+"/s");
 
 							env.add(
 								"downxfers",
@@ -224,7 +224,6 @@ public class IRCListener implements FtpListener, Observer {
 							rslave.handleRemoteException(e);
 							statusString = "offline";
 						} catch (NoAvailableSlaveException e) {
-							logger.log(Level.WARNING, "", e);
 							statusString = "offline";
 						} catch (Throwable t) {
 							logger.log(
