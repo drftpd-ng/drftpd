@@ -41,7 +41,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.72 2004/02/03 20:57:14 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.73 2004/02/09 23:35:03 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -434,9 +434,9 @@ public class BaseFtpConnection implements Runnable {
 				Level.INFO,
 				ex.getMessage()
 					+ ", closing for user "
-					+ (this._user == null
+					+ (_user == null
 						? "<not logged in>"
-						: this._user.getUsername()),
+						: _user.getUsername()),
 				ex);
 		} catch (Exception ex) {
 			logger.log(Level.INFO, "Exception, closing", ex);

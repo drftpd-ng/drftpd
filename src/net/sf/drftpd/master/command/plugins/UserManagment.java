@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
@@ -37,7 +36,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.26 2004/02/09 21:44:47 mog Exp $
+ * @version $Id: UserManagment.java,v 1.27 2004/02/09 23:35:03 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -387,14 +386,7 @@ public class UserManagment implements CommandHandler {
 				(FtpReply) FtpReply.RESPONSE_501_SYNTAX_ERROR.clone();
 
 			response.addComment(
-				conn.jprintf(UserManagment.class.getName(), "change.usage0"));
-			response.addComment(" ");
-			response.addComment(
-				conn.jprintf(UserManagment.class.getName(), "change.usage1"));
-			response.addComment(
-				conn.jprintf(UserManagment.class.getName(), "change.usage2"));
-			response.addComment(
-				conn.jprintf(UserManagment.class.getName(), "change.usage3"));
+				conn.jprintf(UserManagment.class.getName(), "change.usage"));
 			return response;
 		}
 
@@ -408,19 +400,8 @@ public class UserManagment implements CommandHandler {
 			if (pos1 == -1) {
 				FtpReply response2 =
 					(FtpReply) FtpReply.RESPONSE_501_SYNTAX_ERROR.clone();
-
 				response2.addComment(
-					conn.jprintf(
-						UserManagment.class.getName(),
-						"change.usage1"));
-				response2.addComment(
-					conn.jprintf(
-						UserManagment.class.getName(),
-						"change.usage2"));
-				response2.addComment(
-					conn.jprintf(
-						UserManagment.class.getName(),
-						"change.usage3"));
+					conn.jprintf(UserManagment.class, "change.usage"));
 				return response2;
 			}
 			String username = argument.substring(0, pos1);

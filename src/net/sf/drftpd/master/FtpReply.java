@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: FtpReply.java,v 1.8 2004/01/20 06:59:00 mog Exp $
+ * @version $Id: FtpReply.java,v 1.9 2004/02/09 23:35:03 mog Exp $
  */
 public class FtpReply implements Cloneable {
 	private static final Logger logger =
@@ -151,7 +151,7 @@ public class FtpReply implements Cloneable {
 	public Object clone() {
 		try {
 			FtpReply r = (FtpReply) super.clone();
-			r._lines = (Vector) this._lines.clone();
+			r._lines = (Vector) _lines.clone();
 			return r;
 		} catch (CloneNotSupportedException ex) {
 			throw new RuntimeException(ex);
@@ -162,7 +162,7 @@ public class FtpReply implements Cloneable {
 		return _code;
 	}
 	public void setCode(int code) {
-		this._code = code;
+		_code = code;
 	}
 	public void setMessage(String response) {
 		assert response != null;
@@ -172,7 +172,7 @@ public class FtpReply implements Cloneable {
 			response = response.substring(0, pos);
 			logger.log(Level.DEBUG, "Truncated response message with multiple lines: "+response);
 		}
-		this._message = response;
+		_message = response;
 	}
 	public int size() {
 		return _lines.size();

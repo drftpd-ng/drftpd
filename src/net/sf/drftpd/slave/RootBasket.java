@@ -19,7 +19,7 @@ import se.mog.io.File;
 //TODO SECURITY: verify so that we never get outside of a rootbasket root
 /**
  * @author mog
- * @version $Id: RootBasket.java,v 1.21 2004/01/13 20:30:55 mog Exp $
+ * @version $Id: RootBasket.java,v 1.22 2004/02/09 23:35:03 mog Exp $
  */
 public class RootBasket {
 	private static final Logger logger = Logger.getLogger(RootBasket.class);
@@ -28,7 +28,7 @@ public class RootBasket {
 	public RootBasket(Collection roots) throws IOException {
 		/** sanity checks **/
 		validateRoots(roots);
-		this._roots = new ArrayList(roots);
+		_roots = new ArrayList(roots);
 	}
 
 	public Root getARoot() {

@@ -5,9 +5,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author mog
- * @version $Id: SafeFileWriter.java,v 1.3 2004/02/03 20:03:14 mog Exp $
+ * @version $Id: SafeFileWriter.java,v 1.4 2004/02/09 23:35:03 mog Exp $
  */
 public class SafeFileWriter extends Writer {
 	private File _actualFile;
@@ -44,7 +46,7 @@ public class SafeFileWriter extends Writer {
 		_out.flush();
 		_out.close();
 		if (!failed) {
-			//Logger.getLogger(SafeFileWriter.class).debug("Renaming "+_tempFile+" ("+_tempFile.length()+") to "+_actualFile);
+			Logger.getLogger(SafeFileWriter.class).debug("Renaming "+_tempFile+" ("+_tempFile.length()+") to "+_actualFile);
 			if (_actualFile.exists() && !_actualFile.delete())
 				throw new IOException("delete() failed");
 			if (!_tempFile.exists())
