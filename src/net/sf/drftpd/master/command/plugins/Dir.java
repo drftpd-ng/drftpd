@@ -42,6 +42,7 @@ import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 import net.sf.drftpd.util.ListUtils;
 import net.sf.drftpd.util.ReplacerUtils;
@@ -54,14 +55,14 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.19 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: Dir.java,v 1.20 2004/02/23 01:14:37 mog Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
 	private final static SimpleDateFormat DATE_FMT =
 		new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
 	private static final Logger logger = Logger.getLogger(Dir.class);
-	protected LinkedRemoteFile _renameFrom = null;
+	protected LinkedRemoteFileInterface _renameFrom = null;
 
 	public Dir() {
 		super();
@@ -519,10 +520,10 @@ public class Dir implements CommandHandler, Cloneable {
 		NonExistingFile ret =
 			conn.getCurrentDirectory().lookupNonExistingFile(
 				request.getArgument());
-		LinkedRemoteFile toDir = ret.getFile();
+		LinkedRemoteFileInterface toDir = ret.getFile();
 		String name = ret.getPath();
 
-		LinkedRemoteFile fromFile = _renameFrom;
+		LinkedRemoteFileInterface fromFile = _renameFrom;
 		conn.resetState();
 
 		if (name == null)
@@ -576,7 +577,7 @@ public class Dir implements CommandHandler, Cloneable {
 
 		while (st.hasMoreTokens()) {
 			try {
-				LinkedRemoteFile file =
+				LinkedRemoteFileInterface file =
 					conn.getCurrentDirectory().lookupFile(st.nextToken());
 				if (owner != null)
 					file.setOwner(owner);

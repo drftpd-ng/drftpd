@@ -54,6 +54,7 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.slave.TransferStatus;
@@ -67,7 +68,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.44 2004/02/21 05:28:20 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.45 2004/02/23 01:14:37 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -448,7 +449,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 					conn
 						.getCurrentDirectory()
 						.lookupFile(ghostRequest.getArgument())
-						.getASlaveForDownload();
+						.getASlave(Transfer.TRANSFER_SENDING_DOWNLOAD, conn);
 				_preTransfer = true;
 				return new FtpReply(
 					200,
@@ -463,10 +464,17 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 			}
 		} else if (cmd.equals("STOR")) {
+			LinkedRemoteFile.NonExistingFile nef = conn.getCurrentDirectory().lookupNonExistingFile(ghostRequest.getArgument());
+			if(!nef.hasPath()) {
+				return FtpReply.RESPONSE_530_ACCESS_DENIED;
+			}
+			if(!ListUtils.isLegalFileName(nef.getPath())) {
+				return FtpReply.RESPONSE_530_ACCESS_DENIED;
+			}
 			try {
 				_preTransferRSlave =
 					conn.getSlaveManager().getASlave(
-						Transfer.TRANSFER_RECEIVING_UPLOAD);
+						Transfer.TRANSFER_RECEIVING_UPLOAD, conn, nef.getFile());
 				_preTransfer = true;
 				return new FtpReply(
 					200,
@@ -543,7 +551,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		boolean forceRescan =
 			(request.hasArgument()
 				&& request.getArgument().equalsIgnoreCase("force"));
-		LinkedRemoteFile directory = conn.getCurrentDirectory();
+		LinkedRemoteFileInterface directory = conn.getCurrentDirectory();
 		SFVFile sfv;
 		try {
 			sfv = conn.getCurrentDirectory().lookupSFVFile();
@@ -559,7 +567,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			Map.Entry entry = (Map.Entry) i.next();
 			String fileName = (String) entry.getKey();
 			Long checkSum = (Long) entry.getValue();
-			LinkedRemoteFile file;
+			LinkedRemoteFileInterface file;
 			try {
 				file = directory.lookupFile(fileName);
 			} catch (FileNotFoundException ex) {
@@ -1126,7 +1134,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			}
 
 			//check credits
-			if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+			if (isRetr) {
 				if (conn.getUserNull().getRatio() != 0
 					&& conn.getUserNull().getCredits() < _transferFile.length()) {
 					return new FtpReply(550, "Not enough credits.");
@@ -1152,10 +1160,10 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 
 				try {
 					if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-						_rslave = _transferFile.getASlave(direction);
+						_rslave = _transferFile.getASlave(direction, conn);
 					} else if (
 						direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-						_rslave = conn.getSlaveManager().getASlave(direction);
+						_rslave = conn.getSlaveManager().getASlave(direction, conn, targetDir);
 					} else {
 						throw new RuntimeException();
 					}
@@ -1408,7 +1416,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		long checksum,
 		FtpReply response,
 		String targetFileName,
-		LinkedRemoteFile targetDir) {
+		LinkedRemoteFileInterface targetDir) {
 		//zipscript
 		logger.debug(
 			"Running zipscript on file "

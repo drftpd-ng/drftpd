@@ -19,14 +19,14 @@ package net.sf.drftpd.master.config;
 
 import java.util.Collection;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Matcher;
 
 /**
  * @author mog
- * @version $Id: PatternPathPermission.java,v 1.6 2004/02/10 00:03:08 mog Exp $
+ * @version $Id: PatternPathPermission.java,v 1.7 2004/02/23 01:14:38 mog Exp $
  */
 public class PatternPathPermission extends PathPermission {
 	Pattern _pat;
@@ -35,7 +35,7 @@ public class PatternPathPermission extends PathPermission {
 		 _pat = pat;
 	}
 	
-	public boolean checkPath(LinkedRemoteFile file) {
+	public boolean checkPath(LinkedRemoteFileInterface file) {
 		String path = file.getPath();
 		if(file.isDirectory()) path = path.concat("/");
 		Perl5Matcher m = new Perl5Matcher();

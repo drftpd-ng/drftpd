@@ -36,6 +36,7 @@ import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -43,7 +44,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * @version $Id: Pre.java,v 1.10 2004/02/15 13:42:23 mog Exp $
+ * @version $Id: Pre.java,v 1.11 2004/02/23 01:14:37 mog Exp $
  */
 public class Pre implements CommandHandler {
 
@@ -66,7 +67,7 @@ public class Pre implements CommandHandler {
 		if (args.length != 2) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
-		LinkedRemoteFile section;
+		LinkedRemoteFileInterface section;
 		try {
 			section = conn.getCurrentDirectory().getRoot().lookupFile(args[1]);
 		} catch (FileNotFoundException ex) {
@@ -81,7 +82,7 @@ public class Pre implements CommandHandler {
 		} catch (FileNotFoundException e) {
 			return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 		}
-		LinkedRemoteFile path = preDir;
+		LinkedRemoteFileInterface path = preDir;
 		if (!conn.getConfig().checkPathPermission("pre", conn.getUserNull(), path)) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
@@ -135,10 +136,10 @@ public class Pre implements CommandHandler {
 
 	private void preAwardCredits(
 		BaseFtpConnection conn,
-		LinkedRemoteFile preDir,
+		LinkedRemoteFileInterface preDir,
 		Hashtable awards) {
 		for (Iterator iter = preDir.getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
 			User owner;
 			try {
 				owner = conn.getUserManager().getUserByName(file.getUsername());

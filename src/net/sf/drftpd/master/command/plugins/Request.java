@@ -30,12 +30,13 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Request.java,v 1.10 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: Request.java,v 1.11 2004/02/23 01:14:37 mog Exp $
  */
 public class Request implements CommandHandler {
 	private static final String FILLEDPREFIX = "FILLED-for.";
@@ -48,7 +49,7 @@ public class Request implements CommandHandler {
 		if (!conn.getRequest().hasArgument())
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 
-		LinkedRemoteFile currdir = conn.getCurrentDirectory();
+		LinkedRemoteFileInterface currdir = conn.getCurrentDirectory();
 		String reqname = conn.getRequest().getArgument();
 
 		for (Iterator iter = currdir.getFiles().iterator(); iter.hasNext();) {

@@ -45,7 +45,7 @@ import net.sf.drftpd.master.command.plugins.Nuke;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.util.Time;
 
@@ -55,7 +55,7 @@ import org.tanesha.replacer.FormatterException;
 
 /**
  * @author mog
- * @version $Id: GlftpdLog.java,v 1.11 2004/02/10 00:03:05 mog Exp $
+ * @version $Id: GlftpdLog.java,v 1.12 2004/02/23 01:14:35 mog Exp $
  */
 public class GlftpdLog implements FtpListener {
 	PrintWriter out;
@@ -129,7 +129,7 @@ public class GlftpdLog implements FtpListener {
 		}
 	}
 		
-	private void sayDirectorySection(DirectoryFtpEvent direvent, String string, LinkedRemoteFile dir)
+	private void sayDirectorySection(DirectoryFtpEvent direvent, String string, LinkedRemoteFileInterface dir)
 		throws FormatterException {
 
 		// TYPE = NEWDIR DELDIR WIPE
@@ -151,7 +151,7 @@ public class GlftpdLog implements FtpListener {
 	private void actionPerformedDirectorySTOR(DirectoryFtpEvent direvent)
 		throws FormatterException {
 
-		LinkedRemoteFile dir;
+		LinkedRemoteFileInterface dir;
 		try {
 			dir = direvent.getDirectory().getParentFile();
 		} catch (FileNotFoundException e) {
@@ -174,7 +174,7 @@ public class GlftpdLog implements FtpListener {
 
 		long starttime = Long.MAX_VALUE;
 		for (Iterator iter = sfvfile.getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
 			if (file.lastModified() < starttime)
 				starttime = file.lastModified();
 		}
@@ -192,7 +192,7 @@ public class GlftpdLog implements FtpListener {
 			for (Iterator iter = sfvfile.getFiles().iterator();
 				iter.hasNext();
 				) {
-				LinkedRemoteFile sfvFileEntry = (LinkedRemoteFile) iter.next();
+				LinkedRemoteFileInterface sfvFileEntry = (LinkedRemoteFileInterface) iter.next();
 				if (sfvFileEntry == direvent.getDirectory())
 					continue;
 				if (sfvFileEntry.getUsername().equals(username))
@@ -346,8 +346,7 @@ public class GlftpdLog implements FtpListener {
 		//HALFWAY
 		} else if (sfvfile.size() >= 4 && sfvstatus.getMissing() == halfway) {
 			Collection uploaders = topFileUploaders(sfvfile.getFiles());
-			Collection groups = topFileUploaders(sfvfile.getFiles());
-			//			ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
+			//Collection groups = topFileUploaders(sfvfile.getFiles());
 			UploaderPosition stat =
 				(UploaderPosition) uploaders.iterator().next();
 
@@ -388,7 +387,7 @@ public class GlftpdLog implements FtpListener {
 	public static Collection topFileUploaders(Collection files) {
 		ArrayList ret = new ArrayList();
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
 			String username = file.getUsername();
 
 			UploaderPosition stat = null;
@@ -420,7 +419,7 @@ public class GlftpdLog implements FtpListener {
 	public static Collection topFileGroup(Collection files) {
 		ArrayList ret = new ArrayList();
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
 			String groupname = file.getGroupname();
 
 			GroupPosition stat = null;
@@ -452,7 +451,7 @@ public class GlftpdLog implements FtpListener {
 	public static Collection UserSort(Collection files, String type, String sort) {
 		ArrayList ret = new ArrayList();
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
 			String username = file.getUsername();
 
 			UploaderPosition stat = null;

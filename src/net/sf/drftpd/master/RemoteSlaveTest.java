@@ -15,16 +15,30 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slaveselection;
+package net.sf.drftpd.master;
+
+import java.util.Collections;
+
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * @author mog
- * @version $Id: SlaveSelection.java,v 1.1 2004/02/16 22:39:43 mog Exp $
+ * @version $Id: RemoteSlaveTest.java,v 1.1 2004/02/23 01:14:36 mog Exp $
  */
-public abstract class SlaveSelection {
-
-	public SlaveSelection() {
-		super();
+public class RemoteSlaveTest extends TestCase {
+	public static TestSuite suite() {
+		return new TestSuite(RemoteSlaveTest.class);
 	}
-
+	
+	public RemoteSlaveTest(String fName) {
+		super(fName);
+	}
+	
+	public void testEquals() {
+		RemoteSlave rslave1 = new RemoteSlave("test1", Collections.EMPTY_LIST);
+		RemoteSlave rslave2 = new RemoteSlave("test1", Collections.EMPTY_LIST);
+		assertTrue(rslave1.equals(rslave1));
+		assertTrue(rslave1.equals(rslave2));
+	}
 }

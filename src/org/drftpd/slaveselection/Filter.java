@@ -17,20 +17,23 @@
  */
 package org.drftpd.slaveselection;
 
+import java.net.InetAddress;
+
+import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+
 /**
+ * if upload, the inetaddress would be the source.
+ * if download, the inetaddress would be the dest.
+ * 
  * @author mog
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: Filter.java,v 1.1 2004/02/23 01:14:41 mog Exp $
  */
-public class MatchdirSelection {
-
-	/**
-	 * 
-	 */
-	public MatchdirSelection() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-
+public abstract class Filter {
+	public abstract void process(
+		ScoreChart scorechart,
+		User user,
+		InetAddress peer,
+		char direction,
+		LinkedRemoteFileInterface file);
 }

@@ -23,15 +23,17 @@ import java.util.List;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
+ * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.8 2004/02/21 05:28:21 zubov Exp $
+ * @version $Id: Job.java,v 1.9 2004/02/23 01:14:39 mog Exp $
  */
 public class Job {
 	protected ArrayList _destSlaves;
 	protected boolean _done;
-	protected LinkedRemoteFile _file;
+	protected LinkedRemoteFileInterface _file;
 	protected User _owner;
 	protected int _priority;
 	protected Object _source;
@@ -39,7 +41,7 @@ public class Job {
 	protected long _timeSpent;
 
 	public Job(
-		LinkedRemoteFile file,
+		LinkedRemoteFileInterface file,
 		List destSlaves,
 		Object source,
 		User owner,
@@ -76,7 +78,7 @@ public class Job {
 	 * Returns the file (or directory, if directories can be submitted as jobs,) for this job.
 	 * This file is used to tell the slaves what file to transfer & receive.
 	 */
-	public LinkedRemoteFile getFile() {
+	public LinkedRemoteFileInterface getFile() {
 		return _file;
 	}
 

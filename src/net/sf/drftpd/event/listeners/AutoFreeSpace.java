@@ -36,6 +36,7 @@ import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.config.ExcludePath;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.RemoteFileLastModifiedComparator;
 
 import org.apache.log4j.BasicConfigurator;
@@ -44,7 +45,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author zubov
- * @version $Id: AutoFreeSpace.java,v 1.9 2004/02/10 00:03:06 mog Exp $
+ * @version $Id: AutoFreeSpace.java,v 1.10 2004/02/23 01:14:36 mog Exp $
  */
 public class AutoFreeSpace implements FtpListener {
 	private static final Logger logger = Logger.getLogger(AutoFreeSpace.class);
@@ -52,7 +53,7 @@ public class AutoFreeSpace implements FtpListener {
 	public static void main(String args[]) throws IOException {
 		BasicConfigurator.configure();
 		List rslaves = SlaveManagerImpl.loadRSlaves();
-		LinkedRemoteFile root =
+		LinkedRemoteFileInterface root =
 			SlaveManagerImpl.loadMLSTFileDatabase(rslaves, null);
 
 		AutoFreeSpace space = new AutoFreeSpace();
@@ -111,7 +112,7 @@ public class AutoFreeSpace implements FtpListener {
 	 * Returns true if lrf.getPath() is excluded
 	 */
 
-	public boolean checkExclude(LinkedRemoteFile lrf) {
+	public boolean checkExclude(LinkedRemoteFileInterface lrf) {
 		for (Iterator iter = _exemptList.iterator(); iter.hasNext();) {
 			ExcludePath ep = (ExcludePath) iter.next();
 			if (ep.checkPath(lrf))
@@ -150,7 +151,7 @@ public class AutoFreeSpace implements FtpListener {
 						+ Bytes.formatBytes(_keepFree));
 				if (spaceAvailable >= _keepFree)
 					break;
-				LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+				LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
 				spaceAvailable += file.length();
 				logger.info("delete " + file.getPath());
 				file.delete();

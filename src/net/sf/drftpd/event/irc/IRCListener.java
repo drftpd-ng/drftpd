@@ -94,7 +94,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.87 2004/02/22 16:40:46 mog Exp $
+ * @version $Id: IRCListener.java,v 1.88 2004/02/23 01:14:35 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -114,42 +114,47 @@ public class IRCListener implements FtpListener, Observer {
 		}
 
 	}
-	private AutoJoin _autoJoin;
-	private AutoRegister _autoRegister;
+	public static final ReplacerEnvironment GLOBAL_ENV =
+		new ReplacerEnvironment();
+	static {
+		GLOBAL_ENV.add("bold", "\u0002");
+		GLOBAL_ENV.add("coloroff", "\u000f");
+		GLOBAL_ENV.add("color", "\u0003");
+	}
 	private static final Logger logger = Logger.getLogger(IRCListener.class);
 
-	/**
-	 * Used from FtpConnection
-	 * @param files Collection of LinkedRemoteFile objects
-	 */
-	public static Collection topFileUploaders(Collection files) {
-		ArrayList ret = new ArrayList();
-		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			LinkedRemoteFile file =
-				(LinkedRemoteFile) iter.next();
-			String username = file.getUsername();
+	public static void getAllDirectories(
+		LinkedRemoteFile dir,
+		Collection directories) {
+		for (Iterator iter = dir.getDirectories().iterator();
+			iter.hasNext();
+			) {
+			LinkedRemoteFile subdir = (LinkedRemoteFile) iter.next();
+			getAllDirectories(subdir, directories);
+		}
+		directories.add(dir);
+	}
 
-			UploaderPosition stat = null;
-			for (Iterator iter2 = ret.iterator(); iter2.hasNext();) {
-				UploaderPosition stat2 = (UploaderPosition) iter2.next();
-				if (stat2.getUsername().equals(username)) {
-					stat = stat2;
-					break;
-				}
-			}
-			if (stat == null) {
-				stat =
-					new UploaderPosition(
-						username,
-						file.length(),
-						1,
-						file.getXfertime());
-				ret.add(stat);
-			} else {
-				stat.updateBytes(file.length());
-				stat.updateFiles(1);
-				stat.updateXfertime(file.getXfertime());
-			}
+	public static void getAllSFVFiles(
+		LinkedRemoteFile dir,
+		Collection sfvFiles) {
+		for (Iterator iter = dir.getDirectories().iterator();
+			iter.hasNext();
+			) {
+			LinkedRemoteFile subdir = (LinkedRemoteFile) iter.next();
+			getAllSFVFiles(subdir, sfvFiles);
+		}
+		sfvFiles.add(dir);
+	}
+
+	public static ArrayList map2nukees(Map nukees) {
+		ArrayList ret = new ArrayList();
+		for (Iterator iter = nukees.entrySet().iterator(); iter.hasNext();) {
+			Map.Entry element = (Map.Entry) iter.next();
+			ret.add(
+				new Nukee(
+					(String) element.getKey(),
+					((Long) element.getValue()).longValue()));
 		}
 		Collections.sort(ret);
 		return ret;
@@ -158,8 +163,7 @@ public class IRCListener implements FtpListener, Observer {
 	public static Collection topFileGroup(Collection files) {
 		ArrayList ret = new ArrayList();
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			LinkedRemoteFile file =
-				(LinkedRemoteFile) iter.next();
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
 			String groupname = file.getGroupname();
 
 			GroupPosition stat = null;
@@ -188,7 +192,45 @@ public class IRCListener implements FtpListener, Observer {
 		return ret;
 	}
 
+	/**
+	 * Used from FtpConnection
+	 * @param files Collection of LinkedRemoteFile objects
+	 */
+	public static Collection topFileUploaders(Collection files) {
+		ArrayList ret = new ArrayList();
+		for (Iterator iter = files.iterator(); iter.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			String username = file.getUsername();
+
+			UploaderPosition stat = null;
+			for (Iterator iter2 = ret.iterator(); iter2.hasNext();) {
+				UploaderPosition stat2 = (UploaderPosition) iter2.next();
+				if (stat2.getUsername().equals(username)) {
+					stat = stat2;
+					break;
+				}
+			}
+			if (stat == null) {
+				stat =
+					new UploaderPosition(
+						username,
+						file.length(),
+						1,
+						file.getXfertime());
+				ret.add(stat);
+			} else {
+				stat.updateBytes(file.length());
+				stat.updateFiles(1);
+				stat.updateXfertime(file.getXfertime());
+			}
+		}
+		Collections.sort(ret);
+		return ret;
+	}
+	private AutoJoin _autoJoin;
+
 	private AutoReconnect _autoReconnect;
+	private AutoRegister _autoRegister;
 	private String _channelName;
 
 	private ClientState _clientState;
@@ -201,19 +243,12 @@ public class IRCListener implements FtpListener, Observer {
 
 	private String _server;
 	private boolean _useSSL;
-	public static final ReplacerEnvironment GLOBAL_ENV =
-		new ReplacerEnvironment();
-	static {
-		GLOBAL_ENV.add("bold", "\u0002");
-		GLOBAL_ENV.add("coloroff", "\u000f");
-		GLOBAL_ENV.add("color", "\u0003");
-	}
 
 	public IRCListener() throws UnknownHostException, IOException {
 		new File("logs").mkdirs();
 		Debug.setOutputStream(
 			new PrintStream(new FileOutputStream("logs/sitebot.log")));
-		Debug.setDebugLevel(Debug.NORMAL);
+		Debug.setDebugLevel(Debug.BAD);
 	}
 
 	public void actionPerformed(Event event) {
@@ -298,13 +333,6 @@ public class IRCListener implements FtpListener, Observer {
 			return;
 		}
 
-		long starttime = Long.MAX_VALUE;
-		for (Iterator iter = sfvfile.getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFile file =
-				(LinkedRemoteFile) iter.next();
-			if (file.lastModified() < starttime)
-				starttime = file.lastModified();
-		}
 
 		if (!sfvfile.hasFile(direvent.getDirectory().getName()))
 			return;
@@ -319,8 +347,7 @@ public class IRCListener implements FtpListener, Observer {
 			for (Iterator iter = sfvfile.getFiles().iterator();
 				iter.hasNext();
 				) {
-				LinkedRemoteFile sfvFileEntry =
-					(LinkedRemoteFile) iter.next();
+				LinkedRemoteFile sfvFileEntry = (LinkedRemoteFile) iter.next();
 				if (sfvFileEntry == direvent.getDirectory())
 					continue;
 				if (sfvFileEntry.getUsername().equals(username))
@@ -350,12 +377,10 @@ public class IRCListener implements FtpListener, Observer {
 			}
 		}
 
-		long racedtimeMillis = direvent.getTime() - starttime;
-		env.add("secondstocomplete", Time.formatTime(racedtimeMillis));
-		env.add(
-			"averagespeed",
-			Bytes.formatBytes(
-				direvent.getDirectory().length() / (racedtimeMillis / 1000)));
+//		env.add(
+//			"averagespeed",
+//			Bytes.formatBytes(
+//				direvent.getDirectory().length() / (racedtimeMillis / 1000)));
 
 		//COMPLETE
 		if (sfvstatus.isFinished()) {
@@ -525,6 +550,12 @@ public class IRCListener implements FtpListener, Observer {
 
 	}
 
+	private void actionPerformedInvite(InviteEvent event) {
+		String user = event.getUser();
+		logger.info("Invited " + user + " through SITE INVITE");
+		_conn.sendCommand(new InviteCommand(user, _channelName));
+	}
+
 	private void actionPerformedNuke(NukeEvent event)
 		throws FormatterException {
 		String cmd = event.getCommand();
@@ -608,19 +639,6 @@ public class IRCListener implements FtpListener, Observer {
 		}
 	}
 
-	public static ArrayList map2nukees(Map nukees) {
-		ArrayList ret = new ArrayList();
-		for (Iterator iter = nukees.entrySet().iterator(); iter.hasNext();) {
-			Map.Entry element = (Map.Entry) iter.next();
-			ret.add(
-				new Nukee(
-					(String) element.getKey(),
-					((Long) element.getValue()).longValue()));
-		}
-		Collections.sort(ret);
-		return ret;
-	}
-
 	private void actionPerformedSlave(SlaveEvent event)
 		throws FormatterException {
 		SlaveEvent sevent = (SlaveEvent) event;
@@ -644,189 +662,50 @@ public class IRCListener implements FtpListener, Observer {
 			say(ReplacerUtils.jprintf("delslave", env, IRCListener.class));
 		}
 	}
-
-	private void actionPerformedInvite(InviteEvent event) {
-		String user = event.getUser();
-		logger.info("Invited " + user + " through SITE INVITE");
-		_conn.sendCommand(new InviteCommand(user, _channelName));
-	}
-
-	private void fillEnvSection(
-		ReplacerEnvironment env,
-		DirectoryFtpEvent direvent,
-		LinkedRemoteFile section) {
-		fillEnvSection(env, direvent, section, direvent.getDirectory());
-	}
-
-	private void fillEnvSection(
-		ReplacerEnvironment env,
-		DirectoryFtpEvent direvent,
-		LinkedRemoteFile section,
-		LinkedRemoteFile file) {
-		env.add("user", direvent.getUser().getUsername());
-		env.add("group", direvent.getUser().getGroupName());
-		env.add("section", strippath(section.getPath()));
-
-		LinkedRemoteFile dir = file;
-		if (dir.isFile())
-			dir = dir.getParentFileNull();
-
-		long elapsed;
-		try {
-			elapsed = dir.getOldestFile().lastModified() / 1000;
-		} catch (ObjectNotFoundException e) {
-			elapsed = dir.lastModified() / 1000;
-		}
-		elapsed = System.currentTimeMillis() - elapsed;
-		env.add("elapsed", "" + elapsed);
-		env.add("elapsed", "" + elapsed);
-		env.add(
-			"averagespeed",
-			Bytes.formatBytes(dir.dirSize() / elapsed / 1000) + "/s");
-
-		env.add("size", Bytes.formatBytes(file.length()));
-		if (file.isFile()) {
-			env.add("speed", Bytes.formatBytes(file.getXferspeed()) + "/s");
-		} else if (file.isDirectory()) {
-			SFVFile sfvfile;
-			try {
-				sfvfile = file.lookupSFVFile();
-				//env.add("size", Bytes.formatBytes(sfvfile.getTotalBytes()()));
-				env.add("totalfiles", "" + sfvfile.size());
-				env.add(
-					"totalspeed",
-					Bytes.formatBytes(sfvfile.getXferspeed()));
-			} catch (Exception ex) {
-				//COULD BE multi-cd, PRE will have to get it owns fillEnvSection with sub-dir .sfv support!
-				logger.warn("Couldn't get SFV file in announce", ex);
-				//env.add("size", Bytes.formatBytes(file.length()));
-				env.add("totalfiles", "" + file.getFiles().size());
-			}
-		} else {
-			throw new Error("Not a file or directory, what weird shit are we then?");
-		}
-
-		env.add(
-			"path",
-			strippath(dir.getPath().substring(section.getPath().length())));
-		env.add("file", file.getName());
-	}
-
-	void fillEnvSpace(ReplacerEnvironment env, SlaveStatus status) {
-		env.add("xfers", Integer.toString(status.getTransfers()));
-		env.add("throughput", Bytes.formatBytes(status.getThroughput()));
-
-		env.add("xfersup", Integer.toString(status.getTransfersReceiving()));
-		env.add(
-			"throughputup",
-			Bytes.formatBytes(status.getThroughputReceiving()));
-
-		env.add("xfersdn", Integer.toString(status.getTransfersSending()));
-		env.add(
-			"throughputdown",
-			Bytes.formatBytes(status.getThroughputSending()));
-
-		env.add("disktotal", Bytes.formatBytes(status.getDiskSpaceCapacity()));
-		env.add("diskfree", Bytes.formatBytes(status.getDiskSpaceAvailable()));
-		env.add("diskused", Bytes.formatBytes(status.getDiskSpaceUsed()));
-		env.add(
-			"diskfreepercent",
-			status.getDiskSpaceAvailable()
-				* 100
-				/ status.getDiskSpaceCapacity()
-				+ "%");
-		env.add(
-			"diskusedpercent",
-			status.getDiskSpaceUsed() * 100 / status.getDiskSpaceCapacity()
-				+ "%");
-		try {
-			env.add(
-				"slaves",
-				"" + getSlaveManager().getAvailableSlaves().size());
-		} catch (NoAvailableSlaveException e) {
-			env.add("slaves", "0");
-		}
-	}
-
-	public FtpConfig getConfig() {
-		return _cm.getConfig();
-	}
-
-	public ConnectionManager getConnectionManager() {
-		return _cm;
-	}
-	public IRCConnection getIRCConnection() {
-		return _conn;
-	}
-
-	public Ret getPropertyFileSuffix(
-		String prefix,
-		LinkedRemoteFile dir) {
-		Section sectionObj =
-			getConnectionManager().getSectionManager().lookup(dir.getPath());
-		logger.debug("section = " + sectionObj.getName());
-		//		LinkedRemoteFile section = null;
-		//		LinkedRemoteFile tmp2 = dir, tmp1 = dir;
-		//		try {
-		//			while (true) {
-		//				section = tmp2;
-		//				tmp2 = tmp1;
-		//				tmp1 = tmp1.getParentFile();
-		//			}
-		//		} catch (FileNotFoundException success) {
-		//		}
-		return new Ret(
-			ResourceBundle.getBundle(IRCListener.class.getName()).getString(
-				prefix),
-			sectionObj.getFile());
-	}
-
-	public SlaveManagerImpl getSlaveManager() {
-		return getConnectionManager().getSlaveManager();
-	}
-
-	private void reload() throws FileNotFoundException, IOException {
-		Properties ircCfg = new Properties();
-		ircCfg.load(new FileInputStream("conf/irc.conf"));
-		_server = FtpConfig.getProperty(ircCfg, "irc.server");
-		_port = Integer.parseInt(FtpConfig.getProperty(ircCfg, "irc.port"));
-		String oldchannel = _channelName;
-		_channelName = FtpConfig.getProperty(ircCfg, "irc.channel");
-		_useSSL = ircCfg.getProperty("irc.ssl", "false").equals("true");
-		_key = ircCfg.getProperty("irc.key");
-		if (_key.equals(""))
-			_key = null;
-		if (_conn == null
-			|| !_conn.getClientState().getServer().equals(_server)
-			|| _conn.getClientState().getPort() != _port) {
-			logger.info("Reconnecting due to server change");
-			connect(ircCfg);
-		} else {
-			if (!_conn
-				.getClientState()
-				.getNick()
-				.getNick()
-				.equals(FtpConfig.getProperty(ircCfg, "irc.nick"))) {
-				logger.info("Switching to new nick");
-				_autoRegister.disable();
-				_autoRegister = addAutoRegister(ircCfg);
-				_conn.sendCommand(
-					new NickCommand(ircCfg.getProperty("irc.nick")));
-			}
-			if (!_conn.getClientState().isOnChannel(_channelName)) {
-				_autoJoin.disable();
-				_conn.removeCommandObserver(_autoJoin);
-				_conn.sendCommand(new PartCommand(oldchannel));
-				_autoJoin = new AutoJoin(_conn, _channelName, _key);
-			}
-		}
-	}
 	private AutoRegister addAutoRegister(Properties ircCfg) {
 		return new AutoRegister(
 			_conn,
 			FtpConfig.getProperty(ircCfg, "irc.nick"),
 			FtpConfig.getProperty(ircCfg, "irc.user"),
 			FtpConfig.getProperty(ircCfg, "irc.name"));
+	}
+
+	public void connect() throws UnknownHostException, IOException {
+		logger.info("IRCListener: connecting to " + _server + ":" + _port);
+		if (_useSSL) {
+			try {
+				SSLContext ctx = SSLContext.getInstance("TLS");
+				//KeyManagerFactory kmf = KeyManagerFactory.getInstance("JSSE");
+				//ctx.init(kmf.getKeyManagers(), null, null);
+				TrustManager tms[] =
+					{ new X509TrustManager() {
+						public void checkClientTrusted(
+							X509Certificate[] arg0,
+							String arg1)
+						throws CertificateException {
+						}
+
+						public void checkServerTrusted(
+							X509Certificate[] arg0,
+							String arg1)
+							throws CertificateException {
+						}
+						public X509Certificate[] getAcceptedIssuers() {
+							return null;
+						}
+					}
+				};
+
+				ctx.init(null, tms, null);
+				_conn.connect(
+					ctx.getSocketFactory().createSocket(_server, _port),
+					_server);
+				return;
+			} catch (GeneralSecurityException e) {
+				throw new FatalException(e);
+			}
+		}
+		_conn.connect(_server, _port);
 	}
 	private void connect(Properties ircCfg)
 		throws UnknownHostException, IOException {
@@ -871,44 +750,207 @@ public class IRCListener implements FtpListener, Observer {
 		_conn.disconnect();
 	}
 
-	public void connect() throws UnknownHostException, IOException {
-		logger.info("IRCListener: connecting to " + _server + ":" + _port);
-		if (_useSSL) {
+	private void fillEnvSection(
+		ReplacerEnvironment env,
+		DirectoryFtpEvent direvent,
+		LinkedRemoteFile section) {
+		fillEnvSection(env, direvent, section, direvent.getDirectory());
+	}
+
+	private void fillEnvSection(
+		ReplacerEnvironment env,
+		DirectoryFtpEvent direvent,
+		LinkedRemoteFile section,
+		LinkedRemoteFile file) {
+		env.add("user", direvent.getUser().getUsername());
+		env.add("group", direvent.getUser().getGroupName());
+		env.add("section", strippath(section.getPath()));
+
+		LinkedRemoteFile dir = file;
+		if (dir.isFile())
+			dir = dir.getParentFileNull();
+
+		long elapsed;
+		try {
+			elapsed = dir.getOldestFile().lastModified() / 1000;
+		} catch (ObjectNotFoundException e) {
+			elapsed = dir.lastModified() / 1000;
+		}
+		elapsed = System.currentTimeMillis() - elapsed;
+		env.add("elapsed", "" + elapsed);
+		env.add("elapsed", "" + elapsed);
+		
+
+		env.add("size", Bytes.formatBytes(file.length()));
+		if (file.isFile()) {
+			env.add("speed", Bytes.formatBytes(file.getXferspeed()) + "/s");
+		} else if (file.isDirectory()) {
+			
+			long starttime = Long.MAX_VALUE;
+			for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
+				LinkedRemoteFile subfile = (LinkedRemoteFile) iter.next();
+				if (subfile.lastModified() < starttime)
+					starttime = subfile.lastModified();
+			}
+			env.add("secondstocomplete", Time.formatTime(direvent.getTime() - starttime));
+			env.add(
+				"averagespeed",
+				Bytes.formatBytes(dir.dirSize() / (elapsed / 1000)) + "/s");
+
+			ArrayList dirs = new ArrayList();
+			getAllDirectories(file, dirs);
+			int files = 0;
+
+			for (Iterator iter = dirs.iterator(); iter.hasNext();) {
+				LinkedRemoteFile subdir = (LinkedRemoteFile) iter.next();
+				files += subdir.dirSize();
+			}
+			SFVFile sfvfile;
 			try {
-				SSLContext ctx = SSLContext.getInstance("TLS");
-				//KeyManagerFactory kmf = KeyManagerFactory.getInstance("JSSE");
-				//ctx.init(kmf.getKeyManagers(), null, null);
-				TrustManager tms[] =
-					{
-						new X509TrustManager() {
-							public X509Certificate[] getAcceptedIssuers() {
-							return null;
-						}
+				sfvfile = file.lookupSFVFile();
+				//env.add("size", Bytes.formatBytes(sfvfile.getTotalBytes()()));
+				env.add("totalfiles", "" + sfvfile.size());
+				env.add(
+					"totalspeed",
+					Bytes.formatBytes(sfvfile.getXferspeed()));
+			} catch (Exception ex) {
+				//COULD BE multi-cd, PRE will have to get it owns fillEnvSection with sub-dir .sfv support!
+				logger.warn("Couldn't get SFV file in announce", ex);
+				//env.add("size", Bytes.formatBytes(file.length()));
+				env.add("totalfiles", "" + file.getFiles().size());
+			}
+		} else {
+			throw new Error("Not a file or directory, what weird shit are we then?");
+		}
 
-						public void checkClientTrusted(
-							X509Certificate[] arg0,
-							String arg1)
-							throws CertificateException {
-						}
+		env.add(
+			"path",
+			strippath(dir.getPath().substring(section.getPath().length())));
+		env.add("file", file.getName());
+	}
+	void fillEnvSpace(ReplacerEnvironment env, SlaveStatus status) {
+		env.add("xfers", Integer.toString(status.getTransfers()));
+		env.add("throughput", Bytes.formatBytes(status.getThroughput()));
 
-						public void checkServerTrusted(
-							X509Certificate[] arg0,
-							String arg1)
-							throws CertificateException {
-						}
-					}
-				};
+		env.add("xfersup", Integer.toString(status.getTransfersReceiving()));
+		env.add(
+			"throughputup",
+			Bytes.formatBytes(status.getThroughputReceiving()));
 
-				ctx.init(null, tms, null);
-				_conn.connect(
-					ctx.getSocketFactory().createSocket(_server, _port),
-					_server);
-				return;
-			} catch (GeneralSecurityException e) {
-				throw new FatalException(e);
+		env.add("xfersdn", Integer.toString(status.getTransfersSending()));
+		env.add(
+			"throughputdown",
+			Bytes.formatBytes(status.getThroughputSending()));
+
+		env.add("disktotal", Bytes.formatBytes(status.getDiskSpaceCapacity()));
+		env.add("diskfree", Bytes.formatBytes(status.getDiskSpaceAvailable()));
+		env.add("diskused", Bytes.formatBytes(status.getDiskSpaceUsed()));
+		env.add(
+			"diskfreepercent",
+			status.getDiskSpaceAvailable()
+				* 100
+				/ status.getDiskSpaceCapacity()
+				+ "%");
+		env.add(
+			"diskusedpercent",
+			status.getDiskSpaceUsed() * 100 / status.getDiskSpaceCapacity()
+				+ "%");
+		try {
+			env.add(
+				"slaves",
+				"" + getSlaveManager().getAvailableSlaves().size());
+		} catch (NoAvailableSlaveException e) {
+			env.add("slaves", "0");
+		}
+	}
+
+	public String getChannelName() {
+		return _channelName;
+	}
+
+	public FtpConfig getConfig() {
+		return _cm.getConfig();
+	}
+
+	public ConnectionManager getConnectionManager() {
+		return _cm;
+	}
+	public IRCConnection getIRCConnection() {
+		return _conn;
+	}
+
+	public Ret getPropertyFileSuffix(String prefix, LinkedRemoteFile dir) {
+		Section sectionObj =
+			getConnectionManager().getSectionManager().lookup(dir.getPath());
+		logger.debug("section = " + sectionObj.getName());
+		//		LinkedRemoteFile section = null;
+		//		LinkedRemoteFile tmp2 = dir, tmp1 = dir;
+		//		try {
+		//			while (true) {
+		//				section = tmp2;
+		//				tmp2 = tmp1;
+		//				tmp1 = tmp1.getParentFile();
+		//			}
+		//		} catch (FileNotFoundException success) {
+		//		}
+		return new Ret(
+			ResourceBundle.getBundle(IRCListener.class.getName()).getString(
+				prefix),
+			sectionObj.getFile());
+	}
+
+	public SlaveManagerImpl getSlaveManager() {
+		return getConnectionManager().getSlaveManager();
+	}
+
+	public void init(ConnectionManager mgr) {
+		_cm = mgr;
+		try {
+			reload();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void reconnect() {
+		_conn.disconnect();
+	}
+
+	private void reload() throws FileNotFoundException, IOException {
+		Properties ircCfg = new Properties();
+		ircCfg.load(new FileInputStream("conf/irc.conf"));
+		_server = FtpConfig.getProperty(ircCfg, "irc.server");
+		_port = Integer.parseInt(FtpConfig.getProperty(ircCfg, "irc.port"));
+		String oldchannel = _channelName;
+		_channelName = FtpConfig.getProperty(ircCfg, "irc.channel");
+		_useSSL = ircCfg.getProperty("irc.ssl", "false").equals("true");
+		_key = ircCfg.getProperty("irc.key");
+		if (_key.equals(""))
+			_key = null;
+		if (_conn == null
+			|| !_conn.getClientState().getServer().equals(_server)
+			|| _conn.getClientState().getPort() != _port) {
+			logger.info("Reconnecting due to server change");
+			connect(ircCfg);
+		} else {
+			if (!_conn
+				.getClientState()
+				.getNick()
+				.getNick()
+				.equals(FtpConfig.getProperty(ircCfg, "irc.nick"))) {
+				logger.info("Switching to new nick");
+				_autoRegister.disable();
+				_autoRegister = addAutoRegister(ircCfg);
+				_conn.sendCommand(
+					new NickCommand(ircCfg.getProperty("irc.nick")));
+			}
+			if (!_conn.getClientState().isOnChannel(_channelName)) {
+				_autoJoin.disable();
+				_conn.removeCommandObserver(_autoJoin);
+				_conn.sendCommand(new PartCommand(oldchannel));
+				_autoJoin = new AutoJoin(_conn, _channelName, _key);
 			}
 		}
-		_conn.connect(_server, _port);
 	}
 	public void say(String message) {
 		//		if (!_clientState.isOnChannel(_channelName)) {
@@ -954,6 +996,10 @@ public class IRCListener implements FtpListener, Observer {
 			return path;
 		}
 		return path.substring(1);
+	}
+
+	public void unload() {
+
 	}
 
 	public void update(Observable observer, Object updated) {
@@ -1200,27 +1246,6 @@ public class IRCListener implements FtpListener, Observer {
 				ReplacerUtils.jprintf("speed.error", env, IRCListener.class);
 		}
 		say(status);
-	}
-
-	public void init(ConnectionManager mgr) {
-		_cm = mgr;
-		try {
-			reload();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public String getChannelName() {
-		return _channelName;
-	}
-
-	public void unload() {
-
-	}
-
-	public void reconnect() {
-		_conn.disconnect();
 	}
 
 }

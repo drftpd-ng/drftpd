@@ -21,7 +21,7 @@ import java.io.Serializable;
 
 /**
  * @author mog
- * @version $Id: SlaveStatus.java,v 1.10 2004/02/10 00:03:31 mog Exp $
+ * @version $Id: SlaveStatus.java,v 1.11 2004/02/23 01:14:40 mog Exp $
  */
 public class SlaveStatus implements Serializable {
 	static final long serialVersionUID = -5171512270937436414L;
@@ -29,46 +29,54 @@ public class SlaveStatus implements Serializable {
 	private long _bytesSent;
 	private long _diskSpaceAvailable;
 	private long _diskSpaceCapacity;
-	
+
 	private int _throughputReceiving;
 	private int _throughputSending;
 	private int _transfersReceiving;
-	
+
 	private int _transfersSending;
 	public SlaveStatus() {
 		_diskSpaceAvailable = 0;
 		_diskSpaceCapacity = 0;
-		
+
 		_throughputReceiving = 0;
 		_throughputSending = 0;
 
 		_transfersSending = 0;
-		_transfersReceiving = 0;		
+		_transfersReceiving = 0;
 	}
-	public SlaveStatus(long diskFree, long diskTotal, long bytesSent, long bytesReceived, int throughputReceiving, int transfersReceiving, int throughputSending, int transfersSending) {
+	public SlaveStatus(
+		long diskFree,
+		long diskTotal,
+		long bytesSent,
+		long bytesReceived,
+		int throughputReceiving,
+		int transfersReceiving,
+		int throughputSending,
+		int transfersSending) {
 		_diskSpaceAvailable = diskFree;
 		_diskSpaceCapacity = diskTotal;
-		
+
 		_bytesSent = bytesSent;
 		_bytesReceived = bytesReceived;
-		
+
 		_throughputReceiving = throughputReceiving;
 		_throughputSending = throughputSending;
 
 		_transfersSending = transfersSending;
 		_transfersReceiving = transfersReceiving;
 	}
-	
+
 	public SlaveStatus append(SlaveStatus arg) {
-		return new SlaveStatus(getDiskSpaceAvailable()+arg.getDiskSpaceAvailable(),
-		getDiskSpaceCapacity()+arg.getDiskSpaceCapacity(),
-		getBytesSent()+arg.getBytesSent(),
-		getBytesReceived()+arg.getBytesReceived(),
-		getThroughputReceiving()+arg.getThroughputReceiving(),
-		getTransfersReceiving()+arg.getTransfersReceiving(),
-		getThroughputSending()+arg.getThroughputSending(),
-		getTransfersSending()+arg.getTransfersSending()
-		);
+		return new SlaveStatus(
+			getDiskSpaceAvailable() + arg.getDiskSpaceAvailable(),
+			getDiskSpaceCapacity() + arg.getDiskSpaceCapacity(),
+			getBytesSent() + arg.getBytesSent(),
+			getBytesReceived() + arg.getBytesReceived(),
+			getThroughputReceiving() + arg.getThroughputReceiving(),
+			getTransfersReceiving() + arg.getTransfersReceiving(),
+			getThroughputSending() + arg.getThroughputSending(),
+			getTransfersSending() + arg.getTransfersSending());
 	}
 
 	public long getBytesReceived() {
@@ -78,7 +86,7 @@ public class SlaveStatus implements Serializable {
 	public long getBytesSent() {
 		return _bytesSent;
 	}
-	
+
 	public long getDiskSpaceAvailable() {
 		return _diskSpaceAvailable;
 	}
@@ -88,10 +96,10 @@ public class SlaveStatus implements Serializable {
 	}
 
 	public long getDiskSpaceUsed() {
-		return getDiskSpaceCapacity()-getDiskSpaceAvailable();
+		return getDiskSpaceCapacity() - getDiskSpaceAvailable();
 	}
 	public int getThroughput() {
-		return _throughputReceiving+_throughputSending;
+		return _throughputReceiving + _throughputSending;
 	}
 
 	public int getThroughputReceiving() {
@@ -101,9 +109,9 @@ public class SlaveStatus implements Serializable {
 	public int getThroughputSending() {
 		return _throughputSending;
 	}
-	
+
 	public int getTransfers() {
-		return _transfersReceiving+_transfersSending;
+		return _transfersReceiving + _transfersSending;
 	}
 
 	public int getTransfersReceiving() {
@@ -113,8 +121,31 @@ public class SlaveStatus implements Serializable {
 	public int getTransfersSending() {
 		return _transfersSending;
 	}
-	
+
 	public String toString() {
-		return "[SlaveStatus [diskSpaceAvailable: "+_diskSpaceAvailable+"][receiving: "+_throughputReceiving+" bps, "+_transfersSending+" streams][sending: "+_throughputSending+" bps, "+_transfersReceiving+" streams]]";
+		return "[SlaveStatus [diskSpaceAvailable: "
+			+ _diskSpaceAvailable
+			+ "][receiving: "
+			+ _throughputReceiving
+			+ " bps, "
+			+ _transfersSending
+			+ " streams][sending: "
+			+ _throughputSending
+			+ " bps, "
+			+ _transfersReceiving
+			+ " streams]]";
+	}
+
+	public int getThroughputDirection(char c) {
+		switch (c) {
+			case Transfer.TRANSFER_RECEIVING_UPLOAD :
+				return getThroughputReceiving();
+			case Transfer.TRANSFER_SENDING_DOWNLOAD :
+				return getThroughputSending();
+			case Transfer.TRANSFER_THROUGHPUT :
+				return getThroughput();
+			default :
+				throw new IllegalArgumentException();
+		}
 	}
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- $Id: build.xml,v 1.34 2004/02/15 01:39:26 mog Exp $ -->
+<!-- $Id: build.xml,v 1.35 2004/02/23 01:14:26 mog Exp $ -->
 <project name="drftpd" basedir="." default="compile">
 
   <target name="all" depends="compile"/>
@@ -82,6 +82,15 @@
       <zipfileset dir="." includes="lib/libFileSystem.so" fullpath="libFileSystem.so" />
       <zipfileset dir="." includes="lib/FileSystem.dll" fullpath="FileSystem.dll" />
     </zip>
+  </target>
+
+  <target name="classjar">
+    <jar destfile="class.jar" basedir="classes">
+      <manifest>
+        <attribute name="Main-Class" value="net.sf.drftpd.master.ConnectionManager" />
+      </manifest>
+      <include name="**" />
+    </jar>
   </target>
 
   <target name="dist" depends="compile">

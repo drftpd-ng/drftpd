@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.24 2004/02/10 00:03:06 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.25 2004/02/23 01:14:36 mog Exp $
  */
 public class RemoteSlave implements Comparable {
 
@@ -58,17 +58,13 @@ public class RemoteSlave implements Comparable {
 	//private long _statusTime;
 
 	public RemoteSlave(String name, Collection masks) {
+		if (name.equalsIgnoreCase("all"))
+			throw new IllegalArgumentException(
+				name
+					+ " is a reserved keyword, it can't be used as a slave name");
 		_name = name;
 		_masks = masks;
 	}
-
-//	public RemoteSlave(
-//		String name,
-//		Collection masks,
-//		SlaveManagerImpl manager) {
-//		this(name, masks);
-//		_manager = manager;
-//	}
 
 	public int compareTo(Object o) {
 		if (!(o instanceof RemoteSlave))
@@ -79,7 +75,7 @@ public class RemoteSlave implements Comparable {
 	public boolean equals(Object obj) {
 		if (obj instanceof RemoteSlave) {
 			RemoteSlave rslave = (RemoteSlave) obj;
-			if (rslave.getName().equals(this.getName())) {
+			if (rslave.getName().equals(getName())) {
 				return true;
 			}
 		}
@@ -145,15 +141,15 @@ public class RemoteSlave implements Comparable {
 	 * @return true If exception was fatal and the slave was removed 
 	 */
 	public boolean handleRemoteException(RemoteException ex) {
-//		if (!isFatalRemoteException(ex)) {
-//			logger.log(
-//				Level.WARN,
-//				"Caught non-fatal exception from "
-//					+ getName()
-//					+ ", not removing",
-//				ex);
-//			return false;
-//		}
+		//		if (!isFatalRemoteException(ex)) {
+		//			logger.log(
+		//				Level.WARN,
+		//				"Caught non-fatal exception from "
+		//					+ getName()
+		//					+ ", not removing",
+		//				ex);
+		//			return false;
+		//		}
 		logger.warn("Exception from " + getName() + ", removing", ex);
 		setOffline(ex.getCause().getMessage());
 		return true;

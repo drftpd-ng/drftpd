@@ -37,6 +37,7 @@ import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
+import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.config.FtpConfig;
@@ -51,10 +52,10 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.120 2004/02/23 00:39:46 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.121 2004/02/23 01:14:40 mog Exp $
  */
 public class LinkedRemoteFile
-	implements RemoteFileInterface, Serializable, Comparable {
+	implements Serializable, Comparable, LinkedRemoteFileInterface {
 	public static class NonExistingFile {
 		private LinkedRemoteFile _file;
 		private String _path;
@@ -116,7 +117,7 @@ public class LinkedRemoteFile
 
 			LinkedRemoteFile toFile;
 			try {
-				toFile = toDir.getFile(fromFile.getName());
+				toFile = (LinkedRemoteFile) toDir.getFile(fromFile.getName());
 			} catch (FileNotFoundException e) {
 				toFile = toDir.putFile(fromFile);
 			}
@@ -360,10 +361,11 @@ public class LinkedRemoteFile
 
 	public LinkedRemoteFile createDirectories(String path) {
 		NonExistingFile nef = lookupNonExistingFile(path);
-		if(!nef.hasPath()) throw new RuntimeException("createDirectories called on already existing directory");
+		if (!nef.hasPath())
+			throw new RuntimeException("createDirectories called on already existing directory");
 		LinkedRemoteFile dir = nef.getFile();
 		StringTokenizer st = new StringTokenizer(nef.getPath(), "/");
-		while(st.hasMoreTokens()) {
+		while (st.hasMoreTokens()) {
 			try {
 				dir.createDirectory(st.nextToken());
 			} catch (ObjectExistsException e) {
@@ -373,7 +375,8 @@ public class LinkedRemoteFile
 		return dir;
 	}
 
-	public LinkedRemoteFile createDirectory(String fileName) throws ObjectExistsException {
+	public LinkedRemoteFile createDirectory(String fileName)
+		throws ObjectExistsException {
 		return createDirectory(null, null, fileName);
 	}
 
@@ -422,7 +425,8 @@ public class LinkedRemoteFile
 		_link = null;
 		if (isDirectory()) {
 			for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
-				LinkedRemoteFile myFile = (LinkedRemoteFile) iter.next();
+				LinkedRemoteFileInterface myFile =
+					(LinkedRemoteFileInterface) iter.next();
 				myFile.delete();
 			}
 			try {
@@ -534,24 +538,32 @@ public class LinkedRemoteFile
 	}
 
 	public boolean equals(Object obj) {
-		if (obj instanceof LinkedRemoteFile
-			&& ((LinkedRemoteFile) obj).getPath().equals(getPath())) {
+		if (obj instanceof LinkedRemoteFileInterface
+			&& ((LinkedRemoteFileInterface) obj).getPath().equals(getPath())) {
 			return true;
 		}
 		return false;
 	}
 
-	public RemoteSlave getASlave(char direction)
+	/**
+	 * Checksums call us with null BaseFtpConnection.
+	 */
+	public RemoteSlave getASlave(char direction, BaseFtpConnection conn)
 		throws NoAvailableSlaveException {
 		return SlaveManagerImpl.getASlave(
 			getAvailableSlaves(),
 			direction,
-			_ftpConfig);
+			_ftpConfig,
+			conn,
+			this);
 	}
 
-	public RemoteSlave getASlaveForDownload()
+	/**
+	 * @deprecated inline me
+	 */
+	public RemoteSlave getASlaveForDownload(BaseFtpConnection conn)
 		throws NoAvailableSlaveException {
-		return getASlave(Transfer.TRANSFER_SENDING_DOWNLOAD);
+		return getASlave(Transfer.TRANSFER_SENDING_DOWNLOAD, conn);
 	}
 
 	public Collection getAvailableSlaves() throws NoAvailableSlaveException {
@@ -599,7 +611,7 @@ public class LinkedRemoteFile
 		throws NoAvailableSlaveException, IOException {
 		RemoteSlave slave;
 		while (true) {
-			slave = getASlaveForDownload();
+			slave = getASlaveForDownload(null);
 			try {
 				_checkSum = slave.getSlave().checkSum(getPath());
 				// throws IOException
@@ -615,7 +627,7 @@ public class LinkedRemoteFile
 	public Collection getDirectories() {
 		Collection temp = getFiles();
 		for (Iterator iter = temp.iterator(); iter.hasNext();) {
-			if (((LinkedRemoteFile) iter.next()).isFile())
+			if (((LinkedRemoteFileInterface) iter.next()).isFile())
 				iter.remove();
 		}
 		return temp;
@@ -628,14 +640,17 @@ public class LinkedRemoteFile
 	 * @throws FileNotFoundException
 	 *             if fileName doesn't exist in the files Map
 	 */
-	public LinkedRemoteFile getFile(String fileName)
+	public LinkedRemoteFileInterface getFile(String fileName)
 		throws FileNotFoundException {
 		return getFile(fileName, false);
 	}
 
-	public LinkedRemoteFile getFile(String fileName, boolean includeDeleted)
+	public LinkedRemoteFileInterface getFile(
+		String fileName,
+		boolean includeDeleted)
 		throws FileNotFoundException {
-		LinkedRemoteFile file = (LinkedRemoteFile) _files.get(fileName);
+		LinkedRemoteFileInterface file =
+			(LinkedRemoteFileInterface) _files.get(fileName);
 		if (file == null)
 			throw new FileNotFoundException("No such file or directory");
 		if (!includeDeleted && file.isDeleted())
@@ -668,11 +683,12 @@ public class LinkedRemoteFile
 	 *         LinkedRemoteFile file as value, with all .isDeleted() files
 	 *         removed.
 	 */
-	public Map getFilesMap() {
+	private Map getFilesMap() {
 		Hashtable ret = new Hashtable(_files);
 
 		for (Iterator iter = ret.values().iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			LinkedRemoteFileInterface file =
+				(LinkedRemoteFileInterface) iter.next();
 			if (file.isDeleted())
 				iter.remove();
 		}
@@ -710,7 +726,8 @@ public class LinkedRemoteFile
 		return _name;
 	}
 
-	public LinkedRemoteFile getOldestFile() throws ObjectNotFoundException {
+	public LinkedRemoteFileInterface getOldestFile()
+		throws ObjectNotFoundException {
 		long oldestTime = Long.MAX_VALUE;
 		LinkedRemoteFile oldestFile = null;
 		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
@@ -741,7 +758,7 @@ public class LinkedRemoteFile
 
 	public String getPath() {
 		StringBuffer path = new StringBuffer();
-		LinkedRemoteFile parent = this;
+		LinkedRemoteFileInterface parent = this;
 
 		while (true) {
 			if (parent.getName().length() == 0)
@@ -768,13 +785,16 @@ public class LinkedRemoteFile
 			return root;
 		}
 	}
-	
+
 	public synchronized SFVFile getSFVFile()
 		throws IOException, FileNotFoundException, NoAvailableSlaveException {
 
 		if (sfvFile == null) {
 			while (true) {
-				RemoteSlave rslave = getASlaveForDownload();
+				RemoteSlave rslave =
+					_ftpConfig.getSlaveManager().getSlaveSelectionManager(
+						"down").getASlave(
+						this);
 				try {
 					sfvFile = rslave.getSlave().getSFVFile(getPath());
 					sfvFile.setCompanion(this);
@@ -851,7 +871,8 @@ public class LinkedRemoteFile
 			}
 		} else if (isDirectory()) {
 			for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
-				if (((LinkedRemoteFile) iter.next()).hasOfflineSlaves())
+				if (((LinkedRemoteFileInterface) iter.next())
+					.hasOfflineSlaves())
 					return true;
 			}
 		}
@@ -943,7 +964,7 @@ public class LinkedRemoteFile
 	public RemoteFileInterface[] listFiles() {
 		if (!isDirectory())
 			throw new RuntimeException(getPath() + " is not a directory");
-		return (LinkedRemoteFile[]) getFilesMap().values().toArray(
+		return (LinkedRemoteFileInterface[]) getFilesMap().values().toArray(
 			new LinkedRemoteFile[0]);
 	}
 
@@ -1034,7 +1055,8 @@ public class LinkedRemoteFile
 			throw new IllegalStateException("lookupSFVFile must be called on a directory");
 
 		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFile myFile = (LinkedRemoteFile) iter.next();
+			LinkedRemoteFileInterface myFile =
+				(LinkedRemoteFileInterface) iter.next();
 			if (myFile.getName().toLowerCase().endsWith(".sfv")) {
 				return myFile.getSFVFile();
 			}
@@ -1093,7 +1115,8 @@ public class LinkedRemoteFile
 	 */
 	private LinkedRemoteFile putFile(RemoteFileInterface file, String toName) {
 		if (_files.containsKey(toName))
-			throw new IllegalStateException("Don't overwrite! "+getPath()+" "+toName);
+			throw new IllegalStateException(
+				"Don't overwrite! " + getPath() + " " + toName);
 		//validate
 		if (file.isFile()) {
 			assert file.getSlaves() != null : file.toString();
@@ -1116,8 +1139,12 @@ public class LinkedRemoteFile
 		_link = toFile.getPath();
 		_isDeleted = true;
 	}
-	public TransferStatus receiveFile(Transfer transfer, char type, long offset) throws IOException {
-		return transfer.receiveFile(getParent(),type,getName(),offset);
+	public TransferStatus receiveFile(
+		Transfer transfer,
+		char type,
+		long offset)
+		throws IOException {
+		return transfer.receiveFile(getParent(), type, getName(), offset);
 	}
 
 	/**
@@ -1177,8 +1204,8 @@ public class LinkedRemoteFile
 						String linktarget = localfile.getLinkPath();
 						//// rename ////
 						try {
-							LinkedRemoteFile renameTo =
-								(LinkedRemoteFile) localfile.getLink();
+							LinkedRemoteFileInterface renameTo =
+								(LinkedRemoteFileInterface) localfile.getLink();
 							logger.debug(
 								"queued rename for "
 									+ localfile.getPath()
@@ -1194,9 +1221,11 @@ public class LinkedRemoteFile
 								if (localfile.isFile()) {
 									recursiveRenameLoopFile(
 										localfile,
-										renameTo);
+										(LinkedRemoteFile) renameTo);
 								} else {
-									recursiveRenameLoop(localfile, renameTo);
+									recursiveRenameLoop(
+										localfile,
+										(LinkedRemoteFile) renameTo);
 								}
 
 								//migrate mergefile on mergedir or files will
@@ -1295,7 +1324,10 @@ public class LinkedRemoteFile
 					} else if (slavefile.length() == 0) {
 						logger.log(
 							Level.INFO,
-							"Deleting conflicting 0byte " + slavefile + " on " + rslave);
+							"Deleting conflicting 0byte "
+								+ slavefile
+								+ " on "
+								+ rslave);
 						try {
 							rslave.getSlave().delete(slavefile.getPath());
 						} catch (PermissionDeniedException ex) {
@@ -1365,16 +1397,16 @@ public class LinkedRemoteFile
 
 	}
 
-	private synchronized void remergePass2(LinkedRemoteFile mergedir, RemoteSlave rslave) {
+	private synchronized void remergePass2(
+		LinkedRemoteFile mergedir,
+		RemoteSlave rslave) {
 		// remove all slaves not in mergedir.getFiles()
 		// unmerge() gets called on all files not on slave & all directories
 		//for (Iterator i = new ArrayList(getFilesMap().values()).iterator();
 		// getFilesMap() returns a copy of the list and without isDeleted files
-		for (Iterator i = _files.values().iterator();
-			i.hasNext();
-			) {
+		for (Iterator i = _files.values().iterator(); i.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) i.next();
-			if (mergedir == null ) { // slave doesn't have the directory
+			if (mergedir == null) { // slave doesn't have the directory
 				if (file.isFile()) {
 					if (file.getSlaves().contains(rslave)) {
 						file.getSlaves().remove(rslave);
@@ -1405,11 +1437,13 @@ public class LinkedRemoteFile
 			} else {
 				if (file.isDirectory()) {
 					try {
-						file.remergePass2(mergedir.getFile(file.getName()), rslave);
+						file.remergePass2(
+							(LinkedRemoteFile) mergedir.getFile(file.getName()),
+							rslave);
 					} catch (FileNotFoundException e) {
 						throw new RuntimeException(
-								"inconsistent with hasFile() above",
-								e);
+							"inconsistent with hasFile() above",
+							e);
 					}
 				}
 				// else slave has the file
@@ -1525,8 +1559,9 @@ public class LinkedRemoteFile
 		//		_name = toName;
 		return toFile;
 	}
-	public TransferStatus sendFile(Transfer transfer, char type, long offset) throws IOException {
-		return transfer.sendFile(getPath(),type,offset);
+	public TransferStatus sendFile(Transfer transfer, char type, long offset)
+		throws IOException {
+		return transfer.sendFile(getPath(), type, offset);
 	}
 
 	public void setCheckSum(long checkSum) {
@@ -1592,7 +1627,8 @@ public class LinkedRemoteFile
 			throw new IllegalStateException();
 
 		for (Iterator i = getFiles().iterator(); i.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) i.next();
+			LinkedRemoteFileInterface file =
+				(LinkedRemoteFileInterface) i.next();
 			if (file.isDirectory()) {
 				file.unmergeDir(rslave);
 				//remove empty deleted directories

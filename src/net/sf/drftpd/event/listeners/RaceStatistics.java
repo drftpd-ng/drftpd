@@ -34,11 +34,11 @@ import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
- * @version $Id: RaceStatistics.java,v 1.8 2004/02/10 00:03:06 mog Exp $
+ * @version $Id: RaceStatistics.java,v 1.9 2004/02/23 01:14:36 mog Exp $
  */
 public class RaceStatistics implements FtpListener {
 
@@ -53,7 +53,7 @@ public class RaceStatistics implements FtpListener {
 		DirectoryFtpEvent direvent = (DirectoryFtpEvent) event;
 		if (!direvent.getCommand().equals("STOR"))
 			return;
-		LinkedRemoteFile dir;
+		LinkedRemoteFileInterface dir;
 		try {
 			dir = direvent.getDirectory().getParentFile();
 		} catch (FileNotFoundException e) {

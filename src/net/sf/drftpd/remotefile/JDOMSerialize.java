@@ -31,13 +31,13 @@ import org.jdom.input.SAXBuilder;
 
 /**
  * @author mog
- * @version $Id: JDOMSerialize.java,v 1.7 2004/02/10 00:03:15 mog Exp $
+ * @version $Id: JDOMSerialize.java,v 1.8 2004/02/23 01:14:40 mog Exp $
  */
 public class JDOMSerialize {
 	private static final Logger logger = Logger.getLogger(JDOMSerialize.class);
 
-	public static LinkedRemoteFile unserialize(ConnectionManager cm, Reader in, List rslaves) throws FileNotFoundException {
-		LinkedRemoteFile root;
+	public static LinkedRemoteFileInterface unserialize(ConnectionManager cm, Reader in, List rslaves) throws FileNotFoundException {
+		LinkedRemoteFileInterface root;
 		try {
 			Document doc = new SAXBuilder().build(in);
 			System.out.flush();
@@ -55,7 +55,7 @@ public class JDOMSerialize {
 		}
 		return root;
 	}
-	public static Element serialize(LinkedRemoteFile file) {
+	public static Element serialize(LinkedRemoteFileInterface file) {
 		throw new UnsupportedOperationException("JDOMSerialize is deprecated");
 	}
 }

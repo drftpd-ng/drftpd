@@ -40,6 +40,7 @@ import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.RemoteFileInterface;
 import net.sf.drftpd.util.ListUtils;
 
@@ -48,7 +49,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * @version $Id: LIST.java,v 1.13 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: LIST.java,v 1.14 2004/02/23 01:14:37 mog Exp $
  */
 public class LIST implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(LIST.class);
@@ -333,7 +334,7 @@ public class LIST implements CommandHandler {
 	/**
 	 * Get file name.
 	 */
-	private static String getName(LinkedRemoteFile fl) {
+	private static String getName(LinkedRemoteFileInterface fl) {
 		String flName = fl.getName();
 
 		int lastIndex = flName.lastIndexOf("/");
@@ -373,8 +374,8 @@ public class LIST implements CommandHandler {
 		boolean fulldate)
 		throws IOException {
 		StringBuffer line = new StringBuffer();
-		if (fl instanceof LinkedRemoteFile
-			&& !((LinkedRemoteFile) fl).isAvailable()) {
+		if (fl instanceof LinkedRemoteFileInterface
+			&& !((LinkedRemoteFileInterface) fl).isAvailable()) {
 			line.append("----------");
 		} else {
 			line.append(getPermission(fl));

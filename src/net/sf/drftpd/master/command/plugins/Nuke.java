@@ -43,7 +43,7 @@ import net.sf.drftpd.master.usermanager.AbstractUser;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -56,7 +56,7 @@ import org.jdom.input.SAXBuilder;
  * amount -> amount before multiplier
  * 
  * @author mog
- * @version $Id: Nuke.java,v 1.11 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: Nuke.java,v 1.12 2004/02/23 01:14:37 mog Exp $
  */
 public class Nuke implements CommandHandler {
 
@@ -70,10 +70,10 @@ public class Nuke implements CommandHandler {
 	}
 
 	private static void nukeRemoveCredits(
-		LinkedRemoteFile nukeDir,
+		LinkedRemoteFileInterface nukeDir,
 		Hashtable nukees) {
 		for (Iterator iter = nukeDir.getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
 			if (file.isDirectory()) {
 				nukeRemoveCredits(file, nukees);
 			}
@@ -126,7 +126,7 @@ public class Nuke implements CommandHandler {
 		}
 
 		int multiplier;
-		LinkedRemoteFile nukeDir;
+		LinkedRemoteFileInterface nukeDir;
 		String nukeDirName;
 		try {
 			nukeDirName = st.nextToken();
@@ -329,7 +329,7 @@ public class Nuke implements CommandHandler {
 			reason = "";
 		}
 
-		LinkedRemoteFile nukeDir;
+		LinkedRemoteFileInterface nukeDir;
 		try {
 			nukeDir = conn.getCurrentDirectory().getFile(nukeName);
 		} catch (FileNotFoundException e2) {

@@ -40,7 +40,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: MLSTSerialize.java,v 1.24 2004/02/10 00:03:15 mog Exp $
+ * @version $Id: MLSTSerialize.java,v 1.25 2004/02/23 01:14:40 mog Exp $
  */
 public class MLSTSerialize {
 	private static final Logger logger = Logger.getLogger(MLSTSerialize.class);
@@ -48,10 +48,10 @@ public class MLSTSerialize {
 	public static final SimpleDateFormat timeval =
 		new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
-	public static void serialize(LinkedRemoteFile dir, Writer out) {
+	public static void serialize(LinkedRemoteFileInterface dir, Writer out) {
 		serialize(dir, new PrintWriter(out));
 	}
-	public static void serialize(LinkedRemoteFile dir, PrintWriter out) {
+	public static void serialize(LinkedRemoteFileInterface dir, PrintWriter out) {
 		out.println(dir.getPath() + ":");
 		for (Iterator iter = dir.getMap().values().iterator();
 			iter.hasNext();
@@ -65,7 +65,7 @@ public class MLSTSerialize {
 		for (Iterator iter = dir.getMap().values().iterator();
 			iter.hasNext();
 			) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
 			if (file.isDirectory())
 				serialize(file, out);
 		}
@@ -116,7 +116,7 @@ public class MLSTSerialize {
 
 	private static void unserialize(
 		LineNumberReader in,
-		LinkedRemoteFile dir,
+		LinkedRemoteFileInterface dir,
 		Hashtable allRslaves,
 		String path)
 		throws IOException {
@@ -222,7 +222,7 @@ public class MLSTSerialize {
 
 			String path = line.substring(0, line.length() - 1);
 			NonExistingFile ret = root.lookupNonExistingFile(path, true);
-			LinkedRemoteFile dir;
+			LinkedRemoteFileInterface dir;
 			dir = ret.getFile();
 			if (!ret.exists()) {
 				throw new CorruptFileListException(path + " doesn't exist");

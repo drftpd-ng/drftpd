@@ -35,6 +35,7 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -42,7 +43,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagment.java,v 1.12 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: SiteManagment.java,v 1.13 2004/02/23 01:14:37 mog Exp $
  */
 public class SiteManagment implements CommandHandler {
 
@@ -66,7 +67,7 @@ public class SiteManagment implements CommandHandler {
 		ArrayList files = new ArrayList(dir.getMap().values());
 		Collections.sort(files);
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
 			//if (!key.equals(file.getName()))
 			//	response.addComment(
 			//		"WARN: " + key + " not equals to " + file.getName());
@@ -115,7 +116,7 @@ public class SiteManagment implements CommandHandler {
 
 		try {
 			conn.getConnectionManager().getConfig().reloadConfig();
-			conn.getSlaveManager().reloadRSlaves();
+			conn.getSlaveManager().reload();
 			conn.getConnectionManager().getCommandManagerFactory().reload();
 			//slaveManager.saveFilesXML();
 		} catch (IOException e) {

@@ -34,7 +34,7 @@ import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.SlaveImpl;
 
 import org.apache.log4j.Logger;
@@ -43,7 +43,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.41 2004/02/16 23:46:11 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.42 2004/02/23 01:14:38 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -113,10 +113,10 @@ public class FtpConfig {
 		loadConfig(cfg, connManager);
 	}
 
-	public boolean checkDelete(User fromUser, LinkedRemoteFile path) {
+	public boolean checkDelete(User fromUser, LinkedRemoteFileInterface path) {
 		return checkPathPermission("delete", fromUser, path);
 	}
-	public boolean checkDeleteOwn(User fromUser, LinkedRemoteFile path) {
+	public boolean checkDeleteOwn(User fromUser, LinkedRemoteFileInterface path) {
 		return checkPathPermission("deleteown", fromUser, path);
 	}
 
@@ -126,7 +126,7 @@ public class FtpConfig {
 	 * @param path The path in question.
 	 * @return true if the path has dirlog enabled.
 	 */
-	public boolean checkDirLog(User fromUser, LinkedRemoteFile path) {
+	public boolean checkDirLog(User fromUser, LinkedRemoteFileInterface path) {
 		return checkPathPermission("dirlog", fromUser, path);
 	}
 
@@ -134,35 +134,35 @@ public class FtpConfig {
 	 * Also checks privpath for permission
 	 * @return true if fromUser is allowed to download the file path
 	 */
-	public boolean checkDownload(User fromUser, LinkedRemoteFile path) {
+	public boolean checkDownload(User fromUser, LinkedRemoteFileInterface path) {
 		return checkPathPermission("download", fromUser, path);
 	}
 
 	/**
 	 * @return true if fromUser should be hidden
 	 */
-	public boolean checkHideInWho(User fromUser, LinkedRemoteFile path) {
+	public boolean checkHideInWho(User fromUser, LinkedRemoteFileInterface path) {
 		return checkPathPermission("hideinwho", fromUser, path);
 	}
 
 	/**
 	 * @return true if fromUser is allowed to mkdir in path
 	 */
-	public boolean checkMakeDir(User fromUser, LinkedRemoteFile path) {
+	public boolean checkMakeDir(User fromUser, LinkedRemoteFileInterface path) {
 		return checkPathPermission("makedir", fromUser, path);
 	}
 
 	public boolean checkPathPermission(
 		String key,
 		User fromUser,
-		LinkedRemoteFile path) {
+		LinkedRemoteFileInterface path) {
 		return checkPathPermission(key, fromUser, path, false);
 	}
 
 	private boolean checkPathPermission(
 		String key,
 		User fromUser,
-		LinkedRemoteFile path,
+		LinkedRemoteFileInterface path,
 		boolean defaults) {
 		Iterator iter = ((Collection) _patternPaths.get(key)).iterator();
 		while (iter.hasNext()) {
@@ -178,34 +178,34 @@ public class FtpConfig {
 	/**
 	 * @return true if user fromUser is allowed to see path
 	 */
-	public boolean checkPrivPath(User fromUser, LinkedRemoteFile path) {
+	public boolean checkPrivPath(User fromUser, LinkedRemoteFileInterface path) {
 		return checkPathPermission("privpath", fromUser, path, true);
 	}
 
-	public boolean checkRename(User fromUser, LinkedRemoteFile path) {
+	public boolean checkRename(User fromUser, LinkedRemoteFileInterface path) {
 		return checkPathPermission("rename", fromUser, path);
 	}
 
-	public boolean checkRenameOwn(User fromUser, LinkedRemoteFile path) {
+	public boolean checkRenameOwn(User fromUser, LinkedRemoteFileInterface path) {
 		return checkPathPermission("renameown", fromUser, path);
 	}
 	/**
 	 * @deprecated non-core
 	 */
-	public boolean checkRequest(User fromUser, LinkedRemoteFile path) {
+	public boolean checkRequest(User fromUser, LinkedRemoteFileInterface path) {
 		return checkPathPermission("request", fromUser, path);
 	}
 	/**
 	 * @return true if fromUser is allowed to upload in directory path
 	 */
-	public boolean checkUpload(User fromUser, LinkedRemoteFile path) {
+	public boolean checkUpload(User fromUser, LinkedRemoteFileInterface path) {
 		return checkPathPermission("upload", fromUser, path);
 	}
 
 	public void directoryMessage(
 		FtpReply response,
 		User user,
-		LinkedRemoteFile dir) {
+		LinkedRemoteFileInterface dir) {
 
 		for (Iterator iter = _msgpath.iterator(); iter.hasNext();) {
 			MessagePathPermission perm = (MessagePathPermission) iter.next();
@@ -216,7 +216,7 @@ public class FtpConfig {
 			}
 		}
 	}
-	public float getCreditCheckRatio(LinkedRemoteFile path, User fromUser) {
+	public float getCreditCheckRatio(LinkedRemoteFileInterface path, User fromUser) {
 		for (Iterator iter = _creditcheck.iterator(); iter.hasNext();) {
 			RatioPathPermission perm = (RatioPathPermission) iter.next();
 			if (perm.checkPath(path)) {
@@ -230,7 +230,7 @@ public class FtpConfig {
 		return fromUser.getRatio();
 	}
 
-	public float getCreditLossRatio(LinkedRemoteFile path, User fromUser) {
+	public float getCreditLossRatio(LinkedRemoteFileInterface path, User fromUser) {
 		for (Iterator iter = _creditloss.iterator(); iter.hasNext();) {
 			RatioPathPermission perm = (RatioPathPermission) iter.next();
 

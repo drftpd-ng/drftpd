@@ -19,7 +19,7 @@ package net.sf.drftpd.master.config;
 
 import java.util.ArrayList;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
@@ -38,7 +38,7 @@ public class ExcludePath {
 		_pat = pat;
 	}
 	
-	public boolean checkPath(LinkedRemoteFile file) {
+	public boolean checkPath(LinkedRemoteFileInterface file) {
 		String path = file.getPath();
 		if(file.isDirectory()) path = path.concat("/");
 		Perl5Matcher m = new Perl5Matcher();

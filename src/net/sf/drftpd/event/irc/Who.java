@@ -19,7 +19,6 @@ package net.sf.drftpd.event.irc;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 
 import net.sf.drftpd.Bytes;
@@ -44,7 +43,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Who.java,v 1.3 2004/02/10 00:03:05 mog Exp $
+ * @version $Id: Who.java,v 1.4 2004/02/23 01:14:35 mog Exp $
  */
 public class Who extends GenericAutoService {
 	private static final Logger logger = Logger.getLogger(Who.class);

@@ -33,12 +33,13 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * CommandHandler plugin for viewing and manipulating the JobManager queue.
  * 
  * @author mog
- * @version $Id: JobManagerCommandHandler.java,v 1.7 2004/02/21 05:28:21 zubov Exp $
+ * @version $Id: JobManagerCommandHandler.java,v 1.8 2004/02/23 01:14:39 mog Exp $
  */
 public class JobManagerCommandHandler implements CommandHandler {
 
@@ -56,7 +57,7 @@ public class JobManagerCommandHandler implements CommandHandler {
 		}
 		StringTokenizer st =
 			new StringTokenizer(conn.getRequest().getArgument());
-		LinkedRemoteFile lrf;
+		LinkedRemoteFileInterface lrf;
 		FtpReply reply = new FtpReply(200);
 		try {
 			lrf = conn.getCurrentDirectory().getFile(st.nextToken());

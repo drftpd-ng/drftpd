@@ -13,6 +13,8 @@ REST=net.sf.drftpd.master.command.plugins.DataConnectionHandler
 SITE\ RESCAN=net.sf.drftpd.master.command.plugins.DataConnectionHandler
 SITE\ XDUPE=net.sf.drftpd.master.command.plugins.DataConnectionHandler
 STOR=net.sf.drftpd.master.command.plugins.DataConnectionHandler
+#EPSV=net.sf.drftpd.master.command.plugins.DataConnectionHandler
+#EPRT=net.sf.drftpd.master.command.plugins.DataConnectionHandler
 
 USER=net.sf.drftpd.master.command.plugins.Login
 PASS=net.sf.drftpd.master.command.plugins.Login

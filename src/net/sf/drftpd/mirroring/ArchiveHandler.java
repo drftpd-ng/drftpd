@@ -28,15 +28,11 @@ import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.listeners.Archive;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+
 /**
  * @author zubov
- * 
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
-/**
- * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.15 2004/02/21 05:28:21 zubov Exp $
+ * @version $Id: ArchiveHandler.java,v 1.16 2004/02/23 01:14:39 mog Exp $
  */
 public class ArchiveHandler extends Thread {
 	private static final Logger logger = Logger.getLogger(ArchiveHandler.class);
@@ -47,14 +43,14 @@ public class ArchiveHandler extends Thread {
 		_parent = archive;
 		setName("ArchiveHandler for unknown");
 	}
-	private RemoteSlave findDestinationSlave(LinkedRemoteFile lrf) {
+	private RemoteSlave findDestinationSlave(LinkedRemoteFileInterface lrf) {
 		if (_parent.isArchiveToFreeSlave()) {
 			return _parent.getConnectionManager().getSlaveManager()
 					.findLargestFreeSlave();
 		}
 		ArrayList slaveList = new ArrayList();
 		for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
-			Collection tempSlaveList = ((LinkedRemoteFile) iter.next())
+			Collection tempSlaveList = ((LinkedRemoteFileInterface) iter.next())
 					.getSlaves();
 			slaveList.addAll(tempSlaveList);
 		}
@@ -116,7 +112,7 @@ public class ArchiveHandler extends Thread {
 				return null;
 			}
 			for (Iterator iter = files.iterator(); iter.hasNext();) {
-				if (((LinkedRemoteFile) iter.next()).hasSlave(rslave))
+				if (((LinkedRemoteFileInterface) iter.next()).hasSlave(rslave))
 					return lrf;
 			}
 			return null;
@@ -245,7 +241,7 @@ public class ArchiveHandler extends Thread {
 		logger.debug("The slave to archive to is " + slave.getName());
 		ArrayList jobQueue = new ArrayList();
 		for (Iterator iter = oldDir.getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFile src = (LinkedRemoteFile) iter.next();
+			LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
 			Job job = null;
 			//if (!src.getSlaves().contains(slave)) {
 			// I don't care if it's already on that slave, the JobManager will

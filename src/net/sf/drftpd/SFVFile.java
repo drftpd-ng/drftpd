@@ -27,10 +27,11 @@ import java.util.Iterator;
 import java.util.Map;
 
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: SFVFile.java,v 1.28 2004/02/10 00:03:05 mog Exp $
+ * @version $Id: SFVFile.java,v 1.29 2004/02/23 01:14:34 mog Exp $
  */
 public class SFVFile implements Serializable {
 
@@ -86,7 +87,7 @@ public class SFVFile implements Serializable {
 
 	static final long serialVersionUID = 5381510163578487722L;
 
-	private transient LinkedRemoteFile _companion;
+	private transient LinkedRemoteFileInterface _companion;
 
 	/**
 	 * String fileName as key.
@@ -146,7 +147,7 @@ public class SFVFile implements Serializable {
 		int present = 0;
 
 		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
 			if (file.length() != 0) {
 				present++;
 				if (!file.isAvailable()) {
@@ -173,7 +174,7 @@ public class SFVFile implements Serializable {
 	}
 
 	public Map getEntriesFiles() {
-		LinkedRemoteFile dir;
+		LinkedRemoteFileInterface dir;
 		try {
 			dir = _companion.getParentFile();
 		} catch (FileNotFoundException e) {
@@ -214,7 +215,7 @@ public class SFVFile implements Serializable {
 	public long getTotalBytes() {
 		long totalBytes = 0;
 		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
-			totalBytes += ((LinkedRemoteFile) iter.next()).length();
+			totalBytes += ((LinkedRemoteFileInterface) iter.next()).length();
 		}
 		return totalBytes;
 	}
@@ -222,7 +223,7 @@ public class SFVFile implements Serializable {
 	public long getTotalXfertime() {
 		long totalXfertime = 0;
 		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
-			totalXfertime += ((LinkedRemoteFile) iter.next()).getXfertime();
+			totalXfertime += ((LinkedRemoteFileInterface) iter.next()).getXfertime();
 		}
 		return totalXfertime;
 	}
@@ -251,7 +252,7 @@ public class SFVFile implements Serializable {
 		//		return offlineFiles;
 	}
 
-	public void setCompanion(LinkedRemoteFile companion) {
+	public void setCompanion(LinkedRemoteFileInterface companion) {
 		if (_companion != null)
 			throw new IllegalStateException("Can't overwrite companion");
 		_companion = companion;

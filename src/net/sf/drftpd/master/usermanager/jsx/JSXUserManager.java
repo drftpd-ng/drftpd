@@ -42,7 +42,7 @@ import JSX.ObjIn;
 
 /**
  * @author mog
- * @version $Id: JSXUserManager.java,v 1.26 2004/02/10 01:06:40 mog Exp $
+ * @version $Id: JSXUserManager.java,v 1.27 2004/02/23 01:14:38 mog Exp $
  */
 public class JSXUserManager implements UserManager {
 	private ConnectionManager _connManager;
@@ -69,11 +69,13 @@ public class JSXUserManager implements UserManager {
 			}
 		}
 		if (numUsers == 0) {
-			User user = this.create("drftpd");
+			User user = create("drftpd");
 			user.setGroup("drftpd");
 			user.setPassword("drftpd");
+			user.setRatio(0);
 			try {
 				user.addIPMask("*@127.0.0.1");
+				user.addIPMask("*@0:0:0:0:0:0:0:1");
 			} catch (DuplicateElementException e) {
 			}
 			try {

@@ -21,7 +21,7 @@ import java.util.Comparator;
 
 /**
  * @author mog
- * @version $Id: RemoteFileLastModifiedComparator.java,v 1.2 2004/02/10 00:03:15 mog Exp $
+ * @version $Id: RemoteFileLastModifiedComparator.java,v 1.3 2004/02/23 01:14:40 mog Exp $
  */
 public class RemoteFileLastModifiedComparator implements Comparator {
 
@@ -32,8 +32,8 @@ public class RemoteFileLastModifiedComparator implements Comparator {
 	}
 
 	public int compare(Object o1, Object o2) {
-		long thisVal = ((LinkedRemoteFile)(_reverse ? o2 : o1)).length();
-		long anotherVal = ((LinkedRemoteFile)(_reverse ? o1 : o2)).length();
+		long thisVal = ((LinkedRemoteFileInterface)(_reverse ? o2 : o1)).length();
+		long anotherVal = ((LinkedRemoteFileInterface)(_reverse ? o1 : o2)).length();
 		
 		return (thisVal<anotherVal ? -1 : (thisVal==anotherVal ? 0 : 1));
 	}

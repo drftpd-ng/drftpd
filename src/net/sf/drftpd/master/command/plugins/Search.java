@@ -21,19 +21,19 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
-
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Search.java,v 1.8 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: Search.java,v 1.9 2004/02/23 01:14:37 mog Exp $
  */
 public class Search implements CommandHandler {
 	public void unload() {}
@@ -42,7 +42,7 @@ public class Search implements CommandHandler {
 	private static void findFile(
 		BaseFtpConnection conn,
 		FtpReply response,
-		LinkedRemoteFile dir,
+		LinkedRemoteFileInterface dir,
 		Collection searchstrings,
 		boolean files,
 		boolean dirs) {
@@ -52,7 +52,7 @@ public class Search implements CommandHandler {
 			return;
 		}
 		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
 			if (file.isDirectory()) {
 				findFile(conn, response, file, searchstrings, files, dirs);
 			}

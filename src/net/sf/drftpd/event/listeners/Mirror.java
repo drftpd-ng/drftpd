@@ -31,6 +31,7 @@ import net.sf.drftpd.master.config.ExcludePath;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
@@ -38,7 +39,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 /**
  * @author zubov
  *
- * @version $Id: Mirror.java,v 1.15 2004/02/16 14:41:43 zubov Exp $
+ * @version $Id: Mirror.java,v 1.16 2004/02/23 01:14:36 mog Exp $
  */
 public class Mirror implements FtpListener {
 
@@ -87,7 +88,7 @@ public class Mirror implements FtpListener {
 	 * @param lrf
 	 * Returns true if lrf.getPath() is excluded
 	 */
-	public boolean checkExclude(LinkedRemoteFile lrf) {
+	public boolean checkExclude(LinkedRemoteFileInterface lrf) {
 		for (Iterator iter = _exemptList.iterator(); iter.hasNext();) {
 			ExcludePath ep = (ExcludePath) iter.next();
 			if (ep.checkPath(lrf))

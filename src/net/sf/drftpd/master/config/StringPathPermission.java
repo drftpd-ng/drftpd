@@ -19,12 +19,12 @@ package net.sf.drftpd.master.config;
 
 import java.util.Collection;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
  *
- * @version $Id: StringPathPermission.java,v 1.5 2004/02/10 00:03:08 mog Exp $
+ * @version $Id: StringPathPermission.java,v 1.6 2004/02/23 01:14:38 mog Exp $
  */
 public class StringPathPermission extends PathPermission {
 	private String path;
@@ -34,7 +34,7 @@ public class StringPathPermission extends PathPermission {
 		this.path = path;
 	}
 
-	public boolean checkPath(LinkedRemoteFile path) {
+	public boolean checkPath(LinkedRemoteFileInterface path) {
 		assert path.isDirectory() : "Should be a directory";
 		return (path.getPath()+"/").startsWith(this.path);
 	}

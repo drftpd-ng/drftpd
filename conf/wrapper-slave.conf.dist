@@ -41,7 +41,7 @@ wrapper.app.parameter.1=net.sf.drftpd.slave.SlaveImpl
 
 #Retry when slave exits
 wrapper.disable_shutdown_hook=TRUE
-
+wrapper.restart.delay=300
 #********************************************************************
 # Wrapper Logging Properties
 #********************************************************************

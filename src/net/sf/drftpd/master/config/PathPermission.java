@@ -19,11 +19,11 @@ package net.sf.drftpd.master.config;
 
 import java.util.Collection;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: PathPermission.java,v 1.6 2004/02/10 00:03:08 mog Exp $
+ * @version $Id: PathPermission.java,v 1.7 2004/02/23 01:14:38 mog Exp $
  */
 public abstract class PathPermission extends Permission {
 	
@@ -31,5 +31,5 @@ public abstract class PathPermission extends Permission {
 		super(users);
 	}
 
-	public abstract boolean checkPath(LinkedRemoteFile path);
+	public abstract boolean checkPath(LinkedRemoteFileInterface path);
 }

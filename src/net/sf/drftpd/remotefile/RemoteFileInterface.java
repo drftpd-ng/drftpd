@@ -22,9 +22,14 @@ import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: RemoteFileInterface.java,v 1.8 2004/02/10 00:03:15 mog Exp $
+ * @version $Id: RemoteFileInterface.java,v 1.9 2004/02/23 01:14:40 mog Exp $
  */
 public interface RemoteFileInterface {
+	/**
+	 * Returns the cached checksum or 0 if no checksum was cached.
+	 * <p>
+	 * Use {getCheckSum()} to automatically calculate checksum if no cached checksum is available.
+	 */
 	public long getCheckSumCached();
 	/**
 	 * Returns a Collection of RemteFileInterface objects.

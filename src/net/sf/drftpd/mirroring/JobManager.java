@@ -34,12 +34,12 @@ import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.SlaveStatus;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.29 2004/02/21 05:28:21 zubov Exp $
+ * @version $Id: JobManager.java,v 1.30 2004/02/23 01:14:39 mog Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -98,7 +98,7 @@ public class JobManager implements FtpListener {
 	 * @return A <code>java.util.List</code> of all jobs for the specific
 	 *         LinkedRemoteFile
 	 */
-	public synchronized List getAllJobs(LinkedRemoteFile lrf) {
+	public synchronized List getAllJobs(LinkedRemoteFileInterface lrf) {
 		ArrayList tempList = new ArrayList();
 		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
 			Job tempJob = (Job) iter.next();
@@ -189,8 +189,7 @@ public class JobManager implements FtpListener {
 	 * immediately transfer
 	 */
 	public boolean processJob(RemoteSlave slave) {
-		Job job;
-		job = getNextJob(slave);
+		Job job = getNextJob(slave);
 		if (job == null) { // nothing to process for this slave
 			logger.debug("Nothing to process for slave " + slave.getName());
 			return false;
@@ -201,7 +200,8 @@ public class JobManager implements FtpListener {
 		long difference = 0;
 		RemoteSlave sourceSlave = null;
 		try {
-			sourceSlave = job.getFile().getASlaveForDownload();
+			sourceSlave = _cm.getSlaveManager().getSlaveSelectionManager("down").getASlave(job, slave);
+			//sourceSlave = job.getFile().getASlaveForDownload();
 		} catch (NoAvailableSlaveException e) {
 			logger
 					.debug(
