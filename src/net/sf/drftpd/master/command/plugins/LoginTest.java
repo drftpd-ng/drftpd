@@ -29,6 +29,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import org.drftpd.commands.Reply;
+import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UnhandledCommandException;
 
 import org.drftpd.tests.DummyBaseFtpConnection;
@@ -98,31 +99,30 @@ public class LoginTest extends TestCase {
     }
 
     public void testUSER()
-        throws UnknownHostException, UnhandledCommandException, 
-            DuplicateElementException {
+        throws UnknownHostException, DuplicateElementException, ReplyException {
         internalSetUp();
         _conn.setClientAddress(InetAddress.getByName("127.0.0.1"));
 
         Reply reply;
         _conn.setRequest(new FtpRequest("USER myuser"));
         reply = _login.execute(_conn);
-        assertEquals(530, reply.getCode());
+        assertEquals(reply.toString(), 530, reply.getCode());
         assertNull(_conn.getUserNull());
 
         _user.addIPMask("*@1.2.3.4");
         reply = _login.execute(_conn);
-        assertEquals(530, reply.getCode());
+        assertEquals(reply.toString(), 530, reply.getCode());
         assertNull(_conn.getUserNull());
 
         _user.addIPMask("*@127.0.0.1");
         reply = _login.execute(_conn);
-        assertEquals(331, reply.getCode());
+        assertEquals(reply.toString(), 331, reply.getCode());
         assertNotNull(_conn.getUserNull());
     }
 
     public void testIDNT()
-        throws UnhandledCommandException, DuplicateElementException, 
-            UnknownHostException {
+        throws DuplicateElementException, 
+            UnknownHostException, ReplyException {
         internalSetUp();
         _conn.setClientAddress(InetAddress.getByName("10.0.0.2"));
         _conn.setRequest(new FtpRequest("IDNT user@127.0.0.1:localhost"));
@@ -159,8 +159,8 @@ public class LoginTest extends TestCase {
             Properties cfg = new Properties();
             cfg.setProperty("bouncer_ip", "10.0.1.1 10.0.0.1");
 
-            Reader r = new StringReader("shutdown !*");
-            cfg.setProperty("shutdown", "!*");
+            Reader r = new StringReader("shutdown *");
+            cfg.setProperty("shutdown", "*");
 
             try {
                 loadConfig1(cfg);

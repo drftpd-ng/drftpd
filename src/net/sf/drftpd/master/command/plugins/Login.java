@@ -30,6 +30,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
+import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.commands.UserManagment;
 
@@ -159,7 +160,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
      * normally be the first command transmitted by the user after
      * the control connections are made.
      */
-    private Reply doUSER(BaseFtpConnection conn) {
+    private Reply doUSER(BaseFtpConnection conn) throws ReplyException {
         FtpRequest request = conn.getRequest();
         conn.setAuthenticated(false);
         conn.setUser(null);
@@ -177,12 +178,11 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
             return new Reply(530, ex.getMessage());
         } catch (UserFileException ex) {
             logger.warn("", ex);
-
             return new Reply(530, "IOException: " + ex.getMessage());
         } catch (RuntimeException ex) {
             logger.error("", ex);
 
-            return new Reply(530, ex.getMessage());
+            throw new ReplyException(ex);
         }
 
         if (newUser.isDeleted()) {
@@ -192,7 +192,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
 							Reply.RESPONSE_530_ACCESS_DENIED.getMessage()));
         }
         if(!conn.getGlobalContext().getConfig().isLoginAllowed(newUser)) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
+        	return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         try {
@@ -230,7 +230,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
     }
 
     public Reply execute(BaseFtpConnection conn)
-        throws UnhandledCommandException {
+        throws ReplyException {
         String cmd = conn.getRequest().getCommand();
 
         if ("USER".equals(cmd)) {

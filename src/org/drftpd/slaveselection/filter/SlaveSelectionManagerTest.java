@@ -47,13 +47,13 @@ public class SlaveSelectionManagerTest extends TestCase {
         return new TestSuite(SlaveSelectionManagerTest.class);
     }
 
-    public void testEmptyFail() {
+    public void testEmptyPass() {
         Properties p = new Properties();
 
         try {
             new FilterChain(null, p);
-            fail();
         } catch (IllegalArgumentException pass) {
+            fail();
         }
     }
 

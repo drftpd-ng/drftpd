@@ -1,7 +1,8 @@
 package org.drftpd.tests;
 
-import org.drftpd.commands.UserManagment;
+import java.util.Date;
 
+import org.drftpd.commands.UserManagment;
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserFileException;
@@ -22,7 +23,7 @@ public class DummyUser extends AbstractUser {
 
     public DummyUser(String username, long time) {
         this(username);
-        getKeyedMap().setObject(UserManagment.CREATED, new Long(time));
+        getKeyedMap().setObject(UserManagment.CREATED, new Date(time));
     }
 
     public boolean checkPassword(String password) {

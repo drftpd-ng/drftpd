@@ -30,6 +30,7 @@ import org.drftpd.commands.UnhandledCommandException;
 
 import org.drftpd.tests.DummyBaseFtpConnection;
 import org.drftpd.tests.DummyConnectionManager;
+import org.drftpd.tests.DummyFtpConfig;
 import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyServerSocketFactory;
 import org.drftpd.tests.DummySocketFactory;
@@ -52,7 +53,7 @@ public class DataConnectionHandlerTest extends TestCase {
     private DummyGlobalContext gctx;
     private DummyConnectionManager cm;
     DummyBaseFtpConnection conn;
-    DHC dch;
+    DummyDataConnectionHandler dch;
 
     public DataConnectionHandlerTest(String fName) {
         super(fName);
@@ -109,10 +110,10 @@ public class DataConnectionHandlerTest extends TestCase {
 
     protected void setUp() throws Exception {
         BasicConfigurator.configure();
-        dch = (DHC) new DHC().initialize(null, null);
+        dch = (DummyDataConnectionHandler) new DummyDataConnectionHandler().initialize(null, null);
 
         gctx = new DummyGlobalContext();
-        gctx.setFtpConfig(new FC());
+        gctx.setFtpConfig(new DummyFtpConfig());
 
         conn = new DummyBaseFtpConnection(dch);
         cm = new DummyConnectionManager();
@@ -151,8 +152,8 @@ public class DataConnectionHandlerTest extends TestCase {
         portList();
     }
 
-    public class DHC extends DataConnectionHandler {
-        public DHC() {
+    public class DummyDataConnectionHandler extends DataConnectionHandler {
+        public DummyDataConnectionHandler() {
             super();
         }
 
@@ -165,16 +166,4 @@ public class DataConnectionHandlerTest extends TestCase {
         }
     }
 
-    private static class FC extends FtpConfig {
-        public FC() {
-            super();
-
-            try {
-                loadConfig2(new StringReader(""));
-                loadConfig1(new Properties());
-            } catch (IOException e) {
-                throw new RuntimeException();
-            }
-        }
-    }
 }

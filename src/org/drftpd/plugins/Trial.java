@@ -39,6 +39,7 @@ import org.drftpd.Bytes;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commands.UserManagment;
 import org.drftpd.master.ConnectionManager;
+import org.drftpd.usermanager.KeyNotFoundException;
 import org.drftpd.usermanager.User;
 
 import com.Ostermiller.util.StringTokenizer;
@@ -101,7 +102,11 @@ public class Trial implements FtpListener {
 
     public static Calendar getCalendarForEndOfBonus(User user, int period) {
         Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(user.getObjectLong(UserManagment.CREATED));
+        try {
+			cal.setTime((Date) user.getObject(UserManagment.CREATED));
+		} catch (KeyNotFoundException e) {
+			throw new IllegalArgumentException("User has no created");
+		}
         moveCalendarToEndOfPeriod(cal, period);
 
         return cal;
@@ -112,7 +117,11 @@ public class Trial implements FtpListener {
      */
     public static Calendar getCalendarForEndOfFirstPeriod(User user, int period) {
         Calendar cal = Calendar.getInstance();
-        cal.setTime(new Date(user.getObjectLong(UserManagment.CREATED)));
+        try {
+			cal.setTime((Date) user.getObject(UserManagment.CREATED));
+		} catch (KeyNotFoundException e) {
+			throw new IllegalArgumentException("User has no created info");
+		}
         CalendarUtils.ceilAllLessThanDay(cal);
 
         switch (period) {

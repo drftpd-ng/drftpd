@@ -60,7 +60,7 @@ public class DummyUserManager extends AbstractUserManager {
 
     public User getUserByNameUnchecked(String username)
         throws NoSuchUserException, UserFileException {
-        throw new UnsupportedOperationException();
+        return _user;
     }
 
     public User getUserByName(String username) {

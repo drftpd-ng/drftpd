@@ -135,7 +135,7 @@ public abstract class AbstractUser extends User {
     }
 
     public void addIPMask(String mask) throws DuplicateElementException {
-        _hostMasks.addMask(mask);
+        getHostMaskCollection().addMask(mask);
     }
 
     //    public void addRacesLost() {

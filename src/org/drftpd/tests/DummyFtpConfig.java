@@ -17,17 +17,31 @@
  */
 package org.drftpd.tests;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Properties;
+
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+import net.sf.drftpd.util.PortRange;
 
 import org.drftpd.commands.UserManagment;
 
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.usermanager.User;
 
-
 public class DummyFtpConfig extends FtpConfig {
     public DummyFtpConfig() {
+        try {
+            loadConfig2(new StringReader(""));
+            loadConfig1(new Properties());
+            if (_portRange == null) {
+                //default portrange if none specified
+                _portRange = new PortRange();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException();
+        }
     }
 
     public boolean checkPathPermission(String key, User fromUser,

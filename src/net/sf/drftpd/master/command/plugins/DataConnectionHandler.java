@@ -246,7 +246,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                         _serverSocket.getLocalPort());
                 _isPasv = true;
             } catch (Exception ex) {
-                logger.warn(ex);
+                logger.warn("", ex);
 
                 return new Reply(550, ex.getMessage());
             }

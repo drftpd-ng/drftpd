@@ -83,7 +83,7 @@ public class FtpConfig {
     private boolean _useDirNames;
     private boolean _useFileNames;
     private String newConf = "conf/perms.conf";
-    private PortRange _portRange;
+    protected PortRange _portRange;
 	private Permission _shutdown;
 
     protected FtpConfig() {
