@@ -87,7 +87,6 @@ import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
-import org.drftpd.sitebot.OnConnect;
 
 import f00f.net.irc.martyr.CommandRegister;
 import f00f.net.irc.martyr.Debug;
@@ -907,8 +906,6 @@ public class SiteBot extends FtpListener implements Observer {
             }
         }
 
-        // add OnConnect class
-        _conn.addCommandObserver(new OnConnect(this));
         connect();
     }
 
@@ -1280,34 +1277,41 @@ public class SiteBot extends FtpListener implements Observer {
 			_identWhoisQueue.clear();
     	}
     	
-        if (!(updated instanceof MessageCommand)) {
-            return;
-        }
-        MessageCommand msgc = (MessageCommand) updated;
+    	MessageCommand msgc;
+        if ((updated instanceof MessageCommand)) {
+            msgc = (MessageCommand) updated;
 
-        //recreate the MessageCommand with the encrypted text
-        if (_fish != null && !msgc.isPrivateToUs(getIRCConnection().getClientState())) {
-            try {
-                MessageCommand decmsgc = new MessageCommand(msgc.getSource(), msgc.getDest(),
-                        						  	_fish.Decrypt(msgc.getMessage()));
-                msgc = decmsgc;
-            } catch (UnsupportedEncodingException e) {
-                logger.warn("Unable to decrypt '"+msgc.getSourceString()+"'", e);
+            //recreate the MessageCommand with the encrypted text
+            if (_fish != null && !msgc.isPrivateToUs(getIRCConnection().getClientState())) {
+                try {
+                    MessageCommand decmsgc = new MessageCommand(msgc.getSource(), msgc.getDest(),
+                            						  	_fish.Decrypt(msgc.getMessage()));
+                    msgc = decmsgc;
+                } catch (UnsupportedEncodingException e) {
+                    logger.warn("Unable to decrypt '"+msgc.getSourceString()+"'", e);
+                }
             }
+            
+            //dispatch the decrypted MessageCommand to our plugins
+        	for (Observer plugin : _commandObservers) {
+        	    plugin.update(observer, msgc);
+        	}
+        } else {
+            //dispatch the unmodified InCommand to our plugins
+        	for (Observer plugin : _commandObservers) {
+        	    plugin.update(observer, updated);
+        	}            
+        	return;
         }
         
-        //dispatch the command to our plugins
-    	for (Observer plugin : _commandObservers) {
-    	    plugin.update(observer, msgc);
-    	}
 
         if (msgc.isPrivateToUs(getIRCConnection().getClientState())) {
             return;
         }
 
-        if (!msgc.getDest().equalsIgnoreCase(_channelName)) {
-            return;
-        }
+        //if (!msgc.getDest().equalsIgnoreCase(_channelName)) {
+        //    return;
+        //}
 
 		String msg = msgc.getMessage();
         if (msg.equals(_chanprefix +"help")) {
