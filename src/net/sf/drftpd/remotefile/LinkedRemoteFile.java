@@ -53,7 +53,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.131 2004/03/31 04:43:51 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.132 2004/04/07 13:05:52 zubov Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -845,7 +845,7 @@ public class LinkedRemoteFile
 	public long getXferspeed() {
 		if (getXfertime() == 0)
 			return 0;
-		return length() / (getXfertime() / 1000);
+		return (length() / getXfertime()) / 1000;
 	}
 	/**
 	 * @return xfertime in milliseconds

@@ -42,9 +42,10 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.44 2004/03/26 00:16:33 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.45 2004/04/07 13:05:51 zubov Exp $
  */
 public class FtpConfig {
+	private long _slaveStatusUpdateTime;
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
 
 	private static Collection getCollection(Hashtable tbl, String key) {
@@ -288,6 +289,7 @@ public class FtpConfig {
 		loadConfig2();
 		_connManager = connManager;
 		_useIdent = cfg.getProperty("use.ident", "true").equals("true");
+		_slaveStatusUpdateTime = Long.parseLong(cfg.getProperty("slaveStatusUpdateTime","3000"));
 	}
 
 	private void loadConfig2() throws IOException {
@@ -483,4 +485,7 @@ public class FtpConfig {
 		return _useIdent;
 	}
 
+	public long getSlaveStatusUpdateTime() {
+		return _slaveStatusUpdateTime;
+	}
 }

@@ -39,7 +39,7 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.7 2004/03/06 00:39:47 zubov Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.8 2004/04/07 13:05:53 zubov Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 	private FilterChain _ssmiDown;
@@ -73,7 +73,6 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 				
 			try {
 				if (_sm.getConnectionManager().getJobManager() != null) {
-				logger.debug("loading jobManagerSlaveSelection configs");
 					_ssmiJobUp =
 						new FilterChain(this,"conf/slaveselection-jobup.conf");
 					_ssmiJobDown =
@@ -179,20 +178,17 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 		throws NoAvailableSlaveException {
 			ArrayList slaves = new ArrayList(_sm.getAvailableSlaves());
 			slaves.removeAll(job.getFile().getAvailableSlaves());
-			for (Iterator iter = job.getDestinationSlaves().iterator(); iter.hasNext();) {
-				RemoteSlave slave = (RemoteSlave) iter.next();
-				if (slave != null) {
-					logger.debug("added slave " + slave.getName());
-					slaves.add(slave);
-				}
+			if (!job.getDestinationSlaves().contains(null)) {
+				slaves.clear();
+				slaves.addAll(job.getDestinationSlaves());
 			}
-		return process(
-			"jobup",
-			new ScoreChart(slaves),
-			null,
-			null,
-			Transfer.TRANSFER_SENDING_DOWNLOAD,
-			job.getFile());
+			return process(
+				"jobup",
+				new ScoreChart(slaves),
+				null,
+				null,
+				Transfer.TRANSFER_SENDING_DOWNLOAD,
+				job.getFile());
 	}
 
 }

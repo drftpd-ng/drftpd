@@ -34,7 +34,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.19 2004/03/28 16:34:41 zubov Exp $
+ * @version $Id: ArchiveHandler.java,v 1.20 2004/04/07 13:05:52 zubov Exp $
  */
 public class ArchiveHandler extends Thread {
 	private static final Logger logger = Logger.getLogger(ArchiveHandler.class);
@@ -166,7 +166,7 @@ public class ArchiveHandler extends Thread {
 				if (lrf.lookupSFVFile().getStatus().getMissing() > 0) {
 					logger
 							.info(lrf.getPath()
-									+ " does not have all files complete, will not archive it");
+									+ "is not complete");
 					return null;
 				}
 			} catch (Exception e) {

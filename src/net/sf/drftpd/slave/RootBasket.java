@@ -36,7 +36,7 @@ import se.mog.io.File;
 //TODO SECURITY: verify so that we never get outside of a rootbasket root
 /**
  * @author mog
- * @version $Id: RootBasket.java,v 1.23 2004/02/10 00:03:31 mog Exp $
+ * @version $Id: RootBasket.java,v 1.24 2004/04/07 13:05:53 zubov Exp $
  */
 public class RootBasket {
 	private static final Logger logger = Logger.getLogger(RootBasket.class);
@@ -113,7 +113,7 @@ public class RootBasket {
 				roots.add(root);
 		}
 		if (roots.size() == 0)
-			throw new FileNotFoundException("No files found");
+			throw new FileNotFoundException("Unable to find suitable root");
 		return roots;
 	}
 

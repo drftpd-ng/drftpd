@@ -37,7 +37,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.TimerTask;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
@@ -64,11 +63,11 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.77 2004/03/31 04:43:50 zubov Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.78 2004/04/07 13:05:51 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
-	implements SlaveManager {
+	implements SlaveManager, Runnable {
 
 	private SlaveSelectionManagerInterface _slaveSelectionManager;
 	private static final Logger logger =
@@ -188,7 +187,6 @@ public class SlaveManagerImpl
 	private ConnectionManager _cm;
 
 	protected List _rslaves;
-	private long _statusReloadTime;
 	protected SlaveManagerImpl() throws RemoteException {
 	}
 	public SlaveManagerImpl(
@@ -236,31 +234,44 @@ public class SlaveManagerImpl
 				throw (RuntimeException) e;
 			throw new FatalException(e);
 		}
-		_statusReloadTime =
-			Long.parseLong(cfg.getProperty("slaveStatusUpdateTime", "10000"));
-		_cm.getTimer().scheduleAtFixedRate(
-			updateSlaveStatus,
-			_statusReloadTime,
-			_statusReloadTime);
+		logger.debug("starting slavestatus updater thread");
+		new Thread(this,"SlaveStatusUpdater").start();
 	}
-
-	public TimerTask updateSlaveStatus = new TimerTask() {
-		public void run() {
+	
+	public void run() {
+		logger.debug("started slavestatus updater thread");
+		long low = Integer.MAX_VALUE;
+		long high = 0;
+		while(true) {
 			try {
 				for (Iterator iter = getAvailableSlaves().iterator();
 					iter.hasNext();
 					) {
 					RemoteSlave slave = (RemoteSlave) iter.next();
 					try {
+						long time = System.currentTimeMillis();
 						slave.updateStatus();
+						long difference = System.currentTimeMillis() - time;
+						if (difference < low) {
+							low = difference;
+							logger.debug(low + " low milliseconds were used to run updateStatus on " + slave.getName());
+						}
+						if (difference > high) {
+							high= difference;
+							logger.debug(high + " high milliseconds were used to run updateStatus on " + slave.getName());
+						}
 					} catch (SlaveUnavailableException e1) {
 						continue;
 					}
 				}
 			} catch (NoAvailableSlaveException e) {
 			}
+			try {
+				Thread.sleep(_cm.getConfig().getSlaveStatusUpdateTime());
+			} catch (InterruptedException e1) {
+			}
 		}
-	};
+	}
 
 	protected void addShutdownHook() {
 		//add shutdown hook last

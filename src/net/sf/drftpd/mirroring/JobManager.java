@@ -36,7 +36,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.41 2004/04/01 05:32:42 zubov Exp $
+ * @version $Id: JobManager.java,v 1.42 2004/04/07 13:05:52 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -228,9 +228,7 @@ public class JobManager implements Runnable {
 		SlaveTransfer slaveTransfer =
 			new SlaveTransfer(job.getFile(), sourceSlave, destSlave);
 		try {
-			logger.debug("Before transfer for " + job);
 			if (!slaveTransfer.transfer(useCRC())) { // crc failed
-				logger.debug("After transfer for " + job);
 				try {
 					destSlave.getSlave().delete(job.getFile().getPath());
 				} catch (IOException e) {
@@ -246,7 +244,6 @@ public class JobManager implements Runnable {
 				addJob(job);
 				return false;
 			}
-			logger.debug("After transfer for " + job);
 		} catch (IOException e) {
 			logger.debug(
 				"Caught IOException in sending "

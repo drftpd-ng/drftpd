@@ -36,7 +36,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.20 2004/03/15 14:06:23 zubov Exp $
+ * @version $Id: Archive.java,v 1.21 2004/04/07 13:05:51 zubov Exp $
  */
 
 public class Archive implements FtpListener, Runnable {
@@ -146,7 +146,6 @@ public class Archive implements FtpListener, Runnable {
 			stopArchive();
 			thread.interrupt();
 			while(thread.isAlive()) {
-				logger.debug("thread is still alive");
 				Thread.yield();
 			}
 		}
