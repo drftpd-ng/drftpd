@@ -1,3 +1,6 @@
+2005/02/06 Matt Zimmerman <zubov@users.sourceforge.net>
+* I dare you to get "the SSL bug" again, http://sourceforge.net/tracker/index.php?func=detail&aid=997540&group_id=56385&atid=480372
+
 2005/02/06 Jamal James <teflon114@gmail.com>
 * Updated to new Blowfish class provided by k2r
 

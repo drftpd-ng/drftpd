@@ -146,9 +146,13 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             s2.addHandshakeCompletedListener(this);
             s2.startHandshake();
             while(!_handshakeCompleted) {
-            	try {
-            		Thread.sleep(100);
-            	} catch (InterruptedException e) {
+            	synchronized(this) {
+            		try {
+            			wait(10000);
+            		} catch (InterruptedException e) {
+            			conn.stop("Took too long to negotiate SSL");
+            			return new Reply(400, "Took too long to negotiate SSL");
+            		}
             	}
             }
             // reset for possible auth later
@@ -1484,7 +1488,8 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         return true; // modify credits, transfer was okay
     }
 
-	public void handshakeCompleted(HandshakeCompletedEvent arg0) {
+	public synchronized void handshakeCompleted(HandshakeCompletedEvent arg0) {
 		_handshakeCompleted = true;
+		notifyAll();
 	}
 }
