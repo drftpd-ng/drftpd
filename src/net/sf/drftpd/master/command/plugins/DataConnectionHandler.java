@@ -51,7 +51,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.34 2004/01/28 08:15:20 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.35 2004/01/31 15:26:44 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -1286,7 +1286,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			//zipscript
 			if (isRetr) {
 				//compare checksum from transfer to cached checksum
-				{
+				logger.debug("checksum from transfer = " + status.getChecksum());
+				if ( status.getChecksum() != 0 ){
 					response.addComment(
 						"Checksum from transfer: "
 							+ Checksum.formatChecksum(status.getChecksum()));
@@ -1309,33 +1310,35 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 								+ _rslave.getName(),
 							new Throwable());
 					}
-				}
-				//compare checksum from transfer to checksum from sfv
-				try {
-					long sfvChecksum =
-						_transferFile
-							.getParentFileNull()
-							.lookupSFVFile()
-							.getChecksum(
-							_transferFile.getName());
-					if (sfvChecksum == status.getChecksum()) {
+					//compare checksum from transfer to checksum from sfv
+					try {
+						long sfvChecksum =
+							_transferFile
+								.getParentFileNull()
+								.lookupSFVFile()
+								.getChecksum(
+								_transferFile.getName());
+						if (sfvChecksum == status.getChecksum()) {
+							response.addComment(
+								"checksum from transfer matched checksum in .sfv");
+						} else {
+							response.addComment(
+								"WARNING: checksum from transfer didn't match checksum in .sfv");
+						}
+					} catch (NoAvailableSlaveException e1) {
 						response.addComment(
-							"checksum from transfer matched checksum in .sfv");
-					} else {
+							"slave with .sfv offline, checksum not verified");
+					} catch (FileNotFoundException e1) {
+						//continue without verification
+					} catch (ObjectNotFoundException e1) {
+						//file not found in .sfv, continue
+					} catch (IOException e1) {
+						logger.info(e1);
 						response.addComment(
-							"WARNING: checksum from transfer didn't match checksum in .sfv");
+							"IO Error reading sfv file: " + e1.getMessage());
 					}
-				} catch (NoAvailableSlaveException e1) {
-					response.addComment(
-						"slave with .sfv offline, checksum not verified");
-				} catch (FileNotFoundException e1) {
-					//continue without verification
-				} catch (ObjectNotFoundException e1) {
-					//file not found in .sfv, continue
-				} catch (IOException e1) {
-					logger.info(e1);
-					response.addComment(
-						"IO Error reading sfv file: " + e1.getMessage());
+				} else { // slave has disabled download crc
+					//response.addComment("Slave has disabled download checksum");
 				}
 			} else if (isStor) {
 				if (!targetFileName.toLowerCase().endsWith(".sfv")) {
