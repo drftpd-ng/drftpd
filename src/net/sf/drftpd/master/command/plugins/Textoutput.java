@@ -40,7 +40,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Textoutput.java,v 1.13 2004/06/04 14:18:56 mog Exp $
+ * @version $Id: Textoutput.java,v 1.14 2004/07/08 16:09:52 zubov Exp $
  */
 public class Textoutput implements CommandHandlerFactory, CommandHandler {
 
@@ -74,22 +74,25 @@ public class Textoutput implements CommandHandlerFactory, CommandHandler {
 		}
 	}
 
+	/**
+	 * @param Path is a complete working path, not just a filename, for example "text/file.txt"
+	 */
 	public static void sendTextToIRC(
 		IRCConnection conn,
 		String destination,
-		String file) {
+		String path) {
 		BufferedReader fileReader = null;
 		try {
 			fileReader =
 				new BufferedReader(
 					new InputStreamReader(
-						new FileInputStream("text/" + file + ".txt")));
+						new FileInputStream(path)));
 			sendTextToIRC(conn, destination, fileReader);
 		} catch (IOException e) {
 			conn.sendCommand(
 				new MessageCommand(
 					destination,
-					"IOException opening text/" + file + ".txt"));
+					"IOException opening file, check textoutput.conf"));
 			return;
 		}
 	}

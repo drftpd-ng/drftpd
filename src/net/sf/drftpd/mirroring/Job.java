@@ -30,10 +30,10 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.22 2004/07/07 23:34:31 zubov Exp $
+ * @version $Id: Job.java,v 1.23 2004/07/08 16:09:53 zubov Exp $
  */
 public class Job {
-	protected int _transferNum;
+	private int _transferNum;
 	private Set _destSlaves;
 	private LinkedRemoteFileInterface _file;
 	private User _owner;

@@ -36,7 +36,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: GlftpdUserManager.java,v 1.15 2004/07/01 16:07:50 zubov Exp $
+ * @version $Id: GlftpdUserManager.java,v 1.16 2004/07/08 16:09:53 zubov Exp $
  */
 public class GlftpdUserManager extends UserManager {
 	private static final Logger logger = Logger
@@ -112,7 +112,7 @@ public class GlftpdUserManager extends UserManager {
 		if (!new File(getUserfilepath(username)).exists()) {
 			throw new NoSuchUserException("No userfile for user " + username);
 		}
-		GlftpdUser user = new GlftpdUser(username);
+		GlftpdUser user = new GlftpdUser(this, username);
 		try {
 			load(user);
 			//throws CorruptUserFileException, NoSuchUserException

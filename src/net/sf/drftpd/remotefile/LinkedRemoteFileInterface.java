@@ -125,6 +125,12 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 	 * @return Always true for directories
 	 */
 	public abstract boolean isAvailable();
+	/**
+	 * Does file have slaves at all?
+	 * 
+	 * @return Always false for directories
+	 */
+	public abstract boolean isDeleted();
 	public abstract LinkedRemoteFile lookupFile(String path)
 		throws FileNotFoundException;
 	public abstract LinkedRemoteFile lookupFile(

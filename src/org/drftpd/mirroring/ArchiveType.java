@@ -41,7 +41,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
- * @version $Id: ArchiveType.java,v 1.9 2004/07/04 05:40:57 zubov Exp $
+ * @version $Id: ArchiveType.java,v 1.10 2004/07/08 16:09:54 zubov Exp $
  */
 public abstract class ArchiveType {
 	private long _archiveAfter;
@@ -207,7 +207,7 @@ public abstract class ArchiveType {
 			_archiveAfter =
 				60000 * Long.parseLong(FtpConfig.getProperty(properties, getSection().getName() + ".archiveAfter"));
 		} catch (NullPointerException e) {
-			throw new IllegalArgumentException("archiveAfter setting is missing for section " + getSection().getName());
+			_archiveAfter = 0;
 		}
 	}
 

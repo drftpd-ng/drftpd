@@ -78,7 +78,7 @@ public class ConstantMirroring extends ArchiveType {
 				(LinkedRemoteFileInterface) iter.next();
 			if (src.isFile()) {
 				try {
-					if (src.getAvailableSlaves().size() == _numOfSlaves)
+					if (src.getAvailableSlaves().size() != _numOfSlaves)
 						return false;
 				} catch (NoAvailableSlaveException e) {
 					throw new OfflineSlaveException(src.getName() + " is not online");

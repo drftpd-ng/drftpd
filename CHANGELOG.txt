@@ -1,18 +1,24 @@
-2004/7/7 Matthew Zimmerman <zubov@users.sourceforge.net>
+2004/07/08 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Changes in JobManager to check for deleted files in the job queue
+* Fixed small bug in ConstantMirroring
+* Implemented GenericTextOutput irc plugin instead of Affils and Bnc
+  checkout conf/generictextoutput.conf.dist
+
+2004/07/07 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Integrated "site give" and "site take" with FtpConfig so give and take permissions
   can be defined in perms.conf
 * Fixed the double announce error with the sitebot
 * Refactored JobManager and SlaveTransfer's and added functionality that will result
   in better error control and output
 
-2004/7/4 Matthew Zimmerman <zubov@users.sourceforge.net>
+2004/07/04 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Slightly refactored ArchiveType's
 * site archive command now takes, Properties parameters
   try "site archive" for help
 * Implemented ConstantMirroring which will keep X # of copies of files 
   at all times
 
-2004/7/1 Matthew Zimmerman <zubov@users.sourceforge.net>
+2004/07/01 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Implemented SITE GRPREN <oldgroup> <newgroup>
 * Heavily refactored UserManager(s), UserManager is now an abstract class
 * Refactoring on User and AbstractUser also

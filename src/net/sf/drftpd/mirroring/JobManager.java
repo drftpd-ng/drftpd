@@ -39,7 +39,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.50 2004/07/07 23:34:31 zubov Exp $
+ * @version $Id: JobManager.java,v 1.51 2004/07/08 16:09:53 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -92,6 +92,10 @@ public class JobManager implements Runnable {
 			try {
 				availableSlaves = tempJob.getFile().getAvailableSlaves();
 			} catch (NoAvailableSlaveException e) {
+				if (tempJob.getFile().isDeleted()) {
+					tempJob.setDone();
+					iter.remove();
+				}
 				continue; // can't transfer what isn't online
 			}
 			if (!busySlaves.containsAll(availableSlaves)) {
@@ -287,6 +291,7 @@ public class JobManager implements Runnable {
 			}
 		}
 		_isStopped = false;
+		logger.debug("Starting JobTransferStarter thread");
 		thread = new Thread(this, "JobTransferStarter");
 		thread.start();
 	}
