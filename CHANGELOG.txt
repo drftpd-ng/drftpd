@@ -1,3 +1,7 @@
+2004/7/7 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Integrated "site give" and "site take" with FtpConfig so give and take permissions
+  can be defined in perms.conf
+
 2004/7/4 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Slightly refactored ArchiveType's
 * site archive command now takes, Properties parameters

@@ -47,7 +47,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.56 2004/07/02 19:58:53 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.57 2004/07/07 17:11:33 zubov Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -129,6 +129,14 @@ public class FtpConfig {
 		User fromUser,
 		LinkedRemoteFileInterface path) {
 		return checkPathPermission("deleteown", fromUser, path);
+	}
+	
+	public boolean checkGive(User user) {
+		return checkPermission("give", user);
+	}
+	
+	public boolean checkTake(User user) {
+		return checkPermission("take", user);
 	}
 
 	public boolean checkDenyDataUnencrypted(User user) {
@@ -467,7 +475,9 @@ public class FtpConfig {
 						"userrejectsecure".equals(cmd)
 							|| "userrejectinsecure".equals(cmd)
 							|| "denydiruncrypted".equals(cmd)
-							|| "denydatauncrypted".equals(cmd)) {
+							|| "denydatauncrypted".equals(cmd) 
+							|| "give".equals(cmd)
+							|| "take".equals(cmd)) {
 						if (permissions.containsKey(cmd))
 							throw new RuntimeException(
 								"Duplicate key in perms.conf: "

@@ -53,7 +53,7 @@ import org.tanesha.replacer.SimplePrintf;
 /**
  * @author mog
  * @author zubov
- * @version $Id: UserManagment.java,v 1.43 2004/07/01 16:07:48 zubov Exp $
+ * @version $Id: UserManagment.java,v 1.44 2004/07/07 17:11:33 zubov Exp $
  */
 public class UserManagment implements CommandHandler, CommandHandlerFactory {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -834,6 +834,9 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 	}
 	private FtpReply doSITE_GIVE(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
+		if (!conn.getConfig().checkGive(conn.getUserNull())) {
+			return FtpReply.RESPONSE_530_ACCESS_DENIED;
+		}
 		if (!request.hasArgument()) {
 			return new FtpReply(501, conn.jprintf(
 					UserManagment.class.getName(), "give.usage"));
@@ -857,14 +860,16 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		if (0 > credits) {
 			return new FtpReply(200, credits + " is not a positive number.");
 		}
-		if (credits > conn.getUserNull().getCredits()) {
-			return new FtpReply(200,
-					"You cannot give more credits than you have.");
+		if (!conn.getUserNull().isAdmin()) {
+			if (credits > conn.getUserNull().getCredits()) {
+				return new FtpReply(200,
+						"You cannot give more credits than you have.");
+			}
+			conn.getUserNull().updateCredits(-credits);
 		}
 		logger.info("'" + conn.getUserNull().getUsername() + "' transfered "
 				+ Bytes.formatBytes(credits) + " ('" + credits + "') to '"
 				+ myUser.getUsername() + "'");
-		conn.getUserNull().updateCredits(-credits);
 		myUser.updateCredits(credits);
 		return new FtpReply(200, "OK, gave " + Bytes.formatBytes(credits)
 				+ " of your credits to " + myUser.getUsername());
@@ -1122,7 +1127,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 	 */
 	private FtpReply doSITE_TAKE(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
-		if (!conn.getUserNull().isAdmin()) {
+		if (!conn.getConfig().checkTake(conn.getUserNull())) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		if (!request.hasArgument()) {
@@ -1133,7 +1138,6 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		if (!st.hasMoreTokens()) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
-		//String args[] = request.getArgument().split(" ");
 		User myUser;
 		long credits;
 		try {

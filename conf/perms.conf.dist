@@ -46,3 +46,6 @@ dirlog		*	*
 
 #file_names <firstletteruppercase> lower/upper XY XY ..
 #file_names true lower
+
+give =give =siteop
+take =take =siteop
