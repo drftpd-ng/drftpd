@@ -91,7 +91,7 @@ import f00f.net.irc.martyr.services.AutoResponder;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.11 2004/05/12 00:45:13 mog Exp $
+ * @version $Id: SiteBot.java,v 1.12 2004/07/07 19:34:56 zubov Exp $
  */
 public class SiteBot implements FtpListener, Observer {
 
@@ -794,7 +794,7 @@ public class SiteBot implements FtpListener, Observer {
 						.forName(classname)
 						.getConstructor(new Class[] { SiteBot.class })
 						.newInstance(new Object[] { this });
-				_conn.addCommandObserver(obs);
+				//_conn.addCommandObserver(obs);
 				IRCPluginInterface plugin = (IRCPluginInterface) obs;
 				if (plugin.getCommands() != null) {
 					_commands = _commands + plugin.getCommands() + " ";
