@@ -5,7 +5,7 @@ import org.drftpd.remotefile.CaseInsensitiveHashtable;
 
 /**
  * @author zubov
- * @version $Id: AsyncResponseRemerge.java,v 1.4 2004/11/09 18:59:58 mog Exp $
+ * @version $Id$
  */
 public class AsyncResponseRemerge extends AsyncResponse {
     private CaseInsensitiveHashtable _files;
@@ -15,6 +15,9 @@ public class AsyncResponseRemerge extends AsyncResponse {
         CaseInsensitiveHashtable files) {
         super("Remerge");
         _files = files;
+        if (directory.contains("\\")) {
+        	throw new RuntimeException("\\ is not an acceptable character in a directory path");
+        }
         _directory = directory;
     }
 

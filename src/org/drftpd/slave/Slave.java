@@ -91,6 +91,10 @@ public class Slave {
     private boolean _uploadChecksums;
     private PortRange _portRange;
     private InetAddress _externalAddress = null;
+    
+    protected Slave() {
+    	
+    }
 
     public Slave(Properties p) throws IOException {
         InetSocketAddress addr = new InetSocketAddress(PropertyHelper.getProperty(

@@ -34,8 +34,16 @@ public final class LightRemoteFile extends AbstractLightRemoteFile
 
     private boolean _isFile;
     private boolean _isDirectory;
+    
+    private void setName(String name) {
+    	if (name.contains("\\")) {
+    		throw new RuntimeException("\\ is not an allowed character in filenames");
+    	}
+    	_filename = name;
+    }
+    
     public LightRemoteFile(LightRemoteFileInterface file) {
-        _filename = file.getName();
+        setName(file.getName());
         _lastModified = file.lastModified();
         _length = file.length();
         _isFile = file.isFile();
@@ -46,7 +54,7 @@ public final class LightRemoteFile extends AbstractLightRemoteFile
      * Will create a directory
      */
     public LightRemoteFile(String filename, long lastModified) {
-    	_filename = filename;
+    	setName(filename);
     	_lastModified = lastModified;
     	_length = 0;
     	_isDirectory = true;
@@ -56,7 +64,7 @@ public final class LightRemoteFile extends AbstractLightRemoteFile
      * Will create a file
      */
     public LightRemoteFile(String filename, long lastModified, long length) {
-        _filename = filename;
+    	setName(filename);
         _lastModified = lastModified;
         _length = length;
         _isDirectory = false;
