@@ -1,6 +1,5 @@
 package net.sf.drftpd.event;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -39,7 +38,7 @@ import org.tanesha.replacer.FormatterException;
 
 /**
  * @author mog
- * @version $Id: GlftpdLog.java,v 1.9 2004/02/02 14:36:40 mog Exp $
+ * @version $Id: GlftpdLog.java,v 1.10 2004/02/06 10:12:31 flowman Exp $
  */
 public class GlftpdLog implements FtpListener {
 	PrintWriter out;
@@ -52,8 +51,7 @@ public class GlftpdLog implements FtpListener {
 	}
 
 	public GlftpdLog() throws UnknownHostException, IOException {
-		new File("ftp-data/logs").mkdirs();
-		out = new PrintWriter(new FileWriter("ftp-data/logs/glftpd.log")); 
+		out = new PrintWriter(new FileWriter("logs/glftpd.log")); 
 	}
 	
 	public void init(ConnectionManager mgr) {
