@@ -55,7 +55,6 @@ import org.tanesha.replacer.ReplacerEnvironment;
 public class AutoFreeSpace extends FtpListener {
     private static Logger logger = Logger.getLogger(AutoFreeSpace.class);
     private static final String CONFPATH = "conf/autofreespace.conf";
-    private ConnectionManager _cm;
     private long _minFreeSpace;
     private ArrayList<String> _excludeSections;
     private long _cycleTime;
@@ -79,7 +78,6 @@ public class AutoFreeSpace extends FtpListener {
     }
 
     public void init(ConnectionManager connectionManager) {
-        _cm = connectionManager;
         timer = new Timer();
         reload();
     }
@@ -99,7 +97,7 @@ public class AutoFreeSpace extends FtpListener {
             throw new RuntimeException(e);
         }
         try {
-            _irc = (SiteBot) _cm.getGlobalContext().getFtpListener(SiteBot.class);
+            _irc = (SiteBot) getGlobalContext().getFtpListener(SiteBot.class);
         } catch (ObjectNotFoundException e) {
             _irc = null;
         }
@@ -116,24 +114,22 @@ public class AutoFreeSpace extends FtpListener {
             _excludeSections.add(sec);
         }
         _excludeSections.trimToSize();
-        timer.schedule(new MrCleanit(_cm, _excludeSections, _wipeAfter, _minFreeSpace), _cycleTime, _cycleTime);
+        timer.schedule(new MrCleanit(_excludeSections, _wipeAfter, _minFreeSpace), _cycleTime, _cycleTime);
     }
 
     public class MrCleanit extends TimerTask {
-        private ConnectionManager _cm;
         private ArrayList _excludeSections;
         private long _minFreeSpace;
         private long _archiveAfter;
 
-        public MrCleanit(ConnectionManager cm, ArrayList excludeSecs, long archiveAfter, long minFreeSpace) {
-            _cm = cm;
+        public MrCleanit(ArrayList excludeSecs, long archiveAfter, long minFreeSpace) {
             _excludeSections = excludeSecs;
             _minFreeSpace = minFreeSpace;
             _archiveAfter = archiveAfter;
         }
 
         public boolean allSlavesOnline() {
-            List<RemoteSlave> slaves = _cm.getGlobalContext().getSlaveManager().getSlaves();
+            List<RemoteSlave> slaves = getGlobalContext().getSlaveManager().getSlaves();
             for ( RemoteSlave slave : slaves) {
                 if (!slave.isOnline())
                     return false;
@@ -184,8 +180,8 @@ public class AutoFreeSpace extends FtpListener {
         }
 
         public void run() {
-            SectionManagerInterface sm = _cm.getGlobalContext().getSectionManager();
-            long freespace = _cm.getGlobalContext().getSlaveManager().getAllStatus().getDiskSpaceAvailable();
+            SectionManagerInterface sm = getGlobalContext().getSectionManager();
+            long freespace = getGlobalContext().getSlaveManager().getAllStatus().getDiskSpaceAvailable();
             ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
             
             while (freespace < _minFreeSpace && allSlavesOnline()) {
