@@ -36,6 +36,7 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.UploaderPosition;
+import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.command.plugins.Nuke;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -67,7 +68,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.73 2004/01/20 06:59:00 mog Exp $
+ * @version $Id: IRCListener.java,v 1.74 2004/01/20 16:54:31 flowman Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -105,6 +106,38 @@ public class IRCListener implements FtpListener, Observer {
 				stat =
 					new UploaderPosition(
 						username,
+						file.length(),
+						1,
+						file.getXfertime());
+				ret.add(stat);
+			} else {
+				stat.updateBytes(file.length());
+				stat.updateFiles(1);
+				stat.updateXfertime(file.getXfertime());
+			}
+		}
+		Collections.sort(ret);
+		return ret;
+	}
+	
+	public static Collection topFileGroup(Collection files) {
+		ArrayList ret = new ArrayList();
+		for (Iterator iter = files.iterator(); iter.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			String groupname = file.getGroupname();
+
+			GroupPosition stat = null;
+			for (Iterator iter2 = ret.iterator(); iter2.hasNext();) {
+				GroupPosition stat2 = (GroupPosition) iter2.next();
+				if (stat2.getGroupname().equals(groupname)) {
+					stat = stat2;
+					break;
+				}
+			}
+			if (stat == null) {
+				stat =
+					new GroupPosition(
+						groupname,
 						file.length(),
 						1,
 						file.getXfertime());
@@ -294,6 +327,7 @@ public class IRCListener implements FtpListener, Observer {
 		//COMPLETE
 		if (sfvstatus.isFinished()) {
 			Collection racers = topFileUploaders(sfvfile.getFiles());
+			Collection groups = topFileGroup(sfvfile.getFiles());
 			Ret ret = getPropertyFileSuffix("store.complete", dir);
 			String format = ret._format;
 			LinkedRemoteFile section = ret._section;
@@ -308,6 +342,7 @@ public class IRCListener implements FtpListener, Observer {
 				logger.log(Level.FATAL, "", e6);
 			}
 			env.add("racers", Integer.toString(racers.size()));
+			env.add("groups", Integer.toString(groups.size()));
 			env.add("files", Integer.toString(sfvfile.size()));
 			env.add("size", Bytes.formatBytes(sfvfile.getTotalBytes()));
 			env.add("speed", Bytes.formatBytes(sfvfile.getXferspeed()) + "/s");
@@ -351,7 +386,39 @@ public class IRCListener implements FtpListener, Observer {
 
 				say(SimplePrintf.jprintf(raceformat, raceenv));
 			}
-			//HALFWAY
+			
+			Ret ret3 = getPropertyFileSuffix("store.complete.group", dir);
+			// already have section from ret.section
+			raceformat = ReplacerFormat.createFormat(ret3._format);
+			
+			say(
+				SimplePrintf.jprintf(
+					FtpConfig.getProperty(_ircCfg, "store.complete.group.header"),
+					env));
+			
+			position = 1;
+			for (Iterator iter = groups.iterator(); iter.hasNext();) {
+				GroupPosition stat = (GroupPosition) iter.next();
+
+				ReplacerEnvironment raceenv =
+					new ReplacerEnvironment(globalEnv);
+
+				raceenv.add("group", stat.getGroupname());
+
+				raceenv.add("position", new Integer(position));
+				raceenv.add("size", Bytes.formatBytes(stat.getBytes()));
+				raceenv.add("files", Integer.toString(stat.getFiles()));
+				raceenv.add(
+					"percent",
+					Integer.toString(stat.getFiles() * 100 / sfvfile.size())
+						 "%");
+				raceenv.add(
+					"speed",
+					Bytes.formatBytes(stat.getXferspeed())  "/s");
+
+				say(SimplePrintf.jprintf(raceformat, raceenv));
+			}			
+ 			//HALFWAY
 		} else if (sfvfile.size() >= 4 && sfvstatus.getMissing() == halfway) {
 			Collection uploaders = topFileUploaders(sfvfile.getFiles());
 			//			ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
