@@ -1179,7 +1179,7 @@ public class SiteBot extends FtpListener implements Observer {
         	throw new IllegalStateException("SiteBot loaded with no channels, check your config");
         }
 
-        Hashtable<String,SectionSettings> _sections = new Hashtable<String,SectionSettings>();
+        _sections = new Hashtable<String,SectionSettings>();
         for (int i = 1;; i++) {
             String name = ircCfg.getProperty("irc.section." + i);
 
