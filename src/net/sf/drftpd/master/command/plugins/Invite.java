@@ -1,6 +1,7 @@
 package net.sf.drftpd.master.command.plugins;
 
 import net.sf.drftpd.event.Event;
+import net.sf.drftpd.event.InviteEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandHandler;
@@ -36,7 +37,7 @@ public class Invite implements CommandHandler {
 
 	public FtpReply doSITE_INVITE(BaseFtpConnection conn) {
 		String user = conn.getRequest().getArgument();
-		Event invite = new Event("INVITE " + user);
+		InviteEvent invite = new InviteEvent(conn.getRequest().getCommand(),user);
 		conn.getConnectionManager().dispatchFtpEvent(invite);
 		return new FtpReply(200, "Inviting " + user);
 	}
