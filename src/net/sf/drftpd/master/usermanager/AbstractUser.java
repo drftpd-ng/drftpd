@@ -9,6 +9,7 @@ import java.util.List;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMask;
 import net.sf.drftpd.event.UserEvent;
+import net.sf.drftpd.event.listeners.Trial;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.util.CalendarUtils;
 
@@ -23,7 +24,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.35 2004/01/13 21:36:31 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.36 2004/01/13 22:46:44 mog Exp $
  */
 public abstract class AbstractUser implements User {
 	private static final Logger logger = Logger.getLogger(AbstractUser.class);
@@ -43,7 +44,6 @@ public abstract class AbstractUser implements User {
 	protected long _uploadedMillisecondsMonth;
 	protected long _uploadedMillisecondsWeek;
 
-	protected boolean anonymous;
 	protected String comment;
 
 	protected long created;
@@ -63,8 +63,6 @@ public abstract class AbstractUser implements User {
 	protected ArrayList groups = new ArrayList();
 
 	protected short groupSlots;
-	protected String home;
-
 	protected int idleTime = 0; // no limit
 	protected ArrayList ipMasks = new ArrayList();
 	protected long lastAccessTime = 0;
@@ -74,15 +72,11 @@ public abstract class AbstractUser implements User {
 
 	//action counters
 	protected int logins;
-	protected int maxDownloadRate;
-
 	//login limits
 	protected int maxLogins;
 	protected int maxLoginsPerIP;
 	protected int maxSimDownloads;
 	protected int maxSimUploads;
-
-	protected int maxUploadRate;
 
 	protected long nukedBytes;
 	protected int racesLost;
@@ -94,10 +88,7 @@ public abstract class AbstractUser implements User {
 	protected int requests;
 	protected int requestsFilled;
 	protected String tagline;
-	protected int timelimit;
 	protected int timesNuked;
-
-	protected long timeToday;
 
 	protected long uploadedBytes;
 	protected long uploadedBytesDay;
@@ -111,7 +102,7 @@ public abstract class AbstractUser implements User {
 
 	protected String username;
 
-	private long weeklyAllotment;
+	protected long weeklyAllotment;
 
 	public AbstractUser(String username) {
 		this.username = username;
@@ -205,6 +196,20 @@ public abstract class AbstractUser implements User {
 		return downloadedBytesDay;
 	}
 
+	public long getDownloadedBytesForPeriod(int period) {
+		switch (period) {
+			case Trial.PERIOD_DAILY :
+				return this.downloadedBytesDay;
+			case Trial.PERIOD_MONTHLY :
+				return this.downloadedBytesMonth;
+			case Trial.PERIOD_WEEKLY :
+				return this.downloadedBytesWeek;
+			case Trial.PERIOD_ALL :
+				return this.downloadedBytes;
+		}
+		throw new RuntimeException();
+	}
+
 	public long getDownloadedBytesMonth() {
 		return downloadedBytesMonth;
 	}
@@ -221,6 +226,20 @@ public abstract class AbstractUser implements User {
 		return downloadedFilesDay;
 	}
 
+	public int getDownloadedFilesForPeriod(int period) {
+		switch (period) {
+			case Trial.PERIOD_DAILY :
+				return this.downloadedFilesDay;
+			case Trial.PERIOD_MONTHLY :
+			return this.downloadedFilesMonth;
+			case Trial.PERIOD_WEEKLY :
+				return this.downloadedFilesWeek;
+			case Trial.PERIOD_ALL :
+				return this.downloadedFiles;
+		}
+		throw new RuntimeException();
+	}
+
 	public int getDownloadedFilesMonth() {
 		return downloadedFilesMonth;
 	}
@@ -235,6 +254,20 @@ public abstract class AbstractUser implements User {
 
 	public long getDownloadedMillisecondsDay() {
 		return _downloadedMillisecondsDay;
+	}
+
+	public long getDownloadedMillisecondsForPeriod(int period) {
+		switch (period) {
+			case Trial.PERIOD_DAILY :
+				return _downloadedMillisecondsDay;
+			case Trial.PERIOD_MONTHLY :
+				return _downloadedMillisecondsMonth;
+			case Trial.PERIOD_WEEKLY :
+				return _downloadedMillisecondsWeek;
+			case Trial.PERIOD_ALL :
+				return _downloadedMilliseconds;
+		}
+		throw new RuntimeException();
 	}
 
 	public long getDownloadedMillisecondsMonth() {
@@ -261,10 +294,6 @@ public abstract class AbstractUser implements User {
 
 	public short getGroupSlots() {
 		return groupSlots;
-	}
-
-	public String getHomeDirectory() {
-		return home;
 	}
 
 	public int getIdleTime() {
@@ -300,10 +329,6 @@ public abstract class AbstractUser implements User {
 		return logins;
 	}
 
-	public int getMaxDownloadRate() {
-		return maxDownloadRate;
-	}
-
 	public int getMaxLogins() {
 		return maxLogins;
 	}
@@ -318,10 +343,6 @@ public abstract class AbstractUser implements User {
 
 	public int getMaxSimUploads() {
 		return maxSimUploads;
-	}
-
-	public int getMaxUploadRate() {
-		return maxUploadRate;
 	}
 
 	public long getNukedBytes() {
@@ -356,16 +377,8 @@ public abstract class AbstractUser implements User {
 		return tagline;
 	}
 
-	public int getTimelimit() {
-		return timelimit;
-	}
-
 	public int getTimesNuked() {
 		return timesNuked;
-	}
-
-	public long getTimeToday() {
-		return timeToday;
 	}
 
 	public long getUploadedBytes() {
@@ -374,6 +387,20 @@ public abstract class AbstractUser implements User {
 
 	public long getUploadedBytesDay() {
 		return uploadedBytesDay;
+	}
+
+	public long getUploadedBytesForPeriod(int period) {
+		switch (period) {
+			case Trial.PERIOD_DAILY :
+				return this.uploadedBytesDay;
+			case Trial.PERIOD_MONTHLY :
+				return this.uploadedBytesMonth;
+			case Trial.PERIOD_WEEKLY :
+				return this.uploadedBytesWeek;
+			case Trial.PERIOD_ALL :
+				return this.uploadedBytes;
+		}
+		throw new RuntimeException();
 	}
 
 	public long getUploadedBytesMonth() {
@@ -392,6 +419,20 @@ public abstract class AbstractUser implements User {
 		return uploadedFilesDay;
 	}
 
+	public int getUploadedFilesForPeriod(int period) {
+		switch (period) {
+			case Trial.PERIOD_DAILY :
+				return this.uploadedFilesDay;
+			case Trial.PERIOD_MONTHLY :
+				return this.uploadedFilesMonth;
+			case Trial.PERIOD_WEEKLY :
+				return this.uploadedFilesWeek;
+			case Trial.PERIOD_ALL :
+				return this.uploadedFiles;
+		}
+		throw new RuntimeException();
+	}
+
 	public int getUploadedFilesMonth() {
 		return uploadedFilesMonth;
 	}
@@ -406,6 +447,20 @@ public abstract class AbstractUser implements User {
 
 	public long getUploadedMillisecondsDay() {
 		return _uploadedMillisecondsDay;
+	}
+
+	public long getUploadedMillisecondsForPeriod(int period) {
+		switch (period) {
+			case Trial.PERIOD_DAILY :
+				return _uploadedMillisecondsDay;
+			case Trial.PERIOD_MONTHLY :
+				return _uploadedMillisecondsMonth;
+			case Trial.PERIOD_WEEKLY :
+				return _uploadedMillisecondsWeek;
+			case Trial.PERIOD_ALL :
+				return _uploadedMilliseconds;
+		}
+		throw new RuntimeException();
 	}
 
 	public long getUploadedMillisecondsMonth() {
@@ -433,7 +488,7 @@ public abstract class AbstractUser implements User {
 	}
 
 	public boolean isAnonymous() {
-		return anonymous;
+		return isMemberOf("anonymous");
 	}
 
 	public boolean isDeleted() {
@@ -462,7 +517,7 @@ public abstract class AbstractUser implements User {
 	}
 
 	public void login() {
-		updateLogins(1);
+		logins += 1;
 	}
 
 	public void logout() {
@@ -519,7 +574,6 @@ public abstract class AbstractUser implements User {
 
 		this.downloadedBytesDay = 0;
 		this.uploadedBytesDay = 0;
-		this.timeToday = 0;
 		logger.info("Reset daily stats for " + getUsername());
 	}
 
@@ -578,6 +632,75 @@ public abstract class AbstractUser implements User {
 		}
 	}
 
+	public void setDownloadedBytesForPeriod(int period, long bytes) {
+		switch (period) {
+			case Trial.PERIOD_DAILY :
+				this.downloadedBytesDay = bytes;
+				return;
+			case Trial.PERIOD_MONTHLY :
+				this.downloadedBytesMonth = bytes;
+				return;
+			case Trial.PERIOD_WEEKLY :
+				this.downloadedBytesWeek = bytes;
+				return;
+			case Trial.PERIOD_ALL :
+				this.downloadedBytes = bytes;
+				return;
+		}
+		throw new RuntimeException();
+	}
+
+	public void setDownloadedFilesForPeriod(int period, int files) {
+		switch (period) {
+			case Trial.PERIOD_DAILY :
+				this.downloadedFilesDay = files;
+				return;
+			case Trial.PERIOD_MONTHLY :
+				this.downloadedFilesMonth = files;
+				return;
+			case Trial.PERIOD_WEEKLY :
+				this.downloadedFilesWeek = files;
+				return;
+			case Trial.PERIOD_ALL :
+				this.downloadedFiles = files;
+				return;
+		}
+		throw new RuntimeException();
+	}
+
+	public void setDownloadedMilliseconds(long millis) {
+		_downloadedMilliseconds = millis;
+	}
+	public void setDownloadedMillisecondsDay(long millis) {
+		_downloadedMillisecondsDay = millis;
+	}
+
+	public void setDownloadedMillisecondsForPeriod(int period, long millis) {
+		switch (period) {
+			case Trial.PERIOD_DAILY :
+				_downloadedMillisecondsDay = millis;
+				return;
+			case Trial.PERIOD_MONTHLY :
+				_downloadedMillisecondsMonth = millis;
+				return;
+			case Trial.PERIOD_WEEKLY :
+				_downloadedMillisecondsWeek = millis;
+				return;
+			case Trial.PERIOD_ALL :
+				_downloadedMilliseconds = millis;
+				return;
+		}
+		throw new RuntimeException();
+	}
+
+	public void setDownloadedMillisecondsMonth(long millis) {
+		_downloadedMillisecondsMonth = millis;
+	}
+
+	public void setDownloadedMillisecondsWeek(long millis) {
+		_downloadedMillisecondsWeek = millis;
+	}
+
 	public void setGroup(String group) {
 		_group = group;
 	}
@@ -588,10 +711,6 @@ public abstract class AbstractUser implements User {
 
 	public void setGroupSlots(short s) {
 		groupSlots = s;
-	}
-
-	public void setHomeDirectory(String home) {
-		this.home = home;
 	}
 
 	public void setIdleTime(int idleTime) {
@@ -610,15 +729,6 @@ public abstract class AbstractUser implements User {
 		this.logins = logins;
 	}
 
-	/**
-	 * Set user maximum download rate limit.
-	 * Less than or equal to zero means no limit.
-	 * @deprecated not implemented
-	 */
-	public void setMaxDownloadRate(int rate) {
-		maxDownloadRate = rate;
-	}
-
 	public void setMaxLogins(int maxLogins) {
 		this.maxLogins = maxLogins;
 	}
@@ -635,10 +745,6 @@ public abstract class AbstractUser implements User {
 		this.maxSimUploads = maxSimUploads;
 	}
 
-	public void setMaxUploadRate(int rate) {
-		maxUploadRate = rate;
-	}
-
 	public void setNukedBytes(long nukedBytes) {
 		this.nukedBytes = nukedBytes;
 	}
@@ -651,16 +757,78 @@ public abstract class AbstractUser implements User {
 		this.tagline = tagline;
 	}
 
-	public void setTimelimit(int timelimit) {
-		this.timelimit = timelimit;
-	}
-
 	public void setTimesNuked(int nuked) {
 		this.timesNuked = nuked;
 	}
 
-	public void setTimeToday(long timeToday) {
-		this.timeToday = timeToday;
+	public void setUploadedBytesForPeriod(int period, long bytes) {
+		switch (period) {
+			case Trial.PERIOD_DAILY :
+				this.uploadedBytesDay = bytes;
+				return;
+			case Trial.PERIOD_MONTHLY :
+				this.uploadedBytesMonth = bytes;
+				return;
+			case Trial.PERIOD_WEEKLY :
+				this.uploadedBytesWeek = bytes;
+				return;
+			case Trial.PERIOD_ALL :
+				this.uploadedBytes = bytes;
+				return;
+		}
+		throw new RuntimeException();
+	}
+
+	public void setUploadedFilesForPeriod(int period, int files) {
+		switch (period) {
+			case Trial.PERIOD_DAILY :
+				this.uploadedFilesDay = files;
+				return;
+			case Trial.PERIOD_MONTHLY :
+				this.uploadedFilesMonth = files;
+				return;
+			case Trial.PERIOD_WEEKLY :
+				this.uploadedFilesWeek = files;
+				return;
+			case Trial.PERIOD_ALL :
+				this.uploadedFiles = files;
+				return;
+		}
+		throw new RuntimeException();
+	}
+
+	public void setUploadedMilliseconds(long millis) {
+		_uploadedMilliseconds = millis;
+	}
+
+	public void setUploadedMillisecondsDay(long millis) {
+		_uploadedMillisecondsDay = millis;
+	}
+
+	public void setUploadedMillisecondsForPeriod(int period, long millis) {
+		switch (period) {
+			case Trial.PERIOD_DAILY :
+				_uploadedMillisecondsDay = millis;
+				return;
+			case Trial.PERIOD_MONTHLY :
+				_uploadedMillisecondsMonth = millis;
+				return;
+			case Trial.PERIOD_WEEKLY :
+				_uploadedMillisecondsWeek = millis;
+				return;
+			case Trial.PERIOD_ALL :
+				_uploadedMilliseconds = millis;
+				return;
+		}
+		throw new RuntimeException();
+	}
+
+	public void setUploadedMillisecondsMonth(long millis) {
+		_uploadedMillisecondsMonth = millis;
+	}
+
+	public void setUploadedMillisecondsWeek(long millis) {
+		_uploadedMillisecondsWeek = millis;
 	}
 
 	public void setWeeklyAllotment(long weeklyAllotment) {
@@ -719,10 +887,6 @@ public abstract class AbstractUser implements User {
 		lastAccessTime = System.currentTimeMillis();
 	}
 
-	private void updateLogins(int i) {
-		logins += i;
-	}
-
 	public void updateNukedBytes(long bytes) {
 		this.nukedBytes += bytes;
 	}
@@ -751,4 +915,5 @@ public abstract class AbstractUser implements User {
 		_uploadedMillisecondsWeek += millis;
 		_uploadedMillisecondsMonth += millis;
 	}
+
 }

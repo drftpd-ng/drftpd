@@ -13,7 +13,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: SFVFile.java,v 1.26 2004/01/13 20:30:53 mog Exp $
+ * @version $Id: SFVFile.java,v 1.27 2004/01/13 22:46:44 mog Exp $
  */
 public class SFVFile implements Serializable {
 
@@ -43,7 +43,7 @@ public class SFVFile implements Serializable {
 		public int getPresent() {
 			return _present;
 		}
-		
+
 		/**
 		 * Returns the number of files that are available (online).
 		 * 
@@ -53,7 +53,7 @@ public class SFVFile implements Serializable {
 		public int getAvailable() {
 			return _present - _offline;
 		}
-		
+
 		/**
 		 * Returns the number of files that are offline.
 		 * @return the number of files that are offline.
@@ -182,15 +182,18 @@ public class SFVFile implements Serializable {
 		}
 		return ret;
 	}
-	
+
 	public Collection getFiles() {
 		return getEntriesFiles().keySet();
 	}
 
+	/**
+	 * Returns the names of the files in this .sfv file
+	 */
 	public Collection getNames() {
 		return getEntries().keySet();
 	}
-	
+
 	public long getTotalBytes() {
 		long totalBytes = 0;
 		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {

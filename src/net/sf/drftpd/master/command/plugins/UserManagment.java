@@ -34,7 +34,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.19 2004/01/13 20:30:54 mog Exp $
+ * @version $Id: UserManagment.java,v 1.20 2004/01/13 22:46:44 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -485,11 +485,11 @@ public class UserManagment implements CommandHandler {
 		} else if ("num_logins".equalsIgnoreCase(command)) {
 			myUser.setMaxLoginsPerIP(Integer.parseInt(commandArgument));
 
-		} else if ("max_dlspeed".equalsIgnoreCase(command)) {
-			myUser.setRatio(Bytes.parseBytes(commandArgument));
+		//} else if ("max_dlspeed".equalsIgnoreCase(command)) {
+		//	myUser.setMaxDownloadRate(Integer.parseInt(commandArgument));
 
-		} else if ("max_ulspeed".equals(command)) {
-			myUser.setMaxUploadRate(Integer.parseInt(commandArgument));
+		//} else if ("max_ulspeed".equals(command)) {
+		//	myUser.setMaxUploadRate(Integer.parseInt(commandArgument));
 		} else if ("group".equals(command)) {
 			myUser.setGroup(commandArgument);
 
@@ -1117,13 +1117,13 @@ public class UserManagment implements CommandHandler {
 		}
 		response.addComment("comment: " + myUser.getComment());
 		response.addComment("username: " + myUser.getUsername());
-		int i = (int) (myUser.getTimeToday() / 1000);
-		int hours = i / 60;
-		int minutes = i - hours * 60;
+		//int i = (int) (myUser.getTimeToday() / 1000);
+		//int hours = i / 60;
+		//int minutes = i - hours * 60;
 		response.addComment("created: " + new Date(myUser.getCreated()));
 		response.addComment(
 			"last seen: " + new Date(myUser.getLastAccessTime()));
-		response.addComment("time on today: " + hours + ":" + minutes);
+		//response.addComment("time on today: " + hours + ":" + minutes);
 		response.addComment("ratio: " + myUser.getRatio());
 		response.addComment(
 			"credits: " + Bytes.formatBytes(myUser.getCredits()));

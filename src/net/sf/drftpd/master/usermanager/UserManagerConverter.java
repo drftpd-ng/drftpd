@@ -7,12 +7,13 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import net.sf.drftpd.DuplicateElementException;
+import net.sf.drftpd.event.listeners.Trial;
 
 /**
  * Usage: java net.sf.drftpd.master.usermanager.UserManagerConverter net.sf.drftpd.master.usermanager.glftpd.GlftpdUserManager net.sf.drftpd.master.usermanager.JSXUserManager
  * 
  * @author mog
- * @version $Id: UserManagerConverter.java,v 1.4 2004/01/13 20:30:54 mog Exp $
+ * @version $Id: UserManagerConverter.java,v 1.5 2004/01/13 22:46:44 mog Exp $
  */
 public class UserManagerConverter {
 	private static final Logger logger =
@@ -79,8 +80,6 @@ public class UserManagerConverter {
 
 		to.setLogins(from.getLogins());
 
-		to.setMaxDownloadRate(from.getMaxDownloadRate());
-
 		to.setMaxLogins(from.getMaxLogins());
 
 		to.setMaxLoginsPerIP(from.getMaxLoginsPerIP());
@@ -88,8 +87,6 @@ public class UserManagerConverter {
 		to.setMaxSimDownloads(from.getMaxSimDownloads());
 
 		to.setMaxSimUploads(from.getMaxSimUploads());
-
-		to.setMaxUploadRate(from.getMaxUploadRate());
 
 		to.setNukedBytes(from.getNukedBytes());
 
@@ -109,11 +106,36 @@ public class UserManagerConverter {
 
 		to.setTagline(from.getTagline());
 
-		to.setTimelimit(from.getTimelimit());
-
 		to.setTimesNuked(from.getTimesNuked());
 
-		to.setTimeToday(from.getTimeToday());
+		int periods[] =
+			new int[] {
+				Trial.PERIOD_ALL,
+				Trial.PERIOD_DAILY,
+				Trial.PERIOD_MONTHLY,
+				Trial.PERIOD_WEEKLY };
+
+		for (int i = 0; i < periods.length; i++) {
+			to.setUploadedMillisecondsForPeriod(
+				i,
+				from.getUploadedMillisecondsForPeriod(i));
+
+			to.setDownloadedMillisecondsForPeriod(
+				i,
+				from.getDownloadedMillisecondsForPeriod(i));
+
+			to.setUploadedBytesForPeriod(i, from.getUploadedBytesForPeriod(i));
+
+			to.setDownloadedBytesForPeriod(
+				i,
+				from.getDownloadedBytesForPeriod(i));
+
+			to.setUploadedFilesForPeriod(i, from.getUploadedFilesForPeriod(i));
+
+			to.setDownloadedFilesForPeriod(
+				i,
+				from.getDownloadedFilesForPeriod(i));
+		}
 
 		to.commit();
 

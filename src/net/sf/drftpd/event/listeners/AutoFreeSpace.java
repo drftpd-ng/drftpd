@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 
+import net.sf.drftpd.Bytes;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
@@ -27,7 +28,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: AutoFreeSpace.java,v 1.3 2004/01/13 20:30:53 mog Exp $
+ * @version $Id: AutoFreeSpace.java,v 1.4 2004/01/13 22:46:44 mog Exp $
  */
 public class AutoFreeSpace implements FtpListener {
 
@@ -91,6 +92,7 @@ public class AutoFreeSpace implements FtpListener {
 		if (spaceavailable < _keepFree) {
 			for (Iterator iter = dirs.iterator(); iter.hasNext();) {
 				LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+				spaceavailable += file.length();
 				file.delete();
 			}
 		}
@@ -112,9 +114,7 @@ public class AutoFreeSpace implements FtpListener {
 		_cycleTime =
 			60000 * Long.parseLong(FtpConfig.getProperty(props, "cycleTime"));
 		_keepFree =
-			1024
-				* 1024
-				* Long.parseLong(FtpConfig.getProperty(props, "keepFree"));
+			Bytes.parseBytes(FtpConfig.getProperty(props, "keepFree"));
 		_archiveAfter =
 			60000
 				* Long.parseLong(FtpConfig.getProperty(props, "archiveAfter"));

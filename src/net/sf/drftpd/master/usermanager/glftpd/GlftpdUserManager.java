@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: GlftpdUserManager.java,v 1.9 2004/01/13 20:30:54 mog Exp $
+ * @version $Id: GlftpdUserManager.java,v 1.10 2004/01/13 22:46:44 mog Exp $
  */
 public class GlftpdUserManager implements UserManager {
 	private static final Logger logger =
@@ -102,8 +102,8 @@ public class GlftpdUserManager implements UserManager {
 					}
 					if ("USER".equals(param[0])) {
 						user.setComment(arg);
-					} else if ("HOMEDIR".equals(param[0])) {
-						user.setHomeDirectory(arg);
+//					} else if ("HOMEDIR".equals(param[0])) {
+//						user.setHomeDirectory(arg);
 					} else if ("GENERAL".equals(param[0])) {
 						// GENERAL: WKLY_ALLOTMENT, IDLE_TIME, MAX_DLSPEED, MAX_ULSPEED 
 						gluser.setWeeklyAllotment(
@@ -112,8 +112,8 @@ public class GlftpdUserManager implements UserManager {
 						if (idleTime < 0)
 							idleTime = 0;
 						user.setIdleTime(idleTime);
-						user.setMaxDownloadRate(Integer.parseInt(param[3]));
-						user.setMaxUploadRate(Integer.parseInt(param[4]));
+						//user.setMaxDownloadRate(Integer.parseInt(param[3]));
+						//user.setMaxUploadRate(Integer.parseInt(param[4]));
 					} else if ("LOGINS".equals(param[0])) {
 						// max logins per account, max logins from the same IP,
 
@@ -167,9 +167,9 @@ public class GlftpdUserManager implements UserManager {
 							user.addGroup("cust5");
 					} else if ("TAGLINE".equals(param[0])) {
 						user.setTagline(arg);
-					} else if ("DIR".equals(param[0])) {
-						// DIR is the start-up dir for this user
-						user.setHomeDirectory(arg);
+					//} else if ("DIR".equals(param[0])) {
+					// DIR is the start-up dir for this user
+					//	user.setHomeDirectory(arg);
 					} else if ("CREDITS".equals(param[0])) {
 						user.setCredits(Long.parseLong(param[1]) * 1000);
 					} else if ("RATIO".equals(param[0])) {

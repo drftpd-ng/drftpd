@@ -28,9 +28,10 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.15 2004/01/13 20:30:53 mog Exp $
+ * @version $Id: Trial.java,v 1.16 2004/01/13 22:46:44 mog Exp $
  */
 public class Trial implements FtpListener {
+	public static final int PERIOD_ALL = 0;
 	private static final short ACTION_DISABLE = 0;
 	private static final short ACTION_PURGE = 1;
 	private static final Logger logger = Logger.getLogger(Trial.class);

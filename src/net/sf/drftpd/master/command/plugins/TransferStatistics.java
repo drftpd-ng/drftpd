@@ -25,7 +25,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
- * @version $Id: TransferStatistics.java,v 1.12 2004/01/08 02:40:07 zubov Exp $
+ * @version $Id: TransferStatistics.java,v 1.13 2004/01/13 22:46:44 mog Exp $
  */
 public class TransferStatistics implements CommandHandler {
 
@@ -122,7 +122,6 @@ public class TransferStatistics implements CommandHandler {
 		}
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
 		response.addComment("created: " + new Date(user.getCreated()));
-		response.addComment("time on today: " + new Date(user.getTimeToday()));
 		response.addComment("rank alup: " + getStatsPlace("ALUP", user, conn));
 		response.addComment("rank aldn: " + getStatsPlace("ALDN", user, conn));
 		response.addComment(
