@@ -59,8 +59,6 @@ public class GlftpdUserManager extends UserManager {
 		public boolean login(String userPassword) {
 			String userhash =
 				Crypt.crypt(this.password.substring(0, 2), userPassword);
-			System.out.println("userhash: " + userhash);
-			System.out.println("hash: " + password);
 			if (password.equals(userhash)) {
 				login();
 				return true;
@@ -164,7 +162,7 @@ public class GlftpdUserManager extends UserManager {
 						'.',
 						',')
 					+ " "
-					+ user.getIdleTime()
+					+ user.getIdleTime()/60
 					+ " "
 					+ user.getMaxDownloadRate()
 					+ " "
@@ -172,7 +170,7 @@ public class GlftpdUserManager extends UserManager {
 		} else {
 			out.println(
 				"GENERAL 0,0 "
-					+ user.getIdleTime()
+					+ user.getIdleTime()/60
 					+ " "
 					+ user.getMaxDownloadRate()
 					+ " "
@@ -337,7 +335,7 @@ public class GlftpdUserManager extends UserManager {
 						// GENERAL: WKLY_ALLOTMENT, IDLE_TIME, MAX_DLSPEED, MAX_ULSPEED 
 						gluser.setWeeklyAllotment(
 							Integer.parseInt(param[1].substring(2)));
-						user.setMaxIdleTime(Integer.parseInt(param[2]));
+						user.setMaxIdleTime(Integer.parseInt(param[2])*60);
 						user.setMaxDownloadRate(Integer.parseInt(param[3]));
 						user.setMaxUploadRate(Integer.parseInt(param[4]));
 					} else if ("LOGINS".equals(param[0])) {
@@ -480,14 +478,14 @@ public class GlftpdUserManager extends UserManager {
 	/**
 	 * @see net.sf.drftpd.master.UserManager#getUserByName(String)
 	 */
-	public User getUserByName(String username) {
+	public User getUserByName(String username) throws NoSuchUserException {
 		getLock(username);
 		GlftpdUser user = new GlftpdUser(this, username);
 		try {
 			load(user);
-		} catch(Exception ex) {
+		} catch(CorruptUserFileException ex) {
 			ex.printStackTrace();
-			return null;
+			throw new RuntimeException(ex.toString());
 		}
 		return user;
 	}

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.rmi.RemoteException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -19,6 +20,9 @@ import java.util.Vector;
 import java.util.Collection;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+
+import net.sf.drftpd.master.NoAvailableSlaveException;
+import net.sf.drftpd.slave.*;
 /**
  * Represents the file attributes of a remote file.
  * 
@@ -165,7 +169,18 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			}
 		} /* serialize directory */
 	}
-
+	
+	public void mkdir(String fileName) throws NoAvailableSlaveException {
+		for(Iterator i = slaves.iterator(); i.hasNext(); ) {
+			RemoteSlave slave = (RemoteSlave)i.next();
+			try {
+				slave.getSlave().mkdir(getPath()+fileName);
+			} catch(RemoteException ex) {
+				ex.printStackTrace();
+			}
+		}
+	}
+	
 	public LinkedRemoteFile[] listFiles() {
 		return (LinkedRemoteFile[]) files.values().toArray(
 			new LinkedRemoteFile[0]);
@@ -293,18 +308,17 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 				if (mergefile.isDirectory()) {
 					if (!file.isDirectory())
 						throw new RuntimeException("!!! WARNING: File/Directory conflict!!");
+						// is a directory -- dive into directory and start merging
 					file.merge(mergefile);
 				} else {
 					if (file.isDirectory())
 						throw new RuntimeException("!!! WARNING: File/Directory conflict!!");
 				}
+				
+				// in all cases we add the slaves of the remote file to 'this' file
 				Collection slaves2 = mergefile.getSlaves();
 				file.addSlaves(slaves2);
 				System.out.println("Result file: " + file);
-				/*
-				System.out.println("Old file: "+map.get(filename));
-				map.put(filename, file);
-				*/
 			}
 		}
 
@@ -313,4 +327,25 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			lastModified = dir.lastModified();
 		}
 	}
+	
+	public void unmerge(RemoteSlave slave) {
+		//LinkedRemoteFile files[] = listFiles();
+		if (getSlaves().remove(slave)) {
+			System.out.println("Removed slave from " + this);
+		}
+		for (Iterator i = files.entrySet().iterator(); i.hasNext();) {
+			Map.Entry entry = (Map.Entry) i.next();
+			LinkedRemoteFile file = (LinkedRemoteFile) entry.getValue();
+			String filename = (String) entry.getKey();
+			if (file.isDirectory()) {
+				file.unmerge(slave);
+			}
+			else {
+				if (file.getSlaves().remove(slave)) {
+					System.out.println("Removed slave from " + file);
+				}
+			}
+		}
+	}
+	
 }

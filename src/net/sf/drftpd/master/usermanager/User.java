@@ -51,7 +51,6 @@ public abstract class User implements Serializable {
 	private long credits;
 
 	//flags
-	private transient boolean loggedIn;
 	private boolean admin;
 	private boolean groupadmin;
 	private boolean nuker;
@@ -142,7 +141,6 @@ public abstract class User implements Serializable {
 			for (int i = 0; i < masks.length; i++) {
 				String subject = masks[i];
 
-				System.out.println("matching " + subject + " against "+mask);
 				if (m.matches(subject, p)) {
 					return true;
 				}
@@ -265,19 +263,13 @@ public abstract class User implements Serializable {
 	}
 
 	/**
-	 * Check the user login status.
-	 */
-	public boolean hasLoggedIn() {
-		return loginTime != 0;
-	}
-
-	/**
 	 * User login.
 	 */
 	public void login() {
+		logins += 1;
 		loginTime = (int) System.currentTimeMillis() / 1000;
 		lastAccessTime = loginTime;
-		loggedIn = true;
+//		loggedIn = true;
 	}
 
 	/**
@@ -285,7 +277,7 @@ public abstract class User implements Serializable {
 	 */
 	public void logout() {
 		loginTime = 0;
-		loggedIn = false;
+//		loggedIn = false;
 	}
 
 	/**
@@ -476,14 +468,6 @@ public abstract class User implements Serializable {
 	 */
 	public void setIdleTime(int idleTime) {
 		this.idleTime = idleTime;
-	}
-
-	/**
-	 * Sets the logins.
-	 * @param logins The logins to set
-	 */
-	public void setLogins(int logins) {
-		this.logins = logins;
 	}
 
 	/**
@@ -751,15 +735,6 @@ public abstract class User implements Serializable {
 	}
 
 	/**
-	 * Returns the loggedIn.
-	 * @return boolean
-	 */
-	public boolean isLoggedIn() {
-		return loggedIn;
-	}
-
-
-	/**
 	 * Returns the ipMasks.
 	 * @return Vector
 	 */
@@ -1021,6 +996,14 @@ public abstract class User implements Serializable {
 	 */
 	public void setUploadedSecondsWeek(int uploadedSecondsWeek) {
 		this.uploadedSecondsWeek = uploadedSecondsWeek;
+	}
+
+	/**
+	 * Sets the logins.
+	 * @param logins The logins to set
+	 */
+	public void setLogins(int logins) {
+		this.logins = logins;
 	}
 
 }

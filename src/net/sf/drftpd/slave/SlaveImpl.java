@@ -1,58 +1,56 @@
 package net.sf.drftpd.slave;
 
-import net.sf.drftpd.master.SlaveManager;
-import net.sf.drftpd.PermissionDeniedException;
-import net.sf.drftpd.RemoteFile;
-import net.sf.drftpd.LinkedRemoteFile;
-import net.sf.drftpd.DrftpdFileFilter;
-import net.sf.drftpd.RemoteSlave;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-import java.rmi.server.UnicastRemoteObject;
+import java.net.ConnectException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
-import java.rmi.NotBoundException;
-
+import java.rmi.server.UnicastRemoteObject;
+import java.util.Iterator;
 import java.util.Properties;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Stack;
-import java.util.EmptyStackException;
+import java.util.Vector;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedOutputStream;
 
-import java.io.InputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedInputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import com.jconfig.DiskFile;
+import com.jconfig.DiskFileException;
+import com.jconfig.DiskObject;
+import com.jconfig.DiskVolume;
+import com.jconfig.FileRegistry;
 
-import java.net.ConnectException;
-import java.net.MalformedURLException;
-import java.net.Socket;
-import java.net.InetAddress;
+import net.sf.drftpd.LinkedRemoteFile;
+import net.sf.drftpd.PermissionDeniedException;
+import net.sf.drftpd.RemoteFile;
+import net.sf.drftpd.master.SlaveManager;
 
 public final class SlaveImpl extends UnicastRemoteObject implements Slave {
-
-	Properties cfg;
+	private Vector transfers = new Vector();
+	//	Properties cfg;
 	SlaveManager manager;
+	private String root;
 
 	public SlaveImpl(Properties cfg) throws RemoteException {
 		super();
-		this.cfg = cfg;
+		root = cfg.getProperty("slave.root");
+		//		this.cfg = cfg;
 	}
 
 	public static void main(String args[]) {
+
 		RemoteSlave slave;
 		Properties cfg = new Properties();
 		try {
-		cfg.load(new FileInputStream("drftpd.conf"));
-		} catch(IOException ex) {
+			cfg.load(new FileInputStream("drftpd.conf"));
+		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
 
@@ -64,36 +62,55 @@ public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 			return;
 			//the compiler doesn't know that execution stops at System.exit() stops execution
 		}
-		
-		LinkedRemoteFile root = getDefaultRoot(cfg, slave);
-		
+
+		LinkedRemoteFile root =
+			getDefaultRoot(cfg.getProperty("slave.root"), slave);
+
 		SlaveManager manager;
 		try {
 			manager =
 				(SlaveManager) Naming.lookup(
 					cfg.getProperty("slavemanager.url"));
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			ex.printStackTrace();
 			return;
 		}
 		try {
-			System.out.println("manager.addSlave() root: "+root);
+			System.out.println("manager.addSlave() root: " + root);
 			manager.addSlave(slave, root);
-		} catch(RemoteException ex) {
+		} catch (RemoteException ex) {
 			ex.printStackTrace();
 		}
 	}
 
-	public static LinkedRemoteFile getDefaultRoot(Properties cfg, RemoteSlave slave) {
-			File root = new File(cfg.getProperty("slave.root"));
-			if (!root.isDirectory()) {
-				System.out.println(
-					"slave.root = " + root.getPath() + " is not a directory!");
-				System.exit(-1);
-				return null;
+	public static void checkInited() {
+		if (!FileRegistry.isInited()) {
+			System.out.println(
+				"Initalizing using " + System.getProperty("user.dir"));
+
+			/* START jconfig */
+			FileRegistry.initialize(
+				new File(System.getProperty("user.dir")),
+				0);
+			if (!FileRegistry.isInited()) {
+				System.out.println("Please check your configuration.");
+				return;
 			}
-			LinkedRemoteFile rroot = new LinkedRemoteFile(slave, root);
-			return rroot;
+			/* END jconfig */
+		}
+	}
+	public static LinkedRemoteFile getDefaultRoot(
+		String root,
+		RemoteSlave slave) {
+
+		File rootfile = new File(root);
+		if (!rootfile.isDirectory()) {
+			throw new RuntimeException(
+				"slave.root = " + rootfile.getPath() + " is not a directory!");
+			//System.exit(-1);
+			//return null;
+		}
+		return new LinkedRemoteFile(slave, rootfile);
 	}
 	//public void doPassiveTransfer(RemoteFile file) {}
 
@@ -103,18 +120,21 @@ public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 		InetAddress address,
 		int port)
 		throws FileNotFoundException, ConnectException {
-//		doConnectSend(file.getPath(), offset, address, port);
 
-		File file = new File(cfg.getProperty("slave.root") + rfile.getPath());
-		if(!file.exists()) throw new FileNotFoundException("File "+file+" not found, Remotefile: "+rfile);
+		File file = new File(root + rfile.getPath());
+		if (!file.exists())
+			throw new FileNotFoundException(
+				"File " + file + " not found, Remotefile: " + rfile);
+		Transfer transfer = null;
 		try {
 			Socket sock;
 			sock = new Socket(address, port);
 			FileInputStream is = new FileInputStream(file);
 			is.skip(offset);
 			OutputStream os = sock.getOutputStream();
-
-			transfer(is, os);
+			transfer = new Transfer(is, os);
+			transfers.add(transfer);
+			transfer.transfer();
 			sock.close();
 		} catch (ConnectException ex) {
 			System.err.println(
@@ -126,32 +146,9 @@ public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 					+ file.getPath());
 		} catch (Throwable ex) {
 			ex.printStackTrace();
+		} finally {
+			transfers.remove(transfer);
 		}
-	}
-
-	public void doConnectSend(
-		String path,
-		long offset,
-		InetAddress address,
-		int port)
-		throws FileNotFoundException, ConnectException {
-
-	}
-
-	private long transfer(InputStream is, OutputStream os) throws IOException {
-		long transfered = 0;
-		try {
-			byte[] buff = new byte[1024];
-			int count;
-			while ((count = is.read(buff)) != -1) {
-				transfered += count;
-				os.write(buff, 0, count);
-			}
-			os.close();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		return transfered;
 	}
 
 	/**
@@ -164,23 +161,71 @@ public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 		int port)
 		throws RemoteException, PermissionDeniedException {
 
-		File file = new File(remotefile.getPath());
-		FileOutputStream os;
+		File file = new File(root + remotefile.getPath());
+		FileOutputStream out;
 		try {
-			os = new FileOutputStream(file);
+			out = new FileOutputStream(file);
 		} catch (FileNotFoundException ex) {
 			throw new PermissionDeniedException(ex.toString());
 		}
-
-		CRC32 checksum = new CRC32();
-		CheckedOutputStream cos = new CheckedOutputStream(os, checksum);
-
+		/*
+				CRC32 checksum = new CRC32();
+				CheckedOutputStream cos = new CheckedOutputStream(os, checksum);
+		*/
+		Transfer transfer = null;
 		try {
 			Socket socket = new Socket(addr, port);
-			InputStream is = socket.getInputStream();
-			transfer(is, cos);
+			InputStream in = socket.getInputStream();
+			transfer = new Transfer(in, out);
+			transfers.add(transfer);
+			transfer.transfer();
 		} catch (IOException ex) {
 			ex.printStackTrace();
+		} finally {
+			transfers.remove(transfer);
+		}
+	}
+
+	public SlaveStatus getSlaveStatus() {
+		checkInited();
+		float throughputUp = 0, throughputDown = 0;
+		int transfersUp = 0, transfersDown = 0;
+
+		for (Iterator i = transfers.iterator(); i.hasNext();) {
+			Transfer transfer = (Transfer) i.next();
+			if (transfer.getDirection() == transfer.TRANSFER_RECEIVING) {
+				throughputDown += transfer.getTransferSpeed();
+				transfersDown += 1;
+			} else {
+				throughputUp += transfer.getTransferSpeed();
+				transfersUp += 1;
+			}
+			//			throughput += transfer.getTransferSpeed();
+		}
+		try {
+			DiskObject dobject =
+				FileRegistry.createDiskObject(new File(root), 0);
+			if (!(dobject instanceof DiskFile)) {
+				throw new RuntimeException("slave.root is not a DiskFile");
+			}
+			DiskVolume dvolume = ((DiskFile) dobject).getVolume();
+			return new SlaveStatus(
+				dvolume.getFreeSpace(),
+				throughputUp,
+				transfersUp,
+				throughputDown,
+				transfersDown);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			throw new RuntimeException(ex.toString());
+		}
+	}
+	/**
+	 * @see net.sf.drftpd.slave.Slave#mkdir()
+	 */
+	public void mkdir(String fileName) throws RemoteException {
+		if(!new File(root+fileName).mkdir()) {
+			throw new RuntimeException("mkdir(): Permission denied");
 		}
 	}
 

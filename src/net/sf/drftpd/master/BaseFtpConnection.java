@@ -1,22 +1,21 @@
 package net.sf.drftpd.master;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.net.Socket;
-import java.net.ServerSocket;
-import java.net.SocketException;
-import java.net.InetAddress;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
 
-import java.util.Properties;
-
-import net.sf.drftpd.master.usermanager.*;
+import net.sf.drftpd.master.usermanager.User;
 
 //import ranab.util.Message;
 /*import ranab.io.StreamConnectorObserver;*/
@@ -31,28 +30,41 @@ public class BaseFtpConnection implements Runnable {
 
 	protected final static Class[] METHOD_INPUT_SIG =
 		new Class[] { FtpRequest.class, PrintWriter.class };
-
-	//protected FtpConfig mConfig                 = null;
-	protected Properties cfg;
 	/**
-	 * @todo Put back shared FtpStatus
+	 * time when last command from the client finished execution
 	 */
+	protected long lastActive;
+	/**
+	 * Is the client running a command?
+	 */
+	protected boolean executing;
+	
 	protected FtpStatus mFtpStatus;
 	//protected FtpDataConnection mDataConnection = null;
 	protected User user;
+	/**
+	 * Is the current password authenticated?
+	 */
+	protected boolean authenticated = false;
 	//protected SpyConnectionInterface mSpy       = null;
 	//protected FtpConnectionObserver mObserver   = null;
 	protected Socket mControlSocket;
-	protected PrintWriter mWriter;
-	protected boolean mbStopRequest = false;
-
-	protected SlaveManager slavemanager;
-	//	public void setSlaveManager(SlaveManager slavemanager) {
-	//		this.slavemanager = slavemanager;
-	//	}
-
+	protected PrintWriter out;
+	/**
+	 * Should this thread stop insted of continue looping?
+	 */
+	protected boolean stopRequest = false;
+	protected String stopRequestMessage;
+	protected SlaveManagerImpl slavemanager;
 	private InetAddress clientAddress = null;
-
+	private Thread t;
+	protected ConnectionManager connManager;
+	protected FtpRequest request;
+	public void start() {
+		t = new Thread(this);
+		t.start();
+		// start() calls run() and execution will start in the background.
+	}
 	/**
 	 * Get client address
 	 */
@@ -63,9 +75,11 @@ public class BaseFtpConnection implements Runnable {
 	/**
 	 * Set client address
 	 */
+	/*
 	public void setClientAddress(InetAddress clientAddress) {
 		clientAddress = clientAddress;
 	}
+	*/
 
 	/**
 	 * Set configuration file and the control socket.
@@ -79,14 +93,17 @@ public class BaseFtpConnection implements Runnable {
 	    mUser = new FtpUser();
 	}
 	*/
-	public BaseFtpConnection(Socket soc, Properties cfg) {
+	public BaseFtpConnection(ConnectionManager connManager, Socket soc) {
 		//mConfig = ftpConfig;
-		this.cfg = cfg;
+		//this.cfg = cfg;
 		//mFtpStatus = mConfig.getStatus();
 		mFtpStatus = new FtpStatus();
 		mControlSocket = soc;
+		this.connManager = connManager;
 		//mUser = new FtpUser();
 	}
+
+	BufferedReader in;
 
 	/**
 	 * Server one FTP connection.
@@ -100,13 +117,12 @@ public class BaseFtpConnection implements Runnable {
 		//setClientAddress(clientAddress);
 		//mConfig.getConnectionService().newConnection(this);
 
-		BufferedReader in = null;
 		try {
 			in =
 				new BufferedReader(
 					new InputStreamReader(mControlSocket.getInputStream()));
 
-			mWriter =
+			out =
 				new PrintWriter(
 					new FtpWriter(
 						new BufferedWriter(
@@ -120,12 +136,12 @@ public class BaseFtpConnection implements Runnable {
 			        return;
 			    }
 			*/
-			mWriter.write(mFtpStatus.getResponse(220, null, user, null));
-			do {
-				mWriter.flush();
+			out.write(mFtpStatus.getResponse(220, null, user, null));
+			while(!stopRequest) {
+				out.flush();
 				//notifyObserver();
 				String commandLine = in.readLine();
-
+				if(stopRequest) break;
 				// test command line
 				if (commandLine == null) {
 					break;
@@ -136,23 +152,33 @@ public class BaseFtpConnection implements Runnable {
 					continue;
 				}
 
-				FtpRequest request = new FtpRequest(commandLine);
+				request = new FtpRequest(commandLine);
+				System.out.println("<< " + request.getCommandLine());
+
 				if (!hasPermission(request)) {
-					mWriter.write(
+					out.write(
 						mFtpStatus.getResponse(530, request, user, null));
 					continue;
 				}
 				// execute command
-				service(request, mWriter);
-			} while (!mbStopRequest);
+				executing = true;
+				service(request, out);
+				executing = false;
+				lastActive = System.currentTimeMillis();
+			}
+			if(stopRequestMessage != null) {
+				out.println("500 "+stopRequestMessage);
+			} else {
+				out.println("500 Connection closing");
+			}
 		} catch (SocketException ex) {
-			System.out.println(ex.getMessage());
+			ex.printStackTrace();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		} finally {
 			try {
 				in.close();
-				mWriter.close();
+				out.close();
 			} catch (Exception ex2) {
 				System.err.println("Warning, exception closing stream");
 				ex2.printStackTrace();
@@ -163,6 +189,7 @@ public class BaseFtpConnection implements Runnable {
 			    conService.closeConnection(mUser.getSessionId());
 			}
 			*/
+			connManager.remove(this);
 		}
 	}
 
@@ -170,11 +197,9 @@ public class BaseFtpConnection implements Runnable {
 	 * Execute the ftp command.
 	 */
 	public void service(FtpRequest request, Writer writer) throws IOException {
-		System.out.println("<< " + request.getCommandLine());
 		try {
 			String metName;
 			metName = "do" + request.getCommand().replaceAll(" ", "");
-			System.out.println("!!! " + metName);
 			Method actionMet =
 				getClass().getDeclaredMethod(metName, METHOD_INPUT_SIG);
 			actionMet.invoke(this, new Object[] { request, writer });
@@ -210,11 +235,13 @@ public class BaseFtpConnection implements Runnable {
 	 * Check permission - default implementation - does nothing.
 	 */
 	protected boolean hasPermission(FtpRequest request) {
-		if (user != null && user.isLoggedIn())
+		if (isAuthenticated())
 			return true;
 
 		String command = request.getCommand();
-		if ("USER".equals(command) || "PASS".equals(command) || "QUIT".equals(command))
+		if ("USER".equals(command)
+			|| "PASS".equals(command)
+			|| "QUIT".equals(command))
 			return true;
 
 		return false;
@@ -224,33 +251,19 @@ public class BaseFtpConnection implements Runnable {
 	 * User logout and stop this thread.
 	 */
 	public void stop() {
-		mbStopRequest = true;
-		/*
-		if (mDataConnection != null) {
-		    mDataConnection.reset();
-		    mDataConnection = null;
+		stopRequest = true;
+		try {
+			in.close();
+		} catch(IOException ex) {
+			ex.printStackTrace();
 		}
-		*/
-		if (mControlSocket != null) {
-			try {
-				mControlSocket.close();
-			} catch (Exception ex) {
-			}
-			mControlSocket = null;
-		}
-		if (user.hasLoggedIn()) {
-			user.logout();
-		}
-		//mObserver = null;
+//		t.interrupt();
 	}
 
-	/**
-	 * Is the connection closed?
-	 */
-	public boolean isClosed() {
-		return mbStopRequest;
+	public void stop(String message) {
+		stopRequestMessage = message;
+		stop();
 	}
-
 	/**
 	 * Monitor the user request.
 	 */
@@ -276,11 +289,9 @@ public class BaseFtpConnection implements Runnable {
 	/**
 	 * Get user object
 	 */
-	/*
-	public FtpUser getUser() {
-	    return mUser;
+	public User getUser() {
+	    return user;
 	}
-	*/
 
 	/**
 	 * Get connection spy object
@@ -340,10 +351,11 @@ public class BaseFtpConnection implements Runnable {
 	/**
 	 * This method tracks data transfer.
 	 */
+	/*
 	public void dataTransferred(int sz) {
 		//notifyObserver();
 	}
-
+	*/
 	/**
 	 * Get config object
 	 */
@@ -356,10 +368,12 @@ public class BaseFtpConnection implements Runnable {
 	/**
 	 * Get status object
 	 */
+	/*
 	public FtpStatus getStatus() {
 		return mFtpStatus;
 	}
-	/***** DATA CONNECTION *****/
+	*/
+	/////////// DATA CONNECTION ///////////
 	protected Socket mDataSoc;
 	protected ServerSocket mServSoc;
 	protected InetAddress mAddress;
@@ -367,16 +381,6 @@ public class BaseFtpConnection implements Runnable {
 
 	protected boolean mbPort = false;
 	protected boolean mbPasv = false;
-
-	/**
-	 * Constructor.
-	 * @param cfg ftp config object.
-	 */
-	/*
-	public FtpDataConnection(FtpConfig cfg) {
-	    mConfig = cfg;
-	}
-	*/
 
 	/**
 	 * Reset all the member variables. Close all sockets.
@@ -426,6 +430,7 @@ public class BaseFtpConnection implements Runnable {
 	/**
 	 * Passive command. It returns the success flag.
 	 */
+	/*
 	public boolean setPasvCommand() {
 		boolean bRet = false;
 		try {
@@ -443,10 +448,12 @@ public class BaseFtpConnection implements Runnable {
 		}
 		return bRet;
 	}
+	*/
 
 	/**
 	 * Listen for passive socket connection. It returns the success flag.
 	 */
+	/*
 	public boolean listenPasvConnection() {
 		boolean bRet = false;
 		mDataSoc = null;
@@ -459,6 +466,7 @@ public class BaseFtpConnection implements Runnable {
 		}
 		return bRet;
 	}
+	*/
 
 	/**
 	 * Get client address.
@@ -512,4 +520,50 @@ public class BaseFtpConnection implements Runnable {
 		reset();
 		super.finalize();
 	}
+
+	/**
+	 * Returns the authenticated.
+	 * @return boolean
+	 */
+	public boolean isAuthenticated() {
+		return authenticated;
+	}
+	public String toString() {
+		StringBuffer buf = new StringBuffer("[BaseFtpConnection");
+		if(user != null) {
+			buf.append("[user: "+user+"]");
+		}
+		if(request != null) {
+			buf.append("[command: "+request.getCommand()+"]");
+		}
+		if(isExecuting()) {
+			buf.append("[executing]");
+		} else {
+			buf.append("[idle: "+(System.currentTimeMillis()-getLastActive())+"ms]");
+		}
+		buf.append("]");
+		return buf.toString();
+	}
+
+	/**
+	 * Returns true if client is executing a command.
+	 */
+	public boolean isExecuting() {
+		return executing;
+	}
+
+	/**
+	 * Returns the "currentTimeMillis" when last command finished executing.
+	 */
+	public long getLastActive() {
+		return lastActive;
+	}
+
+	/**
+	 * Returns the FtpRequest of current or last command executed.
+	 */
+	public FtpRequest getRequest() {
+		return request;
+	}
+
 }

@@ -13,4 +13,6 @@ public interface Slave extends Remote {
     public void doConnectSend(RemoteFile file, long offset, InetAddress addr, int port) throws RemoteException, FileNotFoundException, ConnectException;
 	//public void doConnectSend(String file, long offset, InetAddress addr, int port) throws RemoteException, FileNotFoundException, ConnectException;
     public void doConnectReceive(RemoteFile file, InetAddress addr, int port) throws RemoteException, PermissionDeniedException;
+   	public SlaveStatus getSlaveStatus() throws RemoteException;
+   	public void mkdir(String fileName) throws RemoteException;
 }

@@ -6,4 +6,4 @@ To run you need to download jakarta-oro from
 http://jakarta.apache.org/oro/ and jconfig from http://jconfig.com/.
 
 You also need to edit drftpd.conf, once you have done this the
-installation is complete.
+installation is complete. :^)

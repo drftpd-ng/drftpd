@@ -12,6 +12,8 @@ import java.util.Enumeration;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+import net.sf.drftpd.slave.*;
+
 
 /**
  * @author mog

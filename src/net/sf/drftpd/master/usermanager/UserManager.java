@@ -34,7 +34,7 @@ public abstract class UserManager {
 	/**
 	 * Get user by name.
 	 */
-	public abstract User getUserByName(String name);
+	public abstract User getUserByName(String name) throws NoSuchUserException;
 
 	/**
 	 * Get all user names in the system.

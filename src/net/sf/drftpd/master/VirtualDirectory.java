@@ -1,32 +1,21 @@
 package net.sf.drftpd.master;
 
-import net.sf.drftpd.LinkedRemoteFile;
 import java.io.File;
-import java.io.Writer;
-import java.io.IOException;
-import java.io.Serializable;
-import java.text.DecimalFormat;
-import java.util.Date;
-import java.util.StringTokenizer;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Iterator;
-
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.EOFException;
+import java.io.Writer;
 
-import java.util.Hashtable;
-//import ranab.io.FileRegularFilter;
-//import ranab.util.DateUtils;
+import java.util.Date;
+import java.util.StringTokenizer;
+
+import net.sf.drftpd.LinkedRemoteFile;
 
 /**
  * This class is responsible to handle all virtual directory activities.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
- */
+ * @author <a href="mailto:mog@linux.nu">Morgan Christiansson</a>
+x */
 public class VirtualDirectory {
 
 	private final static String NEWLINE = "\r\n";
@@ -82,11 +71,11 @@ public class VirtualDirectory {
 	/**
 	 * Get current working directory.
 	 */
-	public String getCurrentDirectoryName() {
+	public String getCurrentDirectory() {
 		return mstCurrDir;
 	}
 
-	public LinkedRemoteFile getCurrentDirectory() {
+	public LinkedRemoteFile getCurrentDirectoryFile() {
 		try {
 			return root.lookupFile(mstCurrDir);
 		} catch(FileNotFoundException ex) {
@@ -268,6 +257,7 @@ public class VirtualDirectory {
 		// check options
 		boolean bAll = options.indexOf('a') != -1;
 		boolean bDetail = options.indexOf('l') != -1;
+		boolean directory = options.indexOf("d") != -1;
 
 		// check pattern
 		lsDirName = getPhysicalName(lsDirName);
@@ -309,21 +299,22 @@ public class VirtualDirectory {
 		//if ( (pattern == null) || pattern.equals("*") || pattern.equals("") ) {
 		//    flLst = lstDirObj.listFiles();
 		//} else {
-		flLst = lstDirObj.listFiles(); //new FileRegularFilter(pattern));
+		if(directory) {
+			flLst = new LinkedRemoteFile[] {lstDirObj};
+		} else {
+			flLst = lstDirObj.listFiles(); //new FileRegularFilter(pattern));
+		}
 		//}
 		//Iterator i = lstDirObj.entrySet().iterator();
 		// print file list
-		System.out.println("Listing " + lstDirObj);
 		if (flLst != null) {
 			for (int i = 0; i < flLst.length; i++) {
 				if ((!bAll) && flLst[i].isHidden()) {
 					continue;
 				}
-				System.out.println("List " + flLst[i]);
 				printLine(flLst[i], out);
 			}
 		}
-		System.out.println("Listed.");
 		return true;
 	}
 
@@ -335,6 +326,7 @@ public class VirtualDirectory {
 	 * </pre>
 	 * @return true if success
 	 */
+	/*
 	public boolean printNList(String argument, Writer out) throws IOException {
 
 		String lsDirName = "./";
@@ -404,6 +396,7 @@ public class VirtualDirectory {
 		}
 		return true;
 	}
+	*/
 
 	/**
 	 * Get file owner.
