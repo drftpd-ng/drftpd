@@ -197,6 +197,13 @@ public class IRCListener implements FtpListener, Observer {
 				ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
 				env.add("message", mevent.getMessage());
 				say(SimplePrintf.jprintf(_ircCfg.getProperty("shutdown"), env));
+			} else if ( event.getCommand().startsWith("INVITE")) {
+				String user = event.getCommand().substring(7);
+				logger.info(
+					"Invited "
+					+ user + " through SITE INVITE");
+					_conn.sendCommand(
+							new InviteCommand(user, _channelName));
 			} else {
 				logger.debug("Unhandled event: " + event);
 			}
