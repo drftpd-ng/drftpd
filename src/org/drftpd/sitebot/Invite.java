@@ -18,15 +18,16 @@
 package org.drftpd.sitebot;
 
 import net.sf.drftpd.event.InviteEvent;
+import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
+import org.tanesha.replacer.ReplacerEnvironment;
 
 import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.InCommand;
@@ -39,23 +40,26 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 public class Invite extends GenericCommandAutoService
     implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Invite.class);
-    private SiteBot _irc;
+    private SiteBot _listener;
     private String _trigger;
 	private GlobalContext _gctx;
 
     public Invite(SiteBot ircListener) {
         super(ircListener.getIRCConnection());
         _gctx = ircListener.getGlobalContext();
-        _irc = ircListener;
-        _trigger = _irc.getMessageCommandPrefix();
+        _listener = ircListener;
+        _trigger = _listener.getMessageCommandPrefix();
     }
 
     public String getCommands() {
         return _trigger + "invite(msg)";
     }
 
-    public String getCommandsHelp() {
-    	return _trigger + "invite <user> <pass> : Invite yourself to site channel.";
+    public String getCommandsHelp(User user) {
+        String help = "";
+        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "invite", user))
+            help += _listener.getCommandPrefix() + "invite <user> <pass> : Invite yourself to site channel.\n";
+    	return help;
     }
     
     protected void updateCommand(InCommand command) {
@@ -81,6 +85,22 @@ public class Invite extends GenericCommandAutoService
                 logger.log(Level.WARN, "", e);
 
                 return;
+            }
+
+            ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+    		env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
+    		env.add("ircnick",msgc.getSource().getNick());	
+    		try {
+                if (!_listener.getIRCConfig().checkIrcPermission(
+                        _listener.getCommandPrefix() + "invite",msgc.getSource())) {
+                	_listener.sayChannel(msgc.getDest(), 
+                			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
+                	return;				
+                }
+            } catch (NoSuchUserException e) {
+    			_listener.sayChannel(msgc.getDest(), 
+    					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+    			return;
             }
 
             boolean success = user.checkPassword(args[2]);

@@ -27,6 +27,8 @@ import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.slave.SlaveStatus;
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import f00f.net.irc.martyr.GenericAutoService;
@@ -54,9 +56,13 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
         return _trigger + "slaves " + _trigger + "slave";
     }
 
-    public String getCommandsHelp() {
-        return _trigger + "slave <name> : Show transfer stats and disk free for a specific slave.\n" + 
-        		_trigger + "slaves : Show transfer stats and disk free for all slaves.";
+    public String getCommandsHelp(User user) {
+        String help = "";
+        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "slave", user))
+            help += _listener.getCommandPrefix() + "slave <name> : Show transfer stats and disk free for a specific slave.\n";
+        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "slaves", user))
+            help += _listener.getCommandPrefix() + "slaves : Show transfer stats and disk free for all slaves.\n";
+        return help;
     }
 
     private GlobalContext getGlobalContext() {
@@ -100,7 +106,23 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 
         String chan = msgc.getDest();
 
+        ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
+		env.add("ircnick",msgc.getSource().getNick());	
         if (msgc.getMessage().startsWith(_trigger + "slave ")) {
+    		try {
+                if (!_listener.getIRCConfig().checkIrcPermission(
+                        _listener.getCommandPrefix() + "slave",msgc.getSource())) {
+                	_listener.sayChannel(msgc.getDest(), 
+                			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
+                	return;				
+                }
+            } catch (NoSuchUserException e) {
+    			_listener.sayChannel(msgc.getDest(), 
+    					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+    			return;
+            }
+
             String slaveName = msgc.getMessage().substring((_trigger + "slave ").length());
 
             try {
@@ -108,12 +130,24 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
                                          .getSlaveManager().getRemoteSlave(slaveName);
                 _listener.sayChannel(chan, makeStatusString(rslave));
             } catch (ObjectNotFoundException e) {
-                ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
                 env.add("slave", slaveName);
                 _listener.sayChannel(chan,
                     ReplacerUtils.jprintf("slaves.notfound", env, Slaves.class));
             }
         } else if (msgc.getMessage().equals(_trigger + "slaves")) {
+    		try {
+                if (!_listener.getIRCConfig().checkIrcPermission(
+                        _listener.getCommandPrefix() + "slaves",msgc.getSource())) {
+                	_listener.sayChannel(msgc.getDest(), 
+                			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
+                	return;				
+                }
+            } catch (NoSuchUserException e) {
+    			_listener.sayChannel(msgc.getDest(), 
+    					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+    			return;
+            }
+
         	for(RemoteSlave rslave : getGlobalContext().getSlaveManager().getSlaves()) {
                 _listener.sayChannel(chan, makeStatusString(rslave));
             }

@@ -18,13 +18,13 @@
 package net.drmods.plugins.irc;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.config.ConfigInterface;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.sitebot.IRCPluginInterface;
@@ -43,25 +43,34 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author Teflon
- * @version $Id: Kick.java 886 2005-01-04 21:57:17Z teflon $
+ * @version $Id: Kick.java,v 1.2 2004/08/03 20:13:55 zubov Exp $
  */
 public class Kick extends GenericAutoService implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Kick.class);
     private SiteBot _listener;
-    private String _trigger;
 
     public Kick(SiteBot listener) {
         super(listener.getIRCConnection());
         _listener = listener;
-        _trigger = _listener.getCommandPrefix();
     }
 
     public String getCommands() {
-        return _trigger + "kick";
+        return _listener.getCommandPrefix() + "kick";
     }
 
-    public String getCommandsHelp() {
-    	return _trigger + "kick : Kicks idle users from the ftp server.";
+    public String getCommandsHelp(User user) {
+        String help = "";
+        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "kick", user))
+            help += _listener.getCommandPrefix() + "kick : Kick idle users off the server.\n";
+        return help;
+    }
+
+    private ConfigInterface getConfig() {
+        return _listener.getGlobalContext().getConfig();
+    }
+
+    private ConnectionManager getConnectionManager() {
+        return _listener.getGlobalContext().getConnectionManager();
     }
 
     protected void updateCommand(InCommand inCommand) {
@@ -71,61 +80,96 @@ public class Kick extends GenericAutoService implements IRCPluginInterface {
 
         MessageCommand msgc = (MessageCommand) inCommand;
 
-        if (!msgc.getMessage().startsWith(_trigger + "kick")) {
+        if (!msgc.getMessage().startsWith(_listener.getCommandPrefix() + "kick")) {
             return;
         }
 
         if (msgc.isPrivateToUs(_listener.getIRCConnection().getClientState())) {
             return;
         }
+        ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
+		env.add("ircnick",msgc.getSource().getNick());	
+		try {
+            if (!_listener.getIRCConfig().checkIrcPermission(
+                    _listener.getCommandPrefix() + "kick",msgc.getSource())) {
+            	_listener.sayChannel(msgc.getDest(), 
+            			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
+            	return;				
+            }
+        } catch (NoSuchUserException e) {
+			_listener.sayChannel(msgc.getDest(), 
+					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+			return;
+        }
 
+        String cmd = msgc.getMessage();
         String cmduser = msgc.getSource().getNick();
         String cmdchan = msgc.getDest();
 
         try {
             ReplacerFormat kickirc = ReplacerUtils.finalFormat(Kick.class,
-                    "kick.irc");
+                    "kick.ircmsg");
             ReplacerFormat kickftp = ReplacerUtils.finalFormat(Kick.class,
-                    "kick.ftp");
+                    "kick.ftpmsg");
+            ReplacerFormat userformat = ReplacerUtils.finalFormat(Kick.class,
+                    "kick.userformat");
+            //ResourceBundle bundle = ResourceBundle.getBundle(TDPKick.class.getName());
+            //String userformat = bundle.getString("kick.userformat");
+            
+			long idlelimit = 0;
+			try {
+				idlelimit = Long.parseLong(ReplacerUtils.jprintf("kick.idlelimit", env, Kick.class));
+			} catch (NumberFormatException e1) {
+				logger.warn("kick.idlelimit in Kick.properties is not set to a valid integer value.");
+				return;
+			}
+			env.add("idlelimit",Long.toString(idlelimit));
 
-            ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-            ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(getGlobalContext().getConnectionManager()
+            ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(getConnectionManager()
                                                 .getConnections());
+            int count = 0;
+            String msg = "";
+            boolean found = false;
+            for (Iterator iter = conns.iterator(); iter.hasNext();) {
+                BaseFtpConnection conn = (BaseFtpConnection) iter.next();
+                User cuser;
 
-            for (BaseFtpConnection conn : conns) {
-                User user;
                 try {
-                    user = conn.getUser();
+					cuser = conn.getUser();
                 } catch (NoSuchUserException e) {
                     continue;
                 }
 
-                if (getGlobalContext().getConfig().checkPathPermission("hideinwho", user, conn.getCurrentDirectory())) {
-                    continue;
-                }
-
-                env.add("idletime",
-                    ((System.currentTimeMillis() - conn.getLastActive()) / 1000) +
-                    "s");
-                env.add("idleuser", user.getName());
+				long idletime = (System.currentTimeMillis() - conn.getLastActive()) / 1000;
+                env.add("idletime", idletime + "s");
+                env.add("idleuser", cuser.getName());
                 env.add("ircuser", cmduser);
                 env.add("ircchan", cmdchan);
 
-                if (!conn.getDataConnectionHandler().isTransfering()) {
+                if (!conn.getDataConnectionHandler().isTransfering()
+                	&& idletime > idlelimit) {
                     conn.stop(SimplePrintf.jprintf(kickftp, env));
-                    _listener.sayChannel(msgc.getDest(),
-                        SimplePrintf.jprintf(kickirc, env));
+                    msg += SimplePrintf.jprintf(userformat, env) + " ";
+                    count++;
+                    found = true;
                 }
+                if ((count >= 10 || !iter.hasNext()) && !msg.trim().equals("")) {
+                    env.add("users", msg.trim());
+                    _listener.sayChannel(msgc.getDest(),SimplePrintf.jprintf(kickirc, env));
+                    count = 0;
+                    msg = "";
+                }
+            }
+            if (!found) {
+				_listener.sayChannel(msgc.getDest(),
+					ReplacerUtils.jprintf("kick.none", env, Kick.class));
             }
         } catch (FormatterException e) {
             logger.warn("", e);
         }
     }
 
-	private GlobalContext getGlobalContext() {
-		return _listener.getGlobalContext();
-	}
-
-	protected void updateState(State state) {
+    protected void updateState(State state) {
     }
 }

@@ -78,8 +78,8 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
         return (long) ((size * ratio) + (size * (multiplier - 1)));
     }
 
-    private static void nukeRemoveCredits(LinkedRemoteFileInterface nukeDir,
-        Hashtable nukees) {
+    public static void nukeRemoveCredits(LinkedRemoteFileInterface nukeDir,
+        Hashtable<String,Long> nukees) {
         for (Iterator iter = nukeDir.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
 
@@ -184,13 +184,13 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
         }
 
         //get nukees with string as key
-        Hashtable nukees = new Hashtable();
+        Hashtable<String,Long> nukees = new Hashtable<String,Long>();
         nukeRemoveCredits(nukeDir, nukees);
 
         Reply response = new Reply(200, "NUKE suceeded");
 
         //// convert key from String to User ////
-        HashMap nukees2 = new HashMap(nukees.size());
+        HashMap<User,Long> nukees2 = new HashMap<User,Long>(nukees.size());
 
         for (Iterator iter = nukees.keySet().iterator(); iter.hasNext();) {
             String username = (String) iter.next();
@@ -491,7 +491,7 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
         return null;
     }
 
-    private NukeLog getNukeLog() {
+    public NukeLog getNukeLog() {
         return _nukelog;
     }
 
@@ -523,7 +523,7 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
                 long nukedAmount = Long.parseLong(nukeElement.getChildText(
                             "nukedAmount"));
 
-                Map nukees = new Hashtable();
+                Map<String,Long> nukees = new Hashtable<String,Long>();
                 List nukeesElement = nukeElement.getChild("nukees").getChildren("nukee");
 
                 for (Iterator iterator = nukeesElement.iterator();

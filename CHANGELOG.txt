@@ -1,3 +1,12 @@
+2005/02/12 Jamal James <teflon114@gmail.com>
+* Fixed SiteBot bug where it would not respond to any commands after site reload
+* Created permissions for irc commands to irc.conf
+  This code created a bug which I can't seem to figure out. /me calls upon the mighty mog & zubov
+  After doing site reload, IrcConfig.reload() locks irc.conf from being edited by another application
+   even though I close the file. I'm stumped. 
+* Changed every IRC plugin to utilize the new permissions code
+* !help command will now only show commands that the user has permission to use
+
 2005/02/10 Matt Zimmerman <zubov@users.sourceforge.net>
 * site user should display all user information
 * converting users from 1.1.4 should convert all information

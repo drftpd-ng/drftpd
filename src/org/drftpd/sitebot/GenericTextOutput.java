@@ -24,6 +24,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 import net.sf.drftpd.master.command.plugins.Textoutput;
 
 import org.drftpd.plugins.SiteBot;
+import org.drftpd.usermanager.User;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -59,7 +60,7 @@ public class GenericTextOutput extends GenericCommandAutoService
         return toReturn.trim();
     }
 
-    public String getCommandsHelp() {
+    public String getCommandsHelp(User user) {
         String toReturn = "";
         String trigger;
         for (Iterator iter = _commandsHelp.keySet().iterator(); iter.hasNext();) {

@@ -18,7 +18,6 @@ import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sitebot.IRCPluginInterface;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import f00f.net.irc.martyr.GenericCommandAutoService;
@@ -40,8 +39,12 @@ public class Approve extends GenericCommandAutoService implements IRCPluginInter
 		return _trigger + "approve";
 	}
 
-	public String getCommandsHelp() {
-		return _trigger + "approve <dir>: Creates a subfolder in the given dir named Approved.by.<User>";
+	public String getCommandsHelp(User user) {
+        String help = "";
+        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "approve", user))
+            help += _listener.getCommandPrefix() 
+            		+ "approve <dir>: Creates a subfolder in the given dir named Approved.by.<user>\n";
+		return help;
 	}
 
 	private GlobalContext getGlobalContext() {
@@ -64,6 +67,7 @@ public class Approve extends GenericCommandAutoService implements IRCPluginInter
 		}
 
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
 		env.add("ircnick",msgc.getSource().getNick());
 
 		String msg = msgc.getMessage().trim();
@@ -71,9 +75,22 @@ public class Approve extends GenericCommandAutoService implements IRCPluginInter
 			_listener.sayChannel(msgc.getDest(), 
 				ReplacerUtils.jprintf("approve.usage", env, Approve.class));			
 		} else if (msg.startsWith(_trigger + "approve ")) {
+    		try {
+                if (!_listener.getIRCConfig().checkIrcPermission(
+                        _listener.getCommandPrefix() + "slaves",msgc.getSource())) {
+                	_listener.sayChannel(msgc.getDest(), 
+                			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
+                	return;				
+                }
+            } catch (NoSuchUserException e) {
+    			_listener.sayChannel(msgc.getDest(), 
+    					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+    			return;
+            }
+
 			String dirName;
 			try {
-				dirName = msgc.getMessage().substring("!approve ".length());
+				dirName = msgc.getMessage().substring((_trigger + "approve ").length());
 			} catch (ArrayIndexOutOfBoundsException e) {
 				logger.warn("", e);
 				_listener.sayChannel(msgc.getDest(), 
@@ -87,33 +104,15 @@ public class Approve extends GenericCommandAutoService implements IRCPluginInter
 			}
 			env.add("sdirname",dirName);
 			
-         	String ident = msgc.getSource().getNick() + "!" 
-         					+ msgc.getSource().getUser() + "@" 
-         					+ msgc.getSource().getHost();
-			//Get the ftp user account based on irc ident
 			User user;
             try {
-                user = getGlobalContext().getUserManager().getUserByIdent(ident);
-            } catch (NoSuchUserException e3) {
-				logger.warn("Could not identify " + ident);
-				_listener.sayChannel(msgc.getDest(), 
-						ReplacerUtils.jprintf("approve.noident", env, Approve.class));				
-				return;
-            } catch (UserFileException e3) {
-				logger.warn("Could not identify " + ident);
-				_listener.sayChannel(msgc.getDest(), 
-						ReplacerUtils.jprintf("approve.noident", env, Approve.class));				
-				return;
+                user = _listener.getIRCConfig().lookupUser(msgc.getSource());
+            } catch (NoSuchUserException e2) {
+    			_listener.sayChannel(msgc.getDest(), 
+    					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+    			return;
             }
-            			
-			env.add("ftpuser",user.getName());			
-			if (!isAllowed(user)) {
-				_listener.sayChannel(msgc.getDest(),
-					ReplacerUtils.jprintf("approve.denymsg", env, Approve.class));
-				return;				
-			}
-
-			LinkedRemoteFileInterface dir = findDir(getGlobalContext(),
+            LinkedRemoteFileInterface dir = findDir(getGlobalContext(),
 													 getGlobalContext().getRoot(),
 													 user,
 													 dirName);
@@ -167,40 +166,5 @@ public class Approve extends GenericCommandAutoService implements IRCPluginInter
 			}
 		}
 		return null;
-	}
-
-	private boolean isAllowed(User user) {
-		//check if user is in any allowed groups
-		boolean allowed = false;
-		String allowedgroups = ReplacerUtils.jprintf("approve.allow", null, Approve.class).trim();
-		if (!allowedgroups.equals("*")) {
-			String aGroups[] = allowedgroups.split(" ");
-			for (int i=0; i < aGroups.length; i++) {
-				if (user.isMemberOf(aGroups[i])) {
-					allowed = true;
-					logger.info(user.getName() + " is allowed to use !approve as he is in "
-						+ "group " + aGroups[i]);
-				}
-			}
-		} else {
-			allowed = true;
-		}
-					
-		//check if user is in any denied groups	
-		String deniedgroups = ReplacerUtils.jprintf("approve.deny", null, Approve.class).trim();
-		if (!deniedgroups.equals("*")){
-			String dGroups[] = deniedgroups.split(" ");
-			for (int i=0; i < dGroups.length; i++) {
-				if (user.isMemberOf(dGroups[i])) {
-					allowed = false;
-					logger.info(user.getName() + "is not allowed to use !approve because "
-						+ "he is in the " + dGroups[i] + " group");
-				}
-			}
-		} else {
-			allowed = false;
-		}
-		
-		return allowed;
 	}
 }

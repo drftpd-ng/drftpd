@@ -52,8 +52,12 @@ public class Ident extends GenericCommandAutoService implements
         return _trigger + "ident(msg)";
     }
 
-    public String getCommandsHelp() {
-    	return _trigger + "ident <user> <pass> : Stores your IRC ident in your userfile giving you access to restricted commands.";
+    public String getCommandsHelp(User user) {
+        String help = "";
+        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "ident", user))
+            help += _listener.getCommandPrefix() 
+            		+ "ident <user> <pass> : Stores your IRC ident in your userfile giving you access to restricted commands.\n";
+    	return help;
     }
     
 	protected void updateCommand(InCommand command) {
@@ -90,7 +94,7 @@ public class Ident extends GenericCommandAutoService implements
             	try {
 					user.commit();
 		           	logger.info("Set IRC ident to '"+ident+"' for "+user.getName());
-	            	_listener.sayChannel(msgc.getSource().getNick(),"Set IRC ident to '"+ident+"' for "+user.getName());
+	            	_listener.sayPrivMessage(msgc.getSource().getNick(),"Set IRC ident to '"+ident+"' for "+user.getName());
 				} catch (UserFileException e1) {
 					logger.warn("Error saving userfile for "+user.getName(),e1);
 					_listener.sayPrivMessage(msgc.getSource().getNick(),"Error saving userfile for "+user.getName());

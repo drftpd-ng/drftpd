@@ -21,7 +21,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
@@ -54,7 +56,7 @@ import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
-import net.sf.drftpd.master.config.ConfigInterface;
+import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.Blowfish;
 import net.sf.drftpd.util.ReplacerUtils;
 
@@ -70,8 +72,8 @@ import org.drftpd.commands.Nuke;
 import org.drftpd.commands.TransferStatistics;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.id3.ID3Tag;
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
+import org.drftpd.permissions.Permission;
 import org.drftpd.remotefile.FileUtils;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -88,7 +90,6 @@ import org.tanesha.replacer.SimplePrintf;
 
 import f00f.net.irc.martyr.CommandRegister;
 import f00f.net.irc.martyr.Debug;
-import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.IRCConnection;
 import f00f.net.irc.martyr.clientstate.Channel;
 import f00f.net.irc.martyr.commands.InviteCommand;
@@ -100,6 +101,7 @@ import f00f.net.irc.martyr.services.AutoJoin;
 import f00f.net.irc.martyr.services.AutoReconnect;
 import f00f.net.irc.martyr.services.AutoRegister;
 import f00f.net.irc.martyr.services.AutoResponder;
+import f00f.net.irc.martyr.util.FullNick;
 
 
 /**
@@ -131,6 +133,7 @@ public class SiteBot extends FtpListener implements Observer {
     private String _msgprefix;
     protected IRCConnection _conn;
     private boolean _enableAnnounce;
+    private IrcConfig _ircCfg;
 
     //private String _key;
     protected int _port;
@@ -841,6 +844,7 @@ public class SiteBot extends FtpListener implements Observer {
         _chanprefix = ircCfg.getProperty("irc.chanprefix") != null ? ircCfg.getProperty("irc.chanprefix") : "!";
         _msgprefix = ircCfg.getProperty("irc.msgprefix") != null ? ircCfg.getProperty("irc.msgprefix") : "!";
 
+        _commandObservers = new ArrayList<Observer>();
         for (int i = 1;; i++) {
             String classname = ircCfg.getProperty("irc.plugins." + i);
 
@@ -863,9 +867,9 @@ public class SiteBot extends FtpListener implements Observer {
                     _commands = _commands + plugin.getCommands() + " ";
                 }
                 
-                if (plugin.getCommandsHelp() != null) {
-                	_commandsHelp = _commandsHelp + plugin.getCommandsHelp() + "\n";
-                }
+                //if (plugin.getCommandsHelp() != null) {
+                //	_commandsHelp = _commandsHelp + plugin.getCommandsHelp() + "\n";
+                //}
                 
                 //add plugin to our list and remove from the IRCCOnnection so we can 
                 //decrypt any messages if needed
@@ -1016,6 +1020,11 @@ public class SiteBot extends FtpListener implements Observer {
         return _conn;
     }
 
+    public IrcConfig getIRCConfig() {
+        logger.info("fetching ircCfg ...");
+        return _ircCfg;
+    }
+
     public Ret getPropertyFileSuffix(String prefix,
         LinkedRemoteFileInterface dir) {
         SectionInterface sectionObj = getGlobalContext()
@@ -1053,6 +1062,10 @@ public class SiteBot extends FtpListener implements Observer {
     }
 
     protected void reload() throws FileNotFoundException, IOException {
+        if (_ircCfg == null) 
+            _ircCfg = new IrcConfig();
+        else
+            _ircCfg.reload();
         Properties ircCfg = new Properties();
         ircCfg.load(new FileInputStream("conf/irc.conf"));
         reload(ircCfg);
@@ -1090,7 +1103,6 @@ public class SiteBot extends FtpListener implements Observer {
 
         _sections = sections;
 
-        _commandObservers = new ArrayList<Observer>();
 		_commandRegister = new CommandRegister();
 
         if ((_conn == null) ||
@@ -1227,7 +1239,7 @@ public class SiteBot extends FtpListener implements Observer {
         MessageCommand msgc = (MessageCommand) updated;
 
         //recreate the MessageCommand with the encrypted text
-        if (_fish != null) {
+        if (_fish != null && !msgc.isPrivateToUs(getIRCConnection().getClientState())) {
             try {
                 MessageCommand decmsgc = new MessageCommand(msgc.getSource(), msgc.getDest(),
                         						  	_fish.Decrypt(msgc.getMessage()));
@@ -1250,14 +1262,120 @@ public class SiteBot extends FtpListener implements Observer {
             return;
         }
 
-        String msg = msgc.getMessage();
+		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		env.add("botnick",getIRCConnection().getClientState().getNick().getNick());
+		env.add("ircnick",msgc.getSource().getNick());
+        //Get the ftp user account based on irc ident
+		User ftpuser;
+		try {
+            ftpuser = getIRCConfig().lookupUser(msgc.getSource());
+        } catch (NoSuchUserException e) {
+			sayChannel(msgc.getDest(), 
+					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+			return;
+        }
+		if (!getIRCConfig().checkIrcPermission(getCommandPrefix() + "help",ftpuser)) {
+			sayChannel(msgc.getDest(), 
+					ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
+			return;				
+		}
 
+		String msg = msgc.getMessage();
         if (msg.equals(_chanprefix +"help")) {
-            //sayChannel(msgc.getDest(), "Available commands: " + _commands);
-            sayPrivMessage(msgc.getSource().getNick(), "Available commands: \n" + _commandsHelp);
+            sayPrivMessage(msgc.getSource().getNick(), "Available commands: \n");
+            for (Observer obs : _commandObservers) {
+                IRCPluginInterface plugin = (IRCPluginInterface) obs;
+                String help = plugin.getCommandsHelp(ftpuser);
+                if (!"".equals(help))
+                sayPrivMessage(msgc.getSource().getNick(), help);
+            }
+            //sayPrivMessage(msgc.getSource().getNick(), "Available commands: \n" + _commandsHelp);
         }
     }
 
+    public class IrcConfig {
+        private String cfgFile = "conf/irc.conf";
+        private Hashtable<String, Permission> _permissions;
+        
+        
+        public IrcConfig() throws IOException  {
+            reload();
+        }
+        
+        public void reload() {
+            _permissions = new Hashtable<String,Permission>();
+            try {
+                FileReader fr = new FileReader(cfgFile);
+                LineNumberReader in = new LineNumberReader(fr);
+                try {
+                    String line;
+                    while ((line = in.readLine()) != null) {
+                        StringTokenizer st = new StringTokenizer(line);
+                        if (!st.hasMoreTokens()) {
+                            continue;
+                        }
+                        if (!st.nextToken().equalsIgnoreCase("perm")) {
+                            continue;
+                        }
+                        if (st.hasMoreTokens()) {
+                            String ircCmd = st.nextToken();
+                            _permissions.put(ircCmd,new Permission(FtpConfig.makeUsers(st)));                  
+                        }
+                        logger.info(in.getLineNumber() + ". " + line);
+                    }
+                } catch (Exception e) {
+                    logger.warn("Exception when reading " + cfgFile + " line " + in.getLineNumber(), e);
+                } finally {
+                    logger.warn("Closing file ...");
+                    in.close();
+                    fr.close();
+                }
+            } catch (FileNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        
+        public boolean checkIrcPermission(String command, FullNick fn)
+        	throws NoSuchUserException {
+            return checkIrcPermission(command, fn, true);
+        }
+
+        public boolean checkIrcPermission(String command, FullNick fn, boolean defaults)
+        	throws NoSuchUserException {
+            Permission perm = _permissions.get(command);
+            User user = lookupUser(fn);
+            return (perm == null) ? defaults : perm.check(user);            
+        }
+
+        public boolean checkIrcPermission(String command, User user) {
+            return checkIrcPermission(command, user, true);
+        }
+
+        public boolean checkIrcPermission(String command, User user, boolean defaults) {
+            Permission perm = _permissions.get(command);
+            return (perm == null) ? defaults : perm.check(user);            
+        }
+
+        public User lookupUser(FullNick fn) throws NoSuchUserException {
+         	String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
+         	User ftpuser;
+         	try {
+         	    ftpuser = getGlobalContext().getUserManager().getUserByIdent(ident);
+         	    return ftpuser;
+         	} catch (NoSuchUserException e3) {
+         	    logger.warn("Could not identify " + ident);
+         	} catch (UserFileException e3) {
+         	    logger.warn("Could not identify " + ident);
+         	}
+    	    throw new NoSuchUserException("No user found");
+    	}
+    	
+    }
+    
     public static class Ret {
         private String _format;
         private SectionInterface _section;

@@ -17,12 +17,13 @@
  */
 package org.drftpd.sitebot;
 
-import f00f.net.irc.martyr.GenericCommandAutoService;
-import f00f.net.irc.martyr.InCommand;
-import f00f.net.irc.martyr.commands.MessageCommand;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.UserComparator;
@@ -31,24 +32,19 @@ import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.TransferStatistics;
-import org.drftpd.commands.UserManagement;
-
 import org.drftpd.permissions.Permission;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.plugins.Trial;
-
+import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.StringTokenizer;
+import f00f.net.irc.martyr.GenericCommandAutoService;
+import f00f.net.irc.martyr.InCommand;
+import f00f.net.irc.martyr.commands.MessageCommand;
 
 
 /**
@@ -69,7 +65,7 @@ public class Stats extends GenericCommandAutoService
         return _listener.getCommandPrefix() + "{al,wk,month,day}{up,dn}";
     }
 
-    public String getCommandsHelp() {
+    public String getCommandsHelp(User user) {
         return _listener.getCommandPrefix() + "{al,wk,month,day}{up,dn} [num] : Show top [num] users for the given period and direction. Default num = 10.";
     }
 
@@ -110,7 +106,24 @@ public class Stats extends GenericCommandAutoService
             return; // msg is not for us
         }
 
-        String destination = null;
+        ReplacerEnvironment env1 = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		env1.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
+		env1.add("ircnick",msgc.getSource().getNick());	
+		try {
+            if (!_listener.getIRCConfig().checkIrcPermission(
+                    _listener.getCommandPrefix() + type.toLowerCase(),msgc.getSource())) {
+            	_listener.sayChannel(msgc.getDest(), 
+            			ReplacerUtils.jprintf("ident.denymsg", env1, SiteBot.class));
+            	return;				
+            }
+        } catch (NoSuchUserException e) {
+			_listener.sayChannel(msgc.getDest(), 
+					ReplacerUtils.jprintf("ident.noident", env1, SiteBot.class));
+			return;
+        }
+
+
+		String destination = null;
 
         if (msgc.isPrivateToUs(getConnection().getClientState())) {
             //destination = msgc.getSource().getNick();

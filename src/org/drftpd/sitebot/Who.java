@@ -17,36 +17,28 @@
  */
 package org.drftpd.sitebot;
 
-import f00f.net.irc.martyr.GenericAutoService;
-import f00f.net.irc.martyr.InCommand;
-import f00f.net.irc.martyr.State;
-import f00f.net.irc.martyr.commands.MessageCommand;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.config.ConfigInterface;
-import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
-
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.master.ConnectionManager;
-import org.drftpd.master.RemoteTransfer;
 import org.drftpd.plugins.SiteBot;
-
-
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
-
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import f00f.net.irc.martyr.GenericAutoService;
+import f00f.net.irc.martyr.InCommand;
+import f00f.net.irc.martyr.State;
+import f00f.net.irc.martyr.commands.MessageCommand;
 
 
 /**
@@ -68,8 +60,11 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
         return _trigger + "who";
     }
 
-    public String getCommandsHelp() {
-        return _trigger + "who : Show who is currently connected to the ftp server.";
+    public String getCommandsHelp(User user) {
+        String help = "";
+        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "who", user))
+            help += _listener.getCommandPrefix() + "who : Show who is currently connected to the ftp server.\n";
+        return help;
     }
 
     private GlobalContext getGlobalContext() {
@@ -95,13 +90,29 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
 
         if (cmd.equals(_trigger + "who")) {
             up = dn = idle = true;
-        } else if (cmd.equals("!leechers") || cmd.equals("!uploaders") ||
-                cmd.equals("!idlers")) {
-            dn = cmd.equals("!leechers");
-            up = cmd.equals("!uploaders");
-            idle = cmd.equals("!idlers");
+        } else if (cmd.equals(_trigger + "leechers") || cmd.equals(_trigger + "uploaders") ||
+                cmd.equals(_trigger + "idlers")) {
+            dn = cmd.equals(_trigger + "leechers");
+            up = cmd.equals(_trigger + "uploaders");
+            idle = cmd.equals(_trigger + "idlers");
         } else {
             return;
+        }
+
+        ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
+		env.add("ircnick",msgc.getSource().getNick());	
+		try {
+            if (!_listener.getIRCConfig().checkIrcPermission(
+                    cmd,msgc.getSource())) {
+            	_listener.sayChannel(msgc.getDest(), 
+            			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
+            	return;				
+            }
+        } catch (NoSuchUserException e) {
+			_listener.sayChannel(msgc.getDest(), 
+					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+			return;
         }
 
         try {
@@ -112,8 +123,7 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
             ReplacerFormat formatidle = ReplacerUtils.finalFormat(Who.class,
                     "who.idle");
 
-            ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-            ArrayList conns = new ArrayList(getGlobalContext().getConnectionManager()
+            ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(getGlobalContext().getConnectionManager()
                                                 .getConnections());
             int i = 0;
 

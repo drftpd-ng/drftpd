@@ -58,11 +58,13 @@ public class Bandwidth extends GenericCommandAutoService
         getCommandPrefix() + "speed";
     }
     
-    public String getCommandsHelp() {
-		return getCommandPrefix()
-				+ "bw : Show total current site bandwidth usage\n"
-				+ getCommandPrefix()
-				+ "speed <user> : Show current transfer speed for <user>";
+    public String getCommandsHelp(User user) {
+        String help = "";
+        if (_listener.getIRCConfig().checkIrcPermission(getCommandPrefix() + "bw", user))
+            help += getCommandPrefix() + "bw : Show total current site bandwidth usage\n";
+        if (_listener.getIRCConfig().checkIrcPermission(getCommandPrefix() + "speed", user))
+            help += getCommandPrefix() + "speed <user> : Show current transfer speed for <user>\n";
+		return help;
 	}
 
     private String getCommandPrefix() {
@@ -83,18 +85,48 @@ public class Bandwidth extends GenericCommandAutoService
         String msg = msgc.getMessage();
 
         if (msg.startsWith(getCommandPrefix() + "bw")) {
-            SlaveStatus status = getGlobalContext()
+            ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+    		env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
+    		env.add("ircnick",msgc.getSource().getNick());	
+    		try {
+                if (!_listener.getIRCConfig().checkIrcPermission(
+                        _listener.getCommandPrefix() + "bw",msgc.getSource())) {
+                	_listener.sayChannel(msgc.getDest(), 
+                			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
+                	return;				
+                }
+            } catch (NoSuchUserException e) {
+    			_listener.sayChannel(msgc.getDest(), 
+    					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+    			return;
+            }
+
+    		SlaveStatus status = getGlobalContext()
                                      .getSlaveManager().getAllStatus();
 
-            ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 
             SiteBot.fillEnvSlaveStatus(env, status, _listener.getSlaveManager());
 
             _listener.sayChannel(msgc.getDest(),
                 ReplacerUtils.jprintf("bw", env, Bandwidth.class));
         } else if (msg.startsWith(getCommandPrefix() + "speed ")) {
-            String username;
+            ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+    		env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
+    		env.add("ircnick",msgc.getSource().getNick());	
+    		try {
+                if (!_listener.getIRCConfig().checkIrcPermission(
+                        _listener.getCommandPrefix() + "speed",msgc.getSource())) {
+                	_listener.sayChannel(msgc.getDest(), 
+                			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
+                	return;				
+                }
+            } catch (NoSuchUserException e) {
+    			_listener.sayChannel(msgc.getDest(), 
+    					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+    			return;
+            }
 
+    		String username;
             try {
                 username = msgc.getMessage().substring("!speed ".length());
             } catch (ArrayIndexOutOfBoundsException e) {
@@ -108,7 +140,6 @@ public class Bandwidth extends GenericCommandAutoService
             }
             User user = null;
 
-            ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
             env.add("user", username);
             try {
 				user = getGlobalContext()

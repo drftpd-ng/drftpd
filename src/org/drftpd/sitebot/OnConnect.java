@@ -18,6 +18,7 @@
 package org.drftpd.sitebot;
 
 import org.drftpd.plugins.SiteBot;
+import org.drftpd.usermanager.User;
 
 import f00f.net.irc.martyr.GenericAutoService;
 import f00f.net.irc.martyr.IRCConnection;
@@ -100,8 +101,8 @@ public class OnConnect extends GenericAutoService implements IRCPluginInterface 
         return null;
     }
 
-    public String getCommandsHelp() {
-    	return null;
+    public String getCommandsHelp(User user) {
+    	return "";
     }
     
 }

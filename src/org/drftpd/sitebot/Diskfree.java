@@ -22,6 +22,8 @@ import net.sf.drftpd.util.ReplacerUtils;
 import org.drftpd.GlobalContext;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.slave.SlaveStatus;
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import f00f.net.irc.martyr.GenericCommandAutoService;
@@ -52,9 +54,13 @@ public class Diskfree extends GenericCommandAutoService
         return _trigger + "df";
     }
 
-    public String getCommandsHelp() {
-    	return _trigger + "df : Show total disk usage for all slaves.";
+    public String getCommandsHelp(User user) {
+        String help = "";
+        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "df", user))
+            help += _listener.getCommandPrefix() + "df : Show total disk usage for all slaves.\n";
+    	return help;
     }
+    
     protected void updateCommand(InCommand command) {
         if (!(command instanceof MessageCommand)) {
             return;
@@ -68,9 +74,24 @@ public class Diskfree extends GenericCommandAutoService
         }
 
         if (msg.equals(_trigger + "df")) {
-            SlaveStatus status = getGlobalContext().getSlaveManager()
-					.getAllStatus();
             ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+    		env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
+    		env.add("ircnick",msgc.getSource().getNick());	
+    		try {
+                if (!_listener.getIRCConfig().checkIrcPermission(
+                        _listener.getCommandPrefix() + "df",msgc.getSource())) {
+                	_listener.sayChannel(msgc.getDest(), 
+                			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
+                	return;				
+                }
+            } catch (NoSuchUserException e) {
+    			_listener.sayChannel(msgc.getDest(), 
+    					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+    			return;
+            }
+
+    		SlaveStatus status = getGlobalContext().getSlaveManager()
+					.getAllStatus();
 
             SiteBot.fillEnvSlaveStatus(env, status, _listener.getSlaveManager());
             _listener.sayChannel(msgc.getDest(),

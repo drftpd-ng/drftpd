@@ -17,6 +17,8 @@
  */
 package org.drftpd.sitebot;
 
+import org.drftpd.usermanager.User;
+
 
 /**
  * @author zubov
@@ -25,5 +27,5 @@ package org.drftpd.sitebot;
 public interface IRCPluginInterface {
     public String getCommands();
     
-    public String getCommandsHelp();
+    public String getCommandsHelp(User user);
 }

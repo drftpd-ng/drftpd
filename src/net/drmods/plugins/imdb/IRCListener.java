@@ -18,6 +18,8 @@
 package net.drmods.plugins.imdb;
 
 import org.drftpd.sitebot.IRCPluginInterface;
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
 import org.drftpd.master.ConnectionManager;
 import net.sf.drftpd.util.ReplacerUtils;
 
@@ -45,11 +47,14 @@ public class IRCListener extends GenericAutoService implements IRCPluginInterfac
     }
 
     public String getCommands() {
-        return "!imdb";
+        return _listener.getCommandPrefix() + "imdb";
     }
 
-    public String getCommandsHelp() {
-        return "!imdb <title> - look up the movie <title> in the imdb database.";
+    public String getCommandsHelp(User user) {
+        String help = "";
+        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "imdb", user))
+                help += _listener.getCommandPrefix() + "imdb <title> - look up the movie <title> in the imdb database.";
+		return help;
     }
 
     protected void updateCommand(InCommand inCommand) {
@@ -59,13 +64,29 @@ public class IRCListener extends GenericAutoService implements IRCPluginInterfac
         if(msgc.isPrivateToUs(_listener.getIRCConnection().getClientState())) 
             return; 
         String msg = msgc.getMessage(); 
-        if (msg.startsWith("!imdb")) { 
+        if (msg.startsWith(_listener.getCommandPrefix() + "imdb")) { 
+            ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+    		env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
+    		env.add("ircnick",msgc.getSource().getNick());	
+    		try {
+                if (!_listener.getIRCConfig().checkIrcPermission(
+                        _listener.getCommandPrefix() + "imdb",msgc.getSource())) {
+                	_listener.sayChannel(msgc.getDest(), 
+                			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
+                	return;				
+                }
+            } catch (NoSuchUserException e) {
+    			_listener.sayChannel(msgc.getDest(), 
+    					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+    			return;
+            }
+
            	try { 
-           		String searchStr = msgc.getMessage().substring("!imdb ".length());
+           		String searchStr = msgc.getMessage().substring(
+           		        			(_listener.getCommandPrefix() + "imdb ").length());
            		
                 IMDBParser imdb = new IMDBParser(searchStr);
                 if (!imdb.foundFilm()) {
-                    ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
                     env.add("searchstr", searchStr);
                     _listener.sayChannel(msgc.getDest(),
                             ReplacerUtils.jprintf("imdb.notfound", env, IMDBParser.class));
