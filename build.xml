@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- $Id: build.xml,v 1.43 2004/08/03 20:13:52 zubov Exp $ -->
+<!-- $Id: build.xml,v 1.44 2004/11/03 13:36:57 zubov Exp $ -->
 <project name="drftpd" basedir="." default="compile">
 
   <target name="all" depends="compile"/>
@@ -55,10 +55,6 @@
       <exclude name="org/drftpd/friendly/**"/>
       <exclude name="net/sf/drftpd/master/usermanager/jsx/**"/>
     </javac>
-    <rmic base="${outputDir}" debug="true" stubversion="1.2">
-	  <include name="**/*Impl.class"/>
-	  <classpath refid="classpath"/>
-    </rmic>
     <copy todir="${outputDir}">
       <fileset dir="${sourceDir}">
         <include name="**/*.properties"/>
@@ -89,7 +85,7 @@
   <target name="slavejar">
     <jar destfile="slave.jar" basedir="classes">
       <manifest>
-        <attribute name="Main-Class" value="net.sf.drftpd.slave.SlaveImpl" />
+        <attribute name="Main-Class" value="org.drftpd.slave.Slave" />
       </manifest>
       <include name="se/mog/io/**/*.class" />
       <include name="net/sf/drftpd/*" />
@@ -97,7 +93,6 @@
       <include name="net/sf/drftpd/remotefile/*" />
       <include name="net/sf/drftpd/master/RemoteSlave.class" />
       <include name="net/sf/drftpd/master/SlaveManager.class" />
-      <include name="net/sf/drftpd/master/SlaveManagerImpl_Stub.class" />
       <include name="net/sf/drftpd/util/SSLGetContext.class" />
       <include name="net/sf/drftpd/util/PortRange.class" />
       <include name="net/sf/drftpd/util/AddAsciiOutputStream.class" />
@@ -112,6 +107,7 @@
       <include name="slave.conf.dist"/>
       <include name="slave.sh" />
       <include name="slave.bat" />
+      <include name="conf/wrapper-slave.conf.dist"/>
       <zipfileset dir="." includes="lib/libFileSystem.so" fullpath="libFileSystem.so" />
       <zipfileset dir="." includes="lib/FileSystem.dll" fullpath="FileSystem.dll" />
     </zip>
@@ -170,7 +166,7 @@
     </zip>
     <echo>
       Note that you need to update version number in
-      src/net/sf/drftpd/slave/SlaveImpl.java manually.
+      src/org/drftpd/slave/Slave.java manually.
     </echo>
   </target>
 
