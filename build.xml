@@ -30,6 +30,7 @@
     <path id="classpath">
 	  <fileset dir=".">
 	    <include name="lib/*.jar"/>
+	    <include name="classes"/>
 	  </fileset>
     </path>
 
