@@ -38,6 +38,7 @@ import org.drftpd.slave.Transfer;
 
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
 
 import org.tanesha.replacer.ReplacerEnvironment;
 
@@ -53,26 +54,30 @@ public class Bandwidth extends GenericCommandAutoService
     implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Bandwidth.class);
     private SiteBot _listener;
-    private String _trigger;
 
     public Bandwidth(SiteBot listener) {
         super(listener.getIRCConnection());
         _listener = listener;
-        _trigger = _listener.getCommandPrefix();
     }
 
     public String getCommands() {
-        return _trigger + "bw " + 
-        		_trigger + "speed";
+        return getCommandPrefix() + "bw " + 
+        getCommandPrefix() + "speed";
     }
     
     public String getCommandsHelp() {
-    	return _trigger + "bw : Show total current site bandwidth usage\n" +
-    			_trigger + "speed <user> : Show current transfer speed for <user>";
-    }
+		return getCommandPrefix()
+				+ "bw : Show total current site bandwidth usage\n"
+				+ getCommandPrefix()
+				+ "speed <user> : Show current transfer speed for <user>";
+	}
 
     private ConnectionManager getConnectionManager() {
         return _listener.getConnectionManager();
+    }
+    
+    private String getCommandPrefix() {
+    	return _listener.getCommandPrefix();
     }
 
     protected void updateCommand(InCommand command) {
@@ -88,7 +93,7 @@ public class Bandwidth extends GenericCommandAutoService
 
         String msg = msgc.getMessage();
 
-        if (msg.startsWith(_trigger + "bw")) {
+        if (msg.startsWith(getCommandPrefix() + "bw")) {
             SlaveStatus status = getConnectionManager().getGlobalContext()
                                      .getSlaveManager().getAllStatus();
 
@@ -98,7 +103,7 @@ public class Bandwidth extends GenericCommandAutoService
 
             _listener.sayChannel(msgc.getDest(),
                 ReplacerUtils.jprintf("bw", env, Bandwidth.class));
-        } else if (msg.startsWith(_trigger + "speed ")) {
+        } else if (msg.startsWith(getCommandPrefix() + "speed ")) {
             String username;
 
             try {
@@ -112,9 +117,22 @@ public class Bandwidth extends GenericCommandAutoService
 
                 return;
             }
+            User user = null;
 
             ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
             env.add("user", username);
+            try {
+				user = getConnectionManager().getGlobalContext()
+						.getUserManager().getUserByName(username);
+			} catch (NoSuchUserException e1) {
+				_listener.sayChannel(msgc.getDest(), ReplacerUtils.jprintf(
+						"speed.usernotfound", env, Bandwidth.class));
+				return;
+			} catch (UserFileException e1) {
+				_listener.sayChannel(msgc.getDest(), ReplacerUtils.jprintf(
+						"speed.usererror", env, Bandwidth.class));
+				return;
+			}
 
             String status = ReplacerUtils.jprintf("speed.pre", env,
                     Bandwidth.class);
@@ -137,7 +155,7 @@ public class Bandwidth extends GenericCommandAutoService
                         status = status + separator;
                     }
 
-                    if (connUser.getName().equals(username)) {
+                    if (connUser.equals(user)) {
                         env.add("idle",
                             Time.formatTime(System.currentTimeMillis() -
                                 conn.getLastActive()));
