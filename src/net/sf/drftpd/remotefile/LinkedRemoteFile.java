@@ -51,7 +51,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.150 2004/06/21 04:50:47 pyrrhic Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.151 2004/06/22 23:33:36 zubov Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -469,6 +469,9 @@ public class LinkedRemoteFile
 			try {
 				if (dirSize() == 0) { //remove empty dir
 					Object ret = getParentFile().getMap().remove(getName());
+					// size SHOULD be 0, but if it isn't, this will even out
+					// the unsynched dirsize
+					getParentFile().addSize(-length());
 					if (ret == null)
 						throw new NullPointerException();
 				}
@@ -1685,26 +1688,18 @@ public class LinkedRemoteFile
 		return ret.toString();
 	}
 
-	public void unmergeDir(RemoteSlave rslave) {
+	public synchronized void unmergeDir(RemoteSlave rslave) {
 		if (!isDirectory())
 			throw new IllegalStateException();
 
-		for (Iterator i = _files.values().iterator(); i.hasNext();) {
+		for (Iterator i = new ArrayList(_files.values()).iterator(); i.hasNext();) {
 			LinkedRemoteFileInterface file =
 				(LinkedRemoteFileInterface) i.next();
 			if (file.isDirectory()) {
 				file.unmergeDir(rslave);
 				//remove empty deleted directories
 				if (file.dirSize() == 0) {
-					i.remove();
-					// size SHOULD be 0, but if it isn't, this will even out
-					// the unsynched dirsize
-					if (file.length() != 0)
-						logger.warn(
-							"file.length() == "
-								+ file.length()
-								+ " for unmerged directory");
-					addSize(-file.length());
+					file.delete();
 				}
 			} else {
 				file.unmergeFile(rslave);
