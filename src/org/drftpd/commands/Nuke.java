@@ -267,7 +267,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
             long size = ((Long) nukees2.get(nukee)).longValue();
 
             long debt = calculateNukedAmount(size,
-                    nukee.getKeyedMap().getObjectFloat(UserManagment.RATIO), multiplier);
+                    nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO), multiplier);
 
             nukedAmount += debt;
             nukeDirSize += size;
@@ -405,7 +405,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
             }
 
             long nukedAmount = calculateNukedAmount(nukeeObj.getAmount(),
-                    nukee.getKeyedMap().getObjectFloat(UserManagment.RATIO),
+                    nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO),
                     nuke.getMultiplier());
 
             nukee.updateCredits(nukedAmount);
