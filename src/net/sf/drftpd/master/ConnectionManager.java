@@ -331,36 +331,45 @@ public class ConnectionManager {
 		return _commandManagerFactory;
 	}
 
-	public boolean canLogin(User user) {
-		
-		int maxUsers[] = getConfig().getMaxUsers();
-		int count = maxUsers[0];
-		if ( user.isExempt() )
-			count += maxUsers[1];
-		synchronized(_conns) {
-			if ( _conns.size() <= count )
-				return true;
-			return false;
-		}
-	}
-	// if -1 is returned, user can login
-	public int getLogins(User user) {
-		if ( user.getMaxLogins() == -1 ) return -1;
-		int count = 0;
-		synchronized (_conns) {
-			for ( int x = 0; x < _conns.size(); x++ ) {
-				try {
-					if ( ((BaseFtpConnection) _conns.get(x)).getUser().getUsername().equals(user.getUsername()) ) {
-						count++;
+	public FtpReply canLogin(BaseFtpConnection baseconn) {
+		User user;
+		try {
+			user = baseconn.getUser();
+			int maxUsers[] = getConfig().getMaxUsers();
+			int count = maxUsers[0];
+			if ( user.isExempt() )
+				count += maxUsers[1];
+			int userCount = 0;
+			int ipCount = 0;
+			synchronized(_conns) {
+				if ( _conns.size() > count ) // not >= because baseconn is already included
+					return new FtpReply(550, "The site is full, try again later.");
+				for ( int x = 0; x < _conns.size(); x++ ) {
+					try {
+						BaseFtpConnection tempConnection = (BaseFtpConnection) _conns.get(x);
+						User tempUser = tempConnection.getUser();
+						if ( tempUser.getUsername().equals(user.getUsername())) {
+							userCount++;
+							if ( tempConnection.getClientAddress().equals(baseconn.getClientAddress())) {
+								ipCount++;
+							}
+						}
+					}
+					catch (NoSuchUserException ex) {
+						// do nothing, we found our current connection, baseconn = tempConnection
 					}
 				}
-				catch (NoSuchUserException ex) {
-					// do nothing, we found our current connection(which has no user attached to it yet)
-				}
 			}
+			if ( user.getMaxLoginsPerIP() > 0 && ipCount > user.getMaxLoginsPerIP() )
+				return new FtpReply(530,"Sorry, your maximum number of connections from this IP (" 
+					+ user.getMaxLoginsPerIP() + ") has been reached.");
+			if ( user.getMaxLogins() > 0 && userCount > user.getMaxLogins() )
+				return new FtpReply(530,"Sorry, your account is restricted to " + user.getMaxLogins() + " simultaneous logins.");
 		}
-		if ( count < user.getMaxLogins() )
-			return -1;
-		return user.getMaxLogins();
+		catch (NoSuchUserException ex) {
+			logger.warn("",ex);
+			// will not happen as user is always set before getUser() is called
+		}
+		return null; // everything passed
 	}
 }

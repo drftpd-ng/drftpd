@@ -839,8 +839,19 @@ public class UserManagment implements CommandHandler {
 			myUser.setIdleTime(Integer.parseInt(commandArgument));
 
 		} else if ("num_logins".equalsIgnoreCase(command)) {
-			myUser.setMaxLogins(Integer.parseInt(commandArgument));
-
+			try {
+				String args[] = commandArgument.split(" ");
+				if ( args.length < 1 || args.length > 2 ) {
+					return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+				}
+				myUser.setMaxLogins(Integer.parseInt(args[0]));
+				if ( args.length == 2 ) {
+					myUser.setMaxLoginsPerIP(Integer.parseInt(args[1]));
+				}
+			}
+			catch (NumberFormatException ex) {
+				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+			}
 		} else if ("num_logins".equalsIgnoreCase(command)) {
 			myUser.setMaxLoginsPerIP(Integer.parseInt(commandArgument));
 

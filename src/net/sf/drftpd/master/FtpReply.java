@@ -120,9 +120,6 @@ public class FtpReply implements Cloneable {
 	public static final FtpReply RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN =
 		new FtpReply(550, "Requested action not taken. File unavailable.");
 
-	public static final FtpReply RESPONSE_550_SITE_FULL =
-		new FtpReply(550, "The site is full, try again later.");
-
 	/** 553 Requested action not taken.
 	 * File name not allowed.
 	 */

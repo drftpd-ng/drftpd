@@ -107,16 +107,13 @@ public class Login implements CommandHandler, Cloneable {
 		if (newUser.isDeleted()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
-
-		if ( !conn.getConnectionManager().canLogin(newUser)) {
-			return FtpReply.RESPONSE_550_SITE_FULL;
+		
+		conn.setUser(newUser);
+		// max_users and num_logins restriction
+		FtpReply response = conn.getConnectionManager().canLogin(conn);
+		if ( response != null ) {
+			return response;
 		}
-
-		int answer = conn.getConnectionManager().getLogins(newUser);
-		// if answer == -1, user can login, otherwise the # of the
-		// user's max logins is returned
-		if ( answer > 0 )
-			return new FtpReply(530,"Sorry, your account is restricted to " + answer + " simultaneous logins.");
 
 		if (!conn.getSlaveManager().hasAvailableSlaves()
 			&& !newUser.isAdmin()) {
@@ -125,7 +122,6 @@ public class Login implements CommandHandler, Cloneable {
 				"No transfer slave(s) available, try again later.");
 		}
 
-		conn.setUser(newUser);
 		return new FtpReply(
 			331,
 			"Password required for " + newUser.getUsername());
