@@ -37,8 +37,6 @@ import org.drftpd.GlobalContext;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.commands.UserManagment;
 
-import org.drftpd.master.RemoteTransfer;
-
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -63,14 +61,13 @@ import java.net.SocketException;
 
 import javax.net.ssl.SSLSocket;
 
-
 /**
  * This is a generic ftp connection handler. It delegates
  * the request to appropriate methods in subclasses.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.105 2004/11/09 18:59:46 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.106 2004/11/11 14:58:31 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
     private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() +

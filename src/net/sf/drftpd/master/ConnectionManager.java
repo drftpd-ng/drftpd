@@ -17,37 +17,11 @@
  */
 package net.sf.drftpd.master;
 
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.mirroring.JobManager;
-import net.sf.drftpd.remotefile.MLSTSerialize;
-import net.sf.drftpd.util.SafeFileWriter;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
-import org.drftpd.GlobalContext;
-import org.drftpd.PropertyHelper;
-
-import org.drftpd.plugins.RaceStatistics;
-
-import org.drftpd.slave.Slave;
-
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-
 import java.net.ServerSocket;
 import java.net.Socket;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -56,15 +30,34 @@ import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import net.sf.drftpd.FatalException;
+import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.event.Event;
+import net.sf.drftpd.event.FtpListener;
+import net.sf.drftpd.master.command.CommandManagerFactory;
+import net.sf.drftpd.mirroring.JobManager;
+import net.sf.drftpd.remotefile.MLSTSerialize;
+import net.sf.drftpd.util.SafeFileWriter;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
+import org.drftpd.PropertyHelper;
+import org.drftpd.plugins.RaceStatistics;
+import org.drftpd.slave.Slave;
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
+
 
 /**
- * @version $Id: ConnectionManager.java,v 1.123 2004/11/09 18:59:47 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.124 2004/11/11 14:58:32 mog Exp $
  */
 public class ConnectionManager {
     public static final int idleTimeout = 300;
     private static final Logger logger = Logger.getLogger(ConnectionManager.class.getName());
     private CommandManagerFactory _commandManagerFactory;
-    private List _conns = Collections.synchronizedList(new ArrayList());
+    private List<BaseFtpConnection> _conns = Collections.synchronizedList(new ArrayList<BaseFtpConnection>());
     protected GlobalContext _gctx;
 
     protected ConnectionManager() {
@@ -225,7 +218,7 @@ public class ConnectionManager {
     /**
      * returns a <code>Collection</code> of current connections
      */
-    public List getConnections() {
+    public List<BaseFtpConnection> getConnections() {
         return _conns;
     }
 
@@ -330,16 +323,11 @@ public class ConnectionManager {
 
     /**
      * TODO move closing connections to GlobalContext.
-     *
-     * @see org.drftpd.GlobalContext#shutdown(String)
      */
     public void shutdown(String message) {
         getGlobalContext().shutdown(message);
-
-        ArrayList conns = new ArrayList(getConnections());
-
-        for (Iterator iter = conns.iterator(); iter.hasNext();) {
-            ((BaseFtpConnection) iter.next()).stop(message);
+        for(BaseFtpConnection conn : new ArrayList<BaseFtpConnection>(getConnections())) {
+        	conn.stop(message);
         }
     }
 

@@ -21,11 +21,11 @@ import java.io.Serializable;
 
 /**
  * @author zubov
- * @version $Id: DiskStatus.java,v 1.1 2004/11/11 13:31:38 mog Exp $
+ * @version $Id: DiskStatus.java,v 1.2 2004/11/11 14:58:34 mog Exp $
  */
 public class DiskStatus implements Serializable {
-
-    private long _free;
+	private static final long serialVersionUID = 3573098662042584609L;
+	private long _free;
     private long _total;
 
     public DiskStatus(long free, long total) {

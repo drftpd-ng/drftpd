@@ -17,10 +17,7 @@
  */
 package net.sf.drftpd.event.irc;
 
-import f00f.net.irc.martyr.GenericAutoService;
-import f00f.net.irc.martyr.InCommand;
-import f00f.net.irc.martyr.State;
-import f00f.net.irc.martyr.commands.MessageCommand;
+import java.util.ArrayList;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
@@ -28,24 +25,23 @@ import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
-
 import org.drftpd.plugins.SiteBot;
-
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
-
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import f00f.net.irc.martyr.GenericAutoService;
+import f00f.net.irc.martyr.InCommand;
+import f00f.net.irc.martyr.State;
+import f00f.net.irc.martyr.commands.MessageCommand;
 
 
 /**
  * @author Teflon
- * @version $Id: Kick.java,v 1.4 2004/11/03 16:46:38 mog Exp $
+ * @version $Id: Kick.java,v 1.5 2004/11/11 14:58:31 mog Exp $
  */
 public class Kick extends GenericAutoService implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Kick.class);
@@ -93,13 +89,11 @@ public class Kick extends GenericAutoService implements IRCPluginInterface {
                     "kick.ftp");
 
             ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-            ArrayList conns = new ArrayList(getConnectionManager()
+            ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(getConnectionManager()
                                                 .getConnections());
 
-            for (Iterator iter = conns.iterator(); iter.hasNext();) {
-                BaseFtpConnection conn = (BaseFtpConnection) iter.next();
+            for (BaseFtpConnection conn : conns) {
                 User user;
-
                 try {
                     user = conn.getUser();
                 } catch (NoSuchUserException e) {

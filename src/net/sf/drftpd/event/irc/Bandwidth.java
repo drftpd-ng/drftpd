@@ -29,10 +29,7 @@ import net.sf.drftpd.util.Time;
 import org.apache.log4j.Logger;
 
 import org.drftpd.Bytes;
-import org.drftpd.master.RemoteTransfer;
 import org.drftpd.plugins.SiteBot;
-
-
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -46,7 +43,7 @@ import java.util.Iterator;
 
 /**
  * @author flowman
- * @version $Id: Bandwidth.java,v 1.14 2004/11/09 18:59:44 mog Exp $
+ * @version $Id: Bandwidth.java,v 1.15 2004/11/11 14:58:31 mog Exp $
  */
 public class Bandwidth extends GenericCommandAutoService
     implements IRCPluginInterface {

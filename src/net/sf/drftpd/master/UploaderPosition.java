@@ -20,20 +20,20 @@ package net.sf.drftpd.master;
 
 /**
  * @author mog
- * @version $Id: UploaderPosition.java,v 1.7 2004/10/05 02:11:22 mog Exp $
+ * @version $Id: UploaderPosition.java,v 1.8 2004/11/11 14:58:32 mog Exp $
  */
 public class UploaderPosition implements Comparable {
-    long bytes;
-    int files;
-    String username;
-    long xfertime;
+    long _bytes;
+    int _files;
+    String _username;
+    long _xfertime;
 
     public UploaderPosition(String username, long bytes, int files,
         long xfertime) {
-        this.username = username;
-        this.bytes = bytes;
-        this.files = files;
-        this.xfertime = xfertime;
+        this._username = username;
+        this._bytes = bytes;
+        this._files = files;
+        this._xfertime = xfertime;
     }
 
     public int compareTo(Object o) {
@@ -65,15 +65,15 @@ public class UploaderPosition implements Comparable {
     }
 
     public long getBytes() {
-        return this.bytes;
+        return this._bytes;
     }
 
     public int getFiles() {
-        return this.files;
+        return this._files;
     }
 
     public String getUsername() {
-        return username;
+        return _username;
     }
 
     public long getXferspeed() {
@@ -85,7 +85,7 @@ public class UploaderPosition implements Comparable {
     }
 
     public long getXfertime() {
-        return xfertime;
+        return _xfertime;
     }
 
     public int hashCode() {
@@ -93,14 +93,14 @@ public class UploaderPosition implements Comparable {
     }
 
     public void updateBytes(long bytes) {
-        this.bytes += bytes;
+        this._bytes += bytes;
     }
 
     public void updateFiles(int files) {
-        this.files += files;
+        this._files += files;
     }
 
     public void updateXfertime(long xfertime) {
-        this.xfertime += xfertime;
+        this._xfertime += xfertime;
     }
 }

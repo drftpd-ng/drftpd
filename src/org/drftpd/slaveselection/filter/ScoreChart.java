@@ -30,7 +30,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: ScoreChart.java,v 1.8 2004/10/03 16:13:57 mog Exp $
+ * @version $Id: ScoreChart.java,v 1.9 2004/11/11 14:58:35 mog Exp $
  */
 public class ScoreChart {
     private static final Logger logger = Logger.getLogger(ScoreChart.class);
@@ -38,17 +38,15 @@ public class ScoreChart {
     /**
      * Contains {@link SlaveScore} elements.
      */
-    private ArrayList _scoreChart;
+    private ArrayList<SlaveScore> _scoreChart;
 
     /**
      * @param slaves Collection of ONLINE slaves
      * (this is not verified by scorechart, you can use offline slaves for JUnit tests etc.)
      */
-    public ScoreChart(Collection slaves) {
-        _scoreChart = new ArrayList();
-
-        for (Iterator iter = slaves.iterator(); iter.hasNext();) {
-            RemoteSlave rslave = (RemoteSlave) iter.next();
+    public ScoreChart(Collection<RemoteSlave> slaves) {
+        _scoreChart = new ArrayList<SlaveScore>();
+        for(RemoteSlave rslave : slaves) {
             _scoreChart.add(new SlaveScore(rslave));
         }
     }
