@@ -16,6 +16,9 @@ wrapper.java.classpath.1=lib/wrapper.jar
 wrapper.java.classpath.2=lib/log4j-1.2.8.jar
 wrapper.java.classpath.3=lib/slave.jar
 
+#URLBootStrap (more options further down, need to comment out item 3 above)
+#wrapper.java.classpath.3=classes/
+
 
 # Java Library Path (location of Wrapper.DLL or libwrapper.so
 # and libFileSystem.so FileSystem.dll)
@@ -33,6 +36,11 @@ wrapper.java.maxmemory=128
 
 # Application parameters.  Add parameters as needed starting from 1
 wrapper.app.parameter.1=org.drftpd.slave.Slave
+
+#BootStrap for Slaves! (need to comment out information above)
+#wrapper.app.parameter.1=org.drftpd.bootstrap.URLBootStrap
+#wrapper.app.parameter.2=http://url.to/slave.jar
+#wrapper.app.parameter.3=org.drftpd.slave.Slave
 
 #Retry when slave exits
 wrapper.disable_shutdown_hook=TRUE

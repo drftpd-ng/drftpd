@@ -188,17 +188,18 @@
     </jar>
     
     <zip destfile="slave.zip" basedir=".">
-      <include name="lib/slave.jar"/>
       <include name="slave.conf.dist"/>
       <include name="slave.sh" />
       <include name="slave.bat" />
       <include name="conf/wrapper-slave.conf.dist"/>
       <include name="drftpd.key" />
+      <include name="src/org/drftpd/bootstrap/URLBootStrap.java" />
+      <include name="classes/org/drftpd/bootstrap/URLBootStrap.class" />
+      <include name="lib/slave.jar" />
       <include name="lib/FileSystem.dll" />
       <include name="lib/libFileSystem.so" />
       <include name="lib/libwrapper.so" />
       <include name="lib/log4j-1.2.8.jar" />
-      <include name="lib/slave.jar" />
       <include name="lib/wrapper.dll" />
       <include name="lib/wrapper.jar" />
       <include name="bin/wrapper" />
