@@ -7,7 +7,7 @@ import java.io.Writer;
 
 /**
  * @author mog
- * @version $Id: SafeFileWriter.java,v 1.1 2004/01/20 06:59:01 mog Exp $
+ * @version $Id: SafeFileWriter.java,v 1.2 2004/02/03 00:28:29 mog Exp $
  */
 public class SafeFileWriter extends Writer {
 	private File _actualFile;
@@ -19,9 +19,14 @@ public class SafeFileWriter extends Writer {
 	 * @see java.io.File#File(java.io.File)
 	 */
 	public SafeFileWriter(File file) throws IOException {
-		_actualFile = file;
+		_actualFile = file.getAbsoluteFile();
+		if (!_actualFile.getParentFile().canWrite())
+			throw new IOException("Can't write to target dir");
 		_tempFile =
-			File.createTempFile(file.getName(), null, file.getParentFile());
+			File.createTempFile(
+				_actualFile.getName(),
+				null,
+				_actualFile.getParentFile());
 		_out = new FileWriter(_tempFile);
 	}
 
@@ -37,8 +42,13 @@ public class SafeFileWriter extends Writer {
 		_out.close();
 		if (!failed) {
 			//Logger.getLogger(SafeFileWriter.class).debug("Renaming "+_tempFile+" ("+_tempFile.length()+") to "+_actualFile);
-			_actualFile.delete();
-			_tempFile.renameTo(_actualFile);
+			if (_actualFile.exists() && !_actualFile.delete())
+				throw new IOException("delete() failed");
+			if (!_tempFile.exists())
+				throw new IOException("source doesn't exist");
+			if (!_tempFile.renameTo(_actualFile))
+				throw new IOException(
+					"renameTo(" + _tempFile + ", " + _actualFile + ") failed");
 		}
 	}
 
