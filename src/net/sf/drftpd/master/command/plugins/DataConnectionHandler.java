@@ -46,6 +46,7 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
+import net.sf.drftpd.master.config.ZipscriptConfig;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
@@ -1065,17 +1066,21 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 
                 //do our zipscript sfv checks
                 String checkName = targetFileName.toLowerCase();
-                if (!(checkName.endsWith(".nfo") || checkName.endsWith(".m3u")
-                        || checkName.endsWith(".jpg") || checkName.endsWith(".cue"))) {
-                    try {
-                        SFVFile sfv = conn.getCurrentDirectory().lookupSFVFile();
-                        if (checkName.endsWith(".sfv") && 
-                        	!conn.getGlobalContext().getZsConfig().multiSfvAllowed()) {
-                            return new Reply(533,
-                            	"Requested action not taken. Multiple SFV files not allowed.");
-                        }
-                        if (conn.getGlobalContext().getZsConfig().restrictSfvEnabled()) {
-                            boolean allow = false;
+                ZipscriptConfig zsCfg = conn.getGlobalContext().getZsConfig();
+                boolean SfvFirstEnforcedPath = zsCfg.checkSfvFirstEnforcedPath(targetDir, 
+                		conn.getUserNull()); 
+                try {
+                    SFVFile sfv = conn.getCurrentDirectory().lookupSFVFile();
+                    if (checkName.endsWith(".sfv") && 
+                    	!zsCfg.multiSfvAllowed()) {
+                        return new Reply(533,
+                        	"Requested action not taken. Multiple SFV files not allowed.");
+                    }
+                    if (SfvFirstEnforcedPath && 
+                    		!zsCfg.checkAllowedExtension(checkName)) {
+                		// filename not explicitly permitted, check for sfv entry
+                        boolean allow = false;
+                        if (zsCfg.restrictSfvEnabled()) {
                             for (Iterator iter = sfv.getNames().iterator(); iter.hasNext();) {
                                 String name = (String) iter.next();
                                 if (name.toLowerCase().equals(checkName)) {
@@ -1088,13 +1093,20 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                                 	"Requested action not taken. File not found in sfv.");
                             }
                         }
-                    } catch (FileNotFoundException e1) {
-                        //no sfv found in current dir, do nothing
-                    } catch (IOException e1) {
-                        //error reading sfv, do nothing
-                    } catch (NoAvailableSlaveException e1) {
-                        //sfv not online, do nothing
                     }
+                } catch (FileNotFoundException e1) {
+                    // no sfv found in dir 
+                	if ( !zsCfg.checkAllowedExtension(checkName) && 
+                			SfvFirstEnforcedPath ) {
+                		// filename not explicitly permitted
+                		// ForceSfvFirst is on, and file is in an enforced path.
+                        return new Reply(533,
+                        	"Requested action not taken. You must upload sfv first.");
+                	}
+                } catch (IOException e1) {
+                    //error reading sfv, do nothing
+                } catch (NoAvailableSlaveException e1) {
+                    //sfv not online, do nothing
                 }
              } else {
             	reset();

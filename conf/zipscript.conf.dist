@@ -18,3 +18,22 @@ sfv.restrict.files=true
 
 #allow multiple sfv files in one dir [true/false]
 allow.multi.sfv=false
+
+#disallow files before sfv [true/false]
+sfvfirst.required=true
+
+#allow files w/o extensions even if stor.sfv.first.enabled=true [true/false]
+sfvfirst.allownoext=true
+
+#allow these file extensions even if not in an sfv file
+allowedexts=nfo txt jpg diz mpg avi zip
+
+#check paths for sfv first enforcement
+sfvfirst.pathcheck=*
+
+#ignore paths for sfv first enforcement
+sfvfirst.pathignore=/PRE/* /REQUESTS/* */Subs/ */Cover/ */Covers/
+
+#who has their restricted by the sfv-first system ?
+#if you wanted siteop group to be exempt, put: !=siteop *
+sfvfirst.users=*

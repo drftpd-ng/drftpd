@@ -21,12 +21,23 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import net.sf.drftpd.master.config.FtpConfig;
+
+import org.apache.log4j.Logger;
+import org.apache.oro.text.GlobCompiler;
+import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
+import org.drftpd.permissions.GlobPathPermission;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.usermanager.User;
+
+import com.Ostermiller.util.StringTokenizer;
 
 /**
  * @author Teflon
  */
 public class ZipscriptConfig {
+    private static final Logger logger = Logger.getLogger(ZipscriptConfig.class);
 	protected GlobalContext _gctx;
 	private String zsConf = "conf/zipscript.conf";
 	private boolean _statusBarEnabled;
@@ -36,6 +47,10 @@ public class ZipscriptConfig {
 	private boolean _raceStatsEnabled;
 	private boolean _restrictSfvEnabled;
 	private boolean _multiSfvAllowed;
+    private boolean _SfvFirstRequired;
+    private boolean _SfvFirstAllowNoExt;
+    private String _AllowedExts;
+    private String _SfvFirstUsers;
 
     public ZipscriptConfig(GlobalContext gctx) throws IOException {
         _gctx = gctx;
@@ -60,6 +75,43 @@ public class ZipscriptConfig {
 									cfg.getProperty("sfv.restrict.files").equalsIgnoreCase("true");
 	    _multiSfvAllowed     = cfg.getProperty("allow.multi.sfv") == null ? true : 
 									cfg.getProperty("allow.multi.sfv").equalsIgnoreCase("true");
+        _SfvFirstRequired    = cfg.getProperty("sfvfirst.required") == null ? true : 
+        							cfg.getProperty("sfvfirst.required").equalsIgnoreCase("true");
+        _SfvFirstAllowNoExt  = cfg.getProperty("sfvfirst.allownoext") == null ? true : 
+        							cfg.getProperty("sfvfirst.allownoext").equalsIgnoreCase("true");
+        _AllowedExts         = cfg.getProperty("allowedexts") == null ? "sfv" : 
+        							cfg.getProperty("allowedexts").toLowerCase().trim() + " sfv";
+        _SfvFirstUsers 		 = cfg.getProperty("sfvfirst.users") == null ? "*" : 
+        							cfg.getProperty("sfvfirst.users");
+
+        // Locals
+        String SfvFirstPathIgnore 	= cfg.getProperty("sfvfirst.pathignore") == null ? "*" : 
+        								cfg.getProperty("sfvfirst.pathignore");
+        String SfvFirstPathCheck 	= cfg.getProperty("sfvfirst.pathcheck") == null ? "*" : 
+										cfg.getProperty("sfvfirst.pathcheck");
+        
+        // SFV First PathPermissions
+        if ( _SfvFirstRequired ) {
+        	try {
+                // this one gets perms defined in sfvfirst.users
+        		StringTokenizer st = new StringTokenizer(SfvFirstPathCheck," ");
+                while (st.hasMoreTokens()) {
+    					_gctx.getConfig().addPathPermission("sfvfirst.pathcheck", 
+    					        new GlobPathPermission(new GlobCompiler().compile(
+    					        	st.nextToken()), FtpConfig.makeUsers(
+    					        			new StringTokenizer(_SfvFirstUsers," "))));
+            	}
+                st = new StringTokenizer(SfvFirstPathIgnore," ");
+                while (st.hasMoreTokens()) {
+                    _gctx.getConfig().addPathPermission("sfvfirst.pathignore", 
+                            new GlobPathPermission(new GlobCompiler().compile(
+                            		st.nextToken()), FtpConfig.makeUsers(
+                            				new StringTokenizer("*"," "))));
+                }
+			} catch (MalformedPatternException e) {
+				logger.warn("Exception when reading " + zsConf, e);
+			}
+        }
 	}
 	
     public GlobalContext getGlobalContext() {
@@ -92,5 +144,28 @@ public class ZipscriptConfig {
     
     public boolean statusBarEnabled() {
         return _statusBarEnabled;
+    }
+    
+    public boolean checkAllowedExtension(String file) {
+    	if ( _SfvFirstAllowNoExt && !file.contains(".") ) {
+        	return true;
+    	}
+    	StringTokenizer st = new StringTokenizer(_AllowedExts, " ");
+        while (st.hasMoreElements()) {
+        	String ext = "." + st.nextElement().toString().toLowerCase();
+            if (file.toLowerCase().endsWith(ext)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean checkSfvFirstEnforcedPath(LinkedRemoteFileInterface dir, User user) {
+    	if (_SfvFirstRequired && 
+    			_gctx.getConfig().checkPathPermission("sfvfirst.pathcheck", user, dir) && 
+    			!_gctx.getConfig().checkPathPermission("sfvfirst.pathignore", user, dir)) {
+    	        	return true;
+    	}
+        return false;
     }
 }

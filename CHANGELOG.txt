@@ -1,3 +1,7 @@
+2005/02/25 Jamal James <teflon114@gmail.com>
+* Applied diff for more zipscript options. Thx TDSoul
+  See http://www.drftpd.org/phpBB2/viewtopic.php?t=170
+
 2005/02/23 Jamal James <teflon114@gmail.com>
 * Fixed OnConnect
 * Possible fix for multiple HALFWAY and COMPLETE SiteBot announcements.
