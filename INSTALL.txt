@@ -3,11 +3,12 @@ http://drftpd.org/
 http://drftpd.mog.se/ (mirror)
 
 INSTALL FOR DRFTPD 1.0
+(installing over old versions or even newer [cvs] will cause numerous glitches)
 
 1 Download and install JAVA Runtime Environment (JRE) on all master and all salves -- http://java.sun.com/j2se/downloads.html
 	:: NOTE: LINUX: If you encounter problems like "master.sh: line 11: exec: java: not found", you need to add the java binary to your PATH environment variable. Edit your /etc/profile and add PATH=$PATH:/path/to/java/bin at the bottom.
 	:: NOTE: WINDOWS: If you encounter problems like "'JAVA' is not recognized as an internal or external command, operable program or batch file." You also need to add the java binary to your PATH environment variable. You can do this in WindowsXP in your System Properties under the Advanced Tab, there is a button Environment Variables, edit your PATH variable accordingly.
-
+	:: NOTE: "keytool" not found -- missing path to JRE/bin/
 2 Download DrFTPD -- http://sourceforge.net/project/showfiles.php?group_id=56385
 3 Unpack zip, keeping drftpd\ directory structure
 4 Master Configuration -- all configuration files are kept in subdirectory \conf\
@@ -15,6 +16,7 @@ INSTALL FOR DRFTPD 1.0
 	** Rename drftpd.conf.dist -> drftpd.conf and edit accordingly
 	** Rename slaves.xml.dist -> slaves.xml and edit accordingly
 	** Rename perms.conf.dist -> perms.conf
+	** Rename all *.conf.dist -> *.conf
 4a Plugins -- There are multiple plugins included with DrFTPD and each plugin has its own settings. 
 	:: NOTE: instructions for plugins are in their respective configuration files.
 	:: NOTE: the numers of the plugins have to be sequential.
@@ -26,11 +28,47 @@ INSTALL FOR DRFTPD 1.0
 	plugins.1=net.sf.drftpd.event.listeners.Trial 
 5 Slave Installation
 	:: If you just want to test drftpd with a local slave, set master.localslave=true in drftpd.conf.
-	:: If you want to run slaves you need to copy the files classes/ lib/FileSystem.dll (win32) lib/libFileSystem.so (linux) drftpd.conf to all slaves.
+	:: If you want to run slaves you need to copy the files classes/ lib/FileSystem.dll (win32) lib/libFileSystem.so (linux) to all slaves.
 	** Edit slave.conf on each slave
+	** Edit slaves.xml on master with new slave information
+	:: NOTE: Slaves do not use any other *.conf files aside from slaves.conf
 6 Finished
 	** Login at: ftp://drftpd:drftpd@localhost:2121/ (or the port you specified as master.port in drftpd.conf)
 	** Sign up to the drftpd-discuss mailing list (http://lists.sourceforge.net/lists/listinfo/drftpd-discuss)
 	** Visit us on EFnet (www.efnet.net) and join #drftpd
 
 More Documentation can be found here: http://drftpd.mog.se/wiki/wiki.phtml?title=Documentation
+
+USING GLFTPDCONVERTER:
+
+This utility is provided to ease the migration of glftpd userfiles to drftpd format.
+Please run this utility from drftpd/
+
+Known error: -Dglftpd.passwd=/etc/users should read: /etc/passwd
+
+COMMON INSTALLATION ERRORS:
+
+java.lang.NoClassDefFoundError: org/tanukisoftware/wrapper/WrapperSimpleApp
+java.io.FileNotFoundException: conf\log4j-default.properties (The system cannot find the file specified)
+log4j:WARN No appenders could be found for logger (net.sf.drftpd.master.ConnectionManager).
+Reason: Missing files or incorrect paths, please see http://drftpd.org/wiki/wiki.phtml?title=Errata_1.0
+
+log4j:ERROR Either File or DatePattern options are not set for appender [A1].
+Reason: No log directory. Fix: mkdir logs/
+
+Slaves running as service will not reconnect to master after crashes and restarts.
+Reason: Impatience. Default Timeout is 5 minutes
+
+java.io.FileNotFoundException: drftpd.key (No such file or directory)
+Reason: Run genkey.sh or genkey.bat to generate drftpd.key file. (if errors using keytool, please see Install note #1)
+
+INFO WrapperSimpleAppMain net.sf.drftpd.slave.SlaveImpl - java.rmi.ConnectException: Connection refused to host: localhost; nested exception is: java.net.ConnectException: Connection refused
+Reason: Edit conf/slaves.xml
+
+ERROR WrapperSimpleAppMain net.sf.drftpd.master.ConnectionManager - java.net.BindException: Address already in use: JVM_Bind
+Reason: master.bindport or master.port is already in use/taken
+
+Loopback IP address used to connect instead of useable IP.
+Solution: wrapper.java.additional.5=-Djava.rmi.server.hostname=192.168.1.1 in wrapper-*.conf (example IP address)
+
+
