@@ -348,7 +348,12 @@ public class Find implements CommandHandler, CommandHandlerFactory {
 		Pattern pattern;
 
 		public OptionName(String str) {
-			pattern = Pattern.compile(str.replaceAll("[*]", ".*"));
+		    str = str.replaceAll("\\[", "\\\\[");
+		    str = str.replaceAll("\\]", "\\\\]");
+		    str = str.replaceAll("\\(", "\\\\(");
+		    str = str.replaceAll("\\)", "\\\\)");
+		    str = str.replaceAll("[*]", ".*");
+			pattern = Pattern.compile(str);
 		}
 
 		public boolean isTrueFor(LinkedRemoteFileInterface file) {
