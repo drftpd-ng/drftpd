@@ -17,8 +17,18 @@ master.port=2121
 # [ true | false ]
 master.localslave=false
 
+#Allow SocketSlaves to connect to the server
+# Port to accept SocketSlave connections on, comment out to disable socket slaves
+master.socketport=1100
+# Passkey for allowing slaves to automatically register with the master
+# Default: "", comment out if you dont want to allow autoregister
+master.autoregister=autopass
+
 #User manager to use, just leave it for now.
 master.usermanager=net.sf.drftpd.master.usermanager.jsx.JSXUserManager
+
+#Slave manager to use, just leave it for now.
+master.slavemanager=net.sf.drftpd.master.SlaveManagerImpl
 
 #loaded plugins must use in sequential numbering
 #plugins.1=org.drftpd.plugins.SiteBotSSL
