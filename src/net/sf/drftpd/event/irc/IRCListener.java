@@ -48,6 +48,7 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.Nukee;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SFVFile;
+import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.SFVFile.SFVStatus;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.Event;
@@ -67,6 +68,7 @@ import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.util.ReplacerUtils;
@@ -95,26 +97,28 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.90 2004/02/27 01:02:18 mog Exp $
+ * @version $Id: IRCListener.java,v 1.91 2004/03/01 00:21:08 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
 	public static class Ret {
 		private String _format;
-		private LinkedRemoteFile _section;
-		public Ret(String format, LinkedRemoteFile dir) {
+		private LinkedRemoteFileInterface _section;
+
+		public Ret(String format, LinkedRemoteFileInterface dir) {
 			_format = format;
 			_section = dir;
 		}
+
 		public String getFormat() {
 			return _format;
 		}
 
-		public LinkedRemoteFile getSection() {
+		public LinkedRemoteFileInterface getSection() {
 			return _section;
 		}
-
 	}
+
 	public static final ReplacerEnvironment GLOBAL_ENV =
 		new ReplacerEnvironment();
 	static {
@@ -310,7 +314,6 @@ public class IRCListener implements FtpListener, Observer {
 			return;
 		}
 
-
 		if (!sfvfile.hasFile(direvent.getDirectory().getName()))
 			return;
 
@@ -336,7 +339,7 @@ public class IRCListener implements FtpListener, Observer {
 							"store.embraces",
 							direvent.getDirectory());
 					String format = obj.getFormat();
-					LinkedRemoteFile section = obj.getSection();
+					LinkedRemoteFileInterface section = obj.getSection();
 
 					//					ReplacerEnvironment env =
 					//						new ReplacerEnvironment(globalEnv);
@@ -354,10 +357,10 @@ public class IRCListener implements FtpListener, Observer {
 			}
 		}
 
-//		env.add(
-//			"averagespeed",
-//			Bytes.formatBytes(
-//				direvent.getDirectory().length() / (racedtimeMillis / 1000)));
+		//		env.add(
+		//			"averagespeed",
+		//			Bytes.formatBytes(
+		//				direvent.getDirectory().length() / (racedtimeMillis / 1000)));
 
 		//COMPLETE
 		if (sfvstatus.isFinished()) {
@@ -489,7 +492,7 @@ public class IRCListener implements FtpListener, Observer {
 
 			Ret obj = getPropertyFileSuffix("store.halfway", dir);
 			String format = (String) obj.getFormat();
-			LinkedRemoteFile section = obj.getSection();
+			LinkedRemoteFileInterface section = obj.getSection();
 
 			fillEnvSection(env, direvent, section);
 
@@ -629,7 +632,7 @@ public class IRCListener implements FtpListener, Observer {
 			} catch (RemoteException e) {
 				sevent.getRSlave().handleRemoteException(e);
 				return;
-			} catch (NoAvailableSlaveException e) {
+			} catch (SlaveUnavailableException e) {
 				return;
 			}
 			fillEnvSpace(env, status);
@@ -730,20 +733,20 @@ public class IRCListener implements FtpListener, Observer {
 	private void fillEnvSection(
 		ReplacerEnvironment env,
 		DirectoryFtpEvent direvent,
-		LinkedRemoteFile section) {
+		LinkedRemoteFileInterface section) {
 		fillEnvSection(env, direvent, section, direvent.getDirectory());
 	}
 
 	private void fillEnvSection(
 		ReplacerEnvironment env,
 		DirectoryFtpEvent direvent,
-		LinkedRemoteFile section,
-		LinkedRemoteFile file) {
+		LinkedRemoteFileInterface section,
+		LinkedRemoteFileInterface file) {
 		env.add("user", direvent.getUser().getUsername());
 		env.add("group", direvent.getUser().getGroupName());
 		env.add("section", strippath(section.getPath()));
 
-		LinkedRemoteFile dir = file;
+		LinkedRemoteFileInterface dir = file;
 		if (dir.isFile())
 			dir = dir.getParentFileNull();
 
@@ -756,20 +759,21 @@ public class IRCListener implements FtpListener, Observer {
 		elapsed = System.currentTimeMillis() - elapsed;
 		env.add("elapsed", "" + elapsed);
 		env.add("elapsed", "" + elapsed);
-		
 
 		env.add("size", Bytes.formatBytes(file.length()));
 		if (file.isFile()) {
 			env.add("speed", Bytes.formatBytes(file.getXferspeed()) + "/s");
 		} else if (file.isDirectory()) {
-			
+
 			long starttime = Long.MAX_VALUE;
 			for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
 				LinkedRemoteFile subfile = (LinkedRemoteFile) iter.next();
 				if (subfile.lastModified() < starttime)
 					starttime = subfile.lastModified();
 			}
-			env.add("secondstocomplete", Time.formatTime(direvent.getTime() - starttime));
+			env.add(
+				"secondstocomplete",
+				Time.formatTime(direvent.getTime() - starttime));
 			env.add(
 				"averagespeed",
 				Bytes.formatBytes(dir.dirSize() / (elapsed / 1000)) + "/s");
@@ -957,7 +961,7 @@ public class IRCListener implements FtpListener, Observer {
 
 		Ret obj = getPropertyFileSuffix(string, direvent.getDirectory());
 		String format = obj.getFormat();
-		LinkedRemoteFile section = obj.getSection();
+		LinkedRemoteFileInterface section = obj.getSection();
 
 		ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
 		fillEnvSection(env, direvent, section);
@@ -1148,9 +1152,8 @@ public class IRCListener implements FtpListener, Observer {
 
 					env.add(
 						"idle",
-						(System.currentTimeMillis() - conn.getLastActive())
-							/ 1000
-							+ "s");
+						Time.formatTime(
+							System.currentTimeMillis() - conn.getLastActive()));
 
 					if (_cm
 						.getConfig()

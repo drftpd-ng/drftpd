@@ -19,11 +19,11 @@ package org.drftpd.sections;
 
 import java.util.Collection;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: SectionInterface.java,v 1.1 2004/02/26 13:56:52 mog Exp $
+ * @version $Id: SectionInterface.java,v 1.2 2004/03/01 00:21:09 mog Exp $
  */
 public interface SectionInterface {
 
@@ -35,7 +35,7 @@ public interface SectionInterface {
 	/**
 	 * @return the (current) directory for this section
 	 */
-	public LinkedRemoteFile getFile();
+	public LinkedRemoteFileInterface getFile();
 
 	/**
 	 * @return getFile().getPath()

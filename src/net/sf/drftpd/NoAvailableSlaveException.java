@@ -17,13 +17,11 @@
  */
 package net.sf.drftpd;
 
-import java.io.IOException;
-
 /**
  * @author mog
- * @version $Id: NoAvailableSlaveException.java,v 1.3 2004/02/10 00:03:04 mog Exp $
+ * @version $Id: NoAvailableSlaveException.java,v 1.4 2004/03/01 00:21:07 mog Exp $
  */
-public class NoAvailableSlaveException extends IOException {
+public class NoAvailableSlaveException extends Exception {
 	public NoAvailableSlaveException(String message) {
 		super(message);
 	}

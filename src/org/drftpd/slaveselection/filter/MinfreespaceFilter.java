@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import net.sf.drftpd.Bytes;
-import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -36,7 +36,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
  * <n>.minfreespace=1GB
  * </pre>
  * @author mog
- * @version $Id: MinfreespaceFilter.java,v 1.2 2004/02/27 01:02:21 mog Exp $
+ * @version $Id: MinfreespaceFilter.java,v 1.3 2004/03/01 00:21:10 mog Exp $
  */
 public class MinfreespaceFilter extends Filter {
 	private long _minfreespace;
@@ -76,7 +76,7 @@ public class MinfreespaceFilter extends Filter {
 			} catch (RemoteException e) {
 				score.getRSlave().handleRemoteException(e);
 				iter.remove();
-			} catch (NoAvailableSlaveException e) {
+			} catch (SlaveUnavailableException e) {
 				iter.remove();
 			}
 		}

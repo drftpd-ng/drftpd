@@ -33,24 +33,27 @@ import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.apache.log4j.Logger;
 import org.drftpd.remotefile.LinkedRemoteFileUtils;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilter.java,v 1.2 2004/02/27 01:02:21 mog Exp $
+ * @version $Id: SlavetopFilter.java,v 1.3 2004/03/01 00:21:10 mog Exp $
  */
 public class SlavetopFilter extends Filter {
 
+	private static final Logger logger = Logger.getLogger(SlavetopFilter.class);
+
 	private long _assign;
 
-	private FilterChain _ssm;
+	private FilterChain _fc;
 
 	private int _topslaves;
 
-	public SlavetopFilter(FilterChain ssm, int i, Properties p) {
-		_ssm = ssm;
+	public SlavetopFilter(FilterChain fc, int i, Properties p) {
+		_fc = fc;
 		_topslaves =
 			Integer.parseInt(FtpConfig.getProperty(p, i + ".topslaves"));
 		_assign = Long.parseLong(FtpConfig.getProperty(p, i + ".assign"));
@@ -66,15 +69,17 @@ public class SlavetopFilter extends Filter {
 
 		String path = dir.getPath();
 		SectionInterface section =
-			_ssm
+			_fc
 				.getSlaveManager()
 				.getConnectionManager()
 				.getSectionManager()
 				.lookup(
 				path);
 
-		path = path.substring(path.length());
-		path = path.substring(0, path.indexOf('/'));
+		path = path.substring(section.getPath().length());
+		int pos = path.indexOf('/');
+		if (pos != -1)
+			path = path.substring(0, pos);
 		LinkedRemoteFileInterface rls;
 		try {
 			rls = section.getFile().getFile(path);
@@ -84,12 +89,19 @@ public class SlavetopFilter extends Filter {
 
 		Hashtable slavesmap = new Hashtable();
 		for (Iterator iter =
-			_ssm.getSlaveManager().getAvailableSlaves().iterator();
+			scorechart.getSlaveScores().iterator();
 			iter.hasNext();
 			) {
-			RemoteSlave rslave = (RemoteSlave) iter.next();
+			RemoteSlave rslave = ((ScoreChart.SlaveScore) iter.next()).getRSlave();
 			slavesmap.put(rslave, new ScoreChart.SlaveScore(rslave));
 		}
+
+		//		for (Iterator iter = scorechart.getSlaveScores().iterator();
+		//			iter.hasNext();
+		//			) {
+		//			ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
+		//			slavesmap.put(score.getRSlave(), score);
+		//		}
 
 		Collection files = LinkedRemoteFileUtils.getAllFiles(rls);
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
@@ -108,14 +120,14 @@ public class SlavetopFilter extends Filter {
 		}
 
 		ArrayList slavescores = new ArrayList(slavesmap.values());
-		Collections.sort(slavescores);
+		Collections.sort(slavescores, Collections.reverseOrder());
 		Iterator iter = slavescores.iterator();
 		for (int i = 0; i < _topslaves && iter.hasNext(); i++) {
+			ScoreChart.SlaveScore score = (SlaveScore) iter.next();
 			try {
-				scorechart.getSlaveScore((RemoteSlave) iter.next()).addScore(
-					_assign);
+				scorechart.getSlaveScore(score.getRSlave()).addScore(_assign);
 			} catch (ObjectNotFoundException e1) {
-				continue;
+				throw new RuntimeException(e1);
 			}
 		}
 	}

@@ -31,7 +31,7 @@ import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManagerTest.java,v 1.2 2004/02/27 01:02:21 mog Exp $
+ * @version $Id: SlaveSelectionManagerTest.java,v 1.3 2004/03/01 00:21:10 mog Exp $
  */
 public class SlaveSelectionManagerTest extends TestCase {
 
@@ -64,7 +64,7 @@ public class SlaveSelectionManagerTest extends TestCase {
 				new RemoteSlave("slave2", Collections.EMPTY_LIST)};
 
 		try {
-			ssm.process(
+			ssm.getBestSlave(
 				new ScoreChart(Arrays.asList(rslaves)), null, null,
 				Transfer.TRANSFER_SENDING_DOWNLOAD,
 				new MatchdirFilterTest.LinkedRemoteFilePath(

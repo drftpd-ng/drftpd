@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Search.java,v 1.9 2004/02/23 01:14:37 mog Exp $
+ * @version $Id: Search.java,v 1.10 2004/03/01 00:21:08 mog Exp $
  */
 public class Search implements CommandHandler {
 	public void unload() {}
@@ -81,7 +81,7 @@ public class Search implements CommandHandler {
 		if (!request.hasArgument()) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
-		String args[] = request.getArgument().split(" ");
+		String args[] = request.getArgument().toLowerCase().split(" ");
 		if (args.length == 0) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}

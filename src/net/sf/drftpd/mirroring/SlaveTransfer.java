@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 
+import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.Transfer;
@@ -28,7 +29,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveTransfer.java,v 1.9 2004/02/27 01:02:19 mog Exp $
+ * @version $Id: SlaveTransfer.java,v 1.10 2004/03/01 00:21:09 mog Exp $
  */
 public class SlaveTransfer {
 	class DstXfer extends Thread {
@@ -80,8 +81,10 @@ public class SlaveTransfer {
 	/**
 	 * Slave to Slave Transfers
 	 */
-	public SlaveTransfer(LinkedRemoteFileInterface file, RemoteSlave sourceSlave,
-			RemoteSlave destSlave) {
+	public SlaveTransfer(
+		LinkedRemoteFileInterface file,
+		RemoteSlave sourceSlave,
+		RemoteSlave destSlave) {
 		_file = file;
 		_sourceSlave = sourceSlave;
 		_destSlave = destSlave;
@@ -104,11 +107,28 @@ public class SlaveTransfer {
 	 * @return @throws
 	 *         IOException
 	 */
-	public boolean transfer(boolean checkCRC) throws IOException {
-		DstXfer dstxfer = new DstXfer(_destSlave.getSlave().listen(false));
-		SrcXfer srcxfer = new SrcXfer(_sourceSlave.getSlave().connect(
-				new InetSocketAddress(_destSlave.getInetAddress(), dstxfer
-						.getLocalPort()), false));
+	public boolean transfer(boolean checkCRC)
+		throws IOException, SlaveUnavailableException {
+		DstXfer dstxfer;
+		try {
+			dstxfer = new DstXfer(_destSlave.getSlave().listen(false));
+		} catch (RemoteException e1) {
+			_destSlave.handleRemoteException(e1);
+			throw new RuntimeException(e1);
+		}
+		SrcXfer srcxfer;
+		try {
+			srcxfer =
+				new SrcXfer(
+					_sourceSlave.getSlave().connect(
+						new InetSocketAddress(
+							_destSlave.getInetAddress(),
+							dstxfer.getLocalPort()),
+						false));
+		} catch (RemoteException e2) {
+			_sourceSlave.handleRemoteException(e2);
+			throw new RuntimeException(e2);
+		}
 		dstxfer.start();
 		srcxfer.start();
 		while (srcxfer.isAlive() && dstxfer.isAlive()) {
@@ -132,9 +152,9 @@ public class SlaveTransfer {
 			return true;
 		}
 		if (dstxfer.getChecksum() == 0
-				|| _file.getCheckSumCached() == dstxfer.getChecksum()
-				|| _file.getCheckSumCached() == _destSlave.getSlave().checkSum(
-						_file.getPath())) {
+			|| _file.getCheckSumCached() == dstxfer.getChecksum()
+			|| _file.getCheckSumCached()
+				== _destSlave.getSlave().checkSum(_file.getPath())) {
 			_file.addSlave(_destSlave);
 			return true;
 		}

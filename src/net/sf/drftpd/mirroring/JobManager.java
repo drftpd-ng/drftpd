@@ -28,6 +28,7 @@ import java.util.Properties;
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.SlaveEvent;
@@ -39,7 +40,7 @@ import net.sf.drftpd.slave.SlaveStatus;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.31 2004/02/27 01:02:19 mog Exp $
+ * @version $Id: JobManager.java,v 1.32 2004/03/01 00:21:08 mog Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -215,17 +216,24 @@ public class JobManager implements FtpListener {
 		if (System.currentTimeMillis() - job.getTimeCreated() < _maxWait) {
 			// check to see if we should transfer it since it is under maxWait
 			// time
-			SlaveStatus sourceStatus = null;
-			SlaveStatus destStatus = null;
+			SlaveStatus sourceStatus;
+			SlaveStatus destStatus;
 			try {
+				try {
 				sourceStatus = sourceSlave.getStatus();
-				destStatus = slave.getStatus();
-			} catch (RemoteException e) {
-				// slave went offline or is having problems after using
-				// getNextJob()
-				addJob(job);
-				return true; // try and send another job immediately
-			} catch (NoAvailableSlaveException e) {
+				} catch(RemoteException e) {
+					sourceSlave.handleRemoteException(e);
+					addJob(job);
+					return true; // try and send another job immediately
+				}
+				try {
+					destStatus = slave.getStatus();
+				} catch(RemoteException e) {
+					slave.handleRemoteException(e);
+					addJob(job);
+					return false;
+				}
+			} catch (SlaveUnavailableException e) {
 				// slave went offline after using getNextJob()
 				addJob(job);
 				return true; // try and send another job immediately

@@ -21,7 +21,7 @@ import java.rmi.RemoteException;
 import java.util.Iterator;
 
 import net.sf.drftpd.Bytes;
-import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.slave.SlaveStatus;
@@ -38,7 +38,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Slaves.java,v 1.2 2004/02/10 00:03:05 mog Exp $
+ * @version $Id: Slaves.java,v 1.3 2004/03/01 00:21:08 mog Exp $
  */
 public class Slaves extends GenericAutoService {
 
@@ -83,7 +83,7 @@ public class Slaves extends GenericAutoService {
 				SlaveStatus status;
 				try {
 					status = rslave.getSlave().getSlaveStatus();
-				} catch (NoAvailableSlaveException e1) {
+				} catch (SlaveUnavailableException e1) {
 					say(
 						ReplacerUtils.jprintf(
 							"slaves.offline",

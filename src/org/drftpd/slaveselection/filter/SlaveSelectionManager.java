@@ -37,7 +37,7 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.4 2004/02/27 01:02:21 mog Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.5 2004/03/01 00:21:10 mog Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 	private FilterChain _ssmiDown;
@@ -129,7 +129,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 		} else {
 			throw new IllegalArgumentException();
 		}
-		return ssmi.process(sc, user, peer, direction, file);
+		return ssmi.getBestSlave(sc, user, peer, direction, file);
 	}
 
 	public SlaveManagerImpl getSlaveManager() {

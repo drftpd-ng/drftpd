@@ -37,6 +37,7 @@ import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
+import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManagerImpl;
@@ -52,7 +53,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.122 2004/02/27 01:02:19 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.123 2004/03/01 00:21:09 mog Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -448,7 +449,7 @@ public class LinkedRemoteFile
 					Slave slave;
 					try {
 						slave = rslave.getSlave();
-					} catch (NoAvailableSlaveException ex) {
+					} catch (SlaveUnavailableException ex) {
 						logger.info("slave not available for deletion");
 						continue;
 					}
@@ -521,7 +522,7 @@ public class LinkedRemoteFile
 							+ tempSlave.getName()
 							+ " during delete, assumed deleted",
 						ex);
-				} catch (NoAvailableSlaveException e) {
+				} catch (SlaveUnavailableException e) {
 					logger.debug("Probably run from Archive", e);
 					continue;
 				} catch (IOException e) {
@@ -611,15 +612,17 @@ public class LinkedRemoteFile
 		throws NoAvailableSlaveException, IOException {
 		RemoteSlave slave;
 		while (true) {
-			slave = getASlaveForDownload(null);
+			slave = getASlaveForDownload(null); // throws NoAvailableSlaveException
 			try {
 				_checkSum = slave.getSlave().checkSum(getPath());
 				// throws IOException
+				return _checkSum;
 			} catch (RemoteException ex) {
 				slave.handleRemoteException(ex);
 				continue;
+			} catch (SlaveUnavailableException e) {
+				continue;
 			}
-			return _checkSum;
 		}
 
 	}
@@ -652,7 +655,7 @@ public class LinkedRemoteFile
 		LinkedRemoteFileInterface file =
 			(LinkedRemoteFileInterface) _files.get(fileName);
 		if (file == null)
-			throw new FileNotFoundException("No such file or directory");
+			throw new FileNotFoundException("No such file or directory: "+fileName);
 		if (!includeDeleted && file.isDeleted())
 			throw new FileNotFoundException("File is queued for deletion");
 		return file;
@@ -802,6 +805,8 @@ public class LinkedRemoteFile
 					break;
 				} catch (RemoteException ex) {
 					rslave.handleRemoteException(ex);
+				} catch (SlaveUnavailableException e) {
+					continue;
 				}
 			}
 		}
@@ -1275,12 +1280,12 @@ public class LinkedRemoteFile
 
 								//file.removeSlave(rslave);
 								//renameTo.addSlave(rslave);
-							} catch (RemoteException e1) {
-								rslave.handleRemoteException(e1);
-							} catch (NoAvailableSlaveException e1) {
-								throw new RuntimeException();
-							} catch (IOException e1) {
-								logger.warn("", e1);
+							} catch (RemoteException e) {
+								rslave.handleRemoteException(e);
+							} catch (SlaveUnavailableException e) {
+								throw new RuntimeException(e);
+							} catch (IOException e) {
+								logger.warn("", e);
 							}
 							continue;
 						} catch (FileNotFoundException e) {
@@ -1491,7 +1496,7 @@ public class LinkedRemoteFile
 				Slave slave;
 				try {
 					slave = rslave.getSlave();
-				} catch (NoAvailableSlaveException e) {
+				} catch (SlaveUnavailableException e) {
 					//trust that hasOfflineSlaves() did a good job and no
 					// files are present on offline slaves
 					continue;
@@ -1517,7 +1522,7 @@ public class LinkedRemoteFile
 				Slave slave;
 				try {
 					slave = rslave.getSlave();
-				} catch (NoAvailableSlaveException ex) {
+				} catch (SlaveUnavailableException ex) {
 					continue;
 				}
 				try {

@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManagerImpl;
@@ -40,7 +41,7 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.3 2004/02/27 14:12:32 zubov Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.4 2004/03/01 00:21:09 mog Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 
@@ -102,7 +103,7 @@ return getASlaveInternal(file.getAvailableSlaves(), Transfer.TRANSFER_SENDING_DO
 					try {
 						beststatus = bestslave.getStatus();
 						// throws NoAvailableSlaveException
-					} catch (NoAvailableSlaveException ex) {
+					} catch (SlaveUnavailableException ex) {
 						continue;
 					}
 					bestthroughput = beststatus.getThroughputDirection(direction);
@@ -121,7 +122,7 @@ return getASlaveInternal(file.getAvailableSlaves(), Transfer.TRANSFER_SENDING_DO
 				} catch (RemoteException ex) {
 					slave.handleRemoteException(ex);
 					continue;
-				} catch (NoAvailableSlaveException ex) { // throws NoAvailableSlaveException
+				} catch (SlaveUnavailableException ex) {
 					continue;
 				}
 

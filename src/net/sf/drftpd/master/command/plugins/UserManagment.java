@@ -27,6 +27,7 @@ import java.util.StringTokenizer;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.DuplicateElementException;
+import net.sf.drftpd.HostMask;
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -53,7 +54,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.28 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: UserManagment.java,v 1.29 2004/03/01 00:21:08 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -250,6 +251,7 @@ public class UserManagment implements CommandHandler {
 			while (st.hasMoreTokens()) {
 				String string = st.nextToken();
 				env.add("mask", string);
+				new HostMask(string); // validate hostmask
 				try {
 					newUser.addIPMask(string);
 					response.addComment(

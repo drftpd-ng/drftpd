@@ -34,7 +34,7 @@ import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: MatchdirFilterTest.java,v 1.3 2004/02/27 01:02:21 mog Exp $
+ * @version $Id: MatchdirFilterTest.java,v 1.4 2004/03/01 00:21:10 mog Exp $
  */
 public class MatchdirFilterTest extends TestCase {
 
@@ -55,7 +55,7 @@ public class MatchdirFilterTest extends TestCase {
 		return new TestSuite(MatchdirFilterTest.class);
 	}
 
-	public class SSM extends FilterChain {
+	public class FC extends FilterChain {
 		public SlaveManagerImpl getSlaveManager() {
 			try {
 				return new SM();
@@ -92,7 +92,7 @@ public class MatchdirFilterTest extends TestCase {
 		p.put("1.assign", "slave1+100,slave2-100");
 		p.put("1.match", "/path1/*");
 
-		Filter f = new MatchdirFilter(new SSM(), 1, p);
+		Filter f = new MatchdirFilter(new FC(), 1, p);
 		ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
 		f.process(sc, null, null,Transfer.TRANSFER_SENDING_DOWNLOAD, new LinkedRemoteFilePath("/path2/dir/file.txt"));
@@ -115,7 +115,7 @@ public class MatchdirFilterTest extends TestCase {
 		p.put("1.assign", "ALL+100");
 		p.put("1.match", "/path2/*");
 
-		Filter f = new MatchdirFilter(new SSM(), 1, p);
+		Filter f = new MatchdirFilter(new FC(), 1, p);
 		ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
 		f.process(sc, null, null,Transfer.TRANSFER_SENDING_DOWNLOAD, new LinkedRemoteFilePath("/path1/dir/file.txt"));

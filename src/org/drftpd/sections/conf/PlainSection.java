@@ -23,13 +23,13 @@ import java.util.Collections;
 import java.util.Properties;
 
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.sections.SectionInterface;
 
 /**
  * @author mog
- * @version $Id: PlainSection.java,v 1.2 2004/02/27 01:02:20 mog Exp $
+ * @version $Id: PlainSection.java,v 1.3 2004/03/01 00:21:09 mog Exp $
  */
 public class PlainSection implements SectionInterface {
 
@@ -48,7 +48,7 @@ public class PlainSection implements SectionInterface {
 		getFile();
 	}
 
-	public LinkedRemoteFile getFile() {
+	public LinkedRemoteFileInterface getFile() {
 		try {
 			return _mgr.getConnectionManager().getRoot().lookupFile(_dir);
 		} catch (FileNotFoundException e) {

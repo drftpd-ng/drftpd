@@ -17,14 +17,20 @@
  */
 package org.drftpd.sections.def;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+
 import net.sf.drftpd.master.ConnectionManager;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SectionManager.java,v 1.1 2004/02/26 21:11:08 mog Exp $
+ * @version $Id: SectionManager.java,v 1.2 2004/03/01 00:21:09 mog Exp $
  */
 public class SectionManager implements SectionManagerInterface {
 
@@ -39,7 +45,44 @@ public class SectionManager implements SectionManagerInterface {
 	}
 
 	public SectionInterface lookup(String string) {
+		//TODO lookup() in default section manager
 		throw new UnsupportedOperationException();
 	}
 
+	public Collection getSections() {
+		ArrayList sections = new ArrayList();
+		for (Iterator iter =
+			_cm.getSlaveManager().getRoot().getDirectories().iterator();
+			iter.hasNext();
+			) {
+			LinkedRemoteFileInterface dir =
+				(LinkedRemoteFileInterface) iter.next();
+			sections.add(new Section(dir));
+		}
+		return sections;
+	}
+
+	public class Section implements SectionInterface {
+		private LinkedRemoteFileInterface _lrf;
+
+		public Section(LinkedRemoteFileInterface lrf) {
+			_lrf = lrf;
+		}
+
+		public String getName() {
+			return _lrf.getName();
+		}
+
+		public LinkedRemoteFileInterface getFile() {
+			return _lrf;
+		}
+
+		public String getPath() {
+			return _lrf.getPath();
+		}
+
+		public Collection getFiles() {
+			return Collections.singletonList(_lrf);
+		}
+	}
 }

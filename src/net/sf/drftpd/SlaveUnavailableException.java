@@ -15,19 +15,27 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.sections;
-
-import java.util.Collection;
-
-import net.sf.drftpd.master.ConnectionManager;
-
+package net.sf.drftpd;
 
 /**
  * @author mog
- * @version $Id: SectionManagerInterface.java,v 1.2 2004/03/01 00:21:09 mog Exp $
+ * @version $Id: SlaveUnavailableException.java,v 1.1 2004/03/01 00:21:07 mog Exp $
  */
-public interface SectionManagerInterface {
-	public ConnectionManager getConnectionManager();
-	public SectionInterface lookup(String string);
-	public Collection getSections(); 
+public class SlaveUnavailableException extends Exception {
+
+	public SlaveUnavailableException() {
+		super();
+	}
+
+	public SlaveUnavailableException(String message) {
+		super(message);
+	}
+
+	public SlaveUnavailableException(Throwable cause) {
+		super(cause);
+	}
+
+	public SlaveUnavailableException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

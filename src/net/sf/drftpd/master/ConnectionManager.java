@@ -20,6 +20,7 @@ package net.sf.drftpd.master;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Constructor;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.RemoteException;
@@ -50,13 +51,13 @@ import net.sf.drftpd.slave.SlaveImpl;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.drftpd.sections.conf.SectionManager;
+import org.drftpd.sections.SectionManagerInterface;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.89 2004/02/26 13:56:49 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.90 2004/03/01 00:21:08 mog Exp $
  */
 public class ConnectionManager {
-	private SectionManager _sections;
+	private SectionManagerInterface _sections;
 
 	public static final int idleTimeout = 300;
 
@@ -65,7 +66,7 @@ public class ConnectionManager {
 
 	public static void main(String args[]) {
 		System.out.println(SlaveImpl.VERSION + " master server starting.");
-		System.out.println("http://drftpd.sourceforge.net");
+		System.out.println("http://drftpd.org/");
 
 		try {
 			String cfgFileName;
@@ -137,6 +138,8 @@ public class ConnectionManager {
 	private SlaveManagerImpl _slaveManager;
 	private Timer _timer;
 	private UserManager _usermanager;
+	protected ConnectionManager() {
+	}
 	public ConnectionManager(
 		Properties cfg,
 		Properties slaveCfg,
@@ -176,11 +179,22 @@ public class ConnectionManager {
 			_usermanager.init(this);
 		} catch (Exception e) {
 			throw new FatalException(
-				"Cannot create instance of usermanager, check master.usermanager in drftpd-0.7.conf",
+				"Cannot create instance of usermanager, check master.usermanager in "+cfgFileName,
 				e);
 		}
-		_sections = new SectionManager(this);
-		
+		try {
+			Class cl =
+				Class.forName(
+					cfg.getProperty(
+						"sectionmanager",
+						"org.drftpd.sections.def.SectionManager"));
+			Constructor c =
+				cl.getConstructor(new Class[] { ConnectionManager.class });
+			_sections = (SectionManagerInterface) c.newInstance(new Object[] { this });
+		} catch (Exception e) {
+			throw new FatalException(e);
+		}
+
 		for (int i = 1;; i++) {
 			String classname = cfg.getProperty("plugins." + i);
 			if (classname == null)
@@ -413,7 +427,7 @@ public class ConnectionManager {
 		return getSlaveManager().getRoot();
 	}
 
-	public SectionManager getSectionManager() {
+	public SectionManagerInterface getSectionManager() {
 		return _sections;
 	}
 }

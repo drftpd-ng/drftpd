@@ -43,6 +43,7 @@ import net.sf.drftpd.Checksum;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SFVFile;
+import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -68,7 +69,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.47 2004/02/26 22:10:13 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.48 2004/03/01 00:21:08 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -302,7 +303,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			} catch (RemoteException e) {
 				_preTransferRSlave.handleRemoteException(e);
 				return new FtpReply(450, "Remote error: " + e.getMessage());
-			} catch (NoAvailableSlaveException e) {
+			} catch (SlaveUnavailableException e) {
 				return FtpReply.RESPONSE_530_SLAVE_UNAVAILABLE;
 			} catch (IOException e) {
 				logger.log(Level.FATAL, "", e);
@@ -1200,8 +1201,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 					return new FtpReply(
 						450,
 						"Remote error: " + ex.getMessage());
-				} catch (IOException ex) {
-					logger.log(Level.FATAL, "rslave=" + _rslave, ex);
+				} catch (Exception ex) {
+					logger.fatal("rslave=" + _rslave, ex);
 					return new FtpReply(
 						450,
 						ex.getClass().getName()

@@ -28,13 +28,14 @@ import junit.framework.TestSuite;
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.Transfer;
 
 /**
  * @author mog
- * @version $Id: MinfreespaceFilterTest.java,v 1.3 2004/02/27 01:02:21 mog Exp $
+ * @version $Id: MinfreespaceFilterTest.java,v 1.4 2004/03/01 00:21:10 mog Exp $
  */
 public class MinfreespaceFilterTest extends TestCase {
 	public static class RemoteSlaveTesting extends RemoteSlave {
@@ -46,7 +47,7 @@ public class MinfreespaceFilterTest extends TestCase {
 		}
 		
 		public SlaveStatus getStatus()
-			throws RemoteException, NoAvailableSlaveException {
+			throws RemoteException, SlaveUnavailableException {
 			return _status;
 		}
 	}

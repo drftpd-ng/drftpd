@@ -32,3 +32,6 @@ use.ident=true
 #plugins.4=net.sf.drftpd.mirroring.JobManager
 #plugins.5=net.sf.drftpd.event.listeners.Mirror
 #plugins.6=net.sf.drftpd.event.listeners.Archive
+
+slaveselection=org.drftpd.slaveselection.def.SlaveSelectionManager
+sectionmanager=org.drftpd.sections.def.SectionManager

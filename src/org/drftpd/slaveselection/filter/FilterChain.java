@@ -34,7 +34,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: FilterChain.java,v 1.1 2004/02/27 01:02:21 mog Exp $
+ * @version $Id: FilterChain.java,v 1.2 2004/03/01 00:21:10 mog Exp $
  */
 public class FilterChain {
 	private String _cfgfileName;
@@ -43,7 +43,7 @@ public class FilterChain {
 
 	protected FilterChain() {
 	}
-	
+
 	public FilterChain(SlaveSelectionManager manager, Properties p) {
 		_sm = manager;
 		reload(p);
@@ -56,7 +56,7 @@ public class FilterChain {
 		reload();
 	}
 
-	public RemoteSlave process(
+	public RemoteSlave getBestSlave(
 		ScoreChart sc,
 		User user,
 		InetAddress peer,
@@ -67,7 +67,9 @@ public class FilterChain {
 			Filter filter = (Filter) iter.next();
 			filter.process(sc, user, peer, direction, file);
 		}
-		return sc.getBestSlave();
+		RemoteSlave rslave = sc.getBestSlave();
+		rslave.setLastDirection(direction, System.currentTimeMillis());
+		return rslave;
 	}
 
 	public void reload() throws FileNotFoundException, IOException {

@@ -24,7 +24,7 @@ import java.util.List;
  * Creates a single RemoteFile object that is not linked to any other objects.
  * 
  * @author mog
- * @version $Id: StaticRemoteFile.java,v 1.25 2004/02/10 00:03:15 mog Exp $
+ * @version $Id: StaticRemoteFile.java,v 1.26 2004/03/01 00:21:09 mog Exp $
  */
 public class StaticRemoteFile extends RemoteFile {
 	private boolean _isDeleted;
@@ -72,6 +72,11 @@ public class StaticRemoteFile extends RemoteFile {
 		_name = name;
 	}
 
+	public StaticRemoteFile(String name, List rslaves) {
+		this(name);
+		_rslaves = rslaves;
+	}
+	
 	public Collection getFiles() {
 		throw new UnsupportedOperationException("getFiles() does not exist in StaticRemoteFile");
 	}

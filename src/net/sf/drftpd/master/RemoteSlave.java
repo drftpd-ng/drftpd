@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.26 2004/02/27 01:02:19 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.27 2004/03/01 00:21:08 mog Exp $
  */
 public class RemoteSlave implements Comparable {
 
@@ -117,9 +117,9 @@ public class RemoteSlave implements Comparable {
 	/**
 	 * Throws NoAvailableSlaveException only if slave is offline
 	 */
-	public Slave getSlave() throws NoAvailableSlaveException {
+	public Slave getSlave() throws SlaveUnavailableException {
 		if (_slave == null)
-			throw new NoAvailableSlaveException("slave is offline");
+			throw new SlaveUnavailableException("slave is offline");
 		return _slave;
 	}
 
@@ -127,7 +127,7 @@ public class RemoteSlave implements Comparable {
 	 * Get's slave status, caches the status for 10 seconds.
 	 */
 	public SlaveStatus getStatus()
-		throws RemoteException, NoAvailableSlaveException {
+		throws RemoteException, SlaveUnavailableException {
 		return getSlave().getSlaveStatus();
 
 		//		if (statusTime < System.currentTimeMillis() - 10000) {
@@ -170,15 +170,15 @@ public class RemoteSlave implements Comparable {
 		} catch (RemoteException e) {
 			handleRemoteException(e);
 			return false;
-		} catch (NoAvailableSlaveException e) {
+		} catch (SlaveUnavailableException e) {
 			return false;
 		}
 		return isAvailable();
 	}
 
-	public void ping() throws RemoteException, NoAvailableSlaveException {
+	public void ping() throws RemoteException, SlaveUnavailableException {
 		if (_slave == null)
-			throw new NoAvailableSlaveException(getName() + " is offline");
+			throw new SlaveUnavailableException(getName() + " is offline");
 		if (System.currentTimeMillis() > _lastPing + 1000) {
 			getSlave().ping();
 		}
@@ -220,7 +220,7 @@ public class RemoteSlave implements Comparable {
 	public String toString() {
 		try {
 			return getName() + "[slave=" + getSlave().toString() + "]";
-		} catch (NoAvailableSlaveException e) {
+		} catch (SlaveUnavailableException e) {
 			return getName() + "[slave=offline]";
 		}
 	}
@@ -235,14 +235,27 @@ public class RemoteSlave implements Comparable {
 	}
 
 	public long getLastTransferForDirection(char dir) {
-		if(dir == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+		if (dir == Transfer.TRANSFER_RECEIVING_UPLOAD) {
 			return getLastUploadReceiving();
-		} else if(dir == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+		} else if (dir == Transfer.TRANSFER_SENDING_DOWNLOAD) {
 			return getLastDownloadSending();
-		} else if(dir == Transfer.TRANSFER_THROUGHPUT) {
+		} else if (dir == Transfer.TRANSFER_THROUGHPUT) {
 			return getLastTransfer();
 		} else {
 			throw new IllegalArgumentException();
+		}
+	}
+
+	public void setLastDirection(char direction, long l) {
+		switch (direction) {
+			case Transfer.TRANSFER_RECEIVING_UPLOAD :
+				setLastUploadReceiving(l);
+				return;
+			case Transfer.TRANSFER_SENDING_DOWNLOAD :
+				setLastDownloadSending(l);
+				return;
+			default :
+				throw new IllegalArgumentException();
 		}
 	}
 }

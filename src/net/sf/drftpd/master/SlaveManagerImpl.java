@@ -41,6 +41,7 @@ import java.util.Properties;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.UserFileException;
@@ -64,7 +65,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.70 2004/02/27 01:02:19 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.71 2004/03/01 00:21:08 mog Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -443,10 +444,10 @@ public class SlaveManagerImpl
 			System.out.println(
 				"SlaveStatus: " + rslave.getSlave().getSlaveStatus());
 			// throws RemoteException
-		} catch (NoAvailableSlaveException e) {
-			logger.log(Level.FATAL, "", e);
+		} catch (SlaveUnavailableException e) {
+			logger.fatal("", e);
 		} catch (RemoteException e) {
-			logger.log(Level.FATAL, "RemoteException from getSlaveStatus()", e);
+			logger.fatal("RemoteException from getSlaveStatus()", e);
 		}
 		getConnectionManager().dispatchFtpEvent(
 			new SlaveEvent("ADDSLAVE", rslave));
@@ -465,7 +466,7 @@ public class SlaveManagerImpl
 				logger.warn(
 					"Got remote exception in slave " + rslave.getName(),
 					e);
-			} catch (NoAvailableSlaveException e) {
+			} catch (SlaveUnavailableException e) {
 				continue;
 			}
 			if (size > bigSize) {
@@ -490,7 +491,7 @@ public class SlaveManagerImpl
 				logger.warn(
 					"Got remote exception in slave " + rslave.getName(),
 					e);
-			} catch (NoAvailableSlaveException e) {
+			} catch (SlaveUnavailableException e) {
 				continue;
 			}
 			if (size < smallSize) {
@@ -515,7 +516,7 @@ public class SlaveManagerImpl
 				allStatus = allStatus.append(rslave.getStatus());
 			} catch (RemoteException e) {
 				rslave.handleRemoteException(e);
-			} catch (NoAvailableSlaveException e) {
+			} catch (SlaveUnavailableException e) {
 				//slave is offline, continue
 			}
 		}
@@ -705,7 +706,7 @@ public class SlaveManagerImpl
 				} catch (RemoteException ex) {
 					if (slave.handleRemoteException(ex))
 						removed++;
-				} catch (NoAvailableSlaveException ex) {
+				} catch (SlaveUnavailableException ex) {
 					continue;
 				}
 			}

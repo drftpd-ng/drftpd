@@ -39,6 +39,7 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.Nukee;
 import net.sf.drftpd.SFVFile;
+import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.SFVFile.SFVStatus;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.Event;
@@ -65,7 +66,7 @@ import org.tanesha.replacer.FormatterException;
 
 /**
  * @author mog
- * @version $Id: GlftpdLog.java,v 1.2 2004/02/26 16:34:41 flowman Exp $
+ * @version $Id: GlftpdLog.java,v 1.3 2004/03/01 00:21:08 mog Exp $
  */
 public class GlftpdLog implements FtpListener {
 	PrintWriter out;
@@ -504,7 +505,7 @@ public class GlftpdLog implements FtpListener {
 			} catch (RemoteException e) {
 				sevent.getRSlave().handleRemoteException(e);
 				return;
-			} catch (NoAvailableSlaveException e) {
+			} catch (SlaveUnavailableException e) {
 				return;
 			}
 

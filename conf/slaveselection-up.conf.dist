@@ -8,3 +8,5 @@
 3.filter=minfreespace
 3.minfreespace=100MB
 3.multiplier=remove
+
+4.filter=cycle

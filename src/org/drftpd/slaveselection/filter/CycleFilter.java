@@ -18,21 +18,26 @@
 package org.drftpd.slaveselection.filter;
 
 import java.net.InetAddress;
+import java.rmi.RemoteException;
+import java.util.Iterator;
 import java.util.Properties;
 
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.master.config.FtpConfig;
+import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
+ * Checks ScoreChart for slaves with 0 bw usage and assigns 1 extra point to the one in that has been unused for the longest time.
+ * 
  * @author mog
- * @version $Id: CycleFilter.java,v 1.1 2004/02/27 01:02:21 mog Exp $
+ * @version $Id: CycleFilter.java,v 1.2 2004/03/01 00:21:10 mog Exp $
  */
 public class CycleFilter extends Filter {
 
 	public CycleFilter(FilterChain fc, int i, Properties p) {
 	}
+
 	public void process(
 		ScoreChart scorechart,
 		User user,
@@ -41,6 +46,36 @@ public class CycleFilter extends Filter {
 		LinkedRemoteFileInterface dir)
 		throws NoAvailableSlaveException {
 
-	}
+		ScoreChart.SlaveScore leastUsed = null;
+		for (Iterator iter = scorechart.getSlaveScores().iterator();
+			iter.hasNext();
+			) {
+			ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
+			try {
+				if (score
+					.getRSlave()
+					.getStatus()
+					.getThroughputDirection(direction)
+					== 0) {
 
+					if (leastUsed == null) {
+						leastUsed = score;
+					} else if (
+						score.getRSlave().getLastTransferForDirection(
+							direction)
+							< leastUsed.getRSlave().getLastTransferForDirection(
+								direction)) {
+						leastUsed = score;
+					}
+				}
+			} catch (RemoteException e) {
+				score.getRSlave().handleRemoteException(e);
+			} catch (SlaveUnavailableException e) {
+				iter.remove();
+			}
+		}
+		if (leastUsed != null) {
+			leastUsed.addScore(1);
+		}
+	}
 }

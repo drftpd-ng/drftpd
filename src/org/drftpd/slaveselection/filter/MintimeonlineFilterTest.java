@@ -18,22 +18,20 @@
 package org.drftpd.slaveselection.filter;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Properties;
 
-import org.apache.log4j.BasicConfigurator;
-
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.util.Time;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author mog
- * @version $Id: MintimeonlineFilterTest.java,v 1.1 2004/02/27 01:02:21 mog Exp $
+ * @version $Id: MintimeonlineFilterTest.java,v 1.2 2004/03/01 00:21:10 mog Exp $
  */
 public class MintimeonlineFilterTest extends TestCase {
 
@@ -63,10 +61,9 @@ public class MintimeonlineFilterTest extends TestCase {
 		p.put("1.multiplier", "1");
 		p.put("1.mintime", "2m");
 
-		Filter f = new MintimeonlineFilter(null, 1, p);
-
 		RemoteSlave rslaves[] = { new RS("slave1")};
 		ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
+		Filter f = new MintimeonlineFilter(null, 1, p);
 		f.process(sc, null, null, Transfer.TRANSFER_UNKNOWN, null);
 		assertEquals(-Time.parseTime("1m"), sc.getBestSlaveScore().getScore());
 	}

@@ -19,6 +19,8 @@ package org.drftpd.sections.conf;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Properties;
@@ -31,7 +33,7 @@ import net.sf.drftpd.master.ConnectionManager;
 
 /**
  * @author mog
- * @version $Id: SectionManager.java,v 1.1 2004/02/26 13:56:52 mog Exp $
+ * @version $Id: SectionManager.java,v 1.2 2004/03/01 00:21:09 mog Exp $
  */
 public class SectionManager implements SectionManagerInterface {
 	private static final Class[] CONSTRUCTOR_SIG =
@@ -47,6 +49,10 @@ public class SectionManager implements SectionManagerInterface {
 
 	public ConnectionManager getConnectionManager() {
 		return _mgr;
+	}
+
+	public Collection getSections() {
+		return Collections.unmodifiableCollection(_sections.values());
 	}
 
 	public SectionInterface lookup(String string) {
