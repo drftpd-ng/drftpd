@@ -21,7 +21,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 /**
  * @author zubov
  *
- * @version $Id: Mirror.java,v 1.10 2004/01/20 04:33:10 zubov Exp $
+ * @version $Id: Mirror.java,v 1.11 2004/01/20 16:07:17 zubov Exp $
  */
 public class Mirror implements FtpListener {
 
@@ -79,7 +79,7 @@ public class Mirror implements FtpListener {
 	private void reload() {
 		Properties props = new Properties();
 		try {
-			props.load(new FileInputStream("mirror.conf"));
+			props.load(new FileInputStream("conf/mirror.conf"));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

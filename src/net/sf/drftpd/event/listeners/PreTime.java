@@ -23,7 +23,7 @@ import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
- * @version $Id: PreTime.java,v 1.11 2004/01/13 20:30:53 mog Exp $
+ * @version $Id: PreTime.java,v 1.12 2004/01/20 16:07:17 zubov Exp $
  */
 public class PreTime implements FtpListener {
 	private SiteBot _siteBot;
@@ -86,7 +86,7 @@ public class PreTime implements FtpListener {
 	private void reload() {
 		Properties props = new Properties();
 		try {
-			props.load(new FileInputStream("pretime.conf"));
+			props.load(new FileInputStream("conf/pretime.conf"));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

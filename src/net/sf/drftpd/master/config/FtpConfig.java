@@ -24,7 +24,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.33 2004/01/20 06:59:01 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.34 2004/01/20 16:07:17 zubov Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -89,7 +89,7 @@ public class FtpConfig {
 
 	String cfgFileName;
 	private String loginPrompt = SlaveImpl.VERSION + " http://drftpd.mog.se";
-	private String newConf = "perms.conf";
+	private String newConf = "conf/perms.conf";
 	/**
 	 * Constructor that allows reusing of cfg object
 	 * 

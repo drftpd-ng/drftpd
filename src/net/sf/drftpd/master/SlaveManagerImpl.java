@@ -45,7 +45,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 /**
- * @version $Id: SlaveManagerImpl.java,v 1.58 2004/01/20 06:59:00 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.59 2004/01/20 16:07:17 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -537,7 +537,7 @@ public class SlaveManagerImpl
 	public void reloadRSlaves() throws FileNotFoundException, IOException {
 		Document doc;
 		try {
-			doc = new SAXBuilder().build(new FileReader("slaves.xml"));
+			doc = new SAXBuilder().build(new FileReader("conf/slaves.xml"));
 		} catch (JDOMException e) {
 			throw (IOException) new IOException().initCause(e);
 		}

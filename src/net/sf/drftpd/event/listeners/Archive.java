@@ -21,7 +21,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.13 2004/01/20 04:18:41 zubov Exp $
+ * @version $Id: Archive.java,v 1.14 2004/01/20 16:07:17 zubov Exp $
  */
 
 public class Archive implements FtpListener {
@@ -124,7 +124,7 @@ public class Archive implements FtpListener {
 	private void reload() {
 		Properties props = new Properties();
 		try {
-			props.load(new FileInputStream("archive.conf"));
+			props.load(new FileInputStream("conf/archive.conf"));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
