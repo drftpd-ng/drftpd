@@ -959,7 +959,14 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	}
 
 	public final synchronized void setOfflineReal(String reason) {
-		_socket = null;
+
+		if (_socket != null) {
+			try {
+				_socket.close();
+			} catch (IOException e) {
+			}
+			_socket = null;
+		}
 		_sin = null;
 		_sout = null;
 		_indexPool = null;
