@@ -1,0 +1,30 @@
+These log levels are used in wrapper-*.conf, under:
+#********************************************************************
+# Wrapper Logging Properties
+#********************************************************************
+
+Log Level
+Defines the minimum set of levels recognized by the system, that is OFF, FATAL, ERROR, WARN, INFODEBUG and ALL.
+
+This is the available log settings in conf/log4j-default.properties. Just change "log4j.rootLogger=DEBUG, A1" to one of the following settings.
+
+ALL
+The ALL has the lowest possible rank and is intended to turn on all logging.
+
+OFF
+The OFF has the highest possible rank and is intended to turn off logging.
+
+INFO
+The INFO level designates informational messages that highlight the progress of the application at coarse-grained level.
+
+DEBUG
+The DEBUG Level designates fine-grained informational events that are most useful to debug an application.
+
+WARN
+The WARN level designates potentially harmful situations.
+
+ERROR
+The ERROR level designates error events that might still allow the application to continue running.
+
+FATAL
+The FATAL level designates very severe error events that will presumably lead the application to abort.
