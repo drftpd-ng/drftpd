@@ -19,7 +19,6 @@ package org.drftpd.mirroring;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.listeners.Archive;
-import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -165,7 +164,6 @@ public abstract class ArchiveType {
                 jobQueue.addAll(recursiveSend(src));
             }
         }
-
         return jobQueue;
     }
 

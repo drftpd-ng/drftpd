@@ -14,11 +14,8 @@ master.localslave=false
 
 #User manager to use.
 #XStream is default for >=1.1, but JSX is still supported for <1.1 users
-master.usermanager=net.sf.drftpd.master.usermanager.xstream.XStreamUserManager
-#master.usermanager=net.sf.drftpd.master.usermanager.jsx.JSXUserManager
-
-#Slave manager to use, just leave it for now.
-master.slavemanager=net.sf.drftpd.master.SlaveManager
+master.usermanager=org.drftpd.usermanager.xstream2.XStreamUserManager
+#master.usermanager=org.drftpd.usermanager.jsx2.JSXUserManager
 
 #loaded plugins must use in sequential numbering
 #plugins.1=org.drftpd.plugins.SiteBotSSL

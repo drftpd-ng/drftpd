@@ -44,7 +44,7 @@ import java.net.UnknownHostException;
 
 /**
  * @author mog
- * @version $Id: Login.java,v 1.39 2004/11/05 13:27:19 mog Exp $
+ * @version $Id$
  */
 public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
     private static final Logger logger = Logger.getLogger(Login.class);
@@ -187,7 +187,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
         }
 
         if (newUser.isDeleted() ||
-                conn.getGlobalContext().getConfig().isSiteShutdown(newUser)) {
+                !conn.getGlobalContext().getConfig().isLoginAllowed(newUser)) {
             return FtpReply.RESPONSE_530_ACCESS_DENIED;
         }
 

@@ -143,6 +143,7 @@ public class HostMaskCollection implements Serializable {
     }
 
     public String toString() {
+    	if(_masks.isEmpty()) return "";
         String masks = "";
 
         for (Iterator iter = _masks.iterator(); iter.hasNext();) {

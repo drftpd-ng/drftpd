@@ -73,14 +73,14 @@ import com.Ostermiller.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: Slave.java,v 1.13 2004/11/11 13:31:38 mog Exp $
+ * @version $Id$
  */
 public class Slave {
     public static final boolean isWin32 = System.getProperty("os.name")
                                                 .startsWith("Windows");
     private static final Logger logger = Logger.getLogger(Slave.class);
     private static final int TIMEOUT = 10000;
-    public static final String VERSION = "DrFTPD 1.2-CVS";
+    public static final String VERSION = "DrFTPD 1.2-SVN";
     private int _bufferSize;
     private SSLContext _ctx;
     private boolean _downloadChecksums;

@@ -26,6 +26,8 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.MLSTSerialize;
 
 import org.drftpd.Bytes;
+import org.drftpd.SFVFile;
+import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -41,15 +43,14 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
-//import org.apache.log4j.Logger;
-
 /**
- * @author B SITE FIND <options>-action <action>Options: -user <user>-group
+ * @author B
+ * SITE FIND <options>-action <action>Options: -user <user>-group
  *         <group>-nogroup -nouser Options: -mtime [-]n -type [f|d] -slave
  *         <slave>-size [-]size Options: -name <name>(* for wildcard)
  *         -incomplete -offline Actions: print, wipe, delete Multipe options and
@@ -64,7 +65,7 @@ public class Find implements CommandHandlerFactory, CommandHandler {
     }
 
     private static void findFile(BaseFtpConnection conn, FtpReply response,
-        LinkedRemoteFileInterface dir, Collection options, Collection actions,
+        LinkedRemoteFileInterface dir, Collection<FindOption> options, Collection actions,
         boolean files, boolean dirs) {
         //TODO optimize me, checking using regexp for all dirs is possibly slow
         if (!conn.getGlobalContext().getConnectionManager().getGlobalContext()
@@ -73,8 +74,8 @@ public class Find implements CommandHandlerFactory, CommandHandler {
             return;
         }
 
-        for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
-            LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
+        for (Iterator<LinkedRemoteFileInterface> iter = new ArrayList<LinkedRemoteFileInterface>(dir.getFiles()).iterator(); iter.hasNext();) {
+            LinkedRemoteFileInterface file = iter.next();
 
             if (file.isDirectory()) {
                 findFile(conn, response, file, options, actions, files, dirs);
@@ -83,13 +84,13 @@ public class Find implements CommandHandlerFactory, CommandHandler {
             if ((dirs && file.isDirectory()) || (files && file.isFile())) {
                 boolean checkIt = true;
 
-                for (Iterator iterator = options.iterator();
+                for (Iterator<FindOption> iterator = options.iterator();
                         iterator.hasNext();) {
                     if (response.size() >= 100) {
                         return;
                     }
 
-                    FindOption findOption = (FindOption) iterator.next();
+                    FindOption findOption = iterator.next();
 
                     if (!findOption.isTrueFor(file)) {
                         checkIt = false;
@@ -146,7 +147,7 @@ public class Find implements CommandHandlerFactory, CommandHandler {
         response.addComment(
             "Options: -mtime [-]n -type [f|d] -slave <slave> -size [-]size");
         response.addComment(
-            "Options: -name <name>(* for wildcard) -incomplete -offline");
+            "Options: -name <name>(* for wildcard) -incomplete [min % incomplete] -offline");
         response.addComment("Actions: print, printf[(format)], wipe, delete");
         response.addComment("Options for printf format:");
         response.addComment("#f - filename");
@@ -204,16 +205,16 @@ public class Find implements CommandHandlerFactory, CommandHandler {
             return getShortHelpMsg();
         }
 
-        Collection c = Arrays.asList(args);
-        ArrayList options = new ArrayList();
-        ArrayList actions = new ArrayList();
+        Collection<String> c = Arrays.asList(args);
+        ArrayList<FindOption> options = new ArrayList<FindOption>();
+        ArrayList<FindAction> actions = new ArrayList<FindAction>();
         boolean files = true;
         boolean dirs = true;
         boolean forceFilesOnly = false;
         boolean forceDirsOnly = false;
 
-        for (Iterator iter = c.iterator(); iter.hasNext();) {
-            String arg = iter.next().toString();
+        for (PeekingIterator<String> iter = new PeekingIterator<String>(c.iterator()); iter.hasNext();) {
+            String arg = iter.next();
 
             if (arg.toLowerCase().equals("-user")) {
                 if (!iter.hasNext()) {
@@ -306,7 +307,16 @@ public class Find implements CommandHandlerFactory, CommandHandler {
                 options.add(new OptionUser("nobody"));
             } else if (arg.toLowerCase().equals("-incomplete")) {
                 forceDirsOnly = true;
-                options.add(new OptionIncomplete());
+                String peek = null;
+                try {
+					peek = iter.peek();
+				} catch (NoSuchElementException fail) {
+				}
+                if(peek != null && peek.charAt(0) != '-') {
+                	options.add(new OptionIncomplete(Integer.parseInt(iter.next())));
+                } else {
+                	options.add(new OptionIncomplete());
+                }
             } else if (arg.toLowerCase().equals("-offline")) {
                 forceDirsOnly = true;
                 options.add(new OptionOffline());
@@ -576,7 +586,7 @@ public class Find implements CommandHandlerFactory, CommandHandler {
                         mlstMatch.group(4) + " | " + mlstMatch.group(5) +
                         " | " + mlstMatch.group(6);
                 } else {
-                    HashMap formats = new HashMap();
+                    HashMap<String,String> formats = new HashMap<String,String>();
                     formats.put("#f", mlstMatch.group(7));
                     formats.put("#s", mlstMatch.group(2));
                     formats.put("#u", mlstMatch.group(4));
@@ -605,7 +615,7 @@ public class Find implements CommandHandlerFactory, CommandHandler {
                         " | " + mlstDirMatch.group(4) + " | " +
                         mlstDirMatch.group(5);
                 } else {
-                    HashMap formats = new HashMap();
+                    HashMap<String,String> formats = new HashMap<String,String>();
                     formats.put("#f", mlstDirMatch.group(6));
                     formats.put("#s", mlstDirMatch.group(2));
                     formats.put("#u", mlstDirMatch.group(4));
@@ -669,22 +679,24 @@ public class Find implements CommandHandlerFactory, CommandHandler {
     }
 
     private static class OptionIncomplete implements FindOption {
-        /*
-         * (non-Javadoc)
-         *
-         * @see net.sf.drftpd.master.command.plugins.find.FindOption#isTrueFor(net.sf.drftpd.remotefile.LinkedRemoteFileInterface)
-         */
-        public boolean isTrueFor(LinkedRemoteFileInterface file) {
+		private int _minPercent;
+
+		public OptionIncomplete() {
+		}
+
+		public OptionIncomplete(int minPercent) {
+			_minPercent = minPercent;
+		}
+
+		public boolean isTrueFor(LinkedRemoteFileInterface file) {
             try {
-                return !file.lookupSFVFile().getStatus().isFinished();
+            	SFVFile sfv = file.lookupSFVFile();
+                SFVStatus status = sfv.getStatus();
+                if(_minPercent == 0) return !status.isFinished();
+                return status.getPresent()*100 / sfv.size() < _minPercent;
             } catch (Exception e) {
                 return false;
             }
-
-            /*
-             * } catch(NoAvailableSlaveException e) { return false; }
-             * catch(IOException e) { return false; }
-             */
         }
     }
 
@@ -695,11 +707,6 @@ public class Find implements CommandHandlerFactory, CommandHandler {
             } catch (Exception e) {
                 return false;
             }
-
-            /*
-             * } catch(NoAvailableSlaveException e) { return false; }
-             * catch(IOException e) { return false; }
-             */
         }
     }
 
@@ -804,5 +811,32 @@ public class Find implements CommandHandlerFactory, CommandHandler {
         public boolean isTrueFor(LinkedRemoteFileInterface file) {
             return file.getUsername().equals(username);
         }
+    }
+    private static class PeekingIterator<E> implements Iterator {
+    	private Iterator<E> _i;
+		private E _peek = null;
+
+		public PeekingIterator(Iterator<E> i) {
+    		_i = i;
+    	}
+		
+		public boolean hasNext() {
+			return _peek != null || _i.hasNext();
+		}
+
+		public E next() {
+			if(_peek != null) {
+				E peek = _peek;
+				_peek = null;
+				return peek;
+			}
+			return _i.next();
+		}
+		public void remove() {
+			_i.remove();
+		}
+		public E peek() {
+			return _peek = next();
+		}
     }
 }

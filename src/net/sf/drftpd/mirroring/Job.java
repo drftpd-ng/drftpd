@@ -69,7 +69,7 @@ public class Job {
     }
 
     /**
-     * Returns a List of slaves that can be used with
+     * Returns an unmodifiable List of slaves that can be used with.
      * {@see net.sf.drftpd.master.SlaveManagerImpl#getASlave(Collection, char, FtpConfig)}
      */
     public Set<RemoteSlave> getDestinationSlaves() {

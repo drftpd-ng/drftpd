@@ -350,7 +350,7 @@ public class ConnectionManager {
 
     public void timerLogoutIdle() {
         long currTime = System.currentTimeMillis();
-        ArrayList conns = new ArrayList(_conns);
+        ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(_conns);
 
         for (Iterator i = conns.iterator(); i.hasNext();) {
             BaseFtpConnection conn = (BaseFtpConnection) i.next();

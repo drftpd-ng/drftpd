@@ -16,6 +16,15 @@
  */
 package org.drftpd.commands;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
+
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMask;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -30,37 +39,23 @@ import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.Bytes;
-import org.drftpd.master.RemoteTransfer;
-
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.Key;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserExistsException;
 import org.drftpd.usermanager.UserFileException;
-
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
-
 
 /**
  * @author mog
  * @author zubov
- * @version $Id: UserManagment.java,v 1.4 2004/11/09 18:59:54 mog Exp $
+ * @version $Id$
  */
 public class UserManagment implements CommandHandler, CommandHandlerFactory {
     public static final Key TAGLINE = new Key(UserManagment.class, "tagline",
@@ -1174,7 +1169,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         }
 
         FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
-        ArrayList conns = new ArrayList(conn.getGlobalContext()
+        ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(conn.getGlobalContext()
                                             .getConnectionManager()
                                             .getConnections());
 
@@ -1562,7 +1557,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             ReplacerFormat formatcommand = ReplacerUtils.finalFormat(UserManagment.class,
                     "who.command");
             ReplacerEnvironment env = new ReplacerEnvironment();
-            ArrayList conns = new ArrayList(conn.getGlobalContext()
+            ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(conn.getGlobalContext()
                                                 .getConnectionManager()
                                                 .getConnections());
 

@@ -33,7 +33,7 @@ import javax.net.ssl.SSLSocket;
 
 /**
  * @author mog
- * @version $Id: PassiveConnection.java,v 1.1 2004/11/09 18:59:58 mog Exp $
+ * @version $Id$
  */
 public class PassiveConnection extends Connection {
     private static final Logger logger = Logger.getLogger(PassiveConnection.class);
@@ -46,7 +46,6 @@ public class PassiveConnection extends Connection {
         } else {
             _serverSocket = portRange.getPort(ServerSocketFactory.getDefault());
         }
-
         _serverSocket.setSoTimeout(TIMEOUT);
     }
 

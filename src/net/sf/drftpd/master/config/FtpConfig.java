@@ -74,7 +74,7 @@ public class FtpConfig {
     private int _maxUsersExempt;
     private int _maxUsersTotal = Integer.MAX_VALUE;
     private ArrayList _msgpath;
-    private Hashtable<String, Collection> _patternPaths;
+    private Hashtable<String, ArrayList> _patternPaths;
     private Hashtable<String, Permission> _permissions;
     private StringTokenizer _replaceDir;
     private StringTokenizer _replaceFile;
@@ -82,6 +82,7 @@ public class FtpConfig {
     private boolean _useDirNames;
     private boolean _useFileNames;
     private String newConf = "conf/perms.conf";
+	private Permission _shutdown;
 
     protected FtpConfig() {
     }
@@ -389,9 +390,10 @@ public class FtpConfig {
     }
 
     protected void loadConfig2(Reader in2) throws IOException {
-        Hashtable patternPathPermissions = new Hashtable();
+        Hashtable<String,ArrayList> patternPathPermissions = new Hashtable<String,ArrayList>();
         Hashtable<String,Permission> permissions = new Hashtable<String,Permission>();
-        ArrayList creditcheck = new ArrayList();
+        ArrayList<RatioPathPermission> creditcheck = new ArrayList<RatioPathPermission>();
+        Permission shutdown = null;
         ArrayList<RatioPathPermission> creditloss = new ArrayList<RatioPathPermission>();
         ArrayList<MessagePathPermission> msgpath = new ArrayList<MessagePathPermission>();
         _useFileNames = false;
@@ -470,8 +472,7 @@ public class FtpConfig {
                             "userrejectinsecure".equals(cmd) ||
                             "denydiruncrypted".equals(cmd) ||
                             "denydatauncrypted".equals(cmd) ||
-                            "give".equals(cmd) || "take".equals(cmd) ||
-                            "shutdown".equals(cmd)) {
+                            "give".equals(cmd) || "take".equals(cmd)) {
                         if (permissions.containsKey(cmd)) {
                             throw new RuntimeException(
                                 "Duplicate key in perms.conf: " + cmd +
@@ -479,6 +480,8 @@ public class FtpConfig {
                         }
 
                         permissions.put(cmd, new Permission(makeUsers(st)));
+                    } else if("shutdown".equals(cmd)) {
+                    	shutdown = new Permission(makeUsers(st));
                     } else {
                         if (!cmd.startsWith("#")) {
                             makePatternPathPermission(patternPathPermissions,
@@ -502,14 +505,15 @@ public class FtpConfig {
 
             _patternPaths = patternPathPermissions;
             _permissions = permissions;
+            _shutdown = shutdown;
         } finally {
             in.close();
         }
     }
 
-    private void makePatternPathPermission(Hashtable patternPathPermission,
+    private void makePatternPathPermission(Hashtable<String,ArrayList> patternPathPermission,
         String key, StringTokenizer st) throws MalformedPatternException {
-        ArrayList perms = (ArrayList) patternPathPermission.get(key);
+        ArrayList perms = patternPathPermission.get(key);
 
         if (perms == null) {
             perms = new ArrayList();
@@ -580,7 +584,10 @@ public class FtpConfig {
         }
     }
 
-    public boolean isSiteShutdown(User user) {
-        return checkPermission("shutdown", user);
+    /**
+     * Returns true if user is allowed into a shutdown server.
+     */
+    public boolean isLoginAllowed(User user) {
+        return (_shutdown == null) ? true : _shutdown.check(user);
     }
 }
