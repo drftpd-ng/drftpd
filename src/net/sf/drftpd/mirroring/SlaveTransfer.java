@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveTransfer.java,v 1.11 2004/03/06 00:39:46 zubov Exp $
+ * @version $Id: SlaveTransfer.java,v 1.12 2004/04/26 13:43:41 zubov Exp $
  */
 public class SlaveTransfer {
 	class DstXfer extends Thread {
@@ -150,6 +150,7 @@ public class SlaveTransfer {
 		}
 		if (!checkCRC) {
 			// crc passes if we're not using it
+			_file.addSlave(_destSlave);
 			return true;
 		}
 		long dstxferCheckSum = dstxfer.getChecksum();
