@@ -21,7 +21,7 @@ public interface Slave extends Remote {
 	 */
 	public Transfer doConnectSend(
 		String path,
-		char mode,
+		char type,
 		long offset,
 		InetAddress addr,
 		int port)
@@ -30,7 +30,7 @@ public interface Slave extends Remote {
 	/**
 	 * Listen on any port and send 'file' when connection is receieved.
 	 */
-	public Transfer doListenSend(String path, char mode, long offset)
+	public Transfer doListenSend(String path, char type, long offset)
 		throws RemoteException, IOException;
 
 	/**
@@ -39,9 +39,9 @@ public interface Slave extends Remote {
 	public Transfer doConnectReceive(
 		String dirname,
 		String file,
+		char type,
 		long offset,
-		InetAddress addr,
-		int port)
+		InetAddress addr, int port)
 		throws RemoteException, IOException;
 		
 	/**
@@ -50,7 +50,7 @@ public interface Slave extends Remote {
 	public Transfer doListenReceive(
 		String dirname,
 		String file,
-		long offset)
+		char type, long offset)
 		throws RemoteException, IOException;
 
 	public long checkSum(

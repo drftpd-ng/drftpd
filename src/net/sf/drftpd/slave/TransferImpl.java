@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import java.net.InetAddress;
 import java.net.Socket;
 
 import java.rmi.RemoteException;
@@ -120,6 +121,10 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 
 	public char getDirection() {
 		return direction;
+	}
+	
+	public InetAddress getEndpoint() {
+		return sock.getInetAddress();
 	}
 	
 	public long getChecksum() {

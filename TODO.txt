@@ -7,6 +7,7 @@
 	Replicate .sfv files over all slaves
 
 * XML BASED CONFIGURATION
+	Is it needed? Will a properties file be too ugly?
 
 * More fine grained file-permissions?
 	Current permission style:

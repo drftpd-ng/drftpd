@@ -13,6 +13,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,7 +35,7 @@ import net.sf.drftpd.slave.Transfer;
  */
 public class BaseFtpConnection implements Runnable {
 
-	java.util.List ftpListeners;
+	List ftpListeners;
 
 	/**
 	 * @deprecated use getConnectionManager().dispatchFtpEvent()
@@ -125,7 +126,6 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	public void run() {
 		clientAddress = controlSocket.getInetAddress();
-		//mConfig.getLogger().info("Handling new request from " + clientAddress.getHostAddress());
 		logger.info(
 			"Handling new request from " + clientAddress.getHostAddress());
 		thread.setName(
@@ -135,7 +135,6 @@ public class BaseFtpConnection implements Runnable {
 				+ clientAddress.getHostAddress()
 				+ "]");
 		//mDataConnection = new FtpDataConnection(mConfig);
-		//setClientAddress(clientAddress);
 		//mConfig.getConnectionService().newConnection(this);
 
 		try {
@@ -482,7 +481,7 @@ public class BaseFtpConnection implements Runnable {
 	*/
 
 	/**
-	 * Get client address.
+	 * Get client address from PORT command.
 	 */
 	public InetAddress getInetAddress() {
 		return mAddress;

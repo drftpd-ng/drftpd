@@ -1,6 +1,7 @@
 package net.sf.drftpd.slave;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -16,4 +17,5 @@ public interface Transfer extends Remote {
 	public int getLocalPort() throws RemoteException;
 	public long getTransfered() throws RemoteException;
 	public void transfer() throws RemoteException, IOException;
+	public InetAddress getEndpoint() throws RemoteException;
 }

@@ -35,6 +35,7 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.NukeEvent;
+import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.event.irc.UploaderPosition;
@@ -1217,7 +1218,6 @@ public class FtpConnection extends BaseFtpConnection {
 //		try {
 //			transferThread.interruptibleSleepUntilFinished();
 //		} catch (Throwable e1) {
-//			// TODO Auto-generated catch block
 //			e1.printStackTrace();
 //		}
 //		System.err.println("Finished");
@@ -2382,7 +2382,6 @@ public class FtpConnection extends BaseFtpConnection {
 //						0L,
 //						destRSlave.getInetAddress(),
 //						destTransfer.getLocalPort());
-//				//TODO: these will block
 //				TransferThread srcTransferThread = new TransferThread(srcRSlave, srcTransfer);
 //				TransferThread destTransferThread = new TransferThread(destRSlave, destTransfer);
 ////				srcTransferThread.interruptibleSleepUntilFinished();
@@ -2391,7 +2390,7 @@ public class FtpConnection extends BaseFtpConnection {
 //					out.print("200- "+srcTransfer.getTransfered()+" : "+destTransfer.getTransfered());
 //				}
 //			} catch (Exception e) {
-//				// TODO: handle exception
+//				// Handle exception
 //			}
 //		}
 //		
@@ -3137,9 +3136,9 @@ public class FtpConnection extends BaseFtpConnection {
 				rslave.getSlave().doConnectReceive(
 					targetDir.getPath(),
 					targetFilename,
+					getType(),
 					resumePosition,
-					mAddress,
-					miPort);
+					mAddress, miPort);
 
 		} catch (RemoteException ex) {
 			rslave.handleRemoteException(ex);
@@ -3252,8 +3251,14 @@ public class FtpConnection extends BaseFtpConnection {
 			response.addComment(
 				"zipscript - IO error parsing sfv file: " + e.getMessage());
 		}
-		connManager.dispatchFtpEvent(
-			new DirectoryFtpEvent(getUser(), "STOR", targetFile));
+		try {
+			connManager.dispatchFtpEvent(
+				new TransferEvent(getUser(), "STOR", targetFile, getClientAddress(), transfer.getEndpoint(), getType(), true));
+		} catch (RemoteException e1) {
+			rslave.handleRemoteException(e1);
+			logger.log(Level.SEVERE, "", e1);
+			response.addComment("Error communicating with slave");
+		}
 		response.addComment(status());
 		out.print(response);
 		return;
@@ -3400,8 +3405,6 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		setType(request.getArgument().charAt(0));
-
 		// set it
 		if (setType(request.getArgument().charAt(0))) {
 			out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
@@ -3446,6 +3449,11 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(new FtpResponse(530, "IOException: " + ex.getMessage()));
 			return;
 		}
+		if(getUser().isDeleted()) {
+			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+			return;
+		}
+		
 		String masks[] =
 			{
 				ident + "@" + getClientAddress().getHostAddress(),

@@ -80,8 +80,6 @@ public class SlaveImpl
 			System.out.println("root."+i+": "+rootString);
 			rootStrings.add(new Root(rootString, minSpaceFree, priority));
 		}
-		// END: RootBasket
-		
 		
 		try {
 			roots = new RootBasket(rootStrings);
@@ -90,6 +88,8 @@ public class SlaveImpl
 			System.exit(0);
 			return;
 		}
+		// END: RootBasket
+
 		register();
 		System.gc();
 	}
@@ -108,7 +108,7 @@ public class SlaveImpl
 
 				manager.addSlave(this.name, this, slaveroot);
 				logger.log(Level.INFO, "Registered with master.");
-				return;
+				break;
 			} catch (Throwable t) {
 				long retry = Long.parseLong(System.getProperty("java.rmi.dgc.leaseValue", "600000"));
 				logger.log(Level.SEVERE, "Failed to register slave, will retry in "+retry/1000+" seconds", t);
@@ -119,6 +119,8 @@ public class SlaveImpl
 				}
 			}
 		}
+		System.gc();
+		return;
 	}
 	public static void main(String args[]) {
 		String drftpdconf;
@@ -141,13 +143,7 @@ public class SlaveImpl
 
 			InetAddress masterAddr = InetAddress.getByName(cfg.getProperty("slavemanager.host"));
 			Slave slave;
-			try {
-				slave = new SlaveImpl(cfg, masterAddr);
-			} catch (Throwable ex) {
-				ex.printStackTrace();
-				System.exit(0);
-				return;
-			}
+			slave = new SlaveImpl(cfg, masterAddr);
 
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -221,7 +217,7 @@ public class SlaveImpl
 	 */
 	private Transfer doSend(
 		String path,
-		char mode,
+		char type,
 		long offset,
 		Connection conn)
 		throws IOException {
@@ -231,7 +227,7 @@ public class SlaveImpl
 		FileInputStream in = new FileInputStream(file); // throws FileNotFoundException
 		in.skip(offset);
 
-		TransferImpl transfer = new TransferImpl(transfers, in, conn, mode);
+		TransferImpl transfer = new TransferImpl(transfers, in, conn, type);
 		return transfer;
 	}
 
@@ -240,13 +236,13 @@ public class SlaveImpl
 	 */
 	public Transfer doConnectSend(
 		String path,
-		char mode,
+		char type,
 		long offset,
 		InetAddress addr,
 		int port)
 		throws IOException {
 
-		return doSend(path, mode, offset, new ActiveConnection(addr, port));
+		return doSend(path, type, offset, new ActiveConnection(addr, port));
 	}
 
 	/**
@@ -254,11 +250,11 @@ public class SlaveImpl
 	 */
 	public Transfer doListenSend(
 		String path,
-		char mode,
+		char type,
 		long offset)
 		throws IOException {
 
-		return doSend(path, mode, offset, new PassiveConnection());
+		return doSend(path, type, offset, new PassiveConnection());
 	}
 
 	//RECEIVE
@@ -268,6 +264,7 @@ public class SlaveImpl
 	private Transfer doReceive(
 		String dirname,
 		String filename,
+		char type,
 		long offset,
 		Connection conn)
 		throws IOException {
@@ -295,15 +292,16 @@ public class SlaveImpl
 	public Transfer doConnectReceive(
 		String dirname,
 		String filename,
+		char type,
 		long offset,
-		InetAddress addr,
-		int port)
+		InetAddress addr, int port)
 		throws IOException {
 
 		//Socket sock = new Socket(addr, port);
 		return doReceive(
 			dirname,
 			filename,
+			type,
 			offset,
 			new ActiveConnection(addr, port));
 	}
@@ -314,13 +312,13 @@ public class SlaveImpl
 	public Transfer doListenReceive(
 		String dirname,
 		String filename,
-		long offset)
+		char type, long offset)
 		throws IOException {
 		//		ServerSocket server = new ServerSocket(0, 1);
 		//server.setSoTimeout(xxx);
 		//		Socket sock = server.accept();
 		//		server.close();
-		return doReceive(dirname, filename, offset, new PassiveConnection());
+		return doReceive(dirname, filename, type, offset, new PassiveConnection());
 	}
 
 	/**
