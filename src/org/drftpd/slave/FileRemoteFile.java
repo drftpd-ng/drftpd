@@ -356,6 +356,7 @@ class Checksummer extends Thread {
     private IOException _e;
 
     public Checksummer(File f) {
+    	super("Checksummer - " + f.getPath());
         _f = f;
     }
 

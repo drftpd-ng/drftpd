@@ -274,7 +274,9 @@ public class Slave {
 	}
 
 	private void startFileLockThread() {
-		new Thread(new FileLockRunnable()).start();
+		Thread t = new Thread(new FileLockRunnable());
+		t.setName("FileLockThread");
+		t.start();
 	}
 
 	public void addTransfer(Transfer transfer) {
@@ -623,9 +625,8 @@ public class Slave {
         String fileName = path.substring(path.lastIndexOf("/") + 1);
         String dirName = path.substring(0, path.lastIndexOf("/"));
         Transfer t = getTransfer(transferIndex);
-        sendResponse(new AsyncResponse(ac.getIndex())); // return
-
-        // calling thread on master
+        sendResponse(new AsyncResponse(ac.getIndex())); // return calling thread
+														// on master
         try {
             return new AsyncResponseTransferStatus(t.receiveFile(dirName, type,
                     fileName, position));
@@ -781,7 +782,9 @@ public class Slave {
                     }
                 }
             }
-            new Thread(new AsyncCommandHandler(ac)).start();
+            Thread t = new Thread(new AsyncCommandHandler(ac));
+            t.setName("AsyncCommandHandler - " + ac.getClass());
+            t.start();
         }
     }
     

@@ -330,6 +330,8 @@ public class BaseFtpConnection implements Runnable {
                      .getConfig().getHideIps()) {
             _thread.setName("FtpConn from " +
                 getClientAddress().getHostAddress());
+        } else {
+        	_thread.setName("FtpConn from <iphidden>");
         }
 
         try {

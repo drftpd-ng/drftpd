@@ -1034,6 +1034,9 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		return art.getConnectInfo();
 	}
 
+	/**
+	 * Will not set a slave offline, it is the job of the calling thread to decide to do this
+	 */
 	private synchronized void sendCommand(AsyncCommand rac)
 			throws SlaveUnavailableException {
 		if (rac == null) {
@@ -1049,7 +1052,6 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 			_sout.flush();
 		} catch (IOException e) {
 			logger.error("error in sendCommand()", e);
-			setOffline(e);
 			throw new SlaveUnavailableException(
 					"error sending command (exception already handled)", e);
 		}

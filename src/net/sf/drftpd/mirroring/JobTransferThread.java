@@ -32,11 +32,11 @@ public class JobTransferThread extends Thread {
      * This class sends a JobTransfer if it is available
      */
     JobTransferThread(JobManager jm) {
+    	super("JobTransferThread");
         _jm = jm;
     }
 
     public void run() {
-        setName("JobTransfer");
 
         try {
             _jm.processJob();

@@ -41,7 +41,6 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 
 /**
- * @author zubov
  * @version $Id$
  */
 public class PreTime extends FtpListener {

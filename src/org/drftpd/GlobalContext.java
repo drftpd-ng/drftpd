@@ -288,7 +288,7 @@ public class GlobalContext {
     }
 
     private void listenForSlaves() {
-    	new Thread(_slaveManager, _slaveManager.toString()).start();
+    	new Thread(_slaveManager, "Listening for slave connections - " + _slaveManager.toString()).start();
     }
 
     protected void loadUserManager(Properties cfg, String cfgFileName) {
