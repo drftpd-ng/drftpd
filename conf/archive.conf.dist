@@ -9,8 +9,8 @@ cycleTime=30
 archiveAfter=10080
 
 # do not archive releases under these directorys
-#exclude.1=/exempt/*
-#exclude.2=/alsoexempt/*
+#exclude.1=sectiona
+#exclude.2=sectionb
 
 
 # ArchiveTypes define the definition of "Archived"
