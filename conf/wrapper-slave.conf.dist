@@ -14,7 +14,8 @@ wrapper.java.mainclass=org.tanukisoftware.wrapper.WrapperSimpleApp
 #  needed starting from 1
 wrapper.java.classpath.1=lib/wrapper.jar
 wrapper.java.classpath.2=lib/log4j-1.2.8.jar
-wrapper.java.classpath.3=classes
+wrapper.java.classpath.3=lib/replacer.jar
+wrapper.java.classpath.4=classes
 
 
 # Java Library Path (location of Wrapper.DLL or libwrapper.so)
