@@ -144,7 +144,7 @@ public class IRCListener implements FtpListener, Observer {
 
 		env.add("xfersdn", Integer.toString(status.getTransfersSending()));
 		env.add(
-			"througputdown",
+			"throughputdown",
 			Bytes.formatBytes(status.getThroughputSending()));
 
 		env.add("spacetotal", Long.toString(status.getDiskSpaceCapacity()));
