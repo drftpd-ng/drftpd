@@ -68,7 +68,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.46 2004/02/25 14:26:39 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.47 2004/02/26 22:10:13 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -1242,15 +1242,29 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				}
 			} catch (RemoteException ex) {
 				_rslave.handleRemoteException(ex);
-				_transferFile.delete();
-				logger.error("RemoteException, deleting file");
-				return new FtpReply(426, "RemoteException, deleting file");
+				if (isStor) {
+					_transferFile.delete();
+					logger.error("RemoteException during transfer, deleting file"); 
+					return new FtpReply(426, "RemoteException, deleting file");
+				}
+				else {
+					logger.error("RemoteException during transfer");
+					return new FtpReply(426, "RemoteException during transfer");
+				} 
 			//} catch (ObjectExistsException ex) {
 				// slave already has the file, treat as a regular IOException
 			} catch (IOException ex) {
-				_transferFile.delete();
-				logger.error("IOException, deleting file");
-				FtpReply reply = new FtpReply(426, "IOException, deleting file");
+				FtpReply reply = null;
+				if (isStor) {
+					_transferFile.removeSlave(_rslave);
+					_transferFile.delete();
+					logger.error("IOException during transfer, deleting file"); 
+					reply =  new FtpReply(426, "IOException, deleting file");
+				}
+				else {
+					logger.error("IOException during transfer");
+					reply = new FtpReply(426, "IOException during transfer");
+				} 
 				reply.addComment(ex.getLocalizedMessage());
 				return reply;
 			}
