@@ -31,8 +31,8 @@ import f00f.net.irc.martyr.errors.ChannelLimitError;
 import f00f.net.irc.martyr.errors.ChannelWrongKeyError;
  
 /**
- * @author <a href="mailto:martyr@mog.se">Morgan Christiansson</a>
- * @version $Id: OnConnect.java,v 1.2 2004/04/21 03:35:53 mog Exp $
+ * @author mog
+ * @version $Id: OnConnect.java,v 1.3 2004/04/25 18:15:19 mog Exp $
  */
 public class OnConnect extends GenericAutoService implements IRCPluginInterface {
         private State _state;
