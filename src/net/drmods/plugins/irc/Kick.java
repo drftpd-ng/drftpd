@@ -25,6 +25,7 @@ import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
+import org.drftpd.Time;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.sitebot.IRCCommand;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -91,8 +92,8 @@ public class Kick extends IRCCommand {
                     continue;
                 }
 
-				long idletime = (System.currentTimeMillis() - conn.getLastActive()) / 1000;
-                env.add("idletime", idletime + "s");
+				long idletime = (System.currentTimeMillis() - conn.getLastActive());
+                env.add("idletime", Time.formatTime(idletime));
                 env.add("idleuser", cuser.getName());
                 env.add("ircuser", cmduser);
                 env.add("ircchan", cmdchan);

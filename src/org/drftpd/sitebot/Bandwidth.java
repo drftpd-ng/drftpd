@@ -74,27 +74,17 @@ public class Bandwidth extends IRCCommand {
 			return out;
 		}
 
-        String status = ReplacerUtils.jprintf("speed.pre", env,
-                Bandwidth.class);
-
-        String separator = ReplacerUtils.jprintf("speed.separator", env,
-                Bandwidth.class);
-
-        boolean first = true;
+        out.add(ReplacerUtils.jprintf("speed.pre", env,Bandwidth.class));
 
         ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(
 				getGlobalContext().getConnectionManager().getConnections());
 
+        boolean found = false;
         for(BaseFtpConnection conn : conns) {
-
             try {
                 User connUser = conn.getUser();
-
-                if (!first) {
-                    status = status + separator;
-                }
-
                 if (connUser.equals(user)) {
+                    found = true;
                     env.add("idle",
                         Time.formatTime(System.currentTimeMillis() -
                             conn.getLastActive()));
@@ -103,11 +93,8 @@ public class Bandwidth extends IRCCommand {
                         continue;
                     }
 
-                    first = false;
-
                     if (!conn.isExecuting()) {
-                        status += ReplacerUtils.jprintf("speed.idle", env,
-                            Bandwidth.class);
+                        out.add(ReplacerUtils.jprintf("speed.idle", env, Bandwidth.class));
                     } else if (conn.getDataConnectionHandler()
                                        .isTransfering()) {
                         env.add("speed",
@@ -123,11 +110,9 @@ public class Bandwidth extends IRCCommand {
                                 .getName());
 
                         if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-                            status += ReplacerUtils.jprintf("speed.up",
-                                env, Bandwidth.class);
+                            out.add(ReplacerUtils.jprintf("speed.up", env, Bandwidth.class));
                         } else if (conn.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-                            status += ReplacerUtils.jprintf("speed.down",
-                                env, Bandwidth.class);
+                            out.add(ReplacerUtils.jprintf("speed.down", env, Bandwidth.class));
                         }
                     }
                 }
@@ -136,14 +121,10 @@ public class Bandwidth extends IRCCommand {
             }
         } // for
 
-        status += ReplacerUtils.jprintf("speed.post", env, Bandwidth.class);
+        if (!found)
+            out.add(ReplacerUtils.jprintf("speed.error", env, Bandwidth.class));
+        out.add(ReplacerUtils.jprintf("speed.post", env, Bandwidth.class));
 
-        if (first) {
-            status = ReplacerUtils.jprintf("speed.error", env,
-                    Bandwidth.class);
-        }
-
-        out.add(status);
 		return out;
 	}
 }

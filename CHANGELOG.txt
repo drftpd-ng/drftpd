@@ -1,3 +1,6 @@
+2005/03/01 Jamal James <teflon114@gmail.com>
+* Fixed !speed ... i hope
+
 2005/02/27 Jamal James <teflon114@gmail.com>
 * All sitebot plugins converted to work with the new implementation
   It compiles ... w00h00
