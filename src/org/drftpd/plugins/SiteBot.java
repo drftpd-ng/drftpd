@@ -1328,7 +1328,12 @@ public class SiteBot extends FtpListener implements Observer {
         for (String line : lines) {
 			// don't encrypt private messages, at least not yet :)
 			if (isChan) {
-				line = _channelMap.get(dest).encrypt(line);
+				ChannelConfig cc = _channelMap.get(dest);
+				if (cc == null) {
+	    			logger.debug("This is a bug! report me! -- channel=" + dest + " cc=" + cc, new Throwable());
+	    			continue;
+				}
+				line = cc.encrypt(line);
 			}
 			_conn.sendCommand(new MessageCommand(dest, line));
 		}
@@ -1343,7 +1348,12 @@ public class SiteBot extends FtpListener implements Observer {
         for (String line : lines) {
 			// don't encrypt private notices, at least not yet :)
 			if (isChan) {
-				line = _channelMap.get(dest).encrypt(line);
+				ChannelConfig cc = _channelMap.get(dest);
+				if (cc == null) {
+	    			logger.debug("This is a bug! report me! -- channel=" + dest + " cc=" + cc, new Throwable());
+	    			continue;
+				}
+				line = cc.encrypt(line);
 			}
 			_conn.sendCommand(new RawCommand("NOTICE " + dest + " :" + line));
 		}
@@ -1414,7 +1424,12 @@ public class SiteBot extends FtpListener implements Observer {
 				// recreate the MessageCommand with the decrypted text
 				if (!msgc.isPrivateToUs(_conn.getClientState())) {
 					try {
-						msgc = _channelMap.get(msgc.getDest()).decrypt(msgc);
+						ChannelConfig cc = _channelMap.get(msgc.getDest());
+						if (cc == null) {
+				    		logger.debug("This is a bug! report me! -- channel=" + msgc.getDest() + " cc=" + cc, new Throwable());
+				    		return;
+						}
+						msgc = cc.decrypt(msgc);
 					} catch (UnsupportedEncodingException e) {
 						logger.warn("Unable to decrypt '"
 								+ msgc.getSourceString() + "'");
