@@ -3,82 +3,97 @@ package net.sf.drftpd.slave;
 import java.io.Serializable;
 
 public class SlaveStatus implements Serializable {
-	private long diskSpaceAvailable;
-	private long diskSpaceCapacity;
 	
-	private int throughputReceiving;
-	private int throughputSending;
+	private long _bytesReceived;
+	private long _bytesSent;
+	private long _diskSpaceAvailable;
+	private long _diskSpaceCapacity;
 	
-	private int transfersSending;
-	private int transfersReceiving;
+	private int _throughputReceiving;
+	private int _throughputSending;
+	private int _transfersReceiving;
+	
+	private int _transfersSending;
 	public SlaveStatus() {
-		this.diskSpaceAvailable = 0;
-		this.diskSpaceCapacity = 0;
+		_diskSpaceAvailable = 0;
+		_diskSpaceCapacity = 0;
 		
-		this.throughputReceiving = 0;
-		this.throughputSending = 0;
+		_throughputReceiving = 0;
+		_throughputSending = 0;
 
-		this.transfersSending = 0;
-		this.transfersReceiving = 0;		
+		_transfersSending = 0;
+		_transfersReceiving = 0;		
 	}
-	public SlaveStatus(long diskFree, long diskTotal, int throughputReceiving, int transfersReceiving, int throughputSending, int transfersSending) {
-		this.diskSpaceAvailable = diskFree;
-		this.diskSpaceCapacity = diskTotal;
+	public SlaveStatus(long diskFree, long diskTotal, long bytesSent, long bytesReceived, int throughputReceiving, int transfersReceiving, int throughputSending, int transfersSending) {
+		_diskSpaceAvailable = diskFree;
+		_diskSpaceCapacity = diskTotal;
 		
-		this.throughputReceiving = throughputReceiving;
-		this.throughputSending = throughputSending;
+		_bytesSent = bytesSent;
+		_bytesReceived = bytesReceived;
+		
+		_throughputReceiving = throughputReceiving;
+		_throughputSending = throughputSending;
 
-		this.transfersSending = transfersSending;
-		this.transfersReceiving = transfersReceiving;
+		_transfersSending = transfersSending;
+		_transfersReceiving = transfersReceiving;
 	}
 	
 	public SlaveStatus append(SlaveStatus arg) {
 		return new SlaveStatus(getDiskSpaceAvailable()+arg.getDiskSpaceAvailable(),
 		getDiskSpaceCapacity()+arg.getDiskSpaceCapacity(),
+		getBytesSent()+arg.getBytesSent(),
+		getBytesReceived()+arg.getBytesReceived(),
 		getThroughputReceiving()+arg.getThroughputReceiving(),
 		getTransfersReceiving()+arg.getTransfersReceiving(),
 		getThroughputSending()+arg.getThroughputSending(),
 		getTransfersSending()+arg.getTransfersSending()
 		);
 	}
-	public int getThroughput() {
-		return throughputReceiving+throughputSending;
+
+	public long getBytesReceived() {
+		return _bytesReceived;
 	}
-	
-	public int getTransfers() {
-		return transfersReceiving+transfersSending;
-	}
-	
-	public String toString() {
-		return "[SlaveStatus [diskSpaceAvailable: "+diskSpaceAvailable+"][receiving: "+throughputReceiving+" bps, "+transfersSending+" streams][sending: "+throughputSending+" bps, "+transfersReceiving+" streams]]";
+
+	public long getBytesSent() {
+		return _bytesSent;
 	}
 	
 	public long getDiskSpaceAvailable() {
-		return diskSpaceAvailable;
+		return _diskSpaceAvailable;
+	}
+
+	public long getDiskSpaceCapacity() {
+		return _diskSpaceCapacity;
 	}
 
 	public long getDiskSpaceUsed() {
 		return getDiskSpaceCapacity()-getDiskSpaceAvailable();
 	}
-
-	public int getThroughputSending() {
-		return throughputSending;
+	public int getThroughput() {
+		return _throughputReceiving+_throughputSending;
 	}
 
 	public int getThroughputReceiving() {
-		return throughputReceiving;
+		return _throughputReceiving;
+	}
+
+	public int getThroughputSending() {
+		return _throughputSending;
+	}
+	
+	public int getTransfers() {
+		return _transfersReceiving+_transfersSending;
 	}
 
 	public int getTransfersReceiving() {
-		return transfersReceiving;
+		return _transfersReceiving;
 	}
 
 	public int getTransfersSending() {
-		return transfersSending;
+		return _transfersSending;
 	}
-
-	public long getDiskSpaceCapacity() {
-		return diskSpaceCapacity;
+	
+	public String toString() {
+		return "[SlaveStatus [diskSpaceAvailable: "+_diskSpaceAvailable+"][receiving: "+_throughputReceiving+" bps, "+_transfersSending+" streams][sending: "+_throughputSending+" bps, "+_transfersReceiving+" streams]]";
 	}
-
 }
