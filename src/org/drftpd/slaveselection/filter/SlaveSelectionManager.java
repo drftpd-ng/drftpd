@@ -43,7 +43,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.17 2004/09/25 03:48:42 mog Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.18 2004/09/29 00:35:53 mog Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     private GlobalContext _gctx;
@@ -166,11 +166,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.drftpd.slaveselection.SlaveSelectionManagerInterface#getGlobalContext()
-     */
     public GlobalContext getGlobalContext() {
-        // TODO Auto-generated method stub
-        return null;
+        return _gctx;
     }
 }
