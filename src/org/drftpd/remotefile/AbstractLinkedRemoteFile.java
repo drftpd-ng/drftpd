@@ -286,7 +286,7 @@ public abstract class AbstractLinkedRemoteFile
         throw new UnsupportedOperationException();
     }
 
-    public LinkedRemoteFile renameTo(String toDirPath, String toName)
+    public void renameTo(String toDirPath, String toName)
         throws IOException, FileNotFoundException {
         throw new UnsupportedOperationException();
     }

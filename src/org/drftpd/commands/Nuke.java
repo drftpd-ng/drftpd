@@ -240,7 +240,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
         }
 
         try {
-            nukeDir = nukeDir.renameTo(toDirPath, toName);
+            nukeDir.renameTo(toDirPath, toName);
             nukeDir.createDirectory(conn.getUserNull().getName(),
                 conn.getUserNull().getGroup(), "REASON-" + reason);
         } catch (IOException ex) {
@@ -433,7 +433,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
         }
 
         try {
-            nukeDir = nukeDir.renameTo(toDir, toName);
+            nukeDir.renameTo(toDir, toName);
         } catch (FileExistsException e1) {
             response.addComment(
                 "Error renaming nuke, target dir already exists");

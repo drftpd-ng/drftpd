@@ -183,7 +183,7 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
     /**
      * Renames this file
      */
-    public abstract LinkedRemoteFile renameTo(String toDirPath, String toName)
+    public abstract void renameTo(String toDirPath, String toName)
         throws IOException, FileNotFoundException;
 
     public abstract void setCheckSum(long checkSum);

@@ -133,7 +133,7 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
         LinkedRemoteFile toDir;
 
         try {
-            toDir = preDir.renameTo(section.getPath(), preDir.getName());
+            preDir.renameTo(section.getPath(), preDir.getName());
         } catch (IOException ex) {
             logger.warn("", ex);
 
@@ -142,7 +142,7 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
 
         //ANNOUNCE
         conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
-                conn, "PRE", toDir));
+                conn, "PRE", preDir));
 
         return Reply.RESPONSE_200_COMMAND_OK;
     }

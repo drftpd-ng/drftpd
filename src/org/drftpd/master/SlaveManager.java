@@ -561,6 +561,7 @@ class RemergeThread extends Thread {
 				logger.info("", e);
 				continue;
 			}
+			
 			if (msg.isCompleted()) {
 				continue;
 			}

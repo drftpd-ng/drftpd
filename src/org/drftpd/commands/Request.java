@@ -72,7 +72,7 @@ public class Request implements CommandHandlerFactory, CommandHandler {
                 LinkedRemoteFile filledfile;
 
                 try {
-                    filledfile = file.renameTo(file.getParentFile().getPath(),
+                    file.renameTo(file.getParentFile().getPath(),
                             filledname);
                 } catch (IOException e) {
                     logger.warn("", e);
@@ -82,7 +82,7 @@ public class Request implements CommandHandlerFactory, CommandHandler {
 
                 //if (conn.getConfig().checkDirLog(conn.getUserNull(), file)) {
                 conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
-                        conn, "REQFILLED", filledfile));
+                        conn, "REQFILLED", file));
 
                 //}
                 try {

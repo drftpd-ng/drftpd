@@ -29,12 +29,17 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.AbstractQueue;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
@@ -105,7 +110,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 
 	private Properties _keysAndValues;
 
-	private HashMap<String, String> _renameQueue;
+	private LinkedList<QueuedOperation> _renameQueue;
 
 	private transient Stack<String> _indexPool;
 
@@ -127,7 +132,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		_name = name;
 		_keysAndValues = new Properties();
 		_ipMasks = new HostMaskCollection();
-		_renameQueue = new HashMap<String, String>();
+		_renameQueue = new LinkedList<QueuedOperation>();
 	}
 
 	/**
@@ -202,12 +207,9 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 					"Slave is online, you cannot queue an operation");
 		}
 
-		if (_renameQueue.containsKey(fileName)) {
-			throw new IllegalArgumentException(fileName
-					+ " is already in the queue for " + getName());
-		}
-
-		_renameQueue.put(fileName, destName);
+		logger.debug("addQueueRename:" + fileName + ":" + destName, new Throwable());
+		_renameQueue.add(new QueuedOperation(fileName, destName));
+		commit();
 	}
 
 	public void setProperty(String name, String value) {
@@ -245,6 +247,8 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 					new DefaultPersistenceDelegate(new String[] { "mask" }));
 			out.setPersistenceDelegate(RemoteSlave.class,
 					new DefaultPersistenceDelegate(new String[] { "name" }));
+			out.setPersistenceDelegate(QueuedOperation.class,
+					new DefaultPersistenceDelegate(new String[] { "source", "destination" }));
 			try {
 				out.writeObject(this);
 			} finally {
@@ -400,6 +404,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	 */
 	private void initializeSlaveAfterThreadIsRunning() throws IOException,
 			SlaveUnavailableException {
+		commit();
 		processQueue();
 
 		String maxPathIndex = issueMaxPathToSlave();
@@ -445,25 +450,28 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 
 	public void processQueue() throws IOException, SlaveUnavailableException {
 		//no for-each loop, needs iter.remove()
-		for (Iterator<String> iter = _renameQueue.keySet().iterator(); iter
+		for (Iterator<QueuedOperation> iter = _renameQueue.iterator(); iter
 				.hasNext();) {
-			String sourceFile = iter.next();
-			String destFile = _renameQueue.get(sourceFile);
+			QueuedOperation item = iter.next();
+			String sourceFile = item.getSource();
+			String destFile = item.getDestination();
 
-			if (destFile == null) {
+			if (destFile == null) { // delete
 				try {
 					fetchResponse(issueDeleteToSlave(sourceFile));
 				} catch (RemoteIOException e) {
 					if (!(e.getCause() instanceof FileNotFoundException)) {
 						throw (IOException) e.getCause();
 					}
+				} finally {
+					iter.remove();
+					commit();
 				}
-			} else {
+			} else { // rename
 				String fileName = destFile
 						.substring(destFile.lastIndexOf("/") + 1);
 				String destDir = destFile.substring(0, destFile
 						.lastIndexOf("/"));
-
 				try {
 					fetchResponse(issueRenameToSlave(sourceFile, destDir,
 							fileName));
@@ -471,14 +479,11 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 					if (!(e.getCause() instanceof FileNotFoundException)) {
 						throw (IOException) e.getCause();
 					}
-
-					LinkedRemoteFileInterface lrf = getGlobalContext()
-							.getRoot().lookupFile(destFile);
-					lrf.removeSlave(this);
+				} finally {
+					iter.remove();
+					commit();
 				}
 			}
-
-			iter.remove();
 		}
 	}
 
@@ -551,14 +556,20 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	 * Renames files/directories and waits for the response
 	 */
 	public void simpleRename(String from, String toDirPath, String toName) {
+		String simplePath = null;
+		if (toDirPath.endsWith("/")) {
+			simplePath = toDirPath + toName;
+		} else {
+			simplePath = toDirPath + "/" + toName;
+		}
 		try {
 			fetchResponse(issueRenameToSlave(from, toDirPath, toName));
 		} catch (RemoteIOException e) {
 			setOffline(e);
-			addQueueRename(from, toDirPath + "/" + toName);
+			addQueueRename(from, simplePath);
 		} catch (SlaveUnavailableException e) {
 			setOffline(e);
-			addQueueRename(from, toDirPath + "/" + toName);
+			addQueueRename(from, simplePath);
 		}
 	}
 
@@ -646,7 +657,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 			}
 		}
 
-		throw new SlaveUnavailableException("Went offline fetching an index");
+		throw new SlaveUnavailableException("Slave was offline or went offline while fetching an index");
 	}
 
 	public int fetchMaxPathFromIndex(String maxPathIndex)
@@ -758,6 +769,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	 */
 	public String issueDeleteToSlave(String sourceFile)
 			throws SlaveUnavailableException {
+		logger.debug("this delete has been sent -- " + sourceFile,new Throwable());
 		String index = fetchIndex();
 		sendCommand(new AsyncCommandArgument(index, "delete", sourceFile));
 
@@ -806,6 +818,9 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 
 	public String issueRenameToSlave(String from, String toDirPath,
 			String toName) throws SlaveUnavailableException {
+		if (toDirPath.length() == 0) { // needed for files in root
+			toDirPath = "/";
+		}
 		String index = fetchIndex();
 		sendCommand(new AsyncCommandArgument(index, "rename", from + ","
 				+ toDirPath + "," + toName));
@@ -1099,10 +1114,10 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		_gctx = globalContext;
 	}
 
-	public HashMap<String, String> getRenameQueue() {
+	public LinkedList<QueuedOperation> getRenameQueue() {
 		return _renameQueue;
 	}
-	public void setRenameQueue(HashMap<String, String> renameQueue) {
+	public void setRenameQueue(LinkedList<QueuedOperation> renameQueue) {
 		_renameQueue = renameQueue;
 	}
 	public void setReceivedBytes(long receivedBytes) {

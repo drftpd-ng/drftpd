@@ -225,59 +225,6 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		this(null, file, cfg);
 	}
 
-	public static void recursiveRenameLoop(LinkedRemoteFile fromDir,
-			LinkedRemoteFile toDir) {
-		logger.debug("recursiveRenameLoop(" + fromDir.getPath() + ", "
-				+ toDir.getPath() + ")");
-
-		for (Iterator iter = new ArrayList(fromDir.getMap().values())
-				.iterator(); iter.hasNext();) {
-			LinkedRemoteFile fromFile = (LinkedRemoteFile) iter.next();
-
-			LinkedRemoteFile toFile;
-			try {
-				toFile = (LinkedRemoteFile) toDir.getFile(fromFile.getName());
-			} catch (FileNotFoundException e) {
-				toFile = toDir.putFile(fromFile);
-			}
-
-			if (fromFile.isDirectory()) {
-				recursiveRenameLoop(fromFile, toFile);
-			} else {
-				recursiveRenameLoopFile(fromFile, toFile);
-			}
-		}
-
-		if (fromDir.isEmpty()) {
-			fromDir.delete();
-		}
-	}
-
-	/**
-	 * @deprecated fromFile
-	 */
-	public static void recursiveRenameLoopFile(LinkedRemoteFile fromFile,
-			LinkedRemoteFile toFile) {
-		logger.debug("recursiveRenameLoopFile(" + fromFile.getPath() + ", "
-				+ toFile.getPath());
-
-		Iterator iterator = new ArrayList<RemoteSlave>(fromFile.getSlaves())
-				.iterator();
-
-		while (iterator.hasNext()) {
-			RemoteSlave rslave = (RemoteSlave) iterator.next();
-
-			if (rslave.isAvailable()) {
-				toFile.addSlave(rslave);
-				fromFile.removeSlave(rslave);
-			} else {
-				logger.debug(rslave + " is offline");
-
-				// fromFile.queueRename(toFile);
-			}
-		}
-	}
-
 	/**
 	 * Updates lastModified() on this directory, use putFile() to avoid it.
 	 */
@@ -1292,7 +1239,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 	/**
 	 * Renames this file
 	 */
-	public LinkedRemoteFile renameTo(String toDirPath, String toName)
+	public void renameTo(String toDirPath, String toName)
 			throws IOException, FileNotFoundException {
 		if (toDirPath.charAt(0) != '/') {
 			throw new RuntimeException(
@@ -1321,9 +1268,12 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			} while ((tmpDir = tmpDir.getParentFileNull()) != null);
 		}
 
-		// slaves are copied here too...
+/*		existed for old queued operations
+ * 		// slaves are copied here too...
 		LinkedRemoteFile toFile = toDir.putFile(this, toName);
-
+*/
+		_parent._files.remove(getName());
+		_parent.addSize(-length());
 		if (isDirectory()) {
 			for (Iterator iter = _ftpConfig.getGlobalContext()
 					.getSlaveManager().getSlaves().iterator(); iter.hasNext();) {
@@ -1331,23 +1281,16 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
 				rslave.simpleRename(getPath(), toDirPath, toName);
 			}
-
-			// need to remove the now moved directory
-			delete();
 		} else { // isFile()
-			toFile._slaves = Collections
-					.synchronizedList(new ArrayList<RemoteSlave>());
-
 			for (Iterator iter = new ArrayList<RemoteSlave>(getSlaves())
 					.iterator(); iter.hasNext();) {
 				RemoteSlave rslave = (RemoteSlave) iter.next();
 				rslave.simpleRename(getPath(), toDirPath, toName);
-				removeSlave(rslave);
-				toFile.addSlave(rslave);
 			}
 		}
-
-		return toFile;
+		_name = toName;
+		toDir._files.put(getName(),this);
+		toDir.addSize(length());
 	}
 
 	public void setCheckSum(long checkSum) {
@@ -1480,6 +1423,8 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
 	public void remerge(CaseInsensitiveHashtable lightRemoteFiles,
 			RemoteSlave rslave) throws IOException {
+		logger.debug("calling remerge on " + this);
+		logger.debug("list of files are -- " + lightRemoteFiles);
 		if (!isDirectory()) {
 			throw new RuntimeException(getPath() + " is not a directory");
 		}
@@ -1497,18 +1442,12 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 					continue;
 				}
 
-				if (light.length() == 0) {
-					rslave.simpleDelete(lrf.getPath());
-					logger.info("Deleting 0byte file " + lrf.getPath()
-							+ " from " + rslave.getName());
-					lrf.unmergeFile(rslave);
-				} else if (light.length() == lrf.length()) {
+				if (light.length() == lrf.length()) {
 					lrf.addSlave(rslave);
 				} else { // light.length() != lrf.length()
-					System.out.println("length did not match! -  light=!"
-							+ light.length() + "!lrf=!" + lrf.length()
-							+ "! -- " + light.getName());
-					if (lrf.getSlaves().size() == 1 && lrf.hasSlave(rslave)) {
+					if (light.length() == 0) {
+						rslave.simpleDelete(lrf.getPath());
+					} else if (lrf.getSlaves().size() == 1 && lrf.hasSlave(rslave)) {
 						lrf.setLength(light.length());
 						lrf.setCheckSum(0);
 					} else {
@@ -1534,9 +1473,14 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 				if (lrf.isFile()) {
 					lrf.removeSlave(rslave);
 				} else if (lrf.isDirectory()) {
+					boolean wasEmpty = lrf.isEmpty();
 					lrf.unmergeDir(rslave);
-					if (lrf.isEmpty())
+					if (lrf.isEmpty() && !wasEmpty) {
 						lrf.delete();
+						if (isEmpty()) {
+							delete();
+						}
+					}
 				}
 			}
 		}
