@@ -4,6 +4,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import org.apache.log4j.BasicConfigurator;
+
 import net.sf.drftpd.master.SlaveManagerImpl;
 
 /**
@@ -14,6 +16,7 @@ import net.sf.drftpd.master.SlaveManagerImpl;
  */
 public class FileListConverter {
 	public static void main(String[] args) throws IOException {
+		BasicConfigurator.configure();
 		if(args.length != 0) {
 			System.out.println("Converts from files.xml to files.mlst");
 			return;
