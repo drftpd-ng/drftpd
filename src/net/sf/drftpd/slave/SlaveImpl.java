@@ -96,7 +96,7 @@ public class SlaveImpl
 		if(args.length >= 1) {
 			drftpdconf = args[0];
 		} else {
-			drftpdconf = "drftpd.conf";
+			drftpdconf = "drftpd-0.7.conf";
 		}
 		try {
 

@@ -13,6 +13,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.rmi.NoSuchObjectException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -155,7 +156,11 @@ public class BaseFtpConnection implements Runnable {
 			        return;
 			    }
 			*/
-			out.println("220 Service ready for new user.");
+			if(!slaveManager.hasAvailableSlaves()) {
+				stop("No transfer slave(s) available");
+			} else {
+				out.println("220 Service ready for new user.");
+			}
 			while (!stopRequest) {
 				out.flush();
 				//notifyObserver();
@@ -304,6 +309,8 @@ public class BaseFtpConnection implements Runnable {
 	 * Get user object
 	 */
 	public User getUser() {
+		if (user == null)
+			throw new RuntimeException(new NoSuchObjectException("no user logged in for connection"));
 		return user;
 	}
 

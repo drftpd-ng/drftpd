@@ -8,20 +8,29 @@ package net.sf.drftpd.master.config;
 
 import java.util.Collection;
 
+import net.sf.drftpd.remotefile.LinkedRemoteFile;
+
 /**
  * @author mog
  *
  * To change the template for this generated type comment go to
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
-public class PathPermission {
-	private String command;
+public class PathPermission extends Permission {
 	private String path;
-	
-	public PathPermission(String command, String path, Collection users) {
-		this.command = command;
+
+	public PathPermission(String path, Collection users) {
+		super(users);
 		this.path = path;
-		
 	}
 
+	public boolean checkPath(String path) {
+		return path.startsWith(this.path);
+	}
+	public String getPath() {
+		return this.path;
+	}
+	public boolean checkPath(LinkedRemoteFile path) {
+		return checkPath(path.getPath());
+	}
 }

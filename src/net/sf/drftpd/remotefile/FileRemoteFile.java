@@ -48,7 +48,8 @@ public class FileRemoteFile extends RemoteFile {
 	public FileRemoteFile(RootBasket rootBasket) throws IOException {
 		this(rootBasket, "");
 	}
-	
+	private boolean isFile;
+	private boolean isDirectory;
 	public FileRemoteFile(RootBasket rootBasket, String path) throws IOException {
 		//if(path.length() != 0) {
 		//	if(path.charAt(path.length()-1) == File.separatorChar) path = path.substring(0, path.length()-1);

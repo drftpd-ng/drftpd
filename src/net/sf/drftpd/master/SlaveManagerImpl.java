@@ -26,6 +26,7 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.SlaveEvent;
+import net.sf.drftpd.master.config.*;
 import net.sf.drftpd.remotefile.JDOMRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.XMLSerialize;
@@ -536,6 +537,14 @@ public class SlaveManagerImpl
 		return rslave.handleRemoteException(ex);
 	}
 
+	public boolean hasAvailableSlaves() {
+		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
+			if(rslave.isAvailable()) return true;
+		}
+		return false;
+	}
+	
 	/** ping's all slaves, returns number of slaves removed */
 	public int verifySlaves() {
 		int removed = 0;

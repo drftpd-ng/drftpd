@@ -53,13 +53,9 @@ public class JDOMRemoteFile extends RemoteFile {
 		this.allSlaves = allSlaves;
 		this.name = element.getAttributeValue("name");
 		if (element.getName().equals("directory")) {
-			this.isDirectory = true;
-			this.isFile = false;
 			this.files = element.getChild("contents").getChildren();
 		}
-		if (element.getName().equals("file")) {
-			this.isDirectory = false;
-			this.isFile = true;
+		else if (element.getName().equals("file")) {
 			try {
 			this.xfertime = Long.parseLong(element.getChildText("xfertime"));
 			} catch(NumberFormatException ex) {
@@ -181,6 +177,12 @@ public class JDOMRemoteFile extends RemoteFile {
 		return this.length;
 	}
 
+	public boolean isDirectory() {
+		return files != null;
+	}
+	public boolean isFile() {
+		return files == null;
+	}
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.remotefile.RemoteFile#lastModified()
 	 */

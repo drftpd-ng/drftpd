@@ -17,9 +17,9 @@ public abstract class RemoteFile {
 
 	protected String group;
 
-	protected boolean isDirectory;
-
-	protected boolean isFile;
+//	protected boolean isDirectory;
+//
+//	protected boolean isFile;
 
 	protected long lastModified = -1;
 	
@@ -81,13 +81,15 @@ public abstract class RemoteFile {
 	public int hashCode() {
 		return getName().hashCode();
 	}
-	public boolean isDirectory() {
-		return isDirectory;
-	}
-	public boolean isFile() {
-		return isFile;
-	}
-
+//	public boolean isDirectory() {
+//		return isDirectory;
+//	}
+//	public boolean isFile() {
+//		return isFile;
+//	}
+	public abstract boolean isFile();
+	public abstract boolean isDirectory();
+	
 	//boolean isHidden;
 	public boolean isHidden() {
 		return getPath().startsWith(".");

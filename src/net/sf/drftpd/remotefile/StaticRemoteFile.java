@@ -18,6 +18,8 @@ public class StaticRemoteFile extends RemoteFile {
 	private long length;
 	private long lastModified;
 	private Collection slaves;
+	private boolean isDirectory;
+	private boolean isFile;
 	
 	public StaticRemoteFile(RemoteFile file) {
 //		canRead = file.canRead();
@@ -145,6 +147,20 @@ public class StaticRemoteFile extends RemoteFile {
 	 */
 	public long lastModified() {
 		return this.lastModified;
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFile#isFile()
+	 */
+	public boolean isFile() {
+		return this.isFile;
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFile#isDirectory()
+	 */
+	public boolean isDirectory() {
+		return this.isDirectory;
 	}
 
 }

@@ -215,6 +215,7 @@ public class IRCListener implements FtpListener {
 	 * @see net.sf.drftpd.event.FtpListener#actionPerformed(net.sf.drftpd.event.FtpEvent)
 	 */
 	public void actionPerformed(Event event) {
+		System.out.println("IRCListener.actionPerformed(): "+event.getCommand());
 		if(event instanceof DirectoryFtpEvent) {
 			actionPerformed((DirectoryFtpEvent)event);
 			return;
@@ -255,7 +256,6 @@ public class IRCListener implements FtpListener {
 					+ formatUser(direvent.getUser()));
 
 		} else if (direvent.getCommand().equals("STOR")) {
-			//TODO new racer
 			LinkedRemoteFile dir;
 			try {
 				dir = direvent.getDirectory().getParentFile();
@@ -279,8 +279,7 @@ public class IRCListener implements FtpListener {
 			}
 			int finishedFiles = sfvfile.finishedFiles();
 
-			//TODO ceil halfway
-			int halfway = sfvfile.size() / 2;
+			int halfway = (int)Math.ceil((double)sfvfile.size() / 2);
 			///// start ///// start ////
 			
 			//check if new racer

@@ -28,8 +28,6 @@ public class DirectoryRemoteFile extends RemoteFile {
 	public DirectoryRemoteFile(LinkedRemoteFile file, String owner, String group, String name) {
 		this.name = name;
 		this.file = file;
-		isDirectory = true;
-		isFile = false;
 		lastModified = System.currentTimeMillis();
 		//canWrite = true;
 		//canRead = true;
@@ -79,6 +77,13 @@ public class DirectoryRemoteFile extends RemoteFile {
 	 */
 	public Collection getSlaves() {
 		return new ArrayList(0);
+	}
+
+	public boolean isDirectory() {
+		return true;
+	}
+	public boolean isFile() {
+		return false;
 	}
 
 	/**

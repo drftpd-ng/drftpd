@@ -184,6 +184,7 @@ public class VirtualDirectory {
 
 	/**
 	 * Get size
+	 * @deprecated
 	 */
 	private static String getLength(RemoteFile fl) {
 		String initStr = "            ";

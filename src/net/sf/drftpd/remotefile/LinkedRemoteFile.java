@@ -71,8 +71,6 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 
 		this.lastModified = System.currentTimeMillis();
 		this.length = 0;
-		this.isDirectory = true;
-		this.isFile = false;
 		this.parent = null;
 		this.name = "";
 		this.files = Collections.synchronizedMap(new Hashtable());
@@ -107,8 +105,6 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		if (this.length == -1)
 			throw new IllegalArgumentException("length() == -1 for " + file);
 		//isHidden = file.isHidden();
-		this.isDirectory = file.isDirectory();
-		this.isFile = file.isFile();
 
 		this.owner = file.getOwnerUsername();
 		this.group = file.getGroup();
@@ -216,6 +212,15 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 				LinkedRemoteFile myFile = (LinkedRemoteFile) iter.next();
 				myFile.delete();
 			}
+			try {
+				getParentFile().getMap().remove(getName());
+			} catch (FileNotFoundException ex) {
+				logger.log(
+					Level.SEVERE,
+					"FileNotFoundException on getParentFile()",
+					ex);
+			}
+			return;
 		}
 
 		synchronized (slaves) {
@@ -425,11 +430,12 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	}
 
 	public boolean hasOfflineSlaves() {
-		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
-			if (!((RemoteSlave) iter.next()).isAvailable())
-				return false;
-		}
-		if (isDirectory()) {
+		if (isFile()) {
+			for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
+				if (!((RemoteSlave) iter.next()).isAvailable())
+					return false;
+			}
+		} else if (isDirectory()) {
 			for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
 				if (((LinkedRemoteFile) iter.next()).hasOfflineSlaves())
 					return true;
@@ -437,6 +443,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		}
 		return false;
 	}
+	
 	protected SFVFile sfvFile;
 	public SFVFile lookupSFVFile()
 		throws IOException, ObjectNotFoundException, NoAvailableSlaveException {
@@ -445,7 +452,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 
 		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile myFile = (LinkedRemoteFile) iter.next();
-			if (myFile.getName().endsWith(".sfv")) {
+			if (myFile.getName().toLowerCase().endsWith(".sfv")) {
 				return myFile.getSFVFile();
 				// throws IOException, NoAvailableSlaveException
 			}
@@ -485,9 +492,11 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		return availableSlaves;
 	}
 
-	/** return slaves;
+	/** returns slaves. May return null if a directory.
 	 */
 	public Collection getSlaves() {
+		if (slaves == null)
+			throw new IllegalStateException("getSlaves() on non-directory");
 		return slaves;
 	}
 
@@ -568,7 +577,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 
 		//logger.info("ret[0] = " + ret[0] + " ret[1] = " + ret[1]);
 		if (ret[1] != null)
-			throw new FileNotFoundException(path + " not found");
+			throw new FileNotFoundException(path + ": Not found");
 		return (LinkedRemoteFile) ret[0];
 	}
 
@@ -651,7 +660,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	}
 
 	public void removeSlave(RemoteSlave slave) {
-		if(slaves != null) slaves.remove(slave);
+		if (slaves != null)
+			slaves.remove(slave);
 	}
 
 	// cannot rename to existing file
@@ -760,7 +770,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		}
 		if (isDirectory())
 			ret.append("[directory(" + files.size() + ")]");
-			if(isDeleted()) ret.append("[DELE]");
+		if (isDeleted())
+			ret.append("[DELE]");
 		ret.append("]");
 		return ret.toString();
 	}
@@ -831,6 +842,13 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 */
 	public void setXfertime(long l) {
 		xfertime = l;
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFile#isFile()
+	 */
+	public boolean isFile() {
+		return this.files == null;
 	}
 
 }

@@ -31,6 +31,7 @@ import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.XferLogListener;
 import net.sf.drftpd.event.irc.IRCListener;
+import net.sf.drftpd.master.config.*;
 import net.sf.drftpd.master.queues.NukeLog;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
@@ -67,7 +68,11 @@ public class ConnectionManager {
 	}
 
 	public ConnectionManager(Properties cfg, String cfgFileName) {
-		this.config = new FtpConfig(cfg, cfgFileName);
+		try {
+			this.config = new FtpConfig(cfg, cfgFileName);
+		} catch(Throwable ex) {
+			throw new FatalException(ex);
+		}
 		
 		/** END: load XML file database **/
 		
@@ -136,26 +141,12 @@ public class ConnectionManager {
 				return;
 				//the compiler doesn't know that execution stops at System.exit(),
 			}
-			
-//			try {
-//				LinkedRemoteFile slaveroot =
-//					SlaveImpl.getDefaultRoot(
-//						cfg.getProperty("slave.roots"));
-//				slavemanager.addSlave(cfg.getProperty("slave.name"), slave, slaveroot);
-//			} catch (RemoteException ex) {
-//				ex.printStackTrace();
-//				return;
-//			} catch (IOException ex) {
-//				ex.printStackTrace();
-//				System.exit(0);
-//				return;
-//			}
 		}
 		
 		try {
 			usermanager = (UserManager) Class.forName(cfg.getProperty("master.usermanager")).newInstance();
 		} catch (Exception e) {
-			throw new FatalException("Cannot create instance of usermanager, check master.usermanager in drftpd.conf", e);
+			throw new FatalException("Cannot create instance of usermanager, check master.usermanager in drftpd-0.7.conf", e);
 		}
 
 		timer = new Timer();
@@ -198,11 +189,10 @@ public class ConnectionManager {
 				FtpConnection conn = (FtpConnection) i.next();
 
 				int idle = (int) ((currTime - conn.getLastActive()) / 1000);
-				if (conn.getUser() == null) {
-					logger.finer(conn + " not logged in");
-					continue;
-				}
-				int maxIdleTime = conn.getUser().getMaxIdleTime();
+				int maxIdleTime = 0;
+				if (conn.getUser() != null) {
+					maxIdleTime = conn.getUser().getMaxIdleTime();
+				} 
 				if (maxIdleTime == 0)
 					maxIdleTime = idleTimeout;
 				User user = conn.getUser();
@@ -282,18 +272,17 @@ public class ConnectionManager {
 			if(args.length >= 1) {
 				cfgFileName = args[0];
 			} else {
-				cfgFileName = "drftpd.conf";
+				cfgFileName = "drftpd-0.7.conf";
 			}
 			if(new File(cfgFileName).exists()) {
 				System.out.println(cfgFileName+" does not exist.");
 			}
 			/** load config **/
-			logger.info("loading drftpd.conf");
 			Properties cfg = new Properties();
 			try {
-				cfg.load(new FileInputStream("drftpd.conf"));
+				cfg.load(new FileInputStream(cfgFileName));
 			} catch (IOException e) {
-				logger.severe("Error reading drftpd.conf: " + e.getMessage());
+				logger.severe("Error reading "+cfgFileName+": " + e.getMessage());
 				return;
 			}
 
@@ -334,7 +323,6 @@ public class ConnectionManager {
 	public UserManager getUsermanager() {
 		return usermanager;
 	}
-
 	/**
 	 * @return
 	 */
