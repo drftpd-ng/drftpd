@@ -128,9 +128,11 @@ public class IMDBParser {
            _genre = _genre.replaceAll("\\(more\\)", "").trim();
            _plot = parseData(data, "<b class=\"ch\">Plot Outline:</b>", "<a href=\"");
            _rating = parseData(data, "<b class=\"ch\">User Rating:</b>", "</b>");
-           _rating = _rating.indexOf("/") < 0 ? "N/A" : _rating.substring(0,_rating.indexOf("/"));
+           _rating = _rating.equals("N/A") || _rating.indexOf("/") < 0 ? "N/A" 
+                       : _rating.substring(0,_rating.indexOf("/"));
            _votes = parseData(data, "<b class=\"ch\">User Rating:</b>", "<br><br>");
-           _votes = _votes.substring(_votes.indexOf("(")+1, _votes.indexOf("votes")).trim();
+           _votes = _votes.indexOf("(") < 0 || _votes.indexOf("votes") < 0 ? "N/A" 
+                       : _votes.substring(_votes.indexOf("(")+1, _votes.indexOf("votes")).trim();
            _year = parseData(data, "<a href=\"/Sections/Years/", "</a>").substring(6);
                
         } catch (MalformedURLException e) {
