@@ -174,7 +174,7 @@ public class ConnectionManager {
                 try {
                     User tempUser = tempConnection.getUser();
 
-                    if (tempUser.getUsername().equals(user.getUsername())) {
+                    if (tempUser.getName().equals(user.getName())) {
                         userCount++;
 
                         if (tempConnection.getClientAddress().equals(baseconn.getClientAddress())) {

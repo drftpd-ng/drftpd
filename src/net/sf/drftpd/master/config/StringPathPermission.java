@@ -24,14 +24,14 @@ import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: StringPathPermission.java,v 1.9 2004/08/03 20:13:58 zubov Exp $
+ * @version $Id$
  */
 public class StringPathPermission extends PathPermission {
-    private String path;
+    private String _path;
 
-    public StringPathPermission(String path, Collection users) {
+    public StringPathPermission(String path, Collection<String> users) {
         super(users);
-        this.path = path;
+        _path = path;
     }
 
     public boolean checkPath(LinkedRemoteFileInterface path) {
@@ -39,6 +39,6 @@ public class StringPathPermission extends PathPermission {
             throw new RuntimeException("Should be a directory");
         }
 
-        return (path.getPath() + "/").startsWith(this.path);
+        return (path.getPath() + "/").startsWith(_path);
     }
 }

@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -49,7 +50,7 @@ public class JobManager implements Runnable {
     private static final Logger logger = Logger.getLogger(JobManager.class);
     private ConnectionManager _cm;
     private boolean _isStopped = false;
-    private ArrayList<Job> _jobList;
+    private LinkedList<Job> _jobList;
     private int _sleepSeconds;
     private boolean _useCRC;
     private Thread thread;
@@ -63,7 +64,7 @@ public class JobManager implements Runnable {
 
     public JobManager(ConnectionManager cm, Properties p) {
         _cm = cm;
-        _jobList = new ArrayList<Job>();
+        _jobList = new LinkedList<Job>();
         reload(p);
     }
 

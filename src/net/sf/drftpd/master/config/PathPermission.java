@@ -24,10 +24,10 @@ import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: PathPermission.java,v 1.8 2004/08/03 20:13:58 zubov Exp $
+ * @version $Id$
  */
 public abstract class PathPermission extends Permission {
-    public PathPermission(Collection users) {
+    public PathPermission(Collection<String> users) {
         super(users);
     }
 

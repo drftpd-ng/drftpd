@@ -109,7 +109,7 @@ public class JSXUserManager implements UserManager {
         }
 
         JSXUser user = new JSXUser(this, username);
-        users.put(user.getUsername(), user);
+        users.put(user.getName(), user);
 
         return user;
     }
@@ -201,7 +201,7 @@ public class JSXUserManager implements UserManager {
 
                 //throws RuntimeException
                 user.setUserManager(this);
-                users.put(user.getUsername(), user);
+                users.put(user.getName(), user);
                 user.reset(_connManager);
                 in.close();
 
@@ -223,7 +223,7 @@ public class JSXUserManager implements UserManager {
         JSXUser user = (JSXUser) getUserByNameUnchecked(username);
 
         if (user.isDeleted()) {
-            throw new NoSuchUserException(user.getUsername() + " is deleted");
+            throw new NoSuchUserException(user.getName() + " is deleted");
         }
 
         user.reset(_connManager);
@@ -236,7 +236,7 @@ public class JSXUserManager implements UserManager {
     }
 
     void remove(JSXUser user) {
-        this.users.remove(user.getUsername());
+        this.users.remove(user.getName());
     }
 
     void rename(JSXUser oldUser, String newUsername) throws UserExistsException {
@@ -244,7 +244,7 @@ public class JSXUserManager implements UserManager {
             throw new UserExistsException("user " + newUsername + " exists");
         }
 
-        users.remove(oldUser.getUsername());
+        users.remove(oldUser.getName());
         users.put(newUsername, oldUser);
     }
 

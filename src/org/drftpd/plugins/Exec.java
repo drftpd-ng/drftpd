@@ -68,7 +68,7 @@ public class Exec implements FtpListener {
 
         TransferEvent uevent = (TransferEvent) event;
         String[] env = {
-                "USER=" + uevent.getUser().getUsername(),
+                "USER=" + uevent.getUser().getName(),
                 "TAGLINE=" +
                 uevent.getUser().getObjectString(UserManagment.TAGLINE),
                 "GROUP=" + uevent.getUser().getGroupName(),

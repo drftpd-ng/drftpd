@@ -136,7 +136,7 @@ public class Stats extends GenericCommandAutoService
             User user = (User) iter.next();
             ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
             env.add("pos", "" + i);
-            env.add("user", user.getUsername());
+            env.add("user", user.getName());
             env.add("upbytesday", Bytes.formatBytes(user.getUploadedBytesDay()));
             env.add("upfilesday", "" + user.getUploadedFilesDay());
             env.add("uprateday",

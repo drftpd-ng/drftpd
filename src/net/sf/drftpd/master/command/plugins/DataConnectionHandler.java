@@ -915,7 +915,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             return false;
         }
 
-        this._type = type;
+        _type = type;
 
         return true;
     }
@@ -1160,7 +1160,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
                 List rslaves = Collections.singletonList(_rslave);
                 StaticRemoteFile uploadFile = new StaticRemoteFile(rslaves,
-                        targetFileName, conn.getUserNull().getUsername(),
+                        targetFileName, conn.getUserNull().getName(),
                         conn.getUserNull().getGroupName(), 0L,
                         System.currentTimeMillis(), 0L);
                 _transferFile = targetDir.addFile(uploadFile);

@@ -129,7 +129,7 @@ public class Bandwidth extends GenericCommandAutoService
                         status = status + separator;
                     }
 
-                    if (connUser.getUsername().equals(username)) {
+                    if (connUser.getName().equals(username)) {
                         env.add("idle",
                             Time.formatTime(System.currentTimeMillis() -
                                 conn.getLastActive()));

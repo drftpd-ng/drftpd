@@ -102,7 +102,7 @@ public class NukeEvent extends UserEvent {
 
     public Element toJDOM() {
         Element element = new Element("nuke");
-        element.addContent(new Element("user").setText(getUser().getUsername()));
+        element.addContent(new Element("user").setText(getUser().getName()));
         element.addContent(new Element("path").setText(this.getPath()));
         element.addContent(new Element("multiplier").setText(Integer.toString(
                     getMultiplier())));

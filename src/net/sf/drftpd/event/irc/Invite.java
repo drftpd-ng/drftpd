@@ -84,7 +84,7 @@ public class Invite extends GenericCommandAutoService
 
             if (success) {
                 logger.info("Invited \"" + msgc.getSourceString() +
-                    "\" as user " + user.getUsername());
+                    "\" as user " + user.getName());
             } else {
                 logger.log(Level.WARN,
                     msgc.getSourceString() +

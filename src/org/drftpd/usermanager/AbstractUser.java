@@ -21,7 +21,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMaskCollection;
@@ -73,7 +72,7 @@ public abstract class AbstractUser extends User {
     // _downloadedMilliSeconds[P_DAY],_downloadedMilliSeconds[P_MONTH],_downloadedMilliSeconds[P_WEEK];
     private String _group = "nogroup";
     private short _groupLeechSlots;
-    private ArrayList _groups = new ArrayList();
+    private ArrayList<String> _groups = new ArrayList<String>();
     private short _groupSlots;
     private HostMaskCollection _hostMasks = new HostMaskCollection();
     private int _idleTime = 0; // no limit
@@ -132,7 +131,7 @@ public abstract class AbstractUser extends User {
         _created = System.currentTimeMillis();
     }
 
-    public void addAllMasks(HostMaskCollection hostMaskCollection) {
+	public void addAllMasks(HostMaskCollection hostMaskCollection) {
         getHostMaskCollection().addAllMasks(hostMaskCollection);
     }
 
@@ -196,7 +195,7 @@ public abstract class AbstractUser extends User {
      */
     public boolean equals(Object obj) {
         return (obj instanceof User)
-        ? ((User) obj).getUsername().equals(getUsername()) : false;
+        ? ((User) obj).getName().equals(getName()) : false;
     }
 
     /**
@@ -333,7 +332,9 @@ public abstract class AbstractUser extends User {
     public KeyedMap getKeyedMap() {
     	return _data;
     }
-
+    public void setKeyedMap(KeyedMap data) {
+    	_data = data;
+    }
     public long getLastAccessTime() {
         return _lastAccessTime;
     }
@@ -454,7 +455,7 @@ public abstract class AbstractUser extends User {
         throw new RuntimeException();
     }
 
-    public String getUsername() {
+    public String getName() {
         return _username;
     }
 
@@ -463,7 +464,7 @@ public abstract class AbstractUser extends User {
     }
 
     public int hashCode() {
-        return getUsername().hashCode();
+        return getName().hashCode();
     }
 
     public boolean isAdmin() {
@@ -522,7 +523,7 @@ public abstract class AbstractUser extends User {
     public void rename(String username)
         throws UserExistsException, UserFileException {
         getAbstractUserManager().rename(this, username); // throws ObjectExistsException
-        getAbstractUserManager().delete(this.getUsername());
+        getAbstractUserManager().delete(this.getName());
         _username = username;
         commit(); // throws IOException
     }
@@ -578,7 +579,7 @@ public abstract class AbstractUser extends User {
         _uploadedMilliSeconds[P_DAY] = 0;
         _downloadedBytes[P_DAY] = 0;
         _uploadedBytes[P_DAY] = 0;
-        logger.info("Reset daily stats for " + getUsername());
+        logger.info("Reset daily stats for " + getName());
     }
 
     private void resetMonth(ConnectionManager cm, Date resetDate) {
@@ -590,11 +591,11 @@ public abstract class AbstractUser extends User {
         _uploadedMilliSeconds[P_MONTH] = 0;
         _downloadedBytes[P_MONTH] = 0;
         _uploadedBytes[P_MONTH] = 0;
-        logger.info("Reset monthly stats for " + getUsername());
+        logger.info("Reset monthly stats for " + getName());
     }
 
     private void resetWeek(ConnectionManager cm, Date resetDate) {
-        logger.info("Reset weekly stats for " + getUsername() + "(was " +
+        logger.info("Reset weekly stats for " + getName() + "(was " +
             Bytes.formatBytes(_uploadedBytes[P_WEEK]) + " UP and " +
             Bytes.formatBytes(_downloadedBytes[P_WEEK]) + " DOWN");
         cm.dispatchFtpEvent(new UserEvent(this, "RESETWEEK", resetDate.getTime()));

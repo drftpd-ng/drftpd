@@ -41,7 +41,7 @@ import java.util.ArrayList;
 
 /**
  * @author mog
- * @version $Id: XStreamUser.java,v 1.12 2004/11/08 18:39:27 mog Exp $
+ * @version $Id$
  */
 public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
     UnixPassword {
@@ -53,7 +53,7 @@ public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
     public XStreamUser(XStreamUserManager usermanager, String username) {
         super(username);
         created = System.currentTimeMillis();
-        this._usermanager = usermanager;
+        _usermanager = usermanager;
     }
 
     public boolean checkPassword(String password) {
@@ -87,7 +87,7 @@ public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
     public void rename(String username)
         throws UserExistsException, UserFileException {
         _usermanager.rename(this, username); // throws ObjectExistsException
-        _usermanager.getUserFile(this.getUsername()).delete();
+        _usermanager.getUserFile(this.getName()).delete();
         this.username = username;
         commit(); // throws IOException
     }
@@ -100,7 +100,7 @@ public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
         try {
             XStream xst = new XStream(new DomDriver());
             SafeFileWriter out = new SafeFileWriter(_usermanager.getUserFile(
-                        this.getUsername()));
+                        this.getName()));
 
             try {
                 out.write(xst.toXML(this));
@@ -108,10 +108,10 @@ public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
                 out.close();
             }
 
-            Logger.getLogger(XStreamUser.class).debug("wrote " + getUsername());
+            Logger.getLogger(XStreamUser.class).debug("wrote " + getName());
         } catch (IOException ex) {
             throw new UserFileException("Error writing userfile for " +
-                this.getUsername() + ": " + ex.getMessage(), ex);
+                this.getName() + ": " + ex.getMessage(), ex);
         }
     }
 
@@ -119,7 +119,7 @@ public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
         this.purged = true;
         _usermanager.remove(this);
 
-        File userfile = _usermanager.getUserFile(this.getUsername());
+        File userfile = _usermanager.getUserFile(this.getName());
         userfile.delete();
     }
 

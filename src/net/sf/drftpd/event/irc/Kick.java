@@ -107,7 +107,7 @@ public class Kick extends GenericAutoService implements IRCPluginInterface {
                 env.add("idletime",
                     ((System.currentTimeMillis() - conn.getLastActive()) / 1000) +
                     "s");
-                env.add("idleuser", user.getUsername());
+                env.add("idleuser", user.getName());
                 env.add("ircuser", cmduser);
                 env.add("ircchan", cmdchan);
 

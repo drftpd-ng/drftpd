@@ -35,29 +35,29 @@ import org.drftpd.commands.Reply;
  * @version $Id$
  */
 public class MessagePathPermission extends StringPathPermission {
-    private ArrayList message;
+    private ArrayList<String> _message;
 
     public MessagePathPermission(String path, String messageFile,
-        Collection users) throws IOException {
+        Collection<String> users) throws IOException {
         super(path, users);
-        message = new ArrayList();
+        _message= new ArrayList<String>();
 
         BufferedReader in = new BufferedReader(new FileReader(messageFile));
         String line;
 
         try {
             while ((line = in.readLine()) != null) {
-                message.add(line);
+                _message.add(line);
             }
         } finally {
             in.close();
         }
 
-        message.trimToSize();
+        _message.trimToSize();
     }
 
     public void printMessage(Reply response) {
-        for (Iterator iter = message.iterator(); iter.hasNext();) {
+        for (Iterator iter = _message.iterator(); iter.hasNext();) {
             String line = (String) iter.next();
             response.addComment(line);
         }

@@ -40,7 +40,7 @@ import java.util.ArrayList;
 
 /**
  * @author mog
- * @version $Id: JSXUser.java,v 1.23 2004/11/08 18:39:27 mog Exp $
+ * @version $Id$
  */
 public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
     UnixPassword {
@@ -86,7 +86,7 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
     public void rename(String username)
         throws UserExistsException, UserFileException {
         _usermanager.rename(this, username); // throws ObjectExistsException
-        _usermanager.getUserFile(this.getUsername()).delete();
+        _usermanager.getUserFile(this.getName()).delete();
         this.username = username;
         commit(); // throws IOException
     }
@@ -98,7 +98,7 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
 
         try {
             ObjOut out = new ObjOut(new SafeFileWriter(_usermanager.getUserFile(
-                            this.getUsername())));
+                            this.getName())));
 
             try {
                 out.writeObject(this);
@@ -106,10 +106,10 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
                 out.close();
             }
 
-            Logger.getLogger(JSXUser.class).debug("wrote " + getUsername());
+            Logger.getLogger(JSXUser.class).debug("wrote " + getName());
         } catch (IOException ex) {
             throw new UserFileException("Error writing userfile for " +
-                this.getUsername() + ": " + ex.getMessage(), ex);
+                this.getName() + ": " + ex.getMessage(), ex);
         }
     }
 
@@ -117,7 +117,7 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
         this.purged = true;
         _usermanager.remove(this);
 
-        File userfile = _usermanager.getUserFile(this.getUsername());
+        File userfile = _usermanager.getUserFile(this.getName());
         userfile.delete();
     }
 

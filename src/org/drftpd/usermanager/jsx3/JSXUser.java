@@ -51,13 +51,13 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
     }
 
     public boolean checkPassword(String password) {
-        if (this._password == null) {
-            if (this._unixPassword == null) {
+        if (_password == null) {
+            if (_unixPassword == null) {
                 throw new IllegalStateException("no password set");
             }
 
-            if (this._unixPassword.equals(Crypt.crypt(
-                            this._unixPassword.substring(0, 2), password))) {
+            if (_unixPassword.equals(Crypt.crypt(
+                            _unixPassword.substring(0, 2), password))) {
                 setPassword(password);
 
                 return true;
@@ -66,7 +66,7 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
             return false;
         }
 
-        return this._password.equals(password);
+        return _password.equals(password);
     }
 
     public void commit() throws UserFileException {
@@ -81,7 +81,7 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
             }
 
             ObjOut out = new ObjOut(new SafeFileWriter(((JSXUserManager) _usermanager).getUserFile(
-                            this.getUsername())));
+                            this.getName())));
 
             try {
                 out.writeObject(this);
@@ -89,10 +89,10 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
                 out.close();
             }
 
-            Logger.getLogger(JSXUser.class).debug("wrote " + getUsername());
+            Logger.getLogger(JSXUser.class).debug("wrote " + getName());
         } catch (IOException ex) {
             throw new UserFileException("Error writing userfile for " +
-                this.getUsername() + ": " + ex.getMessage(), ex);
+                this.getName() + ": " + ex.getMessage(), ex);
         }
     }
 
@@ -101,7 +101,7 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
     }
 
     public String getPassword() {
-        return this._password;
+        return _password;
     }
 
     public String getUnixPassword() {
@@ -117,18 +117,18 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
                 "JSXUser without reference to JSXUserManager");
         }
 
-        File userfile = ((JSXUserManager) _usermanager).getUserFile(this.getUsername());
+        File userfile = ((JSXUserManager) _usermanager).getUserFile(this.getName());
         userfile.delete();
     }
 
     public void setPassword(String password) {
-        this._unixPassword = null;
-        this._password = password;
+        _unixPassword = null;
+        _password = password;
     }
 
     public void setUnixPassword(String password) {
-        this._password = null;
-        this._unixPassword = password;
+        _password = null;
+        _unixPassword = password;
     }
 
     void setUserManager(AbstractUserManager um) {

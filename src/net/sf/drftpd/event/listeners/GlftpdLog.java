@@ -149,7 +149,7 @@ public class GlftpdLog implements FtpListener {
         // TYPE = NEWDIR DELDIR WIPE
         // TYPE: "/path/to/release" "username" "group" "tagline" 
         print("" + string + ": \"" + dir.getPath() + "\" \"" +
-            direvent.getUser().getUsername() + "\" \"" +
+            direvent.getUser().getName() + "\" \"" +
             direvent.getUser().getGroupName() + "\" \"" +
             direvent.getUser().getObjectString(UserManagment.TAGLINE) + "\"");
     }
@@ -203,7 +203,7 @@ public class GlftpdLog implements FtpListener {
 
         ///// start ///// start ////
         //check if new racer
-        String username = direvent.getUser().getUsername();
+        String username = direvent.getUser().getName();
         SFVStatus sfvstatus = sfvfile.getStatus();
 
         if ((sfvfile.size() - sfvstatus.getMissing()) != 1) {
@@ -222,7 +222,7 @@ public class GlftpdLog implements FtpListener {
                     // RACE: "/path/to/release" "new_racer_username" "new_racer_group"
                     // "whois_he_racing" "new_racers_speed" "files_left" "time_raced"
                     print("RACE: \"" + dir.getPath() + "\" \"" +
-                        direvent.getUser().getUsername() + "\" \"" +
+                        direvent.getUser().getName() + "\" \"" +
                         direvent.getUser().getGroupName() + "\" \"" +
                         sfvfile.getXferspeed() + "\" \"" +
                         Integer.toString(sfvstatus.getMissing()) + "\" \"" +
@@ -274,9 +274,9 @@ public class GlftpdLog implements FtpListener {
                 Long.toString((direvent.getTime() - starttime) / 1000) +
                 "\" \"" + Integer.toString(racers.size()) + "\" \"" +
                 Integer.toString(groups.size()) + "\" \"" +
-                fastuser.getUsername() + "\" \"" + fastuser.getGroupName() +
+                fastuser.getName() + "\" \"" + fastuser.getGroupName() +
                 "\" \"" + fastestuser.getXferspeed() + "\" \"" +
-                slowuser.getUsername() + "\" \"" + slowuser.getGroupName() +
+                slowuser.getName() + "\" \"" + slowuser.getGroupName() +
                 "\" \"" + slowestuser.getXferspeed() + "\"");
 
             print("STATS: \"" + dir.getPath() + "\" \"UserTop:\"");
@@ -302,7 +302,7 @@ public class GlftpdLog implements FtpListener {
                 // STATSUSER: "/path/to/release" "race_place" "username" "group" "mb_uploaded"
                 // "files_uploaded" "percent_uploaded" "avrage_speed" 
                 print("STATSUSER: \"" + dir.getPath() + "\" \"" +
-                    new Integer(position++) + "\" \"" + raceuser.getUsername() +
+                    new Integer(position++) + "\" \"" + raceuser.getName() +
                     "\" \"" + raceuser.getGroupName() + "\" \"" +
                     stat.getBytes() + "\" \"" +
                     Integer.toString(stat.getFiles()) + "\" \"" +
@@ -351,7 +351,7 @@ public class GlftpdLog implements FtpListener {
             // HALFWAY: "/path/to/release" "leading_username" "group" "mb_uploaded" 
             // "files_uploaded" "percent_uploaded" "avrage_speed" "files_left"
             print("HALFWAY: \"" + dir.getPath() + "\" \"" +
-                leaduser.getUsername() + "\" \"" + leaduser.getGroupName() +
+                leaduser.getName() + "\" \"" + leaduser.getGroupName() +
                 "\" \"" + stat.getBytes() + "\" \"" +
                 Integer.toString(stat.getFiles()) + "\" \"" +
                 Integer.toString((stat.getFiles() * 100) / sfvfile.size()) +
@@ -389,7 +389,7 @@ public class GlftpdLog implements FtpListener {
 
         if (cmd.equals("NUKE")) {
             print("NUKE: \"" + event.getPath() + "\" \"" +
-                event.getUser().getUsername() + "\" \"" +
+                event.getUser().getName() + "\" \"" +
                 event.getUser().getGroupName() + "\" \"" +
                 String.valueOf(event.getMultiplier()) + " " + event.getSize() +
                 "\" \"" + event.getReason() + "\"");
@@ -419,7 +419,7 @@ public class GlftpdLog implements FtpListener {
                         raceuser.getObjectFloat(UserManagment.RATIO),
                         event.getMultiplier());
 
-                print("NUKEE: \"" + raceuser.getUsername() + "\" \"" +
+                print("NUKEE: \"" + raceuser.getName() + "\" \"" +
                     raceuser.getGroupName() + "\" \"" + position++ + "\" \"" +
                     stat.getAmount() + " " + nukedamount + "\"");
             }
@@ -430,7 +430,7 @@ public class GlftpdLog implements FtpListener {
             }
         } else if (cmd.equals("UNNUKE")) {
             print("UNNUKE: \"" + event.getPath() + "\" \"" +
-                event.getUser().getUsername() + "\" \"" +
+                event.getUser().getName() + "\" \"" +
                 event.getUser().getGroupName() + "\" \"" +
                 String.valueOf(event.getMultiplier()) + " " + event.getSize() +
                 "\" \"" + event.getReason() + "\"");

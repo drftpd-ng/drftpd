@@ -27,12 +27,12 @@ import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: PatternPathPermission.java,v 1.8 2004/08/03 20:13:58 zubov Exp $
+ * @version $Id$
  */
 public class PatternPathPermission extends PathPermission {
     Pattern _pat;
 
-    public PatternPathPermission(Pattern pat, Collection users) {
+    public PatternPathPermission(Pattern pat, Collection<String> users) {
         super(users);
         _pat = pat;
     }

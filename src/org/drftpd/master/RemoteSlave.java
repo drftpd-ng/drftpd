@@ -66,6 +66,7 @@ import org.drftpd.slave.async.AsyncResponseRemerge;
 import org.drftpd.slave.async.AsyncResponseSFVFile;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
+import org.drftpd.usermanager.Entity;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.StreamException;
@@ -75,7 +76,7 @@ import com.thoughtworks.xstream.io.StreamException;
  * @author zubov
  * @version $Id: RemoteSlave.java 789 2004-11-12 18:24:30Z mog $
  */
-public class RemoteSlave implements Runnable, Comparable, Serializable {
+public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	private static final long serialVersionUID = -6973935289361817125L;
 
 	private static final Logger logger = Logger.getLogger(RemoteSlave.class);
@@ -1057,15 +1058,14 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
 		}
 
 		synchronized (_transfers) {
-			if (!_transfers.containsKey(transferIndex)) {
-				throw new FatalException("there is a bug somewhere in code");
-			}
-
-			return _transfers.get(transferIndex);
+			RemoteTransfer ret = _transfers.get(transferIndex);
+			if(ret == null)
+				throw new FatalException("there is a bug somewhere in code");				
+			return ret;
 		}
 	}
 
-	public boolean hasKeyword(String string) {
+	public boolean isMemberOf(String string) {
 		StringTokenizer st = new StringTokenizer(getProperty("keywords", ""),
 				" ");
 

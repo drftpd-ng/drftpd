@@ -367,7 +367,7 @@ public class SiteBot implements FtpListener, Observer {
 
         ///// start ///// start ////
         //check if new racer
-        String username = direvent.getUser().getUsername();
+        String username = direvent.getUser().getName();
         SFVStatus sfvstatus = sfvfile.getStatus();
 
         if ((sfvfile.size() - sfvstatus.getMissing()) != 1) {
@@ -459,7 +459,7 @@ public class SiteBot implements FtpListener, Observer {
 
                 ReplacerEnvironment raceenv = new ReplacerEnvironment(GLOBAL_ENV);
 
-                raceenv.add("user", raceuser.getUsername());
+                raceenv.add("user", raceuser.getName());
                 raceenv.add("group", raceuser.getGroupName());
 
                 raceenv.add("position", new Integer(position++));
@@ -549,7 +549,7 @@ public class SiteBot implements FtpListener, Observer {
             try {
                 leaduser = _cm.getGlobalContext().getUserManager()
                               .getUserByName(stat.getUsername());
-                env.add("leaduser", leaduser.getUsername());
+                env.add("leaduser", leaduser.getName());
                 env.add("leadgroup", leaduser.getGroupName());
             } catch (NoSuchUserException e3) {
                 logger.log(Level.WARN, "", e3);
@@ -621,7 +621,7 @@ public class SiteBot implements FtpListener, Observer {
         env.add("reason", event.getReason());
         env.add("multiplier", String.valueOf(event.getMultiplier()));
 
-        env.add("user", event.getUser().getUsername());
+        env.add("user", event.getUser().getName());
         env.add("group", event.getUser().getGroupName());
 
         //env.add("nukees", event.getNukees().keySet());
@@ -654,7 +654,7 @@ public class SiteBot implements FtpListener, Observer {
 
                 ReplacerEnvironment raceenv = new ReplacerEnvironment(GLOBAL_ENV);
 
-                raceenv.add("user", raceuser.getUsername());
+                raceenv.add("user", raceuser.getName());
                 raceenv.add("group", raceuser.getGroupName());
 
                 raceenv.add("position", "" + position++);
@@ -803,7 +803,7 @@ public class SiteBot implements FtpListener, Observer {
     private void fillEnvSection(ReplacerEnvironment env,
         DirectoryFtpEvent direvent, SectionInterface section,
         LinkedRemoteFileInterface file) {
-        env.add("user", direvent.getUser().getUsername());
+        env.add("user", direvent.getUser().getName());
         env.add("group", direvent.getUser().getGroupName());
         env.add("section", section.getName());
 

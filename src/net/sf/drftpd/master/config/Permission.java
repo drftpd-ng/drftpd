@@ -17,33 +17,32 @@
  */
 package net.sf.drftpd.master.config;
 
-import org.drftpd.usermanager.User;
-
+import org.drftpd.usermanager.Entity;
 import java.util.Collection;
 import java.util.Iterator;
 
 
 /**
  * @author mog
- * @version $Id: Permission.java,v 1.9 2004/11/03 16:46:41 mog Exp $
+ * @version $Id$
  */
 public class Permission {
-    private Collection _users;
+    private Collection<String> _users;
     private boolean _invert = false;
 
-    public Permission(Collection users) {
+    public Permission(Collection<String> users) {
         _users = users;
     }
 
-    public Permission(Collection users, boolean invert) {
+    public Permission(Collection<String> users, boolean invert) {
         this(users);
         _invert = invert;
     }
 
-    public boolean check(User user) {
+    public boolean check(Entity user) {
         boolean allow = false;
 
-        for (Iterator iter = _users.iterator(); iter.hasNext();) {
+        for (Iterator<String> iter = _users.iterator(); iter.hasNext();) {
             String aclUser = (String) iter.next();
             allow = true;
 
@@ -56,7 +55,7 @@ public class Permission {
                 return allow;
             } else if (aclUser.charAt(0) == '-') {
                 //USER
-                if (aclUser.substring(1).equals(user.getUsername())) {
+                if (aclUser.substring(1).equals(user.getName())) {
                     return allow;
                 }
 

@@ -24,11 +24,13 @@ import org.drftpd.usermanager.KeyNotFoundException;
 
 
 /**
+ * Implements Map for javabeans support.
  * @author mog
  * @version $Id$
  */
-public class KeyedMap {
-	private HashMap<Key, Object> _data = new HashMap<Key, Object>();
+public class KeyedMap extends HashMap {
+	//private HashMap<Key, Object> _data = new HashMap<Key, Object>();
+	private HashMap<Key, Object> _data = this;
 	public KeyedMap() {
 		super();
 	}
@@ -97,7 +99,7 @@ public class KeyedMap {
                 i = new Integer(0);
             }
 
-            putObject(key, new Integer(i.intValue() + amount));
+            setObject(key, new Integer(i.intValue() + amount));
         }
     }
 
@@ -119,7 +121,7 @@ public class KeyedMap {
                 i = new Long(0);
             }
 
-            putObject(key, new Long(i.longValue() + amount));
+            setObject(key, new Long(i.longValue() + amount));
         }
 	}
 
@@ -127,7 +129,7 @@ public class KeyedMap {
 		_data.putAll(m.getAllObjects());
 	}
 
-	public void putObject(Key key, Object obj) {
+	public void setObject(Key key, Object obj) {
         if (obj == null) {
             throw new NullPointerException(key + " - " + obj);
         }
@@ -140,10 +142,10 @@ public class KeyedMap {
         _data.put(key, obj);
 	}
 	public void putObject(Key k, int v) {
-		putObject(k, new Integer(v));
+		setObject(k, new Integer(v));
 	}
 
 	public void putObject(Key k, long v) {
-		putObject(k, new Long(v));
+		setObject(k, new Long(v));
 	}
 }

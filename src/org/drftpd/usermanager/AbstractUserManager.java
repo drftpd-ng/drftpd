@@ -140,7 +140,7 @@ public abstract class AbstractUserManager implements UserManager {
         User user = getUserByNameUnchecked(username);
 
         if (user.isDeleted()) {
-            throw new NoSuchUserException(user.getUsername() + " is deleted");
+            throw new NoSuchUserException(user.getName() + " is deleted");
         }
 
         user.reset(_connManager);
@@ -161,7 +161,7 @@ public abstract class AbstractUserManager implements UserManager {
     }
 
     public void remove(User user) {
-        _users.remove(user.getUsername());
+        _users.remove(user.getName());
     }
 
     protected void rename(User oldUser, String newUsername)
@@ -170,7 +170,7 @@ public abstract class AbstractUserManager implements UserManager {
             try {
                 getUserByNameUnchecked(newUsername);
             } catch (NoSuchUserException e) {
-                _users.remove(oldUser.getUsername());
+                _users.remove(oldUser.getName());
                 _users.put(newUsername, oldUser);
 
                 return;

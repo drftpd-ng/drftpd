@@ -247,7 +247,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
 
         try {
             nukeDir = nukeDir.renameTo(toDirPath, toName);
-            nukeDir.createDirectory(conn.getUserNull().getUsername(),
+            nukeDir.createDirectory(conn.getUserNull().getName(),
                 conn.getUserNull().getGroupName(), "REASON-" + reason);
         } catch (IOException ex) {
             logger.warn("", ex);
@@ -293,7 +293,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
                 logger.log(Level.WARN, "Error writing userfile", e1);
             }
 
-            response.addComment(nukee.getUsername() + " " +
+            response.addComment(nukee.getName() + " " +
                 Bytes.formatBytes(debt));
         }
 
@@ -425,9 +425,9 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
                 nukee.commit();
             } catch (UserFileException e3) {
                 logger.log(Level.FATAL,
-                    "Eroror saveing userfile for " + nukee.getUsername(), e3);
+                    "Eroror saveing userfile for " + nukee.getName(), e3);
                 response.addComment("Error saving userfile for " +
-                    nukee.getUsername());
+                    nukee.getName());
             }
 
             response.addComment(nukeeName + ": restored " +

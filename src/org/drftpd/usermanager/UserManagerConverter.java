@@ -42,7 +42,7 @@ public class UserManagerConverter {
     private static final Logger logger = Logger.getLogger(UserManagerConverter.class);
 
     public static void convert(User from, User to) throws UserFileException {
-        logger.debug("Converting " + from.getUsername());
+        logger.debug("Converting " + from.getName());
 
         for (Iterator iter = from.getGroups().iterator(); iter.hasNext();) {
             try {
@@ -88,7 +88,7 @@ public class UserManagerConverter {
             ((UnixPassword) to).setUnixPassword(((UnixPassword) from).getUnixPassword());
         } else {
             logger.warn("Don't know how to convert password from " +
-                from.getUsername());
+                from.getName());
         }
 
         //to.putObject(UserManagment.RATIO, new
@@ -153,7 +153,7 @@ public class UserManagerConverter {
 
         for (Iterator iter = from.getAllUsers().iterator(); iter.hasNext();) {
             User user = (User) iter.next();
-            convert(user, to.create(user.getUsername()));
+            convert(user, to.create(user.getName()));
         }
     }
 }

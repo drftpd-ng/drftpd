@@ -414,7 +414,7 @@ public class BaseFtpConnection implements Runnable {
         } catch (SocketException ex) {
             logger.log(Level.INFO,
                 ex.getMessage() + ", closing for user " +
-                ((_user == null) ? "<not logged in>" : _user.getUsername()), ex);
+                ((_user == null) ? "<not logged in>" : _user.getName()), ex);
         } catch (Exception ex) {
             logger.log(Level.INFO, "Exception, closing", ex);
         } finally {
@@ -467,7 +467,7 @@ public class BaseFtpConnection implements Runnable {
                          .getConfig().getHideIps()) {
             _thread.setName("FtpConn from " +
                 getClientAddress().getHostAddress() + " " +
-                _user.getUsername() + "/" + _user.getGroupName());
+                _user.getName() + "/" + _user.getGroupName());
         }
     }
 

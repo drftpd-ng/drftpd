@@ -46,7 +46,7 @@ import java.util.Iterator;
 public class JSXUserManager extends AbstractUserManager {
     private static final Logger logger = Logger.getLogger(JSXUserManager.class.getName());
     private ConnectionManager _connManager;
-    private String _userpath = "users/jsx2/";
+    private String _userpath = "users/jsx3/";
     private File _userpathFile = new File(_userpath);
 
     public JSXUserManager() throws UserFileException {
@@ -90,7 +90,7 @@ public class JSXUserManager extends AbstractUserManager {
     }
 
     public Collection getAllUsers() throws UserFileException {
-        ArrayList users = new ArrayList();
+        ArrayList<JSXUser> users = new ArrayList<JSXUser>();
         String[] userpaths = _userpathFile.list();
 
         for (int i = 0; i < userpaths.length; i++) {
@@ -136,7 +136,7 @@ public class JSXUserManager extends AbstractUserManager {
 
                 //throws RuntimeException
                 user.setUserManager(this);
-                _users.put(user.getUsername(), user);
+                _users.put(user.getName(), user);
                 user.reset(_connManager);
 
                 return user;

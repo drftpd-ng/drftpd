@@ -179,7 +179,7 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
 
         if (!conn.getRequest().hasArgument()) {
             message = "Service shutdown issued by " +
-                conn.getUserNull().getUsername();
+                conn.getUserNull().getName();
         } else {
             message = conn.getRequest().getArgument();
         }

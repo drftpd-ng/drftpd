@@ -20,7 +20,7 @@ package net.sf.drftpd.master;
 
 /**
  * @author mog
- * @version $Id: UploaderPosition.java,v 1.8 2004/11/11 14:58:32 mog Exp $
+ * @version $Id$
  */
 public class UploaderPosition implements Comparable {
     long _bytes;
@@ -30,10 +30,10 @@ public class UploaderPosition implements Comparable {
 
     public UploaderPosition(String username, long bytes, int files,
         long xfertime) {
-        this._username = username;
-        this._bytes = bytes;
-        this._files = files;
-        this._xfertime = xfertime;
+        _username = username;
+        _bytes = bytes;
+        _files = files;
+        _xfertime = xfertime;
     }
 
     public int compareTo(Object o) {
@@ -65,11 +65,11 @@ public class UploaderPosition implements Comparable {
     }
 
     public long getBytes() {
-        return this._bytes;
+        return _bytes;
     }
 
     public int getFiles() {
-        return this._files;
+        return _files;
     }
 
     public String getUsername() {
@@ -93,14 +93,14 @@ public class UploaderPosition implements Comparable {
     }
 
     public void updateBytes(long bytes) {
-        this._bytes += bytes;
+        _bytes += bytes;
     }
 
     public void updateFiles(int files) {
-        this._files += files;
+        _files += files;
     }
 
     public void updateXfertime(long xfertime) {
-        this._xfertime += xfertime;
+        _xfertime += xfertime;
     }
 }

@@ -120,7 +120,7 @@ public class Find implements CommandHandlerFactory, CommandHandler {
 			//return new FtpReply(550, "File not found: " + ex.getMessage());
 			//}
 			// check permission
-			if (file.getUsername().equals(conn.getUserNull().getUsername())) {
+			if (file.getUsername().equals(conn.getUserNull().getName())) {
 				if (!conn.getGlobalContext().getConnectionManager()
 						.getGlobalContext().getConfig().checkDeleteOwn(
 								conn.getUserNull(), file)) {

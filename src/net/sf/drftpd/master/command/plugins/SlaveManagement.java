@@ -85,7 +85,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         }
 
         rslave.setOffline("Slave kicked by " +
-            conn.getUserNull().getUsername());
+            conn.getUserNull().getName());
 
         return Reply.RESPONSE_200_COMMAND_OK;
     }

@@ -381,7 +381,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         }
 
         // check permission
-        if (requestedFile.getUsername().equals(conn.getUserNull().getUsername())) {
+        if (requestedFile.getUsername().equals(conn.getUserNull().getName())) {
             if (!conn.getGlobalContext().getConfig().checkDeleteOwn(conn.getUserNull(),
                         requestedFile)) {
                 return Reply.RESPONSE_530_ACCESS_DENIED;
@@ -499,7 +499,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 
         try {
             LinkedRemoteFile createdDir = dir.createDirectory(conn.getUserNull()
-                                                                  .getUsername(),
+                                                                  .getName(),
                     conn.getUserNull().getGroupName(), createdDirName);
 
             conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
@@ -551,7 +551,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
             return new Reply(550, fileName + ": " + e.getMessage());
         }
 
-        if (requestedFile.getUsername().equals(conn.getUserNull().getUsername())) {
+        if (requestedFile.getUsername().equals(conn.getUserNull().getName())) {
             if (!conn.getGlobalContext().getConfig().checkDeleteOwn(conn.getUserNull(),
                         requestedFile)) {
                 return Reply.RESPONSE_530_ACCESS_DENIED;
@@ -613,7 +613,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         }
 
         //check permission
-        if (_renameFrom.getUsername().equals(conn.getUserNull().getUsername())) {
+        if (_renameFrom.getUsername().equals(conn.getUserNull().getName())) {
             if (!conn.getGlobalContext().getConfig().checkRenameOwn(conn.getUserNull(),
                         _renameFrom)) {
                 return Reply.RESPONSE_530_ACCESS_DENIED;
@@ -657,7 +657,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         }
 
         // check permission
-        if (_renameFrom.getUsername().equals(conn.getUserNull().getUsername())) {
+        if (_renameFrom.getUsername().equals(conn.getUserNull().getName())) {
             if (!conn.getGlobalContext().getConfig().checkRenameOwn(conn.getUserNull(),
                         toDir)) {
                 return Reply.RESPONSE_530_ACCESS_DENIED;

@@ -122,7 +122,7 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
                 owner.updateCredits(award.longValue());
                 response.addComment("Awarded " +
                     Bytes.formatBytes(award.longValue()) + " to " +
-                    owner.getUsername());
+                    owner.getName());
             }
         }
 

@@ -72,7 +72,7 @@ public class Trial implements FtpListener {
             StringTokenizer st = new StringTokenizer(action);
 
             if (!st.hasMoreTokens()) {
-                logger.info(user.getUsername() + " no action specified");
+                logger.info(user.getName() + " no action specified");
 
                 return;
             }
@@ -85,15 +85,15 @@ public class Trial implements FtpListener {
                 }
             } else if ("setgrp".equals(cmd)) {
                 user.setGroup(st.nextToken());
-                logger.info(user.getUsername() + " primary group set to " +
+                logger.info(user.getName() + " primary group set to " +
                     user.getGroupName());
             } else if ("delete".equals(cmd)) {
                 user.setDeleted(true);
-                logger.info(user.getUsername() + " deleted");
+                logger.info(user.getName() + " deleted");
             } else if ("purge".equals(cmd)) {
                 user.setDeleted(true);
                 user.purge();
-                logger.info(user.getUsername() + " purged");
+                logger.info(user.getName() + " purged");
             }
         } catch (java.util.NoSuchElementException e) {
             logger.info("Error parsing \"" + action + "\"", e);
@@ -366,12 +366,12 @@ public class Trial implements FtpListener {
                 long bytesleft = limit.getBytes() - bytes;
 
                 if (bytesleft > 0) {
-                    logger.info(user.getUsername() + " failed " +
+                    logger.info(user.getName() + " failed " +
                         limit.getName() + " by " +
                         Bytes.formatBytes(bytesleft));
                     limit.doFailed(user);
                 } else {
-                    logger.info(user.getUsername() + " passed " +
+                    logger.info(user.getName() + " passed " +
                         limit.getName() + " with " +
                         Bytes.formatBytes(-bytesleft) + " extra");
                     limit.doPassed(user);

@@ -111,13 +111,13 @@ public class Request implements CommandHandlerFactory, CommandHandler {
             return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
-        String createdDirName = REQPREFIX + conn.getUserNull().getUsername() +
+        String createdDirName = REQPREFIX + conn.getUserNull().getName() +
             "-" + conn.getRequest().getArgument();
 
         try {
             LinkedRemoteFile createdDir = conn.getCurrentDirectory()
                                               .createDirectory(conn.getUserNull()
-                                                                   .getUsername(),
+                                                                   .getName(),
                     conn.getUserNull().getGroupName(), createdDirName);
 
             //if (conn.getConfig().checkDirLog(conn.getUserNull(), createdDir)) {

@@ -23,7 +23,7 @@ package org.drftpd.commands;
  */
 public class ReplyPermissionDeniedException extends ReplyException {
 	public ReplyPermissionDeniedException() {
-		super("Permissin denied");
+		super("Permission denied");
 	}
 
 	public ReplyPermissionDeniedException(String message) {

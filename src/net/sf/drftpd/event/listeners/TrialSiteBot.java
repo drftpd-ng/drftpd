@@ -53,7 +53,7 @@ public class TrialSiteBot extends GenericCommandAutoService {
     protected String jprintf(String key, User user, Limit limit,
         long bytesleft, boolean unique) {
         ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-        env.add("user", user.getUsername());
+        env.add("user", user.getName());
 
         if (limit != null) {
             env.add("period", Trial.getPeriodName(limit.getPeriod()));

@@ -106,7 +106,7 @@ public class XStreamUserManager implements UserManager {
         }
 
         XStreamUser user = new XStreamUser(this, username);
-        users.put(user.getUsername(), user);
+        users.put(user.getName(), user);
 
         return user;
     }
@@ -199,7 +199,7 @@ public class XStreamUserManager implements UserManager {
 
                 //throws RuntimeException
                 user.setUserManager(this);
-                users.put(user.getUsername(), user);
+                users.put(user.getName(), user);
                 user.reset(_connManager);
                 in.close();
 
@@ -221,7 +221,7 @@ public class XStreamUserManager implements UserManager {
         XStreamUser user = (XStreamUser) getUserByNameUnchecked(username);
 
         if (user.isDeleted()) {
-            throw new NoSuchUserException(user.getUsername() + " is deleted");
+            throw new NoSuchUserException(user.getName() + " is deleted");
         }
 
         user.reset(_connManager);
@@ -234,7 +234,7 @@ public class XStreamUserManager implements UserManager {
     }
 
     void remove(XStreamUser user) {
-        this.users.remove(user.getUsername());
+        this.users.remove(user.getName());
     }
 
     void rename(XStreamUser oldUser, String newUsername)
@@ -243,7 +243,7 @@ public class XStreamUserManager implements UserManager {
             throw new UserExistsException("user " + newUsername + " exists");
         }
 
-        users.remove(oldUser.getUsername());
+        users.remove(oldUser.getName());
         users.put(newUsername, oldUser);
     }
 

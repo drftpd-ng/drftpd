@@ -17,35 +17,39 @@
  */
 package org.drftpd.plugins;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.config.FtpConfig;
+import net.sf.drftpd.master.config.PatternPathPermission;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
-
+import org.apache.oro.text.GlobCompiler;
+import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.ConnectionManager;
-import org.drftpd.sections.SectionInterface;
+import org.drftpd.master.RemoteSlave;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.Properties;
+import com.Ostermiller.util.StringTokenizer;
 
 
 /**
  * @author zubov
- *
  * @version $Id$
  */
 public class Mirror implements FtpListener {
     private static final Logger logger = Logger.getLogger(Mirror.class);
     private ConnectionManager _cm;
-    private ArrayList _exemptList;
+    private ArrayList<PatternPathPermission> _perms;
     private boolean _mirrorAllSFV;
     private int _numberOfMirrors;
 
@@ -73,8 +77,14 @@ public class Mirror implements FtpListener {
 
         LinkedRemoteFileInterface file = transevent.getDirectory();
 
-        if (checkExclude(_cm.getGlobalContext().getSectionManager().lookup(file.getPath()))) {
-            return;
+        List<RemoteSlave> slaves = _cm.getGlobalContext().getSlaveManager().getSlaves();
+        for(PatternPathPermission perm : _perms) {
+        	if(perm.checkPath(file)) {
+        		for(Iterator<RemoteSlave> iter = slaves.iterator();iter.hasNext();) {
+        			if(!perm.check(iter.next())) iter.remove();
+        		}
+        		break;
+        	}
         }
 
         int numToMirror = _numberOfMirrors;
@@ -85,7 +95,7 @@ public class Mirror implements FtpListener {
         }
 
         _cm.getJobManager().addJobToQueue(new Job(file,
-                _cm.getGlobalContext().getSlaveManager().getSlaves(), 0,
+                slaves, 0,
                 numToMirror));
         logger.info("Done adding " + file.getPath() + " to the JobList");
     }
@@ -94,9 +104,9 @@ public class Mirror implements FtpListener {
      * @param lrf
      * Returns true if lrf.getPath() is excluded
      */
-    public boolean checkExclude(SectionInterface section) {
-        return _exemptList.contains(section.getName());
-    }
+//    public boolean checkExclude(SectionInterface section) {
+//        return _exemptList.contains(section.getName());
+//    }
 
     public void init(ConnectionManager connectionManager) {
         _cm = connectionManager;
@@ -115,16 +125,20 @@ public class Mirror implements FtpListener {
         _numberOfMirrors = Integer.parseInt(PropertyHelper.getProperty(props,
                     "numberOfMirrors"));
         _mirrorAllSFV = PropertyHelper.getProperty(props, "mirrorAllSFV").equals("true");
-        _exemptList = new ArrayList();
+        _perms = new ArrayList<PatternPathPermission>();
 
         for (int i = 1;; i++) {
-            String path = props.getProperty("exclude." + i);
-
-            if (path == null) {
-                break;
-            }
-
-            _exemptList.add(path);
+        	StringTokenizer st;
+        	try {
+        		st = new com.Ostermiller.util.StringTokenizer(PropertyHelper.getProperty(props, "pathperm."+i));
+        	} catch(NullPointerException e) {
+        		break;
+        	}
+        	try {
+				_perms.add(new PatternPathPermission(new GlobCompiler().compile(st.nextToken()), FtpConfig.makeUsers(st)));
+			} catch (MalformedPatternException e1) {
+				throw new RuntimeException(e1);
+			}
         }
     }
 

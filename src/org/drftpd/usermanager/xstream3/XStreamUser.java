@@ -84,7 +84,7 @@ public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
             }
 
             SafeFileWriter out = new SafeFileWriter(((XStreamUserManager) _userManager).getUserFile(
-                        this.getUsername()));
+                        this.getName()));
 
             try {
                 out.write(xst.toXML(this));
@@ -92,10 +92,10 @@ public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
                 out.close();
             }
 
-            Logger.getLogger(XStreamUser.class).debug("wrote " + getUsername());
+            Logger.getLogger(XStreamUser.class).debug("wrote " + getName());
         } catch (IOException ex) {
             throw new UserFileException("Error writing userfile for " +
-                this.getUsername() + ": " + ex.getMessage(), ex);
+                this.getName() + ": " + ex.getMessage(), ex);
         }
     }
 
@@ -116,7 +116,7 @@ public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
                 "XStreamUser without reference to XStreamUserManager");
         }
 
-        File userfile = ((XStreamUserManager) _userManager).getUserFile(this.getUsername());
+        File userfile = ((XStreamUserManager) _userManager).getUserFile(this.getName());
         userfile.delete();
     }
 

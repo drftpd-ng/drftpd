@@ -195,8 +195,8 @@ public abstract class AbstractUser extends User {
 	}
 
 	public boolean equals(Object obj) {
-		return (obj instanceof User) ? ((User) obj).getUsername().equals(
-				getUsername()) : false;
+		return (obj instanceof User) ? ((User) obj).getName().equals(
+				getName()) : false;
 	}
 
 	public long getCredits() {
@@ -331,10 +331,10 @@ public abstract class AbstractUser extends User {
 		_data.putObject(Request.REQUESTS, requests);
 		_data.putObject(Request.REQUESTSFILLED, requestsFilled);
 
-		_data.putObject(UserManagment.COMMENT, comment);
+		_data.setObject(UserManagment.COMMENT, comment);
 		_data.putObject(UserManagment.CREATED, created);
-		_data.putObject(UserManagment.RATIO, new Float(ratio));
-		_data.putObject(UserManagment.TAGLINE, tagline);
+		_data.setObject(UserManagment.RATIO, new Float(ratio));
+		_data.setObject(UserManagment.TAGLINE, tagline);
 
 		_data.putObject(RaceStatistics.RACES, racesParticipated);
 		_data.putObject(RaceStatistics.RACESLOST, racesLost);
@@ -454,7 +454,7 @@ public abstract class AbstractUser extends User {
 		throw new RuntimeException();
 	}
 
-	public String getUsername() {
+	public String getName() {
 		return username;
 	}
 
@@ -463,7 +463,7 @@ public abstract class AbstractUser extends User {
 	}
 
 	public int hashCode() {
-		return getUsername().hashCode();
+		return getName().hashCode();
 	}
 
 	public boolean isAdmin() {
@@ -580,7 +580,7 @@ public abstract class AbstractUser extends User {
 
 		this.downloadedBytesDay = 0;
 		this.uploadedBytesDay = 0;
-		logger.info("Reset daily stats for " + getUsername());
+		logger.info("Reset daily stats for " + getName());
 	}
 
 	private void resetMonth(ConnectionManager cm, Date resetDate) {
@@ -595,11 +595,11 @@ public abstract class AbstractUser extends User {
 
 		this.downloadedBytesMonth = 0;
 		this.uploadedBytesMonth = 0;
-		logger.info("Reset monthly stats for " + getUsername());
+		logger.info("Reset monthly stats for " + getName());
 	}
 
 	private void resetWeek(ConnectionManager cm, Date resetDate) {
-		logger.info("Reset weekly stats for " + getUsername() + "(was "
+		logger.info("Reset weekly stats for " + getName() + "(was "
 				+ Bytes.formatBytes(uploadedBytesWeek) + " UP and "
 				+ Bytes.formatBytes(downloadedBytesWeek) + " DOWN");
 

@@ -45,7 +45,7 @@ import java.util.Iterator;
  */
 public class XStreamUserManager extends AbstractUserManager {
     private static final Logger logger = Logger.getLogger(XStreamUserManager.class.getName());
-    String _userpath = "users/xstream2/";
+    String _userpath = "users/xstream3/";
     File _userpathFile = new File(_userpath);
 
     public XStreamUserManager() throws UserFileException {
@@ -136,7 +136,7 @@ public class XStreamUserManager extends AbstractUserManager {
 
                 //throws RuntimeException
                 user.setUserManager(this);
-                _users.put(user.getUsername(), user);
+                _users.put(user.getName(), user);
                 user.reset(_connManager);
 
                 return user;

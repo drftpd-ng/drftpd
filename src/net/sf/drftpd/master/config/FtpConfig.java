@@ -107,7 +107,7 @@ public class FtpConfig {
         return arr;
     }
 
-    public static ArrayList makeUsers(Enumeration st) {
+    public static ArrayList<String> makeUsers(Enumeration st) {
         ArrayList<String> users = new ArrayList<String>();
 
         while (st.hasMoreElements()) {

@@ -22,8 +22,6 @@ import net.sf.drftpd.HostMaskCollection;
 import java.util.List;
 import java.util.Map;
 
-import javax.naming.OperationNotSupportedException;
-
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.master.ConnectionManager;
@@ -33,7 +31,7 @@ import org.drftpd.master.ConnectionManager;
  * @author mog
  * @version $Id$
  */
-public abstract class User {
+public abstract class User implements Entity {
     public final float getObjectFloat(Key key) {
     	return getKeyedMap().getObjectFloat(key);
     }
@@ -235,7 +233,7 @@ public abstract class User {
 
     public abstract long getUploadedTimeForTrialPeriod(int i);
 
-    public abstract String getUsername();
+    public abstract String getName();
 
     public abstract long getWeeklyAllotment();
 
@@ -448,7 +446,7 @@ public abstract class User {
     public abstract void updateUploadedTime(long millis);
 
     public final void putObject(Key key, Object obj) {
-    	getKeyedMap().putObject(key, obj);
+    	getKeyedMap().setObject(key, obj);
     }
 
     public final Object getObject(Key key) throws KeyNotFoundException {

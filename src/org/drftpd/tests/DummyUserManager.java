@@ -58,7 +58,7 @@ public class DummyUserManager extends AbstractUserManager {
     }
 
     public void add(User user) {
-        _users.put(user.getUsername(), user);
+        _users.put(user.getName(), user);
     }
 
     public User getUserByNameUnchecked(String username)

@@ -130,7 +130,7 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
                 env.add("idle",
                     ((System.currentTimeMillis() - conn.getLastActive()) / 1000) +
                     "s");
-                env.add("targetuser", user.getUsername());
+                env.add("targetuser", user.getName());
 
                 if (!conn.getDataConnectionHandler().isTransfering()) {
                     if (idle) {

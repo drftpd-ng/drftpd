@@ -1,3 +1,12 @@
+2004/11/26 Morgan Christiansson <drftpd@mog.se>
+* Renamed .getUsername() to .getName() and moved the declaration
+  to the interface Entity.
+* Added pathpermissions to Mirror plugin.
+  perm.1=/section1/* -slave1,-slave2
+  perm.2=/section2/* =group
+* Added initial javabeans usermanager. This will replace the old usermanagers.
+  Thanks to captain- for recommending javabeans.
+
 2004/11/24 Morgan Christiansson <drftpd@mog.se>
 * Added SITE DEBUG for displaying stacktraces in control connection.
 * Changed keys in .properties formatting.

@@ -41,7 +41,7 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author mog
- * @version $Id: DatedSection.java,v 1.13 2004/11/15 01:12:16 mog Exp $
+ * @version $Id$
  */
 public class DatedSection implements SectionInterface {
     // The code assumes that the following constants are in a increasing
@@ -261,7 +261,7 @@ class RollingCalendar extends GregorianCalendar {
     }
 
     void setType(int type) {
-        this._type = type;
+        _type = type;
     }
 
     public long getNextCheckMillis(Date now) {
