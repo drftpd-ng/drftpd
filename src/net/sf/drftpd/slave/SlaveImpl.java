@@ -44,9 +44,9 @@ public class SlaveImpl
 	extends UnicastRemoteObject
 	implements Slave, Unreferenced {
 
-	static boolean isWin32 =
+	private static final boolean isWin32 =
 		System.getProperty("os.name").startsWith("Windows");
-	private static Logger logger = Logger.getLogger(SlaveImpl.class.getName());
+	private static final Logger logger = Logger.getLogger(SlaveImpl.class.getName());
 
 	/**
 	 * returns the {LinkedRemoteFile} directory that will be serialized and registered at the master.
@@ -215,9 +215,10 @@ public class SlaveImpl
 	}
 
 	public void delete(String path) throws IOException {
-		Collection files = _roots.getMultipleFiles(path);
+		Collection files = _roots.getMultipleRootsForFile(path);
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			File file = (File) iter.next();
+			Root root = (Root) iter.next();
+			File file = root.getFile(path);
 			if (!file.exists()) {
 				throw new FileNotFoundException(
 					file.getAbsolutePath() + " does not exist.");
@@ -225,10 +226,17 @@ public class SlaveImpl
 			if (!file.delete())
 				throw new PermissionDeniedException("delete failed on " + path);
 			File dir = new File(file.getParentFile());
-			assert dir != null;
+			
+			//TODO don't go above empty root
 			while (dir.list().length == 0) {
 				file.delete();
-				dir = new File(dir.getParentFile());
+				logger.debug(dir.getPath()+" - "+dir.getParent());
+				java.io.File tmpFile = dir.getParentFile();
+				logger.debug(tmpFile.getPath()+".length() <= "+root.getPath()+".length()");
+				if(tmpFile.getPath().length() <= root.getPath().length()) {
+					break;
+				}
+				dir = new File(tmpFile);
 			}
 		}
 	}

@@ -18,7 +18,7 @@ import net.sf.drftpd.AsciiOutputStream;
 
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.31 2003/11/19 00:20:54 mog Exp $
+ * @version $Id: TransferImpl.java,v 1.32 2003/11/25 20:43:04 mog Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private boolean _abort = false;
@@ -69,7 +69,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		_abort = true;
 	}
 
-	public void sendFile(
+	public TransferStatus sendFile(
 		String path,
 		char type,
 		long resumePosition,
@@ -86,6 +86,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 
 		System.out.println("DL:" + path);
 		transfer();
+		return getStatus();
 	}
 
 	public long getChecksum() {
@@ -184,7 +185,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	}
 
 	//TODO char mode for uploads?
-	public void receiveFile(String dirname, String filename, long offset)
+	public TransferStatus receiveFile(String dirname, String filename, long offset)
 		throws IOException {
 		_direction = TRANSFER_RECEIVING_UPLOAD;
 		_checksum = new CRC32();
@@ -201,5 +202,6 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		_out = new CheckedOutputStream(_out, _checksum);
 		System.out.println("UL:" + dirname + File.separator + filename);
 		transfer();
+		return getStatus();
 	}
 }

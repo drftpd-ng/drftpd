@@ -19,10 +19,10 @@ import net.sf.drftpd.slave.RootBasket;
  * A wrapper for java.io.File to the net.sf.drftpd.RemoteFile structure.
  * 
  * @author mog
- * @version $Id: FileRemoteFile.java,v 1.29 2003/11/18 00:43:44 mog Exp $
+ * @version $Id: FileRemoteFile.java,v 1.30 2003/11/25 20:43:04 mog Exp $
  */
 public class FileRemoteFile extends RemoteFile {
-	private static Logger logger = Logger.getLogger(FileRemoteFile.class.getName());
+	private static final Logger logger = Logger.getLogger(FileRemoteFile.class.getName());
 //	private File file;
 //	private String root;
 

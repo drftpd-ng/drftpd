@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.85 2003/11/19 00:20:53 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.86 2003/11/25 20:43:04 mog Exp $
  */
 
 public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comparable {
@@ -626,7 +626,16 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 		public String getPath() {
 			return _path;
 		}
+		/**
+		 * Returns true if getPath() returns a non-null value, i.e.<!-- --> returns false if the file exists.
+		 */
 		public boolean hasPath() {
+			return _path != null;
+		}
+		/**
+		 * Return true if getPath() returns a null value, i.e.<!-- --> returns true if the file exists.
+		 */
+		public boolean exists() {
 			return _path == null;
 		}
 	}

@@ -36,10 +36,10 @@ import org.apache.log4j.PatternLayout;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.57 2003/11/25 19:47:52 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.58 2003/11/25 20:43:04 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
-	private static Logger debuglogger =
+	private static final Logger debuglogger =
 		Logger.getLogger(BaseFtpConnection.class.getName() + ".service");
 
 	static {
@@ -54,8 +54,8 @@ public class BaseFtpConnection implements Runnable {
 		}
 	}
 
-	private static Logger logger = Logger.getLogger(BaseFtpConnection.class);
-	public static String NEWLINE = "\r\n";
+	private static final Logger logger = Logger.getLogger(BaseFtpConnection.class);
+	public static final String NEWLINE = "\r\n";
 
 	/**
 	 * Is the current password authenticated?

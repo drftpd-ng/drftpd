@@ -64,7 +64,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.12 2003/11/25 19:47:52 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.13 2003/11/25 20:43:04 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -539,7 +539,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 * 
 	 * ''zipscript?? renames bad uploads to .bad, how do we handle this with resumes?
 	 */
-
+	//TODO add APPE support
 	private FtpReply transfer(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
 		char direction = conn.getDirection();
@@ -577,14 +577,14 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			targetDir = ret.getFile();
 			targetFileName = ret.getPath();
 
-			if (ret.hasPath()) {
+			if (ret.exists()) {
 				// target exists, this could be overwrite or resume
 				// if(resumePosition != 0) {} // resume
 				//TODO overwrite & resume files.
 
 				return new FtpReply(
 					550,
-					"Requested action not taken. File exists");
+					"Requested action not taken. File exists.");
 				//_transferFile = targetDir;
 				//targetDir = _transferFile.getParent();
 				//if(_transfereFile.getOwner().equals(getUser().getUsername())) {
