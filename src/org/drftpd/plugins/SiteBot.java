@@ -134,6 +134,8 @@ public class SiteBot extends FtpListener implements Observer {
     protected IRCConnection _conn;
     private boolean _enableAnnounce;
     private IrcConfig _ircCfg;
+    private int _maxUserAnnounce;
+    private int _maxGroupAnnounce;
 
     //private String _key;
     protected int _port;
@@ -524,6 +526,8 @@ public class SiteBot extends FtpListener implements Observer {
                             raceuser, getGlobalContext().getUserManager())));
 
                 say(ret.getSection(), SimplePrintf.jprintf(raceformat, raceenv));
+                if (position >= _maxUserAnnounce)
+                    break;
             }
 
             Ret ret3 = getPropertyFileSuffix("store.complete.group", dir);
@@ -553,6 +557,8 @@ public class SiteBot extends FtpListener implements Observer {
                     Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
                 say(ret.getSection(), SimplePrintf.jprintf(raceformat, raceenv));
+                if (position >= _maxGroupAnnounce)
+                    break;
             }
 
             //HALFWAY
@@ -1159,6 +1165,20 @@ public class SiteBot extends FtpListener implements Observer {
 			}
 			_fish = new Blowfish(_blowfishKey);
 		}
+		
+        //maximum announcements for race results
+		try {
+            _maxUserAnnounce = Integer.parseInt(ircCfg.getProperty("irc.max.racers"));
+        } catch (NumberFormatException e) {
+            logger.warn("Invalid setting in irc.conf: irc.max.racers", e);
+            _maxUserAnnounce = 100;
+        }
+		try {
+            _maxGroupAnnounce = Integer.parseInt(ircCfg.getProperty("irc.max.groups"));
+        } catch (NumberFormatException e) {
+            logger.warn("Invalid setting in irc.conf: irc.max.groups", e);
+            _maxGroupAnnounce = 100;
+        }
    }
 
     public String getBlowfishKey() {

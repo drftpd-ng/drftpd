@@ -8,7 +8,7 @@
 * Fixed TrialSiteBot to recieve decrypted message when using blowfish
 * Removed !failed 
 * Added User ban support (site ban, site unban, site bans)
-
+* Added setting in irc.conf to set maximum number of racers/groups to announce on COMPLETE (requested by blueprism)
 
 2005/02/13 Matt Zimmerman <zubov@users.sourceforge.net>
 * Updated perms.conf.dist to reflect login_prompt and secure(SSL/TLS)

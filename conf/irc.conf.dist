@@ -33,6 +33,10 @@ irc.user=drftpd
 # (based on irc.section.x settings below)
 # [true | false ]
 irc.enable.announce=true
+# maximum number of racers to announce on COMPLETE
+irc.max.racers=10
+# maximum number of groups to announce on COMPLETE
+irc.max.groups=10
 
 # Sets the time in milliseconds we wait after each command is sent.
 # The best protection you can set to avoid flood disconnects
