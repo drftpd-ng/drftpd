@@ -15,7 +15,7 @@ import java.net.Socket;
 public abstract class Connection implements Serializable {
 
 	public abstract Socket connect() throws IOException;
-	void setSockOpts(Socket sock) throws IOException {
+	protected void setSockOpts(Socket sock) throws IOException {
 		/*
 		 * IPTOS_LOWCOST (0x02)
 		 * IPTOS_RELIABILITY (0x04)

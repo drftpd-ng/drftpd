@@ -3,6 +3,7 @@ package net.sf.drftpd.remotefile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import java.net.ServerSocket;
 import java.rmi.RemoteException;
 
 import java.util.Collection;
@@ -18,6 +19,9 @@ import java.util.regex.Pattern;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.InvalidDirectoryException;
+import net.sf.drftpd.SFVFile;
+import net.sf.drftpd.master.NoAvailableSlaveException;
+import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.slave.RemoteSlave;
 
@@ -93,13 +97,15 @@ public class LinkedRemoteFile extends RemoteFileTree {
 		parent = null;
 		name = "";
 		files = new Hashtable();
-		slaves = new Vector(1); // there _should_ always be at least 1 RemoteSlave.
+		slaves = new Vector(1);
+		// there _should_ always be at least 1 RemoteSlave.
 	}
 
 	/**
 	 * The slave argument may be null, if it is null, no slaves will be added.
 	 */
-	public LinkedRemoteFile(RemoteSlave slave, RemoteFile file) throws  IOException {
+	public LinkedRemoteFile(RemoteSlave slave, RemoteFile file)
+		throws IOException {
 		this(slave, null, file);
 	}
 
@@ -110,11 +116,13 @@ public class LinkedRemoteFile extends RemoteFileTree {
 	public LinkedRemoteFile(
 		RemoteSlave slave,
 		LinkedRemoteFile parent,
-		RemoteFile file) throws InvalidDirectoryException {
-		
-		RemoteFileTree treefile=null;
-		if(file instanceof RemoteFileTree) treefile = (RemoteFileTree)file;
-		
+		RemoteFile file)
+		throws InvalidDirectoryException {
+
+		RemoteFileTree treefile = null;
+		if (file instanceof RemoteFileTree)
+			treefile = (RemoteFileTree) file;
+
 		canRead = file.canRead();
 		canWrite = file.canWrite();
 		lastModified = file.lastModified();
@@ -137,32 +145,32 @@ public class LinkedRemoteFile extends RemoteFileTree {
 		}
 		//file.isDirectory cached
 		if (isDirectory()) {
-//			if (!(file instanceof RemoteFileTree)) {
-			if(treefile == null) {
+			//			if (!(file instanceof RemoteFileTree)) {
+			if (treefile == null) {
 				throw new InvalidDirectoryException("Directories must implement LinkedRemoteFile to be added to the LinkedRemoteFile tree");
 			}
-//			RemoteFileTree treefile = (RemoteFileTree)file;
+			//			RemoteFileTree treefile = (RemoteFileTree)file;
 			/* get existing file entries */
-/*
-			File cache = new File(file.getPath() + "/.drftpd");
-			Hashtable oldtable = null;
-			try {
-				ObjectInputStream is =
-					new ObjectInputStream(new FileInputStream(cache));
-				oldtable = (Hashtable) is.readObject();
-			} catch (FileNotFoundException ex) {
-				//it's ok if it doesn't exist
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			} catch (ClassNotFoundException ex) {
-				// this class must exist
-				ex.printStackTrace();
-				System.exit(-1);
-			}
-*/
+			/*
+						File cache = new File(file.getPath() + "/.drftpd");
+						Hashtable oldtable = null;
+						try {
+							ObjectInputStream is =
+								new ObjectInputStream(new FileInputStream(cache));
+							oldtable = (Hashtable) is.readObject();
+						} catch (FileNotFoundException ex) {
+							//it's ok if it doesn't exist
+						} catch (IOException ex) {
+							ex.printStackTrace();
+						} catch (ClassNotFoundException ex) {
+							// this class must exist
+							ex.printStackTrace();
+							System.exit(-1);
+						}
+			*/
 			/* END get existing file entries*/
 
-//			File dir[] = treefile.listFiles(new DrftpdFileFilter());
+			//			File dir[] = treefile.listFiles(new DrftpdFileFilter());
 			RemoteFile dir[] = treefile.listFiles();
 			files = new Hashtable(dir.length);
 			Stack dirstack = new Stack();
@@ -181,9 +189,9 @@ public class LinkedRemoteFile extends RemoteFileTree {
 					files.put(file2.getName(), oldfile);
 				} else {
 				*/
-					files.put(
-						file2.getName(),
-						new LinkedRemoteFile(slave, this, file2));
+				files.put(
+					file2.getName(),
+					new LinkedRemoteFile(slave, this, file2));
 				/*}*/
 			}
 
@@ -218,9 +226,7 @@ public class LinkedRemoteFile extends RemoteFileTree {
 					}
 				} else {
 					*/
-					files.put(
-						filename,
-						new LinkedRemoteFile(slave, this, file2));
+				files.put(filename, new LinkedRemoteFile(slave, this, file2));
 				/*
 				}
 				*/
@@ -229,23 +235,28 @@ public class LinkedRemoteFile extends RemoteFileTree {
 	}
 
 	public void mkdir(User owner, String fileName) throws IOException {
-		LinkedRemoteFile existingfile = (LinkedRemoteFile)files.get(fileName);
-		if(existingfile != null) {
-			throw new FileExistsException(fileName+" already exists in this directory");
+		LinkedRemoteFile existingfile = (LinkedRemoteFile) files.get(fileName);
+		if (existingfile != null) {
+			throw new FileExistsException(
+				fileName + " already exists in this directory");
 		}
 		for (Iterator i = slaves.iterator(); i.hasNext();) {
 			RemoteSlave slave = (RemoteSlave) i.next();
 			try {
-				slave.getSlave().mkdir(owner, getPath() +"/"+ fileName);
+				slave.getSlave().mkdir(owner, getPath() + "/" + fileName);
 			} catch (RemoteException ex) {
 				slave.getManager().handleRemoteException(ex, slave);
 			}
 		}
-		
-		LinkedRemoteFile file = new LinkedRemoteFile(null, this, new DirectoryRemoteFile(owner, fileName));
+
+		LinkedRemoteFile file =
+			new LinkedRemoteFile(
+				null,
+				this,
+				new DirectoryRemoteFile(owner, fileName));
 		file.addSlaves(getSlaves());
 		files.put(file.getName(), file);
-		System.out.println("Created directory "+file.getPath());
+		System.out.println("Created directory " + file.getPath());
 	}
 
 	public void addFile(RemoteFile file) throws InvalidDirectoryException {
@@ -253,6 +264,10 @@ public class LinkedRemoteFile extends RemoteFileTree {
 		files.put(linkedfile.getName(), linkedfile);
 	}
 
+	public Map getFiles() {
+		return files;
+	}
+	
 	public RemoteFileTree[] listFiles() {
 		if (files == null) {
 			System.out.println(
@@ -458,7 +473,7 @@ public class LinkedRemoteFile extends RemoteFileTree {
 		return slaves;
 	}
 	private Random rand = new Random();
-	public RemoteSlave getAnySlave() {
+	public RemoteSlave getASlave() throws NoAvailableSlaveException {
 		RemoteSlave myslaves[] =
 			(RemoteSlave[]) slaves.toArray(new RemoteSlave[0]);
 		int num = rand.nextInt(myslaves.length);
@@ -505,5 +520,47 @@ public class LinkedRemoteFile extends RemoteFileTree {
 		ret.append("]]");
 		return ret.toString();
 	}
-
+	/**
+	 * @see net.sf.drftpd.remotefile.RemoteFileTree#getSFVFile()
+	 */
+	public SFVFile getSFVFile() throws IOException {
+		if (sfvFile == null) {
+			while (true) {
+				RemoteSlave slave = getASlave();
+				try {
+					sfvFile = slave.getSlave().getSFVFile(getPath());
+					break;
+				} catch (RemoteException ex) {
+					slave.getManager().handleRemoteException(ex, slave);
+				}
+			}
+		}
+		return sfvFile;
+	}
+	/**
+	 * @see net.sf.drftpd.remotefile.RemoteFile#getCheckSum()
+	 */
+	public long getCheckSum() throws IOException {
+		if(checkSum != 0) return super.getCheckSum();
+		
+		RemoteSlave slave;
+		while(true) {
+			
+			slave = getASlave();
+			try {
+				checkSum = slave.getSlave().checkSum(getPath());
+			} catch(RemoteException ex) {
+				slave.getManager().handleRemoteException(ex, slave);
+				continue;
+			}
+			return checkSum;
+		}
+	}
+	
+	public void renameTo(String to) {
+		throw new NoSuchMethodError("renameTo() not implemented");
+	}
+	public void delete() {
+		throw new NoSuchMethodError("delete() not implemented");
+	}
 }

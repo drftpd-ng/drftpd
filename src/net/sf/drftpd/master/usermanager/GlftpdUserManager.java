@@ -169,7 +169,6 @@ public class GlftpdUserManager extends UserManager {
 				usermanager.releaseLock(getUsername());
 			}
 		}
-
 	}
 	/**
 	 * @author mog

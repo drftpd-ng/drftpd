@@ -1,6 +1,7 @@
 package net.sf.drftpd.slave;
 
 import net.sf.drftpd.PermissionDeniedException;
+import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.RemoteFile;
 
@@ -62,6 +63,10 @@ public interface Slave extends Remote {
 		long offset)
 		throws RemoteException, IOException;
 
+	public long checkSum(
+		String path)
+		throws RemoteException, IOException;
+		
 	/**
 	 * Get statistics for this slave, usefull when deciding which slave to use when transferring files.
 	 */
@@ -76,4 +81,13 @@ public interface Slave extends Remote {
 	 * Check to see if slave is still up.
 	 */
 	public void ping() throws RemoteException;
+	
+	public SFVFile getSFVFile(String path)
+		throws RemoteException, IOException;
+	
+	/**
+	 * Rename files.
+	 */
+	public void rename(String from, String to)
+		throws RemoteException, IOException;
 }

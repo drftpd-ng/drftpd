@@ -1,5 +1,6 @@
 package net.sf.drftpd.slave;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -7,36 +8,29 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-
-import java.net.ConnectException;
 import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.zip.CRC32;
-import java.util.zip.CheckedOutputStream;
+import java.util.zip.CheckedInputStream;
 
-import com.jconfig.DiskFile;
-import com.jconfig.DiskFileException;
-import com.jconfig.DiskObject;
-import com.jconfig.DiskVolume;
-import com.jconfig.FileRegistry;
-import com.sun.corba.se.internal.iiop.ListenerThread;
-
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.PermissionDeniedException;
+import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.RemoteFile;
-import net.sf.drftpd.remotefile.RemoteFileTree;
+
+import com.jconfig.DiskFile;
+import com.jconfig.DiskObject;
+import com.jconfig.DiskVolume;
+import com.jconfig.FileRegistry;
 
 /**
  * @author <a href="mailto:mog@linux.nu">Morgan Christiansson</a>
@@ -175,7 +169,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	/**
 	 * @see net.sf.drftpd.slave.Slave#mkdir()
 	 */
-	public void mkdir(User user, String path) throws RemoteException, PermissionDeniedException {
+	public void mkdir(User user, String path) throws PermissionDeniedException {
 		System.out.println("Will create "+root+path);
 		if(!new File(root+path).mkdir()) {
 			throw new PermissionDeniedException("mkdir(): Permission denied");
@@ -186,7 +180,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	/**
 	 * @see net.sf.drftpd.slave.Slave#ping()
 	 */
-	public void ping() throws RemoteException {
+	public void ping() {
 	}
 	
 	/////////////////// TRANSFER METHODS ///////////////////////////
@@ -226,7 +220,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	 * @see net.sf.drftpd.slave.Slave#doListenSend(RemoteFile, long, int)
 	 */
 	public Transfer doListenSend(RemoteFile remotefile, char mode, long offset)
-		throws RemoteException, IOException {
+		throws IOException {
 		
 //		ServerSocket server = new ServerSocket(0, 1);
 		//server.setSoTimeout(xxx);
@@ -286,4 +280,37 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		return doReceive(dir, filename, user, offset, new PassiveConnection());
 	}
 
+
+	/**
+	 * @see net.sf.drftpd.slave.Slave#checkSum(String)
+	 */
+	public long checkSum(String path) throws IOException {
+		CRC32 crc32 = new CRC32();
+		InputStream in = new CheckedInputStream(new FileInputStream(root+path), crc32);
+		byte buf[] = new byte[1024];
+		while(in.read(buf) != -1);
+		return crc32.getValue();
+	}
+
+	public SFVFile getSFVFile(String path) throws IOException {
+		return new SFVFile(new BufferedReader(new FileReader(root+path)));
+	}
+	/**
+	 * @see net.sf.drftpd.slave.Slave#rename(String, String)
+	 */
+	public void rename(String from, String to)
+		throws IOException {
+		
+		File fromfile = new File(root+from);
+		if(!fromfile.exists()) throw new FileNotFoundException("cannot rename from "+from+", file does not exist");
+		File tofile = new File(root+to);
+		if(tofile.exists()) throw new FileExistsException("cannot rename from "+from+" to "+to+", destination exists");
+		fromfile.renameTo(tofile);
+	}
+
+	public void delete(String path) throws IOException {
+		File file = new File(root+path);
+		if(!file.exists()) throw new FileNotFoundException("cannot delete "+path+", file does not exist");
+		if(!file.delete()) throw new PermissionDeniedException("could not delete "+path);
+	}
 }

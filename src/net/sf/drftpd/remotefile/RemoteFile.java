@@ -2,6 +2,7 @@ package net.sf.drftpd.remotefile;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
@@ -25,7 +26,6 @@ import net.sf.drftpd.slave.*;
  * Window>Preferences>Java>Code Generation.
  */
 public abstract class RemoteFile implements Serializable {
-
 
 	protected String user;
 	public String getUser() {
@@ -129,4 +129,20 @@ public abstract class RemoteFile implements Serializable {
 	public int hashCode() {
 		return getName().hashCode();
 	}
+
+	protected long checkSum;
+	/**
+	 * Gets the checkSum
+	 */
+	public long getCheckSum() throws IOException {
+		return checkSum;	
+	}
+	/**
+	 * Sets the checkSum.
+	 * @param checkSum The checkSum to set
+	 */
+	public void setCheckSum(long checkSum) {
+		this.checkSum = checkSum;
+	}
+
 }

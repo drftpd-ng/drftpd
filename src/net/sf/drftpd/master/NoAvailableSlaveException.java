@@ -1,5 +1,7 @@
 package net.sf.drftpd.master;
 
+import java.io.IOException;
+
 /**
  * @author mog
  *
@@ -8,7 +10,7 @@ package net.sf.drftpd.master;
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-public class NoAvailableSlaveException extends Exception {
+public class NoAvailableSlaveException extends IOException {
 	public NoAvailableSlaveException(String message) {
 		super(message);
 	}

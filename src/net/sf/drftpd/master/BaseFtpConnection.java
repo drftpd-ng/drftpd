@@ -492,7 +492,7 @@ public class BaseFtpConnection implements Runnable {
 		if (mbPort) {
 			try {
 				mDataSoc = new Socket(mAddress, miPort);
-				mDataSoc.setSoTimeout(60000);
+				mDataSoc.setSoTimeout(30000); // .5 minute timeout
 			} catch (Exception ex) {
 				//mConfig.getLogger().warn(ex);
 				ex.printStackTrace();

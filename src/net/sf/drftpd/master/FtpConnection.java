@@ -12,10 +12,12 @@ import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.InvalidDirectoryException;
+import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.usermanager.GlftpdUserManager;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
@@ -534,6 +536,57 @@ public class FtpConnection extends BaseFtpConnection {
 			}
 		}
 	*/
+	public void doSITERESCAN(FtpRequest request, PrintWriter out) {
+		LinkedRemoteFile directory = getVirtualDirectory().getCurrentDirectoryFile();
+		LinkedRemoteFile sfvFile = null;
+		Map files = directory.getFiles();
+		for(Iterator i = files.keySet().iterator(); i.hasNext(); ) {
+			String fileName = (String)i.next();
+			if(fileName.endsWith(".sfv")) {
+				try {
+					sfvFile = directory.lookupFile(fileName);
+				} catch (FileNotFoundException e) {
+					out.println("550 "+e.getMessage());
+					return;
+				}
+			}
+		}
+		if(sfvFile == null) {
+			out.println("550 Sorry! no .sfv file found!");
+			return;
+		}
+		SFVFile sfv;
+		try {
+			sfv = sfvFile.getSFVFile();
+		} catch (IOException e) {
+			out.println("550 "+e.getMessage());
+			return;
+		}
+		for(Iterator i = sfv.entrySet().iterator(); i.hasNext(); ) {
+			Map.Entry entry = (Map.Entry)i.next();
+			String fileName = (String)entry.getKey();
+			Long checkSum = (Long)entry.getValue();
+			LinkedRemoteFile file;
+			try {
+				file = directory.lookupFile(fileName);
+			} catch(FileNotFoundException ex) {
+				out.println("200- "+fileName+" MISSING");
+				continue;
+			}
+			boolean ok;
+			try {
+				ok = checkSum.longValue() == file.getCheckSum();
+			} catch(IOException ex) {
+				out.println("200- "+fileName+" "+ex.getMessage());
+				ex.printStackTrace();
+				out.flush();
+				continue;
+			}
+			out.println("200- "+fileName+(ok ? " OK" : " FAILED"));
+			out.flush();
+		}
+		out.println("200 Command ok.");
+	}
 
 	public void doSITEADDIP(FtpRequest request, PrintWriter out) {
 		resetState();
@@ -1161,7 +1214,12 @@ public class FtpConnection extends BaseFtpConnection {
 		Transfer transfer;
 		RemoteSlave slave;
 		while (true) {
-			slave = remoteFile.getAnySlave();
+			try {
+				slave = remoteFile.getASlave();
+			} catch(NoAvailableSlaveException ex) {
+				out.println("550 "+ex.getMessage());
+				return;
+			}
 			
 			// get socket depending on the selection
 			if (mbPort) {
