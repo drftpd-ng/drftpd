@@ -14,8 +14,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- *
- * @version $Id: CommandManager.java,v 1.4 2004/01/13 20:30:54 mog Exp $
+ * @version $Id: CommandManager.java,v 1.5 2004/02/03 11:00:11 mog Exp $
  */
 public class CommandManager {
 	//TODO reload me
@@ -59,10 +58,6 @@ public class CommandManager {
 		String command = conn.getRequest().getCommand();
 		CommandHandler handler = (CommandHandler) commands.get(command);
 		if (handler == null) {
-			for (int i = 0; i < command.length(); i++) {
-				System.out.println(
-					"" + command.charAt(i) + "=" + (int) command.charAt(i));
-			}
 			throw new UnhandledCommandException(
 				"No command handler for " + command);
 		}
@@ -77,9 +72,6 @@ public class CommandManager {
 		return ret;
 	}
 
-	/**
-	 * @param class1
-	 */
 	public List getHandledCommands(Class class1) {
 		ArrayList list = new ArrayList();
 		for (Iterator iter = commands.entrySet().iterator(); iter.hasNext();) {
