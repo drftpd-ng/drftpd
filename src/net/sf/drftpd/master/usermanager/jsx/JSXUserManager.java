@@ -22,13 +22,13 @@ import JSX.ObjIn;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.master.ConnectionManager;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.drftpd.commands.UserManagment;
 
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserExistsException;
@@ -48,7 +48,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: JSXUserManager.java,v 1.38 2004/11/08 18:39:27 mog Exp $
+ * @version $Id$
  */
 public class JSXUserManager implements UserManager {
     private static final Logger logger = Logger.getLogger(JSXUserManager.class.getName());

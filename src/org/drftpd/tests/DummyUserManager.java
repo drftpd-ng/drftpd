@@ -16,8 +16,8 @@
  */
 package org.drftpd.tests;
 
-import net.sf.drftpd.master.ConnectionManager;
 
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -29,7 +29,7 @@ import java.util.Collections;
 
 /**
  * @author mog
- * @version $Id: DummyUserManager.java,v 1.7 2004/11/08 18:39:31 mog Exp $
+ * @version $Id$
  */
 public class DummyUserManager extends AbstractUserManager {
     private User _user;

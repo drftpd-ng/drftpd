@@ -16,7 +16,6 @@
  */
 package net.sf.drftpd.mirroring;
 
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import java.util.Collection;
@@ -25,11 +24,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.drftpd.master.RemoteSlave;
+
 
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.37 2004/11/12 14:22:18 mog Exp $
+ * @version $Id$
  */
 public class Job {
     private RemoteSlave _destSlave;

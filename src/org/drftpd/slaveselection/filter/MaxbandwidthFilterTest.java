@@ -21,10 +21,10 @@ import junit.framework.TestCase;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.SlaveManager;
 
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
+import org.drftpd.master.SlaveManager;
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.slave.DiskStatus;

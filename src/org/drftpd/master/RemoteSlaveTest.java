@@ -15,13 +15,14 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.master;
+package org.drftpd.master;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.Event;
+import net.sf.drftpd.master.SlaveFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
@@ -44,7 +45,7 @@ import java.util.Set;
 
 /**
  * @author mog
- * @version $Id: RemoteSlaveTest.java,v 1.17 2004/11/09 18:59:47 mog Exp $
+ * @version $Id: RemoteSlaveTest.java 781 2004-11-09 19:00:01Z mog $
  */
 public class RemoteSlaveTest extends TestCase {
     public RemoteSlaveTest(String fName) {

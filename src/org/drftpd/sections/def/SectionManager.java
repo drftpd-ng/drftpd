@@ -17,9 +17,9 @@
  */
 package org.drftpd.sections.def;
 
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.remotefile.FileUtils;
 
 import org.drftpd.sections.SectionInterface;
@@ -36,7 +36,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: SectionManager.java,v 1.12 2004/11/15 01:12:16 mog Exp $
+ * @version $Id$
  */
 public class SectionManager implements SectionManagerInterface {
     private ConnectionManager _cm;

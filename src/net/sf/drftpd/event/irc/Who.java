@@ -23,13 +23,13 @@ import f00f.net.irc.martyr.State;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
 
 import org.drftpd.Bytes;
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.plugins.SiteBot;
 
@@ -49,7 +49,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Who.java,v 1.11 2004/11/09 18:59:45 mog Exp $
+ * @version $Id$
  */
 public class Who extends GenericAutoService implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Who.class);

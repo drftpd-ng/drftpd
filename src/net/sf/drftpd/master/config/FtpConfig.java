@@ -17,7 +17,6 @@
  */
 package net.sf.drftpd.master.config;
 
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
@@ -29,6 +28,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagment;
 
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.slave.Slave;
 
 import org.drftpd.usermanager.User;
@@ -56,7 +56,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.68 2004/11/09 18:59:49 mog Exp $
+ * @version $Id$
  */
 public class FtpConfig {
     private static final Logger logger = Logger.getLogger(FtpConfig.class);

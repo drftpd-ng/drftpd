@@ -22,9 +22,9 @@ import junit.framework.TestSuite;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.master.RemoteSlave;
 
 import org.drftpd.Bytes;
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 
 import org.drftpd.slave.DiskStatus;
@@ -40,7 +40,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: MinfreespaceFilterTest.java,v 1.13 2004/11/11 13:31:40 mog Exp $
+ * @version $Id$
  */
 public class MinfreespaceFilterTest extends TestCase {
     public MinfreespaceFilterTest(String fName) {

@@ -21,7 +21,6 @@ import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -33,6 +32,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.drftpd.SFVFile;
+import org.drftpd.master.RemoteSlave;
 
 
 /**

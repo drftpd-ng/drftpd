@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.master;
+package org.drftpd.master;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
@@ -24,6 +24,7 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
+import net.sf.drftpd.master.SlaveFileException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.MLSTSerialize;
@@ -34,7 +35,6 @@ import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 
-import org.drftpd.master.RemergeMessage;
 
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.async.AsyncCommandArgument;
@@ -69,7 +69,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author mog
- * @version $Id: SlaveManager.java,v 1.28 2004/11/12 14:22:17 mog Exp $
+ * @version $Id: SlaveManager.java 788 2004-11-12 14:22:19Z mog $
  */
 public class SlaveManager implements Runnable {
     private static final Logger logger = Logger.getLogger(SlaveManager.class.getName());
@@ -200,7 +200,7 @@ public class SlaveManager implements Runnable {
     public HashSet findSlavesBySpace(int numOfSlaves, Set exemptSlaves,
         boolean ascending) {
         Collection<RemoteSlave> slaveList = getSlaves();
-        HashMap map = new HashMap();
+        HashMap<Long,RemoteSlave> map = new HashMap<Long,RemoteSlave>();
 
         for (Iterator<RemoteSlave> iter = slaveList.iterator(); iter.hasNext();) {
             RemoteSlave rslave = iter.next();

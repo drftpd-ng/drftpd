@@ -21,13 +21,13 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.listeners.Archive;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.ArchiveHandler;
 import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.mirroring.DuplicateArchiveException;
@@ -48,7 +48,7 @@ import java.util.StringTokenizer;
 
 /*
  * @author zubov
- * @version $Id: ArchiveCommandHandler.java,v 1.10 2004/11/09 15:20:18 mog Exp $
+ * @version $Id$
  */
 public class ArchiveCommandHandler implements CommandHandlerFactory,
     CommandHandler {

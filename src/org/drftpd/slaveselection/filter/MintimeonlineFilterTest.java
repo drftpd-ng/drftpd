@@ -20,11 +20,11 @@ package org.drftpd.slaveselection.filter;
 import junit.framework.TestCase;
 
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.BasicConfigurator;
 
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 
 import org.drftpd.slave.Transfer;
@@ -36,7 +36,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: MintimeonlineFilterTest.java,v 1.8 2004/11/09 18:59:59 mog Exp $
+ * @version $Id$
  */
 public class MintimeonlineFilterTest extends TestCase {
     public MintimeonlineFilterTest(String name) {

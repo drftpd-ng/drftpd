@@ -18,15 +18,16 @@ package org.drftpd.usermanager;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMaskCollection;
-import net.sf.drftpd.master.ConnectionManager;
 
 import java.util.List;
 import java.util.Map;
 
+import org.drftpd.master.ConnectionManager;
+
 
 /**
  * @author mog
- * @version $Id: User.java,v 1.4 2004/11/08 18:39:32 mog Exp $
+ * @version $Id$
  */
 public abstract class User {
     public abstract float getObjectFloat(Key key);

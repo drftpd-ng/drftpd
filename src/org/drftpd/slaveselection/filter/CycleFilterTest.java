@@ -21,8 +21,8 @@ import junit.framework.TestCase;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.master.RemoteSlave;
 
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 
 import org.drftpd.slave.Transfer;
@@ -33,7 +33,7 @@ import java.util.Arrays;
 
 /**
  * @author zubov
- * @version $Id: CycleFilterTest.java,v 1.6 2004/11/09 18:59:59 mog Exp $
+ * @version $Id$
  */
 public class CycleFilterTest extends TestCase {
     /**

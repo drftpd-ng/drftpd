@@ -20,13 +20,13 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.MLSTSerialize;
 
 import org.drftpd.Bytes;
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;

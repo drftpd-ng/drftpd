@@ -21,12 +21,12 @@ import junit.framework.TestCase;
 
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.UserEvent;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.tests.DummyUser;
 
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: AbstractUserTest.java,v 1.1 2004/11/03 16:46:49 mog Exp $
+ * @version $Id$
  */
 public class AbstractUserTest extends TestCase {
     private static final Logger logger = Logger.getLogger(AbstractUserTest.class);

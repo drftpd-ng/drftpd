@@ -21,9 +21,9 @@ import net.sf.drftpd.Checksum;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
-import net.sf.drftpd.master.ConnectionManager;
 
 import org.drftpd.commands.UserManagment;
+import org.drftpd.master.ConnectionManager;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -55,7 +55,7 @@ import java.io.IOException;
  *</ul>
  *
  * @author mog
- * @version $Id: Exec.java,v 1.6 2004/11/08 18:39:30 mog Exp $
+ * @version $Id$
  */
 public class Exec implements FtpListener {
     private ConnectionManager _cm;

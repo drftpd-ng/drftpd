@@ -20,7 +20,6 @@ package net.sf.drftpd.event.listeners;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.ExcludePath;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -32,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.Bytes;
 import org.drftpd.PropertyHelper;
+import org.drftpd.master.ConnectionManager;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -45,7 +45,7 @@ import java.util.Properties;
 
 /**
  * @author zubov
- * @version $Id: AutoFreeSpace.java,v 1.16 2004/11/09 18:59:46 mog Exp $
+ * @version $Id$
  */
 public class AutoFreeSpace implements FtpListener {
     private static final Logger logger = Logger.getLogger(AutoFreeSpace.class);

@@ -20,10 +20,10 @@ package net.sf.drftpd.mirroring;
 import junit.framework.TestCase;
 
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveFileException;
 
+import org.drftpd.master.ConnectionManager;
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
 
@@ -46,7 +46,7 @@ import java.util.Set;
 
 /**
  * @author zubov
- * @version $Id: JobManagerTest.java,v 1.18 2004/11/15 01:12:11 mog Exp $
+ * @version $Id$
  */
 public class JobManagerTest extends TestCase {
     private Properties p;

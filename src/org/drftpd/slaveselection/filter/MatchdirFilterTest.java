@@ -22,11 +22,11 @@ import junit.framework.TestSuite;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveFileException;
 
 import org.drftpd.GlobalContext;
 
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
@@ -46,7 +46,7 @@ import java.util.Set;
 
 /**
  * @author mog
- * @version $Id: MatchdirFilterTest.java,v 1.12 2004/11/09 18:59:59 mog Exp $
+ * @version $Id$
  */
 public class MatchdirFilterTest extends TestCase {
     RemoteSlave[] rslaves = {

@@ -18,9 +18,9 @@ package org.drftpd.usermanager;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.master.ConnectionManager;
 
 import org.drftpd.commands.UserManagment;
+import org.drftpd.master.ConnectionManager;
 
 import java.io.IOException;
 
@@ -35,7 +35,7 @@ import java.util.Iterator;
  * new user manager, we have to override this class.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya </a>
- * @version $Id: AbstractUserManager.java,v 1.2 2004/11/08 18:39:32 mog Exp $
+ * @version $Id$
  */
 public abstract class AbstractUserManager implements UserManager {
     protected ConnectionManager _connManager;

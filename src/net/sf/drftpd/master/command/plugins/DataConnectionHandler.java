@@ -24,7 +24,6 @@ import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -43,6 +42,7 @@ import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.commands.UserManagment;
 
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
@@ -79,7 +79,7 @@ import javax.net.ssl.SSLSocket;
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.77 2004/11/15 01:11:51 mog Exp $
+ * @version $Id$
  */
 public class DataConnectionHandler implements CommandHandlerFactory,
     CommandHandler, Cloneable {

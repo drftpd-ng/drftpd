@@ -19,18 +19,18 @@ package org.drftpd.tests;
 
 import java.util.Properties;
 
-import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.master.ConnectionManager;
+import org.drftpd.master.SlaveManager;
 import org.drftpd.sections.SectionManagerInterface;
 
 
 /**
  * @author mog
- * @version $Id: DummyGlobalContext.java,v 1.5 2004/11/15 01:12:17 mog Exp $
+ * @version $Id$
  */
 public class DummyGlobalContext extends GlobalContext {
     public DummyGlobalContext() {

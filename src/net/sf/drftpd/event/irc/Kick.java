@@ -20,11 +20,11 @@ package net.sf.drftpd.event.irc;
 import java.util.ArrayList;
 
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -41,7 +41,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author Teflon
- * @version $Id: Kick.java,v 1.5 2004/11/11 14:58:31 mog Exp $
+ * @version $Id$
  */
 public class Kick extends GenericAutoService implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Kick.class);

@@ -1,7 +1,6 @@
 package org.drftpd.tests;
 
 import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 import org.drftpd.GlobalContext;
@@ -9,6 +8,7 @@ import org.drftpd.LightSFVFile;
 import org.drftpd.SFVFile;
 
 import org.drftpd.id3.ID3Tag;
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
@@ -26,7 +26,7 @@ import java.net.Socket;
 
 /**
  * @author zubov
- * @version $Id: DummyRemoteSlave.java,v 1.8 2004/11/09 19:00:00 mog Exp $
+ * @version $Id$
  */
 public class DummyRemoteSlave extends RemoteSlave {
     public DummyRemoteSlave(String name, GlobalContext gctx) {

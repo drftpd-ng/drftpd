@@ -20,7 +20,6 @@ package net.sf.drftpd.remotefile;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 
 import java.io.FileNotFoundException;
@@ -31,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.drftpd.SFVFile;
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.AbstractRemoteFile;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.remotefile.RemoteFileInterface;
@@ -38,7 +38,7 @@ import org.drftpd.remotefile.RemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: LinkedRemoteFileInterface.java,v 1.18 2004/11/15 01:12:13 mog Exp $
+ * @version $Id$
  *
  */
 public interface LinkedRemoteFileInterface extends RemoteFileInterface {

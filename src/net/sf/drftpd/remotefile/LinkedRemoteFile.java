@@ -35,7 +35,6 @@ import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.ListUtils;
 
@@ -43,6 +42,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.SFVFile;
 import org.drftpd.id3.ID3Tag;
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.AbstractRemoteFile;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.remotefile.LightRemoteFile;

@@ -30,7 +30,6 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.UserEvent;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.Permission;
 import net.sf.drftpd.util.CalendarUtils;
@@ -39,6 +38,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commands.UserManagment;
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.usermanager.User;
 
@@ -47,7 +47,7 @@ import com.Ostermiller.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.33 2004/11/09 18:59:46 mog Exp $
+ * @version $Id$
  */
 public class Trial implements FtpListener {
     private static final Logger logger = Logger.getLogger(Trial.class);

@@ -23,9 +23,7 @@ import junit.framework.TestSuite;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveFileException;
-import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 
@@ -33,7 +31,9 @@ import org.apache.log4j.BasicConfigurator;
 
 import org.drftpd.GlobalContext;
 
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
+import org.drftpd.master.SlaveManager;
 import org.drftpd.sections.def.SectionManager;
 import org.drftpd.slave.Transfer;
 
@@ -52,7 +52,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilterTest.java,v 1.10 2004/11/09 19:00:00 mog Exp $
+ * @version $Id$
  */
 public class SlavetopFilterTest extends TestCase {
     private LinkedRemoteFile dir1;

@@ -17,9 +17,9 @@
  */
 package org.drftpd.tests;
 
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.remotefile.FileUtils;
 
 import org.drftpd.sections.SectionInterface;

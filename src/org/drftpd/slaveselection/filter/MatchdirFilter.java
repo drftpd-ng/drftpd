@@ -18,8 +18,6 @@
 package org.drftpd.slaveselection.filter;
 
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
@@ -28,6 +26,8 @@ import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Matcher;
 
 import org.drftpd.PropertyHelper;
+import org.drftpd.master.RemoteSlave;
+import org.drftpd.master.SlaveManager;
 import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;
@@ -47,7 +47,7 @@ import java.util.StringTokenizer;
  * </pre>
  *
  * @author mog
- * @version $Id: MatchdirFilter.java,v 1.8 2004/11/09 18:59:59 mog Exp $
+ * @version $Id$
  */
 public class MatchdirFilter extends Filter {
     private ArrayList<AssignSlave> _assigns;

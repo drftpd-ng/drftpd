@@ -19,9 +19,9 @@ package org.drftpd.slaveselection.filter;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.master.RemoteSlave;
 
 import org.apache.log4j.Logger;
+import org.drftpd.master.RemoteSlave;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +30,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: ScoreChart.java,v 1.9 2004/11/11 14:58:35 mog Exp $
+ * @version $Id$
  */
 public class ScoreChart {
     private static final Logger logger = Logger.getLogger(ScoreChart.class);

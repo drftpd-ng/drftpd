@@ -33,17 +33,17 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.RemoteSlave;
 
 import org.apache.log4j.Logger;
 import org.drftpd.PropertyHelper;
+import org.drftpd.master.ConnectionManager;
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.RemoteIOException;
 
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.65 2004/11/11 14:58:32 mog Exp $
+ * @version $Id$
  */
 public class JobManager implements Runnable {
     private static final Logger logger = Logger.getLogger(JobManager.class);

@@ -21,9 +21,7 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.MessageEvent;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.SlaveFileException;
-import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -32,6 +30,8 @@ import net.sf.drftpd.remotefile.MLSTSerialize;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.master.ConnectionManager;
+import org.drftpd.master.SlaveManager;
 import org.drftpd.sections.SectionManagerInterface;
 
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
@@ -290,7 +290,7 @@ public class GlobalContext {
     /**
      * Doesn't close connections like ConnectionManager.close() does
      * ConnectionManager.close() calls this method.
-     * @see net.sf.drftpd.master.ConnectionManager#shutdown(String)
+     * @see org.drftpd.master.ConnectionManager#shutdown(String)
      */
     public void shutdown(String message) {
         _shutdownMessage = message;

@@ -18,7 +18,6 @@
 package org.drftpd.master;
 
 import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.master.RemoteSlave;
 
 import java.io.IOException;
 
@@ -35,7 +34,7 @@ import org.drftpd.slave.TransferStatus;
 /**
  * @author zubov
  * @author mog
- * @version $Id: RemoteTransfer.java,v 1.2 2004/11/09 21:49:58 zubov Exp $
+ * @version $Id$
  */
 public class RemoteTransfer {
     private InetSocketAddress _address;

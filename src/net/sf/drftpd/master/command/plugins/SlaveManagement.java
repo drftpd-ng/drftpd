@@ -24,7 +24,6 @@ import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
@@ -32,6 +31,7 @@ import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.slave.SlaveStatus;
 
@@ -47,7 +47,7 @@ import java.util.Map;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveManagement.java,v 1.12 2004/11/09 21:49:57 zubov Exp $
+ * @version $Id$
  */
 public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
     public void unload() {
@@ -281,10 +281,10 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
             env.add("mask", mask);
 
             if (rslave.removeMask(mask)) {
-                response.addComment(conn.jprintf(SlaveManagement.class,
+                return new FtpReply(200, conn.jprintf(SlaveManagement.class,
                         "slave.delmask.success", env));
             } else {
-                response.addComment(conn.jprintf(SlaveManagement.class,
+            	return new FtpReply(501, conn.jprintf(SlaveManagement.class,
                         "slave.delmask.failed", env));
             }
         }

@@ -22,11 +22,11 @@ import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
 import net.sf.drftpd.event.InviteEvent;
-import net.sf.drftpd.master.ConnectionManager;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.*;
 
 import org.drftpd.usermanager.NoSuchUserException;

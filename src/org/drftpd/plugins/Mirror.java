@@ -20,7 +20,6 @@ package org.drftpd.plugins;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -28,6 +27,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.apache.log4j.Logger;
 
 import org.drftpd.PropertyHelper;
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.sections.SectionInterface;
 
 import java.io.FileInputStream;
@@ -40,7 +40,7 @@ import java.util.Properties;
 /**
  * @author zubov
  *
- * @version $Id: Mirror.java,v 1.2 2004/11/09 18:59:56 mog Exp $
+ * @version $Id$
  */
 public class Mirror implements FtpListener {
     private static final Logger logger = Logger.getLogger(Mirror.class);

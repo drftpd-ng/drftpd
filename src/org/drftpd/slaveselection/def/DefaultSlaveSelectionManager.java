@@ -20,7 +20,6 @@ package org.drftpd.slaveselection.def;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -29,6 +28,7 @@ import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 
 import org.drftpd.slave.SlaveStatus;
@@ -46,7 +46,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: DefaultSlaveSelectionManager.java,v 1.6 2004/11/09 21:49:59 zubov Exp $
+ * @version $Id$
  */
 public class DefaultSlaveSelectionManager
     implements SlaveSelectionManagerInterface {

@@ -18,12 +18,12 @@
 package net.sf.drftpd.remotefile;
 
 import net.sf.drftpd.Checksum;
-import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 
 import org.apache.log4j.Logger;
+import org.drftpd.master.ConnectionManager;
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.RemoteFileInterface;
 
 import java.io.FileReader;
@@ -46,7 +46,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: MLSTSerialize.java,v 1.35 2004/11/09 18:59:52 mog Exp $
+ * @version $Id$
  */
 public class MLSTSerialize {
     private static final Logger logger = Logger.getLogger(MLSTSerialize.class);

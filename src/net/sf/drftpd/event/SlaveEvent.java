@@ -17,13 +17,13 @@
  */
 package net.sf.drftpd.event;
 
-import net.sf.drftpd.master.RemoteSlave;
+import org.drftpd.master.RemoteSlave;
 
 
 /**
  * @author mog
  *
- * @version $Id: SlaveEvent.java,v 1.5 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id$
  */
 public class SlaveEvent extends MessageEvent {
     private RemoteSlave slave;

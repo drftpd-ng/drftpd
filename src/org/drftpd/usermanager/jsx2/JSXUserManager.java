@@ -19,11 +19,11 @@ package org.drftpd.usermanager.jsx2;
 import JSX.ObjIn;
 
 import net.sf.drftpd.FatalException;
-import net.sf.drftpd.master.ConnectionManager;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -41,7 +41,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: JSXUserManager.java,v 1.3 2004/11/08 18:39:32 mog Exp $
+ * @version $Id$
  */
 public class JSXUserManager extends AbstractUserManager {
     private static final Logger logger = Logger.getLogger(JSXUserManager.class.getName());

@@ -6,9 +6,10 @@
  */
 package org.drftpd.usermanager;
 
-import net.sf.drftpd.master.ConnectionManager;
 
 import java.util.Collection;
+
+import org.drftpd.master.ConnectionManager;
 
 
 /**

@@ -17,7 +17,6 @@
  */
 package org.drftpd.master;
 
-import net.sf.drftpd.master.RemoteSlave;
 
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.slave.async.AsyncResponseRemerge;
@@ -25,7 +24,7 @@ import org.drftpd.slave.async.AsyncResponseRemerge;
 
 /**
  * @author mog
- * @version $Id: RemergeMessage.java,v 1.3 2004/11/09 18:59:54 mog Exp $
+ * @version $Id$
  */
 public class RemergeMessage {
     private RemoteSlave _rslave;

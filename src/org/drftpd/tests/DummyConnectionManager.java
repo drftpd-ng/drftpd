@@ -17,9 +17,9 @@
  */
 package org.drftpd.tests;
 
-import net.sf.drftpd.master.ConnectionManager;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.master.ConnectionManager;
 
 
 public class DummyConnectionManager extends ConnectionManager {

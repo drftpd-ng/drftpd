@@ -18,11 +18,11 @@
 package org.drftpd.sections.conf;
 
 import net.sf.drftpd.FatalException;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
 
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
 
@@ -38,7 +38,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: SectionManager.java,v 1.8 2004/11/15 01:12:16 mog Exp $
+ * @version $Id$
  */
 public class SectionManager implements SectionManagerInterface {
     private static final Class[] CONSTRUCTOR_SIG = new Class[] {

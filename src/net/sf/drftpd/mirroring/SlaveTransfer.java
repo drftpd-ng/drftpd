@@ -18,11 +18,11 @@ package net.sf.drftpd.mirroring;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
@@ -36,7 +36,7 @@ import java.net.InetSocketAddress;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveTransfer.java,v 1.27 2004/11/09 18:59:51 mog Exp $
+ * @version $Id$
  */
 public class SlaveTransfer {
     private static final Logger logger = Logger.getLogger(SlaveTransfer.class);

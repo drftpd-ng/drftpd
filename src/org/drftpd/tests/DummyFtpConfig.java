@@ -17,12 +17,12 @@
  */
 package org.drftpd.tests;
 
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.commands.UserManagment;
 
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.usermanager.User;
 
 

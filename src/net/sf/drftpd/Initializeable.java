@@ -17,11 +17,11 @@
  */
 package net.sf.drftpd;
 
-import net.sf.drftpd.master.ConnectionManager;
+import org.drftpd.master.ConnectionManager;
 
 
 /**
- * @version $Id: Initializeable.java,v 1.4 2004/08/03 20:13:54 zubov Exp $
+ * @version $Id$
  */
 public interface Initializeable {
     public void init(ConnectionManager connectionManager);

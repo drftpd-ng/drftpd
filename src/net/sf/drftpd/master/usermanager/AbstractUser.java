@@ -21,7 +21,6 @@ import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMaskCollection;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.event.listeners.Trial;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.command.plugins.Nuke;
 import net.sf.drftpd.util.CalendarUtils;
 
@@ -31,6 +30,7 @@ import org.drftpd.Bytes;
 import org.drftpd.commands.Request;
 import org.drftpd.commands.UserManagment;
 
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.RaceStatistics;
 import org.drftpd.plugins.Statistics;
 
@@ -53,7 +53,7 @@ import java.util.Map;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya </a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.55 2004/11/09 18:59:50 mog Exp $
+ * @version $Id$
  */
 public abstract class AbstractUser extends User {
     private static final Logger logger = Logger.getLogger(AbstractUser.class);

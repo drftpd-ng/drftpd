@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.master;
+package org.drftpd.master;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -47,8 +47,6 @@ import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.LightSFVFile;
 import org.drftpd.id3.ID3Tag;
-import org.drftpd.master.RemergeMessage;
-import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.RemoteIOException;
@@ -75,7 +73,7 @@ import com.thoughtworks.xstream.io.StreamException;
 /**
  * @author mog
  * @author zubov
- * @version $Id: RemoteSlave.java,v 1.78 2004/11/12 18:24:30 mog Exp $
+ * @version $Id: RemoteSlave.java 789 2004-11-12 18:24:30Z mog $
  */
 public class RemoteSlave implements Runnable, Comparable, Serializable {
 	private static final long serialVersionUID = -6973935289361817125L;

@@ -21,16 +21,16 @@ import java.util.Collection;
 import java.util.List;
 
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveFileException;
-import net.sf.drftpd.master.SlaveManager;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.master.RemoteSlave;
+import org.drftpd.master.SlaveManager;
 
 
 /**
  * @author mog
- * @version $Id: DummySlaveManager.java,v 1.7 2004/11/15 01:12:17 mog Exp $
+ * @version $Id$
  */
 public class DummySlaveManager extends SlaveManager {
     public DummySlaveManager() throws SlaveFileException {

@@ -18,15 +18,16 @@
 package net.sf.drftpd.event;
 
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import java.net.InetAddress;
 
+import org.drftpd.master.RemoteSlave;
+
 
 /**
  * @author mog
- * @version $Id: TransferEvent.java,v 1.13 2004/11/02 07:32:38 zubov Exp $
+ * @version $Id$
  */
 public class TransferEvent extends DirectoryFtpEvent {
     private boolean _complete;

@@ -29,7 +29,6 @@ import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.event.TransferEvent;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.command.plugins.Nuke;
@@ -42,6 +41,7 @@ import org.drftpd.SFVFile;
 import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.UserManagment;
 
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
 
 import org.drftpd.slave.SlaveStatus;
@@ -71,7 +71,7 @@ import java.util.Locale;
 
 /**
  * @author flowman
- * @version $Id: GlftpdLog.java,v 1.18 2004/11/09 21:49:56 zubov Exp $
+ * @version $Id$
  */
 public class GlftpdLog implements FtpListener {
     private static Logger logger = Logger.getLogger(GlftpdLog.class);

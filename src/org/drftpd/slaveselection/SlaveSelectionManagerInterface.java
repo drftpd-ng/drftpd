@@ -19,12 +19,12 @@ package org.drftpd.slaveselection;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.master.RemoteSlave;
 
 import java.io.IOException;
 
@@ -33,7 +33,7 @@ import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManagerInterface.java,v 1.10 2004/11/12 14:22:19 mog Exp $
+ * @version $Id$
  */
 public interface SlaveSelectionManagerInterface {
     public abstract void reload() throws IOException;

@@ -19,8 +19,8 @@ package net.sf.drftpd.mirroring;
 
 import junit.framework.TestCase;
 
-import net.sf.drftpd.master.RemoteSlave;
 
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.tests.DummyRemoteSlave;
 
 import java.util.HashSet;
@@ -28,7 +28,7 @@ import java.util.HashSet;
 
 /**
  * @author zubov
- * @version $Id: JobTest.java,v 1.11 2004/11/02 07:32:46 zubov Exp $
+ * @version $Id$
  */
 public class JobTest extends TestCase {
     public JobTest(String arg0) {

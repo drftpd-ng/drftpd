@@ -23,11 +23,11 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectExistsException;
-import net.sf.drftpd.master.ConnectionManager;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserExistsException;
@@ -47,7 +47,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: XStreamUserManager.java,v 1.12 2004/11/08 18:39:27 mog Exp $
+ * @version $Id$
  */
 public class XStreamUserManager implements UserManager {
     private static final Logger logger = Logger.getLogger(XStreamUserManager.class.getName());

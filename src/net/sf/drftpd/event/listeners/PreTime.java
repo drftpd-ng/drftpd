@@ -26,12 +26,12 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.Logger;
 
 import org.drftpd.PropertyHelper;
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
 
 import java.io.FileInputStream;
@@ -45,7 +45,7 @@ import java.util.Properties;
 
 /**
  * @author zubov
- * @version $Id: PreTime.java,v 1.20 2004/11/09 18:59:46 mog Exp $
+ * @version $Id$
  */
 public class PreTime implements FtpListener {
     private static final Logger logger = Logger.getLogger(PreTime.class);

@@ -42,9 +42,7 @@ import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.event.irc.IRCPluginInterface;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.GroupPosition;
-import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.command.plugins.Nuke;
 import net.sf.drftpd.master.config.FtpConfig;
@@ -63,6 +61,8 @@ import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.TransferStatistics;
 import org.drftpd.commands.UserManagment;
 import org.drftpd.id3.ID3Tag;
+import org.drftpd.master.ConnectionManager;
+import org.drftpd.master.SlaveManager;
 
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.slave.SlaveStatus;
@@ -101,7 +101,7 @@ import java.util.ResourceBundle;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.29 2004/11/15 01:12:14 mog Exp $
+ * @version $Id$
  */
 public class SiteBot implements FtpListener, Observer {
     public static final ReplacerEnvironment GLOBAL_ENV = new ReplacerEnvironment();

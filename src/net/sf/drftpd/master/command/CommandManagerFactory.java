@@ -21,10 +21,10 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.ConnectionManager;
 
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.master.ConnectionManager;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -39,7 +39,7 @@ import java.util.Properties;
  * @author mog
  *
  * Istantiates the CommandManager instances that holds per-connection CommandHandlers.
- * @version $Id: CommandManagerFactory.java,v 1.10 2004/08/03 20:13:56 zubov Exp $
+ * @version $Id$
  */
 public class CommandManagerFactory {
     private ConnectionManager _connMgr;

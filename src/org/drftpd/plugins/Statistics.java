@@ -21,14 +21,14 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.event.UserEvent;
-import net.sf.drftpd.master.ConnectionManager;
 
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.usermanager.Key;
 
 
 /**
  * @author mog
- * @version $Id: Statistics.java,v 1.1 2004/11/05 13:27:22 mog Exp $
+ * @version $Id$
  */
 public class Statistics implements FtpListener {
     public static final Key LOGINS = new Key(Statistics.class, "logins",

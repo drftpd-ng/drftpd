@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.master;
+package org.drftpd.master;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -34,6 +34,9 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
+import net.sf.drftpd.master.BaseFtpConnection;
+import net.sf.drftpd.master.FtpReply;
+import net.sf.drftpd.master.SlaveFileException;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.MLSTSerialize;
@@ -51,7 +54,7 @@ import org.drftpd.usermanager.UserFileException;
 
 
 /**
- * @version $Id: ConnectionManager.java,v 1.124 2004/11/11 14:58:32 mog Exp $
+ * @version $Id: ConnectionManager.java 787 2004-11-11 14:58:35Z mog $
  */
 public class ConnectionManager {
     public static final int idleTimeout = 300;

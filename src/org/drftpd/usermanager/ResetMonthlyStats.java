@@ -17,10 +17,10 @@
  */
 package org.drftpd.usermanager;
 
-import net.sf.drftpd.master.ConnectionManager;
 
 import org.apache.log4j.BasicConfigurator;
 
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.slave.Slave;
 
 import org.drftpd.tests.DummyGlobalContext;
@@ -37,7 +37,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: ResetMonthlyStats.java,v 1.7 2004/11/03 16:46:49 mog Exp $
+ * @version $Id$
  */
 public class ResetMonthlyStats {
     public ResetMonthlyStats() {

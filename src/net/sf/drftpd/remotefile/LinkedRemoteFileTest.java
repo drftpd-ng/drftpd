@@ -20,10 +20,10 @@ package net.sf.drftpd.remotefile;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
-import net.sf.drftpd.master.RemoteSlave;
 
 import org.apache.log4j.BasicConfigurator;
 
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.remotefile.LightRemoteFile;
 
@@ -40,7 +40,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: LinkedRemoteFileTest.java,v 1.14 2004/11/09 18:59:52 mog Exp $
+ * @version $Id$
  */
 public class LinkedRemoteFileTest extends TestCase {
     private LinkedRemoteFile _root;

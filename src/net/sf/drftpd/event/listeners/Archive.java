@@ -18,12 +18,12 @@ package net.sf.drftpd.event.listeners;
 
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.Logger;
 
 import org.drftpd.PropertyHelper;
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.mirroring.ArchiveHandler;
 import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.mirroring.DuplicateArchiveException;
@@ -44,7 +44,7 @@ import java.util.Properties;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.34 2004/11/09 18:59:45 mog Exp $
+ * @version $Id$
  */
 public class Archive implements FtpListener, Runnable {
     private static final Logger logger = Logger.getLogger(Archive.class);

@@ -19,13 +19,13 @@ package org.drftpd.slaveselection.filter;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.LinkedRemoteFileUtils;
 
 import org.drftpd.sections.SectionInterface;
@@ -46,7 +46,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilter.java,v 1.14 2004/11/09 19:00:00 mog Exp $
+ * @version $Id$
  */
 public class SlavetopFilter extends Filter {
     private GlobalContext _gctx;

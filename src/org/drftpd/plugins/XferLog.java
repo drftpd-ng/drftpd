@@ -21,7 +21,6 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
-import net.sf.drftpd.master.ConnectionManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,11 +32,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import org.drftpd.master.ConnectionManager;
+
 
 /**
  * @see http://www.wu-ftpd.org/man/xferlog.html
  * @author mog
- * @version $Id: XferLog.java,v 1.3 2004/08/03 20:14:06 zubov Exp $
+ * @version $Id$
  */
 public class XferLog implements FtpListener {
     /**
