@@ -39,11 +39,9 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.10 2004/04/18 21:02:29 zubov Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.11 2004/05/12 00:45:20 mog Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
-	private static final Logger logger =
-		Logger.getLogger(SlaveSelectionManager.class);
 	private SlaveManagerImpl _sm;
 	private FilterChain _ssmiDown;
 	private FilterChain _ssmiJobDown;

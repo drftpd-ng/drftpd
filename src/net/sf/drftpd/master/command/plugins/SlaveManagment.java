@@ -38,11 +38,13 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author mog
  *
- * @version $Id: SlaveManagment.java,v 1.8 2004/04/23 12:18:30 mog Exp $
+ * @version $Id: SlaveManagment.java,v 1.9 2004/05/12 00:45:07 mog Exp $
  */
 public class SlaveManagment implements CommandHandler {
-	public void unload() {}
-	public void load(CommandManagerFactory initializer) {}
+	public void unload() {
+	}
+	public void load(CommandManagerFactory initializer) {
+	}
 
 	private FtpReply doSITE_CHECKSLAVES(BaseFtpConnection conn) {
 		return new FtpReply(
@@ -80,10 +82,14 @@ public class SlaveManagment implements CommandHandler {
 	 * 
 	 */
 	private FtpReply doSITE_SLAVES(BaseFtpConnection conn) {
-		if (!conn.getUserNull().isAdmin()) {
+		boolean showRMI =
+			conn.getRequest().hasArgument() && conn.getRequest().getArgument().indexOf("rmi") != -1;
+		if(showRMI && !conn.getUserNull().isAdmin()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
-		boolean showRMI = conn.getUserNull().isAdmin() && conn.getRequest().hasArgument();
+		boolean showPlain =
+			conn.getRequest().hasArgument()
+				&& conn.getRequest().getArgument().indexOf("plain") != -1;
 		Collection slaves = conn.getSlaveManager().getSlaves();
 		FtpReply response =
 			new FtpReply(200, "OK, " + slaves.size() + " slaves listed.");
@@ -92,24 +98,25 @@ public class SlaveManagment implements CommandHandler {
 			iter.hasNext();
 			) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
-			if(showRMI) {
+			if (showRMI) {
 				response.addComment(rslave.toString());
 			}
+			ReplacerEnvironment env = new ReplacerEnvironment();
+			env.add("slave", rslave.getName());
 			try {
 				SlaveStatus status = rslave.getStatus();
-				ReplacerEnvironment env = new ReplacerEnvironment();
 				SiteBot.fillEnvSlaveStatus(env, status, conn.getSlaveManager());
-				env.add("slave", rslave.getName());
-				response.addComment(conn.jprintf(SlaveManagment.class, "slaves", env));
+				response.addComment(
+					conn.jprintf(SlaveManagment.class, "slaves", env));
 			} catch (SlaveUnavailableException e) {
-				//slave is offline
+				response.addComment(
+					conn.jprintf(SlaveManagment.class, "slaves.offline", env));
 			}
-			
-			
+
 		}
 		return response;
 	}
-	
+
 	private FtpReply doSITE_REMERGE(BaseFtpConnection conn) {
 		if (!conn.getUserNull().isAdmin()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
@@ -132,7 +139,7 @@ public class SlaveManagment implements CommandHandler {
 			conn.getConnectionManager().getSlaveManager().remerge(rslave);
 		} catch (IOException e) {
 			rslave.setOffline("IOException during remerge()");
-			return new FtpReply(200, "IOException during remerge()");			
+			return new FtpReply(200, "IOException during remerge()");
 		} catch (SlaveUnavailableException e) {
 			rslave.setOffline("Slave Unavailable during remerge()");
 			return new FtpReply(200, "Slave Unavailable during remerge()");
@@ -159,7 +166,9 @@ public class SlaveManagment implements CommandHandler {
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.command.CommandHandler#initialize(net.sf.drftpd.master.BaseFtpConnection)
 	 */
-	public CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer) {
+	public CommandHandler initialize(
+		BaseFtpConnection conn,
+		CommandManager initializer) {
 		return this;
 	}
 

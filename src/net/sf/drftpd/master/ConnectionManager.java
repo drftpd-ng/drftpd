@@ -59,7 +59,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.101 2004/05/10 02:53:58 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.102 2004/05/12 00:45:06 mog Exp $
  */
 public class ConnectionManager {
 
@@ -153,11 +153,10 @@ public class ConnectionManager {
 	private SlaveManagerImpl _slaveManager;
 	private Timer _timer;
 	private UserManager _usermanager;
-        private SocketSlaveManager _socketmanager;
-        
+
 	protected ConnectionManager() {
 	}
-        
+
 	public ConnectionManager(
 		Properties cfg,
 		Properties slaveCfg,
@@ -191,13 +190,15 @@ public class ConnectionManager {
 			throw new FatalException(e);
 		}
 
-            // start socket slave manager
-            SocketSlaveManager smgr = new SocketSlaveManager(this, cfg);
+		// start socket slave manager
+		if(cfg.getProperty("master.socketslavemanager","false").equals("true")) {
+			new SocketSlaveManager(this, cfg);
+		}
 
 		if (slaveCfg != null) {
 			try {
 				new SlaveImpl(slaveCfg);
-			} catch (RemoteException ex) {
+			} catch (IOException ex) { //and RemoteException
 				throw new FatalException(ex);
 			}
 		}
@@ -344,9 +345,11 @@ public class ConnectionManager {
 				"Sorry, your account is restricted to "
 					+ user.getMaxLogins()
 					+ " simultaneous logins.");
-		if (!baseconn.isSecure() && getConfig().checkUserRejectInsecure(user)) {
+		if (!baseconn.isSecure()
+			&& getConfig().checkUserRejectInsecure(user)) {
 			return new FtpReply(530, "USE SECURE CONNECTION");
-		} else if(baseconn.isSecure() && getConfig().checkUserRejectSecure(user)) {
+		} else if (
+			baseconn.isSecure() && getConfig().checkUserRejectSecure(user)) {
 			return new FtpReply(530, "USE INSECURE CONNECTION");
 		}
 		return null; // everything passed

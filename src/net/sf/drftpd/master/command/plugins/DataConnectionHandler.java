@@ -72,7 +72,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.53 2004/04/27 19:57:19 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.54 2004/05/12 00:45:07 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -1261,13 +1261,12 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				}
 				FtpReply reply = null;
 				if (isStor) {
-					_transferFile.removeSlave(_rslave);
 					_transferFile.delete();
 					logger.error("IOException during transfer, deleting file", ex); 
 					reply =  new FtpReply(426, "IOException, deleting file");
 				}
 				else {
-					logger.error("IOException during transfer");
+					logger.error("IOException during transfer", ex);
 					reply = new FtpReply(426, "IOException during transfer");
 				} 
 				reply.addComment(ex.getLocalizedMessage());
@@ -1456,7 +1455,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				} catch (NoSFVEntryException e1) {
 					//file not found in .sfv, continue
 				} catch (IOException e1) {
-					logger.info(e1);
+					logger.info("", e1);
 					response.addComment(
 						"IO Error reading sfv file: " + e1.getMessage());
 				}

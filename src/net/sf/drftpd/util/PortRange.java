@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: PortRange.java,v 1.7 2004/04/23 12:18:31 mog Exp $
+ * @version $Id: PortRange.java,v 1.8 2004/05/12 00:45:12 mog Exp $
  */
 public class PortRange {
 	private static final Logger logger = Logger.getLogger(PortRange.class);
@@ -46,7 +46,6 @@ public class PortRange {
 
 	protected void finalize() throws Throwable {
 		super.finalize();
-		System.out.println("portrange finalize()'d");
 		for (int i = 0; i < _ports.length; i++) {
 			if (_ports[i]) {
 				logger.debug(_minPort + i + " not released");

@@ -43,7 +43,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagment.java,v 1.17 2004/04/25 17:46:18 mog Exp $
+ * @version $Id: SiteManagment.java,v 1.18 2004/05/12 00:45:07 mog Exp $
  */
 public class SiteManagment implements CommandHandler {
 
@@ -75,6 +75,7 @@ public class SiteManagment implements CommandHandler {
 		}
 		return response;
 	}
+
 	private FtpReply doSITE_LOADPLUGIN(BaseFtpConnection conn) {
 		if (!conn.getUserNull().isAdmin()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;

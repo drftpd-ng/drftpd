@@ -38,7 +38,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.47 2004/04/22 02:10:12 mog Exp $
+ * @version $Id: TransferImpl.java,v 1.48 2004/05/12 00:45:11 mog Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private static final Logger logger = Logger.getLogger(TransferImpl.class);
@@ -259,7 +259,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 			return transfer();
 		} catch (IOException e) {
 			// TODO really delete on IOException ?
-			_slave.delete(root + File.separator + filename);
+			//_slave.delete(root + File.separator + filename);
 			throw e; // so the Master can still handle the exception
 		}
 	}

@@ -20,7 +20,6 @@ package net.sf.drftpd.event.irc;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.command.plugins.Textoutput;
 
-import org.apache.log4j.Logger;
 import org.drftpd.plugins.SiteBot;
 
 import f00f.net.irc.martyr.GenericCommandAutoService;
@@ -29,13 +28,11 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author zubov
- * @version $Id: Affils.java,v 1.4 2004/03/26 00:16:32 mog Exp $
+ * @version $Id: Affils.java,v 1.5 2004/05/12 00:45:04 mog Exp $
  */
 public class Affils extends GenericCommandAutoService implements IRCPluginInterface {
 
 	private ConnectionManager _cm;
-	private static final Logger logger = Logger.getLogger(Affils.class);
-
 	public Affils(SiteBot ircListener) {
 		super(ircListener.getIRCConnection());
 		_cm = ircListener.getConnectionManager();

@@ -36,14 +36,9 @@ import net.sf.drftpd.slave.RootBasket;
  * A wrapper for java.io.File to the net.sf.drftpd.RemoteFile structure.
  * 
  * @author mog
- * @version $Id: FileRemoteFile.java,v 1.35 2004/04/17 02:24:38 mog Exp $
+ * @version $Id: FileRemoteFile.java,v 1.36 2004/05/12 00:45:10 mog Exp $
  */
 public class FileRemoteFile extends AbstractRemoteFile {
-	private static final Logger logger =
-		Logger.getLogger(FileRemoteFile.class.getName());
-	//	private File file;
-	//	private String root;
-
 	RootBasket rootBasket;
 	String path;
 
@@ -114,9 +109,6 @@ public class FileRemoteFile extends AbstractRemoteFile {
 			if (!file
 				.getCanonicalPath()
 				.equalsIgnoreCase(file.getAbsolutePath())) {
-				System.out.println(
-					"FileRemoteFile: warning: not following possible symlink: "
-						+ file.getAbsolutePath());
 				throw new InvalidDirectoryException(
 					"Not following symlink: " + file.getAbsolutePath());
 			}

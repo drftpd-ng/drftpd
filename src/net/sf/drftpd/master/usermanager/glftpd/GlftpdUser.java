@@ -28,7 +28,7 @@ import net.sf.drftpd.util.Crypt;
 /**
  * @author mog
  * @author zubov
- * @version $Id: GlftpdUser.java,v 1.8 2004/02/10 00:03:09 mog Exp $
+ * @version $Id: GlftpdUser.java,v 1.9 2004/05/12 00:45:09 mog Exp $
  */
 public class GlftpdUser extends AbstractUser implements UnixPassword {
 	private String password;
@@ -55,8 +55,6 @@ public class GlftpdUser extends AbstractUser implements UnixPassword {
 		if (password.equals(userhash)) {
 			login();
 			return true;
-		} else {
-			System.out.println(password + " != " + userhash);
 		}
 		return false;
 	}

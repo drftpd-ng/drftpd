@@ -33,7 +33,6 @@ import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.UserComparator;
 
-import org.apache.log4j.Logger;
 import org.drftpd.plugins.SiteBot;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -45,15 +44,13 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author zubov
-  * @version $Id: Stats.java,v 1.4 2004/03/26 00:16:32 mog Exp $
+  * @version $Id: Stats.java,v 1.5 2004/05/12 00:45:04 mog Exp $
  */
 public class Stats
 	extends GenericCommandAutoService
 	implements IRCPluginInterface {
 
 	private ConnectionManager _cm;
-	private static final Logger logger = Logger.getLogger(Bnc.class);
-
 	public Stats(SiteBot ircListener) {
 		super(ircListener.getIRCConnection());
 		_cm = ircListener.getConnectionManager();

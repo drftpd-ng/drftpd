@@ -37,7 +37,7 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.24 2004/04/26 21:41:51 zubov Exp $
+ * @version $Id: Archive.java,v 1.25 2004/05/12 00:45:05 mog Exp $
  */
 
 public class Archive implements FtpListener, Runnable {
@@ -48,14 +48,11 @@ public class Archive implements FtpListener, Runnable {
 	public static Logger getLogger() {
 		return logger;
 	}
-	private long _archiveAfter;
-
 	private HashMap _archiveTypes;
 	private ConnectionManager _cm;
 	private long _cycleTime;
 	private ArrayList _exemptList = new ArrayList();
 	private boolean _isStopped = false;
-	private int _maxArchive;
 	private Thread thread = null;
 
 	public Archive() {

@@ -56,7 +56,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.35 2004/04/20 04:11:48 mog Exp $
+ * @version $Id: UserManagment.java,v 1.36 2004/05/12 00:45:07 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -102,7 +102,14 @@ public class UserManagment implements CommandHandler {
 							UserManagment.class.getName(),
 							"addip.success",
 							env));
-					logger.info("'"+conn.getUserNull().getUsername()+"' added ip '"+string+"' to '"+myUser.getUsername()+"'");
+					logger.info(
+						"'"
+							+ conn.getUserNull().getUsername()
+							+ "' added ip '"
+							+ string
+							+ "' to '"
+							+ myUser.getUsername()
+							+ "'");
 				} catch (DuplicateElementException e) {
 					response.addComment(
 						conn.jprintf(
@@ -201,7 +208,7 @@ public class UserManagment implements CommandHandler {
 				return new FtpReply(200, e1.getMessage());
 			}
 			newGroup = conn.getUserNull().getGroupName();
-		} else if(!conn.getUserNull().isAdmin()) {
+		} else if (!conn.getUserNull().isAdmin()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 
@@ -228,15 +235,27 @@ public class UserManagment implements CommandHandler {
 			newUser.setComment("Added by " + conn.getUserNull().getUsername());
 			if (newGroup != null) {
 				newUser.setGroup(newGroup);
-				logger.info("'"+conn.getUserNull().getUsername()+"' added '"+newUser.getUsername()+"' with group "+newUser.getGroupName()+"'");
+				logger.info(
+					"'"
+						+ conn.getUserNull().getUsername()
+						+ "' added '"
+						+ newUser.getUsername()
+						+ "' with group "
+						+ newUser.getGroupName()
+						+ "'");
 				env.add("primgroup", newUser.getGroupName());
 				response.addComment(
-						conn.jprintf(
-								UserManagment.class.getName(),
-								"adduser.primgroup",
-								env));
+					conn.jprintf(
+						UserManagment.class.getName(),
+						"adduser.primgroup",
+						env));
 			} else {
-				logger.info("'"+conn.getUserNull().getUsername()+"' added '"+newUser.getUsername()+"'");
+				logger.info(
+					"'"
+						+ conn.getUserNull().getUsername()
+						+ "' added '"
+						+ newUser.getUsername()
+						+ "'");
 			}
 		} catch (NoSuchElementException ex) {
 			return new FtpReply(
@@ -259,7 +278,14 @@ public class UserManagment implements CommandHandler {
 							UserManagment.class.getName(),
 							"addip.success",
 							env));
-					logger.info("'"+conn.getUserNull().getUsername()+"' added ip '"+string+"' to '"+newUser.getUsername()+"'");
+					logger.info(
+						"'"
+							+ conn.getUserNull().getUsername()
+							+ "' added ip '"
+							+ string
+							+ "' to '"
+							+ newUser.getUsername()
+							+ "'");
 				} catch (DuplicateElementException e1) {
 					response.addComment(
 						conn.jprintf(
@@ -448,13 +474,13 @@ public class UserManagment implements CommandHandler {
 				//					conn.jprintf(
 				//						UserManagment.class.getName(),
 				//						"change.specify"));
-				command = argument.substring(pos1+1);
+				command = argument.substring(pos1 + 1);
 				commandArgument = "";
 			} else {
 				command = argument.substring(pos1 + 1, pos2);
 				commandArgument = argument.substring(pos2 + 1);
 			}
-			
+
 			env.add("targetuser", myUser.getUsername());
 			if (conn.getUserNull().isGroupAdmin()) {
 				////// ratio //////
@@ -498,7 +524,16 @@ public class UserManagment implements CommandHandler {
 							UserManagment.class.getName(),
 							"changeratio.invalidratio"));
 				}
-				logger.info("'"+conn.getUserNull().getUsername()+"' changed ratio for '"+myUser.getUsername()+"' from '"+myUser.getRatio()+"' to '"+ratio+"'");
+				logger.info(
+					"'"
+						+ conn.getUserNull().getUsername()
+						+ "' changed ratio for '"
+						+ myUser.getUsername()
+						+ "' from '"
+						+ myUser.getRatio()
+						+ "' to '"
+						+ ratio
+						+ "'");
 				myUser.setRatio(ratio);
 
 				env.add("ratio", Float.toString(myUser.getRatio()));
@@ -518,7 +553,16 @@ public class UserManagment implements CommandHandler {
 
 		if ("credits".equalsIgnoreCase(command)) {
 			long credits = Bytes.parseBytes(commandArgument);
-			logger.info("'"+conn.getUserNull().getUsername()+"' changed credits for '"+myUser.getUsername()+"' from '"+myUser.getCredits()+" to '"+credits+"'");
+			logger.info(
+				"'"
+					+ conn.getUserNull().getUsername()
+					+ "' changed credits for '"
+					+ myUser.getUsername()
+					+ "' from '"
+					+ myUser.getCredits()
+					+ " to '"
+					+ credits
+					+ "'");
 			myUser.setCredits(credits);
 
 			env.add("credits", Bytes.formatBytes(myUser.getCredits()));
@@ -530,7 +574,16 @@ public class UserManagment implements CommandHandler {
 
 		} else if ("ratio".equalsIgnoreCase(command)) {
 			float ratio = Float.parseFloat(commandArgument);
-			logger.info("'"+conn.getUserNull().getUsername()+"' changed ratio for '"+myUser.getUsername()+"' from '"+myUser.getRatio()+" to '"+ratio+"'");
+			logger.info(
+				"'"
+					+ conn.getUserNull().getUsername()
+					+ "' changed ratio for '"
+					+ myUser.getUsername()
+					+ "' from '"
+					+ myUser.getRatio()
+					+ " to '"
+					+ ratio
+					+ "'");
 			myUser.setRatio(ratio);
 
 			env.add("ratio", Float.toString(myUser.getRatio()));
@@ -541,7 +594,16 @@ public class UserManagment implements CommandHandler {
 					env));
 
 		} else if ("comment".equalsIgnoreCase(command)) {
-			logger.info("'"+conn.getUserNull().getUsername()+"' changed comment for '"+myUser.getUsername()+"' from '"+myUser.getComment()+" to '"+commandArgument+"'");
+			logger.info(
+				"'"
+					+ conn.getUserNull().getUsername()
+					+ "' changed comment for '"
+					+ myUser.getUsername()
+					+ "' from '"
+					+ myUser.getComment()
+					+ " to '"
+					+ commandArgument
+					+ "'");
 			myUser.setComment(commandArgument);
 
 			env.add("comment", myUser.getComment());
@@ -553,7 +615,16 @@ public class UserManagment implements CommandHandler {
 
 		} else if ("idle_time".equalsIgnoreCase(command)) {
 			int idleTime = Integer.parseInt(commandArgument);
-			logger.info("'"+conn.getUserNull().getUsername()+"' changed idle_time for '"+myUser.getUsername()+"' from '"+myUser.getIdleTime()+" to '"+idleTime+"'");
+			logger.info(
+				"'"
+					+ conn.getUserNull().getUsername()
+					+ "' changed idle_time for '"
+					+ myUser.getUsername()
+					+ "' from '"
+					+ myUser.getIdleTime()
+					+ " to '"
+					+ idleTime
+					+ "'");
 			myUser.setIdleTime(idleTime);
 
 			env.add("idletime", Long.toString(myUser.getIdleTime()));
@@ -577,7 +648,20 @@ public class UserManagment implements CommandHandler {
 				} else {
 					numLoginsIP = myUser.getMaxLoginsPerIP();
 				}
-				logger.info("'"+conn.getUserNull().getUsername()+"' changed num_logins for '"+myUser.getUsername()+"' from '"+myUser.getMaxLogins()+"' '"+myUser.getMaxLoginsPerIP()+"' to '"+numLogins+"' '"+numLoginsIP+"'");
+				logger.info(
+					"'"
+						+ conn.getUserNull().getUsername()
+						+ "' changed num_logins for '"
+						+ myUser.getUsername()
+						+ "' from '"
+						+ myUser.getMaxLogins()
+						+ "' '"
+						+ myUser.getMaxLoginsPerIP()
+						+ "' to '"
+						+ numLogins
+						+ "' '"
+						+ numLoginsIP
+						+ "'");
 				myUser.setMaxLogins(numLogins);
 				myUser.setMaxLoginsPerIP(numLoginsIP);
 
@@ -600,7 +684,16 @@ public class UserManagment implements CommandHandler {
 			//} else if ("max_ulspeed".equals(command)) {
 			//	myUser.setMaxUploadRate(Integer.parseInt(commandArgument));
 		} else if ("group".equals(command)) {
-			logger.info("'"+conn.getUserNull().getUsername()+"' changed primary group for '"+myUser.getUsername()+"' from '"+myUser.getGroupName()+"' to '"+commandArgument+"'");
+			logger.info(
+				"'"
+					+ conn.getUserNull().getUsername()
+					+ "' changed primary group for '"
+					+ myUser.getUsername()
+					+ "' from '"
+					+ myUser.getGroupName()
+					+ "' to '"
+					+ commandArgument
+					+ "'");
 			myUser.setGroup(commandArgument);
 
 			env.add("primgroup", myUser.getGroupName());
@@ -622,16 +715,29 @@ public class UserManagment implements CommandHandler {
 				}
 				short groupSlots = Short.parseShort(args[0]);
 				short groupLeechSlots;
-				if(args.length >= 2) {
+				if (args.length >= 2) {
 					groupLeechSlots = Short.parseShort(args[1]);
 				} else {
 					groupLeechSlots = myUser.getGroupLeechSlots();
 				}
-				logger.info("'"+conn.getUserNull().getUsername()+"' changed group_slots for '"+myUser.getUsername()+"' from '"+myUser.getGroupSlots()+"' "+myUser.getGroupLeechSlots()+"' to '"+groupSlots+"' '"+groupLeechSlots+"'");
+				logger.info(
+					"'"
+						+ conn.getUserNull().getUsername()
+						+ "' changed group_slots for '"
+						+ myUser.getUsername()
+						+ "' from '"
+						+ myUser.getGroupSlots()
+						+ "' "
+						+ myUser.getGroupLeechSlots()
+						+ "' to '"
+						+ groupSlots
+						+ "' '"
+						+ groupLeechSlots
+						+ "'");
 				myUser.setGroupSlots(groupSlots);
 				myUser.setGroupLeechSlots(groupLeechSlots);
 
-				env.add("groupslots", ""+myUser.getGroupSlots());
+				env.add("groupslots", "" + myUser.getGroupSlots());
 				env.add(
 					"groupleechslots",
 					Long.toString(myUser.getGroupLeechSlots()));
@@ -647,7 +753,10 @@ public class UserManagment implements CommandHandler {
 			long myDate;
 			if (!commandArgument.equals("")) {
 				try {
-					myDate =  new SimpleDateFormat("yyyy-MM-dd").parse(commandArgument).getTime();
+					myDate =
+						new SimpleDateFormat("yyyy-MM-dd")
+							.parse(commandArgument)
+							.getTime();
 				} catch (ParseException e1) {
 					logger.log(Level.INFO, e1);
 					return new FtpReply(200, e1.getMessage());
@@ -655,7 +764,16 @@ public class UserManagment implements CommandHandler {
 			} else {
 				myDate = System.currentTimeMillis();
 			}
-			logger.info("'"+conn.getUserNull().getUsername()+"' changed created for '"+myUser.getUsername()+"' from '"+new Date(myUser.getCreated())+"' to '"+new Date(myDate)+"'");
+			logger.info(
+				"'"
+					+ conn.getUserNull().getUsername()
+					+ "' changed created for '"
+					+ myUser.getUsername()
+					+ "' from '"
+					+ new Date(myUser.getCreated())
+					+ "' to '"
+					+ new Date(myDate)
+					+ "'");
 			myUser.setCreated(myDate);
 			env.add("created", new Date(myDate));
 			return new FtpReply(
@@ -664,13 +782,31 @@ public class UserManagment implements CommandHandler {
 					UserManagment.class,
 					"changecreated.success",
 					env));
-		} else if("wkly_allotment".equals(command)) {
+		} else if ("wkly_allotment".equals(command)) {
 			long weeklyAllotment = Bytes.parseBytes(commandArgument);
-			logger.info("'"+conn.getUserNull().getUsername()+"' changed wkly_allotment for '"+myUser.getUsername()+"' from '"+myUser.getWeeklyAllotment()+"' to "+weeklyAllotment+"'");
+			logger.info(
+				"'"
+					+ conn.getUserNull().getUsername()
+					+ "' changed wkly_allotment for '"
+					+ myUser.getUsername()
+					+ "' from '"
+					+ myUser.getWeeklyAllotment()
+					+ "' to "
+					+ weeklyAllotment
+					+ "'");
 			myUser.setWeeklyAllotment(weeklyAllotment);
 			return FtpReply.RESPONSE_200_COMMAND_OK;
-		} else if("tagline".equals(command)) {
-			logger.info("'"+conn.getUserNull().getUsername()+"' changed tagline for '"+myUser.getUsername()+"' from '"+myUser.getTagline()+"' to '"+commandArgument+"'");
+		} else if ("tagline".equals(command)) {
+			logger.info(
+				"'"
+					+ conn.getUserNull().getUsername()
+					+ "' changed tagline for '"
+					+ myUser.getUsername()
+					+ "' from '"
+					+ myUser.getTagline()
+					+ "' to '"
+					+ commandArgument
+					+ "'");
 			myUser.setTagline(commandArgument);
 			return FtpReply.RESPONSE_200_COMMAND_OK;
 		} else {
@@ -738,17 +874,32 @@ public class UserManagment implements CommandHandler {
 			String string = args[i];
 			try {
 				myUser.removeGroup(string);
-				logger.info("'"+conn.getUserNull().getUsername()+"' removed '"+myUser.getUsername()+"' from group '"+string+"'");
+				logger.info(
+					"'"
+						+ conn.getUserNull().getUsername()
+						+ "' removed '"
+						+ myUser.getUsername()
+						+ "' from group '"
+						+ string
+						+ "'");
 				response.addComment(
 					myUser.getUsername() + " removed from group " + string);
 			} catch (NoSuchFieldException e1) {
 				try {
 					myUser.addGroup(string);
-					logger.info("'"+conn.getUserNull().getUsername()+"' added '"+myUser.getUsername()+"' to group '"+string+"'");
+					logger.info(
+						"'"
+							+ conn.getUserNull().getUsername()
+							+ "' added '"
+							+ myUser.getUsername()
+							+ "' to group '"
+							+ string
+							+ "'");
 					response.addComment(
-							myUser.getUsername() + " added to group " + string);
+						myUser.getUsername() + " added to group " + string);
 				} catch (DuplicateElementException e2) {
-					throw new RuntimeException("Error, user was not a member before",
+					throw new RuntimeException(
+						"Error, user was not a member before",
 						e2);
 				}
 			}
@@ -794,7 +945,12 @@ public class UserManagment implements CommandHandler {
 		try {
 			User myUser = conn.getUserManager().getUserByName(args[0]);
 			myUser.setPassword(args[1]);
-			logger.info("'"+conn.getUserNull().getUsername()+"' changed password for '"+myUser.getUsername()+"'");
+			logger.info(
+				"'"
+					+ conn.getUserNull().getUsername()
+					+ "' changed password for '"
+					+ myUser.getUsername()
+					+ "'");
 			return FtpReply.RESPONSE_200_COMMAND_OK;
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, "User not found: " + e.getMessage());
@@ -826,7 +982,6 @@ public class UserManagment implements CommandHandler {
 
 		String args[] = request.getArgument().split(" ");
 
-		System.out.println(args.length);
 		if (args.length < 2) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
@@ -850,7 +1005,14 @@ public class UserManagment implements CommandHandler {
 			String string = args[i];
 			try {
 				myUser.removeIpMask(string);
-				logger.info("'"+conn.getUserNull().getUsername()+"' removed ip '"+string+"' from '"+myUser+"'");
+				logger.info(
+					"'"
+						+ conn.getUserNull().getUsername()
+						+ "' removed ip '"
+						+ string
+						+ "' from '"
+						+ myUser
+						+ "'");
 				response.addComment("Removed " + string);
 			} catch (NoSuchFieldException e1) {
 				response.addComment(
@@ -885,13 +1047,17 @@ public class UserManagment implements CommandHandler {
 		}
 
 		if (conn.getUserNull().isGroupAdmin()
-			&& !conn.getUserNull().getGroupName().equals(
-				myUser.getGroupName())) {
+			&& !conn.getUserNull().getGroupName().equals(myUser.getGroupName())) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 
 		myUser.setDeleted(true);
-		logger.info("'"+conn.getUserNull().getUsername()+"' deleted user '"+myUser.getUsername()+"'");
+		logger.info(
+			"'"
+				+ conn.getUserNull().getUsername()
+				+ "' deleted user '"
+				+ myUser.getUsername()
+				+ "'");
 		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
 
@@ -967,9 +1133,18 @@ public class UserManagment implements CommandHandler {
 
 		long credits = Bytes.parseBytes(st.nextToken());
 		if (0 > credits) {
-			return new FtpReply(200, credits+" is not a positive number.");
+			return new FtpReply(200, credits + " is not a positive number.");
 		}
-		logger.info("'"+conn.getUserNull().getUsername()+"' transfered "+Bytes.formatBytes(credits)+" ('"+credits+"') to '"+myUser.getUsername()+"'");
+		logger.info(
+			"'"
+				+ conn.getUserNull().getUsername()
+				+ "' transfered "
+				+ Bytes.formatBytes(credits)
+				+ " ('"
+				+ credits
+				+ "') to '"
+				+ myUser.getUsername()
+				+ "'");
 		conn.getUserNull().updateCredits(-credits);
 		myUser.updateCredits(credits);
 		return new FtpReply(
@@ -1043,7 +1218,8 @@ public class UserManagment implements CommandHandler {
 				501,
 				conn.jprintf(UserManagment.class.getName(), "passwd.usage"));
 		}
-		logger.info("'"+conn.getUserNull().getUsername()+"' changed his password");
+		logger.info(
+			"'" + conn.getUserNull().getUsername() + "' changed his password");
 		conn.getUserNull().setPassword(request.getArgument());
 		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
@@ -1076,15 +1252,19 @@ public class UserManagment implements CommandHandler {
 		}
 
 		if (conn.getUserNull().isGroupAdmin()
-			&& !conn.getUserNull().getGroupName().equals(
-				myUser.getGroupName())) {
+			&& !conn.getUserNull().getGroupName().equals(myUser.getGroupName())) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		myUser.purge();
-		logger.info("'"+conn.getUserNull().getUsername()+"' purged '"+myUser.getUsername()+"'");
+		logger.info(
+			"'"
+				+ conn.getUserNull().getUsername()
+				+ "' purged '"
+				+ myUser.getUsername()
+				+ "'");
 		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
-	
+
 	private FtpReply doSITE_READD(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
 		if (!conn.getUserNull().isAdmin()
@@ -1118,7 +1298,12 @@ public class UserManagment implements CommandHandler {
 			return new FtpReply(200, "User wasn't deleted");
 		}
 		myUser.setDeleted(false);
-		logger.info("'"+conn.getUserNull().getUsername()+"' readded '"+myUser.getUsername()+"'");
+		logger.info(
+			"'"
+				+ conn.getUserNull().getUsername()
+				+ "' readded '"
+				+ myUser.getUsername()
+				+ "'");
 		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
 
@@ -1143,7 +1328,14 @@ public class UserManagment implements CommandHandler {
 			User myUser = conn.getUserManager().getUserByName(args[0]);
 			String oldUsername = myUser.getUsername();
 			myUser.rename(args[1]);
-			logger.info("'"+conn.getUserNull().getUsername()+"' renamed '"+oldUsername+"' to '"+myUser.getUsername()+"'");
+			logger.info(
+				"'"
+					+ conn.getUserNull().getUsername()
+					+ "' renamed '"
+					+ oldUsername
+					+ "' to '"
+					+ myUser.getUsername()
+					+ "'");
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, "No such user: " + e.getMessage());
 		} catch (UserExistsException e) {
@@ -1186,7 +1378,14 @@ public class UserManagment implements CommandHandler {
 				501,
 				conn.jprintf(UserManagment.class.getName(), "tagline.usage"));
 		}
-		logger.info("'"+conn.getUserNull().getUsername()+"' changed his tagline from '"+conn.getUserNull().getTagline()+"' to '"+request.getArgument()+"'");
+		logger.info(
+			"'"
+				+ conn.getUserNull().getUsername()
+				+ "' changed his tagline from '"
+				+ conn.getUserNull().getTagline()
+				+ "' to '"
+				+ request.getArgument()
+				+ "'");
 		conn.getUserNull().setTagline(request.getArgument());
 		return FtpReply.RESPONSE_200_COMMAND_OK;
 	}
@@ -1226,7 +1425,16 @@ public class UserManagment implements CommandHandler {
 			if (0 > credits) {
 				return new FtpReply(200, "Credits must be a positive number.");
 			}
-			logger.info("'"+conn.getUserNull().getUsername()+"' took "+Bytes.formatBytes(credits)+" ('"+credits+"') from '"+myUser.getUsername()+"'");
+			logger.info(
+				"'"
+					+ conn.getUserNull().getUsername()
+					+ "' took "
+					+ Bytes.formatBytes(credits)
+					+ " ('"
+					+ credits
+					+ "') from '"
+					+ myUser.getUsername()
+					+ "'");
 			myUser.updateCredits(-credits);
 		} catch (Exception ex) {
 			return new FtpReply(200, ex.getMessage());
@@ -1379,13 +1587,14 @@ public class UserManagment implements CommandHandler {
 			User myUser = (User) iter.next();
 			response.addComment(myUser.getUsername());
 		}
+		response.addComment("Ok, "+myUsers.size()+" users listed.");
 		return response;
 	}
+
 	/**
 	 * Lists currently connected users.
 	 */
 	private FtpReply doSITE_WHO(BaseFtpConnection conn) {
-
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
 		long users = 0, speedup = 0, speeddn = 0, speed = 0;
 
@@ -1540,6 +1749,8 @@ public class UserManagment implements CommandHandler {
 			return doSITE_READD(conn);
 		if ("SITE RENUSER".equals(cmd))
 			return doSITE_RENUSER(conn);
+		if ("SITE SEEN".equals(cmd))
+			return doSITE_SEEN(conn);
 		if ("SITE TAGLINE".equals(cmd))
 			return doSITE_TAGLINE(conn);
 		if ("SITE TAKE".equals(cmd))

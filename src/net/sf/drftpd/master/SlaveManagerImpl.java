@@ -65,7 +65,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.84 2004/05/10 02:53:59 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.85 2004/05/12 00:45:06 mog Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -113,7 +113,8 @@ public class SlaveManagerImpl
 		}
 		return new RemoteSlave(
 			slaveElement.getChildText("name").toString(),
-			masks, slaveElement);
+			masks,
+			slaveElement);
 	}
 
 	public static List loadRSlaves() {
@@ -245,7 +246,11 @@ public class SlaveManagerImpl
 		});
 	}
 
-	public void addSlave(String slaveName, Slave slave, SlaveStatus status)
+	public void addSlave(
+		String slaveName,
+		Slave slave,
+		SlaveStatus status,
+		int maxPath)
 		throws RemoteException {
 
 		slave.ping();
@@ -267,21 +272,23 @@ public class SlaveManagerImpl
 		}
 
 		try {
-                    InetAddress addr = null;
-                    if (slave instanceof SocketSlaveImpl) {
-                        addr = ((SocketSlaveImpl)slave).getPeerAddress();
-                    }
-                    if (addr == null) {
-                        addr = InetAddress.getByName(RemoteServer.getClientHost());
-                    }
-                    //logger.debug("slave ip address is " + addr);
-                    if (addr == null) {
-                        throw new IllegalArgumentException(rslave.getName() + " has no slave address");
-                    }
-                    rslave.setSlave(slave,addr,slave.getSlaveStatus());
+			InetAddress addr = null;
+			if (slave instanceof SocketSlaveImpl) {
+				addr = ((SocketSlaveImpl) slave).getPeerAddress();
+			}
+			if (addr == null) {
+				addr = InetAddress.getByName(RemoteServer.getClientHost());
+			}
+			//logger.debug("slave ip address is " + addr);
+			if (addr == null) {
+				throw new IllegalArgumentException(
+					rslave.getName() + " has no slave address");
+			}
+			rslave.setSlave(slave, addr, slave.getSlaveStatus(), maxPath);
 		} catch (Throwable e1) {
 			throw new FatalException(e1);
-		}		logger.debug("About to remerge(), slave is " + rslave);
+		}
+		logger.debug("About to remerge(), slave is " + rslave);
 		try {
 			remerge(rslave);
 		} catch (IOException e) {
@@ -292,9 +299,8 @@ public class SlaveManagerImpl
 			return;
 		}
 
-		logger.info("Slave added: '" + rslave.getName()+"'");
-		logger.info("SlaveStatus: " + status);
-		
+		logger.info("Slave added: '" + rslave.getName() + "' status: " + status);
+
 		getConnectionManager().dispatchFtpEvent(
 			new SlaveEvent("ADDSLAVE", rslave));
 	}
@@ -311,11 +317,11 @@ public class SlaveManagerImpl
 			}
 		}
 		if (rslave == null)
-			throw new IllegalArgumentException("Slave not found in slaves.xml (" + slaveName + ")");
-                
-                rslave.setOffline(reason);
-        }
+			throw new IllegalArgumentException(
+				"Slave not found in slaves.xml (" + slaveName + ")");
 
+		rslave.setOffline(reason);
+	}
 
 	public RemoteSlave findLargestFreeSlave() {
 		Collection slaveList =
@@ -549,41 +555,41 @@ public class SlaveManagerImpl
 			long low = Integer.MAX_VALUE;
 			long high = 0;
 			while (true) {
-			try {
-				for (Iterator iter = getAvailableSlaves().iterator();
-					iter.hasNext();
-					) {
-					RemoteSlave slave = (RemoteSlave) iter.next();
-					try {
-						long time = System.currentTimeMillis();
-						slave.updateStatus();
-						long difference = System.currentTimeMillis() - time;
-						if (difference < low) {
-							low = difference;
-							logger.debug(
-								low
-									+ " low milliseconds were used to run updateStatus on "
-									+ slave.getName());
+				try {
+					for (Iterator iter = getAvailableSlaves().iterator();
+						iter.hasNext();
+						) {
+						RemoteSlave slave = (RemoteSlave) iter.next();
+						try {
+							long time = System.currentTimeMillis();
+							slave.updateStatus();
+							long difference = System.currentTimeMillis() - time;
+							if (difference < low) {
+								low = difference;
+								logger.debug(
+									low
+										+ " low milliseconds were used to run updateStatus on "
+										+ slave.getName());
+							}
+							if (difference > high) {
+								high = difference;
+								logger.debug(
+									high
+										+ " high milliseconds were used to run updateStatus on "
+										+ slave.getName());
+							}
+						} catch (SlaveUnavailableException e1) {
+							continue;
 						}
-						if (difference > high) {
-							high = difference;
-							logger.debug(
-								high
-									+ " high milliseconds were used to run updateStatus on "
-									+ slave.getName());
-						}
-					} catch (SlaveUnavailableException e1) {
-						continue;
 					}
+				} catch (NoAvailableSlaveException e) {
 				}
-			} catch (NoAvailableSlaveException e) {
-			}
-			try {
-				Thread.sleep(_cm.getConfig().getSlaveStatusUpdateTime());
-			} catch (InterruptedException e1) {
+				try {
+					Thread.sleep(_cm.getConfig().getSlaveStatusUpdateTime());
+				} catch (InterruptedException e1) {
+				}
 			}
 		}
-	}
 	}
 
 	public void saveFilelist() {

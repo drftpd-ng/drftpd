@@ -31,7 +31,7 @@ import org.jdom.input.SAXBuilder;
 
 /**
  * @author mog
- * @version $Id: JDOMSerialize.java,v 1.8 2004/02/23 01:14:40 mog Exp $
+ * @version $Id: JDOMSerialize.java,v 1.9 2004/05/12 00:45:10 mog Exp $
  */
 public class JDOMSerialize {
 	private static final Logger logger = Logger.getLogger(JDOMSerialize.class);
@@ -40,7 +40,6 @@ public class JDOMSerialize {
 		LinkedRemoteFileInterface root;
 		try {
 			Document doc = new SAXBuilder().build(in);
-			System.out.flush();
 			JDOMRemoteFile xmlroot =
 				new JDOMRemoteFile(doc.getRootElement(), rslaves);
 			root =

@@ -66,7 +66,7 @@ import org.tanesha.replacer.FormatterException;
 
 /**
  * @author flowman
- * @version $Id: GlftpdLog.java,v 1.6 2004/04/22 02:10:11 mog Exp $
+ * @version $Id: GlftpdLog.java,v 1.7 2004/05/12 00:45:05 mog Exp $
  */
 public class GlftpdLog implements FtpListener {
 	PrintWriter out;
@@ -601,10 +601,8 @@ public class GlftpdLog implements FtpListener {
 	}
 	
 	public void print(Date date, String line) {
-		String str;
-		out.println(str = DATE_FMT.format(date) + line);
+		out.println(DATE_FMT.format(date) + line);
 		out.flush();
-		System.out.println(str);		
 	}
 
 	private void reload() {

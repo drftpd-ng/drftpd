@@ -81,7 +81,6 @@ import org.tanesha.replacer.SimplePrintf;
 import f00f.net.irc.martyr.Debug;
 import f00f.net.irc.martyr.IRCConnection;
 import f00f.net.irc.martyr.clientstate.Channel;
-import f00f.net.irc.martyr.clientstate.ClientState;
 import f00f.net.irc.martyr.commands.InviteCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 import f00f.net.irc.martyr.commands.NickCommand;
@@ -92,7 +91,7 @@ import f00f.net.irc.martyr.services.AutoResponder;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.10 2004/04/23 12:18:32 mog Exp $
+ * @version $Id: SiteBot.java,v 1.11 2004/05/12 00:45:13 mog Exp $
  */
 public class SiteBot implements FtpListener, Observer {
 
@@ -227,7 +226,6 @@ public class SiteBot implements FtpListener, Observer {
 	private AutoRegister _autoRegister;
 	private String _channelName;
 
-	private ClientState _clientState;
 	private ConnectionManager _cm;
 
 	private String _commands;

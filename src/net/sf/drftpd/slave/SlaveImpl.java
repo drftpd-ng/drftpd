@@ -62,13 +62,13 @@ import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.90 2004/05/10 02:54:00 mog Exp $
+ * @version $Id: SlaveImpl.java,v 1.91 2004/05/12 00:45:11 mog Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
 	implements Slave, Unreferenced {
 	private int _bufferSize;
-	private static final boolean isWin32 =
+	static final boolean isWin32 =
 		System.getProperty("os.name").startsWith("Windows");
 	private static final Logger logger =
 		Logger.getLogger(SlaveImpl.class.getName());
@@ -88,7 +88,7 @@ public class SlaveImpl
 		return linkedroot;
 	}
 
-	public static RootBasket getDefaultRootBasket(Properties cfg) {
+	public static RootBasket getDefaultRootBasket(Properties cfg) throws IOException {
 		RootBasket roots;
 		// START: RootBasket
 		long defaultMinSpaceFree =
@@ -183,7 +183,7 @@ public class SlaveImpl
 			return SlaveImpl.getDefaultRoot(_roots);
 	}
 
-	public SlaveImpl(Properties cfg) throws RemoteException {
+	public SlaveImpl(Properties cfg) throws RemoteException, IOException {
 		super(0);
 		try {
 			_ctx = SSLGetContext.getSSLContext();
@@ -214,7 +214,7 @@ public class SlaveImpl
 				Level.INFO,
 				"Registering with master and sending filelist");
 
-			manager.addSlave(_name, this, getSlaveStatus());
+			manager.addSlave(_name, this, getSlaveStatus(), _roots.getMaxPath());
 
 			logger.log(
 				Level.INFO,

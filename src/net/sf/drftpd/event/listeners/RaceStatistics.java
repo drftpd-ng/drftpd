@@ -39,7 +39,7 @@ import org.drftpd.plugins.SiteBot;
 
 /**
  * @author zubov
- * @version $Id: RaceStatistics.java,v 1.12 2004/04/22 02:10:11 mog Exp $
+ * @version $Id: RaceStatistics.java,v 1.13 2004/05/12 00:45:05 mog Exp $
  */
 public class RaceStatistics implements FtpListener {
 
@@ -85,7 +85,6 @@ public class RaceStatistics implements FtpListener {
 		int count = 1;
 		for (Iterator iter = racers.iterator(); iter.hasNext(); count++) {
 			UploaderPosition racer = (UploaderPosition) iter.next();
-			System.out.println("racer = " + racer.getUsername());
 			User user;
 			try {
 				user = _cm.getUserManager().getUserByName(racer.getUsername());

@@ -37,7 +37,7 @@ import se.mog.io.File;
 //TODO SECURITY: verify so that we never get outside of a rootbasket root
 /**
  * @author mog
- * @version $Id: RootBasket.java,v 1.25 2004/05/10 02:54:00 mog Exp $
+ * @version $Id: RootBasket.java,v 1.26 2004/05/12 00:45:11 mog Exp $
  */
 public class RootBasket {
 	private static final Logger logger = Logger.getLogger(RootBasket.class);
@@ -85,8 +85,10 @@ public class RootBasket {
 		}
 		bestRoot.touch();
 		File file = bestRoot.getFile(dir);
-		if(!file.mkdirs()) {
-			throw new PermissionDeniedException("mkdirs failed on "+file.getPath());
+		if(!file.exists()) {
+			if(!file.mkdirs()) {
+				throw new PermissionDeniedException("mkdirs failed on "+file.getPath());
+			}
 		}
 		return file;
 	}
@@ -230,5 +232,20 @@ public class RootBasket {
 				}
 			}
 		}
+	}
+
+	public int getMaxPath() {
+		if(SlaveImpl.isWin32) {
+			int maxPath=0;
+			for (Iterator iter = iterator(); iter.hasNext();) {
+				Root root = (Root) iter.next();
+				maxPath = Math.max(root.getPath().length(), maxPath);
+			}
+			//constant for win32, see
+			//http://support.microsoft.com/default.aspx?scid=http://support.microsoft.com:80/support/kb/articles/Q177/6/65.ASP&NoWebContent=1
+			// for more info
+			return 256-maxPath;
+		}
+		return -1;
 	}
 }

@@ -45,7 +45,7 @@ import org.drftpd.plugins.SiteBot;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.23 2004/04/25 17:46:16 mog Exp $
+ * @version $Id: Trial.java,v 1.24 2004/05/12 00:45:05 mog Exp $
  */
 public class Trial implements FtpListener {
 	public static class Limit {
@@ -149,8 +149,6 @@ public class Trial implements FtpListener {
 			}
 		}
 	}
-	private static final short ACTION_DISABLE = 0;
-	private static final short ACTION_PURGE = 1;
 	private static final Logger logger = Logger.getLogger(Trial.class);
 	
 	public static final int PERIOD_ALL = 0;

@@ -43,14 +43,10 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.49 2004/04/29 03:57:53 zombiewoof64 Exp $
+ * @version $Id: FtpConfig.java,v 1.50 2004/05/12 00:45:08 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
-
-	private static Collection getCollection(Hashtable tbl, String key) {
-		return (Collection) tbl.get(key);
-	}
 
 	public static String getProperty(Properties p, String name)
 		throws NullPointerException {

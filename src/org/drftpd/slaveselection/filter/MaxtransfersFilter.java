@@ -34,9 +34,6 @@ import net.sf.drftpd.slave.Transfer;
  * @author zubov
  */
 public class MaxtransfersFilter extends Filter {
-	private static final Logger logger =
-		Logger.getLogger(MaxtransfersFilter.class);
-
 	private long _maxTransfers;
 
 	public MaxtransfersFilter(FilterChain ssm, int i, Properties p) {

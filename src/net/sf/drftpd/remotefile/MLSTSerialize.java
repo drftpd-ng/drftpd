@@ -36,15 +36,11 @@ import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 
-import org.apache.log4j.Logger;
-
 /**
  * @author mog
- * @version $Id: MLSTSerialize.java,v 1.28 2004/04/23 12:18:30 mog Exp $
+ * @version $Id: MLSTSerialize.java,v 1.29 2004/05/12 00:45:10 mog Exp $
  */
 public class MLSTSerialize {
-	private static final Logger logger = Logger.getLogger(MLSTSerialize.class);
-
 	public static final SimpleDateFormat timeval =
 		new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 

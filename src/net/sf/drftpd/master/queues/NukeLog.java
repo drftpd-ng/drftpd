@@ -26,18 +26,15 @@ import java.util.List;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.NukeEvent;
 
-import org.apache.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
  *
- * @version $Id: NukeLog.java,v 1.10 2004/02/10 00:03:08 mog Exp $
+ * @version $Id: NukeLog.java,v 1.11 2004/05/12 00:45:09 mog Exp $
  */
 public class NukeLog {
-	private static final Logger logger = Logger.getLogger(NukeLog.class);
-
 	ArrayList nukes = new ArrayList();
 	public NukeLog() {
 	}

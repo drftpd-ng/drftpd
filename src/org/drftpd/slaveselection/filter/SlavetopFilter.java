@@ -39,11 +39,9 @@ import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilter.java,v 1.6 2004/04/25 17:46:20 mog Exp $
+ * @version $Id: SlavetopFilter.java,v 1.7 2004/05/12 00:45:20 mog Exp $
  */
 public class SlavetopFilter extends Filter {
-
-	private static final Logger logger = Logger.getLogger(SlavetopFilter.class);
 
 	private long _assign;
 

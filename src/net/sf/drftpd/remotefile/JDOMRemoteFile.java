@@ -33,7 +33,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: JDOMRemoteFile.java,v 1.28 2004/03/26 00:16:35 mog Exp $
+ * @version $Id: JDOMRemoteFile.java,v 1.29 2004/05/12 00:45:10 mog Exp $
  */
 public class JDOMRemoteFile implements RemoteFileInterface {
 
@@ -190,7 +190,7 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 			Element fileElement = (Element)i.next();
 			
 			if(fileElement.getName().equals("file") && fileElement.getChild("slaves").getChildren().size() == 0) {
-				System.out.println(new XMLOutputter().outputString(fileElement)+" has no slaves! skipping");
+				logger.warn(new XMLOutputter().outputString(fileElement)+" has no slaves! skipping");
 				continue;
 			} 
 			listFiles.add(new JDOMRemoteFile(fileElement, this.allSlaves));

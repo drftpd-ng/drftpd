@@ -21,9 +21,7 @@ import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.util.ReplacerUtils;
 
-import org.apache.log4j.Logger;
-import org.drftpd.plugins.*;
-
+import org.drftpd.plugins.SiteBot;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import f00f.net.irc.martyr.GenericCommandAutoService;
@@ -32,7 +30,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author zubov
- * @version $Id: Diskfree.java,v 1.5 2004/04/23 12:18:30 mog Exp $
+ * @version $Id: Diskfree.java,v 1.6 2004/05/12 00:45:04 mog Exp $
  */
 
 public class Diskfree
@@ -40,8 +38,6 @@ public class Diskfree
 	implements IRCPluginInterface {
 
 	private SiteBot _listener;
-
-	private static final Logger logger = Logger.getLogger(Diskfree.class);
 
 	private ConnectionManager getConnectionManager() {
 		return _listener.getConnectionManager();

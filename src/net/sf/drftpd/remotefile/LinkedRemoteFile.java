@@ -53,7 +53,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.137 2004/04/23 00:47:24 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.138 2004/05/12 00:45:10 mog Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -510,8 +510,8 @@ public class LinkedRemoteFile
 	}
 
 	public void deleteOthers(RemoteSlave slave) {
-		synchronized (getSlaves()) {
-			for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
+		synchronized (_slaves) {
+			for (Iterator iter = _slaves.iterator(); iter.hasNext();) {
 				RemoteSlave tempSlave = (RemoteSlave) iter.next();
 				if (tempSlave == slave)
 					continue; // do not want to delete the archived file
@@ -1461,6 +1461,9 @@ public class LinkedRemoteFile
 		}
 	}
 
+	/**
+	 * Shorthand for _slaves.remove() that checks if _slaves is empty and calls .delete() if it is.
+	 */
 	public boolean removeSlave(RemoteSlave slave) {
 		if (_slaves == null)
 			throw new IllegalStateException("Cannot removeSlave() on directory");

@@ -50,11 +50,11 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: SocketSlaveImpl.java,v 1.9 2004/05/10 02:54:00 mog Exp $
+ * @version $Id: SocketSlaveImpl.java,v 1.10 2004/05/12 00:45:12 mog Exp $
  */
 public class SocketSlaveImpl extends Thread implements Slave, Unreferenced {
 	private static final Logger logger =
-		Logger.getLogger(SocketSlaveImpl.class.getName());
+		Logger.getLogger(SocketSlaveImpl.class);
 
 	private long disktotal = 0;
 	private long diskfree = 0;
@@ -196,7 +196,7 @@ public class SocketSlaveImpl extends Thread implements Slave, Unreferenced {
 			}
 
 			start();
-			_cman.getSlaveManager().addSlave(_name, this, getSlaveStatus());
+			_cman.getSlaveManager().addSlave(_name, this, getSlaveStatus(), -1);
 		} catch (IOException e) {
 			if (e instanceof ConnectIOException
 				&& e.getCause() instanceof EOFException) {

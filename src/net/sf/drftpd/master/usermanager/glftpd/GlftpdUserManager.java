@@ -41,7 +41,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: GlftpdUserManager.java,v 1.13 2004/02/10 00:03:09 mog Exp $
+ * @version $Id: GlftpdUserManager.java,v 1.14 2004/05/12 00:45:09 mog Exp $
  */
 public class GlftpdUserManager implements UserManager {
 	private static final Logger logger =
@@ -349,7 +349,6 @@ public class GlftpdUserManager implements UserManager {
 		return users;
 	}
 	public List getAllUsers() throws UserFileException {
-		System.out.println("userpathFile = " + userpathFile);
 		if (!userpathFile.exists())
 			throw new UserFileException(userpathFile + " not found");
 		String userpaths[] = userpathFile.list();

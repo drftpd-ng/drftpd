@@ -27,16 +27,12 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 
-import org.apache.log4j.Logger;
-
 /**
  * @author mog
- * @version $Id: CommandManager.java,v 1.6 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: CommandManager.java,v 1.7 2004/05/12 00:45:06 mog Exp $
  */
 public class CommandManager {
 	//TODO reload me
-
-	private static final Logger logger = Logger.getLogger(CommandManager.class);
 
 	private CommandManagerFactory _factory;
 	/**

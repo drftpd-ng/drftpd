@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveTransfer.java,v 1.12 2004/04/26 13:43:41 zubov Exp $
+ * @version $Id: SlaveTransfer.java,v 1.13 2004/05/12 00:45:09 mog Exp $
  */
 public class SlaveTransfer {
 	class DstXfer extends Thread {
@@ -73,7 +73,6 @@ public class SlaveTransfer {
 			}
 		}
 	}
-	private static final Logger logger = Logger.getLogger(SlaveTransfer.class);
 	private RemoteSlave _destSlave;
 	private LinkedRemoteFileInterface _file;
 	private RemoteSlave _sourceSlave;

@@ -60,7 +60,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.83 2004/05/10 02:53:58 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.84 2004/05/12 00:45:05 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -509,7 +509,6 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	public void stop() {
 		stopRequest = true;
-		//TODO _conn.close aswell?
 	}
 
 	public void stop(String message) {

@@ -31,7 +31,6 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.config.ExcludePath;
 import net.sf.drftpd.master.config.FtpConfig;
@@ -45,7 +44,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author zubov
- * @version $Id: AutoFreeSpace.java,v 1.12 2004/04/22 02:10:10 mog Exp $
+ * @version $Id: AutoFreeSpace.java,v 1.13 2004/05/12 00:45:05 mog Exp $
  */
 public class AutoFreeSpace implements FtpListener {
 	private static final Logger logger = Logger.getLogger(AutoFreeSpace.class);
@@ -64,7 +63,6 @@ public class AutoFreeSpace implements FtpListener {
 	private ConnectionManager _cm;
 	private long _cycleTime;
 	private ArrayList _exemptList;
-	private int _keepCopies;
 	private long _keepFree;
 	private long _lastchecked = System.currentTimeMillis();
 	public AutoFreeSpace() {
@@ -158,12 +156,6 @@ public class AutoFreeSpace implements FtpListener {
 		}
 	}
 
-	private void deleteOldReleases(RemoteSlave slave) {
-	}
-
-	private ConnectionManager getConnectionManager() {
-		return _cm;
-	}
 	public void init(ConnectionManager connectionManager) {
 		_cm = connectionManager;
 	}
