@@ -37,36 +37,17 @@ import org.jdom.input.SAXBuilder;
 /**
  * @author mog
  *
- * @version $Id: Nuke.java,v 1.8 2004/01/05 00:14:19 mog Exp $
+ * @version $Id: Nuke.java,v 1.9 2004/01/22 01:41:52 zubov Exp $
  */
 public class Nuke implements CommandHandler {
-	public Nuke() {
-	}
-	public void unload() {
-		_nukelog = null;
-	}
-	private NukeLog _nukelog;
 
 	private static final Logger logger = Logger.getLogger(Nuke.class);
-	
-	public static long calculateNukedAmount(long size, float ratio, int multiplier) {
-		return (long) (size * ratio + size * (multiplier - 1));
-	}
-			
 
-	public FtpReply execute(BaseFtpConnection conn)
-		throws UnhandledCommandException {
-		if (_nukelog == null) {
-			return new FtpReply(500, "You must reconnect to use NUKE");
-		}
-		String cmd = conn.getRequest().getCommand();
-		if ("SITE NUKE".equals(cmd))
-			return doSITE_NUKE(conn);
-		if ("SITE NUKES".equals(cmd))
-			return doSITE_NUKES(conn);
-		if ("SITE UNNUKE".equals(cmd))
-			return doSITE_UNNUKE(conn);
-		throw UnhandledCommandException.create(Nuke.class, conn.getRequest());
+	public static long calculateNukedAmount(
+		long size,
+		float ratio,
+		int multiplier) {
+		return (long) (size * ratio + size * (multiplier - 1));
 	}
 
 	private static void nukeRemoveCredits(
@@ -86,6 +67,9 @@ public class Nuke implements CommandHandler {
 				nukees.put(owner, total);
 			}
 		}
+	}
+	private NukeLog _nukelog;
+	public Nuke() {
 	}
 	/**
 	 * USAGE: site nuke <directory> <multiplier> <message>
@@ -237,9 +221,9 @@ public class Nuke implements CommandHandler {
 			if (nukee == null)
 				continue;
 			long size = ((Long) nukees2.get(nukee)).longValue();
-			
-			long debt = calculateNukedAmount(size, nukee.getRatio(), multiplier);
-				
+
+			long debt =
+				calculateNukedAmount(size, nukee.getRatio(), multiplier);
 
 			nukedAmount += debt;
 			nukeDirSize += size;
@@ -364,7 +348,11 @@ public class Nuke implements CommandHandler {
 				logger.fatal("error reading userfile", e);
 				continue;
 			}
-			long nukedAmount = calculateNukedAmount(nukeeObj.getAmount(), nukee.getRatio(), nuke.getMultiplier());
+			long nukedAmount =
+				calculateNukedAmount(
+					nukeeObj.getAmount(),
+					nukee.getRatio(),
+					nuke.getMultiplier());
 
 			nukee.updateCredits(nukedAmount);
 			nukee.updateUploadedBytes(nukeeObj.getAmount());
@@ -406,8 +394,28 @@ public class Nuke implements CommandHandler {
 		}
 		nuke.setCommand("UNNUKE");
 		nuke.setReason(reason);
+		nuke.setUser(conn.getUserNull());
 		conn.getConnectionManager().dispatchFtpEvent(nuke);
 		return response;
+	}
+
+	public FtpReply execute(BaseFtpConnection conn)
+		throws UnhandledCommandException {
+		if (_nukelog == null) {
+			return new FtpReply(500, "You must reconnect to use NUKE");
+		}
+		String cmd = conn.getRequest().getCommand();
+		if ("SITE NUKE".equals(cmd))
+			return doSITE_NUKE(conn);
+		if ("SITE NUKES".equals(cmd))
+			return doSITE_NUKES(conn);
+		if ("SITE UNNUKE".equals(cmd))
+			return doSITE_UNNUKE(conn);
+		throw UnhandledCommandException.create(Nuke.class, conn.getRequest());
+	}
+
+	public String[] getFeatReplies() {
+		return null;
 	}
 
 	private NukeLog getNukeLog() {
@@ -418,10 +426,6 @@ public class Nuke implements CommandHandler {
 		BaseFtpConnection conn,
 		CommandManager initializer) {
 		return this;
-	}
-
-	public String[] getFeatReplies() {
-		return null;
 	}
 
 	public void load(CommandManagerFactory initializer) {
@@ -485,6 +489,9 @@ public class Nuke implements CommandHandler {
 				"Error loading nukelog from nukelog.xml",
 				ex);
 		}
+	}
+	public void unload() {
+		_nukelog = null;
 	}
 
 }

@@ -12,15 +12,36 @@ import org.jdom.Element;
 /**
  * @author mog
  *
- * @version $Id: NukeEvent.java,v 1.17 2004/01/05 00:14:19 mog Exp $
+ * @version $Id: NukeEvent.java,v 1.18 2004/01/22 01:41:51 zubov Exp $
  */
 public class NukeEvent extends UserEvent {
+	private int multiplier;
 	private long nukedAmount;
-	private long size;
+	private Map nukees;
 	private String path;
-	
-	public NukeEvent(User user, String command, String path, long size, long nukedAmount, int multiplier, String reason, Map nukees) {
-		this(user, command, path, System.currentTimeMillis(), size, nukedAmount, multiplier, reason, nukees);
+
+	private String reason;
+	private long size;
+
+	public NukeEvent(
+		User user,
+		String command,
+		String path,
+		long size,
+		long nukedAmount,
+		int multiplier,
+		String reason,
+		Map nukees) {
+		this(
+			user,
+			command,
+			path,
+			System.currentTimeMillis(),
+			size,
+			nukedAmount,
+			multiplier,
+			reason,
+			nukees);
 	}
 	/**
 	 * @param user
@@ -28,8 +49,17 @@ public class NukeEvent extends UserEvent {
 	 * @param multiplier
 	 * @param nukees
 	 */
-	public NukeEvent(User user, String command, String path, long time, long size, long nukedAmount, int multiplier, String reason, Map nukees) {
-		super(user, command,  time);
+	public NukeEvent(
+		User user,
+		String command,
+		String path,
+		long time,
+		long size,
+		long nukedAmount,
+		int multiplier,
+		String reason,
+		Map nukees) {
+		super(user, command, time);
 		this.multiplier = multiplier;
 		this.reason = reason;
 		this.path = path;
@@ -37,13 +67,13 @@ public class NukeEvent extends UserEvent {
 		this.size = size;
 		this.nukedAmount = nukedAmount;
 	}
-	
-	private String reason;
-	private int multiplier;
-	private Map nukees;
 
 	public int getMultiplier() {
 		return multiplier;
+	}
+
+	public long getNukedAmount() {
+		return nukedAmount;
 	}
 
 	/**
@@ -64,34 +94,47 @@ public class NukeEvent extends UserEvent {
 		return IRCListener.map2nukees(nukees);
 	}
 
+	public String getPath() {
+		return path;
+	}
+
 	public String getReason() {
 		return reason;
+	}
+
+	public long getSize() {
+		return size;
 	}
 
 	public void setReason(String string) {
 		reason = string;
 	}
 
-	public String toString() {
-		return "[NUKE:"+getPath()+",multiplier="+getMultiplier()+"]";
-	}
-
 	public Element toJDOM() {
 		Element element = new Element("nuke");
-		element.addContent(new Element("user").setText(this.getUser().getUsername()));
+		element.addContent(
+			new Element("user").setText(this.getUser().getUsername()));
 		element.addContent(new Element("path").setText(this.getPath()));
-		element.addContent(new Element("multiplier").setText(Integer.toString(this.getMultiplier())));
+		element.addContent(
+			new Element("multiplier").setText(
+				Integer.toString(this.getMultiplier())));
 		element.addContent(new Element("reason").setText(this.getReason()));
-		element.addContent(new Element("time").setText(Long.toString(this.getTime())));
-		
-		element.addContent(new Element("size").setText(Long.toString(getSize())));
-		element.addContent(new Element("nukedAmount").setText(Long.toString(getNukedAmount())));
-		
+		element.addContent(
+			new Element("time").setText(Long.toString(this.getTime())));
+
+		element.addContent(
+			new Element("size").setText(Long.toString(getSize())));
+		element.addContent(
+			new Element("nukedAmount").setText(
+				Long.toString(getNukedAmount())));
+
 		Element nukees = new Element("nukees");
-		for (Iterator iter = this.getNukees().entrySet().iterator(); iter.hasNext();) {
+		for (Iterator iter = this.getNukees().entrySet().iterator();
+			iter.hasNext();
+			) {
 			Map.Entry entry = (Map.Entry) iter.next();
-			String username = (String)entry.getKey();
-			Long amount = (Long)entry.getValue();
+			String username = (String) entry.getKey();
+			Long amount = (Long) entry.getValue();
 			Element nukee = new Element("nukee");
 			nukee.addContent(new Element("username").setText(username));
 			nukee.addContent(new Element("amount").setText(amount.toString()));
@@ -101,16 +144,8 @@ public class NukeEvent extends UserEvent {
 		return element;
 	}
 
-	public String getPath() {
-		return path;
-	}
-
-	public long getSize() {
-		return size;
-	}
-
-	public long getNukedAmount() {
-		return nukedAmount;
+	public String toString() {
+		return "[NUKE:" + getPath() + ",multiplier=" + getMultiplier() + "]";
 	}
 
 }
