@@ -29,6 +29,7 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.NukeEvent;
+import net.sf.drftpd.event.XferLogListener;
 import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.master.queues.NukeLog;
 import net.sf.drftpd.master.usermanager.User;
@@ -115,7 +116,7 @@ public class ConnectionManager {
 			slavemanager =
 				new SlaveManagerImpl(
 					cfg, rslaves, ssf, this);
-		} catch (Throwable e) {
+		} catch (RemoteException e) {
 			throw new FatalException(e);
 		}
 		
@@ -187,6 +188,7 @@ public class ConnectionManager {
 		} catch (Exception e2) {
 			logger.log(Level.WARNING, "Error starting IRC bot", e2);
 		}
+		addFtpListener(new XferLogListener());
 	}
 
 	public void timerLogoutIdle() {

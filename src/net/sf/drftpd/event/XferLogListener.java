@@ -6,6 +6,9 @@
  */
 package net.sf.drftpd.event;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -26,6 +29,12 @@ public class XferLogListener implements FtpListener {
 	 */
 	public XferLogListener() {
 		super();
+		new File("ftp-data/logs").mkdirs();
+		try {
+			this.out = new PrintStream(new FileOutputStream("ftp-data/logs/xferlog"));
+		} catch (IOException e) {
+			throw new FatalException(e);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -51,8 +60,6 @@ public class XferLogListener implements FtpListener {
 	          vice-name    authentication-method   authenticated-
 	          user-id   completion-status
 	
-	
-	
 	example lines:
 	Mon Aug 11 14:03:30 2003 20 as1-2-3.ld.bonet.se 15000000 /site/tv-dvdrip/Babylon.5.S03E01.DVDRip.XviD-SFM/babylon5.s03e01.dvdrip.xvid-sfm.r16 b _ i r jh iND 0 *
 	Mon Aug 11 14:03:31 2003 33 c-d2b470d5.012-16-67766c2.cust.bredbandsbolaget.se 15000000 /site/tv-dvdrip/Babylon.5.S03E01.DVDRip.XviD-SFM/babylon5.s03e01.dvdrip.xvid-sfm.r15 b _ i r void0 GUD 1 void0
@@ -61,7 +68,7 @@ public class XferLogListener implements FtpListener {
 	// TODO write XferLog
 	static SimpleDateFormat DATE_FMT =
 		new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy ", Locale.ENGLISH);
-	private PrintStream out = System.out;
+	private PrintStream out;
 
 	public void actionPerformed(TransferEvent event) {
 		char direction;

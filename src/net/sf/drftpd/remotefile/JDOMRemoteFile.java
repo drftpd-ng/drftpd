@@ -63,8 +63,11 @@ public class JDOMRemoteFile extends RemoteFile {
 			} catch(NumberFormatException ex) {
 				this.xfertime = 0L;
 			}
-			this.checkSum =
+			try {
+				this.checkSum =
 				Long.parseLong(element.getChildText("checksum"), 16);
+			} catch(NumberFormatException e) {
+			}
 		}
 		this.length = Long.parseLong(element.getChild("size").getText());
 		this.owner = element.getChild("user").getText();

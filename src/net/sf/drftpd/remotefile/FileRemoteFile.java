@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Vector;
 
+import net.sf.drftpd.FatalException;
 import net.sf.drftpd.InvalidDirectoryException;
 import net.sf.drftpd.slave.Root;
 import net.sf.drftpd.slave.RootBasket;
@@ -59,13 +60,15 @@ public class FileRemoteFile extends RemoteFile {
 		//check that the roots in the rootBasket are in sync
 		boolean first = true;
 		for (Iterator iter = rootBasket.iterator(); iter.hasNext();) {
-			File root = (File) iter.next();
+			Root root = (Root)iter.next();
+			//File rootFile = root.getFile();
 			File file = new File(root.getPath()+"/"+path);
 			//System.out.println("File: "+file);
 			
 			if (!file.exists()) continue;
 
 			if(first) {
+				first=false;
 				isDirectory = file.isDirectory();
 				isFile = file.isFile();
 			} else {
@@ -73,9 +76,9 @@ public class FileRemoteFile extends RemoteFile {
 				if(file.isFile() != isFile) throw new IOException("rootBasket out of sync");
 			}
 					
-			if (!file.getCanonicalPath().equals(file.getAbsolutePath())) {
+			if (!file.getCanonicalPath().equalsIgnoreCase(file.getAbsolutePath())) {
 				System.out.println(
-					"FileRemoteFile: warning: not serializing possible symlink: "
+					"FileRemoteFile: warning: not following possible symlink: "
 						+ file.getAbsolutePath());
 				throw new InvalidDirectoryException(
 					"Not following symlink: " + file.getAbsolutePath());
@@ -175,7 +178,10 @@ public class FileRemoteFile extends RemoteFile {
 			Root root = (Root)iter.next();
 			File file = new File(root.getPath()+"/"+path);
 			if(!file.exists()) continue;
+			if(!file.isDirectory()) throw new FatalException(file.getPath()+" is not a directory, attempt to getPath() on it");
+			if(!file.canRead()) throw new FatalException("Cannot read: "+file);
 			String tmpFiles[] = file.list(); //returns null if not a dir, blah!
+			if(tmpFiles == null) throw new NullPointerException("list() on "+file+" returned null, permission denied?");
 
 			for (int i = 0; i < tmpFiles.length; i++) {
 				try {

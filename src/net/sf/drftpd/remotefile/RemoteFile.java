@@ -13,7 +13,7 @@ public abstract class RemoteFile {
 	 */
 	public static final char separatorChar = '/';
 
-	protected long checkSum;
+	protected long checkSum = 0;
 
 	protected String group;
 

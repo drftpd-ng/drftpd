@@ -108,8 +108,9 @@ public class GlobServerSocket extends ServerSocket {
 				if (m.matches(hostmask, p)) {
 					return sock;
 				}
+				System.out.println("Didn't match: "+mask);
 			} //for
-			System.out.println("Denying connection: "+hostmask+".");
+			System.out.println("Denying connection: "+hostmask+"/"+ipmask+".");
 			sock.close();
 		}
 	}

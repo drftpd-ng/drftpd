@@ -35,4 +35,11 @@ public class Root {
 	public int getPriority() {
 		return _priority;
 	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		return "[root="+getPath()+"]";
+	}
+
 }

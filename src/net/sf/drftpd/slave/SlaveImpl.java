@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
-import java.rmi.server.RMISocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.server.Unreferenced;
 import java.util.ArrayList;
@@ -28,7 +27,6 @@ import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.SlaveManager;
-import net.sf.drftpd.permission.InetAddrRMIServerSocketFactory;
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import se.mog.io.File;
@@ -53,14 +51,16 @@ public class SlaveImpl
 	private String name;
 
 	public SlaveImpl(Properties cfg, InetAddress inetAddress) throws RemoteException {
-		super(0, RMISocketFactory.getDefaultSocketFactory(), new InetAddrRMIServerSocketFactory(inetAddress));
+		//super(0, RMISocketFactory.getDefaultSocketFactory(), new InetAddrRMIServerSocketFactory(inetAddress));
+		super(0);
 		this.slavemanagerurl = "//"+cfg.getProperty("master.host")+"/"+cfg.getProperty("master.bindname");
 		this.name = cfg.getProperty("slave.name");
 
 		// START: RootBasket
 		ArrayList rootStrings = new ArrayList();
-		for (int i = 0; ; i++) {
-			String rootString = System.getProperty("slave.root."+i);
+		for (int i = 1; true; i++) {
+			String rootString = cfg.getProperty("slave.root."+i);
+			System.out.println("slave.root."+i+": "+rootString);
 			if(rootString == null) break;
 			
 			long minSpaceFree;
@@ -77,7 +77,6 @@ public class SlaveImpl
 				priority = 0;
 			}
 
-			System.out.println("root."+i+": "+rootString);
 			rootStrings.add(new Root(rootString, minSpaceFree, priority));
 		}
 		
@@ -107,7 +106,7 @@ public class SlaveImpl
 					SlaveImpl.getDefaultRoot(this.roots);
 
 				manager.addSlave(this.name, this, slaveroot);
-				logger.log(Level.INFO, "Registered with master.");
+				logger.log(Level.INFO, "Registered with master, awaiting commands.");
 				break;
 			} catch (Throwable t) {
 				long retry = Long.parseLong(System.getProperty("java.rmi.dgc.leaseValue", "600000"));

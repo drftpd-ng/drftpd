@@ -42,7 +42,7 @@
     </rmic>
   </target>
   
-  <target name="slavejar" depends="compile">
+  <target name="slavejar">
     <jar destfile="slave.jar" basedir="classes">
       <manifest>
         <attribute name="Main-Class" value="net.sf.drftpd.slave.SlaveImpl" />
@@ -58,6 +58,8 @@
       <include name="net/sf/drftpd/master/RemoteSlave.class" />
       <include name="net/sf/drftpd/master/SlaveManager.class" />
       <include name="net/sf/drftpd/master/SlaveManagerImpl_Stub.class" />
+      <include name="net/sf/drftpd/permission/InetAddrRMIServerSocketFactory.class" />
+      <include name="net/sf/drftpd/permission/InetAddrServerSocket.class" />
       <!-- until we have lightweight LinkedRemoteFile -->
       <include name="net/sf/drftpd/master/*" />
     </jar>
@@ -71,4 +73,21 @@
       <zipfileset dir="." includes="src/se/mog/io/FileSystem.dll" fullpath="FileSystem.dll" />
     </zip>
   </target>
+  
+  <target name="dist" depends="compile">
+    <zip destfile="drftpd-0.7.zip" basedir=".">
+      <include name="drftpd.conf.dist"/>
+      <include name="slaves.xml.dist"/>
+      <include name="slaves.dtd"/>
+      <include name="build.xml"/>
+      <include name="slave.bat"/>
+      <include name="slave.sh"/>
+      <include name="master.sh"/>
+      <include name="master.bat"/>
+      <include name="lib/*"/>
+      <include name="src/**"/>
+      <include name="classes/**"/>
+    </zip>
+  </target>
+  
 </project>

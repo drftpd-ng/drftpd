@@ -36,11 +36,16 @@ public class SFVFile implements Serializable {
 			if (line.charAt(0) == ';')
 				continue;
 			int separator = line.indexOf(" ");
+			if(separator == -1) continue;
 
 			String fileName = line.substring(0, separator);
 			String checkSumString = line.substring(separator + 1);
-			//long checkSum = Long.decode("0x"+checkSumString).longValue();
-			Long checkSum = Long.valueOf(checkSumString, 16);
+			Long checkSum;
+			try {
+				checkSum = Long.valueOf(checkSumString, 16);
+			} catch(NumberFormatException e) {
+				continue;
+			}
 			entries.put(fileName, checkSum);
 		}
 	}

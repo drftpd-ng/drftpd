@@ -327,6 +327,14 @@ public class IRCListener implements FtpListener {
 					+ direvent.getDirectory().getName()
 					+ " was deleted by "
 					+ formatUser(direvent.getUser()));
+		} else if(direvent.getCommand().equals("WIPE")) {
+			if(direvent.getDirectory().isDirectory()) {
+				say(
+				"[wipe] "
+					+ direvent.getDirectory().getName()
+					+ " was wiped by "
+					+ formatUser(direvent.getUser()));
+			}
 		}
 
 	}

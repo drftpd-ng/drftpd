@@ -227,6 +227,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 				}
 				try {
 					slave.delete(getPath());
+					System.out.print("DELETE: "+rslave.getName()+" "+getPath());
 					// throws RemoteException, IOException
 					iter.remove();
 				} catch (RemoteException ex) {
@@ -759,6 +760,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 					i.remove();
 			} else {
 				file.removeSlave(rslave);
+				//should be safe to remove it as it has no slaves.
+				if(file.getSlaves().size() == 0) i.remove();
 			}
 		}
 		if (isFile() && getSlaves().size() == 0) {

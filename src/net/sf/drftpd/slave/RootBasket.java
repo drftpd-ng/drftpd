@@ -55,12 +55,11 @@ public class RootBasket {
 				throw new FileNotFoundException("Invalid root: " + rootFile);
 			for (Iterator iterator = roots.iterator(); iterator.hasNext();) {
 				Root root2 = (Root) iterator.next();
-				File root2File = root2.getFile();
-				if (rootFile == root2File)
+				if (root == root2)
 					continue;
-				if (root2File.getPath().startsWith(rootFile.getPath())) {
+				if (root2.getPath().startsWith(root.getPath())) {
 					throw new FatalException(
-						"Overlapping roots: " + rootFile + " and " + root2File);
+						"Overlapping roots: " + root + " and " + root2);
 				}
 			}
 		}

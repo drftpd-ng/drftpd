@@ -27,13 +27,6 @@ public class XMLSerialize {
 			new Element("lastModified").setText(
 				Long.toString(file.lastModified())));
 
-		if (file.isDirectory()) {
-			Element contents = new Element("contents");
-			for (Iterator i = file.getFiles().iterator(); i.hasNext();) {
-				contents.addContent(serialize((LinkedRemoteFile) i.next()));
-			}
-			element.addContent(contents);
-		}
 		if(file.isFile()) {
 			String checksum = "";
 			checksum = Long.toHexString(file.getCheckSum(false));
@@ -49,6 +42,14 @@ public class XMLSerialize {
 			slaves.addContent(new Element("slave").setText(rslave.getName()));
 		}
 		element.addContent(slaves);
+
+		if (file.isDirectory()) {
+			Element contents = new Element("contents");
+			for (Iterator i = file.getFiles().iterator(); i.hasNext();) {
+				contents.addContent(serialize((LinkedRemoteFile) i.next()));
+			}
+			element.addContent(contents);
+		}
 
 		return element;
 	}

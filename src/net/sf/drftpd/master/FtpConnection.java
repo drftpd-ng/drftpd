@@ -537,6 +537,8 @@ public class FtpConnection extends BaseFtpConnection {
 			logger.log(Level.WARNING, "IO error loading SFV file", e);
 		} catch (ObjectNotFoundException e) {
 			// no sfv file in directory - just skip it
+		} catch(Throwable e) {
+			response.addComment("zipscript error: "+e.getMessage());
 		}
 
 		try {
@@ -2212,6 +2214,7 @@ public class FtpConnection extends BaseFtpConnection {
 		out.print(FtpResponse.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
 		return;
 	}
+	
 	public void doSITE_PURGE(FtpRequest request, PrintWriter out) {
 		resetState();
 		if (!request.hasArgument()) {
