@@ -10,7 +10,6 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.SlaveEvent;
-import net.sf.drftpd.event.listeners.Mirror;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -19,7 +18,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.11 2004/01/08 20:53:57 zubov Exp $
+ * @version $Id: JobManager.java,v 1.12 2004/01/08 21:00:34 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -283,10 +282,11 @@ public class JobManager implements FtpListener {
 				+ difference / 1000
 				+ " seconds");
 		synchronized (temp.getDestinationSlaves()) {
-			if (temp.getSource() instanceof Mirror) {
-				temp.getDestinationSlaves().remove(null);
-			} else {
+			if (temp.getDestinationSlaves().contains(slave)) {
 				temp.getDestinationSlaves().remove(slave);
+			}
+			else {
+				temp.getDestinationSlaves().remove(null);
 			}
 			if (temp.getDestinationSlaves().size() > 0)
 				addJob(temp); // job still has more places to transfer
