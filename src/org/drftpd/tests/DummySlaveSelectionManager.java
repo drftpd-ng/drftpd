@@ -46,7 +46,7 @@ public class DummySlaveSelectionManager
         throw new UnsupportedOperationException();
     }
 
-    public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave, Collection<RemoteSlave> availableSlaves)
+    public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException {
         throw new UnsupportedOperationException();
     }

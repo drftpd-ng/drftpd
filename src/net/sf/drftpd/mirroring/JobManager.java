@@ -187,7 +187,7 @@ public class JobManager implements Runnable {
                 try {
                     destSlave = _cm.getGlobalContext().getSlaveManager()
                                    .getSlaveSelectionManager()
-                                   .getASlaveForJobUpload(job, sourceSlave, availableSlaves);
+                                   .getASlaveForJobUpload(job, sourceSlave);
 
                     break; // we have a source slave and a destination slave,
 

@@ -95,7 +95,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
             Transfer.TRANSFER_SENDING_DOWNLOAD, job.getFile(), null);
     }
 
-    public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave, Collection<RemoteSlave> availableSlaves)
+    public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException {
         ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(job.getDestinationSlaves());
 
