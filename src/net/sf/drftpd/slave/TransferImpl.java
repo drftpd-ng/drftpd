@@ -1,12 +1,13 @@
 package net.sf.drftpd.slave;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import java.net.InetAddress;
 import java.net.Socket;
-
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;
@@ -39,8 +40,8 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private CRC32 checksum;
 
 	/**
-	 * Send, reading from 'in' and write to 'conn' using transfer type 'mode'.
-	 * 
+	 * Send/Download, reading from 'in' and write to 'conn' using transfer type 'mode'.
+	 * @deprecated
 	 */
 	public TransferImpl(
 		Collection transfers,
@@ -57,7 +58,8 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	}
 
 	/**
-	 * Receive, read from 'conn' and write to 'out'.
+	 * Receive/Upload, read from 'conn' and write to 'out'.
+	 * @deprecated
 	 */
 	public TransferImpl(
 		Collection transfers,
@@ -71,9 +73,42 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		this.out = new CheckedOutputStream(out, this.checksum);
 		this.transfers = transfers;
 	}
+	private RootBasket roots;
+	/**
+	 * Start undefined passive transfer.
+	 */
+	public TransferImpl(Collection transfers, Connection conn, RootBasket roots) throws RemoteException {
+		super();
+		this.direction = Transfer.TRANSFER_UNKNOWN;
+		this.conn = conn;
+		this.transfers = transfers;
+		this.roots = roots;
+	}
+	
+	//TODO char mode for uploads?
+	public void uploadFile(String dirname, String filename, long offset) throws IOException {
+		this.direction = TRANSFER_RECEIVING_UPLOAD;
+		this.checksum = new CRC32();
 
+		String root = roots.getARoot(dirname).getPath();
+
+		FileOutputStream out = new FileOutputStream(root + File.separator + filename);
+
+		this.out = new CheckedOutputStream(out, this.checksum);
+		transfer();
+	}
+	
+	public void downloadFile(String path, char type, long resumePosition) throws IOException {
+		this.direction = TRANSFER_SENDING_DOWNLOAD;
+		
+		this.in = new FileInputStream(roots.getFile(path));
+		this.in.skip(resumePosition);
+
+		transfer();
+	}
 	/**
 	 * Call sock.connect() and start sending.
+	 * @deprecated
 	 */
 	public void transfer() throws IOException {
 		this.transfers.add(this);
@@ -124,6 +159,9 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		return direction;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public InetAddress getEndpoint() {
 		return sock.getInetAddress();
 	}

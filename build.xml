@@ -4,18 +4,13 @@
     <target name="all" depends="compile"/>
 
     <target name="init">
-        <property name="build.compiler" value="gcj"/>
+<!--        <property name="build.compiler" value="gcj"/>-->
         <!-- You might like to set up some overridable paths, etc.: -->
         <!-- <property name="mylib" value="../lib/mylib.jar"/> -->
         <property name="sourceDir" value="src/"/>
         <property name="outputDir" value="classes/"/>
 
 	<path id="classpath">
-	    <pathelement path="/usr/share/jdom/lib/jdom.jar"/>
-	    <pathelement path="/usr/share/log4j/lib/log4j-1.2.7.jar"/>
-	    <pathelement path="/usr/share/oro/lib/oro.jar"/>
-		<pathelement path="martyr-0.3.0/martyr.jar" />
-		<pathelement path="JSX1.0.7.4.jar" />
 	    <fileset dir=".">
 	        <include name="lib/*"/>
 	    </fileset>
@@ -32,11 +27,11 @@
    </target>
 
    <target name="compile" depends="init, prepare">
-    <javac destdir="${outputDir}" debug="yes">
+    <javac destdir="${outputDir}" source="1.4">
 	<src path="${sourceDir}"/>
 	<classpath refid="classpath"/>
     </javac>
-    <rmic base="${outputDir}" sourcebase="${sourceDir}" stubversion="1.2">
+    <rmic base="${outputDir}" stubversion="1.2">
 	<include name="**/*Impl.class"/>
 	<classpath refid="classpath"/>
     </rmic>
@@ -58,6 +53,7 @@
       <include name="net/sf/drftpd/permission/InetAddrServerSocket.class" />
       <!-- until we have lightweight LinkedRemoteFile -->
       <include name="net/sf/drftpd/master/*" />
+      <include name="net/sf/drftpd/master/config/FtpConfig.class" />
     </jar>
     
     <zip destfile="slave.zip" basedir=".">

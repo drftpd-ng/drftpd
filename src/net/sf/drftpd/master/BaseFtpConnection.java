@@ -113,9 +113,13 @@ public class BaseFtpConnection implements Runnable {
 	}
 	*/
 	private Writer debugLog;
-	public BaseFtpConnection(ConnectionManager connManager, Socket soc, Writer debugLog) {
+	public BaseFtpConnection(
+		ConnectionManager connManager,
+		Socket soc,
+		Writer debugLog) {
 		this.controlSocket = soc;
 		this.connManager = connManager;
+		this.debugLog = debugLog;
 	}
 
 	BufferedReader in;
@@ -133,8 +137,6 @@ public class BaseFtpConnection implements Runnable {
 				+ "["
 				+ clientAddress.getHostAddress()
 				+ "]");
-		//mDataConnection = new FtpDataConnection(mConfig);
-		//mConfig.getConnectionService().newConnection(this);
 
 		try {
 			in =
@@ -147,14 +149,7 @@ public class BaseFtpConnection implements Runnable {
 		new OutputStreamWriter(controlSocket.getOutputStream())));
 
 			controlSocket.setSoTimeout(1000);
-			// permission check
-			/*
-			    if( !mConfig.getIpRestrictor().hasPermission(mControlSocket.getInetAddress()) ) {
-			        mWriter.write(mFtpStatus.getResponse(530, null, mUser, null));
-			        return;
-			    }
-			*/
-			if(connManager.isShutdown()) {
+			if (connManager.isShutdown()) {
 				stop(connManager.getShutdownMessage());
 			} else {
 				out.println("220 Service ready for new user.");
@@ -179,7 +174,7 @@ public class BaseFtpConnection implements Runnable {
 					continue;
 
 				request = new FtpRequest(commandLine);
-				//TODO log somewhere else!
+				//TODO write to this.debugLog
 				logger.fine(
 					"<< "
 						+ request.getCommandLine()
@@ -284,31 +279,13 @@ public class BaseFtpConnection implements Runnable {
 	/**
 	 * Monitor the user request.
 	 */
-	/*
-	protected void spyRequest(final String str) {
-	    final SpyConnectionInterface spy = mSpy;
-	    if (spy != null) {
-	        Message msg = new Message() {
-	            public void execute() {
-	                try {
-	                    spy.request(str + '\n');
-	                }
-	                catch(Exception ex) {
-	                    mSpy = null;
-	                    mConfig.getLogger().error(ex);
-	                }
-	            }
-	        };
-	        mConfig.getMessageQueue().add(msg);
-	    }
-	}
-	*/
 	/**
 	 * Get user object
 	 */
 	public User getUser() {
 		if (user == null)
-			throw new RuntimeException(new NoSuchObjectException("no user logged in for connection"));
+			throw new RuntimeException(
+				new NoSuchObjectException("no user logged in for connection"));
 		return user;
 	}
 
@@ -348,58 +325,18 @@ public class BaseFtpConnection implements Runnable {
 	}
 	*/
 
-	/**
-	 * Notify observer.
-	 */
-	/*
-	public void notifyObserver() {
-	   mUser.hitUser();
-	   final FtpUser thisUser = mUser; 
-	   final FtpConnectionObserver obsr = mObserver;
-	
-	   if (obsr != null) {
-	        Message msg = new Message() {
-	            public void execute() {
-	                obsr.updateConnection(thisUser);
-	            }
-	        };
-	        mConfig.getMessageQueue().add(msg);
-	   }
-	}
-	*/
-	/**
-	 * This method tracks data transfer.
-	 */
-	/*
-	public void dataTransferred(int sz) {
-		//notifyObserver();
-	}
-	*/
-	/**
-	 * Get config object
-	 */
-	/*
-	public FtpConfig getConfig() {
-	    return mConfig;
-	} 
-	*/
-
-	/**
-	 * Get status object
-	 */
-	/*
-	public FtpStatus getStatus() {
-		return mFtpStatus;
-	}
-	*/
 	/////////// DATA CONNECTION ///////////
 	protected Socket mDataSoc;
 	protected ServerSocket mServSoc;
+	/**
+	 * Set by setPasvCommand to controlSocket.getLocalAddress()
+	 * Set by setPortCommand to whatever the argument said.
+	 */
 	protected InetAddress mAddress;
 	protected int miPort = 0;
 
 	protected boolean mbPort = false;
-
+	protected boolean mbPasv = false;
 	/**
 	 * Reset all the member variables. Close all sockets.
 	 */
@@ -410,29 +347,27 @@ public class BaseFtpConnection implements Runnable {
 			try {
 				mDataSoc.close();
 			} catch (Exception ex) {
-				//mConfig.getLogger().warn(ex);
-				ex.printStackTrace();
+				logger.log(Level.WARNING, "Error closing data socket", ex);
 			}
 			mDataSoc = null;
 		}
 
 		// close server socket
-		if (mServSoc != null) {
-			try {
-				mServSoc.close();
-			} catch (Exception ex) {
-				//mConfig.getLogger().warn(ex);
-				ex.printStackTrace();
-			}
-			mServSoc = null;
-		}
+		//		if (mServSoc != null) {
+		//			try {
+		//				mServSoc.close();
+		//			} catch (Exception ex) {
+		//				logger.log(Level.WARNING, "Error closing server socket", ex);
+		//			}
+		//			mServSoc = null;
+		//		}
 
 		// reset other variables
 		mAddress = null;
 		miPort = 0;
 
 		mbPort = false;
-		//mbPasv = false;
+		mbPasv = false;
 	}
 
 	/**
@@ -448,53 +383,58 @@ public class BaseFtpConnection implements Runnable {
 	/**
 	 * Passive command. It returns the success flag.
 	 */
-	/*
 	public boolean setPasvCommand() {
-		boolean bRet = false;
 		try {
 			reset();
-			//mAddress = mConfig.getSelfAddress();
-			//mServSoc = new ServerSocket(0, 1, mAddress);
-			mServSoc = new ServerSocket(0, 1);
+			mAddress = controlSocket.getLocalAddress();
+			mServSoc = new ServerSocket(0, 1, mAddress);
+			//mServSoc = new ServerSocket(0, 1);
 			mServSoc.setSoTimeout(60000);
 			miPort = mServSoc.getLocalPort();
 			mbPasv = true;
-			bRet = true;
+			return true;
 		} catch (Exception ex) {
-			//mConfig.getLogger().warn(ex);
-			ex.printStackTrace();
+			logger.log(Level.WARNING, "", ex);
+			return false;
 		}
-		return bRet;
 	}
-	*/
 
 	/**
 	 * Listen for passive socket connection. It returns the success flag.
 	 */
-	/*
-	public boolean listenPasvConnection() {
+	public boolean acceptPasvConnection() throws IOException {
 		boolean bRet = false;
 		mDataSoc = null;
 		try {
 			mDataSoc = mServSoc.accept();
 			mDataSoc.setSoTimeout(60000);
 			bRet = true;
+		} catch (IOException ex) {
+			throw ex;
 		} catch (Exception ex) {
-			//mConfig.getLogger().warn(ex);
+			throw new RuntimeException(ex);
+		} finally {
+			if (mServSoc != null)
+				mServSoc.close();
+			mServSoc = null;
 		}
 		return bRet;
 	}
-	*/
 
 	/**
 	 * Get client address from PORT command.
 	 */
 	public InetAddress getInetAddress() {
-		return mAddress;
+		if (preTransferRSlave != null) {
+			return preTransferRSlave.getInetAddress();
+		} else {
+			return mAddress;
+		}
 	}
 
 	/**
 	 * Get port number.
+	 * return miPort
 	 */
 	public int getPort() {
 		return miPort;
@@ -502,6 +442,8 @@ public class BaseFtpConnection implements Runnable {
 
 	/**
 	 * Get the data socket. In case of error returns null.
+	 * 
+	 * Used by LIST and NLST.
 	 */
 	public Socket getDataSocket() throws IOException {
 
@@ -512,11 +454,15 @@ public class BaseFtpConnection implements Runnable {
 				mDataSoc.setSoTimeout(30000); // 30 seconds timeout
 			} catch (IOException ex) {
 				//mConfig.getLogger().warn(ex);
-				ex.printStackTrace();
+				logger.log(Level.WARNING, "Error opening data socket", ex);
 				mDataSoc = null;
 				throw ex;
 			}
+		} else if (mbPasv) {
+			if (mDataSoc == null)
+				acceptPasvConnection();
 		}
+
 		/* else if (!mbPasv) {
 			if (mDataSoc != null) {
 				try {
@@ -575,7 +521,7 @@ public class BaseFtpConnection implements Runnable {
 		return executing;
 	}
 	public boolean isTransfering() {
-		return transfer != null;
+		return _transfer != null;
 	}
 	/**
 	 * Returns the "currentTimeMillis" when last command finished executing.
@@ -606,6 +552,32 @@ public class BaseFtpConnection implements Runnable {
 	public void setCurrentDirectory(LinkedRemoteFile file) {
 		currentDirectory = file;
 	}
-	protected Transfer transfer;
+	protected Transfer _transfer;
+	protected LinkedRemoteFile _transferFile;
 
+	/**
+		 * PRE Transfere
+		 *
+		 */
+	protected RemoteSlave preTransferRSlave;
+	protected boolean preTransfer;
+
+	public Transfer getTransfer() {
+		return _transfer;
+	}
+
+	public LinkedRemoteFile getTransferFile() {
+		return _transferFile;
+	}
+
+	public char getTransferDirection() {
+		String cmd = getRequest().getCommand();
+		if (cmd.equals("RETR")) {
+			return Transfer.TRANSFER_RECEIVING_UPLOAD;
+		} else if (cmd.equals("STOR")) {
+			return Transfer.TRANSFER_SENDING_DOWNLOAD;
+		} else {
+			return Transfer.TRANSFER_UNKNOWN;
+		}
+	}
 }

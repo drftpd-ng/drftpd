@@ -36,10 +36,10 @@ JNIEXPORT jobject JNICALL Java_se_mog_io_UnixFileSystem_getDiskFreeSpace
   jfieldID fid;
   
   fid = (*env)->GetFieldID(env, diskFreeSpaceClass, "freeBytes", "J");
-  (*env)->SetLongField(env, diskFreeSpace, fid, buf.f_bavail * buf.f_bsize);
+  (*env)->SetLongField(env, diskFreeSpace, fid, (long  long)buf.f_bavail * (long  long)buf.f_bsize);
 
   fid = (*env)->GetFieldID(env, diskFreeSpaceClass, "totalBytes", "J");
-  (*env)->SetLongField(env, diskFreeSpace, fid, buf.f_blocks * buf.f_bsize);
+  (*env)->SetLongField(env, diskFreeSpace, fid, (long  long)buf.f_blocks * (long  long)buf.f_bsize);
 
 
   return diskFreeSpace;

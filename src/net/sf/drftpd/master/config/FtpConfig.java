@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -19,6 +20,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.FtpResponse;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
@@ -37,15 +39,20 @@ public class FtpConfig {
 
 	String cfgFileName;
 
-	public FtpConfig(String cfgFileName)
+	public FtpConfig(String cfgFileName, ConnectionManager connManager)
 		throws FileNotFoundException, IOException {
 		this.cfgFileName = cfgFileName;
-		loadConfig();
+		this.connManager = connManager;
+		reloadConfig();
 	}
 
-	public FtpConfig(Properties cfg, String cfgFileName) throws IOException {
+	/**
+	 * Constructor that allows reusing of cfg object
+	 * 
+	 */
+	public FtpConfig(Properties cfg, String cfgFileName, ConnectionManager connManager) throws IOException {
 		this.cfgFileName = cfgFileName;
-		loadConfig(cfg);
+		loadConfig(cfg, connManager);
 	}
 	private long freespaceMin;
 	public long getFreespaceMin() {
@@ -57,26 +64,34 @@ public class FtpConfig {
 	 * @param cfg
 	 * @throws NumberFormatException
 	 */
-	public void loadConfig() throws FileNotFoundException, IOException {
+	public void reloadConfig() throws FileNotFoundException, IOException {
 		Properties cfg = new Properties();
 		cfg.load(new FileInputStream(cfgFileName));
-		loadConfig(cfg);
+		loadConfig(cfg, connManager);
 	}
 	
-	private ArrayList privpaths;
-	private ArrayList msgpaths;
-	private ArrayList creditloss;
-	private ArrayList creditcheck;
+	private ArrayList _creditloss;
+	private ArrayList _creditcheck;
+	private ArrayList _hideinwhos;
+	private ArrayList _msgpaths;
+	private ArrayList _privpaths;
+	private ArrayList _eventplugins;
+	private ConnectionManager connManager;
+	
 	private void loadConfig2() throws IOException {
 		ArrayList privpaths = new ArrayList();
 		ArrayList msgpaths = new ArrayList();
+		ArrayList hideinwhos = new ArrayList();
 		ArrayList creditloss = new ArrayList();
 		ArrayList creditcheck = new ArrayList();
-
+		ArrayList eventplugins = new ArrayList();
+		
 		BufferedReader in =
 			new BufferedReader(new FileReader("drftpd-0.8.conf"));
+		int lineno = 0;
 		String line;
 		while ((line = in.readLine()) != null) {
+			lineno++;
 			//			String args = line.split(" ");
 			//			String command = args[0];
 			StringTokenizer st = new StringTokenizer(line);
@@ -98,13 +113,12 @@ public class FtpConfig {
 						messageFile,
 						makeUsers(st)));
 			}
-			//creditloss <multiplier> <allow leechers yes/no> <path> <permissions>
+			//creditloss <multiplier> <path> <permissions>
 			else if (command.equals("creditloss")) {
 				float multiplier = Float.parseFloat(st.nextToken());
-				boolean leechers = !st.nextToken().equalsIgnoreCase("no");
+				
 				String path = st.nextToken();
 				Collection users = makeUsers(st);
-				//TODO leecheres? ignore it? remove it from config?
 				creditloss.add(
 					new RatioPathPermission(multiplier, path, users));
 			}
@@ -115,10 +129,44 @@ public class FtpConfig {
 				Collection users = makeUsers(st);
 				creditloss.add(
 					new RatioPathPermission(multiplier, path, users));
+			} else if(command.equals("hideinwho")) {
+				String path = st.nextToken();
+				hideinwhos.add(new PathPermission(path, makeUsers(st)));
+			} else if(command.equals("loadplugin")) {
+				String clazz = st.nextToken();
+				ArrayList argsCollection = new ArrayList();
+				while(st.hasMoreTokens())  {
+					argsCollection.add(st.nextToken());
+				}
+				String args[] = (String[])argsCollection.toArray(new String[0]);
+				try {
+					Class SIG[] = {FtpConfig.class, ConnectionManager.class, String[].class };
+					Constructor met = Class.forName(clazz).getConstructor(SIG);
+					Object obj = met.newInstance(new Object[] {this, connManager, args});
+					eventplugins.add(obj);
+				} catch (Throwable e) {
+					logger.log(Level.SEVERE, "Error loading "+clazz, e);
+				}
 			}
 		}
-		this.privpaths = privpaths;
-		this.msgpaths = msgpaths;
+		
+		creditloss.trimToSize();
+		_creditloss = creditloss;
+
+		creditcheck.trimToSize();
+		_creditcheck = creditcheck;
+
+		privpaths.trimToSize();
+		_privpaths = privpaths;
+		
+		msgpaths.trimToSize();
+		_msgpaths = msgpaths;
+
+		hideinwhos.trimToSize();
+		_hideinwhos = hideinwhos;
+		
+		eventplugins.trimToSize();
+		_eventplugins = eventplugins;
 	}
 	private ArrayList makeUsers(StringTokenizer st) {
 		ArrayList users = new ArrayList();
@@ -128,7 +176,7 @@ public class FtpConfig {
 		return users;
 	}
 	public boolean isVisible(User user, LinkedRemoteFile path) {
-		for (Iterator iter = privpaths.iterator(); iter.hasNext();) {
+		for (Iterator iter = _privpaths.iterator(); iter.hasNext();) {
 			PathPermission perm = (PathPermission) iter.next();
 			if (perm.checkPath(path)) {
 				System.out.println(
@@ -143,9 +191,10 @@ public class FtpConfig {
 		}
 		return true;
 	}
-	public void loadConfig(Properties cfg) throws IOException {
+	public void loadConfig(Properties cfg, ConnectionManager connManager) throws IOException {
 		loadConfig2();
-		freespaceMin = Long.parseLong(cfg.getProperty("freespace.min"));
+		this.connManager = connManager;
+		this.freespaceMin = Long.parseLong(cfg.getProperty("freespace.min"));
 	}
 
 	public void welcomeMessage(FtpResponse response) throws IOException {
@@ -159,7 +208,7 @@ public class FtpConfig {
 		LinkedRemoteFile dir) {
 		String path = dir.getPath();
 
-		for (Iterator iter = msgpaths.iterator(); iter.hasNext();) {
+		for (Iterator iter = _msgpaths.iterator(); iter.hasNext();) {
 			MessagePathPermission perm = (MessagePathPermission) iter.next();
 			if (perm.getPath().equals(path)) {
 				if (perm.check(user)) {

@@ -8,9 +8,8 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.sf.drftpd.*;
+import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.SlaveEvent;
-import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
 
@@ -108,8 +107,6 @@ public class RemoteSlave implements Serializable, Comparable {
 			return false;
 		}
 		System.out.println(". Fatal exception, removing");
-		manager.getConnectionManager().dispatchFtpEvent(new UserEvent(null, "DELSLAVE"));
-		//manager.getRoot().unmerge(this);
 		setSlave(null, null);
 		return true;
 	}
@@ -136,13 +133,12 @@ public class RemoteSlave implements Serializable, Comparable {
 		}
 	}
 	public boolean isAvailable() {
-		//if(slave == null) return false;
-		try {
-			ping();
-		} catch (RemoteException e) {
-			handleRemoteException(e);
-		} catch (NoAvailableSlaveException e) {
-		}
+		//try {
+		//	ping();
+		//} catch (RemoteException e) {
+		//	handleRemoteException(e);
+		//} catch (NoAvailableSlaveException e) {
+		//}
 		return slave != null;
 	}
 

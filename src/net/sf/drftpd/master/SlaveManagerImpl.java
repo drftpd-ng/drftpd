@@ -112,9 +112,11 @@ public class SlaveManagerImpl
 		filesxmlbak.delete();
 		filesDotXml.renameTo(filesxmlbak);
 		try {
+			FileWriter out = new FileWriter(filesDotXml);
 			new XMLOutputter("  ", true).output(
-				root,
-				new FileWriter(filesDotXml));
+				root, out
+				);
+			out.flush();
 		} catch (IOException ex) {
 			logger.log(
 				Level.WARNING,
@@ -215,11 +217,11 @@ public class SlaveManagerImpl
 			root =
 				new LinkedRemoteFile(
 					xmlroot,
-					cm);
+					cm.getConfig());
 			System.out.println("FINISHED");
 		} catch (FileNotFoundException ex) {
 			logger.info("files.xml not found, new file will be created.");
-			root = new LinkedRemoteFile(cm);
+			root = new LinkedRemoteFile(cm.getConfig());
 		} catch (Exception ex) {
 			logger.log(Level.SEVERE, "Error loading \"files.xml\"", ex);
 			throw new FatalException(ex);

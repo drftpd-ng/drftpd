@@ -22,9 +22,9 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SFVFile;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManagerImpl;
+import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.Transfer;
 
@@ -35,7 +35,10 @@ import net.sf.drftpd.slave.Transfer;
  */
 //TODO make lightweight LinkedRemoteFile for the slave without RemoteSlave & ConnectionManager
 
-public class LinkedRemoteFile extends RemoteFile implements Serializable {
+public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
+	private long checkSum;
+	private String owner;
+	private String group;
 	static final long serialVersionUID = 3585958839961835107L;
 	private static Logger logger =
 		Logger.getLogger(LinkedRemoteFile.class.getName());
@@ -57,7 +60,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	private long lastModified;
 	/////////////////////// SLAVES
 	protected Collection slaves;
-	private transient ConnectionManager connectionmanager;
+	private transient FtpConfig ftpConfig;
 
 	/**
 	 * Creates an empty RemoteFile directory, usually used as an empty root directory that
@@ -65,10 +68,10 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 * 
 	 * Used if no file database exists to start a tree from scratch.
 	 */
-	public LinkedRemoteFile(ConnectionManager cm) {
+	public LinkedRemoteFile(FtpConfig ftpConfig) {
 		//		canRead = true;
 		//		canWrite = false;
-		this.connectionmanager = cm;
+		this.ftpConfig = ftpConfig;
 
 		this.lastModified = System.currentTimeMillis();
 		this.length = 0;
@@ -83,7 +86,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 * 
 	 * Also called with null ConnectionManager from slave
 	 */
-	public LinkedRemoteFile(RemoteFileInterface file, ConnectionManager cm)
+	public LinkedRemoteFile(RemoteFileInterface file, FtpConfig cm)
 		throws IOException {
 		this(null, file, cm);
 	}
@@ -99,8 +102,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	private LinkedRemoteFile(
 		LinkedRemoteFile parent,
 		RemoteFileInterface file,
-		ConnectionManager cm) {
-		this.connectionmanager = cm;
+		FtpConfig cm) {
+		this.ftpConfig = cm;
 		this.lastModified = file.lastModified();
 		this.length = file.length();
 		if (this.length == -1)
@@ -150,27 +153,28 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 				}
 				files.put(
 					file2.getName(),
-					new LinkedRemoteFile(this, file2, this.connectionmanager));
+					new LinkedRemoteFile(this, file2, this.ftpConfig));
 			}
 
 			Iterator i = dirstack.iterator();
 			while (i.hasNext()) {
-				RemoteFile file2 = (RemoteFile) i.next();
+				RemoteFileInterface file2 = (RemoteFileInterface) i.next();
 				String filename = file2.getName();
 				files.put(
 					filename,
-					new LinkedRemoteFile(this, file2, this.connectionmanager));
+					new LinkedRemoteFile(this, file2, this.ftpConfig));
 			}
 		}
 	}
 
 	public LinkedRemoteFile addFile(RemoteFile file) {
 		LinkedRemoteFile linkedfile =
-			new LinkedRemoteFile(this, file, this.connectionmanager);
+			new LinkedRemoteFile(this, file, this.ftpConfig);
 		files.put(linkedfile.getName(), linkedfile);
 		return linkedfile;
 	}
 	public void addSlave(RemoteSlave slave) {
+		if(slaves == null) throw new IllegalStateException("Cannot addSlave() on a directory");
 		if (slaves.contains(slave)) {
 			//logger.log(Level.WARNING, this+" already contained "+slave, new Throwable());
 			return;
@@ -208,7 +212,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			new LinkedRemoteFile(
 				this,
 				new DirectoryRemoteFile(this, owner, group, fileName),
-				connectionmanager);
+				ftpConfig);
 		//file.addSlaves(getSlaves());
 		files.put(file.getName(), file);
 		logger.fine("Created directory " + file);
@@ -296,11 +300,11 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		return SlaveManagerImpl.getASlave(
 			getAvailableSlaves(),
 			direction,
-			connectionmanager.getConfig());
+			ftpConfig);
 	}
 
-	public RemoteSlave getASlave() throws NoAvailableSlaveException {
-		return getASlave(Transfer.TRANSFER_THROUGHPUT);
+	public RemoteSlave getASlaveForDownload() throws NoAvailableSlaveException {
+		return getASlave(Transfer.TRANSFER_SENDING_DOWNLOAD);
 	}
 
 	/**
@@ -317,7 +321,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	public long getCheckSum(boolean scan) {
 		if (scan == false)
 			return checkSum;
-		if (checkSum != 0 && length != 0) {
+		if (checkSum == 0 && length != 0) {
 			try {
 				this.checkSum = getCheckSumFromSlave();
 			} catch (NoAvailableSlaveException ex) {
@@ -333,7 +337,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	public long getCheckSumFromSlave() throws NoAvailableSlaveException {
 		RemoteSlave slave;
 		while (true) {
-			slave = getASlave();
+			slave = getASlaveForDownload();
 			try {
 				this.checkSum = slave.getSlave().checkSum(getPath());
 			} catch (RemoteException ex) {
@@ -480,7 +484,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	public SFVFile getSFVFile() throws IOException, NoAvailableSlaveException {
 		if (sfvFile == null) {
 			while (true) {
-				RemoteSlave slave = getASlave();
+				RemoteSlave slave = getASlaveForDownload();
 				try {
 					sfvFile = slave.getSlave().getSFVFile(getPath()); //throws RemoteException
 					sfvFile.setCompanion(this);
@@ -517,6 +521,12 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		return slaves;
 	}
 
+	public boolean isAvailable() {
+		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
+			if(((RemoteSlave) iter.next()).isAvailable()) return true;
+		}
+		return false;
+	}
 	/** return isDeleted;
 	 */
 	public boolean isDeleted() {
@@ -637,8 +647,11 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			// two scenarios:, local file [does not] exists
 			if (file == null) {
 				// local file does not exist, just put it in the hashtable
+				if(!mergefile.isDirectory()) {
+					mergefile.addSlave(rslave);
+				} 
+				mergefile.ftpConfig = this.ftpConfig;
 				map.put(mergefile.getName(), mergefile);
-				mergefile.addSlave(rslave);
 			} else {
 				if (file.isDeleted()) {
 					//TODO mergefile has no RemoteSlave object!
@@ -835,6 +848,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 				if (rslave == null)
 					throw new FatalException("There's a null in rslaves");
 				ret.append(rslave.getName());
+				if(!rslave.isAvailable()) ret.append("-OFFLINE");
 				if (i.hasNext())
 					ret.append(",");
 			}
@@ -843,7 +857,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		if (isDirectory())
 			ret.append("[directory(" + files.size() + ")]");
 		if (isDeleted())
-			ret.append("[DELE]");
+			ret.append("[deleted]");
 		ret.append("]");
 		return ret.toString();
 	}
@@ -852,10 +866,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		removeSlave(rslave);
 		if (files == null)
 			return;
-		for (Iterator i = files.entrySet().iterator(); i.hasNext();) {
-			Map.Entry entry = (Map.Entry) i.next();
-			LinkedRemoteFile file = (LinkedRemoteFile) entry.getValue();
-			String filename = (String) entry.getKey();
+		for (Iterator i = files.values().iterator(); i.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) i.next();
 			if (file.isDirectory()) {
 				file.unmerge(rslave);
 				if (file.isDeleted() && file.getFilesMap().size() == 0)
@@ -889,6 +901,14 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 * @see net.sf.drftpd.remotefile.RemoteFile#length()
 	 */
 	public long length() {
+		if(isDirectory()) {
+			long length = 0;
+			for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+				LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
+				length += element.length();
+			}
+			return length;
+		}
 		return this.length;
 	}
 
@@ -921,6 +941,20 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 */
 	public boolean isFile() {
 		return this.files == null;
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getGroupname()
+	 */
+	public String getGroupname() {
+		return this.group;
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getUsername()
+	 */
+	public String getUsername() {
+		return this.owner;
 	}
 
 }

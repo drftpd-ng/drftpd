@@ -110,7 +110,6 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 	public RemoteFileInterface[] listFiles() {
 		//JDOMRemoteFile listFiles[] = new JDOMRemoteFile[files.size()];
 		ArrayList listFiles = new ArrayList();
-		int i2 = 0;
 		for (Iterator i = files.iterator(); i.hasNext();) {
 			Element fileElement = (Element)i.next();
 			
@@ -220,22 +219,19 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getCheckSum()
 	 */
 	public long getCheckSum() {
-		// TODO Auto-generated method stub
-		return 0;
+		return this.checkSum;
 	}
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getGroupname()
 	 */
 	public String getGroupname() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.group;
 	}
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getUsername()
 	 */
 	public String getUsername() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.owner;
 	}
 
 }

@@ -72,11 +72,17 @@ public class RootBasket {
 		return roots.iterator();
 	}
 
-	//TODO Use net.sf.drftpd.Root for getting the right root.
+	public File getARoot(String dir) {
+		File file = new File(getARoot()+File.separator+dir);
+		file.mkdirs();
+		return file;
+	}
+
+	//TODO Use net.sf.drftpd.slave.Root for getting the right root.
 	public File getARoot() {
 		long mostFree = 0;
 		File mostFreeRoot = null;
-		int prio = 0;
+		//int prio = 0;
 		for (Iterator iter = roots.iterator(); iter.hasNext();) {
 			Root root = (Root) iter.next();
 			File rootFile = root.getFile();

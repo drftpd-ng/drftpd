@@ -14,49 +14,12 @@ import net.sf.drftpd.SFVFile;
  * @author Morgan Christiansson <mog@linux.nu>
  */
 public interface Slave extends Remote {
-	/**
-	 * Connect to 'addr':'port'. and send 'file'.
-	 * 
-	 * Argument should be a StaticStaticRemoteFile so that the whole directory structure doesn't get serialized and sent.
-	 */
-	public Transfer doConnectSend(
-		String path,
-		char type,
-		long offset,
-		InetAddress addr,
-		int port)
-		throws RemoteException, IOException;
-
-	/**
-	 * Listen on any port and send 'file' when connection is receieved.
-	 */
-	public Transfer doListenSend(String path, char type, long offset)
-		throws RemoteException, IOException;
-
-	/**
-	 * Connect to 'addr':'port' and receive file.
-	 */
-	public Transfer doConnectReceive(
-		String dirname,
-		String file,
-		char type,
-		long offset,
-		InetAddress addr, int port)
-		throws RemoteException, IOException;
-		
-	/**
-	 * Listen on any port and receive 'file' when connection is received.
-	 */
-	public Transfer doListenReceive(
-		String dirname,
-		String file,
-		char type, long offset)
-		throws RemoteException, IOException;
-
 	public long checkSum(
 		String path)
 		throws RemoteException, IOException;
-		
+	
+	public Transfer listen() throws RemoteException, IOException;
+	public Transfer connect(InetAddress addr, int port) throws RemoteException;
 	/**
 	 * Get statistics for this slave, usefull when deciding which slave to use when transferring files.
 	 */

@@ -30,6 +30,9 @@ public class DateUtils {
     private final static DateFormat AFTER_SIX  = new SimpleDateFormat(" yyyy");
     private final static DateFormat BEFORE_SIX = new SimpleDateFormat("HH:mm");
     
+    public static String getUnixDate(long date) {
+    	return getUnixDate(new Date(date));
+    }
     /**
      * Get unix style date string.
      */

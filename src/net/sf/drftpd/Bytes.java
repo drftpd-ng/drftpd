@@ -56,7 +56,7 @@ public class Bytes {
 		} else if (bytes > KILO) {
 			return format.format((float) bytes / KILO) + "KB";
 		}
-		return Long.toString(bytes);
+		return Long.toString(bytes)+"B";
 	}
 
 	//	public static void main(String args[]) {

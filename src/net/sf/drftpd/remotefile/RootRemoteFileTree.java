@@ -8,7 +8,7 @@ package net.sf.drftpd.remotefile;
 
 import java.io.IOException;
 
-import net.sf.drftpd.master.ConnectionManager;
+import net.sf.drftpd.master.config.FtpConfig;
 
 /**
  * @author mog
@@ -21,7 +21,7 @@ public class RootRemoteFileTree extends LinkedRemoteFile {
 	/**
 	 * @param cm
 	 */
-	public RootRemoteFileTree(ConnectionManager cm) {
+	public RootRemoteFileTree(FtpConfig cm) {
 		super(cm);
 		// TODO Auto-generated constructor stub
 	}
@@ -31,7 +31,7 @@ public class RootRemoteFileTree extends LinkedRemoteFile {
 	 * @param cm
 	 * @throws IOException
 	 */
-	public RootRemoteFileTree(RemoteFile file, ConnectionManager cm)
+	public RootRemoteFileTree(RemoteFile file, FtpConfig cm)
 		throws IOException {
 		super(file, cm);
 		// TODO Auto-generated constructor stub

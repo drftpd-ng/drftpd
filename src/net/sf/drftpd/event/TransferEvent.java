@@ -28,9 +28,19 @@ public class TransferEvent extends DirectoryFtpEvent {
 		User user,
 		String command,
 		LinkedRemoteFile directory,
-	InetAddress userHost,
-	InetAddress xferHost, char type, boolean complete) {
-		this(user, command, directory, userHost, xferHost, type, complete, System.currentTimeMillis());
+		InetAddress userHost,
+		InetAddress xferHost,
+		char type,
+		boolean complete) {
+		this(
+			user,
+			command,
+			directory,
+			userHost,
+			xferHost,
+			type,
+			complete,
+			System.currentTimeMillis());
 	}
 	/**
 	 * @param user
@@ -42,17 +52,17 @@ public class TransferEvent extends DirectoryFtpEvent {
 		User user,
 		String command,
 		LinkedRemoteFile directory,
-	InetAddress userHost,
-	InetAddress xferHost,
-	char type, boolean complete,
+		InetAddress userHost,
+		InetAddress xferHost,
+		char type,
+		boolean complete,
 		long time) {
-		super(user, command, directory);
+		super(user, command, directory, time);
 		_userHost = userHost;
 		_xferHost = xferHost;
 		_complete = complete;
 		_type = type;
 	}
-	
 	private InetAddress _userHost;
 	private InetAddress _xferHost;
 	private boolean _complete;

@@ -39,6 +39,7 @@ public class SlaveImpl
 	extends UnicastRemoteObject
 	implements Slave, Unreferenced {
 	private Vector transfers = new Vector();
+	private InetAddress _address;
 	private static Logger logger = Logger.getLogger(SlaveImpl.class.getName());
 	static {
 		logger.setLevel(Level.FINEST);
@@ -52,7 +53,7 @@ public class SlaveImpl
 	private String name;
 
 	public SlaveImpl(Properties cfg, InetAddress inetAddress) throws RemoteException {
-		//super(0, RMISocketFactory.getDefaultSocketFactory(), new InetAddrRMIServerSocketFactory(inetAddress));
+		
 		super(0);
 		this.slavemanagerurl = "//"+cfg.getProperty("master.host")+":"+cfg.getProperty("master.bindport","1099")+"/"+cfg.getProperty("master.bindname");
 		this.name = cfg.getProperty("slave.name");
@@ -68,7 +69,7 @@ public class SlaveImpl
 				logger.log(Level.INFO, "Getting master reference");
 				SlaveManager manager;
 				manager = (SlaveManager) Naming.lookup(slavemanagerurl);
-				
+
 				logger.log(Level.INFO, "Registering with master and sending filelist");
 
 				LinkedRemoteFile slaveroot =
@@ -111,8 +112,9 @@ public class SlaveImpl
 			}
 
 			InetAddress masterAddr = InetAddress.getByName(cfg.getProperty("slavemanager.host"));
-			Slave slave;
-			slave = new SlaveImpl(cfg, masterAddr);
+			//Slave slave;
+			//slave = 
+			new SlaveImpl(cfg, masterAddr);
 
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -224,6 +226,7 @@ public class SlaveImpl
 
 	/**
 	 * Starts sending 'remotefile' starting at 'offset' bytes to a outputstream from the already connected socket 'sock'.
+	 * @deprecated
 	 */
 	private Transfer doSend(
 		String path,
@@ -240,36 +243,15 @@ public class SlaveImpl
 		TransferImpl transfer = new TransferImpl(transfers, in, conn, type);
 		return transfer;
 	}
-
-	/**
-	 * @see net.sf.drftpd.slave.Slave#doConnectSend(REmoteFile, long, InetADdress, int)
-	 */
-	public Transfer doConnectSend(
-		String path,
-		char type,
-		long offset,
-		InetAddress addr,
-		int port)
-		throws IOException {
-
-		return doSend(path, type, offset, new ActiveConnection(addr, port));
-	}
-
-	/**
-	 * @see net.sf.drftpd.slave.Slave#doListenSend(RemoteFile, long, int)
-	 */
-	public Transfer doListenSend(
-		String path,
-		char type,
-		long offset)
-		throws IOException {
-
-		return doSend(path, type, offset, new PassiveConnection());
-	}
+	
+//	private Transfer doListen() {
+//		return new PassiveConnection();
+//	}
 
 	//RECEIVE
 	/**
-	 * Generic receive method.
+	 * Generic upload/receive method.
+	 * @deprecated
 	 */
 	private Transfer doReceive(
 		String dirname,
@@ -294,41 +276,6 @@ public class SlaveImpl
 		*/
 		TransferImpl transfer = new TransferImpl(transfers, conn, out);
 		return transfer;
-	}
-
-	/**
-	 * @see net.sf.drftpd.slave.Slave#doConnectReceive(RemoteFile, long, InetAddress, int)
-	 */
-	public Transfer doConnectReceive(
-		String dirname,
-		String filename,
-		char type,
-		long offset,
-		InetAddress addr, int port)
-		throws IOException {
-
-		//Socket sock = new Socket(addr, port);
-		return doReceive(
-			dirname,
-			filename,
-			type,
-			offset,
-			new ActiveConnection(addr, port));
-	}
-
-	/**
-	 * @see net.sf.drftpd.slave.Slave#doListenReceive(RemoteFile, long, int)
-	 */
-	public Transfer doListenReceive(
-		String dirname,
-		String filename,
-		char type, long offset)
-		throws IOException {
-		//		ServerSocket server = new ServerSocket(0, 1);
-		//server.setSoTimeout(xxx);
-		//		Socket sock = server.accept();
-		//		server.close();
-		return doReceive(dirname, filename, type, offset, new PassiveConnection());
 	}
 
 	/**
@@ -389,5 +336,20 @@ public class SlaveImpl
 		logger.log(Level.WARNING, "Lost master, trying to re-register with master.");
 		register();
 		System.gc();
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.slave.Slave#listen()
+	 */
+	public Transfer listen() throws RemoteException, IOException {
+		
+		return new TransferImpl(this.transfers, new PassiveConnection(null), this.roots);
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.slave.Slave#connect(java.net.InetAddress, int)
+	 */
+	public Transfer connect(InetAddress addr, int port) throws RemoteException {
+		return new TransferImpl(this.transfers, new ActiveConnection(addr, port), this.roots);
 	}
 }

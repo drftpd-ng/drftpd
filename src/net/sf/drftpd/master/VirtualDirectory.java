@@ -3,12 +3,9 @@ package net.sf.drftpd.master;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
-import java.util.StringTokenizer;
 
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.RemoteFile;
 
 /**
  * This class is responsible to handle all virtual directory activities.
@@ -20,44 +17,6 @@ public class VirtualDirectory {
 
 	private final static String NEWLINE = "\r\n";
 	private final static String DELIM = " ";
-
-	private String mstRoot = "/";
-	private String mstCurrDir = "/";
-
-	private LinkedRemoteFile root;
-	private LinkedRemoteFile currentDirectory;
-	/**
-	 * Default constructor does nothing
-	 */
-	public VirtualDirectory(LinkedRemoteFile root) {
-		this.root = root;
-	}
-
-
-	
-//	/**
-//	 * Check read permission.
-//	 * @deprecated Unusable, user information must be supplied
-//	 */
-//	public boolean hasReadPermission(LinkedRemoteFile fileName) {
-//		return true;
-//	}
-//
-//	/**
-//	 * Check file write/delete permission.
-//	 * @deprecated Unusable, user information must be supplied
-//	 */
-//	public boolean hasWritePermission(LinkedRemoteFile fileName) {
-//		return true;
-//	}
-//
-//	/**
-//	 * Check file create permission.
-//	 * @deprecated use RemoteFile methods instead.
-//	 */
-//	public boolean hasCreatePermission(LinkedRemoteFile fileName) {
-//		return true;
-//	}
 
 	/**
 	 * Print file list. Detail listing.
@@ -94,7 +53,7 @@ public class VirtualDirectory {
 
 		// print file list
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			RemoteFile file = (RemoteFile) iter.next();
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
 			printLine(file, out);
 		}
 //		if (fileList != null) {
@@ -158,41 +117,12 @@ public class VirtualDirectory {
 	}
 
 	/**
-	 * Get file owner.
-	 */
-	private static String getOwner(RemoteFile fl) {
-		return fl.getUsername();
-	}
-
-	/**
-	 * Get group name
-	 */
-	private static String getGroup(RemoteFile fl) {
-		return fl.getGroupname();
-	}
-
-	/**
-	 * Get link count
-	 */
-	private static String getLinkCount(RemoteFile fl) {
-		if (fl.isDirectory()) {
-			return String.valueOf(3);
-		} else {
-			return String.valueOf(1);
-		}
-	}
-
-	/**
 	 * Get size
 	 * @deprecated
 	 */
-	private static String getLength(RemoteFile fl) {
+	private static String getLength(LinkedRemoteFile fl) {
 		String initStr = "            ";
-		long sz = 0;
-		if (fl.isFile()) {
-			sz = fl.length();
-		}
-		String szStr = String.valueOf(sz);
+		String szStr = Long.toString(fl.length());
 		if (szStr.length() > initStr.length()) {
 			return szStr;
 		}
@@ -200,20 +130,10 @@ public class VirtualDirectory {
 	}
 
 	/**
-	 * Get last modified date string.
-	 */
-	private static String getLastModified(RemoteFile fl) {
-		long modTime = fl.lastModified();
-		Date date = new Date(modTime);
-		return DateUtils.getUnixDate(date);
-	}
-
-	/**
 	 * Get file name.
 	 */
-	private static String getName(RemoteFile fl) {
+	private static String getName(LinkedRemoteFile fl) {
 		String flName = fl.getName();
-		//flName = normalizeSeparateChar(flName);
 
 		int lastIndex = flName.lastIndexOf("/");
 		if (lastIndex == -1) {
@@ -226,7 +146,7 @@ public class VirtualDirectory {
 	/**
 	 * Get permission string.
 	 */
-	private static String getPermission(RemoteFile fl) {
+	private static String getPermission(LinkedRemoteFile fl) {
 
 		StringBuffer sb = new StringBuffer(13);
 		if (fl.isDirectory()) {
@@ -256,137 +176,32 @@ public class VirtualDirectory {
 		return sb.toString();
 	}
 
-	/**
-	 * Normalize separate characher. Separate character should be '/' always.
-	 */
-	//	private static String normalizeSeparateChar(String pathName) {
-	//		pathName = pathName.replace(File.separatorChar, '/');
-	//		pathName = pathName.replace('\\', '/');
-	//		return pathName;
-	//	}
-
-	/**
-	 * Replace dots.
-	 * @param inArg the virtaul name
-	 * @deprecated VirtualDirectory instance methods are deprecated
-	 */
-	private String replaceDots(String inArg) {
-
-		// get the starting directory
-		String resArg;
-		if (inArg.charAt(0) != '/') {
-			resArg = mstRoot + mstCurrDir.substring(1);
-		} else {
-			resArg = mstRoot;
-		}
-
-		// strip last '/'
-		if (resArg.charAt(resArg.length() - 1) == '/') {
-			resArg = resArg.substring(0, resArg.length() - 1);
-		}
-
-		// replace ., ~ and ..        
-		StringTokenizer st = new StringTokenizer(inArg, "/");
-		while (st.hasMoreTokens()) {
-
-			String tok = st.nextToken().trim();
-
-			// . => current directory
-			if (tok.equals(".")) {
-				continue;
-			}
-
-			// .. => parent directory (if not root)
-			if (tok.equals("..")) {
-				if (resArg.startsWith(mstRoot)) {
-					int slashIndex = resArg.lastIndexOf('/');
-					if (slashIndex != -1) {
-						resArg = resArg.substring(0, slashIndex);
-					}
-				}
-				continue;
-			}
-
-			// ~ => home directory (in this case /)
-			if (tok.equals("~")) {
-				resArg = mstRoot.substring(0, mstRoot.length() - 1).trim();
-				continue;
-			}
-
-			resArg = resArg + '/' + tok;
-		}
-
-		// add last slash if necessary
-		if (!inArg.equals("") && (inArg.charAt(inArg.length() - 1) == '/')) {
-			resArg = resArg + '/';
-		}
-
-		// final check
-		if (resArg.length() < mstRoot.length()) {
-			resArg = mstRoot;
-		}
-
-		return resArg;
-	}
-
 	public static boolean isLegalFileName(String fileName) {
 		return !(fileName.indexOf("/") != -1) && !fileName.equals(".") && !fileName.equals("..");
 	}
 	/**
 	 * Get each directory line.
 	 */
-	public static void printLine(RemoteFile fl, Writer out) throws IOException {
-		out.write(getPermission(fl));
+	public static void printLine(LinkedRemoteFile fl, Writer out) throws IOException {
+		out.write(fl.isAvailable() ? getPermission(fl) : "------");
 		out.write(DELIM);
 		out.write(DELIM);
 		out.write(DELIM);
-		out.write(getLinkCount(fl));
+		out.write((fl.isDirectory() ? "3" : "1"));
 		out.write(DELIM);
-		out.write(getOwner(fl));
+		out.write(fl.getUsername());
 		out.write(DELIM);
-		out.write(getGroup(fl));
+		LinkedRemoteFile fl2 = fl;
+		out.write(fl2.getGroupname());
 		out.write(DELIM);
 		out.write(getLength(fl));
 		out.write(DELIM);
-		out.write(getLastModified(fl));
+		LinkedRemoteFile fl1 = fl;
+		out.write(DateUtils.getUnixDate(fl1.lastModified()));
 		out.write(DELIM);
-		out.write(getName(fl));
+		//out.write(getName(fl));
+		out.write(fl.getName() + (fl.isAvailable() ? "" : "-OFFLINE"));
 		out.write(NEWLINE);
-	}
-
-	/**
-	 * Get each directory line.
-	 */
-	/*
-	public void printLine(File fl, Writer out) throws IOException {
-	    out.write(getPermission(fl));
-	    out.write(DELIM);
-	    out.write(DELIM);
-	    out.write(DELIM);
-	    out.write(getLinkCount(fl));
-	    out.write(DELIM);
-	    out.write(getOwner(fl));
-	    out.write(DELIM);
-	    out.write(getGroup(fl));
-	    out.write(DELIM);
-	    out.write(getLength(fl));
-	    out.write(DELIM);
-	    out.write(getLastModified(fl));
-	    out.write(DELIM);
-	    out.write(getName(fl));
-	out.write(NEWLINE);
-	}
-	*/
-
-	/**
-	 * If the string is not '/', remove last slash.
-	 * @deprecated VirtualDirectory instance methods are deprecated
-	 */
-	private String removeLastSlash(String str) {
-		if ((str.length() > 1) && (str.charAt(str.length() - 1) == '/')) {
-			str = str.substring(0, str.length() - 1);
-		}
-		return str;
 	}
 
 }

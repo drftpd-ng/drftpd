@@ -40,7 +40,6 @@ import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
-import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveImpl;
 
 import org.jdom.Document;
@@ -52,6 +51,7 @@ public class ConnectionManager {
 	private Vector connections = new Vector();
 	private UserManager usermanager;
 	private NukeLog nukelog;
+	//allow package classes for inner classes without use of synthetic methods
 	private SlaveManagerImpl slavemanager;
 	private String shutdownMessage = null;
 	private Timer timer;
@@ -65,63 +65,79 @@ public class ConnectionManager {
 	}
 	private Writer commandDebug;
 	protected void dispatchFtpEvent(Event event) {
+		System.out.println("Dispatching "+event.getCommand()+" to "+ftpListeners);
 		for (Iterator iter = ftpListeners.iterator(); iter.hasNext();) {
 			try {
-			FtpListener handler = (FtpListener) iter.next();
-			System.out.println("Dispatching "+event.getCommand()+" to "+handler.getClass().getName());
-			handler.actionPerformed(event);
-			} catch(Throwable t) {
+				FtpListener handler = (FtpListener) iter.next();
+				handler.actionPerformed(event);
+			} catch (Throwable t) {
 				logger.log(Level.WARNING, "Exception dispatching event", t);
 			}
 		}
 	}
-
+	private Properties propertiesConfig;
 	public ConnectionManager(Properties cfg, String cfgFileName) {
+		this.propertiesConfig = cfg;
 		try {
-			this.config = new FtpConfig(cfg, cfgFileName);
-		} catch(Throwable ex) {
+			this.config = new FtpConfig(cfg, cfgFileName, this);
+		} catch (Throwable ex) {
 			throw new FatalException(ex);
 		}
 		new File("ftp-data/logs").mkdirs();
-		
+
 		try {
 			this.commandDebug = new FileWriter("ftp-data/logs/debug.log");
 		} catch (IOException e1) {
 			throw new FatalException(e1);
 		}
 		/** END: load XML file database **/
-		
+
 		nukelog = new NukeLog();
-		
+
 		try {
 			Document doc =
 				new SAXBuilder().build(new FileReader("nukelog.xml"));
 			List nukes = doc.getRootElement().getChildren("nukes");
 			for (Iterator iter = nukes.iterator(); iter.hasNext();) {
 				Element nukeElement = (Element) iter.next();
-				
-				User user = usermanager.getUserByName(nukeElement.getChildText("user"));
+
+				User user =
+					usermanager.getUserByName(nukeElement.getChildText("user"));
 				String command = nukeElement.getChildText("command");
 				String directory = nukeElement.getChildText("directory");
 				long time = Long.parseLong(nukeElement.getChildText("time"));
-				int multiplier = Integer.parseInt(nukeElement.getChildText("multiplier"));
+				int multiplier =
+					Integer.parseInt(nukeElement.getChildText("multiplier"));
 				String reason = nukeElement.getChildText("reason");
-				
+
 				Map nukees = new Hashtable();
-				List nukeesElement = nukeElement.getChild("nukees").getChildren("nukee");
+				List nukeesElement =
+					nukeElement.getChild("nukees").getChildren("nukee");
 				for (Iterator iterator = nukeesElement.iterator();
 					iterator.hasNext();
 					) {
 					Element nukeeElement = (Element) iterator.next();
-					String nukeeUsername = nukeeElement.getChildText("username");
-					Long nukeeAmount = new Long(nukeeElement.getChildText("amount"));
+					String nukeeUsername =
+						nukeeElement.getChildText("username");
+					Long nukeeAmount =
+						new Long(nukeeElement.getChildText("amount"));
 					nukees.put(nukeeUsername, nukeeAmount);
 				}
-				
-				nukelog.add(new NukeEvent(user, command, directory, time, multiplier, reason, nukees));
+
+				nukelog.add(
+					new NukeEvent(
+						user,
+						command,
+						directory,
+						time,
+						multiplier,
+						reason,
+						nukees));
 			}
-		} catch(FileNotFoundException ex) {
-			logger.log(Level.FINE, "nukelog.xml not found, will create it after first nuke.");
+		} catch (FileNotFoundException ex) {
+			logger.log(
+				Level.FINE,
+				"nukelog.xml not found, will create it after first nuke.");
 		} catch (Exception ex) {
 			logger.log(
 				Level.INFO,
@@ -129,16 +145,15 @@ public class ConnectionManager {
 				ex);
 		}
 		List rslaves = SlaveManagerImpl.loadRSlaves();
-		GlobRMIServerSocketFactory ssf = new GlobRMIServerSocketFactory(rslaves);
+		GlobRMIServerSocketFactory ssf =
+			new GlobRMIServerSocketFactory(rslaves);
 		/** register slavemanager **/
 		try {
-			slavemanager =
-				new SlaveManagerImpl(
-					cfg, rslaves, ssf, this);
+			slavemanager = new SlaveManagerImpl(cfg, rslaves, ssf, this);
 		} catch (RemoteException e) {
 			throw new FatalException(e);
 		}
-		
+
 		InetAddress inetAddress;
 		try {
 			inetAddress = InetAddress.getByName(cfg.getProperty("master.host"));
@@ -146,10 +161,12 @@ public class ConnectionManager {
 			throw new FatalException(e);
 		}
 
-		if(cfg.getProperty("master.localslave", "false").equalsIgnoreCase("true")) {
-			Slave slave;
+		if (cfg
+			.getProperty("master.localslave", "false")
+			.equalsIgnoreCase("true")) {
 			try {
-				slave = new SlaveImpl(cfg, inetAddress);
+				//TODO stop auto-register and register local reference
+				new SlaveImpl(cfg, inetAddress);
 			} catch (RemoteException ex) {
 				ex.printStackTrace();
 				System.exit(0);
@@ -157,11 +174,16 @@ public class ConnectionManager {
 				//the compiler doesn't know that execution stops at System.exit(),
 			}
 		}
-		
+
 		try {
-			usermanager = (UserManager) Class.forName(cfg.getProperty("master.usermanager")).newInstance();
+			usermanager =
+				(UserManager) Class
+					.forName(cfg.getProperty("master.usermanager"))
+					.newInstance();
 		} catch (Exception e) {
-			throw new FatalException("Cannot create instance of usermanager, check master.usermanager in drftpd-0.7.conf", e);
+			throw new FatalException(
+				"Cannot create instance of usermanager, check master.usermanager in drftpd-0.7.conf",
+				e);
 		}
 
 		timer = new Timer();
@@ -175,7 +197,7 @@ public class ConnectionManager {
 
 		TimerTask timerSave = new TimerTask() {
 			public void run() {
-				slavemanager.saveFilesXML();
+				getSlavemanager().saveFilesXML();
 				try {
 					getUsermanager().saveAll();
 				} catch (UserFileException e) {
@@ -185,13 +207,14 @@ public class ConnectionManager {
 		};
 		//run every 5 minutes
 		timer.schedule(timerSave, 0, 600 * 1000);
-		
-		if(cfg.getProperty("irc.enabled", "false").equals("true")) {
-		try {
-			addFtpListener(new IRCListener(this, cfg));
-		} catch (Exception e2) {
-			logger.log(Level.WARNING, "Error starting IRC bot", e2);
-		}
+
+		if (cfg.getProperty("irc.enabled", "false").equals("true")) {
+			try {
+				addFtpListener(
+					new IRCListener(this, getConfig(), new String[0]));
+			} catch (Exception e2) {
+				logger.log(Level.WARNING, "Error starting IRC bot", e2);
+			}
 		}
 		addFtpListener(new XferLogListener());
 	}
@@ -207,16 +230,9 @@ public class ConnectionManager {
 				int maxIdleTime = 0;
 				if (conn.getUser() != null) {
 					maxIdleTime = conn.getUser().getMaxIdleTime();
-				} 
+				}
 				if (maxIdleTime == 0)
 					maxIdleTime = idleTimeout;
-				User user = conn.getUser();
-				//				logger.finest(
-				//					"User has been idle for "
-				//						+ idle
-				//						+ "s, max "
-				//						+ maxIdleTime
-				//						+ "s");
 
 				if (!conn.isExecuting() && idle >= maxIdleTime) {
 					// idle time expired, logout user.
@@ -237,7 +253,8 @@ public class ConnectionManager {
 				slavemanager,
 				slavemanager.getRoot(),
 				this,
-				this.nukelog, this.commandDebug);
+				this.nukelog,
+				this.commandDebug);
 		conn.ftpListeners = this.ftpListeners;
 		connections.add(conn);
 		conn.start();
@@ -249,17 +266,17 @@ public class ConnectionManager {
 		}
 		dispatchFtpEvent(new MessageEvent("SHUTDOWN", message));
 	}
-	
+
 	private ArrayList ftpListeners = new ArrayList();
 	public void addFtpListener(FtpListener listener) {
 		ftpListeners.add(listener);
 	}
-	
+
 	public void remove(BaseFtpConnection conn) {
 		if (!connections.remove(conn)) {
 			throw new RuntimeException("connections.remove() returned false.");
 		}
-		if(isShutdown() && connections.isEmpty()) {
+		if (isShutdown() && connections.isEmpty()) {
 			slavemanager.saveFilesXML();
 			try {
 				getUsermanager().saveAll();
@@ -282,12 +299,12 @@ public class ConnectionManager {
 	public String getShutdownMessage() {
 		return this.shutdownMessage;
 	}
-	
+
 	public static final String VERSION = "drftpd v0.7.0";
 	public static void main(String args[]) {
-		System.out.println(VERSION+" master server starting.");
+		System.out.println(VERSION + " master server starting.");
 		System.out.println("http://drftpd.sourceforge.net");
-		
+
 		try {
 			Handler handlers[] = Logger.getLogger("").getHandlers();
 			if (handlers.length == 1) {
@@ -298,20 +315,21 @@ public class ConnectionManager {
 			}
 
 			String cfgFileName;
-			if(args.length >= 1) {
+			if (args.length >= 1) {
 				cfgFileName = args[0];
 			} else {
 				cfgFileName = "drftpd-0.7.conf";
 			}
-			if(new File(cfgFileName).exists()) {
-				System.out.println(cfgFileName+" does not exist.");
+			if (new File(cfgFileName).exists()) {
+				System.out.println(cfgFileName + " does not exist.");
 			}
 			/** load config **/
 			Properties cfg = new Properties();
 			try {
 				cfg.load(new FileInputStream(cfgFileName));
 			} catch (IOException e) {
-				logger.severe("Error reading "+cfgFileName+": " + e.getMessage());
+				logger.severe(
+					"Error reading " + cfgFileName + ": " + e.getMessage());
 				return;
 			}
 
@@ -327,8 +345,10 @@ public class ConnectionManager {
 				while (true) {
 					mgr.start(server.accept());
 				}
-			} catch(BindException e) {
-				throw new FatalException("Couldn't bind on port "+cfg.getProperty("master.port"), e);
+			} catch (BindException e) {
+				throw new FatalException(
+					"Couldn't bind on port " + cfg.getProperty("master.port"),
+					e);
 			} catch (Exception e) {
 				logger.log(Level.SEVERE, "", e);
 			}
@@ -338,7 +358,7 @@ public class ConnectionManager {
 			return;
 		}
 	}
-	
+
 	/**
 	 * @return
 	 */
@@ -358,4 +378,11 @@ public class ConnectionManager {
 	public FtpConfig getConfig() {
 		return config;
 	}
+	/**
+	 * @return
+	 */
+	public Properties getPropertiesConfig() {
+		return propertiesConfig;
+	}
+
 }
