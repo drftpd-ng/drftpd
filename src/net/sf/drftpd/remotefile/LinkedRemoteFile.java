@@ -675,7 +675,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 							+ rslave
 							+ " for file "
 							+ mergefile);
-					mergefile.addSlave(rslave);
+					if(!mergefile.isDirectory()) mergefile.addSlave(rslave);
 					mergefile.delete();
 					continue;
 				}
