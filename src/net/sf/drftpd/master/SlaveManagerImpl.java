@@ -17,7 +17,6 @@
  */
 package net.sf.drftpd.master;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -48,7 +47,6 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.SlaveEvent;
-import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -57,10 +55,9 @@ import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.util.SafeFileWriter;
 
-import net.sf.drftpd.tcpslave.SocketSlaveImpl;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.slave.socket.SocketSlaveImpl;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -70,7 +67,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.90 2004/05/19 20:45:04 zombiewoof64 Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.91 2004/05/21 03:51:32 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -320,6 +317,7 @@ public class SlaveManagerImpl
 			if (addr == null) {
 				addr = InetAddress.getByName(RemoteServer.getClientHost());
 			}
+
 			//logger.debug("slave ip address is " + addr);
 			if (addr == null) {
 				throw new IllegalArgumentException(
