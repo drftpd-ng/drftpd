@@ -20,6 +20,7 @@ package org.drftpd.remotefile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -206,4 +207,6 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 	public abstract void deleteFromSlave(RemoteSlave rslave);
 
 	public abstract Collection<LinkedRemoteFileInterface> getFiles2();
+
+	public abstract List<LinkedRemoteFileInterface> getAllParentFiles();
 }

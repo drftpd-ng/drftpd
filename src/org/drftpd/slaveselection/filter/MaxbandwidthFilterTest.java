@@ -27,6 +27,7 @@ import org.drftpd.master.RemoteTransfer;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
@@ -41,6 +42,7 @@ import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 

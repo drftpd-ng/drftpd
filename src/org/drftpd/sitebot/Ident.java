@@ -1,8 +1,18 @@
 /*
- * Created on Dec 6, 2004
+ * This file is part of DrFTPD, Distributed FTP Daemon.
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * DrFTPD is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ *
+ * DrFTPD is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
+ * Suite 330, Boston, MA 02111-1307 USA
  */
 package org.drftpd.sitebot;
 
@@ -14,6 +24,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.drftpd.commands.UserManagment;
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
 
@@ -29,13 +40,14 @@ public class Ident extends GenericCommandAutoService implements
     private static final Logger logger = Logger.getLogger(Ident.class);
 	private ConnectionManager _cm;
 	private SiteBot _irc;
+	public static final Key IDENT = new Key(Ident.class,"IRCIdent",String.class);
 
 	public Ident(SiteBot ircListener) {
 		super(ircListener.getIRCConnection());
 		_cm = ircListener.getConnectionManager();
 		_irc = ircListener;
 	}
-	
+
 	public String getCommands() {
         return "!ident(msg)";
     }
@@ -60,17 +72,13 @@ public class Ident extends GenericCommandAutoService implements
                 user = _cm.getGlobalContext().getUserManager().getUserByName(args[1]);
             } catch (NoSuchUserException e) {
                 logger.log(Level.WARN, args[1] + " " + e.getMessage(), e);
-
                 return;
             } catch (UserFileException e) {
                 logger.log(Level.WARN, "", e);
-
                 return;
             }
 
-            boolean success = user.checkPassword(args[2]);
-            
-            if (success) {
+            if (user.checkPassword(args[2])) {
              	String ident = msgc.getSource().getNick() + "!" 
 								+ msgc.getSource().getUser() + "@" 
 								+ msgc.getSource().getHost();
@@ -86,6 +94,4 @@ public class Ident extends GenericCommandAutoService implements
              }
         }
 	}
-
-
 }

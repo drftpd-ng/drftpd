@@ -750,7 +750,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		if (sfvFile == null) {
 			while (true) {
 				RemoteSlave rslave = _ftpConfig.getGlobalContext()
-						.getSlaveManager().getSlaveSelectionManager()
+				.getSlaveManager().getGlobalContext().getSlaveSelectionManager()
 						.getASlaveForMaster(this, _ftpConfig);
 
 				try {
@@ -787,7 +787,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
 			while (true) {
 				RemoteSlave rslave = _ftpConfig.getGlobalContext()
-						.getSlaveManager().getSlaveSelectionManager()
+				.getSlaveManager().getGlobalContext().getSlaveSelectionManager()
 						.getASlaveForMaster(this, _ftpConfig);
 
 				if (rslave == null) {
@@ -1591,5 +1591,19 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			return "[NonExistingFile:file=" + getFile().getPath() + ",path="
 					+ getPath() + "]";
 		}
+	}
+
+	public List<LinkedRemoteFileInterface> getAllParentFiles() {
+		List<LinkedRemoteFileInterface> parents = new ArrayList<LinkedRemoteFileInterface>();
+		parents.add(this);
+		LinkedRemoteFileInterface parent = this;
+		while(true) {
+			try {
+				parents.add(parent = parent.getParentFile());
+			} catch (FileNotFoundException e) {
+				break;
+			}
+		}
+		return parents;
 	}
 }

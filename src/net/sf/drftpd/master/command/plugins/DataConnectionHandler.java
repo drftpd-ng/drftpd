@@ -358,8 +358,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             try {
                 LinkedRemoteFileInterface downFile = conn.getCurrentDirectory()
                                                          .lookupFile(ghostRequest.getArgument());
-                _preTransferRSlave = conn.getGlobalContext().getSlaveManager()
-                                         .getSlaveSelectionManager().getASlave(downFile.getAvailableSlaves(),
+                _preTransferRSlave = conn.getGlobalContext().getSlaveSelectionManager().getASlave(downFile.getAvailableSlaves(),
                         Transfer.TRANSFER_SENDING_DOWNLOAD, conn, downFile);
                 _preTransfer = true;
 
@@ -384,8 +383,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             }
 
             try {
-                _preTransferRSlave = conn.getGlobalContext().getSlaveManager()
-                                         .getSlaveSelectionManager().getASlave(conn.getGlobalContext()
+                _preTransferRSlave = conn.getGlobalContext().getSlaveSelectionManager().getASlave(conn.getGlobalContext()
                                                                                    .getSlaveManager()
                                                                                    .getAvailableSlaves(),
                         Transfer.TRANSFER_RECEIVING_UPLOAD, conn,
@@ -1088,13 +1086,11 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             } else {
                 try {
                     if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-                        _rslave = conn.getGlobalContext().getSlaveManager()
-                                      .getSlaveSelectionManager().getASlave(_transferFile.getAvailableSlaves(),
+                        _rslave = conn.getGlobalContext().getSlaveSelectionManager().getASlave(_transferFile.getAvailableSlaves(),
                                 Transfer.TRANSFER_SENDING_DOWNLOAD, conn,
                                 _transferFile);
                     } else if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-                        _rslave = conn.getGlobalContext().getSlaveManager()
-                                      .getSlaveSelectionManager().getASlave(conn.getGlobalContext()
+                        _rslave = conn.getGlobalContext().getSlaveSelectionManager().getASlave(conn.getGlobalContext()
                                                                                 .getSlaveManager()
                                                                                 .getAvailableSlaves(),
                                 Transfer.TRANSFER_RECEIVING_UPLOAD, conn,

@@ -1,4 +1,4 @@
-/**
+/*
  * This file is part of DrFTPD, Distributed FTP Daemon.
  *
  * DrFTPD is free software; you can redistribute it and/or modify
@@ -15,37 +15,27 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.usermanager;
+package org.drftpd.dynamicdata;
 
 
 /**
  * @author mog
- * @version $Id: Key.java,v 1.1 2004/11/05 13:27:23 mog Exp $
+ * @version $Id: KeyNotFoundException.java 756 2004-11-05 13:27:23Z mog $
  */
-public class Key {
-    private String _key;
-    private Class _owner;
-    private Class _type;
-
-    public Key(Class owner, String key, Class type) {
-        _owner = owner;
-        _key = key;
-        _type = type;
+public class KeyNotFoundException extends Exception {
+    public KeyNotFoundException() {
+        super();
     }
 
-    public String getKey() {
-        return _key;
+    public KeyNotFoundException(String arg0) {
+        super(arg0);
     }
 
-    public Class getOwner() {
-        return _owner;
+    public KeyNotFoundException(String arg0, Throwable arg1) {
+        super(arg0, arg1);
     }
 
-    public Class getType() {
-        return _type;
-    }
-
-    public String toString() {
-        return getOwner().getName() + '@' + getKey();
+    public KeyNotFoundException(Throwable arg0) {
+        super(arg0);
     }
 }

@@ -552,8 +552,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	 */
 	public void simpleRename(String from, String toDirPath, String toName) {
 		try {
-			String index = issueRenameToSlave(from, toDirPath, toName);
-			AsyncResponse ar = fetchResponse(index);
+			fetchResponse(issueRenameToSlave(from, toDirPath, toName));
 		} catch (RemoteIOException e) {
 			setOffline(e);
 			addQueueRename(from, toDirPath + "/" + toName);

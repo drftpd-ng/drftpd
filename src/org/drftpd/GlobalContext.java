@@ -69,12 +69,18 @@ public class GlobalContext {
     protected AbstractUserManager _usermanager;
     private Timer _timer = new Timer();
     protected SlaveSelectionManagerInterface _slaveSelectionManager;
+	private String _cfgFileName;
 
     protected GlobalContext() {
     }
 
+    public void reloadFtpConfig() throws IOException {
+    	_config = new FtpConfig(_cfgFileName, getConnectionManager());
+    }
+
     public GlobalContext(Properties cfg, String cfgFileName,
         ConnectionManager cm) throws SlaveFileException {
+    	_cfgFileName = cfgFileName;
         _cm = cm;
         _cm.setGlobalContext(this);
         loadUserManager(cfg, cfgFileName);
@@ -216,7 +222,7 @@ public class GlobalContext {
 
         try {
             _jm = new JobManager(_cm,null);
-            getSlaveManager().getSlaveSelectionManager().reload();
+            getSlaveSelectionManager().reload();
             _jm.startJobs();
         } catch (IOException e) {
             throw new FatalException("Error loading JobManager", e);

@@ -52,6 +52,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Observable;
 import java.util.Properties;
 
 
@@ -59,7 +60,7 @@ import java.util.Properties;
  * @author mog
  * @version $Id$
  */
-public class FtpConfig {
+public class FtpConfig extends Observable {
     private static final Logger logger = Logger.getLogger(FtpConfig.class);
     private ArrayList<InetAddress> _bouncerIps;
     private boolean _capFirstDir;
@@ -75,7 +76,7 @@ public class FtpConfig {
     private int _maxUsersExempt;
     private int _maxUsersTotal = Integer.MAX_VALUE;
     private ArrayList _msgpath;
-    private Hashtable<String, ArrayList> _patternPaths;
+    private Hashtable<String, ArrayList<PathPermission>> _pathsPerms = new Hashtable<String, ArrayList<PathPermission>>();
     private Hashtable<String, Permission> _permissions;
     private StringTokenizer _replaceDir;
     private StringTokenizer _replaceFile;
@@ -96,6 +97,13 @@ public class FtpConfig {
         ConnectionManager connManager) throws IOException {
         _cfgFileName = cfgFileName;
         loadConfig(cfg, connManager);
+    }
+    
+    public FtpConfig(String cfgFileName, ConnectionManager connManager) throws IOException {
+    	_connManager = connManager;
+        Properties cfg = new Properties();
+        cfg.load(new FileInputStream(cfgFileName));
+        loadConfig(cfg, _connManager);
     }
 
     private static ArrayList makeRatioPermission(ArrayList<RatioPathPermission> arr,
@@ -176,7 +184,7 @@ public class FtpConfig {
 
     public boolean checkPathPermission(String key, User fromUser,
         LinkedRemoteFileInterface path, boolean defaults) {
-        Collection coll = ((Collection) _patternPaths.get(key));
+        Collection coll = ((Collection) _pathsPerms.get(key));
 
         if (coll == null) {
             return defaults;
@@ -396,10 +404,9 @@ public class FtpConfig {
     }
 
     protected void loadConfig2(Reader in2) throws IOException {
-        Hashtable<String,ArrayList> patternPathPermissions = new Hashtable<String,ArrayList>();
+        //Hashtable<String,ArrayList> patternPathPermissions =
         Hashtable<String,Permission> permissions = new Hashtable<String,Permission>();
         ArrayList<RatioPathPermission> creditcheck = new ArrayList<RatioPathPermission>();
-        Permission shutdown = null;
         ArrayList<RatioPathPermission> creditloss = new ArrayList<RatioPathPermission>();
         ArrayList<MessagePathPermission> msgpath = new ArrayList<MessagePathPermission>();
         _useFileNames = false;
@@ -459,24 +466,17 @@ public class FtpConfig {
                     else if (cmd.equals("creditcheck")) {
                         makeRatioPermission(creditcheck, st);
                     } else if (cmd.equals("pathperm")) {
-                        makePatternPathPermission(patternPathPermissions,
-                            st.nextToken(), st);
+                        addPathPermission(                            st.nextToken(), st);
 
-                        //						patternPathPermission.put(
-                        //							st.nextToken(),
-                        //							makePatternPathPermission(st));
                     } else if (cmd.equals("privpath") || cmd.equals("dirlog") ||
                             cmd.equals("hideinwho") || cmd.equals("makedir") ||
                             cmd.equals("pre") || cmd.equals("upload") ||
                             cmd.equals("download") || cmd.equals("delete") ||
                             cmd.equals("deleteown") || cmd.equals("rename") ||
                             cmd.equals("renameown") || cmd.equals("request")) {
-                        makePatternPathPermission(patternPathPermissions, cmd,
+                        addPathPermission(cmd,
                             st);
 
-                        //						patternPathPermission.put(
-                        //							cmd,
-                        //							makePatternPathPermission(st));
                     } else if ("userrejectsecure".equals(cmd) ||
                             "userrejectinsecure".equals(cmd) ||
                             "denydiruncrypted".equals(cmd) ||
@@ -490,11 +490,10 @@ public class FtpConfig {
 
                         permissions.put(cmd, new Permission(makeUsers(st)));
                     } else if("shutdown".equals(cmd)) {
-                    	shutdown = new Permission(makeUsers(st));
+                    	_shutdown = new Permission(makeUsers(st));
                     } else {
                         if (!cmd.startsWith("#")) {
-                            makePatternPathPermission(patternPathPermissions,
-                                cmd, st);
+                            addPathPermission(cmd, st);
                         }
                     }
                 } catch (Exception e) {
@@ -512,37 +511,38 @@ public class FtpConfig {
             msgpath.trimToSize();
             _msgpath = msgpath;
 
-            _patternPaths = patternPathPermissions;
             _permissions = permissions;
-            _shutdown = shutdown;
+            //_shutdown = shutdown;
+
+            //notify any observers so they can add their own permissions
+            notifyObservers();
         } finally {
             in.close();
         }
     }
-
-    private void makePatternPathPermission(Hashtable<String,ArrayList> patternPathPermission,
-        String key, StringTokenizer st) throws MalformedPatternException {
-        ArrayList perms = patternPathPermission.get(key);
+	public void addPathPermission(String key, PathPermission permission) {
+        ArrayList<PathPermission> perms = _pathsPerms.get(key);
 
         if (perms == null) {
-            perms = new ArrayList();
-            patternPathPermission.put(key, perms);
+            perms = new ArrayList<PathPermission>();
+            _pathsPerms.put(key, perms);
         }
+        perms.add(permission);		
+	}
 
-        perms.add(new PatternPathPermission(new GlobCompiler().compile(
+    private void addPathPermission(String key, StringTokenizer st) throws MalformedPatternException {
+        addPathPermission(key, new PatternPathPermission(new GlobCompiler().compile(
                     st.nextToken()), makeUsers(st)));
     }
 
-    /**
-     *
-     * @param cfg
-     * @throws NumberFormatException
-     */
-    public void reloadConfig() throws FileNotFoundException, IOException {
-        Properties cfg = new Properties();
-        cfg.load(new FileInputStream(_cfgFileName));
-        loadConfig(cfg, _connManager);
-    }
+//    /**
+//     * @deprecated
+//     */
+//    public void reloadConfig() throws FileNotFoundException, IOException {
+//        Properties cfg = new Properties();
+//        cfg.load(new FileInputStream(_cfgFileName));
+//        loadConfig(cfg, _connManager);
+//    }
 
     private void replaceChars(StringBuffer source, Character oldChar,
         Character newChar) {
@@ -603,4 +603,5 @@ public class FtpConfig {
     public PortRange getPortRange() {
         return _portRange;
     }
+
 }

@@ -142,7 +142,7 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
 
 		try {
 			conn.getGlobalContext().getConnectionManager().reload();
-			conn.getGlobalContext().getConfig().reloadConfig();
+			conn.getGlobalContext().reloadFtpConfig();
 			conn.getGlobalContext().getSlaveManager().reload();
 			conn.getGlobalContext().getSlaveSelectionManager().reload();
 

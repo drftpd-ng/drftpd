@@ -38,8 +38,8 @@ import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commands.UserManagment;
+import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.ConnectionManager;
-import org.drftpd.usermanager.KeyNotFoundException;
 import org.drftpd.usermanager.User;
 
 import com.Ostermiller.util.StringTokenizer;

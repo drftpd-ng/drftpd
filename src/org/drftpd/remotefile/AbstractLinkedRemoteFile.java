@@ -26,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.drftpd.SFVFile;
@@ -333,4 +334,7 @@ public abstract class AbstractLinkedRemoteFile
     public void setSlaveForMerging(RemoteSlave rslave) {
         throw new UnsupportedOperationException();
     }
+	public List<LinkedRemoteFileInterface> getAllParentFiles() {
+		throw new UnsupportedOperationException();
+	}
 }

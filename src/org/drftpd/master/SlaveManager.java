@@ -389,10 +389,6 @@ public class SlaveManager implements Runnable {
 		return Collections.unmodifiableList(_rslaves);
 	}
 
-	public SlaveSelectionManagerInterface getSlaveSelectionManager() {
-		return getGlobalContext().getSlaveSelectionManager();
-	}
-
 	/**
 	 * Returns true if one or more slaves are online, false otherwise.
 	 * 

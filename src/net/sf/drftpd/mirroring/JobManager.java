@@ -174,8 +174,7 @@ public class JobManager implements Runnable {
 
 				// logger.debug("looking up slave for job " + job);
 				try {
-					sourceSlave = _cm.getGlobalContext().getSlaveManager()
-							.getSlaveSelectionManager()
+					sourceSlave = _cm.getGlobalContext().getSlaveSelectionManager()
 							.getASlaveForJobDownload(job);
 				} catch (NoAvailableSlaveException e) {
 					try {
@@ -195,8 +194,7 @@ public class JobManager implements Runnable {
 
 				availableSlaves.removeAll(job.getFile().getSlaves());
 				try {
-					destSlave = _cm.getGlobalContext().getSlaveManager()
-							.getSlaveSelectionManager().getASlaveForJobUpload(
+					destSlave = _cm.getGlobalContext().getSlaveSelectionManager().getASlaveForJobUpload(
 									job, sourceSlave);
 
 					break; // we have a source slave and a destination

@@ -19,6 +19,7 @@ package org.drftpd.dynamicdata;
 
 import java.io.Serializable;
 
+
 /**
  * @author mog
  * @version $Id: Key.java 756 2004-11-05 13:27:23Z mog $
@@ -29,12 +30,22 @@ public class Key implements Serializable {
     private Class _type;
 
     public Key(Class owner, String key, Class type) {
-    	assert owner != null;
-    	assert key != null;
-    	assert type != null;
+        assert owner != null;
+        assert key != null;
+        assert type != null;
         _owner = owner;
         _key = key;
         _type = type;
+    }
+
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
+
+        Key k = (Key) o;
+
+        return k.getOwner().equals(getOwner()) && k.getKey().equals(getKey());
     }
 
     public String getKey() {
@@ -53,12 +64,7 @@ public class Key implements Serializable {
         return getOwner().getName() + '@' + getKey();
     }
 
-	public String toString(Object value) {
-		return value.toString();
-	}
-	public boolean equals(Object o) {
-		if(o == null) return false;
-		Key k = (Key)o;
-		return k.getOwner().equals(getOwner()) && k.getKey().equals(getKey());
-	}
+    public String toString(Object value) {
+        return value.toString();
+    }
 }
