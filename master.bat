@@ -30,7 +30,7 @@ rem Run the application.
 rem At runtime, the current directory will be that of Wrapper.exe
 rem
 :startup
-"%_APP_HOME%\bin\Wrapper.exe" -c %_WRAPPER_CONF%
+"%_APP_HOME%\Wrapper.exe" -c %_WRAPPER_CONF%
 if not errorlevel 1 goto end
 pause
 
