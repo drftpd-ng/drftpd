@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- $Id: build.xml,v 1.45 2004/11/03 14:00:36 zubov Exp $ -->
+<!-- $Id: build.xml,v 1.46 2004/11/06 06:09:07 zubov Exp $ -->
 <project name="drftpd" basedir="." default="compile">
 
   <target name="all" depends="compile"/>
@@ -101,6 +101,7 @@
       <include name="net/sf/drftpd/master/*" />
       <include name="net/sf/drftpd/master/config/FtpConfig.class" />
       <include name="org/drftpd/slave/*" />
+      <include name="org/drftpd/remotefile/*" />
       <include name="org/drftpd/slave/async/*" />
     </jar>
     
