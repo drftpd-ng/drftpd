@@ -8,14 +8,7 @@ master.bindport=1099
 #Port to accept FTP connections on
 master.port=2121
 
-#Run a slave in the same process as the master?
-# [ true | false ]
-master.localslave=false
-
-#User manager to use.
-#XStream is default for >=1.1, but JSX is still supported for <1.1 users
-#master.usermanager=org.drftpd.usermanager.xstream3.XStreamUserManager
-#master.usermanager=org.drftpd.usermanager.jsx3.JSXUserManager
+#User manager to use, leave it for now
 master.usermanager=org.drftpd.usermanager.javabeans.BeanUserManager
 
 #loaded plugins must use in sequential numbering
