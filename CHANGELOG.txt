@@ -2,6 +2,7 @@
 * All sitebot plugins converted to work with the new implementation
   It compiles ... w00h00
 * All bugs with !rank should be fixed now. I redid the entire thing from scratch
+* Added !find irc plugin ... thx [SMAN]
 
 
 2005/02/27 Matt Zimmerman <zubov@users.sourceforge.net>
