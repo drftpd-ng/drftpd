@@ -27,14 +27,18 @@ import java.util.Comparator;
 public class RemoteFileLastModifiedComparator implements Comparator {
     private boolean _reverse;
 
+    public RemoteFileLastModifiedComparator() {
+        this(false);
+    }
+
     public RemoteFileLastModifiedComparator(boolean reverse) {
         _reverse = reverse;
     }
 
     public int compare(Object o1, Object o2) {
-        long thisVal = ((LinkedRemoteFileInterface) (_reverse ? o2 : o1)).length();
-        long anotherVal = ((LinkedRemoteFileInterface) (_reverse ? o1 : o2)).length();
+        long thisVal = ((LinkedRemoteFileInterface) (_reverse ? o2 : o1)).lastModified();
+        long anotherVal = ((LinkedRemoteFileInterface) (_reverse ? o1 : o2)).lastModified();
 
-        return ((thisVal < anotherVal) ? (-1) : ((thisVal == anotherVal) ? 0 : 1));
+        return new Long(thisVal - anotherVal).intValue();
     }
 }
