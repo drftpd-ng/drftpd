@@ -20,9 +20,7 @@ public class Nukee implements Comparable {
 	public long getBytes() {
 		return _amount;
 	}
-	/* (non-Javadoc)
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
+
 	public int compareTo(Object o) {
 		return compareTo((Nukee) o);
 	}
@@ -33,25 +31,16 @@ public class Nukee implements Comparable {
 		return (
 			thisVal < anotherVal ? 1 : (thisVal == anotherVal ? 0 : -1));
 	}
-	/**
-	 * @param user
-	 * @param l
-	 */
+
 	public Nukee(String user, long l) {
 		_username = user;
 		_amount = l;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getUsername() {
 		return _username;
 	}
 
-	/**
-	 * @return
-	 */
 	public long getAmount() {
 		return _amount;
 	}

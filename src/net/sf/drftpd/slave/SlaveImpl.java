@@ -290,9 +290,6 @@ public class SlaveImpl
 	 */
 	public void ping() {
 	}
-	/**
-	 * @see net.sf.drftpd.slave.Slave#rename(String, String)
-	 */
 	public void rename(String from, String toDirPath, String toName)
 		throws IOException {
 		//Collection files = roots.iterator(from);

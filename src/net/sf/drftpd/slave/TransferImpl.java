@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -99,13 +98,6 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 
 	public char getDirection() {
 		return _direction;
-	}
-
-	/**
-	 * @deprecated
-	 */
-	public InetAddress getEndpoint() {
-		return _sock.getInetAddress();
 	}
 
 	/**

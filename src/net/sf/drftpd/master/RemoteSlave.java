@@ -94,12 +94,11 @@ public class RemoteSlave implements Serializable, Comparable {
 		}
 		return false;
 	}
-	/**
-	 * @return
-	 */
+
 	public InetAddress getInetAddress() {
 		return inetAddress;
 	}
+
 	public long getLastDownloadSending() {
 		return this.lastDownloadSending;
 	}
@@ -107,6 +106,7 @@ public class RemoteSlave implements Serializable, Comparable {
 	public long getLastTransfer() {
 		return Math.max(getLastDownloadSending(), getLastUploadReceiving());
 	}
+
 	public long getLastUploadReceiving() {
 		return this.lastUploadReceiving;
 	}
@@ -115,9 +115,6 @@ public class RemoteSlave implements Serializable, Comparable {
 		return manager;
 	}
 
-	/**
-	 * @return
-	 */
 	public Collection getMasks() {
 		return masks;
 	}
@@ -130,10 +127,7 @@ public class RemoteSlave implements Serializable, Comparable {
 	}
 
 	/**
-	 * 
 	 * Throws NoAvailableSlaveException only if slave is offline
-	 * @return
-	 * @throws NoAvailableSlaveException
 	 */
 	public Slave getSlave() throws NoAvailableSlaveException {
 		if (slave == null)
@@ -143,9 +137,6 @@ public class RemoteSlave implements Serializable, Comparable {
 
 	/**
 	 * Get's slave status, caches the status for 10 seconds.
-	 * @return
-	 * @throws RemoteException
-	 * @throws NoAvailableSlaveException
 	 */
 	public SlaveStatus getStatus()
 		throws RemoteException, NoAvailableSlaveException {

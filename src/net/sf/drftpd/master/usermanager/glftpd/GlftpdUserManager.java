@@ -39,14 +39,6 @@ public class GlftpdUserManager implements UserManager {
 
 	Hashtable users = new Hashtable();
 
-	/**
-	 * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
-	 *
-	 * To change this generated comment edit the template variable "typecomment":
-	 * Window>Preferences>Java>Templates.
-	 * To enable and disable the creation of type comments go to
-	 * Window>Preferences>Java>Code Generation.
-	 */
 	private String userdirpath;
 	private File passwdfile;
 	LinkedRemoteFile root;
@@ -303,7 +295,6 @@ public class GlftpdUserManager implements UserManager {
 		//		return user
 	}
 	/**
-	 * @see net.sf.drftpd.master.UserManager#getUserByName(String)
 	 * @throws NoSuchUserException, CorruptUserFileException
 	 */
 	public User getUserByNameUnchecked(String username)
@@ -316,9 +307,6 @@ public class GlftpdUserManager implements UserManager {
 		return user;
 	}
 
-	/**
-	 * @see net.sf.drftpd.master.UserManager#exists(String)
-	 */
 	public boolean exists(String name) {
 		throw new UnsupportedOperationException();
 	}

@@ -71,9 +71,7 @@ public class GlftpdUser extends AbstractUser implements UnixPassword {
 		//must be encrypted...
 		//this.password = password;
 	}
-	/**
-	* @see net.sf.drftpd.master.usermanager.User#removeCredits(long)
-	*/
+
 	public void updateCredits(long credits) {
 		throw new UnsupportedOperationException();
 	}

@@ -93,10 +93,7 @@ public class ConnectionManager {
 			return;
 		}
 	}
-	/**
-	 * @param args
-	 * @return
-	 */
+
 	private static String[] scrubArgs(String[] args) {
 		String ret[] = new String[args.length - 1];
 		System.arraycopy(args, 1, ret, 0, ret.length);
@@ -244,9 +241,7 @@ public class ConnectionManager {
 	public Collection getConnections() {
 		return _conns;
 	}
-	/**
-	 * @return
-	 */
+
 	public List getFtpListeners() {
 		return _ftpListeners;
 	}
@@ -254,16 +249,10 @@ public class ConnectionManager {
 		return this._shutdownMessage;
 	}
 
-	/**
-	 * @return
-	 */
 	public SlaveManagerImpl getSlaveManager() {
 		return _slaveManager;
 	}
 
-	/**
-	 * @return
-	 */
 	public UserManager getUserManager() {
 		return _usermanager;
 	}
@@ -329,9 +318,6 @@ public class ConnectionManager {
 		}
 	}
 
-	/**
-	 * @return
-	 */
 	public CommandManagerFactory getCommandManagerFactory() {
 		return _commandManagerFactory;
 	}

@@ -78,6 +78,87 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	}
 
 	/**
+	 * <code>APPE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+	 *
+	 * This command causes the server-DTP to accept the data
+	 * transferred via the data connection and to store the data in
+	 * a file at the server site.  If the file specified in the
+	 * pathname exists at the server site, then the data shall be
+	 * appended to that file; otherwise the file specified in the
+	 * pathname shall be created at the server site.
+	 */
+	//TODO implement APPE
+	/*
+	 public void doAPPE(FtpRequest request, PrintWriter out) {
+	    
+		 // reset state variables
+		 resetState();
+	     
+		 // argument check
+		 if(!request.hasArgument()) {
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			return;  
+		 }
+	     
+		 // get filenames
+		 String fileName = request.getArgument();
+		 fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
+		 String physicalName = user.getVirtualDirectory().getPhysicalName(fileName);
+		 File requestedFile = new File(physicalName);
+		 String args[] = {fileName};
+	     
+		 // check permission
+		 if(!user.getVirtualDirectory().hasWritePermission(physicalName, true)) {
+			 out.write(ftpStatus.getResponse(450, request, user, args));
+			 return;
+		 }
+	     
+		 // now transfer file data
+		 out.write(ftpStatus.getResponse(150, request, user, args));
+		 InputStream is = null;
+		 OutputStream os = null;
+		 try {
+			 Socket dataSoc = mDataConnection.getDataSocket();
+			 if (dataSoc == null) {
+				  out.write(ftpStatus.getResponse(550, request, user, args));
+				  return;
+			 }
+	         
+			 is = dataSoc.getInputStream();
+			 RandomAccessFile raf = new RandomAccessFile(requestedFile, "rw");
+			 raf.seek(raf.length());
+			 os = user.getOutputStream( new FileOutputStream(raf.getFD()) );
+	         
+			 StreamConnector msc = new StreamConnector(is, os);
+			 msc.setMaxTransferRate(user.getMaxUploadRate());
+			 msc.setObserver(this);
+			 msc.connect();
+	         
+			 if(msc.hasException()) {
+				 out.write(ftpStatus.getResponse(451, request, user, args));
+			 }
+			 else {
+				 mConfig.getStatistics().setUpload(requestedFile, user, msc.getTransferredSize());
+			 }
+	         
+			 out.write(ftpStatus.getResponse(226, request, user, args));
+		 }
+		 catch(IOException ex) {
+			 out.write(ftpStatus.getResponse(425, request, user, args));
+		 }
+		 finally {
+		 try {
+		 is.close();
+		 os.close();
+		 mDataConnection.reset(); 
+		 } catch(Exception ex) {
+		 ex.printStackTrace();
+		 }
+		 }
+	 }
+	*/
+
+	/**
 	 * <code>MODE &lt;SP&gt; <mode-code> &lt;CRLF&gt;</code><br>
 	 *
 	 * The argument is a single Telnet character code specifying

@@ -24,9 +24,6 @@ public class UserEvent extends Event {
 		this.user = user;
 	}
 
-	/**
-	 * @return
-	 */
 	public User getUser() {
 		return user;
 	}

@@ -77,8 +77,9 @@ public class FtpReply implements Cloneable {
 	/** 450 Requested file action not taken. */
 	public static final FtpReply RESPONSE_450_REQUESTED_ACTION_NOT_TAKEN = 
 		new FtpReply(450, "Requested file action not taken.");
+
 	/** 450 No transfer-slave(s) available
-	 * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
+	 * author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
 	 */
 	public static final FtpReply RESPONSE_450_SLAVE_UNAVAILABLE =
 		new FtpReply(450, "No transfer-slave(s) available");

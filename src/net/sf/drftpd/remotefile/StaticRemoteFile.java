@@ -13,8 +13,6 @@ import java.util.List;
  */
 public class StaticRemoteFile extends RemoteFile {
 	private boolean _isDeleted;
-//	private boolean _isDirectory;
-//	private boolean _isFile;
 	private long _lastModified;
 	private long _length;
 	private String _name;
@@ -23,8 +21,6 @@ public class StaticRemoteFile extends RemoteFile {
 	
 //	//no longer used
 //	public StaticRemoteFile(RemoteFile file) {
-////		canRead = file.canRead();
-////		canWrite = file.canWrite();
 //		this.lastModified = file.lastModified();
 //		this.length = file.length();
 //		//isHidden = file.isHidden();

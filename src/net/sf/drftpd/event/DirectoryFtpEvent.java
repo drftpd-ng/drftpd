@@ -27,9 +27,6 @@ public class DirectoryFtpEvent extends UserEvent {
 		this.directory = directory;
 	}
 	
-	/**
-		 * @return
-		 */
 	public LinkedRemoteFile getDirectory() {
 		return directory;
 	}

@@ -23,7 +23,6 @@ public interface RemoteFileInterface {
 	/**
 	 * Get the group owner of the file as a String.
 	 * getUser().getGroupname() if the implementing class uses a User object.
-	 * @return
 	 */
 	public String getGroupname();
 	

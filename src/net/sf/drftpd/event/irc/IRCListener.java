@@ -88,8 +88,6 @@ public class IRCListener implements FtpListener, Observer {
 
 	/**
 	 * @deprecated use libreplace
-	 * @param user
-	 * @return
 	 */
 	public static String formatUser(User user) {
 		return user.getUsername() + "/" + user.getGroupName();
@@ -98,7 +96,6 @@ public class IRCListener implements FtpListener, Observer {
 	/**
 	 * Used from FtpConnection
 	 * @param files Collection of LinkedRemoteFile objects
-	 * @return
 	 */
 	public static Collection topFileUploaders(Collection files) {
 		ArrayList ret = new ArrayList();

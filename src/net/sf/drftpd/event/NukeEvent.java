@@ -48,9 +48,7 @@ public class NukeEvent extends UserEvent {
 	private String reason;
 	private int multiplier;
 	private Map nukees;
-	/**
-	 * @return
-	 */
+
 	public int getMultiplier() {
 		return multiplier;
 	}
@@ -59,7 +57,6 @@ public class NukeEvent extends UserEvent {
 	 * String username as key
 	 * Integer debt as value
 	 * @deprecated
-	 * @return
 	 */
 	public Map getNukees() {
 		return nukees;
@@ -68,23 +65,15 @@ public class NukeEvent extends UserEvent {
 	public Collection getNukees2() {
 		return IRCListener.map2nukees(nukees);
 	}
-	/**
-	 * @return
-	 */
+
 	public String getReason() {
 		return reason;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setReason(String string) {
 		reason = string;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	public String toString() {
 		return "[NUKE:"+getPath()+",multiplier="+getMultiplier()+"]";
 	}
@@ -113,22 +102,15 @@ public class NukeEvent extends UserEvent {
 		element.addContent(nukees);
 		return element;
 	}
-	/**
-	 * @return
-	 */
+
 	public String getPath() {
 		return path;
 	}
 
-	/**
-	 * @return
-	 */
 	public long getSize() {
 		return size;
 	}
-	/**
-	 * @return
-	 */
+
 	public long getNukedAmount() {
 		return nukedAmount;
 	}

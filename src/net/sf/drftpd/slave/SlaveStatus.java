@@ -53,10 +53,6 @@ public class SlaveStatus implements Serializable {
 		return "[SlaveStatus [diskSpaceAvailable: "+diskSpaceAvailable+"][receiving: "+throughputReceiving+" bps, "+transfersSending+" streams][sending: "+throughputSending+" bps, "+transfersReceiving+" streams]]";
 	}
 	
-	/**
-	 * Returns the diskFree.
-	 * @return long
-	 */
 	public long getDiskSpaceAvailable() {
 		return diskSpaceAvailable;
 	}
@@ -65,41 +61,22 @@ public class SlaveStatus implements Serializable {
 		return getDiskSpaceCapacity()-getDiskSpaceAvailable();
 	}
 
-	/**
-	 * Returns the throughputDown.
-	 * @return float
-	 */
 	public int getThroughputSending() {
 		return throughputSending;
 	}
 
-	/**
-	 * Returns the throughputUp.
-	 * @return float
-	 */
 	public int getThroughputReceiving() {
 		return throughputReceiving;
 	}
 
-	/**
-	 * Returns the transfersDown.
-	 * @return int
-	 */
 	public int getTransfersReceiving() {
 		return transfersReceiving;
 	}
 
-	/**
-	 * Returns the transfersUp.
-	 * @return int
-	 */
 	public int getTransfersSending() {
 		return transfersSending;
 	}
 
-	/**
-	 * @return
-	 */
 	public long getDiskSpaceCapacity() {
 		return diskSpaceCapacity;
 	}

@@ -342,10 +342,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		return availableSlaves;
 	}
 
-	/**
-	 * @see net.sf.drftpd.remotefile.RemoteFile#getCheckSum()
-	 * @throws net.sf.drftpd.master.NoAvailableSlaveException
-	 */
 	public long getCheckSum() throws IOException {
 		if (_checkSum == 0 && _length != 0) {
 			try {
@@ -355,13 +351,13 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		}
 		return _checkSum;
 	}
+	
 	public long getCheckSumCached() {
 		return _checkSum;
 	}
+	
 	/**
-	 * Returns the checksum 0L if the checksum cannot be read.
-	 * @return
-	 * @throws NoAvailableSlaveException
+	 * Returns 0 if the checksum cannot be read.
 	 */
 	public long getCheckSumFromSlave()
 		throws NoAvailableSlaveException, IOException {
@@ -526,9 +522,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		return _owner;
 	}
 
-	/**
-	 * @return
-	 */
 	public long getXferspeed() {
 		return length() / (getXfertime() / 1000);
 	}
@@ -705,8 +698,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 
 	/**
 	 * Returns path for a non-existing file. Performs path normalization and returns an absolute path
-	 * @param path
-	 * @return
 	 */
 	public String lookupPath(String path) {
 		Object[] ret = lookupNonExistingFile(path);

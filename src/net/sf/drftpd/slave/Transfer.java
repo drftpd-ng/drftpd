@@ -1,7 +1,6 @@
 package net.sf.drftpd.slave;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -21,15 +20,6 @@ public interface Transfer extends Remote {
 	
 	public void receiveFile(String dirname, String filename, long offset) throws RemoteException, IOException;
 	public void sendFile(String path, char mode, long resumePosition, boolean checksum) throws RemoteException, IOException;
-	/**
-	 * @deprecated use RemoteSlave.getAddress()
-	 * @return
-	 * @throws RemoteException
-	 */
-	public InetAddress getEndpoint() throws RemoteException;
-	/**
-	 * @return
-	 */
 	public long getTransferTime() throws RemoteException;
 	
 	public void abort() throws RemoteException;

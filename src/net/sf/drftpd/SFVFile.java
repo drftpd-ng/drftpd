@@ -120,9 +120,6 @@ public class SFVFile implements Serializable {
 		return entries.size();
 	}
 
-	/**
-	 * @return
-	 */
 	public long getTotalBytes() {
 		long totalBytes=0;
 		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
@@ -131,9 +128,6 @@ public class SFVFile implements Serializable {
 		return totalBytes;
 	}
 
-	/**
-	 * @return
-	 */
 	public long getTotalXfertime() {
 		long totalXfertime=0;
 		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
@@ -142,16 +136,10 @@ public class SFVFile implements Serializable {
 		return totalXfertime;
 	}
 
-	/**
-	 * 
-	 */
 	public int filesLeft() {
 		return size()-finishedFiles();
 	}
 
-	/**
-	 * @return
-	 */
 	public long getXferspeed() {
 		if(getTotalXfertime() == 0) return 0;
 		return getTotalBytes() / (getTotalXfertime() / 1000);

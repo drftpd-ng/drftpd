@@ -55,7 +55,6 @@ public class RootBasket {
 	/**
 	 * Get a directory specified by dir under an approperiate root for storing storing files in.
 	 * @param directory to store file in
-	 * @return
 	 */
 	public File getARootFileDir(String dir) {
 		Iterator iter = _roots.iterator();

@@ -150,9 +150,6 @@ public class BaseFtpConnection implements Runnable {
 		return out;
 	}
 
-	/**
-	 * @return
-	 */
 	public LinkedRemoteFile getCurrentDirectory() {
 		return currentDirectory;
 	}

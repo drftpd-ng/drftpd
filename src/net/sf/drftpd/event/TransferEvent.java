@@ -74,16 +74,11 @@ public class TransferEvent extends DirectoryFtpEvent {
 	public boolean isComplete() {
 		return _complete;
 	}
-	/**
-	 * @return
-	 */
+
 	public InetAddress getUserHost() {
 		return _userHost;
 	}
 
-	/**
-	 * @return
-	 */
 	public InetAddress getXferHost() {
 		return _xferHost;
 	}

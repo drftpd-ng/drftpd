@@ -56,9 +56,6 @@ public class UploaderPosition implements Comparable {
 		return this.files;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getUsername() {
 		return username;
 	}
@@ -67,16 +64,11 @@ public class UploaderPosition implements Comparable {
 			return 0;
 		return getBytes() / (getXfertime() / 1000);
 	}
-	/**
-	 * @return
-	 */
+
 	public long getXfertime() {
 		return xfertime;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	public int hashCode() {
 		return getUsername().hashCode();
 	}

@@ -264,9 +264,6 @@ public abstract class AbstractUser implements User {
 		return downloadedSecondsWeek;
 	}
 
-	/**
-	 * @return
-	 */
 	public short getGroupLeechSlots() {
 		return groupLeechSlots;
 	}
@@ -285,9 +282,6 @@ public abstract class AbstractUser implements User {
 		return groups;
 	}
 
-	/**
-	 * @return
-	 */
 	public short getGroupSlots() {
 		return groupSlots;
 	}

@@ -192,9 +192,6 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 		return this.length;
 	}
 
-	/**
-	 * @see net.sf.drftpd.remotefile.RemoteFileTree#listFiles()
-	 */
 	public RemoteFileInterface[] listFiles() {
 		//JDOMRemoteFile listFiles[] = new JDOMRemoteFile[files.size()];
 		ArrayList listFiles = new ArrayList();

@@ -89,6 +89,7 @@ public class FileRemoteFile extends RemoteFile {
 			}
 		}
 	}
+
 	private File getFile() {
 		try {
 			return rootBasket.getFile(getPath());
@@ -96,68 +97,42 @@ public class FileRemoteFile extends RemoteFile {
 			throw new RuntimeException(ex); 
 		}
 	}
-	/**
-	 * @see net.sf.drftpd.RemoteFile#getName()
-	 */
+
 	public String getName() {
 		return path.substring(path.lastIndexOf(File.separatorChar)+1);
 	}
 
-	/**
-	 * @see net.sf.drftpd.RemoteFile#getParent()
-	 */
 	public String getParent() {
 		throw new UnsupportedOperationException();
 		//return file.getParent();
 	}
 
-	/**
-	 * @see net.sf.drftpd.RemoteFile#getPath()
-	 */
 	public String getPath() {
 		return path;
 		//throw new UnsupportedOperationException();
 		//return file.getPath();
 	}
 
-	/**
-	 * @see net.sf.drftpd.RemoteFile#getGroup()
-	 */
 	public String getGroupname() {
 		return "drftpd";
 	}
 
-	/**
-	 * @see net.sf.drftpd.RemoteFile#getUser()
-	 */
 	public String getUsername() {
 		return "drftpd";
 	}
 
-	/**
-	 * @see net.sf.drftpd.RemoteFile#isDirectory()
-	 */
 	public boolean isDirectory() {
 		return isDirectory;
 	}
 
-	/**
-	 * @see net.sf.drftpd.RemoteFile#isFile()
-	 */
 	public boolean isFile() {
 		return isFile;
 	}
 
-	/**
-	 * @see net.sf.drftpd.RemoteFile#lastModified()
-	 */
 	public long lastModified() {
 		return this.getFile().lastModified();
 	}
 
-	/**
-	 * @see net.sf.drftpd.RemoteFile#length()
-	 */
 	public long length() {
 		if(isDirectory()) {
 			buildFileFiles();
@@ -168,7 +143,6 @@ public class FileRemoteFile extends RemoteFile {
 
 	/**
 	 * Returns an array of FileRemoteFile:s representing the contents of the directory this FileRemoteFile represents.
-	 * @see net.sf.drftpd.RemoteFileTree#listFiles()
 	 */
 	public RemoteFileInterface[] listFiles() {
 		return (RemoteFileInterface[]) getFiles().toArray(new FileRemoteFile[0]);
