@@ -295,8 +295,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
                     }
                 }
 
-                racetext += (ReplacerUtils.jprintf("cwd.groups.footer", env,
-                    Dir.class) + "\n");
+                racetext += (zsCfg.getProperty("cwd.groups.footer") + "\n");
 
                 env.add("totalfiles", Integer.toString(sfvfile.size()));
                 env.add("totalbytes", Bytes.formatBytes(sfvfile.getTotalBytes()));
