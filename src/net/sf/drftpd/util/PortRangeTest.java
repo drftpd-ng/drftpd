@@ -24,18 +24,20 @@ import java.io.IOException;
 import java.net.ServerSocket;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import javax.net.ServerSocketFactory;
 
 
 /**
  * @author zubov
- * @version $Id: PortRangeTest.java,v 1.2 2004/11/08 18:39:29 mog Exp $
+ * @version $Id$
  */
 public class PortRangeTest extends TestCase {
     public void testGetPort() throws IOException {
         PortRange pr = new PortRange(45300, 45310);
-        ArrayList ports = new ArrayList();
+        ArrayList<Integer> ports = new ArrayList<Integer>();
+        ArrayList<ServerSocket> sockets = new ArrayList<ServerSocket>();
 
         for (int x = 45300; x <= 45310; x++) {
             ports.add(new Integer(x));
@@ -44,24 +46,33 @@ public class PortRangeTest extends TestCase {
         assertEquals(11, ports.size());
 
         ServerSocket ss = new ServerSocket(45305);
+        sockets.add(ss);
         ports.remove(new Integer(ss.getLocalPort()));
         assertEquals(10, ports.size());
 
         for (int x = 0; x < 10; x++) {
             ServerSocket socket = pr.getPort(ServerSocketFactory.getDefault());
+            sockets.add(socket);
             ports.remove(new Integer(socket.getLocalPort()));
-            assertEquals(10 - x - 1, ports.size());
+            assertEquals(9 - x, ports.size());
         }
 
         assertEquals(0, ports.size());
 
         try {
             pr.getPort(ServerSocketFactory.getDefault());
+            throw new RuntimeException("PortRange should be exhausted!");
         } catch (RuntimeException e) {
             assertTrue(e.getMessage().equals("PortRange exhausted"));
         }
 
         ss.close();
         ss = pr.getPort(ServerSocketFactory.getDefault());
+        
+        // clean up
+        ss.close();
+        for (Iterator<ServerSocket> iter = sockets.iterator();iter.hasNext();) {
+        	iter.next().close();
+        }
     }
 }

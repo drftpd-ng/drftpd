@@ -30,7 +30,7 @@ import javax.net.ServerSocketFactory;
 
 /**
  * @author mog
- * @version $Id: PortRange.java,v 1.16 2004/11/08 18:39:29 mog Exp $
+ * @version $Id$
  */
 public class PortRange {
     private static final Logger logger = Logger.getLogger(PortRange.class);
@@ -65,22 +65,22 @@ public class PortRange {
         }
 
         int initPos = rand.nextInt(_maxPort - _minPort + 1) + _minPort;
-        int pos = initPos + 1;
-
-        if (pos > _maxPort) {
-            pos = _minPort;
+        try {
+            return ssf.createServerSocket(initPos, 1);
+        } catch (IOException e) {
         }
-
-        while (pos != initPos) {
+        int pos = initPos;
+        while (true) {
+        	pos++;
+            if (pos > _maxPort) {
+                pos = _minPort;
+            }
+        	if (pos == initPos) {
+        		break;
+        	}
             try {
                 return ssf.createServerSocket(pos, 1);
             } catch (IOException e) {
-            }
-
-            pos++;
-
-            if (pos > _maxPort) {
-                pos = _minPort;
             }
         }
 
