@@ -36,7 +36,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Request.java,v 1.12 2004/03/26 00:16:33 mog Exp $
+ * @version $Id: Request.java,v 1.13 2004/04/17 02:24:37 mog Exp $
  */
 public class Request implements CommandHandler {
 	private static final String FILLEDPREFIX = "FILLED-for.";
@@ -92,7 +92,6 @@ public class Request implements CommandHandler {
 		return new FtpReply(200, "Couldn't find a request named " + reqname);
 	}
 	private FtpReply doSITE_REQUEST(BaseFtpConnection conn) {
-		conn.resetState();
 
 		if (!conn
 			.getConfig()

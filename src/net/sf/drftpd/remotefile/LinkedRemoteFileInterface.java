@@ -42,7 +42,7 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 	/**
 	 * Updates lastMofidied() on this directory, use putFile() to avoid it.
 	 */
-	public abstract LinkedRemoteFile addFile(RemoteFile file);
+	public abstract LinkedRemoteFile addFile(AbstractRemoteFile file);
 	public abstract void addSlave(RemoteSlave slave);
 	/**
 	 * @throws ClassCastException if object is not an instance of RemoteFileInterface.

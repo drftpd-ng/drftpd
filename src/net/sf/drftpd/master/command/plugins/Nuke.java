@@ -56,7 +56,7 @@ import org.jdom.input.SAXBuilder;
  * amount -> amount before multiplier
  * 
  * @author mog
- * @version $Id: Nuke.java,v 1.12 2004/02/23 01:14:37 mog Exp $
+ * @version $Id: Nuke.java,v 1.13 2004/04/17 02:24:37 mog Exp $
  */
 public class Nuke implements CommandHandler {
 
@@ -301,8 +301,6 @@ public class Nuke implements CommandHandler {
 	 * 	See the section about glftpd.conf.
 	 */
 	private FtpReply doSITE_UNNUKE(BaseFtpConnection conn) {
-		conn.resetState();
-
 		StringTokenizer st =
 			new StringTokenizer(conn.getRequest().getArgument());
 		if (!st.hasMoreTokens()) {

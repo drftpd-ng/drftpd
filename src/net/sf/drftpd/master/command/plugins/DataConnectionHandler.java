@@ -54,6 +54,7 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.usermanager.UserFileException;
+//import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
@@ -69,7 +70,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.49 2004/03/26 00:16:33 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.50 2004/04/17 02:24:37 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -93,7 +94,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 */
 	private ServerSocket _serverSocket;
 	private Transfer _transfer;
-	private LinkedRemoteFile _transferFile;
+	private LinkedRemoteFileInterface _transferFile;
 	protected boolean _isPasv = false;
 	protected boolean _isPort = false;
 
@@ -231,8 +232,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 */
 	private FtpReply doMODE(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
-		// reset state variables
-		conn.resetState();
 
 		// argument check
 		if (!request.hasArgument()) {
@@ -256,7 +255,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 * host and port address this server is listening on.
 	 */
 	private FtpReply doPASV(BaseFtpConnection conn) {
-		conn.resetState();
 		if (!_preTransfer) {
 			return new FtpReply(
 				500,
@@ -350,8 +348,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 */
 	private FtpReply doPORT(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
-		// reset state variables
-		conn.resetState();
 		reset();
 
 		InetAddress clientAddr = null;
@@ -458,10 +454,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 						+ _preTransferRSlave.getName()
 						+ " for upcoming transfer");
 			} catch (NoAvailableSlaveException e) {
-				conn.reset();
 				return FtpReply.RESPONSE_530_SLAVE_UNAVAILABLE;
 			} catch (FileNotFoundException e) {
-				conn.reset();
 				return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 			}
 		} else if (cmd.equals("STOR")) {
@@ -483,7 +477,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 						+ _preTransferRSlave.getName()
 						+ " for upcoming transfer");
 			} catch (NoAvailableSlaveException e) {
-				conn.reset();
 				return FtpReply.RESPONSE_530_SLAVE_UNAVAILABLE;
 			}
 		} else {
@@ -529,9 +522,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
 
-		// set state variables
-		conn.resetState();
-
 		String skipNum = request.getArgument();
 		try {
 			_resumePosition = Long.parseLong(skipNum);
@@ -548,7 +538,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 
 	private FtpReply doSITE_RESCAN(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
-		conn.resetState();
 		boolean forceRescan =
 			(request.hasArgument()
 				&& request.getArgument().equalsIgnoreCase("force"));
@@ -668,7 +657,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 */
 	private FtpReply doSTRU(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
-		conn.resetState();
 
 		// argument check
 		if (!request.hasArgument()) {
@@ -696,7 +684,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 * system at the server.
 	 */
 	private FtpReply doSYST(BaseFtpConnection conn) {
-		conn.resetState();
 
 		/*
 		String systemName = System.getProperty("os.name");
@@ -720,7 +707,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 */
 	private FtpReply doTYPE(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
-		conn.resetState();
 
 		// get type from argument
 		if (!request.hasArgument()) {
@@ -848,7 +834,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		return _transfer;
 	}
 
-	public LinkedRemoteFile getTransferFile() {
+	public LinkedRemoteFileInterface getTransferFile() {
 		return _transferFile;
 	}
 	/**
@@ -1038,8 +1024,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				throw UnhandledCommandException.create(
 					DataConnectionHandler.class,
 					conn.getRequest());
-			// set state variables
-			conn.resetState();
 
 			// argument check
 			if (!request.hasArgument()) {
@@ -1047,7 +1031,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			}
 
 			// get filenames
-			LinkedRemoteFile targetDir;
+			LinkedRemoteFileInterface targetDir;
 			String targetFileName;
 			if (isRetr) {
 				try {
@@ -1377,7 +1361,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 							getType(),
 							true));
 				}
-				conn.reset();
 			}
 			return response;
 		} finally {

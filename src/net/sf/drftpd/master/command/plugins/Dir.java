@@ -56,7 +56,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.25 2004/03/26 13:58:22 mog Exp $
+ * @version $Id: Dir.java,v 1.26 2004/04/17 02:24:37 mog Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
 	private final static SimpleDateFormat DATE_FMT =
@@ -79,9 +79,6 @@ public class Dir implements CommandHandler, Cloneable {
 	 * shall be identical to the reply codes of CWD.      
 	 */
 	private FtpReply doCDUP(BaseFtpConnection conn) {
-
-		// reset state variables
-		conn.resetState();
 
 		// change directory
 		try {
@@ -106,8 +103,6 @@ public class Dir implements CommandHandler, Cloneable {
 	 */
 	private FtpReply doCWD(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
-		// reset state variables
-		conn.resetState();
 
 		if (!request.hasArgument()) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
@@ -205,8 +200,6 @@ public class Dir implements CommandHandler, Cloneable {
 	 */
 	private FtpReply doDELE(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
-		// reset state variables
-		conn.resetState();
 
 		// argument check
 		if (!request.hasArgument()) {
@@ -270,9 +263,6 @@ public class Dir implements CommandHandler, Cloneable {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
 
-		// reset state variables
-		conn.resetState();
-
 		// get filenames
 		String fileName = request.getArgument();
 		LinkedRemoteFile reqFile;
@@ -312,8 +302,6 @@ public class Dir implements CommandHandler, Cloneable {
 	 */
 	private FtpReply doMKD(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
-		// reset state variables
-		conn.resetState();
 
 		// argument check
 		if (!request.hasArgument()) {
@@ -376,9 +364,6 @@ public class Dir implements CommandHandler, Cloneable {
 	 * directory to be returned in the reply.
 	 */
 	private FtpReply doPWD(BaseFtpConnection conn) {
-
-		// reset state variables
-		conn.resetState();
 		return new FtpReply(
 			257,
 			"\""
@@ -396,8 +381,6 @@ public class Dir implements CommandHandler, Cloneable {
 	 */
 	private FtpReply doRMD(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
-		// reset state variables
-		conn.resetState();
 
 		// argument check
 		if (!request.hasArgument()) {
@@ -458,9 +441,6 @@ public class Dir implements CommandHandler, Cloneable {
 	private FtpReply doRNFR(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
 
-		// reset state variable
-		conn.resetState();
-
 		// argument check
 		if (!request.hasArgument()) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
@@ -477,7 +457,6 @@ public class Dir implements CommandHandler, Cloneable {
 			_renameFrom =
 				conn.getCurrentDirectory().lookupFile(request.getArgument());
 		} catch (FileNotFoundException e) {
-			conn.resetState();
 			return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 		}
 
@@ -488,12 +467,10 @@ public class Dir implements CommandHandler, Cloneable {
 			if (!conn
 				.getConfig()
 				.checkRenameOwn(conn.getUserNull(), _renameFrom)) {
-				conn.resetState();
 				return FtpReply.RESPONSE_530_ACCESS_DENIED;
 			}
 		} else if (
 			!conn.getConfig().checkRename(conn.getUserNull(), _renameFrom)) {
-			conn.resetState();
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		return new FtpReply(350, "File exists, ready for destination name");
@@ -512,14 +489,11 @@ public class Dir implements CommandHandler, Cloneable {
 
 		// argument check
 		if (!request.hasArgument()) {
-			conn.resetState();
-			//out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
 
 		// set state variables
 		if (_renameFrom == null) {
-			conn.resetState();
 			return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 		}
 
@@ -533,7 +507,6 @@ public class Dir implements CommandHandler, Cloneable {
 		}
 
 		LinkedRemoteFileInterface fromFile = _renameFrom;
-		conn.resetState();
 
 		if (name == null)
 			name = fromFile.getName();
@@ -544,11 +517,9 @@ public class Dir implements CommandHandler, Cloneable {
 			.getUsername()
 			.equals(conn.getUserNull().getUsername())) {
 			if (!conn.getConfig().checkRenameOwn(conn.getUserNull(), toDir)) {
-				conn.resetState();
 				return FtpReply.RESPONSE_530_ACCESS_DENIED;
 			}
 		} else if (!conn.getConfig().checkRename(conn.getUserNull(), toDir)) {
-			conn.resetState();
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 
@@ -556,7 +527,8 @@ public class Dir implements CommandHandler, Cloneable {
 			fromFile.renameTo(toDir.getPath(), name);
 		} catch (IOException e) {
 			logger.warn("", e);
-			return FtpReply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
+			return new FtpReply(553, e.getMessage());
+			//return FtpReply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
 		}
 
 		//out.write(FtpResponse.RESPONSE_250_ACTION_OKAY.toString());
@@ -635,7 +607,6 @@ public class Dir implements CommandHandler, Cloneable {
 	 * @param out
 	 */
 	private FtpReply doSITE_WIPE(BaseFtpConnection conn) {
-		conn.resetState();
 		if (!conn.getUserNull().isAdmin()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
@@ -681,7 +652,6 @@ public class Dir implements CommandHandler, Cloneable {
 	 */
 	private FtpReply doSIZE(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
-		conn.resetState();
 		if (!request.hasArgument()) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}

@@ -40,7 +40,7 @@ import net.sf.drftpd.master.command.UnhandledCommandException;
 
 /**
  * @author mog
- * @version $Id: Textoutput.java,v 1.9 2004/03/26 00:16:33 mog Exp $
+ * @version $Id: Textoutput.java,v 1.10 2004/04/17 02:24:37 mog Exp $
  */
 public class Textoutput implements CommandHandler {
 
@@ -83,7 +83,6 @@ public class Textoutput implements CommandHandler {
 
 	public FtpReply execute(BaseFtpConnection conn)
 		throws UnhandledCommandException {
-		conn.resetState();
 
 		if (conn.getRequest().hasArgument()) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;

@@ -39,7 +39,7 @@ import org.apache.log4j.Logger;
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.18 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: Login.java,v 1.19 2004/04/17 02:24:37 mog Exp $
  */
 public class Login implements CommandHandler, Cloneable {
 
@@ -53,10 +53,6 @@ public class Login implements CommandHandler, Cloneable {
 	 */
 	private FtpReply doQUIT(BaseFtpConnection conn) {
 
-		// reset state variables
-		conn.resetState();
-
-		// and exit
 		conn.stop();
 		return new FtpReply(221, conn.jprintf(Login.class.getName(), "quit.success"));
 	}
@@ -72,7 +68,6 @@ public class Login implements CommandHandler, Cloneable {
 	 */
 	private FtpReply doUSER(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
-		conn.resetState();
 		conn.setAuthenticated(false);
 		conn.setUser(null);
 
@@ -147,14 +142,11 @@ public class Login implements CommandHandler, Cloneable {
 	*/
 	private FtpReply doPASS(BaseFtpConnection conn) {
 		if (conn.getUserNull() == null) {
-			conn.resetState();
 			return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 		}
 
 		FtpRequest request = conn.getRequest();
 		
-		conn.resetState();
-		//		mbPass = true;
 
 		// set user password and login
 		String pass = request.hasArgument() ? request.getArgument() : "";

@@ -30,7 +30,7 @@ import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.slave.SlaveImpl;
 
 /**
- * @version $Id: Misc.java,v 1.6 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: Misc.java,v 1.7 2004/04/17 02:24:37 mog Exp $
  */
 public class Misc implements CommandHandler {
 	/**
@@ -46,9 +46,6 @@ public class Misc implements CommandHandler {
 	 * transfers are not multi-threaded. 
 	 */
 	private FtpReply doABOR(BaseFtpConnection conn) {
-		// reset state variables
-		conn.resetState();
-		//mDataConnection.reset();
 		return FtpReply.RESPONSE_226_CLOSING_DATA_CONNECTION;
 	}
 
@@ -115,7 +112,6 @@ public class Misc implements CommandHandler {
 //	}
 
 	private FtpReply doSITE_STAT(BaseFtpConnection conn) {
-		conn.resetState();
 		if (conn.getRequest().hasArgument()) {
 			return FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
 		}
@@ -126,7 +122,6 @@ public class Misc implements CommandHandler {
 	}
 
 	private FtpReply doSITE_TIME(BaseFtpConnection conn) {
-		conn.resetState();
 		if (conn.getRequest().hasArgument()) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
@@ -134,7 +129,6 @@ public class Misc implements CommandHandler {
 	}
 
 	private FtpReply doSITE_VERS(BaseFtpConnection conn) {
-		conn.resetState();
 		return new FtpReply(200, SlaveImpl.VERSION);
 	}
 

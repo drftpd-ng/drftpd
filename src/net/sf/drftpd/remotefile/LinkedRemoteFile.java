@@ -53,7 +53,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.133 2004/04/09 22:07:24 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.134 2004/04/17 02:24:38 mog Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -329,7 +329,7 @@ public class LinkedRemoteFile
 	/**
 	 * Updates lastMofidied() on this directory, use putFile() to avoid it.
 	 */
-	public LinkedRemoteFile addFile(RemoteFile file) {
+	public LinkedRemoteFile addFile(AbstractRemoteFile file) {
 		_lastModified = System.currentTimeMillis();
 		return putFile(file);
 	}
@@ -1054,7 +1054,7 @@ public class LinkedRemoteFile
 			return ret.getFile().getPath();
 		}
 		return ret.getFile().getPath()
-			+ RemoteFile.separatorChar
+			+ '/'
 			+ ret.getPath();
 	}
 
@@ -1476,6 +1476,14 @@ public class LinkedRemoteFile
 
 		LinkedRemoteFile toDir = lookupFile(toDirPath);
 		// throws FileNotFoundException
+		{
+			LinkedRemoteFile tmpDir = toDir;
+			do {
+				if(tmpDir == this) {
+					throw new IOException("Cannot rename into a subdirectory of self");
+				}
+			} while((tmpDir = tmpDir.getParentFileNull()) != null);
+		}
 
 		//slaves are copied here too...
 		LinkedRemoteFile toFile = toDir.putFile(this, toName);

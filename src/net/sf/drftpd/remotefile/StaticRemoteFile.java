@@ -25,15 +25,18 @@ import java.util.List;
  * Creates a single RemoteFile object that is not linked to any other objects.
  * 
  * @author mog
- * @version $Id: StaticRemoteFile.java,v 1.27 2004/03/26 12:15:18 mog Exp $
+ * @version $Id: StaticRemoteFile.java,v 1.28 2004/04/17 02:24:38 mog Exp $
  */
-public class StaticRemoteFile extends RemoteFile {
+public class StaticRemoteFile extends AbstractRemoteFile {
+	private long _checkSum;
+	private String _groupname;
 	private boolean _isDeleted;
 	private long _lastModified;
 	private long _length;
 	private String _link = null;
 	private String _name;
 	private List _rslaves;
+	private String _username;
 	private long _xfertime;
 
 	/**
@@ -77,6 +80,10 @@ public class StaticRemoteFile extends RemoteFile {
 		this(name);
 		_rslaves = rslaves;
 	}
+
+	public long getCheckSumCached() {
+		return _checkSum;
+	}
 	
 	/**
 	 * StaticRemoteFile cannot be linked
@@ -84,6 +91,10 @@ public class StaticRemoteFile extends RemoteFile {
 	 */
 	public Collection getFiles() {
 		return Collections.EMPTY_LIST;
+	}
+
+	public String getGroupname() {
+		return _groupname;
 	}
 
 	public String getLinkPath() {
@@ -104,6 +115,10 @@ public class StaticRemoteFile extends RemoteFile {
 
 	public Collection getSlaves() {
 		return _rslaves;
+	}
+
+	public String getUsername() {
+		return _username;
 	}
 
 	public long getXfertime() {
@@ -132,6 +147,14 @@ public class StaticRemoteFile extends RemoteFile {
 
 	public long length() {
 		return _length;
+	}
+
+	/**
+	 * Sets the checkSum.
+	 * @param checkSum The checkSum to set
+	 */
+	public void setCheckSum(long checkSum) {
+		_checkSum = checkSum;
 	}
 
 	public void setDeleted(boolean isDeleted) {

@@ -77,10 +77,10 @@ import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
-import f00f.net.irc.martyr.AutoJoin;
-import f00f.net.irc.martyr.AutoReconnect;
-import f00f.net.irc.martyr.AutoRegister;
-import f00f.net.irc.martyr.AutoResponder;
+import f00f.net.irc.martyr.services.AutoJoin;
+import f00f.net.irc.martyr.services.AutoReconnect;
+import f00f.net.irc.martyr.services.AutoRegister;
+import f00f.net.irc.martyr.services.AutoResponder;
 import f00f.net.irc.martyr.Debug;
 import f00f.net.irc.martyr.IRCConnection;
 import f00f.net.irc.martyr.clientstate.Channel;
@@ -91,7 +91,7 @@ import f00f.net.irc.martyr.commands.NickCommand;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.4 2004/04/09 22:07:25 mog Exp $
+ * @version $Id: SiteBot.java,v 1.5 2004/04/17 02:24:38 mog Exp $
  */
 public class SiteBot implements FtpListener, Observer {
 
@@ -942,7 +942,7 @@ public class SiteBot implements FtpListener, Observer {
 		return _conn;
 	}
 
-	public Ret getPropertyFileSuffix(String prefix, LinkedRemoteFile dir) {
+	public Ret getPropertyFileSuffix(String prefix, LinkedRemoteFileInterface dir) {
 		SectionInterface sectionObj =
 			getConnectionManager().getSectionManager().lookup(dir.getPath());
 		logger.debug("section = " + sectionObj.getName());

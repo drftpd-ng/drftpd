@@ -19,38 +19,17 @@ package net.sf.drftpd.remotefile;
 
 /**
  * @author mog
- * @version $Id: RemoteFile.java,v 1.24 2004/02/10 00:03:15 mog Exp $
+ * @version $Id: AbstractRemoteFile.java,v 1.1 2004/04/17 02:24:38 mog Exp $
  */
-public abstract class RemoteFile implements RemoteFileInterface {
-	/**
-	 * separatorChar is always "/" as "/" is always used in (SYST type UNIX) FTP.
-	 */
-	public static final char separatorChar = '/';
-
-	protected long _checkSum = 0;
-
-	protected String _groupname;
-
-	protected long _lastModified = -1;
-	
-	protected String _username;
-
+public abstract class AbstractRemoteFile implements RemoteFileInterface {
 	public boolean equals(Object file) {
 		if (!(file instanceof RemoteFileInterface))
 			return false;
-		return getPath().equals(((RemoteFile) file).getPath());
+		return getPath().equals(((AbstractRemoteFile) file).getPath());
 	}
-	/**
-	 * Gets the checkSum
-	 */
-	public long getCheckSumCached() {
-		return _checkSum;	
-	}
-	
+
 	public String getGroupname() {
-		if (_groupname == null)
 			return "drftpd";
-		return _groupname;
 	}
 
 	public RemoteFileInterface getLink() {
@@ -58,13 +37,15 @@ public abstract class RemoteFile implements RemoteFileInterface {
 	}
 	
 	public String getUsername() {
-		if (_username == null)
-			return "drftpd";
-		return _username;
+		return "drftpd";
 	}
-	
+
 	public long getXfertime() {
 		throw new UnsupportedOperationException();
+	}
+
+	public boolean isDeleted() {
+		return false;
 	}
 
 	public int hashCode() {
@@ -73,14 +54,6 @@ public abstract class RemoteFile implements RemoteFileInterface {
 
 	public boolean isLink() {
 		return false;
-	}
-	
-	/**
-	 * Sets the checkSum.
-	 * @param checkSum The checkSum to set
-	 */
-	public void setCheckSum(long checkSum) {
-		_checkSum = checkSum;
 	}
 
 	public String toString() {
@@ -98,5 +71,9 @@ public abstract class RemoteFile implements RemoteFileInterface {
 
 	public String getLinkPath() {
 		return getLink().getPath();
+	}
+
+	public long getCheckSumCached() {
+		return 0;
 	}
 }

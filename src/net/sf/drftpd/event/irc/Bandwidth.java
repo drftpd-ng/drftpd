@@ -41,7 +41,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author flowman
- * @version $Id: Bandwidth.java,v 1.4 2004/04/09 19:05:03 mog Exp $
+ * @version $Id: Bandwidth.java,v 1.5 2004/04/17 02:24:36 mog Exp $
  */
 
 public class Bandwidth
@@ -88,7 +88,7 @@ public class Bandwidth
 			fillEnvSpace(env, status);
 
 			_listener.sayChannel(msgc.getDest(), ReplacerUtils.jprintf("bw", env, SiteBot.class));
-		} else if (msg.startsWith("!speed")) {
+		} else if (msg.startsWith("!speed ")) {
 			String username;
 			try {
 				username = msgc.getMessage().substring("!speed ".length());

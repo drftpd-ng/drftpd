@@ -34,14 +34,13 @@ import net.sf.drftpd.master.command.UnhandledCommandException;
 /**
  * @author mog
  *
- * @version $Id: SlaveManagment.java,v 1.5 2004/03/15 01:55:26 zubov Exp $
+ * @version $Id: SlaveManagment.java,v 1.6 2004/04/17 02:24:37 mog Exp $
  */
 public class SlaveManagment implements CommandHandler {
 	public void unload() {}
 	public void load(CommandManagerFactory initializer) {}
 
 	private FtpReply doSITE_CHECKSLAVES(BaseFtpConnection conn) {
-		conn.resetState();
 		return new FtpReply(
 			200,
 			"Ok, "
@@ -50,7 +49,6 @@ public class SlaveManagment implements CommandHandler {
 	}
 
 	private FtpReply doSITE_KICKSLAVE(BaseFtpConnection conn) {
-		conn.reset();
 		if (!conn.getUserNull().isAdmin()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}

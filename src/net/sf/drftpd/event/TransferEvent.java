@@ -20,11 +20,11 @@ package net.sf.drftpd.event;
 import java.net.InetAddress;
 
 import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: TransferEvent.java,v 1.7 2004/02/10 00:03:05 mog Exp $
+ * @version $Id: TransferEvent.java,v 1.8 2004/04/17 02:24:35 mog Exp $
  */
 public class TransferEvent extends DirectoryFtpEvent {
 
@@ -36,7 +36,7 @@ public class TransferEvent extends DirectoryFtpEvent {
 	public TransferEvent(
 		User user,
 		String command,
-		LinkedRemoteFile directory,
+		LinkedRemoteFileInterface directory,
 		InetAddress userHost,
 		InetAddress xferHost,
 		char type,
@@ -55,7 +55,7 @@ public class TransferEvent extends DirectoryFtpEvent {
 	public TransferEvent(
 		User user,
 		String command,
-		LinkedRemoteFile directory,
+		LinkedRemoteFileInterface directory,
 		InetAddress userHost,
 		InetAddress xferHost,
 		char type,

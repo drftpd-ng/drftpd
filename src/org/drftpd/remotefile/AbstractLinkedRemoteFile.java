@@ -30,7 +30,7 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.remotefile.RemoteFile;
+import net.sf.drftpd.remotefile.AbstractRemoteFile;
 import net.sf.drftpd.remotefile.RemoteFileInterface;
 import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 import net.sf.drftpd.slave.Transfer;
@@ -49,7 +49,7 @@ public abstract class AbstractLinkedRemoteFile
 		super();
 	}
 
-	public LinkedRemoteFile addFile(RemoteFile file) {
+	public LinkedRemoteFile addFile(AbstractRemoteFile file) {
 		throw new UnsupportedOperationException();
 	}
 

@@ -36,9 +36,9 @@ import net.sf.drftpd.slave.RootBasket;
  * A wrapper for java.io.File to the net.sf.drftpd.RemoteFile structure.
  * 
  * @author mog
- * @version $Id: FileRemoteFile.java,v 1.34 2004/02/10 00:03:15 mog Exp $
+ * @version $Id: FileRemoteFile.java,v 1.35 2004/04/17 02:24:38 mog Exp $
  */
-public class FileRemoteFile extends RemoteFile {
+public class FileRemoteFile extends AbstractRemoteFile {
 	private static final Logger logger =
 		Logger.getLogger(FileRemoteFile.class.getName());
 	//	private File file;
@@ -224,7 +224,7 @@ public class FileRemoteFile extends RemoteFile {
 		assert !(!getName().equals("") && filefiles.isEmpty()) : this;
 	}
 	/**
-	 * @see net.sf.drftpd.remotefile.RemoteFile#getFiles()
+	 * @see net.sf.drftpd.remotefile.AbstractRemoteFile#getFiles()
 	 */
 	public Collection getFiles() {
 		buildFileFiles();
@@ -261,5 +261,4 @@ public class FileRemoteFile extends RemoteFile {
 	public boolean isDeleted() {
 		return false;
 	}
-
 }

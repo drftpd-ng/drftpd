@@ -59,7 +59,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.78 2004/04/01 15:08:19 zubov Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.79 2004/04/17 02:24:37 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -125,14 +125,6 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	protected void dispatchFtpEvent(Event event) {
 		getConnectionManager().dispatchFtpEvent(event);
-	}
-
-	/**
-	 * Last defense - close connections.
-	 */
-	protected void finalize() throws Throwable {
-		reset();
-		super.finalize();
 	}
 
 	/**
@@ -322,56 +314,6 @@ public class BaseFtpConnection implements Runnable {
 		throws FormatterException {
 		env = getReplacerEnvironment(env, user);
 		return ReplacerUtils.finalJprintf(format, env);
-	}
-
-	/**
-	 * Reset all the member variables. Close all sockets.
-	 * @deprecated empty, should call reset() on DataConnectionHandler ?
-	 */
-	public void reset() {
-		//
-		//		// close data socket
-		//		if (_dataSocket != null) {
-		//			try {
-		//				_dataSocket.close();
-		//			} catch (Exception ex) {
-		//				logger.log(Level.WARN, "Error closing data socket", ex);
-		//			}
-		//			_dataSocket = null;
-		//		}
-		//
-		//		// close server socket
-		//		//		if (mServSoc != null) {
-		//		//			try {
-		//		//				mServSoc.close();
-		//		//			} catch (Exception ex) {
-		//		//				logger.log(Level.WARNING, "Error closing server socket", ex);
-		//		//			}
-		//		//			mServSoc = null;
-		//		//		}
-		//
-		//		// reset other variables
-		//		mAddress = null;
-		//		miPort = 0;
-		//
-		//		mbPort = false;
-		//		mbPasv = false;
-	}
-
-	/**
-		 * Reset temporary state variables.
-		 * mstRenFr and resumePosition
-		 */
-	public void resetState() {
-		//		_renameFrom = null;
-		//		preTransfer = false;
-		//		preTransferRSlave = null;
-
-		//		mbReset = false;
-		//resumePosition = 0;
-
-		//mbUser = false;
-		//mbPass = false;
 	}
 
 	/**

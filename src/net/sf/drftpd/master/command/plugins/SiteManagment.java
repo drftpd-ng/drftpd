@@ -43,7 +43,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagment.java,v 1.14 2004/03/01 04:21:03 zubov Exp $
+ * @version $Id: SiteManagment.java,v 1.15 2004/04/17 02:24:37 mog Exp $
  */
 public class SiteManagment implements CommandHandler {
 
@@ -52,7 +52,6 @@ public class SiteManagment implements CommandHandler {
 	private FtpReply doSITE_LIST(BaseFtpConnection conn) {
 		if (!conn.getUserNull().isAdmin())
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
-		conn.resetState();
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
 		//.getMap().values() to get the .isDeleted files as well.
 		LinkedRemoteFile dir = conn.getCurrentDirectory();
@@ -109,7 +108,6 @@ public class SiteManagment implements CommandHandler {
 	}
 
 	private FtpReply doSITE_RELOAD(BaseFtpConnection conn) {
-		conn.resetState();
 		if (!conn.getUserNull().isAdmin()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
@@ -146,7 +144,6 @@ public class SiteManagment implements CommandHandler {
 	}
 
 	private FtpReply doSITE_SHUTDOWN(BaseFtpConnection conn) {
-		conn.resetState();
 		if (!conn.getUserNull().isAdmin()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}

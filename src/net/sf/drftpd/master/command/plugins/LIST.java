@@ -49,7 +49,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * @version $Id: LIST.java,v 1.14 2004/02/23 01:14:37 mog Exp $
+ * @version $Id: LIST.java,v 1.15 2004/04/17 02:24:37 mog Exp $
  */
 public class LIST implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(LIST.class);
@@ -111,8 +111,6 @@ public class LIST implements CommandHandler {
 	 */
 	public FtpReply execute(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
-		// reset state variables
-		conn.resetState();
 
 		String directoryName = null;
 		String options = "";
