@@ -35,7 +35,7 @@ import org.jdom.Element;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.39 2004/05/31 13:47:25 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.40 2004/05/31 14:08:20 mog Exp $
  */
 public class RemoteSlave implements Comparable {
 	/**
@@ -84,6 +84,8 @@ public class RemoteSlave implements Comparable {
 	}
 
 	public RemoteSlave(Properties config) {
+		String name = FtpConfig.getProperty(config, "name");
+		_name = name;
 		updateConfig(config);
 	}
 
@@ -104,7 +106,6 @@ public class RemoteSlave implements Comparable {
 		for (int i = 0; i < maskitems.length; i++) {
 			masks.add(maskitems[i]);
 		}
-		_name = name;
 		_masks = masks;
 		_config = config;
 	}
