@@ -227,7 +227,6 @@ public class ListUtils {
 			}
 		} catch (FileNotFoundException e) {
 		} catch (NoAvailableSlaveException e) {
-			logger.warn("No available slaves for DIZ file", e);
 		}
 
         try {
