@@ -17,6 +17,7 @@
  */
 package net.sf.drftpd.event;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
 
 
@@ -24,10 +25,24 @@ import org.drftpd.master.ConnectionManager;
  * @author mog
  * @version $Id$
  */
-public interface FtpListener {
-    public void actionPerformed(Event event);
+public abstract class FtpListener {
+    protected GlobalContext _gctx;
+	public abstract void actionPerformed(Event event);
 
-    public void unload();
+    public void unload() {}
 
-    public void init(ConnectionManager connectionManager);
+    public void init(GlobalContext gctx) {
+    	_gctx = gctx;
+    }
+
+    /**
+     * @deprecated
+     */
+    public final void init(ConnectionManager cm) {
+    	throw new UnsupportedOperationException("deprecated");
+    }
+    public final GlobalContext getGlobalContext() {
+    	assert _gctx != null;
+    	return _gctx;
+    }
 }

@@ -19,6 +19,7 @@ package org.drftpd.slaveselection.filter;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
+import net.sf.drftpd.master.config.ConfigInterface;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 
@@ -117,7 +118,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
      * Get slave for transfer to master.
      */
     public RemoteSlave getASlaveForMaster(LinkedRemoteFileInterface file,
-        FtpConfig cfg) throws NoAvailableSlaveException {
+        ConfigInterface cfg) throws NoAvailableSlaveException {
         return process("master", new ScoreChart(file.getAvailableSlaves()),
             null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, file, null);
     }

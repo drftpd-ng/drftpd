@@ -23,14 +23,13 @@ import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.event.UserEvent;
 
 import org.drftpd.dynamicdata.Key;
-import org.drftpd.master.ConnectionManager;
 
 
 /**
  * @author mog
  * @version $Id$
  */
-public class Statistics implements FtpListener {
+public class Statistics extends FtpListener {
     public static final Key LOGINS = new Key(Statistics.class, "logins",
             Integer.class);
 
@@ -45,11 +44,5 @@ public class Statistics implements FtpListener {
 
             //tevent.getTime()
         }
-    }
-
-    public void unload() {
-    }
-
-    public void init(ConnectionManager connectionManager) {
     }
 }

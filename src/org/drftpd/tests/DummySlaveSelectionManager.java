@@ -1,20 +1,18 @@
 package org.drftpd.tests;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Collection;
+
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.config.FtpConfig;
+import net.sf.drftpd.master.config.ConfigInterface;
 import net.sf.drftpd.mirroring.Job;
 
 import org.drftpd.GlobalContext;
-
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.util.Collection;
 
 
 /**
@@ -37,7 +35,7 @@ public class DummySlaveSelectionManager
     }
 
     public RemoteSlave getASlaveForMaster(LinkedRemoteFileInterface file,
-        FtpConfig cfg) throws NoAvailableSlaveException {
+        ConfigInterface cfg) throws NoAvailableSlaveException {
         throw new UnsupportedOperationException();
     }
 

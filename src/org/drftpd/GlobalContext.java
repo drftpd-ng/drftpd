@@ -22,6 +22,7 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.master.SlaveFileException;
+import net.sf.drftpd.master.config.ConfigInterface;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.util.PortRange;
@@ -59,7 +60,7 @@ import java.util.Timer;
 public class GlobalContext {
     private static final Logger logger = Logger.getLogger(GlobalContext.class);
     protected ConnectionManager _cm;
-    protected FtpConfig _config;
+    protected ConfigInterface _config;
     private ArrayList<FtpListener> _ftpListeners = new ArrayList<FtpListener>();
     protected JobManager _jm;
     protected LinkedRemoteFileInterface _root;
@@ -75,7 +76,7 @@ public class GlobalContext {
     }
 
     public void reloadFtpConfig() throws IOException {
-    	_config = new FtpConfig(_cfgFileName, getConnectionManager());
+    	_config = new FtpConfig(_cfgFileName, this);
     }
 
     public GlobalContext(Properties cfg, String cfgFileName,
@@ -86,7 +87,7 @@ public class GlobalContext {
         loadUserManager(cfg, cfgFileName);
 
         try {
-            _config = new FtpConfig(cfg, cfgFileName, _cm);
+            _config = new FtpConfig(cfg, cfgFileName, this);
         } catch (Throwable ex) {
             throw new FatalException(ex);
         }
@@ -143,7 +144,7 @@ public class GlobalContext {
         }
     }
 
-    public FtpConfig getConfig() {
+    public ConfigInterface getConfig() {
         if (_config == null) {
             throw new NullPointerException();
         }

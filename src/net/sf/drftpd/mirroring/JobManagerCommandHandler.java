@@ -127,8 +127,7 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
         }
 
         Job job = new Job(lrf, destSlaves, priority, timesToMirror);
-        conn.getGlobalContext().getConnectionManager().getJobManager()
-            .addJobToQueue(job);
+        conn.getGlobalContext().getJobManager().addJobToQueue(job);
 
         ReplacerEnvironment env = new ReplacerEnvironment();
         env.add("job", job);
@@ -148,7 +147,6 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
         ReplacerEnvironment env = new ReplacerEnvironment();
 
         for (Iterator<Job> iter = new ArrayList<Job>(conn.getGlobalContext()
-                                               .getConnectionManager()
                                                .getJobManager()
                                                .getAllJobsFromQueue()).iterator();
                 iter.hasNext();) {
@@ -194,8 +192,8 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
         Perl5Matcher m = new Perl5Matcher();
 
         Job job = null;
-        List jobs = new ArrayList<Job>(conn.getGlobalContext().getConnectionManager()
-                                      .getJobManager().getAllJobsFromQueue());
+        List jobs = new ArrayList<Job>(conn.getGlobalContext().getJobManager()
+				.getAllJobsFromQueue());
         ReplacerEnvironment env = new ReplacerEnvironment();
         env.add("filename", filename);
 
@@ -206,7 +204,7 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
 
             if (m.matches(job.getFile().getPath(), p)) {
                 env.add("job", job);
-                conn.getGlobalContext().getConnectionManager().getJobManager()
+                conn.getGlobalContext().getJobManager()
                     .stopJob(job);
                 r.addComment(conn.jprintf(JobManagerCommandHandler.class,
                         "removejob.success", env));
@@ -220,7 +218,7 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        conn.getGlobalContext().getConnectionManager().getJobManager()
+        conn.getGlobalContext().getJobManager()
             .startJobs();
 
         return new Reply(200, "JobTransfers will now start");
@@ -231,7 +229,7 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        conn.getGlobalContext().getConnectionManager().getJobManager().stopJobs();
+        conn.getGlobalContext().getJobManager().stopJobs();
 
         return new Reply(200,
             "All JobTransfers will stop after their current transfer");

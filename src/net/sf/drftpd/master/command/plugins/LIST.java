@@ -316,8 +316,7 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
                 return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
             }
 
-            if (!conn.getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(),
-                        directoryFile)) {
+            if (!conn.getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), directoryFile, true)) {
                 return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
             }
         } else {
@@ -334,7 +333,7 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
                 NEWLINE);
         } else {
             if (!dataconn.isEncryptedDataChannel() &&
-                    conn.getGlobalContext().getConfig().checkDenyDirUnencrypted(conn.getUserNull())) {
+                    conn.getGlobalContext().getConfig().checkPermission("denydiruncrypted", conn.getUserNull())) {
                 return new Reply(550, "Secure Listing Required");
             }
 

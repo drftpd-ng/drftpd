@@ -160,7 +160,6 @@ public class LoginTest extends TestCase {
             cfg.setProperty("bouncer_ip", "10.0.1.1 10.0.0.1");
 
             Reader r = new StringReader("shutdown *");
-            cfg.setProperty("shutdown", "*");
 
             try {
                 loadConfig1(cfg);

@@ -16,39 +16,34 @@
  */
 package org.drftpd.plugins;
 
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.master.config.FtpConfig;
-
-import org.apache.log4j.Logger;
-
-import org.drftpd.PropertyHelper;
-import org.drftpd.master.ConnectionManager;
-import org.drftpd.mirroring.ArchiveHandler;
-import org.drftpd.mirroring.ArchiveType;
-import org.drftpd.mirroring.DuplicateArchiveException;
-
-import org.drftpd.sections.SectionInterface;
-
 import java.io.FileInputStream;
 import java.io.IOException;
-
 import java.lang.reflect.Constructor;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
 
+import net.sf.drftpd.event.Event;
+import net.sf.drftpd.event.FtpListener;
+
+import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
+import org.drftpd.PropertyHelper;
+import org.drftpd.master.ConnectionManager;
+import org.drftpd.mirroring.ArchiveHandler;
+import org.drftpd.mirroring.ArchiveType;
+import org.drftpd.mirroring.DuplicateArchiveException;
+import org.drftpd.sections.SectionInterface;
+
 /**
  * @author zubov
  * @version $Id: Archive.java 814 2004-11-22 02:38:00Z mog $
  */
-public class Archive implements FtpListener, Runnable {
+public class Archive extends FtpListener implements Runnable {
     private static final Logger logger = Logger.getLogger(Archive.class);
     private Properties _props;
-    private ConnectionManager _cm;
     private long _cycleTime;
     private boolean _isStopped = false;
     private Thread thread = null;
@@ -111,22 +106,15 @@ public class Archive implements FtpListener, Runnable {
     }
 
     /**
-     * Returns the ConnectionManager
-     */
-    public ConnectionManager getConnectionManager() {
-        return _cm;
-    }
-
-    /**
      * Returns the getCycleTime setting
      */
     public long getCycleTime() {
         return _cycleTime;
     }
 
-    public void init(ConnectionManager connectionManager) {
-        _cm = connectionManager;
-        _cm.getGlobalContext().loadJobManager();
+    public void init(GlobalContext gctx) {
+    	super.init(gctx);
+        getGlobalContext().loadJobManager();
         reload();
         startArchive();
     }
@@ -156,9 +144,8 @@ public class Archive implements FtpListener, Runnable {
                 return;
             }
 
-            Collection sectionsToCheck = getConnectionManager()
-                                             .getGlobalContext()
-                                             .getSectionManager().getSections();
+            Collection sectionsToCheck = getGlobalContext().getSectionManager()
+					.getSections();
 
             for (Iterator iter = sectionsToCheck.iterator(); iter.hasNext();) {
                 SectionInterface section = (SectionInterface) iter.next();

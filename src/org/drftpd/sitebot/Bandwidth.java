@@ -134,9 +134,7 @@ public class Bandwidth extends GenericCommandAutoService
                             Time.formatTime(System.currentTimeMillis() -
                                 conn.getLastActive()));
 
-                        if (getConnectionManager().getGlobalContext().getConfig()
-                                    .checkHideInWho(connUser,
-                                    conn.getCurrentDirectory())) {
+                        if (getConnectionManager().getGlobalContext().getConfig().checkPathPermission("hideinwho", connUser, conn.getCurrentDirectory())) {
                             continue;
                         }
 

@@ -23,6 +23,7 @@ import f00f.net.irc.martyr.State;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
 import net.sf.drftpd.master.BaseFtpConnection;
+import net.sf.drftpd.master.config.ConfigInterface;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.ReplacerUtils;
 
@@ -64,7 +65,7 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
         return "!who";
     }
 
-    private FtpConfig getConfig() {
+    private ConfigInterface getConfig() {
         return _listener.getConfig();
     }
 
@@ -123,7 +124,7 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
                     continue;
                 }
 
-                if (getConfig().checkHideInWho(user, conn.getCurrentDirectory())) {
+                if (getConfig().checkPathPermission("hideinwho", user, conn.getCurrentDirectory())) {
                     continue;
                 }
 

@@ -35,6 +35,7 @@ import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
+import net.sf.drftpd.master.config.ConfigInterface;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.ListUtils;
 
@@ -64,7 +65,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 	// it's used by slave when sending commands.
 	private CaseInsensitiveHashtable _files;
 
-	private transient FtpConfig _ftpConfig;
+	private transient ConfigInterface _ftpConfig;
 
 	private String _group;
 
@@ -97,7 +98,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 	 * 
 	 * Used if no file database exists to start a tree from scratch.
 	 */
-	public LinkedRemoteFile(FtpConfig ftpConfig) {
+	public LinkedRemoteFile(ConfigInterface ftpConfig) {
 		_ftpConfig = ftpConfig;
 
 		_lastModified = System.currentTimeMillis();
@@ -123,12 +124,12 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 	 *            file that this RemoteFile object should represent.
 	 */
 	private LinkedRemoteFile(LinkedRemoteFile parent, RemoteFileInterface file,
-			FtpConfig cfg) {
+			ConfigInterface cfg) {
 		this(parent, file, file.getName(), cfg);
 	}
 
 	private LinkedRemoteFile(LinkedRemoteFile parent, RemoteFileInterface file,
-			String name, FtpConfig cfg) {
+			String name, ConfigInterface cfg) {
 		if (!ListUtils.isLegalFileName(name)) {
 			throw new IllegalArgumentException("Illegal filename - "
 					+ parent.getPath() + "/" + name);

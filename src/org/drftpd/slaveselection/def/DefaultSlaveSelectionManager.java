@@ -17,32 +17,27 @@
  */
 package org.drftpd.slaveselection.def;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Properties;
+
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.config.FtpConfig;
+import net.sf.drftpd.master.config.ConfigInterface;
 import net.sf.drftpd.mirroring.Job;
 
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
-
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.master.RemoteTransfer;
-
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Properties;
-
 
 /**
  * @author mog
@@ -67,7 +62,7 @@ public class DefaultSlaveSelectionManager
         _minfreespace = Bytes.parseBytes(PropertyHelper.getProperty(p, "minfreespace"));
 
         try {
-            if (getGlobalContext().getConnectionManager().getJobManager() != null) {
+            if (getGlobalContext().getJobManager() != null) {
                 _maxTransfers = Integer.parseInt(PropertyHelper.getProperty(p,
                             "maxTransfers"));
                 _maxBandwidth = Bytes.parseBytes(PropertyHelper.getProperty(p,
@@ -85,7 +80,7 @@ public class DefaultSlaveSelectionManager
     }
 
     public RemoteSlave getASlaveForMaster(LinkedRemoteFileInterface file,
-        FtpConfig cfg) throws NoAvailableSlaveException {
+        ConfigInterface cfg) throws NoAvailableSlaveException {
         return getASlaveInternal(file.getAvailableSlaves(),
             Transfer.TRANSFER_SENDING_DOWNLOAD);
     }
@@ -198,7 +193,7 @@ public class DefaultSlaveSelectionManager
 
     public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException {
-        Collection slaves = job.getDestinationSlaves();
+        Collection<RemoteSlave> slaves = job.getDestinationSlaves();
         slaves.removeAll(job.getFile().getAvailableSlaves());
 
         return getASlaveForJob(slaves, Transfer.TRANSFER_RECEIVING_UPLOAD);
@@ -237,4 +232,5 @@ public class DefaultSlaveSelectionManager
     public GlobalContext getGlobalContext() {
         return _gctx;
     }
+
 }

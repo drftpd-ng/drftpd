@@ -98,8 +98,8 @@ public class TrialSiteBot extends GenericCommandAutoService {
         User user;
 
         try {
-            user = _trial.getConnectionManager().getGlobalContext()
-                         .getUserManager().getUserByName(username);
+            user = _trial.getGlobalContext().getUserManager().getUserByName(
+					username);
         } catch (NoSuchUserException e) {
             _irc.sayChannel(msgc.getDest(), "[passed] No such user: " +
                 username);

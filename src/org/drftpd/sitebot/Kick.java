@@ -20,6 +20,7 @@ package org.drftpd.sitebot;
 import java.util.ArrayList;
 
 import net.sf.drftpd.master.BaseFtpConnection;
+import net.sf.drftpd.master.config.ConfigInterface;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.ReplacerUtils;
 
@@ -56,7 +57,7 @@ public class Kick extends GenericAutoService implements IRCPluginInterface {
         return "!kick";
     }
 
-    private FtpConfig getConfig() {
+    private ConfigInterface getConfig() {
         return _listener.getConfig();
     }
 
@@ -100,7 +101,7 @@ public class Kick extends GenericAutoService implements IRCPluginInterface {
                     continue;
                 }
 
-                if (getConfig().checkHideInWho(user, conn.getCurrentDirectory())) {
+                if (getConfig().checkPathPermission("hideinwho", user, conn.getCurrentDirectory())) {
                     continue;
                 }
 

@@ -90,31 +90,31 @@ public class PreTest extends TestCase {
     public void testOwnership()
         throws UnhandledCommandException, FileNotFoundException, 
             RemoteException {
+        DummyGlobalContext gctx = new DummyGlobalContext();
+
         _config = new DummyFtpConfig();
+        gctx.setFtpConfig(_config);
+        _config.setGlobalContext(gctx);
+
         buildRoot();
+        gctx.setRoot(_root);
 
         Pre pre = new Pre();
         DummyBaseFtpConnection conn = new DummyBaseFtpConnection(null);
         pre.initialize(conn, null);
+        conn.setCurrentDirectory(_root);
         conn.setRequest(new FtpRequest("SITE PRE release section"));
         _cm = new DummyConnectionManager();
-
-        _config.setConnectionManager(_cm);
+        _cm.setGlobalContext(gctx);
+        gctx.setConnectionManager(_cm);
+        conn.setGlobalConext(gctx);
 
         SectionManager sm = new SectionManager(_cm);
-        conn.setCurrentDirectory(_root);
+        gctx.setSectionManager(sm);
 
         DummyUserManager um = new DummyUserManager();
         um.setUser(new DummyUser("owner"));
-
-        DummyGlobalContext gctx = new DummyGlobalContext();
         gctx.setUserManager(um);
-        gctx.setSectionManager(sm);
-        gctx.setFtpConfig(_config);
-        gctx.setRoot(_root);
-        gctx.setConnectionManager(_cm);
-        _cm.setGlobalContext(gctx);
-        conn.setGlobalConext(gctx);
 
         DummySlaveManager slavem = null;
 
@@ -128,7 +128,7 @@ public class PreTest extends TestCase {
 
         Reply reply;
         reply = pre.execute(conn);
-        MLSTSerialize.serialize(_root, new PrintWriter(System.err, true));
+        //MLSTSerialize.serialize(_root, new PrintWriter(System.err, true));
         assertEquals(reply.getCode(), 200);
     }
 }

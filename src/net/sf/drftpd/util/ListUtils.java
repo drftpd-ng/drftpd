@@ -17,6 +17,14 @@
  */
 package net.sf.drftpd.util;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
 
@@ -29,19 +37,7 @@ import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.remotefile.RemoteFileInterface;
 import org.drftpd.remotefile.StaticRemoteFile;
-import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
-import org.tanesha.replacer.SimplePrintf;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
 
 
 /**
@@ -77,16 +73,17 @@ public class ListUtils {
     public static List list(LinkedRemoteFileInterface dir,
         BaseFtpConnection conn, Reply response) throws IOException {
         ArrayList tempFileList = new ArrayList<RemoteFileInterface>(dir.getFiles());
-        ArrayList listFiles = new ArrayList<RemoteFileInterface>();
+        ArrayList<RemoteFileInterface> listFiles = new ArrayList<RemoteFileInterface>();
         int numOnline = 0;
         int numTotal = 0;
         boolean id3found = false;
         ID3Tag mp3tag = null;
 
-        Properties zsCfg = new Properties();
-        FileInputStream zsFile = new FileInputStream("conf/zipscript.conf");
-        zsCfg.load(zsFile);
-        zsFile.close();
+        //Properties zsCfg = new Properties();
+        //FileInputStream zsFile = new FileInputStream("conf/zipscript.conf");
+        //zsCfg.load(zsFile);
+        //zsFile.close();
+        Properties zsCfg = conn.getGlobalContext().getConfig().getZsConfig();
 
         for (Iterator iter = tempFileList.iterator(); iter.hasNext();) {
             LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
@@ -94,8 +91,7 @@ public class ListUtils {
             if ((conn.getGlobalContext().getConnectionManager()
                          .getGlobalContext().getConfig() != null) &&
                     !conn.getGlobalContext().getConnectionManager()
-                             .getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(),
-                        element)) {
+					 .getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), element, true)) {
                 // don't add it
                 continue;
             }
@@ -140,20 +136,16 @@ public class ListUtils {
             //				listFiles.add(element);
             //				continue;
             //			} else if (
-    		boolean offlineEnabled = zsCfg.getProperty("files.missing.enabled").equalsIgnoreCase("true");
+    		boolean offlineEnabled = zsCfg.getProperty("files.offline.enabled", "true").equalsIgnoreCase("true");
             if (!element.isAvailable() && offlineEnabled) { // directories are always available
-                try {
-    				ReplacerEnvironment env = new ReplacerEnvironment();
-    				env.add("ofilename",element.getName());
-                	String oFileName = SimplePrintf.jprintf(zsCfg.getProperty("files.offline.filename"), env);
-                	listFiles.add(new StaticRemoteFile(Collections.EMPTY_LIST,
-	                        oFileName, element.getUsername(),
-	                        element.getGroupname(), element.length(),
-	                        element.lastModified()));
-                    numTotal++;
-				} catch (FormatterException e1) {
-					logger.warn("",e1);
-				}
+                ReplacerEnvironment env = new ReplacerEnvironment();
+				env.add("ofilename",element.getName());
+				String oFileName = conn.jprintf(ListUtils.class, "files.offline.filename", env);
+				listFiles.add(new StaticRemoteFile(Collections.EMPTY_LIST,
+				        oFileName, element.getUsername(),
+				        element.getGroupname(), element.length(),
+				        element.lastModified()));
+				numTotal++;
 
                 // -OFFLINE and "ONLINE" files will both be present until someoe implements
                 // a way to reupload OFFLINE files.
@@ -178,7 +170,7 @@ public class ListUtils {
                 if (sfvstatus.getMissing() != 0) {
 					env.add("missing.number","" + sfvstatus.getMissing());
 					env.add("missing.percent","" + (sfvstatus.getMissing() * 100) / sfvfile.size());
-					env.add("missing",SimplePrintf.jprintf(zsCfg.getProperty("statusbar.missing"),env));
+					env.add("missing",conn.jprintf(ListUtils.class, "statusbar.missing",env));
                 } else {
                 	env.add("missing","");
                 }
@@ -191,14 +183,14 @@ public class ListUtils {
 					env.add("complete.number", "" + sfvstatus.getPresent());
 					env.add("complete.percent","" + (sfvstatus.getPresent() * 100) / sfvfile.size());
 				}
-				env.add("complete",SimplePrintf.jprintf(zsCfg.getProperty("statusbar.complete"),env));
+				env.add("complete",conn.jprintf(ListUtils.class, "statusbar.complete",env));
 
                 if (sfvstatus.getOffline() != 0) {
 					env.add("offline.number","" + sfvstatus.getOffline());
 					env.add("offline.percent",""+ (sfvstatus.getOffline() * 100) / sfvstatus.getPresent());
 					env.add("online.number","" + sfvstatus.getPresent());
 					env.add("online.percent","" + (sfvstatus.getAvailable() * 100) / sfvstatus.getPresent());
-					env.add("offline",SimplePrintf.jprintf(zsCfg.getProperty("statusbar.offline"),env));
+					env.add("offline",conn.jprintf(ListUtils.class, "statusbar.offline",env));
                 } else {
                 	env.add("offline","");
                 }
@@ -210,12 +202,12 @@ public class ListUtils {
                 	env.add("title", mp3tag.getTitle().trim());
                 	env.add("genre", mp3tag.getGenre().trim());
                 	env.add("year", mp3tag.getYear().trim());
-                	env.add("id3tag",SimplePrintf.jprintf(zsCfg.getProperty("statusbar.id3tag"),env));
+                	env.add("id3tag",conn.jprintf(ListUtils.class, "statusbar.id3tag",env));
                 } else {
                 	env.add("id3tag","");
                 }
 
-                statusDirName = SimplePrintf.jprintf(zsCfg.getProperty("statusbar.format"),env);
+                statusDirName = conn.jprintf(ListUtils.class, "statusbar.format",env);
 
                 if (statusDirName == null) {
                     throw new RuntimeException();
@@ -226,7 +218,7 @@ public class ListUtils {
                 	listFiles.add(new StaticRemoteFile(null, statusDirName,
                         "drftpd", "drftpd", 0L, dir.lastModified()));
                 }
-                
+
                 boolean missingEnabled = zsCfg.getProperty("files.missing.enabled").equalsIgnoreCase("true");
                 if (missingEnabled) {
                     for (Iterator iter = sfvfile.getNames().iterator();
@@ -238,7 +230,7 @@ public class ListUtils {
                     		env.add("mfilename",filename);
                     		listFiles.add(new StaticRemoteFile(
                     				Collections.EMPTY_LIST, 
-									SimplePrintf.jprintf(zsCfg.getProperty("files.missing.filename"),env),
+									conn.jprintf(ListUtils.class, "files.missing.filename",env),
 									"drftpd", "drftpd", 0L, dir.lastModified()));
                     	}
                     }

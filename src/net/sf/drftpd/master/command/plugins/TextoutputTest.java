@@ -70,7 +70,7 @@ public class TextoutputTest extends TestCase {
     }
 
     public static class SB extends SiteBot {
-        public final ArrayList msgs = new ArrayList();
+        public final ArrayList<OutCommand> msgs = new ArrayList<OutCommand>();
 
         public SB() throws IOException {
             super();

@@ -17,22 +17,18 @@
  */
 package org.drftpd.plugins;
 
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.event.TransferEvent;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-
 import java.text.SimpleDateFormat;
-
 import java.util.Date;
 import java.util.Locale;
 
-import org.drftpd.master.ConnectionManager;
+import net.sf.drftpd.FatalException;
+import net.sf.drftpd.event.Event;
+import net.sf.drftpd.event.FtpListener;
+import net.sf.drftpd.event.TransferEvent;
 
 
 /**
@@ -40,7 +36,7 @@ import org.drftpd.master.ConnectionManager;
  * @author mog
  * @version $Id$
  */
-public class XferLog implements FtpListener {
+public class XferLog extends FtpListener {
     /**
      * xferlog.log - Contains all the upload/download information for all files
               transferred (if logging of that is enabled). The format is the
@@ -114,11 +110,5 @@ public class XferLog implements FtpListener {
             event.getUser().getGroup() +
             " 0 * " // authentication-method   authenticated-user-id
              +completed);
-    }
-
-    public void init(ConnectionManager mgr) {
-    }
-
-    public void unload() {
     }
 }

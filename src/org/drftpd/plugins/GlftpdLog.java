@@ -17,6 +17,20 @@
  */
 package org.drftpd.plugins;
 
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.UnknownHostException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Locale;
+
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.Nukee;
@@ -34,45 +48,23 @@ import net.sf.drftpd.master.UploaderPosition;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.SFVFile;
 import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.Nuke;
 import org.drftpd.commands.UserManagment;
-
-import org.drftpd.master.ConnectionManager;
-
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-
 import org.tanesha.replacer.FormatterException;
-
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import java.net.UnknownHostException;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Locale;
 
 
 /**
  * @author flowman
  * @version $Id: GlftpdLog.java 823 2004-11-29 01:36:22Z mog $
  */
-public class GlftpdLog implements FtpListener {
+public class GlftpdLog extends FtpListener {
     private static Logger logger = Logger.getLogger(GlftpdLog.class);
 
     static {
@@ -80,16 +72,11 @@ public class GlftpdLog implements FtpListener {
     }
 
     private PrintWriter _out;
-    private ConnectionManager _cm;
     DateFormat DATE_FMT = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy ",
             Locale.ENGLISH);
 
     public GlftpdLog() throws UnknownHostException, IOException {
         _out = new PrintWriter(new FileWriter("logs/glftpd.log"));
-    }
-
-    public void init(ConnectionManager mgr) {
-        _cm = mgr;
     }
 
     public void actionPerformed(Event event) {
@@ -250,9 +237,9 @@ public class GlftpdLog implements FtpListener {
             User slowuser;
 
             try {
-                fastuser = _cm.getGlobalContext().getUserManager()
+                fastuser = getGlobalContext().getUserManager()
                               .getUserByName(fastestuser.getUsername());
-                slowuser = _cm.getGlobalContext().getUserManager()
+                slowuser = getGlobalContext().getUserManager()
                               .getUserByName(slowestuser.getUsername());
             } catch (NoSuchUserException e2) {
                 return;
@@ -288,7 +275,7 @@ public class GlftpdLog implements FtpListener {
                 User raceuser;
 
                 try {
-                    raceuser = _cm.getGlobalContext().getUserManager()
+                    raceuser = getGlobalContext().getUserManager()
                                   .getUserByName(stat.getUsername());
                 } catch (NoSuchUserException e2) {
                     continue;
@@ -337,7 +324,7 @@ public class GlftpdLog implements FtpListener {
             User leaduser;
 
             try {
-                leaduser = _cm.getGlobalContext().getUserManager()
+                leaduser = getGlobalContext().getUserManager()
                               .getUserByName(stat.getUsername());
             } catch (NoSuchUserException e3) {
                 return;
@@ -402,7 +389,7 @@ public class GlftpdLog implements FtpListener {
                 User raceuser;
 
                 try {
-                    raceuser = _cm.getGlobalContext().getUserManager()
+                    raceuser = getGlobalContext().getUserManager()
                                   .getUserByName(stat.getUsername());
                 } catch (NoSuchUserException e2) {
                     nobodyAmount += stat.getAmount();
@@ -437,7 +424,7 @@ public class GlftpdLog implements FtpListener {
     }
 
     public static Collection topFileGroup(Collection files) {
-        ArrayList ret = new ArrayList();
+        ArrayList<GroupPosition> ret = new ArrayList<GroupPosition>();
 
         for (Iterator iter = files.iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();

@@ -49,8 +49,7 @@ public class Search implements CommandHandlerFactory, CommandHandler {
         LinkedRemoteFileInterface dir, Collection searchstrings, boolean files,
         boolean dirs) {
         //TODO optimize me, checking using regexp for all dirs is possibly slow
-        if (!conn.getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(),
-                    dir)) {
+        if (!conn.getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), dir, true)) {
             Logger.getLogger(Search.class).debug("privpath: " + dir.getPath());
 
             return;

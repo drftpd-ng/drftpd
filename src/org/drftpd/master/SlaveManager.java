@@ -207,7 +207,7 @@ public class SlaveManager implements Runnable {
 		}
 	}
 
-	public HashSet findSlavesBySpace(int numOfSlaves, Set exemptSlaves,
+	public HashSet<RemoteSlave> findSlavesBySpace(int numOfSlaves, Set exemptSlaves,
 			boolean ascending) {
 		Collection<RemoteSlave> slaveList = getSlaves();
 		HashMap<Long, RemoteSlave> map = new HashMap<Long, RemoteSlave>();
@@ -239,7 +239,7 @@ public class SlaveManager implements Runnable {
 			Collections.sort(sorted, Collections.reverseOrder());
 		}
 
-		HashSet returnMe = new HashSet();
+		HashSet<RemoteSlave> returnMe = new HashSet<RemoteSlave>();
 
 		for (ListIterator iter = sorted.listIterator(); iter.hasNext();) {
 			if (iter.nextIndex() == numOfSlaves) {

@@ -17,23 +17,21 @@
  */
 package org.drftpd.mirroring.archivetypes;
 
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.mirroring.Job;
-
-import org.apache.log4j.Logger;
-
-import org.drftpd.PropertyHelper;
-import org.drftpd.mirroring.ArchiveType;
-import org.drftpd.plugins.Archive;
-
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.sections.SectionInterface;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
+
+import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.mirroring.Job;
+
+import org.apache.log4j.Logger;
+import org.drftpd.PropertyHelper;
+import org.drftpd.master.RemoteSlave;
+import org.drftpd.mirroring.ArchiveType;
+import org.drftpd.plugins.Archive;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.sections.SectionInterface;
 
 
 /**
@@ -42,13 +40,13 @@ import java.util.Properties;
  */
 public class MoveReleaseToSpecificSlaves extends ArchiveType {
     private static final Logger logger = Logger.getLogger(MoveReleaseToSpecificSlaves.class);
-    private HashSet _destSlaves;
+    private HashSet<RemoteSlave> _destSlaves;
     private int _numOfSlaves;
 
     public MoveReleaseToSpecificSlaves(Archive archive,
         SectionInterface section, Properties props) {
         super(archive, section, props);
-        _destSlaves = new HashSet();
+        _destSlaves = new HashSet<RemoteSlave>();
 
         for (int i = 1;; i++) {
             String slavename = null;
@@ -61,7 +59,7 @@ public class MoveReleaseToSpecificSlaves extends ArchiveType {
             }
 
             try {
-                _destSlaves.add(_parent.getConnectionManager().getGlobalContext()
+                _destSlaves.add(_parent.getGlobalContext()
                                        .getSlaveManager().getRemoteSlave(slavename));
             } catch (ObjectNotFoundException e) {
                 logger.debug("Unable to get slave " + slavename +

@@ -103,7 +103,7 @@ public class StaticRemoteFile extends AbstractRemoteFile {
      * StaticRemoteFile cannot be linked
      * @return java.util.Collections.EMPTY_LIST
      */
-    public Collection getFiles() {
+    public List getFiles() {
         return Collections.EMPTY_LIST;
     }
 

@@ -17,22 +17,20 @@
  */
 package org.drftpd.mirroring.archivetypes;
 
-import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.mirroring.Job;
-
-import org.apache.log4j.Logger;
-
-import org.drftpd.PropertyHelper;
-import org.drftpd.mirroring.ArchiveType;
-import org.drftpd.plugins.Archive;
-
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.sections.SectionInterface;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
+
+import net.sf.drftpd.mirroring.Job;
+
+import org.apache.log4j.Logger;
+import org.drftpd.PropertyHelper;
+import org.drftpd.master.RemoteSlave;
+import org.drftpd.mirroring.ArchiveType;
+import org.drftpd.plugins.Archive;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.sections.SectionInterface;
 
 
 /**
@@ -62,8 +60,8 @@ public class MoveReleaseToMostFreeSlaves extends ArchiveType {
         }
     }
 
-    public HashSet findDestinationSlaves() {
-        HashSet set = _parent.getConnectionManager().getGlobalContext()
+    public HashSet<RemoteSlave> findDestinationSlaves() {
+        HashSet<RemoteSlave> set = _parent.getGlobalContext()
                              .getSlaveManager().findSlavesBySpace(_numOfSlaves,
                 new HashSet(), false);
 

@@ -128,8 +128,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
             return new Reply(550, ex.getMessage());
         }
 
-        if (!conn.getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(),
-                    newCurrentDirectory)) {
+        if (!conn.getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), newCurrentDirectory, true)) {
             return new Reply(550, request.getArgument() + ": Not found");
 
             // reply identical to FileNotFoundException.getMessage() above
@@ -365,12 +364,10 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 
         // check permission
         if (requestedFile.getUsername().equals(conn.getUserNull().getName())) {
-            if (!conn.getGlobalContext().getConfig().checkDeleteOwn(conn.getUserNull(),
-                        requestedFile)) {
+            if (!conn.getGlobalContext().getConfig().checkPathPermission("deleteown", conn.getUserNull(), requestedFile)) {
                 return Reply.RESPONSE_530_ACCESS_DENIED;
             }
-        } else if (!conn.getGlobalContext().getConfig().checkDelete(conn.getUserNull(),
-                    requestedFile)) {
+        } else if (!conn.getGlobalContext().getConfig().checkPathPermission("delete", conn.getUserNull(), requestedFile)) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
@@ -474,8 +471,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
             return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
         }
 
-        if (!conn.getGlobalContext().getConfig().checkMakeDir(conn.getUserNull(),
-                    dir)) {
+        if (!conn.getGlobalContext().getConfig().checkPathPermission("makedir", conn.getUserNull(), dir)) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
@@ -534,12 +530,10 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         }
 
         if (requestedFile.getUsername().equals(conn.getUserNull().getName())) {
-            if (!conn.getGlobalContext().getConfig().checkDeleteOwn(conn.getUserNull(),
-                        requestedFile)) {
+            if (!conn.getGlobalContext().getConfig().checkPathPermission("deleteown", conn.getUserNull(), requestedFile)) {
                 return Reply.RESPONSE_530_ACCESS_DENIED;
             }
-        } else if (!conn.getGlobalContext().getConfig().checkDelete(conn.getUserNull(),
-                    requestedFile)) {
+        } else if (!conn.getGlobalContext().getConfig().checkPathPermission("delete", conn.getUserNull(), requestedFile)) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
@@ -596,12 +590,10 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 
         //check permission
         if (_renameFrom.getUsername().equals(conn.getUserNull().getName())) {
-            if (!conn.getGlobalContext().getConfig().checkRenameOwn(conn.getUserNull(),
-                        _renameFrom)) {
+            if (!conn.getGlobalContext().getConfig().checkPathPermission("renameown", conn.getUserNull(), _renameFrom)) {
                 return Reply.RESPONSE_530_ACCESS_DENIED;
             }
-        } else if (!conn.getGlobalContext().getConfig().checkRename(conn.getUserNull(),
-                    _renameFrom)) {
+        } else if (!conn.getGlobalContext().getConfig().checkPathPermission("rename", conn.getUserNull(), _renameFrom)) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
@@ -640,12 +632,10 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 
         // check permission
         if (_renameFrom.getUsername().equals(conn.getUserNull().getName())) {
-            if (!conn.getGlobalContext().getConfig().checkRenameOwn(conn.getUserNull(),
-                        toDir)) {
+            if (!conn.getGlobalContext().getConfig().checkPathPermission("renameown", conn.getUserNull(), toDir)) {
                 return Reply.RESPONSE_530_ACCESS_DENIED;
             }
-        } else if (!conn.getGlobalContext().getConfig().checkRename(conn.getUserNull(),
-                    toDir)) {
+        } else if (!conn.getGlobalContext().getConfig().checkPathPermission("rename", conn.getUserNull(), toDir)) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 

@@ -49,7 +49,7 @@ public class ConstantMirroringAndArchive extends ArchiveType {
     private static final Logger logger = Logger.getLogger(ConstantMirroringAndArchive.class);
     private int _numOfSlaves;
     private long _slowAfter;
-    private ArrayList _fastHosts;
+    private ArrayList<RemoteSlave> _fastHosts;
 
     public ConstantMirroringAndArchive(Archive archive,
         SectionInterface section, Properties p) {
@@ -83,8 +83,8 @@ public class ConstantMirroringAndArchive extends ArchiveType {
             }
 
             try {
-                _fastHosts.add(_parent.getConnectionManager().getGlobalContext()
-                                      .getSlaveManager().getRemoteSlave(slavename));
+                _fastHosts.add(_parent.getGlobalContext().getSlaveManager()
+						.getRemoteSlave(slavename));
             } catch (ObjectNotFoundException e) {
                 logger.error("Unable to get slave " + slavename +
                     " from the SlaveManager");
@@ -150,19 +150,17 @@ public class ConstantMirroringAndArchive extends ArchiveType {
         }
     }
 
-    public HashSet findDestinationSlaves() {
-        HashSet allHosts = new HashSet(_parent.getConnectionManager()
-                                              .getGlobalContext()
-                                              .getSlaveManager().getSlaves());
+    public HashSet<RemoteSlave> findDestinationSlaves() {
+        HashSet<RemoteSlave> allHosts = new HashSet<RemoteSlave>(_parent
+				.getGlobalContext().getSlaveManager().getSlaves());
 
         HashSet returnMe = new HashSet();
 
-        /*if ((System.currentTimeMillis() - getDirectory().lastModified()) > _slowAfter) {
-                logger.debug("Returning list of slowhosts");
-        }
-        else {
-                logger.debug("Returning list of fasthosts");
-        }*/
+        /*
+		 * if ((System.currentTimeMillis() - getDirectory().lastModified()) >
+		 * _slowAfter) { logger.debug("Returning list of slowhosts"); } else {
+		 * logger.debug("Returning list of fasthosts"); }
+		 */
         for (Iterator iter2 = allHosts.iterator(); iter2.hasNext();) {
             RemoteSlave rslave = (RemoteSlave) iter2.next();
 
@@ -271,7 +269,7 @@ public class ConstantMirroringAndArchive extends ArchiveType {
 
     private ArrayList recursiveSend(LinkedRemoteFileInterface lrf) {
         ArrayList jobQueue = new ArrayList();
-        JobManager jm = _parent.getConnectionManager().getJobManager();
+        JobManager jm = _parent.getGlobalContext().getJobManager();
 
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();

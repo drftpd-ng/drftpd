@@ -114,8 +114,8 @@ public class ConstantMirroring extends ArchiveType {
         }
     }
 
-    public HashSet findDestinationSlaves() {
-        return new HashSet(_parent.getConnectionManager().getGlobalContext()
+    public HashSet<RemoteSlave> findDestinationSlaves() {
+        return new HashSet<RemoteSlave>(_parent.getGlobalContext()
                                   .getSlaveManager().getSlaves());
     }
 
@@ -157,7 +157,7 @@ public class ConstantMirroring extends ArchiveType {
 
     private ArrayList recursiveSend(LinkedRemoteFileInterface lrf) {
         ArrayList jobQueue = new ArrayList();
-        JobManager jm = _parent.getConnectionManager().getJobManager();
+        JobManager jm = _parent.getGlobalContext().getJobManager();
 
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();

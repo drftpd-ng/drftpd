@@ -146,7 +146,7 @@ public abstract class ArchiveType {
      */
     public ArrayList<Job> send() {
         ArrayList<Job> jobs = recursiveSend(getDirectory());
-        JobManager jm = _parent.getConnectionManager().getJobManager();
+        JobManager jm = _parent.getGlobalContext().getJobManager();
         jm.addJobsToQueue(jobs);
         return jobs;
     }

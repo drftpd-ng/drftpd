@@ -22,7 +22,6 @@ import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.config.Permission;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.UserComparator;
 
@@ -30,6 +29,7 @@ import org.drftpd.Bytes;
 import org.drftpd.commands.TransferStatistics;
 
 import org.drftpd.master.ConnectionManager;
+import org.drftpd.permissions.Permission;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.plugins.Trial;
 

@@ -28,7 +28,12 @@ import org.drftpd.GlobalContext;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.UserManagment;
 
-import org.drftpd.master.ConnectionManager;
+import org.drftpd.permissions.GlobPathPermission;
+import org.drftpd.permissions.MessagePathPermission;
+import org.drftpd.permissions.PathPermission;
+import org.drftpd.permissions.PatternPathPermission;
+import org.drftpd.permissions.Permission;
+import org.drftpd.permissions.RatioPathPermission;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.Slave;
 
@@ -37,7 +42,6 @@ import org.drftpd.usermanager.User;
 import com.Ostermiller.util.StringTokenizer;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
@@ -60,32 +64,33 @@ import java.util.Properties;
  * @author mog
  * @version $Id$
  */
-public class FtpConfig extends Observable {
+public class FtpConfig extends Observable implements ConfigInterface {
     private static final Logger logger = Logger.getLogger(FtpConfig.class);
     private ArrayList<InetAddress> _bouncerIps;
     private boolean _capFirstDir;
     private boolean _capFirstFile;
     private String _cfgFileName;
-    protected ConnectionManager _connManager;
-    private ArrayList _creditcheck;
-    private ArrayList _creditloss;
+    private ArrayList<RatioPathPermission> _creditcheck = new ArrayList<RatioPathPermission>();
+    private ArrayList<RatioPathPermission> _creditloss = new ArrayList<RatioPathPermission>();
     private boolean _hideIps;
     private boolean _isLowerDir;
     private boolean _isLowerFile;
     private String _loginPrompt = Slave.VERSION + " http://drftpd.org";
     private int _maxUsersExempt;
     private int _maxUsersTotal = Integer.MAX_VALUE;
-    private ArrayList _msgpath;
+    private ArrayList<MessagePathPermission> _msgpath = new ArrayList<MessagePathPermission>();
     private Hashtable<String, ArrayList<PathPermission>> _pathsPerms = new Hashtable<String, ArrayList<PathPermission>>();
-    private Hashtable<String, Permission> _permissions;
-    private StringTokenizer _replaceDir;
-    private StringTokenizer _replaceFile;
+    private Hashtable<String, Permission> _permissions = new Hashtable<String,Permission>();
+    private StringTokenizer _replaceDir = null;
+    private StringTokenizer _replaceFile = null;
     private long _slaveStatusUpdateTime;
-    private boolean _useDirNames;
-    private boolean _useFileNames;
+    private boolean _useDirNames = false;
+    private boolean _useFileNames = false;
     private String newConf = "conf/perms.conf";
     protected PortRange _portRange;
 	private Permission _shutdown;
+	protected Properties _zsCfg;
+	protected GlobalContext _gctx;
 
     protected FtpConfig() {
     }
@@ -94,16 +99,15 @@ public class FtpConfig extends Observable {
      * Constructor that allows reusing of cfg object
      */
     public FtpConfig(Properties cfg, String cfgFileName,
-        ConnectionManager connManager) throws IOException {
+        GlobalContext gctx) throws IOException {
         _cfgFileName = cfgFileName;
-        loadConfig(cfg, connManager);
+        loadConfig(cfg, gctx);
     }
     
-    public FtpConfig(String cfgFileName, ConnectionManager connManager) throws IOException {
-    	_connManager = connManager;
+    public FtpConfig(String cfgFileName, GlobalContext gctx) throws IOException {
         Properties cfg = new Properties();
         cfg.load(new FileInputStream(cfgFileName));
-        loadConfig(cfg, _connManager);
+        loadConfig(cfg, gctx);
     }
 
     private static ArrayList makeRatioPermission(ArrayList<RatioPathPermission> arr,
@@ -123,58 +127,6 @@ public class FtpConfig extends Observable {
         }
 
         return users;
-    }
-
-    public boolean checkDelete(User fromUser, LinkedRemoteFileInterface path) {
-        return checkPathPermission("delete", fromUser, path);
-    }
-
-    public boolean checkDeleteOwn(User fromUser, LinkedRemoteFileInterface path) {
-        return checkPathPermission("deleteown", fromUser, path);
-    }
-
-    public boolean checkDenyDataUnencrypted(User user) {
-        return checkPermission("denydatauncrypted", user);
-    }
-
-    public boolean checkDenyDirUnencrypted(User user) {
-        return checkPermission("denydiruncrypted", user);
-    }
-
-    /**
-     * Returns true if the path has dirlog enabled.
-     * @param fromUser The user who created the log event.
-     * @param path The path in question.
-     * @return true if the path has dirlog enabled.
-     */
-    public boolean checkDirLog(User fromUser, LinkedRemoteFileInterface path) {
-        return checkPathPermission("dirlog", fromUser, path);
-    }
-
-    /**
-     * Also checks privpath for permission
-     * @return true if fromUser is allowed to download the file path
-     */
-    public boolean checkDownload(User fromUser, LinkedRemoteFileInterface path) {
-        return checkPathPermission("download", fromUser, path);
-    }
-
-    public boolean checkGive(User user) {
-        return checkPermission("give", user);
-    }
-
-    /**
-     * @return true if fromUser should be hidden
-     */
-    public boolean checkHideInWho(User fromUser, LinkedRemoteFileInterface path) {
-        return checkPathPermission("hideinwho", fromUser, path);
-    }
-
-    /**
-     * @return true if fromUser is allowed to mkdir in path
-     */
-    public boolean checkMakeDir(User fromUser, LinkedRemoteFileInterface path) {
-        return checkPathPermission("makedir", fromUser, path);
     }
 
     public boolean checkPathPermission(String key, User fromUser,
@@ -203,44 +155,10 @@ public class FtpConfig extends Observable {
         return defaults;
     }
 
-    private boolean checkPermission(String key, User user) {
+    public boolean checkPermission(String key, User user) {
         Permission perm = _permissions.get(key);
 
         return (perm == null) ? false : perm.check(user);
-    }
-
-    /**
-     * @return true if user fromUser is allowed to see path
-     */
-    public boolean checkPrivPath(User fromUser, LinkedRemoteFileInterface path) {
-        return checkPathPermission("privpath", fromUser, path, true);
-    }
-
-    public boolean checkRename(User fromUser, LinkedRemoteFileInterface path) {
-        return checkPathPermission("rename", fromUser, path);
-    }
-
-    public boolean checkRenameOwn(User fromUser, LinkedRemoteFileInterface path) {
-        return checkPathPermission("renameown", fromUser, path);
-    }
-
-    public boolean checkTake(User user) {
-        return checkPermission("take", user);
-    }
-
-    /**
-     * @return true if fromUser is allowed to upload in directory path
-     */
-    public boolean checkUpload(User fromUser, LinkedRemoteFileInterface path) {
-        return checkPathPermission("upload", fromUser, path);
-    }
-
-    public boolean checkUserRejectInsecure(User user) {
-        return checkPermission("userrejectinsecure", user);
-    }
-
-    public boolean checkUserRejectSecure(User user) {
-        return checkPermission("userrejectsecure", user);
     }
 
     public void directoryMessage(Reply response, User user,
@@ -261,14 +179,6 @@ public class FtpConfig extends Observable {
      */
     public List getBouncerIps() {
         return _bouncerIps;
-    }
-
-    public ConnectionManager getConnectionManager() {
-        if (_connManager == null) {
-            throw new NullPointerException();
-        }
-
-        return _connManager;
     }
 
     public float getCreditCheckRatio(LinkedRemoteFileInterface path,
@@ -330,7 +240,7 @@ public class FtpConfig extends Observable {
             return name;
         }
 
-        String temp = new String(name);
+        String temp = name;
 
         if (_isLowerFile) {
             temp = temp.toLowerCase();
@@ -347,7 +257,8 @@ public class FtpConfig extends Observable {
     }
 
     public GlobalContext getGlobalContext() {
-        return getConnectionManager().getGlobalContext();
+    	assert _gctx != null;
+        return _gctx;
     }
 
     public boolean getHideIps() {
@@ -370,24 +281,28 @@ public class FtpConfig extends Observable {
         return _slaveStatusUpdateTime;
     }
 
-    public void loadConfig(Properties cfg, ConnectionManager connManager)
+	public Properties getZsConfig() {
+		assert _zsCfg != null;
+		return _zsCfg;
+	}
+
+	public void loadConfig(Properties cfg, GlobalContext gctx)
         throws IOException {
         loadConfig2(new FileReader(newConf));
         if (_portRange == null) {
             //default portrange if none specified
             _portRange = new PortRange();
         }
-        _connManager = connManager;
+        _gctx = gctx;
         loadConfig1(cfg);
+        _zsCfg = new Properties();
+        _zsCfg.load(new FileInputStream("conf/zipscript.conf"));
     }
 
     protected void loadConfig1(Properties cfg) throws UnknownHostException {
         _slaveStatusUpdateTime = Long.parseLong(cfg.getProperty(
                     "slaveStatusUpdateTime", "3000"));
 
-        /*        _serverName = cfg.getProperty("master.bindname", "slavemaster");
-                _socketPort = Integer.parseInt(cfg.getProperty("master.socketport",
-                            "1100"));*/
         _hideIps = cfg.getProperty("hideips", "").equalsIgnoreCase("true");
 
         StringTokenizer st = new StringTokenizer(cfg.getProperty("bouncer_ip",
@@ -397,23 +312,12 @@ public class FtpConfig extends Observable {
 
         while (st.hasMoreTokens()) {
             bouncerIps.add(InetAddress.getByName(st.nextToken()));
-            // throws UnknownHostException
         }
 
         _bouncerIps = bouncerIps;
     }
 
     protected void loadConfig2(Reader in2) throws IOException {
-        //Hashtable<String,ArrayList> patternPathPermissions =
-        Hashtable<String,Permission> permissions = new Hashtable<String,Permission>();
-        ArrayList<RatioPathPermission> creditcheck = new ArrayList<RatioPathPermission>();
-        ArrayList<RatioPathPermission> creditloss = new ArrayList<RatioPathPermission>();
-        ArrayList<MessagePathPermission> msgpath = new ArrayList<MessagePathPermission>();
-        _useFileNames = false;
-        _replaceFile = null;
-        _useDirNames = false;
-        _replaceDir = null;
-
         LineNumberReader in = new LineNumberReader(in2);
 
         try {
@@ -455,18 +359,18 @@ public class FtpConfig extends Observable {
                     else if (cmd.equals("msgpath")) {
                         String path = st.nextToken();
                         String messageFile = st.nextToken();
-                        msgpath.add(new MessagePathPermission(path,
+                        _msgpath.add(new MessagePathPermission(path,
                                 messageFile, makeUsers(st)));
                     }
                     //creditloss <path> <multiplier> [<-user|=group|flag> ...]
                     else if (cmd.equals("creditloss")) {
-                        makeRatioPermission(creditloss, st);
+                        makeRatioPermission(_creditloss, st);
                     }
                     //creditcheck <path> <ratio> [<-user|=group|flag> ...]
                     else if (cmd.equals("creditcheck")) {
-                        makeRatioPermission(creditcheck, st);
+                        makeRatioPermission(_creditcheck, st);
                     } else if (cmd.equals("pathperm")) {
-                        addPathPermission(                            st.nextToken(), st);
+                        addGlobPathPermission(st.nextToken(), st);
 
                     } else if (cmd.equals("privpath") || cmd.equals("dirlog") ||
                             cmd.equals("hideinwho") || cmd.equals("makedir") ||
@@ -474,26 +378,28 @@ public class FtpConfig extends Observable {
                             cmd.equals("download") || cmd.equals("delete") ||
                             cmd.equals("deleteown") || cmd.equals("rename") ||
                             cmd.equals("renameown") || cmd.equals("request")) {
-                        addPathPermission(cmd,
+                        addGlobPathPermission(cmd,
                             st);
-
+                    } else if(cmd.equals("makedir2")) {
+                    	addPatternPathPermission(cmd.substring(0,
+								cmd.length() - 1), st);
                     } else if ("userrejectsecure".equals(cmd) ||
                             "userrejectinsecure".equals(cmd) ||
                             "denydiruncrypted".equals(cmd) ||
                             "denydatauncrypted".equals(cmd) ||
                             "give".equals(cmd) || "take".equals(cmd)) {
-                        if (permissions.containsKey(cmd)) {
+                        if (_permissions.containsKey(cmd)) {
                             throw new RuntimeException(
                                 "Duplicate key in perms.conf: " + cmd +
                                 " line: " + in.getLineNumber());
                         }
 
-                        permissions.put(cmd, new Permission(makeUsers(st)));
+                        _permissions.put(cmd, new Permission(makeUsers(st)));
                     } else if("shutdown".equals(cmd)) {
                     	_shutdown = new Permission(makeUsers(st));
                     } else {
                         if (!cmd.startsWith("#")) {
-                            addPathPermission(cmd, st);
+                            addGlobPathPermission(cmd, st);
                         }
                     }
                 } catch (Exception e) {
@@ -502,25 +408,23 @@ public class FtpConfig extends Observable {
                 }
             }
 
-            creditcheck.trimToSize();
-            _creditcheck = creditcheck;
-
-            creditloss.trimToSize();
-            _creditloss = creditloss;
-
-            msgpath.trimToSize();
-            _msgpath = msgpath;
-
-            _permissions = permissions;
-            //_shutdown = shutdown;
-
             //notify any observers so they can add their own permissions
             notifyObservers();
         } finally {
             in.close();
         }
     }
-	public void addPathPermission(String key, PathPermission permission) {
+
+    private void addGlobPathPermission(String key, StringTokenizer st) throws MalformedPatternException {
+        addPathPermission(key, new GlobPathPermission(new GlobCompiler().compile(
+                    st.nextToken()), makeUsers(st)));
+    }
+
+    private void addPatternPathPermission(String key, StringTokenizer st) {
+    	addPathPermission(key, new PatternPathPermission(st.nextToken(), makeUsers(st)));
+    }
+
+    public void addPathPermission(String key, PathPermission permission) {
         ArrayList<PathPermission> perms = _pathsPerms.get(key);
 
         if (perms == null) {
@@ -530,21 +434,7 @@ public class FtpConfig extends Observable {
         perms.add(permission);		
 	}
 
-    private void addPathPermission(String key, StringTokenizer st) throws MalformedPatternException {
-        addPathPermission(key, new PatternPathPermission(new GlobCompiler().compile(
-                    st.nextToken()), makeUsers(st)));
-    }
-
-//    /**
-//     * @deprecated
-//     */
-//    public void reloadConfig() throws FileNotFoundException, IOException {
-//        Properties cfg = new Properties();
-//        cfg.load(new FileInputStream(_cfgFileName));
-//        loadConfig(cfg, _connManager);
-//    }
-
-    private void replaceChars(StringBuffer source, Character oldChar,
+    private static void replaceChars(StringBuffer source, Character oldChar,
         Character newChar) {
         if (newChar == null) {
             int x = 0;
@@ -569,7 +459,7 @@ public class FtpConfig extends Observable {
         }
     }
 
-    private String replaceName(String source, StringTokenizer st) {
+    private static String replaceName(String source, StringTokenizer st) {
         StringBuffer sb = new StringBuffer(source);
         Character oldChar = null;
         Character newChar = null;

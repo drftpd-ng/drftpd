@@ -31,15 +31,15 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.config.Permission;
 import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
+import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commands.UserManagment;
 import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.master.ConnectionManager;
+import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.User;
 
 import com.Ostermiller.util.StringTokenizer;
@@ -49,13 +49,12 @@ import com.Ostermiller.util.StringTokenizer;
  * @author mog
  * @version $Id: Trial.java 823 2004-11-29 01:36:22Z mog $
  */
-public class Trial implements FtpListener {
+public class Trial extends FtpListener {
     private static final Logger logger = Logger.getLogger(Trial.class);
     public static final int PERIOD_ALL = 0;
     public static final int PERIOD_DAILY = Calendar.DAY_OF_MONTH; // = 5
     public static final short PERIOD_MONTHLY = Calendar.MONTH; // = 2
     public static final short PERIOD_WEEKLY = Calendar.WEEK_OF_YEAR; // = 3
-    private ConnectionManager _cm;
     private ArrayList _limits;
     private TrialSiteBot _siteBot;
 
@@ -388,16 +387,12 @@ public class Trial implements FtpListener {
         }
     }
 
-    protected ConnectionManager getConnectionManager() {
-        return _cm;
-    }
-
     public ArrayList getLimits() {
         return _limits;
     }
 
-    public void init(ConnectionManager mgr) {
-        _cm = mgr;
+    public void init(GlobalContext gctx) {
+        super.init(gctx);
         reload();
     }
 
@@ -420,9 +415,9 @@ public class Trial implements FtpListener {
             _siteBot.disable();
         }
 
-        if (_cm != null) {
+        if (_gctx != null) {
             try {
-                SiteBot _irc = (SiteBot) _cm.getFtpListener(SiteBot.class);
+                SiteBot _irc = (SiteBot) getGlobalContext().getConnectionManager().getFtpListener(SiteBot.class);
                 _siteBot = new TrialSiteBot(this, _irc);
             } catch (ObjectNotFoundException e1) {
                 logger.warn("Error loading sitebot component, sitebot announcements disabled.",
@@ -432,7 +427,7 @@ public class Trial implements FtpListener {
     }
 
     protected void reload(Properties props) {
-        ArrayList limits = new ArrayList();
+        ArrayList<Limit> limits = new ArrayList<Limit>();
 
         for (int i = 1;; i++) {
             if (props.getProperty(i + ".quota") == null) {

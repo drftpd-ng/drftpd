@@ -37,7 +37,6 @@ import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.SlaveFileException;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.mirroring.JobManager;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -201,10 +200,10 @@ public class ConnectionManager {
         }
 
         if (!baseconn.isSecure() &&
-                getGlobalContext().getConfig().checkUserRejectInsecure(user)) {
+                getGlobalContext().getConfig().checkPermission("userrejectinsecure", user)) {
             return new Reply(530, "USE SECURE CONNECTION");
         } else if (baseconn.isSecure() &&
-                getGlobalContext().getConfig().checkUserRejectSecure(user)) {
+                getGlobalContext().getConfig().checkPermission("userrejectsecure", user)) {
             return new Reply(530, "USE INSECURE CONNECTION");
         }
 
@@ -249,10 +248,6 @@ public class ConnectionManager {
         }
 
         return _gctx;
-    }
-
-    public JobManager getJobManager() {
-        return getGlobalContext().getJobManager();
     }
 
     public Timer getTimer() {

@@ -17,18 +17,25 @@
  */
 package org.drftpd.plugins;
 
-import f00f.net.irc.martyr.Debug;
-import f00f.net.irc.martyr.IRCConnection;
-import f00f.net.irc.martyr.clientstate.Channel;
-import f00f.net.irc.martyr.commands.InviteCommand;
-import f00f.net.irc.martyr.commands.MessageCommand;
-import f00f.net.irc.martyr.commands.NickCommand;
-import f00f.net.irc.martyr.commands.WhoisCommand;
-import f00f.net.irc.martyr.replies.WhoisUserReply;
-import f00f.net.irc.martyr.services.AutoJoin;
-import f00f.net.irc.martyr.services.AutoReconnect;
-import f00f.net.irc.martyr.services.AutoRegister;
-import f00f.net.irc.martyr.services.AutoResponder;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Properties;
+import java.util.ResourceBundle;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
@@ -45,14 +52,14 @@ import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
-import net.sf.drftpd.master.config.FtpConfig;
+import net.sf.drftpd.master.config.ConfigInterface;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.Bytes;
+import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.SFVFile;
 import org.drftpd.SFVFile.SFVStatus;
@@ -62,51 +69,39 @@ import org.drftpd.commands.UserManagment;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
-
 import org.drftpd.remotefile.FileUtils;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sitebot.IRCPluginInterface;
 import org.drftpd.slave.SlaveStatus;
-
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-
-import java.net.UnknownHostException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Properties;
-import java.util.ResourceBundle;
+import f00f.net.irc.martyr.Debug;
+import f00f.net.irc.martyr.IRCConnection;
+import f00f.net.irc.martyr.clientstate.Channel;
+import f00f.net.irc.martyr.commands.InviteCommand;
+import f00f.net.irc.martyr.commands.MessageCommand;
+import f00f.net.irc.martyr.commands.NickCommand;
+import f00f.net.irc.martyr.commands.WhoisCommand;
+import f00f.net.irc.martyr.replies.WhoisUserReply;
+import f00f.net.irc.martyr.services.AutoJoin;
+import f00f.net.irc.martyr.services.AutoReconnect;
+import f00f.net.irc.martyr.services.AutoRegister;
+import f00f.net.irc.martyr.services.AutoResponder;
 
 
 /**
  * @author mog
  * @version $Id$
  */
-public class SiteBot implements FtpListener, Observer {
+public class SiteBot extends FtpListener implements Observer {
     public static final ReplacerEnvironment GLOBAL_ENV = new ReplacerEnvironment();
 
     static {
@@ -121,7 +116,6 @@ public class SiteBot implements FtpListener, Observer {
     private AutoReconnect _autoReconnect;
     private AutoRegister _autoRegister;
     private String _channelName;
-    private ConnectionManager _cm;
     private String _commands;
     protected IRCConnection _conn;
     private boolean _enableAnnounce;
@@ -258,7 +252,7 @@ public class SiteBot implements FtpListener, Observer {
 
     private void actionPerformedDirectory(DirectoryFtpEvent direvent)
         throws FormatterException {
-        if (!getConfig().checkDirLog(direvent.getUser(), direvent.getDirectory())) {
+        if (!getConfig().checkPathPermission("dirlog", direvent.getUser(), direvent.getDirectory())) {
             return;
         }
 
@@ -451,7 +445,7 @@ public class SiteBot implements FtpListener, Observer {
                 User raceuser;
 
                 try {
-                    raceuser = _cm.getGlobalContext().getUserManager()
+                    raceuser = getGlobalContext().getUserManager()
                                   .getUserByName(stat.getUsername());
                 } catch (NoSuchUserException e2) {
                     continue;
@@ -476,28 +470,28 @@ public class SiteBot implements FtpListener, Observer {
                     Bytes.formatBytes(stat.getXferspeed()) + "/s");
                 raceenv.add("alup",
                     new Integer(TransferStatistics.getStatsPlace("ALUP",
-                            raceuser, _cm.getGlobalContext().getUserManager())));
+                            raceuser, getGlobalContext().getUserManager())));
                 raceenv.add("monthup",
                     new Integer(TransferStatistics.getStatsPlace("MONTHUP",
-                            raceuser, _cm.getGlobalContext().getUserManager())));
+                            raceuser, getGlobalContext().getUserManager())));
                 raceenv.add("wkup",
                     new Integer(TransferStatistics.getStatsPlace("WKUP",
-                            raceuser, _cm.getGlobalContext().getUserManager())));
+                            raceuser, getGlobalContext().getUserManager())));
                 raceenv.add("dayup",
                     new Integer(TransferStatistics.getStatsPlace("DAYUP",
-                            raceuser, _cm.getGlobalContext().getUserManager())));
+                            raceuser, getGlobalContext().getUserManager())));
                 raceenv.add("aldn",
                     new Integer(TransferStatistics.getStatsPlace("ALDN",
-                            raceuser, _cm.getGlobalContext().getUserManager())));
+                            raceuser, getGlobalContext().getUserManager())));
                 raceenv.add("monthdn",
                     new Integer(TransferStatistics.getStatsPlace("MONTHDN",
-                            raceuser, _cm.getGlobalContext().getUserManager())));
+                            raceuser, getGlobalContext().getUserManager())));
                 raceenv.add("wkdn",
                     new Integer(TransferStatistics.getStatsPlace("WKDN",
-                            raceuser, _cm.getGlobalContext().getUserManager())));
+                            raceuser, getGlobalContext().getUserManager())));
                 raceenv.add("daydn",
                     new Integer(TransferStatistics.getStatsPlace("DAYDN",
-                            raceuser, _cm.getGlobalContext().getUserManager())));
+                            raceuser, getGlobalContext().getUserManager())));
 
                 say(ret.getSection(), SimplePrintf.jprintf(raceformat, raceenv));
             }
@@ -550,7 +544,7 @@ public class SiteBot implements FtpListener, Observer {
 
             User leaduser = null;
             try {
-                leaduser = _cm.getGlobalContext().getUserManager()
+                leaduser = getGlobalContext().getUserManager()
                               .getUserByName(stat.getUsername());
             } catch (NoSuchUserException e3) {
                 logger.log(Level.WARN, "", e3);
@@ -631,7 +625,7 @@ public class SiteBot implements FtpListener, Observer {
 
     private void actionPerformedNuke(NukeEvent event) throws FormatterException {
         String cmd = event.getCommand();
-        SectionInterface section = _cm.getGlobalContext().getSectionManager()
+        SectionInterface section = getGlobalContext().getSectionManager()
                                       .lookup(event.getPath());
         ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
         env.add("size", Bytes.formatBytes(event.getSize()));
@@ -661,7 +655,7 @@ public class SiteBot implements FtpListener, Observer {
                 User raceuser;
 
                 try {
-                    raceuser = _cm.getGlobalContext().getUserManager()
+                    raceuser = getGlobalContext().getUserManager()
                                   .getUserByName(stat.getUsername());
                 } catch (NoSuchUserException e2) {
                     nobodyAmount += stat.getAmount();
@@ -933,12 +927,12 @@ public class SiteBot implements FtpListener, Observer {
         return _channelName;
     }
 
-    public FtpConfig getConfig() {
-        return _cm.getGlobalContext().getConfig();
+    public ConfigInterface getConfig() {
+        return getGlobalContext().getConfig();
     }
 
     public ConnectionManager getConnectionManager() {
-        return _cm;
+        return getGlobalContext().getConnectionManager();
     }
 
     public IRCConnection getIRCConnection() {
@@ -947,7 +941,7 @@ public class SiteBot implements FtpListener, Observer {
 
     public Ret getPropertyFileSuffix(String prefix,
         LinkedRemoteFileInterface dir) {
-        SectionInterface sectionObj = getConnectionManager().getGlobalContext()
+        SectionInterface sectionObj = getGlobalContext()
                                           .getSectionManager().lookup(dir.getPath());
 
         //		LinkedRemoteFile section = null;
@@ -965,12 +959,11 @@ public class SiteBot implements FtpListener, Observer {
     }
 
     public SlaveManager getSlaveManager() {
-        return getConnectionManager().getGlobalContext().getSlaveManager();
+        return getGlobalContext().getSlaveManager();
     }
 
-    public void init(ConnectionManager mgr) {
-        _cm = mgr;
-
+    public void init(GlobalContext gctx) {
+    	super.init(gctx);
         try {
             reload();
         } catch (Exception e) {

@@ -120,14 +120,12 @@ public class Find implements CommandHandlerFactory, CommandHandler {
 			// check permission
 			if (file.getUsername().equals(conn.getUserNull().getName())) {
 				if (!conn.getGlobalContext().getConnectionManager()
-						.getGlobalContext().getConfig().checkDeleteOwn(
-								conn.getUserNull(), file)) {
+				.getGlobalContext().getConfig().checkPathPermission("deleteown", conn.getUserNull(), file)) {
 					//return FtpReply.RESPONSE_530_ACCESS_DENIED;
 					return "Access denied for " + file.getPath();
 				}
 			} else if (!conn.getGlobalContext().getConnectionManager()
-					.getGlobalContext().getConfig().checkDelete(
-							conn.getUserNull(), file)) {
+			.getGlobalContext().getConfig().checkPathPermission("delete", conn.getUserNull(), file)) {
 				//return FtpReply.RESPONSE_530_ACCESS_DENIED;
 				return "Access denied for " + file.getPath();
 			}
@@ -475,7 +473,7 @@ public class Find implements CommandHandlerFactory, CommandHandler {
 			ArrayList actions, boolean files, boolean dirs) {
 		//TODO optimize me, checking using regexp for all dirs is possibly slow
 		if (!conn.getGlobalContext().getConnectionManager().getGlobalContext()
-				.getConfig().checkPrivPath(conn.getUserNull(), dir)) {
+		.getConfig().checkPathPermission("privpath", conn.getUserNull(), dir, true)) {
 			//Logger.getLogger(Find.class).debug("privpath: " + dir.getPath());
 			return;
 		}

@@ -147,7 +147,7 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
 			conn.getGlobalContext().getSlaveSelectionManager().reload();
 
 			try {
-				conn.getGlobalContext().getConnectionManager().getJobManager()
+				conn.getGlobalContext().getJobManager()
 						.reload();
 			} catch (IllegalStateException e1) {
 				// not loaded, don't reload

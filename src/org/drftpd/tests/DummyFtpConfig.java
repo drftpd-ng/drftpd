@@ -24,9 +24,9 @@ import java.util.Properties;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.PortRange;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagment;
 
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
 
@@ -42,6 +42,7 @@ public class DummyFtpConfig extends FtpConfig {
         } catch (IOException e) {
             throw new RuntimeException();
         }
+        _zsCfg = new Properties();
     }
 
     public boolean checkPathPermission(String key, User fromUser,
@@ -54,7 +55,7 @@ public class DummyFtpConfig extends FtpConfig {
         return fromUser.getKeyedMap().getObjectFloat(UserManagment.RATIO);
     }
 
-    public void setConnectionManager(ConnectionManager cm) {
-        _connManager = cm;
+    public void setGlobalContext(GlobalContext gctx) {
+        _gctx = gctx;
     }
 }

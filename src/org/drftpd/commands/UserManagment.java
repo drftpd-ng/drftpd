@@ -33,7 +33,6 @@ import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.config.Permission;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.Time;
 
@@ -41,6 +40,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.dynamicdata.Key;
+import org.drftpd.permissions.Permission;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.HostMask;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -1105,7 +1105,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
     private Reply doSITE_GIVE(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
-        if (!conn.getGlobalContext().getConfig().checkGive(conn.getUserNull())) {
+        if (!conn.getGlobalContext().getConfig().checkPermission("give", conn.getUserNull())) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
@@ -1499,7 +1499,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
     private Reply doSITE_TAKE(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
-        if (!conn.getGlobalContext().getConfig().checkTake(conn.getUserNull())) {
+        if (!conn.getGlobalContext().getConfig().checkPermission("take", conn.getUserNull())) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
@@ -1694,8 +1694,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                         continue;
                     }
 
-                    if (conn.getGlobalContext().getConfig().checkHideInWho(user,
-                                conn2.getCurrentDirectory())) {
+                    if (conn.getGlobalContext().getConfig().checkPathPermission("hideinwho", user, conn2.getCurrentDirectory())) {
                         continue;
                     }
 

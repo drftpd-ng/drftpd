@@ -19,6 +19,7 @@ package org.drftpd.slaveselection;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
+import net.sf.drftpd.master.config.ConfigInterface;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 
@@ -49,7 +50,7 @@ public interface SlaveSelectionManagerInterface {
      * Get slave for transfer to master.
      */
     public RemoteSlave getASlaveForMaster(LinkedRemoteFileInterface file,
-        FtpConfig cfg) throws NoAvailableSlaveException;
+        ConfigInterface config) throws NoAvailableSlaveException;
 
     public GlobalContext getGlobalContext();
 

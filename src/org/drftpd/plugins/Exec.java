@@ -57,8 +57,7 @@ import java.io.IOException;
  * @author mog
  * @version $Id$
  */
-public class Exec implements FtpListener {
-    private ConnectionManager _cm;
+public class Exec extends FtpListener {
 
     public void actionPerformed(Event event) {
         if (!(event instanceof TransferEvent) ||
@@ -79,7 +78,7 @@ public class Exec implements FtpListener {
                 "HOST=@" + uevent.getConn().getClientAddress(),
                 
                 "SECTION=" +
-                _cm.getGlobalContext().getSectionManager().lookup(uevent.getDirectory()
+                getGlobalContext().getSectionManager().lookup(uevent.getDirectory()
                                                                         .getPath())
             };
         String[] cmd;
@@ -106,7 +105,4 @@ public class Exec implements FtpListener {
     public void unload() {
     }
 
-    public void init(ConnectionManager connectionManager) {
-        _cm = connectionManager;
-    }
 }

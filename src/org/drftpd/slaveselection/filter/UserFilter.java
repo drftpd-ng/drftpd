@@ -24,10 +24,10 @@ import java.util.Properties;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.config.Permission;
 
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.permissions.Permission;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
 

@@ -951,7 +951,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
     private Reply transfer(BaseFtpConnection conn)
         throws ReplyException {
         if (!_encryptedDataChannel &&
-                conn.getGlobalContext().getConfig().checkDenyDataUnencrypted(conn.getUserNull())) {
+                conn.getGlobalContext().getConfig().checkPermission("denydatauncrypted", conn.getUserNull())) {
             return new Reply(530, "USE SECURE DATA CONNECTION");
         }
 
@@ -1018,8 +1018,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                 }
 
                 if (!ListUtils.isLegalFileName(targetFileName) ||
-                        !conn.getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(),
-                            targetDir)) {
+                        !conn.getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), targetDir, true)) {
                     return new Reply(553,
                         "Requested action not taken. File name not allowed.");
                 }
@@ -1029,8 +1028,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             }
 
             //check access
-            if (!conn.getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(),
-                        targetDir)) {
+            if (!conn.getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), targetDir, true)) {
                 return new Reply(550,
                     request.getArgument() + ": No such file");
             }
@@ -1038,8 +1036,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             switch (direction) {
             case Transfer.TRANSFER_SENDING_DOWNLOAD:
 
-                if (!conn.getGlobalContext().getConfig().checkDownload(conn.getUserNull(),
-                            targetDir)) {
+                if (!conn.getGlobalContext().getConfig().checkPathPermission("download", conn.getUserNull(), targetDir)) {
                     return Reply.RESPONSE_530_ACCESS_DENIED;
                 }
 
@@ -1047,8 +1044,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
             case Transfer.TRANSFER_RECEIVING_UPLOAD:
 
-                if (!conn.getGlobalContext().getConfig().checkUpload(conn.getUserNull(),
-                            targetDir)) {
+                if (!conn.getGlobalContext().getConfig().checkPathPermission("upload", conn.getUserNull(), targetDir)) {
                     return Reply.RESPONSE_530_ACCESS_DENIED;
                 }
 

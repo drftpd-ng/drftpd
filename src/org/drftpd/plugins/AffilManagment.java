@@ -26,16 +26,16 @@ import java.util.Observer;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.config.PathPermission;
 
-import org.drftpd.master.ConnectionManager;
+import org.drftpd.GlobalContext;
+import org.drftpd.permissions.PathPermission;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
  * @version $Id$
  */
-public class AffilManagment implements FtpListener {
+public class AffilManagment extends FtpListener {
 
 	public static class AffilPermission extends PathPermission {
 		private String _group;
@@ -60,8 +60,9 @@ public class AffilManagment implements FtpListener {
 
 	public ArrayList<String> groups;
 
-	public void init(ConnectionManager connectionManager) {
-		connectionManager.getGlobalContext().getConfig().addObserver(
+	public void init(GlobalContext gctx) {
+		super.init(gctx);
+		getGlobalContext().getConfig().addObserver(
 				new Observer() {
 					public void update(Observable o, Object arg) {
 						FtpConfig cfg = (FtpConfig) o;

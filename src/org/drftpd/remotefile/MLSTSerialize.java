@@ -18,6 +18,7 @@
 package org.drftpd.remotefile;
 
 import net.sf.drftpd.Checksum;
+import net.sf.drftpd.master.config.ConfigInterface;
 import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.Logger;
@@ -236,7 +237,7 @@ public class MLSTSerialize {
         }
     }
 
-    public static LinkedRemoteFile unserialize(FtpConfig conf, Reader in,
+    public static LinkedRemoteFile unserialize(ConfigInterface conf, Reader in,
         List rslaves) throws IOException, CorruptFileListException {
         LinkedRemoteFile root = new LinkedRemoteFile(conf);
 

@@ -17,36 +17,34 @@
  */
 package org.drftpd.plugins;
 
-import f00f.net.irc.martyr.GenericCommandAutoService;
-import f00f.net.irc.martyr.InCommand;
-import f00f.net.irc.martyr.commands.MessageCommand;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Properties;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.Logger;
-
+import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.ConnectionManager;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Properties;
+import f00f.net.irc.martyr.GenericCommandAutoService;
+import f00f.net.irc.martyr.InCommand;
+import f00f.net.irc.martyr.commands.MessageCommand;
 
 
 /**
  * @author zubov
  * @version $Id: PreTime.java 806 2004-11-17 22:29:13Z mog $
  */
-public class PreTime implements FtpListener {
+public class PreTime extends FtpListener {
     private static final Logger logger = Logger.getLogger(PreTime.class);
     private ConnectionManager _cm;
     private SiteBot _irc;
@@ -71,8 +69,7 @@ public class PreTime implements FtpListener {
 
         DirectoryFtpEvent dfe = (DirectoryFtpEvent) event;
 
-        if (!getConnectionManager().getGlobalContext().getConfig().checkDirLog(dfe.getUser(),
-                    dfe.getDirectory())) {
+        if (!getConnectionManager().getGlobalContext().getConfig().checkPathPermission("dirlog", dfe.getUser(), dfe.getDirectory())) {
             return;
         }
 
@@ -115,8 +112,8 @@ public class PreTime implements FtpListener {
         return prebot;
     }
 
-    public void init(ConnectionManager mgr) {
-        _cm = mgr;
+    public void init(GlobalContext gctx) {
+    	super.init(gctx);
         reload();
     }
 

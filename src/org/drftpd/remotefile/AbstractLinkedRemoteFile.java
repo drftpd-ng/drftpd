@@ -129,10 +129,10 @@ public abstract class AbstractLinkedRemoteFile
         throw new UnsupportedOperationException();
     }
 
-    public Collection getFiles2() {
+    public List getFiles2() {
         throw new UnsupportedOperationException();
     }
-    public Collection getFiles() {
+    public List getFiles() {
     	return getFiles2();
     }
 

@@ -17,6 +17,11 @@
  */
 package org.drftpd.plugins;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
+
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.Event;
@@ -26,31 +31,23 @@ import net.sf.drftpd.master.UploaderPosition;
 
 import org.drftpd.SFVFile;
 import org.drftpd.dynamicdata.Key;
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.util.Collection;
-import java.util.Iterator;
 
 
 /**
  * @author zubov
  * @version $Id$
  */
-public class RaceStatistics implements FtpListener {
+public class RaceStatistics extends FtpListener {
     public static final Key RACESWON = new Key(RaceStatistics.class,
             "racesWon", Integer.class);
     public static final Key RACES = new Key(RaceStatistics.class, "races",
             Integer.class);
     public static final Key RACESLOST = new Key(RaceStatistics.class,
             "racesLost", Integer.class);
-    private ConnectionManager _cm;
 
     public RaceStatistics() {
     }
@@ -109,7 +106,8 @@ public class RaceStatistics implements FtpListener {
             User user;
 
             try {
-                user = _cm.getGlobalContext().getUserManager().getUserByName(racer.getUsername());
+                user = getGlobalContext().getUserManager().getUserByName(
+						racer.getUsername());
             } catch (NoSuchUserException ex) {
                 // this should not happen, but if it does, it means the user was
                 // deleted
@@ -129,10 +127,6 @@ public class RaceStatistics implements FtpListener {
                 user.getKeyedMap().incrementObjectLong(RACES);
             }
         }
-    }
-
-    public void init(ConnectionManager connectionManager) {
-        _cm = connectionManager;
     }
 
     public void unload() {
