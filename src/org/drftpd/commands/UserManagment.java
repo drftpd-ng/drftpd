@@ -264,7 +264,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
             response.addComment(conn.jprintf(UserManagment.class,
                     "adduser.success", env));
             newUser.getKeyedMap().setObject(UserManagment.COMMENT, "Added by " + conn.getUserNull().getName());
-            newUser.getKeyedMap().setObject(UserManagment.RATIO, new Float(0));
+            newUser.getKeyedMap().setObject(UserManagment.RATIO, new Float(3));
             newUser.getKeyedMap().setObject(UserManagment.GROUPSLOTS,0);
             newUser.getKeyedMap().setObject(UserManagment.LEECHSLOTS,0);
             newUser.getKeyedMap().setObject(UserManagment.MAXLOGINS,0);
