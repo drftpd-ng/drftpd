@@ -3,11 +3,9 @@ package net.sf.drftpd.master;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -36,6 +34,7 @@ import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.slave.TransferImpl;
+import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -46,7 +45,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 /**
- * @version $Id: SlaveManagerImpl.java,v 1.57 2004/01/14 02:35:36 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.58 2004/01/20 06:59:00 mog Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -226,7 +225,7 @@ public class SlaveManagerImpl
 			slaveElement.getChildText("name").toString(),
 			masks);
 	}
-	
+
 	public static List loadRSlaves() {
 		ArrayList rslaves;
 		try {
@@ -611,9 +610,12 @@ public class SlaveManagerImpl
 		bak.delete();
 		new File("files.mlst").renameTo(bak);
 		try {
-			FileOutputStream out = new FileOutputStream("files.mlst");
-			MLSTSerialize.serialize(getRoot(), new PrintStream(out));
-			out.close();
+			SafeFileWriter out = new SafeFileWriter("files.mlst");
+			try {
+				MLSTSerialize.serialize(getRoot(), out);
+			} finally {
+				out.close();
+			}
 		} catch (IOException e) {
 			logger.warn("Error saving files.mlst", e);
 		}

@@ -17,7 +17,7 @@ import net.sf.drftpd.master.ConnectionManager;
  * @author mog
  *
  * Istantiates the CommandManager instances that holds per-connection CommandHandlers.
- * @version $Id: CommandManagerFactory.java,v 1.4 2004/01/13 20:30:54 mog Exp $
+ * @version $Id: CommandManagerFactory.java,v 1.5 2004/01/20 06:59:00 mog Exp $
  */
 public class CommandManagerFactory {
 
@@ -46,7 +46,7 @@ public class CommandManagerFactory {
 		Hashtable hnds = new Hashtable();
 		Properties props = new Properties();
 		try {
-			props.load(new FileInputStream("commandhandlers.conf"));
+			props.load(new FileInputStream("conf/commandhandlers.conf"));
 		} catch (IOException e) {
 			throw new FatalException("Error loading commandhandlers.conf", e);
 		}

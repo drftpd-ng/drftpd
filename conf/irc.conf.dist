@@ -1,0 +1,11 @@
+irc.server=irc.csbnet.se
+irc.port=6667
+irc.channel=#drftpd-test
+irc.key=
+irc.nick=drftpd
+irc.name=drftpd
+irc.user=drftpd
+
+irc.plugins.1=net.sf.drftpd.event.irc.Invite
+irc.plugins.2=net.sf.drftpd.event.irc.Who
+irc.plugins.3=net.sf.drftpd.event.irc.Slaves

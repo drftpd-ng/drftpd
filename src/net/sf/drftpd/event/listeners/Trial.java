@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.16 2004/01/13 22:46:44 mog Exp $
+ * @version $Id: Trial.java,v 1.17 2004/01/20 06:59:00 mog Exp $
  */
 public class Trial implements FtpListener {
 	public static final int PERIOD_ALL = 0;
@@ -369,7 +369,7 @@ public class Trial implements FtpListener {
 	private void reload() {
 		Properties props = new Properties();
 		try {
-			props.load(new FileInputStream("trial.conf"));
+			props.load(new FileInputStream("conf/trial.conf"));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

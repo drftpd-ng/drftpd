@@ -17,6 +17,7 @@ import java.util.StringTokenizer;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectExistsException;
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.RemoteSlave;
@@ -32,7 +33,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.103 2004/01/13 20:30:55 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.104 2004/01/20 06:59:01 mog Exp $
  */
 public class LinkedRemoteFile
 	implements RemoteFileInterface, Serializable, Comparable {
@@ -323,7 +324,7 @@ public class LinkedRemoteFile
 							getPath()
 								+ " missing on "
 								+ rslave.getName()
-								+ " during delete, assumed deleted");
+								+ " during delete, assumed deleted", ex);
 					} catch (RemoteException ex) {
 						rslave.handleRemoteException(ex);
 						continue;
@@ -377,7 +378,7 @@ public class LinkedRemoteFile
 						getPath()
 							+ " missing on "
 							+ tempSlave.getName()
-							+ " during delete, assumed deleted");
+							+ " during delete, assumed deleted", ex);
 				} catch (NoAvailableSlaveException e) {
 					logger.debug("Probably run from Archive", e);
 					continue;
@@ -1261,6 +1262,20 @@ public class LinkedRemoteFile
 		if (isFile() && getSlaves().size() == 0) {
 			delete();
 		}
+	}
+
+	public LinkedRemoteFile getOldestFile() throws ObjectNotFoundException {
+		long oldestTime = Long.MAX_VALUE;
+		LinkedRemoteFile oldestFile = null;
+		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			if(oldestTime > file.lastModified()) {
+				oldestFile = file;
+				oldestTime = oldestFile.lastModified();
+			}
+		}
+		if(oldestFile == null) throw new ObjectNotFoundException();
+		return oldestFile;
 	}
 
 }

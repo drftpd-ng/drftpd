@@ -1,7 +1,6 @@
 package net.sf.drftpd.master.usermanager.jsx;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
@@ -12,11 +11,15 @@ import net.sf.drftpd.master.usermanager.PlainTextPasswordUser;
 import net.sf.drftpd.master.usermanager.UnixPassword;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.util.Crypt;
+import net.sf.drftpd.util.SafeFileWriter;
+
+import org.apache.log4j.Logger;
+
 import JSX.ObjOut;
 
 /**
  * @author mog
- * @version $Id: JSXUser.java,v 1.9 2004/01/03 23:50:54 mog Exp $
+ * @version $Id: JSXUser.java,v 1.10 2004/01/20 06:59:01 mog Exp $
  */
 public class JSXUser
 	extends AbstractUser
@@ -74,16 +77,20 @@ public class JSXUser
 		try {
 			ObjOut out =
 				new ObjOut(
-					new FileWriter(
+					new SafeFileWriter(
 						usermanager.getUserFile(this.getUsername())));
-			out.writeObject(this);
-			out.close();
+			try {
+				out.writeObject(this);
+			} finally {
+				out.close();
+			}
+			Logger.getLogger(JSXUser.class).debug("wrote "+getUsername());
 		} catch (IOException ex) {
 			throw new UserFileException(
 				"Error writing userfile for "
 					+ this.getUsername()
 					+ ": "
-					+ ex.getMessage());
+					+ ex.getMessage(), ex);
 		}
 	}
 

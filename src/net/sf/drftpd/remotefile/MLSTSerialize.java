@@ -20,7 +20,8 @@ package net.sf.drftpd.remotefile;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: MLSTSerialize.java,v 1.19 2004/01/14 02:35:36 mog Exp $
+ * @version $Id: MLSTSerialize.java,v 1.20 2004/01/20 06:59:01 mog Exp $
  */
 public class MLSTSerialize {
 	private static final Logger logger = Logger.getLogger(MLSTSerialize.class);
@@ -47,7 +48,7 @@ public class MLSTSerialize {
 	public static final SimpleDateFormat timeval =
 		new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
-	public static void serialize(LinkedRemoteFile dir, PrintStream out) {
+	public static void serialize(LinkedRemoteFile dir, PrintWriter out) {
 		out.println(dir.getPath() + ":");
 		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
@@ -81,14 +82,14 @@ public class MLSTSerialize {
 		ret.append("unix.group=" + file.getGroupname() + ";");
 		if (file.isFile()) {
 			Iterator iter = file.getSlaves().iterator();
+			ret.append("x.slaves=");
 			if (iter.hasNext()) {
-				ret.append("x.slaves=");
 				ret.append(((RemoteSlave) iter.next()).getName());
 				while (iter.hasNext()) {
 					ret.append("," + ((RemoteSlave) iter.next()).getName());
 				}
-				ret.append(";");
 			}
+			ret.append(";");
 		}
 		if (file.isDeleted())
 			ret.append("x.deleted=true;");
@@ -114,7 +115,9 @@ public class MLSTSerialize {
 			if (line.equals(""))
 				return;
 			int pos = line.indexOf(' ');
-			if(pos == -1) throw new CorruptFileListException("\""+line+"\" is in valid");
+			if (pos == -1)
+				throw new CorruptFileListException(
+					"\"" + line + "\" is in valid");
 			String filename = line.substring(pos + 1);
 			StaticRemoteFile file = new StaticRemoteFile(filename);
 			StringTokenizer st =
@@ -162,7 +165,8 @@ public class MLSTSerialize {
 			}
 			//if(isFile && !file.isFile()) file.setRSlaves(Collections.EMPTY_LIST);
 			if (isFile != file.isFile() && isDir != file.isDirectory())
-				throw new CorruptFileListException("entry is a file but had no x.slaves entry: "+line);
+				throw new CorruptFileListException(
+					"entry is a file but had no x.slaves entry: " + line);
 
 			dir.putFile(file);
 		}
@@ -195,5 +199,9 @@ public class MLSTSerialize {
 			unserialize(in, dir, RemoteSlave.rslavesToHashtable(rslaves), path);
 		}
 		return root;
+	}
+
+	public static void serialize(LinkedRemoteFile dir, Writer out) {
+		serialize(dir, new PrintWriter(out));
 	}
 }

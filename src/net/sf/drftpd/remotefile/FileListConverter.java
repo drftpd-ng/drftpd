@@ -1,17 +1,16 @@
 package net.sf.drftpd.remotefile;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
-
-import org.apache.log4j.BasicConfigurator;
 
 import net.sf.drftpd.master.SlaveManagerImpl;
+import net.sf.drftpd.util.SafeFileWriter;
+
+import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author mog
  *
- * @version $Id: FileListConverter.java,v 1.5 2003/12/23 13:38:21 mog Exp $
+ * @version $Id: FileListConverter.java,v 1.6 2004/01/20 06:59:01 mog Exp $
  */
 public class FileListConverter {
 	public static void main(String[] args) throws IOException {
@@ -23,7 +22,7 @@ public class FileListConverter {
 		System.out.println("Converting files.xml to files.mlst");
 		System.out.println("This might take a while for large filelists and/or slow servers, have patience...");
 		LinkedRemoteFile root = SlaveManagerImpl.loadJDOMFileDatabase(SlaveManagerImpl.loadRSlaves(), null);
-		MLSTSerialize.serialize(root, new PrintStream(new FileOutputStream("files.mlst")));
+		MLSTSerialize.serialize(root, new SafeFileWriter("files.mlst"));
 		System.out.println("Completed, have a nice day");
 	}
 }

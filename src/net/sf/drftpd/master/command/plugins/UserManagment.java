@@ -24,6 +24,7 @@ import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.slave.Transfer;
+import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -34,7 +35,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.20 2004/01/13 22:46:44 mog Exp $
+ * @version $Id: UserManagment.java,v 1.21 2004/01/20 06:59:00 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -485,11 +486,11 @@ public class UserManagment implements CommandHandler {
 		} else if ("num_logins".equalsIgnoreCase(command)) {
 			myUser.setMaxLoginsPerIP(Integer.parseInt(commandArgument));
 
-		//} else if ("max_dlspeed".equalsIgnoreCase(command)) {
-		//	myUser.setMaxDownloadRate(Integer.parseInt(commandArgument));
+			//} else if ("max_dlspeed".equalsIgnoreCase(command)) {
+			//	myUser.setMaxDownloadRate(Integer.parseInt(commandArgument));
 
-		//} else if ("max_ulspeed".equals(command)) {
-		//	myUser.setMaxUploadRate(Integer.parseInt(commandArgument));
+			//} else if ("max_ulspeed".equals(command)) {
+			//	myUser.setMaxUploadRate(Integer.parseInt(commandArgument));
 		} else if ("group".equals(command)) {
 			myUser.setGroup(commandArgument);
 
@@ -1187,13 +1188,13 @@ public class UserManagment implements CommandHandler {
 
 		try {
 			ReplacerFormat formatup =
-				conn.getConfig().getReplacerFormat("who.up");
+				ReplacerUtils.finalFormat(UserManagment.class, "who.up");
 			ReplacerFormat formatdown =
-				conn.getConfig().getReplacerFormat("who.down");
+				ReplacerUtils.finalFormat(UserManagment.class, "who.down");
 			ReplacerFormat formatidle =
-				conn.getConfig().getReplacerFormat("who.idle");
+				ReplacerUtils.finalFormat(UserManagment.class, "who.idle");
 			ReplacerFormat formatcommand =
-				conn.getConfig().getReplacerFormat("who.command");
+				ReplacerUtils.finalFormat(UserManagment.class, "who.command");
 
 			ReplacerEnvironment env = new ReplacerEnvironment();
 
@@ -1219,7 +1220,7 @@ public class UserManagment implements CommandHandler {
 								- conn2.getLastActive())
 								/ 1000
 								+ "s");
-						env.add("user", user.getUsername());
+						env.add("targetuser", user.getUsername());
 
 						if (!conn2.isExecuting()) {
 							response.addComment(

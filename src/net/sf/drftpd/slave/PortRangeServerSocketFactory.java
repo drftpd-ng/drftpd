@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: PortRangeServerSocketFactory.java,v 1.3 2004/01/13 20:30:55 mog Exp $
+ * @version $Id: PortRangeServerSocketFactory.java,v 1.4 2004/01/20 06:59:01 mog Exp $
  * @deprecated
  */
 public class PortRangeServerSocketFactory extends RMISocketFactory {
@@ -48,7 +48,7 @@ public class PortRangeServerSocketFactory extends RMISocketFactory {
 			try {
 				return new ServerSocket(myport, 1);
 			} catch (IOException e) {
-				logger.warn("Failed to listen, will try next port");
+				logger.warn("Failed to listen, will try next port", e);
 				myport += 1;
 				//fail
 				if (myport == randport)

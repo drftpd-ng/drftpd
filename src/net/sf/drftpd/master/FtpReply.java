@@ -10,8 +10,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- *
- * @version $Id: FtpReply.java,v 1.7 2003/12/23 13:38:19 mog Exp $
+ * @version $Id: FtpReply.java,v 1.8 2004/01/20 06:59:00 mog Exp $
  */
 public class FtpReply implements Cloneable {
 	private static final Logger logger =
@@ -121,10 +120,10 @@ public class FtpReply implements Cloneable {
 	 */
 	public static final FtpReply RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN =
 		new FtpReply(553, "Requested action not taken.");
-	protected int code;
+	protected int _code;
 
-	protected Vector lines = new Vector();
-	protected String message;
+	protected Vector _lines = new Vector();
+	protected String _message;
 
 	public FtpReply() {
 	}
@@ -145,53 +144,55 @@ public class FtpReply implements Cloneable {
 	}
 
 	public FtpReply addComment(Object response) {
-		lines.add(String.valueOf(response));
+		_lines.add(String.valueOf(response));
 		return this;
-	}
-	public int size() {
-		return lines.size();
 	}
 
 	public Object clone() {
 		try {
 			FtpReply r = (FtpReply) super.clone();
-			r.lines = (Vector) this.lines.clone();
+			r._lines = (Vector) this._lines.clone();
 			return r;
 		} catch (CloneNotSupportedException ex) {
 			throw new RuntimeException(ex);
 		}
 	}
+
+	public int getCode() {
+		return _code;
+	}
 	public void setCode(int code) {
-		this.code = code;
+		this._code = code;
 	}
 	public void setMessage(String response) {
 		assert response != null;
-		if (response.indexOf('\n') != -1) {
-			response = response.substring(0, response.indexOf('\n'));
+		int pos = response.indexOf('\n');
+		if (pos != -1) {
+			addComment(response.substring(pos+1));
+			response = response.substring(0, pos);
 			logger.log(Level.DEBUG, "Truncated response message with multiple lines: "+response);
 		}
-		this.message = response;
+		this._message = response;
+	}
+	public int size() {
+		return _lines.size();
 	}
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		//sb.append(code + "-");
-		if(lines.size() == 0 && message == null) setMessage("No text specified");
-		for (Iterator iter = lines.iterator(); iter.hasNext();) {
+		if(_lines.size() == 0 && _message == null) setMessage("No text specified");
+		for (Iterator iter = _lines.iterator(); iter.hasNext();) {
 			String comment = (String) iter.next();
-			if (!iter.hasNext() && message == null) {
-				sb.append(code + "  " + comment + "\r\n");
+			if (!iter.hasNext() && _message == null) {
+				sb.append(_code + "  " + comment + "\r\n");
 			} else {
-				sb.append(code + "- " + comment + "\r\n");
+				sb.append(_code + "- " + comment + "\r\n");
 			}
 		}
-		if (message != null)
-			sb.append(code + " " + message + "\r\n");
+		if (_message != null)
+			sb.append(_code + " " + _message + "\r\n");
 		return sb.toString();
-	}
-
-	public int getCode() {
-		return code;
 	}
 
 }

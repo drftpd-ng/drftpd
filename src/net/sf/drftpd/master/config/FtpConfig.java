@@ -4,12 +4,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -24,12 +21,10 @@ import net.sf.drftpd.slave.SlaveImpl;
 import org.apache.log4j.Logger;
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
-import org.tanesha.replacer.FormatterException;
-import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.32 2004/01/13 23:26:59 zubov Exp $
+ * @version $Id: FtpConfig.java,v 1.33 2004/01/20 06:59:01 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -95,8 +90,6 @@ public class FtpConfig {
 	String cfgFileName;
 	private String loginPrompt = SlaveImpl.VERSION + " http://drftpd.mog.se";
 	private String newConf = "perms.conf";
-	private Map replacerFormats;
-
 	/**
 	 * Constructor that allows reusing of cfg object
 	 * 
@@ -266,13 +259,6 @@ public class FtpConfig {
 		return _maxUsersTotal;
 	}
 
-	public ReplacerFormat getReplacerFormat(String key) {
-		ReplacerFormat ret = (ReplacerFormat) replacerFormats.get(key);
-		if (ret == null)
-			throw new NoSuchFieldError("No ReplacerFormat for " + key);
-		return ret;
-	}
-
 	public SlaveManagerImpl getSlaveManager() {
 		return this._connManager.getSlaveManager();
 	}
@@ -280,12 +266,6 @@ public class FtpConfig {
 	public void loadConfig(Properties cfg, ConnectionManager connManager)
 		throws IOException {
 		loadConfig2();
-		try {
-			replacerFormats =
-				loadFormats(new FileInputStream("replacerformats.conf"));
-		} catch (FormatterException e) {
-			throw (IOException) new IOException().initCause(e);
-		}
 		_connManager = connManager;
 		_freespaceMin =
 			Bytes.parseBytes(FtpConfig.getProperty(cfg, "freespace.min"));
@@ -438,20 +418,6 @@ public class FtpConfig {
 		} finally {
 			in.close();
 		}
-	}
-
-	private Map loadFormats(InputStream in)
-		throws FormatterException, IOException {
-		Properties props = new Properties();
-		props.load(in);
-		Hashtable replacerFormats = new Hashtable();
-		for (Iterator iter = props.entrySet().iterator(); iter.hasNext();) {
-			Map.Entry entry = (Map.Entry) iter.next();
-			replacerFormats.put(
-				(String) entry.getKey(),
-				ReplacerFormat.createFormat((String) entry.getValue()));
-		}
-		return replacerFormats;
 	}
 
 	/**

@@ -10,7 +10,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.rmi.RemoteException;
-import java.util.ResourceBundle;
 
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
@@ -28,12 +27,13 @@ import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.Transfer;
+import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
-import org.tanesha.replacer.SimplePrintf;
+import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * This is a generic ftp connection handler. It delegates 
@@ -41,7 +41,7 @@ import org.tanesha.replacer.SimplePrintf;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.68 2004/01/05 00:14:19 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.69 2004/01/20 06:59:00 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -207,7 +207,7 @@ public class BaseFtpConnection implements Runnable {
 	 * Get user object
 	 */
 	public User getUser() throws NoSuchUserException {
-		if (_user == null || !_authenticated)
+		if (_user == null || !isAuthenticated())
 			throw new NoSuchUserException("no user logged in for connection");
 		return _user;
 	}
@@ -251,6 +251,10 @@ public class BaseFtpConnection implements Runnable {
 		return jprintf(baseName, key, null);
 	}
 
+	public String jprintf(Class baseName, String key) {
+		return jprintf(baseName.getName(), key, null);
+	}
+
 	/**
 	 * @param env null for an empty parent replacerenvironment.
 	 */
@@ -262,33 +266,42 @@ public class BaseFtpConnection implements Runnable {
 		return jprintf(baseName, key, env, getUserNull());
 	}
 
-	public static String jprintf(String baseName, String key, ReplacerEnvironment env, User user) {
+	public static ReplacerEnvironment getReplacerEnvironment(
+		ReplacerEnvironment env,
+		User user) {
 		env = new ReplacerEnvironment(env);
 
-		if(user != null) {
+		if (user != null) {
 			env.add("user", user.getUsername());
 			env.add("credits", Bytes.formatBytes(user.getCredits()));
-			env.add("ratio", ""+user.getRatio());
+			env.add("ratio", "" + user.getRatio());
 			env.add("tagline", user.getTagline());
 		} else {
 			env.add("user", "<unknown>");
 		}
-		try {
-			ResourceBundle bundle = ResourceBundle.getBundle(baseName);
-			String str = bundle.getString(key);
-			try {
-				return SimplePrintf.jprintf(str, env);
-			} catch (FormatterException e1) {
-				logger.warn("", e1);
-				return str;
-			}
-		} catch (Throwable e) {
-			logger.warn("baseName: "+baseName, e);
-			return key;
-		}		
+		return env;
 	}
+
+	public static String jprintf(
+		String baseName,
+		String key,
+		ReplacerEnvironment env,
+		User user) {
+		env = getReplacerEnvironment(env, user);
+		return ReplacerUtils.jprintf(key, env, baseName);
+	}
+	public static String jprintf(
+		ReplacerFormat format,
+		ReplacerEnvironment env,
+		User user)
+		throws FormatterException {
+		env = getReplacerEnvironment(env, user);
+		return ReplacerUtils.finalJprintf(format, env);
+	}
+
 	/**
 	 * Reset all the member variables. Close all sockets.
+	 * @deprecated empty, should call reset() on DataConnectionHandler ?
 	 */
 	public void reset() {
 		//
@@ -489,11 +502,11 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	public String status() {
 		return jprintf(BaseFtpConnection.class.getName(), "statusline");
-//		return " [Credits: "
-//			+ Bytes.formatBytes(_user.getCredits())
-//			+ "] [Ratio: 1:"
-//			+ _user.getRatio()
-//			+ "]";
+		//		return " [Credits: "
+		//			+ Bytes.formatBytes(_user.getCredits())
+		//			+ "] [Ratio: 1:"
+		//			+ _user.getRatio()
+		//			+ "]";
 	}
 
 	/**
@@ -562,5 +575,9 @@ public class BaseFtpConnection implements Runnable {
 
 	public SocketFactory getSocketFactory() {
 		return SocketFactory.getDefault();
+	}
+
+	public String jprintf(Class class1, String string, ReplacerEnvironment env) {
+		return jprintf(class1.getName(), string, env);
 	}
 }
