@@ -47,7 +47,7 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.52 2004/07/29 17:39:04 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.53 2004/07/29 19:39:38 zubov Exp $
  */
 public class RemoteSlave implements Comparable, Serializable {
 	private transient int _errors;
@@ -79,14 +79,17 @@ public class RemoteSlave implements Comparable, Serializable {
 	 */
 	public void addNetworkError(SocketException e) {
 		// set slave offline if too many network errors
-		long timeout = Long.parseLong(getProperty("errortimeout","60000")); // one minute
-		int errors = Integer.parseInt(getProperty("maxerrors","5"));
-		_errors -= (System.currentTimeMillis()-_lasterror)/timeout;
+		long errortimeout = Long.parseLong(getProperty("errortimeout","60000")); // one minute
+		if (errortimeout <= 0) errortimeout = 60000;
+		int maxerrors = Integer.parseInt(getProperty("maxerrors","5"));
+		if (maxerrors < 0) maxerrors = 5;
+		_errors -= (System.currentTimeMillis()-_lasterror)/errortimeout;
 		if (_errors < 0) {
 			_errors = 0;
 		}
+		_errors++;
 		_lasterror = System.currentTimeMillis();
-		if (_errors > errors)
+		if (_errors > maxerrors)
 			setOffline("Too many network errors");
 	}
 
@@ -360,7 +363,7 @@ public class RemoteSlave implements Comparable, Serializable {
 			throw new RuntimeException("_manager == null");
 		}
 		if (_slave != null) {
-			_manager.getGlobalContext().getConnectionManager().dispatchFtpEvent(
+			_manager.getGlobalContext().dispatchFtpEvent(
 				new SlaveEvent("DELSLAVE", reason, this));
 		}
 		_slave = null;

@@ -1,0 +1,7 @@
+<net.sf.drftpd.master.RemoteSlave>
+  <ipMasks class="list">
+    <string>*@127.0.0.1</string>
+  </ipMasks>
+  <keysAndValues/>
+  <renameQueue class="map"/>
+</net.sf.drftpd.master.RemoteSlave>

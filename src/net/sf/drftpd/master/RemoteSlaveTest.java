@@ -19,10 +19,14 @@ package net.sf.drftpd.master;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
+import org.drftpd.GlobalContext;
+import org.drftpd.tests.DummyGlobalContext;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -36,7 +40,7 @@ import de.hampelratte.id3.ID3v1Tag;
 
 /**
  * @author mog
- * @version $Id: RemoteSlaveTest.java,v 1.6 2004/07/29 17:39:04 zubov Exp $
+ * @version $Id: RemoteSlaveTest.java,v 1.7 2004/07/29 19:39:38 zubov Exp $
  */
 public class RemoteSlaveTest extends TestCase {
 	public static TestSuite suite() {
@@ -50,9 +54,57 @@ public class RemoteSlaveTest extends TestCase {
 	public void testEquals() {
 		RemoteSlave rslave1 = new RemoteSlave("test1",null);
 		RemoteSlave rslave2 = new RemoteSlave("test1",null);
+		RemoteSlave rslave3 = new RemoteSlave("test2",null);
 		assertTrue(rslave1.equals(rslave1));
 		assertTrue(rslave1.equals(rslave2));
+		assertFalse(rslave1.equals(rslave3));
 	}
+	
+	public class SM extends SlaveManagerImpl {
+
+		public SM() throws RemoteException {
+			super();
+		}
+		
+		public GlobalContext getGlobalContext() {
+			return new DummyGlobalContext();
+		}
+		
+		public void loadSlaves() throws SlaveFileException {
+		}
+	}
+	
+	public class RS extends RemoteSlave {
+
+		public RS(String name, SlaveManagerImpl manager) {
+			super(name, manager);
+		}
+		
+		public void commit() {
+			// just for testing, don't write userfiles
+		}
+	}
+	
+	public void testAddNetworkError() throws RemoteException, InterruptedException {
+		SlaveManagerImpl sm = new SlaveManagerImpl();
+		RemoteSlave rslave = new RS("test",new SM());
+		sm.addSlave(rslave);
+		rslave.setProperty("errortimeout","100");
+		rslave.setProperty("maxerrors","2");
+		rslave.setSlave(new SlaveImpl(new HashSet()),null,null,256);
+		rslave.setAvailable(true);
+		assertTrue(rslave.isAvailable());
+		rslave.addNetworkError(new SocketException());
+		assertTrue(rslave.isAvailable());
+		rslave.addNetworkError(new SocketException());
+		assertTrue(rslave.isAvailable());
+		Thread.sleep(100);
+		rslave.addNetworkError(new SocketException());
+		assertTrue(rslave.isAvailable());
+		rslave.addNetworkError(new SocketException());
+		assertFalse(rslave.isAvailable());
+	}
+	
 	public class SlaveImpl implements Slave {
 
 		private HashSet _filelist;

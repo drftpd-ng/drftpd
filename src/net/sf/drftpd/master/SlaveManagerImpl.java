@@ -64,7 +64,7 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.102 2004/07/29 17:39:04 zubov Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.103 2004/07/29 19:39:39 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -227,6 +227,7 @@ public class SlaveManagerImpl
 	protected SlaveSelectionManagerInterface _slaveSelectionManager;
 
 	public SlaveManagerImpl() throws RemoteException {
+		_rslaves = new ArrayList();
 	}
 
 	public void init(
