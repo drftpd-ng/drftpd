@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.33 2004/10/03 16:13:54 mog Exp $
+ * @version $Id: Job.java,v 1.34 2004/11/02 07:32:45 zubov Exp $
  */
 public class Job {
     private RemoteSlave _destSlave;

@@ -17,7 +17,11 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import net.sf.drftpd.HostMask;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+import net.sf.drftpd.HostMaskCollection;
 import net.sf.drftpd.event.ConnectionEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -29,24 +33,15 @@ import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 
 import org.apache.log4j.Logger;
-
+import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 
-import socks.server.Ident;
-
-import java.io.IOException;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
-import java.util.Iterator;
-import java.util.List;
-
 
 /**
- * @version $Id: Login.java,v 1.35 2004/10/05 02:11:22 mog Exp $
+ * @author mog
+ * @version $Id: Login.java,v 1.36 2004/11/02 07:32:41 zubov Exp $
  */
 public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
     private static final Logger logger = Logger.getLogger(Login.class);
@@ -89,7 +84,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
 
         try {
             _idntAddress = InetAddress.getByName(arg.substring(pos1 + 1, pos2));
-            _idntIdent = arg.substring(0, pos1).toString();
+            _idntIdent = arg.substring(0, pos1);
         } catch (UnknownHostException e) {
             logger.info("Invalid hostname passed to IDNT", e);
 
@@ -136,9 +131,10 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
             }
 
             return response;
-        } else {
-            return new FtpReply(530, conn.jprintf(Login.class, "pass.fail"));
         }
+
+        return new FtpReply(530,
+            conn.jprintf(Login.class, "pass.fail"));
     }
 
     /**
@@ -192,39 +188,14 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
             return FtpReply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        List masks = newUser.getIpMasks2();
+        HostMaskCollection masks2 = new HostMaskCollection(newUser.getIpMasks());
 
-        /**
-         * ident is null if ident hasn't been queried yet.
-         */
-        String ident = null;
-
-        for (Iterator iter = masks.iterator(); iter.hasNext();) {
-            HostMask mask = (HostMask) iter.next();
-
-            // request ident if no IDNT, ident hasn't been requested
-            // and ident matters in this hostmask
-            if ((_idntAddress == null) && (ident == null) &&
-                    mask.isIdentMaskSignificant()) {
-                Ident id = new Ident(conn.getControlSocket());
-
-                if (id.successful) {
-                    ident = id.userName;
-
-                    if (ident.indexOf('@') != -1) {
-                        return new FtpReply(530, "Invalid ident response");
-                    }
-                } else {
-                    logger.warn("Failed to get ident response: " +
-                        id.errorMessage);
-                    ident = "";
-                }
-            }
-
+        try {
             if (((_idntAddress != null) &&
-                    mask.matches(_idntIdent, _idntAddress)) ||
+                    masks2.check(_idntIdent, _idntAddress, null)) ||
                     ((_idntAddress == null) &&
-                    (mask.matches(ident, conn.getClientAddress())))) {
+                    (masks2.check(null, conn.getClientAddress(),
+                        conn.getControlSocket())))) {
                 //success
                 // max_users and num_logins restriction
                 FtpReply response = conn.getConnectionManager().canLogin(conn,
@@ -239,6 +210,8 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
                 return new FtpReply(331,
                     conn.jprintf(Login.class, "user.success"));
             }
+        } catch (MalformedPatternException e) {
+            return new FtpReply(530, e.getMessage());
         }
 
         //fail

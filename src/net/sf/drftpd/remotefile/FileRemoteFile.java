@@ -17,26 +17,24 @@
  */
 package net.sf.drftpd.remotefile;
 
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.InvalidDirectoryException;
-import net.sf.drftpd.slave.Root;
-import net.sf.drftpd.slave.RootBasket;
-
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
+
+import net.sf.drftpd.FatalException;
+import net.sf.drftpd.InvalidDirectoryException;
+import net.sf.drftpd.slave.Root;
+import net.sf.drftpd.slave.RootBasket;
 
 
 /**
  * A wrapper for java.io.File to the net.sf.drftpd.RemoteFile structure.
  *
  * @author mog
- * @version $Id: FileRemoteFile.java,v 1.39 2004/08/03 20:14:02 zubov Exp $
+ * @version $Id: FileRemoteFile.java,v 1.40 2004/11/02 07:32:47 zubov Exp $
  */
 public class FileRemoteFile extends AbstractRemoteFile {
     RootBasket rootBasket;
@@ -44,6 +42,7 @@ public class FileRemoteFile extends AbstractRemoteFile {
     private boolean isFile;
     private boolean isDirectory;
     private long length;
+    private long lastModified;
     Hashtable filefiles;
 
     public FileRemoteFile(RootBasket rootBasket) throws IOException {
@@ -94,6 +93,8 @@ public class FileRemoteFile extends AbstractRemoteFile {
                 } else {
                     length = file.length();
                 }
+
+                lastModified = file.lastModified();
             } else {
                 if (file.isDirectory() != isDirectory) {
                     throw new IOException(
@@ -119,17 +120,8 @@ public class FileRemoteFile extends AbstractRemoteFile {
         }
     }
 
-    private File getFile() {
-        try {
-            return rootBasket.getFile(getPath());
-        } catch (FileNotFoundException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
     public String getName() {
-        return path.substring(path.lastIndexOf(File.separatorChar) + 1)
-                   .toString();
+        return path.substring(path.lastIndexOf(File.separatorChar) + 1);
     }
 
     public String getParent() {
@@ -162,15 +154,11 @@ public class FileRemoteFile extends AbstractRemoteFile {
     }
 
     public long lastModified() {
-        return this.getFile().lastModified();
+        return lastModified;
     }
 
     public long length() {
-        if (isDirectory()) {
-            return 0;
-        }
-
-        return getFile().length();
+        return length;
     }
 
     /**

@@ -68,7 +68,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.40 2004/10/05 02:11:22 mog Exp $
+ * @version $Id: Dir.java,v 1.41 2004/11/02 07:32:41 zubov Exp $
  */
 public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
     private final static SimpleDateFormat DATE_FMT = new SimpleDateFormat(
@@ -665,12 +665,14 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 
         try {
             fromFile.renameTo(toDir.getPath(), name);
+        } catch (FileNotFoundException e) {
+            logger.info("FileNotFoundException on renameTo()", e);
+
+            return new FtpReply(500, "FileNotFound - " + e.getMessage());
         } catch (IOException e) {
-            logger.warn("", e);
+            logger.info("IOException on renameTo()", e);
 
-            return new FtpReply(553, e.getMessage());
-
-            //return FtpReply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
+            return new FtpReply(500, "IOException - " + e.getMessage());
         }
 
         //out.write(FtpResponse.RESPONSE_250_ACTION_OKAY.toString());

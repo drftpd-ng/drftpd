@@ -48,7 +48,7 @@ import java.util.StringTokenizer;
 
 /*
  * @author zubov
- * @version $Id: ArchiveCommandHandler.java,v 1.7 2004/09/13 15:05:00 zubov Exp $
+ * @version $Id: ArchiveCommandHandler.java,v 1.8 2004/11/02 07:32:49 zubov Exp $
  */
 public class ArchiveCommandHandler implements CommandHandlerFactory,
     CommandHandler {
@@ -183,7 +183,7 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
             try {
                 RemoteSlave rslave = conn.getConnectionManager()
                                          .getGlobalContext().getSlaveManager()
-                                         .getSlave(slavename);
+                                         .getRemoteSlave(slavename);
                 slaveSet.add(rslave);
             } catch (ObjectNotFoundException e2) {
                 env.add("slavename", slavename);

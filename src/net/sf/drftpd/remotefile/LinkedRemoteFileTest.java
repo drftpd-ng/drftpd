@@ -24,7 +24,10 @@ import net.sf.drftpd.master.RemoteSlave;
 
 import org.apache.log4j.BasicConfigurator;
 
+import org.drftpd.remotefile.LightRemoteFile;
+
 import org.drftpd.tests.DummyFtpConfig;
+import org.drftpd.tests.DummyRemoteSlave;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -36,7 +39,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: LinkedRemoteFileTest.java,v 1.11 2004/09/25 03:48:37 mog Exp $
+ * @version $Id: LinkedRemoteFileTest.java,v 1.12 2004/11/02 07:32:47 zubov Exp $
  */
 public class LinkedRemoteFileTest extends TestCase {
     private LinkedRemoteFile _root;
@@ -54,42 +57,53 @@ public class LinkedRemoteFileTest extends TestCase {
         root.addFile(new StaticRemoteFile(slaveBothList, "RemoteSlaveTest", 1000));
         root.addFile(new StaticRemoteFile(slave2List, "RemoveFile", 1000));
         root.addFile(new StaticRemoteFile(null, "DirTest", 0));
+        root.addFile(new StaticRemoteFile(null, "RemoveDir", 0));
 
         LinkedRemoteFileInterface masterdir = root.getFile("DirTest");
-        masterdir.addFile(new StaticRemoteFile(slaveBothList, "TestFileInDir",
-                1000));
+        masterdir.addFile(new StaticRemoteFile(slaveBothList, "TestFileInDir", 1000));
+
+        LinkedRemoteFileInterface removedir = root.getFile("RemoveDir");
+        removedir.addFile(new StaticRemoteFile(slave1List, "TestForRemoval", 1000));
     }
 
-    private static void internalRemergeSlave1(LinkedRemoteFile masterroot,
+    private static void internalRemergeSlave1(LinkedRemoteFile root,
         RemoteSlave slave1) throws IOException {
-        LinkedRemoteFile slaveroot = new LinkedRemoteFile(null);
-        slaveroot.addFile(new StaticRemoteFile(Collections.EMPTY_LIST,
-                "ConflictTest", 1000));
-        slaveroot.addFile(new StaticRemoteFile(Collections.EMPTY_LIST,
-                "AddSlaveTest", 1000));
-        slaveroot.addFile(new StaticRemoteFile(Collections.EMPTY_LIST,
-                "RemoteSlaveTest", 1000));
-        masterroot.remerge(slaveroot, slave1);
+        LinkedRemoteFile.CaseInsensitiveHashtable slaveroot = new LinkedRemoteFile.CaseInsensitiveHashtable();
+        slaveroot.put("ConflictTest",
+            new LightRemoteFile("ConflictTest", System.currentTimeMillis(), 1000));
+        slaveroot.put("AddSlaveTest",
+            new LightRemoteFile("AddSlaveTest", System.currentTimeMillis(), 1000));
+        slaveroot.put("RemoteSlaveTest",
+            new LightRemoteFile("RemoteSlaveTest", System.currentTimeMillis(),
+                1000));
+        root.setSlaveForMerging(slave1);
+        root.remerge(slaveroot, slave1);
+        slaveroot.clear();
+        slaveroot.put("TestFileInDir",new LightRemoteFile("TestFileInDir", System.currentTimeMillis(), 1000));
+        root.getFile("DirTest").remerge(slaveroot,slave1);
+        slaveroot.clear();
+        root.getFile("RemoveDir").remerge(slaveroot,slave1);
+        root.cleanSlaveFromMerging(slave1);
     }
 
     private static void internalRemergeSlave2(LinkedRemoteFile root,
         RemoteSlave slave2) throws IOException {
-        LinkedRemoteFile slaveroot = new LinkedRemoteFile(null);
-        slaveroot.addFile(new StaticRemoteFile(Collections.EMPTY_LIST,
-                "ConflictTest", 1001));
-        slaveroot.addFile(new StaticRemoteFile(Collections.EMPTY_LIST,
-                "AddSlaveTest", 1000));
-        slaveroot.addFile(new StaticRemoteFile(null, "DirTest", 0));
-
-        LinkedRemoteFileInterface slavedir = slaveroot.getFile("DirTest");
-        slavedir.addFile(new StaticRemoteFile(Collections.EMPTY_LIST,
-                "TestFileInDir", 1000));
+        LinkedRemoteFile.CaseInsensitiveHashtable slaveroot = new LinkedRemoteFile.CaseInsensitiveHashtable();
+        slaveroot.put("ConflictTest",
+            new LightRemoteFile("ConflictTest", System.currentTimeMillis(), 1001));
+        slaveroot.put("AddSlaveTest",
+            new LightRemoteFile("AddSlaveTest", System.currentTimeMillis(), 1000));
+        root.setSlaveForMerging(slave2);
         root.remerge(slaveroot, slave2);
+        slaveroot.clear();
+        slaveroot.put("TestFileInDir",new LightRemoteFile("TestFileInDir", System.currentTimeMillis(), 1000));
+        root.getFile("DirTest").remerge(slaveroot,slave2);
+        root.cleanSlaveFromMerging(slave2);
     }
 
     private void internalSetUp() {
-        _slave1 = new RemoteSlave("slave1", null);
-        _slave2 = new RemoteSlave("slave2", null);
+        _slave1 = new DummyRemoteSlave("slave1", null);
+        _slave2 = new DummyRemoteSlave("slave2", null);
 
         DummyFtpConfig cfg = new DummyFtpConfig();
         _root = new LinkedRemoteFile(cfg);
@@ -104,20 +118,28 @@ public class LinkedRemoteFileTest extends TestCase {
 
         List bothSlaves = Arrays.asList(new RemoteSlave[] { _slave1, _slave2 });
 
-        //file2 = _root.addFile(file);
-        LinkedRemoteFile slaveroot = new LinkedRemoteFile(null);
-        slaveroot.addFile(new StaticRemoteFile(Collections.EMPTY_LIST,
-                "AddSlaveTest", 1000));
-        _root.remerge(slaveroot, _slave1);
-        _root.remerge(slaveroot, _slave2);
+        LinkedRemoteFile.CaseInsensitiveHashtable files = new LinkedRemoteFile.CaseInsensitiveHashtable();
+        files.put("AddSlaveTest",
+            new LightRemoteFile("AddSlaveTest", 1000, System.currentTimeMillis()));
+
+        LinkedRemoteFile.CaseInsensitiveHashtable files2 = new LinkedRemoteFile.CaseInsensitiveHashtable();
+        files2.put("AddSlaveTest",
+            new LightRemoteFile("AddSlaveTest", 1000, System.currentTimeMillis()));
+        _root.setSlaveForMerging(_slave1);
+        _root.remerge(files, _slave1);
+        _root.setSlaveForMerging(_slave2);
+        _root.remerge(files2, _slave2);
+        _root.cleanSlaveFromMerging(_slave1);
+        _root.cleanSlaveFromMerging(_slave2);
 
         LinkedRemoteFileInterface file2 = _root.getFile(new StaticRemoteFile(
                     Collections.EMPTY_LIST, "AddSlaveTest", 1000).getName());
         assertEquals(file2, _root.getFile(file2.getName()));
         assertEquals(file2, _root.getFile(file2.getName().toUpperCase()));
         assertEquals(file2, _root.getFile(file2.getName().toLowerCase()));
+        System.out.println(_root.getFile(file2.getName()).getSlaves());
+        System.out.println(_root.getFiles());
         assertEquals(bothSlaves, _root.getFile(file2.getName()).getSlaves());
-        System.out.println(file2);
     }
 
     public void testEmptyRoot() throws FileNotFoundException {
@@ -174,11 +196,9 @@ public class LinkedRemoteFileTest extends TestCase {
     }
 
     public void testRemerge() throws IOException {
+        System.out.println("testRemerge()");
         internalSetUp();
 
-        //		List slaveBothList = new ArrayList();
-        //		slaveBothList.add(_slave1);
-        //		slaveBothList.add(_slave2);
         List slaveBothList = Arrays.asList(new RemoteSlave[] { _slave1, _slave2 });
 
         // build like files.mlst does
@@ -189,6 +209,13 @@ public class LinkedRemoteFileTest extends TestCase {
         internalRemergeSlave1(_root, _slave1);
         assertEquals(Collections.singletonList(_slave1),
             _root.getFile("AddSlaveTest").getSlaves());
+        assertTrue(_root.getFile("DirTest").getFile("TestFileInDir").getSlaves().contains(_slave1));
+        try {
+            LinkedRemoteFileInterface file = _root.getFile("RemoveDir");
+            throw new AssertionFailedError(file.toString() +
+                " should be deleted");
+        } catch (FileNotFoundException success) {
+        }
 
         // remerge slave 2
         internalRemergeSlave2(_root, _slave2);
@@ -198,6 +225,7 @@ public class LinkedRemoteFileTest extends TestCase {
             assertNotNull(_root.getFile("ConflictTest.slave2.conflict"));
             assertEquals(slaveBothList,
                 _root.getFile("AddSlaveTest").getSlaves());
+            System.out.println(_root.getFile("RemoteSlaveTest"));
             assertFalse(_root.getFile("RemoteSlaveTest").getSlaves().contains(_slave2));
 
             try {
@@ -208,7 +236,8 @@ public class LinkedRemoteFileTest extends TestCase {
             }
 
             LinkedRemoteFileInterface masterdir = _root.getFile("DirTest");
-            assertTrue(masterdir.getFile("TestFileInDir").getSlaves().contains(_slave2));
+            assertEquals(masterdir.getFile("TestFileInDir").getSlaves(),slaveBothList);
+            
         }
     }
 }

@@ -17,7 +17,10 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import com.Ostermiller.util.StringTokenizer;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
 
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
@@ -32,22 +35,16 @@ import net.sf.drftpd.slave.SlaveStatus;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
-
 import org.drftpd.plugins.SiteBot;
-
 import org.tanesha.replacer.ReplacerEnvironment;
 
-import java.io.IOException;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import com.Ostermiller.util.StringTokenizer;
 
 
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveManagement.java,v 1.4 2004/10/05 02:11:22 mog Exp $
+ * @version $Id: SlaveManagement.java,v 1.5 2004/11/02 07:32:41 zubov Exp $
  */
 public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
     public void unload() {
@@ -74,7 +71,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         RemoteSlave rslave;
 
         try {
-            rslave = conn.getGlobalContext().getSlaveManager().getSlave(conn.getRequest()
+            rslave = conn.getGlobalContext().getSlaveManager().getRemoteSlave(conn.getRequest()
                                                                             .getArgument());
         } catch (ObjectNotFoundException e) {
             return new FtpReply(200, "No such slave");
@@ -95,15 +92,13 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
      *
      */
     private FtpReply doSITE_SLAVES(BaseFtpConnection conn) {
-        boolean showRMI = conn.getRequest().hasArgument() &&
-            (conn.getRequest().getArgument().indexOf("rmi") != -1);
+        boolean showMore = conn.getRequest().hasArgument() &&
+            (conn.getRequest().getArgument().equalsIgnoreCase("more"));
 
-        if (showRMI && !conn.getUserNull().isAdmin()) {
+        if (showMore && !conn.getUserNull().isAdmin()) {
             return FtpReply.RESPONSE_530_ACCESS_DENIED;
         }
 
-        boolean showPlain = !conn.getRequest().hasArgument() ||
-            (conn.getRequest().getArgument().indexOf("plain") != -1);
         Collection slaves = conn.getSlaveManager().getSlaves();
         FtpReply response = new FtpReply(200,
                 "OK, " + slaves.size() + " slaves listed.");
@@ -112,24 +107,21 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
                 iter.hasNext();) {
             RemoteSlave rslave = (RemoteSlave) iter.next();
 
-            if (showRMI) {
-                response.addComment(rslave.toString());
+            if (showMore) {
+                response.addComment(rslave.moreInfo());
             }
 
-            if (showPlain) {
-                ReplacerEnvironment env = new ReplacerEnvironment();
-                env.add("slave", rslave.getName());
+            ReplacerEnvironment env = new ReplacerEnvironment();
+            env.add("slave", rslave.getName());
 
-                try {
-                    SlaveStatus status = rslave.getStatusAvailable();
-                    SiteBot.fillEnvSlaveStatus(env, status,
-                        conn.getSlaveManager());
-                    response.addComment(conn.jprintf(SlaveManagement.class,
-                            "slaves", env));
-                } catch (SlaveUnavailableException e) {
-                    response.addComment(conn.jprintf(SlaveManagement.class,
-                            "slaves.offline", env));
-                }
+            try {
+                SlaveStatus status = rslave.getStatusAvailable();
+                SiteBot.fillEnvSlaveStatus(env, status, conn.getSlaveManager());
+                response.addComment(conn.jprintf(SlaveManagement.class,
+                        "slaves", env));
+            } catch (SlaveUnavailableException e) {
+                response.addComment(conn.jprintf(SlaveManagement.class,
+                        "slaves.offline", env));
             }
         }
 
@@ -148,7 +140,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         RemoteSlave rslave;
 
         try {
-            rslave = conn.getGlobalContext().getSlaveManager().getSlave(conn.getRequest()
+            rslave = conn.getGlobalContext().getSlaveManager().getRemoteSlave(conn.getRequest()
                                                                             .getArgument());
         } catch (ObjectNotFoundException e) {
             return new FtpReply(200, "No such slave");
@@ -158,18 +150,18 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
             return new FtpReply(200, "Slave is offline");
         }
 
+
         try {
-            conn.getGlobalContext().getSlaveManager().remerge(rslave);
+            conn.getCurrentDirectory().setSlaveForMerging(rslave);
+            rslave.fetchRemergeResponseFromIndex(rslave.issueRemergeToSlave(conn.getCurrentDirectory().getPath()));
+            conn.getCurrentDirectory().cleanSlaveFromMerging(rslave);
         } catch (IOException e) {
             rslave.setOffline("IOException during remerge()");
-
             return new FtpReply(200, "IOException during remerge()");
         } catch (SlaveUnavailableException e) {
             rslave.setOffline("Slave Unavailable during remerge()");
-
             return new FtpReply(200, "Slave Unavailable during remerge()");
         }
-
         return FtpReply.RESPONSE_200_COMMAND_OK;
     }
 
@@ -204,7 +196,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         RemoteSlave rslave = null;
 
         try {
-            rslave = conn.getGlobalContext().getSlaveManager().getSlave(slavename);
+            rslave = conn.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
         } catch (ObjectNotFoundException e) {
             response.addComment(conn.jprintf(SlaveManagement.class,
                     "slave.notfound", env));
@@ -213,18 +205,10 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         }
 
         if (!arguments.hasMoreTokens()) {
-            if (rslave.getMasks().size() > 0) {
-                String masks = new String();
-
-                for (Iterator iter = rslave.getMasks().iterator();
-                        iter.hasNext();) {
-                    masks = masks + ((String) iter.next()) + ",";
-                }
-
-                masks = masks.substring(0, masks.length() - 1);
-                env.add("masks", masks);
-                response.addComment(conn.jprintf(SlaveManagement.class,
-                        "slave.masks", env));
+            if (!rslave.getMasks().isEmpty()) {
+                env.add("masks", rslave.getMasks());
+                response.addComment(conn.jprintf(
+                        SlaveManagement.class, "slave.masks", env));
             }
 
             response.addComment(conn.jprintf(SlaveManagement.class,
@@ -363,7 +347,8 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         env.add("slavename", slavename);
 
         try {
-            conn.getGlobalContext().getSlaveManager().getSlave(slavename);
+            conn.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
+
         } catch (ObjectNotFoundException e) {
             response.addComment(conn.jprintf(SlaveManagement.class,
                     "delslave.notfound", env));
@@ -404,24 +389,20 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         env.add("slavename", slavename);
 
         try {
-            conn.getGlobalContext().getSlaveManager().getSlave(slavename);
+            conn.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
 
             return new FtpReply(501,
                 conn.jprintf(SlaveManagement.class, "addslave.exists"));
         } catch (ObjectNotFoundException e) {
         }
 
-        conn.getSlaveManager().addSlave(new RemoteSlave(slavename,
-                conn.getSlaveManager()));
+        conn.getSlaveManager().newSlave(slavename);
         response.addComment(conn.jprintf(SlaveManagement.class,
                 "addslave.success", env));
 
         return response;
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.drftpd.master.command.CommandHandler#initialize(net.sf.drftpd.master.BaseFtpConnection)
-     */
     public CommandHandler initialize(BaseFtpConnection conn,
         CommandManager initializer) {
         return this;

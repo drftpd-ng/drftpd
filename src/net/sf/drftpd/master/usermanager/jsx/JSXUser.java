@@ -36,7 +36,7 @@ import java.util.ArrayList;
 
 /**
  * @author mog
- * @version $Id: JSXUser.java,v 1.18 2004/10/05 02:11:23 mog Exp $
+ * @version $Id: JSXUser.java,v 1.19 2004/11/02 07:32:43 zubov Exp $
  */
 public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
     UnixPassword {

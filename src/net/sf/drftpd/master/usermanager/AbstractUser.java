@@ -43,7 +43,7 @@ import java.util.List;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya </a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.50 2004/09/25 03:48:36 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.51 2004/11/02 07:32:43 zubov Exp $
  */
 public abstract class AbstractUser implements User {
     private static final Logger logger = Logger.getLogger(AbstractUser.class);
@@ -52,11 +52,7 @@ public abstract class AbstractUser implements User {
     protected long _downloadedMillisecondsMonth;
     protected long _downloadedMillisecondsWeek;
 
-    /**
-     * Should problably be named group for consistency, this would reset group
-     * for JSXUser though.
-     */
-    private String _group = "nogroup";
+    private String group = "nogroup";
     protected transient boolean _purged;
     protected long _uploadedMilliseconds;
     protected long _uploadedMillisecondsDay;
@@ -314,11 +310,11 @@ public abstract class AbstractUser implements User {
     }
 
     public String getGroupName() {
-        if (_group == null) {
+        if (group == null) {
             return "nogroup";
         }
 
-        return _group;
+        return group;
     }
 
     public List getGroups() {
@@ -853,9 +849,9 @@ public abstract class AbstractUser implements User {
         }
     }
 
-    public void setGroup(String group) {
-        checkValidGroupName(group);
-        _group = group;
+    public void setGroup(String g) {
+        checkValidGroupName(g);
+        group = g;
     }
 
     public void setGroupLeechSlots(short s) {

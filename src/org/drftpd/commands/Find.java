@@ -16,6 +16,18 @@
  */
 package org.drftpd.commands;
 
+import java.io.FileNotFoundException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -27,23 +39,8 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.MLSTSerialize;
-
-import java.io.FileNotFoundException;
-
-import java.text.SimpleDateFormat;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 //import org.apache.log4j.Logger;
@@ -242,7 +239,7 @@ public class Find implements CommandHandlerFactory, CommandHandler {
                 String slaveName = iter.next().toString();
 
                 try {
-                    rs = conn.getSlaveManager().getSlave(slaveName);
+                    rs = conn.getSlaveManager().getRemoteSlave(slaveName);
                 } catch (ObjectNotFoundException e) {
                     return new FtpReply(500,
                         "Slave " + slaveName + " was not found.");
@@ -418,8 +415,7 @@ public class Find implements CommandHandlerFactory, CommandHandler {
             //return FtpReply.RESPONSE_501_SYNTAX_ERROR;
             //}
             // get filenames
-            String fileName = file.getName();
-            LinkedRemoteFile requestedFile = (LinkedRemoteFile) file;
+            //String fileName = file.getName();
 
             //try {
             //requestedFile = getVirtualDirectory().lookupFile(fileName);
@@ -428,29 +424,29 @@ public class Find implements CommandHandlerFactory, CommandHandler {
             //return new FtpReply(550, "File not found: " + ex.getMessage());
             //}
             // check permission
-            if (requestedFile.getUsername().equals(conn.getUserNull()
+            if (file.getUsername().equals(conn.getUserNull()
                                                            .getUsername())) {
                 if (!conn.getConnectionManager().getGlobalContext().getConfig()
-                             .checkDeleteOwn(conn.getUserNull(), requestedFile)) {
+                             .checkDeleteOwn(conn.getUserNull(), file)) {
                     //return FtpReply.RESPONSE_530_ACCESS_DENIED;
                     return "Access denied for " + file.getPath();
                 }
             } else if (!conn.getConnectionManager().getGlobalContext()
                                 .getConfig().checkDelete(conn.getUserNull(),
-                        requestedFile)) {
+                        file)) {
                 //return FtpReply.RESPONSE_530_ACCESS_DENIED;
                 return "Access denied for " + file.getPath();
             }
 
             //FtpReply reply = (FtpReply)
             // FtpReply.RESPONSE_250_ACTION_OKAY.clone();
-            String reply = "Deleted " + requestedFile.getPath();
+            String reply = "Deleted " + file.getPath();
             User uploader;
 
             try {
                 uploader = conn.getConnectionManager().getGlobalContext()
-                               .getUserManager().getUserByName(requestedFile.getUsername());
-                uploader.updateCredits((long) -(requestedFile.length() * uploader.getRatio()));
+                               .getUserManager().getUserByName(file.getUsername());
+                uploader.updateCredits((long) -(file.length() * uploader.getRatio()));
             } catch (UserFileException e) {
                 reply += ("Error removing credits: " + e.getMessage());
             } catch (NoSuchUserException e) {
@@ -461,7 +457,7 @@ public class Find implements CommandHandlerFactory, CommandHandler {
             //.dispatchFtpEvent(
             //new DirectoryFtpEvent(conn.getUserNull(), "DELE",
             //requestedFile));
-            requestedFile.delete();
+            file.delete();
 
             return reply;
         }
@@ -649,10 +645,6 @@ public class Find implements CommandHandlerFactory, CommandHandler {
          */
         public String exec(BaseFtpConnection conn,
             LinkedRemoteFileInterface file) {
-            User user = conn.getUserNull();
-
-            //conn.getConnectionManager().dispatchFtpEvent(
-            //new DirectoryFtpEvent(user, "WIPE", file));
             file.delete();
 
             return "Wiped " + file.getPath();
@@ -791,9 +783,8 @@ public class Find implements CommandHandlerFactory, CommandHandler {
                 return file.isFile();
             } else if (!files && dirs) {
                 return file.isDirectory();
-            } else {
-                return true;
             }
+            return true;
         }
     }
 

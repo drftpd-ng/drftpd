@@ -18,7 +18,6 @@
 package net.sf.drftpd.remotefile;
 
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.BasicConfigurator;
@@ -32,7 +31,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: FileListConverter.java,v 1.12 2004/08/03 20:14:02 zubov Exp $
+ * @version $Id: FileListConverter.java,v 1.13 2004/11/02 07:32:47 zubov Exp $
  */
 public class FileListConverter {
     public static void main(String[] args) throws IOException {

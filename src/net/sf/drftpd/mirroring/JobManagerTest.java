@@ -22,10 +22,13 @@ import junit.framework.TestCase;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
+import net.sf.drftpd.master.SlaveFileException;
+import net.sf.drftpd.remotefile.LinkedRemoteFile.CaseInsensitiveHashtable;
 
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 
 import org.drftpd.tests.DummyGlobalContext;
+import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.tests.DummySlaveManager;
 import org.drftpd.tests.DummySlaveSelectionManager;
 
@@ -43,7 +46,7 @@ import java.util.Set;
 
 /**
  * @author zubov
- * @version $Id: JobManagerTest.java,v 1.14 2004/08/03 20:14:01 zubov Exp $
+ * @version $Id: JobManagerTest.java,v 1.15 2004/11/02 07:32:46 zubov Exp $
  */
 public class JobManagerTest extends TestCase {
     private Properties p;
@@ -62,10 +65,13 @@ public class JobManagerTest extends TestCase {
         super(arg0);
     }
 
-    public void setUp() throws RemoteException {
-        RS rslave1 = new RS("slave1");
-        RS rslave2 = new RS("slave2");
-        RS rslave3 = new RS("slave3");
+    public void setUp() throws RemoteException, SlaveFileException {
+        DummyGlobalContext dgc = new DummyGlobalContext();
+        dgc.setSlaveManager(new DummySlaveManager());
+
+        DummyRemoteSlave rslave1 = new DummyRemoteSlave("slave1", dgc);
+        DummyRemoteSlave rslave2 = new DummyRemoteSlave("slave2", dgc);
+        DummyRemoteSlave rslave3 = new DummyRemoteSlave("slave3", dgc);
         slaveList = new ArrayList();
         slaveList.add(rslave1);
         slaveList.add(rslave2);
@@ -73,11 +79,19 @@ public class JobManagerTest extends TestCase {
         p = new Properties();
         cm = new CM(p);
 
-        DummyGlobalContext dgc = new DummyGlobalContext();
         cm.setGlobalContext(dgc);
         dgc.setConnectionManager(cm);
 
-        DummySlaveManager dsm = new DSM();
+        DummySlaveManager dsm = null;
+
+        try {
+            dsm = new DSM();
+        } catch (RemoteException e) {
+            // TODO Auto-generated catch block
+        } catch (SlaveFileException e) {
+            // TODO Auto-generated catch block
+        }
+
         dgc.setSlaveManager(dsm);
 
         DummySlaveSelectionManager dssm = new DummySlaveSelectionManager();
@@ -118,18 +132,8 @@ public class JobManagerTest extends TestCase {
         assertNull(jm.getNextJob(usedSlaveList, skipJobs));
     }
 
-    public class RS extends RemoteSlave {
-        public RS(String name) {
-            super(name, null);
-        }
-
-        public boolean isAvailable() {
-            return true;
-        }
-    }
-
     public class DSM extends DummySlaveManager {
-        public DSM() throws RemoteException {
+        public DSM() throws RemoteException, SlaveFileException {
             super();
         }
 
@@ -166,7 +170,7 @@ public class JobManagerTest extends TestCase {
             return _path;
         }
 
-        public void addSlave(RS slave) {
+        public void addSlave(DummyRemoteSlave slave) {
             slaves.add(slave);
         }
 
@@ -194,7 +198,7 @@ public class JobManagerTest extends TestCase {
             return isDeleted;
         }
 
-        public boolean removeSlave(RS slave) {
+        public boolean removeSlave(DummyRemoteSlave slave) {
             return slaves.remove(slave);
         }
 
@@ -202,7 +206,7 @@ public class JobManagerTest extends TestCase {
             String string = "[file=" + getPath() + "][availableSlaves[";
 
             for (Iterator iter = this.getSlaves().iterator(); iter.hasNext();) {
-                RS rslave = (RS) iter.next();
+                DummyRemoteSlave rslave = (DummyRemoteSlave) iter.next();
                 string = string + rslave + ",";
             }
 
@@ -214,6 +218,11 @@ public class JobManagerTest extends TestCase {
         }
 
         public void deleteOthers(Set destSlaves) {
+            // TODO Auto-generated method stub
+        }
+
+        public void remerge(CaseInsensitiveHashtable lightRemoteFiles,
+            RemoteSlave rslave) throws IOException {
             // TODO Auto-generated method stub
         }
     }

@@ -16,54 +16,15 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import net.sf.drftpd.Bytes;
-import net.sf.drftpd.Checksum;
-import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.NoSFVEntryException;
-import net.sf.drftpd.SFVFile;
-import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.event.TransferEvent;
-import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpReply;
-import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.command.CommandManager;
-import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.usermanager.UserFileException;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.remotefile.StaticRemoteFile;
-import net.sf.drftpd.slave.Transfer;
-import net.sf.drftpd.slave.TransferFailedException;
-import net.sf.drftpd.slave.TransferStatus;
-import net.sf.drftpd.util.ListUtils;
-import net.sf.drftpd.util.PortRange;
-import net.sf.drftpd.util.SSLGetContext;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
-import org.drftpd.commands.CommandHandler;
-import org.drftpd.commands.CommandHandlerFactory;
-import org.drftpd.commands.UnhandledCommandException;
-
-import org.tanesha.replacer.ReplacerEnvironment;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-
 import java.net.BindException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-
-import java.rmi.RemoteException;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -75,11 +36,42 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
+import net.sf.drftpd.Bytes;
+import net.sf.drftpd.Checksum;
+import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.NoSFVEntryException;
+import net.sf.drftpd.SFVFile;
+import net.sf.drftpd.SlaveUnavailableException;
+import net.sf.drftpd.event.TransferEvent;
+import net.sf.drftpd.master.BaseFtpConnection;
+import net.sf.drftpd.master.FtpReply;
+import net.sf.drftpd.master.FtpRequest;
+import net.sf.drftpd.master.RemoteSlave;
+import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
+import net.sf.drftpd.master.usermanager.UserFileException;
+import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+import net.sf.drftpd.remotefile.StaticRemoteFile;
+import net.sf.drftpd.slave.TransferFailedException;
+import net.sf.drftpd.slave.TransferStatus;
+import net.sf.drftpd.util.ListUtils;
+import net.sf.drftpd.util.PortRange;
+import net.sf.drftpd.util.SSLGetContext;
+
+import org.apache.log4j.Logger;
+import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.UnhandledCommandException;
+import org.drftpd.slave.ConnectInfo;
+import org.drftpd.slave.RemoteTransfer;
+import org.tanesha.replacer.ReplacerEnvironment;
+
 
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.64 2004/10/05 02:11:22 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.65 2004/11/02 07:32:40 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandlerFactory,
     CommandHandler, Cloneable {
@@ -103,7 +95,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
      * ServerSocket for PASV mode.
      */
     private ServerSocket _serverSocket;
-    private Transfer _transfer;
+    private RemoteTransfer _transfer;
     private LinkedRemoteFileInterface _transferFile;
     private char type = 'A';
 
@@ -256,35 +248,31 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                 _isPasv = true;
             } catch (BindException ex) {
                 _serverSocket = null;
-                logger.warn("", ex);
+                logger.warn(ex);
 
                 return new FtpReply(550, ex.getMessage());
             } catch (Exception ex) {
-                logger.log(Level.WARN, "", ex);
+                logger.warn(ex);
 
                 return new FtpReply(550, ex.getMessage());
             }
         } else {
             try {
-                _transfer = _preTransferRSlave.getSlave().listen(false);
-                address = new InetSocketAddress(_preTransferRSlave.getInetAddress(),
-                        _transfer.getLocalPort());
+                String index = _preTransferRSlave.issueListenToSlave(false);
+                ConnectInfo ci = _preTransferRSlave.fetchTransferResponseFromIndex(index);
+                _transfer = _preTransferRSlave.getTransfer(ci.getTransferIndex());
+                address = _transfer.getAddress();
                 _isPasv = true;
-            } catch (RemoteException e) {
-                _preTransferRSlave.handleRemoteException(e);
-
-                return new FtpReply(450, "Remote error: " + e.getMessage());
             } catch (SlaveUnavailableException e) {
                 return FtpReply.RESPONSE_530_SLAVE_UNAVAILABLE;
             } catch (IOException e) {
-                logger.log(Level.FATAL, "", e);
+                _preTransferRSlave.setOffline(
+                    "Slave could not listen for a connection");
 
-                return new FtpReply(450, e.getMessage());
+                return new FtpReply(500,
+                    "Slave could not listen for a connection");
             }
         }
-
-        //InetAddress mAddress == getInetAddress();
-        //miPort == getPort();
         String addrStr = address.getAddress().getHostAddress().replace('.', ',') +
             ',' + (address.getPort() >> 8) + ',' + (address.getPort() & 0xFF);
 
@@ -419,7 +407,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                                                          .lookupFile(ghostRequest.getArgument());
                 _preTransferRSlave = conn.getSlaveManager()
                                          .getSlaveSelectionManager().getASlave(downFile.getAvailableSlaves(),
-                        Transfer.TRANSFER_SENDING_DOWNLOAD, conn, downFile);
+                        RemoteTransfer.TRANSFER_SENDING_DOWNLOAD, conn, downFile);
                 _preTransfer = true;
 
                 return new FtpReply(200,
@@ -446,7 +434,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                 _preTransferRSlave = conn.getSlaveManager()
                                          .getSlaveSelectionManager().getASlave(conn.getSlaveManager()
                                                                                    .getAvailableSlaves(),
-                        Transfer.TRANSFER_RECEIVING_UPLOAD, conn, nef.getFile());
+                        RemoteTransfer.TRANSFER_RECEIVING_UPLOAD, conn, nef.getFile());
                 _preTransfer = true;
 
                 return new FtpReply(200,
@@ -559,7 +547,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             }
 
             String status;
-            long fileCheckSum;
+            long fileCheckSum = 0;
 
             try {
                 if (forceRescan) {
@@ -830,7 +818,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
         return _rslave;
     }
 
-    public Transfer getTransfer() {
+    public RemoteTransfer getTransfer() {
         if (_transfer == null) {
             throw new IllegalStateException();
         }
@@ -1081,7 +1069,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             }
 
             switch (direction) {
-            case Transfer.TRANSFER_SENDING_DOWNLOAD:
+            case RemoteTransfer.TRANSFER_SENDING_DOWNLOAD:
 
                 if (!conn.getGlobalContext().getConfig().checkDownload(conn.getUserNull(),
                             targetDir)) {
@@ -1090,7 +1078,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
                 break;
 
-            case Transfer.TRANSFER_RECEIVING_UPLOAD:
+            case RemoteTransfer.TRANSFER_RECEIVING_UPLOAD:
 
                 if (!conn.getGlobalContext().getConfig().checkUpload(conn.getUserNull(),
                             targetDir)) {
@@ -1130,17 +1118,16 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                 //code above to be handled by reset()
             } else {
                 try {
-                    if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-                        FtpConfig r = conn.getGlobalContext().getConfig();
+                    if (direction == RemoteTransfer.TRANSFER_SENDING_DOWNLOAD) {
                         _rslave = conn.getGlobalContext().getSlaveManager()
                                       .getSlaveSelectionManager().getASlave(_transferFile.getAvailableSlaves(),
-                                Transfer.TRANSFER_SENDING_DOWNLOAD, conn,
+                                RemoteTransfer.TRANSFER_SENDING_DOWNLOAD, conn,
                                 _transferFile);
-                    } else if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+                    } else if (direction == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
                         _rslave = conn.getSlaveManager()
                                       .getSlaveSelectionManager().getASlave(conn.getSlaveManager()
                                                                                 .getAvailableSlaves(),
-                                Transfer.TRANSFER_RECEIVING_UPLOAD, conn,
+                                RemoteTransfer.TRANSFER_RECEIVING_UPLOAD, conn,
                                 targetDir);
                     } else {
                         throw new RuntimeException();
@@ -1167,13 +1154,10 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             // setup _transfer
             if (isPort()) {
                 try {
-                    _transfer = _rslave.getSlave().connect(_portAddress,
+                    String index = _rslave.issueConnectToSlave(_portAddress,
                             _encryptedDataChannel);
-                } catch (RemoteException ex) {
-                    _rslave.handleRemoteException(ex);
-
-                    return new FtpReply(450, "Remote error: " +
-                        ex.getMessage());
+                    ConnectInfo ci = _rslave.fetchTransferResponseFromIndex(index);
+                    _transfer = _rslave.getTransfer(ci.getTransferIndex());
                 } catch (Exception ex) {
                     logger.fatal("rslave=" + _rslave, ex);
 
@@ -1199,47 +1183,44 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                 out.flush();
             }
 
-            TransferStatus status;
+            TransferStatus status = null;
 
             //transfer
             try {
                 //TODO ABORtable transfers
                 if (isRetr) {
-                    status = _transferFile.sendFile(_transfer, getType(),
-                            _resumePosition);
+                    _transfer.sendFile(_transferFile.getPath(),getType(),_resumePosition);
+                    while (true) {
+                        status = _transfer.getTransferStatus();
+                        if (status.isFinished()) {
+                            break;
+                        }
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e1) {
+                        }
+                    }
                 } else if (isStor) {
-                    status = _transferFile.receiveFile(_transfer, getType(),
-                            _resumePosition);
+                    _transfer.receiveFile(_transferFile.getPath(),getType(),_resumePosition);
+                    while (true) {
+                        status = _transfer.getTransferStatus();
+                        if (status.isFinished()) {
+                            break;
+                        }
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e1) {
+                        }
+                    }
                 } else {
                     throw new RuntimeException();
                 }
-            } catch (RemoteException ex) {
-                _rslave.handleRemoteException(ex);
-
-                if (isStor) {
-                    _transferFile.delete();
-                    logger.error(
-                        "RemoteException during transfer, deleting file");
-
-                    return new FtpReply(426, "RemoteException, deleting file");
-                }
-
-                logger.error("RemoteException during transfer");
-
-                return new FtpReply(426, "RemoteException during transfer");
-            } catch (FileExistsException ex) {
-                // slave is unsync'd
-                logger.warn("Slave is unsynchronized", ex);
-
-                return new FtpReply(426,
-                    "FileExistsException, slave is unsynchronized: " +
-                    ex.getMessage());
             } catch (IOException ex) {
                 if (ex instanceof TransferFailedException) {
                     status = ((TransferFailedException) ex).getStatus();
                     conn.getConnectionManager().dispatchFtpEvent(new TransferEvent(
                             conn, eventType, _transferFile,
-                            conn.getClientAddress(), _rslave, status.getPeer(),
+                            conn.getClientAddress(), _rslave, _transfer.getAddress().getAddress(),
                             type, false));
 
                     if (isRetr) {
@@ -1260,6 +1241,24 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                 }
 
                 reply.addComment(ex.getLocalizedMessage());
+
+                return reply;
+            } catch (SlaveUnavailableException e) {
+                FtpReply reply = null;
+
+                if (isStor) {
+                    _transferFile.delete();
+                    logger.error("Slave went offline during transfer, deleting file",
+                        e);
+                    reply = new FtpReply(426,
+                            "Slave went offline during transfer, deleting file");
+                } else {
+                    logger.error("Slave went offline during transfer", e);
+                    reply = new FtpReply(426,
+                            "Slave went offline during transfer");
+                }
+
+                reply.addComment(e.getLocalizedMessage());
 
                 return reply;
             }
@@ -1346,7 +1345,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             //Dispatch for both STOR and RETR
             conn.getConnectionManager().dispatchFtpEvent(new TransferEvent(
                     conn, eventType, _transferFile, conn.getClientAddress(),
-                    _rslave, status.getPeer(), getType(), zipscript));
+                    _rslave, _transfer.getAddress().getAddress(), getType(), zipscript));
 
             return response;
         } finally {

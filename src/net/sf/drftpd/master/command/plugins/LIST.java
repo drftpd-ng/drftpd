@@ -55,7 +55,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  *
- * @version $Id: LIST.java,v 1.25 2004/10/29 02:45:18 mog Exp $
+ * @version $Id: LIST.java,v 1.26 2004/11/02 07:32:41 zubov Exp $
  */
 public class LIST implements CommandHandlerFactory, CommandHandler {
     private final static DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
@@ -84,20 +84,24 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
         return initStr.substring(0, initStr.length() - szStr.length()) + szStr;
     }
 
+    /*    */
+
     /**
-     * Get file name.
-     */
+    * Get file name.
+    */
+
+    /*
     private static String getName(LinkedRemoteFileInterface fl) {
-        String flName = fl.getName();
+     String flName = fl.getName();
 
-        int lastIndex = flName.lastIndexOf("/");
+     int lastIndex = flName.lastIndexOf("/");
 
-        if (lastIndex == -1) {
-            return flName;
-        } else {
-            return flName.substring(lastIndex + 1);
-        }
-    }
+     if (lastIndex == -1) {
+         return flName;
+     } else {
+         return flName.substring(lastIndex + 1);
+     }
+    }*/
 
     /**
      * Get permission string.
@@ -371,9 +375,9 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
                     response.addComment(conn.status());
 
                     return response;
-                } else {
-                    return new FtpReply(213, "End of Status");
                 }
+
+                return new FtpReply(213, "End of Status");
             } catch (IOException ioe) {
                 logger.error("", ioe);
 

@@ -37,7 +37,7 @@ import java.util.Iterator;
 
 /**
  * @author zubov
- * @version $Id: GenericTextOutput.java,v 1.3 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: GenericTextOutput.java,v 1.4 2004/11/02 07:32:38 zubov Exp $
  */
 public class GenericTextOutput extends GenericCommandAutoService
     implements IRCPluginInterface {
@@ -89,6 +89,11 @@ public class GenericTextOutput extends GenericCommandAutoService
             }
         } catch (IOException e1) {
             throw new RuntimeException(e1);
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e2) {
+            }
         }
     }
 

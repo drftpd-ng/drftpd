@@ -23,8 +23,6 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
-import net.sf.drftpd.slave.Transfer;
-import net.sf.drftpd.slave.TransferStatus;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -36,9 +34,8 @@ import java.util.Set;
 
 /**
  * @author mog
+ * @version $Id: LinkedRemoteFileInterface.java,v 1.13 2004/11/02 07:32:47 zubov Exp $
  *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public interface LinkedRemoteFileInterface extends RemoteFileInterface {
     /**
@@ -160,9 +157,6 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
     public abstract LinkedRemoteFile lookupFile(String path)
         throws FileNotFoundException;
 
-    public abstract LinkedRemoteFile lookupFile(String path,
-        boolean includeDeleted) throws FileNotFoundException;
-
     public abstract NonExistingFile lookupNonExistingFile(String path);
 
     /**
@@ -178,15 +172,13 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
      */
     public abstract LinkedRemoteFile putFile(RemoteFileInterface file);
 
-    public TransferStatus receiveFile(Transfer transfer, char type, long offset)
-        throws IOException;
-
     /**
      * Merges mergedir directory onto <code>this</code> directories.
      * If duplicates exist, the slaves are added to this object and the file-attributes of the oldest file (lastModified) are kept.
      */
-    public abstract void remerge(LinkedRemoteFile mergedir, RemoteSlave rslave)
-        throws IOException;
+    public abstract void remerge(
+        LinkedRemoteFile.CaseInsensitiveHashtable lightRemoteFiles,
+        RemoteSlave rslave) throws IOException;
 
     public abstract boolean removeSlave(RemoteSlave slave);
 
@@ -195,9 +187,6 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
      */
     public abstract LinkedRemoteFile renameTo(String toDirPath, String toName)
         throws IOException, FileNotFoundException;
-
-    public TransferStatus sendFile(Transfer transfer, char type, long offset)
-        throws IOException;
 
     public abstract void setCheckSum(long checkSum);
 
@@ -216,4 +205,10 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
     public abstract void unmergeDir(RemoteSlave rslave);
 
     public abstract void unmergeFile(RemoteSlave rslave);
+    
+    public abstract void setSlaveForMerging(RemoteSlave rslave);
+
+    public abstract void resetSlaveForMerging(RemoteSlave slave);
+
+    public abstract void cleanSlaveFromMerging(RemoteSlave slave);
 }

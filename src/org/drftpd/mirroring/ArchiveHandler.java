@@ -17,26 +17,22 @@
  */
 package org.drftpd.mirroring;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
+
 import net.sf.drftpd.event.listeners.Archive;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Logger;
-
 import org.drftpd.sections.SectionInterface;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
 
 
 /*
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.9 2004/09/13 15:05:01 zubov Exp $
+ * @version $Id: ArchiveHandler.java,v 1.10 2004/11/02 07:32:50 zubov Exp $
  */
 public class ArchiveHandler extends Thread {
-    protected static Logger logger = Archive.getLogger();
+    protected final static Logger logger = Archive.getLogger();
     private ArchiveType _archiveType;
 
     public ArchiveHandler(ArchiveType archiveType) {

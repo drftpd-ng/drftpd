@@ -24,7 +24,7 @@ import java.util.Random;
 
 /**
  * @author mog
- * @version $Id: PortRange.java,v 1.11 2004/10/05 02:11:25 mog Exp $
+ * @version $Id: PortRange.java,v 1.12 2004/11/02 07:32:49 zubov Exp $
  */
 public class PortRange {
     private static final Logger logger = Logger.getLogger(PortRange.class);

@@ -24,7 +24,7 @@ import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: RemoteFileInterface.java,v 1.13 2004/09/25 03:48:37 mog Exp $
+ * @version $Id: RemoteFileInterface.java,v 1.14 2004/11/02 07:32:47 zubov Exp $
  */
 public interface RemoteFileInterface {
     /**
@@ -35,7 +35,7 @@ public interface RemoteFileInterface {
     public long getCheckSumCached();
 
     /**
-     * Returns a Collection of RemteFileInterface objects.
+     * Returns a Collection of RemoteFileInterface objects.
      */
     public Collection getFiles();
 

@@ -21,12 +21,14 @@ import junit.framework.TestCase;
 
 import net.sf.drftpd.master.RemoteSlave;
 
+import org.drftpd.tests.DummyRemoteSlave;
+
 import java.util.HashSet;
 
 
 /**
  * @author zubov
- * @version $Id: JobTest.java,v 1.10 2004/08/03 20:14:01 zubov Exp $
+ * @version $Id: JobTest.java,v 1.11 2004/11/02 07:32:46 zubov Exp $
  */
 public class JobTest extends TestCase {
     public JobTest(String arg0) {
@@ -35,7 +37,7 @@ public class JobTest extends TestCase {
 
     public void testRemoveDestinationSlave() {
         HashSet slaveSet = new HashSet();
-        RemoteSlave rslave = new RemoteSlave("name", null);
+        RemoteSlave rslave = new DummyRemoteSlave("name", null);
         slaveSet.add(rslave);
 
         Job job = new Job(null, slaveSet, 0, 1);

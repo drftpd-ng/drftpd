@@ -26,7 +26,7 @@ import java.net.InetAddress;
 
 /**
  * @author mog
- * @version $Id: TransferEvent.java,v 1.12 2004/10/05 02:11:20 mog Exp $
+ * @version $Id: TransferEvent.java,v 1.13 2004/11/02 07:32:38 zubov Exp $
  */
 public class TransferEvent extends DirectoryFtpEvent {
     private boolean _complete;

@@ -21,13 +21,18 @@ import junit.framework.TestCase;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.SlaveManagerImpl;
+import net.sf.drftpd.master.SlaveManager;
+import net.sf.drftpd.remotefile.LinkedRemoteFile.CaseInsensitiveHashtable;
 import net.sf.drftpd.slave.SlaveStatus;
-import net.sf.drftpd.slave.Transfer;
 
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
+
+import org.drftpd.slave.RemoteTransfer;
+
+import org.drftpd.tests.DummyRemoteSlave;
+
+import java.io.IOException;
 
 import java.rmi.RemoteException;
 
@@ -68,7 +73,7 @@ public class MaxbandwidthFilterTest extends TestCase {
         Filter f = new MaxbandwidthFilter(new FC(), 1, p);
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
-        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD,
+        f.process(sc, null, null, RemoteTransfer.TRANSFER_SENDING_DOWNLOAD,
             new LinkedRemoteFilePath("/"));
         assertEquals(sc.getBestSlave(), rslaves[1]);
     }
@@ -86,10 +91,14 @@ public class MaxbandwidthFilterTest extends TestCase {
 
         public void deleteOthers(Set destSlaves) {
         }
+
+        public void remerge(CaseInsensitiveHashtable lightRemoteFiles,
+            RemoteSlave rslave) throws IOException {
+        }
     }
 
     public class FC extends FilterChain {
-        public SlaveManagerImpl getSlaveManager() {
+        public SlaveManager getSlaveManager() {
             try {
                 return new SM();
             } catch (RemoteException e) {
@@ -98,7 +107,7 @@ public class MaxbandwidthFilterTest extends TestCase {
         }
     }
 
-    public class SM extends SlaveManagerImpl {
+    public class SM extends SlaveManager {
         public SM() throws RemoteException {
             super();
         }
@@ -124,7 +133,7 @@ public class MaxbandwidthFilterTest extends TestCase {
         }
     }
 
-    public class RS extends RemoteSlave {
+    public class RS extends DummyRemoteSlave {
         public RS(String name, Collection duh) {
             super(name, null);
         }

@@ -39,7 +39,7 @@ import java.util.Properties;
 
 /**
  * @author zubov
- * @version $Id: StripeFilesOffSpecificSlaves.java,v 1.14 2004/08/03 20:14:05 zubov Exp $
+ * @version $Id: StripeFilesOffSpecificSlaves.java,v 1.15 2004/11/02 07:32:51 zubov Exp $
  */
 public class StripeFilesOffSpecificSlaves extends ArchiveType {
     private static final Logger logger = Logger.getLogger(StripeFilesOffSpecificSlaves.class);
@@ -65,7 +65,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
             try {
                 _offOfSlaves.add(_parent.getConnectionManager()
                                         .getGlobalContext().getSlaveManager()
-                                        .getSlave(slavename));
+                                        .getRemoteSlave(slavename));
             } catch (ObjectNotFoundException e) {
                 logger.debug("Unable to get slave " + slavename +
                     " from the SlaveManager");
@@ -101,7 +101,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
             try {
                 RemoteSlave rslave = _parent.getConnectionManager()
                                             .getGlobalContext().getSlaveManager()
-                                            .getSlave(slavename);
+                                            .getRemoteSlave(slavename);
 
                 if (!_offOfSlaves.contains(rslave)) {
                     _destSlaves.add(rslave);

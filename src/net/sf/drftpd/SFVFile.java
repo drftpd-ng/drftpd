@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -33,7 +34,7 @@ import java.util.Map;
 
 /**
  * @author mog
- * @version $Id: SFVFile.java,v 1.33 2004/09/11 23:57:16 zubov Exp $
+ * @version $Id: SFVFile.java,v 1.34 2004/11/02 07:32:37 zubov Exp $
  */
 public class SFVFile implements Serializable {
     static final long serialVersionUID = 5381510163578487722L;
@@ -43,7 +44,7 @@ public class SFVFile implements Serializable {
      * String fileName as key.
      * Long checkSum as value.
      */
-    private Hashtable _entries = new Hashtable();
+    private HashMap _entries = new HashMap();
 
     /**
      * Constructor for SFVFile.
@@ -168,7 +169,7 @@ public class SFVFile implements Serializable {
                 continue;
             }
 
-            ret.put(file, (Long) element.getValue());
+            ret.put(file, element.getValue());
         }
 
         return ret;

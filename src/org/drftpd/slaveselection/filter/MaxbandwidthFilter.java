@@ -17,6 +17,10 @@
  */
 package org.drftpd.slaveselection.filter;
 
+import java.net.InetAddress;
+import java.util.Iterator;
+import java.util.Properties;
+
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.config.FtpConfig;
@@ -25,13 +29,6 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.SlaveStatus;
 
 import org.apache.log4j.Logger;
-
-import java.net.InetAddress;
-
-import java.rmi.RemoteException;
-
-import java.util.Iterator;
-import java.util.Properties;
 
 
 /**
@@ -57,10 +54,6 @@ public class MaxbandwidthFilter extends Filter {
             try {
                 status = slavescore.getRSlave().getStatusAvailable();
             } catch (Exception e) {
-                if (e instanceof RemoteException) {
-                    slavescore.getRSlave().handleRemoteException((RemoteException) e);
-                }
-
                 iter.remove();
                 logger.debug("removed " + slavescore.getRSlave().getName() +
                     " because of exception", e);

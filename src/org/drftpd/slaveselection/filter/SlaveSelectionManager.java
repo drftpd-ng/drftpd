@@ -20,12 +20,15 @@ package org.drftpd.slaveselection.filter;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.SlaveManagerImpl;
+import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.slave.Transfer;
+
+import org.drftpd.GlobalContext;
+
+import org.drftpd.slave.RemoteTransfer;
 
 import org.drftpd.GlobalContext;
 
@@ -43,7 +46,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.18 2004/09/29 00:35:53 mog Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.19 2004/11/02 07:33:12 zubov Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     private GlobalContext _gctx;
@@ -68,9 +71,9 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
         InetAddress source = ((conn != null) ? conn.getClientAddress() : null);
         String status;
 
-        if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+        if (direction == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
             status = "up";
-        } else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+        } else if (direction == RemoteTransfer.TRANSFER_SENDING_DOWNLOAD) {
             status = "down";
         } else {
             throw new IllegalArgumentException();
@@ -90,7 +93,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
         }
 
         return process("jobdown", new ScoreChart(slaves), null, null,
-            Transfer.TRANSFER_SENDING_DOWNLOAD, job.getFile());
+            RemoteTransfer.TRANSFER_SENDING_DOWNLOAD, job.getFile());
     }
 
     public RemoteSlave getASlaveForJobUpload(Job job)
@@ -108,7 +111,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
         }
 
         return process("jobup", new ScoreChart(slaves), null, null,
-            Transfer.TRANSFER_SENDING_DOWNLOAD, job.getFile());
+            RemoteTransfer.TRANSFER_SENDING_DOWNLOAD, job.getFile());
     }
 
     /**
@@ -117,14 +120,10 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     public RemoteSlave getASlaveForMaster(LinkedRemoteFileInterface file,
         FtpConfig cfg) throws NoAvailableSlaveException {
         return process("master", new ScoreChart(file.getAvailableSlaves()),
-            null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, file);
+            null, null, RemoteTransfer.TRANSFER_SENDING_DOWNLOAD, file);
     }
 
-    /**
-     * @deprecated
-     * @return
-     */
-    public SlaveManagerImpl getSlaveManager() {
+    public SlaveManager getSlaveManager() {
         return getGlobalContext().getSlaveManager();
     }
 
@@ -165,7 +164,6 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
             _ssmiJobDown = null;
         }
     }
-
     public GlobalContext getGlobalContext() {
         return _gctx;
     }

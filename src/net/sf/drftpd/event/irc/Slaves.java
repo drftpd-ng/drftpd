@@ -41,7 +41,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Slaves.java,v 1.17 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: Slaves.java,v 1.18 2004/11/02 07:32:38 zubov Exp $
  */
 public class Slaves extends GenericAutoService implements IRCPluginInterface {
     private static final int LEN2 = "!slave ".length();
@@ -103,7 +103,7 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 
             try {
                 RemoteSlave rslave = getConnectionManager().getGlobalContext()
-                                         .getSlaveManager().getSlave(slaveName);
+                                         .getSlaveManager().getRemoteSlave(slaveName);
                 _listener.sayChannel(chan, makeStatusString(rslave));
             } catch (ObjectNotFoundException e) {
                 ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);

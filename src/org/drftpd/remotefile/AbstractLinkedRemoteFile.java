@@ -28,8 +28,6 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.RemoteFileInterface;
-import net.sf.drftpd.slave.Transfer;
-import net.sf.drftpd.slave.TransferStatus;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -275,11 +273,6 @@ public abstract class AbstractLinkedRemoteFile
         throw new UnsupportedOperationException();
     }
 
-    public TransferStatus receiveFile(Transfer transfer, char type, long offset)
-        throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
     public void remerge(LinkedRemoteFile mergedir, RemoteSlave rslave) {
         throw new UnsupportedOperationException();
     }
@@ -290,11 +283,6 @@ public abstract class AbstractLinkedRemoteFile
 
     public LinkedRemoteFile renameTo(String toDirPath, String toName)
         throws IOException, FileNotFoundException {
-        throw new UnsupportedOperationException();
-    }
-
-    public TransferStatus sendFile(Transfer transfer, char type, long offset)
-        throws IOException {
         throw new UnsupportedOperationException();
     }
 
@@ -327,6 +315,18 @@ public abstract class AbstractLinkedRemoteFile
     }
 
     public void unmergeFile(RemoteSlave rslave) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void cleanSlaveFromMerging(RemoteSlave slave) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void resetSlaveForMerging(RemoteSlave slave) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void setSlaveForMerging(RemoteSlave rslave) {
         throw new UnsupportedOperationException();
     }
 }

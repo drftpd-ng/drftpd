@@ -44,7 +44,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilter.java,v 1.11 2004/09/25 03:48:42 mog Exp $
+ * @version $Id: SlavetopFilter.java,v 1.12 2004/11/02 07:33:12 zubov Exp $
  */
 public class SlavetopFilter extends Filter {
     private GlobalContext _gctx;
@@ -52,7 +52,7 @@ public class SlavetopFilter extends Filter {
     private int _topslaves;
 
     public SlavetopFilter(FilterChain fc, int i, Properties p) {
-        _gctx = fc.getSlaveManager().getGlobalContext();
+        _gctx = fc.getGlobalContext();
         _topslaves = Integer.parseInt(FtpConfig.getProperty(p, i +
                     ".topslaves"));
         _assign = Long.parseLong(FtpConfig.getProperty(p, i + ".assign"));

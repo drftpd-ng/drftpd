@@ -20,11 +20,10 @@ package org.drftpd.slaveselection.filter;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.SlaveStatus;
-import net.sf.drftpd.slave.Transfer;
+
+import org.drftpd.slave.RemoteTransfer;
 
 import java.net.InetAddress;
-
-import java.rmi.RemoteException;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -44,10 +43,10 @@ public class ReversebandwidthFilter extends BandwidthFilter {
         char direction, LinkedRemoteFileInterface file) {
         char oppositeDirection;
 
-        if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-            oppositeDirection = Transfer.TRANSFER_SENDING_DOWNLOAD;
+        if (direction == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
+            oppositeDirection = RemoteTransfer.TRANSFER_SENDING_DOWNLOAD;
         } else {
-            oppositeDirection = Transfer.TRANSFER_RECEIVING_UPLOAD;
+            oppositeDirection = RemoteTransfer.TRANSFER_RECEIVING_UPLOAD;
         }
 
         Collection slavescores = scorechart.getSlaveScores();
@@ -59,10 +58,6 @@ public class ReversebandwidthFilter extends BandwidthFilter {
             try {
                 status = score.getRSlave().getStatusAvailable();
             } catch (Exception e) {
-                if (e instanceof RemoteException) {
-                    score.getRSlave().handleRemoteException((RemoteException) e);
-                }
-
                 iter.remove();
 
                 continue;

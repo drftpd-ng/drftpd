@@ -37,7 +37,7 @@ import java.util.Properties;
 
 /**
  * @author zubov
- * @version $Id: MoveReleaseToSpecificSlaves.java,v 1.6 2004/08/03 20:14:05 zubov Exp $
+ * @version $Id: MoveReleaseToSpecificSlaves.java,v 1.7 2004/11/02 07:32:50 zubov Exp $
  */
 public class MoveReleaseToSpecificSlaves extends ArchiveType {
     private static final Logger logger = Logger.getLogger(MoveReleaseToSpecificSlaves.class);
@@ -61,7 +61,7 @@ public class MoveReleaseToSpecificSlaves extends ArchiveType {
 
             try {
                 _destSlaves.add(_parent.getConnectionManager().getGlobalContext()
-                                       .getSlaveManager().getSlave(slavename));
+                                       .getSlaveManager().getRemoteSlave(slavename));
             } catch (ObjectNotFoundException e) {
                 logger.debug("Unable to get slave " + slavename +
                     " from the SlaveManager");

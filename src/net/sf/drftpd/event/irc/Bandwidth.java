@@ -27,7 +27,6 @@ import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.slave.SlaveStatus;
-import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.Time;
 
@@ -35,9 +34,9 @@ import org.apache.log4j.Logger;
 
 import org.drftpd.plugins.SiteBot;
 
-import org.tanesha.replacer.ReplacerEnvironment;
+import org.drftpd.slave.RemoteTransfer;
 
-import java.rmi.RemoteException;
+import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -45,7 +44,7 @@ import java.util.Iterator;
 
 /**
  * @author flowman
- * @version $Id: Bandwidth.java,v 1.11 2004/10/29 02:45:15 mog Exp $
+ * @version $Id: Bandwidth.java,v 1.12 2004/11/02 07:32:38 zubov Exp $
  */
 public class Bandwidth extends GenericCommandAutoService
     implements IRCPluginInterface {
@@ -145,15 +144,10 @@ public class Bandwidth extends GenericCommandAutoService
                                 Bandwidth.class);
                         } else if (conn.getDataConnectionHandler()
                                            .isTransfering()) {
-                            try {
-                                env.add("speed",
-                                    Bytes.formatBytes(
-                                        conn.getDataConnectionHandler()
-                                            .getTransfer().getXferSpeed()) +
-                                    "/s");
-                            } catch (RemoteException e2) {
-                                logger.warn("", e2);
-                            }
+                            env.add("speed",
+                                Bytes.formatBytes(conn.getDataConnectionHandler()
+                                                      .getTransfer()
+                                                      .getXferSpeed()) + "/s");
 
                             env.add("file",
                                 conn.getDataConnectionHandler().getTransferFile()
@@ -162,10 +156,10 @@ public class Bandwidth extends GenericCommandAutoService
                                 conn.getDataConnectionHandler().getTranferSlave()
                                     .getName());
 
-                            if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+                            if (conn.getTransferDirection() == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
                                 status += ReplacerUtils.jprintf("speed.up",
                                     env, Bandwidth.class);
-                            } else if (conn.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+                            } else if (conn.getTransferDirection() == RemoteTransfer.TRANSFER_SENDING_DOWNLOAD) {
                                 status += ReplacerUtils.jprintf("speed.down",
                                     env, Bandwidth.class);
                             }

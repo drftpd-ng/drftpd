@@ -20,7 +20,7 @@ package net.sf.drftpd.master;
 
 /**
  * @author mog
- * @version $Id: GroupPosition.java,v 1.3 2004/08/03 20:13:56 zubov Exp $
+ * @version $Id: GroupPosition.java,v 1.4 2004/11/02 07:32:40 zubov Exp $
  */
 public class GroupPosition implements Comparable {
     long bytes;
@@ -80,7 +80,7 @@ public class GroupPosition implements Comparable {
             return 0;
         }
 
-        return (long) ((long) getBytes() / ((long) getXfertime() / 1000.0));
+        return (long) (getBytes() / (getXfertime() / 1000.0));
     }
 
     public long getXfertime() {

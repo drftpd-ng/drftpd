@@ -47,7 +47,7 @@ import java.util.ResourceBundle;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagement.java,v 1.3 2004/10/05 02:11:22 mog Exp $
+ * @version $Id: SiteManagement.java,v 1.4 2004/11/02 07:32:41 zubov Exp $
  */
 public class SiteManagement implements CommandHandlerFactory, CommandHandler {
     private static final Logger logger = Logger.getLogger(SiteManagement.class);
@@ -64,7 +64,7 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
 
         if (conn.getRequest().hasArgument()) {
             try {
-                dir = dir.lookupFile(conn.getRequest().getArgument(), true);
+                dir = dir.lookupFile(conn.getRequest().getArgument());
             } catch (FileNotFoundException e) {
                 logger.debug("", e);
 

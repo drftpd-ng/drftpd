@@ -22,11 +22,10 @@ import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.SlaveStatus;
-import net.sf.drftpd.slave.Transfer;
+
+import org.drftpd.slave.RemoteTransfer;
 
 import java.net.InetAddress;
-
-import java.rmi.RemoteException;
 
 import java.util.Iterator;
 import java.util.Properties;
@@ -54,10 +53,6 @@ public class MaxtransfersFilter extends Filter {
             try {
                 status = slavescore.getRSlave().getStatusAvailable();
             } catch (Exception e) {
-                if (e instanceof RemoteException) {
-                    slavescore.getRSlave().handleRemoteException((RemoteException) e);
-                }
-
                 iter.remove();
 
                 continue;
@@ -65,9 +60,9 @@ public class MaxtransfersFilter extends Filter {
 
             int transfers = 0;
 
-            if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+            if (direction == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
                 transfers = status.getTransfersReceiving();
-            } else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+            } else if (direction == RemoteTransfer.TRANSFER_SENDING_DOWNLOAD) {
                 transfers = status.getTransfersSending();
             } else {
                 throw new IllegalArgumentException(

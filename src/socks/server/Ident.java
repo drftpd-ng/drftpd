@@ -3,12 +3,8 @@ package socks.server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.InterruptedIOException;
-
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-
 import java.util.StringTokenizer;
 
 
@@ -47,20 +43,11 @@ public class Ident {
     */
     public static final int connectionTimeout = 10000;
 
-    /** Error Message can be null.*/
-    public String errorMessage;
-
     /** Host type as returned by daemon, can be null, if error happened*/
-    public String hostType;
+    private String hostType;
 
     /** User name as returned by the identd daemon, or null, if it failed*/
-    public String userName;
-
-    /** If this is true then userName and hostType contain valid values.
-        Else errorCode contain the error code, and errorMessage contains
-        the corresponding message.
-    */
-    public boolean successful;
+    private String userName;
 
     /** Error code*/
     public int errorCode;
@@ -80,9 +67,8 @@ public class Ident {
      Constructor may block, for a while.
      @param s Socket whose ownership on remote end should be obtained.
     */
-    public Ident(Socket s) {
+    public Ident(Socket s) throws IOException {
         Socket sock = null;
-        successful = false; //We are pessimistic
 
         try {
             sock = new Socket();
@@ -99,15 +85,6 @@ public class Ident {
                         sock.getInputStream()));
 
             parseResponse(in.readLine());
-        } catch (InterruptedIOException iioe) {
-            errorCode = ERR_TIMEOUT;
-            errorMessage = "Connection to identd timed out.";
-        } catch (ConnectException ce) {
-            errorCode = ERR_NO_CONNECT;
-            errorMessage = "Connection to identd server failed.";
-        } catch (IOException ioe) {
-            errorCode = ERR_NO_CONNECT;
-            errorMessage = "" + ioe;
         } finally {
             try {
                 if (sock != null) {
@@ -115,26 +92,18 @@ public class Ident {
                 }
             } catch (IOException ioe) {
             }
-
-            ;
         }
     }
 
-    private void parseResponse(String response) {
+    private void parseResponse(String response) throws IOException {
         if (response == null) {
-            errorCode = ERR_PROTOCOL_INCORRECT;
-            errorMessage = "Identd server closed connection.";
-
-            return;
+            throw new IOException("Identd server closed connection.");
         }
 
         StringTokenizer st = new StringTokenizer(response, ":");
 
         if (st.countTokens() < 3) {
-            errorCode = ERR_PROTOCOL_INCORRECT;
-            errorMessage = "Can't parse server response.";
-
-            return;
+            throw new IOException("Can't parse server response: " + response);
         }
 
         st.nextToken(); //Discard first token, it's basically what we have send
@@ -142,39 +111,26 @@ public class Ident {
         String command = st.nextToken().trim().toUpperCase();
 
         if (command.equals("USERID") && (st.countTokens() >= 2)) {
-            successful = true;
             hostType = st.nextToken().trim();
             userName = st.nextToken().trim(); //Get all that is left
+
+            if (userName.indexOf('@') != -1) {
+                throw new IOException("Illegal username: " + userName);
+            }
+
+            return;
         } else if (command.equals("ERROR")) {
-            errorCode = ERR_PROTOCOL;
-            errorMessage = st.nextToken();
+            throw new IOException("Ident ERROR: " + response);
         } else {
-            errorCode = ERR_PROTOCOL_INCORRECT;
-            System.out.println("Opa!");
-            errorMessage = "Can't parse server response.";
+            throw new IOException("Unexpected reply: " + response);
         }
     }
 
-    ///////////////////////////////////////////////
-    //USED for Testing
+    public String getUserName() {
+        return userName;
+    }
 
-    /*
-        public static void main(String[] args) throws IOException{
-
-           Socket s = null;
-           s = new Socket("gp101-16", 1391);
-
-           Ident id = new Ident(s);
-           if(id.successful){
-             System.out.println("User: "+id.userName);
-             System.out.println("HostType: "+id.hostType);
-           }else{
-             System.out.println("ErrorCode: "+id.errorCode);
-             System.out.println("ErrorMessage: "+id.errorMessage);
-
-           }
-
-           if(s!= null) s.close();
-        }
-    //*/
+    public String getHostType() {
+        return hostType;
+    }
 }

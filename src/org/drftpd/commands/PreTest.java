@@ -21,7 +21,7 @@ import junit.framework.TestCase;
 
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.RemoteSlave;
+import net.sf.drftpd.master.SlaveFileException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.MLSTSerialize;
@@ -33,6 +33,7 @@ import org.drftpd.tests.DummyBaseFtpConnection;
 import org.drftpd.tests.DummyConnectionManager;
 import org.drftpd.tests.DummyFtpConfig;
 import org.drftpd.tests.DummyGlobalContext;
+import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.tests.DummySlaveManager;
 import org.drftpd.tests.DummyUser;
 import org.drftpd.tests.DummyUserManager;
@@ -49,7 +50,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: PreTest.java,v 1.6 2004/10/05 02:11:25 mog Exp $
+ * @version $Id: PreTest.java,v 1.7 2004/11/02 07:32:50 zubov Exp $
  */
 public class PreTest extends TestCase {
     private DummyConnectionManager _cm;
@@ -63,7 +64,7 @@ public class PreTest extends TestCase {
 
     private void buildRoot() throws FileNotFoundException {
         assertNotNull(_config);
-        _rslave = Collections.singletonList(new RemoteSlave("test", null));
+        _rslave = Collections.singletonList(new DummyRemoteSlave("test", null));
         _root = new LinkedRemoteFile(_config);
 
         _root.addFile(new StaticRemoteFile(null, "release", "owner", "group", 0));
@@ -114,14 +115,16 @@ public class PreTest extends TestCase {
         gctx.setRoot(_root);
         gctx.setConnectionManager(_cm);
         _cm.setGlobalContext(gctx);
-
         conn.setGlobalConext(gctx);
+        DummySlaveManager slavem = null;
 
-        //conn.setConnectionManager(_cm);
-        DummySlaveManager slavem = new DummySlaveManager();
+        try {
+            slavem = new DummySlaveManager();
+        } catch (SlaveFileException e) {
+        }
+
         slavem.setSlaves(Collections.EMPTY_LIST);
         gctx.setSlaveManager(slavem);
-
         FtpReply reply;
         reply = pre.execute(conn);
         MLSTSerialize.serialize(_root, new PrintWriter(System.err, true));

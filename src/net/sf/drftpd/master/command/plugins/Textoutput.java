@@ -42,7 +42,7 @@ import java.io.InputStreamReader;
 
 /**
  * @author mog
- * @version $Id: Textoutput.java,v 1.16 2004/08/03 20:13:57 zubov Exp $
+ * @version $Id: Textoutput.java,v 1.17 2004/11/02 07:32:41 zubov Exp $
  */
 public class Textoutput implements CommandHandlerFactory, CommandHandler {
     public static void addTextToResponse(FtpReply reply, String file)
@@ -59,10 +59,14 @@ public class Textoutput implements CommandHandlerFactory, CommandHandler {
         String text = "";
         String line;
 
-        while ((line = rd.readLine()) != null) {
-            if (!line.startsWith("#")) {
-                text += (line + "\n");
+        try {
+            while ((line = rd.readLine()) != null) {
+                if (!line.startsWith("#")) {
+                    text += (line + "\n");
+                }
             }
+        } finally {
+            rd.close();
         }
 
         return text;

@@ -17,16 +17,8 @@
  */
 package net.sf.drftpd.slave;
 
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.PermissionDeniedException;
-
-import org.apache.log4j.Logger;
-
-import se.mog.io.File;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,12 +27,20 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
+import net.sf.drftpd.FatalException;
+import net.sf.drftpd.PermissionDeniedException;
+
+import org.apache.log4j.Logger;
+import org.drftpd.slave.Slave;
+
+import se.mog.io.File;
+
 
 //TODO SECURITY: verify so that we never get outside of a rootbasket root
 
 /**
  * @author mog
- * @version $Id: RootBasket.java,v 1.29 2004/08/03 20:14:03 zubov Exp $
+ * @version $Id: RootBasket.java,v 1.30 2004/11/02 07:32:48 zubov Exp $
  */
 public class RootBasket {
     private static final Logger logger = Logger.getLogger(RootBasket.class);
@@ -285,7 +285,7 @@ public class RootBasket {
     }
 
     public int getMaxPath() {
-        if (SlaveImpl.isWin32) {
+        if (Slave.isWin32) {
             int maxPath = 0;
 
             for (Iterator iter = iterator(); iter.hasNext();) {

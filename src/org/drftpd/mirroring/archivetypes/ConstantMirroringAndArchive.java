@@ -40,7 +40,7 @@ import java.util.Properties;
 /*
  * @author iamn
  * @author zubov
- * @version $Id: ConstantMirroringAndArchive.java,v 1.2 2004/09/12 01:24:39 zubov Exp $
+ * @version $Id: ConstantMirroringAndArchive.java,v 1.3 2004/11/02 07:32:50 zubov Exp $
  */
 public class ConstantMirroringAndArchive extends ArchiveType {
     private int _numOfSlaves;
@@ -80,7 +80,7 @@ public class ConstantMirroringAndArchive extends ArchiveType {
 
             try {
                 _fastHosts.add(_parent.getConnectionManager().getGlobalContext()
-                                      .getSlaveManager().getSlave(slavename));
+                                      .getSlaveManager().getRemoteSlave(slavename));
             } catch (ObjectNotFoundException e) {
                 Archive.getLogger().error("Unable to get slave " + slavename +
                     " from the SlaveManager");
@@ -122,7 +122,7 @@ public class ConstantMirroringAndArchive extends ArchiveType {
 
                     if (!slave.isAvailable()) {
                         src.removeSlave(slave);
-                        slave.deleteFile(src.getPath());
+                        slave.simpleDelete(src.getPath());
                     }
 
                     offlineSlaveIter.remove();
@@ -136,7 +136,7 @@ public class ConstantMirroringAndArchive extends ArchiveType {
                         onlineSlaveIter.hasNext()) { // remove online slaves until size is okay
 
                     RemoteSlave slave = (RemoteSlave) onlineSlaveIter.next();
-                    slave.deleteFile(src.getPath());
+                    slave.simpleDelete(src.getPath());
                     src.removeSlave(slave);
                     onlineSlaveIter.remove();
                 }

@@ -17,27 +17,24 @@
  */
 package org.drftpd.usermanager;
 
-import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.usermanager.AbstractUser;
-import net.sf.drftpd.slave.SlaveImpl;
-
-import org.apache.log4j.BasicConfigurator;
-
-import org.drftpd.tests.DummyGlobalContext;
-
 import java.io.FileInputStream;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 
+import net.sf.drftpd.master.ConnectionManager;
+import net.sf.drftpd.master.usermanager.AbstractUser;
+
+import org.apache.log4j.BasicConfigurator;
+import org.drftpd.slave.Slave;
+import org.drftpd.tests.DummyGlobalContext;
+
 
 /**
  * @author mog
- * @version $Id: ResetMonthlyStats.java,v 1.5 2004/10/05 02:11:26 mog Exp $
+ * @version $Id: ResetMonthlyStats.java,v 1.6 2004/11/02 07:33:13 zubov Exp $
  */
 public class ResetMonthlyStats {
     public ResetMonthlyStats() {
@@ -45,7 +42,7 @@ public class ResetMonthlyStats {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println(SlaveImpl.VERSION + " resetmonth starting.");
+        System.out.println(Slave.VERSION + " resetmonth starting.");
         System.out.println("All your sites are belong to mog ^^");
         System.out.println("http://drftpd.org/");
         BasicConfigurator.configure();

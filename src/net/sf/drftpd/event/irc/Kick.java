@@ -44,7 +44,7 @@ import java.util.Iterator;
 
 /**
  * @author Teflon
- * @version $Id: Kick.java,v 1.2 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: Kick.java,v 1.3 2004/11/02 07:32:38 zubov Exp $
  */
 public class Kick extends GenericAutoService implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Kick.class);
@@ -82,7 +82,6 @@ public class Kick extends GenericAutoService implements IRCPluginInterface {
             return;
         }
 
-        String cmd = msgc.getMessage();
         String cmduser = msgc.getSource().getNick();
         String cmdchan = msgc.getDest();
 
@@ -95,7 +94,6 @@ public class Kick extends GenericAutoService implements IRCPluginInterface {
             ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
             ArrayList conns = new ArrayList(getConnectionManager()
                                                 .getConnections());
-            int i = 0;
 
             for (Iterator iter = conns.iterator(); iter.hasNext();) {
                 BaseFtpConnection conn = (BaseFtpConnection) iter.next();

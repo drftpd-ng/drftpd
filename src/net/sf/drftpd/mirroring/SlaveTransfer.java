@@ -16,37 +16,32 @@
  */
 package net.sf.drftpd.mirroring;
 
-import net.sf.drftpd.FileExistsException;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.slave.Transfer;
+import net.sf.drftpd.slave.TransferFailedException;
 
 import org.apache.log4j.Logger;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.net.InetSocketAddress;
-
-import java.rmi.RemoteException;
+import org.drftpd.slave.ConnectInfo;
+import org.drftpd.slave.RemoteTransfer;
 
 
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveTransfer.java,v 1.22 2004/08/03 20:14:01 zubov Exp $
+ * @version $Id: SlaveTransfer.java,v 1.23 2004/11/02 07:32:46 zubov Exp $
  */
 public class SlaveTransfer {
     private static final Logger logger = Logger.getLogger(SlaveTransfer.class);
     private RemoteSlave _destSlave;
     private LinkedRemoteFileInterface _file;
-    private RemoteSlave _sourceSlave;
-    private DstXfer dstxfer;
-    private boolean finished = false;
-    private SrcXfer srcxfer;
-    private Throwable stackTrace;
+    private RemoteSlave _srcSlave;
+    private RemoteTransfer destTransfer = null;
+    private RemoteTransfer srcTransfer = null;
 
     /**
      * Slave to Slave Transfers
@@ -54,162 +49,106 @@ public class SlaveTransfer {
     public SlaveTransfer(LinkedRemoteFileInterface file,
         RemoteSlave sourceSlave, RemoteSlave destSlave) {
         _file = file;
-        _sourceSlave = sourceSlave;
+        _srcSlave = sourceSlave;
         _destSlave = destSlave;
     }
 
-    int getXferSpeed() {
-        if ((srcxfer == null) || (srcxfer.srcxfer == null) ||
-                (dstxfer == null) || (dstxfer.dstxfer == null)) {
-            return 0;
-        }
-
-        int srcspeed;
-
-        try {
-            srcspeed = srcxfer.srcxfer.getXferSpeed();
-        } catch (RemoteException e) {
-            _sourceSlave.handleRemoteException(e);
-            srcspeed = 0;
-        }
-
-        int dstspeed;
-
-        try {
-            dstspeed = dstxfer.dstxfer.getXferSpeed();
-        } catch (RemoteException e1) {
-            _destSlave.handleRemoteException(e1);
-            dstspeed = 0;
-        }
-
-        return (srcspeed + dstspeed) / 2;
-    }
-
     long getTransfered() {
-        if ((srcxfer == null) || (srcxfer.srcxfer == null) ||
-                (dstxfer == null) || (dstxfer.dstxfer == null)) {
-            return 0;
-        }
-
-        long srctransfered;
-
-        try {
-            srctransfered = srcxfer.srcxfer.getTransfered();
-        } catch (RemoteException e) {
-            _sourceSlave.handleRemoteException(e);
-            srctransfered = 0;
-        }
-
-        long dsttransfered;
-
-        try {
-            dsttransfered = dstxfer.dstxfer.getTransfered();
-        } catch (RemoteException e1) {
-            _destSlave.handleRemoteException(e1);
-            dsttransfered = 0;
-        }
-
-        return (srctransfered + dsttransfered) / 2;
+        return (srcTransfer.getTransfered() + destTransfer.getTransfered()) / 2;
     }
 
-    private void interruptibleSleepUntilFinished() throws Throwable {
-        while (!finished) {
-            try {
-                Thread.sleep(1000); // 1 sec
-
-                //System.err.println("slept 1 secs");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (stackTrace != null) {
-            throw stackTrace;
-        }
-    }
-
-    private void abort() throws DestinationSlaveException, SourceSlaveException {
-        logger.debug("running abort()");
-
-        if ((dstxfer != null) && (dstxfer.dstxfer != null)) {
-            try {
-                logger.debug("running dstxfer abort()");
-                dstxfer.dstxfer.abort();
-                logger.debug("ran dstxfer abort()");
-            } catch (RemoteException e) {
-                throw new DestinationSlaveException(e);
-            }
-        }
-
-        if ((srcxfer != null) && (srcxfer.srcxfer != null)) {
-            try {
-                logger.debug("running srcxfer abort()");
-                srcxfer.srcxfer.abort();
-                logger.debug("ran srcxfer abort()");
-            } catch (RemoteException e1) {
-                throw new SourceSlaveException(e1);
-            }
-        }
+    int getXferSpeed() {
+        return (srcTransfer.getXferSpeed() + destTransfer.getXferSpeed()) / 2;
     }
 
     /**
      * Returns true if the crc passed, false otherwise
-     *
-     * @return @throws
-     *         IOException
      */
     protected boolean transfer(boolean checkCRC) throws SlaveException {
         try {
-            dstxfer = new DstXfer(_destSlave.getSlave().listen(false));
+            String destIndex = _destSlave.issueListenToSlave(false);
+            ConnectInfo ci = _destSlave.fetchTransferResponseFromIndex(destIndex);
+            destTransfer = _destSlave.getTransfer(ci.getTransferIndex());
         } catch (SlaveUnavailableException e) {
-            abort();
-            throw new DestinationSlaveException(e);
-        } catch (RemoteException e1) {
-            _destSlave.handleRemoteException(e1);
-            abort();
-            throw new DestinationSlaveException(
-                "Slave was unavailable to tell to listen for slave2slave transfer");
+            throw new SourceSlaveException(e);
         } catch (IOException e) {
-            abort();
-            throw new DestinationSlaveException(_destSlave.getName() +
-                " had an error listening for slave2slave transfer");
+            throw new SourceSlaveException(e);
         }
 
         try {
-            srcxfer = new SrcXfer(_sourceSlave.getSlave().connect(new InetSocketAddress(
-                            _destSlave.getInetAddress(), dstxfer.getLocalPort()),
-                        false));
+            String srcIndex = _srcSlave.issueConnectToSlave(new InetSocketAddress(
+                        destTransfer.getAddress().getAddress(), destTransfer.getLocalPort()),
+                    false);
+            ConnectInfo ci = _srcSlave.fetchTransferResponseFromIndex(srcIndex);
+            srcTransfer = _srcSlave.getTransfer(ci.getTransferIndex());
         } catch (SlaveUnavailableException e) {
-            abort();
-            throw new SourceSlaveException(e);
-        } catch (RemoteException e2) {
-            _sourceSlave.handleRemoteException(e2);
-            abort();
-            throw new SourceSlaveException(
-                "Slave could not connect for slave2slave transfer");
+            throw new DestinationSlaveException(e);
+        } catch (IOException e) {
+            throw new DestinationSlaveException(e);
+        }
+        
+        try {
+            destTransfer.receiveFile(_file.getPath(),'I',0);
+        } catch (IOException e1) {
+            throw new DestinationSlaveException(e1);
+        } catch (SlaveUnavailableException e1) {
+            throw new DestinationSlaveException(e1);
         }
 
-        dstxfer.start();
-        srcxfer.start();
+        try {
+            srcTransfer.sendFile(_file.getPath(),'I',0);
+        } catch (IOException e2) {
+            throw new SourceSlaveException(e2);
+        } catch (SlaveUnavailableException e2) {
+            throw new SourceSlaveException(e2);
+        }
 
-        while ((srcxfer.isAlive() || dstxfer.isAlive()) &&
-                ((dstxfer.e == null) && (srcxfer.e == null))) {
+        boolean srcIsDone = false;
+        boolean destIsDone = false;
+
+        while (!(srcIsDone && destIsDone)) {
+            try {
+                if(srcTransfer.getTransferStatus().isFinished()) {
+                    srcIsDone = true;
+                }
+            } catch (TransferFailedException e7) {
+                try {
+                    destTransfer.abort();
+                } catch (SlaveUnavailableException e8) {
+                } catch (IOException e8) {
+                }
+                throw new SourceSlaveException(e7);
+            } catch (SlaveUnavailableException e7) {
+                try {
+                    destTransfer.abort();
+                } catch (SlaveUnavailableException e8) {
+                } catch (IOException e8) {
+                }
+                throw new SourceSlaveException(e7);
+            }
+            try {
+                if(destTransfer.getTransferStatus().isFinished()) {
+                    destIsDone = true;
+                }
+            } catch (TransferFailedException e6) {
+                try {
+                    srcTransfer.abort();
+                } catch (SlaveUnavailableException e8) {
+                } catch (IOException e8) {
+                }
+                throw new DestinationSlaveException(e6);
+            } catch (SlaveUnavailableException e6) {
+                try {
+                    srcTransfer.abort();
+                } catch (SlaveUnavailableException e8) {
+                } catch (IOException e8) {
+                }
+                throw new DestinationSlaveException(e6);
+            }
             try {
                 Thread.sleep(100);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException e5) {
             }
-        }
-
-        if (srcxfer.e != null) {
-            logger.info("Problem with " + _sourceSlave.getName(), srcxfer.e);
-            abort();
-            throw new SourceSlaveException(srcxfer.e);
-        }
-
-        if (dstxfer.e != null) {
-            logger.info("Problem with " + _destSlave.getName(), dstxfer.e);
-            abort();
-            throw new DestinationSlaveException(dstxfer.e);
         }
 
         if (!checkCRC) {
@@ -219,15 +158,7 @@ public class SlaveTransfer {
             return true;
         }
 
-        long dstxferCheckSum;
-
-        try {
-            dstxferCheckSum = dstxfer.getChecksum();
-        } catch (RemoteException e3) {
-            _destSlave.handleRemoteException(e3);
-            throw new DestinationSlaveException(
-                "Caught RemoteException getting the checksum from transfer");
-        }
+        long dstxferCheckSum = destTransfer.getChecksum();
 
         try {
             if ((dstxferCheckSum == 0) ||
@@ -249,54 +180,5 @@ public class SlaveTransfer {
         }
 
         return false;
-    }
-
-    class DstXfer extends Thread {
-        private Transfer dstxfer;
-        private Throwable e;
-
-        public DstXfer(Transfer dstxfer) {
-            this.dstxfer = dstxfer;
-        }
-
-        public long getChecksum() throws RemoteException {
-            return dstxfer.getChecksum();
-        }
-
-        /**
-         * @return
-         */
-        public int getLocalPort() throws RemoteException {
-            return dstxfer.getLocalPort();
-        }
-
-        public void run() {
-            try {
-                _file.receiveFile(dstxfer, 'I', 0L);
-            } catch (Throwable e) {
-                this.e = e;
-            }
-        }
-    }
-
-    class SrcXfer extends Thread {
-        private Throwable e;
-        private Transfer srcxfer;
-
-        public SrcXfer(Transfer srcxfer) {
-            this.srcxfer = srcxfer;
-        }
-
-        public long getChecksum() throws RemoteException {
-            return srcxfer.getChecksum();
-        }
-
-        public void run() {
-            try {
-                _file.sendFile(srcxfer, 'I', 0L);
-            } catch (Throwable e) {
-                this.e = e;
-            }
-        }
     }
 }

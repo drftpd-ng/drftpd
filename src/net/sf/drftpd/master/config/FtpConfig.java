@@ -17,29 +17,14 @@
  */
 package net.sf.drftpd.master.config;
 
-import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.FtpReply;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.slave.SlaveImpl;
-
-import org.apache.log4j.Logger;
-
-import org.apache.oro.text.GlobCompiler;
-import org.apache.oro.text.regex.MalformedPatternException;
-
-import org.drftpd.GlobalContext;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Reader;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -49,10 +34,21 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import net.sf.drftpd.master.ConnectionManager;
+import net.sf.drftpd.master.FtpReply;
+import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+
+import org.apache.log4j.Logger;
+import org.apache.oro.text.GlobCompiler;
+import org.apache.oro.text.regex.MalformedPatternException;
+import org.drftpd.GlobalContext;
+import org.drftpd.slave.Slave;
+
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.61 2004/10/11 22:57:53 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.62 2004/11/02 07:32:42 zubov Exp $
  */
 public class FtpConfig {
     private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -66,7 +62,7 @@ public class FtpConfig {
     private boolean _hideIps;
     private boolean _isLowerDir;
     private boolean _isLowerFile;
-    private String _loginPrompt = SlaveImpl.VERSION + " http://drftpd.org";
+    private String _loginPrompt = Slave.VERSION + " http://drftpd.org";
     private int _maxUsersExempt;
     private int _maxUsersTotal = Integer.MAX_VALUE;
     private ArrayList _msgpath;
@@ -74,9 +70,7 @@ public class FtpConfig {
     private Hashtable _permissions;
     private StringTokenizer _replaceDir;
     private StringTokenizer _replaceFile;
-    private String _serverName;
     private long _slaveStatusUpdateTime;
-    private int _socketPort;
     private boolean _useDirNames;
     private boolean _useFileNames;
     private String newConf = "conf/perms.conf";
@@ -276,9 +270,9 @@ public class FtpConfig {
             if (perm.checkPath(path)) {
                 if (perm.check(fromUser)) {
                     return perm.getRatio();
-                } else {
-                    return fromUser.getRatio();
                 }
+
+                return fromUser.getRatio();
             }
         }
 
@@ -377,10 +371,10 @@ public class FtpConfig {
     protected void loadConfig1(Properties cfg) throws UnknownHostException {
         _slaveStatusUpdateTime = Long.parseLong(cfg.getProperty(
                     "slaveStatusUpdateTime", "3000"));
-        _serverName = cfg.getProperty("master.bindname", "slavemaster");
-        _socketPort = Integer.parseInt(cfg.getProperty("master.socketport",
-                    "1100"));
 
+        /*        _serverName = cfg.getProperty("master.bindname", "slavemaster");
+                _socketPort = Integer.parseInt(cfg.getProperty("master.socketport",
+                            "1100"));*/
         _hideIps = cfg.getProperty("hideips", "").equalsIgnoreCase("true");
 
         StringTokenizer st = new StringTokenizer(cfg.getProperty("bouncer_ip",

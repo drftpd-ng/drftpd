@@ -17,24 +17,23 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
+import java.io.PrintWriter;
+import java.util.Date;
+import java.util.Iterator;
+
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.slave.SlaveImpl;
 
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
-
-import java.io.PrintWriter;
-
-import java.util.Date;
-import java.util.Iterator;
+import org.drftpd.slave.Slave;
 
 
 /**
- * @version $Id: Misc.java,v 1.10 2004/08/03 20:13:57 zubov Exp $
+ * @version $Id: Misc.java,v 1.11 2004/11/02 07:32:41 zubov Exp $
  */
 public class Misc implements CommandHandlerFactory, CommandHandler {
     /**
@@ -144,7 +143,7 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
     }
 
     private FtpReply doSITE_VERS(BaseFtpConnection conn) {
-        return new FtpReply(200, SlaveImpl.VERSION);
+        return new FtpReply(200, Slave.VERSION);
     }
 
     public FtpReply execute(BaseFtpConnection conn)

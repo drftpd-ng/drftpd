@@ -18,6 +18,11 @@
 package org.drftpd.slaveselection.filter;
 
 import net.sf.drftpd.master.RemoteSlave;
+import java.net.InetAddress;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Properties;
+
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -25,19 +30,11 @@ import net.sf.drftpd.slave.SlaveStatus;
 
 import org.apache.log4j.Logger;
 
-import java.net.InetAddress;
-
-import java.rmi.RemoteException;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Properties;
-
 
 /**
  * Removes bandwidth * multiplier from the score.
  * @author mog
- * @version $Id: BandwidthFilter.java,v 1.8 2004/10/29 02:45:20 mog Exp $
+ * @version $Id: BandwidthFilter.java,v 1.9 2004/11/02 07:32:54 zubov Exp $
  */
 public class BandwidthFilter extends Filter {
     private static final Logger logger = Logger.getLogger(BandwidthFilter.class);
@@ -115,10 +112,6 @@ public class BandwidthFilter extends Filter {
             try {
                 status = score.getRSlave().getStatusAvailable();
             } catch (Exception e) {
-                if (e instanceof RemoteException) {
-                    score.getRSlave().handleRemoteException((RemoteException) e);
-                }
-
                 iter.remove();
 
                 continue;

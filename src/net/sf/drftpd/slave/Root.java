@@ -24,7 +24,7 @@ import java.io.IOException;
 
 /**
  * @author mog
- * @version $Id: Root.java,v 1.9 2004/08/03 20:14:03 zubov Exp $
+ * @version $Id: Root.java,v 1.10 2004/11/02 07:32:48 zubov Exp $
  */
 public class Root {
     private File _rootFile;
@@ -33,8 +33,7 @@ public class Root {
     private int _priority = 0;
     private long _lastModified;
 
-    public Root(String root, long minSpaceFree, int priority)
-        throws IOException {
+    public Root(String root) throws IOException {
         _rootFile = new File(new File(root).getCanonicalFile());
         _root = _rootFile.getPath();
         _lastModified = getFile().lastModified();

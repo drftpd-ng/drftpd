@@ -30,7 +30,6 @@ import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserExistsException;
 import net.sf.drftpd.master.usermanager.UserFileException;
-import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.Time;
 
@@ -41,12 +40,12 @@ import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 
+import org.drftpd.slave.RemoteTransfer;
+
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
-
-import java.rmi.RemoteException;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -62,7 +61,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  * @author zubov
- * @version $Id: UserManagment.java,v 1.48 2004/10/05 02:11:22 mog Exp $
+ * @version $Id: UserManagment.java,v 1.49 2004/11/02 07:32:41 zubov Exp $
  */
 public class UserManagment implements CommandHandler, CommandHandlerFactory {
     private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -1571,15 +1570,9 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                         response.addComment(SimplePrintf.jprintf(formatidle, env));
                     } else if (conn2.getDataConnectionHandler().isTransfering()) {
                         if (conn2.getDataConnectionHandler().isTransfering()) {
-                            try {
-                                speed = conn2.getDataConnectionHandler()
-                                             .getTransfer().getXferSpeed();
-                                env.add("speed", Bytes.formatBytes(speed) +
-                                    "/s");
-                            } catch (RemoteException e2) {
-                                logger.warn("", e2);
-                            }
-
+                            speed = conn2.getDataConnectionHandler()
+                                         .getTransfer().getXferSpeed();
+                            env.add("speed", Bytes.formatBytes(speed) + "/s");
                             env.add("file",
                                 conn2.getDataConnectionHandler()
                                      .getTransferFile().getName());
@@ -1588,11 +1581,11 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
                                      .getTranferSlave().getName());
                         }
 
-                        if (conn2.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+                        if (conn2.getTransferDirection() == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
                             response.addComment(SimplePrintf.jprintf(formatup,
                                     env));
                             speedup += speed;
-                        } else if (conn2.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+                        } else if (conn2.getTransferDirection() == RemoteTransfer.TRANSFER_SENDING_DOWNLOAD) {
                             response.addComment(SimplePrintf.jprintf(
                                     formatdown, env));
                             speeddn += speed;

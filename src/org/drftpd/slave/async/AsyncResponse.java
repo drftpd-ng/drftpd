@@ -15,29 +15,24 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.permission;
+package org.drftpd.slave.async;
 
-import net.sf.drftpd.master.SlaveManagerImpl;
-
-import java.io.IOException;
-
-import java.net.ServerSocket;
-
-import java.rmi.server.RMIServerSocketFactory;
+import java.io.Serializable;
 
 
 /**
  * @author mog
- * @version $Id: GlobRMIServerSocketFactory.java,v 1.6 2004/08/03 20:14:01 zubov Exp $
+ * @version $Id: AsyncResponse.java,v 1.2 2004/11/02 07:32:53 zubov Exp $
  */
-public class GlobRMIServerSocketFactory implements RMIServerSocketFactory {
-    private SlaveManagerImpl _sm;
+public class AsyncResponse implements Serializable {
+    private static final long serialVersionUID = -6915699035949526136L;
+    private String _index;
 
-    public GlobRMIServerSocketFactory(SlaveManagerImpl sm) {
-        _sm = sm;
+    public AsyncResponse(String index) {
+        _index = index;
     }
 
-    public ServerSocket createServerSocket(int port) throws IOException {
-        return new GlobServerSocket(port, _sm);
+    public String getIndex() {
+        return _index;
     }
 }

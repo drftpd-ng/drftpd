@@ -17,6 +17,12 @@
  */
 package org.drftpd.mirroring.archivetypes;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Properties;
+
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.listeners.Archive;
 import net.sf.drftpd.master.RemoteSlave;
@@ -26,14 +32,7 @@ import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.mirroring.ArchiveType;
-
 import org.drftpd.sections.SectionInterface;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
 
 
 /**
@@ -62,7 +61,8 @@ public class ConstantMirroring extends ArchiveType {
         for (Iterator iter = new ArrayList(lrf.getFiles()).iterator();
                 iter.hasNext();) {
             LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
-
+            if (src.isLink())
+                continue;
             if (src.isFile()) {
                 Collection slaves = new ArrayList(src.getSlaves());
 
@@ -82,7 +82,7 @@ public class ConstantMirroring extends ArchiveType {
 
                     if (!slave.isAvailable()) {
                         src.removeSlave(slave);
-                        slave.deleteFile(src.getPath());
+                        slave.simpleDelete(src.getPath());
                     }
 
                     offlineSlaveIter.remove();
@@ -96,7 +96,7 @@ public class ConstantMirroring extends ArchiveType {
                         onlineSlaveIter.hasNext()) { // remove online slaves until size is okay
 
                     RemoteSlave slave = (RemoteSlave) onlineSlaveIter.next();
-                    slave.deleteFile(src.getPath());
+                    slave.simpleDelete(src.getPath());
                     src.removeSlave(slave);
                     onlineSlaveIter.remove();
                 }
@@ -115,22 +115,19 @@ public class ConstantMirroring extends ArchiveType {
         throws IncompleteDirectoryException, OfflineSlaveException {
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
-
+            if (src.isLink())
+                continue;
             if (src.isFile()) {
+                Collection onlineSlaves;
                 try {
-                    if (src.getAvailableSlaves().size() != _numOfSlaves) {
-                        return false;
-                    }
+                    onlineSlaves = src.getAvailableSlaves();
                 } catch (NoAvailableSlaveException e) {
-                    throw new OfflineSlaveException(src.getName() +
-                        " is not online");
+                    continue;  // can't archive this file but maybe others have a chance
                 }
-
-                if (src.getSlaves().size() > _numOfSlaves) {
+                if (onlineSlaves.size() != _numOfSlaves) {
                     return false;
                 }
-            } else { // src.isDirectory()
-
+            } else if (src.isDirectory()) {
                 return isArchivedDir(src);
             }
         }

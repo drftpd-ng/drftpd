@@ -32,7 +32,7 @@ import java.util.Iterator;
  * new user manager, we have to override this class.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya </a>
- * @version $Id: UserManager.java,v 1.24 2004/10/03 16:13:53 mog Exp $
+ * @version $Id: UserManager.java,v 1.25 2004/11/02 07:32:43 zubov Exp $
  */
 public abstract class UserManager {
     protected ConnectionManager _connManager;
@@ -116,7 +116,7 @@ public abstract class UserManager {
     //TODO garbage collected Map of users.
     public User getUserByName(String username)
         throws NoSuchUserException, UserFileException {
-        User user = (User) getUserByNameUnchecked(username);
+        User user = getUserByNameUnchecked(username);
 
         if (user.isDeleted()) {
             throw new NoSuchUserException(user.getUsername() + " is deleted");

@@ -19,7 +19,7 @@ package org.drftpd.slaveselection.filter;
 
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.SlaveManagerImpl;
+import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -45,7 +45,7 @@ import java.util.StringTokenizer;
  * </pre>
  *
  * @author mog
- * @version $Id: MatchdirFilter.java,v 1.5 2004/08/03 20:14:10 zubov Exp $
+ * @version $Id: MatchdirFilter.java,v 1.6 2004/11/02 07:33:12 zubov Exp $
  */
 public class MatchdirFilter extends Filter {
     private ArrayList _assigns;
@@ -74,7 +74,8 @@ public class MatchdirFilter extends Filter {
         ArrayList assigns = new ArrayList();
 
         while (st.hasMoreTokens()) {
-            assigns.add(new AssignSlave(st.nextToken(), _ssm.getSlaveManager()));
+            assigns.add(new AssignSlave(st.nextToken(),
+                    _ssm.getGlobalContext().getSlaveManager()));
         }
 
         _assigns = assigns;
@@ -121,7 +122,7 @@ public class MatchdirFilter extends Filter {
         private RemoteSlave _rslave;
         private long _score;
 
-        public AssignSlave(String s, SlaveManagerImpl slaveManager)
+        public AssignSlave(String s, SlaveManager slaveManager)
             throws ObjectNotFoundException {
             boolean isAdd;
             int pos = s.indexOf("+");
@@ -142,7 +143,7 @@ public class MatchdirFilter extends Filter {
             String slavename = s.substring(0, pos);
 
             if (!slavename.equalsIgnoreCase("all")) {
-                _rslave = slaveManager.getSlave(slavename);
+                _rslave = slaveManager.getRemoteSlave(slavename);
             }
 
             String assign = s.substring(pos + 1);

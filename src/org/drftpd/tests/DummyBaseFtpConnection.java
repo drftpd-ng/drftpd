@@ -22,7 +22,7 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.SlaveManagerImpl;
+import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -45,7 +45,7 @@ import javax.net.SocketFactory;
 
 /**
  * @author mog
- * @version $Id: DummyBaseFtpConnection.java,v 1.10 2004/10/05 02:11:26 mog Exp $
+ * @version $Id: DummyBaseFtpConnection.java,v 1.11 2004/11/02 07:33:13 zubov Exp $
  */
 public class DummyBaseFtpConnection extends BaseFtpConnection {
     private InetAddress _clientAddress;
@@ -129,7 +129,7 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
         return _serverSocketFactory;
     }
 
-    public SlaveManagerImpl getSlaveManager() {
+    public SlaveManager getSlaveManager() {
         throw new UnsupportedOperationException();
     }
 

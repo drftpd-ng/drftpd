@@ -17,29 +17,28 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.SlaveManagerImpl;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-
-import org.drftpd.GlobalContext;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
 import java.net.InetAddress;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
+import net.sf.drftpd.FatalException;
+import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.master.RemoteSlave;
+import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+
+import org.drftpd.GlobalContext;
+import org.drftpd.GlobalContext;
+import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
+
 
 /**
  * @author mog
- * @version $Id: FilterChain.java,v 1.8 2004/10/29 02:45:22 mog Exp $
+ * @version $Id: FilterChain.java,v 1.9 2004/11/02 07:33:12 zubov Exp $
  */
 public class FilterChain {
     private SlaveSelectionManager _ssm;
@@ -71,11 +70,6 @@ public class FilterChain {
 
         RemoteSlave rslave = sc.getBestSlave();
         rslave.setLastDirection(direction, System.currentTimeMillis());
-
-        if (rslave == null) {
-            throw new NoAvailableSlaveException(
-                "This is not supposed to be thrown");
-        }
 
         return rslave;
     }
@@ -126,11 +120,7 @@ public class FilterChain {
         _filters = filters;
     }
 
-    public SlaveManagerImpl getSlaveManager() {
-        return getGlobalContext().getSlaveManager();
-    }
-
-    GlobalContext getGlobalContext() {
+    public GlobalContext getGlobalContext() {
         return _ssm.getGlobalContext();
     }
 }

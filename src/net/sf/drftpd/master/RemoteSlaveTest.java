@@ -17,35 +17,29 @@
  */
 package net.sf.drftpd.master;
 
+import java.io.IOException;
+import java.net.SocketException;
+import java.util.HashSet;
+import java.util.Set;
+
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
-import net.sf.drftpd.ID3Tag;
-import net.sf.drftpd.SFVFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.slave.Slave;
-import net.sf.drftpd.slave.SlaveStatus;
-import net.sf.drftpd.slave.Transfer;
+import net.sf.drftpd.SlaveUnavailableException;
+import net.sf.drftpd.event.Event;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+import net.sf.drftpd.remotefile.LinkedRemoteFile.CaseInsensitiveHashtable;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.remotefile.AbstractLinkedRemoteFile;
+import org.drftpd.slave.async.AsyncResponse;
+import org.drftpd.tests.DummyRemoteSlave;
+import org.drftpd.tests.DummySlaveManager;
 
-import org.drftpd.tests.DummyGlobalContext;
-
-import java.io.IOException;
-
-import java.net.InetSocketAddress;
-import java.net.SocketException;
-
-import java.rmi.RemoteException;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 
 
 /**
  * @author mog
- * @version $Id: RemoteSlaveTest.java,v 1.10 2004/09/25 03:48:35 mog Exp $
+ * @version $Id: RemoteSlaveTest.java,v 1.11 2004/11/02 07:32:40 zubov Exp $
  */
 public class RemoteSlaveTest extends TestCase {
     public RemoteSlaveTest(String fName) {
@@ -56,23 +50,59 @@ public class RemoteSlaveTest extends TestCase {
         return new TestSuite(RemoteSlaveTest.class);
     }
 
-    public void testEquals() {
-        RemoteSlave rslave1 = new RemoteSlave("test1", null);
-        RemoteSlave rslave2 = new RemoteSlave("test1", null);
-        RemoteSlave rslave3 = new RemoteSlave("test2", null);
+    public void testEquals() throws SlaveFileException {
+        DummySlaveManager sm = new DummySlaveManager();
+        GlobalContext gc = new GC();
+        sm.setGlobalContext(gc);
+        ((GC) gc).setSlaveManager(sm);
+
+        RemoteSlave rslave1 = new DummyRemoteSlave("test1", gc);
+        RemoteSlave rslave2 = new DummyRemoteSlave("test1", gc);
+        RemoteSlave rslave3 = new DummyRemoteSlave("test2", gc);
         assertTrue(rslave1.equals(rslave1));
         assertTrue(rslave1.equals(rslave2));
         assertFalse(rslave1.equals(rslave3));
     }
 
+    public void testProcessQueue()
+        throws SlaveFileException, IOException, SlaveUnavailableException {
+        DummySlaveManager sm = new DummySlaveManager();
+        GC gc = new GC();
+        sm.setGlobalContext(gc);
+        gc.setSlaveManager(sm);
+
+        RemergeRemoteSlave rslave = new RemergeRemoteSlave("test", gc);
+        sm.addSlave(rslave);
+
+        rslave.simpleDelete("/deleteme");
+        rslave.simpleRename("/renameme", "/indir", "tofile");
+
+        HashSet filelist = new HashSet();
+        filelist.add("/deleteme");
+        filelist.add("/renameme");
+        filelist.add("/indir");
+
+        rslave.setFileList(filelist);
+        rslave.processQueue();
+
+        assertFalse(filelist.contains("/deleteme"));
+        assertFalse(filelist.contains("/renameme"));
+        assertTrue(filelist.contains("/indir"));
+        assertTrue(filelist.contains("/indir/tofile"));
+    }
+
     public void testAddNetworkError()
-        throws RemoteException, InterruptedException {
-        SlaveManagerImpl sm = new SlaveManagerImpl();
-        RemoteSlave rslave = new RS("test", new SM());
+        throws InterruptedException, SlaveFileException {
+        DummySlaveManager sm = new DummySlaveManager();
+        GC gc = new GC();
+        sm.setGlobalContext(gc);
+        gc.setSlaveManager(sm);
+
+        DummyRemoteSlave rslave = new DummyRemoteSlave("test", gc);
         sm.addSlave(rslave);
         rslave.setProperty("errortimeout", "100");
         rslave.setProperty("maxerrors", "2");
-        rslave.setSlave(new SlaveImpl(new HashSet()), null, null, 256);
+        rslave.fakeConnect();
         rslave.setAvailable(true);
         assertTrue(rslave.isAvailable());
         rslave.addNetworkError(new SocketException());
@@ -86,100 +116,87 @@ public class RemoteSlaveTest extends TestCase {
         assertFalse(rslave.isAvailable());
     }
 
-    public void testSetSlave() throws IOException {
-        RemoteSlave rslave = new RemoteSlave("test", null);
-        rslave.deleteFile("/deleteme");
-        rslave.rename("/renameme", "/indir", "tofile");
-
-        List list = new ArrayList();
-        list.add(rslave);
-
-        HashSet filelist = new HashSet();
-        filelist.add("/deleteme");
-        filelist.add("/renameme");
-        filelist.add("/indir");
-
-        Slave slave = new SlaveImpl(filelist);
-        rslave.setSlave(slave, null, null, 256);
-        assertFalse(filelist.contains("/deleteme"));
-        assertFalse(filelist.contains("/renameme"));
-        assertTrue(filelist.contains("/indir"));
-        assertTrue(filelist.contains("/indir/tofile"));
-    }
-
-    public class SM extends SlaveManagerImpl {
-        public SM() throws RemoteException {
-            super();
+    public class LRF extends AbstractLinkedRemoteFile {
+        public void cleanSlaveFromMerging(RemoteSlave slave) {
         }
 
-        public GlobalContext getGlobalContext() {
-            return new DummyGlobalContext();
+        public void resetSlaveForMerging(RemoteSlave slave) {
         }
 
-        public void loadSlaves() throws SlaveFileException {
+        public void setSlaveForMerging(RemoteSlave rslave) {
+        }
+
+        public void deleteOthers(Set destSlaves) {
+        }
+
+        /* (non-Javadoc)
+         * @see net.sf.drftpd.remotefile.LinkedRemoteFileInterface#remerge(net.sf.drftpd.remotefile.LinkedRemoteFile.CaseInsensitiveHashtable, net.sf.drftpd.master.RemoteSlave)
+         */
+        public void remerge(CaseInsensitiveHashtable lightRemoteFiles,
+            RemoteSlave rslave) throws IOException {
+            // TODO Auto-generated method stub
         }
     }
 
-    public class RS extends RemoteSlave {
-        public RS(String name, SlaveManagerImpl manager) {
-            super(name, manager);
+    public class GC extends GlobalContext {
+        public SlaveManager getSlaveManager() {
+            return super.getSlaveManager();
         }
 
-        public void commit() {
-            // just for testing, don't write userfiles
+        public void dispatchFtpEvent(Event event) {
+        }
+
+        public void setSlaveManager(SlaveManager sm) {
+            _slaveManager = sm;
+        }
+
+        public LinkedRemoteFileInterface getRoot() {
+            System.out.println("new lrf");
+
+            return new LRF();
         }
     }
 
-    public class SlaveImpl implements Slave {
-        private HashSet _filelist;
+    public class RemergeRemoteSlave extends RemoteSlave {
+        private HashSet _filelist = null;
 
-        public SlaveImpl(HashSet filelist) {
+        public RemergeRemoteSlave(String name, GlobalContext gctx) {
+            super(name, gctx);
+        }
+
+        /**
+         * @param filelist
+         */
+        public void setFileList(HashSet filelist) {
             _filelist = filelist;
         }
 
-        public long checkSum(String path) throws RemoteException, IOException {
-            throw new NoSuchMethodError();
+        public String issueDeleteToSlave(String sourceFile)
+            throws SlaveUnavailableException {
+            _filelist.remove(sourceFile);
+
+            return null;
         }
 
-        public Transfer listen(boolean encrypted)
-            throws RemoteException, IOException {
-            throw new NoSuchMethodError();
-        }
-
-        public Transfer connect(InetSocketAddress addr, boolean encrypted)
-            throws RemoteException {
-            throw new NoSuchMethodError();
-        }
-
-        public SlaveStatus getSlaveStatus() throws RemoteException {
-            throw new NoSuchMethodError();
-        }
-
-        public void ping() throws RemoteException {
-        }
-
-        public SFVFile getSFVFile(String path)
-            throws RemoteException, IOException {
-            throw new NoSuchMethodError();
-        }
-
-        public ID3Tag getID3v1Tag(String path)
-            throws RemoteException, IOException {
-            throw new NoSuchMethodError();
-        }
-
-        public void rename(String from, String toDirPath, String toName)
-            throws RemoteException, IOException {
+        public String issueRenameToSlave(String from, String toDirPath,
+            String toName) throws SlaveUnavailableException {
             _filelist.remove(from);
             _filelist.add(new String(toDirPath + "/" + toName));
+
+            return null;
         }
 
-        public void delete(String path) throws RemoteException, IOException {
-            _filelist.remove(path);
+        public void simpleDelete(String path) {
+            addQueueDelete(path);
         }
 
-        public LinkedRemoteFile getSlaveRoot() throws IOException {
-            throw new NoSuchMethodError();
+        public void simpleRename(String from, String toDirPath, String toName) {
+            addQueueRename(from, toDirPath + "/" + toName);
+        }
+
+        public AsyncResponse fetchResponse(String index)
+            throws IOException, SlaveUnavailableException {
+            return null;
         }
     }
 }

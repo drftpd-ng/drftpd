@@ -30,14 +30,11 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-
-import java.util.ArrayList;
 
 
 /**
  * @author mog
- * @version $Id: XStreamUser.java,v 1.8 2004/08/03 20:14:00 zubov Exp $
+ * @version $Id: XStreamUser.java,v 1.9 2004/11/02 07:32:45 zubov Exp $
  */
 public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
     UnixPassword {
@@ -119,19 +116,6 @@ public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
 
         File userfile = ((XStreamUserManager) _usermanager).getUserFile(this.getUsername());
         userfile.delete();
-    }
-
-    private void readObject(ObjectInputStream stream)
-        throws IOException, ClassNotFoundException {
-        stream.defaultReadObject();
-
-        if (groups == null) {
-            groups = new ArrayList();
-        }
-
-        if (ipMasks == null) {
-            ipMasks = new ArrayList();
-        }
     }
 
     public void setPassword(String password) {

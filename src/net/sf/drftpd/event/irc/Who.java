@@ -28,19 +28,18 @@ import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
 
 import org.drftpd.plugins.SiteBot;
 
+import org.drftpd.slave.RemoteTransfer;
+
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
-
-import java.rmi.RemoteException;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -48,7 +47,7 @@ import java.util.Iterator;
 
 /**
  * @author mog
- * @version $Id: Who.java,v 1.8 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: Who.java,v 1.9 2004/11/02 07:32:38 zubov Exp $
  */
 public class Who extends GenericAutoService implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Who.class);
@@ -137,14 +136,10 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
                             SimplePrintf.jprintf(formatidle, env));
                     }
                 } else {
-                    try {
-                        env.add("speed",
-                            Bytes.formatBytes(conn.getDataConnectionHandler()
-                                                  .getTransfer().getXferSpeed()) +
-                            "/s");
-                    } catch (RemoteException e2) {
-                        logger.warn("", e2);
-                    }
+                    env.add("speed",
+                        Bytes.formatBytes(conn.getDataConnectionHandler()
+                                              .getTransfer().getXferSpeed()) +
+                        "/s");
 
                     env.add("file",
                         conn.getDataConnectionHandler().getTransferFile()
@@ -153,13 +148,13 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
                         conn.getDataConnectionHandler().getTranferSlave()
                             .getName());
 
-                    if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+                    if (conn.getTransferDirection() == RemoteTransfer.TRANSFER_RECEIVING_UPLOAD) {
                         if (up) {
                             _listener.sayChannel(msgc.getDest(),
                                 SimplePrintf.jprintf(formatup, env));
                             i++;
                         }
-                    } else if (conn.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+                    } else if (conn.getTransferDirection() == RemoteTransfer.TRANSFER_SENDING_DOWNLOAD) {
                         if (dn) {
                             _listener.sayChannel(msgc.getDest(),
                                 SimplePrintf.jprintf(formatdown, env));

@@ -26,7 +26,6 @@ import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.master.usermanager.UserManager;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
@@ -47,7 +46,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: LoginTest.java,v 1.11 2004/10/03 16:13:52 mog Exp $
+ * @version $Id: LoginTest.java,v 1.12 2004/11/02 07:32:41 zubov Exp $
  */
 public class LoginTest extends TestCase {
     private static final Logger logger = Logger.getLogger(LoginTest.class);

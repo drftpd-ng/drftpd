@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 
@@ -105,7 +104,7 @@ public class JobManagerCommandHandler implements CommandHandlerFactory,
             RemoteSlave rslave;
 
             try {
-                rslave = conn.getSlaveManager().getSlave(slaveName);
+                rslave = conn.getSlaveManager().getRemoteSlave(slaveName);
             } catch (ObjectNotFoundException e1) {
                 reply.addComment(slaveName +
                     "was not found, cannot add to destination slave list");

@@ -24,17 +24,22 @@ import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.SlaveManagerImpl;
+import net.sf.drftpd.master.SlaveFileException;
+import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
-import net.sf.drftpd.slave.Transfer;
 
 import org.apache.log4j.BasicConfigurator;
 
+import org.drftpd.GlobalContext;
+
 import org.drftpd.sections.def.SectionManager;
+
+import org.drftpd.slave.RemoteTransfer;
 
 import org.drftpd.tests.DummyConnectionManager;
 import org.drftpd.tests.DummyGlobalContext;
+import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.tests.DummySlaveManager;
 
 import java.rmi.RemoteException;
@@ -46,7 +51,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilterTest.java,v 1.8 2004/08/03 20:14:10 zubov Exp $
+ * @version $Id: SlavetopFilterTest.java,v 1.9 2004/11/02 07:33:12 zubov Exp $
  */
 public class SlavetopFilterTest extends TestCase {
     private LinkedRemoteFile dir1;
@@ -66,14 +71,15 @@ public class SlavetopFilterTest extends TestCase {
 
     public void testSimple()
         throws NoAvailableSlaveException, FileExistsException, 
-            ObjectNotFoundException, RemoteException {
+            ObjectNotFoundException, RemoteException, SlaveFileException {
         Properties p = new Properties();
         p.put("1.topslaves", "2");
         p.put("1.assign", "100");
 
         RemoteSlave[] rslaves = {
-                new RemoteSlave("slave1", null), new RemoteSlave("slave2", null),
-                new RemoteSlave("slave3", null)
+                new DummyRemoteSlave("slave1", null),
+                new DummyRemoteSlave("slave2", null),
+                new DummyRemoteSlave("slave3", null)
             };
 
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
@@ -108,6 +114,7 @@ public class SlavetopFilterTest extends TestCase {
         DummyConnectionManager cm = new DummyConnectionManager();
 
         DummyGlobalContext gctx = new DummyGlobalContext();
+        fc.setGlobalContext(gctx);
         gctx.setSectionManager(new SectionManager(cm));
         gctx.setConnectionManager(cm);
         gctx.setRoot(root);
@@ -118,7 +125,7 @@ public class SlavetopFilterTest extends TestCase {
         fc.setSlaveManager(sm);
 
         Filter f = new SlavetopFilter(fc, 1, p);
-        f.process(sc, null, null, Transfer.TRANSFER_UNKNOWN, dir2);
+        f.process(sc, null, null, RemoteTransfer.TRANSFER_UNKNOWN, dir2);
         assertEquals(100, sc.getSlaveScore(rslaves[0]).getScore());
         assertEquals(0, sc.getSlaveScore(rslaves[1]).getScore());
         assertEquals(100, sc.getSlaveScore(rslaves[2]).getScore());
@@ -126,19 +133,22 @@ public class SlavetopFilterTest extends TestCase {
 
     public class FC extends FilterChain {
         private DummySlaveManager _slavem;
+        private DummyGlobalContext _dgctx;
 
-        public SlaveManagerImpl getSlaveManager() {
+        public SlaveManager getSlaveManager() {
             return _slavem;
         }
 
         public void setSlaveManager(DummySlaveManager sm) {
             _slavem = sm;
         }
-    }
 
-    public class SlaveManager extends SlaveManagerImpl {
-        protected SlaveManager() throws RemoteException {
-            super();
+        public void setGlobalContext(DummyGlobalContext dgctx) {
+            _dgctx = dgctx;
+        }
+
+        public GlobalContext getGlobalContext() {
+            return _dgctx;
         }
     }
 }

@@ -17,23 +17,22 @@
  */
 package org.drftpd.tests;
 
-import net.sf.drftpd.master.SlaveManagerImpl;
+import net.sf.drftpd.master.SlaveFileException;
+import net.sf.drftpd.master.SlaveManager;
 
 import org.drftpd.GlobalContext;
 
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
-
-import java.rmi.RemoteException;
 
 import java.util.List;
 
 
 /**
  * @author mog
- * @version $Id: DummySlaveManager.java,v 1.3 2004/08/03 20:14:10 zubov Exp $
+ * @version $Id: DummySlaveManager.java,v 1.4 2004/11/02 07:33:13 zubov Exp $
  */
-public class DummySlaveManager extends SlaveManagerImpl {
-    public DummySlaveManager() throws RemoteException {
+public class DummySlaveManager extends SlaveManager {
+    public DummySlaveManager() throws SlaveFileException {
         super();
     }
 

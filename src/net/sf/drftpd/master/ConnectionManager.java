@@ -17,6 +17,19 @@
  */
 package net.sf.drftpd.master;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
@@ -29,32 +42,16 @@ import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.MLSTSerialize;
-import net.sf.drftpd.slave.SlaveImpl;
 import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.GlobalContext;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import java.net.ServerSocket;
-import java.net.Socket;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
+import org.drftpd.slave.Slave;
 
 
 /**
- * @version $Id: ConnectionManager.java,v 1.118 2004/10/05 02:11:21 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.119 2004/11/02 07:32:39 zubov Exp $
  */
 public class ConnectionManager {
     public static final int idleTimeout = 300;
@@ -67,9 +64,9 @@ public class ConnectionManager {
     }
 
     public ConnectionManager(Properties cfg, Properties slaveCfg,
-        String cfgFileName, String slaveCfgFileName) {
-        _gctx = new GlobalContext(cfg, slaveCfg, cfgFileName, slaveCfgFileName,
-                this);
+        String cfgFileName) throws SlaveFileException {
+        _gctx = new GlobalContext(cfg, cfgFileName, this);
+
 
         // start socket slave manager
 
@@ -78,7 +75,7 @@ public class ConnectionManager {
                         }*/
         if (slaveCfg != null) {
             try {
-                new SlaveImpl(slaveCfg);
+                new Slave(slaveCfg);
             } catch (IOException ex) { // RemoteException extends IOException
                 throw new FatalException(ex);
             }
@@ -93,7 +90,7 @@ public class ConnectionManager {
     }
 
     public static void main(String[] args) {
-        System.out.println(SlaveImpl.VERSION + " master server starting.");
+        System.out.println(Slave.VERSION + " master server starting.");
         System.out.println("http://drftpd.org/");
 
         try {
@@ -130,7 +127,7 @@ public class ConnectionManager {
             logger.info("Starting ConnectionManager");
 
             ConnectionManager mgr = new ConnectionManager(cfg, slaveCfg,
-                    cfgFileName, slaveCfgFileName);
+                    cfgFileName);
 
             /** listen for connections **/
             ServerSocket server = new ServerSocket(Integer.parseInt(

@@ -22,14 +22,17 @@ import junit.framework.TestCase;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.slave.Transfer;
+
+import org.drftpd.slave.RemoteTransfer;
+
+import org.drftpd.tests.DummyRemoteSlave;
 
 import java.util.Arrays;
 
 
 /**
  * @author zubov
- * @version $Id: CycleFilterTest.java,v 1.4 2004/08/03 20:14:10 zubov Exp $
+ * @version $Id: CycleFilterTest.java,v 1.5 2004/11/02 07:33:12 zubov Exp $
  */
 public class CycleFilterTest extends TestCase {
     /**
@@ -47,12 +50,13 @@ public class CycleFilterTest extends TestCase {
     public void testProcess()
         throws NoAvailableSlaveException, ObjectNotFoundException {
         RemoteSlave[] rslaves = {
-                new RemoteSlave("slave1", null), new RemoteSlave("slave2", null),
-                new RemoteSlave("slave3", null)
+                new DummyRemoteSlave("slave1", null),
+                new DummyRemoteSlave("slave2", null),
+                new DummyRemoteSlave("slave3", null)
             };
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
         Filter f = new CycleFilter(null, 0, null);
-        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null);
+        f.process(sc, null, null, RemoteTransfer.TRANSFER_SENDING_DOWNLOAD, null);
         assertEquals(1, sc.getSlaveScore(rslaves[0]).getScore());
         assertEquals(0, sc.getSlaveScore(rslaves[1]).getScore());
         assertEquals(0, sc.getSlaveScore(rslaves[2]).getScore());

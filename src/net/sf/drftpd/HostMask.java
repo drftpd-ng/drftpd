@@ -29,7 +29,7 @@ import java.net.InetAddress;
 
 /**
  * @author mog
- * @version $Id: HostMask.java,v 1.10 2004/08/03 20:13:54 zubov Exp $
+ * @version $Id: HostMask.java,v 1.11 2004/11/02 07:32:37 zubov Exp $
  */
 public class HostMask {
     private static final Logger logger = Logger.getLogger(HostMask.class);
@@ -56,6 +56,10 @@ public class HostMask {
         return _identMask;
     }
 
+    public String getMask() {
+        return getIdentMask() + "@" + getHostMask();
+    }
+
     /**
      * Is ident used?
      * @return false is ident mask equals "*"
@@ -64,31 +68,30 @@ public class HostMask {
         return (_identMask != null) && !_identMask.equals("*");
     }
 
-    public boolean matches(String ident, InetAddress address) {
+    public boolean matchesHost(InetAddress a) throws MalformedPatternException {
+        Perl5Matcher m = new Perl5Matcher();
+        GlobCompiler c = new GlobCompiler();
+        Pattern p = c.compile(getHostMask());
+
+        return (m.matches(a.getHostAddress(), p) ||
+        m.matches(a.getHostName(), p));
+    }
+
+    public boolean matchesIdent(String ident) throws MalformedPatternException {
+        Perl5Matcher m = new Perl5Matcher();
+        GlobCompiler c = new GlobCompiler();
+
         if (ident == null) {
             ident = "";
         }
 
-        Perl5Matcher m = new Perl5Matcher();
+        return !isIdentMaskSignificant() ||
+        m.matches(ident, c.compile(getIdentMask()));
+    }
 
-        GlobCompiler c = new GlobCompiler();
-
-        try {
-            if (!isIdentMaskSignificant() ||
-                    m.matches(ident, c.compile(getIdentMask()))) {
-                Pattern p = c.compile(getHostMask());
-
-                if (m.matches(address.getHostAddress(), p) ||
-                        m.matches(address.getHostName(), p)) {
-                    return true;
-                }
-            }
-
-            return false;
-        } catch (MalformedPatternException ex) {
-            logger.warn("", ex);
-
-            return false;
-        }
+    public String toString() {
+        if (_identMask != null)
+            return _identMask + "@" + _hostMask;
+        return "*@" + _hostMask;
     }
 }

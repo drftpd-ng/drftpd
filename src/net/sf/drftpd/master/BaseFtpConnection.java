@@ -17,32 +17,6 @@
  */
 package net.sf.drftpd.master;
 
-import net.sf.drftpd.Bytes;
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.event.ConnectionEvent;
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.master.command.CommandManager;
-import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
-import net.sf.drftpd.master.usermanager.NoSuchUserException;
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
-import net.sf.drftpd.slave.Transfer;
-import net.sf.drftpd.util.AddAsciiOutputStream;
-import net.sf.drftpd.util.ReplacerUtils;
-import net.sf.drftpd.util.Time;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
-import org.drftpd.GlobalContext;
-
-import org.drftpd.commands.UnhandledCommandException;
-
-import org.tanesha.replacer.FormatterException;
-import org.tanesha.replacer.ReplacerEnvironment;
-import org.tanesha.replacer.ReplacerFormat;
-import org.tanesha.replacer.SimplePrintf;
-
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -51,18 +25,37 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 
-import java.rmi.RemoteException;
-
-import java.util.Date;
-
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocket;
+
+import net.sf.drftpd.Bytes;
+import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.SlaveUnavailableException;
+import net.sf.drftpd.event.ConnectionEvent;
+import net.sf.drftpd.event.Event;
+import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
+import net.sf.drftpd.master.usermanager.NoSuchUserException;
+import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+import net.sf.drftpd.util.AddAsciiOutputStream;
+import net.sf.drftpd.util.ReplacerUtils;
+import net.sf.drftpd.util.Time;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
+import org.drftpd.commands.UnhandledCommandException;
+import org.drftpd.slave.RemoteTransfer;
+import org.tanesha.replacer.FormatterException;
+import org.tanesha.replacer.ReplacerEnvironment;
+import org.tanesha.replacer.ReplacerFormat;
+import org.tanesha.replacer.SimplePrintf;
 
 
 /**
@@ -71,7 +64,7 @@ import javax.net.ssl.SSLSocket;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.98 2004/10/29 02:45:16 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.99 2004/11/02 07:32:39 zubov Exp $
  */
 public class BaseFtpConnection implements Runnable {
     private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() +
@@ -87,7 +80,6 @@ public class BaseFtpConnection implements Runnable {
     //protected ConnectionManager _cm;
     private CommandManager _commandManager;
     protected Socket _controlSocket;
-    protected User _user;
     protected LinkedRemoteFileInterface _currentDirectory;
 
     /**
@@ -110,6 +102,7 @@ public class BaseFtpConnection implements Runnable {
     protected String _stopRequestMessage;
     protected Thread _thread;
     protected GlobalContext _gctx;
+    protected User _user;
 
     protected BaseFtpConnection() {
     }
@@ -223,14 +216,14 @@ public class BaseFtpConnection implements Runnable {
         String cmd = getRequest().getCommand();
 
         if ("RETR".equals(cmd)) {
-            return Transfer.TRANSFER_SENDING_DOWNLOAD;
+            return RemoteTransfer.TRANSFER_SENDING_DOWNLOAD;
         }
 
         if ("STOR".equals(cmd) || "APPE".equals(cmd)) {
-            return Transfer.TRANSFER_RECEIVING_UPLOAD;
+            return RemoteTransfer.TRANSFER_RECEIVING_UPLOAD;
         }
 
-        return Transfer.TRANSFER_UNKNOWN;
+        return RemoteTransfer.TRANSFER_UNKNOWN;
     }
 
     /**
@@ -251,7 +244,7 @@ public class BaseFtpConnection implements Runnable {
         return ServerSocketFactory.getDefault();
     }
 
-    public SlaveManagerImpl getSlaveManager() {
+    public SlaveManager getSlaveManager() {
         return getConnectionManager().getGlobalContext().getSlaveManager();
     }
 
@@ -268,9 +261,9 @@ public class BaseFtpConnection implements Runnable {
         String cmd = getRequest().getCommand();
 
         if (cmd.equals("RETR")) {
-            return Transfer.TRANSFER_SENDING_DOWNLOAD;
+            return RemoteTransfer.TRANSFER_SENDING_DOWNLOAD;
         } else if (cmd.equals("STOR")) {
-            return Transfer.TRANSFER_RECEIVING_UPLOAD;
+            return RemoteTransfer.TRANSFER_RECEIVING_UPLOAD;
         } else {
             throw new IllegalStateException("Not transfering");
         }
@@ -529,9 +522,10 @@ public class BaseFtpConnection implements Runnable {
         if (getDataConnectionHandler().isTransfering()) {
             try {
                 getDataConnectionHandler().getTransfer().abort();
-            } catch (RemoteException e) {
-                getDataConnectionHandler().getTranferSlave()
-                    .handleRemoteException(e);
+            } catch (SlaveUnavailableException e) {
+                logger.warn("Unable to stop transfer, slave is unavailable", e);
+            } catch (IOException e) {
+                logger.warn("Unable to stop transfer", e);
             }
         }
 
@@ -560,7 +554,6 @@ public class BaseFtpConnection implements Runnable {
 
         return buf.toString();
     }
-
     public OutputStream getOutputStream() throws IOException {
         return _controlSocket.getOutputStream();
     }

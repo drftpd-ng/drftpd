@@ -34,7 +34,7 @@ import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManagerInterface.java,v 1.6 2004/09/25 03:48:41 mog Exp $
+ * @version $Id: SlaveSelectionManagerInterface.java,v 1.7 2004/11/02 07:32:53 zubov Exp $
  */
 public interface SlaveSelectionManagerInterface {
     public abstract void reload() throws IOException;
@@ -52,7 +52,6 @@ public interface SlaveSelectionManagerInterface {
     public RemoteSlave getASlaveForMaster(LinkedRemoteFileInterface file,
         FtpConfig cfg) throws NoAvailableSlaveException;
 
-    //    public SlaveManagerImpl getSlaveManager();
     public GlobalContext getGlobalContext();
 
     public RemoteSlave getASlaveForJobDownload(Job job)

@@ -19,53 +19,60 @@ package net.sf.drftpd.slave;
 
 import java.io.Serializable;
 
-import java.net.InetAddress;
-
+import org.drftpd.slave.TransferIndex;
 
 /**
  * @author mog
- * @version $Id: TransferStatus.java,v 1.6 2004/08/03 20:14:03 zubov Exp $
+ * @version $Id: TransferStatus.java,v 1.7 2004/11/02 07:32:48 zubov Exp $
  */
 public class TransferStatus implements Serializable {
     private long _checksum;
+
     private long _elapsed;
+
+    private boolean _isFinished;
+
+    private Throwable _throwable;
+
     private long _transfered;
-    private InetAddress _peer;
+
+    private TransferIndex _transferIndex;
 
     public TransferStatus(long elapsed, long transfered, long checksum,
-        InetAddress peer) {
+            boolean isFinished, TransferIndex transferIndex) {
+        _transferIndex = transferIndex;
         _elapsed = elapsed;
         _transfered = transfered;
         _checksum = checksum;
+        _isFinished = isFinished;
+        _throwable = null;
+    }
 
-        if (peer == null) {
-            throw new NullPointerException();
-        }
-
-        _peer = peer;
+    public TransferStatus(TransferIndex transferIndex, Throwable t) {
+        this(0, 0, 0, true, transferIndex);
+        _throwable = t;
     }
 
     public long getChecksum() {
         return _checksum;
     }
 
-    /**
-     * @see TransferImpl#getElapsed()
-     */
     public long getElapsed() {
         return _elapsed;
     }
 
-    /**
-     * @see TransferImpl#getTransfered()
-     */
+    public Throwable getThrowable() {
+        return _throwable;
+    }
+
     public long getTransfered() {
         return _transfered;
     }
 
-    /**
-     * @see TransferImpl#getXferSpeed()
-     */
+    public TransferIndex getTransferIndex() {
+        return _transferIndex;
+    }
+
     public int getXferSpeed() {
         if (_transfered == 0) {
             return 0;
@@ -78,7 +85,11 @@ public class TransferStatus implements Serializable {
         return (int) (_transfered / ((float) _elapsed / (float) 1000));
     }
 
-    public InetAddress getPeer() {
-        return _peer;
+    public boolean isFinished() {
+        return _isFinished;
+    }
+
+    public boolean threwException() {
+        return (_throwable != null);
     }
 }

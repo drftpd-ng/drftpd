@@ -22,16 +22,15 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.master.ConnectionManager;
-import net.sf.drftpd.master.SlaveManagerImpl;
+import net.sf.drftpd.master.SlaveFileException;
+import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.mirroring.JobManager;
-import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.MLSTSerialize;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.drftpd.sections.SectionManagerInterface;
@@ -50,7 +49,7 @@ import java.util.Timer;
 
 /**
  * @author mog
- * @version $Id: GlobalContext.java,v 1.4 2004/10/03 16:13:55 mog Exp $
+ * @version $Id: GlobalContext.java,v 1.5 2004/11/02 07:32:49 zubov Exp $
  */
 public class GlobalContext {
     private static final Logger logger = Logger.getLogger(GlobalContext.class);
@@ -61,15 +60,15 @@ public class GlobalContext {
     protected LinkedRemoteFileInterface _root;
     protected SectionManagerInterface _sections;
     private String _shutdownMessage = null;
-    protected SlaveManagerImpl _slaveManager;
+    protected SlaveManager _slaveManager;
     protected UserManager _usermanager;
     private Timer _timer = new Timer();
 
     protected GlobalContext() {
     }
 
-    public GlobalContext(Properties cfg, Properties slaveCfg,
-        String cfgFileName, String slaveCfgFileName, ConnectionManager cm) {
+    public GlobalContext(Properties cfg, String cfgFileName,
+        ConnectionManager cm) throws SlaveFileException {
         _cm = cm;
         _cm.setGlobalContext(this);
         loadUserManager(cfg, cfgFileName);
@@ -80,10 +79,9 @@ public class GlobalContext {
             throw new FatalException(ex);
         }
 
-        loadSlaveManager(cfg, cfgFileName);
-        loadRSlavesAndRoot();
-        loadSectionManager(cfg);
+        loadSlaveManager(cfg);
         loadPlugins(cfg);
+        loadRSlavesAndRoot();
     }
 
     /**
@@ -158,7 +156,7 @@ public class GlobalContext {
         return _shutdownMessage;
     }
 
-    public SlaveManagerImpl getSlaveManager() {
+    public SlaveManager getSlaveManager() {
         if (_slaveManager == null) {
             throw new NullPointerException();
         }
@@ -239,32 +237,13 @@ public class GlobalContext {
         }
     }
 
-    private void loadSlaveManager(Properties cfg, String cfgFileName) {
+    private void loadSlaveManager(Properties cfg) throws SlaveFileException {
         /** register slavemanager **/
-        try {
-            String smclass = null;
+        _slaveManager = new SlaveManager(cfg, this);
 
-            try {
-                smclass = FtpConfig.getProperty(cfg, "master.slavemanager");
-            } catch (Exception ex) {
-            }
-
-            if (smclass == null) {
-                smclass = "net.sf.drftpd.master.SlaveManagerImpl";
-            }
-
-            _slaveManager = (SlaveManagerImpl) Class.forName(smclass)
-                                                    .newInstance();
-            _slaveManager.loadSlaves();
-
-            GlobRMIServerSocketFactory ssf = new GlobRMIServerSocketFactory(getSlaveManager());
-            _slaveManager.init(cfg, ssf, this);
-        } catch (Exception e) {
-            logger.log(Level.WARN, "Exception instancing SlaveManager", e);
-            throw new FatalException(
-                "Cannot create instance of slavemanager, check master.slavemanager in " +
-                cfgFileName, e);
-        }
+        Thread t = new Thread(_slaveManager);
+        t.setName(_slaveManager.toString());
+        t.start();
     }
 
     protected void loadUserManager(Properties cfg, String cfgFileName) {

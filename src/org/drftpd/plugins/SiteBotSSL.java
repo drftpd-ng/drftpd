@@ -35,7 +35,7 @@ import javax.net.ssl.TrustManager;
 
 /**
  * @author mog
- * @version $Id: SiteBotSSL.java,v 1.5 2004/08/03 20:14:06 zubov Exp $
+ * @version $Id: SiteBotSSL.java,v 1.6 2004/11/02 07:32:51 zubov Exp $
  */
 public class SiteBotSSL extends SiteBot {
     private static final Logger logger = Logger.getLogger(SiteBot.class);
@@ -65,8 +65,7 @@ public class SiteBotSSL extends SiteBot {
             } catch (GeneralSecurityException e) {
                 throw new FatalException(e);
             }
-        } else {
-            super.connect();
         }
+        super.connect();
     }
 }

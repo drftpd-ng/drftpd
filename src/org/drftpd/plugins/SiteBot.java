@@ -48,7 +48,7 @@ import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.event.irc.IRCPluginInterface;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.GroupPosition;
-import net.sf.drftpd.master.SlaveManagerImpl;
+import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.command.plugins.Nuke;
 import net.sf.drftpd.master.command.plugins.TransferStatistics;
@@ -97,7 +97,7 @@ import java.util.ResourceBundle;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.21 2004/10/05 02:11:26 mog Exp $
+ * @version $Id: SiteBot.java,v 1.22 2004/11/02 07:32:51 zubov Exp $
  */
 public class SiteBot implements FtpListener, Observer {
     public static final ReplacerEnvironment GLOBAL_ENV = new ReplacerEnvironment();
@@ -866,7 +866,7 @@ public class SiteBot implements FtpListener, Observer {
     }
 
     public static void fillEnvSlaveStatus(ReplacerEnvironment env,
-        SlaveStatus status, SlaveManagerImpl slaveManager) {
+        SlaveStatus status, SlaveManager slaveManager) {
         env.add("disktotal", Bytes.formatBytes(status.getDiskSpaceCapacity()));
         env.add("diskfree", Bytes.formatBytes(status.getDiskSpaceAvailable()));
         env.add("diskused", Bytes.formatBytes(status.getDiskSpaceUsed()));
@@ -938,7 +938,7 @@ public class SiteBot implements FtpListener, Observer {
                                      .getString(prefix), sectionObj);
     }
 
-    public SlaveManagerImpl getSlaveManager() {
+    public SlaveManager getSlaveManager() {
         return getConnectionManager().getGlobalContext().getSlaveManager();
     }
 
@@ -1163,9 +1163,8 @@ class UserComparator implements Comparator {
         if (_sort.equals("low")) {
             return ((thisVal < anotherVal) ? (-1)
                                            : ((thisVal == anotherVal) ? 0 : 1));
-        } else {
-            return ((thisVal > anotherVal) ? (-1)
-                                           : ((thisVal == anotherVal) ? 0 : 1));
         }
+        return ((thisVal > anotherVal) ? (-1)
+                                       : ((thisVal == anotherVal) ? 0 : 1));
     }
 }

@@ -38,7 +38,7 @@ import java.util.Properties;
 
 /**
  * @author zubov
- * @version $Id: MoveReleaseOffSlavesToMostFreeSlaves.java,v 1.5 2004/08/03 20:14:05 zubov Exp $
+ * @version $Id: MoveReleaseOffSlavesToMostFreeSlaves.java,v 1.6 2004/11/02 07:32:50 zubov Exp $
  */
 public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
     private static final Logger logger = Logger.getLogger(MoveReleaseOffSlavesToMostFreeSlaves.class);
@@ -63,7 +63,7 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
             try {
                 _offOfSlaves.add(_parent.getConnectionManager()
                                         .getGlobalContext().getSlaveManager()
-                                        .getSlave(slavename));
+                                        .getRemoteSlave(slavename));
             } catch (ObjectNotFoundException e) {
                 logger.debug("Unable to get slave " + slavename +
                     " from the SlaveManager");

@@ -32,8 +32,6 @@ import java.io.IOException;
 
 import java.net.SocketException;
 
-import java.rmi.RemoteException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,7 +44,7 @@ import java.util.Set;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.60 2004/09/17 13:40:15 zubov Exp $
+ * @version $Id: JobManager.java,v 1.61 2004/11/02 07:32:46 zubov Exp $
  */
 public class JobManager implements Runnable {
     private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -224,7 +222,7 @@ public class JobManager implements Runnable {
 
         try {
             if (!job.transfer(useCRC(), sourceSlave, destSlave)) { // crc failed
-                destSlave.deleteFile(job.getFile().getPath());
+                destSlave.simpleDelete(job.getFile().getPath());
                 logger.debug("CRC did not match for " + job.getFile() +
                     " when sending from " + sourceSlave.getName() + " to " +
                     destSlave.getName());
@@ -238,16 +236,17 @@ public class JobManager implements Runnable {
                     " to " + destSlave.getName(), e);
 
                 try {
-                    if (destSlave.getSlave().checkSum(job.getFile().getPath()) == job.getFile()
-                                                                                         .getCheckSum()) {
+                    String index = destSlave.issueChecksumToSlave(job.getFile()
+                                                                     .getPath());
+
+                    if (destSlave.fetchChecksumFromIndex(index) == job.getFile()
+                                                                          .getCheckSum()) {
                         logger.debug("Accepting file because the crc's match");
                     } else {
-                        destSlave.deleteFile(job.getFile().getPath());
+                        destSlave.simpleDelete(job.getFile().getPath());
 
                         return;
                     }
-                } catch (RemoteException e1) {
-                    destSlave.handleRemoteException(e1);
 
                     return;
                 } catch (NoAvailableSlaveException e1) {

@@ -47,9 +47,9 @@ public class ID3GenreList {
     public static String getGenre(int number) {
         if (number < 0) {
             return "";
-        } else {
-            return genres[number];
         }
+
+        return genres[number];
     }
 
     /** Checks, if the given genre is a valid one
@@ -58,9 +58,9 @@ public class ID3GenreList {
     public static boolean validateGenre(String genre) {
         if (getGenreIndex(genre) != -1) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /** Returns the array index of this genre, or -1 if it is an invalid one.
