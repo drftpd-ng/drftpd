@@ -566,6 +566,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 *   destination file does not exist
 	 * @throws IllegalFileNameException, FileExistsException, FileNotFoundException
 	 */
+	//TODO rename to relative path
 	public void renameTo(String to) throws IOException {
 		//		if (!VirtualDirectory.isLegalFileName(to)) {
 		//			throw new IllegalFileNameException("Illegal file name or a directory");

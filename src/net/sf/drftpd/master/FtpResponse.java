@@ -122,7 +122,10 @@ public class FtpResponse implements Cloneable {
 		sb.append(code + " " + response + "\r\n");
 		return sb.toString();
 	}
-
+	/**
+	 * 
+	 * @deprecated
+	 */
 	public void print(PrintWriter out) {
 		out.print(toString());
 	}

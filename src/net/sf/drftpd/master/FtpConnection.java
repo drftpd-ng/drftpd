@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.SFVFile;
+import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.master.usermanager.GlftpdUserManager;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
@@ -1053,7 +1054,7 @@ public class FtpConnection extends BaseFtpConnection {
 			// nukees contains credits as value
 			nukees2.put(user, nukees.get(username));
 		}
-
+		String preNukeName = nukeDir.getPath();
 		String to = "[NUKED]-" + nukeDir.getName();
 		try {
 			nukeDir.renameTo(to);
@@ -1079,7 +1080,7 @@ public class FtpConnection extends BaseFtpConnection {
 				logger.log(Level.WARNING, str, e1);
 			}
 		}
-
+		new NukeEvent(user, request, preNukeName, multiplier, nukees2);
 		out.print(response);
 	}
 	private void nukeRemoveCredits(
