@@ -70,7 +70,7 @@ public class Kick extends IRCCommand {
             if (usersPerLine == null) {
                 throw new RuntimeException("Unspecified value 'kick.usersperline' in " + confFile);        
             }
-            _idleTimeout = Integer.parseInt(idleTimeout) * 1000;
+            _idleTimeout = Integer.parseInt(idleTimeout);
             _usersPerLine = Integer.parseInt(usersPerLine);
         } catch (Exception e) {
             logger.error("Error reading " + confFile,e);
@@ -113,7 +113,7 @@ public class Kick extends IRCCommand {
                     continue;
                 }
 
-				long idletime = (System.currentTimeMillis() - conn.getLastActive());
+				long idletime = (System.currentTimeMillis() - conn.getLastActive()) / 1000;
                 env.add("idletime", Time.formatTime(idletime));
                 env.add("idleuser", cuser.getName());
                 env.add("ircuser", cmduser);
