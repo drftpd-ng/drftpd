@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.98 2004/01/11 23:11:54 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.99 2004/01/12 03:16:31 zubov Exp $
  */
 
 public class LinkedRemoteFile
@@ -211,6 +211,17 @@ public class LinkedRemoteFile
 		return putFile(file);
 	}
 
+	protected synchronized void addSize(long size) {
+		_length += size;
+		//		logger.debug(
+		//			this +" got " + size + " added, now " + _length,
+		//			new Throwable());
+		try {
+			getParentFile().addSize(size);
+		} catch (FileNotFoundException done) {
+		}
+	}
+
 	public void addSlave(RemoteSlave slave) {
 		if (_slaves == null) //isDirectory()
 			throw new IllegalStateException("Cannot addSlave() on a directory");
@@ -352,8 +363,8 @@ public class LinkedRemoteFile
 	}
 
 	public void deleteOthers(RemoteSlave slave) {
-		for (Iterator iter2 = getSlaves().iterator(); iter2.hasNext();) {
-			RemoteSlave tempSlave = (RemoteSlave) iter2.next();
+		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
+			RemoteSlave tempSlave = (RemoteSlave) iter.next();
 			if (tempSlave == slave)
 				continue; // do not want to delete the archived file
 			// delete other files
@@ -361,16 +372,21 @@ public class LinkedRemoteFile
 				tempSlave.getSlave().delete(getPath());
 			} catch (RemoteException e) {
 				tempSlave.handleRemoteException(e);
+			} catch (FileNotFoundException ex) {
+				logger.warn(
+					getPath()
+						+ " missing on "
+						+ tempSlave.getName()
+						+ " during delete, assumed deleted");
 			} catch (NoAvailableSlaveException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.debug("Probably run from Archive", e);
+				continue;
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.debug("Probably run from Archive", e);
+				continue;
 			}
 		}
 	}
-
 	public long dirSize() {
 		if (_files == null)
 			throw new IllegalStateException("Cannot be called on a non-directory");
@@ -814,17 +830,6 @@ public class LinkedRemoteFile
 			}
 		}
 		throw new FileNotFoundException("no sfv file in directory");
-	}
-
-	protected synchronized void addSize(long size) {
-		_length += size;
-		//		logger.debug(
-		//			this +" got " + size + " added, now " + _length,
-		//			new Throwable());
-		try {
-			getParentFile().addSize(size);
-		} catch (FileNotFoundException done) {
-		}
 	}
 
 	public LinkedRemoteFile putFile(RemoteFile file) {
