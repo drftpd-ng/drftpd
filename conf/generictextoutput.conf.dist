@@ -1,4 +1,4 @@
-#Usage: !trigger path/to/file.txt
+#Usage: !trigger path/to/file.txt CommandHelpText
 
-!bnc text/bnc.txt
-!affils text/affils.txt
+!bnc text/bnc.txt Show ftp bouncer info.
+!affils text/affils.txt Show current site affils.

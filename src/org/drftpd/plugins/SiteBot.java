@@ -117,6 +117,7 @@ public class SiteBot extends FtpListener implements Observer {
     private AutoRegister _autoRegister;
     private String _channelName;
     private String _commands;
+    private String _commandsHelp;
     protected IRCConnection _conn;
     private boolean _enableAnnounce;
 
@@ -773,6 +774,7 @@ public class SiteBot extends FtpListener implements Observer {
         new AutoResponder(_conn);
         _conn.addCommandObserver(this);
         _commands = "";
+        _commandsHelp = "";
 
         for (int i = 1;; i++) {
             String classname = ircCfg.getProperty("irc.plugins." + i);
@@ -794,6 +796,10 @@ public class SiteBot extends FtpListener implements Observer {
 
                 if (plugin.getCommands() != null) {
                     _commands = _commands + plugin.getCommands() + " ";
+                }
+                
+                if (plugin.getCommandsHelp() != null) {
+                	_commandsHelp = _commandsHelp + plugin.getCommandsHelp() + "\n";
                 }
             } catch (Exception e) {
                 logger.warn("", e);
@@ -1134,6 +1140,7 @@ public class SiteBot extends FtpListener implements Observer {
 
         if (msg.equals("!help")) {
             sayChannel(msgc.getDest(), "Available commands: " + _commands);
+            sayChannel(msgc.getSource().getNick(), "Available commands: \n" + _commandsHelp);
         }
     }
 

@@ -51,6 +51,10 @@ public class Invite extends GenericCommandAutoService
         return "!invite(msg)";
     }
 
+    public String getCommandsHelp() {
+    	return "!invite <user> <pass> : Invite yourself to site channel.";
+    }
+    
     protected void updateCommand(InCommand command) {
         if (!(command instanceof MessageCommand)) {
             return;

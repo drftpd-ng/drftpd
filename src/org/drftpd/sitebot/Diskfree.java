@@ -53,6 +53,9 @@ public class Diskfree extends GenericCommandAutoService
         return "!df";
     }
 
+    public String getCommandsHelp() {
+    	return "!df : Show total disk usage for all slaves.";
+    }
     protected void updateCommand(InCommand command) {
         if (!(command instanceof MessageCommand)) {
             return;

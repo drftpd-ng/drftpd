@@ -57,6 +57,11 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
         return "!slaves !slave";
     }
 
+    public String getCommandsHelp() {
+        return "!slave <name> : Show transfer stats and disk free for a specific slave.\n" + 
+		       "!slaves : Show transfer stats and disk free for all slaves.";
+    }
+
     private ConnectionManager getConnectionManager() {
         return _listener.getConnectionManager();
     }

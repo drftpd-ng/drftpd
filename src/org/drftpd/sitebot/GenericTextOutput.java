@@ -42,6 +42,7 @@ import java.util.Iterator;
 public class GenericTextOutput extends GenericCommandAutoService
     implements IRCPluginInterface {
     private HashMap _commands;
+    private HashMap _commandsHelp;
 
     public GenericTextOutput(SiteBot ircListener) {
         super(ircListener.getIRCConnection());
@@ -58,8 +59,19 @@ public class GenericTextOutput extends GenericCommandAutoService
         return toReturn.trim();
     }
 
+    public String getCommandsHelp() {
+        String toReturn = "";
+        String trigger;
+        for (Iterator iter = _commandsHelp.keySet().iterator(); iter.hasNext();) {
+        	trigger = (String) iter.next();
+            toReturn += trigger + " : " + _commandsHelp.get(trigger) + "\n";
+        }
+        return toReturn;
+    }	
+    
     private void reload() {
         _commands = new HashMap();
+        _commandsHelp = new HashMap();
 
         BufferedReader in;
 
@@ -72,7 +84,7 @@ public class GenericTextOutput extends GenericCommandAutoService
         }
 
         String line;
-
+        String help;
         try {
             while ((line = in.readLine()) != null) {
                 if (line.startsWith("#")) {
@@ -81,11 +93,17 @@ public class GenericTextOutput extends GenericCommandAutoService
 
                 String[] args = line.split(" ");
 
-                if (args.length != 2) {
+                if (args.length < 3) {
                     continue;
                 }
 
                 _commands.put(args[0], args[1]);
+              
+                help = "";
+                for (int i=2; i < args.length; i++) {
+                	help += args[i] + " ";
+                }
+                _commandsHelp.put(args[0],help.trim());
             }
         } catch (IOException e1) {
             throw new RuntimeException(e1);

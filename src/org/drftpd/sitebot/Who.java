@@ -65,6 +65,10 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
         return "!who";
     }
 
+    public String getCommandsHelp() {
+        return "!who : Show who is currently connected to the ftp server.";
+    }
+
     private ConfigInterface getConfig() {
         return _listener.getConfig();
     }

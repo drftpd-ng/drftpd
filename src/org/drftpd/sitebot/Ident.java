@@ -52,6 +52,10 @@ public class Ident extends GenericCommandAutoService implements
         return "!ident(msg)";
     }
 
+    public String getCommandsHelp() {
+    	return "!ident <user> <pass> : Stores your IRC ident in your userfile giving you access to restricted commands.";
+    }
+    
 	protected void updateCommand(InCommand command) {
         if (!(command instanceof MessageCommand)) {
         	//logger.info("not a MessageCommand");

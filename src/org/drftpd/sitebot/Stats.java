@@ -64,6 +64,10 @@ public class Stats extends GenericCommandAutoService
         return "!{al,wk,month,day}{up,dn}";
     }
 
+    public String getCommandsHelp() {
+        return "!{al,wk,month,day}{up,dn} [num] : Show top [num] users for the given period and direction. Default num = 10.";
+    }
+
     protected void updateCommand(InCommand command) {
         if (!(command instanceof MessageCommand)) {
             return;

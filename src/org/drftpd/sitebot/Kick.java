@@ -57,6 +57,10 @@ public class Kick extends GenericAutoService implements IRCPluginInterface {
         return "!kick";
     }
 
+    public String getCommandsHelp() {
+    	return "!kick : Kicks idle users from the ftp server.";
+    }
+    
     private ConfigInterface getConfig() {
         return _listener.getConfig();
     }

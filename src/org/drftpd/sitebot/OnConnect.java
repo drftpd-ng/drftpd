@@ -99,4 +99,9 @@ public class OnConnect extends GenericAutoService implements IRCPluginInterface 
     public String getCommands() {
         return null;
     }
+
+    public String getCommandsHelp() {
+    	return null;
+    }
+    
 }

@@ -1,4 +1,7 @@
-2003/12/29 Morgan Christiansson <drftpd@mog.se>
+2005/01/04 Jamal James <teflon114@gmail.com>
+* Added getCommandsHelp() to all irc plugins which will be msg'd to user on !help
+
+2004/12/29 Morgan Christiansson <drftpd@mog.se>
 * Fixed commandhandlers that were broken while refactoring.
   Thanks to M3ta for stacktrace.
 * Added MAJORCHANGES.txt which will contain a summary of changes

@@ -62,6 +62,11 @@ public class Bandwidth extends GenericCommandAutoService
     public String getCommands() {
         return "!bw !speed";
     }
+    
+    public String getCommandsHelp() {
+    	return "!bw : Show total current site bandwidth usage\n" +
+		       "!speed <user> : Show current transfer speed for <user>";
+    }
 
     private ConnectionManager getConnectionManager() {
         return _listener.getConnectionManager();

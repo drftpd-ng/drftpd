@@ -24,4 +24,6 @@ package org.drftpd.sitebot;
  */
 public interface IRCPluginInterface {
     public String getCommands();
+    
+    public String getCommandsHelp();
 }
