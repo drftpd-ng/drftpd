@@ -55,41 +55,41 @@ import org.tanesha.replacer.SimplePrintf;
 /**
  * @author mog
  * @author zubov
- * @version $Id$
+ * @version $Id: UserManagement.java 877 2004-12-27 02:33:36Z zubov $
  */
-public class UserManagement implements CommandHandler, CommandHandlerFactory {
-    public static final Key TAGLINE = new Key(UserManagement.class, "tagline",
+public class UserManagment implements CommandHandler, CommandHandlerFactory {
+    public static final Key TAGLINE = new Key(UserManagment.class, "tagline",
             String.class);
-    public static final Key DEBUG = new Key(UserManagement.class, "debug",
+    public static final Key DEBUG = new Key(UserManagment.class, "debug",
             Boolean.class);
-    private static final Logger logger = Logger.getLogger(UserManagement.class);
-    public static final Key RATIO = new Key(UserManagement.class, "ratio",
+    private static final Logger logger = Logger.getLogger(UserManagment.class);
+    public static final Key RATIO = new Key(UserManagment.class, "ratio",
             Float.class);
-    public static final Key CREATED = new Key(UserManagement.class, "created",
+    public static final Key CREATED = new Key(UserManagment.class, "created",
             Date.class);
-    public static final Key COMMENT = new Key(UserManagement.class, "comment",
+    public static final Key COMMENT = new Key(UserManagment.class, "comment",
             String.class);
-    public static final Key REASON = new Key(UserManagement.class, "reason",
+    public static final Key REASON = new Key(UserManagment.class, "reason",
     		String.class);
-    public static final Key IRCIDENT = new Key(UserManagement.class, "ircident",
+    public static final Key IRCIDENT = new Key(UserManagment.class, "ircident",
     		String.class);
-    public static final Key GROUPSLOTS = new Key(UserManagement.class, "groupslots",
+    public static final Key GROUPSLOTS = new Key(UserManagment.class, "groupslots",
     		Integer.class);
-    public static final Key LEECHSLOTS = new Key(UserManagement.class, "leechslots",
+    public static final Key LEECHSLOTS = new Key(UserManagment.class, "leechslots",
     		Integer.class);
-    public static final Key TOTALLOGINS = new Key(UserManagement.class, "totallogins",
+    public static final Key TOTALLOGINS = new Key(UserManagment.class, "totallogins",
     		Integer.class);
-    public static final Key MAXLOGINS = new Key(UserManagement.class, "maxlogins",
+    public static final Key MAXLOGINS = new Key(UserManagment.class, "maxlogins",
     		Integer.class);
-    public static final Key MAXLOGINSIP = new Key(UserManagement.class, "maxloginsip",
+    public static final Key MAXLOGINSIP = new Key(UserManagment.class, "maxloginsip",
     		Integer.class);
-    public static final Key MAXSIMUP = new Key(UserManagement.class, "maxsimup",
+    public static final Key MAXSIMUP = new Key(UserManagment.class, "maxsimup",
     		Integer.class);
-    public static final Key MAXSIMDN = new Key(UserManagement.class, "maxsimdn",
+    public static final Key MAXSIMDN = new Key(UserManagment.class, "maxsimdn",
     		Integer.class);
-    public static final Key LASTSEEN = new Key(UserManagement.class, "lastseen",
+    public static final Key LASTSEEN = new Key(UserManagment.class, "lastseen",
             Date.class);
-    public static final Key WKLY_ALLOTMENT = new Key(UserManagement.class, "wkly_allotment",
+    public static final Key WKLY_ALLOTMENT = new Key(UserManagment.class, "wkly_allotment",
             Long.class);
 
     private Reply doSITE_ADDIP(BaseFtpConnection conn) {
@@ -102,14 +102,14 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if (!request.hasArgument()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "addip.usage"));
+                conn.jprintf(UserManagment.class, "addip.usage"));
         }
 
         String[] args = request.getArgument().split(" ");
 
         if (args.length < 2) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "addip.specify"));
+                conn.jprintf(UserManagment.class, "addip.specify"));
         }
 
         Reply response = new Reply(200);
@@ -132,13 +132,13 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
                 try {
                     myUser.addIPMask(string);
-                    response.addComment(conn.jprintf(UserManagement.class,
+                    response.addComment(conn.jprintf(UserManagment.class,
                             "addip.success", env));
                     logger.info("'" + conn.getUserNull().getName() +
                         "' added ip '" + string + "' to '" +
                         myUser.getName() + "'");
                 } catch (DuplicateElementException e) {
-                    response.addComment(conn.jprintf(UserManagement.class,
+                    response.addComment(conn.jprintf(UserManagment.class,
                             "addip.dupe", env));
                 }
             }
@@ -206,7 +206,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                 key = "adduser.usage";
             }
 
-            return new Reply(501, conn.jprintf(UserManagement.class, key));
+            return new Reply(501, conn.jprintf(UserManagment.class, key));
         }
 
         String newGroup = null;
@@ -229,7 +229,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
                 if (users >= conn.getUserNull().getGroupSlots()) {
                     return new Reply(452,
-                        conn.jprintf(UserManagement.class, "adduser.noslots"));
+                        conn.jprintf(UserManagment.class, "adduser.noslots"));
                 }
             } catch (UserFileException e1) {
                 logger.warn("", e1);
@@ -260,23 +260,23 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             //action, no more NoSuchElementException below here
             newUser = conn.getGlobalContext().getUserManager().create(newUsername);
             newUser.setPassword(pass);
-            newUser.getKeyedMap().setObject(UserManagement.CREATED, new Date());
-            response.addComment(conn.jprintf(UserManagement.class,
+            newUser.getKeyedMap().setObject(UserManagment.CREATED, new Date());
+            response.addComment(conn.jprintf(UserManagment.class,
                     "adduser.success", env));
-            newUser.getKeyedMap().setObject(UserManagement.COMMENT, "Added by " + conn.getUserNull().getName());
-            newUser.getKeyedMap().setObject(UserManagement.RATIO, new Float(3));
-            newUser.getKeyedMap().setObject(UserManagement.GROUPSLOTS,0);
-            newUser.getKeyedMap().setObject(UserManagement.LEECHSLOTS,0);
-            newUser.getKeyedMap().setObject(UserManagement.MAXLOGINS,0);
-            newUser.getKeyedMap().setObject(UserManagement.MAXLOGINSIP,0);
-            newUser.getKeyedMap().setObject(UserManagement.MAXSIMUP,0);
-            newUser.getKeyedMap().setObject(UserManagement.MAXSIMDN,0);
-            newUser.getKeyedMap().setObject(UserManagement.TOTALLOGINS,0);
-            newUser.getKeyedMap().setObject(UserManagement.CREATED, new Date());
-            newUser.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
-            newUser.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT, new Long(0));
-            newUser.getKeyedMap().setObject(UserManagement.COMMENT, "Auto-Generated");
-            newUser.getKeyedMap().setObject(UserManagement.IRCIDENT, "N/A");
+            newUser.getKeyedMap().setObject(UserManagment.COMMENT, "Added by " + conn.getUserNull().getName());
+            newUser.getKeyedMap().setObject(UserManagment.RATIO, new Float(3));
+            newUser.getKeyedMap().setObject(UserManagment.GROUPSLOTS,0);
+            newUser.getKeyedMap().setObject(UserManagment.LEECHSLOTS,0);
+            newUser.getKeyedMap().setObject(UserManagment.MAXLOGINS,0);
+            newUser.getKeyedMap().setObject(UserManagment.MAXLOGINSIP,0);
+            newUser.getKeyedMap().setObject(UserManagment.MAXSIMUP,0);
+            newUser.getKeyedMap().setObject(UserManagment.MAXSIMDN,0);
+            newUser.getKeyedMap().setObject(UserManagment.TOTALLOGINS,0);
+            newUser.getKeyedMap().setObject(UserManagment.CREATED, new Date());
+            newUser.getKeyedMap().setObject(UserManagment.LASTSEEN, new Date());
+            newUser.getKeyedMap().setObject(UserManagment.WKLY_ALLOTMENT, new Long(0));
+            newUser.getKeyedMap().setObject(UserManagment.COMMENT, "Auto-Generated");
+            newUser.getKeyedMap().setObject(UserManagment.IRCIDENT, "N/A");
             newUser.getKeyedMap().setObject(Nuke.NUKED,0);
             newUser.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
 
@@ -286,7 +286,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                     "' added '" + newUser.getName() + "' with group " +
                     newUser.getGroup() + "'");
                 env.add("primgroup", newUser.getGroup());
-                response.addComment(conn.jprintf(UserManagement.class,
+                response.addComment(conn.jprintf(UserManagment.class,
                         "adduser.primgroup", env));
             } else {
                 logger.info("'" + conn.getUserNull().getName() +
@@ -294,7 +294,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             }
         } catch (NoSuchElementException ex) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "adduser.missingpass"));
+                conn.jprintf(UserManagment.class, "adduser.missingpass"));
         } catch (UserFileException ex) {
             return new Reply(452, ex.getMessage());
         }
@@ -307,13 +307,13 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
                 try {
                     newUser.addIPMask(string);
-                    response.addComment(conn.jprintf(UserManagement.class,
+                    response.addComment(conn.jprintf(UserManagment.class,
                             "addip.success", env));
                     logger.info("'" + conn.getUserNull().getName() +
                         "' added ip '" + string + "' to '" +
                         newUser.getName() + "'");
                 } catch (DuplicateElementException e1) {
-                    response.addComment(conn.jprintf(UserManagement.class,
+                    response.addComment(conn.jprintf(UserManagment.class,
                             "addip.dupe", env));
                 }
             }
@@ -430,7 +430,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
      */
     private Reply doSITE_CHANGE(BaseFtpConnection conn) {
         Reply usage = (Reply) Reply.RESPONSE_501_SYNTAX_ERROR.clone();
-        usage.addComment(conn.jprintf(UserManagement.class, "change.usage"));
+        usage.addComment(conn.jprintf(UserManagment.class, "change.usage"));
 
         FtpRequest request = conn.getRequest();
 
@@ -519,7 +519,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                                                  .getAllUsersByGroup(conn.getUserNull()
                                                                          .getGroup())
                                                  .iterator(); iter.hasNext();) {
-                            if (((User) iter.next()).getKeyedMap().getObjectFloat(UserManagement.RATIO) == 0F) {
+                            if (((User) iter.next()).getKeyedMap().getObjectFloat(UserManagment.RATIO) == 0F) {
                                 usedleechslots++;
                             }
                         }
@@ -530,36 +530,36 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
                     if (usedleechslots >= conn.getUserNull().getGroupLeechSlots()) {
                         return new Reply(452,
-                            conn.jprintf(UserManagement.class,
+                            conn.jprintf(UserManagment.class,
                                 "changeratio.nomoreslots"));
                     }
                 } else if (ratio != 0F) {
                     return new Reply(452,
-                        conn.jprintf(UserManagement.class,
+                        conn.jprintf(UserManagment.class,
                             "changeratio.invalidratio"));
                 }
 
                 logger.info("'" + conn.getUserNull().getName() +
                     "' changed ratio for '" + userToChange.getName() +
                     "' from '" +
-                    userToChange.getKeyedMap().getObjectFloat(UserManagement.RATIO) +
+                    userToChange.getKeyedMap().getObjectFloat(UserManagment.RATIO) +
                     "' to '" + ratio + "'");
-                userToChange.getKeyedMap().setObject(UserManagement.RATIO, new Float(ratio));
+                userToChange.getKeyedMap().setObject(UserManagment.RATIO, new Float(ratio));
                 env.add("newratio",
-                    Float.toString(userToChange.getKeyedMap().getObjectFloat(UserManagement.RATIO)));
-                response.addComment(conn.jprintf(UserManagement.class,
+                    Float.toString(userToChange.getKeyedMap().getObjectFloat(UserManagment.RATIO)));
+                response.addComment(conn.jprintf(UserManagment.class,
                         "changeratio.success", env));
             } else {
                 // Ratio changes by an admin //
                 logger.info("'" + conn.getUserNull().getName() +
                     "' changed ratio for '" + userToChange.getName() +
                     "' from '" +
-                    userToChange.getKeyedMap().getObjectFloat(UserManagement.RATIO) + " to '" +
+                    userToChange.getKeyedMap().getObjectFloat(UserManagment.RATIO) + " to '" +
                     ratio + "'");
-                userToChange.getKeyedMap().setObject(UserManagement.RATIO, new Float(ratio));
+                userToChange.getKeyedMap().setObject(UserManagment.RATIO, new Float(ratio));
                 env.add("newratio",
-                    Float.toString(userToChange.getKeyedMap().getObjectFloat(UserManagement.RATIO)));
-                response.addComment(conn.jprintf(UserManagement.class,
+                    Float.toString(userToChange.getKeyedMap().getObjectFloat(UserManagment.RATIO)));
+                response.addComment(conn.jprintf(UserManagment.class,
                         "changeratio.success", env));
             }
         } else if ("credits".equals(command)) {
@@ -574,18 +574,18 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                 "'");
             userToChange.setCredits(credits);
             env.add("newcredits", Bytes.formatBytes(userToChange.getCredits()));
-            response.addComment(conn.jprintf(UserManagement.class,
+            response.addComment(conn.jprintf(UserManagment.class,
                     "changecredits.success", env));
         } else if ("comment".equals(command)) {
             logger.info("'" + conn.getUserNull().getName() +
                 "' changed comment for '" + userToChange.getName() +
                 "' from '" +
-                userToChange.getKeyedMap().getObjectString(UserManagement.COMMENT) + " to '" +
+                userToChange.getKeyedMap().getObjectString(UserManagment.COMMENT) + " to '" +
                 fullCommandArgument + "'");
-            userToChange.getKeyedMap().setObject(UserManagement.COMMENT, fullCommandArgument);
+            userToChange.getKeyedMap().setObject(UserManagment.COMMENT, fullCommandArgument);
             env.add("comment",
-                userToChange.getKeyedMap().getObjectString(UserManagement.COMMENT));
-            response.addComment(conn.jprintf(UserManagement.class,
+                userToChange.getKeyedMap().getObjectString(UserManagment.COMMENT));
+            response.addComment(conn.jprintf(UserManagment.class,
                     "changecomment.success", env));
         } else if ("idle_time".equals(command)) {
             if (commandArguments.length != 1) {
@@ -599,7 +599,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                 "'");
             userToChange.setIdleTime(idleTime);
             env.add("idletime", Long.toString(userToChange.getIdleTime()));
-            response.addComment(conn.jprintf(UserManagement.class,
+            response.addComment(conn.jprintf(UserManagment.class,
                     "changeidletime.success", env));
         } else if ("num_logins".equals(command)) {
             // [# sim logins] [# sim logins/ip]
@@ -630,7 +630,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                 env.add("numlogins", Long.toString(userToChange.getMaxLogins()));
                 env.add("numloginsip",
                     Long.toString(userToChange.getMaxLoginsPerIP()));
-                response.addComment(conn.jprintf(UserManagement.class,
+                response.addComment(conn.jprintf(UserManagment.class,
                         "changenumlogins.success", env));
             } catch (NumberFormatException ex) {
                 return Reply.RESPONSE_501_SYNTAX_ERROR;
@@ -651,7 +651,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                 commandArguments[0] + "'");
             userToChange.setGroup(commandArguments[0]);
             env.add("primgroup", userToChange.getGroup());
-            response.addComment(conn.jprintf(UserManagement.class,
+            response.addComment(conn.jprintf(UserManagment.class,
                     "changeprimgroup.success", env));
 
             //			group_slots Number of users a GADMIN is allowed to add.
@@ -684,7 +684,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                 env.add("groupslots", "" + userToChange.getGroupSlots());
                 env.add("groupleechslots",
                     Long.toString(userToChange.getGroupLeechSlots()));
-                response.addComment(conn.jprintf(UserManagement.class,
+                response.addComment(conn.jprintf(UserManagment.class,
                         "changegroupslots.success", env));
             } catch (NumberFormatException ex) {
                 return Reply.RESPONSE_501_SYNTAX_ERROR;
@@ -707,12 +707,12 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             logger.info("'" + conn.getUserNull().getName() +
                 "' changed created for '" + userToChange.getName() +
                 "' from '" +
-                new Date(userToChange.getKeyedMap().getObjectLong(UserManagement.CREATED)) +
+                new Date(userToChange.getKeyedMap().getObjectLong(UserManagment.CREATED)) +
                 "' to '" + myDate + "'");
-            userToChange.getKeyedMap().setObject(UserManagement.CREATED, myDate);
+            userToChange.getKeyedMap().setObject(UserManagment.CREATED, myDate);
 
             response = new Reply(200,
-                    conn.jprintf(UserManagement.class, "changecreated.success",
+                    conn.jprintf(UserManagment.class, "changecreated.success",
                         env));
         } else if ("wkly_allotment".equals(command)) {
             if (commandArguments.length != 1) {
@@ -736,7 +736,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                 "' changed tagline for '" + userToChange.getName() +
                 "' from '" + userToChange.getKeyedMap().getObject(TAGLINE, "") + "' to '" +
                 fullCommandArgument + "'");
-            userToChange.getKeyedMap().setObject(UserManagement.TAGLINE, fullCommandArgument);
+            userToChange.getKeyedMap().setObject(UserManagment.TAGLINE, fullCommandArgument);
 
             response = Reply.RESPONSE_200_COMMAND_OK;
         } else {
@@ -775,7 +775,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if (!request.hasArgument()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "chgrp.usage"));
+                conn.jprintf(UserManagment.class, "chgrp.usage"));
         }
 
         String[] args = request.getArgument().split("[ ,]");
@@ -849,7 +849,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if (!request.hasArgument()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "chpass.usage"));
+                conn.jprintf(UserManagment.class, "chpass.usage"));
         }
 
         String[] args = request.getArgument().split(" ");
@@ -892,7 +892,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if (!request.hasArgument()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "delip.usage"));
+                conn.jprintf(UserManagment.class, "delip.usage"));
         }
 
         String[] args = request.getArgument().split(" ");
@@ -944,7 +944,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if (!request.hasArgument()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "deluser.usage"));
+                conn.jprintf(UserManagment.class, "deluser.usage"));
         }
 
         if (!conn.getUserNull().isAdmin() &&
@@ -972,7 +972,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         myUser.setDeleted(true);
         String reason = "";
         if(st.hasMoreTokens()) {
-        	myUser.getKeyedMap().setObject(UserManagement.REASON, reason = st.nextToken("").substring(1));
+        	myUser.getKeyedMap().setObject(UserManagment.REASON, reason = st.nextToken("").substring(1));
         }
         try {
 			myUser.commit();
@@ -982,7 +982,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 		}
         logger.info("'" + conn.getUserNull().getName() +
             "' deleted user '" + myUser.getName() + "' with reason '"+reason+"'");
-        logger.debug("reason "+myUser.getKeyedMap().getObjectString(UserManagement.REASON));
+        logger.debug("reason "+myUser.getKeyedMap().getObjectString(UserManagment.REASON));
         return Reply.RESPONSE_200_COMMAND_OK;
     }
 
@@ -995,7 +995,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 		//syntax
 		if (!request.hasArgument()) {
 			return new Reply(501, conn.jprintf(
-				UserManagement.class, "ginfo.usage"));
+				UserManagment.class, "ginfo.usage"));
 		}
 		//gadmin
 		String group = request.getArgument();
@@ -1007,7 +1007,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
 		Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
 
-		ResourceBundle bundle = ResourceBundle.getBundle(UserManagement.class.getName());
+		ResourceBundle bundle = ResourceBundle.getBundle(UserManagment.class.getName());
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		env.add("group", group);
 		env.add("sp", " ");
@@ -1060,7 +1060,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 				env.add("mbup", Bytes.formatBytes(user.getUploadedBytes()));
 				env.add("fdn", "" + user.getDownloadedFiles());
 				env.add("mbdn", Bytes.formatBytes(user.getDownloadedBytes()));
-				env.add("ratio", "1:" + (int) user.getKeyedMap().getObjectFloat(UserManagement.RATIO));	
+				env.add("ratio", "1:" + (int) user.getKeyedMap().getObjectFloat(UserManagment.RATIO));	
 				env.add("wkly", Bytes.formatBytes(user.getWeeklyAllotment()));
 				response.addComment(SimplePrintf.jprintf(body, env));
 			} catch (MissingResourceException e) {
@@ -1071,7 +1071,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 			
 			//update totals
 			numUsers++;
-			if ((int) user.getKeyedMap().getObjectFloat(UserManagement.RATIO) == 0) {
+			if ((int) user.getKeyedMap().getObjectFloat(UserManagment.RATIO) == 0) {
 				numLeechUsers++;
 			}
 			allfup += user.getUploadedFiles();
@@ -1111,7 +1111,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if (!request.hasArgument()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "give.usage"));
+                conn.jprintf(UserManagment.class, "give.usage"));
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
@@ -1190,21 +1190,21 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if (!request.hasArgument()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "grpren.usage"));
+                conn.jprintf(UserManagment.class, "grpren.usage"));
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
 
         if (!st.hasMoreTokens()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "grpren.usage"));
+                conn.jprintf(UserManagment.class, "grpren.usage"));
         }
 
         String oldGroup = st.nextToken();
 
         if (!st.hasMoreTokens()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "grpren.usage"));
+                conn.jprintf(UserManagment.class, "grpren.usage"));
         }
 
         String newGroup = st.nextToken();
@@ -1263,7 +1263,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if (!request.hasArgument()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "kick.usage"));
+                conn.jprintf(UserManagment.class, "kick.usage"));
         }
 
         String arg = request.getArgument();
@@ -1302,7 +1302,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if (!request.hasArgument()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "passwd.usage"));
+                conn.jprintf(UserManagment.class, "passwd.usage"));
         }
 
         logger.info("'" + conn.getUserNull().getName() +
@@ -1322,7 +1322,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if (!request.hasArgument()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "purge.usage"));
+                conn.jprintf(UserManagment.class, "purge.usage"));
         }
 
         String delUsername = request.getArgument();
@@ -1363,7 +1363,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if (!request.hasArgument()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "readd.usage"));
+                conn.jprintf(UserManagment.class, "readd.usage"));
         }
 
         User myUser;
@@ -1387,7 +1387,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
 
         myUser.setDeleted(false);
-        myUser.getKeyedMap().remove(UserManagement.REASON);
+        myUser.getKeyedMap().remove(UserManagment.REASON);
         logger.info("'" + conn.getUserNull().getName() + "' readded '" +
             myUser.getName() + "'");
         try {
@@ -1408,7 +1408,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if (!request.hasArgument()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "renuser.usage"));
+                conn.jprintf(UserManagment.class, "renuser.usage"));
         }
 
         String[] args = request.getArgument().split(" ");
@@ -1440,7 +1440,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if (!request.hasArgument()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "seen.usage"));
+                conn.jprintf(UserManagment.class, "seen.usage"));
         }
 
         User user;
@@ -1465,14 +1465,14 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if (!request.hasArgument()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "tagline.usage"));
+                conn.jprintf(UserManagment.class, "tagline.usage"));
         }
 
         logger.info("'" + conn.getUserNull().getName() +
             "' changed his tagline from '" +
             conn.getUserNull().getKeyedMap().getObject(TAGLINE, "") + "' to '" +
             request.getArgument() + "'");
-        conn.getUserNull().getKeyedMap().setObject(UserManagement.TAGLINE, request.getArgument());
+        conn.getUserNull().getKeyedMap().setObject(UserManagment.TAGLINE, request.getArgument());
 
         return Reply.RESPONSE_200_COMMAND_OK;
     }
@@ -1480,12 +1480,12 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
     private Reply doSITE_DEBUG(BaseFtpConnection conn) {
     	User user = conn.getUserNull();
     	if(!conn.getRequest().hasArgument()) {
-    		user.getKeyedMap().setObject(UserManagement.DEBUG, new Boolean(!user.getKeyedMap().getObjectBoolean(UserManagement.DEBUG)));
+    		user.getKeyedMap().setObject(UserManagment.DEBUG, new Boolean(!user.getKeyedMap().getObjectBoolean(UserManagment.DEBUG)));
     	} else {
     		String arg = conn.getRequest().getArgument();
-    		user.getKeyedMap().setObject(UserManagement.DEBUG, new Boolean(arg.equals("true") || arg.equals("on")));
+    		user.getKeyedMap().setObject(UserManagment.DEBUG, new Boolean(arg.equals("true") || arg.equals("on")));
     	}
-    	return new Reply(200, conn.jprintf(UserManagement.class, "debug"));
+    	return new Reply(200, conn.jprintf(UserManagment.class, "debug"));
     }
 
     /**
@@ -1505,7 +1505,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if (!request.hasArgument()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "take.usage"));
+                conn.jprintf(UserManagment.class, "take.usage"));
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
@@ -1564,7 +1564,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if (!request.hasArgument()) {
             return new Reply(501,
-                conn.jprintf(UserManagement.class, "user.usage"));
+                conn.jprintf(UserManagment.class, "user.usage"));
         }
 
         Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
@@ -1611,7 +1611,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 //        env.add("userdownloaded", Bytes.formatBytes(myUser.getDownloadedBytes()));
 
         //ReplacerEnvironment env = BaseFtpConnection.getReplacerEnvironment(null, myUser);
-        response.addComment(BaseFtpConnection.jprintf(UserManagement.class, "user", null, myUser));
+        response.addComment(BaseFtpConnection.jprintf(UserManagment.class, "user", null, myUser));
         return response;
     }
 
@@ -1667,13 +1667,13 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         long speed = 0;
 
         try {
-            ReplacerFormat formatup = ReplacerUtils.finalFormat(UserManagement.class,
+            ReplacerFormat formatup = ReplacerUtils.finalFormat(UserManagment.class,
                     "who.up");
-            ReplacerFormat formatdown = ReplacerUtils.finalFormat(UserManagement.class,
+            ReplacerFormat formatdown = ReplacerUtils.finalFormat(UserManagment.class,
                     "who.down");
-            ReplacerFormat formatidle = ReplacerUtils.finalFormat(UserManagement.class,
+            ReplacerFormat formatidle = ReplacerUtils.finalFormat(UserManagment.class,
                     "who.idle");
-            ReplacerFormat formatcommand = ReplacerUtils.finalFormat(UserManagement.class,
+            ReplacerFormat formatcommand = ReplacerUtils.finalFormat(UserManagment.class,
                     "who.command");
             ReplacerEnvironment env = new ReplacerEnvironment();
             ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(conn.getGlobalContext()
@@ -1743,9 +1743,9 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             env.add("totalupspeed", Bytes.formatBytes(speedup) + "/s");
             env.add("totaldnspeed", Bytes.formatBytes(speeddn) + "/s");
             response.addComment("");
-            response.addComment(conn.jprintf(UserManagement.class,
+            response.addComment(conn.jprintf(UserManagment.class,
                     "who.statusspeed", env));
-            response.addComment(conn.jprintf(UserManagement.class,
+            response.addComment(conn.jprintf(UserManagment.class,
                     "who.statususers", env));
 
             return response;
@@ -1849,7 +1849,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             return doSITE_WHO(conn);
         }
 
-        throw UnhandledCommandException.create(UserManagement.class,
+        throw UnhandledCommandException.create(UserManagment.class,
             conn.getRequest());
     }
 
