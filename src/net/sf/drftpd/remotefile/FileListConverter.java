@@ -30,7 +30,7 @@ import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author mog
- * @version $Id: FileListConverter.java,v 1.10 2004/07/12 20:37:28 mog Exp $
+ * @version $Id: FileListConverter.java,v 1.11 2004/07/18 15:22:33 zubov Exp $
  */
 public class FileListConverter {
 	public static void main(String[] args) throws IOException {
@@ -41,7 +41,7 @@ public class FileListConverter {
 		}
 		System.out.println("Converting files.xml to files.mlst");
 		System.out.println("This might take a while for large filelists and/or slow servers, have patience...");
-		LinkedRemoteFileInterface root = FileListConverter.loadJDOMFileDatabase(SlaveManagerImpl.loadRSlaves(), null);
+		LinkedRemoteFileInterface root = FileListConverter.loadJDOMFileDatabase(/* only null so it compiles */null, null);
 		MLSTSerialize.serialize(root, new SafeFileWriter("files.mlst"));
 		System.out.println("Completed, have a nice day");
 	}

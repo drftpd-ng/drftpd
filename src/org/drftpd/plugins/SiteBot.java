@@ -89,11 +89,9 @@ import f00f.net.irc.martyr.services.AutoReconnect;
 import f00f.net.irc.martyr.services.AutoRegister;
 import f00f.net.irc.martyr.services.AutoResponder;
 
-import de.hampelratte.id3.ID3v1Tag;
-
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.15 2004/07/14 12:52:01 teflon114 Exp $
+ * @version $Id: SiteBot.java,v 1.16 2004/07/18 15:22:34 zubov Exp $
  */
 public class SiteBot implements FtpListener, Observer {
 
@@ -308,53 +306,14 @@ public class SiteBot implements FtpListener, Observer {
 		} else if ("PRE".equals(direvent.getCommand())) {
 			sayDirectorySection(direvent, "pre");
 		} else if ("STOR".equals(direvent.getCommand())) {
-			actionPerformedDirectorySTOR((TransferEvent)direvent);
+			actionPerformedDirectorySTOR((TransferEvent) direvent);
 		}
-	}
-
-	private void actionPerformedDirectoryID3(TransferEvent direvent)
-		throws FormatterException {
-		ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
-		LinkedRemoteFile dir;
-		try {
-			dir = direvent.getDirectory().getParentFile();
-			
-		} catch (FileNotFoundException e) {
-			throw new FatalException(e);
-		}
-		
-		ID3v1Tag id3tag;
-		try {
-			id3tag = dir.lookupFile(dir.lookupMP3File()).getID3v1Tag();
-		} catch (FileNotFoundException ex) {
-			logger.info(
-				"No id3tag info for "
-					+ direvent.getDirectory().getPath()
-					+ ", can't publish id3tag info");
-			return;
-		} catch (NoAvailableSlaveException e) {
-			logger.info("No available slave with id3 info");
-			return;
-		} catch (IOException e) {
-			logger.warn("IO error reading id3 info", e);
-			return;
-		}
-		
-		env.add("path",dir.getName());
-		env.add("genre",id3tag.getGenre().trim());
-		env.add("year",id3tag.getYear().trim());
-		env.add("album",id3tag.getAlbum().trim());
-		env.add("artist",id3tag.getArtist().trim());
-		env.add("title",id3tag.getTitle().trim());
-		
-		
-		Ret ret = getPropertyFileSuffix("id3tag", dir);
-		say(ret.getSection(), SimplePrintf.jprintf(ret.getFormat(), env));
 	}
 
 	private void actionPerformedDirectorySTOR(TransferEvent direvent)
 		throws FormatterException {
-		if(!direvent.isComplete()) return;
+		if (!direvent.isComplete())
+			return;
 		ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
 		LinkedRemoteFile dir;
 		try {
@@ -385,10 +344,6 @@ public class SiteBot implements FtpListener, Observer {
 
 		int halfway = (int) Math.floor((double) sfvfile.size() / 2);
 		///// start ///// start ////
-
-		if (sfvfile.getStatus().getPresent() == 1) {
-			actionPerformedDirectoryID3(direvent);
-		}
 
 		//check if new racer
 		String username = direvent.getUser().getUsername();
@@ -479,7 +434,7 @@ public class SiteBot implements FtpListener, Observer {
 				User raceuser;
 				try {
 					raceuser =
-						_cm.getUserManager().getUserByName(stat.getUsername());
+						_cm.getGlobalContext().getUserManager().getUserByName(stat.getUsername());
 				} catch (NoSuchUserException e2) {
 					continue;
 				} catch (UserFileException e2) {
@@ -508,56 +463,56 @@ public class SiteBot implements FtpListener, Observer {
 						TransferStatistics.getStatsPlace(
 							"ALUP",
 							raceuser,
-							_cm.getUserManager())));
+							_cm.getGlobalContext().getUserManager())));
 				raceenv.add(
 					"monthup",
 					new Integer(
 						TransferStatistics.getStatsPlace(
 							"MONTHUP",
 							raceuser,
-							_cm.getUserManager())));
+							_cm.getGlobalContext().getUserManager())));
 				raceenv.add(
 					"wkup",
 					new Integer(
 						TransferStatistics.getStatsPlace(
 							"WKUP",
 							raceuser,
-							_cm.getUserManager())));
+							_cm.getGlobalContext().getUserManager())));
 				raceenv.add(
 					"dayup",
 					new Integer(
 						TransferStatistics.getStatsPlace(
 							"DAYUP",
 							raceuser,
-							_cm.getUserManager())));
+							_cm.getGlobalContext().getUserManager())));
 				raceenv.add(
 					"aldn",
 					new Integer(
 						TransferStatistics.getStatsPlace(
 							"ALDN",
 							raceuser,
-							_cm.getUserManager())));
+							_cm.getGlobalContext().getUserManager())));
 				raceenv.add(
 					"monthdn",
 					new Integer(
 						TransferStatistics.getStatsPlace(
 							"MONTHDN",
 							raceuser,
-							_cm.getUserManager())));
+							_cm.getGlobalContext().getUserManager())));
 				raceenv.add(
 					"wkdn",
 					new Integer(
 						TransferStatistics.getStatsPlace(
 							"WKDN",
 							raceuser,
-							_cm.getUserManager())));
+							_cm.getGlobalContext().getUserManager())));
 				raceenv.add(
 					"daydn",
 					new Integer(
 						TransferStatistics.getStatsPlace(
 							"DAYDN",
 							raceuser,
-							_cm.getUserManager())));
+							_cm.getGlobalContext().getUserManager())));
 
 				say(
 					ret.getSection(),
@@ -616,7 +571,7 @@ public class SiteBot implements FtpListener, Observer {
 			User leaduser;
 			try {
 				leaduser =
-					_cm.getUserManager().getUserByName(stat.getUsername());
+					_cm.getGlobalContext().getUserManager().getUserByName(stat.getUsername());
 				env.add("leaduser", leaduser.getUsername());
 				env.add("leadgroup", leaduser.getGroupName());
 			} catch (NoSuchUserException e3) {
@@ -672,7 +627,8 @@ public class SiteBot implements FtpListener, Observer {
 			) {
 			Channel chan = (Channel) e.nextElement();
 			if (chan
-				.findMember(getIRCConnection().getClientState().getNick().getNick())
+				.findMember(
+					getIRCConnection().getClientState().getNick().getNick())
 				.hasOps()) {
 				_conn.sendCommand(new InviteCommand(user, chan.getName()));
 			}
@@ -683,7 +639,7 @@ public class SiteBot implements FtpListener, Observer {
 		throws FormatterException {
 		String cmd = event.getCommand();
 		SectionInterface section =
-			_cm.getSectionManager().lookup(event.getPath());
+			_cm.getGlobalContext().getSectionManager().lookup(event.getPath());
 		ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
 		env.add("size", Bytes.formatBytes(event.getSize()));
 		env.add("section", section.getName());
@@ -716,7 +672,7 @@ public class SiteBot implements FtpListener, Observer {
 				User raceuser;
 				try {
 					raceuser =
-						_cm.getUserManager().getUserByName(stat.getUsername());
+						_cm.getGlobalContext().getUserManager().getUserByName(stat.getUsername());
 				} catch (NoSuchUserException e2) {
 					nobodyAmount += stat.getAmount();
 					continue;
@@ -770,7 +726,7 @@ public class SiteBot implements FtpListener, Observer {
 		if (event.getCommand().equals("ADDSLAVE")) {
 			SlaveStatus status;
 			try {
-				status = sevent.getRSlave().getStatus();
+				status = sevent.getRSlave().getStatusAvailable();
 			} catch (SlaveUnavailableException e) {
 				logger.warn("in ADDSLAVE event handler", e);
 				return;
@@ -834,13 +790,13 @@ public class SiteBot implements FtpListener, Observer {
 				break;
 			Observer obs;
 			try {
-				logger.debug("Loading " + Class.forName(classname));
+				logger.info("Loading " + Class.forName(classname));
 				obs =
 					(Observer) Class
 						.forName(classname)
 						.getConstructor(new Class[] { SiteBot.class })
 						.newInstance(new Object[] { this });
-				_conn.addCommandObserver(obs);
+				//_conn.addCommandObserver(obs);
 				IRCPluginInterface plugin = (IRCPluginInterface) obs;
 				if (plugin.getCommands() != null) {
 					_commands = _commands + plugin.getCommands() + " ";
@@ -891,52 +847,57 @@ public class SiteBot implements FtpListener, Observer {
 
 		env.add("size", Bytes.formatBytes(file.length()));
 		env.add(
-				"path",
-				strippath(dir.getPath().substring(section.getPath().length())));
-			env.add("file", file.getName());
+			"path",
+			strippath(dir.getPath().substring(section.getPath().length())));
+		env.add("file", file.getName());
 		if (file.isFile()) {
-			env.add("speed", Bytes.formatBytes(file.getXferspeed()*1000) + "/s");
+			env.add(
+				"speed",
+				Bytes.formatBytes(file.getXferspeed() * 1000) + "/s");
 			file = file.getParentFileNull(); // files always have parent dirs.
 		}
 
-			long elapsed = (direvent.getTime() - starttime);
-			
-			env.add("secondstocomplete", Time.formatTime(elapsed));
-			long elapsedSeconds = elapsed/1000;
-			env.add(
-				"averagespeed",
-				elapsedSeconds == 0 ? "n/a" : Bytes.formatBytes(dir.length() / elapsedSeconds) + "/s");
+		long elapsed = (direvent.getTime() - starttime);
 
-			//			ArrayList dirs = new ArrayList();
-			//			LinkedRemoteFileUtils.getAllDirectories(file, dirs);
-			//			int files = 0;
-			//
-			//			for (Iterator iter = dirs.iterator(); iter.hasNext();) {
-			//				LinkedRemoteFile subdir = (LinkedRemoteFile) iter.next();
-			//				files += subdir.dirSize();
-			//			}
-			SFVFile sfvfile;
-			try {
-				sfvfile = file.lookupSFVFile();
-				//env.add("size", Bytes.formatBytes(sfvfile.getTotalBytes()()));
-				env.add("totalfiles", "" + sfvfile.size());
-				env.add(
-					"totalspeed",
-					Bytes.formatBytes(sfvfile.getXferspeed()));
-			} catch (Exception ex) {
-				//COULD BE multi-cd, PRE will have to get it owns fillEnvSection with sub-dir .sfv support!
-				logger.warn("Couldn't get SFV file in announce", ex);
-				//env.add("size", Bytes.formatBytes(file.length()));
-				env.add("totalfiles", "" + file.getFiles().size());
-			}
+		env.add("secondstocomplete", Time.formatTime(elapsed));
+		long elapsedSeconds = elapsed / 1000;
+		env.add(
+			"averagespeed",
+			elapsedSeconds == 0
+				? "n/a"
+				: Bytes.formatBytes(dir.length() / elapsedSeconds) + "/s");
+
+		//			ArrayList dirs = new ArrayList();
+		//			LinkedRemoteFileUtils.getAllDirectories(file, dirs);
+		//			int files = 0;
+		//
+		//			for (Iterator iter = dirs.iterator(); iter.hasNext();) {
+		//				LinkedRemoteFile subdir = (LinkedRemoteFile) iter.next();
+		//				files += subdir.dirSize();
+		//			}
+		SFVFile sfvfile;
+		try {
+			sfvfile = file.lookupSFVFile();
+			//env.add("size", Bytes.formatBytes(sfvfile.getTotalBytes()()));
+			env.add("totalfiles", "" + sfvfile.size());
+			env.add("totalspeed", Bytes.formatBytes(sfvfile.getXferspeed()));
+		} catch (Exception ex) {
+			//COULD BE multi-cd, PRE will have to get it owns fillEnvSection with sub-dir .sfv support!
+			logger.warn("Couldn't get SFV file in announce", ex);
+			//env.add("size", Bytes.formatBytes(file.length()));
+			env.add("totalfiles", "" + file.getFiles().size());
+		}
 	}
 
-	public static void fillEnvSlaveStatus(ReplacerEnvironment env, SlaveStatus status, SlaveManagerImpl slaveManager) {
+	public static void fillEnvSlaveStatus(
+		ReplacerEnvironment env,
+		SlaveStatus status,
+		SlaveManagerImpl slaveManager) {
 		env.add("disktotal", Bytes.formatBytes(status.getDiskSpaceCapacity()));
 		env.add("diskfree", Bytes.formatBytes(status.getDiskSpaceAvailable()));
 		env.add("diskused", Bytes.formatBytes(status.getDiskSpaceUsed()));
 
-		if(status.getDiskSpaceCapacity() == 0) {
+		if (status.getDiskSpaceCapacity() == 0) {
 			env.add("diskfreepercent", "n/a");
 			env.add("diskusedpercent", "n/a");
 		} else {
@@ -952,24 +913,22 @@ public class SiteBot implements FtpListener, Observer {
 					+ "%");
 		}
 
-		env.add("xfers", ""+status.getTransfers());
-		env.add("xfersdn", ""+status.getTransfersSending());
-		env.add("xfersup", ""+status.getTransfersReceiving());
-		env.add("xfersdown", ""+status.getTransfersSending());
+		env.add("xfers", "" + status.getTransfers());
+		env.add("xfersdn", "" + status.getTransfersSending());
+		env.add("xfersup", "" + status.getTransfersReceiving());
+		env.add("xfersdown", "" + status.getTransfersSending());
+
+		env.add("throughput", Bytes.formatBytes(status.getThroughput()) + "/s");
 
 		env.add(
-				"throughput",
-				Bytes.formatBytes(status.getThroughput()) + "/s");
-		
+			"throughputup",
+			Bytes.formatBytes(status.getThroughputReceiving()) + "/s");
+
 		env.add(
-				"throughputup",
-				Bytes.formatBytes(status.getThroughputReceiving()) + "/s");
-		
-		env.add(
-				"throughputdown",
-				Bytes.formatBytes(status.getThroughputSending())+"/s");
+			"throughputdown",
+			Bytes.formatBytes(status.getThroughputSending()) + "/s");
 		try {
-			env.add("slaves", ""+slaveManager.getAvailableSlaves().size());
+			env.add("slaves", "" + slaveManager.getAvailableSlaves().size());
 		} catch (NoAvailableSlaveException e2) {
 			env.add("slaves", "0");
 		}
@@ -980,7 +939,7 @@ public class SiteBot implements FtpListener, Observer {
 	}
 
 	public FtpConfig getConfig() {
-		return _cm.getConfig();
+		return _cm.getGlobalContext().getConfig();
 	}
 
 	public ConnectionManager getConnectionManager() {
@@ -990,10 +949,11 @@ public class SiteBot implements FtpListener, Observer {
 		return _conn;
 	}
 
-	public Ret getPropertyFileSuffix(String prefix, LinkedRemoteFileInterface dir) {
+	public Ret getPropertyFileSuffix(
+		String prefix,
+		LinkedRemoteFileInterface dir) {
 		SectionInterface sectionObj =
-			getConnectionManager().getSectionManager().lookup(dir.getPath());
-		logger.debug("section = " + sectionObj.getName());
+			getConnectionManager().getGlobalContext().getSectionManager().lookup(dir.getPath());
 		//		LinkedRemoteFile section = null;
 		//		LinkedRemoteFile tmp2 = dir, tmp1 = dir;
 		//		try {
@@ -1010,7 +970,7 @@ public class SiteBot implements FtpListener, Observer {
 	}
 
 	public SlaveManagerImpl getSlaveManager() {
-		return getConnectionManager().getSlaveManager();
+		return getConnectionManager().getGlobalContext().getSlaveManager();
 	}
 
 	public void init(ConnectionManager mgr) {
@@ -1111,7 +1071,8 @@ public class SiteBot implements FtpListener, Observer {
 	}
 
 	public void sayGlobal(String string) {
-		for (Enumeration e = getIRCConnection().getClientState().getChannelNames();
+		for (Enumeration e =
+			getIRCConnection().getClientState().getChannelNames();
 			e.hasMoreElements();
 			) {
 			sayChannel((String) e.nextElement(), string);

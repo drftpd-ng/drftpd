@@ -60,12 +60,9 @@ import org.apache.log4j.Logger;
 
 import se.mog.io.File;
 
-import de.hampelratte.id3.MP3File;
-import de.hampelratte.id3.ID3v1Tag;
-
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.96 2004/07/14 12:52:00 teflon114 Exp $
+ * @version $Id: SlaveImpl.java,v 1.97 2004/07/18 15:22:33 zubov Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
@@ -76,7 +73,7 @@ public class SlaveImpl
 	private static final Logger logger =
 		Logger.getLogger(SlaveImpl.class.getName());
 	
-	public static final String VERSION = "DrFTPD 1.1.3";
+	public static final String VERSION = "DrFTPD 1.1.2";
 
 	/**
 	 * returns the {LinkedRemoteFile} directory that will be serialized and registered at the master.
@@ -312,21 +309,6 @@ public class SlaveImpl
 			new BufferedReader(new FileReader(_roots.getFile(path))));
 	}
 
-	public ID3v1Tag getID3v1Tag(String path) throws IOException {
-		logger.info("Extracting ID3Tag info from: " + _roots.getFile(path).getAbsolutePath());
-		try {
-			MP3File mp3 = new MP3File(_roots.getFile(path).getAbsolutePath(),"r");
-			ID3v1Tag mp3tag = mp3.readID3v1Tag();
-			mp3.close();
-			return mp3tag;
-		} catch (FileNotFoundException e){
-			logger.warn("FileNotFoundException: ", e);
-		} catch (IOException e) {
-			logger.warn("IOException: ", e);
-		}
-		return null;
-	}
-
 	public SlaveStatus getSlaveStatus() {
 		int throughputUp = 0, throughputDown = 0;
 		int transfersUp = 0, transfersDown = 0;
@@ -435,6 +417,7 @@ public class SlaveImpl
 
 	public void unreferenced() {
 		logger.info("unreferenced");
+		System.out.println("unreferenced");
 		System.exit(0);
 	}
 

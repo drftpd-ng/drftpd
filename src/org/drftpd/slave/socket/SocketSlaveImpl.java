@@ -47,11 +47,10 @@ import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.Logger;
-import de.hampelratte.id3.ID3v1Tag;
 
 /**
  * @author mog
- * @version $Id: SocketSlaveImpl.java,v 1.3 2004/07/14 12:52:01 teflon114 Exp $
+ * @version $Id: SocketSlaveImpl.java,v 1.4 2004/07/18 15:22:34 zubov Exp $
  */
 public class SocketSlaveImpl extends Thread implements Slave, Unreferenced {
 	private static final Logger logger =
@@ -191,7 +190,7 @@ public class SocketSlaveImpl extends Thread implements Slave, Unreferenced {
 				SocketSlaveListener.invalidSlave("INITFAIL BadKey", _sock);
 			}
 			start();
-			_cman.getSlaveManager().addSlave(_name, this, getSlaveStatus(), -1);
+			_cman.getGlobalContext().getSlaveManager().addSlave(_name, this, getSlaveStatus(), -1);
 		} catch (IOException e) {
 			if (e instanceof ConnectIOException
 				&& e.getCause() instanceof EOFException) {
@@ -350,7 +349,7 @@ public class SocketSlaveImpl extends Thread implements Slave, Unreferenced {
 		}
 		// notify SlaveManager that we are dead
 		try {
-			_cman.getSlaveManager().delSlave(_name, "Connection lost");
+			_cman.getGlobalContext().getSlaveManager().delSlave(_name, "Connection lost");
 		} catch (Exception e) {
 		}
 	}
@@ -667,9 +666,9 @@ public class SocketSlaveImpl extends Thread implements Slave, Unreferenced {
 			try {
 				LinkedRemoteFile root =
 					MLSTSerialize.unserialize(
-						_cman.getConfig(),
+						_cman.getGlobalContext().getConfig(),
 						new StringReader(sbuf.toString()),
-						_cman.getSlaveManager().getSlaveList());
+						_cman.getGlobalContext().getSlaveManager().getSlaves());
 				_root = root;
 			} catch (Exception e) {
 				logger.info("LIST Exception from " + getName(), e);
@@ -753,10 +752,6 @@ public class SocketSlaveImpl extends Thread implements Slave, Unreferenced {
 	public SFVFile getSFVFile(String path) throws IOException {
 		String sfv = dumpfile(path);
 		return new SFVFile(new BufferedReader(new StringReader(sfv)));
-	}
-
-	public ID3v1Tag getID3v1Tag(String path) throws IOException {
-		return null;
 	}
 
 	public Transfer connect(InetSocketAddress addr, boolean encrypted)

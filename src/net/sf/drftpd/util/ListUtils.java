@@ -30,14 +30,14 @@ import net.sf.drftpd.SFVFile.SFVStatus;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 import org.apache.log4j.Logger;
-import de.hampelratte.id3.ID3v1Tag;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.24 2004/07/14 12:52:00 teflon114 Exp $
+ * @version $Id: ListUtils.java,v 1.25 2004/07/18 15:22:33 zubov Exp $
  */
 public class ListUtils {
 
@@ -46,52 +46,33 @@ public class ListUtils {
 	public static final String PADDING = "          ";
 
 	public static boolean isLegalFileName(String fileName) {
-		if (fileName == null)
-			throw new RuntimeException();
+		if(fileName == null) throw new RuntimeException();
 		return fileName.indexOf("/") == -1
-			&& fileName.indexOf("?") == -1
 			&& fileName.indexOf('*') == -1
 			&& !fileName.equals(".")
 			&& !fileName.equals("..");
 	}
 
 	public static List list(
-		LinkedRemoteFile directoryFile,
+		LinkedRemoteFileInterface directoryFile,
 		BaseFtpConnection conn) {
 		return list(directoryFile, conn, null);
 	}
 
 	public static List list(
-		LinkedRemoteFile dir,
+		LinkedRemoteFileInterface dir,
 		BaseFtpConnection conn,
 		FtpReply response) {
 		ArrayList tempFileList = new ArrayList(dir.getFiles());
 		ArrayList listFiles = new ArrayList();
 		int numOnline = 0;
 		int numTotal = 0;
-		boolean id3found = false;
-		ID3v1Tag mp3tag = null;
 		for (Iterator iter = tempFileList.iterator(); iter.hasNext();) {
 			LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
-			if (conn.getConfig() != null
-				&& !conn.getConfig().checkPrivPath(conn.getUserNull(), element)) {
+			if (conn.getConnectionManager().getGlobalContext().getConfig() != null
+				&& !conn.getConnectionManager().getGlobalContext().getConfig().checkPrivPath(conn.getUserNull(), element)) {
 				// don't add it
 				continue;
-			}
-			if (element.isFile() 
-				&& element.getName().toLowerCase().endsWith(".mp3")
-				&& id3found == false) {
-				try {
-					mp3tag = element.getID3v1Tag();
-					id3found = true;						
-				} catch (FileNotFoundException e) {
-					logger.warn("FileNotFoundException: " + element.getPath(), e);
-				} catch (IOException e) {
-					logger.warn("IOException: " + element.getPath(), e);					
-				} catch (NoAvailableSlaveException e) {
-					logger.warn("NoAvailableSlaveException: " + element.getPath(), e);
-				}
-				
 			}
 			//			if (element.isDirectory()) { // can slow listing
 			//				try {
@@ -142,35 +123,26 @@ public class ListUtils {
 			SFVStatus sfvstatus = sfvfile.getStatus();
 			if (sfvfile.size() != 0) {
 				statusDirName = "[ ";
-				if (sfvstatus.getMissing() != 0) {
-					statusDirName += sfvstatus.getMissing()
-						+ " files missing = ";
+				if(sfvstatus.getMissing() != 0) {
+					statusDirName += sfvstatus.getMissing()	+ " files missing = ";
 				}
 
-				statusDirName
-					+= (sfvstatus.getPresent() == 0
-						? "0"
-						: "" + (sfvstatus.getPresent() * 100) / sfvfile.size())
+				statusDirName +=
+					(sfvstatus.getPresent() == 0
+							? "0"
+							: ""+(sfvstatus.getPresent() * 100) / sfvfile.size())
 					+ "% complete";
 
-				if (sfvstatus.getOffline() != 0) {
-					statusDirName += " | "
-						+ sfvstatus.getOffline()
-						+ " files offline = "
+				if(sfvstatus.getOffline() != 0) {
+					statusDirName += " | " +
+						sfvstatus.getOffline()+ " files offline = "
 						+ ((sfvstatus.getAvailable() * 100)
-							/ sfvstatus.getPresent())
+						/ sfvstatus.getPresent())
 						+ "% online";
-				}
-				
-				if (mp3tag != null) {
-					statusDirName += " | id3info - "
-						+ mp3tag.getGenre() + " "
-						+ mp3tag.getYear();
 				}
 				statusDirName += " ]";
 
-				if (statusDirName == null)
-					throw new RuntimeException();
+				if(statusDirName == null) throw new RuntimeException();
 				listFiles.add(
 					new StaticRemoteFile(
 						null,
@@ -212,8 +184,7 @@ public class ListUtils {
 	public static String padToLength(String value, int length) {
 		if (value.length() >= length)
 			return value;
-		if (PADDING.length() < length)
-			throw new RuntimeException("padding must be longer than length");
+		if(PADDING.length() < length) throw new RuntimeException("padding must be longer than length");
 		return PADDING.substring(0, length - value.length()) + value;
 	}
 
