@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.9 2004/01/08 15:56:50 zubov Exp $
+ * @version $Id: JobManager.java,v 1.10 2004/01/08 18:50:35 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -121,7 +121,9 @@ public class JobManager implements FtpListener {
 	/**
 	 * Gets the next job suitable for the slave, returns true if it is a mirror job
 	 */
-	public synchronized boolean getNextJob(RemoteSlave slave, Job jobToReturn) {
+	public synchronized boolean getNextJob(
+		RemoteSlave slave,
+		Job jobToReturn) {
 		jobToReturn = null;
 		for (Iterator iter = _jobList.iterator(); iter.hasNext();) {
 			Job tempJob = (Job) iter.next();
@@ -162,7 +164,8 @@ public class JobManager implements FtpListener {
 						.getAvailableSlaves()
 						.contains(slave)) {
 						logger.debug(
-							"an Archive job is being returned - " + slave.getName());
+							"an Archive job is being returned - "
+								+ slave.getName());
 						jobToReturn = tempJob;
 						removeJob(jobToReturn);
 						return false; // not a mirror job
@@ -188,8 +191,9 @@ public class JobManager implements FtpListener {
 					e);
 			}
 		}
-		logger.info("jobToReturn is returning a mirror job for - " + slave.getName());
-		if ( jobToReturn != null )
+		logger.info(
+			"jobToReturn is returning a mirror job for - " + slave.getName());
+		if (jobToReturn != null)
 			removeJob(jobToReturn);
 		return true;
 	}
@@ -280,7 +284,11 @@ public class JobManager implements FtpListener {
 				+ difference / 1000
 				+ " seconds");
 		synchronized (temp.getDestinationSlaves()) {
-			temp.getDestinationSlaves().remove(slave);
+			if (isMirrorJob) {
+				temp.getDestinationSlaves().remove(null);
+			} else {
+				temp.getDestinationSlaves().remove(slave);
+			}
 			if (temp.getDestinationSlaves().size() > 0)
 				addJob(temp); // job still has more places to transfer
 		}
