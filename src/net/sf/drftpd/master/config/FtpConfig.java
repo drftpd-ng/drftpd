@@ -23,6 +23,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -41,10 +43,11 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.38 2004/02/10 00:03:08 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.39 2004/02/15 13:42:24 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
+	private Hashtable _patternPaths;
 
 	public static String getProperty(Properties p, String name)
 		throws NullPointerException {
@@ -54,15 +57,21 @@ public class FtpConfig {
 		return result;
 	}
 
-	private static ArrayList makePermission(ArrayList arr, StringTokenizer st)
-		throws MalformedPatternException {
-		arr.add(
-			new PatternPathPermission(
-				new GlobCompiler().compile(st.nextToken()),
-				makeUsers(st)));
-		return arr;
-	}
+	//	private static ArrayList makePatternPermission(ArrayList arr, StringTokenizer st)
+	//		throws MalformedPatternException {
+	//		arr.add(
+	//			new PatternPathPermission(
+	//				new GlobCompiler().compile(st.nextToken()),
+	//				makeUsers(st)));
+	//		return arr;
+	//	}
 
+	private PatternPathPermission makePatternPathPermission(StringTokenizer st)
+		throws MalformedPatternException {
+		return new PatternPathPermission(
+			new GlobCompiler().compile(st.nextToken()),
+			makeUsers((st)));
+	}
 	private static ArrayList makeRatioPermission(
 		ArrayList arr,
 		StringTokenizer st)
@@ -87,53 +96,44 @@ public class FtpConfig {
 	private ConnectionManager _connManager;
 	private ArrayList _creditcheck;
 	private ArrayList _creditloss;
-	private ArrayList _delete;
-	private ArrayList _deleteown;
-	private ArrayList _dirlog;
-	private ArrayList _download;
 	private long _freespaceMin;
-	private ArrayList _hideinwho;
 	private boolean _isLowerDir;
 	private boolean _isLowerFile;
 	private String _loginPrompt = SlaveImpl.VERSION + " http://drftpd.org";
-	private ArrayList _makedir;
 	private int _maxUsersExempt;
 	private int _maxUsersTotal = Integer.MAX_VALUE;
 	private ArrayList _msgpath;
-	private ArrayList _pre;
-	private ArrayList _privpath;
-	private ArrayList _rename;
-	private ArrayList _renameown;
 	private StringTokenizer _replaceDir;
 	private StringTokenizer _replaceFile;
-	private ArrayList _request;
-	private ArrayList _upload;
 	private boolean _useDirNames;
 	private boolean _useFileNames;
 
 	private boolean _useIdent;
 
-	String cfgFileName;
+	String _cfgFileName;
 	private String newConf = "conf/perms.conf";
+
 	/**
 	 * Constructor that allows reusing of cfg object
-	 * 
 	 */
 	public FtpConfig(
 		Properties cfg,
 		String cfgFileName,
 		ConnectionManager connManager)
 		throws IOException {
-		this.cfgFileName = cfgFileName;
+		_cfgFileName = cfgFileName;
 		loadConfig(cfg, connManager);
 	}
 
 	public boolean checkDelete(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermission(fromUser, path, _delete.iterator());
+		return checkPathPermission("delete", fromUser, path);
 	}
 
+	private static Collection getCollection(Hashtable tbl, String key) {
+		return (Collection) tbl.get(key);
+	}
 	public boolean checkDeleteOwn(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermission(fromUser, path, _deleteown.iterator());
+		return checkPathPermission("deleteown", fromUser, path);
 	}
 
 	/**
@@ -143,7 +143,7 @@ public class FtpConfig {
 	 * @return true if the path has dirlog enabled.
 	 */
 	public boolean checkDirLog(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermission(fromUser, path, _dirlog.iterator());
+		return checkPathPermission("dirlog", fromUser, path);
 	}
 
 	/**
@@ -151,73 +151,70 @@ public class FtpConfig {
 	 * @return true if fromUser is allowed to download the file path
 	 */
 	public boolean checkDownload(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermission(fromUser, path, _download.iterator());
+		return checkPathPermission("download", fromUser, path);
 	}
 
 	/**
 	 * @return true if fromUser should be hidden
 	 */
 	public boolean checkHideInWho(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermission(fromUser, path, _hideinwho.iterator());
+		return checkPathPermission("hideinwho", fromUser, path);
 	}
 
 	/**
 	 * @return true if fromUser is allowed to mkdir in path
 	 */
 	public boolean checkMakeDir(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermission(fromUser, path, _makedir.iterator());
+		return checkPathPermission("makedir", fromUser, path);
 	}
 
 	private boolean checkPathPermission(
+		String key,
+		User fromUser,
+		LinkedRemoteFile path) {
+		return checkPathPermission(key, fromUser, path, false);
+	}
+	private boolean checkPathPermission(
+		String key,
 		User fromUser,
 		LinkedRemoteFile path,
-		Iterator iter) {
+		boolean defaults) {
+		Iterator iter = ((Collection) _patternPaths.get(key)).iterator();
 		while (iter.hasNext()) {
 			PathPermission perm = (PathPermission) iter.next();
 			if (perm.checkPath(path)) {
 				return perm.check(fromUser);
 			}
 		}
-		return false;
-	}
-
-	/**
-	 * @return true if fromUser is allowed to pre in path
-	 */
-	public boolean checkPre(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermission(fromUser, path, _pre.iterator());
+		//return false;
+		return defaults;
 	}
 
 	/**
 	 * @return true if user fromUser is allowed to see path
 	 */
 	public boolean checkPrivPath(User fromUser, LinkedRemoteFile path) {
-		for (Iterator iter = _privpath.iterator(); iter.hasNext();) {
-			PathPermission perm = (PathPermission) iter.next();
-			if (perm.checkPath(path)) {
-				// path matched, if user is in ACL he's allowed access
-				return perm.check(fromUser);
-			}
-		}
-		// default is to allow access
-		return true;
+		return checkPathPermission("privpath", fromUser, path, true);
 	}
 
 	public boolean checkRename(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermission(fromUser, path, _rename.iterator());
+		return checkPathPermission("rename", fromUser, path);
 	}
 
 	public boolean checkRenameOwn(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermission(fromUser, path, _renameown.iterator());
+		return checkPathPermission("renameown", fromUser, path);
 	}
+	/**
+	 * @deprecated non-core
+	 */
 	public boolean checkRequest(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermission(fromUser, path, _request.iterator());
+		return checkPathPermission("request", fromUser, path);
 	}
 	/**
 	 * @return true if fromUser is allowed to upload in directory path
 	 */
 	public boolean checkUpload(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermission(fromUser, path, _upload.iterator());
+		return checkPathPermission("upload", fromUser, path);
 	}
 
 	public void directoryMessage(
@@ -306,7 +303,7 @@ public class FtpConfig {
 	}
 
 	public SlaveManagerImpl getSlaveManager() {
-		return this._connManager.getSlaveManager();
+		return _connManager.getSlaveManager();
 	}
 
 	public void loadConfig(Properties cfg, ConnectionManager connManager)
@@ -320,22 +317,10 @@ public class FtpConfig {
 	}
 
 	private void loadConfig2() throws IOException {
+		Hashtable patternPathPermission = new Hashtable();
 		ArrayList creditcheck = new ArrayList();
 		ArrayList creditloss = new ArrayList();
-		ArrayList delete = new ArrayList();
-		ArrayList deleteown = new ArrayList();
-		ArrayList dirlog = new ArrayList();
-		ArrayList download = new ArrayList();
-		ArrayList hideinwho = new ArrayList();
-		ArrayList makedirs = new ArrayList();
 		ArrayList msgpath = new ArrayList();
-		//ArrayList eventplugin = new ArrayList();
-		ArrayList pre = new ArrayList();
-		ArrayList privpath = new ArrayList();
-		ArrayList rename = new ArrayList();
-		ArrayList renameown = new ArrayList();
-		ArrayList request = new ArrayList();
-		ArrayList upload = new ArrayList();
 		_useFileNames = false;
 		_replaceFile = null;
 		_useDirNames = false;
@@ -344,34 +329,27 @@ public class FtpConfig {
 		LineNumberReader in = new LineNumberReader(new FileReader(newConf));
 		try {
 			String line;
-			GlobCompiler globCompiler = new GlobCompiler();
 			while ((line = in.readLine()) != null) {
 				StringTokenizer st = new StringTokenizer(line);
 				if (!st.hasMoreTokens())
 					continue;
-				String command = st.nextToken();
+				String cmd = st.nextToken();
 
 				try {
-					if (command.equals("privpath")) {
-						privpath.add(
-							new PatternPathPermission(
-								globCompiler.compile(st.nextToken()),
-								makeUsers(st)));
-					}
 					// login_prompt <string>
-					else if (command.equals("login_prompt")) {
+					if (cmd.equals("login_prompt")) {
 						_loginPrompt = line.substring(13);
 					}
 					//max_users <maxUsersTotal> <maxUsersExempt>
-					else if (command.equals("max_users")) {
+					else if (cmd.equals("max_users")) {
 						_maxUsersTotal = Integer.parseInt(st.nextToken());
 						_maxUsersExempt = Integer.parseInt(st.nextToken());
-					} else if (command.equals("dir_names")) {
+					} else if (cmd.equals("dir_names")) {
 						_useDirNames = true;
 						_capFirstDir = st.nextToken().equals("true");
 						_isLowerDir = st.nextToken().equals("lower");
 						_replaceDir = st;
-					} else if (command.equals("file_names")) {
+					} else if (cmd.equals("file_names")) {
 						_useFileNames = true;
 						_capFirstFile = st.nextToken().equals("true");
 						_isLowerFile = st.nextToken().equals("lower");
@@ -379,7 +357,7 @@ public class FtpConfig {
 					}
 
 					//msgpath <path> <filename> <flag/=group/-user>
-					else if (command.equals("msgpath")) {
+					else if (cmd.equals("msgpath")) {
 						String path = st.nextToken();
 						String messageFile = st.nextToken();
 						msgpath.add(
@@ -389,34 +367,32 @@ public class FtpConfig {
 								makeUsers(st)));
 					}
 					//creditloss <path> <multiplier> [<-user|=group|flag> ...]
-					else if (command.equals("creditloss")) {
+					else if (cmd.equals("creditloss")) {
 						makeRatioPermission(creditloss, st);
 					}
 					//creditcheck <path> <ratio> [<-user|=group|flag> ...]
-					else if (command.equals("creditcheck")) {
+					else if (cmd.equals("creditcheck")) {
 						makeRatioPermission(creditcheck, st);
-					} else if (command.equals("dirlog")) {
-						makePermission(dirlog, st);
-					} else if (command.equals("hideinwho")) {
-						makePermission(hideinwho, st);
-					} else if (command.equals("makedir")) {
-						makePermission(makedirs, st);
-					} else if (command.equals("pre")) {
-						makePermission(pre, st);
-					} else if (command.equals("upload")) {
-						makePermission(upload, st);
-					} else if (command.equals("download")) {
-						makePermission(download, st);
-					} else if (command.equals("delete")) {
-						makePermission(delete, st);
-					} else if (command.equals("deleteown")) {
-						makePermission(deleteown, st);
-					} else if (command.equals("rename")) {
-						makePermission(rename, st);
-					} else if (command.equals("renameown")) {
-						makePermission(renameown, st);
-					} else if (command.equals("request")) {
-						makePermission(request, st);
+					} else if (cmd.equals("pathperm")) {
+						patternPathPermission.put(
+							st.nextToken(),
+							makePatternPathPermission(st));
+					} else if (
+						cmd.equals("privpath")
+							|| cmd.equals("dirlog")
+							|| cmd.equals("hideinwho")
+							|| cmd.equals("makedir")
+							|| cmd.equals("pre")
+							|| cmd.equals("upload")
+							|| cmd.equals("download")
+							|| cmd.equals("delete")
+							|| cmd.equals("deleteown")
+							|| cmd.equals("rename")
+							|| cmd.equals("renameown")
+							|| cmd.equals("request")) {
+						patternPathPermission.put(
+							cmd,
+							makePatternPathPermission(st));
 					}
 				} catch (Exception e) {
 					logger.warn(
@@ -434,47 +410,8 @@ public class FtpConfig {
 			creditloss.trimToSize();
 			_creditloss = creditloss;
 
-			delete.trimToSize();
-			_delete = delete;
-
-			deleteown.trimToSize();
-			_deleteown = deleteown;
-
-			dirlog.trimToSize();
-			_dirlog = dirlog;
-
-			download.trimToSize();
-			_download = download;
-
-			hideinwho.trimToSize();
-			_hideinwho = hideinwho;
-
-			makedirs.trimToSize();
-			_makedir = makedirs;
-
 			msgpath.trimToSize();
 			_msgpath = msgpath;
-
-			pre.trimToSize();
-			_pre = pre;
-
-			privpath.trimToSize();
-			_privpath = privpath;
-
-			//		eventplugin.trimToSize();
-			//		_eventplugin = eventplugin;
-
-			rename.trimToSize();
-			_rename = rename;
-
-			renameown.trimToSize();
-			_renameown = renameown;
-
-			request.trimToSize();
-			_request = request;
-
-			upload.trimToSize();
-			_upload = upload;
 
 		} finally {
 			in.close();
@@ -488,7 +425,7 @@ public class FtpConfig {
 	 */
 	public void reloadConfig() throws FileNotFoundException, IOException {
 		Properties cfg = new Properties();
-		cfg.load(new FileInputStream(cfgFileName));
+		cfg.load(new FileInputStream(_cfgFileName));
 		loadConfig(cfg, _connManager);
 	}
 

@@ -43,7 +43,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * @version $Id: Pre.java,v 1.9 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: Pre.java,v 1.10 2004/02/15 13:42:23 mog Exp $
  */
 public class Pre implements CommandHandler {
 
@@ -81,7 +81,8 @@ public class Pre implements CommandHandler {
 		} catch (FileNotFoundException e) {
 			return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 		}
-		if (!conn.getConfig().checkPre(conn.getUserNull(), preDir)) {
+		LinkedRemoteFile path = preDir;
+		if (!conn.getConfig().checkPathPermission("pre", conn.getUserNull(), path)) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 
