@@ -22,7 +22,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.24 2003/11/18 00:13:23 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.25 2003/11/26 01:17:03 zubov Exp $
  */
 public abstract class AbstractUser implements User {
 	private static Logger logger = Logger.getLogger(AbstractUser.class);
@@ -122,13 +122,18 @@ public abstract class AbstractUser implements User {
 			throw new DuplicateElementException("IP mask already added");
 		ipMasks.add(mask);
 	}
-	public boolean checkIP(String masks[]) {
+	public boolean checkIP(String masks[], boolean useIdent) {
 
 		Perl5Matcher m = new Perl5Matcher();
 
 		for (Iterator e2 = ipMasks.iterator(); e2.hasNext();) {
 			String mask = (String) e2.next();
-
+			if (!useIdent){
+				mask = mask.substring(mask.indexOf('@')+1);
+				for (int i = 0; i < masks.length; i++) {
+					masks[i] = masks[i].substring(masks[i].indexOf('@')+1);
+				}
+			}
 			Pattern p;
 			try {
 				p = new GlobCompiler().compile(mask);
@@ -138,9 +143,7 @@ public abstract class AbstractUser implements User {
 			}
 
 			for (int i = 0; i < masks.length; i++) {
-				String subject = masks[i];
-
-				if (m.matches(subject, p)) {
+				if (m.matches(masks[i], p)) {
 					return true;
 				}
 			}

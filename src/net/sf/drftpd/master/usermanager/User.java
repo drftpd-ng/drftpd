@@ -13,7 +13,7 @@ import net.sf.drftpd.ObjectExistsException;
 
 /**
  * @author mog
- * @version $Id: User.java,v 1.23 2003/11/17 20:13:10 mog Exp $
+ * @version $Id: User.java,v 1.24 2003/11/26 01:17:03 zubov Exp $
  */
 public interface User {
 
@@ -22,7 +22,7 @@ public interface User {
 
 	public void addIPMask(String mask)
 		throws DuplicateElementException;
-	public boolean checkIP(String masks[]);
+	public boolean checkIP(String masks[], boolean useIdent);
 	public boolean checkPassword(String password);
 
 	/**

@@ -82,25 +82,29 @@ public class Login implements CommandHandler, Cloneable {
 		//		if(connManager.isShutdown() && !conn.getUser().isAdmin()) {
 		//			out.print(new FtpResponse(421, ))
 		//		}
-
-		Ident id = new Ident(conn.getControlSocket());
 		String ident;
-		if (id.successful) {
-			ident = id.userName;
-		} else {
-			ident = "";
-			System.out.println(
-				"Failed to get ident response: " + id.errorMessage);
+		if (conn.getConnectionManager().useIdent()) {
+			Ident id = new Ident(conn.getControlSocket());
+			if (id.successful) {
+				ident = id.userName;
+			} else {
+				ident = "";
+				System.out.println(
+					"Failed to get ident response: " + id.errorMessage);
+			}
+			if (ident.indexOf('@') != -1) {
+				return new FtpReply(530, "Invalid ident response");
+			}
 		}
-		if (ident.indexOf('@') != -1) {
-			return new FtpReply(530, "Invalid ident response");
+		else {
+			ident = "";
 		}
 		String masks[] =
 			{
 				ident + "@" + conn.getClientAddress().getHostAddress(),
 				ident + "@" + conn.getClientAddress().getHostName()};
 
-		if (!newUser.checkIP(masks)) {
+		if (!newUser.checkIP(masks, conn.getConnectionManager().useIdent())) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 

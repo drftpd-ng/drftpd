@@ -117,7 +117,7 @@ public class ConnectionManager {
 		return ret;
 	}
 	private FtpConfig _config;
-
+	private Properties _cfg;
 	private List _conns = Collections.synchronizedList(new ArrayList());
 
 	private ArrayList _ftpListeners = new ArrayList();
@@ -127,7 +127,6 @@ public class ConnectionManager {
 	private Timer _timer;
 	private UserManager _usermanager;
 	public ConnectionManager(Properties cfg, Properties slaveCfg, String cfgFileName, String slaveCfgFileName) {
-
 		try {
 			_config = new FtpConfig(cfg, cfgFileName, this);
 		} catch (Throwable ex) {
@@ -212,7 +211,7 @@ public class ConnectionManager {
 		};
 		//run every hour 
 		_timer.schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
-
+		_cfg = cfg;
 	}
 	public Timer getTimer() {
 		return _timer;
@@ -249,6 +248,10 @@ public class ConnectionManager {
 
 	public FtpConfig getConfig() {
 		return _config;
+	}
+	
+	public boolean useIdent(){
+		return _cfg.getProperty("use.ident").equals("true");	
 	}
 
 	/**
