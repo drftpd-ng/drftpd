@@ -607,21 +607,21 @@ public abstract class AbstractUser implements User {
 			throw new NoSuchFieldException("User has no such ip mask");
 	}
 
-	public void reset(ConnectionManager cmgr) {
+	public void reset(ConnectionManager cm) {
 		Calendar now = Calendar.getInstance();
 		Calendar lastResetCalendar = Calendar.getInstance();
 		lastResetCalendar.setTime(new Date(lastReset));
 		
 		if (now.get(Calendar.MONTH) != lastResetCalendar.get(Calendar.MONTH))
-			resetMonth(cmgr);
+			resetMonth(cm);
 
 		if (now.get(Calendar.WEEK_OF_YEAR)
 			!= lastResetCalendar.get(Calendar.WEEK_OF_YEAR))
-			resetWeek(cmgr);
+			resetWeek(cm);
 
 		if (now.get(Calendar.DAY_OF_YEAR)
 			!= lastResetCalendar.get(Calendar.DAY_OF_YEAR))
-			resetDay(cmgr);
+			resetDay(cm);
 
 		lastReset = System.currentTimeMillis();
 	}
@@ -647,7 +647,7 @@ public abstract class AbstractUser implements User {
 	 */
 	private void resetMonth(ConnectionManager cm) {
 		cm.dispatchFtpEvent(new UserEvent(this, "RESETMONTH"));
-		logger.info("Reset mothly stats for " + getUsername());
+		logger.info("Reset monthly stats for " + getUsername());
 
 		this.downloadedFilesMonth = 0;
 		this.uploadedBytesMonth = 0;

@@ -142,6 +142,8 @@ public class ConnectionManager {
 				(UserManager) Class
 					.forName(cfg.getProperty("master.usermanager"))
 					.newInstance();
+			// if the below method is not run, JSXUserManager fails when trying to do a reset() on the user logging in
+			_usermanager.init(this);
 		} catch (Exception e) {
 			throw new FatalException(
 				"Cannot create instance of usermanager, check master.usermanager in drftpd-0.7.conf",

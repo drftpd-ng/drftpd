@@ -220,17 +220,7 @@ public class SlaveManagerImpl
 		/** load XML file database **/
 		/** load MLST file database **/
 		//return MLSTSerialize.unserialize(cm.getConfig(), new BufferedReader(new FileReader("files.mlst")), rslaves);
-		LinkedRemoteFile lrf;
-		try { 
-			lrf = loadMLSTFileDatabase(rslaves, cm);
-		} catch (FileNotFoundException ex) {
-			logger.log(
-				Level.WARN,
-					"files.mlst not found, creating new MLST FileSystem",
-						ex);
-			return new LinkedRemoteFile(cm.getConfig());
-		}
-		return lrf;
+		return loadMLSTFileDatabase(rslaves, cm);
 		//System.gc(); done after loading is complete
 	}
 	public static LinkedRemoteFile loadJDOMFileDatabase(List rslaves, ConnectionManager cm) throws FileNotFoundException {
@@ -305,7 +295,9 @@ public class SlaveManagerImpl
 		try {
 			this.root = loadFileDatabase(this.rslaves, cm);
 		} catch(FileNotFoundException e) {
-			logger.info("", e);
+			logger.info("files.mlst not found, creating a new filesystem", e);
+			root = new LinkedRemoteFile(cm.getConfig());
+			saveFilelist();
 		} catch (IOException e) {
 			throw new FatalException(e);
 		}
