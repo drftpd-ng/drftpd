@@ -41,7 +41,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author flowman
- * @version $Id: Bandwidth.java,v 1.6 2004/04/20 04:11:45 mog Exp $
+ * @version $Id: Bandwidth.java,v 1.7 2004/04/23 12:18:30 mog Exp $
  */
 
 public class Bandwidth
@@ -55,10 +55,6 @@ public class Bandwidth
 	public Bandwidth(SiteBot listener) {
 		super(listener.getIRCConnection());
 		_listener = listener;
-	}
-
-	private void fillEnvSpace(ReplacerEnvironment env, SlaveStatus status) {
-		_listener.fillEnvSlaveStatus(env, status);
 	}
 
 	public String getCommands() {
@@ -86,7 +82,7 @@ public class Bandwidth
 			ReplacerEnvironment env =
 				new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 
-			fillEnvSpace(env, status);
+			SiteBot.fillEnvSlaveStatus(env, status, _listener.getSlaveManager());
 
 			_listener.sayChannel(msgc.getDest(), ReplacerUtils.jprintf("bw", env, SiteBot.class));
 		} else if (msg.startsWith("!speed ")) {

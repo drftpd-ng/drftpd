@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: PortRange.java,v 1.6 2004/02/10 00:03:32 mog Exp $
+ * @version $Id: PortRange.java,v 1.7 2004/04/23 12:18:31 mog Exp $
  */
 public class PortRange {
 	private static final Logger logger = Logger.getLogger(PortRange.class);
@@ -53,6 +53,10 @@ public class PortRange {
 			}
 		}
 	}
+
+	/**
+	 * @deprecated Doesn't check if port is used even though marked as unused.
+	 */
 	public int getPort() {
 		synchronized (_ports) {
 			int initPos = rand.nextInt(_ports.length);

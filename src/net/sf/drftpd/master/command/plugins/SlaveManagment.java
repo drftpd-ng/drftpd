@@ -32,10 +32,13 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.slave.SlaveStatus;
 
+import org.drftpd.plugins.SiteBot;
+import org.tanesha.replacer.ReplacerEnvironment;
+
 /**
  * @author mog
  *
- * @version $Id: SlaveManagment.java,v 1.7 2004/04/20 04:11:48 mog Exp $
+ * @version $Id: SlaveManagment.java,v 1.8 2004/04/23 12:18:30 mog Exp $
  */
 public class SlaveManagment implements CommandHandler {
 	public void unload() {}
@@ -80,6 +83,7 @@ public class SlaveManagment implements CommandHandler {
 		if (!conn.getUserNull().isAdmin()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
+		boolean showRMI = conn.getUserNull().isAdmin() && conn.getRequest().hasArgument();
 		Collection slaves = conn.getSlaveManager().getSlaves();
 		FtpReply response =
 			new FtpReply(200, "OK, " + slaves.size() + " slaves listed.");
@@ -88,10 +92,15 @@ public class SlaveManagment implements CommandHandler {
 			iter.hasNext();
 			) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
-			response.addComment(rslave.toString());
+			if(showRMI) {
+				response.addComment(rslave.toString());
+			}
 			try {
 				SlaveStatus status = rslave.getStatus();
-				
+				ReplacerEnvironment env = new ReplacerEnvironment();
+				SiteBot.fillEnvSlaveStatus(env, status, conn.getSlaveManager());
+				env.add("slave", rslave.getName());
+				response.addComment(conn.jprintf(SlaveManagment.class, "slaves", env));
 			} catch (SlaveUnavailableException e) {
 				//slave is offline
 			}

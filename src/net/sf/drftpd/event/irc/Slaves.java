@@ -20,7 +20,6 @@ package net.sf.drftpd.event.irc;
 import java.rmi.RemoteException;
 import java.util.Iterator;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
@@ -39,7 +38,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Slaves.java,v 1.8 2004/04/23 00:47:23 mog Exp $
+ * @version $Id: Slaves.java,v 1.9 2004/04/23 12:18:30 mog Exp $
  */
 public class Slaves extends GenericAutoService implements IRCPluginInterface {
 
@@ -79,7 +78,6 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 
 			ReplacerEnvironment env =
 				new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-			env.add("slave", rslave.getName());
 
 			try {
 				SlaveStatus status;
@@ -95,11 +93,7 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 							Slaves.class));
 					continue;
 				}
-				fillEnv(env, status);
-				ReplacerEnvironment env1 = env;
-				SlaveStatus status1 = status;
-
-				_listener.fillEnvSlaveStatus(env1, status1);
+				SiteBot.fillEnvSlaveStatus(env, status, _listener.getSlaveManager());
 
 				statusString =
 					ReplacerUtils.jprintf("slaves", env, Slaves.class);
@@ -124,27 +118,6 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 			_listener.sayChannel(chan1, string);
 		}
 
-	}
-
-	public static void fillEnv(ReplacerEnvironment env, SlaveStatus status) {
-		env.add("xfers", Integer.toString(status.getTransfers()));
-		env.add(
-			"throughput",
-			Bytes.formatBytes(status.getThroughput()) + "/s");
-
-		env.add(
-			"xfersup",
-			Integer.toString(status.getTransfersReceiving()));
-		env.add(
-			"throughputup",
-			Bytes.formatBytes(status.getThroughputReceiving()) + "/s");
-
-		env.add(
-			"xfersdown",
-			Integer.toString(status.getTransfersSending()));
-		env.add(
-			"throughputdown",
-			Bytes.formatBytes(status.getThroughputSending()));
 	}
 
 	protected void updateState(State state) {

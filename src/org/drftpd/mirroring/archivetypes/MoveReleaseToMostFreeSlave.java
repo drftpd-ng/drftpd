@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.drftpd.mirroring.ArchiveType;
-
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.mirroring.Job;
@@ -30,11 +28,15 @@ import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.apache.log4j.Logger;
+import org.drftpd.mirroring.ArchiveType;
+
 /**
  * @author zubov
- * @version $Id: MoveReleaseToMostFreeSlave.java,v 1.2 2004/04/23 00:47:24 mog Exp $
+ * @version $Id: MoveReleaseToMostFreeSlave.java,v 1.3 2004/04/23 12:18:31 mog Exp $
  */
 public class MoveReleaseToMostFreeSlave extends ArchiveType {
+	private static final Logger logger = Logger.getLogger(MoveReleaseToMostFreeSlave.class);
 
 	public MoveReleaseToMostFreeSlave() {
 		super();
@@ -138,6 +140,7 @@ public class MoveReleaseToMostFreeSlave extends ArchiveType {
 
 	public ArrayList send() {
 		ArrayList jobQueue = new ArrayList();
+		//TODO doesn't handle subdirectories
 		JobManager jm = _parent.getConnectionManager().getJobManager();
 		for (Iterator iter = getDirectory().getFiles().iterator();
 			iter.hasNext();

@@ -78,10 +78,6 @@ import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
-import f00f.net.irc.martyr.services.AutoJoin;
-import f00f.net.irc.martyr.services.AutoReconnect;
-import f00f.net.irc.martyr.services.AutoRegister;
-import f00f.net.irc.martyr.services.AutoResponder;
 import f00f.net.irc.martyr.Debug;
 import f00f.net.irc.martyr.IRCConnection;
 import f00f.net.irc.martyr.clientstate.Channel;
@@ -89,10 +85,14 @@ import f00f.net.irc.martyr.clientstate.ClientState;
 import f00f.net.irc.martyr.commands.InviteCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 import f00f.net.irc.martyr.commands.NickCommand;
+import f00f.net.irc.martyr.services.AutoJoin;
+import f00f.net.irc.martyr.services.AutoReconnect;
+import f00f.net.irc.martyr.services.AutoRegister;
+import f00f.net.irc.martyr.services.AutoResponder;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.9 2004/04/23 00:47:24 mog Exp $
+ * @version $Id: SiteBot.java,v 1.10 2004/04/23 12:18:32 mog Exp $
  */
 public class SiteBot implements FtpListener, Observer {
 
@@ -731,7 +731,7 @@ public class SiteBot implements FtpListener, Observer {
 				logger.warn("in ADDSLAVE event handler", e);
 				return;
 			}
-			fillEnvSlaveStatus(env, status);
+			fillEnvSlaveStatus(env, status, getSlaveManager());
 
 			sayGlobal(ReplacerUtils.jprintf("addslave", env, SiteBot.class));
 		} else if (event.getCommand().equals("DELSLAVE")) {
@@ -887,27 +887,15 @@ public class SiteBot implements FtpListener, Observer {
 			}
 	}
 
-	public void fillEnvSlaveStatus(ReplacerEnvironment env, SlaveStatus status) {
-		env.add("xfers", Integer.toString(status.getTransfers()));
-		env.add("throughput", Bytes.formatBytes(status.getThroughput()));
-
-		env.add("xfersup", Integer.toString(status.getTransfersReceiving()));
-		env.add(
-			"throughputup",
-			Bytes.formatBytes(status.getThroughputReceiving()));
-
-		env.add("xfersdn", Integer.toString(status.getTransfersSending()));
-		env.add(
-			"throughputdown",
-			Bytes.formatBytes(status.getThroughputSending()));
-
+	public static void fillEnvSlaveStatus(ReplacerEnvironment env, SlaveStatus status, SlaveManagerImpl slaveManager) {
 		env.add("disktotal", Bytes.formatBytes(status.getDiskSpaceCapacity()));
 		env.add("diskfree", Bytes.formatBytes(status.getDiskSpaceAvailable()));
 		env.add("diskused", Bytes.formatBytes(status.getDiskSpaceUsed()));
-		try {
-			env.add(
-				"slaves",
-				"" + getSlaveManager().getAvailableSlaves().size());
+
+		if(status.getDiskSpaceCapacity() == 0) {
+			env.add("diskfreepercent", "n/a");
+			env.add("diskusedpercent", "n/a");
+		} else {
 			env.add(
 				"diskfreepercent",
 				status.getDiskSpaceAvailable()
@@ -918,10 +906,28 @@ public class SiteBot implements FtpListener, Observer {
 				"diskusedpercent",
 				status.getDiskSpaceUsed() * 100 / status.getDiskSpaceCapacity()
 					+ "%");
-		} catch (NoAvailableSlaveException e) {
+		}
+
+		env.add("xfers", ""+status.getTransfers());
+		env.add("xfersdn", ""+status.getTransfersSending());
+		env.add("xfersup", ""+status.getTransfersReceiving());
+		env.add("xfersdown", ""+status.getTransfersSending());
+
+		env.add(
+				"throughput",
+				Bytes.formatBytes(status.getThroughput()) + "/s");
+		
+		env.add(
+				"throughputup",
+				Bytes.formatBytes(status.getThroughputReceiving()) + "/s");
+		
+		env.add(
+				"throughputdown",
+				Bytes.formatBytes(status.getThroughputSending())+"/s");
+		try {
+			env.add("slaves", ""+slaveManager.getAvailableSlaves().size());
+		} catch (NoAvailableSlaveException e2) {
 			env.add("slaves", "0");
-			env.add("diskfreepercent","0%");
-			env.add("diskusedpercent","0%");
 		}
 	}
 

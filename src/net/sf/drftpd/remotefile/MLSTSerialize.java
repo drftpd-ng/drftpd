@@ -40,7 +40,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: MLSTSerialize.java,v 1.27 2004/04/22 02:10:12 mog Exp $
+ * @version $Id: MLSTSerialize.java,v 1.28 2004/04/23 12:18:30 mog Exp $
  */
 public class MLSTSerialize {
 	private static final Logger logger = Logger.getLogger(MLSTSerialize.class);
@@ -185,8 +185,7 @@ public class MLSTSerialize {
 						RemoteSlave rslave =
 							(RemoteSlave) allRslaves.get(slavename);
 						if (rslave == null)
-							throw new NullPointerException(
-								slavename + " not found");
+							continue;
 						rslaves.add(rslave);
 					}
 					file.setRSlaves(rslaves);

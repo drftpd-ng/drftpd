@@ -23,20 +23,12 @@ import org.drftpd.sections.SectionInterface;
 import net.sf.drftpd.event.listeners.Archive;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
-/*
- * @author zubov
- * @version $Id
- */
-/*
- * @author zubov
- * @version $Id
- */
 /**
  * @author zubov
- * @version $Id: ArchiveType.java,v 1.1 2004/04/18 05:57:35 zubov Exp $
+ * @version $Id: ArchiveType.java,v 1.2 2004/04/23 12:18:31 mog Exp $
  */
 public abstract class ArchiveType {
-	protected static Logger logger = Logger.getLogger(ArchiveType.class);
+	private static final Logger logger = Logger.getLogger(ArchiveType.class);
 	private LinkedRemoteFileInterface _lrf;
 	protected Archive _parent;
 	protected SectionInterface _section;
