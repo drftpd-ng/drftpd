@@ -23,8 +23,9 @@
   </patternset>
   <target name="all" depends="compile"/>
 
-    <property name="sourceDir" value="src/"/>
-    <property name="outputDir" value="classes/"/>
+    <property name="sourceDir" value="src"/>
+    <!-- appending / will break ${outputDir}-slaveselection -->
+    <property name="outputDir" value="classes"/>
 
     <path id="classpath">
 	  <fileset dir=".">
@@ -97,7 +98,7 @@
       </fileset>
     </move>
     <move todir="${outputDir}" overwrite="false">
-      <fileset dir="classes-slaveselection">
+      <fileset dir="${outputDir}-slaveselection">
         <patternset refid="slaveselection"/>
       </fileset>
     </move>
@@ -112,10 +113,10 @@
       </fileset>
     </move>
 
-    <delete dir="classes-slaveselection"/>
-    <mkdir dir="classes-slaveselection"/>
-    <move todir="classes-slaveselection">
-      <fileset dir="classes">
+    <delete dir="${outputDir}-slaveselection"/>
+    <mkdir dir="${outputDir}-slaveselection"/>
+    <move todir="${outputDir}-slaveselection">
+      <fileset dir="${outputDir}">
         <patternset refid="slaveselection"/>
       </fileset>
     </move>

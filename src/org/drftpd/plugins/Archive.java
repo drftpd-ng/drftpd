@@ -138,7 +138,6 @@ public class Archive extends FtpListener implements Runnable {
         while (true) {
             if (isStopped()) {
                 logger.debug("Stopping ArchiveStarter thread");
-
                 return;
             }
 
