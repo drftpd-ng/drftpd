@@ -38,7 +38,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 /**
  * @author zubov
  *
- * @version $Id: Mirror.java,v 1.14 2004/02/11 03:58:36 zubov Exp $
+ * @version $Id: Mirror.java,v 1.15 2004/02/16 14:41:43 zubov Exp $
  */
 public class Mirror implements FtpListener {
 
@@ -46,6 +46,7 @@ public class Mirror implements FtpListener {
 
 	private ConnectionManager _cm;
 	private ArrayList _exemptList;
+	private boolean _mirrorAllSFV;
 	private int _numberOfMirrors;
 
 	public Mirror() {
@@ -68,7 +69,11 @@ public class Mirror implements FtpListener {
 			return;
 		}
 		ArrayList slaveToMirror = new ArrayList();
-		for (int x = 1; x < _numberOfMirrors; x++) { // already have one copy
+		int numToMirror = _numberOfMirrors;
+		if (_mirrorAllSFV && dir.getName().toLowerCase().endsWith(".sfv")) {
+			numToMirror = _cm.getSlaveManager().getSlaveList().size();
+		}
+		for (int x = 1; x < numToMirror; x++) { // already have one copy
 			slaveToMirror.add(null);
 		}
 		if (slaveToMirror.isEmpty()) {
@@ -104,6 +109,8 @@ public class Mirror implements FtpListener {
 
 		_numberOfMirrors =
 			Integer.parseInt(FtpConfig.getProperty(props, "numberOfMirrors"));
+		_mirrorAllSFV =
+			FtpConfig.getProperty(props, "mirrorAllSFV").equals("true");
 		_exemptList = new ArrayList();
 		for (int i = 1;; i++) {
 			String path = props.getProperty("exclude." + i);

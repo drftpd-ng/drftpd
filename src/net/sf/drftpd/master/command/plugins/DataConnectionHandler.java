@@ -67,7 +67,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.42 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.43 2004/02/16 14:41:43 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -107,7 +107,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	}
 
 	private FtpReply doAUTH(BaseFtpConnection conn) {
-		if(_ctx == null) return new FtpReply(500, "TLS not configured");
+		if (_ctx == null)
+			return new FtpReply(500, "TLS not configured");
 		Socket s = conn.getControlSocket();
 
 		//reply success
@@ -396,7 +397,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			response.addComment(
 				"Or you can just use a PRET capable client, see");
 			response.addComment(
-				"  http://drftpd.mog.se/ for PRET capable clients");
+				"  http://drftpd.org/ for PRET capable clients");
 			return response;
 		}
 		int clientPort;
@@ -483,7 +484,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 
 	private FtpReply doPROT(BaseFtpConnection conn)
 		throws UnhandledCommandException {
-		if(_ctx == null) return new FtpReply(500, "TLS not configured");
+		if (_ctx == null)
+			return new FtpReply(500, "TLS not configured");
 		FtpRequest req = conn.getRequest();
 		if (!req.hasArgument() || req.getArgument().length() != 1)
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
@@ -809,7 +811,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	public String[] getFeatReplies() {
 		if (_ctx != null)
 			return new String[] { "PRET", "AUTH SSL", "PBSZ" };
-		return new String[] {"PRET"};
+		return new String[] { "PRET" };
 	}
 	/**
 	 * Get client address from PORT command.
@@ -1241,10 +1243,42 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				}
 			} catch (RemoteException ex) {
 				_rslave.handleRemoteException(ex);
-				return new FtpReply(426, "Remote error: " + ex.getMessage());
+				_transferFile.delete();
+				logger.error("RemoteException, deleting file");
+				return new FtpReply(426, "RemoteException, deleting file");
 			} catch (IOException ex) {
 				logger.log(Level.WARN, "from " + _rslave.getName(), ex);
-				return new FtpReply(426, "IO error: " + ex.getMessage());
+				FtpReply response =
+					new FtpReply(426, "IO error: " + ex.getMessage());
+				try {
+					zipscript(
+						isRetr,
+						isStor,
+						_rslave.getSlave().checkSum(
+							targetDir.getPath() + "/" + targetFileName),
+						response,
+						targetFileName,
+						targetDir);
+				} catch (RemoteException e) {
+					_rslave.handleRemoteException(e);
+					response.setMessage("RemoteException, deleting file");
+					_transferFile.delete();
+					logger.error("RemoteException, deleting file");
+				} catch (NoAvailableSlaveException e) {
+					response.setMessage(
+						"Slave went offline, could not check crc, deleting file");
+					_transferFile.delete();
+					logger.error(
+						"Slave went offline, could not check crc, deleting file",
+						e);
+				} catch (IOException e) {
+					response.setMessage(
+						"IOException caused, could not check crc, deleting file");
+					_transferFile.delete();
+					logger.error(
+						"IOException caused, could not check crc, deleting file");
+				}
+				return response;
 			}
 			//		TransferThread transferThread = new TransferThread(rslave, transfer);
 			//		System.err.println("Calling interruptibleSleepUntilFinished");
@@ -1303,171 +1337,59 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				}
 			}
 
-			//zipscript
-			if (isRetr) {
-				//compare checksum from transfer to cached checksum
-				logger.debug(
-					"checksum from transfer = " + status.getChecksum());
-				if (status.getChecksum() != 0) {
-					response.addComment(
-						"Checksum from transfer: "
-							+ Checksum.formatChecksum(status.getChecksum()));
-					long cachedChecksum;
+			if (zipscript(isRetr,
+				isStor,
+				status.getChecksum(),
+				response,
+				targetFileName,
+				targetDir)) {
 
-					cachedChecksum = _transferFile.getCheckSumCached();
-					if (cachedChecksum == 0) {
-						_transferFile.setCheckSum(status.getChecksum());
-					} else if (cachedChecksum != status.getChecksum()) {
-						response.addComment(
-							"WARNING: checksum from transfer didn't match cached checksum");
-						logger.info(
-							"checksum from transfer "
-								+ Checksum.formatChecksum(status.getChecksum())
-								+ "didn't match cached checksum"
-								+ Checksum.formatChecksum(cachedChecksum)
-								+ " for "
-								+ _transferFile.toString()
-								+ " from slave "
-								+ _rslave.getName(),
-							new Throwable());
-					}
-					//compare checksum from transfer to checksum from sfv
-					try {
-						long sfvChecksum =
-							_transferFile
-								.getParentFileNull()
-								.lookupSFVFile()
-								.getChecksum(
-								_transferFile.getName());
-						if (sfvChecksum == status.getChecksum()) {
-							response.addComment(
-								"checksum from transfer matched checksum in .sfv");
-						} else {
-							response.addComment(
-								"WARNING: checksum from transfer didn't match checksum in .sfv");
-						}
-					} catch (NoAvailableSlaveException e1) {
-						response.addComment(
-							"slave with .sfv offline, checksum not verified");
-					} catch (FileNotFoundException e1) {
-						//continue without verification
-					} catch (ObjectNotFoundException e1) {
-						//file not found in .sfv, continue
-					} catch (IOException e1) {
-						logger.info(e1);
-						response.addComment(
-							"IO Error reading sfv file: " + e1.getMessage());
-					}
-				} else { // slave has disabled download crc
-					//response.addComment("Slave has disabled download checksum");
-				}
-			} else if (isStor) {
-				if (!targetFileName.toLowerCase().endsWith(".sfv")) {
-					try {
-						long sfvChecksum =
-							targetDir.lookupSFVFile().getChecksum(
-								targetFileName);
-						if (status.getChecksum() == sfvChecksum) {
-							response.addComment(
-								"checksum match: SLAVE/SFV:"
-									+ Long.toHexString(status.getChecksum()));
-						} else if (status.getChecksum() == 0) {
-							response.addComment(
-								"checksum match: SLAVE/SFV: DISABLED");
-						} else {
-							response.addComment(
-								"checksum mismatch: SLAVE: "
-									+ Long.toHexString(status.getChecksum())
-									+ " SFV: "
-									+ Long.toHexString(sfvChecksum));
-							response.addComment(" deleting file");
-							response.setMessage(
-								"Checksum mismatch, deleting file");
-							_transferFile.delete();
-
-							//				getUser().updateCredits(
-							//					- ((long) getUser().getRatio() * transferedBytes));
-							//				getUser().updateUploadedBytes(-transferedBytes);
-							// response.addComment(conn.status());
-							return response;
-							//				String badtargetFilename = targetFilename + ".bad";
-							//
-							//				try {
-							//					LinkedRemoteFile badtargetFile =
-							//						targetDir.getFile(badtargetFilename);
-							//					badtargetFile.delete();
-							//					response.addComment(
-							//						"zipscript - removing "
-							//							+ badtargetFilename
-							//							+ " to be replaced with new file");
-							//				} catch (FileNotFoundException e2) {
-							//					//good, continue...
-							//					response.addComment(
-							//						"zipscript - checksum mismatch, renaming to "
-							//							+ badtargetFilename);
-							//				}
-							//				targetFile.renameTo(targetDir.getPath() + badtargetFilename);
-						}
-					} catch (NoAvailableSlaveException e) {
-						response.addComment(
-							"zipscript - SFV unavailable, slave with .sfv file is offline");
-					} catch (ObjectNotFoundException e) {
-						response.addComment(
-							"zipscript - SFV unavailable, no .sfv file in directory");
-					} catch (IOException e) {
-						response.addComment(
-							"zipscript - SFV unavailable, IO error: "
-								+ e.getMessage());
-					}
-				}
-
-			}
-
-			//transferstatistics
-			if (isRetr) {
-				float ratio =
-					conn.getConfig().getCreditLossRatio(
-						_transferFile,
-						conn.getUserNull());
-				if (ratio != 0) {
-					conn.getUserNull().updateCredits(
-						(long) (-status.getTransfered() * ratio));
-				}
-				conn.getUserNull().updateDownloadedBytes(
-					status.getTransfered());
-				conn.getUserNull().updateDownloadedMilliseconds(
-					status.getElapsed());
-				conn.getUserNull().updateDownloadedFiles(1);
-			} else {
-				conn.getUserNull().updateCredits(
-					(long) (status.getTransfered()
-						* conn.getConfig().getCreditCheckRatio(
+				//transferstatistics
+				if (isRetr) {
+					float ratio =
+						conn.getConfig().getCreditLossRatio(
 							_transferFile,
-							conn.getUserNull())));
-				conn.getUserNull().updateUploadedBytes(status.getTransfered());
-				conn.getUserNull().updateUploadedMilliseconds(
-					status.getElapsed());
-				conn.getUserNull().updateUploadedFiles(1);
-			}
-			try {
-				conn.getUserNull().commit();
-			} catch (UserFileException e) {
-				logger.warn("", e);
-			}
+							conn.getUserNull());
+					if (ratio != 0) {
+						conn.getUserNull().updateCredits(
+							(long) (-status.getTransfered() * ratio));
+					}
+					conn.getUserNull().updateDownloadedBytes(
+						status.getTransfered());
+					conn.getUserNull().updateDownloadedMilliseconds(
+						status.getElapsed());
+					conn.getUserNull().updateDownloadedFiles(1);
+				} else {
+					conn.getUserNull().updateCredits(
+						(long) (status.getTransfered()
+							* conn.getConfig().getCreditCheckRatio(
+								_transferFile,
+								conn.getUserNull())));
+					conn.getUserNull().updateUploadedBytes(
+						status.getTransfered());
+					conn.getUserNull().updateUploadedMilliseconds(
+						status.getElapsed());
+					conn.getUserNull().updateUploadedFiles(1);
+				}
+				try {
+					conn.getUserNull().commit();
+				} catch (UserFileException e) {
+					logger.warn("", e);
+				}
 
-			if (isStor) {
-				conn.getConnectionManager().dispatchFtpEvent(
-					new TransferEvent(
-						conn.getUserNull(),
-						"STOR",
-						_transferFile,
-						conn.getClientAddress(),
-						_rslave.getInetAddress(),
-						getType(),
-						true));
+				if (isStor) {
+					conn.getConnectionManager().dispatchFtpEvent(
+						new TransferEvent(
+							conn.getUserNull(),
+							"STOR",
+							_transferFile,
+							conn.getClientAddress(),
+							_rslave.getInetAddress(),
+							getType(),
+							true));
+				}
+				conn.reset();
 			}
-
-			conn.reset();
 			return response;
 		} finally {
 			reset();
@@ -1478,6 +1400,145 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		if (isPasv()) {
 			_portRange.releasePort(_serverSocket.getLocalPort());
 		}
+	}
+
+	/**
+	 * @param isRetr
+	 * @param isStor
+	 * @param status
+	 * @param response
+	 * @param targetFileName
+	 * @param targetDir
+	 * Returns true if crc check was okay, i.e, if credits should be altered
+	 */
+	private boolean zipscript(
+		boolean isRetr,
+		boolean isStor,
+		long checksum,
+		FtpReply response,
+		String targetFileName,
+		LinkedRemoteFile targetDir) {
+		//zipscript
+		logger.debug(
+			"Running zipscript on file "
+				+ targetFileName
+				+ " with CRC of "
+				+ checksum);
+		if (isRetr) {
+			//compare checksum from transfer to cached checksum
+			logger.debug("checksum from transfer = " + checksum);
+			if (checksum != 0) {
+				response.addComment(
+					"Checksum from transfer: "
+						+ Checksum.formatChecksum(checksum));
+				long cachedChecksum;
+
+				cachedChecksum = _transferFile.getCheckSumCached();
+				if (cachedChecksum == 0) {
+					_transferFile.setCheckSum(checksum);
+				} else if (cachedChecksum != checksum) {
+					response.addComment(
+						"WARNING: checksum from transfer didn't match cached checksum");
+					logger.info(
+						"checksum from transfer "
+							+ Checksum.formatChecksum(checksum)
+							+ "didn't match cached checksum"
+							+ Checksum.formatChecksum(cachedChecksum)
+							+ " for "
+							+ _transferFile.toString()
+							+ " from slave "
+							+ _rslave.getName(),
+						new Throwable());
+				}
+				//compare checksum from transfer to checksum from sfv
+				try {
+					long sfvChecksum =
+						_transferFile
+							.getParentFileNull()
+							.lookupSFVFile()
+							.getChecksum(
+							_transferFile.getName());
+					if (sfvChecksum == checksum) {
+						response.addComment(
+							"checksum from transfer matched checksum in .sfv");
+					} else {
+						response.addComment(
+							"WARNING: checksum from transfer didn't match checksum in .sfv");
+					}
+				} catch (NoAvailableSlaveException e1) {
+					response.addComment(
+						"slave with .sfv offline, checksum not verified");
+				} catch (FileNotFoundException e1) {
+					//continue without verification
+				} catch (ObjectNotFoundException e1) {
+					//file not found in .sfv, continue
+				} catch (IOException e1) {
+					logger.info(e1);
+					response.addComment(
+						"IO Error reading sfv file: " + e1.getMessage());
+				}
+			} else { // slave has disabled download crc
+				//response.addComment("Slave has disabled download checksum");
+			}
+		} else if (isStor) {
+			if (!targetFileName.toLowerCase().endsWith(".sfv")) {
+				try {
+					long sfvChecksum =
+						targetDir.lookupSFVFile().getChecksum(targetFileName);
+					if (checksum == sfvChecksum) {
+						response.addComment(
+							"checksum match: SLAVE/SFV:"
+								+ Long.toHexString(checksum));
+					} else if (checksum == 0) {
+						response.addComment(
+							"checksum match: SLAVE/SFV: DISABLED");
+					} else {
+						response.addComment(
+							"checksum mismatch: SLAVE: "
+								+ Long.toHexString(checksum)
+								+ " SFV: "
+								+ Long.toHexString(sfvChecksum));
+						response.addComment(" deleting file");
+						response.setMessage("Checksum mismatch, deleting file");
+						_transferFile.delete();
+
+						//				getUser().updateCredits(
+						//					- ((long) getUser().getRatio() * transferedBytes));
+						//				getUser().updateUploadedBytes(-transferedBytes);
+						// response.addComment(conn.status());
+						return false; // don't modify credits
+						//				String badtargetFilename = targetFilename + ".bad";
+						//
+						//				try {
+						//					LinkedRemoteFile badtargetFile =
+						//						targetDir.getFile(badtargetFilename);
+						//					badtargetFile.delete();
+						//					response.addComment(
+						//						"zipscript - removing "
+						//							+ badtargetFilename
+						//							+ " to be replaced with new file");
+						//				} catch (FileNotFoundException e2) {
+						//					//good, continue...
+						//					response.addComment(
+						//						"zipscript - checksum mismatch, renaming to "
+						//							+ badtargetFilename);
+						//				}
+						//				targetFile.renameTo(targetDir.getPath() + badtargetFilename);
+					}
+				} catch (NoAvailableSlaveException e) {
+					response.addComment(
+						"zipscript - SFV unavailable, slave with .sfv file is offline");
+				} catch (ObjectNotFoundException e) {
+					response.addComment(
+						"zipscript - SFV unavailable, no .sfv file in directory");
+				} catch (IOException e) {
+					response.addComment(
+						"zipscript - SFV unavailable, IO error: "
+							+ e.getMessage());
+				}
+			}
+		}
+		return true; // modify credits, transfer was okay
 	}
 
 }

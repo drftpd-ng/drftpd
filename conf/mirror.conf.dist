@@ -4,3 +4,6 @@ numberOfMirrors=2
 # do not mirror releases under these directorys
 #exclude.1=/exempt/*
 #exclude.2=/alsoexempt/*
+
+#if you want to mirror SFV files to all slaves
+mirrorAllSFV=true
