@@ -35,6 +35,7 @@ import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.SlaveEvent;
+import net.sf.drftpd.event.InviteEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
@@ -184,6 +185,8 @@ public class IRCListener implements FtpListener, Observer {
 				actionPerformedNuke((NukeEvent) event);
 			} else if (event instanceof SlaveEvent) {
 				actionPerformedSlave((SlaveEvent) event);
+			} else if (event instanceof InviteEvent) {
+				actionPerformedInvite((InviteEvent) event);
 			} else if (event.getCommand().equals("RELOAD")) {
 
 				try {
@@ -197,13 +200,6 @@ public class IRCListener implements FtpListener, Observer {
 				ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
 				env.add("message", mevent.getMessage());
 				say(SimplePrintf.jprintf(_ircCfg.getProperty("shutdown"), env));
-			} else if ( event.getCommand().startsWith("INVITE")) {
-				String user = event.getCommand().substring(7);
-				logger.info(
-					"Invited "
-					+ user + " through SITE INVITE");
-					_conn.sendCommand(
-							new InviteCommand(user, _channelName));
 			} else {
 				logger.debug("Unhandled event: " + event);
 			}
@@ -565,6 +561,14 @@ public class IRCListener implements FtpListener, Observer {
 		} else if (event.getCommand().equals("DELSLAVE")) {
 			say(SimplePrintf.jprintf(_ircCfg.getProperty("delslave"), env));
 		}
+	}
+
+	private void actionPerformedInvite(InviteEvent event) {
+		String user = event.getCommand();
+		logger.info(
+			"Invited "
+			+ user + " through SITE INVITE");
+		_conn.sendCommand(new InviteCommand(user, _channelName));
 	}
 
 	private void fillEnvSection(
