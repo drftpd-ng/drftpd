@@ -19,7 +19,7 @@ public class DumpFile {
 			if(args.length-i != 1) System.out.println();
 		}
 	}
-	public static void dumpFile(RemoteFile file) {
+	public static void dumpFile(RemoteFile file) throws Exception {
 		//shell script to generate below code with:
 		//for x in canRead canWrite exists getAbsolutePath getCanonicalPath getName getParent getPath isAbsolute isDirectory isFile isHidden lastModified length ; do echo -e "\t\tSystem.out.println(\"$x(): \\\"\"+file.$x()+\"\\\"\");" ; done
 		/*

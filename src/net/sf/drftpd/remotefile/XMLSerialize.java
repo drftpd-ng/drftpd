@@ -22,7 +22,7 @@ public class XMLSerialize {
 		}
 		fileElement.setAttribute("name", file.getName());
 		
-		fileElement.addContent(new Element("user").setText(file.getUser()));
+		fileElement.addContent(new Element("user").setText(file.getOwner()));
 		fileElement.addContent(new Element("group").setText(file.getGroup()));
 		if(file.isFile()) {
 			fileElement.addContent(new Element("size").setText(Long.toString(file.length())));

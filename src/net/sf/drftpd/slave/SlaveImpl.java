@@ -21,14 +21,12 @@ import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
 import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.InvalidDirectoryException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.RemoteFile;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 import se.mog.io.File;
 
@@ -328,7 +326,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	/**
 	 * @see net.sf.drftpd.slave.Slave#rename(String, String)
 	 */
-	public void rename(String from, String to) throws IOException {
+	public void rename(String from, String to) throws FileNotFoundException {
 
 		File fromfile = new File(root + from);
 		if (!fromfile.exists())

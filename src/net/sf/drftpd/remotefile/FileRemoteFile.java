@@ -18,15 +18,15 @@ public class FileRemoteFile extends RemoteFile {
 	 * @param file
 	 * @throws IOException
 	 */
-	public FileRemoteFile(String root, File file) throws IOException {
+	public FileRemoteFile(String root, File file) throws InvalidDirectoryException, IOException {
 		this.root = root;
 		this.file = file;
 		
 		isDirectory = file.isDirectory();
 		isFile = file.isFile();
 		if (!file.getCanonicalPath().equals(file.getAbsolutePath())) {
-			isDirectory = false;
-			isFile = false;
+//			isDirectory = false;
+//			isFile = false;
 			System.out.println(
 				"FileRemoteFile: warning: not serializing possible symlink: " + file.getAbsolutePath());
 			throw new InvalidDirectoryException("Not following symlink: "+file.getAbsolutePath());
@@ -69,7 +69,7 @@ public class FileRemoteFile extends RemoteFile {
 	/**
 	 * @see net.sf.drftpd.RemoteFile#getUser()
 	 */
-	public String getUser() {
+	public String getOwner() {
 		return "drftpd";
 	}
 

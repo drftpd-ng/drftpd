@@ -249,7 +249,6 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	public void stop() {
 		stopRequest = true;
-//		t.interrupt();
 	}
 
 	public void stop(String message) {
@@ -372,7 +371,7 @@ public class BaseFtpConnection implements Runnable {
 	protected int miPort = 0;
 
 	protected boolean mbPort = false;
-	protected boolean mbPasv = false;
+	//protected boolean mbPasv = false;
 
 	/**
 	 * Reset all the member variables. Close all sockets.
@@ -406,7 +405,7 @@ public class BaseFtpConnection implements Runnable {
 		miPort = 0;
 
 		mbPort = false;
-		mbPasv = false;
+		//mbPasv = false;
 	}
 
 	/**
@@ -477,19 +476,21 @@ public class BaseFtpConnection implements Runnable {
 	/**
 	 * Get the data socket. In case of error returns null.
 	 */
-	public Socket getDataSocket() {
+	public Socket getDataSocket() throws IOException {
 
 		// get socket depending on the selection
 		if (mbPort) {
 			try {
 				mDataSoc = new Socket(mAddress, miPort);
-				mDataSoc.setSoTimeout(30000); // .5 minute timeout
-			} catch (Exception ex) {
+				mDataSoc.setSoTimeout(30000); // 30 seconds timeout
+			} catch (IOException ex) {
 				//mConfig.getLogger().warn(ex);
 				ex.printStackTrace();
 				mDataSoc = null;
+				throw ex;
 			}
-		} else if (!mbPasv) {
+		}
+		/* else if (!mbPasv) {
 			if (mDataSoc != null) {
 				try {
 					mDataSoc.close();
@@ -499,7 +500,7 @@ public class BaseFtpConnection implements Runnable {
 				}
 				mDataSoc = null;
 			}
-		}
+		}*/
 
 		// result check
 		return mDataSoc;

@@ -31,6 +31,10 @@ public abstract class UserManager {
 	 */
 	public abstract void delete(String userName) throws IOException;
 
+//	public User getUserByName2(String name) throws NoSuchUserException, IOException {
+//		HashMap users = new HashMap();
+//	}
+
 	/**
 	 * Get user by name.
 	 */

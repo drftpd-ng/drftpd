@@ -557,14 +557,14 @@ public class GlftpdUserManager extends UserManager {
 	 * @see net.sf.drftpd.master.UserManager#getAllUserNames()
 	 */
 	public Collection getAllUserNames() {
-		return null;
+		throw new NoSuchMethodError("TODO");
 	}
 
 	/**
 	 * @see net.sf.drftpd.master.UserManager#exists(String)
 	 */
 	public boolean exists(String name) {
-		return false;
+		throw new NoSuchMethodError("TODO");
 	}
 
 	//LOCKING
@@ -607,8 +607,6 @@ public class GlftpdUserManager extends UserManager {
 			lastLocked = lock.lastModified();
 		}
 		while (lock.exists()) {
-			//			try {
-			//				Thread.sleep(100L);
 			if (lock.lastModified() != lastLocked) {
 				lastLocked = lock.lastModified();
 				System.out.println(
@@ -625,7 +623,7 @@ public class GlftpdUserManager extends UserManager {
 				}
 			}
 			try {
-				Thread.sleep(5);
+				Thread.sleep(5); // 1/20 of a second
 			} catch (InterruptedException ex) {
 			}
 		}

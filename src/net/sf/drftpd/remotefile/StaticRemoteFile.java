@@ -45,10 +45,10 @@ public class StaticRemoteFile extends RemoteFile {
 			isFile = true;
 		}
 		if(owner == null) {
-			user = owner.getUsername();
+			this.owner = owner.getUsername();
 			group = owner.getGroup();
 		} else {
-			user = "drftpd";
+			this.owner = "drftpd";
 			group = "drftpd";
 		}
 		this.length = size;

@@ -189,23 +189,14 @@ public class SlaveManagerImpl
 		}
 		return bestslave;
 	}
-
-	public void handleRemoteException(RemoteException ex, RemoteSlave slave) {
-		System.out.print(
-			"Caught exception when trying to communicate with " + slave);
-		if (!isFatalRemoteException(ex)) {
-			System.out.println(". Non-fatal exception, not removing");
-			return;
-		}
-		System.out.println(". Fatal exception, removing");
-		ex.printStackTrace();
-		root.unmerge(slave);
+	/**
+	 * @deprecated Use RemoteSlave.handleRemoteException instead
+	 */
+	public boolean handleRemoteException(RemoteException ex, RemoteSlave rslave) {
+		return rslave.handleRemoteException(ex);
 	}
 
-	public boolean isFatalRemoteException(RemoteException ex) {
-		return (ex instanceof java.rmi.ConnectException);
-	}
-
+	/** ping's all slaves, returns number of slaves removed */
 	public int verifySlaves() {
 		int removed = 0;
 		synchronized (slaves) {
@@ -214,10 +205,7 @@ public class SlaveManagerImpl
 				try {
 					slave.getSlave().ping();
 				} catch (RemoteException ex) {
-					if (isFatalRemoteException(ex))
-						i.remove();
-					handleRemoteException(ex, slave);
-					removed++;
+					if(slave.handleRemoteException(ex)) removed++;
 				}
 			}
 		}

@@ -1,28 +1,19 @@
 package net.sf.drftpd.remotefile;
 
-import java.io.IOException;
-
-import net.sf.drftpd.SFVFile;
-
+import java.io.FileNotFoundException;
 
 /**
  * @author <a href="mailto:mog@linux.nu">Morgan Christiansson</a>
  */
 public abstract class RemoteFile {
-	
-	protected SFVFile sfvFile;
-	
-	public SFVFile getSFVFile() throws IOException {
-		return sfvFile;
-	}
-	
+		
 	public abstract RemoteFile[] listFiles();
 	
-	protected String user;
-	public String getUser() {
-		if (user == null)
+	protected String owner;
+	public String getOwner() {
+		if (owner == null)
 			return "drftpd";
-		return user;
+		return owner;
 	}
 
 	protected String group;
@@ -98,7 +89,7 @@ public abstract class RemoteFile {
 	/**
 	 * @see net.sf.drftpd.RemoteFile#getParent()
 	 */
-	public abstract String getParent();
+	public abstract String getParent() throws FileNotFoundException;
 	/**
 	 * @see net.sf.drftpd.RemoteFile#getPath()
 	 */

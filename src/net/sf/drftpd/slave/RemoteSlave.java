@@ -1,6 +1,7 @@
 package net.sf.drftpd.slave;
 
 import java.io.Serializable;
+import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 
 import net.sf.drftpd.master.SlaveManagerImpl;
@@ -43,6 +44,23 @@ public class RemoteSlave implements Serializable {
 		}
 		return status;
 	}
+	public boolean handleRemoteException(RemoteException ex) {
+		System.out.print(
+			"Caught exception when trying to communicate with " + this);
+		if (!isFatalRemoteException(ex)) {
+			System.out.println(". Non-fatal exception, not removing");
+			return false;
+		}
+		System.out.println(". Fatal exception, removing");
+		ex.printStackTrace();
+		manager.getRoot().unmerge(this);
+		return true;
+	}
+	
+	public static boolean isFatalRemoteException(RemoteException ex) {
+		return (ex instanceof ConnectException);
+	}
+
 	public void setManager(SlaveManagerImpl manager) {
 		this.manager = manager;
 	}
