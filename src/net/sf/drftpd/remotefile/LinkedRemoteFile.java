@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.112 2004/02/04 17:13:13 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.113 2004/02/06 00:20:50 mog Exp $
  */
 public class LinkedRemoteFile
 	implements RemoteFileInterface, Serializable, Comparable {
@@ -134,7 +134,7 @@ public class LinkedRemoteFile
 		this(parent, file, file.getName(), cfg);
 	}
 
-	public LinkedRemoteFile(
+	private LinkedRemoteFile(
 		LinkedRemoteFile parent,
 		RemoteFileInterface file,
 		String name,

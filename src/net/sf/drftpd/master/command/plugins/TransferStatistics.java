@@ -1,5 +1,6 @@
 package net.sf.drftpd.master.command.plugins;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.Bytes;
+import net.sf.drftpd.event.listeners.Trial;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
@@ -23,9 +25,10 @@ import net.sf.drftpd.master.usermanager.UserFileException;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
- * @version $Id: TransferStatistics.java,v 1.13 2004/01/13 22:46:44 mog Exp $
+ * @version $Id: TransferStatistics.java,v 1.14 2004/02/06 00:20:50 mog Exp $
  */
 public class TransferStatistics implements CommandHandler {
 
@@ -211,18 +214,100 @@ public class TransferStatistics implements CommandHandler {
 		Collections.sort(users, new UserComparator(request));
 
 		FtpReply response = new FtpReply(200);
+		String type = command.substring("SITE ".length()).toLowerCase();
+		try {
+			Textoutput.addTextToResponse(response, type + "_header");
+		} catch (IOException ioe) {
+			logger.warn("Error reading " + type + "_header", ioe);
+		}
+
 		int i = 0;
 		for (Iterator iter = users.iterator(); iter.hasNext();) {
 			if (++i > count)
 				break;
 			User user = (User) iter.next();
+			ReplacerEnvironment env = new ReplacerEnvironment();
+			env.add("pos", "" + i);
+
+			env.add(
+				"upbytesday",
+				Bytes.formatBytes(user.getUploadedBytesDay()));
+			env.add("upfilesday", "" + user.getUploadedFilesDay());
+			env.add("uprateday", getUpRate(user, Trial.PERIOD_DAILY));
+			env.add(
+				"upbytesweek",
+				Bytes.formatBytes(user.getUploadedBytesWeek()));
+			env.add("upfilesweek", "" + user.getUploadedFilesWeek());
+			env.add("uprateweek", getUpRate(user, Trial.PERIOD_WEEKLY));
+			env.add(
+				"upbytesmonth",
+				Bytes.formatBytes(user.getUploadedBytesMonth()));
+			env.add("upfilesmonth", "" + user.getUploadedFilesMonth());
+			env.add("upratemonth", getUpRate(user, Trial.PERIOD_MONTHLY));
+			env.add("upbytes", Bytes.formatBytes(user.getUploadedBytes()));
+			env.add("upfiles", "" + user.getUploadedFiles());
+			env.add("uprate", getUpRate(user, Trial.PERIOD_ALL));
+
+			env.add(
+				"dnbytesday",
+				Bytes.formatBytes(user.getDownloadedBytesDay()));
+			env.add("dnfilesday", "" + user.getDownloadedFilesDay());
+			env.add("dnrateday", getDownRate(user, Trial.PERIOD_DAILY));
+			env.add(
+				"dnbytesweek",
+				Bytes.formatBytes(user.getDownloadedBytesWeek()));
+			env.add("dnfilesweek", "" + user.getDownloadedFilesWeek());
+			env.add("dnrateweek", getDownRate(user, Trial.PERIOD_WEEKLY));
+			env.add(
+				"dnbytesmonth",
+				Bytes.formatBytes(user.getDownloadedBytesMonth()));
+			env.add("dnfilesmonth", "" + user.getDownloadedFilesMonth());
+			env.add("dnratemonth", getDownRate(user, Trial.PERIOD_MONTHLY));
+			env.add("dnbytes", Bytes.formatBytes(user.getDownloadedBytes()));
+			env.add("dnfiles", "" + user.getDownloadedFiles());
+			env.add("dnrate", getDownRate(user, Trial.PERIOD_ALL));
+
 			response.addComment(
-				user.getUsername()
-					+ " "
-					+ Bytes.formatBytes(
-						getStats(command.substring("SITE ".length()), user)));
+				BaseFtpConnection.jprintf(
+					TransferStatistics.class.getName(),
+					"transferstatistics" + type,
+					env,
+					user));
+			//			response.addComment(
+			//	user.getUsername()
+			//		+ " "
+			//		+ Bytes.formatBytes(
+			//			getStats(command.substring("SITE ".length()), user)));
 		}
+		try {
+			Textoutput.addTextToResponse(response, type + "_footer");
+		} catch (IOException ioe) {
+			logger.warn("Error reading " + type + "_footer", ioe);
+		}
+
 		return response;
+	}
+
+	private String getUpRate(User user, int period) {
+		double s =
+			user.getUploadedMillisecondsForPeriod(period) / (double) 1000.0;
+		if (s <= 0) {
+			return "- k/s";
+		}
+
+		double rate = user.getUploadedBytesForPeriod(period) / s;
+		return Bytes.formatBytes((long) rate) + "/s";
+	}
+
+	private String getDownRate(User user, int period) {
+		double s =
+			user.getDownloadedMillisecondsForPeriod(period) / (double) 1000.0;
+		if (s <= 0) {
+			return "- k/s";
+		}
+
+		double rate = user.getDownloadedBytesForPeriod(period) / s;
+		return Bytes.formatBytes((long) rate) + "/s";
 	}
 
 	public String[] getFeatReplies() {

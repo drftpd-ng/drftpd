@@ -15,7 +15,7 @@ import net.sf.drftpd.master.command.UnhandledCommandException;
 
 /**
  * @author mog
- * @version $Id: Textoutput.java,v 1.5 2004/01/13 00:38:55 mog Exp $
+ * @version $Id: Textoutput.java,v 1.6 2004/02/06 00:20:50 mog Exp $
  */
 public class Textoutput implements CommandHandler {
 
@@ -24,7 +24,7 @@ public class Textoutput implements CommandHandler {
 		reply.addComment(
 			new BufferedReader(
 				new InputStreamReader(
-					new FileInputStream("ftp-data/text/" + file + ".txt"),
+					new FileInputStream("text/" + file + ".txt"),
 					"ISO-8859-1")));
 	}
 
