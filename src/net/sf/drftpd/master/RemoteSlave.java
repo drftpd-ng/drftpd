@@ -34,7 +34,7 @@ import org.jdom.Element;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.37 2004/05/19 17:05:57 zombiewoof64 Exp $
+ * @version $Id: RemoteSlave.java,v 1.38 2004/05/19 20:44:39 zombiewoof64 Exp $
  */
 public class RemoteSlave implements Comparable {
     private int _maxPath;
@@ -50,7 +50,7 @@ public class RemoteSlave implements Comparable {
     private String _name;
     private Slave _slave;
     private SlaveStatus _status;
-    private Hashtable _config = new Hashtable();
+    private Properties _config;
     
     public void oldRemoteSlave(String name, Collection masks) {
         if (name.equalsIgnoreCase("all"))
@@ -72,8 +72,8 @@ public class RemoteSlave implements Comparable {
         }
     }
     
-    public RemoteSlave(Element config) {
-        String name = config.getChild("name").getText();
+    public RemoteSlave(Properties config) {
+        String name = config.getProperty("name");
         if (name.equalsIgnoreCase("all"))
         {
             throw new IllegalArgumentException(
@@ -85,9 +85,9 @@ public class RemoteSlave implements Comparable {
         updateConfig(config);
     }
     
-    public void updateConfig(Element config)
+    public void updateConfig(Properties config)
     {
-        String name = config.getChild("name").getText();
+        String name = config.getProperty("name");
         if (!name.equalsIgnoreCase(_name)) 
         {
             throw new IllegalArgumentException(
@@ -96,19 +96,12 @@ public class RemoteSlave implements Comparable {
             );
         }
         List masks = new ArrayList();
-        List maskElements = config.getChildren("mask");
-        for (Iterator i2 = maskElements.iterator(); i2.hasNext();) {
-            masks.add(((Element) i2.next()).getText());
+        String[] maskitems = config.getProperty("masks", "").split(",");
+        for (int i=0; i<maskitems.length; i++) {
+            masks.add(maskitems[i]);
         }
         _masks = masks;
-        for (Iterator i = config.getChildren().iterator(); i.hasNext();) {
-            Element e = (Element) i.next();
-            if (e.getName().equalsIgnoreCase("mask")) continue;
-            try {
-                _config.put(e.getName(), e.getText());
-            } catch (Exception e1) {
-            }
-        }
+        _config = config;
     }
     
     public Element getConfigXML() {
