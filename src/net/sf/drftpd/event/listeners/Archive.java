@@ -78,6 +78,8 @@ public class Archive implements FtpListener {
 				((DirectoryFtpEvent) event).getDirectory();
 			LinkedRemoteFile root = oldDir.getRoot();
 			oldDir = getOldestNonArchivedDir(root);
+			if (oldDir == null)
+				return; //everything is archived
 			System.out.println("The oldest Directory is " + oldDir.getPath());
 			RemoteSlave slave = findDestinationSlave(oldDir);
 			System.out.println("The slave to archive to is " + slave.getName());
@@ -90,16 +92,20 @@ public class Archive implements FtpListener {
 					temp = new CooperativeSlaveTransfer(src, slave, 3);
 				} else {
 					src.deleteOthers(slave);
+					src.getSlaves().clear();
+					src.addSlave(slave);
 					continue;
 				}
 				temp.start();
 				while (temp.isAlive())
 					Thread.yield();
 				src.deleteOthers(slave);
-				System.out.println("at the end of archive");
+				src.getSlaves().clear();
+				src.addSlave(slave);
 			}
 		}
 		_archiving = false;
+		System.out.println("at the end of archive");
 	}
 	private RemoteSlave findDestinationSlave(LinkedRemoteFile lrf) {
 		ArrayList slaveList = new ArrayList();
@@ -140,6 +146,8 @@ public class Archive implements FtpListener {
 	private LinkedRemoteFile getOldestNonArchivedDir(LinkedRemoteFile lrf) {
 		if (lrf.getDirectories().size() == 0) {
 			Collection files = lrf.getFiles();
+			if (files.size() == 0)
+				return null;
 			ArrayList slaveList = new ArrayList();
 			for (Iterator iter = files.iterator(); iter.hasNext();) {
 				LinkedRemoteFile temp = (LinkedRemoteFile) iter.next();
@@ -195,5 +203,4 @@ public class Archive implements FtpListener {
 		}
 		_cycleTime = Long.parseLong(props.getProperty("cycleTime"));
 	}
-
 }
