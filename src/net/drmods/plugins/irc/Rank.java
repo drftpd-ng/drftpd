@@ -96,16 +96,16 @@ public class Rank extends IRCCommand {
         }
         String type = "MONTHUP";
 
-        boolean found = false;
+        boolean allow = false;
         String exempt[] = exemptgroups.split(" ");
         ArrayList<User> filteredusers = new ArrayList<User>();
         for (User fuser : users) {
-            found = false;
+            allow = true;
             for (int i = 0; i < exempt.length; i++) {
-                if (!fuser.isMemberOf(exempt[i]))
-                    found = true;
+                if (fuser.isMemberOf(exempt[i]))
+                    allow = false;
             }
-            if (found)
+            if (allow)
                 filteredusers.add(fuser);
         }
         
