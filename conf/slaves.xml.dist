@@ -32,12 +32,12 @@
       slavepass = secret key used to generate md5 authentication key
       Required for all SocketSlaves
     -->
-    <!-- <slavepass>slavesecret</slavepass> -->
+    <!-- <slavepass>slavepass</slavepass> -->
 
     <!--
       masterpass = secret key used to generate md5 authentication key
       Required for all SocketSlaves
     -->
-    <!-- <slavepass>slavesecret</slavepass> -->
+    <!-- <masterpass>masterpass</masterpass> -->
   </slave>
 </slaves>
