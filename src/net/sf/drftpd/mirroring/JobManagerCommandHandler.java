@@ -41,7 +41,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * CommandHandler plugin for viewing and manipulating the JobManager queue.
  * 
  * @author mog
- * @version $Id: JobManagerCommandHandler.java,v 1.17 2004/06/04 14:18:57 mog Exp $
+ * @version $Id: JobManagerCommandHandler.java,v 1.18 2004/07/09 06:11:57 zubov Exp $
  */
 public class JobManagerCommandHandler implements CommandHandlerFactory, CommandHandler {
 
@@ -111,7 +111,7 @@ public class JobManagerCommandHandler implements CommandHandlerFactory, CommandH
 				501,
 				conn.jprintf(JobManagerCommandHandler.class, "addjob.usage"));
 		}
-		Job job = new Job(lrf, destSlaves, this, conn.getUserNull(), priority, timesToMirror);
+		Job job = new Job(lrf, destSlaves, priority, timesToMirror);
 		conn.getConnectionManager().getJobManager().addJob(job);
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		env.add("job", job);

@@ -37,7 +37,7 @@ import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: JobManagerTest.java,v 1.8 2004/06/04 14:18:57 mog Exp $
+ * @version $Id: JobManagerTest.java,v 1.9 2004/07/09 06:11:57 zubov Exp $
  */
 public class JobManagerTest extends TestCase {
 
@@ -194,14 +194,14 @@ public class JobManagerTest extends TestCase {
 		slaveSet.add(rslave1);
 		slaveSet.add(rslave2);
 		slaveSet.add(rslave3);
-		Job job = new Job(file, slaveSet, null, null, 0,slaveSet.size());
+		Job job = new Job(file, slaveSet, 0,slaveSet.size());
 		jm.addJob(job);
 		Set usedSlaveList = new HashSet();
 		Set skipJobs = new HashSet();
 		assertSame(job, jm.getNextJob(usedSlaveList, skipJobs));
 		skipJobs.add(job);
 		assertNull(jm.getNextJob(usedSlaveList, skipJobs));
-		Job job2 = new Job(file2, slaveSet, null, null, 5, 2);
+		Job job2 = new Job(file2, slaveSet, 5, 2);
 		jm.addJob(job2);
 		assertSame(job2, jm.getNextJob(usedSlaveList, skipJobs));
 		skipJobs.add(job2);

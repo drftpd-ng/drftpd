@@ -39,7 +39,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.51 2004/07/08 16:09:53 zubov Exp $
+ * @version $Id: JobManager.java,v 1.52 2004/07/09 06:11:57 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -131,7 +131,7 @@ public class JobManager implements Runnable {
 				if (job == null) {
 					return false;
 				}
-				logger.debug("looking up slave for job " + job);
+				//logger.debug("looking up slave for job " + job);
 				try {
 					sourceSlave = _cm.getSlaveManager()
 							.getSlaveSelectionManager()
@@ -145,8 +145,7 @@ public class JobManager implements Runnable {
 					continue;
 				}
 				if (sourceSlave == null) {
-					logger
-							.debug("JobManager was unable to find a suitable job for transfer");
+					logger.debug("JobManager was unable to find a suitable job for transfer");
 					return false;
 				}
 				try {
@@ -163,8 +162,7 @@ public class JobManager implements Runnable {
 				}
 			}
 			if (destSlave == null) {
-				logger
-						.debug("destSlave is null, all destination slaves are busy"
+				logger.debug("destSlave is null, all destination slaves are busy"
 								+ job);
 				return false;
 			}

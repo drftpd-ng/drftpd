@@ -30,36 +30,32 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.23 2004/07/08 16:09:53 zubov Exp $
+ * @version $Id: Job.java,v 1.24 2004/07/09 06:11:56 zubov Exp $
  */
 public class Job {
 	private int _transferNum;
 	private Set _destSlaves;
 	private LinkedRemoteFileInterface _file;
-	private User _owner;
 	private int _priority;
-	private Object _source;
 	private long _timeCreated;
 	private long _timeSpent;
 
 	public Job(
 		LinkedRemoteFileInterface file,
 		Set destSlaves,
-		Object source,
-		User owner,
 		int priority,
 		int transferNum) {
-		super();
 		_destSlaves = new HashSet(destSlaves);
 		_file = file;
-		_source = source;
-		_owner = owner;
 		_priority = priority;
 		_timeCreated = System.currentTimeMillis();
 		_timeSpent = 0;
 		_transferNum = transferNum;
 		if (_transferNum > destSlaves.size())
 			throw new IllegalArgumentException("transferNum cannot be greater than destSlaves.size()");
+		if (_transferNum > 0)
+			throw new IllegalArgumentException("transferNum must be greater than 0");
+
 	}
 
 	public void addTimeSpent(long time) {
@@ -82,28 +78,10 @@ public class Job {
 	}
 
 	/**
-	 * Returns user that is the owner of this file/job or null (or exception) if not applicable.
-	 */
-	public User getOwner() {
-		return _owner;
-	}
-
-	/**
 	 * Returns the priority of this job.
 	 */
 	public int getPriority() {
 		return _priority;
-	}
-
-	/**
-	 * Instance that submitted this object.
-	 * 
-	 * For example so that Archive instance can see if this job was submitted by itself
-	 * 
-	 * @see java.util.EventObject#getSource()
-	 */
-	public Object getSource() {
-		return _source;
 	}
 
 	/**
@@ -149,19 +127,11 @@ public class Job {
 	}
 	
 	public String toString() {
-		String toReturn =
-			"Job[file="
+		return "Job[file="
 				+ getFile().getName()
-				+ "],dest=["
+				+ "]dest=["
 				+ outputDestinationSlaves()
-				+ "],owner=";
-		if (getOwner() != null) {
-			toReturn += getOwner().getUsername();
-		} else {
-			toReturn += "null";
-		}
-		toReturn += "]";
-		return toReturn;
+				+ "]transferNum=[" + _transferNum + "]";
 	}
 
 	public void setDone() {
