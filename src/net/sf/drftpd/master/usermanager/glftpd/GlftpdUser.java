@@ -9,10 +9,9 @@ import net.sf.drftpd.master.usermanager.UnixPassword;
 import net.sf.drftpd.util.Crypt;
 
 /**
- * 
  * @author mog
  * @author zubov
- * @version $Id: GlftpdUser.java,v 1.6 2004/01/14 18:20:01 mog Exp $
+ * @version $Id: GlftpdUser.java,v 1.7 2004/01/14 19:04:51 mog Exp $
  */
 public class GlftpdUser extends AbstractUser implements UnixPassword {
 	private String password;
@@ -20,6 +19,7 @@ public class GlftpdUser extends AbstractUser implements UnixPassword {
 	private Vector privateGroups = new Vector();
 	//private long weeklyAllotment;
 	//private GlftpdUserManager usermanager;
+	
 	/**
 	 * Constructor for GlftpdUser.
 	 */
