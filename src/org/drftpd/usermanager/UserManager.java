@@ -21,7 +21,6 @@ package org.drftpd.usermanager;
 import java.util.Collection;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.master.ConnectionManager;
 
 
 /**
@@ -36,7 +35,7 @@ public interface UserManager {
     /**
      * Get all user names in the system.
      */
-    public abstract Collection getAllUsers() throws UserFileException;
+    public abstract Collection<User> getAllUsers() throws UserFileException;
 
     public abstract Collection getAllUsersByGroup(String group)
         throws UserFileException;

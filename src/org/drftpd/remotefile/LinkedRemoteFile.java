@@ -803,9 +803,6 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 	}
 
 	public long getXferspeed() {
-		logger.warn("getXferspeed = " + length() + " \\ " + getXfertime()
-				+ " = " + (length() / getXfertime()));
-
 		if (getXfertime() == 0) {
 			return 0;
 		}
