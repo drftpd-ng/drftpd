@@ -829,7 +829,7 @@ public class SiteBot extends FtpListener implements Observer {
     	private ChannelConfig(String blowKey, String chanKey, String permissions) {
     		_chanKey = chanKey;
     		_permissions = (permissions == null) ? "*" : permissions;
-    		if (_blowKey != null) {
+    		if (blowKey != null) {
         		_blowKey = blowKey;
     			_blowFish = new WeakReference<Blowfish>(new Blowfish(_blowKey));
     		}
