@@ -331,6 +331,9 @@ public abstract class AbstractUser extends User {
 		_data.setObject(UserManagement.GROUPSLOTS, groupSlots);
 		_data.setObject(UserManagement.MAXSIMUP, maxSimUploads);
 		_data.setObject(UserManagement.MAXSIMDN, maxSimDownloads);
+		_data.setObject(UserManagement.MAXLOGINS, maxLogins);
+		_data.setObject(UserManagement.MAXLOGINSIP, maxLoginsPerIP);
+		_data.setObject(UserManagement.WKLY_ALLOTMENT, weeklyAllotment);
 
 		_data.setObject(RaceStatistics.RACES, racesParticipated);
 		_data.setObject(RaceStatistics.RACESLOST, racesLost);
