@@ -957,4 +957,11 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		return this.owner;
 	}
 
+	/**
+	 * @param l
+	 */
+	public void setCheckSum(long l) {
+		this.checkSum = l;
+	}
+
 }
