@@ -28,32 +28,40 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 /**
  * @author zubov
  */
-public class Affils extends GenericCommandAutoService {
+public class Bnc extends GenericCommandAutoService {
 
 	private ConnectionManager _cm;
-	private static final Logger logger = Logger.getLogger(Affils.class);
+	private static final Logger logger = Logger.getLogger(Bnc.class);
 
-	public Affils(IRCListener ircListener) {
+	public Bnc(IRCListener ircListener) {
 		super(ircListener.getIRCConnection());
 		_cm = ircListener.getConnectionManager();
 	}
 
 	protected void updateCommand(InCommand command) {
+		try {
 		if (command instanceof MessageCommand) {
 			MessageCommand msgc = (MessageCommand) command;
 			String msg = msgc.getMessage();
-			if (msg.startsWith("!affils")) {
-				if (msgc.isPrivateToUs(getConnection().getClientState())) {
-					Textoutput.sendTextToIRC(
-						getConnection(),
-						msgc.getSource().getNick(),
-						"affils");
-				} else
-					Textoutput.sendTextToIRC(
-						getConnection(),
-						msgc.getDest(),
-						"affils");
+			try {
+				if (msg.startsWith("!bnc")) {
+					if (msgc.isPrivateToUs(getConnection().getClientState())) {
+						Textoutput.sendTextToIRC(
+							getConnection(),
+							msgc.getSource().getNick(),
+							"bnc");
+					} else
+						Textoutput.sendTextToIRC(
+							getConnection(),
+							msgc.getDest(),
+							"bnc");
+				}
+			} catch (Exception e) {
+				logger.debug("", e);
 			}
 		}
+	}catch (Exception e) {
+		logger.debug("",e);
+	}
 	}
 }

@@ -35,7 +35,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.35 2004/03/01 06:11:50 zubov Exp $
+ * @version $Id: JobManager.java,v 1.36 2004/03/03 04:48:08 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -259,64 +259,12 @@ public class JobManager implements Runnable {
 			} catch (NoAvailableSlaveException e) {
 				return false;
 			}
-			// job is not deleted and is out of the jobList, we are ready to
-			// process
 			time = System.currentTimeMillis();
 			difference = 0;
-			//		if (System.currentTimeMillis() - job.getTimeCreated() < _maxWait) {
-			//			// check to see if we should transfer it since it is under maxWait
-			//			// time
-			//			SlaveStatus sourceStatus = null;
-			//			SlaveStatus destStatus = null;
-			//			try {
-			//				sourceStatus = sourceSlave.getStatus();
-			//				destStatus = slave.getStatus();
-			//			} catch (RemoteException e) {
-			//				// slave went offline or is having problems after using
-			//				// getNextJob()
-			//				addJob(job);
-			//				return true; // try and send another job immediately
-			//			} catch (NoAvailableSlaveException e) {
-			//				// slave went offline after using getNextJob()
-			//				addJob(job);
-			//				return true; // try and send another job immediately
-			//			}
-			//			int sendThroughput = sourceStatus.getThroughputSending();
-			//			if (sendThroughput > _maxBandwidth) {
-			//				logger.debug(sourceSlave.getName()
-			//						+ " is using too much bandwidth (" + sendThroughput
-			//						+ ") to send " + job.getFile());
-			//				addJob(job);
-			//				return false;
-			//			}
-			//			int receiveThroughput = destStatus.getThroughputReceiving();
-			//			if (receiveThroughput > _maxBandwidth) {
-			//				logger.debug(slave.getName() + " is using too much bandwidth ("
-			//						+ receiveThroughput + ") to send " + job.getFile());
-			//				addJob(job);
-			//				return false;
-			//			}
-			//			int sendTransfers = sourceStatus.getTransfersSending();
-			//			if (sendTransfers > _maxTransfers) {
-			//				logger.debug(sourceSlave.getName()
-			//						+ " has too many transfers (" + sendTransfers
-			//						+ ") to send " + job.getFile());
-			//				addJob(job);
-			//				return false;
-			//			}
-			//			int receiveTransfers = destStatus.getTransfersReceiving();
-			//			if (receiveTransfers > _maxTransfers) {
-			//				logger.debug(slave.getName() + " has too many transfers ("
-			//						+ receiveTransfers + ") to send " + job.getFile());
-			//				addJob(job);
-			//				return false;
-			//			}
-			//		} // job has been in the queue too long or
-			//the sourceSlave and destSlave are both <= maxTransfers && <=
-			// maxBandwidth
-			//send it now!
 			removeJob(job);
 		}
+		// job is not deleted and is out of the jobList, we are ready to
+		// process
 		logger.info(
 			"Sending "
 				+ job.getFile().getName()
@@ -331,7 +279,7 @@ public class JobManager implements Runnable {
 			if (!slaveTransfer.transfer(useCRC())) { // crc failed
 				logger.debug("After transfer for " + job.getFile());
 				try {
-					sourceSlave.getSlave().delete(job.getFile().getPath());
+					destSlave.getSlave().delete(job.getFile().getPath());
 				} catch (IOException e) {
 					//couldn't delete it, just carry on
 				}
@@ -356,18 +304,34 @@ public class JobManager implements Runnable {
 					+ destSlave.getName(),
 				e);
 			if (!e.getMessage().equals("File exists")) {
+				try {
+					destSlave.getSlave().delete(job.getFile().getPath());
+				} catch (SlaveUnavailableException e3) {
+					//couldn't delete it, just carry on
+				} catch (IOException e1) {
+					//couldn't delete it, just carry on
+				}
 				addJob(job);
 				return false;
-			} else
-				logger.debug(
-					"File "
-						+ job.getFile()
-						+ " was already on the destination slave");
+			}
+			logger.debug(
+				"File "
+					+ job.getFile()
+					+ " was already on the destination slave");
 			try {
 				if (destSlave.getSlave().checkSum(job.getFile().getPath())
 					== job.getFile().getCheckSum()) {
 					logger.debug("Accepting file because the crc's match");
 					job.getFile().addSlave(destSlave);
+				}
+				else {
+					try {
+						destSlave.getSlave().delete(job.getFile().getPath());
+					} catch (SlaveUnavailableException e3) {
+						//couldn't delete it, just carry on
+					} catch (IOException e1) {
+						//couldn't delete it, just carry on
+					}
 				}
 			} catch (RemoteException e1) {
 				destSlave.handleRemoteException(e1);

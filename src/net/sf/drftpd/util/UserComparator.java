@@ -15,34 +15,39 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.mirroring;
-import org.apache.log4j.Logger;
+package net.sf.drftpd.util;
+
+import java.util.Comparator;
+
+import net.sf.drftpd.master.command.plugins.TransferStatistics;
+import net.sf.drftpd.master.usermanager.User;
+
 /**
+ * @author mog
  * @author zubov
  * @version $Id
  */
-public class JobTransferThread extends Thread {
-	private static final Logger logger = Logger
-			.getLogger(JobTransferThread.class);
-	private JobManager _jm;
-	/**
-	 * This class sends a JobTransfer if it is available
-	 */
-	JobTransferThread(JobManager jm) {
-		_jm = jm;
-	}
+public class UserComparator implements Comparator {
+
+	private String _type;
 	
-	public void run() {
-		setName("JobTransfer");
-		//logger.debug("JobTransfer started");
-		try {
-		if(_jm.processJob()) {
-			logger.debug("processJob() returned true, file was sent okay");
-		}
-		}
-		catch (Exception e) {
-			logger.debug("",e);
-		}
-		//logger.debug("JobTransfer stopped");
+	public UserComparator(String type) {
+			_type = type;
 	}
+
+	public int compare(Object o1, Object o2) {
+			User u1 = (User) o1;
+			User u2 = (User) o2;
+
+			long thisVal =
+					TransferStatistics.getStats(
+							_type,
+							u1);
+			long anotherVal =
+					TransferStatistics.getStats(
+							_type,
+							u2);
+			return (thisVal > anotherVal ? -1 : (thisVal == anotherVal ? 0 : 1));
+	}
+
 }
