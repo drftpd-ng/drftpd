@@ -12,10 +12,11 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
-
+import java.util.Collection;
 /**
  * Represents the file attributes of a remote file.
  * 
@@ -23,61 +24,26 @@ import java.util.Vector;
  */
 public class RemoteFile implements Serializable {
 
-	public RemoteFile[] listFiles() {
-		return (RemoteFile[]) files.values().toArray(new RemoteFile[0]);
-	}
-
-	public RemoteFile lookupFile(String path) throws FileNotFoundException {
-		StringTokenizer st = new StringTokenizer(path, "/");
-		RemoteFile currfile;
-		while (st.hasMoreTokens()) {
-			String nextToken = st.nextToken();
-			currfile = (RemoteFile) files.get(nextToken);
-			if (currfile == null)
-				throw new FileNotFoundException();
-		}
-		return null;
-	}
-
 	/**
-	 * For compatibility with java.io.File, always returns true.
+	 * Creates an empty RemoteFile directory, usually used as an empty root directory that
+	 * <link>{merge()}</link> can be called on.
 	 */
-	public boolean exists() {
-		return true;
+	public RemoteFile() {
+		canRead = true;
+		canWrite = false;
+		lastModified = System.currentTimeMillis();
+		length = 0;
+		isDirectory = true;
+		isFile = false;
+		path = "/";
+		files = new Hashtable();
 	}
-
-	private transient Vector slaves = new Vector();
-	public void addSlave(RemoteSlave slave) {
-		slaves.add(slave);
-	}
-	public void removeSlave(RemoteSlave slave) {
-		slaves.remove(slave);
-	}
-
-	private String user;
-	private String group;
-	public String getUser() {
-		if (user == null) {
-			return "dftpd";
-		}
-		return user;
-	}
-
-	public String getGroup() {
-		if (group == null) {
-			return "dftpd";
-		} else {
-			return group;
-		}
-	}
-
-	private static final char separatorChar = '/';
 
 	/**
 	 * Creates a RemoteFile from file.
 	 * @param file file that this RemoteFile object should represent.
 	 */
-	public RemoteFile(File file) {
+	public RemoteFile(RemoteSlave slave, File file) {
 		canRead = file.canRead();
 		canWrite = file.canWrite();
 		lastModified = file.lastModified();
@@ -86,12 +52,14 @@ public class RemoteFile implements Serializable {
 		isDirectory = file.isDirectory();
 		isFile = file.isFile();
 		path = file.getPath();
-
 		/* serialize directory*/
-		if (isDirectory()) {
 
+		slaves = new Vector(1);
+		slaves.add(slave);
+
+		if (isDirectory()) {
 			/* get existing file entries */
-			File cache = new File(file.getPath() + "/.dftpd");
+			File cache = new File(file.getPath() + "/.drftpd");
 			Hashtable oldtable = null;
 			try {
 				ObjectInputStream is =
@@ -108,11 +76,12 @@ public class RemoteFile implements Serializable {
 			}
 			/* END get existing file entries*/
 
-			File dir[] = file.listFiles(new DftpdFileFilter());
+			File dir[] = file.listFiles(new DrftpdFileFilter());
 			files = new Hashtable(dir.length);
 			Stack dirstack = new Stack();
 			for (int i = 0; i < dir.length; i++) {
 				File file2 = dir[i];
+				System.out.println("III " + file2);
 				if (file2.isDirectory()) {
 					dirstack.push(file2);
 					continue;
@@ -121,36 +90,110 @@ public class RemoteFile implements Serializable {
 				if (oldtable != null)
 					oldfile = (RemoteFile) oldtable.get(file.getName());
 				if (oldfile != null) {
-					files.put(file.getName(), oldfile);
+					files.put(file2.getName(), oldfile);
 				} else {
-					files.put(file.getName(), new RemoteFile(file2));
+					files.put(file2.getName(), new RemoteFile(slave, file2));
 				}
 			}
 
-			try {
-				new ObjectOutputStream(
-					new FileOutputStream(cache)).writeObject(
-					files);
-			} catch (FileNotFoundException ex) {
-				System.out.println("Could not open file: " + ex.getMessage());
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-
+			/*
+					//don't need to serialize/cache old files... we won't save any additional data about them anyway..
+						try {
+							new ObjectOutputStream(
+								new FileOutputStream(cache)).writeObject(
+								files);
+						} catch (FileNotFoundException ex) {
+							System.out.println("Could not open file: " + ex.getMessage());
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
+			*/
 			// OK, now the Object is saved, continue with serializing the dir's
 			Enumeration e = dirstack.elements();
 			while (e.hasMoreElements()) {
-				RemoteFile file2 = (RemoteFile) e.nextElement();
+				File file2 = (File) e.nextElement();
 				String filename = file2.getName();
-				RemoteFile oldfile = (RemoteFile) oldtable.get(file2.getName());
-				if (oldfile != null) {
-					files.put(filename, oldfile);
+				System.out.println(">>> " + file2.getName());
+				if (oldtable != null) {
+					RemoteFile oldfile = (RemoteFile) oldtable.get(filename);
+					if (oldfile != null) {
+						files.put(filename, oldfile);
+					} else {
+						files.put(filename, new RemoteFile(slave, file2));
+					}
 				} else {
-					files.put(filename, file2);
+					files.put(filename, new RemoteFile(slave, file2));
 				}
 			}
+			System.out.println(
+				"<<< " + getPath() + " " + files.size() + " entries");
 		} /* serialize directory */
 	}
+
+	public RemoteFile[] listFiles() {
+		return (RemoteFile[]) files.values().toArray(new RemoteFile[0]);
+	}
+
+	public RemoteFile lookupFile(String path) throws FileNotFoundException {
+		StringTokenizer st = new StringTokenizer(path, "/");
+		RemoteFile currfile = this;
+		while (st.hasMoreTokens()) {
+			String nextToken = st.nextToken();
+			currfile = (RemoteFile) currfile.getHashtable().get(nextToken);
+			if (currfile == null)
+				throw new FileNotFoundException();
+		}
+		return currfile;
+	}
+
+	/**
+	 * For compatibility with java.io.File, always returns true.
+	 */
+	public boolean exists() {
+		return true;
+	}
+
+	private Vector slaves;
+	public void addSlave(RemoteSlave slave) {
+		slaves.add(slave);
+	}
+	public void addSlaves(Collection slaves) {
+		this.slaves.addAll(slaves);
+	}
+	public Collection getSlaves() {
+		return slaves;
+	}
+	private Random rand = new Random();
+	public RemoteSlave getAnySlave() {
+		/*if(slaves.size() == 1) {
+			return (RemoteSlave)slaves.get(0);
+		}
+		*/
+		return (RemoteSlave)slaves.get(rand.nextInt(slaves.size()));
+		
+	}
+	public void removeSlave(RemoteSlave slave) {
+		slaves.remove(slave);
+	}
+
+	private String user;
+	public String getUser() {
+		if (user == null) {
+			return "drftpd";
+		}
+		return user;
+	}
+
+	private String group;
+	public String getGroup() {
+		if (group == null) {
+			return "drftpd";
+		} else {
+			return group;
+		}
+	}
+
+	private static final char separatorChar = '/';
 
 	private Hashtable files;
 	public Hashtable getHashtable() {
@@ -163,12 +206,12 @@ public class RemoteFile implements Serializable {
 		files = map;
 	}
 
-	boolean isDirectory;
+	protected boolean isDirectory;
 	public boolean isDirectory() {
 		return isDirectory;
 	}
 
-	boolean isFile;
+	protected boolean isFile;
 	public boolean isFile() {
 		return isFile;
 	}
@@ -216,59 +259,73 @@ public class RemoteFile implements Serializable {
 		}
 		return false;
 	}
-	private void readObject(ObjectInputStream s)
-		throws IOException, ClassNotFoundException {
-		s.defaultReadObject();
-		slaves = new Vector();
-	}
 
 	public void merge(RemoteFile dir) {
 		if (!isDirectory())
 			throw new IllegalArgumentException("merge() called on a non-directory");
 		if (!dir.isDirectory())
-			throw new IllegalArgumentException("argument is not a directory");
+			throw new IllegalArgumentException(
+				"argument is not a directory (" + dir + ")");
 
-		Hashtable srcmap = getHashtable();
-		Hashtable dstmap = dir.getHashtable();
+		//Hashtable map = getHashtable();
+		Hashtable mergemap = dir.getHashtable();
+		System.out.println(
+			"Adding " + dir.getPath() + " with " + mergemap.size() + " files");
 
-		Iterator i = srcmap.entrySet().iterator();
+		Iterator i = mergemap.entrySet().iterator();
 		while (i.hasNext()) {
-			//Map.Entry entry = (Map.Entry)i.next());
-			//RemoteFile srcfile = (RemoteFile)entry.getValue();
-			RemoteFile srcfile = (RemoteFile) ((Map.Entry) i.next()).getValue();
-			RemoteFile dstfile = (RemoteFile) dstmap.get(getName());
-			if (srcfile.isDirectory()) {
-				//let mergeRoot() merge fromfile's hashtable to tofile's hashtable
-				//and put the reference mergeRoot() returns back into the table
-				dstmap.put(
-					srcfile.getName(),
-					null		//mergeRoot(slave, srcfile, dstfile));
-				);
-			}
+			Map.Entry entry = (Map.Entry) i.next();
+			String filename = (String) entry.getKey();
+			//RemoteFile file = (RemoteFile) entry.getValue();
+			RemoteFile file = (RemoteFile) files.get(filename);
+			RemoteFile mergefile = (RemoteFile) entry.getValue();
+			//RemoteFile mergefile = (RemoteFile) mergemap.get(getName());
 
-			if (dstfile == null) {
-				// dstfile has no entry for this file, addSlave() and add to dstmap
-				//srcfile.addSlave(slave);
-				dstmap.put(srcfile.getName(), srcfile);
+			System.out.println("Adding " + mergefile.getPath());
+
+			// two scenarios:, local file [does not] exists
+			if (file == null) {
+				// local file does not exist, just put it in the hashtable
+				files.put(mergefile.getName(), mergefile);
 			} else {
-				// file backdating
-
-				// dstfile exists, if we're adding an older srcfile,
-				// replace the RemoteFile and put it in the Hashtable and keep looping
-				if (srcfile.lastModified() > dstfile.lastModified()) {
-					srcfile.getHashtable().putAll(dstfile.getHashtable());
-					dstmap.put(srcfile.getName(), srcfile);
-				} else {
-					//just add the remoteslave to the target remotefile
-					//dstfile.addSlave(slave);
+				
+				if (lastModified() > mergefile.lastModified()) {
+					lastModified = mergefile.lastModified();
 				}
-				//dst.addSlave(slave);
+
+				// 4 scenarios: new/existing file/directory
+				if (mergefile.isDirectory()) {
+					if (!file.isDirectory())
+						System.out.println(
+							"!!! WARNING: File/Directory conflict!!");
+					file.merge(mergefile);
+				} else {
+					if (file.isDirectory())
+						System.out.println(
+							"!!! WARNING: File/Directory conflict!!");
+					addSlaves(mergefile.getSlaves());
+				}
 			}
 		}
 
-		// directory backdating
+		// directory backdating, do other attrbiutes need "backdating"? if so fix it! :)
 		if (lastModified() > dir.lastModified()) {
 			lastModified = dir.lastModified();
 		}
+	}
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		StringBuffer ret = new StringBuffer();
+		ret.append("net.sf.drftpd.RemoteFile[");
+		ret.append("isDirectory(): " + isDirectory() + " ");
+		if (isDirectory())
+			ret.append("[directory contains " + files.size() + " files] ");
+		ret.append("isFile(): " + isFile() + " ");
+		ret.append(getPath());
+		ret.append("]");
+		return ret.toString();
 	}
 }
