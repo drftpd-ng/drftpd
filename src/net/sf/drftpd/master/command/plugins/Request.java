@@ -19,20 +19,24 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * @version $Id: Request.java,v 1.6 2004/01/03 23:50:53 mog Exp $
+ * @version $Id: Request.java,v 1.7 2004/01/13 00:38:55 mog Exp $
  */
 public class Request implements CommandHandler {
-	public void unload() {}
-	public void load(CommandManagerFactory initializer) {}
+	public void unload() {
+	}
+	public void load(CommandManagerFactory initializer) {
+	}
 
 	private static Logger logger = Logger.getLogger(Request.class);
-	
+
 	private static final String REQPREFIX = "REQUEST-by.";
 	private static final String FILLEDPREFIX = "FILLED-for.";
 	private FtpReply doSITE_REQUEST(BaseFtpConnection conn) {
 		conn.resetState();
 
-		if (!conn.getConfig().checkRequest(conn.getUserNull(), conn.getCurrentDirectory())) {
+		if (!conn
+			.getConfig()
+			.checkRequest(conn.getUserNull(), conn.getCurrentDirectory())) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 
@@ -41,7 +45,10 @@ public class Request implements CommandHandler {
 		}
 
 		String createdDirName =
-			REQPREFIX + conn.getUserNull().getUsername() + "-" + conn.getRequest().getArgument();
+			REQPREFIX
+				+ conn.getUserNull().getUsername()
+				+ "-"
+				+ conn.getRequest().getArgument();
 		try {
 			LinkedRemoteFile createdDir =
 				conn.getCurrentDirectory().createDirectory(
@@ -49,26 +56,38 @@ public class Request implements CommandHandler {
 					conn.getUserNull().getGroupName(),
 					createdDirName);
 
-			if (conn.getConfig().checkDirLog(conn.getUserNull(), createdDir)) {
-				conn.getConnectionManager().dispatchFtpEvent(
-					new DirectoryFtpEvent(conn.getUserNull(), "REQUEST", createdDir));
-			}
+			//if (conn.getConfig().checkDirLog(conn.getUserNull(), createdDir)) {
+			conn.getConnectionManager().dispatchFtpEvent(
+				new DirectoryFtpEvent(
+					conn.getUserNull(),
+					"REQUEST",
+					createdDir));
+			//}
 			try {
 				conn.getUser().addRequests();
 			} catch (NoSuchUserException e) {
 				e.printStackTrace();
 			}
-			return new FtpReply(257, "\"" + createdDir.getPath() + "\" created.");
+			return new FtpReply(
+				257,
+				"\"" + createdDir.getPath() + "\" created.");
 		} catch (ObjectExistsException ex) {
-			return new FtpReply(550, "directory " + createdDirName + " already exists");
+			return new FtpReply(
+				550,
+				"directory " + createdDirName + " already exists");
 		}
 	}
 
-	public FtpReply execute(BaseFtpConnection conn) throws UnhandledCommandException {
+	public FtpReply execute(BaseFtpConnection conn)
+		throws UnhandledCommandException {
 		String cmd = conn.getRequest().getCommand();
-		if("SITE REQUEST".equals(cmd)) return doSITE_REQUEST(conn);
-		if("SITE REQFILLED".equals(cmd)) return doSITE_REQFILLED(conn);
-		throw UnhandledCommandException.create(Request.class, conn.getRequest());
+		if ("SITE REQUEST".equals(cmd))
+			return doSITE_REQUEST(conn);
+		if ("SITE REQFILLED".equals(cmd))
+			return doSITE_REQFILLED(conn);
+		throw UnhandledCommandException.create(
+			Request.class,
+			conn.getRequest());
 	}
 
 	/**
@@ -76,42 +95,51 @@ public class Request implements CommandHandler {
 	 * @return
 	 */
 	private FtpReply doSITE_REQFILLED(BaseFtpConnection conn) {
-		if(!conn.getRequest().hasArgument()) return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-		
+		if (!conn.getRequest().hasArgument())
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+
 		LinkedRemoteFile currdir = conn.getCurrentDirectory();
 		String reqname = conn.getRequest().getArgument();
-		
+
 		for (Iterator iter = currdir.getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			
-			if(!file.getName().startsWith(REQPREFIX)) continue;
+
+			if (!file.getName().startsWith(REQPREFIX))
+				continue;
 			String username = file.getName().substring(REQPREFIX.length());
-			String myreqname = username.substring(username.indexOf('-')+1);
+			String myreqname = username.substring(username.indexOf('-') + 1);
 			username = username.substring(0, username.indexOf('-'));
-			if(myreqname.equals(reqname)) {
-				String filledname = FILLEDPREFIX+username+"-"+myreqname;
+			if (myreqname.equals(reqname)) {
+				String filledname = FILLEDPREFIX + username + "-" + myreqname;
 				try {
 					file.renameTo(file.getParentFile().getPath(), filledname);
 				} catch (IOException e) {
 					logger.warn("", e);
 					return new FtpReply(200, e.getMessage());
 				}
-				if (conn.getConfig().checkDirLog(conn.getUserNull(), file)) {
-					conn.getConnectionManager().dispatchFtpEvent(
-						new DirectoryFtpEvent(conn.getUserNull(), "REQFILLED", file));
-				}
+				//if (conn.getConfig().checkDirLog(conn.getUserNull(), file)) {
+				conn.getConnectionManager().dispatchFtpEvent(
+					new DirectoryFtpEvent(
+						conn.getUserNull(),
+						"REQFILLED",
+						file));
+				//}
 				try {
 					conn.getUser().addRequestsFilled();
 				} catch (NoSuchUserException e) {
 					e.printStackTrace();
 				}
-				return new FtpReply(200, "OK, renamed "+ myreqname+ " to "+filledname);
+				return new FtpReply(
+					200,
+					"OK, renamed " + myreqname + " to " + filledname);
 			}
 		}
-		return new FtpReply(200, "Couldn't find a request named "+reqname);
+		return new FtpReply(200, "Couldn't find a request named " + reqname);
 	}
 
-	public CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer) {
+	public CommandHandler initialize(
+		BaseFtpConnection conn,
+		CommandManager initializer) {
 		return this;
 	}
 

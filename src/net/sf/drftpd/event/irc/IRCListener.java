@@ -72,7 +72,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.70 2004/01/05 00:14:19 mog Exp $
+ * @version $Id: IRCListener.java,v 1.71 2004/01/13 00:38:55 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -87,13 +87,6 @@ public class IRCListener implements FtpListener, Observer {
 	private AutoJoin _autoJoin;
 	private AutoRegister _autoRegister;
 	private static Logger logger = Logger.getLogger(IRCListener.class);
-
-	/**
-	 * @deprecated use libreplace
-	 */
-	public static String formatUser(User user) {
-		return user.getUsername() + "/" + user.getGroupName();
-	}
 
 	/**
 	 * Used from FtpConnection
@@ -190,7 +183,10 @@ public class IRCListener implements FtpListener, Observer {
 
 	private void actionPerformedDirectory(DirectoryFtpEvent direvent)
 		throws FormatterException {
-
+		if (!getConfig()
+			.checkDirLog(direvent.getUser(), direvent.getDirectory())) {
+			return;
+		}
 		if ("MKD".equals(direvent.getCommand())) {
 			sayDirectorySection(direvent, "mkdir");
 		} else if ("REQUEST".equals(direvent.getCommand())) {
@@ -216,8 +212,6 @@ public class IRCListener implements FtpListener, Observer {
 
 		} else if (direvent.getCommand().equals("STOR")) {
 			actionPerformedDirectorySTOR(direvent);
-		} else {
-			logger.debug("Unhandled DirectoryEvent: " + direvent);
 		}
 	}
 
@@ -477,7 +471,7 @@ public class IRCListener implements FtpListener, Observer {
 
 				raceenv.add("position", "" + position++);
 				raceenv.add("size", Bytes.formatBytes(stat.getAmount()));
-				
+
 				long nukedamount =
 					Nuke.calculateNukedAmount(
 						stat.getAmount(),

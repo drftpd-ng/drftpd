@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.13 2004/01/08 05:37:46 mog Exp $
+ * @version $Id: Trial.java,v 1.14 2004/01/13 00:38:55 mog Exp $
  */
 public class Trial implements FtpListener {
 	private static final short ACTION_DISABLE = 0;
@@ -102,8 +102,8 @@ public class Trial implements FtpListener {
 			case PERIOD_DAILY :
 				break;
 			case PERIOD_WEEKLY :
-				//TODO i'm really tired, is the week really ending up right?
 				int dow = CalendarUtils.getLastDayOfWeek(cal);
+				//dow is less than current day of week, increment week
 				if (dow < cal.get(Calendar.DAY_OF_WEEK)) {
 					cal.add(Calendar.WEEK_OF_YEAR, 1);
 				}
@@ -258,7 +258,6 @@ public class Trial implements FtpListener {
 
 			// WEEK UNIQUE //
 			// if less than month unique period
-			//TODO should be <= ?
 			if (uevent.getTime() < cal.getTimeInMillis()) {
 				cal =
 					getCalendarForEndOfFirstPeriod(
@@ -277,7 +276,7 @@ public class Trial implements FtpListener {
 
 			// DAY UNIQUE //
 			//if event lesss than week unique period (cal)
-			if (uevent.getTime() <= cal.getTimeInMillis()) {
+			if (uevent.getTime() < cal.getTimeInMillis()) {
 				cal =
 					getCalendarForEndOfFirstPeriod(
 						uevent.getUser(),
@@ -308,20 +307,22 @@ public class Trial implements FtpListener {
 		if ("RESETWEEK".equals(cmd)) {
 			if (!isInFirstPeriod(uevent.getUser(),
 				PERIOD_WEEKLY,
-				uevent.getTime()))
+				uevent.getTime())) {
 				checkPassed(
 					uevent.getUser(),
 					uevent.getUser().getUploadedBytesWeek(),
 					PERIOD_WEEKLY);
+			}
 		}
 		if ("RESETMONTH".equals(cmd)) {
 			if (!isInFirstPeriod(uevent.getUser(),
 				PERIOD_MONTHLY,
-				uevent.getTime()))
+				uevent.getTime())) {
 				checkPassed(
 					uevent.getUser(),
 					uevent.getUser().getUploadedBytesMonth(),
 					PERIOD_MONTHLY);
+			}
 		}
 	}
 

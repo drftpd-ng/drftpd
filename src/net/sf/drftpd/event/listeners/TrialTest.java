@@ -3,6 +3,7 @@ package net.sf.drftpd.event.listeners;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Locale;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -16,9 +17,12 @@ import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author mog
- * @version $Id: TrialTest.java,v 1.2 2004/01/05 00:14:19 mog Exp $
+ * @version $Id: TrialTest.java,v 1.3 2004/01/13 00:38:55 mog Exp $
  */
 public class TrialTest extends TestCase {
+	/**
+	 * Mon Dec 15 23:59:59 CET 2003
+	 */
 	private static final long RESETTIME = 1071519356421L;
 	private static final long TESTBYTES = Bytes.parseBytes("100m");
 	public static TestSuite suite() {
@@ -225,6 +229,15 @@ public class TrialTest extends TestCase {
 		internalTestUnique();
 	}
 
+	public void testGetCalendarEndOfWeek() {
+		Locale.setDefault(Locale.ENGLISH);
+		cal = getJUnitCalendar();
+		assertEquals(Calendar.SATURDAY, Trial.getCalendarForEndOfPeriod(Trial.PERIOD_WEEKLY).get(Calendar.DAY_OF_WEEK));
+		
+		Locale.setDefault(new Locale("sv_SE"));
+		cal = getJUnitCalendar();
+		assertEquals(Calendar.SUNDAY, Trial.getCalendarForEndOfPeriod(Trial.PERIOD_WEEKLY).get(Calendar.DAY_OF_WEEK));
+	}
 	/**
 	 * Sets up trial, cal and user.
 	 * period must be set before internalSetUp() is called because of Limit period.

@@ -29,7 +29,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.29 2004/01/08 02:40:07 zubov Exp $
+ * @version $Id: FtpConfig.java,v 1.30 2004/01/13 00:38:55 mog Exp $
  */
 public class FtpConfig {
 	private static Logger logger = Logger.getLogger(FtpConfig.class);
@@ -117,6 +117,12 @@ public class FtpConfig {
 		return checkPathPermssion(fromUser, path, _deleteown.iterator());
 	}
 
+	/**
+	 * Returns true if the path has dirlog enabled.
+	 * @param fromUser The user who created the log event.
+	 * @param path The path in question.
+	 * @return true if the path has dirlog enabled.
+	 */
 	public boolean checkDirLog(User fromUser, LinkedRemoteFile path) {
 		return checkPathPermssion(fromUser, path, _dirlog.iterator());
 	}

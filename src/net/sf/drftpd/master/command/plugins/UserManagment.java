@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.Bytes;
@@ -33,7 +34,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.17 2004/01/11 23:11:54 mog Exp $
+ * @version $Id: UserManagment.java,v 1.18 2004/01/13 00:38:55 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	private Logger logger = Logger.getLogger(UserManagment.class);
@@ -137,6 +138,7 @@ public class UserManagment implements CommandHandler {
 	 */
 	private FtpReply doSITE_ADDUSER(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
+		boolean isGAdduser = conn.getRequest().equals("SITE GADDUSER");
 		conn.resetState();
 
 		if (!conn.getUserNull().isAdmin()
@@ -145,13 +147,19 @@ public class UserManagment implements CommandHandler {
 		}
 
 		if (!request.hasArgument()) {
+			String key;
+			if (isGAdduser) {
+				key = "gadduser.usage";
+			} else { //request.getCommand().equals("SITE ADDUSER");
+				key = "adduser.usage";
+			}
 			return new FtpReply(
 				501,
-				conn.jprintf(UserManagment.class.getName(), "adduser.usage"));
+				conn.jprintf(UserManagment.class.getName(), key));
 		}
 
 		if (conn.getUserNull().isGroupAdmin()) {
-			if (request.getCommand().equals("SITE GADDUSER")) {
+			if (isGAdduser) {
 				return FtpReply.RESPONSE_530_ACCESS_DENIED;
 			}
 
@@ -174,39 +182,43 @@ public class UserManagment implements CommandHandler {
 				return new FtpReply(200, e1.getMessage());
 			}
 		}
-
 		StringTokenizer st = new StringTokenizer(request.getArgument());
-		if (!st.hasMoreTokens()) {
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-		}
-		String newUsername = st.nextToken();
-		if (!st.hasMoreTokens()) {
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-		}
-		String pass = st.nextToken();
 		User newUser;
 		FtpReply response = new FtpReply(200);
-
 		ReplacerEnvironment env = new ReplacerEnvironment();
-		env.add("targetuser", newUsername);
-
-		response.addComment(
-			conn.jprintf(
-				UserManagment.class.getName(),
-				"adduser.success",
-				env));
 		try {
+			String group = null;
+			if (isGAdduser) {
+				group = st.nextToken();
+			}
+			String newUsername = st.nextToken();
+			env.add("targetuser", newUsername);
+
+			String pass = st.nextToken();
+
+			response.addComment(
+				conn.jprintf(
+					UserManagment.class.getName(),
+					"adduser.success",
+					env));
+			//action, no more NoSuchElementException below here
 			newUser = conn.getUserManager().create(newUsername);
 			newUser.setPassword(pass);
 			newUser.setComment("Added by " + conn.getUserNull().getUsername());
 			if (conn.getUserNull().isGroupAdmin()) {
 				newUser.setGroup(conn.getUserNull().getGroupName());
 			}
-			if (request.getCommand().equals("SITE GADDUSER")) {
-				newUser.setGroup(st.nextToken());
+			if (isGAdduser) {
+				newUser.setGroup(group);
 				response.addComment(
 					"Primary group set to " + newUser.getGroupName());
 			}
+		} catch (NoSuchElementException ex) {
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+		} catch (UserFileException ex) {
+			return new FtpReply(200, ex.getMessage());
+		}
+		try {
 			while (st.hasMoreTokens()) {
 				String string = st.nextToken();
 				try {
@@ -225,8 +237,8 @@ public class UserManagment implements CommandHandler {
 				}
 			}
 			newUser.commit();
-		} catch (UserFileException e) {
-			return new FtpReply(200, e.getMessage());
+		} catch (UserFileException ex) {
+			return new FtpReply(200, ex.getMessage());
 		}
 		return response;
 	}
@@ -511,19 +523,16 @@ public class UserManagment implements CommandHandler {
 
 	/**
 	 * USAGE: site chgrp <user> <group> [<group>]
-		Adds/removes a user from group(s).
-	
-		ex. site chgrp archimede ftp
-		This would change the group to 'ftp' for the user 'archimede'.
-	
-		ex1. site chgrp archimede ftp
-		This would remove the group ftp from the user 'archimede'.
-	
-		ex2. site chgrp archimede ftp eleet
-		This moves archimede from ftp group to eleet group.
-	    
-	 * @param request
-	 * @param out
+	 *		Adds/removes a user from group(s).
+	 *	
+	 *		ex. site chgrp archimede ftp
+	 *		This would change the group to 'ftp' for the user 'archimede'.
+	 *	
+	 *		ex1. site chgrp archimede ftp
+	 *		This would remove the group ftp from the user 'archimede'.
+	 *	
+	 *		ex2. site chgrp archimede ftp eleet
+	 *		This moves archimede from ftp group to eleet group.
 	 */
 	private FtpReply doSITE_CHGRP(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
@@ -579,6 +588,23 @@ public class UserManagment implements CommandHandler {
 		return response;
 	}
 
+	/**
+	 * USAGE: site chpass <user> <password>
+	 * 	Change users password.
+	 * 
+	 * 	ex. site chpass Archimede newpassword
+	 * 	This would change the password to 'newpassword' for the 
+	 * 	user 'Archimede'.
+	 * 
+	 * 	See "site passwd" for more info if you get a "Password is not secure
+	 * 	enough" error.
+	 * 
+	 * 	* Denotes any password, ex. site chpass arch *
+	 * 	This will allow arch to login with any password
+	 * 
+	 * 	@ Denotes any email-like password, ex. site chpass arch @
+	 * 	This will allow arch to login with a@b.com but not ab.com
+	 */
 	private FtpReply doSITE_CHPASS(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
 		conn.resetState();

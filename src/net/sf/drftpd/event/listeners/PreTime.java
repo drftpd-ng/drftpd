@@ -22,7 +22,7 @@ import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
- * @version $Id: PreTime.java,v 1.9 2003/12/23 13:38:19 mog Exp $
+ * @version $Id: PreTime.java,v 1.10 2004/01/13 00:38:55 mog Exp $
  */
 public class PreTime implements FtpListener {
 	private SiteBot _siteBot;
@@ -44,6 +44,9 @@ public class PreTime implements FtpListener {
 		if (!(event instanceof DirectoryFtpEvent))
 			return;
 		DirectoryFtpEvent dfe = (DirectoryFtpEvent) event;
+		if(!getConnectionManager().getConfig().checkDirLog(dfe.getUser(), dfe.getDirectory())) {
+			return;
+		}
 		try {
 			if ( dfe.getCommand().startsWith("MKD") ) {
 				String release[] = dfe.getDirectory().getPath().split("/");

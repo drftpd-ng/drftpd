@@ -18,7 +18,7 @@ import net.sf.drftpd.util.AddAsciiOutputStream;
 
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.34 2004/01/03 23:50:54 mog Exp $
+ * @version $Id: TransferImpl.java,v 1.35 2004/01/13 00:38:55 mog Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private boolean _abort = false;
@@ -142,6 +142,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	public boolean isSendingUploading() {
 		return _direction == Transfer.TRANSFER_SENDING_DOWNLOAD;
 	}
+	
 	/**
 	 * Call sock.connect() and start sending.
 	 */

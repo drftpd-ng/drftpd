@@ -46,10 +46,11 @@ import net.sf.drftpd.util.SSLGetContext;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.28 2004/01/04 01:23:38 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.29 2004/01/13 00:38:55 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -235,7 +236,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 */
 	private FtpReply doPASV(BaseFtpConnection conn) {
 		conn.resetState();
-		//reset();
+		reset();
 		if (!_preTransfer) {
 			return new FtpReply(
 				500,
@@ -857,10 +858,10 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		_preTransfer = false;
 		_preTransferRSlave = null;
 
-		isPasv = false;
 		if (isPasv()) {
 			_portRange.releasePort(_serverSocket.getLocalPort());
 		}
+		isPasv = false;
 		_serverSocket = null;
 		isPort = false;
 		_resumePosition = 0;
@@ -1194,7 +1195,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			TransferStatus status;
 
 			//transfer
-
 			try {
 				//TODO ABORtable transfers
 				if (isRetr) {
@@ -1230,16 +1230,18 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			//		}
 			//		System.err.println("Finished");
 
+			ReplacerEnvironment env = new ReplacerEnvironment();
+			env.add("bytes", Bytes.formatBytes(status.getTransfered()));
+			env.add("speed", Bytes.formatBytes(status.getXferSpeed()) + "/s");
+			env.add("seconds", "" + status.getElapsed() / 1000);
+			env.add("checksum", Checksum.formatChecksum(status.getChecksum()));
 			FtpReply response =
 				new FtpReply(
 					226,
-					"Transfer complete, "
-						+ Bytes.formatBytes(status.getTransfered())
-						+ " in "
-						+ status.getElapsed() / 1000
-						+ " seconds ("
-						+ Bytes.formatBytes(status.getXferSpeed())
-						+ "/s)");
+					conn.jprintf(
+						DataConnectionHandler.class.getName(),
+						"transfer.complete",
+						env));
 
 			if (isStor) {
 				long transferedBytes;
@@ -1418,19 +1420,19 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			}
 
 			if (isStor) {
-				if (conn
-					.getConfig()
-					.checkDirLog(conn.getUserNull(), _transferFile)) {
-					conn.getConnectionManager().dispatchFtpEvent(
-						new TransferEvent(
-							conn.getUserNull(),
-							"STOR",
-							_transferFile,
-							conn.getClientAddress(),
-							_rslave.getInetAddress(),
-							getType(),
-							true));
-				}
+				//if (conn
+				//	.getConfig()
+				//	.checkDirLog(conn.getUserNull(), _transferFile)) {
+				conn.getConnectionManager().dispatchFtpEvent(
+					new TransferEvent(
+						conn.getUserNull(),
+						"STOR",
+						_transferFile,
+						conn.getClientAddress(),
+						_rslave.getInetAddress(),
+						getType(),
+						true));
+				//}
 				reset();
 			}
 

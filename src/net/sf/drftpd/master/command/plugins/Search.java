@@ -15,7 +15,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 /**
  * @author mog
  *
- * @version $Id: Search.java,v 1.4 2003/12/23 13:38:20 mog Exp $
+ * @version $Id: Search.java,v 1.5 2004/01/13 00:38:55 mog Exp $
  */
 public class Search implements CommandHandler {
 	public void unload() {}
@@ -36,7 +36,8 @@ public class Search implements CommandHandler {
 		Collection searchstrings,
 		boolean files,
 		boolean dirs) {
-		if (!conn.getConfig().checkDirLog(conn.getUserNull(), dir))
+		//TODO optimize me, checking using regexp for all dirs is possibly slow 
+		if (conn.getConfig().checkPrivPath(conn.getUserNull(), dir))
 			return;
 		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();

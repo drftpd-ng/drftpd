@@ -13,7 +13,7 @@ import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandlerTest.java,v 1.1 2003/12/22 18:09:42 mog Exp $
+ * @version $Id: DataConnectionHandlerTest.java,v 1.2 2004/01/13 00:38:55 mog Exp $
  */
 public class DataConnectionHandlerTest extends TestCase {
 	public static TestSuite suite() {
@@ -75,9 +75,11 @@ public class DataConnectionHandlerTest extends TestCase {
 				null);
 		conn = new DummyBaseFtpConnection(dch);
 	}
+
 	protected void tearDown() throws Exception {
 		dch = null;
 	}
+
 	public void testMixedListEqual() throws UnhandledCommandException {
 		String list = portList();
 		assertEquals(list, pasvList());
