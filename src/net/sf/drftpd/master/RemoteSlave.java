@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.30 2004/03/15 01:55:25 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.31 2004/03/29 14:26:12 zubov Exp $
  */
 public class RemoteSlave implements Comparable {
 
@@ -127,13 +127,8 @@ public class RemoteSlave implements Comparable {
 	/**
 	 * Returns the RemoteSlave's stored SlaveStatus
 	 */
-	public synchronized SlaveStatus getStatus()
+	public SlaveStatus getStatus()
 		throws SlaveUnavailableException {
-			if (_status == null ) {
-				if (isAvailable()) {
-					updateStatus(); // throws SlaveUnavailableException
-				}
-			}
 			if (_status == null ) {
 				throw new SlaveUnavailableException();
 			}
