@@ -36,7 +36,7 @@ import org.jdom.Element;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.47 2004/06/11 03:45:50 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.48 2004/07/02 19:58:52 mog Exp $
  */
 public class RemoteSlave implements Comparable {
 	/**
@@ -261,6 +261,7 @@ public class RemoteSlave implements Comparable {
 		try {
 			_status = getSlave().getSlaveStatus();
 		} catch (RemoteException e) {
+			handleRemoteException(e);
 			_status = null;
 		}
 	}

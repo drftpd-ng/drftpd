@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.ConnectionManager;
@@ -37,7 +36,7 @@ import org.drftpd.tests.DummyUser;
 
 /**
  * @author mog
- * @version $Id: AbstractUserTest.java,v 1.2 2004/06/04 14:18:57 mog Exp $
+ * @version $Id: AbstractUserTest.java,v 1.3 2004/07/02 19:58:54 mog Exp $
  */
 public class AbstractUserTest extends TestCase {
 

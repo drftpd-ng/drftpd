@@ -57,7 +57,7 @@ import org.jdom.input.SAXBuilder;
  * amount -> amount before multiplier
  * 
  * @author mog
- * @version $Id: Nuke.java,v 1.19 2004/06/04 14:18:56 mog Exp $
+ * @version $Id: Nuke.java,v 1.20 2004/07/02 19:58:53 mog Exp $
  */
 public class Nuke implements CommandHandlerFactory, CommandHandler {
 
@@ -116,9 +116,9 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
 	 *     multiplier is 3, user loses size * ratio + size * 2, etc.
 	 */
 	private FtpReply doSITE_NUKE(BaseFtpConnection conn) {
-		if (!conn.getUserNull().isNuker()) {
+		if (!conn.getUserNull().isNuker())
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
-		}
+
 		if(!conn.getRequest().hasArgument()) {
 			return new FtpReply(501, conn.jprintf(Nuke.class, "nuke.usage"));
 		}
@@ -307,6 +307,9 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
 	 * 	See the section about glftpd.conf.
 	 */
 	private FtpReply doSITE_UNNUKE(BaseFtpConnection conn) {
+		if (!conn.getUserNull().isNuker())
+			return FtpReply.RESPONSE_530_ACCESS_DENIED;
+
 		StringTokenizer st =
 			new StringTokenizer(conn.getRequest().getArgument());
 		if (!st.hasMoreTokens()) {

@@ -3,6 +3,24 @@
 * Heavily refactored UserManager(s), UserManager is now an abstract class
 * Refactoring on User and AbstractUser also
 
+2004/06/30 Morgan Christiansson <drftpd@mog.se>
+* Now using AddAsciiOutputStream on controlconnection so that a single \n
+  will never appear alone which is not what the FTP RFC says and breaks
+  RaidenFTPD.
+
+2004/06/29 Morgan Christiansson <drftpd@mog.se>
+* Added ListUtils to "ant slavejar" target.
+
+2004/06/27 Morgan Christiansson <drftpd@mog.se>
+* Added org.drftpd.plugins.Exec per request of darcangel.
+  See http://drftpd.org/modules.php?name=Forums&file=viewtopic&t=49
+* Refactored events to use subclasses of the new ConnectionEvent
+  instead of UserEvent where approperiate.
+* Fixed permission on SITE UNNUKE command.
+* Renamed .passed to .pass in trial.conf, .passed will still work for now.
+* Added .pass=setgrp iND as example in trial.conf.dist.
+* Actions in trial must now be in lowercase.
+* Made PRE commandhandler set user owner to drftpd on PRE.
 
 2004/6/28 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Fixed a minor bug in ArchiveType's where directories without files 

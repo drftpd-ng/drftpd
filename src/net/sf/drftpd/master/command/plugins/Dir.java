@@ -57,7 +57,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.31 2004/06/06 21:33:46 zubov Exp $
+ * @version $Id: Dir.java,v 1.32 2004/07/02 19:58:52 mog Exp $
  */
 public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 	private final static SimpleDateFormat DATE_FMT =
@@ -247,7 +247,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 		}
 
 		conn.getConnectionManager().dispatchFtpEvent(
-			new DirectoryFtpEvent(conn.getUserNull(), "DELE", requestedFile));
+			new DirectoryFtpEvent(conn, "DELE", requestedFile));
 		requestedFile.delete();
 		return reply;
 	}
@@ -338,7 +338,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 						createdDirName);
 			
 			conn.getConnectionManager().dispatchFtpEvent(
-					new DirectoryFtpEvent(conn.getUserNull(), "MKD", createdDir));
+					new DirectoryFtpEvent(conn, "MKD", createdDir));
 			return new FtpReply(
 					257,
 					"\"" + createdDir.getPath() + "\" created.");
@@ -411,7 +411,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 		// now delete
 		//if (conn.getConfig().checkDirLog(conn.getUserNull(), requestedFile)) {
 		conn.getConnectionManager().dispatchFtpEvent(
-			new DirectoryFtpEvent(conn.getUserNull(), "RMD", requestedFile));
+			new DirectoryFtpEvent(conn, "RMD", requestedFile));
 		//}
 		requestedFile.delete();
 		return FtpReply.RESPONSE_250_ACTION_OKAY;
@@ -626,7 +626,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 		}
 		//if (conn.getConfig().checkDirLog(conn.getUserNull(), wipeFile)) {
 		conn.getConnectionManager().dispatchFtpEvent(
-			new DirectoryFtpEvent(conn.getUserNull(), "WIPE", wipeFile));
+			new DirectoryFtpEvent(conn, "WIPE", wipeFile));
 		//}
 		wipeFile.delete();
 		return FtpReply.RESPONSE_200_COMMAND_OK;

@@ -19,28 +19,26 @@ package org.drftpd.plugins;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.Properties;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 import net.sf.drftpd.FatalException;
 
 import org.apache.log4j.Logger;
+import org.drftpd.BlindTrustManager;
 
 /**
  * @author mog
- * @version $Id: SiteBotSSL.java,v 1.3 2004/04/23 01:55:03 mog Exp $
+ * @version $Id: SiteBotSSL.java,v 1.4 2004/07/02 19:58:57 mog Exp $
  */
 public class SiteBotSSL extends SiteBot {
 	private static final Logger logger = Logger.getLogger(SiteBot.class);
 	private boolean _useSSL;
 	protected void reload(Properties ircCfg) throws IOException {
 		_useSSL = ircCfg.getProperty("irc.ssl", "false").equals("true");
-		logger.debug("useSSL: "+_useSSL);
+		logger.debug("useSSL: " + _useSSL);
 		super.reload(ircCfg);
 	}
 
@@ -49,30 +47,10 @@ public class SiteBotSSL extends SiteBot {
 	}
 
 	public void connect() throws IOException {
-		logger.debug("In connect()");
 		if (_useSSL) {
 			try {
 				SSLContext ctx = SSLContext.getInstance("TLS");
-				//KeyManagerFactory kmf = KeyManagerFactory.getInstance("JSSE");
-				//ctx.init(kmf.getKeyManagers(), null, null);
-				TrustManager tms[] =
-					{ new X509TrustManager() {
-						public void checkClientTrusted(
-							X509Certificate[] arg0,
-							String arg1)
-						throws CertificateException {
-						}
-
-						public void checkServerTrusted(
-							X509Certificate[] arg0,
-							String arg1)
-							throws CertificateException {
-						}
-						public X509Certificate[] getAcceptedIssuers() {
-							return null;
-						}
-					}
-				};
+				TrustManager tms[] = { new BlindTrustManager()};
 
 				ctx.init(null, tms, null);
 				_conn.connect(

@@ -19,11 +19,11 @@ package net.sf.drftpd.master.command.plugins;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Properties;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.config.FtpConfig;
@@ -34,7 +34,7 @@ import org.drftpd.tests.DummyBaseFtpConnection;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandlerTest.java,v 1.7 2004/06/09 22:49:16 mog Exp $
+ * @version $Id: DataConnectionHandlerTest.java,v 1.8 2004/07/02 19:58:52 mog Exp $
  */
 public class DataConnectionHandlerTest extends TestCase {
 
@@ -42,7 +42,8 @@ public class DataConnectionHandlerTest extends TestCase {
 		public FC() {
 			super();
 			try {
-				loadConfig(new Properties(), null);
+				loadConfig2(new StringReader(""));
+				loadConfig1(new Properties());
 			} catch (IOException e) {
 				throw new RuntimeException();
 			}

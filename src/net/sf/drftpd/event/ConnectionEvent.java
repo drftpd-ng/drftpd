@@ -17,21 +17,45 @@
  */
 package net.sf.drftpd.event;
 
+import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.usermanager.User;
 
 /**
+ * Dispatched for LOGIN, LOGOUT and RELOAD.
+ * 
+ * Subclassed for events that are paired with a user object.
+ * 
  * @author mog
- * @version $Id: UserEvent.java,v 1.11 2004/07/02 19:58:51 mog Exp $
+ * @version $Id: ConnectionEvent.java,v 1.1 2004/07/02 19:58:49 mog Exp $
  */
-public class UserEvent extends Event {
-	protected User _user;
-
-	public UserEvent(User user, String command, long time) {
+public class ConnectionEvent extends Event {
+	private transient BaseFtpConnection _conn;
+	public ConnectionEvent(BaseFtpConnection conn, String command) {
+		this(conn, command, System.currentTimeMillis());
+	}
+	public ConnectionEvent(BaseFtpConnection conn, String command, long time) {
 		super(command, time);
-		_user = user;
+		_conn = conn;
+	}
+
+	public BaseFtpConnection getConn() {
+		return _conn;
 	}
 
 	public User getUser() {
-		return _user;
+		return _conn.getUserNull();
+	}
+
+	public void setConn(BaseFtpConnection conn) {
+		_conn = conn;
+	}
+
+	public String toString() {
+		return getClass().getName()
+			+ "[user="
+			+ getUser()
+			+ ",cmd="
+			+ getCommand()
+			+ "]";
 	}
 }

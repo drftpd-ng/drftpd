@@ -17,23 +17,23 @@
  */
 package net.sf.drftpd.event;
 
-import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
  *
- * @version $Id: DirectoryFtpEvent.java,v 1.7 2004/05/16 05:44:52 zubov Exp $
+ * @version $Id: DirectoryFtpEvent.java,v 1.8 2004/07/02 19:58:49 mog Exp $
  */
-public class DirectoryFtpEvent extends UserEvent {
+public class DirectoryFtpEvent extends ConnectionEvent {
 	private LinkedRemoteFileInterface directory;
 	
-	public DirectoryFtpEvent(User user, String command, LinkedRemoteFileInterface directory) {
-		this(user, command, directory, System.currentTimeMillis());
+	public DirectoryFtpEvent(BaseFtpConnection conn, String command, LinkedRemoteFileInterface directory) {
+		this(conn, command, directory, System.currentTimeMillis());
 	}
 	
-	public DirectoryFtpEvent(User user, String command, LinkedRemoteFileInterface directory, long time) {
-		super(user, command, time);
+	public DirectoryFtpEvent(BaseFtpConnection conn, String command, LinkedRemoteFileInterface directory, long time) {
+		super(conn, command, time);
 		this.directory = directory;
 	}
 	

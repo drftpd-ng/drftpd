@@ -25,20 +25,17 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.LinkedRemoteFileTest;
-import net.sf.drftpd.remotefile.StaticRemoteFile;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.Transfer;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 /**
  * @author mog
- * @version $Id: RemoteSlaveTest.java,v 1.2 2004/06/11 03:45:50 zubov Exp $
+ * @version $Id: RemoteSlaveTest.java,v 1.3 2004/07/02 19:58:52 mog Exp $
  */
 public class RemoteSlaveTest extends TestCase {
 	public static TestSuite suite() {
@@ -55,10 +52,10 @@ public class RemoteSlaveTest extends TestCase {
 		assertTrue(rslave1.equals(rslave1));
 		assertTrue(rslave1.equals(rslave2));
 	}
-	public class SlaveImplTest implements Slave {
+	public class SlaveImpl implements Slave {
 
 		private HashSet _filelist;
-		public SlaveImplTest(HashSet filelist) {
+		public SlaveImpl(HashSet filelist) {
 			_filelist = filelist;
 		}
 		
@@ -117,7 +114,7 @@ public class RemoteSlaveTest extends TestCase {
 		filelist.add("/deleteme");
 		filelist.add("/renameme");
 		filelist.add("/indir");
-		Slave slave = new SlaveImplTest(filelist);
+		Slave slave = new SlaveImpl(filelist);
 		rslave.setSlave(slave,null,null,256);
 		assertFalse(filelist.contains("/deleteme"));
 		assertFalse(filelist.contains("/renameme"));

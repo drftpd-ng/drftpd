@@ -70,7 +70,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.59 2004/06/06 21:33:46 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.60 2004/07/02 19:58:52 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandlerFactory, CommandHandler, Cloneable {
 	private static final Logger logger = Logger
@@ -1041,7 +1041,7 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 				if (ex instanceof TransferFailedException) {
 					status = ((TransferFailedException) ex).getStatus();
 					conn.getConnectionManager().dispatchFtpEvent(
-							new TransferEvent(conn.getUserNull(), eventType,
+							new TransferEvent(conn, eventType,
 									_transferFile, conn.getClientAddress(),
 									_rslave, status.getPeer(), type, false));
 					if (isRetr) {
@@ -1080,7 +1080,6 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 					DataConnectionHandler.class.getName(), "transfer.complete",
 					env));
 			if (isStor) {
-				// throws RemoteException
 				if (_resumePosition == 0) {
 					_transferFile.setCheckSum(status.getChecksum());
 				} else {
@@ -1139,7 +1138,7 @@ public class DataConnectionHandler implements CommandHandlerFactory, CommandHand
 			}
 			//Dispatch for both STOR and RETR
 			conn.getConnectionManager().dispatchFtpEvent(
-					new TransferEvent(conn.getUserNull(), eventType,
+					new TransferEvent(conn, eventType,
 							_transferFile, conn.getClientAddress(), _rslave,
 							status.getPeer(), getType(), zipscript));
 			return response;

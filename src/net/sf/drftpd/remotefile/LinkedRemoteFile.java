@@ -51,7 +51,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.152 2004/06/28 14:34:00 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.153 2004/07/02 19:58:54 mog Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -645,10 +645,11 @@ public class LinkedRemoteFile
 	 * Returns a Collection of all the LinkedRemoteFile objects in this
 	 * directory, with all .isDeleted() files removed.
 	 * 
-	 * The Collection can be safely modified, it is a copy.
-	 * 
+	 * <p><b>NOTE:</b>Since DrFTPD 1.2, the collection returned can no longer
+	 * be directly modified.
+	 *  
 	 * @return a Collection of all the LinkedRemoteFile objects in this
-	 *         directory, with all .isDeleted() files removed.
+	 *         directory.
 	 */
 	public Collection getFiles() {
 		if (_files == null)
@@ -660,8 +661,9 @@ public class LinkedRemoteFile
 	 * Returns a map for this directory, having String name as key and
 	 * LinkedRemoteFile file as value, with all .isDeleted() files removed.
 	 * 
-	 * The Map can be safely modified, it is a copy.
-	 * 
+	 * <p><b>NOTE:</b>Since DrFTPD 1.2, the map returned can no longer
+	 * be directly modified.
+	 *  
 	 * @return map for this directory, having String name as key and
 	 *         LinkedRemoteFile file as value, with all .isDeleted() files
 	 *         removed.

@@ -24,7 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.sf.drftpd.HostMask;
-import net.sf.drftpd.event.UserEvent;
+import net.sf.drftpd.event.ConnectionEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
@@ -42,7 +42,7 @@ import org.drftpd.commands.UnhandledCommandException;
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.31 2004/06/09 10:56:35 mog Exp $
+ * @version $Id: Login.java,v 1.32 2004/07/02 19:58:53 mog Exp $
  */
 public class Login
 	implements CommandHandlerFactory, CommandHandler, Cloneable {
@@ -113,7 +113,7 @@ public class Login
 			conn.getUserNull().login();
 			conn.setAuthenticated(true);
 			conn.getConnectionManager().dispatchFtpEvent(
-				new UserEvent(conn.getUserNull(), "LOGIN"));
+				new ConnectionEvent(conn, "LOGIN"));
 
 			FtpReply response =
 				new FtpReply(

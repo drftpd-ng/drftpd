@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
@@ -35,7 +36,7 @@ import javax.net.ssl.SSLSocket;
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
-import net.sf.drftpd.event.UserEvent;
+import net.sf.drftpd.event.ConnectionEvent;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 import net.sf.drftpd.master.config.FtpConfig;
@@ -43,6 +44,7 @@ import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.Transfer;
+import net.sf.drftpd.util.AddAsciiOutputStream;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.Time;
 
@@ -59,7 +61,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.90 2004/06/09 10:56:32 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.91 2004/07/02 19:58:52 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -121,33 +123,29 @@ public class BaseFtpConnection implements Runnable {
 
 	protected User _user;
 
-	protected LinkedRemoteFile currentDirectory;
+	protected LinkedRemoteFile _currentDirectory;
 
 	/**
 	 * Is the client running a command?
 	 */
-	protected boolean executing;
+	protected boolean _executing;
 
-	private BufferedReader in;
+	private BufferedReader _in;
 	/**
 	 * time when last command from the client finished execution
 	 */
-	protected long lastActive;
+	protected long _lastActive;
 
-	protected PrintWriter out;
+	private PrintWriter _out;
 
-	/**
-	  * PRE Transfere
-	  *
-	  */
-	protected FtpRequest request;
+	protected FtpRequest _request;
 
 	/**
 	 * Should this thread stop insted of continue looping?
 	 */
-	protected boolean stopRequest = false;
-	protected String stopRequestMessage;
-	protected Thread thread;
+	protected boolean _stopRequest = false;
+	protected String _stopRequestMessage;
+	protected Thread _thread;
 	protected BaseFtpConnection() {
 	}
 	public BaseFtpConnection(ConnectionManager connManager, Socket soc)
@@ -155,9 +153,8 @@ public class BaseFtpConnection implements Runnable {
 		_commandManager =
 			connManager.getCommandManagerFactory().initialize(this);
 		_cm = connManager;
-		//_controlSocket = soc;
 		setControlSocket(soc);
-		lastActive = System.currentTimeMillis();
+		_lastActive = System.currentTimeMillis();
 		setCurrentDirectory(connManager.getRoot());
 	}
 
@@ -187,16 +184,20 @@ public class BaseFtpConnection implements Runnable {
 		return _cm;
 	}
 
+	public BufferedReader getControlReader() {
+		return _in;
+	}
+
 	public Socket getControlSocket() {
 		return _controlSocket;
 	}
 
 	public PrintWriter getControlWriter() {
-		return out;
+		return _out;
 	}
 
 	public LinkedRemoteFile getCurrentDirectory() {
-		return currentDirectory;
+		return _currentDirectory;
 	}
 
 	public DataConnectionHandler getDataConnectionHandler() {
@@ -223,14 +224,14 @@ public class BaseFtpConnection implements Runnable {
 	 * Returns the "currentTimeMillis" when last command finished executing.
 	 */
 	public long getLastActive() {
-		return lastActive;
+		return _lastActive;
 	}
 
 	/**
 	 * Returns the FtpRequest of current or last command executed.
 	 */
 	public FtpRequest getRequest() {
-		return request;
+		return _request;
 	}
 
 	public ServerSocketFactory getServerSocketFactory() {
@@ -299,7 +300,7 @@ public class BaseFtpConnection implements Runnable {
 	 * Returns true if client is executing a command.
 	 */
 	public boolean isExecuting() {
-		return executing;
+		return _executing;
 	}
 
 	public boolean isSecure() {
@@ -335,11 +336,11 @@ public class BaseFtpConnection implements Runnable {
 	 * Server one FTP connection.
 	 */
 	public void run() {
-		lastActive = System.currentTimeMillis();
+		_lastActive = System.currentTimeMillis();
 		logger.info(
 			"Handling new request from " + getClientAddress().getHostAddress());
 		if (!getConfig().getHideIps()) {
-			thread.setName(
+			_thread.setName(
 				"FtpConn from " + getClientAddress().getHostAddress());
 		}
 
@@ -359,19 +360,19 @@ public class BaseFtpConnection implements Runnable {
 			} else {
 				FtpReply response =
 					new FtpReply(220, getConfig().getLoginPrompt());
-				out.print(response);
+				_out.print(response);
 			}
-			while (!stopRequest) {
+			while (!_stopRequest) {
 
-				out.flush();
+				_out.flush();
 				//notifyObserver();
 				String commandLine;
 				try {
-					commandLine = in.readLine();
+					commandLine = _in.readLine();
 				} catch (InterruptedIOException ex) {
 					continue;
 				}
-				if (stopRequest)
+				if (_stopRequest)
 					break;
 				// test command line
 				if (commandLine == null)
@@ -381,26 +382,26 @@ public class BaseFtpConnection implements Runnable {
 				if (commandLine.equals(""))
 					continue;
 
-				request = new FtpRequest(commandLine);
+				_request = new FtpRequest(commandLine);
 
-				if (!request.getCommand().equals("PASS"))
-					debuglogger.debug("<< " + request.getCommandLine());
-				if (!hasPermission(request)) {
-					out.print(FtpReply.RESPONSE_530_NOT_LOGGED_IN);
+				if (!_request.getCommand().equals("PASS"))
+					debuglogger.debug("<< " + _request.getCommandLine());
+				if (!hasPermission(_request)) {
+					_out.print(FtpReply.RESPONSE_530_NOT_LOGGED_IN);
 					continue;
 				}
 				// execute command
-				executing = true;
-				service(request, out);
-				executing = false;
-				lastActive = System.currentTimeMillis();
+				_executing = true;
+				service(_request, _out);
+				_executing = false;
+				_lastActive = System.currentTimeMillis();
 			}
-			if (stopRequestMessage != null) {
-				out.print(new FtpReply(421, stopRequestMessage));
+			if (_stopRequestMessage != null) {
+				_out.print(new FtpReply(421, _stopRequestMessage));
 			} else {
-				out.println("421 Connection closing");
+				_out.println("421 Connection closing");
 			}
-			out.flush();
+			_out.flush();
 		} catch (SocketException ex) {
 			logger.log(
 				Level.INFO,
@@ -412,14 +413,14 @@ public class BaseFtpConnection implements Runnable {
 			logger.log(Level.INFO, "Exception, closing", ex);
 		} finally {
 			try {
-				in.close();
-				out.close();
+				_in.close();
+				_out.close();
 			} catch (Exception ex2) {
 				logger.log(Level.WARN, "Exception closing stream", ex2);
 			}
 			if (isAuthenticated()) {
 				_user.updateLastAccessTime();
-				dispatchFtpEvent(new UserEvent(_user, "LOGOUT"));
+				dispatchFtpEvent(new ConnectionEvent(this, "LOGOUT"));
 			}
 			getConnectionManager().remove(this);
 		}
@@ -447,7 +448,7 @@ public class BaseFtpConnection implements Runnable {
 	public void setAuthenticated(boolean authenticated) {
 		_authenticated = authenticated;
 		if (isAuthenticated() && !getConfig().getHideIps())
-			thread.setName(
+			_thread.setName(
 				"FtpConn from "
 					+ getClientAddress().getHostAddress()
 					+ " "
@@ -459,16 +460,16 @@ public class BaseFtpConnection implements Runnable {
 	public void setControlSocket(Socket socket) {
 		try {
 			_controlSocket = socket;
-			in =
+			_in =
 				new BufferedReader(
 					new InputStreamReader(
 						_controlSocket.getInputStream(),
 						"ISO-8859-1"));
 
-			out =
+			_out =
 				new PrintWriter(
 					new OutputStreamWriter(
-						_controlSocket.getOutputStream(),
+						new AddAsciiOutputStream(_controlSocket.getOutputStream()),
 						"ISO-8859-1"));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -476,15 +477,15 @@ public class BaseFtpConnection implements Runnable {
 	}
 
 	public void setCurrentDirectory(LinkedRemoteFile file) {
-		currentDirectory = file;
+		_currentDirectory = file;
 	}
 
 	public void setUser(User user) {
 		_user = user;
 	}
 	public void start() {
-		thread = new Thread(this);
-		thread.start();
+		_thread = new Thread(this);
+		_thread.start();
 		// start() calls run() and execution will start in the background.
 	}
 
@@ -499,11 +500,11 @@ public class BaseFtpConnection implements Runnable {
 	 * User logout and stop this thread.
 	 */
 	public void stop() {
-		stopRequest = true;
+		_stopRequest = true;
 	}
 
 	public void stop(String message) {
-		stopRequestMessage = message;
+		_stopRequestMessage = message;
 		if (getDataConnectionHandler().isTransfering()) {
 			try {
 				getDataConnectionHandler().getTransfer().abort();
@@ -522,8 +523,8 @@ public class BaseFtpConnection implements Runnable {
 		if (_user != null) {
 			buf.append("[user: " + _user + "]");
 		}
-		if (request != null) {
-			buf.append("[command: " + request.getCommand() + "]");
+		if (_request != null) {
+			buf.append("[command: " + _request.getCommand() + "]");
 		}
 		if (isExecuting()) {
 			buf.append("[executing]");
@@ -535,5 +536,9 @@ public class BaseFtpConnection implements Runnable {
 		}
 		buf.append("]");
 		return buf.toString();
+	}
+
+	public OutputStream getOutputStream() throws IOException {
+		return _controlSocket.getOutputStream();
 	}
 }

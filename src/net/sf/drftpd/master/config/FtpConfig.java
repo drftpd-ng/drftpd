@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.io.Reader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.55 2004/06/09 10:56:38 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.56 2004/07/02 19:58:53 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -351,7 +352,7 @@ public class FtpConfig {
 
 	public void loadConfig(Properties cfg, ConnectionManager connManager)
 		throws IOException {
-		loadConfig2();
+		loadConfig2(new FileReader(newConf));
 		_connManager = connManager;
 		loadConfig1(cfg);
 	}
@@ -376,7 +377,7 @@ public class FtpConfig {
 		_bouncerIps = bouncerIps;
 	}
 
-	private void loadConfig2() throws IOException {
+	protected void loadConfig2(Reader in2) throws IOException {
 		Hashtable patternPathPermissions = new Hashtable();
 		Hashtable permissions = new Hashtable();
 		ArrayList creditcheck = new ArrayList();
@@ -387,7 +388,7 @@ public class FtpConfig {
 		_useDirNames = false;
 		_replaceDir = null;
 
-		LineNumberReader in = new LineNumberReader(new FileReader(newConf));
+		LineNumberReader in = new LineNumberReader(in2);
 		try {
 			String line;
 			while ((line = in.readLine()) != null) {

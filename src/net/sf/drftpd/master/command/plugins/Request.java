@@ -37,7 +37,7 @@ import org.drftpd.commands.UnhandledCommandException;
 
 /**
  * @author mog
- * @version $Id: Request.java,v 1.16 2004/06/04 14:18:56 mog Exp $
+ * @version $Id: Request.java,v 1.17 2004/07/02 19:58:53 mog Exp $
  */
 public class Request implements CommandHandlerFactory, CommandHandler {
 	private static final String FILLEDPREFIX = "FILLED-for.";
@@ -76,7 +76,7 @@ public class Request implements CommandHandlerFactory, CommandHandler {
 				//if (conn.getConfig().checkDirLog(conn.getUserNull(), file)) {
 				conn.getConnectionManager().dispatchFtpEvent(
 					new DirectoryFtpEvent(
-						conn.getUserNull(),
+						conn,
 						"REQFILLED",
 						filledfile));
 				//}
@@ -122,7 +122,7 @@ public class Request implements CommandHandlerFactory, CommandHandler {
 			//if (conn.getConfig().checkDirLog(conn.getUserNull(), createdDir)) {
 			conn.getConnectionManager().dispatchFtpEvent(
 				new DirectoryFtpEvent(
-					conn.getUserNull(),
+					conn,
 					"REQUEST",
 					createdDir));
 			//}

@@ -19,13 +19,13 @@ package net.sf.drftpd.event;
 
 import java.net.InetAddress;
 
+import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: TransferEvent.java,v 1.9 2004/04/22 02:10:10 mog Exp $
+ * @version $Id: TransferEvent.java,v 1.10 2004/07/02 19:58:51 mog Exp $
  */
 public class TransferEvent extends DirectoryFtpEvent {
 	private boolean _complete;
@@ -41,7 +41,7 @@ public class TransferEvent extends DirectoryFtpEvent {
 	 * @param directory
 	 */
 	public TransferEvent(
-		User user,
+		BaseFtpConnection conn,
 		String command,
 		LinkedRemoteFileInterface directory,
 		InetAddress clientHost,
@@ -50,7 +50,7 @@ public class TransferEvent extends DirectoryFtpEvent {
 		char type,
 		boolean complete) {
 		this(
-			user,
+			conn,
 			command,
 			directory,
 			clientHost,
@@ -61,8 +61,8 @@ public class TransferEvent extends DirectoryFtpEvent {
 			System.currentTimeMillis());
 	}
 
-	public TransferEvent(
-		User user,
+	private TransferEvent(
+		BaseFtpConnection conn,
 		String command,
 		LinkedRemoteFileInterface directory,
 		InetAddress clientHost,
@@ -71,7 +71,7 @@ public class TransferEvent extends DirectoryFtpEvent {
 		char type,
 		boolean complete,
 		long time) {
-		super(user, command, directory, time);
+		super(conn, command, directory, time);
 		_clientHost = clientHost;
 		_rslave = rslave;
 		if(peer == null) throw new NullPointerException();

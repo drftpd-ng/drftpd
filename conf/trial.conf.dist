@@ -10,7 +10,8 @@
 1.quota=1gb
 1.period=weekly
 1.fail=delete
-1.perm=!=siteop *
+1.pass=setgrp iND
+1.perm=!=siteop !=iND *
 
 2.name=quota
 2.quota=10gb

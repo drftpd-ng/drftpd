@@ -24,7 +24,7 @@ import java.io.OutputStream;
  * AddAsciiOutputStream that ignores \r and adds an \r before every \n.
  * 
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
- * @version $Id: AddAsciiOutputStream.java,v 1.3 2004/02/10 00:03:31 mog Exp $
+ * @version $Id: AddAsciiOutputStream.java,v 1.4 2004/07/02 19:58:55 mog Exp $
  */
 public class AddAsciiOutputStream extends OutputStream {
 	private OutputStream _out;
@@ -48,10 +48,8 @@ public class AddAsciiOutputStream extends OutputStream {
 		if (i == '\r') {
 			_lastWasCarriageReturn = true;
 		}
-		if (i == '\n') {
-			if (!_lastWasCarriageReturn) {
-				_out.write('\r');
-			}
+		if (i == '\n' && !_lastWasCarriageReturn) {
+			_out.write('\r');
 		}
 		_lastWasCarriageReturn = false;
 		_out.write(i);

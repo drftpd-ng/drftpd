@@ -15,23 +15,28 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.event;
+package org.drftpd;
 
-import net.sf.drftpd.master.usermanager.User;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.X509TrustManager;
 
 /**
+ * Also used by com.drftpd.friendly.
+ * 
  * @author mog
- * @version $Id: UserEvent.java,v 1.11 2004/07/02 19:58:51 mog Exp $
+ * @version $Id: BlindTrustManager.java,v 1.1 2004/07/02 19:58:55 mog Exp $
  */
-public class UserEvent extends Event {
-	protected User _user;
-
-	public UserEvent(User user, String command, long time) {
-		super(command, time);
-		_user = user;
+public class BlindTrustManager implements X509TrustManager {
+	public void checkClientTrusted(X509Certificate[] arg0, String arg1)
+		throws CertificateException {
 	}
 
-	public User getUser() {
-		return _user;
+	public void checkServerTrusted(X509Certificate[] arg0, String arg1)
+		throws CertificateException {
+	}
+	public X509Certificate[] getAcceptedIssuers() {
+		return null;
 	}
 }

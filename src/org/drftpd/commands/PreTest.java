@@ -15,23 +15,21 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.event;
+package org.drftpd.commands;
 
-import net.sf.drftpd.master.usermanager.User;
+import junit.framework.TestCase;
 
 /**
  * @author mog
- * @version $Id: UserEvent.java,v 1.11 2004/07/02 19:58:51 mog Exp $
+ * @version $Id: PreTest.java,v 1.1 2004/07/02 19:58:56 mog Exp $
  */
-public class UserEvent extends Event {
-	protected User _user;
+public class PreTest extends TestCase {
 
-	public UserEvent(User user, String command, long time) {
-		super(command, time);
-		_user = user;
+	/**
+	 * @param arg0
+	 */
+	public PreTest(String fName) {
+		super(fName);
 	}
 
-	public User getUser() {
-		return _user;
-	}
 }

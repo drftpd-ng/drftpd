@@ -19,29 +19,31 @@ package net.sf.drftpd.event;
 
 /**
  * @author mog
- * @version $Id: Event.java,v 1.5 2004/02/10 00:03:05 mog Exp $
+ * @version $Id: Event.java,v 1.6 2004/07/02 19:58:49 mog Exp $
  */
 public class Event {
-	private String command;
+	private String _command;
+	private long _time;
+
 	public Event(String command) {
 		super();
-		this.command = command;
-	}
-	
-	public Event(String command, long time) {
-		this(command);
-		this.time = time;
-	}
-	public String getCommand() {
-		return command;
-	}
-	public void setCommand(String command) {
-		this.command = command;
-	}
-	
-	private long time;
-	public long getTime() {
-		return time;
+		_command = command;
 	}
 
+	public Event(String command, long time) {
+		this(command);
+		_time = time;
+	}
+
+	public String getCommand() {
+		return _command;
+	}
+
+	public long getTime() {
+		return _time;
+	}
+
+	public void setCommand(String command) {
+		_command = command;
+	}
 }

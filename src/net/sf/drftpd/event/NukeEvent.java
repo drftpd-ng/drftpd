@@ -29,7 +29,7 @@ import org.jdom.Element;
 /**
  * @author mog
  *
- * @version $Id: NukeEvent.java,v 1.20 2004/03/26 00:16:32 mog Exp $
+ * @version $Id: NukeEvent.java,v 1.21 2004/07/02 19:58:51 mog Exp $
  */
 public class NukeEvent extends UserEvent {
 	private int multiplier;
@@ -60,12 +60,6 @@ public class NukeEvent extends UserEvent {
 			reason,
 			nukees);
 	}
-	/**
-	 * @param user
-	 * @param preNukeName
-	 * @param multiplier
-	 * @param nukees
-	 */
 	public NukeEvent(
 		User user,
 		String command,
@@ -130,14 +124,14 @@ public class NukeEvent extends UserEvent {
 	public Element toJDOM() {
 		Element element = new Element("nuke");
 		element.addContent(
-			new Element("user").setText(this.getUser().getUsername()));
+			new Element("user").setText(getUser().getUsername()));
 		element.addContent(new Element("path").setText(this.getPath()));
 		element.addContent(
 			new Element("multiplier").setText(
-				Integer.toString(this.getMultiplier())));
+				Integer.toString(getMultiplier())));
 		element.addContent(new Element("reason").setText(this.getReason()));
 		element.addContent(
-			new Element("time").setText(Long.toString(this.getTime())));
+			new Element("time").setText(Long.toString(getTime())));
 
 		element.addContent(
 			new Element("size").setText(Long.toString(getSize())));
@@ -146,7 +140,7 @@ public class NukeEvent extends UserEvent {
 				Long.toString(getNukedAmount())));
 
 		Element nukees = new Element("nukees");
-		for (Iterator iter = this.getNukees().entrySet().iterator();
+		for (Iterator iter = getNukees().entrySet().iterator();
 			iter.hasNext();
 			) {
 			Map.Entry entry = (Map.Entry) iter.next();
@@ -163,6 +157,10 @@ public class NukeEvent extends UserEvent {
 
 	public String toString() {
 		return "[NUKE:" + getPath() + ",multiplier=" + getMultiplier() + "]";
+	}
+
+	public void setUser(User user) {
+		_user = user;
 	}
 
 }

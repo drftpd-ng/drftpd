@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.event.UserEvent;
+import net.sf.drftpd.event.ConnectionEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.command.CommandManager;
@@ -44,7 +44,7 @@ import org.drftpd.commands.UnhandledCommandException;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagment.java,v 1.20 2004/06/04 14:18:56 mog Exp $
+ * @version $Id: SiteManagment.java,v 1.21 2004/07/02 19:58:53 mog Exp $
  */
 public class SiteManagment implements CommandHandlerFactory, CommandHandler {
 
@@ -130,7 +130,7 @@ public class SiteManagment implements CommandHandlerFactory, CommandHandler {
 			return new FtpReply(200, e.getMessage());
 		}
 		conn.getConnectionManager().dispatchFtpEvent(
-			new UserEvent(conn.getUserNull(), "RELOAD"));
+			new ConnectionEvent(conn, "RELOAD"));
 
 		//ugly hack to clear resourcebundle cache
 		//see http://developer.java.sun.com/developer/bugParade/bugs/4212439.html
