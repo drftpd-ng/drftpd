@@ -44,10 +44,11 @@ import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 /**
  * @author mog
- * @version $Id: DummyBaseFtpConnection.java,v 1.1 2004/05/16 18:07:31 mog Exp $
+ * @version $Id: DummyBaseFtpConnection.java,v 1.2 2004/05/17 11:27:26 mog Exp $
  */
 public class DummyBaseFtpConnection extends BaseFtpConnection {
 
+	private InetAddress _clientAddress;
 	private UserManager _userManager;
 	private DummyServerSocketFactory _serverSocketFactory;
 	private DummySocketFactory _socketFactory;
@@ -76,9 +77,13 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 	}
 
 	public InetAddress getClientAddress() {
-		throw new UnsupportedOperationException();
+		if(_clientAddress == null) throw new NullPointerException();
+		return _clientAddress;
 	}
-
+	public void setClientAddress(InetAddress clientAddress) {
+		_clientAddress = clientAddress;
+	}
+	
 	public CommandManager getCommandManager() {
 		throw new UnsupportedOperationException();
 	}
@@ -88,7 +93,7 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 	}
 
 	public ConnectionManager getConnectionManager() {
-		throw new UnsupportedOperationException();
+		return _cm;
 	}
 
 	public Socket getControlSocket() {
@@ -133,7 +138,7 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 	 * @see net.sf.drftpd.master.BaseFtpConnection#getUserNull()
 	 */
 	public User getUserNull() {
-		throw new UnsupportedOperationException();
+		return super.getUserNull();
 	}
 
 	protected boolean hasPermission(FtpRequest request) {
@@ -257,6 +262,10 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 
 	public SocketFactory getSocketFactory() {
 		return _socketFactory;
+	}
+
+	public void setConnectionManager(ConnectionManager manager) {
+		_cm = manager;
 	}
 
 }

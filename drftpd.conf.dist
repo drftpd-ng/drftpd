@@ -20,10 +20,6 @@ master.localslave=false
 #User manager to use, just leave it for now.
 master.usermanager=net.sf.drftpd.master.usermanager.jsx.JSXUserManager
 
-#use ident on user lookups
-# [ true | false ]
-use.ident=true
-
 #loaded plugins must use in sequential numbering
 #plugins.1=org.drftpd.plugins.SiteBotSSL
 #plugins.2=net.sf.drftpd.event.listeners.Trial
@@ -38,4 +34,5 @@ sectionmanager=org.drftpd.sections.def.SectionManager
 # value is in milliseconds
 # the lower it is, the more accurate it will be
 # 300 milliseconds works well for LAN conditions
+# Reloadable by SITE RELOAD
 slaveStatusUpdateTime=3000

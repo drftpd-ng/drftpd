@@ -27,7 +27,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
 
 /**
  * @author mog
- * @version $Id: HostMask.java,v 1.7 2004/02/10 00:03:04 mog Exp $
+ * @version $Id: HostMask.java,v 1.8 2004/05/17 11:27:23 mog Exp $
  */
 public class HostMask {
 	private static final Logger logger = Logger.getLogger(HostMask.class);
@@ -58,7 +58,7 @@ public class HostMask {
 	 * @return false is ident mask equals "*"
 	 */
 	public boolean isIdentMaskSignificant() {
-		return !_identMask.equals("*");
+		return _identMask != null && !_identMask.equals("*");
 	}
 
 	public boolean matches(String ident, InetAddress address) {

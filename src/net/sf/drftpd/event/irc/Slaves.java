@@ -17,7 +17,6 @@
  */
 package net.sf.drftpd.event.irc;
 
-import java.rmi.RemoteException;
 import java.util.Iterator;
 
 import net.sf.drftpd.SlaveUnavailableException;
@@ -38,7 +37,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Slaves.java,v 1.12 2004/05/16 18:07:29 mog Exp $
+ * @version $Id: Slaves.java,v 1.13 2004/05/17 11:27:23 mog Exp $
  */
 public class Slaves extends GenericAutoService implements IRCPluginInterface {
 

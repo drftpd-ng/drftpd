@@ -41,11 +41,14 @@ import org.apache.log4j.Logger;
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.21 2004/05/16 18:07:30 mog Exp $
+ * @version $Id: Login.java,v 1.22 2004/05/17 11:27:24 mog Exp $
  */
 public class Login implements CommandHandler, Cloneable {
 
 	private static final Logger logger = Logger.getLogger(CommandHandler.class);
+	/**
+	 * If _idntAddress == null, IDNT hasn't been used.
+	 */
 	protected InetAddress _idntAddress;
 	protected String _idntIdent;
 
@@ -55,8 +58,8 @@ public class Login implements CommandHandler, Cloneable {
 	 */
 	private FtpReply doIDNT(BaseFtpConnection conn) {
 		if (_idntAddress != null
-			&& !conn.getClientAddress().equals(
-				conn.getConnectionManager().getConfig().getBouncerIp())) {
+			|| !conn.getConnectionManager().getConfig().getBouncerIps().contains(
+				conn.getClientAddress())) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		String arg = conn.getRequest().getArgument();
@@ -180,9 +183,9 @@ public class Login implements CommandHandler, Cloneable {
 		String ident = null;
 		for (Iterator iter = masks.iterator(); iter.hasNext();) {
 			HostMask mask = (HostMask) iter.next();
-			if (ident == null
-				&& mask.isIdentMaskSignificant()
-				&& conn.getConfig().useIdent()) {
+			if (_idntAddress != null
+				&& ident == null
+				&& mask.isIdentMaskSignificant()) {
 				Ident id = new Ident(conn.getControlSocket());
 				if (id.successful) {
 					ident = id.userName;
@@ -197,9 +200,8 @@ public class Login implements CommandHandler, Cloneable {
 			}
 			if ((_idntAddress != null
 				&& mask.matches(_idntIdent, _idntAddress))
-				|| mask.matches(
-					(ident == null ? "" : ident),
-					conn.getClientAddress())) {
+				|| (_idntAddress == null
+					&& mask.matches(ident, conn.getClientAddress()))) {
 				//success
 				// max_users and num_logins restriction
 				FtpReply response =
@@ -252,5 +254,4 @@ public class Login implements CommandHandler, Cloneable {
 
 	public void unload() {
 	}
-
 }

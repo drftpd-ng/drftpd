@@ -37,7 +37,7 @@ import se.mog.io.File;
 //TODO SECURITY: verify so that we never get outside of a rootbasket root
 /**
  * @author mog
- * @version $Id: RootBasket.java,v 1.26 2004/05/12 00:45:11 mog Exp $
+ * @version $Id: RootBasket.java,v 1.27 2004/05/17 11:27:25 mog Exp $
  */
 public class RootBasket {
 	private static final Logger logger = Logger.getLogger(RootBasket.class);
@@ -68,6 +68,7 @@ public class RootBasket {
 	/**
 	 * Get a directory specified by dir under an approperiate root for storing storing files in.
 	 * @param directory to store file in
+	 * @throws PermissionDeniedException If creation of dir failed in the slave root selected by getARootFileDir().
 	 */
 	public File getARootFileDir(String dir) throws PermissionDeniedException {
 		Iterator iter = _roots.iterator();

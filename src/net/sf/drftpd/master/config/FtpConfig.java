@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -43,7 +44,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.51 2004/05/16 18:07:30 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.52 2004/05/17 11:27:24 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -74,7 +75,7 @@ public class FtpConfig {
 		}
 		return users;
 	}
-	private InetAddress _bouncerIp;
+	private ArrayList _bouncerIps;
 	private boolean _capFirstDir;
 	private boolean _capFirstFile;
 
@@ -96,11 +97,10 @@ public class FtpConfig {
 	private boolean _useDirNames;
 	private boolean _useFileNames;
 
-	private boolean _useIdent;
 	private String newConf = "conf/perms.conf";
-        
-        private String _serverName;
-        private int _socketPort;
+
+	private String _serverName;
+	private int _socketPort;
 
 	/**
 	 * Constructor that allows reusing of cfg object
@@ -196,8 +196,9 @@ public class FtpConfig {
 	}
 
 	private boolean checkPermission(String key, User user) {
-		Permission perm = (Permission)_permissions.get(key);
-		if(perm == null) return false;
+		Permission perm = (Permission) _permissions.get(key);
+		if (perm == null)
+			return false;
 		return perm.check(user);
 	}
 
@@ -252,8 +253,8 @@ public class FtpConfig {
 	/**
 	 * @return Returns the bouncerIp.
 	 */
-	public InetAddress getBouncerIp() {
-		return _bouncerIp;
+	public List getBouncerIps() {
+		return _bouncerIps;
 	}
 
 	public float getCreditCheckRatio(
@@ -341,14 +342,21 @@ public class FtpConfig {
 		throws IOException {
 		loadConfig2();
 		_connManager = connManager;
-		_useIdent = cfg.getProperty("use.ident", "true").equals("true");
-		_slaveStatusUpdateTime = Long.parseLong(cfg.getProperty("slaveStatusUpdateTime", "3000"));
+		_slaveStatusUpdateTime =
+			Long.parseLong(cfg.getProperty("slaveStatusUpdateTime", "3000"));
 		_serverName = cfg.getProperty("master.bindname", "slavemaster");
-		_socketPort = Integer.parseInt(cfg.getProperty("master.socketport", "1100"));
+		_socketPort =
+			Integer.parseInt(cfg.getProperty("master.socketport", "1100"));
 
-		String bouncerHost = cfg.getProperty("bouncer_ip");
-		_bouncerIp =
-			bouncerHost != null ? InetAddress.getByName(bouncerHost) : null;
+		StringTokenizer st =
+			new StringTokenizer(cfg.getProperty("bouncer_ip",""), " ");
+
+		ArrayList bouncerIps = new ArrayList();
+		while (st.hasMoreTokens()) {
+			bouncerIps.add(InetAddress.getByName(st.nextToken()));
+			// throws UnknownHostException
+		}
+		_bouncerIps = bouncerIps;
 	}
 
 	private void loadConfig2() throws IOException {
@@ -442,7 +450,12 @@ public class FtpConfig {
 							|| "userrejectinsecure".equals(cmd)
 							|| "denydiruncrypted".equals(cmd)
 							|| "denydatauncrypted".equals(cmd)) {
-						if(permissions.containsKey(cmd)) throw new RuntimeException("Duplicate key in perms.conf: "+cmd+" line: "+in.getLineNumber());
+						if (permissions.containsKey(cmd))
+							throw new RuntimeException(
+								"Duplicate key in perms.conf: "
+									+ cmd
+									+ " line: "
+									+ in.getLineNumber());
 						permissions.put(cmd, new Permission(makeUsers(st)));
 					}
 				} catch (Exception e) {
@@ -537,9 +550,5 @@ public class FtpConfig {
 			}
 			replaceChars(sb, oldChar, newChar);
 		}
-	}
-
-	public boolean useIdent() {
-		return _useIdent;
 	}
 }

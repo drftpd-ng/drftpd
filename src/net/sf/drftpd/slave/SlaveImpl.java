@@ -62,7 +62,7 @@ import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.91 2004/05/12 00:45:11 mog Exp $
+ * @version $Id: SlaveImpl.java,v 1.92 2004/05/17 11:27:26 mog Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
@@ -281,19 +281,15 @@ public class SlaveImpl
 			File dir = new File(file.getParentFile());
 
 			//TODO don't go above empty root
+			logger.debug("DELETE: "+path);
 			while (dir.list().length == 0) {
 				file.delete();
-				logger.debug(dir.getPath() + " - " + dir.getParent());
+				logger.debug("DELETEFS: "+file.getPath());
 				java.io.File tmpFile = dir.getParentFile();
 				if (tmpFile == null)
 					break;
-				logger.debug(
-					tmpFile.getPath()
-						+ ".length() <= "
-						+ root.getPath()
-						+ ".length()");
 				if (tmpFile.getPath().length() <= root.getPath().length()) {
-					break;
+					throw new SecurityException("Attempt to break out of root");
 				}
 				dir = new File(tmpFile);
 			}

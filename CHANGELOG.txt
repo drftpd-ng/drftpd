@@ -1,3 +1,7 @@
+2004/05/17 Morgan Christiansson <drftpd@mog.se>
+* Added IDNT support with accompanying LoginTest JUnit tetscase.
+* Removed use.ident support, ident protocol is used if it is significant in users hostmasks.
+
 2004/05/16 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Refactored ArchiveType(s) to accept multiple destination slaves
 * There are four ArchiveType(s) now available, MoveReleaseToMostFreeSlaves
