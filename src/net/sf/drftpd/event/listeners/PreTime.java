@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.lang.reflect.Array;
 
 import net.sf.drftpd.Bytes;
+import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.DirectoryFtpEvent;
@@ -46,18 +47,19 @@ public class PreTime implements FtpListener {
 		if (!(event instanceof DirectoryFtpEvent))
 			return;
 		DirectoryFtpEvent dfe = (DirectoryFtpEvent) event;
-		System.out.println(dfe.getCommand());
 		if ( dfe.getCommand().startsWith("MKD") ) {
 			String release[] = dfe.getDirectory().getPath().split("/");
 			String releaseName;
 			if ( isDatedDir(release[1]) )
 				releaseName = release[3];
 			else releaseName = release[2];
+			if ( releaseName == null ) return; // DatedDir section created date dir
 //			for ( int j = 0; j<Array.getLength(release); j++) {
 //				System.out.println("release["+j+"] = " + release[j]);
 //			}
+			
 			_irc.getIRCConnection().sendCommand(
-				new MessageCommand(prebot,"!pred " + releaseName));
+				new MessageCommand(getPreBot(),"!pred " + releaseName));
 		}
 	}
 
@@ -80,11 +82,11 @@ public class PreTime implements FtpListener {
 		}
 		prebot = props.getProperty("prebot");
 		if ( prebot == null ) {
-			logger.warn("prebot not set in prebot.conf");
+			throw new FatalException("prebot not set in prebot.conf");
 		}
 		datedDirs = new ArrayList();
 		for (int i = 1;; i++) {
-			String temp = props.getProperty("datedDir." + i);
+			String temp = props.getProperty("DatedDir." + i);
 			if ( temp == null )
 				break;
 			datedDirs.add(temp);
@@ -94,7 +96,7 @@ public class PreTime implements FtpListener {
 			_siteBot.disable();
 		}
 		try {
-			IRCListener _irc =
+			_irc =
 				(IRCListener) _cm.getFtpListener(IRCListener.class);
 			_siteBot = new SiteBot(_irc, this);
 		} catch (ObjectNotFoundException e1) {
