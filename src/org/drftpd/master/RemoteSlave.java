@@ -946,6 +946,10 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	public final synchronized void setOfflineReal(String reason) {
 		if (_socket != null) {
 			try {
+				sendCommand(new AsyncCommand("error", reason));
+			} catch (SlaveUnavailableException e) {
+			}
+			try {
 				_socket.close();
 			} catch (IOException e) {
 			}
@@ -1135,5 +1139,12 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	}
 	public void setSentBytes(long sentBytes) {
 		_sentBytes = sentBytes;
+	}
+	
+	public void shutdown() {
+		try {
+			sendCommand(new AsyncCommand("shutdown", "shutdown gracefully"));
+		} catch (SlaveUnavailableException e) {
+		}
 	}
 }

@@ -69,11 +69,6 @@ public class ConnectionManager {
         String cfgFileName) throws SlaveFileException {
         _gctx = new GlobalContext(cfg, cfgFileName, this);
 
-        // start socket slave manager
-
-        /*                if (!cfg.getProperty("master.socketport", "").equals("")) {
-                                new SocketSlaveManager(this, cfg);
-                        }*/
         if (slaveCfg != null) {
             try {
                 new Slave(slaveCfg);

@@ -21,7 +21,6 @@ import java.io.Serializable;
 
 /**
  * @author zubov
- *
  * @version $Id$
  */
 public class QueuedOperation implements Serializable {
@@ -29,8 +28,16 @@ public class QueuedOperation implements Serializable {
 	private static final long serialVersionUID = 3258125869099659321L;
 	
 	private String _source;
+
 	private String _destination;
 	
+	public boolean equals(Object arg0) {
+		return ((QueuedOperation) arg0)._source.equals(_source);
+	}
+	
+	public int hashCode() {
+		return _source.hashCode();
+	}
 	public QueuedOperation(String src, String dest) {
 		this._source = src;
 		this._destination = dest;

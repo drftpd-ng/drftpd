@@ -32,8 +32,10 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
@@ -64,7 +66,6 @@ import org.drftpd.slave.async.AsyncResponseRemerge;
 import org.drftpd.slave.async.AsyncResponseSFVFile;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
-import org.tanukisoftware.wrapper.WrapperManager;
 
 import se.mog.io.File;
 import se.mog.io.PermissionDeniedException;
@@ -92,7 +93,7 @@ public class Slave {
     private HashMap _transfers;
     private boolean _uploadChecksums;
     private PortRange _portRange;
-    private ArrayList _renameQueue = null;
+    private Set _renameQueue = null;
     private InetAddress _externalAddress = null;
     
     protected Slave() {
@@ -108,7 +109,7 @@ public class Slave {
         String slavename = PropertyHelper.getProperty(p, "slave.name");
         
         if (isWin32) {
-        	_renameQueue = new ArrayList();
+        	_renameQueue = new HashSet();
         }
 
         try {
@@ -471,8 +472,13 @@ public class Slave {
 
             return null;
         }
+        
+        if (ac.getIndex().equals("shutdown")) {
+        	logger.info("The master has requested that I shutdown");
+        	System.exit(0);
+        }
 
-        if (ac.getName().equals("error")) {
+        if (ac.getIndex().equals("error")) {
             throw new RuntimeException("error - " + ac);
         }
 
@@ -518,7 +524,7 @@ public class Slave {
     private AsyncResponse handleDelete(AsyncCommandArgument ac) {
         try {
         	try {
-        		delete(ac.getArgs());
+        		delete(mapPathToRenameQueue(ac.getArgs()));
             } catch (PermissionDeniedException e) {
             	if (isWin32) {
             		synchronized (_renameQueue) {
@@ -538,7 +544,7 @@ public class Slave {
     private AsyncResponse handleID3Tag(AsyncCommandArgument ac) {
         try {
             return new AsyncResponseID3Tag(ac.getIndex(),
-                getID3v1Tag(ac.getArgs()));
+                getID3v1Tag(mapPathToRenameQueue(ac.getArgs())));
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);
         }
@@ -577,7 +583,7 @@ public class Slave {
         long position = Long.parseLong(st.nextToken());
         TransferIndex transferIndex = new TransferIndex(Integer.parseInt(
                     st.nextToken()));
-        String path = st.nextToken();
+        String path = mapPathToRenameQueue(st.nextToken());
         String fileName = path.substring(path.lastIndexOf("/") + 1);
         String dirName = path.substring(0, path.lastIndexOf("/"));
         Transfer t = getTransfer(transferIndex);
@@ -634,7 +640,7 @@ public class Slave {
 
     private AsyncResponse handleRename(AsyncCommandArgument ac) {
         StringTokenizer st = new StringTokenizer(ac.getArgs(), ",");
-        String from = st.nextToken();
+        String from = mapPathToRenameQueue(st.nextToken());
         String toDir = st.nextToken();
         String toFile = st.nextToken();
 
@@ -669,7 +675,7 @@ public class Slave {
         long position = Long.parseLong(st.nextToken());
         TransferIndex transferIndex = new TransferIndex(Integer.parseInt(
                     st.nextToken()));
-        String path = st.nextToken();
+        String path = mapPathToRenameQueue(st.nextToken());
         Transfer t = getTransfer(transferIndex);
         sendResponse(new AsyncResponse(ac.getIndex())); // return
 
@@ -686,7 +692,7 @@ public class Slave {
     private AsyncResponse handleSfvFile(AsyncCommandArgument ac) {
         try {
             return new AsyncResponseSFVFile(ac.getIndex(),
-                getSFVFile(ac.getArgs()));
+                getSFVFile(mapPathToRenameQueue(ac.getArgs())));
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);
         }
@@ -728,6 +734,24 @@ public class Slave {
             }
             new Thread(new AsyncCommandHandler(ac)).start();
         }
+    }
+    
+    public String mapPathToRenameQueue(String path) {
+    	if (!isWin32) { // there is no renameQueue
+    		return path;
+    	}
+    	synchronized(_renameQueue) {
+    		for (Iterator iter = _renameQueue.iterator(); iter.hasNext();) {
+    			QueuedOperation qo = (QueuedOperation) iter.next();
+    			if (qo.getDestination() == null) {
+    				continue;
+    			}
+    			if (qo.getDestination().equals(path)) {
+    				return qo.getSource();
+    			}
+    		}
+        	return path;
+    	}
     }
 
     public void removeTransfer(Transfer transfer) {

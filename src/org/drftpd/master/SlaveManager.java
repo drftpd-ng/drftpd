@@ -181,6 +181,9 @@ public class SlaveManager implements Runnable {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				logger.info("Running shutdown hook");
+				for (RemoteSlave rslave : _rslaves) {
+					rslave.shutdown();
+				}
 				saveFilelist();
 
 				try {
