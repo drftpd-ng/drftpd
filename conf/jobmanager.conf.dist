@@ -1,0 +1,8 @@
+# maximum time to allowed for a release to sit in the queue and wait
+# for a better time to transfer(one when the source and dest slave are
+# free in their respective transfer directions (in minutes)
+# *** not implemented yet ***
+maxWait=60
+
+# use CRC checks after transfers to make sure files arrived correctly
+useCRC=true

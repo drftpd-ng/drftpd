@@ -1,11 +1,14 @@
 package net.sf.drftpd.mirroring;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.Event;
@@ -13,26 +16,29 @@ import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
+import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.20 2004/02/06 01:39:18 zubov Exp $
+ * @version $Id: JobManager.java,v 1.21 2004/02/07 18:16:20 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
 	private ConnectionManager _cm;
+	private boolean _isStopped = false;
 	private ArrayList _jobList = new ArrayList();
 	private ArrayList _slaveSendingList = new ArrayList();
 	private ArrayList _threadList = new ArrayList();
-	private boolean _isStopped = false;
+	private boolean _useCRC;
 
 	/**
 	 * Keeps track of all jobs and controls them
 	 */
-	public JobManager() {
+	public JobManager() throws IOException {
+		reload();
 	}
 
 	public void actionPerformed(Event event) {
@@ -234,7 +240,24 @@ public class JobManager implements FtpListener {
 				}
 				Thread.sleep(20000);
 			}
-			new SlaveTransfer(temp.getFile(), sourceSlave, slave).transfer();
+			SlaveTransfer slaveTransfer =
+				new SlaveTransfer(temp.getFile(), sourceSlave, slave);
+			if (!slaveTransfer.transfer(useCRC())) { // crc failed
+				try {
+					slave.getSlave().delete(temp.getFile().getPath());
+				} catch (IOException e) {
+					//couldn't delete it, just carry on
+				}
+				logger.debug(
+					"CRC did not match for "
+						+ temp.getFile()
+						+ " when sending from "
+						+ sourceSlave.getName()
+						+ " to "
+						+ slave.getName());
+				addJob(temp);
+				return false;
+			}
 		} catch (IOException e) {
 			_slaveSendingList.remove(sourceSlave);
 			if (!e.getMessage().equals("File exists")) {
@@ -291,6 +314,12 @@ public class JobManager implements FtpListener {
 		}
 		return true;
 	}
+
+	private void reload() throws FileNotFoundException, IOException {
+		Properties ircCfg = new Properties();
+		ircCfg.load(new FileInputStream("conf/jobmanager.conf"));
+		_useCRC = FtpConfig.getProperty(ircCfg, "useCRC").equals("true");
+	}
 	public synchronized void removeJob(Job job) {
 		_jobList.remove(job);
 		Collections.sort(_jobList, new JobComparator());
@@ -343,6 +372,10 @@ public class JobManager implements FtpListener {
 
 	public void unload() {
 
+	}
+
+	private boolean useCRC() {
+		return _useCRC;
 	}
 
 }
