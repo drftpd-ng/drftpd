@@ -41,7 +41,7 @@ import org.apache.log4j.Logger;
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.26 2004/05/31 12:14:36 mog Exp $
+ * @version $Id: Login.java,v 1.27 2004/05/31 13:47:26 mog Exp $
  */
 public class Login implements CommandHandler, Cloneable {
 
@@ -161,7 +161,8 @@ public class Login implements CommandHandler, Cloneable {
 		User newUser;
 		try {
 			newUser =
-				conn.getConnectionManager().getUserManager().getUserByName(request.getArgument());
+				conn.getConnectionManager().getUserManager().getUserByName(
+					request.getArgument());
 		} catch (NoSuchUserException ex) {
 			return new FtpReply(530, ex.getMessage());
 		} catch (UserFileException ex) {
@@ -183,7 +184,9 @@ public class Login implements CommandHandler, Cloneable {
 		String ident = null;
 		for (Iterator iter = masks.iterator(); iter.hasNext();) {
 			HostMask mask = (HostMask) iter.next();
-			if (_idntAddress != null
+			// request ident if no IDNT, ident hasn't been requested
+			// and ident matters in this hostmask
+			if (_idntAddress == null
 				&& ident == null
 				&& mask.isIdentMaskSignificant()) {
 				Ident id = new Ident(conn.getControlSocket());
