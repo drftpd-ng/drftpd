@@ -16,7 +16,15 @@ master.usermanager=org.drftpd.usermanager.javabeans.BeanUserManager
 #plugins.2=net.sf.drftpd.event.listeners.Trial
 #plugins.3=net.sf.drftpd.event.listeners.Archive
 
+#leave slaveselection manager as is and use default configs in:
+# 1. slaveselection-up.conf.dist
+# 2. slaveselection-down.conf.dist
+# 3. slaveselection-master.conf.dist
+# alternate is org.drftpd.slaveselection.def.SlaveSelectionManager
 slaveselection=org.drftpd.slaveselection.filter.SlaveSelectionManager
+
+# this defines each directory under / as a section, "site sections"
+# alternate is org.drftpd.sections.filter.SectionManager
 sectionmanager=org.drftpd.sections.def.SectionManager
 
 #hide ips in logs?
