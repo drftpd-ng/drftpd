@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: GlftpdUserManager.java,v 1.10 2004/01/13 22:46:44 mog Exp $
+ * @version $Id: GlftpdUserManager.java,v 1.11 2004/01/13 23:26:59 zubov Exp $
  */
 public class GlftpdUserManager implements UserManager {
 	private static final Logger logger =
@@ -44,6 +44,10 @@ public class GlftpdUserManager implements UserManager {
 	 * glftpd.passwd
 	 * </pre>
 	 */
+	public GlftpdUserManager() {
+		this(System.getProperties());
+	}
+	
 	public GlftpdUserManager(Properties cfg) {
 		//		super();
 		//this.root = root;

@@ -29,7 +29,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.31 2004/01/13 20:30:54 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.32 2004/01/13 23:26:59 zubov Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -111,11 +111,11 @@ public class FtpConfig {
 	}
 
 	public boolean checkDelete(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermssion(fromUser, path, _delete.iterator());
+		return checkPathPermission(fromUser, path, _delete.iterator());
 	}
 
 	public boolean checkDeleteOwn(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermssion(fromUser, path, _deleteown.iterator());
+		return checkPathPermission(fromUser, path, _deleteown.iterator());
 	}
 
 	/**
@@ -125,7 +125,7 @@ public class FtpConfig {
 	 * @return true if the path has dirlog enabled.
 	 */
 	public boolean checkDirLog(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermssion(fromUser, path, _dirlog.iterator());
+		return checkPathPermission(fromUser, path, _dirlog.iterator());
 	}
 
 	/**
@@ -133,24 +133,24 @@ public class FtpConfig {
 	 * @return true if fromUser is allowed to download the file path
 	 */
 	public boolean checkDownload(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermssion(fromUser, path, _download.iterator());
+		return checkPathPermission(fromUser, path, _download.iterator());
 	}
 
 	/**
 	 * @return true if fromUser should be hidden
 	 */
 	public boolean checkHideInWho(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermssion(fromUser, path, _hideinwho.iterator());
+		return checkPathPermission(fromUser, path, _hideinwho.iterator());
 	}
 
 	/**
 	 * @return true if fromUser is allowed to mkdir in path
 	 */
 	public boolean checkMakeDir(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermssion(fromUser, path, _makedir.iterator());
+		return checkPathPermission(fromUser, path, _makedir.iterator());
 	}
 
-	private boolean checkPathPermssion(
+	private boolean checkPathPermission(
 		User fromUser,
 		LinkedRemoteFile path,
 		Iterator iter) {
@@ -167,7 +167,7 @@ public class FtpConfig {
 	 * @return true if fromUser is allowed to pre in path
 	 */
 	public boolean checkPre(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermssion(fromUser, path, _pre.iterator());
+		return checkPathPermission(fromUser, path, _pre.iterator());
 	}
 
 	/**
@@ -187,20 +187,20 @@ public class FtpConfig {
 	}
 
 	public boolean checkRename(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermssion(fromUser, path, _rename.iterator());
+		return checkPathPermission(fromUser, path, _rename.iterator());
 	}
 
 	public boolean checkRenameOwn(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermssion(fromUser, path, _renameown.iterator());
+		return checkPathPermission(fromUser, path, _renameown.iterator());
 	}
 	public boolean checkRequest(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermssion(fromUser, path, _request.iterator());
+		return checkPathPermission(fromUser, path, _request.iterator());
 	}
 	/**
 	 * @return true if fromUser is allowed to upload in directory path
 	 */
 	public boolean checkUpload(User fromUser, LinkedRemoteFile path) {
-		return checkPathPermssion(fromUser, path, _upload.iterator());
+		return checkPathPermission(fromUser, path, _upload.iterator());
 	}
 
 	public void directoryMessage(
