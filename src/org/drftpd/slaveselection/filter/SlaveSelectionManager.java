@@ -37,12 +37,13 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.Transfer;
 
 import org.apache.log4j.Logger;
+import org.drftpd.slaveselection.*;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.1 2004/02/26 13:56:53 mog Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.2 2004/02/26 20:36:57 mog Exp $
  */
-public class SlaveSelectionManager {
+public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 	private static final Logger logger =
 		Logger.getLogger(SlaveSelectionManager.class);
 	private SlaveManagerImpl _sm;
@@ -77,7 +78,7 @@ public class SlaveSelectionManager {
 				break;
 			if (type.indexOf('.') == -1) {
 				type =
-					"org.drftpd.slaveselection."
+					"org.drftpd.slaveselection.filter."
 						+ type.substring(0, 1).toUpperCase()
 						+ type.substring(1)
 						+ "Filter";
@@ -113,8 +114,6 @@ public class SlaveSelectionManager {
 		BaseFtpConnection conn,
 		LinkedRemoteFileInterface file)
 		throws NoAvailableSlaveException {
-		if (conn != null && direction != conn.getDirection())
-			throw new RuntimeException("direction != conn.getDirection()");
 		InetAddress source = conn != null ? conn.getClientAddress() : null;
 		return process(
 			new ScoreChart(rslaves),
