@@ -90,10 +90,6 @@ i1:
         }
     }
 
-    private static void verifyEvents(List<String> tmpEventNames, ArrayList events) {
-        verifyEvents(new ArrayList<String>(tmpEventNames), events);
-    }
-
     public void resetSetUp() {
         _gctx = new GCtx();
 
@@ -115,7 +111,7 @@ i1:
         logger.debug("resetDay lastreset " + new Date(_user.getLastReset()));
         logger.debug("resetDay date " + _resetCal.getTime());
         _user.reset(_gctx, _resetCal);
-        verifyEvents(Arrays.asList(new String[] { "RESETDAY" }), _gctx.events);
+        verifyEvents(new ArrayList<String>(Arrays.asList(new String[] { "RESETDAY" })), _gctx.events);
     }
 
     public void testResetMonth() throws UserFileException {
@@ -126,8 +122,8 @@ i1:
         logger.debug("resetMonth lastreset " + new Date(_user.getLastReset()));
         logger.debug("resetMonth date " + _resetCal.getTime());
         _user.reset(_gctx, _resetCal);
-        verifyEvents(Arrays.asList(
-                new String[] { "RESETDAY", "RESETWEEK", "RESETMONTH" }),
+        verifyEvents(new ArrayList<String>(Arrays.asList(
+                new String[] { "RESETDAY", "RESETWEEK", "RESETMONTH" })),
             _gctx.events);
     }
 
@@ -151,7 +147,7 @@ i1:
         logger.debug("resetWeek lastreset " + new Date(_user.getLastReset()));
         logger.debug("resetWeek date " + _resetCal.getTime());
         _user.reset(_gctx, _resetCal);
-        verifyEvents(Arrays.asList(new String[] { "RESETDAY", "RESETWEEK" }),
+        verifyEvents(new ArrayList<String>(Arrays.asList(new String[] { "RESETDAY", "RESETWEEK" })),
             _gctx.events);
     }
 
