@@ -53,7 +53,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.129 2004/03/28 16:34:41 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.130 2004/03/30 14:16:35 mog Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -1186,11 +1186,6 @@ public class LinkedRemoteFile
 			throw new IllegalArgumentException("argument is not a directory");
 
 		// add/merge all files from mergedir
-		for (Iterator iter = _files.values().iterator(); iter.hasNext();) {
-			LinkedRemoteFile localfile = (LinkedRemoteFile) iter.next();
-			LinkedRemoteFile parent = localfile.getParentFileNull();
-			logger.debug("localfile = " + localfile + " with parent " + parent);
-		}
 		for (Iterator i = mergedir.getFiles().iterator(); i.hasNext();) {
 			LinkedRemoteFile slavefile = (LinkedRemoteFile) i.next();
 			if (slavefile.isDirectory() && slavefile.length() == 0) {

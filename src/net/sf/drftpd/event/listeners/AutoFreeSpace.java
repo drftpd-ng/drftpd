@@ -45,7 +45,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author zubov
- * @version $Id: AutoFreeSpace.java,v 1.10 2004/02/23 01:14:36 mog Exp $
+ * @version $Id: AutoFreeSpace.java,v 1.11 2004/03/30 14:16:34 mog Exp $
  */
 public class AutoFreeSpace implements FtpListener {
 	private static final Logger logger = Logger.getLogger(AutoFreeSpace.class);
@@ -54,7 +54,7 @@ public class AutoFreeSpace implements FtpListener {
 		BasicConfigurator.configure();
 		List rslaves = SlaveManagerImpl.loadRSlaves();
 		LinkedRemoteFileInterface root =
-			SlaveManagerImpl.loadMLSTFileDatabase(rslaves, null);
+			ConnectionManager.loadMLSTFileDatabase(rslaves, null);
 
 		AutoFreeSpace space = new AutoFreeSpace();
 		space.deleteOldReleases(root.getDirectories(), 0);

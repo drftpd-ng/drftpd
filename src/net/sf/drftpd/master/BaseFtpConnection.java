@@ -59,7 +59,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.75 2004/02/27 01:02:19 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.76 2004/03/30 14:16:34 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -115,7 +115,7 @@ public class BaseFtpConnection implements Runnable {
 		//_controlSocket = soc;
 		setControlSocket(soc);
 		lastActive = System.currentTimeMillis();
-		setCurrentDirectory(connManager.getSlaveManager().getRoot());
+		setCurrentDirectory(connManager.getRoot());
 	}
 	protected BaseFtpConnection() {
 	}

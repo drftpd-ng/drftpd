@@ -18,6 +18,8 @@
 package net.sf.drftpd.master;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
@@ -47,7 +49,9 @@ import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.MLSTSerialize;
 import net.sf.drftpd.slave.SlaveImpl;
+import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -55,7 +59,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.92 2004/03/04 01:41:27 zubov Exp $
+ * @version $Id: ConnectionManager.java,v 1.93 2004/03/30 14:16:34 mog Exp $
  */
 public class ConnectionManager {
 	private SectionManagerInterface _sections;
@@ -141,6 +145,8 @@ public class ConnectionManager {
 	private UserManager _usermanager;
 	protected ConnectionManager() {
 	}
+
+	protected LinkedRemoteFile _root;
 	public ConnectionManager(
 		Properties cfg,
 		Properties slaveCfg,
@@ -156,6 +162,17 @@ public class ConnectionManager {
 		GlobRMIServerSocketFactory ssf =
 			new GlobRMIServerSocketFactory(rslaves);
 			
+			try {
+				List rslaves1 = rslaves;
+				_root = ConnectionManager.loadMLSTFileDatabase(rslaves1, this);
+			} catch (FileNotFoundException e) {
+				logger.info("files.mlst not found, creating a new filelist", e);
+				_root = new LinkedRemoteFile(getConfig());
+				//saveFilelist();
+			} catch (IOException e) {
+				throw new FatalException(e);
+			}
+
 		/** register slavemanager **/
 		try {
 			_slaveManager = new SlaveManagerImpl(cfg, rslaves, ssf, this);
@@ -251,7 +268,19 @@ public class ConnectionManager {
 		_timer.schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
 		getSlaveManager().addShutdownHook();
 	}
-	
+	public void saveFilelist() {
+		try {
+			SafeFileWriter out = new SafeFileWriter("files.mlst");
+			try {
+				MLSTSerialize.serialize(getRoot(), out);
+			} finally {
+				out.close();
+			}
+		} catch (IOException e) {
+			logger.warn("Error saving files.mlst", e);
+		}
+	}
+
 	public void loadJobManager() {
 		if ( _jm != null ) return; // already loaded
 		try {
@@ -440,10 +469,20 @@ public class ConnectionManager {
 	}
 
 	public LinkedRemoteFile getRoot() {
-		return getSlaveManager().getRoot();
+		return _root;
 	}
 
 	public SectionManagerInterface getSectionManager() {
 		return _sections;
+	}
+
+	public static LinkedRemoteFile loadMLSTFileDatabase(
+		List rslaves,
+		ConnectionManager cm)
+		throws IOException {
+		return MLSTSerialize.unserialize(
+			cm != null ? cm.getConfig() : null,
+			new FileReader("files.mlst"),
+			rslaves);
 	}
 }

@@ -18,6 +18,8 @@
 package net.sf.drftpd.master.command.plugins;
 
 import java.rmi.RemoteException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -54,7 +56,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.31 2004/03/26 11:22:20 mog Exp $
+ * @version $Id: UserManagment.java,v 1.32 2004/03/30 14:16:35 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -620,10 +622,18 @@ public class UserManagment implements CommandHandler {
 				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 			}
 		} else if ("created".equals(command)) {
+			long myDate;
 			if (!commandArgument.equals("")) {
-				return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+				try {
+					myDate =  new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.Sz").parse(commandArgument).getTime();
+				} catch (ParseException e1) {
+					logger.log(Level.INFO, e1);
+					return new FtpReply(200, e1.getMessage());
+				}
+			} else {
+				myDate = System.currentTimeMillis();
 			}
-			myUser.setCreated(System.currentTimeMillis());
+			myUser.setCreated(myDate);
 			return new FtpReply(
 				200,
 				conn.jprintf(

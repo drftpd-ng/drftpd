@@ -65,7 +65,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.75 2004/03/15 01:55:25 zubov Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.76 2004/03/30 14:16:34 mog Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -111,23 +111,6 @@ public class SlaveManagerImpl
 		return availableSlaves;
 	}
 
-	public static LinkedRemoteFile loadFileDatabase(
-		List rslaves,
-		ConnectionManager cm)
-		throws FileNotFoundException, IOException, CorruptFileListException {
-		/** load MLST file database **/
-		return loadMLSTFileDatabase(rslaves, cm);
-	}
-
-	public static LinkedRemoteFile loadMLSTFileDatabase(
-		List rslaves,
-		ConnectionManager cm)
-		throws IOException {
-		return MLSTSerialize.unserialize(
-			cm != null ? cm.getConfig() : null,
-			new FileReader("files.mlst"),
-			rslaves);
-	}
 	public static RemoteSlave loadRSlave(Element slaveElement) {
 		List masks = new ArrayList();
 		List maskElements = slaveElement.getChildren("mask");
@@ -205,7 +188,6 @@ public class SlaveManagerImpl
 
 	private ConnectionManager _cm;
 
-	protected LinkedRemoteFile _root;
 	protected List _rslaves;
 	private long _statusReloadTime;
 	protected SlaveManagerImpl() throws RemoteException {
@@ -225,15 +207,7 @@ public class SlaveManagerImpl
 		setRSlavesManager(rslaves, this);
 
 		_rslaves = rslaves;
-		try {
-			_root = loadFileDatabase(_rslaves, cm);
-		} catch (FileNotFoundException e) {
-			logger.info("files.mlst not found, creating a new filelist", e);
-			_root = new LinkedRemoteFile(cm.getConfig());
-			saveFilelist();
-		} catch (IOException e) {
-			throw new FatalException(e);
-		}
+
 		Registry registry =
 			LocateRegistry.createRegistry(
 				Integer.parseInt(cfg.getProperty("master.bindport", "1099")),
@@ -308,7 +282,7 @@ public class SlaveManagerImpl
 		LinkedRemoteFile slaveroot;
 		slaveroot = rslave.getSlaveRoot();
 		try {
-			_root.remerge(slaveroot, rslave);
+			getConnectionManager().getRoot().remerge(slaveroot, rslave);
 		} catch (RuntimeException t) {
 			logger.log(Level.FATAL, "", t);
 			rslave.setOffline(t.getMessage());
@@ -470,10 +444,6 @@ public class SlaveManagerImpl
 	public ConnectionManager getConnectionManager() {
 		return _cm;
 	}
-	public LinkedRemoteFile getRoot() {
-		return _root;
-	}
-
 	public RemoteSlave getSlave(String s) throws ObjectNotFoundException {
 		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
@@ -546,7 +516,7 @@ public class SlaveManagerImpl
 					Level.WARN,
 					rslave.getName() + " no longer in slaves.xml, unmerging");
 				rslave.setOffline("Slave removed from slaves.xml");
-				_root.unmergeDir(rslave);
+				getConnectionManager().getRoot().unmergeDir(rslave);
 				//rslaves.remove(rslave);
 				iter.remove();
 			}
@@ -584,15 +554,10 @@ public class SlaveManagerImpl
 	}
 
 	public void saveFilelist() {
-		//saveFilesXML(JDOMSerialize.serialize(this.getRoot()));
-
-		//		File bak = new File("files.mlst.bak");
-		//		bak.delete();
-		//		new File("files.mlst").renameTo(bak);
 		try {
 			SafeFileWriter out = new SafeFileWriter("files.mlst");
 			try {
-				MLSTSerialize.serialize(getRoot(), out);
+				MLSTSerialize.serialize(getConnectionManager().getRoot(), out);
 			} finally {
 				out.close();
 			}

@@ -37,14 +37,18 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
  * CommandHandler plugin for viewing and manipulating the JobManager queue.
  * 
  * @author mog
- * @version $Id: JobManagerCommandHandler.java,v 1.10 2004/03/01 04:21:04 zubov Exp $
+ * @version $Id: JobManagerCommandHandler.java,v 1.11 2004/03/30 14:16:35 mog Exp $
  */
 public class JobManagerCommandHandler implements CommandHandler {
 
 	public JobManagerCommandHandler() {
 		super();
 	}
-
+	/**
+	 * USAGE: <file> <priority> [destslave ...] 
+	 * @param conn
+	 * @return
+	 */
 	private FtpReply doADDJOB(BaseFtpConnection conn) {
 		if (!conn.getUserNull().isAdmin())
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
@@ -58,7 +62,7 @@ public class JobManagerCommandHandler implements CommandHandler {
 		LinkedRemoteFileInterface lrf;
 		FtpReply reply = new FtpReply(200);
 		try {
-			lrf = conn.getCurrentDirectory().getFile(st.nextToken());
+			lrf = conn.getCurrentDirectory().lookupFile(st.nextToken());
 		} catch (FileNotFoundException e) {
 			return new FtpReply(500, "File does not exist");
 		}
