@@ -2,6 +2,7 @@
 * Fixed a minor bug in ArchiveType's where directories without files 
   could cause a NullPointerException, Thanks to akrog for the report
 * Fixed rename(), it would leave old directories behind, thanks Cy8er
+* Fixed gadmin's being able to give a leech slot when they are not allowed, thanks wikd
 
 2004/06/09 Morgan Christiansson <drftpd@mog.se>
 * Added hideIps=true setting in drftpd.conf for disabling logging of ips.
