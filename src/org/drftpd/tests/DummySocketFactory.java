@@ -15,56 +15,56 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.tests;
+package org.drftpd.tests;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
-import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
 
 /**
  * @author mog
- * @version $Id: DummyServerSocketFactory.java,v 1.2 2004/02/10 00:03:31 mog Exp $
+ * @version $Id: DummySocketFactory.java,v 1.1 2004/05/16 18:07:31 mog Exp $
  */
-public class DummyServerSocketFactory extends ServerSocketFactory {
-	private DummySocketFactory _dssf;
+public class DummySocketFactory extends SocketFactory {
 
-	public DummyServerSocketFactory(DummySocketFactory dssf) {
-		_dssf = dssf;
+	private DummySocket _socket = new DummySocket();
+	
+	public DummySocketFactory() {
 	}
 
-	public ServerSocket createServerSocket() {
-		try {
-			return new ServerSocket() {
-				public Socket accept() {
-					return getDummySocket();
-				}
-			};
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	public ServerSocket createServerSocket(int arg0) throws IOException {
-		return createServerSocket();
-	}
+	public Socket createSocket(String arg0, int arg1)
+		throws IOException, UnknownHostException {
+			return createSocket();	}
 
-	public ServerSocket createServerSocket(int arg0, int arg1)
-		throws IOException {
-		return createServerSocket();
-	}
-
-	public ServerSocket createServerSocket(
-		int arg0,
+	public Socket createSocket(
+		String arg0,
 		int arg1,
-		InetAddress arg2)
+		InetAddress arg2,
+		int arg3)
+		throws IOException, UnknownHostException {
+			return createSocket();	}
+
+	public Socket createSocket(InetAddress arg0, int arg1) throws IOException {
+		return createSocket();	}
+
+	public Socket createSocket(
+		InetAddress arg0,
+		int arg1,
+		InetAddress arg2,
+		int arg3)
 		throws IOException {
-		return createServerSocket();
+		return createSocket();
+	}
+
+	public Socket createSocket() throws IOException {
+		return _socket;
 	}
 
 	public DummySocket getDummySocket() {
-		return _dssf.getDummySocket();
+		return _socket;
 	}
 
 }

@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.tests;
+package org.drftpd.tests;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -44,21 +44,17 @@ import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 /**
  * @author mog
- * @version $Id: DummyBaseFtpConnection.java,v 1.4 2004/02/27 01:02:20 mog Exp $
+ * @version $Id: DummyBaseFtpConnection.java,v 1.1 2004/05/16 18:07:31 mog Exp $
  */
 public class DummyBaseFtpConnection extends BaseFtpConnection {
 
+	private UserManager _userManager;
 	private DummyServerSocketFactory _serverSocketFactory;
 	private DummySocketFactory _socketFactory;
 	private StringWriter _out;
 
 	private DataConnectionHandler _dch;
 
-	/**
-	 * @param connManager
-	 * @param soc
-	 * @throws IOException
-	 */
 	public DummyBaseFtpConnection(DataConnectionHandler dch) {
 		_dch = dch;
 		_socketFactory = new DummySocketFactory();
@@ -126,11 +122,11 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 		throw new UnsupportedOperationException();
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.BaseFtpConnection#getUserManager()
-	 */
 	public UserManager getUserManager() {
-		throw new UnsupportedOperationException();
+		return _userManager;
+	}
+	public void setUserManager(UserManager um) {
+		_userManager = um;
 	}
 
 	/* (non-Javadoc)
@@ -178,13 +174,6 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 	}
 
 	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.BaseFtpConnection#setAuthenticated(boolean)
-	 */
-	public void setAuthenticated(boolean authenticated) {
-		throw new UnsupportedOperationException();
-	}
-
-	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.BaseFtpConnection#setControlSocket(java.net.Socket)
 	 */
 	public void setControlSocket(Socket socket) {
@@ -198,11 +187,8 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 		throw new UnsupportedOperationException();
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.BaseFtpConnection#setUser(net.sf.drftpd.master.usermanager.User)
-	 */
 	public void setUser(User user) {
-		throw new UnsupportedOperationException();
+		super.setUser(user);
 	}
 
 	/* (non-Javadoc)

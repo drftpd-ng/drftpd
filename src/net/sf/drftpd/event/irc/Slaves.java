@@ -38,7 +38,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Slaves.java,v 1.11 2004/04/25 18:37:05 mog Exp $
+ * @version $Id: Slaves.java,v 1.12 2004/05/16 18:07:29 mog Exp $
  */
 public class Slaves extends GenericAutoService implements IRCPluginInterface {
 
@@ -83,7 +83,7 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 			try {
 				SlaveStatus status;
 				try {
-					status = rslave.getSlave().getSlaveStatus();
+					status = rslave.getStatus();
 				} catch (SlaveUnavailableException e1) {
 					String chan1 = chan;
 					_listener.sayChannel(
@@ -103,12 +103,6 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 					Level.WARN,
 					"Caught RuntimeException in !slaves loop",
 					t);
-				statusString = ReplacerUtils.jprintf(
-						"slaves.offline",
-						env,
-						Slaves.class);
-			} catch (RemoteException e) {
-				rslave.handleRemoteException(e);
 				statusString = ReplacerUtils.jprintf(
 						"slaves.offline",
 						env,

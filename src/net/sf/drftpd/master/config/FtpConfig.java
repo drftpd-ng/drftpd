@@ -43,7 +43,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.50 2004/05/12 00:45:08 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.51 2004/05/16 18:07:30 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -255,6 +255,7 @@ public class FtpConfig {
 	public InetAddress getBouncerIp() {
 		return _bouncerIp;
 	}
+
 	public float getCreditCheckRatio(
 		LinkedRemoteFileInterface path,
 		User fromUser) {
@@ -441,11 +442,6 @@ public class FtpConfig {
 							|| "userrejectinsecure".equals(cmd)
 							|| "denydiruncrypted".equals(cmd)
 							|| "denydatauncrypted".equals(cmd)) {
-						//ArrayList perms = (ArrayList) permissions1.get(key);
-						//if (perms == null) {
-						//	perms = new ArrayList();
-						//	permissions1.put(key, perms);
-						//}
 						if(permissions.containsKey(cmd)) throw new RuntimeException("Duplicate key in perms.conf: "+cmd+" line: "+in.getLineNumber());
 						permissions.put(cmd, new Permission(makeUsers(st)));
 					}

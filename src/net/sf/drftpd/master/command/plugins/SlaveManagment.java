@@ -38,7 +38,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author mog
  *
- * @version $Id: SlaveManagment.java,v 1.9 2004/05/12 00:45:07 mog Exp $
+ * @version $Id: SlaveManagment.java,v 1.10 2004/05/16 18:07:30 mog Exp $
  */
 public class SlaveManagment implements CommandHandler {
 	public void unload() {
@@ -83,13 +83,14 @@ public class SlaveManagment implements CommandHandler {
 	 */
 	private FtpReply doSITE_SLAVES(BaseFtpConnection conn) {
 		boolean showRMI =
-			conn.getRequest().hasArgument() && conn.getRequest().getArgument().indexOf("rmi") != -1;
-		if(showRMI && !conn.getUserNull().isAdmin()) {
+			conn.getRequest().hasArgument()
+				&& conn.getRequest().getArgument().indexOf("rmi") != -1;
+		if (showRMI && !conn.getUserNull().isAdmin()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
 		boolean showPlain =
-			conn.getRequest().hasArgument()
-				&& conn.getRequest().getArgument().indexOf("plain") != -1;
+			!conn.getRequest().hasArgument()
+				|| conn.getRequest().getArgument().indexOf("plain") != -1;
 		Collection slaves = conn.getSlaveManager().getSlaves();
 		FtpReply response =
 			new FtpReply(200, "OK, " + slaves.size() + " slaves listed.");
@@ -101,18 +102,25 @@ public class SlaveManagment implements CommandHandler {
 			if (showRMI) {
 				response.addComment(rslave.toString());
 			}
-			ReplacerEnvironment env = new ReplacerEnvironment();
-			env.add("slave", rslave.getName());
-			try {
-				SlaveStatus status = rslave.getStatus();
-				SiteBot.fillEnvSlaveStatus(env, status, conn.getSlaveManager());
-				response.addComment(
-					conn.jprintf(SlaveManagment.class, "slaves", env));
-			} catch (SlaveUnavailableException e) {
-				response.addComment(
-					conn.jprintf(SlaveManagment.class, "slaves.offline", env));
+			if (showPlain) {
+				ReplacerEnvironment env = new ReplacerEnvironment();
+				env.add("slave", rslave.getName());
+				try {
+					SlaveStatus status = rslave.getStatus();
+					SiteBot.fillEnvSlaveStatus(
+						env,
+						status,
+						conn.getSlaveManager());
+					response.addComment(
+						conn.jprintf(SlaveManagment.class, "slaves", env));
+				} catch (SlaveUnavailableException e) {
+					response.addComment(
+						conn.jprintf(
+							SlaveManagment.class,
+							"slaves.offline",
+							env));
+				}
 			}
-
 		}
 		return response;
 	}

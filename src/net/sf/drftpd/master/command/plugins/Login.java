@@ -41,36 +41,43 @@ import org.apache.log4j.Logger;
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.20 2004/04/20 04:11:48 mog Exp $
+ * @version $Id: Login.java,v 1.21 2004/05/16 18:07:30 mog Exp $
  */
 public class Login implements CommandHandler, Cloneable {
 
 	private static final Logger logger = Logger.getLogger(CommandHandler.class);
-	private InetAddress _idntAddress;
-	private String _idntIdent;
+	protected InetAddress _idntAddress;
+	protected String _idntIdent;
 
 	/**
-	 * Syntax: IDNT ident@ip:dns ???
-	 * @param conn
-	 * @return
+	 * Syntax: IDNT ident@ip:dns
+	 * Returns nothing.
 	 */
 	private FtpReply doIDNT(BaseFtpConnection conn) {
-		if(_idntAddress != null) return FtpReply.RESPONSE_530_ACCESS_DENIED;
-		if(conn.getClientAddress().equals(conn.getConnectionManager().getConfig().getBouncerIp())) {
-			String arg = conn.getRequest().getArgument();
-			int pos1 = arg.indexOf('@');
-			if(pos1 == -1) return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-			int pos2 = arg.indexOf(':', pos1+1);
-			if(pos2 == -1) return FtpReply.RESPONSE_501_SYNTAX_ERROR;
-
-			try {
-				_idntAddress = InetAddress.getByName(arg.substring(pos1+1, pos2));
-				_idntIdent = arg.substring(0, pos1).toString();
-			} catch (UnknownHostException e) {
-				return new FtpReply(501, e.getMessage());
-			}
+		if (_idntAddress != null
+			&& !conn.getClientAddress().equals(
+				conn.getConnectionManager().getConfig().getBouncerIp())) {
+			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
-		return FtpReply.RESPONSE_200_COMMAND_OK;
+		String arg = conn.getRequest().getArgument();
+		int pos1 = arg.indexOf('@');
+		if (pos1 == -1)
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+		int pos2 = arg.indexOf(':', pos1 + 1);
+		if (pos2 == -1)
+			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+
+		try {
+			_idntAddress = InetAddress.getByName(arg.substring(pos1 + 1, pos2));
+			_idntIdent = arg.substring(0, pos1).toString();
+		} catch (UnknownHostException e) {
+			logger.info("Invalid hostname passed to IDNT", e);
+			//this will most likely cause control connection to become unsynchronized
+			//but give error anyway, this error is unlikely to happen
+			return new FtpReply(501, "IDNT FAILED: " + e.getMessage());
+		}
+		// bnc doesn't expect any reply
+		return null;
 	}
 
 	/**
@@ -108,7 +115,9 @@ public class Login implements CommandHandler, Cloneable {
 			}
 			return response;
 		} else {
-			return new FtpReply(530, conn.jprintf(Login.class.getName(), "pass.fail"));
+			return new FtpReply(
+				530,
+				conn.jprintf(Login.class.getName(), "pass.fail"));
 		}
 	}
 
@@ -121,7 +130,9 @@ public class Login implements CommandHandler, Cloneable {
 	private FtpReply doQUIT(BaseFtpConnection conn) {
 
 		conn.stop();
-		return new FtpReply(221, conn.jprintf(Login.class.getName(), "quit.success"));
+		return new FtpReply(
+			221,
+			conn.jprintf(Login.class.getName(), "quit.success"));
 	}
 
 	/**
@@ -179,15 +190,20 @@ public class Login implements CommandHandler, Cloneable {
 						return new FtpReply(530, "Invalid ident response");
 					}
 				} else {
-					logger.warn("Failed to get ident response: " + id.errorMessage);
+					logger.warn(
+						"Failed to get ident response: " + id.errorMessage);
 					ident = "";
 				}
 			}
-			if((_idntAddress != null && mask.matches(_idntIdent, _idntAddress)) ||
-				mask.matches((ident == null ? "" : ident), conn.getClientAddress())) {
+			if ((_idntAddress != null
+				&& mask.matches(_idntIdent, _idntAddress))
+				|| mask.matches(
+					(ident == null ? "" : ident),
+					conn.getClientAddress())) {
 				//success
 				// max_users and num_logins restriction
-				FtpReply response = conn.getConnectionManager().canLogin(conn, newUser);
+				FtpReply response =
+					conn.getConnectionManager().canLogin(conn, newUser);
 				if (response != null) {
 					return response;
 				}
@@ -210,7 +226,8 @@ public class Login implements CommandHandler, Cloneable {
 			return doPASS(conn);
 		if ("QUIT".equals(cmd))
 			return doQUIT(conn);
-		if("IDNT".equals(cmd)) return doIDNT(conn);
+		if ("IDNT".equals(cmd))
+			return doIDNT(conn);
 		throw UnhandledCommandException.create(Login.class, conn.getRequest());
 	}
 
@@ -221,13 +238,13 @@ public class Login implements CommandHandler, Cloneable {
 	public CommandHandler initialize(
 		BaseFtpConnection conn,
 		CommandManager initializer) {
-				Login login;
-				try {
-					login = (Login) clone();
-				} catch (CloneNotSupportedException e) {
-					throw new RuntimeException(e);
-				}
-				return login;
+		Login login;
+		try {
+			login = (Login) clone();
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
+		return login;
 	}
 
 	public void load(CommandManagerFactory initializer) {

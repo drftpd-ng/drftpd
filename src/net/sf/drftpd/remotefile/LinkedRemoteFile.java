@@ -55,7 +55,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.139 2004/05/16 05:44:53 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.140 2004/05/16 18:07:30 mog Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -244,8 +244,8 @@ public class LinkedRemoteFile
 		String name,
 		FtpConfig cfg) {
 
-		if (name.indexOf('*') != -1)
-			throw new IllegalArgumentException("Illegal character (*) in filename");
+		if (name.indexOf('*') != -1 || name.indexOf('?') != -1)
+			throw new IllegalArgumentException("Illegal character (*?) in filename");
 
 		if (!file.isFile() && !file.isDirectory())
 			throw new IllegalArgumentException(

@@ -22,62 +22,32 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import junit.framework.TestCase;
-import net.sf.drftpd.master.usermanager.AbstractUser;
-import net.sf.drftpd.master.usermanager.UserExistsException;
-import net.sf.drftpd.master.usermanager.UserFileException;
+import junit.framework.TestSuite;
+
+import org.drftpd.tests.DummyUser;
 
 /**
  * @author zubov
- * @version $Id: StatsTest.java,v 1.4 2004/04/20 04:11:47 mog Exp $
+ * @version $Id: StatsTest.java,v 1.5 2004/05/16 18:07:29 mog Exp $
  */
 public class StatsTest extends TestCase {
 
 	/**
 	 * Constructor for StatsTest.
-	 * @param arg0
 	 */
-	public StatsTest(String arg0) {
-		super(arg0);
+	public StatsTest(String fName) {
+		super(fName);
 	}
 
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(StatsTest.class);
+	public static TestSuite suite() {
+		return new TestSuite(StatsTest.class);
 	}
-
-	class TestUser extends AbstractUser {
-		
-		public TestUser(String name) {
-			 super(name);
-		}
-		
-		public boolean checkPassword(String password) {
-			return true;
-		}
-
-		public void commit() throws UserFileException {
-
-		}
-
-		public void purge() {
-			throw new UnsupportedOperationException();
-		}
-
-		public void rename(String username)
-			throws UserExistsException, UserFileException {
-			throw new UnsupportedOperationException();
-		}
-
-		public void setPassword(String password) {
-			throw new UnsupportedOperationException();
-		}
-
-}
 
 	public void testStats() throws UnknownHostException, IOException {
 		ArrayList users = new ArrayList();
-		users.add(new TestUser("user1"));
-		users.add(new TestUser("user2"));
-		users.add(new TestUser("user3"));
+		users.add(new DummyUser("user1"));
+		users.add(new DummyUser("user2"));
+		users.add(new DummyUser("user3"));
 		assertEquals(Stats.fixNumberAndUserlist("!alup 2",users),2);
 		assertEquals(3,users.size());
 		assertEquals(2,Stats.fixNumberAndUserlist("!alup 2 !-user1 *",users));

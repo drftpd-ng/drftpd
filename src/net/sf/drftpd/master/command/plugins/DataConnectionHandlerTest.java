@@ -24,13 +24,13 @@ import junit.framework.TestSuite;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.UnhandledCommandException;
-import net.sf.drftpd.tests.DummyBaseFtpConnection;
 
 import org.apache.log4j.BasicConfigurator;
+import org.drftpd.tests.DummyBaseFtpConnection;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandlerTest.java,v 1.3 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: DataConnectionHandlerTest.java,v 1.4 2004/05/16 18:07:30 mog Exp $
  */
 public class DataConnectionHandlerTest extends TestCase {
 	public static TestSuite suite() {

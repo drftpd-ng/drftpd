@@ -23,20 +23,24 @@ import org.apache.oro.text.regex.Pattern;
 
 /**
  * @author mog
- *
- * @version $Id: RatioPathPermission.java,v 1.5 2004/02/10 00:03:08 mog Exp $
+ * @version $Id: RatioPathPermission.java,v 1.6 2004/05/16 18:07:30 mog Exp $
  */
 public class RatioPathPermission extends PatternPathPermission {
-	private float ratio;
+	private float _ratio;
+
 	/**
 	 * @param path
 	 * @param users
 	 */
-	public RatioPathPermission(Pattern pattern, float ratio, Collection users) {
+	public RatioPathPermission(
+		Pattern pattern,
+		float ratio,
+		Collection users) {
 		super(pattern, users);
-		this.ratio = ratio;
+		_ratio = ratio;
 	}
+
 	public float getRatio() {
-		return this.ratio;
+		return _ratio;
 	}
 }

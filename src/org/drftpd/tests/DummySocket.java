@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.tests;
+package org.drftpd.tests;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -31,7 +31,7 @@ import java.nio.channels.SocketChannel;
 
 /**
  * @author mog
- * @version $Id: DummySocket.java,v 1.2 2004/02/10 00:03:31 mog Exp $
+ * @version $Id: DummySocket.java,v 1.1 2004/05/16 18:07:31 mog Exp $
  */
 public class DummySocket extends Socket {
 

@@ -60,7 +60,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.84 2004/05/12 00:45:05 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.85 2004/05/16 18:07:30 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -271,6 +271,9 @@ public class BaseFtpConnection implements Runnable {
 		return _user;
 	}
 
+	/**
+	 * @deprecated inline me
+	 */
 	public UserManager getUserManager() {
 		return getConnectionManager().getUserManager();
 	}

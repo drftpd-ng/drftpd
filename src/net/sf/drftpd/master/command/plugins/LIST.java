@@ -49,7 +49,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * @version $Id: LIST.java,v 1.17 2004/05/10 02:53:59 mog Exp $
+ * @version $Id: LIST.java,v 1.18 2004/05/16 18:07:30 mog Exp $
  */
 public class LIST implements CommandHandler {
 
@@ -335,7 +335,6 @@ public class LIST implements CommandHandler {
 				&& conn.getConfig().checkDenyDirUnencrypted(conn.getUserNull())) {
 				return new FtpReply(550, "Secure Listing Required");
 			}
-			//dataSocket.
 			out.write(FtpReply.RESPONSE_150_OK);
 			out.flush();
 			try {
