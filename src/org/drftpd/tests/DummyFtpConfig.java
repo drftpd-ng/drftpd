@@ -42,7 +42,6 @@ public class DummyFtpConfig extends FtpConfig {
         } catch (IOException e) {
             throw new RuntimeException();
         }
-        _zsCfg = new Properties();
     }
 
     public boolean checkPathPermission(String key, User fromUser,
