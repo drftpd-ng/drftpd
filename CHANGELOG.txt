@@ -8,6 +8,10 @@
 * !help command will now only show commands that the user has permission to use
 * Added nostatsup and nostatsdn to perms.conf to prevent updating stats under a path
 * Fixed site ginfo error "Java.lang.Long"
+* Added More SiteBot plugins:
+   Credits written by me
+   Rank ported from 1.1.4 written by Kolor
+   Request ported from 1.1.4 written by Kolor
 
 2005/02/10 Matt Zimmerman <zubov@users.sourceforge.net>
 * site user should display all user information

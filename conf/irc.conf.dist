@@ -53,6 +53,10 @@ irc.plugins.9=org.drftpd.sitebot.Ident
 irc.plugins.10=net.drmods.plugins.irc.Kick
 irc.plugins.11=net.drmods.plugins.irc.Approve
 irc.plugins.12=net.drmods.plugins.irc.imdb.IRCListener
+irc.plugins.13=net.drmods.plugins.irc.IRCNuke
+irc.plugins.14=net.drmods.plugins.irc.Credits
+irc.plugins.15=net.drmods.plugins.irc.Rank
+irc.plugins.16=net.drmods.plugins.irc.Request
 
 # Plugin command permissions ... defaults to allow for all commands not listed
 perm 	!approve 	=siteop
