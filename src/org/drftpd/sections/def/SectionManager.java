@@ -36,7 +36,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: SectionManager.java,v 1.10 2004/10/03 16:13:57 mog Exp $
+ * @version $Id: SectionManager.java,v 1.11 2004/10/29 02:45:19 mog Exp $
  */
 public class SectionManager implements SectionManagerInterface {
     private ConnectionManager _cm;
@@ -71,6 +71,10 @@ public class SectionManager implements SectionManagerInterface {
 
     public SectionInterface lookup(String string) {
         StringTokenizer st = new StringTokenizer(string, "/");
+
+        if (!st.hasMoreTokens()) {
+            return new Section(_cm.getGlobalContext().getRoot());
+        }
 
         try {
             return new Section(_cm.getGlobalContext().getRoot().getFile(st.nextToken()));

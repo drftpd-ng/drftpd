@@ -37,22 +37,26 @@ import java.util.Properties;
 /**
  * Removes bandwidth * multiplier from the score.
  * @author mog
- * @version $Id: BandwidthFilter.java,v 1.7 2004/09/25 03:48:42 mog Exp $
+ * @version $Id: BandwidthFilter.java,v 1.8 2004/10/29 02:45:20 mog Exp $
  */
 public class BandwidthFilter extends Filter {
     private static final Logger logger = Logger.getLogger(BandwidthFilter.class);
     protected float _multiplier;
 
     public BandwidthFilter(FilterChain ssm, int i, Properties p) {
-        setMultiplier(FtpConfig.getProperty(p, i + ".multiplier"));
+        setMultiplier(parseMultiplier(FtpConfig.getProperty(p, i +
+                    ".multiplier")));
     }
 
+    /**
+         * @param multiplier
+         */
     public BandwidthFilter(float multiplier) {
-        _multiplier = multiplier;
+        setMultiplier(multiplier);
     }
 
-    protected void setMultiplier(String s) {
-        _multiplier = parseMultiplier(s);
+    protected void setMultiplier(float multiplier) {
+        _multiplier = multiplier;
     }
 
     protected static float parseMultiplier(String string) {

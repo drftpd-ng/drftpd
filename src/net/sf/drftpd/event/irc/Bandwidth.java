@@ -45,7 +45,7 @@ import java.util.Iterator;
 
 /**
  * @author flowman
- * @version $Id: Bandwidth.java,v 1.10 2004/10/11 22:57:52 mog Exp $
+ * @version $Id: Bandwidth.java,v 1.11 2004/10/29 02:45:15 mog Exp $
  */
 public class Bandwidth extends GenericCommandAutoService
     implements IRCPluginInterface {
@@ -179,7 +179,8 @@ public class Bandwidth extends GenericCommandAutoService
             status += ReplacerUtils.jprintf("speed.post", env, Bandwidth.class);
 
             if (first) {
-                status = ReplacerUtils.jprintf("speed.error", env, Bandwidth.class);
+                status = ReplacerUtils.jprintf("speed.error", env,
+                        Bandwidth.class);
             }
 
             _listener.sayChannel(msgc.getDest(), status);

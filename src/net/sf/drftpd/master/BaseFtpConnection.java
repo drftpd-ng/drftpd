@@ -71,7 +71,7 @@ import javax.net.ssl.SSLSocket;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.97 2004/10/05 02:11:21 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.98 2004/10/29 02:45:16 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
     private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() +
@@ -563,5 +563,9 @@ public class BaseFtpConnection implements Runnable {
 
     public OutputStream getOutputStream() throws IOException {
         return _controlSocket.getOutputStream();
+    }
+
+    public boolean isTransfering() {
+        return getDataConnectionHandler().isTransfering();
     }
 }

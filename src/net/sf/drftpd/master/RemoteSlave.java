@@ -22,6 +22,7 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
 
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.SlaveEvent;
+import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
@@ -52,7 +53,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.56 2004/09/25 03:48:35 mog Exp $
+ * @version $Id: RemoteSlave.java,v 1.57 2004/10/29 02:45:17 mog Exp $
  */
 public class RemoteSlave implements Comparable, Serializable {
     private static final Logger logger = Logger.getLogger(RemoteSlave.class);
@@ -210,22 +211,16 @@ public class RemoteSlave implements Comparable, Serializable {
     }
 
     public void setProperty(String name, String value) {
-        keysAndValues.put(name, value);
+        keysAndValues.setProperty(name, value);
         commit();
     }
 
     public String getProperty(String name, String def) {
-        String value = keysAndValues.getProperty(name);
-
-        if (value == null) {
-            return def;
-        }
-
-        return keysAndValues.getProperty(name);
+        return keysAndValues.getProperty(name, def);
     }
 
-    public Map getProperties() {
-        return Collections.unmodifiableMap(keysAndValues);
+    public Properties getProperties() {
+        return keysAndValues;
     }
 
     public void commit() {
@@ -549,5 +544,9 @@ public class RemoteSlave implements Comparable, Serializable {
         }
 
         return false;
+    }
+
+    public String getProperty(String name) {
+        return FtpConfig.getProperty(keysAndValues, name);
     }
 }

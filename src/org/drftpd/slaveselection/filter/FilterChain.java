@@ -39,7 +39,7 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: FilterChain.java,v 1.7 2004/09/25 03:48:42 mog Exp $
+ * @version $Id: FilterChain.java,v 1.8 2004/10/29 02:45:22 mog Exp $
  */
 public class FilterChain {
     private SlaveSelectionManager _ssm;
@@ -130,7 +130,7 @@ public class FilterChain {
         return getGlobalContext().getSlaveManager();
     }
 
-    private GlobalContext getGlobalContext() {
+    GlobalContext getGlobalContext() {
         return _ssm.getGlobalContext();
     }
 }

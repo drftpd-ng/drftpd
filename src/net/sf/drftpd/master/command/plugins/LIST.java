@@ -55,7 +55,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  *
- * @version $Id: LIST.java,v 1.24 2004/10/28 04:28:20 teflon114 Exp $
+ * @version $Id: LIST.java,v 1.25 2004/10/29 02:45:18 mog Exp $
  */
 public class LIST implements CommandHandlerFactory, CommandHandler {
     private final static DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
@@ -104,12 +104,13 @@ public class LIST implements CommandHandlerFactory, CommandHandler {
      */
     private static String getPermission(RemoteFileInterface fl) {
         StringBuffer sb = new StringBuffer(13);
-        if(fl.isLink()){
-			sb.append("l");        	
-        } else if(fl.isDirectory()) {
-			sb.append("d");
+
+        if (fl.isLink()) {
+            sb.append("l");
+        } else if (fl.isDirectory()) {
+            sb.append("d");
         } else {
-			sb.append("-");
+            sb.append("-");
         }
 
         sb.append("rw");

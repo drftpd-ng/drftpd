@@ -24,9 +24,7 @@ import java.net.URI;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- *
- * To change the template for this generated type comment go to
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * @version $Id: File.java,v 1.10 2004/10/29 02:45:22 mog Exp $
  */
 public class File extends java.io.File {
     private static FileSystem fs = FileSystem.getFileSystem();
@@ -101,5 +99,11 @@ public class File extends java.io.File {
         }
 
         return super.delete();
+    }
+
+    public void delete2() throws IOException {
+        if (!super.delete()) {
+            throw new IOException("Failed to delete: " + toString());
+        }
     }
 }
