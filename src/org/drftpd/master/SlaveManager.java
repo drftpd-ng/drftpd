@@ -461,8 +461,7 @@ public class SlaveManager implements Runnable {
                             " does not exist, use \"site addslave\""));
                     logger.info("Slave " + slavename +
                         " does not exist, use \"site addslave\"");
-
-                    return;
+                    continue;
                 }
 
                 if (rslave.isOnlinePing()) {
