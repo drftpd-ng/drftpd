@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- $Id: build.xml,v 1.38 2004/06/01 17:16:41 mog Exp $ -->
+<!-- $Id: build.xml,v 1.39 2004/06/02 00:32:39 mog Exp $ -->
 <project name="drftpd" basedir="." default="compile">
 
   <target name="all" depends="compile"/>
@@ -48,6 +48,7 @@
         <include name="**/*.properties"/>
       </fileset>
     </copy>
+    <echo>Additional important compile targets are: compile-jsx</echo>
   </target>
   
   <target name="tests" depends="init, prepare">

@@ -36,7 +36,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.21 2004/06/01 15:40:33 mog Exp $
+ * @version $Id: ListUtils.java,v 1.22 2004/06/02 00:32:42 mog Exp $
  */
 public class ListUtils {
 
@@ -175,22 +175,8 @@ public class ListUtils {
 		} catch (IOException e) {
 			logger.warn("IO error loading SFV file", e);
 		} catch (Throwable e) {
-			if (response != null)
-				response.addComment("zipscript error: " + e.getMessage());
 			logger.warn("zipscript error", e);
 		}
-//		if (statusDirName == null
-//			&& numTotal > 5
-//			&& numOnline != numTotal) { // in future list by user settings
-//			statusDirName =
-//				"[ "
-//					+ numOnline
-//					+ "/"
-//					+ numTotal
-//					+ " = "
-//					+ (numOnline * 100) / numTotal
-//					+ "% online ]";
-//		}
 		return listFiles;
 	}
 

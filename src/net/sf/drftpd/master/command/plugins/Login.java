@@ -37,16 +37,17 @@ import net.sf.drftpd.master.usermanager.UserFileException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.commands.CommandHandler;
+import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.UnhandledCommandException;
 
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.28 2004/06/01 15:40:30 mog Exp $
+ * @version $Id: Login.java,v 1.29 2004/06/02 00:32:40 mog Exp $
  */
-public class Login implements CommandHandlerBundle, Cloneable {
+public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
 
-	private static final Logger logger = Logger.getLogger(CommandHandlerBundle.class);
+	private static final Logger logger = Logger.getLogger(Login.class);
 	/**
 	 * If _idntAddress == null, IDNT hasn't been used.
 	 */

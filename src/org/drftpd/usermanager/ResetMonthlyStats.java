@@ -13,16 +13,15 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.PropertyConfigurator;
-
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.usermanager.AbstractUser;
 import net.sf.drftpd.slave.SlaveImpl;
 
+import org.apache.log4j.BasicConfigurator;
+
 /**
  * @author mog
- * @version $Id: ResetMonthlyStats.java,v 1.1 2004/06/01 17:16:50 mog Exp $
+ * @version $Id: ResetMonthlyStats.java,v 1.2 2004/06/02 00:32:43 mog Exp $
  */
 public class ResetMonthlyStats {
 
