@@ -39,3 +39,4 @@ irc.plugins.5=net.sf.drftpd.event.irc.Stats
 irc.plugins.6=net.sf.drftpd.event.irc.Bandwidth
 irc.plugins.7=net.sf.drftpd.event.irc.Diskfree
 irc.plugins.8=org.drftpd.plugins.OnConnect
+irc.plugins.9=net.sf.drftpd.event.irc.Kick
