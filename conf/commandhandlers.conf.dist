@@ -136,3 +136,9 @@ SITE\ ARCHIVE=org.drftpd.commands.ArchiveCommandHandler
 SITE\ LISTARCHIVETYPES=org.drftpd.commands.ArchiveCommandHandler
 
 SITE\ FIND=org.drftpd.commands.Find
+
+SITE\ TRAFFIC=org.drftpd.commands.MoreStats
+SITE\ GALUP=org.drftpd.commands.MoreStats
+SITE\ GALDN=org.drftpd.commands.MoreStats
+SITE\ GWKUP=org.drftpd.commands.MoreStats
+SITE\ GWKDN=org.drftpd.commands.MoreStats
