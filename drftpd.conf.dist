@@ -26,6 +26,8 @@ master.usermanager=net.sf.drftpd.master.usermanager.jsx.JSXUserManager
 #100 MiB, 100,000,000
 freespace.min=100MB
 
+#use ident on user lookups
+use.ident=true
 
 #plugin settings
 #plugins.1=net.sf.drftpd.event.irc.IRCListener
