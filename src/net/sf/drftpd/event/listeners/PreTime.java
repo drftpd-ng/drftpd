@@ -21,6 +21,9 @@ import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
+/**
+ * @version $Id: PreTime.java,v 1.9 2003/12/23 13:38:19 mog Exp $
+ */
 public class PreTime implements FtpListener {
 	private SiteBot _siteBot;
 	private IRCListener _irc;

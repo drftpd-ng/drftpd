@@ -10,6 +10,7 @@ import net.sf.drftpd.master.ConnectionManager;
  * this class.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
+ * @version $Id: UserManager.java,v 1.19 2003/12/23 13:38:20 mog Exp $
  */
 public interface UserManager {
 

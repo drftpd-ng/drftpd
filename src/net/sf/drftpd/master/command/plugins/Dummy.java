@@ -17,6 +17,7 @@ import net.sf.drftpd.master.command.UnhandledCommandException;
  * returns 200 Command OK on all commands
  * 
  * @author mog
+ * @version $Id: Dummy.java,v 1.3 2003/12/23 13:38:19 mog Exp $
  */
 public class Dummy implements CommandHandler {
 

@@ -1,9 +1,3 @@
-/*
- * Created on 2003-okt-16
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd.master.command.plugins;
 
 import java.io.FileNotFoundException;
@@ -32,8 +26,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: Pre.java,v 1.4 2003/12/23 13:38:19 mog Exp $
  */
 public class Pre implements CommandHandler {
 	public void unload() {}

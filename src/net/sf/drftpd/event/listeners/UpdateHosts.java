@@ -1,9 +1,3 @@
-/*
- * Created on 2003-sep-02
- *
- * To change the template for this generated file go to
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
 package net.sf.drftpd.event.listeners;
 
 import java.io.FileWriter;
@@ -18,6 +12,9 @@ import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.config.FtpConfig;
 
+/**
+ * @version $Id: UpdateHosts.java,v 1.4 2003/12/23 13:38:19 mog Exp $
+ */
 public class UpdateHosts implements FtpListener {
 	private ConnectionManager connManager;
 	public UpdateHosts(FtpConfig config, ConnectionManager connManager, String args[]) {

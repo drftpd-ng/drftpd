@@ -25,7 +25,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author matt
- * @version $Id: JobManager.java,v 1.3 2003/12/13 12:42:48 zubov Exp $
+ * @version $Id: JobManager.java,v 1.4 2003/12/23 13:38:21 mog Exp $
  */
 public class JobManager implements FtpListener {
 	private ConnectionManager _cm;

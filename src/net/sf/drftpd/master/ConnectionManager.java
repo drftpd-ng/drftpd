@@ -36,6 +36,9 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
+/**
+ * @version $Id: ConnectionManager.java,v 1.80 2003/12/23 13:38:19 mog Exp $
+ */
 public class ConnectionManager {
 	public static final int idleTimeout = 300;
 

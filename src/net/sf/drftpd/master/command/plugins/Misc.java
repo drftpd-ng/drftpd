@@ -18,6 +18,9 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.slave.SlaveImpl;
 
+/**
+ * @version $Id: Misc.java,v 1.4 2003/12/23 13:38:19 mog Exp $
+ */
 public class Misc implements CommandHandler {
 	/**
 	 * <code>ABOR &lt;CRLF&gt;</code><br>

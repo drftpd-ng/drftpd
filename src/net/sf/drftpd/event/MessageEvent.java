@@ -1,16 +1,9 @@
-/*
- * Created on 2003-aug-26
- *
- * To change the template for this generated file go to
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
 package net.sf.drftpd.event;
 
 /**
  * @author mog
  *
- * To change the template for this generated type comment go to
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * @version $Id: MessageEvent.java,v 1.2 2003/12/23 13:38:18 mog Exp $
  */
 public class MessageEvent extends Event {
 	private String message;

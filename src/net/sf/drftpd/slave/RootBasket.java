@@ -1,9 +1,3 @@
-/*
- * Created on 2003-maj-19
- *
- * To change the template for this generated file go to
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
 package net.sf.drftpd.slave;
 
 import java.io.FileNotFoundException;
@@ -23,9 +17,12 @@ import org.apache.log4j.Logger;
 import se.mog.io.File;
 
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
+ * @author mog
  */
 //TODO SECURITY: verify so that we never get outside of a rootbasket root
+/**
+ * @version $Id: RootBasket.java,v 1.19 2003/12/23 13:38:21 mog Exp $
+ */
 public class RootBasket {
 	private static Logger logger = Logger.getLogger(RootBasket.class);
 	private Collection _roots;

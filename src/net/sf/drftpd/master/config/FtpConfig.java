@@ -1,9 +1,3 @@
-/*
- * Created on 2003-jul-19
- *
- * To change the template for this generated file go to
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
 package net.sf.drftpd.master.config;
 
 import java.io.FileInputStream;
@@ -35,7 +29,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.24 2003/11/19 00:20:52 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.25 2003/12/23 13:38:20 mog Exp $
  */
 public class FtpConfig {
 	private int _maxUsersExempt;

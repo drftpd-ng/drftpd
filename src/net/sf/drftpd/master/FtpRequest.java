@@ -6,6 +6,7 @@ package net.sf.drftpd.master;
  * single Ftp request.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
+ * @version $Id: FtpRequest.java,v 1.6 2003/12/23 13:38:19 mog Exp $
  */
 public class FtpRequest {
 

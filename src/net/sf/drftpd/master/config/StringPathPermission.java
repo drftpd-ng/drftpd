@@ -1,9 +1,3 @@
-/*
- * Created on 2003-aug-13
- *
- * To change the template for this generated file go to
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
 package net.sf.drftpd.master.config;
 
 import java.util.Collection;
@@ -13,8 +7,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 /**
  * @author mog
  *
- * To change the template for this generated type comment go to
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * @version $Id: StringPathPermission.java,v 1.4 2003/12/23 13:38:20 mog Exp $
  */
 public class StringPathPermission extends PathPermission {
 	private String path;

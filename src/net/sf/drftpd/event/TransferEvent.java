@@ -1,9 +1,3 @@
-/*
- * Created on 2003-aug-11
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd.event;
 
 import java.net.InetAddress;
@@ -14,8 +8,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 /**
  * @author mog
  *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: TransferEvent.java,v 1.5 2003/12/23 13:38:18 mog Exp $
  */
 public class TransferEvent extends DirectoryFtpEvent {
 

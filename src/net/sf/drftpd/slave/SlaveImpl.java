@@ -43,7 +43,8 @@ import org.apache.log4j.Logger;
 import se.mog.io.File;
 
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
+ * @author mog
+ * @version $Id: SlaveImpl.java,v 1.76 2003/12/23 13:38:21 mog Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject

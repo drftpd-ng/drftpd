@@ -8,6 +8,7 @@ package net.sf.drftpd.event;
 
 /**
  * @author mog
+ * @version $Id: Event.java,v 1.4 2003/12/23 13:38:18 mog Exp $
  */
 public class Event {
 	private String command;

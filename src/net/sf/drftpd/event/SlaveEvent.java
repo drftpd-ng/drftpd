@@ -1,9 +1,3 @@
-/*
- * Created on 2003-aug-07
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd.event;
 
 import net.sf.drftpd.master.RemoteSlave;
@@ -11,8 +5,7 @@ import net.sf.drftpd.master.RemoteSlave;
 /**
  * @author mog
  *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: SlaveEvent.java,v 1.3 2003/12/23 13:38:18 mog Exp $
  */
 public class SlaveEvent extends MessageEvent {
 	private RemoteSlave slave;

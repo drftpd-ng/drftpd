@@ -12,6 +12,7 @@ import net.sf.drftpd.util.Crypt;
  * 
  * @author mog
  * @author zubov
+ * @version $Id: GlftpdUser.java,v 1.4 2003/12/23 13:38:20 mog Exp $
  */
 public class GlftpdUser extends AbstractUser implements UnixPassword {
 	private GlftpdUserManager usermanager;

@@ -12,6 +12,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author mog
+ * @version $Id: PathPermission.java,v 1.4 2003/12/23 13:38:20 mog Exp $
  */
 public abstract class PathPermission extends Permission {
 	

@@ -24,6 +24,9 @@ import net.sf.drftpd.master.usermanager.UserFileException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+/**
+ * @version $Id: TransferStatistics.java,v 1.10 2003/12/23 13:38:20 mog Exp $
+ */
 public class TransferStatistics implements CommandHandler {
 
 	private static Logger logger = Logger.getLogger(TransferStatistics.class);

@@ -1,16 +1,9 @@
-/*
- * Created on 2003-oct-25
- *
- * To change the template for this generated file go to
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
 package net.sf.drftpd.event;
 
 /**
  * @author mog
  *
- * To change the template for this generated type comment go to
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * @version $Id: InviteEvent.java,v 1.3 2003/12/23 13:38:18 mog Exp $
  */
 public class InviteEvent extends Event {
 	private String ircUser;

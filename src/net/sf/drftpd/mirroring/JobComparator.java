@@ -10,7 +10,7 @@ import java.util.Comparator;
 
 /**
  * @author zubov
- * @version $Id: JobComparator.java,v 1.1 2003/12/11 18:19:26 zubov Exp $
+ * @version $Id: JobComparator.java,v 1.2 2003/12/23 13:38:21 mog Exp $
  *
  */
 public class JobComparator implements Comparator {

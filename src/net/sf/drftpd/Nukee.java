@@ -1,17 +1,9 @@
-/*
- * Created on 2003-sep-29
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd;
 
 
 /**
  * @author mog
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: Nukee.java,v 1.4 2003/12/23 13:38:18 mog Exp $
  */
 public class Nukee implements Comparable {
 	private String _username;

@@ -1,12 +1,9 @@
 package net.sf.drftpd.master.usermanager;
 
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
+ * @author mog
  *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
+ * @version $Id: NoSuchUserException.java,v 1.4 2003/12/23 13:38:20 mog Exp $
  */
 public class NoSuchUserException extends Exception {
 	/**

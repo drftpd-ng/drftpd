@@ -16,6 +16,7 @@ import net.sf.drftpd.master.usermanager.User;
  * Dispatched for LOGIN, LOGOUT and RELOAD.
  * 
  * Subclassed for events that are paired with a user object.
+ * @version $Id: UserEvent.java,v 1.7 2003/12/23 13:38:18 mog Exp $
  */
 public class UserEvent extends Event {
 	public static String getCommandFromPeriod(int period) {

@@ -10,6 +10,7 @@ import net.sf.drftpd.master.FtpRequest;
 
 /**
  * @author mog
+ * @version $Id: UnhandledCommandException.java,v 1.4 2003/12/23 13:38:19 mog Exp $
  */
 public class UnhandledCommandException extends Exception {
 	public UnhandledCommandException() {

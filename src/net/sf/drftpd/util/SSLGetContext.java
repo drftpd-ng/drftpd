@@ -10,7 +10,7 @@ import javax.net.ssl.SSLContext;
 
 /**
  * @author mog
- *
+ * @version $Id: SSLGetContext.java,v 1.2 2003/12/23 13:38:22 mog Exp $
  */
 public class SSLGetContext {
 	public static SSLContext getSSLContext()

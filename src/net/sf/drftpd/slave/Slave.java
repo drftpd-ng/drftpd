@@ -10,6 +10,7 @@ import net.sf.drftpd.SFVFile;
 /**
  * Slave interface, this interface is used to initate transfers to and from remote slaves.
  * @author Morgan Christiansson <mog@linux.nu>
+ * @version $Id: Slave.java,v 1.26 2003/12/23 13:38:21 mog Exp $
  */
 public interface Slave extends Remote {
 	public long checkSum(

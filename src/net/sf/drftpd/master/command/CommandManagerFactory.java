@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
  * @author mog
  *
  * Istantiates the CommandManager instances that holds per-connection CommandHandlers.
+ * @version $Id: CommandManagerFactory.java,v 1.3 2003/12/23 13:38:19 mog Exp $
  */
 public class CommandManagerFactory {
 

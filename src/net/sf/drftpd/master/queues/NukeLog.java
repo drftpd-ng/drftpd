@@ -1,9 +1,3 @@
-/*
- * Created on 2003-jul-13
- *
- * To change the template for this generated file go to
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
 package net.sf.drftpd.master.queues;
 
 import java.io.FileOutputStream;
@@ -21,10 +15,9 @@ import org.jdom.Element;
 import org.jdom.output.XMLOutputter;
 
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
+ * @author mog
  *
- * To change the template for this generated type comment go to
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * @version $Id: NukeLog.java,v 1.8 2003/12/23 13:38:20 mog Exp $
  */
 public class NukeLog implements Serializable {
 	private static Logger logger = Logger.getLogger(NukeLog.class);

@@ -1,9 +1,3 @@
-/*
- * Created on 2003-jul-26
- *
- * To change the template for this generated file go to
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
 package net.sf.drftpd.master.usermanager;
 
 import java.util.List;
@@ -13,7 +7,7 @@ import net.sf.drftpd.ObjectExistsException;
 
 /**
  * @author mog
- * @version $Id: User.java,v 1.29 2003/12/07 22:31:45 mog Exp $
+ * @version $Id: User.java,v 1.30 2003/12/23 13:38:20 mog Exp $
  */
 public interface User {
 

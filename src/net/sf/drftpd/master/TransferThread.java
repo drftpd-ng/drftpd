@@ -1,9 +1,3 @@
-/*
- * Created on 2003-aug-09
- *
- * To change the template for this generated file go to
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
 package net.sf.drftpd.master;
 
 import java.io.IOException;
@@ -15,6 +9,7 @@ import net.sf.drftpd.slave.Transfer;
 
 /**
  * @author mog
+ * @version $Id: TransferThread.java,v 1.7 2003/12/23 13:38:19 mog Exp $
  */
 public class TransferThread {
 	private LinkedRemoteFile file;

@@ -45,6 +45,9 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
+/**
+ * @version $Id: SlaveManagerImpl.java,v 1.53 2003/12/23 13:38:19 mog Exp $
+ */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
 	implements SlaveManager {

@@ -1,9 +1,3 @@
-/*
- * Created on 2003-maj-18
- *
- * To change the template for this generated file go to
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
 package net.sf.drftpd.master;
 
 import java.io.BufferedReader;
@@ -15,8 +9,9 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
+ * @author mog
  *
+ * @version $Id: FtpReply.java,v 1.7 2003/12/23 13:38:19 mog Exp $
  */
 public class FtpReply implements Cloneable {
 	private static final Logger logger =

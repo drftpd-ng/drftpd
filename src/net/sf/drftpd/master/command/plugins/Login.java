@@ -21,6 +21,9 @@ import org.apache.log4j.Logger;
 
 import socks.server.Ident;
 
+/**
+ * @version $Id: Login.java,v 1.14 2003/12/23 13:38:19 mog Exp $
+ */
 public class Login implements CommandHandler, Cloneable {
 
 	private static Logger logger = Logger.getLogger(CommandHandler.class);

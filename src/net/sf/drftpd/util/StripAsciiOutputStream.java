@@ -13,6 +13,7 @@ import java.io.OutputStream;
  * OutputStream filter that strips the \r from \r\n sequences.
  * 
  * @author mog
+ * @version $Id: StripAsciiOutputStream.java,v 1.2 2003/12/23 13:38:22 mog Exp $
  */
 public class StripAsciiOutputStream extends OutputStream {
 

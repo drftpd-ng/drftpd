@@ -1,9 +1,3 @@
-/*
- * Created on 2003-jul-29
- *
- * To change the template for this generated file go to
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
 package net.sf.drftpd.master.usermanager.jsx;
 
 import java.io.File;
@@ -31,7 +25,7 @@ import JSX.ObjIn;
 
 /**
  * @author mog
- * @version $Id: JSXUserManager.java,v 1.21 2003/11/17 20:13:11 mog Exp $
+ * @version $Id: JSXUserManager.java,v 1.22 2003/12/23 13:38:21 mog Exp $
  */
 public class JSXUserManager implements UserManager {
 	private ConnectionManager _connManager;

@@ -14,7 +14,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: AbstractJob.java,v 1.2 2003/12/11 23:12:51 zubov Exp $
+ * @version $Id: AbstractJob.java,v 1.3 2003/12/23 13:38:21 mog Exp $
  */
 public class AbstractJob extends Job {
 	private ArrayList _destSlaves;

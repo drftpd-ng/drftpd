@@ -1,9 +1,3 @@
-/*
- * Created on 2003-okt-27
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd.event.irc;
 
 import net.sf.drftpd.event.InviteEvent;
@@ -22,8 +16,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 /**
  * @author mog
  *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: Invite.java,v 1.5 2003/12/23 13:38:18 mog Exp $
  */
 public class Invite extends GenericCommandAutoService {
 

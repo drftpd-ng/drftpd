@@ -1,9 +1,3 @@
-/*
- * Created on Dec 2, 2003
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd.util;
 
 import java.io.IOException;
@@ -17,8 +11,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 /**
  * @author matt
  *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: CooperativeSlaveTransfer.java,v 1.4 2003/12/23 13:38:22 mog Exp $
  */
 public class CooperativeSlaveTransfer extends Thread {
 

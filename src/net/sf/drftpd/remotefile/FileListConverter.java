@@ -11,8 +11,7 @@ import net.sf.drftpd.master.SlaveManagerImpl;
 /**
  * @author mog
  *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: FileListConverter.java,v 1.5 2003/12/23 13:38:21 mog Exp $
  */
 public class FileListConverter {
 	public static void main(String[] args) throws IOException {

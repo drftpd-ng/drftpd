@@ -1,9 +1,3 @@
-/*
- * Created on Dec 2, 2003
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd.event.listeners;
 
 import java.io.FileInputStream;
@@ -23,8 +17,7 @@ import org.apache.log4j.Logger;
 /**
  * @author zubov
  *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: Mirror.java,v 1.6 2003/12/23 13:38:19 mog Exp $
  */
 public class Mirror implements FtpListener {
 

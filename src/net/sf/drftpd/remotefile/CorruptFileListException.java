@@ -1,9 +1,3 @@
-/*
- * Created on 2003-okt-21
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd.remotefile;
 
 import java.io.IOException;
@@ -11,8 +5,7 @@ import java.io.IOException;
 /**
  * @author mog
  *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version $Id: CorruptFileListException.java,v 1.2 2003/12/23 13:38:21 mog Exp $
  */
 public class CorruptFileListException extends IOException {
 

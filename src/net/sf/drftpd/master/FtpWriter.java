@@ -9,6 +9,7 @@ import java.io.Writer;
  * Writer object used by the server. It has the spying capability.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
+ * @version $Id: FtpWriter.java,v 1.4 2003/12/23 13:38:19 mog Exp $
  */
 public class FtpWriter extends Writer {
 

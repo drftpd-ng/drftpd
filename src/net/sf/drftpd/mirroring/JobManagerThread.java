@@ -12,7 +12,7 @@ import net.sf.drftpd.master.RemoteSlave;
 
 /**
  * @author zubov
- * @version $Id: JobManagerThread.java,v 1.2 2003/12/11 23:12:51 zubov Exp $
+ * @version $Id: JobManagerThread.java,v 1.3 2003/12/23 13:38:21 mog Exp $
  */
 public class JobManagerThread extends Thread {
 	private JobManager _jm;

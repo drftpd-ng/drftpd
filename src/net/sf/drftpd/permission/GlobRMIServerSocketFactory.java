@@ -7,8 +7,8 @@ import java.util.Collection;
 
 
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- * @version $Id: GlobRMIServerSocketFactory.java,v 1.2 2003/12/01 04:43:44 mog Exp $
+ * @author mog
+ * @version $Id: GlobRMIServerSocketFactory.java,v 1.3 2003/12/23 13:38:21 mog Exp $
  */
 public class GlobRMIServerSocketFactory implements RMIServerSocketFactory {
 	private Collection rslaves;

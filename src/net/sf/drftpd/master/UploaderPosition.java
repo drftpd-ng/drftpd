@@ -8,6 +8,7 @@ package net.sf.drftpd.master;
 
 /**
  * @author mog
+ * @version $Id: UploaderPosition.java,v 1.4 2003/12/23 13:38:19 mog Exp $
  */
 public class UploaderPosition implements Comparable {
 	long bytes;

@@ -12,8 +12,8 @@ import java.util.Map;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- * @version $Id: SFVFile.java,v 1.21 2003/12/04 04:48:25 zubov Exp $
+ * @author mog
+ * @version $Id: SFVFile.java,v 1.22 2003/12/23 13:38:18 mog Exp $
  */
 public class SFVFile implements Serializable {
 

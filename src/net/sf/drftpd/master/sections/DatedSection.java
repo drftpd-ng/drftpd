@@ -10,6 +10,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author mog
+ * @version $Id: DatedSection.java,v 1.2 2003/12/23 13:38:20 mog Exp $
  */
 public class DatedSection implements Section {
 

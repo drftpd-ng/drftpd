@@ -6,14 +6,12 @@ import java.io.IOException;
  * Created on 2003-jul-12
  *
  * To change the template for this generated file go to
- * Window>Preferences>Java>Code Generation>Code and Comments
  */
 
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
+ * @author mog
  *
- * To change the template for this generated type comment go to
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * @version $Id: IllegalTargetException.java,v 1.3 2003/12/23 13:38:18 mog Exp $
  */
 public class IllegalTargetException extends IOException {
 

@@ -9,7 +9,8 @@ import java.util.List;
  * Useful when doing RMI call and you do not want to send the entire
  * linked directory structure to the remote VM.
  * 
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
+ * @author mog
+ * @version $Id: StaticRemoteFile.java,v 1.21 2003/12/23 13:38:21 mog Exp $
  */
 public class StaticRemoteFile extends RemoteFile {
 	private boolean _isDeleted;

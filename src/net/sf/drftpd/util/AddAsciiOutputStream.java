@@ -7,6 +7,7 @@ import java.io.OutputStream;
  * AddAsciiOutputStream that ignores \r and adds an \r before every \n.
  * 
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
+ * @version $Id: AddAsciiOutputStream.java,v 1.2 2003/12/23 13:38:21 mog Exp $
  */
 public class AddAsciiOutputStream extends OutputStream {
 	private OutputStream _out;

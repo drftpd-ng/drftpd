@@ -22,7 +22,7 @@ import net.sf.drftpd.mirroring.ArchiveHandler;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.6 2003/12/11 23:12:51 zubov Exp $
+ * @version $Id: Archive.java,v 1.7 2003/12/23 13:38:19 mog Exp $
  */
 
 public class Archive implements FtpListener {
