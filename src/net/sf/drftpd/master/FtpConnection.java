@@ -659,13 +659,6 @@ public class FtpConnection extends BaseFtpConnection {
 			response.addComment("zipscript error: " + e.getMessage());
 			logger.log(Level.WARN, "zipscript error", e);
 		}
-		try {
-			logger.debug("sendbuffersize: "+dataSocket.getSendBufferSize());
-			//dataSocket.
-		} catch (SocketException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
 
 		try {
 			if (request.getCommand().equals("LIST")

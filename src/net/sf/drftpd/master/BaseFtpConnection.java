@@ -81,7 +81,7 @@ public class BaseFtpConnection implements Runnable {
 
 
 	/////////// DATA CONNECTION ///////////
-	protected Socket mDataSoc;
+	protected Socket _dataSocket;
 	protected int miPort = 0;
 	protected ServerSocket mServSoc;
 	protected PrintWriter out;
@@ -114,9 +114,9 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	public boolean acceptPasvConnection() throws IOException {
 		boolean bRet = false;
-		mDataSoc = null;
+		_dataSocket = null;
 		try {
-			mDataSoc = mServSoc.accept();
+			_dataSocket = mServSoc.accept();
 			bRet = true;
 		} catch (IOException ex) {
 			throw ex;
@@ -168,19 +168,20 @@ public class BaseFtpConnection implements Runnable {
 		// get socket depending on the selection
 		if (mbPort) {
 			try {
-				mDataSoc = new Socket(mAddress, miPort);
-				//mDataSoc.setSoTimeout(30000); // 30 seconds timeout
+				_dataSocket = new Socket(mAddress, miPort);
+				_dataSocket.setSoTimeout(30000); // 30 seconds timeout
+				_dataSocket.setSendBufferSize(65536);
 			} catch (IOException ex) {
 				//mConfig.getLogger().warn(ex);
 				logger.log(Level.WARN, "Error opening data socket", ex);
-				mDataSoc = null;
+				_dataSocket = null;
 				throw ex;
 			}
 		} else if (mbPasv) {
-			if (mDataSoc == null)
+			if (_dataSocket == null)
 				acceptPasvConnection();
 		}
-		return mDataSoc;
+		return _dataSocket;
 	}
 
 	/**
@@ -285,13 +286,13 @@ public class BaseFtpConnection implements Runnable {
 	public void reset() {
 
 		// close data socket
-		if (mDataSoc != null) {
+		if (_dataSocket != null) {
 			try {
-				mDataSoc.close();
+				_dataSocket.close();
 			} catch (Exception ex) {
 				logger.log(Level.WARN, "Error closing data socket", ex);
 			}
-			mDataSoc = null;
+			_dataSocket = null;
 		}
 
 		// close server socket

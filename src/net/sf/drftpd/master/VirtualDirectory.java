@@ -36,15 +36,9 @@ public class VirtualDirectory {
 		out.write("total 0"+NEWLINE);
 
 		// print file list
-		int i=0;
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			if(++i > 565) return;
 			RemoteFileInterface file = (RemoteFileInterface) iter.next();
 			printLine(file, out);
-			if(i % 100 == 0) {
-				System.err.println("i: "+i+" flushing");
-				out.flush();
-			} 
 		}
 	}
 
@@ -171,12 +165,6 @@ public class VirtualDirectory {
 		}
 		line.append(NEWLINE);
 		out.write(line.toString());
-		try {
-			Thread.sleep(10);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 }
