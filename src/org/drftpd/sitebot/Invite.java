@@ -21,6 +21,7 @@ import net.sf.drftpd.event.InviteEvent;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -38,13 +39,13 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 public class Invite extends GenericCommandAutoService
     implements IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Invite.class);
-    private ConnectionManager _cm;
     private SiteBot _irc;
     private String _trigger;
+	private GlobalContext _gctx;
 
     public Invite(SiteBot ircListener) {
         super(ircListener.getIRCConnection());
-        _cm = ircListener.getConnectionManager();
+        _gctx = ircListener.getGlobalContext();
         _irc = ircListener;
         _trigger = _irc.getMessageCommandPrefix();
     }
@@ -71,7 +72,7 @@ public class Invite extends GenericCommandAutoService
             User user;
 
             try {
-                user = _cm.getGlobalContext().getUserManager().getUserByName(args[1]);
+                user = getGlobalContext().getUserManager().getUserByName(args[1]);
             } catch (NoSuchUserException e) {
                 logger.log(Level.WARN, args[1] + " " + e.getMessage(), e);
 
@@ -83,7 +84,7 @@ public class Invite extends GenericCommandAutoService
             }
 
             boolean success = user.checkPassword(args[2]);
-            getConnectionManager().dispatchFtpEvent(new InviteEvent(success
+            getGlobalContext().dispatchFtpEvent(new InviteEvent(success
                     ? "INVITE" : "BINVITE", msgc.getSource().getNick(), user));
 
            	String ident = msgc.getSource().getNick() + "!" 
@@ -100,7 +101,7 @@ public class Invite extends GenericCommandAutoService
         }
     }
 
-    private ConnectionManager getConnectionManager() {
-        return _cm;
+    private GlobalContext getGlobalContext() {
+        return _gctx;
     }
 }

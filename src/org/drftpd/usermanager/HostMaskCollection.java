@@ -26,8 +26,6 @@ import org.apache.oro.text.regex.MalformedPatternException;
 import socks.server.Ident;
 
 import java.io.IOException;
-import java.io.Serializable;
-
 import java.net.InetAddress;
 import java.net.Socket;
 
@@ -52,12 +50,10 @@ public class HostMaskCollection extends ArrayList {
      *
      * @param masks
      */
-    public HostMaskCollection(Collection masks) {
-
-        for (Iterator<String> iter = masks.iterator(); iter.hasNext();) {
-            String mask = iter.next();
-            add(new HostMask(mask));
-        }
+    public HostMaskCollection(Collection<String> masks) {
+    	for (String mask : masks) {
+			add(new HostMask(mask));
+		}
     }
 
     public void addAllMasks(HostMaskCollection hostMaskCollection) {

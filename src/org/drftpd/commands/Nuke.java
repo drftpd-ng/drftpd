@@ -293,7 +293,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
         NukeEvent nuke = new NukeEvent(conn.getUserNull(), "NUKE", nukeDirPath,
                 nukeDirSize, nukedAmount, multiplier, reason, nukees);
         getNukeLog().add(nuke);
-        conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);
+        conn.getGlobalContext().dispatchFtpEvent(nuke);
 
         return response;
     }
@@ -458,7 +458,7 @@ public class Nuke implements CommandHandlerFactory, CommandHandler {
         nuke.setCommand("UNNUKE");
         nuke.setReason(reason);
         nuke.setUser(conn.getUserNull());
-        conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);
+        conn.getGlobalContext().dispatchFtpEvent(nuke);
 
         return response;
     }

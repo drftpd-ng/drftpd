@@ -161,7 +161,7 @@ public class PreTime extends FtpListener {
         }
 
         try {
-            _irc = (SiteBot) _cm.getFtpListener(PreSiteBot.class);
+            _irc = (SiteBot) _cm.getGlobalContext().getFtpListener(PreSiteBot.class);
             _siteBot = new PreSiteBot(_irc, this);
         } catch (ObjectNotFoundException e1) {
             logger.warn("Error loading sitebot component", e1);

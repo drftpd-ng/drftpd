@@ -26,6 +26,7 @@ import net.sf.drftpd.FileExistsException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 
@@ -53,7 +54,7 @@ import java.util.Iterator;
  */
 public class JSXUserManager implements UserManager {
     private static final Logger logger = Logger.getLogger(JSXUserManager.class.getName());
-    private ConnectionManager _connManager;
+    private GlobalContext _gctx;
     String userpath = "users/jsx/";
     File userpathFile = new File(userpath);
     Hashtable users = new Hashtable();
@@ -203,7 +204,7 @@ public class JSXUserManager implements UserManager {
                 //throws RuntimeException
                 user.setUserManager(this);
                 users.put(user.getName(), user);
-                user.reset(_connManager);
+                user.reset(getGlobalContext());
                 in.close();
 
                 return user;
@@ -219,7 +220,11 @@ public class JSXUserManager implements UserManager {
         }
     }
 
-    public User getUserByName(String username)
+	private GlobalContext getGlobalContext() {
+		return _gctx;
+	}
+
+	public User getUserByName(String username)
         throws NoSuchUserException, UserFileException {
         JSXUser user = (JSXUser) getUserByNameUnchecked(username);
 
@@ -227,7 +232,7 @@ public class JSXUserManager implements UserManager {
             throw new NoSuchUserException(user.getName() + " is deleted");
         }
 
-        user.reset(_connManager);
+        user.reset(getGlobalContext());
 
         return user;
     }
@@ -264,9 +269,10 @@ public class JSXUserManager implements UserManager {
         }
     }
 
-    public void init(ConnectionManager mgr) {
-        _connManager = mgr;
+    public void init(GlobalContext gctx) {
+        _gctx = gctx;
     }
+
 	public User getUserByNameIncludeDeleted(String argument) throws NoSuchUserException, UserFileException {
 		return getUserByName(argument);
 	}

@@ -21,11 +21,11 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.plugins.Textoutput;
-import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Logger;
 
 import org.drftpd.Bytes;
+import org.drftpd.Time;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
 
@@ -66,7 +66,8 @@ public class New implements CommandHandlerFactory, CommandHandler {
 
         // Collect all new files (= directories hopefully!) from all sections,
         // and sort them.
-        Collection directories = new TreeSet(new DateComparator());
+        Collection<LinkedRemoteFileInterface> directories = new TreeSet<LinkedRemoteFileInterface>(
+				new DateComparator());
 
         for (Iterator iter = sections.iterator(); iter.hasNext();) {
             SectionInterface section = (SectionInterface) iter.next();

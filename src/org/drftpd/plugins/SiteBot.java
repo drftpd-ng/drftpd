@@ -57,7 +57,6 @@ import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.config.ConfigInterface;
 import net.sf.drftpd.util.Blowfish;
 import net.sf.drftpd.util.ReplacerUtils;
-import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -65,6 +64,7 @@ import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.SFVFile;
+import org.drftpd.Time;
 import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.Nuke;
 import org.drftpd.commands.TransferStatistics;
@@ -265,7 +265,7 @@ public class SiteBot extends FtpListener implements Observer {
 
     private void actionPerformedDirectory(DirectoryFtpEvent direvent)
         throws FormatterException {
-        if (!getConfig().checkPathPermission("dirlog", direvent.getUser(), direvent.getDirectory())) {
+        if (!getGlobalContext().getConfig().checkPathPermission("dirlog", direvent.getUser(), direvent.getDirectory())) {
             return;
         }
 
@@ -1011,14 +1011,6 @@ public class SiteBot extends FtpListener implements Observer {
 
     public String getChannelName() {
         return _channelName;
-    }
-
-    public ConfigInterface getConfig() {
-        return getGlobalContext().getConfig();
-    }
-
-    public ConnectionManager getConnectionManager() {
-        return getGlobalContext().getConnectionManager();
     }
 
     public IRCConnection getIRCConnection() {

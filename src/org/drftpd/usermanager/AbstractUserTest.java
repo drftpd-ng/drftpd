@@ -26,7 +26,7 @@ import net.sf.drftpd.util.CalendarUtils;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
-import org.drftpd.master.ConnectionManager;
+import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyUser;
 
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ public class AbstractUserTest extends TestCase {
      * Mon Dec 15 23:59:59 CET 2003
      */
     private static final long RESETTIME = 1071519356421L;
-    private CM _cm;
+    private GCtx _gctx;
     private Calendar _resetCal;
     private DummyUser _user;
 
@@ -90,12 +90,12 @@ i1:
         }
     }
 
-    private static void verifyEvents(List tmpEventNames, ArrayList events) {
-        verifyEvents(new ArrayList(tmpEventNames), events);
+    private static void verifyEvents(List<String> tmpEventNames, ArrayList events) {
+        verifyEvents(new ArrayList<String>(tmpEventNames), events);
     }
 
     public void resetSetUp() {
-        _cm = new CM();
+        _gctx = new GCtx();
 
         _user = new DummyUser("junit", null);
         _user.setLastReset(RESETTIME - 10000);
@@ -114,8 +114,8 @@ i1:
         CalendarUtils.floorAllLessThanDay(_resetCal);
         logger.debug("resetDay lastreset " + new Date(_user.getLastReset()));
         logger.debug("resetDay date " + _resetCal.getTime());
-        _user.reset(_cm, _resetCal);
-        verifyEvents(Arrays.asList(new String[] { "RESETDAY" }), _cm.events);
+        _user.reset(_gctx, _resetCal);
+        verifyEvents(Arrays.asList(new String[] { "RESETDAY" }), _gctx.events);
     }
 
     public void testResetMonth() throws UserFileException {
@@ -125,22 +125,22 @@ i1:
         CalendarUtils.floorAllLessThanDay(_resetCal);
         logger.debug("resetMonth lastreset " + new Date(_user.getLastReset()));
         logger.debug("resetMonth date " + _resetCal.getTime());
-        _user.reset(_cm, _resetCal);
+        _user.reset(_gctx, _resetCal);
         verifyEvents(Arrays.asList(
                 new String[] { "RESETDAY", "RESETWEEK", "RESETMONTH" }),
-            _cm.events);
+            _gctx.events);
     }
 
     public void testResetNone1() throws UserFileException {
         resetSetUp();
         CalendarUtils.ceilAllLessThanDay(_resetCal);
-        _user.reset(_cm, _resetCal);
+        _user.reset(_gctx, _resetCal);
     }
 
     public void testResetNone2() throws UserFileException {
         resetSetUp();
         CalendarUtils.floorAllLessThanDay(_resetCal);
-        _user.reset(_cm, _resetCal);
+        _user.reset(_gctx, _resetCal);
     }
 
     public void testResetWeek() throws UserFileException {
@@ -150,13 +150,13 @@ i1:
         CalendarUtils.floorAllLessThanDay(_resetCal);
         logger.debug("resetWeek lastreset " + new Date(_user.getLastReset()));
         logger.debug("resetWeek date " + _resetCal.getTime());
-        _user.reset(_cm, _resetCal);
+        _user.reset(_gctx, _resetCal);
         verifyEvents(Arrays.asList(new String[] { "RESETDAY", "RESETWEEK" }),
-            _cm.events);
+            _gctx.events);
     }
 
-    private static class CM extends ConnectionManager {
-        public ArrayList events = new ArrayList();
+    private static class GCtx extends DummyGlobalContext {
+        public ArrayList<Event> events = new ArrayList<Event>();
 
         public void dispatchFtpEvent(Event event) {
             events.add(event);

@@ -23,9 +23,9 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
 
 import org.drftpd.usermanager.NoSuchUserException;
@@ -38,16 +38,14 @@ import org.drftpd.usermanager.UserFileException;
 public class Ident extends GenericCommandAutoService implements
 		IRCPluginInterface {
     private static final Logger logger = Logger.getLogger(Ident.class);
-	private ConnectionManager _cm;
-	private SiteBot _irc;
+	private SiteBot _listener;
     private String _trigger;
 	public static final Key IDENT = new Key(Ident.class,"IRCIdent",String.class);
 
 	public Ident(SiteBot ircListener) {
 		super(ircListener.getIRCConnection());
-		_cm = ircListener.getConnectionManager();
-		_irc = ircListener;
-        _trigger = _irc.getMessageCommandPrefix();
+		_listener = ircListener;
+        _trigger = _listener.getMessageCommandPrefix();
 	}
 
 	public String getCommands() {
@@ -75,7 +73,7 @@ public class Ident extends GenericCommandAutoService implements
             }
             User user;
             try {
-                user = _cm.getGlobalContext().getUserManager().getUserByName(args[1]);
+                user = getGlobalContext().getUserManager().getUserByName(args[1]);
             } catch (NoSuchUserException e) {
                 logger.log(Level.WARN, args[1] + " " + e.getMessage(), e);
                 return;
@@ -92,12 +90,16 @@ public class Ident extends GenericCommandAutoService implements
             	try {
 					user.commit();
 		           	logger.info("Set IRC ident to '"+ident+"' for "+user.getName());
-	            	_irc.sayChannel(msgc.getSource().getNick(),"Set IRC ident to '"+ident+"' for "+user.getName());
+	            	_listener.sayChannel(msgc.getSource().getNick(),"Set IRC ident to '"+ident+"' for "+user.getName());
 				} catch (UserFileException e1) {
 					logger.warn("Error saving userfile for "+user.getName(),e1);
-					_irc.sayPrivMessage(msgc.getSource().getNick(),"Error saving userfile for "+user.getName());
+					_listener.sayPrivMessage(msgc.getSource().getNick(),"Error saving userfile for "+user.getName());
 				}
              }
         }
+	}
+
+	private GlobalContext getGlobalContext() {
+		return _listener.getGlobalContext();
 	}
 }

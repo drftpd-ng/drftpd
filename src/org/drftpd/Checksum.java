@@ -15,13 +15,13 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd;
+package org.drftpd;
 
 
 /**
  * @author mog
  *
- * @version $Id$
+ * @version $Id: Checksum.java 808 2004-11-18 15:58:39Z mog $
  */
 public class Checksum {
     public static String formatChecksum(long checkSum) {

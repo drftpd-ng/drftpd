@@ -41,10 +41,6 @@ import java.util.ArrayList;
  * @version $Id$
  */
 public class TextoutputTest extends TestCase {
-    /**
-     * Constructor for TextoutputTest.
-     * @param arg0
-     */
     public TextoutputTest(String arg0) {
         super(arg0);
     }

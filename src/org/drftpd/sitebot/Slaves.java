@@ -17,26 +17,22 @@
  */
 package org.drftpd.sitebot;
 
-import f00f.net.irc.martyr.GenericAutoService;
-import f00f.net.irc.martyr.InCommand;
-import f00f.net.irc.martyr.State;
-import f00f.net.irc.martyr.commands.MessageCommand;
-
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
-import org.drftpd.master.ConnectionManager;
+import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.slave.SlaveStatus;
-
 import org.tanesha.replacer.ReplacerEnvironment;
 
-import java.util.Iterator;
+import f00f.net.irc.martyr.GenericAutoService;
+import f00f.net.irc.martyr.InCommand;
+import f00f.net.irc.martyr.State;
+import f00f.net.irc.martyr.commands.MessageCommand;
 
 
 /**
@@ -64,8 +60,8 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
         		_trigger + "slaves : Show transfer stats and disk free for all slaves.";
     }
 
-    private ConnectionManager getConnectionManager() {
-        return _listener.getConnectionManager();
+    private GlobalContext getGlobalContext() {
+        return _listener.getGlobalContext();
     }
 
     private String makeStatusString(RemoteSlave rslave) {
@@ -109,7 +105,7 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
             String slaveName = msgc.getMessage().substring(LEN2);
 
             try {
-                RemoteSlave rslave = getConnectionManager().getGlobalContext()
+                RemoteSlave rslave = getGlobalContext()
                                          .getSlaveManager().getRemoteSlave(slaveName);
                 _listener.sayChannel(chan, makeStatusString(rslave));
             } catch (ObjectNotFoundException e) {
@@ -119,12 +115,8 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
                     ReplacerUtils.jprintf("slaves.notfound", env, Slaves.class));
             }
         } else if (msgc.getMessage().equals(_trigger + "slaves")) {
-            for (Iterator iter = getConnectionManager().getGlobalContext()
-                                     .getSlaveManager().getSlaves().iterator();
-                    iter.hasNext();) {
-                RemoteSlave rslave = (RemoteSlave) iter.next();
-                String statusString = makeStatusString(rslave);
-                _listener.sayChannel(chan, statusString);
+        	for(RemoteSlave rslave : getGlobalContext().getSlaveManager().getSlaves()) {
+                _listener.sayChannel(chan, makeStatusString(rslave));
             }
         }
     }

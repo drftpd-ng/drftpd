@@ -17,11 +17,11 @@
  */
 package org.drftpd.plugins;
 
-import net.sf.drftpd.Checksum;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 
+import org.drftpd.Checksum;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.master.ConnectionManager;
 

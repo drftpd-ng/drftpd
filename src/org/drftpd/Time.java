@@ -15,12 +15,12 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.util;
+package org.drftpd;
 
 
 /**
  * @author zubov
- * @version $Id$
+ * @version $Id: Time.java 852 2004-12-04 17:46:58Z mog $
  */
 public class Time {
     /**

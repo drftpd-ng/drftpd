@@ -108,8 +108,7 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
         Archive archive;
 
         try {
-            archive = (Archive) conn.getGlobalContext().getConnectionManager()
-                                    .getFtpListener(Archive.class);
+            archive = (Archive) conn.getGlobalContext().getConnectionManager().getGlobalContext().getFtpListener(Archive.class);
         } catch (ObjectNotFoundException e3) {
             reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
                     "archive.loadarchive", env));
@@ -247,8 +246,7 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
         Archive archive;
 
         try {
-            archive = (Archive) conn.getGlobalContext().getConnectionManager()
-                                    .getFtpListener(Archive.class);
+            archive = (Archive) conn.getGlobalContext().getConnectionManager().getGlobalContext().getFtpListener(Archive.class);
         } catch (ObjectNotFoundException e) {
             reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
                     "archive.loadarchive", env));

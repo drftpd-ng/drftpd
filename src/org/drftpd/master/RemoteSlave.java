@@ -416,7 +416,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 				new RemergeMessage(this));
 		setAvailable(true);
 		logger.info("Slave added: '" + getName() + "' status: " + _status);
-		getGlobalContext().getConnectionManager().dispatchFtpEvent(
+		getGlobalContext().dispatchFtpEvent(
 				new SlaveEvent("ADDSLAVE", this));
 	}
 

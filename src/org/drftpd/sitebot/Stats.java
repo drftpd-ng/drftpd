@@ -26,9 +26,9 @@ import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.UserComparator;
 
 import org.drftpd.Bytes;
+import org.drftpd.GlobalContext;
 import org.drftpd.commands.TransferStatistics;
 
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.permissions.Permission;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.plugins.Trial;
@@ -53,13 +53,11 @@ import java.util.StringTokenizer;
  */
 public class Stats extends GenericCommandAutoService
     implements IRCPluginInterface {
-    private ConnectionManager _cm;
     private SiteBot _listener;
     private String _trigger;
     
     public Stats(SiteBot ircListener) {
         super(ircListener.getIRCConnection());
-        _cm = ircListener.getConnectionManager();
         _listener = ircListener;
         _trigger = _listener.getCommandPrefix();
     }
@@ -120,7 +118,7 @@ public class Stats extends GenericCommandAutoService
         Collection users = null;
 
         try {
-            users = _cm.getGlobalContext().getUserManager().getAllUsers();
+            users = getGlobalContext().getUserManager().getAllUsers();
         } catch (UserFileException e) {
             getConnection().sendCommand(new MessageCommand(destination,
                     "Error processing userfiles"));
@@ -199,7 +197,11 @@ public class Stats extends GenericCommandAutoService
         }
     }
 
-    public static int fixNumberAndUserlist(String params, Collection userList) {
+	private GlobalContext getGlobalContext() {
+		return _listener.getGlobalContext();
+	}
+
+	public static int fixNumberAndUserlist(String params, Collection userList) {
         int number = 10;
         com.Ostermiller.util.StringTokenizer st = new com.Ostermiller.util.StringTokenizer(params);
         st.nextToken(); // !alup

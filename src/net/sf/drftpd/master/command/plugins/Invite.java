@@ -53,7 +53,7 @@ public class Invite implements CommandHandlerFactory, CommandHandler {
         String user = conn.getRequest().getArgument();
         
         InviteEvent invite = new InviteEvent(cmd, user, conn.getUserNull());
-        conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(invite);
+        conn.getGlobalContext().dispatchFtpEvent(invite);
 
         return new Reply(200, "Inviting " + user);
     }

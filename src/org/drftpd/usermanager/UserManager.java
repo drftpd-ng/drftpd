@@ -20,6 +20,7 @@ package org.drftpd.usermanager;
 
 import java.util.Collection;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
 
 
@@ -57,7 +58,7 @@ public interface UserManager {
      * usermanager to get a hold of the ConnectionManager object for dispatching
      * events etc.
      */
-    public abstract void init(ConnectionManager mgr);
+    public abstract void init(GlobalContext mgr);
 
     public abstract void saveAll() throws UserFileException;
 

@@ -19,9 +19,9 @@ package org.drftpd.slaveselection.filter;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.util.Time;
 
 import org.drftpd.PropertyHelper;
+import org.drftpd.Time;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;

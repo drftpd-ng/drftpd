@@ -123,11 +123,11 @@ SITE\ DELSLAVE=net.sf.drftpd.master.command.plugins.SlaveManagement
 
 SITE\ INVITE=net.sf.drftpd.master.command.plugins.Invite
 
-SITE\ LISTJOBS=net.sf.drftpd.mirroring.JobManagerCommandHandler
-SITE\ STARTJOBS=net.sf.drftpd.mirroring.JobManagerCommandHandler
-SITE\ STOPJOBS=net.sf.drftpd.mirroring.JobManagerCommandHandler
-SITE\ ADDJOB=net.sf.drftpd.mirroring.JobManagerCommandHandler
-SITE\ REMOVEJOB=net.sf.drftpd.mirroring.JobManagerCommandHandler
+#SITE\ LISTJOBS=net.sf.drftpd.mirroring.JobManagerCommandHandler
+#SITE\ STARTJOBS=net.sf.drftpd.mirroring.JobManagerCommandHandler
+#SITE\ STOPJOBS=net.sf.drftpd.mirroring.JobManagerCommandHandler
+#SITE\ ADDJOB=net.sf.drftpd.mirroring.JobManagerCommandHandler
+#SITE\ REMOVEJOB=net.sf.drftpd.mirroring.JobManagerCommandHandler
 
 SITE\ IRC=org.drftpd.commands.SiteBotManagment
 
@@ -135,8 +135,8 @@ SITE\ SECTIONS=org.drftpd.commands.Sections
 
 SITE\ NEW=org.drftpd.commands.New
 
-SITE\ ARCHIVE=org.drftpd.commands.ArchiveCommandHandler
-SITE\ LISTARCHIVETYPES=org.drftpd.commands.ArchiveCommandHandler
+#SITE\ ARCHIVE=org.drftpd.commands.ArchiveCommandHandler
+#SITE\ LISTARCHIVETYPES=org.drftpd.commands.ArchiveCommandHandler
 
 SITE\ FIND=org.drftpd.commands.Find
 

@@ -127,8 +127,8 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
 		Reply ftpReply = new Reply(200, "Command ok");
 		ftpReply.addComment("Plugins loaded:");
 
-		for (Iterator iter = conn.getGlobalContext().getConnectionManager()
-				.getFtpListeners().iterator(); iter.hasNext();) {
+		for (Iterator iter = conn.getGlobalContext().getFtpListeners()
+				.iterator(); iter.hasNext();) {
 			ftpReply.addComment(iter.next().getClass().getName());
 		}
 
@@ -141,9 +141,8 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
 		}
 
 		try {
-			conn.getGlobalContext().getConnectionManager().reload();
+			conn.getGlobalContext().getSectionManager().reload();
 			conn.getGlobalContext().reloadFtpConfig();
-			conn.getGlobalContext().getSlaveManager().reload();
 			conn.getGlobalContext().getSlaveSelectionManager().reload();
 
 			try {
@@ -156,14 +155,13 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
 			conn.getGlobalContext().getConnectionManager()
 					.getCommandManagerFactory().reload();
 
-			// slaveManager.saveFilesXML();
 		} catch (IOException e) {
 			logger.log(Level.FATAL, "Error reloading config", e);
 
 			return new Reply(200, e.getMessage());
 		}
 
-		conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(
+		conn.getGlobalContext().dispatchFtpEvent(
 				new ConnectionEvent(conn, "RELOAD"));
 
 		// ugly hack to clear resourcebundle cache
@@ -205,7 +203,7 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
 			message = conn.getRequest().getArgument();
 		}
 
-		conn.getGlobalContext().getConnectionManager().shutdown(message);
+		conn.getGlobalContext().shutdown(message);
 
 		return Reply.RESPONSE_200_COMMAND_OK;
 	}
@@ -219,8 +217,8 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
 			return new Reply(500, "Usage: site unload className");
 		}
 
-		for (Iterator iter = conn.getGlobalContext().getConnectionManager()
-				.getFtpListeners().iterator(); iter.hasNext();) {
+		for (Iterator iter = conn.getGlobalContext().getFtpListeners()
+				.iterator(); iter.hasNext();) {
 			FtpListener ftpListener = (FtpListener) iter.next();
 
 			if (ftpListener.getClass().getName().equals(

@@ -12,7 +12,7 @@ import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
-import org.drftpd.master.ConnectionManager;
+import org.drftpd.GlobalContext;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sitebot.IRCPluginInterface;
@@ -44,8 +44,8 @@ public class Approve extends GenericCommandAutoService implements IRCPluginInter
 		return _trigger + "approve <dir>: Creates a subfolder in the given dir named Approved.by.<User>";
 	}
 
-	private ConnectionManager getConnectionManager() {
-		return _listener.getConnectionManager();
+	private GlobalContext getGlobalContext() {
+		return _listener.getGlobalContext();
 	}
 
 	public Approve(SiteBot listener) {
@@ -93,7 +93,7 @@ public class Approve extends GenericCommandAutoService implements IRCPluginInter
 			//Get the ftp user account based on irc ident
 			User user;
             try {
-                user = getConnectionManager().getGlobalContext().getUserManager().getUserByIdent(ident);
+                user = getGlobalContext().getUserManager().getUserByIdent(ident);
             } catch (NoSuchUserException e3) {
 				logger.warn("Could not identify " + ident);
 				_listener.sayChannel(msgc.getDest(), 
@@ -113,8 +113,8 @@ public class Approve extends GenericCommandAutoService implements IRCPluginInter
 				return;				
 			}
 
-			LinkedRemoteFileInterface dir = findDir(getConnectionManager(),
-													 getConnectionManager().getGlobalContext().getRoot(),
+			LinkedRemoteFileInterface dir = findDir(getGlobalContext(),
+													 getGlobalContext().getRoot(),
 													 user,
 													 dirName);
 			if (dir!= null){
@@ -128,7 +128,7 @@ public class Approve extends GenericCommandAutoService implements IRCPluginInter
 					newdir.setGroup(user.getGroup());
 					_listener.sayChannel(msgc.getDest(), 
 										 ReplacerUtils.jprintf("approve.success", env, Approve.class));
-					getConnectionManager().dispatchFtpEvent(
+					getGlobalContext().dispatchFtpEvent(
 							new DirectoryFtpEvent(null, "MKD", newdir));
 				} catch (FileExistsException e1) {
 					_listener.sayChannel(msgc.getDest(), 
@@ -143,12 +143,12 @@ public class Approve extends GenericCommandAutoService implements IRCPluginInter
 	}
 
 	private static LinkedRemoteFileInterface findDir(
-		ConnectionManager conn,
+		GlobalContext gctx,
 		LinkedRemoteFileInterface dir,
 		User user,
 		String searchstring) {
 
-		if (!conn.getGlobalContext().getConfig().checkPathPermission("privpath", user, dir, true)) {
+		if (!gctx.getConfig().checkPathPermission("privpath", user, dir, true)) {
 			Logger.getLogger(Approve.class).debug("privpath: "+dir.getPath());
 			return null;
 		}
@@ -160,7 +160,7 @@ public class Approve extends GenericCommandAutoService implements IRCPluginInter
 					logger.info("Found " + file.getPath());
 					return file;
 				} 
-				LinkedRemoteFileInterface dir2 = findDir(conn, file, user, searchstring);
+				LinkedRemoteFileInterface dir2 = findDir(gctx, file, user, searchstring);
 				if (dir2 != null) {
 					return dir2;
 				}		

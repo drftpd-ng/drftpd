@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.util;
+package org.drftpd;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -23,7 +23,7 @@ import junit.framework.TestSuite;
 
 /**
  * @author mog
- * @version $Id: TimeTest.java,v 1.2 2004/08/03 20:14:03 zubov Exp $
+ * @version $Id: TimeTest.java 690 2004-08-03 20:14:12Z zubov $
  */
 public class TimeTest extends TestCase {
     public TimeTest(String name) {

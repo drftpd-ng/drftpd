@@ -17,12 +17,10 @@
  */
 package org.drftpd.remotefile;
 
-import net.sf.drftpd.ObjectNotFoundException;
-
 import java.io.FileNotFoundException;
-
 import java.util.Iterator;
-import java.util.Stack;
+
+import net.sf.drftpd.ObjectNotFoundException;
 
 
 /**
@@ -47,18 +45,6 @@ public class FileUtils {
         }
 
         return dir2;
-    }
-
-    public LinkedRemoteFileInterface getSubDirOfDirectoryLevel(
-        LinkedRemoteFileInterface baseDir, LinkedRemoteFileInterface dir,
-        int level) throws FileNotFoundException {
-        Stack s = new Stack();
-
-        while (s.peek() != baseDir) {
-            s.push(((LinkedRemoteFileInterface) s.peek()).getParentFile());
-        }
-
-        return (LinkedRemoteFileInterface) s.peek();
     }
 
 	public static LinkedRemoteFile getOldestFile(LinkedRemoteFileInterface dir) throws ObjectNotFoundException {

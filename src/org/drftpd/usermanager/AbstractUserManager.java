@@ -28,10 +28,10 @@ import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FileExistsException;
 
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.commands.Nuke;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.Statistics;
 
 import se.mog.io.PermissionDeniedException;
@@ -44,9 +44,9 @@ import se.mog.io.PermissionDeniedException;
  * @version $Id$
  */
 public abstract class AbstractUserManager implements UserManager {
-    protected ConnectionManager _connManager;
     protected Hashtable<String, User> _users = new Hashtable<String, User>();
 	private static final Logger logger = Logger.getLogger(AbstractUserManager.class);
+	private GlobalContext _gctx;
 
 	/**
 	 * For DummyUserManager, skips creation of userfile directory.
@@ -224,7 +224,7 @@ public abstract class AbstractUserManager implements UserManager {
     public User getUserByNameIncludeDeleted(String username)
     	throws NoSuchUserException, UserFileException {
         User user = getUserByNameUnchecked(username);
-        user.reset(_connManager);
+        user.reset(getGlobalContext());
         return user;
     }
 
@@ -239,6 +239,9 @@ public abstract class AbstractUserManager implements UserManager {
         return user;
     }
 
+    public GlobalContext getGlobalContext() {
+    	return _gctx;
+    }
     public User getUserByIdent(String ident)
 		throws NoSuchUserException, UserFileException { 
         for (Iterator iter = getAllUsers().iterator(); iter.hasNext();) {
@@ -262,8 +265,8 @@ public abstract class AbstractUserManager implements UserManager {
      * usermanager to get a hold of the ConnectionManager object for dispatching
      * events etc.
      */
-    public void init(ConnectionManager mgr) {
-        _connManager = mgr;
+    public void init(GlobalContext gctx) {
+        _gctx = gctx;
     }
 
     public void remove(User user) {

@@ -34,11 +34,11 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.ReplacerUtils;
-import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
+import org.drftpd.Time;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.permissions.Permission;
 import org.drftpd.plugins.Statistics;

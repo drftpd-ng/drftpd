@@ -18,9 +18,9 @@
 package org.drftpd.mirroring;
 
 
-/*
+/**
  * @author zubov
- * @version $Id: DuplicateArchiveException.java,v 1.1 2004/09/13 15:05:01 zubov Exp $
+ * @version $Id$
  */
 public class DuplicateArchiveException extends Exception {
     public DuplicateArchiveException() {

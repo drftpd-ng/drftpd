@@ -100,14 +100,6 @@ public class Mirror extends FtpListener {
         logger.info("Done adding " + file.getPath() + " to the JobList");
     }
 
-    /**
-     * @param lrf
-     * Returns true if lrf.getPath() is excluded
-     */
-//    public boolean checkExclude(SectionInterface section) {
-//        return _exemptList.contains(section.getName());
-//    }
-
     public void init(GlobalContext gctx) {
         super.init(gctx);
         getGlobalContext().loadJobManager();

@@ -24,13 +24,13 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 import net.sf.drftpd.util.ReplacerUtils;
-import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
+import org.drftpd.Time;
 
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyException;
@@ -172,13 +172,6 @@ public class BaseFtpConnection implements Runnable {
         env = getReplacerEnvironment(env, user);
 
         return SimplePrintf.jprintf(ReplacerUtils.finalFormat(class1, key), env);
-    }
-
-    /**
-    * @deprecated use getConnectionManager().dispatchFtpEvent()
-    */
-    protected void dispatchFtpEvent(Event event) {
-        getGlobalContext().getConnectionManager().dispatchFtpEvent(event);
     }
 
     /**
@@ -431,7 +424,7 @@ public class BaseFtpConnection implements Runnable {
 
             if (isAuthenticated()) {
                 _user.updateLastAccessTime();
-                dispatchFtpEvent(new ConnectionEvent(this, "LOGOUT"));
+                getGlobalContext().dispatchFtpEvent(new ConnectionEvent(this, "LOGOUT"));
             }
 
             getGlobalContext().getConnectionManager().remove(this);

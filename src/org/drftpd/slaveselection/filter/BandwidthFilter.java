@@ -17,8 +17,6 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import net.sf.drftpd.master.config.FtpConfig;
-
 import org.apache.log4j.Logger;
 
 import org.drftpd.PropertyHelper;

@@ -17,19 +17,16 @@
  */
 package org.drftpd.slaveselection;
 
+import java.io.IOException;
+import java.util.Collection;
+
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.config.ConfigInterface;
-import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
-
-import java.io.IOException;
-
-import java.util.Collection;
 
 
 /**

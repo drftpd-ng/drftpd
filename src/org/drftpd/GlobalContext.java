@@ -17,7 +17,17 @@
  */
 package org.drftpd;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Timer;
+
 import net.sf.drftpd.FatalException;
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.MessageEvent;
@@ -28,29 +38,15 @@ import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.Logger;
-
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.remotefile.MLSTSerialize;
 import org.drftpd.sections.SectionManagerInterface;
-
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
-
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserManager;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.lang.reflect.Constructor;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Timer;
 
 
 /**
@@ -128,15 +124,11 @@ public class GlobalContext {
         _ftpListeners.add(listener);
     }
 
-    /**
-     * @param event
-     */
     public void dispatchFtpEvent(Event event) {
         logger.debug("Dispatching " + event + " to " + getFtpListeners());
 
-        for (Iterator iter = getFtpListeners().iterator(); iter.hasNext();) {
+        for(FtpListener handler : getFtpListeners()) {
             try {
-                FtpListener handler = (FtpListener) iter.next();
                 handler.actionPerformed(event);
             } catch (RuntimeException e) {
                 logger.warn("RuntimeException dispatching event", e);
@@ -145,22 +137,16 @@ public class GlobalContext {
     }
 
     public ConfigInterface getConfig() {
-        if (_config == null) {
-            throw new NullPointerException();
-        }
-
+        assert _config != null;
         return _config;
     }
 
     public ConnectionManager getConnectionManager() {
-        if (_cm == null) {
-            throw new NullPointerException();
-        }
-
+    	assert _cm != null;
         return _cm;
     }
 
-    public List getFtpListeners() {
+    public List<FtpListener> getFtpListeners() {
         return _ftpListeners;
     }
 
@@ -297,7 +283,7 @@ public class GlobalContext {
                         cfg, "master.usermanager")).newInstance();
 
             // if the below method is not run, JSXUserManager fails when trying to do a reset() on the user logging in
-            _usermanager.init(_cm);
+            _usermanager.init(this);
         } catch (Exception e) {
             throw new FatalException(
                 "Cannot create instance of usermanager, check master.usermanager in " +
@@ -313,6 +299,7 @@ public class GlobalContext {
     public void shutdown(String message) {
         _shutdownMessage = message;
         dispatchFtpEvent(new MessageEvent("SHUTDOWN", message));
+        getConnectionManager().shutdownPrivate(message);
     }
 
     public Timer getTimer() {
@@ -325,4 +312,16 @@ public class GlobalContext {
     public PortRange getPortRange() {
         return getConfig().getPortRange();
     }
+
+	public FtpListener getFtpListener(Class clazz) throws ObjectNotFoundException {
+        for (Iterator iter = getFtpListeners().iterator(); iter.hasNext();) {
+            FtpListener listener = (FtpListener) iter.next();
+
+            if (clazz.isInstance(listener)) {
+                return listener;
+            }
+        }
+
+        throw new ObjectNotFoundException();
+	}
 }

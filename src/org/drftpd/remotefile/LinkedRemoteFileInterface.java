@@ -26,7 +26,6 @@ import java.util.Set;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.ObjectNotFoundException;
 
 import org.drftpd.SFVFile;
 import org.drftpd.master.RemoteSlave;

@@ -75,18 +75,49 @@
   </target>
 
   <patternset id="archive">
-    <include name="org/drftpd/mirroring/*"/>
-    <include name="org/drftpd/plugnis/Archive*"/>
-    <include name="org/drftpd/plugnis/Mirror*"/>
+    <include name="org/drftpd/mirroring/**"/>
+    <include name="org/drftpd/plugins/Archive*"/>
+    <include name="org/drftpd/plugins/Mirror*"/>
+  </patternset>
+  
+  <patternset id="slaveselection">
+    <include name="se/mog/slaveselection/**"/>
+    <!-- Don't remove SlaveSelectionManagerInterface, -->
+    <!-- it needs to be accessible by non-delegated plugins -->
+    <exclude name="org/drftpd/slaveselection/*"/>
+    <include name="org/drftpd/slaveselection/**"/>
   </patternset>
 
-  <target name="delegatingarchive">
-    <delete>
-      <fileset id="archive"/>
-    </delete>
-    <javac srcdir="${sourceDir}" destdir="classes-archive" debug="true" classpathref="classpath" source="1.5">
-      <fileset id="archive"/>
-    </javac>
+  <target name="undodelegate">
+    <move todir="${outputDir}" overwrite="false">
+      <fileset dir="classes-archive">
+        <patternset refid="archive"/>
+      </fileset>
+    </move>
+    <move todir="${outputDir}" overwrite="false">
+      <fileset dir="classes-slaveselection">
+        <patternset refid="slaveselection"/>
+      </fileset>
+    </move>
+  </target>
+
+  <target name="delegate">
+    <delete dir="classes-archive"/>
+    <mkdir dir="classes-archive"/>
+    <move todir="classes-archive">
+      <fileset dir="classes">
+        <patternset refid="archive"/>
+      </fileset>
+    </move>
+
+    <delete dir="classes-slaveselection"/>
+    <mkdir dir="classes-slaveselection"/>
+    <move todir="classes-slaveselection">
+      <fileset dir="classes">
+        <patternset refid="slaveselection"/>
+      </fileset>
+    </move>
+
     <echo>Note that ArchiveCommandHandler and JobManagerCommandHandler aren't delegated yet so they won't load using DelegatingArchive</echo>
   </target>
 
@@ -121,7 +152,7 @@
   </target>
 
   <target name="tests" depends="compile-junit">
-    <junit printsummary="on" haltonfailure="yes">
+    <junit printsummary="yes" haltonfailure="no">
       <classpath refid="classpath"/>
       <classpath path="${outputDir}"/>
       <batchtest>

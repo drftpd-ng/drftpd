@@ -403,9 +403,6 @@ public class SlaveManager implements Runnable {
 		return false;
 	}
 
-	public void reload() throws FileNotFoundException, IOException {
-	}
-
 	public void saveFilelist() {
 		try {
 			SafeFileWriter out = new SafeFileWriter("files.mlst");

@@ -20,10 +20,10 @@ package org.drftpd.slaveselection.filter;
 import junit.framework.TestCase;
 
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.BasicConfigurator;
 
+import org.drftpd.Time;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 

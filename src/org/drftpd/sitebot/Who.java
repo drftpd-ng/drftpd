@@ -30,6 +30,7 @@ import net.sf.drftpd.util.ReplacerUtils;
 import org.apache.log4j.Logger;
 
 import org.drftpd.Bytes;
+import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.plugins.SiteBot;
@@ -71,12 +72,8 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
         return _trigger + "who : Show who is currently connected to the ftp server.";
     }
 
-    private ConfigInterface getConfig() {
-        return _listener.getConfig();
-    }
-
-    private ConnectionManager getConnectionManager() {
-        return _listener.getConnectionManager();
+    private GlobalContext getGlobalContext() {
+        return _listener.getGlobalContext();
     }
 
     protected void updateCommand(InCommand inCommand) {
@@ -116,7 +113,7 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
                     "who.idle");
 
             ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-            ArrayList conns = new ArrayList(getConnectionManager()
+            ArrayList conns = new ArrayList(getGlobalContext().getConnectionManager()
                                                 .getConnections());
             int i = 0;
 
@@ -130,9 +127,10 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
                     continue;
                 }
 
-                if (getConfig().checkPathPermission("hideinwho", user, conn.getCurrentDirectory())) {
-                    continue;
-                }
+                if (getGlobalContext().getConfig().checkPathPermission(
+						"hideinwho", user, conn.getCurrentDirectory())) {
+					continue;
+				}
 
                 env.add("idle",
                     ((System.currentTimeMillis() - conn.getLastActive()) / 1000) +

@@ -67,10 +67,6 @@ import org.tanesha.replacer.FormatterException;
 public class GlftpdLog extends FtpListener {
     private static Logger logger = Logger.getLogger(GlftpdLog.class);
 
-    static {
-        logger.setLevel(Level.ALL);
-    }
-
     private PrintWriter _out;
     DateFormat DATE_FMT = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy ",
             Locale.ENGLISH);
@@ -111,18 +107,8 @@ public class GlftpdLog extends FtpListener {
             if (direvent.getDirectory().isDirectory()) {
                 sayDirectorySection(direvent, "WIPE", direvent.getDirectory());
             }
-
-            /*                } else if ("PRE".equals(direvent.getCommand())) {
-
-                                    Ret obj = getPropertyFileSuffix("PRE", direvent.getDirectory());
-                                    String format = obj.format;
-                                    LinkedRemoteFile dir = obj.section;
-
-                                    ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
-                                    fillEnvSection(env, direvent, dir);
-
-                                    say(SimplePrintf.jprintf(format, env));
-            */
+       } else if ("PRE".equals(direvent.getCommand())) {
+               sayDirectorySection(direvent, "PRE", direvent.getDirectory());
         } else if (direvent.getCommand().equals("STOR")) {
             actionPerformedDirectorySTOR((TransferEvent) direvent);
         } else {
@@ -132,7 +118,7 @@ public class GlftpdLog extends FtpListener {
 
     private void sayDirectorySection(DirectoryFtpEvent direvent, String string,
         LinkedRemoteFileInterface dir) throws FormatterException {
-        // TYPE = NEWDIR DELDIR WIPE
+        // TYPE = NEWDIR, DELDIR, WIPE, etc.
         // TYPE: "/path/to/release" "username" "group" "tagline" 
         print("" + string + ": \"" + dir.getPath() + "\" \"" +
             direvent.getUser().getName() + "\" \"" +
@@ -244,8 +230,7 @@ public class GlftpdLog extends FtpListener {
             } catch (NoSuchUserException e2) {
                 return;
             } catch (UserFileException e2) {
-                logger.log(Level.FATAL, "Error reading userfile", e2);
-
+                logger.fatal("Error reading userfile", e2);
                 return;
             }
 
@@ -367,7 +352,7 @@ public class GlftpdLog extends FtpListener {
 
     private void actionPerformedInvite(InviteEvent event) {
         String user = event.getIrcNick();
-        print("INVITE: \"" + user + "\"");
+        print("INVITE: \"" + user + "\" \"" + event.getUser().getName() +"\" \"" + event.getUser().getGroup() +"\"");
     }
 
     private void actionPerformedNuke(NukeEvent event) throws FormatterException {

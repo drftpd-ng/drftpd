@@ -69,7 +69,6 @@ public class Request implements CommandHandlerFactory, CommandHandler {
 
             if (myreqname.equals(reqname)) {
                 String filledname = FILLEDPREFIX + username + "-" + myreqname;
-                LinkedRemoteFile filledfile;
 
                 try {
                     file.renameTo(file.getParentFile().getPath(),
@@ -81,7 +80,7 @@ public class Request implements CommandHandlerFactory, CommandHandler {
                 }
 
                 //if (conn.getConfig().checkDirLog(conn.getUserNull(), file)) {
-                conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
+                conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
                         conn, "REQFILLED", file));
 
                 //}
@@ -121,7 +120,7 @@ public class Request implements CommandHandlerFactory, CommandHandler {
                     conn.getUserNull().getGroup(), createdDirName);
 
             //if (conn.getConfig().checkDirLog(conn.getUserNull(), createdDir)) {
-            conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
+            conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
                     conn, "REQUEST", createdDir));
 
             conn.getUserNull().getKeyedMap().incrementObjectLong(REQUESTS);

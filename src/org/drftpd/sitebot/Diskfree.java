@@ -17,19 +17,16 @@
  */
 package org.drftpd.sitebot;
 
+import net.sf.drftpd.util.ReplacerUtils;
+
+import org.drftpd.GlobalContext;
+import org.drftpd.plugins.SiteBot;
+import org.drftpd.slave.SlaveStatus;
+import org.tanesha.replacer.ReplacerEnvironment;
+
 import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
-
-import net.sf.drftpd.util.ReplacerUtils;
-
-import org.drftpd.master.ConnectionManager;
-
-import org.drftpd.plugins.SiteBot;
-
-import org.drftpd.slave.SlaveStatus;
-
-import org.tanesha.replacer.ReplacerEnvironment;
 
 
 /**
@@ -47,8 +44,8 @@ public class Diskfree extends GenericCommandAutoService
         _trigger = _listener.getCommandPrefix();
     }
 
-    private ConnectionManager getConnectionManager() {
-        return _listener.getConnectionManager();
+    private GlobalContext getGlobalContext() {
+        return _listener.getGlobalContext();
     }
 
     public String getCommands() {
@@ -71,8 +68,8 @@ public class Diskfree extends GenericCommandAutoService
         }
 
         if (msg.equals(_trigger + "df")) {
-            SlaveStatus status = getConnectionManager().getGlobalContext()
-                                     .getSlaveManager().getAllStatus();
+            SlaveStatus status = getGlobalContext().getSlaveManager()
+					.getAllStatus();
             ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 
             SiteBot.fillEnvSlaveStatus(env, status, _listener.getSlaveManager());

@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import net.sf.drftpd.FatalException;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;

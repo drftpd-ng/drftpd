@@ -17,11 +17,9 @@
  */
 package org.drftpd.remotefile;
 
-import net.sf.drftpd.Checksum;
 import net.sf.drftpd.master.config.ConfigInterface;
-import net.sf.drftpd.master.config.FtpConfig;
-
 import org.apache.log4j.Logger;
+import org.drftpd.Checksum;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;

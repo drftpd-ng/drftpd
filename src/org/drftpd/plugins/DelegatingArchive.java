@@ -17,7 +17,6 @@
 package org.drftpd.plugins;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -26,6 +25,7 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 
 /**
  * @author mog
@@ -37,21 +37,19 @@ public class DelegatingArchive extends FtpListener {
 	private URLClassLoader _cl;
 
 	public DelegatingArchive() {
-		try {
-			_cl = new URLClassLoader(new URL[] {new File("classes-archive").toURL()});
-			_delegates.add((FtpListener)_cl.loadClass("org.drftpd.plugins.Archive").newInstance());
-			_delegates.add((FtpListener)_cl.loadClass("org.drftpd.plugins.Mirror").newInstance());
-		} catch(Exception e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	public void actionPerformed(Event event) {
+		if(event.getCommand().equals("RELOAD")) {
+			unload();
+			init(getGlobalContext());
+			return;
+		}
 		for(FtpListener delegate : _delegates) {
 			try {
 				delegate.actionPerformed(event);
 			} catch(Throwable t) {
-				logger.error("Throwable in event loop");
+				logger.error("Throwable from event handler", t);
 			}
 		}
 	}
@@ -59,6 +57,26 @@ public class DelegatingArchive extends FtpListener {
 	public void unload() {
 		for(FtpListener delegate : _delegates) {
 			delegate.unload();
+		}
+	}
+	public void init(GlobalContext gctx) {
+		super.init(gctx);
+		init2(gctx);
+	}
+	public void init2(GlobalContext gctx) {
+		try {
+			_cl = new URLClassLoader(new URL[] {new File("classes-archive").toURL()});
+			_delegates.add((FtpListener)_cl.loadClass("org.drftpd.plugins.Archive").newInstance());
+			_delegates.add((FtpListener)_cl.loadClass("org.drftpd.plugins.Mirror").newInstance());
+		} catch(Exception e) {
+			throw new RuntimeException(e);
+		}
+		for(FtpListener delegate : _delegates) {
+			try {
+			delegate.init(gctx);
+			} catch(Throwable t) {
+				logger.error("Throwable from init", t);
+			}
 		}
 	}
 }

@@ -16,15 +16,13 @@
  */
 package org.drftpd.usermanager;
 
+import java.util.List;
+
 import net.sf.drftpd.DuplicateElementException;
 
-import java.util.List;
-import java.util.Map;
-
-import org.drftpd.commands.UserManagement;
+import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
-import org.drftpd.master.ConnectionManager;
 
 
 /**
@@ -263,7 +261,7 @@ public abstract class User implements Entity {
     public abstract void rename(String username)
         throws UserExistsException, UserFileException;
 
-    public abstract void reset(ConnectionManager manager)
+    public abstract void reset(GlobalContext manager)
         throws UserFileException;
 
     /**

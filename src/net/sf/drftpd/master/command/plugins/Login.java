@@ -121,7 +121,7 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
         if (conn.getUserNull().checkPassword(pass)) {
             conn.getUserNull().login();
             conn.setAuthenticated(true);
-            conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new ConnectionEvent(
+            conn.getGlobalContext().dispatchFtpEvent(new ConnectionEvent(
                     conn, "LOGIN"));
 
             Reply response = new Reply(230,

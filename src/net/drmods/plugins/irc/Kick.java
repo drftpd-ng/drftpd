@@ -24,6 +24,7 @@ import net.sf.drftpd.master.config.ConfigInterface;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.sitebot.IRCPluginInterface;
@@ -62,14 +63,6 @@ public class Kick extends GenericAutoService implements IRCPluginInterface {
     public String getCommandsHelp() {
     	return _trigger + "kick : Kicks idle users from the ftp server.";
     }
-    
-    private ConfigInterface getConfig() {
-        return _listener.getConfig();
-    }
-
-    private ConnectionManager getConnectionManager() {
-        return _listener.getConnectionManager();
-    }
 
     protected void updateCommand(InCommand inCommand) {
         if (!(inCommand instanceof MessageCommand)) {
@@ -96,7 +89,7 @@ public class Kick extends GenericAutoService implements IRCPluginInterface {
                     "kick.ftp");
 
             ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-            ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(getConnectionManager()
+            ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(getGlobalContext().getConnectionManager()
                                                 .getConnections());
 
             for (BaseFtpConnection conn : conns) {
@@ -107,7 +100,7 @@ public class Kick extends GenericAutoService implements IRCPluginInterface {
                     continue;
                 }
 
-                if (getConfig().checkPathPermission("hideinwho", user, conn.getCurrentDirectory())) {
+                if (getGlobalContext().getConfig().checkPathPermission("hideinwho", user, conn.getCurrentDirectory())) {
                     continue;
                 }
 
@@ -129,6 +122,10 @@ public class Kick extends GenericAutoService implements IRCPluginInterface {
         }
     }
 
-    protected void updateState(State state) {
+	private GlobalContext getGlobalContext() {
+		return _listener.getGlobalContext();
+	}
+
+	protected void updateState(State state) {
     }
 }

@@ -50,6 +50,7 @@ public class Archive extends FtpListener implements Runnable {
     private ArrayList<ArchiveHandler> _archiveHandlers = new ArrayList<ArchiveHandler>();
     public Archive() {
         logger.info("Archive plugin loaded successfully");
+    	logger.debug("MOGET TEST!");
     }
 
     public Properties getProperties() {

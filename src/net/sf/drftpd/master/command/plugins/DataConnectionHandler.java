@@ -16,7 +16,6 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import net.sf.drftpd.Checksum;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.NoSFVEntryException;
 import net.sf.drftpd.SlaveUnavailableException;
@@ -25,10 +24,10 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.util.ListUtils;
 import org.apache.log4j.Logger;
 
 import org.drftpd.Bytes;
+import org.drftpd.Checksum;
 import org.drftpd.SFVFile;
 import org.drftpd.SSLGetContext;
 import org.drftpd.commands.CommandHandler;
@@ -43,6 +42,7 @@ import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.remotefile.ListUtils;
 import org.drftpd.remotefile.StaticRemoteFile;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
@@ -1190,7 +1190,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             } catch (IOException ex) {
                 if (ex instanceof TransferFailedException) {
                     status = ((TransferFailedException) ex).getStatus();
-                    conn.getGlobalContext().getConnectionManager()
+                    conn.getGlobalContext()
                         .dispatchFtpEvent(new TransferEvent(conn, eventType,
                             _transferFile, conn.getClientAddress(), _rslave,
                             _transfer.getAddress().getAddress(), _type, false));
@@ -1315,7 +1315,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
             }
 
             //Dispatch for both STOR and RETR
-            conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new TransferEvent(
+            conn.getGlobalContext().dispatchFtpEvent(new TransferEvent(
                     conn, eventType, _transferFile, conn.getClientAddress(),
                     _rslave, _transfer.getAddress().getAddress(), getType(),
                     zipscript));

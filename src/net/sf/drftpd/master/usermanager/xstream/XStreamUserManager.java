@@ -27,6 +27,7 @@ import net.sf.drftpd.ObjectExistsException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.ConnectionManager;
@@ -202,7 +203,7 @@ public class XStreamUserManager implements UserManager {
                 //throws RuntimeException
                 user.setUserManager(this);
                 users.put(user.getName(), user);
-                user.reset(_connManager);
+                user.reset(_connManager.getGlobalContext());
                 in.close();
 
                 return user;
@@ -226,7 +227,7 @@ public class XStreamUserManager implements UserManager {
             throw new NoSuchUserException(user.getName() + " is deleted");
         }
 
-        user.reset(_connManager);
+        user.reset(_connManager.getGlobalContext());
 
         return user;
     }
@@ -264,9 +265,10 @@ public class XStreamUserManager implements UserManager {
         }
     }
 
-    public void init(ConnectionManager mgr) {
-        _connManager = mgr;
+    public void init(GlobalContext mgr) {
+        _connManager = mgr.getConnectionManager();
     }
+
 	public User getUserByNameIncludeDeleted(String argument) throws NoSuchUserException, UserFileException {
 		return getUserByName(argument);
 	}

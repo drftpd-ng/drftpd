@@ -417,7 +417,7 @@ public class Trial extends FtpListener {
 
         if (_gctx != null) {
             try {
-                SiteBot _irc = (SiteBot) getGlobalContext().getConnectionManager().getFtpListener(SiteBot.class);
+                SiteBot _irc = (SiteBot) getGlobalContext().getConnectionManager().getGlobalContext().getFtpListener(SiteBot.class);
                 _siteBot = new TrialSiteBot(this, _irc);
             } catch (ObjectNotFoundException e1) {
                 logger.warn("Error loading sitebot component, sitebot announcements disabled.",

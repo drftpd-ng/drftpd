@@ -31,9 +31,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import net.sf.drftpd.FatalException;
-import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
-import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.SlaveFileException;
 import net.sf.drftpd.master.command.CommandManagerFactory;
@@ -225,28 +223,10 @@ public class ConnectionManager {
         return _conns;
     }
 
-    public FtpListener getFtpListener(Class clazz)
-        throws ObjectNotFoundException {
-        for (Iterator iter = getFtpListeners().iterator(); iter.hasNext();) {
-            FtpListener listener = (FtpListener) iter.next();
-
-            if (clazz.isInstance(listener)) {
-                return listener;
-            }
-        }
-
-        throw new ObjectNotFoundException();
-    }
-
-    public List getFtpListeners() {
-        return getGlobalContext().getFtpListeners();
-    }
-
     public GlobalContext getGlobalContext() {
         if (_gctx == null) {
             throw new NullPointerException();
         }
-
         return _gctx;
     }
 
@@ -280,15 +260,6 @@ public class ConnectionManager {
         getTimer().schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
     }
 
-    public void reload() {
-        //		String url = System.getProperty(LogManager.DEFAULT_CONFIGURATION_KEY);
-        //		if(url != null) {
-        //			LogManager.resetConfiguration();
-        //			OptionConverter.selectAndConfigure(url, null, LogManager.getLoggerRepository());
-        //		}
-        getGlobalContext().getSectionManager().reload();
-    }
-
     public void remove(BaseFtpConnection conn) {
         if (!_conns.remove(conn)) {
             throw new RuntimeException("connections.remove() returned false.");
@@ -320,11 +291,7 @@ public class ConnectionManager {
         }
     }
 
-    /**
-     * TODO move closing connections to GlobalContext.
-     */
-    public void shutdown(String message) {
-        getGlobalContext().shutdown(message);
+    public void shutdownPrivate(String message) {
         for(BaseFtpConnection conn : new ArrayList<BaseFtpConnection>(getConnections())) {
         	conn.stop(message);
         }

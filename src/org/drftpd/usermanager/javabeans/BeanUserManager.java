@@ -77,7 +77,7 @@ public class BeanUserManager extends AbstractUserManager {
 
 			user.setUserManager(this);
 			_users.put(user.getName(), user);
-			user.reset(_connManager);
+			user.reset(getGlobalContext());
 			return user;
 		} catch (FileNotFoundException ex) {
 			throw new NoSuchUserException("No such user", ex);
@@ -109,8 +109,8 @@ public class BeanUserManager extends AbstractUserManager {
 	public XMLEncoder getXMLEncoder(OutputStream out) {
 		XMLEncoder e = new XMLEncoder(out);
 		e.setExceptionListener(new ExceptionListener() {
-			public void exceptionThrown(Exception e) {
-				logger.error("", e);
+			public void exceptionThrown(Exception e1) {
+				logger.error("", e1);
 			}
 		});
 		e.setPersistenceDelegate(BeanUser.class,

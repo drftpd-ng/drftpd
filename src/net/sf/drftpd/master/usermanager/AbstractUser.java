@@ -30,6 +30,7 @@ import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
+import org.drftpd.GlobalContext;
 import org.drftpd.commands.Nuke;
 import org.drftpd.commands.Request;
 import org.drftpd.commands.UserManagement;
@@ -531,14 +532,14 @@ public abstract class AbstractUser extends User {
 		}
 	}
 
-	public void reset(ConnectionManager cmgr) throws UserFileException {
-		reset(cmgr, Calendar.getInstance());
+	public void reset(GlobalContext gctx) throws UserFileException {
+		reset(gctx, Calendar.getInstance());
 	}
 
-	protected void reset(ConnectionManager cmgr, Calendar cal)
+	protected void reset(GlobalContext gctx, Calendar cal)
 			throws UserFileException {
 		//ignore reset() if we are called from userfileconverter or the like
-		if (cmgr == null) {
+		if (gctx == null) {
 			return;
 		}
 
@@ -552,7 +553,7 @@ public abstract class AbstractUser extends User {
 
 		//has not been reset since midnight
 		if (lastResetDate.before(calTmp.getTime())) {
-			resetDay(cmgr, cal.getTime());
+			resetDay(gctx, cal.getTime());
 
 			//floorDayOfWeek could go into the previous month
 			calTmp = (Calendar) cal.clone();
@@ -561,21 +562,21 @@ public abstract class AbstractUser extends User {
 			CalendarUtils.floorDayOfWeek(calTmp);
 
 			if (lastResetDate.before(calTmp.getTime())) {
-				resetWeek(cmgr, calTmp.getTime());
+				resetWeek(gctx, calTmp.getTime());
 			}
 
 			CalendarUtils.floorDayOfMonth(cal);
 
 			if (lastResetDate.before(cal.getTime())) {
-				resetMonth(cmgr, cal.getTime());
+				resetMonth(gctx, cal.getTime());
 			}
 
 			commit(); //throws UserFileException
 		}
 	}
 
-	private void resetDay(ConnectionManager cm, Date resetDate) {
-		cm
+	private void resetDay(GlobalContext gctx, Date resetDate) {
+		gctx
 				.dispatchFtpEvent(new UserEvent(this, "RESETDAY", resetDate
 						.getTime()));
 
@@ -590,8 +591,8 @@ public abstract class AbstractUser extends User {
 		logger.info("Reset daily stats for " + getName());
 	}
 
-	private void resetMonth(ConnectionManager cm, Date resetDate) {
-		cm.dispatchFtpEvent(new UserEvent(this, "RESETMONTH", resetDate
+	private void resetMonth(GlobalContext gctx, Date resetDate) {
+		gctx.dispatchFtpEvent(new UserEvent(this, "RESETMONTH", resetDate
 				.getTime()));
 
 		this.downloadedFilesMonth = 0;
@@ -605,12 +606,12 @@ public abstract class AbstractUser extends User {
 		logger.info("Reset monthly stats for " + getName());
 	}
 
-	private void resetWeek(ConnectionManager cm, Date resetDate) {
+	private void resetWeek(GlobalContext gctx, Date resetDate) {
 		logger.info("Reset weekly stats for " + getName() + "(was "
 				+ Bytes.formatBytes(uploadedBytesWeek) + " UP and "
 				+ Bytes.formatBytes(downloadedBytesWeek) + " DOWN");
 
-		cm.dispatchFtpEvent(new UserEvent(this, "RESETWEEK", resetDate
+		gctx.dispatchFtpEvent(new UserEvent(this, "RESETWEEK", resetDate
 				.getTime()));
 
 		this.downloadedFilesWeek = 0;

@@ -17,33 +17,26 @@
  */
 package org.drftpd.sitebot;
 
-import f00f.net.irc.martyr.GenericCommandAutoService;
-import f00f.net.irc.martyr.InCommand;
-import f00f.net.irc.martyr.commands.MessageCommand;
+import java.util.ArrayList;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.util.ReplacerUtils;
-import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Logger;
-
 import org.drftpd.Bytes;
-
-import org.drftpd.master.ConnectionManager;
-
+import org.drftpd.GlobalContext;
+import org.drftpd.Time;
 import org.drftpd.plugins.SiteBot;
-
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
-
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-
 import org.tanesha.replacer.ReplacerEnvironment;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import f00f.net.irc.martyr.GenericCommandAutoService;
+import f00f.net.irc.martyr.InCommand;
+import f00f.net.irc.martyr.commands.MessageCommand;
 
 
 /**
@@ -72,10 +65,6 @@ public class Bandwidth extends GenericCommandAutoService
 				+ "speed <user> : Show current transfer speed for <user>";
 	}
 
-    private ConnectionManager getConnectionManager() {
-        return _listener.getConnectionManager();
-    }
-    
     private String getCommandPrefix() {
     	return _listener.getCommandPrefix();
     }
@@ -94,7 +83,7 @@ public class Bandwidth extends GenericCommandAutoService
         String msg = msgc.getMessage();
 
         if (msg.startsWith(getCommandPrefix() + "bw")) {
-            SlaveStatus status = getConnectionManager().getGlobalContext()
+            SlaveStatus status = getGlobalContext()
                                      .getSlaveManager().getAllStatus();
 
             ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
@@ -122,7 +111,7 @@ public class Bandwidth extends GenericCommandAutoService
             ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
             env.add("user", username);
             try {
-				user = getConnectionManager().getGlobalContext()
+				user = getGlobalContext()
 						.getUserManager().getUserByName(username);
 			} catch (NoSuchUserException e1) {
 				_listener.sayChannel(msgc.getDest(), ReplacerUtils.jprintf(
@@ -142,11 +131,10 @@ public class Bandwidth extends GenericCommandAutoService
 
             boolean first = true;
 
-            ArrayList conns = new ArrayList(getConnectionManager()
-                                                .getConnections());
+            ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(
+					getGlobalContext().getConnectionManager().getConnections());
 
-            for (Iterator iter = conns.iterator(); iter.hasNext();) {
-                BaseFtpConnection conn = (BaseFtpConnection) iter.next();
+            for(BaseFtpConnection conn : conns) {
 
                 try {
                     User connUser = conn.getUser();
@@ -160,7 +148,7 @@ public class Bandwidth extends GenericCommandAutoService
                             Time.formatTime(System.currentTimeMillis() -
                                 conn.getLastActive()));
 
-                        if (getConnectionManager().getGlobalContext().getConfig().checkPathPermission("hideinwho", connUser, conn.getCurrentDirectory())) {
+                        if (getGlobalContext().getConfig().checkPathPermission("hideinwho", connUser, conn.getCurrentDirectory())) {
                             continue;
                         }
 
@@ -207,4 +195,8 @@ public class Bandwidth extends GenericCommandAutoService
             _listener.sayChannel(msgc.getDest(), status);
         }
     }
+
+	private GlobalContext getGlobalContext() {
+		return _listener.getGlobalContext();
+	}
 }

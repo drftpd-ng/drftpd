@@ -17,7 +17,6 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import net.sf.drftpd.Checksum;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
@@ -27,13 +26,13 @@ import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.util.ListUtils;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.drftpd.Bytes;
+import org.drftpd.Checksum;
 import org.drftpd.SFVFile;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
@@ -45,6 +44,7 @@ import org.drftpd.id3.ID3Tag;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.remotefile.ListUtils;
 import org.drftpd.remotefile.StaticRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 
@@ -381,7 +381,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 					+ " does not exist, cannot remove credits on deletion");
 		}
 
-        conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
+        conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
                 conn, "DELE", requestedFile));
         requestedFile.delete();
 
@@ -476,7 +476,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
                                                                   .getName(),
                     conn.getUserNull().getGroup(), createdDirName);
 
-            conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
+            conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
                     conn, "MKD", createdDir));
 
             return new Reply(257, "\"" + createdDir.getPath() +
@@ -543,7 +543,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
 
         // now delete
         //if (conn.getConfig().checkDirLog(conn.getUserNull(), requestedFile)) {
-        conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
+        conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
                 conn, "RMD", requestedFile));
 
         //}
@@ -798,7 +798,7 @@ public class Dir implements CommandHandlerFactory, CommandHandler, Cloneable {
         }
 
         //if (conn.getConfig().checkDirLog(conn.getUserNull(), wipeFile)) {
-        conn.getGlobalContext().getConnectionManager().dispatchFtpEvent(new DirectoryFtpEvent(
+        conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
                 conn, "WIPE", wipeFile));
 
         //}

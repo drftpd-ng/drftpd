@@ -21,7 +21,6 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.util.ListUtils;
 
 import org.apache.log4j.Logger;
 
@@ -30,6 +29,7 @@ import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.remotefile.ListUtils;
 import org.drftpd.remotefile.RemoteFileInterface;
 
 import java.io.FileNotFoundException;
