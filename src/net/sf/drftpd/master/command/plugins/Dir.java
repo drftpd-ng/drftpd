@@ -348,7 +348,7 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 
         try {
             //requestedFile = getVirtualDirectory().lookupFile(fileName);
-            requestedFile = conn.getCurrentDirectory().lookupFile(fileName);
+            requestedFile = conn.getCurrentDirectory().lookupFile(fileName, false);
         } catch (FileNotFoundException ex) {
             return new Reply(550, "File not found: " + ex.getMessage());
         }

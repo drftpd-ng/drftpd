@@ -51,6 +51,7 @@ import org.drftpd.slave.RemoteIOException;
  * @author mog
  * @version $Id$
  */
+
 public class LinkedRemoteFile implements Serializable, Comparable,
 		LinkedRemoteFileInterface {
 	private static final Logger logger = Logger
@@ -272,6 +273,9 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		return getName().compareTo(((RemoteFileInterface) o).getName());
 	}
 
+	/**
+	 * Follows links
+	 */
 	public LinkedRemoteFile createDirectories(String path) {
 		NonExistingFile nef = lookupNonExistingFile(path);
 
@@ -965,10 +969,15 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
 		return _length;
 	}
-
+	
 	public LinkedRemoteFile lookupFile(String path)
 			throws FileNotFoundException {
-		NonExistingFile ret = lookupNonExistingFile(path);
+		return lookupFile(path, true);
+	}
+
+	public LinkedRemoteFile lookupFile(String path, boolean followLinks)
+			throws FileNotFoundException {
+		NonExistingFile ret = lookupNonExistingFile(path, followLinks);
 
 		if (!ret.exists()) {
 			throw new FileNotFoundException(path + ": File not found");
@@ -976,8 +985,12 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
 		return ret.getFile();
 	}
-
+	
 	public NonExistingFile lookupNonExistingFile(String path) {
+		return lookupNonExistingFile(path, true);
+	}
+
+	public NonExistingFile lookupNonExistingFile(String path, boolean followLinks) {
 		if (path == null) {
 			throw new IllegalArgumentException("null path not allowed");
 		}
@@ -1024,7 +1037,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			try {
 				nextFile = (LinkedRemoteFile) currFile.getFile(currFileName);
 
-				if (nextFile.isLink()) {
+				if (nextFile.isLink() && followLinks) {
 					currFile = currFile.lookupFile(nextFile.getLinkPath());
 				} else {
 					currFile = nextFile;
@@ -1045,7 +1058,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
 	/**
 	 * Returns path for a non-existing file. Performs path normalization and
-	 * returns an absolute path
+	 * returns an absolute path, follows links
 	 */
 	public String lookupPath(String path) {
 		NonExistingFile ret = lookupNonExistingFile(path);

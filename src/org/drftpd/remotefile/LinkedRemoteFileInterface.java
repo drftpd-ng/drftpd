@@ -152,8 +152,13 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 
     public abstract LinkedRemoteFile lookupFile(String path)
         throws FileNotFoundException;
+    
+    public abstract LinkedRemoteFile lookupFile(String path, boolean followLinks)
+    	throws FileNotFoundException;
 
     public abstract NonExistingFile lookupNonExistingFile(String path);
+    
+    public abstract NonExistingFile lookupNonExistingFile(String path, boolean followLinks);
 
     /**
      * Returns path for a non-existing file. Performs path normalization and returns an absolute path
