@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.13 2004/01/13 22:46:44 mog Exp $
+ * @version $Id: ListUtils.java,v 1.14 2004/01/27 10:34:59 flowman Exp $
  */
 public class ListUtils {
 
@@ -45,7 +45,6 @@ public class ListUtils {
 		LinkedRemoteFile dir,
 		BaseFtpConnection conn,
 		FtpReply response) {
-
 		ArrayList listFiles = new ArrayList(dir.getFiles());
 		for (Iterator iter = listFiles.iterator(); iter.hasNext();) {
 			LinkedRemoteFile element = (LinkedRemoteFile) iter.next();
@@ -56,24 +55,35 @@ public class ListUtils {
 		try {
 			SFVFile sfvfile = dir.lookupSFVFile();
 			SFVStatus sfvstatus = sfvfile.getStatus();
-
 			if (sfvfile.size() != 0) {
-				String statusDirName =
-					"[ "
-						+ sfvstatus.getPresent()
-						+ "/"
-						+ sfvfile.size()
-						+ " = "
-						+ (sfvstatus.getPresent() * 100) / sfvfile.size()
-						+ "% complete | "
-						+ sfvstatus.getAvailable()
-						+ "/"
-						+ sfvstatus.getPresent()
-						+ " = "
-						+ (sfvstatus.getAvailable() * 100)
-							/ sfvstatus.getPresent()
-						+ "% online ]";
-
+				String statusDirName;
+				if (sfvstatus.getPresent() != 0) {
+					 statusDirName =
+						"[ "
+							+ sfvstatus.getPresent()
+							+ "/"
+							+ sfvfile.size()
+							+ " = "
+							+ (sfvstatus.getPresent() * 100) / sfvfile.size()
+							+ "% complete | "
+							+ sfvstatus.getAvailable()
+							+ "/"
+							+ sfvstatus.getPresent()
+							+ " = "
+							+ (sfvstatus.getAvailable() * 100)
+								/ sfvstatus.getPresent()
+							+ "% online ]";
+				} else {
+					statusDirName =
+						"[ "
+							+ sfvstatus.getPresent()
+							+ "/"
+							+ sfvfile.size()
+							+ " = "
+							+ (sfvstatus.getPresent() * 100) / sfvfile.size()
+							+ "% complete | 0/0 = 0% online ]";
+				}
+	
 				listFiles.add(
 					new StaticRemoteFile(
 						null,
@@ -82,6 +92,7 @@ public class ListUtils {
 						"drftpd",
 						0L,
 						dir.lastModified()));
+						
 				for (Iterator iter = sfvfile.getNames().iterator();
 					iter.hasNext();
 					) {
@@ -97,7 +108,7 @@ public class ListUtils {
 								dir.lastModified()));
 					}
 				}
-
+				
 				for (Iterator iter = dir.getFiles().iterator();
 					iter.hasNext();
 					) {
