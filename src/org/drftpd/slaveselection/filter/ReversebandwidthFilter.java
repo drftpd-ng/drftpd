@@ -19,58 +19,59 @@ package org.drftpd.slaveselection.filter;
 
 import java.net.InetAddress;
 import java.rmi.RemoteException;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 
-import net.sf.drftpd.Bytes;
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.SlaveStatus;
+import net.sf.drftpd.slave.Transfer;
 
-import org.apache.log4j.Logger;
-
-/**
+/*
  * @author zubov
+ * @version $Id
  */
-public class MaxbandwidthFilter extends Filter {
-	private static final Logger logger =
-		Logger.getLogger(MaxbandwidthFilter.class);
-
-	private long _maxBandwidth;
-
-	public MaxbandwidthFilter(FilterChain ssm, int i, Properties p) {
-		_maxBandwidth =
-			Bytes.parseBytes(FtpConfig.getProperty(p, i + ".maxbandwidth"));
+public class ReversebandwidthFilter extends BandwidthFilter {
+	public ReversebandwidthFilter(FilterChain ssm, int i, Properties p) {
+		super(ssm, i, p);
 	}
+
+	/**
+	 *
+	 */
 
 	public void process(
 		ScoreChart scorechart,
 		User user,
-		InetAddress peer,
+		InetAddress source,
 		char direction,
-		LinkedRemoteFileInterface dir)
-		throws NoAvailableSlaveException {
-		for (Iterator iter = scorechart.getSlaveScores().iterator();
-			iter.hasNext();
-			) {
-			ScoreChart.SlaveScore slavescore =
-				(ScoreChart.SlaveScore) iter.next();
+		LinkedRemoteFileInterface file) {
+		char oppositeDirection;
+		if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+			oppositeDirection = Transfer.TRANSFER_SENDING_DOWNLOAD;
+		} else
+			oppositeDirection = Transfer.TRANSFER_RECEIVING_UPLOAD;
+
+		Collection slavescores = scorechart.getSlaveScores();
+		for (Iterator iter = slavescores.iterator(); iter.hasNext();) {
+			ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
 			SlaveStatus status;
 			try {
-				status = slavescore.getRSlave().getStatus();
+				status = score.getRSlave().getStatus();
 			} catch (Exception e) {
 				if (e instanceof RemoteException) {
-					slavescore.getRSlave().handleRemoteException(
+					score.getRSlave().handleRemoteException(
 						(RemoteException) e);
 				}
 				iter.remove();
 				continue;
 			}
-			if (status.getThroughputDirection(direction) > _maxBandwidth) {
-				iter.remove();
-			}
+			score.addScore(
+				- (long)
+					(status.getThroughputDirection(oppositeDirection)
+						* _multiplier));
 		}
 	}
+
 }

@@ -20,7 +20,6 @@ package net.sf.drftpd.event.irc;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.master.usermanager.AbstractUser;
@@ -80,11 +79,9 @@ public class StatsTest extends TestCase {
 		users.add(new TestUser("user1"));
 		users.add(new TestUser("user2"));
 		users.add(new TestUser("user3"));
-		StringTokenizer st = new StringTokenizer(new String("2"));
-		assertEquals(Stats.fixNumberAndUserlist(st,users),2);
+		assertEquals(Stats.fixNumberAndUserlist("!alup 2",users),2);
 		assertEquals(3,users.size());
-		st = new StringTokenizer(new String("2 !-user1 *"));
-		assertEquals(2,Stats.fixNumberAndUserlist(st,users));
+		assertEquals(2,Stats.fixNumberAndUserlist("!alup 2 !-user1 *",users));
 		assertEquals(2,users.size());
 	}
 }

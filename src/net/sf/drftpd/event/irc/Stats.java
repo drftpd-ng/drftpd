@@ -225,11 +225,8 @@ public class Stats extends GenericCommandAutoService {
 		if (token.hasMoreTokens()) {
 			try {
 				String strin = token.nextToken();
-				logger.debug("trying to parse " + strin);
 				number = Integer.parseInt(strin);
-				logger.debug("number = " + number);
 			} catch (NumberFormatException ex) {
-				logger.debug("number was not set");
 				token = st;
 			}
 		}
