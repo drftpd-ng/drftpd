@@ -872,7 +872,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 				}
 
 				synchronized (this) {
-					if (!(ar instanceof AsyncResponseRemerge)) {
+					if (!(ar instanceof AsyncResponseRemerge) || (ar instanceof AsyncResponseTransferStatus)) {
 						logger.debug("Received: " + ar);
 					}
 

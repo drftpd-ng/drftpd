@@ -53,7 +53,6 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     private FilterChain _ssmiDown;
     private FilterChain _ssmiJobDown;
     private FilterChain _ssmiJobUp;
-    private FilterChain _ssmiMaster;
     private FilterChain _ssmiUp;
 
     public SlaveSelectionManager(GlobalContext gctx)
@@ -114,15 +113,6 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
             Transfer.TRANSFER_SENDING_DOWNLOAD, job.getFile(), sourceSlave);
     }
 
-    /**
-     * Get slave for transfer to master.
-     */
-    public RemoteSlave getASlaveForMaster(LinkedRemoteFileInterface file,
-        ConfigInterface cfg) throws NoAvailableSlaveException {
-        return process("master", new ScoreChart(file.getAvailableSlaves()),
-            null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, file, null);
-    }
-
     public SlaveManager getSlaveManager() {
         return getGlobalContext().getSlaveManager();
     }
@@ -136,8 +126,6 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
             ssmi = _ssmiDown;
         } else if (filterchain.equals("up")) {
             ssmi = _ssmiUp;
-        } else if (filterchain.equals("master")) {
-            ssmi = _ssmiMaster;
         } else if (filterchain.equals("jobup")) {
             ssmi = _ssmiJobUp;
         } else if (filterchain.equals("jobdown")) {
@@ -151,7 +139,6 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 
     public void reload() throws FileNotFoundException, IOException {
         _ssmiDown = new FilterChain(this, "conf/slaveselection-down.conf");
-        _ssmiMaster = new FilterChain(this, "conf/slaveselection-master.conf");
         _ssmiUp = new FilterChain(this, "conf/slaveselection-up.conf");
 
         if (getGlobalContext().getConnectionManager().getGlobalContext()

@@ -46,12 +46,6 @@ public interface SlaveSelectionManagerInterface {
         BaseFtpConnection conn, LinkedRemoteFileInterface file)
         throws NoAvailableSlaveException;
 
-    /**
-     * Get slave for transfer to master.
-     */
-    public RemoteSlave getASlaveForMaster(LinkedRemoteFileInterface file,
-        ConfigInterface config) throws NoAvailableSlaveException;
-
     public GlobalContext getGlobalContext();
 
     public RemoteSlave getASlaveForJobDownload(Job job)

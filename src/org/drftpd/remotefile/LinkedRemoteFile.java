@@ -700,10 +700,14 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		 */
 		if (_sfvFile == null) {
 			while (true) {
-				RemoteSlave rslave = _ftpConfig.getGlobalContext()
-				.getSlaveManager().getGlobalContext().getSlaveSelectionManager()
-						.getASlaveForMaster(this, _ftpConfig);
-
+				RemoteSlave rslave = null;
+				if (isAvailable()) {
+					try {
+						rslave = getSlaves().get(0);
+					} catch (IndexOutOfBoundsException e) {
+						throw new NoAvailableSlaveException();
+					}
+				}
 				try {
 					String index = rslave.issueSFVFileToSlave(getPath());
 					_sfvFile = new SFVFile(rslave.fetchSFVFileFromIndex(index));
@@ -739,9 +743,14 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			logger.info("getID3v1Tag() : (file) " + getPath());
 
 			while (true) {
-				RemoteSlave rslave = _ftpConfig.getGlobalContext()
-				.getSlaveManager().getGlobalContext().getSlaveSelectionManager()
-						.getASlaveForMaster(this, _ftpConfig);
+				RemoteSlave rslave = null;
+				if (isAvailable()) {
+					try {
+						rslave = getSlaves().get(0);
+					} catch (IndexOutOfBoundsException e) {
+						throw new NoAvailableSlaveException();
+					}
+				}
 
 				if (rslave == null) {
 					throw new NoAvailableSlaveException(
