@@ -11,6 +11,7 @@ import java.util.Iterator;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.event.irc.IRCListener;
+import net.sf.drftpd.event.listeners.Trial.Limit;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;

@@ -69,7 +69,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.78 2004/02/02 19:09:15 mog Exp $
+ * @version $Id: IRCListener.java,v 1.79 2004/02/03 01:04:05 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -803,10 +803,18 @@ public class IRCListener implements FtpListener, Observer {
 					e);
 			}
 		}
+		connect();
+	}
+
+	public void disconnect() {
+		_autoReconnect.disable();
+		_conn.disconnect();
+	}
+	
+	public void connect() throws UnknownHostException, IOException {
 		logger.info("IRCListener: connecting to " + _server + ":" + _port);
 		_conn.connect(_server, _port);
 	}
-
 	public void say(String message) {
 		//		if (!_clientState.isOnChannel(_channelName)) {
 		//			logger.warn("Not in "+_channelName+", dropping message");
@@ -1122,6 +1130,10 @@ public class IRCListener implements FtpListener, Observer {
 
 	public void unload() {
 
+	}
+
+	public void reconnect() {
+		_conn.disconnect();
 	}
 
 }

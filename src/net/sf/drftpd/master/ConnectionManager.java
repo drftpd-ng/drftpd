@@ -2,6 +2,7 @@ package net.sf.drftpd.master;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.RemoteException;
@@ -34,7 +35,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.83 2004/01/22 21:48:22 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.84 2004/02/03 01:04:06 mog Exp $
  */
 public class ConnectionManager {
 	public static final int idleTimeout = 300;
@@ -276,19 +277,18 @@ public class ConnectionManager {
 			throw new RuntimeException("connections.remove() returned false.");
 		}
 		if (isShutdown() && _conns.isEmpty()) {
-			_slaveManager.saveFilelist();
-			try {
-				getUserManager().saveAll();
-			} catch (UserFileException e) {
-				logger.log(Level.WARN, "Failed to save all userfiles", e);
-			}
+//			_slaveManager.saveFilelist();
+//			try {
+//				getUserManager().saveAll();
+//			} catch (UserFileException e) {
+//				logger.log(Level.WARN, "Failed to save all userfiles", e);
+//			}
 			logger.info("Shutdown complete, exiting");
-			System.runFinalization();
 			System.exit(0);
 		}
 	}
 	public void shutdown(String message) {
-		this._shutdownMessage = message;
+		_shutdownMessage = message;
 		Collection conns = getConnections();
 		synchronized (conns) {
 			for (Iterator iter = getConnections().iterator();
@@ -301,6 +301,11 @@ public class ConnectionManager {
 	}
 	private CommandManagerFactory _commandManagerFactory;
 	public void start(Socket sock) throws IOException {
+		if(isShutdown()) {
+			new PrintWriter(sock.getOutputStream()).println("421 "+getShutdownMessage());
+			sock.close();
+			return;
+		}
 		BaseFtpConnection conn = new BaseFtpConnection(this, sock);
 		_conns.add(conn);
 		conn.start();

@@ -6,6 +6,7 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,17 +28,29 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagment.java,v 1.9 2004/01/31 02:32:07 zubov Exp $
+ * @version $Id: SiteManagment.java,v 1.10 2004/02/03 01:04:06 mog Exp $
  */
 public class SiteManagment implements CommandHandler {
 
 	private static final Logger logger = Logger.getLogger(SiteManagment.class);
 
 	private FtpReply doSITE_LIST(BaseFtpConnection conn) {
+		if (!conn.getUserNull().isAdmin())
+			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		conn.resetState();
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
 		//.getMap().values() to get the .isDeleted files as well.
-		ArrayList files = new ArrayList(conn.getCurrentDirectory().getMap().values());
+		LinkedRemoteFile dir = conn.getCurrentDirectory();
+		if (conn.getRequest().hasArgument()) {
+			try {
+				dir = dir.lookupFile(conn.getRequest().getArgument(), true);
+			} catch (FileNotFoundException e) {
+				logger.debug("", e);
+				return new FtpReply(200, e.getMessage());
+			}
+		}
+		ArrayList files =
+			new ArrayList(dir.getMap().values());
 		Collections.sort(files);
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
@@ -65,7 +78,7 @@ public class SiteManagment implements CommandHandler {
 		conn.getConnectionManager().addFtpListener(ftpListener);
 		return new FtpReply(200, "Successfully loaded your plugin");
 	}
-	
+
 	private FtpReply doSITE_PLUGINS(BaseFtpConnection conn) {
 		if (!conn.getUserNull().isAdmin()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;

@@ -9,6 +9,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.event.UserEvent;
+import net.sf.drftpd.event.listeners.Trial.Limit;
 import net.sf.drftpd.master.config.Permission;
 import net.sf.drftpd.master.usermanager.StaticUser;
 import net.sf.drftpd.util.CalendarUtils;
@@ -17,7 +18,7 @@ import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author mog
- * @version $Id: TrialTest.java,v 1.4 2004/01/13 01:40:56 mog Exp $
+ * @version $Id: TrialTest.java,v 1.5 2004/02/03 01:04:06 mog Exp $
  */
 public class TrialTest extends TestCase {
 	/**

@@ -33,7 +33,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author zubov
- * @version $Id: AutoFreeSpace.java,v 1.7 2004/01/31 02:32:07 zubov Exp $
+ * @version $Id: AutoFreeSpace.java,v 1.8 2004/02/03 01:04:05 mog Exp $
  */
 public class AutoFreeSpace implements FtpListener {
 	private static final Logger logger = Logger.getLogger(AutoFreeSpace.class);
@@ -141,8 +141,8 @@ public class AutoFreeSpace implements FtpListener {
 					break;
 				LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
 				spaceAvailable += file.length();
-				logger.debug("delete " + file.getPath());
-				//file.delete();
+				logger.info("delete " + file.getPath());
+				file.delete();
 			}
 		}
 	}
