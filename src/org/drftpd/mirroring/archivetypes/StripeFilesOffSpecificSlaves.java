@@ -34,7 +34,7 @@ import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.sections.SectionInterface;
 /**
  * @author zubov
- * @version $Id: StripeFilesOffSpecificSlaves.java,v 1.9 2004/07/09 06:12:10 zubov Exp $
+ * @version $Id: StripeFilesOffSpecificSlaves.java,v 1.10 2004/07/09 06:43:33 zubov Exp $
  */
 public class StripeFilesOffSpecificSlaves extends ArchiveType {
 	private static final Logger logger = Logger
@@ -141,6 +141,10 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 			}
 		}
 		return true;
+	}
+	
+	public ArrayList send() {
+		return recursiveSend(getDirectory());
 	}
 	
 	private ArrayList recursiveSend(LinkedRemoteFileInterface lrf) {
