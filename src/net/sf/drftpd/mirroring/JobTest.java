@@ -20,12 +20,11 @@ package net.sf.drftpd.mirroring;
 import java.util.HashSet;
 
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import net.sf.drftpd.master.RemoteSlave;
 
 /**
  * @author zubov
- * @version $Id: JobTest.java,v 1.5 2004/06/04 14:18:57 mog Exp $
+ * @version $Id: JobTest.java,v 1.6 2004/06/11 01:02:09 zubov Exp $
  */
 public class JobTest extends TestCase {
 	public JobTest(String arg0) {
@@ -38,7 +37,7 @@ public class JobTest extends TestCase {
 		slaveSet.add(rslave);
 		Job job = new Job(null, slaveSet, null, null, 0, 1);
 		job.sentToSlave(rslave);
-		assertEquals(0, slaveSet.size());
+		assertTrue(job.isDone());
 	}
 
 }

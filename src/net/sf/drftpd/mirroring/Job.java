@@ -30,7 +30,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.20 2004/06/04 14:18:57 mog Exp $
+ * @version $Id: Job.java,v 1.21 2004/06/11 01:02:09 zubov Exp $
  */
 public class Job {
 	protected int _transferNum;
@@ -50,7 +50,7 @@ public class Job {
 		int priority,
 		int transferNum) {
 		super();
-		_destSlaves = destSlaves;
+		_destSlaves = new HashSet(destSlaves);
 		_file = file;
 		_source = source;
 		_owner = owner;
