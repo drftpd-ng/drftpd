@@ -54,7 +54,7 @@ class TrialSiteBot extends GenericCommandAutoService {
 		long bytesleft,
 		boolean unique) {
 
-		ReplacerEnvironment env = new ReplacerEnvironment();
+		ReplacerEnvironment env = IRCListener.GLOBAL_ENV;
 		env.add("user", user.getUsername());
 		if (limit != null) {
 			env.add("period", Trial.getPeriodName(limit.getPeriod()));
