@@ -52,7 +52,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.21 2003/12/08 22:36:43 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.22 2003/12/12 22:34:34 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private boolean _encryptedDataChannel;
@@ -1404,7 +1404,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private boolean setPasvCommand(BaseFtpConnection conn) {
 		try {
 			conn.reset();
-			reset();
+			//reset();
 			_address2 =
 				new InetSocketAddress(
 					conn.getControlSocket().getLocalAddress(),

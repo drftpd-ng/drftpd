@@ -36,7 +36,7 @@ import org.apache.log4j.PatternLayout;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.60 2003/12/07 22:31:44 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.61 2003/12/12 22:34:34 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -54,7 +54,8 @@ public class BaseFtpConnection implements Runnable {
 		}
 	}
 
-	private static final Logger logger = Logger.getLogger(BaseFtpConnection.class);
+	private static final Logger logger =
+		Logger.getLogger(BaseFtpConnection.class);
 	public static final String NEWLINE = "\r\n";
 
 	/**
@@ -95,7 +96,8 @@ public class BaseFtpConnection implements Runnable {
 	protected boolean stopRequest = false;
 	protected String stopRequestMessage;
 	protected Thread thread;
-	public BaseFtpConnection(ConnectionManager connManager, Socket soc) throws IOException {
+	public BaseFtpConnection(ConnectionManager connManager, Socket soc)
+		throws IOException {
 		_commandManager =
 			connManager.getCommandManagerFactory().initialize(this);
 		_cm = connManager;
@@ -231,7 +233,9 @@ public class BaseFtpConnection implements Runnable {
 		if ("USER".equals(cmd)
 			|| "PASS".equals(cmd)
 			|| "QUIT".equals(cmd)
-			|| "HELP".equals(cmd) || "AUTH".equals(cmd))
+			|| "HELP".equals(cmd)
+			|| "AUTH".equals(cmd)
+			|| "PBSZ".equals(cmd))
 			return true;
 
 		return false;
@@ -308,14 +312,14 @@ public class BaseFtpConnection implements Runnable {
 		thread.setName("FtpConn from " + clientAddress.getHostAddress());
 
 		try {
-//			in =
-//				new BufferedReader(
-//					new InputStreamReader(_controlSocket.getInputStream()));
+			//			in =
+			//				new BufferedReader(
+			//					new InputStreamReader(_controlSocket.getInputStream()));
 
-//			out = new PrintWriter(
-//				//new FtpWriter( no need for spying :P
-//	new BufferedWriter(
-//		new OutputStreamWriter(_controlSocket.getOutputStream())));
+			//			out = new PrintWriter(
+			//				//new FtpWriter( no need for spying :P
+			//	new BufferedWriter(
+			//		new OutputStreamWriter(_controlSocket.getOutputStream())));
 
 			_controlSocket.setSoTimeout(1000);
 			if (getConnectionManager().isShutdown()) {
@@ -503,7 +507,7 @@ public class BaseFtpConnection implements Runnable {
 			_controlSocket = socket;
 			in =
 				new BufferedReader(
-					new InputStreamReader(_controlSocket.getInputStream()));
+					new InputStreamReader(_controlSocket.getInputStream(), "ISO-8859-1"));
 
 			out = new PrintWriter(_controlSocket.getOutputStream());
 		} catch (IOException e) {

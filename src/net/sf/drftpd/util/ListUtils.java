@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.4 2003/11/25 19:47:52 mog Exp $
+ * @version $Id: ListUtils.java,v 1.5 2003/12/12 22:34:34 mog Exp $
  */
 public class ListUtils {
 
@@ -55,7 +55,6 @@ public class ListUtils {
 			SFVFile sfvfile = directoryFile.lookupSFVFile();
 			SFVStatus sfvstatus = sfvfile.getStatus();
 			int good = sfvfile.size() - sfvstatus.getMissing();
-			int offline = sfvstatus.getOffline();
 			
 			if (sfvfile.size() != 0) {
 				String statusDirName =
