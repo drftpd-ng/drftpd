@@ -7,8 +7,10 @@
 package net.sf.drftpd.master.command.plugins;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
+import net.sf.drftpd.HostMask;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -79,48 +81,58 @@ public class Login implements CommandHandler, Cloneable {
 			return new FtpReply(530, ex.getMessage());
 		}
 
-
 		//		if(connManager.isShutdown() && !conn.getUser().isAdmin()) {
 		//			out.print(new FtpResponse(421, ))
 		//		}
-		Collection masks = newUser.getIpMasks();
-		String ident;
-		if (conn.getConnectionManager().useIdent()) {
-			Ident id = new Ident(conn.getControlSocket());
-			if (id.successful) {
-				ident = id.userName;
-			} else {
-				ident = "";
-				System.out.println(
-					"Failed to get ident response: " + id.errorMessage);
-			}
-			if (ident.indexOf('@') != -1) {
-				return new FtpReply(530, "Invalid ident response");
-			}
-		}
-		else {
-			ident = "";
-		}
-		String masks[][] =
-			{
-				new String[] {ident, conn.getClientAddress().getHostAddress()},
-				new String[] {ident, conn.getClientAddress().getHostName()}
-			};
-
-		if (!newUser.checkIP(masks, conn.getConnectionManager().useIdent())) {
-			return FtpReply.RESPONSE_530_ACCESS_DENIED;
-		}
-
+		
 		if (newUser.isDeleted()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
-		
-		conn.setUser(newUser);
-		// max_users and num_logins restriction
-		FtpReply response = conn.getConnectionManager().canLogin(conn);
-		if ( response != null ) {
-			return response;
+
+		List masks = newUser.getIpMasks2();
+		String ident = null;
+		if (conn.getConnectionManager().useIdent()) {
+			for (Iterator iter = masks.iterator(); iter.hasNext();) {
+				HostMask mask = (HostMask) iter.next();
+				if (mask.isIdentMaskSignificant() && ident == null) {
+					Ident id = new Ident(conn.getControlSocket());
+					if (id.successful) {
+						ident = id.userName;
+						if (ident.indexOf('@') != -1) {
+							return new FtpReply(530, "Invalid ident response");
+						}
+					} else {
+						logger.warn("Failed to get ident response: " + id.errorMessage);
+						ident = "";
+					}
+				}
+				if(mask.matches((ident == null ? "" : ident), conn.getClientAddress())) {
+					//success
+					// max_users and num_logins restriction
+					FtpReply response = conn.getConnectionManager().canLogin(conn);
+					if (response != null) {
+						return response;
+					}
+
+					conn.setUser(newUser);
+
+				}
+			}
+		} else {
+			ident = "";
 		}
+		//fail
+		return FtpReply.RESPONSE_530_ACCESS_DENIED;
+//		String masks[][] =
+//			{
+//				new String[] { ident, conn.getClientAddress().getHostAddress()},
+//				new String[] { ident, conn.getClientAddress().getHostName()}
+//		};
+//
+//		if (!newUser.checkIP(masks, conn.getConnectionManager().useIdent())) {
+//			return FtpReply.RESPONSE_530_ACCESS_DENIED;
+//		}
+
 
 		if (!conn.getSlaveManager().hasAvailableSlaves()
 			&& !newUser.isAdmin()) {
@@ -174,17 +186,18 @@ public class Login implements CommandHandler, Cloneable {
 		}
 	}
 
-	
-	public CommandHandler initialize(BaseFtpConnection conn, CommandManager initializer) {
+	public CommandHandler initialize(
+		BaseFtpConnection conn,
+		CommandManager initializer) {
 		return this;
-//		Login login;
-//		try {
-//			login = (Login) clone();
-//		} catch (CloneNotSupportedException e) {
-//			throw new RuntimeException(e);
-//		}
-//		login.conn = conn;
-//		return login;
+		//		Login login;
+		//		try {
+		//			login = (Login) clone();
+		//		} catch (CloneNotSupportedException e) {
+		//			throw new RuntimeException(e);
+		//		}
+		//		login.conn = conn;
+		//		return login;
 	}
 
 	public FtpReply execute(BaseFtpConnection conn)
@@ -206,8 +219,10 @@ public class Login implements CommandHandler, Cloneable {
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.command.CommandHandler#load(net.sf.drftpd.master.command.CommandManagerFactory)
 	 */
-	public void load(CommandManagerFactory initializer) {}
+	public void load(CommandManagerFactory initializer) {
+	}
 
-	public void unload() {}
+	public void unload() {
+	}
 
 }

@@ -215,9 +215,9 @@ public class LIST implements CommandHandler {
 				} else {
 					return new FtpReply(213, "End of Status");
 				}
-			} catch (IOException e1) {
-				logger.error("", e1);
-				//return null;
+			} catch (IOException ioe) {
+				logger.error("", ioe);
+				return new FtpReply(450, ioe.getMessage());
 			}
 
 		} catch (IOException ex) {

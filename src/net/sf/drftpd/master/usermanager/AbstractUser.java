@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.sf.drftpd.DuplicateElementException;
+import net.sf.drftpd.HostMask;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.util.CalendarUtils;
@@ -22,7 +23,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.28 2003/12/02 06:30:48 zubov Exp $
+ * @version $Id: AbstractUser.java,v 1.29 2003/12/02 20:40:54 mog Exp $
  */
 public abstract class AbstractUser implements User {
 	private static Logger logger = Logger.getLogger(AbstractUser.class);
@@ -242,9 +243,18 @@ public abstract class AbstractUser implements User {
 	public int getIdleTime() {
 		return idleTime;
 	}
-
+	
 	public List getIpMasks() {
 		return ipMasks;
+	}
+	
+	public List getIpMasks2() {
+		//return ipMasks;
+		ArrayList ret = new ArrayList();
+		for (Iterator iter = ret.iterator(); iter.hasNext();) {
+			ret.add(new HostMask((String)iter.next()));
+		}
+		return ret;
 	}
 
 	public long getLastAccessTime() {

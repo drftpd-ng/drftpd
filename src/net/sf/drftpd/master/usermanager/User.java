@@ -13,7 +13,7 @@ import net.sf.drftpd.ObjectExistsException;
 
 /**
  * @author mog
- * @version $Id: User.java,v 1.27 2003/12/02 06:30:48 zubov Exp $
+ * @version $Id: User.java,v 1.28 2003/12/02 20:40:54 mog Exp $
  */
 public interface User {
 
@@ -417,4 +417,5 @@ public interface User {
 	public void updateTimesNuked(int timesNuked);
 	public void updateUploadedBytes(long bytes);
 	public void updateUploadedFiles(int i);
+	public List getIpMasks2();
 }
