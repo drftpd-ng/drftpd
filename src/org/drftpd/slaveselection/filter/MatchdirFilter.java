@@ -43,7 +43,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  * </pre>
  * 
  * @author mog
- * @version $Id: MatchdirFilter.java,v 1.3 2004/03/11 22:51:11 mog Exp $
+ * @version $Id: MatchdirFilter.java,v 1.4 2004/03/30 13:59:49 mog Exp $
  */
 public class MatchdirFilter extends Filter {
 	private ArrayList _assigns;
@@ -86,10 +86,17 @@ public class MatchdirFilter extends Filter {
 			if (!slavename.equalsIgnoreCase("all")) {
 				_rslave = slaveManager.getSlave(slavename);
 			}
-			_score = Long.parseLong(s.substring(pos + 1));
-			if (!isAdd)
-				_score = -_score;
+			String assign = s.substring(pos+1);
+			if(assign.equals("remove")) {
+				_score = 0;
+				isAdd = false;
+			} else {
+				_score = Long.parseLong(s.substring(pos + 1));
+				if (!isAdd)
+					_score = -_score;
+			}
 		}
+
 		public RemoteSlave getRSlave() {
 			return _rslave;
 		}
@@ -124,12 +131,16 @@ public class MatchdirFilter extends Filter {
 						score.addScore(assign.getScore());
 					}
 				}
-			}
-			try {
-				scorechart.getSlaveScore(assign.getRSlave()).addScore(
-					assign.getScore());
-			} catch (ObjectNotFoundException e) {
-				continue;
+			} else {
+					if(assign.getScore() == 0) {
+						scorechart.removeSlaveScore(assign.getRSlave());
+					} else {
+						try {
+							scorechart.getSlaveScore(assign.getRSlave()).addScore(
+									assign.getScore());
+						//not in scorechart, this is OK
+						} catch (ObjectNotFoundException e) {}
+					}
 			}
 		}
 	}

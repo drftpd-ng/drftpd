@@ -34,7 +34,7 @@ import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: MatchdirFilterTest.java,v 1.4 2004/03/01 00:21:10 mog Exp $
+ * @version $Id: MatchdirFilterTest.java,v 1.5 2004/03/30 13:59:49 mog Exp $
  */
 public class MatchdirFilterTest extends TestCase {
 
@@ -127,5 +127,24 @@ public class MatchdirFilterTest extends TestCase {
 		assertEquals(100, sc.getSlaveScore(rslaves[0]).getScore());
 		assertEquals(100, sc.getSlaveScore(rslaves[1]).getScore());
 		assertEquals(100, sc.getSlaveScore(rslaves[2]).getScore());
+	}
+	public void testRemove() throws NoAvailableSlaveException, ObjectNotFoundException {
+		Properties p = new Properties();
+		p.put("1.assign", "slave2-remove");
+		p.put("1.match", "/path1/*");
+		
+		ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
+		
+		Filter f = new MatchdirFilter(new FC(), 1, p);
+		f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new LinkedRemoteFilePath("/path1/dir/file.txt"));
+
+		assertEquals(0, sc.getSlaveScore(rslaves[0]).getScore());
+		assertEquals(0, sc.getSlaveScore(rslaves[2]).getScore());
+		try {
+			sc.getSlaveScore(rslaves[1]);
+			fail();
+		} catch (ObjectNotFoundException success) {
+			//success
+		}
 	}
 }

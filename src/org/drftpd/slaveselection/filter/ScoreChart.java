@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ScoreChart.java,v 1.1 2004/02/26 13:56:53 mog Exp $
+ * @version $Id: ScoreChart.java,v 1.2 2004/03/30 13:59:49 mog Exp $
  */
 public class ScoreChart {
 	public static class SlaveScore implements Comparable {
@@ -44,6 +44,12 @@ public class ScoreChart {
 			//logger.debug("Added "+score+" to "+getRSlave().getName());
 			_score += score;
 		}
+		public int compareTo(Object o) {
+			SlaveScore s = (SlaveScore) o;
+			//int thisVal = this.value;
+			//int anotherVal = anotherInteger.value;
+			return (getScore()<s.getScore()? -1 : (getScore()==s.getScore()? 0 : 1));
+		}
 		public RemoteSlave getRSlave() {
 			return _rslave;
 		}
@@ -52,12 +58,6 @@ public class ScoreChart {
 		}
 		public String toString() {
 			return "SlaveScore[rslave="+getRSlave().getName()+",score="+getScore()+"]";
-		}
-		public int compareTo(Object o) {
-			SlaveScore s = (SlaveScore) o;
-			//int thisVal = this.value;
-			//int anotherVal = anotherInteger.value;
-			return (getScore()<s.getScore()? -1 : (getScore()==s.getScore()? 0 : 1));
 		}
 	}
 
@@ -104,11 +104,20 @@ public class ScoreChart {
 			if (score.getRSlave().equals(rslave))
 				return score;
 		}
-		throw new ObjectNotFoundException();
+		throw new ObjectNotFoundException(rslave.getName()+" not in ScoreChart");
 	}
 
 	public Collection getSlaveScores() {
 		return _scoreChart;
+	}
+
+	public void removeSlaveScore(RemoteSlave rslave) {
+		for (Iterator iter = _scoreChart.iterator(); iter.hasNext();) {
+			SlaveScore score = (SlaveScore) iter.next();
+			if(score.getRSlave().equals(rslave))
+				iter.remove();
+		}
+		
 	}
 
 }
