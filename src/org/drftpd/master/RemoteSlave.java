@@ -1157,7 +1157,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 	public void shutdown() {
 		try {
 			sendCommand(new AsyncCommand("shutdown", "shutdown gracefully"));
-			setOffline("shutdown gracefully");
+			setOfflineReal("shutdown gracefully");
 		} catch (SlaveUnavailableException e) {
 		}
 	}
