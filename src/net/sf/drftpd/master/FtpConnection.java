@@ -10,7 +10,6 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -2224,7 +2223,7 @@ public class FtpConnection extends BaseFtpConnection {
 				if (conn.getUser().getUsername().equals(username)) {
 					conn.stop(message);
 				}
-			} catch (ObjectNotFoundException e) {
+			} catch (NoSuchUserException e) {
 			}
 		}
 		out.print(response);
@@ -3275,7 +3274,7 @@ public class FtpConnection extends BaseFtpConnection {
 			User user;
 			try {
 				user = conn.getUser();
-			} catch (ObjectNotFoundException e) {
+			} catch (NoSuchUserException e) {
 				throw new FatalException(e);
 			}
 			String command = conn.getRequest().getCommand();

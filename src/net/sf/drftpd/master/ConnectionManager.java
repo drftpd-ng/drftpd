@@ -12,7 +12,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,7 +25,6 @@ import java.util.TimerTask;
 import java.util.Vector;
 
 import net.sf.drftpd.FatalException;
-import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.MessageEvent;
@@ -35,6 +33,7 @@ import net.sf.drftpd.event.XferLogListener;
 import net.sf.drftpd.event.irc.IRCListener;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.queues.NukeLog;
+import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.master.usermanager.UserManager;
@@ -233,7 +232,7 @@ public class ConnectionManager {
 					try {
 						maxIdleTime = conn.getUser().getMaxIdleTime();
 						if(maxIdleTime == 0) maxIdleTime = idleTimeout;
-					} catch (ObjectNotFoundException e) {
+					} catch (NoSuchUserException e) {
 						maxIdleTime = idleTimeout;
 					}
 

@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
+
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.InvalidDirectoryException;
 import net.sf.drftpd.slave.Root;
@@ -19,7 +21,7 @@ import net.sf.drftpd.slave.RootBasket;
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
 public class FileRemoteFile extends RemoteFile {
-	private static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(FileRemoteFile.class.getName());
+	private static Logger logger = Logger.getLogger(FileRemoteFile.class.getName());
 //	private File file;
 //	private String root;
 
@@ -181,7 +183,6 @@ public class FileRemoteFile extends RemoteFile {
 			for (int i = 0; i < tmpFiles.length; i++) {
 				try {
 					if(tmpFiles[i].isDirectory() && isEmptyDeleted(tmpFiles[i])) {
-						logger.info(tmpFiles[i]+".isEmptyDeleted()");
 						continue;
 					}
 					FileRemoteFile listfile = new FileRemoteFile(rootBasket, path+File.separatorChar+tmpFiles[i].getName());

@@ -16,9 +16,9 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.List;
 
-import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.UserEvent;
+import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.Transfer;
@@ -280,9 +280,9 @@ public class BaseFtpConnection implements Runnable {
 	/**
 	 * Get user object
 	 */
-	public User getUser() throws ObjectNotFoundException {
+	public User getUser() throws NoSuchUserException {
 		if (_user == null)
-			throw new ObjectNotFoundException("no user logged in for connection");
+			throw new NoSuchUserException("no user logged in for connection");
 		return _user;
 	}
 

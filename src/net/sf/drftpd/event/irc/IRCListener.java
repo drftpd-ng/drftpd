@@ -169,7 +169,9 @@ public class IRCListener implements FtpListener, Observer {
 
 				ReplacerFormat format =
 					ReplacerFormat.createFormat(_ircCfg.getProperty("slaves"));
-				ReplacerEnvironment env = new ReplacerEnvironment();
+				ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
+				
+				env.add("name", rslave.getName());
 
 				env.add("totalxfers", new Integer(status.getTransfers()));
 				env.add(
@@ -202,9 +204,15 @@ public class IRCListener implements FtpListener, Observer {
 				statusString = "offline";
 			} catch (NoAvailableSlaveException e) {
 				statusString = "offline";
-			} catch (Throwable t) {
-				logger.log(Level.WARN, "Caught throwable in !slaves loop", t);
-				statusString = "offline";
+			} catch (FormatterException e) {
+				say("[slaves] formatterexception: "+e.getMessage());
+				return;
+			} catch (RuntimeException t) {
+				logger.log(Level.WARN, "Caught RuntimeException in !slaves loop", t);
+				statusString = "RuntimeException";
+			} catch (RemoteException e) {
+				rslave.handleRemoteException(e);
+				statusString ="offline";
 			}
 			say("[slaves] " + rslave.getName() + " " + statusString);
 		}
@@ -277,12 +285,10 @@ public class IRCListener implements FtpListener, Observer {
 						}
 					}
 				}
-			} catch (FormatterException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (ObjectNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} catch (FormatterException e) {
+				say("speed: formatterexception: "+e.getMessage());
+			} catch (NoSuchUserException e) {
+				//just continue.. we aren't interested in connections without logged-in users
 			}
 		}
 		say(status);

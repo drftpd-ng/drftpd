@@ -44,7 +44,6 @@ public class SlaveImpl
 	 * @param cfg
 	 * @param inetAddress
 	 * @param b
-	 * @deprecated
 	 */
 	public SlaveImpl(
 		Properties cfg,
