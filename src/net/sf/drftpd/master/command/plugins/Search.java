@@ -1,6 +1,6 @@
 package net.sf.drftpd.master.command.plugins;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -14,21 +14,12 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author mog
- *
- * @version $Id: Search.java,v 1.5 2004/01/13 00:38:55 mog Exp $
+ * @version $Id: Search.java,v 1.6 2004/01/13 01:40:56 mog Exp $
  */
 public class Search implements CommandHandler {
 	public void unload() {}
 	public void load(CommandManagerFactory initializer) {}
 
-	//	private void doSITE_SEARCH(BaseFtpConnection conn) {
-	//		doSITE_DUPE(request, out);
-	//	}
-
-	/**
-	 * Used by doSITE_DUPE()
-	 * 
-	 */
 	private static void findFile(
 		BaseFtpConnection conn,
 		FtpReply response,
@@ -73,11 +64,8 @@ public class Search implements CommandHandler {
 		if (args.length == 0) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
-		ArrayList searchstrings = new ArrayList(args.length);
+		Collection searchstrings = Arrays.asList(args);
 		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
-		for (int i = 0; i < args.length; i++) {
-			searchstrings.add(args[i].toLowerCase());
-		}
 		findFile(
 			conn,
 			response,

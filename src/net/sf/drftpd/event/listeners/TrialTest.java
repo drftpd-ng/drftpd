@@ -17,7 +17,7 @@ import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author mog
- * @version $Id: TrialTest.java,v 1.3 2004/01/13 00:38:55 mog Exp $
+ * @version $Id: TrialTest.java,v 1.4 2004/01/13 01:40:56 mog Exp $
  */
 public class TrialTest extends TestCase {
 	/**
@@ -231,11 +231,10 @@ public class TrialTest extends TestCase {
 
 	public void testGetCalendarEndOfWeek() {
 		Locale.setDefault(Locale.ENGLISH);
-		cal = getJUnitCalendar();
 		assertEquals(Calendar.SATURDAY, Trial.getCalendarForEndOfPeriod(Trial.PERIOD_WEEKLY).get(Calendar.DAY_OF_WEEK));
-		
-		Locale.setDefault(new Locale("sv_SE"));
-		cal = getJUnitCalendar();
+
+		//Locale.setDefault(new Locale("sv", "SE"));
+		Locale.setDefault(Locale.FRANCE);
 		assertEquals(Calendar.SUNDAY, Trial.getCalendarForEndOfPeriod(Trial.PERIOD_WEEKLY).get(Calendar.DAY_OF_WEEK));
 	}
 	/**

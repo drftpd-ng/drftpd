@@ -5,7 +5,7 @@ import java.text.DecimalFormatSymbols;
 
 /**
  * @author mog
- * @version $Id: Bytes.java,v 1.9 2003/12/06 10:44:14 mog Exp $
+ * @version $Id: Bytes.java,v 1.10 2004/01/13 01:40:55 mog Exp $
  */
 public class Bytes {
 	//yotta
@@ -39,20 +39,21 @@ public class Bytes {
 	 * @return human readable string representation of a number of bytes.
 	 */
 	public static String formatBytes(long bytes) {
+		long absbytes = Math.abs(bytes);
 		DecimalFormatSymbols formatsymbols = new DecimalFormatSymbols();
 		formatsymbols.setDecimalSeparator('.');
 		DecimalFormat format = new DecimalFormat("0.0", formatsymbols);
 		format.setDecimalSeparatorAlwaysShown(true);
-		if (bytes >= TERRA) {
+		if (absbytes >= TERRA) {
 			return format.format((float) bytes / TERRA) + "TB";
 
-		} else if (bytes >= GIGA) {
+		} else if (absbytes >= GIGA) {
 			return format.format((float) bytes / GIGA) + "GB";
 
-		} else if (bytes >= MEGA) {
+		} else if (absbytes >= MEGA) {
 			return format.format((float) bytes / MEGA) + "MB";
 
-		} else if (bytes >= KILO) {
+		} else if (absbytes >= KILO) {
 			return format.format((float) bytes / KILO) + "KB";
 		}
 		return Long.toString(bytes) + "B";

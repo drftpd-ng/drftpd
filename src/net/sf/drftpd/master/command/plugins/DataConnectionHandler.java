@@ -50,7 +50,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.29 2004/01/13 00:38:55 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.30 2004/01/13 01:40:56 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -62,7 +62,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 */
 	private InetSocketAddress _portAddress;
 	private PortRange _portRange = new PortRange();
-	private boolean _preTransfer = false;
+	protected boolean _preTransfer = false;
 	private RemoteSlave _preTransferRSlave;
 
 	private long _resumePosition = 0;
@@ -75,11 +75,10 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private Transfer _transfer;
 	private LinkedRemoteFile _transferFile;
 	private SSLContext _ctx;
-	private boolean isPasv = false;
+	protected boolean isPasv = false;
 
-	private boolean isPort = false;
+	protected boolean isPort = false;
 	private char type = 'A';
-	private short xdupe = 0;
 	public DataConnectionHandler() {
 		super();
 		try {
@@ -236,12 +235,12 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 */
 	private FtpReply doPASV(BaseFtpConnection conn) {
 		conn.resetState();
-		reset();
 		if (!_preTransfer) {
 			return new FtpReply(
 				500,
 				"You need to use a client supporting PRET (PRE Transfer) to use PASV");
 		}
+		//reset();
 		_preTransfer = false;
 		assert isPort() == false;
 		InetSocketAddress address;
@@ -409,6 +408,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	}
 
 	private FtpReply doPRET(BaseFtpConnection conn) {
+		reset();
 		FtpRequest request = conn.getRequest();
 		FtpRequest ghostRequest = new FtpRequest(request.getArgument());
 		String cmd = ghostRequest.getCommand();
@@ -851,14 +851,14 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	}
 	public void load(CommandManagerFactory initializer) {
 	}
-	private void reset() {
+	protected void reset() {
 		_rslave = null;
 		_transfer = null;
 		_transferFile = null;
 		_preTransfer = false;
 		_preTransferRSlave = null;
 
-		if (isPasv()) {
+		if (_serverSocket != null) {//isPasv() && _preTransferRSlave == null
 			_portRange.releasePort(_serverSocket.getLocalPort());
 		}
 		isPasv = false;
