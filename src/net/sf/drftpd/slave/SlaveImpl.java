@@ -45,7 +45,7 @@ import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.80 2004/01/30 14:56:10 mog Exp $
+ * @version $Id: SlaveImpl.java,v 1.81 2004/02/09 14:12:56 mog Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
@@ -169,7 +169,7 @@ public class SlaveImpl
 			logger.warn("Error loading SSLContext", e);
 		}
 		_uploadChecksums = cfg.getProperty("enableuploadchecksums", "true").equals("true");
-		_downloadChecksums = cfg.getProperty("enabledownloadchecksums", "false").equals("true");
+		_downloadChecksums = cfg.getProperty("enabledownloadchecksums", "true").equals("true");
 
 		String slavemanagerurl;
 		slavemanagerurl =
@@ -392,7 +392,7 @@ public class SlaveImpl
 
 			if (!fromfile.renameTo(tofile)) {
 				throw new IOException(
-					"Rename " + fromfile + " to " + tofile + " failed");
+					"renameTo(" + fromfile + ", " + tofile + ") failed");
 			}
 		}
 	}

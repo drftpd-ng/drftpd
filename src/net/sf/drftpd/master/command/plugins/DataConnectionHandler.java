@@ -23,7 +23,6 @@ import javax.net.ssl.SSLSocketFactory;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.Checksum;
-import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SFVFile;
@@ -51,7 +50,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.40 2004/02/05 19:38:52 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.41 2004/02/09 14:12:55 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =

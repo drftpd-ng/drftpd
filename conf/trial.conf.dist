@@ -2,16 +2,16 @@
 1.quota=1gb
 1.period=weekly
 1.fail=delete
-1.perm=*
+1.perm=!=siteop *
 
 2.name=quota
 2.quota=10gb
 2.period=monthly
 2.fail=delete
-2.perm=*
+2.perm=!=siteop *
 
 3.name=torture
 3.quota=100mb
 3.period=daily
 3.fail=delete
-3.perm=*
+3.perm=!=siteop *

@@ -69,17 +69,25 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.80 2004/02/04 21:16:57 mog Exp $
+ * @version $Id: IRCListener.java,v 1.81 2004/02/09 14:12:55 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
 	public static class Ret {
-		public String _format;
-		public LinkedRemoteFile _section;
+		private String _format;
+		private LinkedRemoteFile _section;
 		public Ret(String format, LinkedRemoteFile dir) {
 			_format = format;
 			_section = dir;
 		}
+		public String getFormat() {
+			return _format;
+		}
+
+		public LinkedRemoteFile getSection() {
+			return _section;
+		}
+
 	}
 	private AutoJoin _autoJoin;
 	private AutoRegister _autoRegister;
@@ -120,7 +128,7 @@ public class IRCListener implements FtpListener, Observer {
 		Collections.sort(ret);
 		return ret;
 	}
-	
+
 	public static Collection topFileGroup(Collection files) {
 		ArrayList ret = new ArrayList();
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
@@ -232,8 +240,8 @@ public class IRCListener implements FtpListener, Observer {
 		} else if ("PRE".equals(direvent.getCommand())) {
 
 			Ret obj = getPropertyFileSuffix("pre", direvent.getDirectory());
-			String format = obj._format;
-			LinkedRemoteFile dir = obj._section;
+			String format = obj.getFormat();
+			LinkedRemoteFile dir = obj.getSection();
 
 			ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
 			fillEnvSection(env, direvent, dir);
@@ -303,8 +311,8 @@ public class IRCListener implements FtpListener, Observer {
 						getPropertyFileSuffix(
 							"store.embraces",
 							direvent.getDirectory());
-					String format = obj._format;
-					LinkedRemoteFile section = obj._section;
+					String format = obj.getFormat();
+					LinkedRemoteFile section = obj.getSection();
 
 					//					ReplacerEnvironment env =
 					//						new ReplacerEnvironment(globalEnv);
@@ -322,13 +330,20 @@ public class IRCListener implements FtpListener, Observer {
 			}
 		}
 
+		long racedtimeMillis = direvent.getTime() - starttime;
+		env.add("secondstocomplete", Time.formatTime(racedtimeMillis));
+		env.add(
+			"averagespeed",
+			Bytes.formatBytes(
+				direvent.getDirectory().length() / racedtimeMillis));
+
 		//COMPLETE
 		if (sfvstatus.isFinished()) {
 			Collection racers = topFileUploaders(sfvfile.getFiles());
 			Collection groups = topFileGroup(sfvfile.getFiles());
 			Ret ret = getPropertyFileSuffix("store.complete", dir);
-			String format = ret._format;
-			LinkedRemoteFile section = ret._section;
+			String format = ret.getFormat();
+			LinkedRemoteFile section = ret.getSection();
 
 			try {
 				fillEnvSection(
@@ -344,15 +359,12 @@ public class IRCListener implements FtpListener, Observer {
 			env.add("files", Integer.toString(sfvfile.size()));
 			env.add("size", Bytes.formatBytes(sfvfile.getTotalBytes()));
 			env.add("speed", Bytes.formatBytes(sfvfile.getXferspeed()) + "/s");
-			env.add(
-				"secondstocomplete",
-				Time.formatTime((direvent.getTime() - starttime)));
 			say(SimplePrintf.jprintf(format, env));
 
 			Ret ret2 = getPropertyFileSuffix("store.complete.racer", dir);
 			ReplacerFormat raceformat;
 			// already have section from ret.section
-			raceformat = ReplacerFormat.createFormat(ret2._format);
+			raceformat = ReplacerFormat.createFormat(ret2.getFormat());
 
 			int position = 1;
 			for (Iterator iter = racers.iterator(); iter.hasNext();) {
@@ -387,15 +399,17 @@ public class IRCListener implements FtpListener, Observer {
 
 				say(SimplePrintf.jprintf(raceformat, raceenv));
 			}
-			
+
 			Ret ret3 = getPropertyFileSuffix("store.complete.group", dir);
 			// already have section from ret.section
-			raceformat = ReplacerFormat.createFormat(ret3._format);
+			raceformat = ReplacerFormat.createFormat(ret3.getFormat());
 			say(
 				SimplePrintf.jprintf(
-					getPropertyFileSuffix("store.complete.group.header",dir)._format,
+					getPropertyFileSuffix(
+						"store.complete.group.header",
+						dir).getFormat(),
 					env));
-			
+
 			position = 1;
 			for (Iterator iter = groups.iterator(); iter.hasNext();) {
 				GroupPosition stat = (GroupPosition) iter.next();
@@ -411,14 +425,14 @@ public class IRCListener implements FtpListener, Observer {
 				raceenv.add(
 					"percent",
 					Integer.toString(stat.getFiles() * 100 / sfvfile.size())
-						 + "%");
+						+ "%");
 				raceenv.add(
 					"speed",
 					Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
 				say(SimplePrintf.jprintf(raceformat, raceenv));
-			}			
- 			//HALFWAY
+			}
+			//HALFWAY
 		} else if (sfvfile.size() >= 4 && sfvstatus.getMissing() == halfway) {
 			Collection uploaders = topFileUploaders(sfvfile.getFiles());
 			//			ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
@@ -445,8 +459,8 @@ public class IRCListener implements FtpListener, Observer {
 			}
 
 			Ret obj = getPropertyFileSuffix("store.halfway", dir);
-			String format = (String) obj._format;
-			LinkedRemoteFile section = obj._section;
+			String format = (String) obj.getFormat();
+			LinkedRemoteFile section = obj.getSection();
 
 			fillEnvSection(env, direvent, section);
 
@@ -627,18 +641,21 @@ public class IRCListener implements FtpListener, Observer {
 		env.add("section", strippath(section.getPath()));
 
 		LinkedRemoteFile dir = file;
-		if(dir.isFile()) dir = dir.getParentFileNull();
-		
-	long elapsed;
+		if (dir.isFile())
+			dir = dir.getParentFileNull();
+
+		long elapsed;
 		try {
-			elapsed = dir.getOldestFile().lastModified()/1000;
+			elapsed = dir.getOldestFile().lastModified() / 1000;
 		} catch (ObjectNotFoundException e) {
-			elapsed = dir.lastModified()/1000;
+			elapsed = dir.lastModified() / 1000;
 		}
 		elapsed = System.currentTimeMillis() - elapsed;
-		env.add("elapsed", ""+elapsed);
-		env.add("elapsed", ""+elapsed);
-		env.add("averagespeed", Bytes.formatBytes(dir.dirSize()/elapsed/1000)+"/s");
+		env.add("elapsed", "" + elapsed);
+		env.add("elapsed", "" + elapsed);
+		env.add(
+			"averagespeed",
+			Bytes.formatBytes(dir.dirSize() / elapsed / 1000) + "/s");
 
 		if (file.isFile()) {
 			env.add("size", Bytes.formatBytes(file.length()));
@@ -810,7 +827,7 @@ public class IRCListener implements FtpListener, Observer {
 		_autoReconnect.disable();
 		_conn.disconnect();
 	}
-	
+
 	public void connect() throws UnknownHostException, IOException {
 		logger.info("IRCListener: connecting to " + _server + ":" + _port);
 		_conn.connect(_server, _port);
@@ -842,8 +859,8 @@ public class IRCListener implements FtpListener, Observer {
 		throws FormatterException {
 
 		Ret obj = getPropertyFileSuffix(string, direvent.getDirectory());
-		String format = obj._format;
-		LinkedRemoteFile section = obj._section;
+		String format = obj.getFormat();
+		LinkedRemoteFile section = obj.getSection();
 
 		ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
 		fillEnvSection(env, direvent, section);

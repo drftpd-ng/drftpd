@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
@@ -23,7 +24,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.22 2004/02/07 23:56:35 zubov Exp $
+ * @version $Id: JobManager.java,v 1.23 2004/02/09 14:12:56 mog Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -42,8 +43,8 @@ public class JobManager implements FtpListener {
 	}
 
 	public void actionPerformed(Event event) {
-                if (event.getCommand().equals("RELOAD")) {
-                        reload();
+		if (event.getCommand().equals("RELOAD")) {
+			reload();
 			return;
 		}
 		if (!(event instanceof SlaveEvent))
@@ -319,15 +320,21 @@ public class JobManager implements FtpListener {
 		return true;
 	}
 
-	private void reload() throws FileNotFoundException, IOException {
+	private void reload() {
 		Properties ircCfg = new Properties();
-		ircCfg.load(new FileInputStream("conf/jobmanager.conf"));
+		try {
+			ircCfg.load(new FileInputStream("conf/jobmanager.conf"));
+		} catch (IOException e) {
+			throw new FatalException(e);
+		}
 		_useCRC = FtpConfig.getProperty(ircCfg, "useCRC").equals("true");
 	}
+
 	public synchronized void removeJob(Job job) {
 		_jobList.remove(job);
 		Collections.sort(_jobList, new JobComparator());
 	}
+
 	public void startAllSlaves() throws NoAvailableSlaveException {
 		stopAllSlaves();
 		_isStopped = false;

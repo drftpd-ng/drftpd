@@ -10,7 +10,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
 
 /**
  * @author mog
- * @version $Id: HostMask.java,v 1.5 2004/01/03 23:50:53 mog Exp $
+ * @version $Id: HostMask.java,v 1.6 2004/02/09 14:12:55 mog Exp $
  */
 public class HostMask {
 	private static final Logger logger = Logger.getLogger(HostMask.class);
@@ -19,12 +19,13 @@ public class HostMask {
 
 	public HostMask(String string) {
 		int pos = string.indexOf('@');
-		if(pos == -1) {
+		if (pos == -1) {
 			_identMask = null;
 			_hostMask = string;
+		} else {
+			_identMask = string.substring(0, pos);
+			_hostMask = string.substring(pos + 1);
 		}
-		_identMask = string.substring(0, pos);
-		_hostMask = string.substring(pos + 1);
 	}
 
 	public String getHostMask() {
@@ -47,19 +48,12 @@ public class HostMask {
 		Perl5Matcher m = new Perl5Matcher();
 
 		GlobCompiler c = new GlobCompiler();
-//		System.out.println(
-//			"comparing "
-//				+ ident
-//				+ "@"
-//				+ address.getHostAddress()
-//				+ " and "
-//				+ getIdentMask()
-//				+ "@"
-//				+ getHostMask());
 		try {
-			if (!isIdentMaskSignificant() || m.matches(ident, c.compile(getIdentMask()))) {
+			if (!isIdentMaskSignificant()
+				|| m.matches(ident, c.compile(getIdentMask()))) {
 				Pattern p = c.compile(getHostMask());
-				if (m.matches(address.getHostAddress(), p) || m.matches(address.getHostName(), p)) {
+				if (m.matches(address.getHostAddress(), p)
+					|| m.matches(address.getHostName(), p)) {
 					return true;
 				}
 			}

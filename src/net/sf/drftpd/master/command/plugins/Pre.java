@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * @version $Id: Pre.java,v 1.7 2004/02/04 17:13:13 mog Exp $
+ * @version $Id: Pre.java,v 1.8 2004/02/09 14:12:55 mog Exp $
  */
 public class Pre implements CommandHandler {
 
@@ -97,7 +97,6 @@ public class Pre implements CommandHandler {
 		}
 
 		//ANNOUNCE
-		logger.debug("preDir after rename: " + preDir);
 		conn.getConnectionManager().dispatchFtpEvent(
 			new DirectoryFtpEvent(conn.getUserNull(), "PRE", toDir));
 
