@@ -51,7 +51,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.118 2004/02/21 05:28:21 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.119 2004/02/22 15:22:53 zubov Exp $
  */
 public class LinkedRemoteFile
 	implements RemoteFileInterface, Serializable, Comparable {
@@ -64,7 +64,8 @@ public class LinkedRemoteFile
 		}
 
 		/**
-		 * Return true if getPath() returns a null value, i.e.<!-- --> returns true if the file exists.
+		 * Return true if getPath() returns a null value, i.e. <!-- --> returns
+		 * true if the file exists.
 		 */
 		public boolean exists() {
 			return _path == null;
@@ -79,7 +80,8 @@ public class LinkedRemoteFile
 		}
 
 		/**
-		 * Returns true if getPath() returns a non-null value, i.e.<!-- --> returns false if the file exists.
+		 * Returns true if getPath() returns a non-null value, i.e. <!-- -->
+		 * returns false if the file exists.
 		 */
 		public boolean hasPath() {
 			return _path != null;
@@ -119,8 +121,8 @@ public class LinkedRemoteFile
 
 	protected SFVFile sfvFile;
 	/**
-	 * Creates an empty RemoteFile directory, usually used as an empty root directory that
-	 * <link>{merge()}</link> can be called on.
+	 * Creates an empty RemoteFile directory, usually used as an empty root
+	 * directory that <link>{merge()} </link> can be called on.
 	 * 
 	 * Used if no file database exists to start a tree from scratch.
 	 */
@@ -136,14 +138,18 @@ public class LinkedRemoteFile
 	}
 
 	/**
-	 * Creates a RemoteFile from file or creates a directory tree representation.
+	 * Creates a RemoteFile from file or creates a directory tree
+	 * representation.
 	 * 
-	 * Used by DirectoryRemoteFile.
-	 * Called by other constructor, ConnectionManager is null if called from SlaveImpl.
+	 * Used by DirectoryRemoteFile. Called by other constructor,
+	 * ConnectionManager is null if called from SlaveImpl.
 	 * 
 	 * They all end up here.
-	 * @param parent the parent of this file
-	 * @param file file that this RemoteFile object should represent.
+	 * 
+	 * @param parent
+	 *            the parent of this file
+	 * @param file
+	 *            file that this RemoteFile object should represent.
 	 */
 	private LinkedRemoteFile(
 		LinkedRemoteFile parent,
@@ -234,7 +240,8 @@ public class LinkedRemoteFile
 	}
 
 	/**
-	 * Creates a root directory (parent == null) that FileRemoteFile or JDOMRemoteFile is merged on.
+	 * Creates a root directory (parent == null) that FileRemoteFile or
+	 * JDOMRemoteFile is merged on.
 	 * 
 	 * Also called with null ConnectionManager from slave
 	 */
@@ -267,7 +274,8 @@ public class LinkedRemoteFile
 			throw new IllegalStateException("Cannot addSlave() on a directory");
 		assert slave != null;
 
-		// we get lots of duplicate adds when merging and the slave is already in the file database
+		// we get lots of duplicate adds when merging and the slave is already
+		// in the file database
 		if (_slaves.contains(slave)) {
 			return;
 		}
@@ -275,7 +283,8 @@ public class LinkedRemoteFile
 	}
 
 	/**
-	 * @throws ClassCastException if object is not an instance of RemoteFileInterface.
+	 * @throws ClassCastException
+	 *             if object is not an instance of RemoteFileInterface.
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	public int compareTo(Object o) {
@@ -291,7 +300,8 @@ public class LinkedRemoteFile
 		String group,
 		String fileName)
 		throws ObjectExistsException {
-		//		LinkedRemoteFile existingfile = (LinkedRemoteFile) _files.get(fileName);
+		//		LinkedRemoteFile existingfile = (LinkedRemoteFile)
+		// _files.get(fileName);
 		//		//throws NullPointerException on non-existing directories
 		//		if (existingfile.isDeleted())
 		//			existingfile.delete();
@@ -316,10 +326,13 @@ public class LinkedRemoteFile
 	}
 
 	/**
-	 * Deletes a file or directory, if slaves are offline, the file cannot be deleted.
-	 * To work around this, the file gets a deleted flag set and when the offline slave is remerge()'d, it is deleted from the slave and delete() is called again.
-	 *
-	 * Trying to lookupFile() or getFile() a deleted file throws FileNotFoundException.
+	 * Deletes a file or directory, if slaves are offline, the file cannot be
+	 * deleted. To work around this, the file gets a deleted flag set and when
+	 * the offline slave is remerge()'d, it is deleted from the slave and
+	 * delete() is called again.
+	 * 
+	 * Trying to lookupFile() or getFile() a deleted file throws
+	 * FileNotFoundException.
 	 */
 	public void delete() {
 		logger.debug("delete(" + getPath() + ")");
@@ -490,7 +503,8 @@ public class LinkedRemoteFile
 	/**
 	 * Returns the cached checksum or 0 if no checksum was cached.
 	 * <p>
-	 * Use {getCheckSum()} to automatically calculate checksum if no cached checksum is available.
+	 * Use {getCheckSum()} to automatically calculate checksum if no cached
+	 * checksum is available.
 	 */
 	public long getCheckSumCached() {
 		return _checkSum;
@@ -529,7 +543,8 @@ public class LinkedRemoteFile
 	 * Returns fileName contained in this directory.
 	 * 
 	 * @param fileName
-	 * @throws FileNotFoundException if fileName doesn't exist in the files Map
+	 * @throws FileNotFoundException
+	 *             if fileName doesn't exist in the files Map
 	 */
 	public LinkedRemoteFile getFile(String fileName)
 		throws FileNotFoundException {
@@ -547,11 +562,13 @@ public class LinkedRemoteFile
 	}
 
 	/**
-	 * Returns a Collection of all the LinkedRemoteFile objects in this directory,
-	 * with all .isDeleted() files removed.
+	 * Returns a Collection of all the LinkedRemoteFile objects in this
+	 * directory, with all .isDeleted() files removed.
 	 * 
 	 * The Collection can be safely modified, it is a copy.
-	 * @return a Collection of all the LinkedRemoteFile objects in this directory, with all .isDeleted() files removed.
+	 * 
+	 * @return a Collection of all the LinkedRemoteFile objects in this
+	 *         directory, with all .isDeleted() files removed.
 	 */
 	public Collection getFiles() {
 		if (_files == null)
@@ -560,11 +577,14 @@ public class LinkedRemoteFile
 	}
 
 	/**
-	 * Returns a map for this directory, having String name as key and LinkedRemoteFile file as value,
-	 * with all .isDeleted() files removed.
+	 * Returns a map for this directory, having String name as key and
+	 * LinkedRemoteFile file as value, with all .isDeleted() files removed.
 	 * 
 	 * The Map can be safely modified, it is a copy.
-	 * @return map for this directory, having String name as key and LinkedRemoteFile file as value, with all .isDeleted() files removed.
+	 * 
+	 * @return map for this directory, having String name as key and
+	 *         LinkedRemoteFile file as value, with all .isDeleted() files
+	 *         removed.
 	 */
 	public Map getFilesMap() {
 		Hashtable ret = new Hashtable(_files);
@@ -590,8 +610,10 @@ public class LinkedRemoteFile
 	/**
 	 * Returns the underlying Map for this directory.
 	 * 
-	 * It is dangerous to modify without knowing what you're doing.
-	 * Dirsize needs to be taken into account as well as sending approperiate commands to the slaves. 
+	 * It is dangerous to modify without knowing what you're doing. Dirsize
+	 * needs to be taken into account as well as sending approperiate commands
+	 * to the slaves.
+	 * 
 	 * @return the underlying Map for this directory.
 	 */
 	public Map getMap() {
@@ -667,7 +689,8 @@ public class LinkedRemoteFile
 		return sfvFile;
 	}
 
-	/** returns slaves. returns null if a directory.
+	/**
+	 * returns slaves. returns null if a directory.
 	 */
 	public Collection getSlaves() {
 		if (_slaves == null)
@@ -694,9 +717,13 @@ public class LinkedRemoteFile
 	}
 
 	/**
-	 * Returns true if this directory contains a file named filename, this is case sensitive.
-	 * @param filename The name of the file
-	 * @return true if this directory contains a file named filename, this is case sensitive.
+	 * Returns true if this directory contains a file named filename, this is
+	 * case sensitive.
+	 * 
+	 * @param filename
+	 *            The name of the file
+	 * @return true if this directory contains a file named filename, this is
+	 *         case sensitive.
 	 */
 	public boolean hasFile(String filename) {
 		return _files.containsKey(filename);
@@ -707,8 +734,11 @@ public class LinkedRemoteFile
 	}
 
 	/**
-	 * Returns true if this file or directory uses slaves that are currently offline.
-	 * @return true if this file or directory uses slaves that are currently offline.
+	 * Returns true if this file or directory uses slaves that are currently
+	 * offline.
+	 * 
+	 * @return true if this file or directory uses slaves that are currently
+	 *         offline.
 	 */
 	public boolean hasOfflineSlaves() {
 		if (isFile()) {
@@ -750,6 +780,7 @@ public class LinkedRemoteFile
 
 	/**
 	 * Returns true if this file is queued for deletion.
+	 * 
 	 * @return true if this file is queued for deletion.
 	 */
 	public boolean isDeleted() {
@@ -757,11 +788,11 @@ public class LinkedRemoteFile
 	}
 
 	public boolean isDirectory() {
-		return _files != null;
+		return !isFile();
 	}
 
 	public boolean isFile() {
-		return _files == null;
+		return _files == null && _slaves != null;
 	}
 
 	/**
@@ -874,7 +905,8 @@ public class LinkedRemoteFile
 	}
 
 	/**
-	 * Returns path for a non-existing file. Performs path normalization and returns an absolute path
+	 * Returns path for a non-existing file. Performs path normalization and
+	 * returns an absolute path
 	 */
 	public String lookupPath(String path) {
 		NonExistingFile ret = lookupNonExistingFile(path);
@@ -908,8 +940,9 @@ public class LinkedRemoteFile
 	}
 
 	/**
-	 * Merges mergedir directory onto <code>this</code> directories.
-	 * If duplicates exist, the slaves are added to this object and the file-attributes of the oldest file (lastModified) are kept.
+	 * Merges mergedir directory onto <code>this</code> directories. If
+	 * duplicates exist, the slaves are added to this object and the
+	 * file-attributes of the oldest file (lastModified) are kept.
 	 */
 	public void remerge(LinkedRemoteFile mergedir, RemoteSlave rslave) {
 		if (_ftpConfig == null)
@@ -926,16 +959,21 @@ public class LinkedRemoteFile
 			throw new IllegalArgumentException("argument is not a directory");
 
 		// add/merge all files from mergedir
+		for (Iterator iter = _files.values().iterator(); iter.hasNext();) {
+			LinkedRemoteFile localfile = (LinkedRemoteFile) iter.next();
+			LinkedRemoteFile parent = localfile.getParentFileNull();
+			logger.debug("localfile = " + localfile + " with parent " + parent);
+		}
 		for (Iterator i = mergedir.getFiles().iterator(); i.hasNext();) {
 			LinkedRemoteFile slavefile = (LinkedRemoteFile) i.next();
-
-			if (slavefile.isDirectory() && slavefile.length() == 0)
+			if (slavefile.isDirectory() && slavefile.length() == 0) {
 				logger.fatal(
 					"Attempt to add empty directory: "
 						+ slavefile
 						+ " from "
 						+ rslave.getName());
-
+				continue;
+			}
 			//this is localdir
 			//localfile is local file
 			//mergedir is mergedir argument to remerge()
@@ -952,6 +990,7 @@ public class LinkedRemoteFile
 					slavefile.getPath() + " added from " + rslave.getName());
 			} else { //file exists
 				if (localfile.isDeleted()) {
+					//logger.debug("localfile isDeleted() " + localfile);
 					//// queued delete or rename ////
 					if (localfile.isLink()) {
 						String linktarget = localfile.getLinkPath();
@@ -969,7 +1008,8 @@ public class LinkedRemoteFile
 									localfile.getPath(),
 									renameTo.getParent(),
 									renameTo.getName());
-								//recusive migration of rslaves from source to dest
+								//recusive migration of rslaves from source to
+								// dest
 								if (localfile.isFile()) {
 									recursiveRenameLoopFile(
 										localfile,
@@ -978,8 +1018,11 @@ public class LinkedRemoteFile
 									recursiveRenameLoop(localfile, renameTo);
 								}
 
-								//migrate mergefile on mergedir or files will be removed cause they aren't in slave filelist
-								//simple ugly move of the lrf object so that remergePass2() won't delete it
+								//migrate mergefile on mergedir or files will
+								// be removed cause they aren't in slave
+								// filelist
+								//simple ugly move of the lrf object so that
+								// remergePass2() won't delete it
 								{
 									NonExistingFile ret =
 										slavefile.lookupNonExistingFile(
@@ -1141,36 +1184,62 @@ public class LinkedRemoteFile
 
 	}
 
-	private void remergePass2(LinkedRemoteFile mergedir, RemoteSlave rslave) {
+	private synchronized void remergePass2(LinkedRemoteFile mergedir, RemoteSlave rslave) {
 		// remove all slaves not in mergedir.getFiles()
 		// unmerge() gets called on all files not on slave & all directories
-		for (Iterator i = new ArrayList(getFilesMap().values()).iterator();
+		//for (Iterator i = new ArrayList(getFilesMap().values()).iterator();
+		// getFilesMap() returns a copy of the list and without isDeleted files
+		for (Iterator i = _files.values().iterator();
 			i.hasNext();
 			) {
 			LinkedRemoteFile file = (LinkedRemoteFile) i.next();
-			//no point in checking the targets, are there anyway
-			//if(file.isDeleted() && file.isLink()) continue;
+			if (mergedir == null ) { // slave doesn't have the directory
+				if (file.isFile()) {
+					if (file.getSlaves().contains(rslave)) {
+						file.getSlaves().remove(rslave);
+					}
+					if (file.getSlaves().isEmpty()) {
+						i.remove();
+					}
+				} else {
+					file.remergePass2(null, rslave);
+					if (file.isEmpty())
+						i.remove();
+				}
+				continue;
+			}
 			if (!mergedir.hasFile(file.getName())) {
 				if (file.isFile()) {
-					file.unmergeFile(rslave);
+					if (file.getSlaves().contains(rslave)) {
+						file.getSlaves().remove(rslave);
+					}
+					if (file.getSlaves().isEmpty()) {
+						i.remove();
+					}
 				} else {
-					file.unmergeDir(rslave);
+					file.remergePass2(null, rslave);
+					if (file.isEmpty())
+						i.remove();
 				}
-			} else if (file.isDirectory()) {
+			} else {
+				if (file.isDirectory()) {
 				try {
-					file.remergePass2(mergedir.getFile(file.getName()), rslave);
+						file.remergePass2(mergedir.getFile(file.getName()), rslave);
+						if (file.isEmpty())
+							i.remove();
 				} catch (FileNotFoundException e) {
 					throw new RuntimeException(
 						"inconsistent with hasFile() above",
 						e);
-				}
+				}}
+				// else slave has the file
 			}
 		}
 	}
 
 	public boolean removeSlave(RemoteSlave slave) {
 		if (_slaves == null)
-			throw new IllegalStateException("Cannot removeSlave() on non-directory");
+			throw new IllegalStateException("Cannot removeSlave() on directory");
 		boolean ret = _slaves.remove(slave);
 		if (_slaves.isEmpty())
 			delete();
@@ -1276,7 +1345,8 @@ public class LinkedRemoteFile
 				try {
 					slave = rslave.getSlave();
 				} catch (NoAvailableSlaveException e) {
-					//trust that hasOfflineSlaves() did a good job and no files are present on offline slaves
+					//trust that hasOfflineSlaves() did a good job and no
+					// files are present on offline slaves
 					continue;
 				}
 				try {
@@ -1345,7 +1415,8 @@ public class LinkedRemoteFile
 	}
 
 	/**
-	 * @param torslave RemoteSlave to replicate to.
+	 * @param torslave
+	 *            RemoteSlave to replicate to.
 	 */
 	//	public void replicate(final RemoteSlave torslave)
 	//		throws NoAvailableSlaveException, IOException {
@@ -1382,7 +1453,8 @@ public class LinkedRemoteFile
 	//	}
 
 	/**
-	 * @param toName name argument to LinkedRemoteFile constructor
+	 * @param toName
+	 *            name argument to LinkedRemoteFile constructor
 	 */
 	private LinkedRemoteFile putFile(RemoteFileInterface file, String toName) {
 		if (_files.containsKey(toName))
@@ -1493,7 +1565,8 @@ public class LinkedRemoteFile
 				//remove empty deleted directories
 				if (file.isDeleted() && file.dirSize() == 0) {
 					i.remove();
-					// size SHOULD be 0, but if it isn't, this will even out the unsynched dirsize 
+					// size SHOULD be 0, but if it isn't, this will even out
+					// the unsynched dirsize
 					if (file.length() != 0)
 						logger.warn(
 							"file.length() == "
