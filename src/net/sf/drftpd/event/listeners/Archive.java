@@ -8,6 +8,7 @@ package net.sf.drftpd.event.listeners;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,6 +31,7 @@ import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.Transfer;
+import net.sf.drftpd.util.CooperativeSlaveTransfer;
 
 /**
  * @author zubov
@@ -60,7 +62,7 @@ public class Archive implements FtpListener {
 	public void actionPerformed(Event event) {
 		if (!(event instanceof TransferEvent))
 			return;
-		System.out.println("We are now about to try and archive");
+		//System.out.println("We are now about to try and archive");
 		_archiving = false;
 		synchronized (this) {
 			if (!_archiving)
@@ -71,21 +73,31 @@ public class Archive implements FtpListener {
 		System.out.println("We are now archiving");
 		if (event.getTime() - lastchecked > _cycleTime) {
 			// find the oldest release possible
-			System.out.println("We are now looking for the oldest directory");
+			//System.out.println("We are now looking for the oldest directory");
 			LinkedRemoteFile oldDir =
 				((DirectoryFtpEvent) event).getDirectory();
 			LinkedRemoteFile root = oldDir.getRoot();
-			oldDir = this.getOldestNonArchivedDir(root);
+			oldDir = getOldestNonArchivedDir(root);
 			System.out.println("The oldest Directory is " + oldDir.getPath());
 			RemoteSlave slave = findDestinationSlave(oldDir);
 			System.out.println("The slave to archive to is " + slave.getName());
-			//			try {
-			//				slave = _sm.getASlave(Transfer.TRANSFER_RECEIVING_UPLOAD);
-			//			} catch (NoAvailableSlaveException e) {
-			//				_archiving = false;
-			//				return;
-			//				//can't archive if there are no slaves online
-			//			}
+			for (Iterator iter = oldDir.getFiles().iterator();
+				iter.hasNext();
+				) {
+				LinkedRemoteFile src = (LinkedRemoteFile) iter.next();
+				CooperativeSlaveTransfer temp = null;
+				if (!src.getSlaves().contains(slave)) {
+					temp = new CooperativeSlaveTransfer(src, slave, 3);
+				} else {
+					src.deleteOthers(slave);
+					continue;
+				}
+				temp.start();
+				while (temp.isAlive())
+					Thread.yield();
+				src.deleteOthers(slave);
+				System.out.println("at the end of archive");
+			}
 		}
 		_archiving = false;
 	}
@@ -101,9 +113,9 @@ public class Archive implements FtpListener {
 		int highSlaveCount = 0;
 		RemoteSlave slave = null;
 		int slaveCount = 0;
+		int x = 0;
 		for (Iterator iter = slaveList.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
-			System.out.println("rslave = " + rslave.getName());
 			if (highSlave == null) {
 				highSlave = rslave;
 				slave = rslave;
@@ -118,6 +130,8 @@ public class Archive implements FtpListener {
 				slaveCount = 1;
 				slave = rslave;
 			}
+			x++;
+			//System.out.println(x + ": slave = " + rslave.getName() + ", " + slaveCount);
 		}
 
 		return highSlave;
@@ -159,6 +173,7 @@ public class Archive implements FtpListener {
 				continue;
 			}
 			if (oldestDir.lastModified() > temp.lastModified()) {
+				// for testing			if (oldestDir.lastModified() < temp.lastModified()) {
 				oldestDir = temp;
 			}
 		}

@@ -34,10 +34,11 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.89 2003/12/05 04:02:25 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.90 2003/12/05 06:23:17 zubov Exp $
  */
 
-public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comparable {
+public class LinkedRemoteFile
+	implements RemoteFileInterface, Serializable, Comparable {
 	public class NonExistingFile {
 		private LinkedRemoteFile _file;
 		private String _path;
@@ -106,7 +107,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 		_files = Collections.synchronizedMap(new Hashtable());
 		_slaves = Collections.synchronizedList(new ArrayList(1));
 	}
-	
+
 	/**
 	 * Creates a RemoteFile from file or creates a directory tree representation.
 	 * 
@@ -121,7 +122,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 		LinkedRemoteFile parent,
 		RemoteFileInterface file,
 		FtpConfig cfg) {
-		if(file.getName().indexOf('*') != -1) {
+		if (file.getName().indexOf('*') != -1) {
 			throw new IllegalArgumentException("Illegal character (*) in filename");
 		}
 		_ftpConfig = cfg;
@@ -227,7 +228,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 	 * @throws ClassCastException if object is not an instance of RemoteFileInterface.
 	 */
 	public int compareTo(Object o) {
-		return getName().compareTo(((RemoteFileInterface)o).getName());
+		return getName().compareTo(((RemoteFileInterface) o).getName());
 	}
 
 	public LinkedRemoteFile createDirectory(
@@ -248,12 +249,16 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 		//				slave.handleRemoteException(ex);
 		//			}
 		//		}
-		LinkedRemoteFile file =
-			new LinkedRemoteFile(
-				this,
-				//new DirectoryRemoteFile(this, owner, group, fileName),
-				new StaticRemoteFile(null, fileName, owner, group, 0L, System.currentTimeMillis()),
-				_ftpConfig);
+		LinkedRemoteFile file = new LinkedRemoteFile(this,
+			//new DirectoryRemoteFile(this, owner, group, fileName),
+	new StaticRemoteFile(
+		null,
+		fileName,
+		owner,
+		group,
+		0L,
+		System.currentTimeMillis()),
+		_ftpConfig);
 		//file.addSlaves(getSlaves());
 		_files.put(file.getName(), file);
 		logger.debug("Created directory " + file);
@@ -298,9 +303,13 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 						slave.delete(getPath());
 						// throws RemoteException, IOException
 						iter.remove();
-					} catch(FileNotFoundException ex) {
+					} catch (FileNotFoundException ex) {
 						iter.remove();
-						logger.warn(getPath()+" missing on "+rslave.getName()+" during delete, assumed deleted");
+						logger.warn(
+							getPath()
+								+ " missing on "
+								+ rslave.getName()
+								+ " during delete, assumed deleted");
 					} catch (RemoteException ex) {
 						rslave.handleRemoteException(ex);
 						continue;
@@ -330,6 +339,26 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 					getPath()
 						+ " queued for deletion, remaining slaves:"
 						+ _slaves);
+			}
+		}
+	}
+	public void deleteOthers(RemoteSlave slave) {
+		for (Iterator iter2 = getSlaves().iterator(); iter2.hasNext();) {
+			RemoteSlave tempSlave = (RemoteSlave) iter2.next();
+			if (tempSlave == slave)
+				continue; // do not want to delete the archived file
+			// delete other files
+			try {
+				tempSlave.getSlave().delete(getPath());
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoAvailableSlaveException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}
@@ -393,11 +422,11 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 	 * Returns the cached checksum or 0 if no checksum was cached.
 	 * <p>
 	 * Use {getCheckSum()} to automatically calculate checksum if no cached checksum is available.
-	 */	
+	 */
 	public long getCheckSumCached() {
 		return _checkSum;
 	}
-	
+
 	/**
 	 * Returns 0 if the checksum cannot be read.
 	 */
@@ -417,11 +446,11 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 		}
 
 	}
-	
+
 	public Collection getDirectories() {
 		Collection temp = getFiles();
-		for ( Iterator iter = temp.iterator(); iter.hasNext();) {
-			if ( ((LinkedRemoteFile) iter.next()).isFile())
+		for (Iterator iter = temp.iterator(); iter.hasNext();) {
+			if (((LinkedRemoteFile) iter.next()).isFile())
 				iter.remove();
 		}
 		return temp;
@@ -589,7 +618,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 		}
 		return false;
 	}
-	
+
 	public boolean hasSlave(RemoteSlave slave) {
 		return _slaves.contains(slave);
 	}
@@ -663,7 +692,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 			throw new FileNotFoundException(path + ": File not found");
 		return (LinkedRemoteFile) ret.getFile();
 	}
-	
+
 	/**
 	 * 
 	 * @return new Object[] {LinkedRemoteFile file, String path};
@@ -706,11 +735,11 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 				if (st.hasMoreElements()) {
 					remaining.append('/').append(st.nextToken(EMPTY_STRING));
 				}
-				return new NonExistingFile( currFile, remaining.toString());
+				return new NonExistingFile(currFile, remaining.toString());
 			}
 			currFile = nextFile;
 		}
-		return new NonExistingFile( currFile, null );
+		return new NonExistingFile(currFile, null);
 	}
 
 	/**
@@ -721,9 +750,11 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 		if (!ret.hasPath()) {
 			return ret.getFile().getPath();
 		}
-		return ret.getFile().getPath() + RemoteFile.separatorChar + ret.getPath();
+		return ret.getFile().getPath()
+			+ RemoteFile.separatorChar
+			+ ret.getPath();
 	}
-	
+
 	public SFVFile lookupSFVFile()
 		throws IOException, FileNotFoundException, NoAvailableSlaveException {
 		if (!isDirectory())
@@ -1042,7 +1073,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable, Comp
 					totransfer.receiveFile(
 						getParentFile().getPath(),
 						'I',
-						getName(), 0L);
+						getName(),
+						0L);
 				} catch (RemoteException e) {
 					torslave.handleRemoteException(e);
 					logger.warn(EMPTY_STRING, e);
