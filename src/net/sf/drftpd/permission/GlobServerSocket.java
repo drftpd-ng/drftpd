@@ -77,7 +77,7 @@ public class GlobServerSocket extends ServerSocket {
 	public Socket accept() throws IOException {
 		Perl5Matcher m = new Perl5Matcher();
 		// Try until a valid peer tries to connect.
-		while (true) {
+		while(true) {
 			Socket sock = super.accept();
 			Ident identObj = new Ident(sock);
 			String ident;
@@ -108,9 +108,8 @@ public class GlobServerSocket extends ServerSocket {
 				if (m.matches(hostmask, p)) {
 					return sock;
 				}
-				System.out.println("Didn't match: "+mask);
 			} //for
-			System.out.println("Denying connection: "+hostmask+"/"+ipmask+".");
+			System.out.println("Rejecting RMI connection: "+hostmask+"/"+ipmask+".");
 			sock.close();
 		}
 	}

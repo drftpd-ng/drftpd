@@ -156,11 +156,7 @@ public class BaseFtpConnection implements Runnable {
 			        return;
 			    }
 			*/
-			if(!slaveManager.hasAvailableSlaves()) {
-				stop("No transfer slave(s) available");
-			} else {
-				out.println("220 Service ready for new user.");
-			}
+			out.println("220 Service ready for new user.");
 			while (!stopRequest) {
 				out.flush();
 				//notifyObserver();

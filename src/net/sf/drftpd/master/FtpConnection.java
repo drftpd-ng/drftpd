@@ -271,12 +271,15 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(response);
 			return;
 		}
-		if(!connManager.getConfig().hasReadPermission(getUser(), newCurrentDirectory)) {
-			FtpResponse response = new FtpResponse(550, dirName+": Not found");
+		if (!connManager
+			.getConfig()
+			.hasReadPermission(getUser(), newCurrentDirectory)) {
+			FtpResponse response =
+				new FtpResponse(550, dirName + ": Not found");
 			out.print(response);
 			return;
 		}
-		
+
 		if (!newCurrentDirectory.isDirectory()) {
 			out.print(new FtpResponse(550, dirName + ": Not a directory"));
 			return;
@@ -290,8 +293,11 @@ public class FtpConnection extends BaseFtpConnection {
 			new FtpResponse(
 				200,
 				"Directory changed to " + currentDirectory.getPath());
-		connManager.getConfig().directoryMessage(response, getUser(), currentDirectory);
-		
+		connManager.getConfig().directoryMessage(
+			response,
+			getUser(),
+			currentDirectory);
+
 		Collection uploaders =
 			IRCListener.topFileUploaders2(currentDirectory.getFiles());
 		for (Iterator iter = uploaders.iterator(); iter.hasNext();) {
@@ -1297,7 +1303,9 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		if(!connManager.getConfig().hasReadPermission(getUser(), requestedFile)) {
+		if (!connManager
+			.getConfig()
+			.hasReadPermission(getUser(), requestedFile)) {
 			out.print(new FtpResponse(550, fileName + ": Not found"));
 			return;
 		}
@@ -1351,7 +1359,8 @@ public class FtpConnection extends BaseFtpConnection {
 		//mstRenFr = user.getVirtualDirectory().getPhysicalName(fileName);
 
 		try {
-			this.renameFrom = currentDirectory.lookupFile(request.getArgument());
+			this.renameFrom =
+				currentDirectory.lookupFile(request.getArgument());
 		} catch (FileNotFoundException e) {
 			out.print(FtpResponse.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN);
 			resetState();
@@ -3508,7 +3517,9 @@ public class FtpConnection extends BaseFtpConnection {
 	 */
 	public void doUSER(FtpRequest request, PrintWriter out) {
 		resetState();
-
+		this.authenticated = false;
+		this.user = null;
+		
 		// argument check
 		if (!request.hasArgument()) {
 			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
@@ -3522,8 +3533,9 @@ public class FtpConnection extends BaseFtpConnection {
 			System.out.println(
 				"Failed to get ident response: " + id.errorMessage);
 		}
+		User newUser;
 		try {
-			this.user = userManager.getUserByName(request.getArgument());
+			newUser = userManager.getUserByName(request.getArgument());
 		} catch (NoSuchUserException ex) {
 			out.print(new FtpResponse(530, ex.getMessage()));
 			return;
@@ -3532,65 +3544,32 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(new FtpResponse(530, "IOException: " + ex.getMessage()));
 			return;
 		}
-		if (getUser().isDeleted()) {
+		
+		if (newUser.isDeleted()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
 
-		if(!slaveManager.hasAvailableSlaves() && !getUser().isAdmin()) {
-			out.print(new FtpResponse(530, "No transfer slave(s) available"));
-			return;
-		}
 		String masks[] =
 			{
 				ident + "@" + getClientAddress().getHostAddress(),
 				ident + "@" + getClientAddress().getHostName()};
-		if (!getUser().checkIP(masks)) {
+
+		if (!newUser.checkIP(masks)) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+		}
+
+		if (!slaveManager.hasAvailableSlaves() && !newUser.isAdmin()) {
+			out.print(new FtpResponse(530, "No transfer slave(s) available"));
 			return;
 		}
-		// check user login status
-		//		mbUser = true;
-		/*		if (user.hasLoggedIn()) {
-					if (user.getUsername().equals(request.getArgument())) {
-						out.write(ftpStatus.getResponse(230, request, user, null));
-						return;
-					}
-					    else {
-					        mConfig.getConnectionService().closeConnection(user.getSessionId());
-					    }
-				}
-				*/
-
-		// set user name and send appropriate message
-		if (getUser() == null) {
-			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
-			//out.write(ftpStatus.getResponse(530, request, user, null));
-		} else {
-			//			user.setUsername(request.getArgument());
-			//out.print(FtpResponse.RESPONSE_331_USERNAME_OK_NEED_PASS);
-			FtpResponse response =
-				new FtpResponse(
-					331,
-					"Password required for " + getUser().getUsername());
-			out.print(response);
-			//out.write(ftpStatus.getResponse(331, request, user, null));
-		}
-		/*
-		if (user.isAnonymous()) {
-			//if(mConfig.isAnonymousLoginAllowed()) { 
-			FtpRequest anoRequest = new FtpRequest(user.getUsername());
-			out.write(ftpStatus.getResponse(331, anoRequest, user, null));
-			/*
-			    }
-			    else {
-			        out.write(ftpStatus.getResponse(530, request, user, null));
-			        ConnectionService conService = mConfig.getConnectionService();
-			        if (conService != null) {
-			           conService.closeConnection(user.getSessionId());
-			        }
-			    }
-			*/
+		
+		this.user = newUser;
+		FtpResponse response =
+			new FtpResponse(
+				331,
+				"Password required for " + getUser().getUsername());
+		out.print(response);
 	}
 
 	/**
