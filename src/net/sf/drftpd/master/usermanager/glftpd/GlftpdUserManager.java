@@ -23,12 +23,9 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import org.apache.log4j.Logger;
 
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
+ * @author mog
+ * @author zubov
+ * @version $Id: GlftpdUserManager.java,v 1.8 2003/12/12 22:33:28 mog Exp $
  */
 public class GlftpdUserManager implements UserManager {
 	private static Logger logger =
@@ -43,28 +40,30 @@ public class GlftpdUserManager implements UserManager {
 	LinkedRemoteFile root;
 	/**
 	 * Constructor for GlftpdUserManager.
+	 * 
+	 * Used properties:
+	 * <pre>
+	 * glftpd.root
+	 * glftpd.users
+	 * glftpd.passwd
+	 * </pre>
 	 */
 	public GlftpdUserManager(Properties cfg) {
 		//		super();
 		//this.root = root;
+		String glftpdRoot = cfg.getProperty("glftpd.root", ".");
 		userdirpath =
 			cfg.getProperty(
 				"glftpd.users",
-				cfg.getProperty("glftpd.root") + "/ftp-data/users/");
+				glftpdRoot + "/ftp-data/users/");
 		userpathFile = new File(userdirpath);
 		passwdfile =
 			new File(
 				cfg.getProperty(
 					"glftpd.passwd",
-					cfg.getProperty("glftpd.root") + "/etc/passwd"));
+					glftpdRoot + "/etc/passwd"));
 	}
 
-	/**
-	 * @deprecated
-	 */
-	public GlftpdUserManager() {
-		this(System.getProperties());
-	}
 	/**
 	 * @see net.sf.drftpd.master.UserManager#save(User)
 	 */
