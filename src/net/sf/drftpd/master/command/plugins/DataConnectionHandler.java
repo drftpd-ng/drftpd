@@ -93,7 +93,6 @@ public class DataConnectionHandler implements CommandHandlerFactory,
      * Holds the address that getDataSocket() should connect to in PORT mode.
      */
     private InetSocketAddress _portAddress;
-    private PortRange _portRange = new PortRange();
     protected boolean _preTransfer = false;
     private RemoteSlave _preTransferRSlave;
     private long _resumePosition = 0;
@@ -240,7 +239,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
 
         if (_preTransferRSlave == null) {
             try {
-                _serverSocket = _portRange.getPort(getServerSocketFactory(
+                _serverSocket = conn.getGlobalContext().getPortRange().getPort(getServerSocketFactory(
                             _encryptedDataChannel));
                 address = new InetSocketAddress(conn.getControlSocket()
                                                     .getLocalAddress(),

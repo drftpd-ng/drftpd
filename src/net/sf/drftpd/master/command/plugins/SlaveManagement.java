@@ -283,10 +283,9 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
             if (rslave.removeMask(mask)) {
                 return new FtpReply(200, conn.jprintf(SlaveManagement.class,
                         "slave.delmask.success", env));
-            } else {
-            	return new FtpReply(501, conn.jprintf(SlaveManagement.class,
-                        "slave.delmask.failed", env));
             }
+            return new FtpReply(501, conn.jprintf(SlaveManagement.class,
+                        "slave.delmask.failed", env));
         }
 
         return new FtpReply(501,

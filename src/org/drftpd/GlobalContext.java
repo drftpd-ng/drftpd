@@ -27,6 +27,7 @@ import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.MLSTSerialize;
+import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.Logger;
 
@@ -312,5 +313,8 @@ public class GlobalContext {
 
     public SlaveSelectionManagerInterface getSlaveSelectionManager() {
         return _slaveSelectionManager;
+    }
+    public PortRange getPortRange() {
+        return getConfig().getPortRange();
     }
 }

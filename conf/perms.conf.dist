@@ -54,3 +54,6 @@ take =take =siteop
 #shutdown =siteop
 shutdown *
 
+#excepts only one range of ports, if you want more...
+# contribute and request :)
+#pasv_ports 50000-60000

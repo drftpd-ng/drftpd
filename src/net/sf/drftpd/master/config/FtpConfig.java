@@ -19,6 +19,7 @@ package net.sf.drftpd.master.config;
 
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.Logger;
 
@@ -82,6 +83,7 @@ public class FtpConfig {
     private boolean _useDirNames;
     private boolean _useFileNames;
     private String newConf = "conf/perms.conf";
+    private PortRange _portRange;
 	private Permission _shutdown;
 
     protected FtpConfig() {
@@ -363,6 +365,10 @@ public class FtpConfig {
     public void loadConfig(Properties cfg, ConnectionManager connManager)
         throws IOException {
         loadConfig2(new FileReader(newConf));
+        if (_portRange == null) {
+            //default portrange if none specified
+            _portRange = new PortRange();
+        }
         _connManager = connManager;
         loadConfig1(cfg);
     }
@@ -424,6 +430,9 @@ public class FtpConfig {
                     else if (cmd.equals("max_users")) {
                         _maxUsersTotal = Integer.parseInt(st.nextToken());
                         _maxUsersExempt = Integer.parseInt(st.nextToken());
+                    } else if (cmd.equals("pasv_ports")) {
+                        String[] temp = st.nextToken().split("-");
+                        _portRange = new PortRange(Integer.parseInt(temp[0]),Integer.parseInt(temp[1]));
                     } else if (cmd.equals("dir_names")) {
                         _useDirNames = true;
                         _capFirstDir = st.nextToken().equals("true");
@@ -589,5 +598,9 @@ public class FtpConfig {
      */
     public boolean isLoginAllowed(User user) {
         return (_shutdown == null) ? true : _shutdown.check(user);
+    }
+
+    public PortRange getPortRange() {
+        return _portRange;
     }
 }
