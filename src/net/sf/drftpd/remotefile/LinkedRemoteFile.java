@@ -55,7 +55,7 @@ import java.util.StringTokenizer;
  * Represents the file attributes of a remote file.
  *
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.163 2004/08/03 23:39:42 teflon114 Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.164 2004/08/09 20:54:51 teflon114 Exp $
  */
 public class LinkedRemoteFile implements Serializable, Comparable,
     LinkedRemoteFileInterface {
@@ -151,9 +151,10 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
         if (file.isFile()) {
             _length = file.length();
+			_xfertime = file.getXfertime();
             _slaves = Collections.synchronizedList(new ArrayList(
                         file.getSlaves()));
-
+			
             try {
                 getParentFile().addSize(length());
             } catch (FileNotFoundException ok) {
@@ -824,6 +825,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
     }
 
     public long getXferspeed() {
+		logger.warn("getXferspeed = " + length() + " \\ " + getXfertime() + " = " + length() / getXfertime());
         if (getXfertime() == 0) {
             return 0;
         }
