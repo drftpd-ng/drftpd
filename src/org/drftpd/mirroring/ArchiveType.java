@@ -145,12 +145,14 @@ public abstract class ArchiveType {
      * Adds relevant Jobs to the JobManager and returns an ArrayList of those Job's
      */
     public ArrayList<Job> send() {
-        return recursiveSend(getDirectory());
+        ArrayList<Job> jobs = recursiveSend(getDirectory());
+        JobManager jm = _parent.getConnectionManager().getJobManager();
+        jm.addJobsToQueue(jobs);
+        return jobs;
     }
 
     private final ArrayList<Job> recursiveSend(LinkedRemoteFileInterface lrf) {
         ArrayList<Job> jobQueue = new ArrayList<Job>();
-        JobManager jm = _parent.getConnectionManager().getJobManager();
 
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
@@ -162,7 +164,7 @@ public abstract class ArchiveType {
                 logger.info("Adding " + src.getPath() + " to the job queue");
 
                 Job job = new Job(src, destSlaves, 3, destSlaves.size());
-                jm.addJobToQueue(job);
+                //jm.addJobToQueue(job);
                 jobQueue.add(job);
             } else {
                 jobQueue.addAll(recursiveSend(src));
