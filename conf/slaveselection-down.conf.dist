@@ -1,5 +1,4 @@
 1.filter=bandwidth
 1.multiplier=1
 
-1.filter=reversebandwidth
-1.multiplier=0.5
+2.filter=cycle

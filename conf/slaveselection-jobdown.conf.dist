@@ -6,3 +6,5 @@
 
 3.filter=bandwidth
 3.multiplier=1
+
+4.filter=cycle
