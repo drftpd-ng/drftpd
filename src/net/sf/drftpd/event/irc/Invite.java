@@ -36,7 +36,7 @@ import org.drftpd.usermanager.UserFileException;
 
 /**
  * @author mog
- * @version $Id: Invite.java,v 1.14 2004/11/09 15:20:12 mog Exp $
+ * @version $Id$
  */
 public class Invite extends GenericCommandAutoService
     implements IRCPluginInterface {
@@ -77,9 +77,10 @@ public class Invite extends GenericCommandAutoService
                 return;
             }
 
-            boolean success =user.checkPassword(args[2]);
-            getConnectionManager().dispatchFtpEvent(new InviteEvent(
-                    success ? "INVITE" : "BINVITE", msgc.getSource().getNick(), user));
+            boolean success = user.checkPassword(args[2]);
+            getConnectionManager().dispatchFtpEvent(new InviteEvent(success
+                    ? "INVITE" : "BINVITE", msgc.getSource().getNick(), user));
+
             if (success) {
                 logger.info("Invited \"" + msgc.getSourceString() +
                     "\" as user " + user.getUsername());
