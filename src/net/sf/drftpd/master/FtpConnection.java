@@ -1997,7 +1997,15 @@ public class FtpConnection extends BaseFtpConnection {
 						out.print(new FtpResponse(200, "IO error reading userfiles: "+e1.getMessage()));
 						return;
 					}
+					if(usedleechslots >= _user.getGroupLeechSlots()+1) {
+						out.print(new FtpResponse(200, "You have already used all your leech slots"));
+						return;
+					}
+				} else if(ratio != 0F) {
+					out.print(new FtpResponse(200, "ratio can only be 0 or 3"));
+					return;
 				}
+				myUser.setRatio(ratio);
 			}
 		}
 
