@@ -105,10 +105,10 @@ public class RemoteSlave implements Serializable, Comparable {
 	 */
 	public boolean handleRemoteException(RemoteException ex) {
 		if (!isFatalRemoteException(ex)) {
-			logger.log(Level.WARN, "Caught non-fatal exception, not removing", ex);
+			logger.log(Level.WARN, "Caught non-fatal exception from "+getName()+", not removing", ex);
 			return false;
 		}
-		logger.warn("Fatal exception, removing", ex);
+		logger.warn("Fatal exception from "+getName()+", removing", ex);
 		setOffline(ex.getMessage()+": "+ex.getCause().getMessage());
 		return true;
 	}

@@ -292,7 +292,7 @@ public class ConnectionManager {
 		return this.shutdownMessage;
 	}
 
-	public static final String VERSION = "drftpd v0.7.0";
+	public static final String VERSION = "drftpd 0.7.0-CVS";
 	public static void main(String args[]) {
 		BasicConfigurator.configure();
 		System.out.println(VERSION + " master server starting.");

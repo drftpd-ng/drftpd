@@ -604,7 +604,9 @@ public class FtpConnection extends BaseFtpConnection {
 		try {
 			os = new OutputStreamWriter(dataSocket.getOutputStream());
 			try {
-				VirtualDirectory.printList(listFiles, os);
+				if(request.getCommand().equals("LIST")) {
+					VirtualDirectory.printList(listFiles, os);
+				}
 			} catch (IOException ex) {
 				out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 				return;
@@ -2157,9 +2159,13 @@ public class FtpConnection extends BaseFtpConnection {
 	}
 
 	public void doSITE_DUPE(FtpRequest request, PrintWriter out) {
-		FtpResponse response = (FtpResponse)FtpResponse.RESPONSE_200_COMMAND_OK.clone();
 		String args[] = request.getArgument().split(" ");
+		if(args.length == 0) {
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			return;
+		}
 		ArrayList searchstrings = new ArrayList(args.length);
+		FtpResponse response = (FtpResponse)FtpResponse.RESPONSE_200_COMMAND_OK.clone();
 		for (int i = 0; i < args.length; i++) {
 			searchstrings.add(args[i]);
 		}
@@ -3443,6 +3449,7 @@ public class FtpConnection extends BaseFtpConnection {
 		if (myXdupe > 0 || myXdupe < 4) {
 			out.print(
 				FtpResponse.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM);
+			return;
 		}
 		this.xdupe = myXdupe;
 		out.println("200 Activated extended dupe mode " + myXdupe + ".");
@@ -3903,10 +3910,11 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 		Ident id = new Ident(controlSocket);
-		String ident = "";
+		String ident;
 		if (id.successful) {
 			ident = id.userName;
 		} else {
+			ident = "";
 			System.out.println(
 				"Failed to get ident response: " + id.errorMessage);
 		}
