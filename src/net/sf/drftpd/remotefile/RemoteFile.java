@@ -35,7 +35,7 @@ public abstract class RemoteFile implements RemoteFileInterface {
 	/**
 	 * Gets the checkSum
 	 */
-	public long getCheckSum() {
+	public long getCheckSumCached() {
 		return checkSum;	
 	}
 	

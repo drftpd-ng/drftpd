@@ -26,13 +26,6 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 
 	private static Logger logger =
 		Logger.getLogger(JDOMRemoteFile.class.getName());
-	static {
-		logger.setLevel(Level.ALL);
-	}
-	protected List files = null;
-	protected Collection slaves;
-	Hashtable allSlaves;
-	private long xfertime;
 
 	private static Hashtable rslavesToHashtable(Collection rslaves) {
 		Hashtable map = new Hashtable(rslaves.size());
@@ -42,9 +35,19 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 		}
 		return map;
 	}
+	Hashtable allSlaves;
 	private long checkSum;
-	private String owner;
+	protected List files = null;
 	private String group;
+	protected long lastModified;
+
+	protected long length;
+
+	//	protected String path;
+	protected String name;
+	private String owner;
+	protected Collection slaves;
+	private long xfertime;
 	
 	/**
 	 * Constructor for JDOMRemoteFileTree.
@@ -103,27 +106,30 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 			throw new FatalException(this+" has missing fields, try switching to files.xml.bak", ex);
 		}
 	}
-
-	/**
-	 * @see net.sf.drftpd.remotefile.RemoteFileTree#listFiles()
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getCheckSum()
 	 */
-	public RemoteFileInterface[] listFiles() {
-		//JDOMRemoteFile listFiles[] = new JDOMRemoteFile[files.size()];
-		ArrayList listFiles = new ArrayList();
-		for (Iterator i = files.iterator(); i.hasNext();) {
-			Element fileElement = (Element)i.next();
-			
-			if(fileElement.getName().equals("file") && fileElement.getChild("slaves").getChildren().size() == 0) {
-				System.out.println(new XMLOutputter().outputString(fileElement)+" has no slaves! skipping");
-				continue;
-			} 
-			listFiles.add(new JDOMRemoteFile(fileElement, this.allSlaves));
-		}
-		return (RemoteFileInterface[])listFiles.toArray(new JDOMRemoteFile[0]);
+	public long getCheckSumCached() {
+		return this.checkSum;
 	}
 
-	//	protected String path;
-	protected String name;
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFile#getFiles()
+	 */
+	public Collection getFiles() {
+		ArrayList listFiles = new ArrayList(files.size());
+		for (Iterator i = files.iterator(); i.hasNext();) {
+			listFiles.add(
+				new JDOMRemoteFile((Element) i.next(), this.allSlaves));
+		}
+		return listFiles;
+	}
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getGroupname()
+	 */
+	public String getGroupname() {
+		return this.group;
+	}
 	/**
 	 * @see net.sf.drftpd.remotefile.RemoteFile#getName()
 	 */
@@ -146,58 +152,17 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 		throw new NoSuchMethodError("JDOMRemoteFile.getPath() not implemented");
 	}
 
-	public String toString() {
-		StringBuffer ret = new StringBuffer();
-		ret.append("[" + getClass().getName() + "[");
-		//ret.append(slaves);
-		if (isDirectory())
-			ret.append("[directory: " + listFiles().length + "]");
-		if (isFile())
-			ret.append("[file: true]");
-		//ret.append("isFile(): " + isFile() + " ");
-		ret.append(getName());
-		return ret.toString();
-	}
-
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#getFiles()
-	 */
-	public Collection getFiles() {
-		ArrayList listFiles = new ArrayList(files.size());
-		for (Iterator i = files.iterator(); i.hasNext();) {
-			listFiles.add(
-				new JDOMRemoteFile((Element) i.next(), this.allSlaves));
-		}
-		return listFiles;
-	}
-
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.remotefile.RemoteFile#getSlaves()
 	 */
 	public Collection getSlaves() {
 		return this.slaves;
 	}
-
-	protected long length;
-	protected long lastModified;
-	/**
-	 * @see net.sf.drftpd.remotefile.RemoteFile#length()
-	 */
-	public long length() {
-		return this.length;
-	}
-
-	public boolean isDirectory() {
-		return files != null;
-	}
-	public boolean isFile() {
-		return files == null;
-	}
 	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFile#lastModified()
+	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getUsername()
 	 */
-	public long lastModified() {
-		return this.lastModified;
+	public String getUsername() {
+		return this.owner;
 	}
 //	/* (non-Javadoc)
 //	 * @see net.sf.drftpd.remotefile.RemoteFile#hasFile(java.lang.String)
@@ -215,23 +180,55 @@ public class JDOMRemoteFile implements RemoteFileInterface {
 	public long getXfertime() {
 		return xfertime;
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getCheckSum()
-	 */
-	public long getCheckSum() {
-		return this.checkSum;
+
+	public boolean isDirectory() {
+		return files != null;
+	}
+	public boolean isFile() {
+		return files == null;
 	}
 	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getGroupname()
+	 * @see net.sf.drftpd.remotefile.RemoteFile#lastModified()
 	 */
-	public String getGroupname() {
-		return this.group;
+	public long lastModified() {
+		return this.lastModified;
 	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.remotefile.RemoteFileInterface#getUsername()
+	/**
+	 * @see net.sf.drftpd.remotefile.RemoteFile#length()
 	 */
-	public String getUsername() {
-		return this.owner;
+	public long length() {
+		return this.length;
+	}
+
+	/**
+	 * @see net.sf.drftpd.remotefile.RemoteFileTree#listFiles()
+	 */
+	public RemoteFileInterface[] listFiles() {
+		//JDOMRemoteFile listFiles[] = new JDOMRemoteFile[files.size()];
+		ArrayList listFiles = new ArrayList();
+		for (Iterator i = files.iterator(); i.hasNext();) {
+			Element fileElement = (Element)i.next();
+			
+			if(fileElement.getName().equals("file") && fileElement.getChild("slaves").getChildren().size() == 0) {
+				System.out.println(new XMLOutputter().outputString(fileElement)+" has no slaves! skipping");
+				continue;
+			} 
+			listFiles.add(new JDOMRemoteFile(fileElement, this.allSlaves));
+		}
+		return (RemoteFileInterface[])listFiles.toArray(new JDOMRemoteFile[0]);
+	}
+
+	public String toString() {
+		StringBuffer ret = new StringBuffer();
+		ret.append("[" + getClass().getName() + "[");
+		//ret.append(slaves);
+		if (isDirectory())
+			ret.append("[directory: " + listFiles().length + "]");
+		if (isFile())
+			ret.append("[file: true]");
+		//ret.append("isFile(): " + isFile() + " ");
+		ret.append(getName());
+		return ret.toString();
 	}
 
 }

@@ -29,7 +29,7 @@ public class VirtualDirectory {
 	public static void printList(Collection files, Writer out)
 		throws IOException {
 		//out = new BufferedWriter(out);
-		out.write("total 0"+NEWLINE);
+		out.write("total 0" + NEWLINE);
 
 		// print file list
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
@@ -76,6 +76,12 @@ public class VirtualDirectory {
 		return initStr.substring(0, initStr.length() - szStr.length()) + szStr;
 	}
 
+	private static String padToLength(String value, int length) {
+		if(value.length() >= length) return value;
+		String padding = "          ";
+		assert value.length() > length : "padding must be longer than length";
+		return padding.substring(0, length-value.length())+value;
+	}
 	/**
 	 * Get file name.
 	 */
@@ -135,19 +141,38 @@ public class VirtualDirectory {
 	 */
 	public static void printLine(RemoteFileInterface fl, Writer out)
 		throws IOException {
+		if (fl.isDirectory()) {
+			if (fl instanceof LinkedRemoteFile) {
+				LinkedRemoteFile file = (LinkedRemoteFile) fl;
+				int filesleft = file.lookupSFVFile().filesLeft();
+				if (filesleft != 0)
+					out.write(
+					"l--------- 3 "
+						+ padToLength(fl.getUsername(), 8)
+						+ DELIM
+						+ padToLength(fl.getGroupname(), 8)
+						+ " 0 "
+						+ DateUtils.getUnixDate(fl.lastModified())
+						+ DELIM
+						+ fl.getName()
+						+ "-MISSING-"
+						+ filesleft
+						+ "-FILES"+NEWLINE);
+			}
+		}
 		StringBuffer line = new StringBuffer();
 		if (fl instanceof LinkedRemoteFile
 			&& !((LinkedRemoteFile) fl).isAvailable()) {
-			line.append("------");
+			line.append("---------");
 		} else {
 			line.append(getPermission(fl));
 		}
 		line.append(DELIM);
 		line.append((fl.isDirectory() ? "3" : "1"));
 		line.append(DELIM);
-		line.append(fl.getUsername());
+		line.append(padToLength(fl.getUsername(), 8));
 		line.append(DELIM);
-		line.append(fl.getGroupname());
+		line.append(padToLength(fl.getGroupname(), 8));
 		line.append(DELIM);
 		line.append(getLength(fl));
 		line.append(DELIM);

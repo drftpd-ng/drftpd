@@ -34,18 +34,16 @@ import JSX.ObjIn;
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 public class JSXUserManager extends UserManager {
+	private static Logger logger =
+		Logger.getLogger(JSXUserManager.class.getName());
 	String userpath =
 		"ftp-data" + File.separatorChar + "users" + File.separatorChar;
 	File userpathFile = new File(userpath);
 
-	public File getUserFile(String username) {
-		return new File(userpath + username + ".xml");
-	}
-	private static Logger logger =
-		Logger.getLogger(JSXUserManager.class.getName());
-	static {
-		logger.setLevel(Level.ALL);
-	}
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.master.usermanager.UserManager#getUserByName(java.lang.String)
+	 */
+	Hashtable users = new Hashtable();
 
 	public JSXUserManager() throws UserFileException {
 		if (!userpathFile.exists() && !userpathFile.mkdirs()) {
@@ -93,11 +91,62 @@ public class JSXUserManager extends UserManager {
 		users.put(user.getUsername(), user);
 		return user;
 	}
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.master.usermanager.UserManager#exists(java.lang.String)
+	 */
+	public boolean exists(String username) {
+		return getUserFile(username).exists();
+	}
+
+	public Collection getAllGroups() throws IOException {
+		Collection users = this.getAllUsers();
+		ArrayList ret = new ArrayList();
+
+		for (Iterator iter = users.iterator(); iter.hasNext();) {
+			User myUser = (User) iter.next();
+			Collection myGroups = myUser.getGroups();
+			for (Iterator iterator = myGroups.iterator();
+				iterator.hasNext();
+				) {
+				String myGroup = (String) iterator.next();
+				if (!ret.contains(myGroup))
+					ret.add(myGroup);
+			}
+		}
+
+		return ret;
+	}
 
 	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.UserManager#getUserByName(java.lang.String)
+	 * @see net.sf.drftpd.master.usermanager.UserManager#getAllUserNames()
 	 */
-	Hashtable users = new Hashtable();
+	public Collection getAllUsers() throws IOException {
+		ArrayList users = new ArrayList();
+
+		String userpaths[] = userpathFile.list();
+		for (int i = 0; i < userpaths.length; i++) {
+			String userpath = userpaths[i];
+			System.out.println(userpath);
+			if(!userpath.endsWith(".xml")) continue;
+			String username = userpath.substring(0, userpath.length()-".xml".length());
+			try {
+				users.add((JSXUser) getUserByName(username));
+				// throws IOException
+			} catch (NoSuchUserException e) {
+				throw (IOException) new IOException().initCause(e);
+			}
+		}
+		return users;
+	}
+
+	public Collection getAllUsersByGroup(String group) throws IOException {
+		Collection users = getAllUsers();
+		for (Iterator iter = users.iterator(); iter.hasNext();) {
+			JSXUser user = (JSXUser) iter.next();
+			if(!user.getGroupName().equals(group)) iter.remove();
+		}
+		return users;
+	}
 	public User getUserByName(String username)
 		throws NoSuchUserException, IOException {
 
@@ -125,60 +174,8 @@ public class JSXUserManager extends UserManager {
 		}
 	}
 
-	public Collection getAllUsersByGroup(String group) throws IOException {
-		Collection users = getAllUsers();
-		for (Iterator iter = users.iterator(); iter.hasNext();) {
-			JSXUser user = (JSXUser) iter.next();
-			if(!user.getGroupName().equals(group)) iter.remove();
-		}
-		return users;
-	}
-
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.UserManager#getAllUserNames()
-	 */
-	public Collection getAllUsers() throws IOException {
-		ArrayList users = new ArrayList();
-
-		String userpaths[] = userpathFile.list();
-		for (int i = 0; i < userpaths.length; i++) {
-			String userpath = userpaths[i];
-			System.out.println(userpath);
-			if(!userpath.endsWith(".xml")) continue;
-			String username = userpath.substring(0, userpath.length()-".xml".length());
-			try {
-				users.add((JSXUser) getUserByName(username));
-				// throws IOException
-			} catch (NoSuchUserException e) {
-				throw (IOException) new IOException().initCause(e);
-			}
-		}
-		return users;
-	}
-
-	public Collection getAllGroups() throws IOException {
-		Collection users = this.getAllUsers();
-		ArrayList ret = new ArrayList();
-
-		for (Iterator iter = users.iterator(); iter.hasNext();) {
-			User myUser = (User) iter.next();
-			Collection myGroups = myUser.getGroups();
-			for (Iterator iterator = myGroups.iterator();
-				iterator.hasNext();
-				) {
-				String myGroup = (String) iterator.next();
-				if (!ret.contains(myGroup))
-					ret.add(myGroup);
-			}
-		}
-
-		return ret;
-	}
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.usermanager.UserManager#exists(java.lang.String)
-	 */
-	public boolean exists(String username) {
-		return getUserFile(username).exists();
+	public File getUserFile(String username) {
+		return new File(userpath + username + ".xml");
 	}
 
 	void remove(JSXUser user) {

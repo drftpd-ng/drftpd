@@ -13,7 +13,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -28,7 +27,6 @@ import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
@@ -42,13 +40,13 @@ import org.tanesha.replacer.ReplacerFormat;
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 public class FtpConfig {
-	private Map replacerFormats;
 	private static Logger logger = Logger.getLogger(FtpConfig.class);
 	private ArrayList _creditcheck;
 
 	private ArrayList _creditloss;
 	private ArrayList _delete;
 	private ArrayList _deleteown;
+	private ArrayList _dirlog;
 	private ArrayList _download;
 //	private ArrayList _eventplugin;
 	private ArrayList _hideinwho;
@@ -56,14 +54,16 @@ public class FtpConfig {
 	private ArrayList _msgpath;
 	private ArrayList _pre;
 	private ArrayList _privpath;
+	private ArrayList _rename;
+	private ArrayList _renameown;
 	private ArrayList _upload;
-	private ArrayList _dirlog;
 
 	String cfgFileName;
 	private ConnectionManager connManager;
 	private long freespaceMin;
 
 	private String newConf = "perms.conf";
+	private Map replacerFormats;
 
 	/**
 	 * Constructor that allows reusing of cfg object
@@ -78,12 +78,11 @@ public class FtpConfig {
 		loadConfig(cfg, connManager);
 	}
 
-	/**
-	 * @param _user
-	 * @param requestedFile
-	 * @return
-	 */
 	public boolean checkDelete(User fromUser, LinkedRemoteFile path) {
+		return checkPathPermssion(fromUser, path, _delete.iterator());
+	}
+
+	public boolean checkDeleteOwn(User fromUser, LinkedRemoteFile path) {
 		return checkPathPermssion(fromUser, path, _delete.iterator());
 	}
 
@@ -160,6 +159,14 @@ public class FtpConfig {
 		return true;
 	}
 
+	public boolean checkRename(User fromUser, LinkedRemoteFile path) {
+		return checkPathPermssion(fromUser, path, _rename.iterator());
+	}
+
+	public boolean checkRenameOwn(User fromUser, LinkedRemoteFile path) {
+		return checkPathPermssion(fromUser, path, _rename.iterator());
+	}
+
 	/**
 	 * @return true if fromUser is allowed to upload in directory path
 	 */
@@ -198,20 +205,6 @@ public class FtpConfig {
 	}
 	public long getFreespaceMin() {
 		return freespaceMin;
-	}
-
-	private Map loadFormats(InputStream in)
-		throws FormatterException, IOException {
-		Properties props = new Properties();
-		props.load(in);
-		Hashtable replacerFormats = new Hashtable();
-		for (Iterator iter = props.entrySet().iterator(); iter.hasNext();) {
-			Map.Entry entry = (Map.Entry) iter.next();
-			replacerFormats.put(
-				(String) entry.getKey(),
-				ReplacerFormat.createFormat((String) entry.getValue()));
-		}
-		return replacerFormats;
 	}
 
 	public ReplacerFormat getReplacerFormat(String key) {
@@ -258,6 +251,8 @@ public class FtpConfig {
 		ArrayList delete = new ArrayList();
 		ArrayList deleteown = new ArrayList();
 		ArrayList dirlog = new ArrayList();
+		ArrayList rename = new ArrayList();
+		ArrayList renameown = new ArrayList();
 
 		LineNumberReader in = new LineNumberReader(new FileReader(newConf));
 		int lineno = 0;
@@ -321,6 +316,10 @@ public class FtpConfig {
 					makePermission(delete, st);
 				} else if (command.equals("deleteown")) {
 					makePermission(deleteown, st);
+				} else if (command.equals("rename")) {
+					makePermission(rename, st);
+				} else if (command.equals("renameown")) {
+					makePermission(renameown, st);
 //				} else if (command.equals("plugin")) {
 //					String clazz = st.nextToken();
 //					ArrayList argsCollection = new ArrayList();
@@ -355,47 +354,67 @@ public class FtpConfig {
 			}
 		}
 
-		makedirs.trimToSize();
-		_makedir = makedirs;
+		creditcheck.trimToSize();
+		_creditcheck = creditcheck;
 
 		creditloss.trimToSize();
 		_creditloss = creditloss;
 
-		creditcheck.trimToSize();
-		_creditcheck = creditcheck;
+		delete.trimToSize();
+		_delete = delete;
 
-		privpath.trimToSize();
-		_privpath = privpath;
+		deleteown.trimToSize();
+		_deleteown = delete;
 
-		msgpath.trimToSize();
-		_msgpath = msgpath;
-
-		hideinwho.trimToSize();
-		_hideinwho = hideinwho;
-
-//		eventplugin.trimToSize();
-//		_eventplugin = eventplugin;
-
-		pre.trimToSize();
-		_pre = pre;
-
-		upload.trimToSize();
-		_upload = upload;
+		dirlog.trimToSize();
+		_dirlog = dirlog;
 
 		download.trimToSize();
 		_download = download;
 
-		delete.trimToSize();
-		_delete = delete;
+		hideinwho.trimToSize();
+		_hideinwho = hideinwho;
 
-		dirlog.trimToSize();
-		_dirlog = dirlog;
+		makedirs.trimToSize();
+		_makedir = makedirs;
+
+		msgpath.trimToSize();
+		_msgpath = msgpath;
+
+		pre.trimToSize();
+		_pre = pre;
+
+		privpath.trimToSize();
+		_privpath = privpath;
+
+//		eventplugin.trimToSize();
+//		_eventplugin = eventplugin;
+
+		rename.trimToSize();
+		_rename = rename;
+
+		renameown.trimToSize();
+		_renameown = rename;
+
+		upload.trimToSize();
+		_upload = upload;
+
 	}
 
-	/**
-	 * @param delete
-	 * @param st
-	 */
+	private Map loadFormats(InputStream in)
+		throws FormatterException, IOException {
+		Properties props = new Properties();
+		props.load(in);
+		Hashtable replacerFormats = new Hashtable();
+		for (Iterator iter = props.entrySet().iterator(); iter.hasNext();) {
+			Map.Entry entry = (Map.Entry) iter.next();
+			replacerFormats.put(
+				(String) entry.getKey(),
+				ReplacerFormat.createFormat((String) entry.getValue()));
+		}
+		return replacerFormats;
+	}
+
 	private void makePermission(ArrayList arr, StringTokenizer st)
 		throws MalformedPatternException {
 		arr.add(
@@ -404,7 +423,7 @@ public class FtpConfig {
 				makeUsers(st)));
 	}
 
-	private ArrayList makeUsers(StringTokenizer st) {
+	public static ArrayList makeUsers(StringTokenizer st) {
 		ArrayList users = new ArrayList();
 		while (st.hasMoreTokens()) {
 			users.add(st.nextToken());

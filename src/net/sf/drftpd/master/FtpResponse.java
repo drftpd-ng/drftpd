@@ -21,9 +21,6 @@ import org.apache.log4j.Logger;
 public class FtpResponse implements Cloneable {
 	private static Logger logger =
 		Logger.getLogger(FtpResponse.class.getName());
-	static {
-		logger.setLevel(Level.ALL);
-	}
 
 	/** 150 File status okay; about to open data connection. */
 	public static final String RESPONSE_150_OK =
@@ -110,12 +107,12 @@ public class FtpResponse implements Cloneable {
 	public static final FtpResponse RESPONSE_530_ACCESS_DENIED =
 		new FtpResponse(530, "Access denied");
 
-	public static final FtpResponse RESPONSE_530_SLAVE_UNAVAILABLE = 
-	new FtpResponse(530, "No transfer-slave(s) available");
-
 	/** 530 Not logged in. */
 	public static final FtpResponse RESPONSE_530_NOT_LOGGED_IN =
 		new FtpResponse(530, "Not logged in.");
+
+	public static final FtpResponse RESPONSE_530_SLAVE_UNAVAILABLE = 
+	new FtpResponse(530, "No transfer-slave(s) available");
 
 	/** 550 Requested action not taken. File unavailable.
 	 * File unavailable (e.g., file not found, no access).
@@ -128,9 +125,9 @@ public class FtpResponse implements Cloneable {
 	 */
 	public static final FtpResponse RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN =
 		new FtpResponse(553, "Requested action not taken.");
+	protected int code;
 
 	protected Vector lines = new Vector();
-	protected int code;
 	protected String message;
 
 	public FtpResponse() {
@@ -143,17 +140,33 @@ public class FtpResponse implements Cloneable {
 		setMessage(response);
 	}
 
-	public FtpResponse addComment(Object response) {
-		lines.add(String.valueOf(response));
-		return this;
-	}
-
 	public FtpResponse addComment(BufferedReader in) throws IOException {
 		String line;
 		while ((line = in.readLine()) != null) { //throws IOException
 			this.addComment(line);
 		}
 		return this;
+	}
+
+	public FtpResponse addComment(Object response) {
+		lines.add(String.valueOf(response));
+		return this;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#clone()
+	 */
+	protected Object clone() {
+		try {
+			FtpResponse r = (FtpResponse) super.clone();
+			r.lines = (Vector) this.lines.clone();
+			return r;
+		} catch (CloneNotSupportedException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+	public void setCode(int code) {
+		this.code = code;
 	}
 	public void setMessage(String response) {
 		assert response != null;
@@ -162,9 +175,6 @@ public class FtpResponse implements Cloneable {
 			logger.log(Level.DEBUG, "Truncated response message with multiple lines: "+response);
 		}
 		this.message = response;
-	}
-	public void setCode(int code) {
-		this.code = code;
 	}
 
 	public String toString() {
@@ -182,19 +192,6 @@ public class FtpResponse implements Cloneable {
 		if (message != null)
 			sb.append(code + " " + message + "\r\n");
 		return sb.toString();
-	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#clone()
-	 */
-	protected Object clone() {
-		try {
-			FtpResponse r = (FtpResponse) super.clone();
-			r.lines = (Vector) this.lines.clone();
-			return r;
-		} catch (CloneNotSupportedException ex) {
-			throw new RuntimeException(ex);
-		}
 	}
 
 }

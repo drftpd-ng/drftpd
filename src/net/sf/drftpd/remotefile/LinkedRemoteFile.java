@@ -108,7 +108,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 
 		this.owner = file.getUsername();
 		this.group = file.getGroupname();
-		this.checkSum = file.getCheckSum();
+		this.checkSum = file.getCheckSumCached();
 		if (file.isFile()) {
 			this.slaves =
 				Collections.synchronizedCollection(
@@ -342,16 +342,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	 * @see net.sf.drftpd.remotefile.RemoteFile#getCheckSum()
 	 * @throws net.sf.drftpd.master.NoAvailableSlaveException
 	 */
-	public long getCheckSum() {
-		return getCheckSum(true);
-	}
-
-	/**
-	 * @throws net.sf.drftpd.master.NoAvailableSlaveException
-	 */
-	public long getCheckSum(boolean scan) {
-		if (scan == false)
-			return checkSum;
+	public long getCheckSum() throws IOException {
 		if (checkSum == 0 && length != 0) {
 			try {
 				this.checkSum = getCheckSumFromSlave();
@@ -360,23 +351,22 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		}
 		return this.checkSum;
 	}
+	public long getCheckSumCached() {
+		return checkSum;
+	}
 	/**
 	 * Returns the checksum 0L if the checksum cannot be read.
 	 * @return
 	 * @throws NoAvailableSlaveException
 	 */
-	public long getCheckSumFromSlave() throws NoAvailableSlaveException {
+	public long getCheckSumFromSlave() throws NoAvailableSlaveException, IOException {
 		RemoteSlave slave;
 		while (true) {
 			slave = getASlaveForDownload();
 			try {
-				this.checkSum = slave.getSlave().checkSum(getPath());
+				this.checkSum = slave.getSlave().checkSum(getPath()); // throws IOException
 			} catch (RemoteException ex) {
 				slave.handleRemoteException(ex);
-				continue;
-			} catch (IOException ex) {
-				// severe exception.. but we can still try to get the checksum from another slave
-				logger.log(Level.FATAL, "IOException", ex);
 				continue;
 			}
 			return checkSum;
@@ -844,21 +834,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 						} catch (Exception e) {
 							throw new FatalException(e);
 						}
-						//						throw new RuntimeException(
-						//							"file sizes differ: "
-						//								+ file
-						//								+ " size["
-						//								+ file.length()
-						//								+ "]"
-						//								+ " and "
-						//								+ mergefile
-						//								+ " size["
-						//								+ mergefile.length()
-						//								+ "], contains other slaves than "
-						//								+ rslave
-						//								+ " rslaves"
-						//								+ filerslaves
-						//								+ "don't know what to do!");
 					}
 				}
 
@@ -880,6 +855,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		for (Iterator i = getFiles().iterator(); i.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) i.next();
 			if (!mergedir.hasFile(file.getName())) {
+				logger.info(file.getPath()+" deleted from "+rslave.getName());
 				file.unmerge(rslave);
 			}
 		}
@@ -889,11 +865,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		if (slaves != null)
 			slaves.remove(slave);
 	}
-
-	// cannot rename to existing file
-	//	public void renameTo(RemoteFile to) throws IOException {
-	//		renameTo(to.getPath());
-	//	}
 
 	/**
 	 * Renames this file

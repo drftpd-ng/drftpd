@@ -26,7 +26,7 @@ public class XMLSerialize {
 				new Element("size").setText(Long.toString(file.length())));
 
 			String checksum = "";
-			checksum = Long.toHexString(file.getCheckSum(false));
+			checksum = Long.toHexString(file.getCheckSumCached());
 
 			element.addContent(new Element("checksum").setText(checksum));
 			

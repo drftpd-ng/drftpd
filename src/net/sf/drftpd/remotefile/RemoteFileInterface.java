@@ -18,7 +18,7 @@ public interface RemoteFileInterface {
 	/**
 	 * Gets the checkSum
 	 */
-	public long getCheckSum();
+	public long getCheckSumCached();
 	
 	/**
 	 * Get the group owner of the file as a String.

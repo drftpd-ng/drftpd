@@ -10,6 +10,7 @@ import java.rmi.ConnectIOException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.server.RMISocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.server.Unreferenced;
 import java.util.ArrayList;
@@ -120,6 +121,13 @@ public class SlaveImpl
 				System.exit(0);
 				return;
 			}
+			if(cfg.getProperty("slave.portfrom") != null) {
+			RMISocketFactory
+				.setSocketFactory(
+					new PortRangeServerSocketFactory(
+						Integer.parseInt(cfg.getProperty("slave.portfrom")),
+						Integer.parseInt(cfg.getProperty("slave.portto"))));
+			}
 
 			new SlaveImpl(cfg);
 
@@ -134,16 +142,12 @@ public class SlaveImpl
 	private RootBasket _roots;
 
 	private Vector _transfers = new Vector();
-	private int portfrom;
-	private int portto;
 
+	//private PortRangeServerSocketFactory _factory;
 	public SlaveImpl(Properties cfg) throws RemoteException {
-		super(Integer.parseInt(cfg.getProperty("slave.rmi.port", "0")));
+		super(0);
 
-		portfrom = Integer.parseInt(cfg.getProperty("slave.portfrom", "0"));
-		portto = Integer.parseInt(cfg.getProperty("slave.portto", "0"));
-		if(portfrom > portto) throw new IllegalArgumentException("portfrom can't be higher than portto");
-		
+
 		String slavemanagerurl;
 		slavemanagerurl =
 			"//"

@@ -9,6 +9,8 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.rmi.RemoteException;
+import java.rmi.server.RMIServerSocketFactory;
+import java.rmi.server.RMISocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;
 import java.util.zip.CRC32;
@@ -44,26 +46,10 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private long _transfered = 0;
 
 	/**
-	 * Receive/Upload, read from 'conn' and write to 'out'.
-	 * @deprecated
-	 */
-	public TransferImpl(
-		Collection transfers,
-		Connection conn,
-		OutputStream out)
-		throws RemoteException {
-		super();
-		_direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
-		_checksum = new CRC32();
-		_conn = conn;
-		_out = new CheckedOutputStream(out, _checksum);
-		_transfers = transfers;
-	}
-	/**
 	 * Start undefined passive transfer.
 	 */
 	public TransferImpl(Collection transfers, Connection conn, RootBasket roots) throws RemoteException {
-		super();
+		super(0);
 		_direction = Transfer.TRANSFER_UNKNOWN;
 		_conn = conn;
 		_transfers = transfers;
@@ -74,13 +60,13 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	 * Send/Download, reading from 'in' and write to 'conn' using transfer type 'mode'.
 	 * @deprecated
 	 */
-	public TransferImpl(
+	public TransferImpl(RMIServerSocketFactory factory,
 		Collection transfers,
 		InputStream in,
 		Connection conn,
 		char mode)
 		throws RemoteException {
-		super();
+		super(0, RMISocketFactory.getDefaultSocketFactory(), factory);
 		_direction = TRANSFER_SENDING_DOWNLOAD;
 		_in = in;
 		_conn = conn;
