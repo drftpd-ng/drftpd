@@ -45,7 +45,7 @@ public class Bytes {
 //		} else if (bytes >= GIGA * 1000) {
 //			return (float) bytes / GIGA + "GB";
 		} else if (bytes >= GIGA) {
-			return format.format((float) bytes / GIGA) + "GB "+bytes;
+			return format.format((float) bytes / GIGA) + "GB";
 
 //		} else if (bytes >= MEGA * 1000) {
 //			return (float) bytes / MEGA + "MB";
