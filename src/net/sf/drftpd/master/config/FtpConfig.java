@@ -42,10 +42,9 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.45 2004/04/07 13:05:51 zubov Exp $
+ * @version $Id: FtpConfig.java,v 1.46 2004/04/07 13:48:00 zubov Exp $
  */
 public class FtpConfig {
-	private long _slaveStatusUpdateTime;
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
 
 	private static Collection getCollection(Hashtable tbl, String key) {
@@ -94,6 +93,7 @@ public class FtpConfig {
 	private Hashtable _patternPaths;
 	private StringTokenizer _replaceDir;
 	private StringTokenizer _replaceFile;
+	private long _slaveStatusUpdateTime;
 	private boolean _useDirNames;
 	private boolean _useFileNames;
 
@@ -115,7 +115,9 @@ public class FtpConfig {
 	public boolean checkDelete(User fromUser, LinkedRemoteFileInterface path) {
 		return checkPathPermission("delete", fromUser, path);
 	}
-	public boolean checkDeleteOwn(User fromUser, LinkedRemoteFileInterface path) {
+	public boolean checkDeleteOwn(
+		User fromUser,
+		LinkedRemoteFileInterface path) {
 		return checkPathPermission("deleteown", fromUser, path);
 	}
 
@@ -133,21 +135,27 @@ public class FtpConfig {
 	 * Also checks privpath for permission
 	 * @return true if fromUser is allowed to download the file path
 	 */
-	public boolean checkDownload(User fromUser, LinkedRemoteFileInterface path) {
+	public boolean checkDownload(
+		User fromUser,
+		LinkedRemoteFileInterface path) {
 		return checkPathPermission("download", fromUser, path);
 	}
 
 	/**
 	 * @return true if fromUser should be hidden
 	 */
-	public boolean checkHideInWho(User fromUser, LinkedRemoteFileInterface path) {
+	public boolean checkHideInWho(
+		User fromUser,
+		LinkedRemoteFileInterface path) {
 		return checkPathPermission("hideinwho", fromUser, path);
 	}
 
 	/**
 	 * @return true if fromUser is allowed to mkdir in path
 	 */
-	public boolean checkMakeDir(User fromUser, LinkedRemoteFileInterface path) {
+	public boolean checkMakeDir(
+		User fromUser,
+		LinkedRemoteFileInterface path) {
 		return checkPathPermission("makedir", fromUser, path);
 	}
 
@@ -164,7 +172,8 @@ public class FtpConfig {
 		LinkedRemoteFileInterface path,
 		boolean defaults) {
 		Collection coll = ((Collection) _patternPaths.get(key));
-		if(coll == null) return defaults;
+		if (coll == null)
+			return defaults;
 		Iterator iter = coll.iterator();
 		while (iter.hasNext()) {
 			PathPermission perm = (PathPermission) iter.next();
@@ -178,7 +187,9 @@ public class FtpConfig {
 	/**
 	 * @return true if user fromUser is allowed to see path
 	 */
-	public boolean checkPrivPath(User fromUser, LinkedRemoteFileInterface path) {
+	public boolean checkPrivPath(
+		User fromUser,
+		LinkedRemoteFileInterface path) {
 		return checkPathPermission("privpath", fromUser, path, true);
 	}
 
@@ -186,7 +197,9 @@ public class FtpConfig {
 		return checkPathPermission("rename", fromUser, path);
 	}
 
-	public boolean checkRenameOwn(User fromUser, LinkedRemoteFileInterface path) {
+	public boolean checkRenameOwn(
+		User fromUser,
+		LinkedRemoteFileInterface path) {
 		return checkPathPermission("renameown", fromUser, path);
 	}
 
@@ -211,7 +224,9 @@ public class FtpConfig {
 			}
 		}
 	}
-	public float getCreditCheckRatio(LinkedRemoteFileInterface path, User fromUser) {
+	public float getCreditCheckRatio(
+		LinkedRemoteFileInterface path,
+		User fromUser) {
 		for (Iterator iter = _creditcheck.iterator(); iter.hasNext();) {
 			RatioPathPermission perm = (RatioPathPermission) iter.next();
 			if (perm.checkPath(path)) {
@@ -225,7 +240,9 @@ public class FtpConfig {
 		return fromUser.getRatio();
 	}
 
-	public float getCreditLossRatio(LinkedRemoteFileInterface path, User fromUser) {
+	public float getCreditLossRatio(
+		LinkedRemoteFileInterface path,
+		User fromUser) {
 		for (Iterator iter = _creditloss.iterator(); iter.hasNext();) {
 			RatioPathPermission perm = (RatioPathPermission) iter.next();
 
@@ -284,12 +301,17 @@ public class FtpConfig {
 		return _connManager.getSlaveManager();
 	}
 
+	public long getSlaveStatusUpdateTime() {
+		return _slaveStatusUpdateTime;
+	}
+
 	public void loadConfig(Properties cfg, ConnectionManager connManager)
 		throws IOException {
 		loadConfig2();
 		_connManager = connManager;
 		_useIdent = cfg.getProperty("use.ident", "true").equals("true");
-		_slaveStatusUpdateTime = Long.parseLong(cfg.getProperty("slaveStatusUpdateTime","3000"));
+		_slaveStatusUpdateTime =
+			Long.parseLong(cfg.getProperty("slaveStatusUpdateTime", "3000"));
 	}
 
 	private void loadConfig2() throws IOException {
@@ -483,9 +505,5 @@ public class FtpConfig {
 
 	public boolean useIdent() {
 		return _useIdent;
-	}
-
-	public long getSlaveStatusUpdateTime() {
-		return _slaveStatusUpdateTime;
 	}
 }

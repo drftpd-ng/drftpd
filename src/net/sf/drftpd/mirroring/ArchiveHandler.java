@@ -34,7 +34,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.20 2004/04/07 13:05:52 zubov Exp $
+ * @version $Id: ArchiveHandler.java,v 1.21 2004/04/07 13:48:01 zubov Exp $
  */
 public class ArchiveHandler extends Thread {
 	private static final Logger logger = Logger.getLogger(ArchiveHandler.class);
@@ -46,13 +46,15 @@ public class ArchiveHandler extends Thread {
 	}
 	private RemoteSlave findDestinationSlave(LinkedRemoteFileInterface lrf) {
 		if (_parent.isArchiveToFreeSlave()) {
-			return _parent.getConnectionManager().getSlaveManager()
-					.findLargestFreeSlave();
+			return _parent
+				.getConnectionManager()
+				.getSlaveManager()
+				.findLargestFreeSlave();
 		}
 		ArrayList slaveList = new ArrayList();
 		for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
-			Collection tempSlaveList = ((LinkedRemoteFileInterface) iter.next())
-					.getSlaves();
+			Collection tempSlaveList =
+				((LinkedRemoteFileInterface) iter.next()).getSlaves();
 			slaveList.addAll(tempSlaveList);
 		}
 		Collections.sort(slaveList);
@@ -84,8 +86,9 @@ public class ArchiveHandler extends Thread {
 	/**
 	 * @deprecated
 	 */
-	private LinkedRemoteFile getOldestDirectoryOnSlave(LinkedRemoteFile lrf,
-			RemoteSlave rslave) {
+	private LinkedRemoteFile getOldestDirectoryOnSlave(
+		LinkedRemoteFile lrf,
+		RemoteSlave rslave) {
 		if (lrf.getDirectories().size() == 0) {
 			Collection files = lrf.getFiles();
 			if (files.size() == 0) {
@@ -93,23 +96,23 @@ public class ArchiveHandler extends Thread {
 				return null;
 			}
 			if (_parent.getArchivingList().contains(lrf.getPath())) {
-				logger
-						.info(lrf.getPath()
-								+ " is already being handled by another ArchiveHandler");
+				logger.info(
+					lrf.getPath()
+						+ " is already being handled by another ArchiveHandler");
 				return null;
 			}
 			try {
 				if (lrf.lookupSFVFile().getStatus().getMissing() > 0) {
-					logger
-							.info(lrf.getPath()
-									+ " does not have all files complete, will not use it to make space on "
-									+ rslave.getName());
+					logger.info(
+						lrf.getPath()
+							+ " does not have all files complete, will not use it to make space on "
+							+ rslave.getName());
 					return null;
 				}
 			} catch (Exception e) {
-				logger
-						.info(lrf.getPath() + " exception in lookupSFVFile() ",
-								e);
+				logger.info(
+					lrf.getPath() + " exception in lookupSFVFile() ",
+					e);
 				return null;
 			}
 			for (Iterator iter = files.iterator(); iter.hasNext();) {
@@ -119,9 +122,13 @@ public class ArchiveHandler extends Thread {
 			return null;
 		}
 		ArrayList oldDirs = new ArrayList();
-		for (Iterator iter = lrf.getDirectories().iterator(); iter.hasNext();) {
-			LinkedRemoteFile temp = getOldestDirectoryOnSlave(
-					(LinkedRemoteFile) iter.next(), rslave);
+		for (Iterator iter = lrf.getDirectories().iterator();
+			iter.hasNext();
+			) {
+			LinkedRemoteFile temp =
+				getOldestDirectoryOnSlave(
+					(LinkedRemoteFile) iter.next(),
+					rslave);
 			// if temp == null, there are no good files to move in this
 			// directory tree
 			if (temp != null)
@@ -142,31 +149,29 @@ public class ArchiveHandler extends Thread {
 	}
 	private LinkedRemoteFile getOldestNonArchivedDir(LinkedRemoteFile lrf) {
 		if (_parent.checkExclude(lrf)) {
-//			logger.debug(lrf.getPath() + " is excluded");
+			//			logger.debug(lrf.getPath() + " is excluded");
 			return null;
 		}
 		if (_parent.getArchivingList().contains(lrf.getPath())) {
-//			logger.debug(lrf.getPath()
-//					+ " is already being handled by another ArchiveHandler");
+			//			logger.debug(lrf.getPath()
+			//					+ " is already being handled by another ArchiveHandler");
 			return null;
 		}
 		if (lrf.getDirectories().size() == 0) {
-			if (System.currentTimeMillis() - lrf.lastModified() < _parent
-					.getArchiveAfter()) {
+			if (System.currentTimeMillis() - lrf.lastModified()
+				< _parent.getArchiveAfter()) {
 				return null;
 			}
 			Collection files = lrf.getFiles();
 			if (files.size() == 0) {
-//				logger
-//						.debug(lrf.getPath()
-//								+ " does not have any files in it, it is already archived");
+				//				logger
+				//						.debug(lrf.getPath()
+				//								+ " does not have any files in it, it is already archived");
 				return null;
 			}
 			try {
 				if (lrf.lookupSFVFile().getStatus().getMissing() > 0) {
-					logger
-							.info(lrf.getPath()
-									+ "is not complete");
+					logger.info(lrf.getPath() + "is not complete");
 					return null;
 				}
 			} catch (Exception e) {
@@ -176,15 +181,18 @@ public class ArchiveHandler extends Thread {
 			for (Iterator iter = files.iterator(); iter.hasNext();) {
 				LinkedRemoteFile temp = (LinkedRemoteFile) iter.next();
 				try {
-					if (!temp.getAvailableSlaves().containsAll(temp.getSlaves())) {
-//						logger.debug(lrf.getPath() + " contains " + temp.getName() + " which is on an offline slave, will not archive it");
+					if (!temp
+						.getAvailableSlaves()
+						.containsAll(temp.getSlaves())) {
+						//						logger.debug(lrf.getPath() + " contains " + temp.getName() + " which is on an offline slave, will not archive it");
 						return null;
 					}
 				} catch (NoAvailableSlaveException e1) {
 					return null;
 				}
-				for (Iterator iter2 = temp.getSlaves().iterator(); iter2
-						.hasNext();) {
+				for (Iterator iter2 = temp.getSlaves().iterator();
+					iter2.hasNext();
+					) {
 					RemoteSlave tempSlave = (RemoteSlave) iter2.next();
 					if (!slaveList.contains(tempSlave))
 						slaveList.add(tempSlave);
@@ -195,9 +203,11 @@ public class ArchiveHandler extends Thread {
 			return lrf;
 		}
 		ArrayList oldDirs = new ArrayList();
-		for (Iterator iter = lrf.getDirectories().iterator(); iter.hasNext();) {
-			LinkedRemoteFile temp = getOldestNonArchivedDir((LinkedRemoteFile) iter
-					.next());
+		for (Iterator iter = lrf.getDirectories().iterator();
+			iter.hasNext();
+			) {
+			LinkedRemoteFile temp =
+				getOldestNonArchivedDir((LinkedRemoteFile) iter.next());
 			// if temp == null all directories are archived
 			if (temp != null)
 				oldDirs.add(temp);
@@ -242,7 +252,8 @@ public class ArchiveHandler extends Thread {
 		logger.debug("The slave to archive to is " + slave.getName());
 		ArrayList jobQueue = new ArrayList();
 		for (Iterator iter = oldDir.getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
+			LinkedRemoteFileInterface src =
+				(LinkedRemoteFileInterface) iter.next();
 			Job job = null;
 			//if (!src.getSlaves().contains(slave)) {
 			// I don't care if it's already on that slave, the JobManager will
@@ -263,13 +274,17 @@ public class ArchiveHandler extends Thread {
 	 * waits until the LinkedRemoteFiles in the ArrayList jobQueue are sent and
 	 * deletes them from the non-archived slave
 	 */
-	private void waitForSendOfFiles(ArrayList jobQueue, RemoteSlave destSlave) {
+	private void waitForSendOfFiles(
+		ArrayList jobQueue,
+		RemoteSlave destSlave) {
 		try {
 			while (true) {
 				for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
 					Job job = (Job) iter.next();
 					if (job.isDone()) {
-						logger.debug("File " + job.getFile().getPath()
+						logger.debug(
+							"File "
+								+ job.getFile().getPath()
 								+ " is done being sent");
 						job.getFile().deleteOthers(destSlave);
 						iter.remove();

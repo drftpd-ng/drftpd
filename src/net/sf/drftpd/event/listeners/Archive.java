@@ -36,7 +36,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.21 2004/04/07 13:05:51 zubov Exp $
+ * @version $Id: Archive.java,v 1.22 2004/04/07 13:47:50 zubov Exp $
  */
 
 public class Archive implements FtpListener, Runnable {
@@ -48,10 +48,10 @@ public class Archive implements FtpListener, Runnable {
 	private ConnectionManager _cm;
 	private long _cycleTime;
 	private ArrayList _exemptList = new ArrayList();
-	private long _moveFullSlaves;
 	private boolean _isStopped = false;
-	private Thread thread = null;
 	private int _maxArchive;
+	private long _moveFullSlaves;
+	private Thread thread = null;
 
 	/**
 	 * 
@@ -140,22 +140,9 @@ public class Archive implements FtpListener, Runnable {
 	public boolean isArchiveToFreeSlave() {
 		return _archiveToFreeSlave;
 	}
-	
-	public void startArchive() {
-		if (thread != null) {
-			stopArchive();
-			thread.interrupt();
-			while(thread.isAlive()) {
-				Thread.yield();
-			}
-		}
-		_isStopped = false;
-		thread = new Thread(this,"ArchiveStarter");
-		thread.start();
-	}
-	
-	public void stopArchive() {
-		_isStopped = true;
+
+	private boolean isStopped() {
+		return _isStopped;
 	}
 	
 	private void reload() {
@@ -193,14 +180,6 @@ public class Archive implements FtpListener, Runnable {
 		_archivingList.remove(dir);
 	}
 
-	public void unload() {
-		stopArchive();
-	}
-
-	private boolean isStopped() {
-		return _isStopped;
-	}
-
 	public void run() {
 		while(true) {
 			if (isStopped()) {
@@ -214,6 +193,27 @@ public class Archive implements FtpListener, Runnable {
 			} catch (InterruptedException e) {
 			}
 		}
+	}
+	
+	public void startArchive() {
+		if (thread != null) {
+			stopArchive();
+			thread.interrupt();
+			while(thread.isAlive()) {
+				Thread.yield();
+			}
+		}
+		_isStopped = false;
+		thread = new Thread(this,"ArchiveStarter");
+		thread.start();
+	}
+	
+	public void stopArchive() {
+		_isStopped = true;
+	}
+
+	public void unload() {
+		stopArchive();
 	}
 
 }

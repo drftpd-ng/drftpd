@@ -39,47 +39,22 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.8 2004/04/07 13:05:53 zubov Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.9 2004/04/07 13:48:02 zubov Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
-	private FilterChain _ssmiDown;
-	private FilterChain _ssmiUp;
-	private FilterChain _ssmiMaster;
-	private FilterChain _ssmiJobUp;
-	private FilterChain _ssmiJobDown;
 	private static final Logger logger =
 		Logger.getLogger(SlaveSelectionManager.class);
 	private SlaveManagerImpl _sm;
+	private FilterChain _ssmiDown;
+	private FilterChain _ssmiJobDown;
+	private FilterChain _ssmiJobUp;
+	private FilterChain _ssmiMaster;
+	private FilterChain _ssmiUp;
 
 	public SlaveSelectionManager(SlaveManagerImpl sm)
 		throws FileNotFoundException, IOException {
 		_sm = sm;
 		reload();
-	}
-
-	public void reload() throws FileNotFoundException, IOException {
-		_ssmiDown =
-			new FilterChain(
-				this,
-				"conf/slaveselection-down.conf");
-		_ssmiMaster =
-			new FilterChain(
-				this,
-				"conf/slaveselection-master.conf");
-		_ssmiUp =
-			new FilterChain(
-				this,
-				"conf/slaveselection-up.conf");
-				
-			try {
-				if (_sm.getConnectionManager().getJobManager() != null) {
-					_ssmiJobUp =
-						new FilterChain(this,"conf/slaveselection-jobup.conf");
-					_ssmiJobDown =
-						new FilterChain(this,"conf/slaveselection-jobdown.conf");		
-				}
-			} catch (IllegalStateException e) {
-			}
 	}
 
 	/**
@@ -109,6 +84,45 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 			file);
 	}
 
+	public RemoteSlave getASlaveForJobDownload(Job job)
+		throws NoAvailableSlaveException {
+		ArrayList slaves = new ArrayList(job.getFile().getAvailableSlaves());
+		logger.debug("calling getASlaveForJobDownload");
+		for (Iterator iter = job.getDestinationSlaves().iterator();
+			iter.hasNext();
+			) {
+			RemoteSlave slave = (RemoteSlave) iter.next();
+			if (slave != null) {
+				logger.debug("removed slave " + slave.getName());
+				slaves.remove(slave);
+			}
+		}
+		return process(
+			"jobdown",
+			new ScoreChart(slaves),
+			null,
+			null,
+			Transfer.TRANSFER_SENDING_DOWNLOAD,
+			job.getFile());
+	}
+
+	public RemoteSlave getASlaveForJobUpload(Job job)
+		throws NoAvailableSlaveException {
+		ArrayList slaves = new ArrayList(_sm.getAvailableSlaves());
+		slaves.removeAll(job.getFile().getAvailableSlaves());
+		if (!job.getDestinationSlaves().contains(null)) {
+			slaves.clear();
+			slaves.addAll(job.getDestinationSlaves());
+		}
+		return process(
+			"jobup",
+			new ScoreChart(slaves),
+			null,
+			null,
+			Transfer.TRANSFER_SENDING_DOWNLOAD,
+			job.getFile());
+	}
+
 	/**
 	 * Get slave for transfer to master.
 	 */
@@ -123,6 +137,10 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 			null,
 			Transfer.TRANSFER_SENDING_DOWNLOAD,
 			file);
+	}
+
+	public SlaveManagerImpl getSlaveManager() {
+		return _sm;
 	}
 
 	private RemoteSlave process(
@@ -150,45 +168,20 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 		return ssmi.getBestSlave(sc, user, peer, direction, file);
 	}
 
-	public SlaveManagerImpl getSlaveManager() {
-		return _sm;
-	}
+	public void reload() throws FileNotFoundException, IOException {
+		_ssmiDown = new FilterChain(this, "conf/slaveselection-down.conf");
+		_ssmiMaster = new FilterChain(this, "conf/slaveselection-master.conf");
+		_ssmiUp = new FilterChain(this, "conf/slaveselection-up.conf");
 
-	public RemoteSlave getASlaveForJobDownload(Job job)
-		throws NoAvailableSlaveException {
-			ArrayList slaves = new ArrayList(job.getFile().getAvailableSlaves());
-			logger.debug("calling getASlaveForJobDownload");
-			for (Iterator iter = job.getDestinationSlaves().iterator(); iter.hasNext();) {
-				RemoteSlave slave = (RemoteSlave) iter.next();
-				if (slave != null) {
-					logger.debug("removed slave " + slave.getName());
-					slaves.remove(slave);
-				}
+		try {
+			if (_sm.getConnectionManager().getJobManager() != null) {
+				_ssmiJobUp =
+					new FilterChain(this, "conf/slaveselection-jobup.conf");
+				_ssmiJobDown =
+					new FilterChain(this, "conf/slaveselection-jobdown.conf");
 			}
-			return process(
-				"jobdown",
-				new ScoreChart(slaves),
-				null,
-				null,
-				Transfer.TRANSFER_SENDING_DOWNLOAD,
-				job.getFile());
-	}
-
-	public RemoteSlave getASlaveForJobUpload(Job job)
-		throws NoAvailableSlaveException {
-			ArrayList slaves = new ArrayList(_sm.getAvailableSlaves());
-			slaves.removeAll(job.getFile().getAvailableSlaves());
-			if (!job.getDestinationSlaves().contains(null)) {
-				slaves.clear();
-				slaves.addAll(job.getDestinationSlaves());
-			}
-			return process(
-				"jobup",
-				new ScoreChart(slaves),
-				null,
-				null,
-				Transfer.TRANSFER_SENDING_DOWNLOAD,
-				job.getFile());
+		} catch (IllegalStateException e) {
+		}
 	}
 
 }

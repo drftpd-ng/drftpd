@@ -59,15 +59,24 @@ import org.apache.log4j.PropertyConfigurator;
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.93 2004/03/30 14:16:34 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.94 2004/04/07 13:47:51 zubov Exp $
  */
 public class ConnectionManager {
-	private SectionManagerInterface _sections;
 
 	public static final int idleTimeout = 300;
 
 	private static final Logger logger =
 		Logger.getLogger(ConnectionManager.class.getName());
+
+	public static LinkedRemoteFile loadMLSTFileDatabase(
+		List rslaves,
+		ConnectionManager cm)
+		throws IOException {
+		return MLSTSerialize.unserialize(
+			cm != null ? cm.getConfig() : null,
+			new FileReader("files.mlst"),
+			rslaves);
+	}
 
 	public static void main(String args[]) {
 		System.out.println(SlaveImpl.VERSION + " master server starting.");
@@ -133,11 +142,15 @@ public class ConnectionManager {
 		System.arraycopy(args, 1, ret, 0, ret.length);
 		return ret;
 	}
+	private CommandManagerFactory _commandManagerFactory;
 	private FtpConfig _config;
-	private JobManager _jm;
 	private List _conns = Collections.synchronizedList(new ArrayList());
 
 	private ArrayList _ftpListeners = new ArrayList();
+	private JobManager _jm;
+
+	protected LinkedRemoteFile _root;
+	private SectionManagerInterface _sections;
 	private String _shutdownMessage = null;
 	//allow package classes for inner classes without use of synthetic methods
 	private SlaveManagerImpl _slaveManager;
@@ -145,8 +158,6 @@ public class ConnectionManager {
 	private UserManager _usermanager;
 	protected ConnectionManager() {
 	}
-
-	protected LinkedRemoteFile _root;
 	public ConnectionManager(
 		Properties cfg,
 		Properties slaveCfg,
@@ -161,17 +172,17 @@ public class ConnectionManager {
 		List rslaves = SlaveManagerImpl.loadRSlaves();
 		GlobRMIServerSocketFactory ssf =
 			new GlobRMIServerSocketFactory(rslaves);
-			
-			try {
-				List rslaves1 = rslaves;
-				_root = ConnectionManager.loadMLSTFileDatabase(rslaves1, this);
-			} catch (FileNotFoundException e) {
-				logger.info("files.mlst not found, creating a new filelist", e);
-				_root = new LinkedRemoteFile(getConfig());
-				//saveFilelist();
-			} catch (IOException e) {
-				throw new FatalException(e);
-			}
+
+		try {
+			List rslaves1 = rslaves;
+			_root = ConnectionManager.loadMLSTFileDatabase(rslaves1, this);
+		} catch (FileNotFoundException e) {
+			logger.info("files.mlst not found, creating a new filelist", e);
+			_root = new LinkedRemoteFile(getConfig());
+			//saveFilelist();
+		} catch (IOException e) {
+			throw new FatalException(e);
+		}
 
 		/** register slavemanager **/
 		try {
@@ -197,10 +208,11 @@ public class ConnectionManager {
 			_usermanager.init(this);
 		} catch (Exception e) {
 			throw new FatalException(
-				"Cannot create instance of usermanager, check master.usermanager in "+cfgFileName,
+				"Cannot create instance of usermanager, check master.usermanager in "
+					+ cfgFileName,
 				e);
 		}
-		
+
 		_commandManagerFactory = new CommandManagerFactory(this);
 
 		//		if (cfg.getProperty("irc.enabled", "false").equals("true")) {
@@ -213,7 +225,7 @@ public class ConnectionManager {
 		//		}
 
 		addFtpListener(new RaceStatistics());
-		
+
 		try {
 			Class cl =
 				Class.forName(
@@ -222,7 +234,8 @@ public class ConnectionManager {
 						"org.drftpd.sections.def.SectionManager"));
 			Constructor c =
 				cl.getConstructor(new Class[] { ConnectionManager.class });
-			_sections = (SectionManagerInterface) c.newInstance(new Object[] { this });
+			_sections =
+				(SectionManagerInterface) c.newInstance(new Object[] { this });
 		} catch (Exception e) {
 			throw new FatalException(e);
 		}
@@ -239,13 +252,13 @@ public class ConnectionManager {
 				throw new FatalException("Error loading plugins", e);
 			}
 		}
-		
+
 		try { // only need to reload for SlaveSelection using JobManager settings
 			getSlaveManager().getSlaveSelectionManager().reload();
 		} catch (IOException e1) {
 			throw new FatalException(e1);
 		}
-		
+
 		TimerTask timerLogoutIdle = new TimerTask() {
 			public void run() {
 				timerLogoutIdle();
@@ -268,32 +281,6 @@ public class ConnectionManager {
 		_timer.schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
 		getSlaveManager().addShutdownHook();
 	}
-	public void saveFilelist() {
-		try {
-			SafeFileWriter out = new SafeFileWriter("files.mlst");
-			try {
-				MLSTSerialize.serialize(getRoot(), out);
-			} finally {
-				out.close();
-			}
-		} catch (IOException e) {
-			logger.warn("Error saving files.mlst", e);
-		}
-	}
-
-	public void loadJobManager() {
-		if ( _jm != null ) return; // already loaded
-		try {
-			_jm = new JobManager(this);
-			_jm.startJobs();
-		} catch (IOException e) {
-			throw new FatalException("Error loading JobManager", e);
-		}
-	}
-
-	public Timer getTimer() {
-		return _timer;
-	}
 
 	/**
 	 * Calls init(this) on the argument
@@ -301,125 +288,6 @@ public class ConnectionManager {
 	public void addFtpListener(FtpListener listener) {
 		listener.init(this);
 		_ftpListeners.add(listener);
-	}
-	public FtpListener getFtpListener(Class clazz)
-		throws ObjectNotFoundException {
-		for (Iterator iter = getFtpListeners().iterator(); iter.hasNext();) {
-			FtpListener listener = (FtpListener) iter.next();
-			if (listener.getClass().equals(clazz))
-				return listener;
-		}
-		throw new ObjectNotFoundException();
-	}
-
-	public void dispatchFtpEvent(Event event) {
-		logger.debug("Dispatching " + event + " to " + getFtpListeners());
-		for (Iterator iter = getFtpListeners().iterator(); iter.hasNext();) {
-			try {
-				FtpListener handler = (FtpListener) iter.next();
-				handler.actionPerformed(event);
-			} catch (RuntimeException e) {
-				logger.log(Level.WARN, "RuntimeException dispatching event", e);
-			}
-		}
-	}
-
-	public FtpConfig getConfig() {
-		return _config;
-	}
-
-	/**
-	 * returns a <code>Collection</code> of current connections
-	 */
-	public List getConnections() {
-		return _conns;
-	}
-
-	public List getFtpListeners() {
-		return _ftpListeners;
-	}
-	public String getShutdownMessage() {
-		return _shutdownMessage;
-	}
-
-	public SlaveManagerImpl getSlaveManager() {
-		return _slaveManager;
-	}
-
-	public UserManager getUserManager() {
-		return _usermanager;
-	}
-	public boolean isShutdown() {
-		return _shutdownMessage != null;
-	}
-
-	public void remove(BaseFtpConnection conn) {
-		if (!_conns.remove(conn)) {
-			throw new RuntimeException("connections.remove() returned false.");
-		}
-		if (isShutdown() && _conns.isEmpty()) {
-			//			_slaveManager.saveFilelist();
-			//			try {
-			//				getUserManager().saveAll();
-			//			} catch (UserFileException e) {
-			//				logger.log(Level.WARN, "Failed to save all userfiles", e);
-			//			}
-			logger.info("Shutdown complete, exiting");
-			System.exit(0);
-		}
-	}
-	public void shutdown(String message) {
-		_shutdownMessage = message;
-		ArrayList conns = new ArrayList(getConnections());
-		for (Iterator iter = conns.iterator(); iter.hasNext();) {
-			((BaseFtpConnection) iter.next()).stop(message);
-		}
-		dispatchFtpEvent(new MessageEvent("SHUTDOWN", message));
-	}
-	private CommandManagerFactory _commandManagerFactory;
-	public void start(Socket sock) throws IOException {
-		if (isShutdown()) {
-			new PrintWriter(sock.getOutputStream()).println(
-				"421 " + getShutdownMessage());
-			sock.close();
-			return;
-		}
-		BaseFtpConnection conn = new BaseFtpConnection(this, sock);
-		_conns.add(conn);
-		conn.start();
-	}
-
-	public void timerLogoutIdle() {
-		long currTime = System.currentTimeMillis();
-		ArrayList conns = new ArrayList(_conns);
-		for (Iterator i = conns.iterator(); i.hasNext();) {
-			BaseFtpConnection conn = (BaseFtpConnection) i.next();
-
-			int idle = (int) ((currTime - conn.getLastActive()) / 1000);
-			int maxIdleTime;
-			try {
-				maxIdleTime = conn.getUser().getIdleTime();
-				if (maxIdleTime == 0)
-					maxIdleTime = idleTimeout;
-			} catch (NoSuchUserException e) {
-				maxIdleTime = idleTimeout;
-			}
-
-			if (!conn.isExecuting() && idle >= maxIdleTime) {
-				// idle time expired, logout user.
-				conn.stop("Idle time expired: " + maxIdleTime + "s");
-			}
-		}
-	}
-
-	public CommandManagerFactory getCommandManagerFactory() {
-		return _commandManagerFactory;
-	}
-
-	public JobManager getJobManager() {
-		if (_jm == null)
-			throw new IllegalStateException("JobManager not loaded");
-		return _jm;
 	}
 
 	public FtpReply canLogin(BaseFtpConnection baseconn) {
@@ -468,6 +336,52 @@ public class ConnectionManager {
 		return null; // everything passed
 	}
 
+	public void dispatchFtpEvent(Event event) {
+		logger.debug("Dispatching " + event + " to " + getFtpListeners());
+		for (Iterator iter = getFtpListeners().iterator(); iter.hasNext();) {
+			try {
+				FtpListener handler = (FtpListener) iter.next();
+				handler.actionPerformed(event);
+			} catch (RuntimeException e) {
+				logger.log(Level.WARN, "RuntimeException dispatching event", e);
+			}
+		}
+	}
+
+	public CommandManagerFactory getCommandManagerFactory() {
+		return _commandManagerFactory;
+	}
+
+	public FtpConfig getConfig() {
+		return _config;
+	}
+
+	/**
+	 * returns a <code>Collection</code> of current connections
+	 */
+	public List getConnections() {
+		return _conns;
+	}
+	public FtpListener getFtpListener(Class clazz)
+		throws ObjectNotFoundException {
+		for (Iterator iter = getFtpListeners().iterator(); iter.hasNext();) {
+			FtpListener listener = (FtpListener) iter.next();
+			if (listener.getClass().equals(clazz))
+				return listener;
+		}
+		throw new ObjectNotFoundException();
+	}
+
+	public List getFtpListeners() {
+		return _ftpListeners;
+	}
+
+	public JobManager getJobManager() {
+		if (_jm == null)
+			throw new IllegalStateException("JobManager not loaded");
+		return _jm;
+	}
+
 	public LinkedRemoteFile getRoot() {
 		return _root;
 	}
@@ -475,14 +389,103 @@ public class ConnectionManager {
 	public SectionManagerInterface getSectionManager() {
 		return _sections;
 	}
+	public String getShutdownMessage() {
+		return _shutdownMessage;
+	}
 
-	public static LinkedRemoteFile loadMLSTFileDatabase(
-		List rslaves,
-		ConnectionManager cm)
-		throws IOException {
-		return MLSTSerialize.unserialize(
-			cm != null ? cm.getConfig() : null,
-			new FileReader("files.mlst"),
-			rslaves);
+	public SlaveManagerImpl getSlaveManager() {
+		return _slaveManager;
+	}
+
+	public Timer getTimer() {
+		return _timer;
+	}
+
+	public UserManager getUserManager() {
+		return _usermanager;
+	}
+	public boolean isShutdown() {
+		return _shutdownMessage != null;
+	}
+
+	public void loadJobManager() {
+		if (_jm != null)
+			return; // already loaded
+		try {
+			_jm = new JobManager(this);
+			_jm.startJobs();
+		} catch (IOException e) {
+			throw new FatalException("Error loading JobManager", e);
+		}
+	}
+
+	public void remove(BaseFtpConnection conn) {
+		if (!_conns.remove(conn)) {
+			throw new RuntimeException("connections.remove() returned false.");
+		}
+		if (isShutdown() && _conns.isEmpty()) {
+			//			_slaveManager.saveFilelist();
+			//			try {
+			//				getUserManager().saveAll();
+			//			} catch (UserFileException e) {
+			//				logger.log(Level.WARN, "Failed to save all userfiles", e);
+			//			}
+			logger.info("Shutdown complete, exiting");
+			System.exit(0);
+		}
+	}
+	public void saveFilelist() {
+		try {
+			SafeFileWriter out = new SafeFileWriter("files.mlst");
+			try {
+				MLSTSerialize.serialize(getRoot(), out);
+			} finally {
+				out.close();
+			}
+		} catch (IOException e) {
+			logger.warn("Error saving files.mlst", e);
+		}
+	}
+	public void shutdown(String message) {
+		_shutdownMessage = message;
+		ArrayList conns = new ArrayList(getConnections());
+		for (Iterator iter = conns.iterator(); iter.hasNext();) {
+			((BaseFtpConnection) iter.next()).stop(message);
+		}
+		dispatchFtpEvent(new MessageEvent("SHUTDOWN", message));
+	}
+	public void start(Socket sock) throws IOException {
+		if (isShutdown()) {
+			new PrintWriter(sock.getOutputStream()).println(
+				"421 " + getShutdownMessage());
+			sock.close();
+			return;
+		}
+		BaseFtpConnection conn = new BaseFtpConnection(this, sock);
+		_conns.add(conn);
+		conn.start();
+	}
+
+	public void timerLogoutIdle() {
+		long currTime = System.currentTimeMillis();
+		ArrayList conns = new ArrayList(_conns);
+		for (Iterator i = conns.iterator(); i.hasNext();) {
+			BaseFtpConnection conn = (BaseFtpConnection) i.next();
+
+			int idle = (int) ((currTime - conn.getLastActive()) / 1000);
+			int maxIdleTime;
+			try {
+				maxIdleTime = conn.getUser().getIdleTime();
+				if (maxIdleTime == 0)
+					maxIdleTime = idleTimeout;
+			} catch (NoSuchUserException e) {
+				maxIdleTime = idleTimeout;
+			}
+
+			if (!conn.isExecuting() && idle >= maxIdleTime) {
+				// idle time expired, logout user.
+				conn.stop("Idle time expired: " + maxIdleTime + "s");
+			}
+		}
 	}
 }

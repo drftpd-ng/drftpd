@@ -63,13 +63,11 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.78 2004/04/07 13:05:51 zubov Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.79 2004/04/07 13:48:00 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
 	implements SlaveManager, Runnable {
-
-	private SlaveSelectionManagerInterface _slaveSelectionManager;
 	private static final Logger logger =
 		Logger.getLogger(SlaveManagerImpl.class.getName());
 
@@ -88,10 +86,6 @@ public class SlaveManagerImpl
 			direction,
 			conn,
 			file);
-	}
-
-	public SlaveSelectionManagerInterface getSlaveSelectionManager() {
-		return _slaveSelectionManager;
 	}
 
 	public static Collection getAvailableSlaves(Collection slaves)
@@ -187,6 +181,8 @@ public class SlaveManagerImpl
 	private ConnectionManager _cm;
 
 	protected List _rslaves;
+
+	private SlaveSelectionManagerInterface _slaveSelectionManager;
 	protected SlaveManagerImpl() throws RemoteException {
 	}
 	public SlaveManagerImpl(
@@ -235,42 +231,7 @@ public class SlaveManagerImpl
 			throw new FatalException(e);
 		}
 		logger.debug("starting slavestatus updater thread");
-		new Thread(this,"SlaveStatusUpdater").start();
-	}
-	
-	public void run() {
-		logger.debug("started slavestatus updater thread");
-		long low = Integer.MAX_VALUE;
-		long high = 0;
-		while(true) {
-			try {
-				for (Iterator iter = getAvailableSlaves().iterator();
-					iter.hasNext();
-					) {
-					RemoteSlave slave = (RemoteSlave) iter.next();
-					try {
-						long time = System.currentTimeMillis();
-						slave.updateStatus();
-						long difference = System.currentTimeMillis() - time;
-						if (difference < low) {
-							low = difference;
-							logger.debug(low + " low milliseconds were used to run updateStatus on " + slave.getName());
-						}
-						if (difference > high) {
-							high= difference;
-							logger.debug(high + " high milliseconds were used to run updateStatus on " + slave.getName());
-						}
-					} catch (SlaveUnavailableException e1) {
-						continue;
-					}
-				}
-			} catch (NoAvailableSlaveException e) {
-			}
-			try {
-				Thread.sleep(_cm.getConfig().getSlaveStatusUpdateTime());
-			} catch (InterruptedException e1) {
-			}
-		}
+		new Thread(this, "SlaveStatusUpdater").start();
 	}
 
 	protected void addShutdownHook() {
@@ -287,22 +248,8 @@ public class SlaveManagerImpl
 			}
 		});
 	}
-	
-	public void remerge(RemoteSlave rslave) throws IOException, SlaveUnavailableException {
-		LinkedRemoteFile slaveroot;
-		slaveroot = rslave.getSlaveRoot();
-		try {
-			getConnectionManager().getRoot().remerge(slaveroot, rslave);
-		} catch (RuntimeException t) {
-			logger.log(Level.FATAL, "", t);
-			rslave.setOffline(t.getMessage());
-			throw t;
-		}
-	}
 
-	public void addSlave(
-		String slaveName,
-		Slave slave)
+	public void addSlave(String slaveName, Slave slave)
 		throws RemoteException {
 
 		slave.ping();
@@ -341,9 +288,7 @@ public class SlaveManagerImpl
 			return;
 		}
 
-		System.out.println(
-			"SlaveManager.addSlave(): "
-				+ rslave.getName());
+		System.out.println("SlaveManager.addSlave(): " + rslave.getName());
 
 		try {
 			System.out.println(
@@ -469,6 +414,10 @@ public class SlaveManagerImpl
 	public Collection getSlaves() {
 		return _rslaves;
 	}
+
+	public SlaveSelectionManagerInterface getSlaveSelectionManager() {
+		return _slaveSelectionManager;
+	}
 	/**
 	 * @deprecated Use RemoteSlave.handleRemoteException instead
 	 */
@@ -561,6 +510,60 @@ public class SlaveManagerImpl
 			logger.log(Level.INFO, "Added " + rslave.getName() + " to slaves");
 		}
 		Collections.sort(_rslaves);
+	}
+
+	public void remerge(RemoteSlave rslave)
+		throws IOException, SlaveUnavailableException {
+		LinkedRemoteFile slaveroot;
+		slaveroot = rslave.getSlaveRoot();
+		try {
+			getConnectionManager().getRoot().remerge(slaveroot, rslave);
+		} catch (RuntimeException t) {
+			logger.log(Level.FATAL, "", t);
+			rslave.setOffline(t.getMessage());
+			throw t;
+		}
+	}
+
+	public void run() {
+		logger.debug("started slavestatus updater thread");
+		long low = Integer.MAX_VALUE;
+		long high = 0;
+		while (true) {
+			try {
+				for (Iterator iter = getAvailableSlaves().iterator();
+					iter.hasNext();
+					) {
+					RemoteSlave slave = (RemoteSlave) iter.next();
+					try {
+						long time = System.currentTimeMillis();
+						slave.updateStatus();
+						long difference = System.currentTimeMillis() - time;
+						if (difference < low) {
+							low = difference;
+							logger.debug(
+								low
+									+ " low milliseconds were used to run updateStatus on "
+									+ slave.getName());
+						}
+						if (difference > high) {
+							high = difference;
+							logger.debug(
+								high
+									+ " high milliseconds were used to run updateStatus on "
+									+ slave.getName());
+						}
+					} catch (SlaveUnavailableException e1) {
+						continue;
+					}
+				}
+			} catch (NoAvailableSlaveException e) {
+			}
+			try {
+				Thread.sleep(_cm.getConfig().getSlaveStatusUpdateTime());
+			} catch (InterruptedException e1) {
+			}
+		}
 	}
 
 	public void saveFilelist() {
