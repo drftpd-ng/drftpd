@@ -169,7 +169,8 @@ public class BaseFtpConnection implements Runnable {
 		if (mbPort) {
 			try {
 				mDataSoc = new Socket(mAddress, miPort);
-				//mDataSoc.setSoTimeout(30000); // 30 seconds timeout
+				mDataSoc.setSoTimeout(30000); // 30 seconds timeout
+				mDataSoc.setSendBufferSize(8096);
 			} catch (IOException ex) {
 				//mConfig.getLogger().warn(ex);
 				logger.log(Level.WARN, "Error opening data socket", ex);
