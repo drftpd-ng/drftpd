@@ -15,6 +15,8 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+package org.drftpd.bootstrap;
+
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -24,9 +26,9 @@ import java.net.URLClassLoader;
  * Takes URL as first argument and passes the rest of the arguments to SlaveImpl.main()
  * 
  * @author mog
- * @version $Id: SlaveBootStrap.java,v 1.5 2004/02/26 13:56:46 mog Exp $
+ * @version $Id: URLBootStrap.java,v 1.1 2004/02/26 13:56:51 mog Exp $
  */
-public class SlaveBootStrap {
+public class URLBootStrap {
 	public static void main(String args[]) throws Throwable {
 		URL urls[] = { new URL(args[0])};
 		URLClassLoader cl = new URLClassLoader(urls);

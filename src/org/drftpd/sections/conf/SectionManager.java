@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.sections;
+package org.drftpd.sections.conf;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -23,14 +23,17 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.drftpd.sections.*;
+import org.drftpd.sections.SectionInterface;
+
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.master.ConnectionManager;
 
 /**
  * @author mog
- * @version $Id: SectionManager.java,v 1.1 2004/02/16 22:39:43 mog Exp $
+ * @version $Id: SectionManager.java,v 1.1 2004/02/26 13:56:52 mog Exp $
  */
-public class SectionManager {
+public class SectionManager implements SectionManagerInterface {
 	private static final Class[] CONSTRUCTOR_SIG =
 		new Class[] { SectionManager.class, int.class, Properties.class };
 	private PlainSection _emptySection;
@@ -46,12 +49,12 @@ public class SectionManager {
 		return _mgr;
 	}
 
-	public Section lookup(String string) {
+	public SectionInterface lookup(String string) {
 		int matchlen = 0;
-		Section match = _emptySection;
+		SectionInterface match = _emptySection;
 
 		for (Iterator iter = _sections.values().iterator(); iter.hasNext();) {
-			Section section = (Section) iter.next();
+			SectionInterface section = (SectionInterface) iter.next();
 			if (string.startsWith(section.getPath())
 				&& matchlen < section.getPath().length()) {
 				match = section;
@@ -78,12 +81,12 @@ public class SectionManager {
 			try {
 				Class clazz =
 					Class.forName(
-						"org.drftpd.sections."
+						"org.drftpd.sections.conf."
 							+ type.substring(0, 1).toUpperCase()
 							+ type.substring(1)
 							+ "Section");
-				Section section =
-					(Section) clazz.getDeclaredConstructor(
+				SectionInterface section =
+					(SectionInterface) clazz.getDeclaredConstructor(
 						CONSTRUCTOR_SIG).newInstance(
 						new Object[] { this, new Integer(i), p });
 				_sections.put(name, section);

@@ -15,34 +15,26 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.sections;
+package org.drftpd.slaveselection.filter;
 
-import java.util.Collection;
+import java.net.InetAddress;
 
-import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
+ * if upload, the inetaddress would be the source.
+ * if download, the inetaddress would be the dest.
+ * 
  * @author mog
- * @version $Id: Section.java,v 1.1 2004/02/16 22:39:42 mog Exp $
+ * @version $Id: Filter.java,v 1.1 2004/02/26 13:56:53 mog Exp $
  */
-public interface Section {
-
-	/**
-	 * @return The name of this section
-	 */
-	public String getName();
-
-	/**
-	 * @return the (current) directory for this section
-	 */
-	public LinkedRemoteFile getFile();
-
-	/**
-	 * @return getFile().getPath()
-	 */
-	public String getPath();
-	/**
-	 * @return all directories for this section. For example if this is a dated-dir section, it would return all dated dirs, including current dir.
-	 */
-	public Collection getFiles();
+public abstract class Filter {
+	public abstract void process(
+		ScoreChart scorechart,
+		User user,
+		InetAddress peer,
+		char direction,
+		LinkedRemoteFileInterface dir) throws NoAvailableSlaveException;
 }

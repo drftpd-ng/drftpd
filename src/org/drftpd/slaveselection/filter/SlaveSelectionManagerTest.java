@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slaveselection;
+package org.drftpd.slaveselection.filter;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,7 +31,7 @@ import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManagerTest.java,v 1.1 2004/02/23 01:14:41 mog Exp $
+ * @version $Id: SlaveSelectionManagerTest.java,v 1.1 2004/02/26 13:56:53 mog Exp $
  */
 public class SlaveSelectionManagerTest extends TestCase {
 

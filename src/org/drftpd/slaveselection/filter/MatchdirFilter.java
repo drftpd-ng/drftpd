@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slaveselection;
+package org.drftpd.slaveselection.filter;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -35,8 +35,15 @@ import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Matcher;
 
 /**
+ * Example slaveselection entry:
+ * <pre>
+ * <n>.filter=matchdir
+ * <n>.assignslave=<slavename>+100000
+ * <n>.match=<path glob match>
+ * </pre>
+ * 
  * @author mog
- * @version $Id: MatchdirFilter.java,v 1.1 2004/02/23 01:14:41 mog Exp $
+ * @version $Id: MatchdirFilter.java,v 1.1 2004/02/26 13:56:53 mog Exp $
  */
 public class MatchdirFilter extends Filter {
 	private ArrayList _assigns;
@@ -47,10 +54,10 @@ public class MatchdirFilter extends Filter {
 	public MatchdirFilter(SlaveSelectionManager ssm, int i, Properties p) {
 		_ssm = ssm;
 		try {
-			parseAssign(FtpConfig.getProperty(p, i + ".assignslave"));
+			parseAssign(FtpConfig.getProperty(p, i + ".assign"));
 			_p =
 				new GlobCompiler().compile(
-					FtpConfig.getProperty(p, i + ".expr"));
+					FtpConfig.getProperty(p, i + ".match"));
 		} catch (Exception e) {
 			if (e instanceof RuntimeException)
 				throw (RuntimeException) e;
@@ -60,7 +67,7 @@ public class MatchdirFilter extends Filter {
 
 	private static class AssignSlave {
 		private RemoteSlave _rslave;
-		private int _score;
+		private long _score;
 		public AssignSlave(String s, SlaveManagerImpl slaveManager)
 			throws ObjectNotFoundException {
 			boolean isAdd;
@@ -79,14 +86,14 @@ public class MatchdirFilter extends Filter {
 			if (!slavename.equalsIgnoreCase("all")) {
 				_rslave = slaveManager.getSlave(slavename);
 			}
-			_score = Integer.parseInt(s.substring(pos + 1));
+			_score = Long.parseLong(s.substring(pos + 1));
 			if (!isAdd)
 				_score = -_score;
 		}
 		public RemoteSlave getRSlave() {
 			return _rslave;
 		}
-		public int getScore() {
+		public long getScore() {
 			return _score;
 		}
 		public boolean isAll() {

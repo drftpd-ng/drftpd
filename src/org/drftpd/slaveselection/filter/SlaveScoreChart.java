@@ -15,25 +15,26 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slaveselection;
+package org.drftpd.slaveselection.filter;
 
-import java.net.InetAddress;
+import java.util.Collection;
+import java.util.Hashtable;
+import java.util.Iterator;
 
-import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
+import net.sf.drftpd.master.RemoteSlave;
 
 /**
- * if upload, the inetaddress would be the source.
- * if download, the inetaddress would be the dest.
- * 
  * @author mog
- * @version $Id: Filter.java,v 1.1 2004/02/23 01:14:41 mog Exp $
+ * @version $Id: SlaveScoreChart.java,v 1.1 2004/02/26 13:56:53 mog Exp $
  */
-public abstract class Filter {
-	public abstract void process(
-		ScoreChart scorechart,
-		User user,
-		InetAddress peer,
-		char direction,
-		LinkedRemoteFileInterface file);
+public class SlaveScoreChart {
+
+	public SlaveScoreChart(Collection slaves) {
+		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
+			RemoteSlave rslave= (RemoteSlave) iter.next();
+			_scoreChart.put(rslave, new Integer(0));
+		}
+	}
+
+	private Hashtable _scoreChart = new Hashtable();
 }

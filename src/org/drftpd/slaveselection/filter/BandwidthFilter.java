@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slaveselection;
+package org.drftpd.slaveselection.filter;
 
 import java.net.InetAddress;
 import java.rmi.RemoteException;
@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
 /**
  * Removes bandwidth * multiplier from the score.
  * @author mog
- * @version $Id: BandwidthFilter.java,v 1.1 2004/02/23 01:14:41 mog Exp $
+ * @version $Id: BandwidthFilter.java,v 1.1 2004/02/26 13:56:53 mog Exp $
  */
 public class BandwidthFilter extends Filter {
 	private static final Logger logger =
@@ -46,9 +46,11 @@ public class BandwidthFilter extends Filter {
 	}
 
 	protected void setMultiplier(String s) {
-		_multiplier = -parseMultiplier(s);
+		_multiplier = parseMultiplier(s);
 	}
 	protected static float parseMultiplier(String string) {
+		if (string.equalsIgnoreCase("remove"))
+			return 0;
 		boolean isMultiplier;
 		float multiplier = 1;
 		while (string.length() != 0) {
@@ -100,7 +102,8 @@ public class BandwidthFilter extends Filter {
 				continue;
 			}
 			score.addScore(
-				(int) (status.getThroughputDirection(direction) * _multiplier));
+				- (long)
+					(status.getThroughputDirection(direction) * _multiplier));
 		}
 	}
 

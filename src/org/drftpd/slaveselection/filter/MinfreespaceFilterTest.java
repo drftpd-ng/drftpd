@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slaveselection;
+package org.drftpd.slaveselection.filter;
 
 import java.rmi.RemoteException;
 import java.util.Arrays;
@@ -34,7 +34,7 @@ import net.sf.drftpd.slave.Transfer;
 
 /**
  * @author mog
- * @version $Id: MinfreespaceFilterTest.java,v 1.1 2004/02/23 01:14:41 mog Exp $
+ * @version $Id: MinfreespaceFilterTest.java,v 1.1 2004/02/26 13:56:53 mog Exp $
  */
 public class MinfreespaceFilterTest extends TestCase {
 	public static class RemoteSlaveTesting extends RemoteSlave {

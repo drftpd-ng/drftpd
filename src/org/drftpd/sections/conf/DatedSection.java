@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.sections;
+package org.drftpd.sections.conf;
 
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
@@ -23,15 +23,18 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Properties;
 
+import org.drftpd.sections.SectionInterface;
+import org.drftpd.sections.conf.*;
+
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: DatedSection.java,v 1.1 2004/02/16 22:39:42 mog Exp $
+ * @version $Id: DatedSection.java,v 1.1 2004/02/26 13:56:52 mog Exp $
  */
-public class DatedSection implements Section {
+public class DatedSection implements SectionInterface {
 
 	private SectionManager _mgr;
 	private SimpleDateFormat _dateFormat;

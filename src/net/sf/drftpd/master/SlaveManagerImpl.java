@@ -54,7 +54,7 @@ import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.drftpd.slaveselection.SlaveSelectionManager;
+import org.drftpd.slaveselection.filter.SlaveSelectionManager;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -62,23 +62,27 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 /**
- * @version $Id: SlaveManagerImpl.java,v 1.68 2004/02/23 01:14:36 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.69 2004/02/26 13:56:50 mog Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
 	implements SlaveManager {
 
-	private SlaveSelectionManager _slaveSelectionManager;
+	private SlaveSelectionManager _slaveSelectionManagerUp;
+	private SlaveSelectionManager _slaveSelectionManagerDown;
+	private SlaveSelectionManager _slaveSelectionManagerMaster;
 	private static final Logger logger =
 		Logger.getLogger(SlaveManagerImpl.class.getName());
 
-		/**
-		 * Checksums call us with null BaseFtpConnection.
-		 */
+	/**
+	 * Checksums call us with null BaseFtpConnection.
+	 */
 	public static RemoteSlave getASlave(
 		Collection slaves,
 		char direction,
-		FtpConfig config, BaseFtpConnection conn, LinkedRemoteFileInterface file)
+		FtpConfig config,
+		BaseFtpConnection conn,
+		LinkedRemoteFileInterface file)
 		throws NoAvailableSlaveException {
 		String dir;
 		if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
@@ -88,7 +92,12 @@ public class SlaveManagerImpl
 		} else {
 			throw new IllegalArgumentException();
 		}
-		return config.getSlaveManager().getSlaveSelectionManager(dir).getASlave(slaves, direction, conn, file);
+		return config.getSlaveManager().getSlaveSelectionManager(
+			dir).getASlave(
+			slaves,
+			direction,
+			conn,
+			file);
 		//		RemoteSlave bestslave;
 		//		SlaveStatus beststatus;
 		//		{
@@ -191,14 +200,15 @@ public class SlaveManagerImpl
 	}
 
 	public SlaveSelectionManager getSlaveSelectionManager(String dir) {
-		if(_slaveSelectionManager == null) {
-			try {
-				_slaveSelectionManager = new SlaveSelectionManager(this, "conf/slaveselection-down.conf");
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+		if(dir.equals("up")) {
+			return _slaveSelectionManagerUp;
+		} else if(dir.equals("down")) {
+			return _slaveSelectionManagerDown;
+		} else if(dir.equals("master")) {
+			return _slaveSelectionManagerMaster;
+		} else {
+			throw new IllegalArgumentException(dir);
 		}
-		return _slaveSelectionManager;
 	}
 
 	public static Collection getAvailableSlaves(Collection slaves)
@@ -344,10 +354,31 @@ public class SlaveManagerImpl
 				ssf);
 		// throws RemoteException
 		try {
-			registry.bind(FtpConfig.getProperty(cfg, "master.bindname"), this);
+			registry.bind(cfg.getProperty("master.bindname", "slavemanager"), this);
 		} catch (Exception t) {
 			throw new FatalException(t);
 		}
+		try {
+			_slaveSelectionManagerDown =
+				new SlaveSelectionManager(
+					this,
+					"conf/slaveselection-down.conf");
+			_slaveSelectionManagerMaster =
+				new SlaveSelectionManager(
+					this,
+					"conf/slaveselection-master.conf");
+			_slaveSelectionManagerUp =
+				new SlaveSelectionManager(
+					this,
+					"conf/slaveselection-up.conf");
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
+	}
+
+	protected void addShutdownHook() {
+		//add shutdown hook last
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				logger.info("Running shutdown hook");
@@ -360,7 +391,7 @@ public class SlaveManagerImpl
 			}
 		});
 	}
-
+	
 	public void addSlave(
 		String slaveName,
 		Slave slave,
@@ -510,12 +541,17 @@ public class SlaveManagerImpl
 	//		return (RemoteSlave) retSlaves.get(num);
 	//	}
 
-	public RemoteSlave getASlave(char direction, BaseFtpConnection conn, LinkedRemoteFileInterface file)
+	public RemoteSlave getASlave(
+		char direction,
+		BaseFtpConnection conn,
+		LinkedRemoteFileInterface file)
 		throws NoAvailableSlaveException {
 		return getASlave(
 			getSlaves(),
 			direction,
-			getConnectionManager().getConfig(), conn, file);
+			getConnectionManager().getConfig(),
+			conn,
+			file);
 	}
 
 	public Collection getAvailableSlaves() throws NoAvailableSlaveException {
@@ -566,7 +602,9 @@ public class SlaveManagerImpl
 	}
 
 	public void reload() throws FileNotFoundException, IOException {
-		_slaveSelectionManager.reload();
+		_slaveSelectionManagerDown.reload();
+		_slaveSelectionManagerMaster.reload();
+		_slaveSelectionManagerUp.reload();
 		reloadRSlaves();
 	}
 	public void reloadRSlaves() throws FileNotFoundException, IOException {

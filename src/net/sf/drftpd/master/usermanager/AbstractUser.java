@@ -41,7 +41,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.40 2004/02/10 00:03:08 mog Exp $
+ * @version $Id: AbstractUser.java,v 1.41 2004/02/26 13:56:50 mog Exp $
  */
 public abstract class AbstractUser implements User {
 	private static final Logger logger = Logger.getLogger(AbstractUser.class);
@@ -666,7 +666,7 @@ public abstract class AbstractUser implements User {
 			Calendar cal2 = (Calendar) cal.clone();
 			CalendarUtils.floorDayOfWeek(cal2);
 			if (lastResetDate.before(cal2.getTime()))
-				resetWeek(cmgr, cal.getTime());
+				resetWeek(cmgr, cal2.getTime());
 
 			CalendarUtils.floorDayOfMonth(cal);
 			if (lastResetDate.before(cal.getTime()))

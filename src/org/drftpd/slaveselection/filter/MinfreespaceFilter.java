@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slaveselection;
+package org.drftpd.slaveselection.filter;
 
 import java.net.InetAddress;
 import java.rmi.RemoteException;
@@ -29,16 +29,25 @@ import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
+ * Example slaveselection.conf entry:
+ * <pre>
+ * <n>.filter=minfreespace
+ * <n>.remove=10000
+ * <n>.minfreespace=1GB
+ * </pre>
  * @author mog
- * @version $Id: MinfreespaceFilter.java,v 1.1 2004/02/23 01:14:41 mog Exp $
+ * @version $Id: MinfreespaceFilter.java,v 1.1 2004/02/26 13:56:53 mog Exp $
  */
 public class MinfreespaceFilter extends Filter {
 	private long _minfreespace;
 
-	private int _assign;
+	private float _multiplier;
 
 	public MinfreespaceFilter(SlaveSelectionManager ssm, int i, Properties p) {
-		_assign = -Integer.parseInt(FtpConfig.getProperty(p, i + ".remove"));
+		//_multiplier = -Integer.parseInt(FtpConfig.getProperty(p, i + ".multiplier"));
+		_multiplier =
+			BandwidthFilter.parseMultiplier(
+				FtpConfig.getProperty(p, i + ".multiplier"));
 		_minfreespace =
 			Bytes.parseBytes(FtpConfig.getProperty(p, i + ".minfreespace"));
 	}
@@ -57,10 +66,11 @@ public class MinfreespaceFilter extends Filter {
 			try {
 				df = score.getRSlave().getStatus().getDiskSpaceAvailable();
 				if (df < _minfreespace) {
-					if (_assign == 0) {
+					if (_multiplier == 0) {
 						iter.remove();
 					} else {
-						score.addScore(_assign);
+						score.addScore(
+							- (long) ((_minfreespace - df) * _multiplier));
 					}
 				}
 			} catch (RemoteException e) {

@@ -15,26 +15,34 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slaveselection;
+package org.drftpd.sections;
 
 import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Iterator;
 
-import net.sf.drftpd.master.RemoteSlave;
+import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: SlaveScoreChart.java,v 1.1 2004/02/16 22:39:43 mog Exp $
+ * @version $Id: SectionInterface.java,v 1.1 2004/02/26 13:56:52 mog Exp $
  */
-public class SlaveScoreChart {
+public interface SectionInterface {
 
-	public SlaveScoreChart(Collection slaves) {
-		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
-			RemoteSlave rslave= (RemoteSlave) iter.next();
-			_scoreChart.put(rslave, new Integer(0));
-		}
-	}
+	/**
+	 * @return The name of this section
+	 */
+	public String getName();
 
-	private Hashtable _scoreChart = new Hashtable();
+	/**
+	 * @return the (current) directory for this section
+	 */
+	public LinkedRemoteFile getFile();
+
+	/**
+	 * @return getFile().getPath()
+	 */
+	public String getPath();
+	/**
+	 * @return all directories for this section. For example if this is a dated-dir section, it would return all dated dirs, including current dir.
+	 */
+	public Collection getFiles();
 }

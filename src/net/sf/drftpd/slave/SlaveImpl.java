@@ -62,7 +62,7 @@ import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.83 2004/02/10 01:06:41 mog Exp $
+ * @version $Id: SlaveImpl.java,v 1.84 2004/02/26 13:56:51 mog Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
@@ -195,7 +195,7 @@ public class SlaveImpl
 				+ ":"
 				+ cfg.getProperty("master.bindport", "1099")
 				+ "/"
-				+ FtpConfig.getProperty(cfg, "master.bindname");
+				+ cfg.getProperty("master.bindname", "slavemanager");
 		_name = FtpConfig.getProperty(cfg, "slave.name");
 
 		_roots = getDefaultRootBasket(cfg);

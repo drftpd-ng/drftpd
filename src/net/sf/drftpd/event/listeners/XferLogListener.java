@@ -34,27 +34,21 @@ import net.sf.drftpd.master.ConnectionManager;
 /**
  * @author mog
  *
- * @version $Id: XferLogListener.java,v 1.4 2004/02/10 00:03:06 mog Exp $
+ * @version $Id: XferLogListener.java,v 1.5 2004/02/26 13:56:48 mog Exp $
  */
 public class XferLogListener implements FtpListener {
 
-	/**
-	 * 
-	 */
 	public XferLogListener() {
 		super();
 		new File("ftp-data/logs").mkdirs();
 		try {
 			//APPEND
-			this.out = new PrintStream(new FileOutputStream("ftp-data/logs/xferlog", true));
+			this.out = new PrintStream(new FileOutputStream("logs/xferlog", true));
 		} catch (IOException e) {
 			throw new FatalException(e);
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.event.FtpListener#actionPerformed(net.sf.drftpd.event.Event)
-	 */
 	public void actionPerformed(Event event) {
 		if (event instanceof TransferEvent)
 			actionPerformed((TransferEvent) event);
@@ -127,14 +121,10 @@ public class XferLogListener implements FtpListener {
 				+ completed);
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.event.FtpListener#init(net.sf.drftpd.master.ConnectionManager)
-	 */
 	public void init(ConnectionManager mgr) {
 	}
 
 	public void unload() {
-
 	}
 
 }

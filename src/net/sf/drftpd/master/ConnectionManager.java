@@ -50,10 +50,10 @@ import net.sf.drftpd.slave.SlaveImpl;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.drftpd.sections.SectionManager;
+import org.drftpd.sections.conf.SectionManager;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.88 2004/02/15 13:00:05 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.89 2004/02/26 13:56:49 mog Exp $
  */
 public class ConnectionManager {
 	private SectionManager _sections;
@@ -229,6 +229,7 @@ public class ConnectionManager {
 		};
 		//run every hour 
 		_timer.schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
+		getSlaveManager().addShutdownHook();
 	}
 
 	public Timer getTimer() {

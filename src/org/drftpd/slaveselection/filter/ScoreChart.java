@@ -15,42 +15,49 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slaveselection;
+package org.drftpd.slaveselection.filter;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
-
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.RemoteSlave;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author mog
- * @version $Id: ScoreChart.java,v 1.1 2004/02/23 01:14:41 mog Exp $
+ * @version $Id: ScoreChart.java,v 1.1 2004/02/26 13:56:53 mog Exp $
  */
 public class ScoreChart {
-	public static class SlaveScore {
+	public static class SlaveScore implements Comparable {
 		private RemoteSlave _rslave;
-		private int _score;
+		private long _score;
 
 		public SlaveScore(RemoteSlave rslave) {
 			_rslave = rslave;
 		}
 
-		public void addScore(int score) {
+		public void addScore(long score) {
+			//logger.debug("Added "+score+" to "+getRSlave().getName());
 			_score += score;
 		}
 		public RemoteSlave getRSlave() {
 			return _rslave;
 		}
-		public int getScore() {
+		public long getScore() {
 			return _score;
 		}
 		public String toString() {
 			return "SlaveScore[rslave="+getRSlave().getName()+",score="+getScore()+"]";
+		}
+		public int compareTo(Object o) {
+			SlaveScore s = (SlaveScore) o;
+			//int thisVal = this.value;
+			//int anotherVal = anotherInteger.value;
+			return (getScore()<s.getScore()? -1 : (getScore()==s.getScore()? 0 : 1));
 		}
 	}
 
@@ -103,4 +110,5 @@ public class ScoreChart {
 	public Collection getSlaveScores() {
 		return _scoreChart;
 	}
+
 }

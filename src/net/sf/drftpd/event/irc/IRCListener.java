@@ -74,7 +74,8 @@ import net.sf.drftpd.util.Time;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.drftpd.sections.Section;
+import org.drftpd.remotefile.LinkedRemoteFileUtils;
+import org.drftpd.sections.SectionInterface;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
@@ -94,7 +95,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.88 2004/02/23 01:14:35 mog Exp $
+ * @version $Id: IRCListener.java,v 1.89 2004/02/26 13:56:48 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -122,30 +123,6 @@ public class IRCListener implements FtpListener, Observer {
 		GLOBAL_ENV.add("color", "\u0003");
 	}
 	private static final Logger logger = Logger.getLogger(IRCListener.class);
-
-	public static void getAllDirectories(
-		LinkedRemoteFile dir,
-		Collection directories) {
-		for (Iterator iter = dir.getDirectories().iterator();
-			iter.hasNext();
-			) {
-			LinkedRemoteFile subdir = (LinkedRemoteFile) iter.next();
-			getAllDirectories(subdir, directories);
-		}
-		directories.add(dir);
-	}
-
-	public static void getAllSFVFiles(
-		LinkedRemoteFile dir,
-		Collection sfvFiles) {
-		for (Iterator iter = dir.getDirectories().iterator();
-			iter.hasNext();
-			) {
-			LinkedRemoteFile subdir = (LinkedRemoteFile) iter.next();
-			getAllSFVFiles(subdir, sfvFiles);
-		}
-		sfvFiles.add(dir);
-	}
 
 	public static ArrayList map2nukees(Map nukees) {
 		ArrayList ret = new ArrayList();
@@ -798,7 +775,7 @@ public class IRCListener implements FtpListener, Observer {
 				Bytes.formatBytes(dir.dirSize() / (elapsed / 1000)) + "/s");
 
 			ArrayList dirs = new ArrayList();
-			getAllDirectories(file, dirs);
+			LinkedRemoteFileUtils.getAllDirectories(file, dirs);
 			int files = 0;
 
 			for (Iterator iter = dirs.iterator(); iter.hasNext();) {
@@ -880,7 +857,7 @@ public class IRCListener implements FtpListener, Observer {
 	}
 
 	public Ret getPropertyFileSuffix(String prefix, LinkedRemoteFile dir) {
-		Section sectionObj =
+		SectionInterface sectionObj =
 			getConnectionManager().getSectionManager().lookup(dir.getPath());
 		logger.debug("section = " + sectionObj.getName());
 		//		LinkedRemoteFile section = null;

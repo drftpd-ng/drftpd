@@ -15,14 +15,14 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slaveselection;
+package org.drftpd.slaveselection.filter;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
  * @author mog
- * @version $Id: BandwidthFilterTest.java,v 1.1 2004/02/23 01:14:41 mog Exp $
+ * @version $Id: BandwidthFilterTest.java,v 1.1 2004/02/26 13:56:53 mog Exp $
  */
 public class BandwidthFilterTest extends TestCase {
 

@@ -31,7 +31,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: SFVFile.java,v 1.29 2004/02/23 01:14:34 mog Exp $
+ * @version $Id: SFVFile.java,v 1.30 2004/02/26 13:56:46 mog Exp $
  */
 public class SFVFile implements Serializable {
 
@@ -229,27 +229,12 @@ public class SFVFile implements Serializable {
 	}
 
 	public long getXferspeed() {
-		if (getTotalXfertime() == 0)
+		if (getTotalXfertime()/1000 == 0)
 			return 0;
 		return getTotalBytes() / (getTotalXfertime() / 1000);
 	}
 	public boolean hasFile(String name) {
 		return getEntries().containsKey(name);
-	}
-
-	/**
-	 * @deprecated use getStatus().getOffline()
-	 */
-	public int offlineFiles() {
-		return getStatus().getOffline();
-		//		int offlineFiles = 0;
-		//		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
-		//			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-		//			if (!file.isAvailable()) {
-		//				offlineFiles++;
-		//			}
-		//		}
-		//		return offlineFiles;
 	}
 
 	public void setCompanion(LinkedRemoteFileInterface companion) {

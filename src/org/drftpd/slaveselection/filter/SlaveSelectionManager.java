@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slaveselection;
+package org.drftpd.slaveselection.filter;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -40,7 +40,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.2 2004/02/23 01:14:41 mog Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.1 2004/02/26 13:56:53 mog Exp $
  */
 public class SlaveSelectionManager {
 	private static final Logger logger =
