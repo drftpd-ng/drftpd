@@ -99,7 +99,7 @@ public class FinishReleaseOnSlaves extends ArchiveType {
     	Map.Entry<RemoteSlave,SlaveCount> entry;
     	Iterator<Map.Entry<RemoteSlave,SlaveCount>> iter = slaveMap.entrySet().iterator();
 
-        for(int i=0; i >= _numOfSlaves; i++) {
+        for(int i=0; i < _numOfSlaves; i++) {
         	entry = iter.next();
     		returnMe.add(entry.getKey());
         	// overwrite mincount if count of added is lower.

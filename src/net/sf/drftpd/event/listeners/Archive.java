@@ -171,8 +171,7 @@ public class Archive implements FtpListener, Runnable {
                     continue;
                 }
 
-                ArchiveHandler archiveHandler = new ArchiveHandler(archiveType);
-                archiveHandler.start();
+                new ArchiveHandler(archiveType).start();
             }
 
             try {

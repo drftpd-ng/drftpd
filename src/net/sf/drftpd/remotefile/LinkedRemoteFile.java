@@ -1541,7 +1541,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
                 if (light.length() == 0) {
                     rslave.simpleDelete(lrf.getPath());
-                    logger.info("Deleting 0byte file " + lrf.getPath());
+                    logger.info("Deleting 0byte file " + lrf.getPath()+" from "+rslave.getName());
                     lrf.unmergeFile(rslave);
                 } else if (light.length() == lrf.length()) {
                     lrf.addSlave(rslave);
@@ -1568,7 +1568,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
             LightRemoteFile light = (LightRemoteFile) iter.next();
             ArrayList<RemoteSlave> list = new ArrayList<RemoteSlave>();
             list.add(rslave);
-            logger.debug("adding file " + light.getName());
+            logger.debug("adding file " + light.getName()+" from "+rslave.getName());
             addFile(new StaticRemoteFile(list, light.getName(), "drftpd",
                     "drftpd", light.length(), light.lastModified()));
         }
