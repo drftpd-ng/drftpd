@@ -71,6 +71,7 @@ public class ConnectionManager {
 			FtpConnection conn = (FtpConnection)i.next();
 			
 			int idle = (int)((currTime-conn.getLastActive())/1000);
+			if(conn.getUser() == null) continue;
 			System.out.println("User has been idle for "+idle+"s, max "+conn.getUser().getMaxIdleTime()+"s");
 			System.out.println(idle+" >= "+conn.getUser().getMaxIdleTime());
 			if(idle >= conn.getUser().getMaxIdleTime()) {

@@ -11,6 +11,7 @@ import java.io.OutputStream;
 
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
@@ -32,9 +33,13 @@ import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.RemoteFile;
 import net.sf.drftpd.master.SlaveManager;
 
+/**
+ * @author <a href="mailto:mog@linux.nu">Morgan Christiansson</a>
+ */
 public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 	private Vector transfers = new Vector();
-	//	Properties cfg;
+	//Properties cfg;
+
 	SlaveManager manager;
 	private String root;
 
@@ -45,7 +50,6 @@ public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 	}
 
 	public static void main(String args[]) {
-
 		RemoteSlave slave;
 		Properties cfg = new Properties();
 		try {
@@ -112,79 +116,6 @@ public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 		}
 		return new LinkedRemoteFile(slave, rootfile);
 	}
-	//public void doPassiveTransfer(RemoteFile file) {}
-
-	public void doConnectSend(
-		RemoteFile rfile,
-		long offset,
-		InetAddress address,
-		int port)
-		throws FileNotFoundException, ConnectException {
-
-		File file = new File(root + rfile.getPath());
-		if (!file.exists())
-			throw new FileNotFoundException(
-				"File " + file + " not found, Remotefile: " + rfile);
-		Transfer transfer = null;
-		try {
-			Socket sock;
-			sock = new Socket(address, port);
-			FileInputStream is = new FileInputStream(file);
-			is.skip(offset);
-			OutputStream os = sock.getOutputStream();
-			transfer = new Transfer(is, os);
-			transfers.add(transfer);
-			transfer.transfer();
-			sock.close();
-		} catch (ConnectException ex) {
-			System.err.println(
-				"Error connecting to "
-					+ address
-					+ ":"
-					+ port
-					+ " to send "
-					+ file.getPath());
-		} catch (Throwable ex) {
-			ex.printStackTrace();
-		} finally {
-			transfers.remove(transfer);
-		}
-	}
-
-	/**
-	 * @see net.sf.drftpd.slave.Slave#doConnectReceive(String, InetAddress, int)
-	 * @author mog
-	 */
-	public void doConnectReceive(
-		RemoteFile remotefile,
-		InetAddress addr,
-		int port)
-		throws RemoteException, PermissionDeniedException {
-
-		File file = new File(root + remotefile.getPath());
-		FileOutputStream out;
-		try {
-			out = new FileOutputStream(file);
-		} catch (FileNotFoundException ex) {
-			throw new PermissionDeniedException(ex.toString());
-		}
-		/*
-				CRC32 checksum = new CRC32();
-				CheckedOutputStream cos = new CheckedOutputStream(os, checksum);
-		*/
-		Transfer transfer = null;
-		try {
-			Socket socket = new Socket(addr, port);
-			InputStream in = socket.getInputStream();
-			transfer = new Transfer(in, out);
-			transfers.add(transfer);
-			transfer.transfer();
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		} finally {
-			transfers.remove(transfer);
-		}
-	}
 
 	public SlaveStatus getSlaveStatus() {
 		checkInited();
@@ -192,7 +123,7 @@ public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 		int transfersUp = 0, transfersDown = 0;
 
 		for (Iterator i = transfers.iterator(); i.hasNext();) {
-			Transfer transfer = (Transfer) i.next();
+			TransferImpl transfer = (TransferImpl) i.next();
 			if (transfer.getDirection() == transfer.TRANSFER_RECEIVING) {
 				throughputDown += transfer.getTransferSpeed();
 				transfersDown += 1;
@@ -220,13 +151,115 @@ public final class SlaveImpl extends UnicastRemoteObject implements Slave {
 			throw new RuntimeException(ex.toString());
 		}
 	}
+
 	/**
 	 * @see net.sf.drftpd.slave.Slave#mkdir()
 	 */
-	public void mkdir(String fileName) throws RemoteException {
-		if(!new File(root+fileName).mkdir()) {
-			throw new RuntimeException("mkdir(): Permission denied");
+	public void mkdir(String path) throws RemoteException, PermissionDeniedException {
+		if(!new File(root+path).mkdir()) {
+			throw new PermissionDeniedException("mkdir(): Permission denied");
 		}
 	}
+
+	/////////////////// TRANSFER METHODS ///////////////////////////
+	/////////////////// TRANSFER METHODS ///////////////////////////
+	/////////////////// TRANSFER METHODS ///////////////////////////
+	/////////////////// TRANSFER METHODS ///////////////////////////
+	/////////////////// TRANSFER METHODS ///////////////////////////
+	// ;-)
+	// SEND
+
+	/**
+	 * Starts sending 'remotefile' starting at 'offset' bytes to a outputstream from the already connected socket 'sock'.
+	 */
+	private Transfer doSend(RemoteFile remotefile, long offset, Socket sock) throws IOException {
+		File file = new File(root + remotefile.getPath());
+		if (!file.exists())
+			throw new FileNotFoundException(
+				"File " + file + " not found, Remotefile: " + remotefile);
+		
+		FileInputStream in = new FileInputStream(file);
+		in.skip(offset);
+		
+		TransferImpl transfer = null;
+
+		OutputStream out = sock.getOutputStream();
+		return new TransferImpl(in, out);
+	}
+
+	/**
+	 * @see net.sf.drftpd.slave.Slave#doConnectSend(REmoteFile, long, InetADdress, int)
+	 */
+	public Transfer doConnectSend(
+		RemoteFile rfile,
+		long offset,
+		InetAddress address,
+		int port)
+		throws IOException {
+
+		Socket sock;
+		sock = new Socket(address, port);
+		return doSend(rfile, offset, sock);
+	}
+
+	/**
+	 * @see net.sf.drftpd.slave.Slave#doListenSend(RemoteFile, long, int)
+	 */
+	public Transfer doListenSend(RemoteFile remotefile, long offset, int port)
+		throws RemoteException, IOException {
+		
+		ServerSocket server = new ServerSocket(port, 1);
+		//server.setSoTimeout(xxx);
+		Socket sock = server.accept();
+		server.close();
+		return doSend(remotefile, offset, sock);
+	}
+
+	//RECEIVE
+	/**
+	 * Generic receive method.
+	 */
+	private Transfer doReceive(RemoteFile remotefile, long offset, Socket sock) throws IOException {
+		
+		File file = new File(root + remotefile.getPath());
+		FileOutputStream out;
+		out = new FileOutputStream(file);
+
+		InputStream in = sock.getInputStream();
+		/*
+				CRC32 checksum = new CRC32();
+				CheckedOutputStream cos = new CheckedOutputStream(os, checksum);
+		*/
+
+		return new TransferImpl(in, out);
+	}
+
+	/**
+	 * @see net.sf.drftpd.slave.Slave#doConnectReceive(RemoteFile, long, InetAddress, int)
+	 */
+	public Transfer doConnectReceive(
+		RemoteFile remotefile,
+		long offset,
+		InetAddress addr,
+		int port)
+		throws RemoteException, PermissionDeniedException, IOException {
+
+		Socket sock = new Socket(addr, port);
+		return doReceive(remotefile, offset, sock);
+	}
+
+
+	/**
+	 * @see net.sf.drftpd.slave.Slave#doListenReceive(RemoteFile, long, int)
+	 */
+	public Transfer doListenReceive(RemoteFile remotefile, long offset, int port)
+		throws IOException {
+		ServerSocket server = new ServerSocket(port, 1);
+		//server.setSoTimeout(xxx);
+		Socket sock = server.accept();
+		server.close();
+		return doSend(remotefile, offset, sock);
+	}
+
 
 }

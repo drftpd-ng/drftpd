@@ -26,7 +26,7 @@ import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.slave.RemoteSlave;
-import net.sf.drftpd.slave.Transfer;
+import net.sf.drftpd.slave.TransferImpl;
 
 import socks.server.Ident;
 
@@ -1422,7 +1422,7 @@ public class FtpConnection extends BaseFtpConnection {
 		// now transfer file data
 		out.write(mFtpStatus.getResponse(150, request, user, null));
 		try {
-			RemoteSlave slave = slavemanager.getASlave(Transfer.TRANSFER_RECEIVING);
+			RemoteSlave slave = slavemanager.getASlave(TransferImpl.TRANSFER_RECEIVING);
 		} catch(NoAvailableSlaveException ex) {
 			//TODO: send correct error to client
 			out.write(mFtpStatus.getResponse(530, request, user, null));

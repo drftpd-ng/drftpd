@@ -12,7 +12,7 @@ import java.util.Random;
 import net.sf.drftpd.slave.RemoteSlave;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
-import net.sf.drftpd.slave.Transfer;
+import net.sf.drftpd.slave.TransferImpl;
 import net.sf.drftpd.LinkedRemoteFile;
 
 public class SlaveManagerImpl
@@ -101,10 +101,10 @@ public class SlaveManagerImpl
 					continue;
 				}
 				float throughput, bestthroughput;
-				if (direction == Transfer.TRANSFER_RECEIVING) {
+				if (direction == TransferImpl.TRANSFER_RECEIVING) {
 					throughput = status.getThroughputReceiving();
 					bestthroughput = beststatus.getThroughputReceiving();
-				} else if(direction == Transfer.TRANSFER_SENDING) {
+				} else if(direction == TransferImpl.TRANSFER_SENDING) {
 					throughput = status.getThroughputSending();
 					bestthroughput = beststatus.getThroughputSending();
 				} else {

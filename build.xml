@@ -1,14 +1,6 @@
 <?xml version="1.0"?>
 
-<!-- Written to assume that classpath is rooted in the current directory. -->
-<!-- So this should be OK if you make this script in the root of a filesystem. -->
-<!-- If not, you may prefer to adjust the basedir, or move some directories around. -->
-<!-- The idea is that both Ant and NetBeans have to know what the package root is -->
-<!-- for the classes in your application. -->
 <project name="drftpd" basedir="." default="all">
-
-    <!-- Don't worry if you don't know the Ant syntax completely or need help on some tasks! -->
-    <!-- The standard Ant documentation is bundled. See Help | Help Sets | Ant 1.4.1 Manual. -->
 
     <target name="all" depends="compile"/>
 
@@ -21,10 +13,12 @@
         <!-- <property name="mylib" value="../lib/mylib.jar"/> -->
         <property name="sourceDir" value="src/"/>
         <property name="outputDir" value="classes/"/>
-<!--
-        <property name="deployJsp" value="web/"/>
-        <property name="deployProperty" value="web/"/>
--->
+
+	<path id="classpath">
+	    <fileset dir=".">
+	        <include name="lib/*"/>
+	    </fileset>
+	</path>
     </target>
 
 
@@ -37,29 +31,15 @@
    </target>
 
    <target name="compile" depends="init, prepare">
-     <javac destdir="${outputDir}" debug="yes">
-       <src path="${sourceDir}"/>
-       <exclude name="**/UnixDirectoryHelper.java"/>
-       <exclude name="**/ListRemoteFiles.java"/>
-     </javac>
-     <rmic base="${outputDir}">
-       <include name="**/*Impl.class"/>
-     </rmic>
-     <copy file="${sourceDir}/net/sf/drftpd/master/FtpStatus.properties" todir="${outputDir}/net/sf/distributedftpd/master"/>
-     <!--
-     <jar jarfile="drftpd.jar">
-       <fileset dir="${outputDir}">
-         <include name="**"/>
-       </fileset>
-     </jar>
-     -->
-   </target>
-
-   <target name="deploy" depends="compile,init">
-<!--
-     <copydir src="${jsp}" dest="${deployJSP}"/>
-     <copyfile src="server.properties" dest="${deployProperties}"/>
--->
-   </target>
+    <javac destdir="${outputDir}" debug="yes">
+	<src path="${sourceDir}"/>
+	<classpath refid="classpath"/>
+    </javac>
+    <rmic base="${outputDir}">
+	<include name="**/*Impl.class"/>
+	<classpath refid="classpath"/>
+    </rmic>
+    <copy file="${sourceDir}/net/sf/drftpd/master/FtpStatus.properties" todir="${outputDir}/net/sf/distributedftpd/master"/>
+  </target>
 
 </project>

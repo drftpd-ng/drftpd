@@ -170,13 +170,13 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		} /* serialize directory */
 	}
 	
-	public void mkdir(String fileName) throws NoAvailableSlaveException {
+	public void mkdir(String fileName) throws IOException {
 		for(Iterator i = slaves.iterator(); i.hasNext(); ) {
 			RemoteSlave slave = (RemoteSlave)i.next();
 			try {
 				slave.getSlave().mkdir(getPath()+fileName);
 			} catch(RemoteException ex) {
-				ex.printStackTrace();
+				slave.getManager().handleRemoteException(ex, slave);
 			}
 		}
 	}

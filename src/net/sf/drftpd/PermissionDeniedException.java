@@ -1,5 +1,7 @@
 package net.sf.drftpd;
 
+import java.io.IOException;
+
 /**
  * @author mog
  *
@@ -8,7 +10,7 @@ package net.sf.drftpd;
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-public class PermissionDeniedException extends Exception {
+public class PermissionDeniedException extends IOException {
 	public PermissionDeniedException() { super(); }
 	public PermissionDeniedException(String message) { super(message); }
 }
