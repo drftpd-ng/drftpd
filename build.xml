@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+
+<!-- Written to assume that classpath is rooted in the current directory. -->
+<!-- So this should be OK if you make this script in the root of a filesystem. -->
+<!-- If not, you may prefer to adjust the basedir, or move some directories around. -->
+<!-- The idea is that both Ant and NetBeans have to know what the package root is -->
+<!-- for the classes in your application. -->
+<project name="drftpd" basedir="." default="all">
+
+    <!-- Don't worry if you don't know the Ant syntax completely or need help on some tasks! -->
+    <!-- The standard Ant documentation is bundled. See Help | Help Sets | Ant 1.4.1 Manual. -->
+
+    <target name="all" depends="compile"/>
+
+    <target name="init">
+        <!-- You can set up any variables you want used throughout the script here. -->
+        <!-- To use e.g. Jikes, uncomment this line. -->
+        <!-- (Or make the same change in Tools | Options | Ant Settings | Properties.) -->
+        <!-- <property name="build.compiler" value="jikes"/> -->
+        <!-- You might like to set up some overridable paths, etc.: -->
+        <!-- <property name="mylib" value="../lib/mylib.jar"/> -->
+        <property name="sourceDir" value="src/"/>
+        <property name="outputDir" value="classes/"/>
+<!--
+        <property name="deployJsp" value="web/"/>
+        <property name="deployProperty" value="web/"/>
+-->
+    </target>
+
+
+    <target name="clean" depends="init">
+        <delete dir="${outputDir}" />
+    </target>
+
+   <target name="prepare" depends="init">
+      <mkdir dir="${outputDir}" />
+   </target>
+
+   <target name="compile" depends="init, prepare">
+     <javac destdir="${outputDir}" debug="yes" optimize="no">
+       <src path="${sourceDir}"/>
+       <exclude name="**/UnixDirectoryHelper.java"/>
+       <exclude name="**/ListRemoteFiles.java"/>
+     </javac>
+     <rmic base="${outputDir}">
+       <include name="**/*Impl.class"/>
+     </rmic>
+     <copy file="${sourceDir}/net/sf/drftpd/master/FtpStatus.properties" todir="${outputDir}/net/sf/distributedftpd/master"/>
+     <!--
+     <jar jarfile="dftpd.jar">
+       <fileset dir="${outputDir}">
+         <include name="**"/>
+       </fileset>
+     </jar>
+     -->
+   </target>
+
+   <target name="deploy" depends="compile,init">
+<!--
+     <copydir src="${jsp}" dest="${deployJSP}"/>
+     <copyfile src="server.properties" dest="${deployProperties}"/>
+-->
+   </target>
+
+</project>
