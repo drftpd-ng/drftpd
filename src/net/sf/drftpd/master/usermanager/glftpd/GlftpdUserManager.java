@@ -340,6 +340,7 @@ public class GlftpdUserManager implements UserManager {
 		return users;
 	}
 	public List getAllUsers() throws IOException {
+		System.out.println("userpathFile = " + userpathFile);
 		if (!userpathFile.exists())
 			throw new FileNotFoundException(userpathFile + " not found");
 		String userpaths[] = userpathFile.list();
@@ -351,6 +352,8 @@ public class GlftpdUserManager implements UserManager {
 			if (userpath.endsWith(".xml"))
 				continue;
 			if (!new File(getUserfilepath(userpath)).isFile())
+				continue;
+			if (userpath.endsWith(".user"))  //default.user
 				continue;
 			logger.debug("add " + userpath);
 			try {

@@ -41,8 +41,8 @@ public class JSXUser
 		if (this.password == null) {
 			if (this.unixPassword == null)
 				throw new IllegalStateException("no password set");
-			if (password
-				.equals(Crypt.crypt(this.password.substring(0, 2), password))) {
+			if (this.unixPassword
+				.equals(Crypt.crypt(this.unixPassword.substring(0, 2), password))) {
 				setPassword(password);
 				return true;
 			}

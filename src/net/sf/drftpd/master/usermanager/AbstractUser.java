@@ -608,6 +608,7 @@ public abstract class AbstractUser implements User {
 	}
 
 	public void reset(ConnectionManager cm) {
+		if ( cm == null ) return;
 		Calendar now = Calendar.getInstance();
 		Calendar lastResetCalendar = Calendar.getInstance();
 		lastResetCalendar.setTime(new Date(lastReset));
