@@ -16,7 +16,7 @@ kick.idlelimit=30
 kick.usersperline=10
 
 # net.drmods.plugins.irc.Rank
-# set the groups that are exepmt from being listed in !rank counts (space seperated)
+# set the groups that are exepmt from being listed in !rank counts (space separated)
 rank.exempt=siteop nuke
 
 # net.drmods.plugins.irc.Request
@@ -28,7 +28,7 @@ request.dirpath=/requests/
 new.default=5
 # specify the maximum number of dirs to show (overrides user input)
 new.max=25
-# sepcify the sections to exclude from output (space separated)
+# specify the sections to exclude from output (space separated)
 new.exclude=REQUESTS
 # specify the format of the date on announce (See: http://java.sun.com/j2se/1.5.0/docs/api/java/text/SimpleDateFormat.html)
 new.dateformat=MM.dd.yy hh:mma
@@ -37,7 +37,7 @@ new.dateformat=MM.dd.yy hh:mma
 #Specify what will be filtered from the release names (regex allowed)
 #i.e. Shrek.2.2004.NTSC.COMPLETE.iNTERNAL.DVDR-GRP -> Shrek 2
 imdb.filter=dvdrip;rip;divx;xvid;int;internal;dvd;svcd;vcd;complete;ntsc;pal;dvdr;ita;italian;eng;dvdscr;scr;ts;proper;screener;AC3;19[0-9][0-9];20[0-9][0-9]
-#specify which sections to fetch imdb data for when a new dir is created (seperated by ;)
+#specify which sections to fetch imdb data for when a new dir is created (separated by ;)
 imdb.sections=VCD;SVCD;DVDR;XVID
 #specify folder names to exclude from fetching imdb data
 imdb.exclude=cd1;cd2;cd3;cd4;cd5;disk1;disk2;disk3;disk4;disk5;sample;covers;cover
