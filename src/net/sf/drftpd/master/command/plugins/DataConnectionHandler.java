@@ -1124,6 +1124,7 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                     _transfer = _rslave.getTransfer(ci.getTransferIndex());
                 } catch (Exception ex) {
                     logger.fatal("rslave=" + _rslave, ex);
+                    reset();
                     return new Reply(450,
                         ex.getClass().getName() + " from slave: " +
                         ex.getMessage());
@@ -1210,9 +1211,9 @@ public class DataConnectionHandler implements CommandHandlerFactory,
                     logger.error("IOException during transfer", ex);
                     reply = new Reply(426, ex.getMessage());
                 }
-
+                
                 reply.addComment(ex.getLocalizedMessage());
-
+                reset();
                 return reply;
             } catch (SlaveUnavailableException e) {
                 Reply reply = null;

@@ -186,8 +186,8 @@ public class ConnectionManager {
             }
         }
 
-        if ((user.getMaxLoginsPerIP() > 0) &&
-                (ipCount > user.getMaxLoginsPerIP())) {
+        if ((user.getMaxLoginsPerIP() > 0) && 
+                (ipCount >= user.getMaxLoginsPerIP())) {
             return new Reply(530,
                 "Sorry, your maximum number of connections from this IP (" +
                 user.getMaxLoginsPerIP() + ") has been reached.");

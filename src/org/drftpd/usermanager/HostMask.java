@@ -32,6 +32,7 @@ import java.net.InetAddress;
  * @version $Id$
  */
 public class HostMask {
+
     private static final Logger logger = Logger.getLogger(HostMask.class);
     private String _hostMask;
     private String _identMask;
@@ -40,13 +41,24 @@ public class HostMask {
         int pos = string.indexOf('@');
 
         if (pos == -1) {
-            _identMask = null;
+            _identMask = "*";
             _hostMask = string;
         } else {
             _identMask = string.substring(0, pos);
             _hostMask = string.substring(pos + 1);
         }
+        if (_identMask.equals("")) {
+        	_identMask = "*";
+        }
+        if (_hostMask.equals("")) {
+        	_hostMask = "*";
+        }
     }
+    
+	public boolean equals(Object obj) {
+		HostMask h = (HostMask) obj;
+		return h.getIdentMask().equals(getIdentMask()) && h.getHostMask().equals(getHostMask());
+	}
 
     public String getHostMask() {
         return _hostMask;
@@ -65,7 +77,7 @@ public class HostMask {
      * @return false is ident mask equals "*"
      */
     public boolean isIdentMaskSignificant() {
-        return (_identMask != null) && !_identMask.equals("*");
+        return !_identMask.equals("*");
     }
 
     public boolean matchesHost(InetAddress a) throws MalformedPatternException {
@@ -90,10 +102,6 @@ public class HostMask {
     }
 
     public String toString() {
-        if (_identMask != null) {
-            return _identMask + "@" + _hostMask;
-        }
-
-        return "*@" + _hostMask;
+        return _identMask + "@" + _hostMask;
     }
 }

@@ -19,6 +19,7 @@ package net.sf.drftpd.master.command.plugins;
 
 import com.Ostermiller.util.StringTokenizer;
 
+import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -260,16 +261,15 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
 
             String mask = arguments.nextToken();
             env.add("mask", mask);
-
-            if (rslave.addMask(mask)) {
-                response.addComment(conn.jprintf(SlaveManagement.class,
-                        "slave.addmask.success", env));
-
-                return response;
-            }
-
-            return new Reply(501,
-                conn.jprintf(SlaveManagement.class, "slave.addmask.failed"));
+            try {
+				rslave.addMask(mask);
+				response.addComment(conn.jprintf(SlaveManagement.class,
+						"slave.addmask.success", env));
+				return response;
+			} catch (DuplicateElementException e) {
+				return new Reply(501, conn.jprintf(SlaveManagement.class,
+						"slave.addmask.dupe", env));
+			}
         } else if (command.equalsIgnoreCase("delmask")) {
             if (arguments.countTokens() != 1) {
                 return new Reply(501,

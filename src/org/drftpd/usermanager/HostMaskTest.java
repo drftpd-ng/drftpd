@@ -52,4 +52,17 @@ public class HostMaskTest extends TestCase {
         assertTrue(h.matchesIdent("anything"));
         assertFalse(h.matchesIdent("nothing"));
     }
+    
+    public void testEquals() {
+    	HostMask a = new HostMask("test@1.1.1.1");
+    	HostMask b = new HostMask("test@1.1.1.1");
+    	assertEquals(a,b);
+    	a = new HostMask("*@1.1.1.*");
+    	b = new HostMask("1.1.1.*");
+    	assertEquals(a,b);
+    	a = new HostMask("@1.1.1.*");
+    	assertEquals(a,b);
+    	a = new HostMask("notequal@4.2.3.4");
+    	assertFalse(a.equals(b));
+    }
 }

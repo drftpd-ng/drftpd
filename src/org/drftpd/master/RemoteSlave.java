@@ -43,6 +43,7 @@ import java.util.Queue;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
+import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.SlaveEvent;
@@ -156,11 +157,9 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		return map;
 	}
 
-	public boolean addMask(String mask) {
+	public void addMask(String mask) throws DuplicateElementException {
 		_ipMasks.addMask(mask);
 		commit();
-
-		return true;
 	}
 
 	/**

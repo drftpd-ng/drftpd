@@ -13,8 +13,8 @@ master.usermanager=org.drftpd.usermanager.javabeans.BeanUserManager
 
 #loaded plugins must use in sequential numbering
 #plugins.1=org.drftpd.plugins.SiteBotSSL
-#plugins.2=net.sf.drftpd.event.listeners.Trial
-#plugins.3=net.sf.drftpd.event.listeners.Archive
+#plugins.2=org.drftpd.plugins.Trial
+#plugins.3=org.drftpd.plugins.Archive
 
 #leave slaveselection manager as is and use default configs in:
 # 1. slaveselection-up.conf.dist

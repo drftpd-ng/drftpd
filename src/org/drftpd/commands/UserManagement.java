@@ -1133,9 +1133,15 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         if (!st.hasMoreTokens()) {
             return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
-
-        long credits = Bytes.parseBytes(st.nextToken());
-
+        long credits = 0;
+        String amt = null;
+        try {
+        	amt = st.nextToken();
+        	credits = Bytes.parseBytes(amt);
+        } catch (NumberFormatException ex) {
+        	return new Reply(452, "The string " + amt + " cannot be interpreted");
+        }
+        
         if (0 > credits) {
             return new Reply(452, credits + " is not a positive number.");
         }
@@ -1516,15 +1522,16 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         User myUser;
         long credits;
-
+        String amt = null;
+        
         try {
             myUser = conn.getGlobalContext().getUserManager().getUserByName(st.nextToken());
 
             if (!st.hasMoreTokens()) {
                 return Reply.RESPONSE_501_SYNTAX_ERROR;
             }
-
-            credits = Bytes.parseBytes(st.nextToken()); // B, not KiB
+            amt = st.nextToken();
+            credits = Bytes.parseBytes(amt); // B, not KiB
 
             if (0 > credits) {
                 return new Reply(452, "Credits must be a positive number.");
@@ -1534,7 +1541,10 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                 Bytes.formatBytes(credits) + " ('" + credits + "') from '" +
                 myUser.getName() + "'");
             myUser.updateCredits(-credits);
+        } catch (NumberFormatException ex) {
+        	return new Reply(452, "The string " + amt + " cannot be interpreted");
         } catch (Exception ex) {
+        	logger.debug("",ex);
             return new Reply(452, ex.getMessage());
         }
 

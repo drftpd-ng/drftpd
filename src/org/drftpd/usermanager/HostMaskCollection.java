@@ -17,6 +17,8 @@
  */
 package org.drftpd.usermanager;
 
+import net.sf.drftpd.DuplicateElementException;
+
 import org.apache.log4j.Logger;
 
 import org.apache.oro.text.regex.MalformedPatternException;
@@ -68,15 +70,14 @@ public class HostMaskCollection extends ArrayList {
         }
     }
 
-    public void addMask(String mask) {
+    public void addMask(String mask) throws DuplicateElementException {
         HostMask newMask = new HostMask(mask);
 
         for (Iterator i = iterator(); i.hasNext();) {
             HostMask hostMask = (HostMask) i.next();
 
             if (hostMask.equals(newMask)) {
-                // mask already added
-                return;
+            	throw new DuplicateElementException();
             }
         }
 
