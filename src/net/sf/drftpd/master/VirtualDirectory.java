@@ -1,10 +1,6 @@
 package net.sf.drftpd.master;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.Iterator;

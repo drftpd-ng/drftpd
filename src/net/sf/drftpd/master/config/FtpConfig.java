@@ -11,11 +11,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -28,6 +31,9 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.oro.text.GlobCompiler;
+import org.apache.oro.text.regex.MalformedPatternException;
+import org.tanesha.replacer.FormatterException;
+import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
@@ -36,19 +42,20 @@ import org.apache.oro.text.GlobCompiler;
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 public class FtpConfig {
+	private Map replacerFormats;
 	private static Logger logger = Logger.getLogger(FtpConfig.class);
 	private ArrayList _creditcheck;
 
 	private ArrayList _creditloss;
 	private ArrayList _delete;
+	private ArrayList _deleteown;
 	private ArrayList _download;
-	private ArrayList _eventplugin;
+//	private ArrayList _eventplugin;
 	private ArrayList _hideinwho;
 	private ArrayList _makedir;
 	private ArrayList _msgpath;
 	private ArrayList _pre;
 	private ArrayList _privpath;
-	//private ArrayList _rename;
 	private ArrayList _upload;
 	private ArrayList _dirlog;
 
@@ -178,8 +185,8 @@ public class FtpConfig {
 	public float getCreditLossRatio(LinkedRemoteFile path, User fromUser) {
 		for (Iterator iter = _creditloss.iterator(); iter.hasNext();) {
 			RatioPathPermission perm = (RatioPathPermission) iter.next();
-			if(perm.checkPath(path)) {
-				if(perm.check(fromUser)) {
+			if (perm.checkPath(path)) {
+				if (perm.check(fromUser)) {
 					return perm.getRatio();
 				} else {
 					return 1;
@@ -191,6 +198,27 @@ public class FtpConfig {
 	}
 	public long getFreespaceMin() {
 		return freespaceMin;
+	}
+
+	private Map loadFormats(InputStream in)
+		throws FormatterException, IOException {
+		Properties props = new Properties();
+		props.load(in);
+		Hashtable replacerFormats = new Hashtable();
+		for (Iterator iter = props.entrySet().iterator(); iter.hasNext();) {
+			Map.Entry entry = (Map.Entry) iter.next();
+			replacerFormats.put(
+				(String) entry.getKey(),
+				ReplacerFormat.createFormat((String) entry.getValue()));
+		}
+		return replacerFormats;
+	}
+
+	public ReplacerFormat getReplacerFormat(String key) {
+		ReplacerFormat ret = (ReplacerFormat) replacerFormats.get(key);
+		if (ret == null)
+			throw new NoSuchFieldError("No ReplacerFormat for " + key);
+		return ret;
 	}
 
 	public SlaveManagerImpl getSlaveManager() {
@@ -207,6 +235,12 @@ public class FtpConfig {
 	public void loadConfig(Properties cfg, ConnectionManager connManager)
 		throws IOException {
 		loadConfig2();
+		try {
+			replacerFormats =
+				loadFormats(new FileInputStream("replacerformats.conf"));
+		} catch (FormatterException e) {
+			throw (IOException) new IOException().initCause(e);
+		}
 		this.connManager = connManager;
 		this.freespaceMin = Long.parseLong(cfg.getProperty("freespace.min"));
 	}
@@ -216,15 +250,15 @@ public class FtpConfig {
 		ArrayList hideinwho = new ArrayList();
 		ArrayList creditloss = new ArrayList();
 		ArrayList creditcheck = new ArrayList();
-		ArrayList eventplugin = new ArrayList();
+		//ArrayList eventplugin = new ArrayList();
 		ArrayList pre = new ArrayList();
 		ArrayList upload = new ArrayList();
-		//ArrayList rename = new ArrayList();
 		ArrayList makedirs = new ArrayList();
 		ArrayList download = new ArrayList();
 		ArrayList delete = new ArrayList();
+		ArrayList deleteown = new ArrayList();
 		ArrayList dirlog = new ArrayList();
-		
+
 		LineNumberReader in = new LineNumberReader(new FileReader(newConf));
 		int lineno = 0;
 		String line;
@@ -272,63 +306,44 @@ public class FtpConfig {
 					creditloss.add(
 						new RatioPathPermission(multiplier, path, users));
 				} else if (command.equals("dirlog")) {
-					dirlog.add(
-						new PatternPathPermission(
-							globComiler.compile(st.nextToken()),
-							makeUsers(st)));
+					makePermission(dirlog, st);
 				} else if (command.equals("hideinwho")) {
-					hideinwho.add(
-						new PatternPathPermission(
-							globComiler.compile(st.nextToken()),
-							makeUsers(st)));
+					makePermission(hideinwho, st);
 				} else if (command.equals("makedir")) {
-					makedirs.add(
-						new PatternPathPermission(
-							globComiler.compile(st.nextToken()),
-							makeUsers(st)));
+					makePermission(makedirs, st);
 				} else if (command.equals("pre")) {
-					pre.add(
-						new PatternPathPermission(
-							globComiler.compile(st.nextToken()),
-							makeUsers(st)));
+					makePermission(pre, st);
 				} else if (command.equals("upload")) {
-					upload.add(
-						new PatternPathPermission(
-							globComiler.compile(st.nextToken()),
-							makeUsers(st)));
+					makePermission(upload, st);
 				} else if (command.equals("download")) {
-					download.add(
-						new PatternPathPermission(
-							globComiler.compile(st.nextToken()),
-							makeUsers(st)));
+					makePermission(download, st);
 				} else if (command.equals("delete")) {
-					delete.add(
-						new PatternPathPermission(
-							globComiler.compile(st.nextToken()),
-							makeUsers(st)));
-				} else if (command.equals("plugin")) {
-					String clazz = st.nextToken();
-					ArrayList argsCollection = new ArrayList();
-					while (st.hasMoreTokens()) {
-						argsCollection.add(st.nextToken());
-					}
-					String args[] =
-						(String[]) argsCollection.toArray(new String[0]);
-					try {
-						Class SIG[] =
-							{
-								FtpConfig.class,
-								ConnectionManager.class,
-								String[].class };
-						Constructor met =
-							Class.forName(clazz).getConstructor(SIG);
-						Object obj =
-							met.newInstance(
-								new Object[] { this, connManager, args });
-						eventplugin.add(obj);
-					} catch (Throwable e) {
-						logger.log(Level.FATAL, "Error loading " + clazz, e);
-					}
+					makePermission(delete, st);
+				} else if (command.equals("deleteown")) {
+					makePermission(deleteown, st);
+//				} else if (command.equals("plugin")) {
+//					String clazz = st.nextToken();
+//					ArrayList argsCollection = new ArrayList();
+//					while (st.hasMoreTokens()) {
+//						argsCollection.add(st.nextToken());
+//					}
+//					String args[] =
+//						(String[]) argsCollection.toArray(new String[0]);
+//					try {
+//						Class SIG[] =
+//							{
+//								FtpConfig.class,
+//								ConnectionManager.class,
+//								String[].class };
+//						Constructor met =
+//							Class.forName(clazz).getConstructor(SIG);
+//						Object obj =
+//							met.newInstance(
+//								new Object[] { this, connManager, args });
+//						eventplugin.add(obj);
+//					} catch (Throwable e) {
+//						logger.log(Level.FATAL, "Error loading " + clazz, e);
+//					}
 				}
 			} catch (Exception e) {
 				logger.warn(
@@ -358,8 +373,8 @@ public class FtpConfig {
 		hideinwho.trimToSize();
 		_hideinwho = hideinwho;
 
-		eventplugin.trimToSize();
-		_eventplugin = eventplugin;
+//		eventplugin.trimToSize();
+//		_eventplugin = eventplugin;
 
 		pre.trimToSize();
 		_pre = pre;
@@ -372,9 +387,21 @@ public class FtpConfig {
 
 		delete.trimToSize();
 		_delete = delete;
-		
+
 		dirlog.trimToSize();
 		_dirlog = dirlog;
+	}
+
+	/**
+	 * @param delete
+	 * @param st
+	 */
+	private void makePermission(ArrayList arr, StringTokenizer st)
+		throws MalformedPatternException {
+		arr.add(
+			new PatternPathPermission(
+				new GlobCompiler().compile(st.nextToken()),
+				makeUsers(st)));
 	}
 
 	private ArrayList makeUsers(StringTokenizer st) {

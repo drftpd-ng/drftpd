@@ -6,7 +6,6 @@
  */
 package net.sf.drftpd;
 
-import net.sf.drftpd.master.usermanager.User;
 
 /**
  * @author mog
@@ -15,11 +14,11 @@ import net.sf.drftpd.master.usermanager.User;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class Nukee implements Comparable {
-	User user;
-	long amount;
+	private String _username;
+	private long _amount;
 
 	public long getBytes() {
-		return amount;
+		return _amount;
 	}
 	/* (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
@@ -38,9 +37,23 @@ public class Nukee implements Comparable {
 	 * @param user
 	 * @param l
 	 */
-	public Nukee(User user, long l) {
-		this.user = user;
-		this.amount = l;
+	public Nukee(String user, long l) {
+		_username = user;
+		_amount = l;
+	}
+
+	/**
+	 * @return
+	 */
+	public String getUsername() {
+		return _username;
+	}
+
+	/**
+	 * @return
+	 */
+	public long getAmount() {
+		return _amount;
 	}
 
 }

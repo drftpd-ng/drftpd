@@ -141,6 +141,9 @@ public class ConnectionManager {
 					Integer.parseInt(nukeElement.getChildText("multiplier"));
 				String reason = nukeElement.getChildText("reason");
 
+				long size = Long.parseLong(nukeElement.getChildText("size"));
+				long nukedAmount = Long.parseLong(nukeElement.getChildText("nukedAmount"));
+
 				Map nukees = new Hashtable();
 				List nukeesElement =
 					nukeElement.getChild("nukees").getChildren("nukee");
@@ -152,6 +155,7 @@ public class ConnectionManager {
 						nukeeElement.getChildText("username");
 					Long nukeeAmount =
 						new Long(nukeeElement.getChildText("amount"));
+					
 					nukees.put(nukeeUsername, nukeeAmount);
 				}
 				nukelog.add(
@@ -160,9 +164,10 @@ public class ConnectionManager {
 						"NUKE",
 						directory,
 						time,
+						size,
+						nukedAmount,
 						multiplier,
-						reason,
-						nukees));
+						reason, nukees));
 			}
 		} catch (FileNotFoundException ex) {
 			logger.log(

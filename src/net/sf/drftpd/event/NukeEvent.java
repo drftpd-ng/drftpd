@@ -22,11 +22,12 @@ import org.jdom.Element;
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 public class NukeEvent extends UserEvent {
+	private long nukedAmount;
 	private long size;
 	private String path;
 	
-	public NukeEvent(User user, String command, String path, long size, int multiplier, String reason, Map nukees) {
-		this(user, command, path, System.currentTimeMillis(), size, multiplier, reason, nukees);
+	public NukeEvent(User user, String command, String path, long size, long nukedAmount, int multiplier, String reason, Map nukees) {
+		this(user, command, path, System.currentTimeMillis(), size, nukedAmount, multiplier, reason, nukees);
 	}
 	/**
 	 * @param user
@@ -34,13 +35,14 @@ public class NukeEvent extends UserEvent {
 	 * @param multiplier
 	 * @param nukees
 	 */
-	public NukeEvent(User user, String command, String path, long time, long size, int multiplier, String reason, Map nukees) {
+	public NukeEvent(User user, String command, String path, long time, long size, long nukedAmount, int multiplier, String reason, Map nukees) {
 		super(user, command,  time);
 		this.multiplier = multiplier;
 		this.reason = reason;
 		this.path = path;
 		this.nukees = nukees;
 		this.size = size;
+		this.nukedAmount = nukedAmount;
 	}
 	
 	private String reason;
@@ -95,6 +97,9 @@ public class NukeEvent extends UserEvent {
 		element.addContent(new Element("reason").setText(this.getReason()));
 		element.addContent(new Element("time").setText(Long.toString(this.getTime())));
 		
+		element.addContent(new Element("size").setText(Long.toString(getSize())));
+		element.addContent(new Element("nukedAmount").setText(Long.toString(getNukedAmount())));
+		
 		Element nukees = new Element("nukees");
 		for (Iterator iter = this.getNukees().entrySet().iterator(); iter.hasNext();) {
 			Map.Entry entry = (Map.Entry) iter.next();
@@ -121,4 +126,11 @@ public class NukeEvent extends UserEvent {
 	public long getSize() {
 		return size;
 	}
+	/**
+	 * @return
+	 */
+	public long getNukedAmount() {
+		return nukedAmount;
+	}
+
 }

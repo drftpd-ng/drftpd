@@ -253,7 +253,7 @@ public class IRCListener implements FtpListener, Observer {
 		try {
 			sfvfile = dir.lookupSFVFile();
 			// throws IOException, ObjectNotFoundException, NoAvailableSlaveException
-		} catch (ObjectNotFoundException ex) {
+		} catch (FileNotFoundException ex) {
 			logger.info(
 				"No sfv file in "
 					+ direvent.getDirectory().getPath()
@@ -292,19 +292,11 @@ public class IRCListener implements FtpListener, Observer {
 							"store.embraces",
 							direvent.getDirectory());
 					String format = obj.format;
-					;
 					LinkedRemoteFile section = obj.section;
 
 					ReplacerEnvironment env =
 						new ReplacerEnvironment(globalEnv);
-					//						env.add("user", direvent.getUser().getUsername());
-					//						env.add("group", direvent.getUser().getGroup());
-					//						env.add("section", section.getPath());
-					//						env.add(
-					//							"path",
-					//							dir.getPath().substring(
-					//								section.getPath().length()));
-					fillEnvSection(env, direvent, section, dir);
+					fillEnvSection(env, direvent, section, direvent.getDirectory());
 					env.add(
 						"filesleft",
 						Integer.toString(
@@ -469,14 +461,16 @@ public class IRCListener implements FtpListener, Observer {
 			ReplacerFormat raceformat= ReplacerFormat.createFormat(_ircCfg.getProperty("nuke.nukees"));
 
 			int position = 1;
+			long nobodyAmount = 0;
 			for (Iterator iter = event.getNukees2().iterator(); iter.hasNext();) {
-				UploaderPosition stat = (UploaderPosition) iter.next();
+				Nukee stat = (Nukee) iter.next();
 
 				User raceuser;
 				try {
 					raceuser =
 						_cm.getUsermanager().getUserByName(stat.getUsername());
 				} catch (NoSuchUserException e2) {
+					nobodyAmount += stat.getAmount();
 					continue;
 				} catch (IOException e2) {
 					logger.log(Level.FATAL, "Error reading userfile", e2);
@@ -488,15 +482,24 @@ public class IRCListener implements FtpListener, Observer {
 				raceenv.add("user", raceuser.getUsername());
 				raceenv.add("group", raceuser.getGroupName());
 
-				raceenv.add("position", new Integer(position++));
-				raceenv.add("size", Bytes.formatBytes(stat.getBytes()));
-				raceenv.add("files", Integer.toString(stat.getFiles()));
-				raceenv.add(
-					"speed",
-					Bytes.formatBytes(stat.getXferspeed()) + "/s");
+				raceenv.add("position", ""+position++);
+				raceenv.add("size", Bytes.formatBytes(stat.getAmount()));
 
 				say(SimplePrintf.jprintf(raceformat, raceenv));
 
+			}
+			if(nobodyAmount != 0) {
+				ReplacerEnvironment raceenv =
+					new ReplacerEnvironment(globalEnv);
+
+				raceenv.add("user", "nobody");
+				raceenv.add("group", "nogroup");
+
+				raceenv.add("position", "?");
+				raceenv.add("size", Bytes.formatBytes(nobodyAmount));
+
+				say(SimplePrintf.jprintf(raceformat, raceenv));
+				
 			}
 		} else if (cmd.equals("UNNUKE")) {
 			say(SimplePrintf.jprintf(_ircCfg.getProperty("unnuke"), env));
@@ -509,7 +512,7 @@ public class IRCListener implements FtpListener, Observer {
 			Map.Entry element = (Map.Entry) iter.next();
 			ret.add(
 				new Nukee(
-					(User) element.getKey(),
+					(String) element.getKey(),
 					((Long) element.getValue()).longValue()));
 		}
 		Collections.sort(ret);
@@ -616,6 +619,11 @@ public class IRCListener implements FtpListener, Observer {
 		env.add("disktotal", Bytes.formatBytes(status.getDiskSpaceCapacity()));
 		env.add("diskfree", Bytes.formatBytes(status.getDiskSpaceAvailable()));
 		env.add("diskused", Bytes.formatBytes(status.getDiskSpaceUsed()));
+		try {
+			env.add("slaves", ""+getSlaveManager().getAvailableSlaves().size());
+		} catch (NoAvailableSlaveException e) {
+			env.add("slaves", "0");
+		}
 	}
 
 	/**

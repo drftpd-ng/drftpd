@@ -52,7 +52,7 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	protected boolean authenticated = false;
 	protected InetAddress clientAddress = null;
-	protected ConnectionManager connManager;
+	protected ConnectionManager _cm;
 	protected Socket controlSocket;
 
 	protected LinkedRemoteFile currentDirectory;
@@ -105,7 +105,7 @@ public class BaseFtpConnection implements Runnable {
 		Socket soc,
 		Writer debugLog) {
 		this.controlSocket = soc;
-		this.connManager = connManager;
+		this._cm = connManager;
 		this.debugLog = debugLog;
 	}
 
@@ -134,7 +134,7 @@ public class BaseFtpConnection implements Runnable {
 	 * @deprecated use getConnectionManager().dispatchFtpEvent()
 	 */
 	protected void dispatchFtpEvent(Event event) {
-		connManager.dispatchFtpEvent(event);
+		_cm.dispatchFtpEvent(event);
 	}
 
 	/**
@@ -335,8 +335,8 @@ public class BaseFtpConnection implements Runnable {
 		new OutputStreamWriter(controlSocket.getOutputStream())));
 
 			controlSocket.setSoTimeout(1000);
-			if (connManager.isShutdown()) {
-				stop(connManager.getShutdownMessage());
+			if (_cm.isShutdown()) {
+				stop(_cm.getShutdownMessage());
 			} else {
 				FtpResponse response = new FtpResponse(220);
 				response.addComment("This program is free software; you can redistribute it and/or");
@@ -407,7 +407,7 @@ public class BaseFtpConnection implements Runnable {
 				_user.updateLastAccessTime();
 				dispatchFtpEvent(new UserEvent(_user, "LOGOUT"));
 			}
-			connManager.remove(this);
+			_cm.remove(this);
 		}
 	}
 

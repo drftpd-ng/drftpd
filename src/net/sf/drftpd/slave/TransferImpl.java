@@ -12,6 +12,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;
 import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 
 import net.sf.drftpd.AsciiOutputStream;
@@ -25,19 +26,49 @@ import net.sf.drftpd.AsciiOutputStream;
  * Window>Preferences>Java>Code Generation.
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
+	private boolean _abort = false;
+	private CRC32 _checksum;
+	private Connection _conn;
+	private char _direction;
 
-	private long started = 0, finished = 0;
-
-	private long transfered = 0;
-	private char direction;
-
-	private InputStream in;
-	private OutputStream out;
-	private Connection conn;
-	private Socket sock;
-	private char mode = 'I';
+	private InputStream _in;
+	private OutputStream _out;
+	private RootBasket _roots;
 	private Collection _transfers;
-	private CRC32 checksum;
+	private char _mode = 'I';
+	private Socket _sock;
+
+	private long _started = 0;
+	private long _finished = 0;
+
+	private long _transfered = 0;
+
+	/**
+	 * Receive/Upload, read from 'conn' and write to 'out'.
+	 * @deprecated
+	 */
+	public TransferImpl(
+		Collection transfers,
+		Connection conn,
+		OutputStream out)
+		throws RemoteException {
+		super();
+		this._direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
+		this._checksum = new CRC32();
+		this._conn = conn;
+		this._out = new CheckedOutputStream(out, this._checksum);
+		this._transfers = transfers;
+	}
+	/**
+	 * Start undefined passive transfer.
+	 */
+	public TransferImpl(Collection transfers, Connection conn, RootBasket roots) throws RemoteException {
+		super();
+		_direction = Transfer.TRANSFER_UNKNOWN;
+		_conn = conn;
+		_transfers = transfers;
+		_roots = roots;
+	}
 
 	/**
 	 * Send/Download, reading from 'in' and write to 'conn' using transfer type 'mode'.
@@ -50,147 +81,54 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		char mode)
 		throws RemoteException {
 		super();
-		direction = TRANSFER_SENDING_DOWNLOAD;
-		this.in = in;
-		this.conn = conn;
-		this.mode = mode;
+		_direction = TRANSFER_SENDING_DOWNLOAD;
+		this._in = in;
+		this._conn = conn;
+		this._mode = mode;
 		this._transfers = transfers;
 	}
-
-	/**
-	 * Receive/Upload, read from 'conn' and write to 'out'.
-	 * @deprecated
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.slave.Transfer#abort()
 	 */
-	public TransferImpl(
-		Collection transfers,
-		Connection conn,
-		OutputStream out)
-		throws RemoteException {
-		super();
-		this.direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
-		this.checksum = new CRC32();
-		this.conn = conn;
-		this.out = new CheckedOutputStream(out, this.checksum);
-		this._transfers = transfers;
-	}
-	private RootBasket roots;
-	/**
-	 * Start undefined passive transfer.
-	 */
-	public TransferImpl(Collection transfers, Connection conn, RootBasket roots) throws RemoteException {
-		super();
-		this.direction = Transfer.TRANSFER_UNKNOWN;
-		this.conn = conn;
-		this._transfers = transfers;
-		this.roots = roots;
+	public void abort() throws RemoteException {
+		_abort = true;
 	}
 	
-	//TODO char mode for uploads?
-	public void uploadFile(String dirname, String filename, long offset) throws IOException {
-		this.direction = TRANSFER_RECEIVING_UPLOAD;
-		this.checksum = new CRC32();
-
-		String root = roots.getARootFile(dirname).getPath();
-
-		FileOutputStream out = new FileOutputStream(root + File.separator + filename);
-
-		this.out = new CheckedOutputStream(out, this.checksum);
-		System.out.println("UL:"+dirname+File.separator+filename);
-		transfer();
-	}
-	
-	public void downloadFile(String path, char type, long resumePosition) throws IOException {
-		this.direction = TRANSFER_SENDING_DOWNLOAD;
+	public void downloadFile(String path, char type, long resumePosition, boolean doChecksum) throws IOException {
+		this._direction = TRANSFER_SENDING_DOWNLOAD;
 		
-		this.in = new FileInputStream(roots.getFile(path));
-		this.in.skip(resumePosition);
+		_in = new FileInputStream(_roots.getFile(path));
+		if(doChecksum) {
+			_checksum = new CRC32();
+			_in = new CheckedInputStream(_in, _checksum);
+		}
+		_in.skip(resumePosition);
+		
 		System.out.println("DL:"+path);
 		transfer();
 	}
-	/**
-	 * Call sock.connect() and start sending.
-	 * @deprecated
-	 */
-	public void transfer() throws IOException {
-		this.started = System.currentTimeMillis();
-		this.sock = conn.connect();
-		if (in == null) {
-			this.in = sock.getInputStream();
-		} else if (out == null) {
-			if (this.mode == 'A') {
-				out = new AsciiOutputStream(sock.getOutputStream());
-			} else {
-				out = sock.getOutputStream();
-			}
-		} else {
-			throw new RuntimeException("neither in or out was null");
-		}
 
-		_transfers.add(this);
-		try {
-			byte[] buff = new byte[4096];
-			int count;
-			while ((count = in.read(buff)) != -1 && !abort) {
-				this.transfered += count;
-				out.write(buff, 0, count);
-			}
-			out.close();
-		} finally {
-			finished = System.currentTimeMillis();
-			_transfers.remove(this);
-
-			in.close();
-			out.close();
-			sock.close();
-
-			in = null;
-			out = null;
-			conn = null;
-		}
-	}
-
-	public boolean isSendingUploading() {
-		return direction == Transfer.TRANSFER_SENDING_DOWNLOAD;
+	public long getChecksum() {
+		return this._checksum.getValue();
 	}
 
 	public char getDirection() {
-		return direction;
+		return _direction;
 	}
 
 	/**
 	 * @deprecated
 	 */
 	public InetAddress getEndpoint() {
-		return sock.getInetAddress();
-	}
-
-	public long getChecksum() {
-		return this.checksum.getValue();
-	}
-
-	public boolean isReceivingUploading() {
-		return direction == TRANSFER_RECEIVING_UPLOAD;
-	}
-
-	public int getXferSpeed() {
-		long elapsed = getTransferTime();
-		
-		if (this.transfered == 0) {
-			return 0;
-		}
-
-		if (elapsed == 0) {
-			return 0;
-		}
-		return (int) (this.transfered / ((float) elapsed / (float) 1000));
+		return _sock.getInetAddress();
 	}
 
 	/**
 	 * @see net.sf.drftpd.slave.Transfer#getLocalPort()
 	 */
 	public int getLocalPort() throws RemoteException {
-		if (conn instanceof PassiveConnection) {
-			return ((PassiveConnection) conn).getLocalPort();
+		if (_conn instanceof PassiveConnection) {
+			return ((PassiveConnection) _conn).getLocalPort();
 		} else {
 			throw new IllegalStateException("getLocalPort() called on a non-passive transfer");
 		}
@@ -201,24 +139,93 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	 * @return long
 	 */
 	public long getTransfered() {
-		return this.transfered;
+		return this._transfered;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.slave.Transfer#getTransferTime()
 	 */
 	public long getTransferTime() {
-		if(finished == 0) {
-			return System.currentTimeMillis() - started;
+		if(_finished == 0) {
+			return System.currentTimeMillis() - _started;
 		} else {
-			return finished - started;
+			return _finished - _started;
 		}
 	}
-	boolean abort = false;
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.slave.Transfer#abort()
+
+	public int getXferSpeed() {
+		long elapsed = getTransferTime();
+		
+		if (this._transfered == 0) {
+			return 0;
+		}
+
+		if (elapsed == 0) {
+			return 0;
+		}
+		return (int) (this._transfered / ((float) elapsed / (float) 1000));
+	}
+
+	public boolean isReceivingUploading() {
+		return _direction == TRANSFER_RECEIVING_UPLOAD;
+	}
+
+	public boolean isSendingUploading() {
+		return _direction == Transfer.TRANSFER_SENDING_DOWNLOAD;
+	}
+	/**
+	 * Call sock.connect() and start sending.
+	 * @deprecated
 	 */
-	public void abort() throws RemoteException {
-		abort = true;
+	public void transfer() throws IOException {
+		this._started = System.currentTimeMillis();
+		this._sock = _conn.connect();
+		if (_in == null) {
+			this._in = _sock.getInputStream();
+		} else if (_out == null) {
+			if (this._mode == 'A') {
+				_out = new AsciiOutputStream(_sock.getOutputStream());
+			} else {
+				_out = _sock.getOutputStream();
+			}
+		} else {
+			throw new RuntimeException("neither in or out was null");
+		}
+
+		_transfers.add(this);
+		try {
+			byte[] buff = new byte[4096];
+			int count;
+			while ((count = _in.read(buff)) != -1 && !_abort) {
+				this._transfered += count;
+				_out.write(buff, 0, count);
+			}
+			_out.close();
+		} finally {
+			_finished = System.currentTimeMillis();
+			_transfers.remove(this);
+
+			_in.close();
+			_out.close();
+			_sock.close();
+
+			_in = null;
+			_out = null;
+			_conn = null;
+		}
+	}
+	
+	//TODO char mode for uploads?
+	public void uploadFile(String dirname, String filename, long offset) throws IOException {
+		_direction = TRANSFER_RECEIVING_UPLOAD;
+		_checksum = new CRC32();
+
+		String root = _roots.getARootFile(dirname).getPath();
+
+		_out = new FileOutputStream(root + File.separator + filename);
+
+		_out = new CheckedOutputStream(_out, this._checksum);
+		System.out.println("UL:"+dirname+File.separator+filename);
+		transfer();
 	}
 }

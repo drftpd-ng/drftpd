@@ -35,7 +35,7 @@ public class Bytes {
 		DecimalFormatSymbols formatsymbols = new DecimalFormatSymbols();
 		formatsymbols.setDecimalSeparator('.');
 		DecimalFormat format = new DecimalFormat("#.#", formatsymbols);
-
+		format.setDecimalSeparatorAlwaysShown(true);
 //		if (bytes >= TERRA * 1000) {
 //			return (float) bytes / TERRA + "TB";
 //		} else

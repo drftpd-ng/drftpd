@@ -18,7 +18,6 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.IllegalTargetException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectExistsException;
-import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.RemoteSlave;
@@ -454,6 +453,10 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 			throw new FileNotFoundException("root directory has no parent");
 		return parent;
 	}
+	
+	public LinkedRemoteFile getParentFileNull() {
+		return parent;
+	}
 
 	public String getPath() {
 		StringBuffer path = new StringBuffer();
@@ -484,7 +487,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		return root;
 	}
 	public SFVFile getSFVFile()
-		throws IOException, ObjectNotFoundException, NoAvailableSlaveException {
+		throws IOException, FileNotFoundException, NoAvailableSlaveException {
 		if (sfvFile != null)
 			return sfvFile;
 		synchronized (this) {
@@ -503,7 +506,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				throw new NoAvailableSlaveException("No available slaves");
 			}
 			if (sfvFile.size() == 0)
-				throw new ObjectNotFoundException("sfv file contains no checksum entries");
+				throw new FileNotFoundException("sfv file contains no checksum entries");
 			return sfvFile;
 		}
 	}
@@ -521,7 +524,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	 */
 	public String getUsername() {
 		if (this.owner == null || this.owner.equals(""))
-			return "drftpd";
+			return "nobody";
 		return this.owner;
 	}
 
@@ -706,7 +709,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		return ((LinkedRemoteFile) ret[0]).getPath() + "/" + ((String) ret[1]);
 	}
 	public SFVFile lookupSFVFile()
-		throws IOException, ObjectNotFoundException, NoAvailableSlaveException {
+		throws IOException, FileNotFoundException, NoAvailableSlaveException {
 		if (!isDirectory())
 			throw new IllegalStateException("lookupSFVFile must be called on a directory");
 
@@ -717,7 +720,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				// throws IOException, NoAvailableSlaveException
 			}
 		}
-		throw new ObjectNotFoundException("no sfv file in directory");
+		throw new FileNotFoundException("no sfv file in directory");
 
 	}
 
@@ -1027,7 +1030,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 			}
 		});
 		t.run();
-		fromtransfer.downloadFile(getPath(), 'I', 0);
+		fromtransfer.downloadFile(getPath(), 'I', 0, false);
 	}
 
 	/**

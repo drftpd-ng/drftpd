@@ -79,6 +79,16 @@ public class JSXUserManager extends UserManager {
 	 * @see net.sf.drftpd.master.usermanager.UserManager#create(java.lang.String)
 	 */
 	public User create(String username) throws UserFileException {
+		try {
+			getUserByName(username);
+			//bad
+			throw new ObjectExistsException("User already exists");
+		} catch (IOException e) {
+			//bad
+			throw new UserFileException(e);
+		} catch (NoSuchUserException e) {
+			//good
+		}
 		JSXUser user = new JSXUser(this, username);
 		users.put(user.getUsername(), user);
 		return user;
