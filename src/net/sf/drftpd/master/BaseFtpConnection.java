@@ -41,7 +41,7 @@ import org.tanesha.replacer.SimplePrintf;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.66 2004/01/04 01:23:37 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.67 2004/01/04 01:40:05 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -258,7 +258,6 @@ public class BaseFtpConnection implements Runnable {
 		String baseName,
 		String key,
 		ReplacerEnvironment env) {
-		ResourceBundle bundle = ResourceBundle.getBundle(baseName);
 
 		env = new ReplacerEnvironment(env);
 
@@ -271,6 +270,7 @@ public class BaseFtpConnection implements Runnable {
 			env.add("user", "<" + e.getMessage() + ">");
 		}
 		try {
+			ResourceBundle bundle = ResourceBundle.getBundle(baseName);
 			String str = bundle.getString(key);
 			try {
 				return SimplePrintf.jprintf(str, env);
