@@ -710,7 +710,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             long weeklyAllotment = Bytes.parseBytes(commandArguments[0]);
             logger.info("'" + conn.getUserNull().getName() +
                 "' changed wkly_allotment for '" + userToChange.getName() +
-                "' from '" + userToChange.getKeyedMap().getObjectInt(UserManagement.WKLY_ALLOTMENT) + "' to " +
+                "' from '" + userToChange.getKeyedMap().getObjectLong(UserManagement.WKLY_ALLOTMENT) + "' to " +
                 weeklyAllotment + "'");
             userToChange.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT,weeklyAllotment);
 
