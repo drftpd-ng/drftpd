@@ -1012,7 +1012,7 @@ public class IRCListener implements FtpListener, Observer {
 								+ "s");
 
 						if (!conn.isExecuting()) {
-							if (!getConfig()
+							if (getConfig()
 								.checkHideInWho(
 									connUser,
 									conn.getTransferFile()))
@@ -1088,6 +1088,16 @@ public class IRCListener implements FtpListener, Observer {
 
 		ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
 		//TODO synchronized read-only access to conns? or clone?
+		String command = msgc.getMessage();
+		boolean up, dn, idle;
+		if (command.equals("!who")) {
+			up = dn = idle = true;
+		} else {
+			dn = command.equals("!leechers");
+			up = command.equals("!uploaders");
+			idle = false;
+		}
+
 		for (Iterator iter = _cm.getConnections().iterator();
 			iter.hasNext();
 			) {
@@ -1110,35 +1120,36 @@ public class IRCListener implements FtpListener, Observer {
 				env.add("user", user.getUsername());
 
 				if (!conn.isExecuting()) {
-					status.append(SimplePrintf.jprintf(formatidle, env));
+					if (idle)
+						status.append(SimplePrintf.jprintf(formatidle, env));
 
 				} else if (conn.isTransfering()) {
-					if (conn.isTransfering()) {
-						try {
-							env.add(
-								"speed",
-								Bytes.formatBytes(
-									conn.getTransfer().getXferSpeed())
-									+ "/s");
-						} catch (RemoteException e2) {
-							logger.warn("", e2);
-						}
-						env.add("file", conn.getTransferFile().getName());
-						env.add("slave", conn.getTranferSlave().getName());
+					try {
+						env.add(
+							"speed",
+							Bytes.formatBytes(
+								conn.getTransfer().getXferSpeed())
+								+ "/s");
+					} catch (RemoteException e2) {
+						logger.warn("", e2);
 					}
+					env.add("file", conn.getTransferFile().getName());
+					env.add("slave", conn.getTranferSlave().getName());
 
 					if (conn.getTransferDirection()
 						== Transfer.TRANSFER_RECEIVING_UPLOAD) {
-						status.append(SimplePrintf.jprintf(formatup, env));
+						if (up)
+							status.append(SimplePrintf.jprintf(formatup, env));
 
 					} else if (
 						conn.getTransferDirection()
 							== Transfer.TRANSFER_SENDING_DOWNLOAD) {
-						status.append(SimplePrintf.jprintf(formatdown, env));
+						if (dn)
+							status.append(
+								SimplePrintf.jprintf(formatdown, env));
 					}
 				}
 				say(status.toString());
-
 			}
 		}
 	}

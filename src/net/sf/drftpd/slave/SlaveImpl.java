@@ -108,7 +108,7 @@ public class SlaveImpl
 		if (args.length >= 1) {
 			drftpdconf = args[0];
 		} else {
-			drftpdconf = "drftpd-0.7.conf";
+			drftpdconf = "drftpd.conf";
 		}
 		try {
 
@@ -117,7 +117,7 @@ public class SlaveImpl
 				cfg.load(new FileInputStream(drftpdconf));
 			} catch (Throwable ex) {
 				ex.printStackTrace();
-				System.err.println("Could not open drftpd.conf, exiting.");
+				System.err.println("Could not open "+drftpdconf+", exiting.");
 				System.exit(0);
 				return;
 			}

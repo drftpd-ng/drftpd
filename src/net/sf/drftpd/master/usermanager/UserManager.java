@@ -2,6 +2,7 @@ package net.sf.drftpd.master.usermanager;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Hashtable;
+import java.util.List;
 
 /**
  * This is the base class of all the user manager classes.
@@ -30,7 +31,7 @@ public abstract class UserManager {
 	/**
 	 * Get all user names in the system.
 	 */
-	public abstract Collection getAllUsers() throws IOException;
+	public abstract List getAllUsers() throws IOException;
 	public abstract Collection getAllUsersByGroup(String group) throws IOException;
 	/**
 	 * Get user by name.

@@ -38,9 +38,10 @@ import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
 import net.sf.drftpd.slave.SlaveImpl;
 
-import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -53,7 +54,13 @@ public class ConnectionManager {
 
 	public static final String VERSION = "drftpd 0.7.0-CVS";
 	public static void main(String args[]) {
-		BasicConfigurator.configure();
+		//BasicConfigurator.configure();
+		Logger root = Logger.getRootLogger();
+		try {
+			root.addAppender(new FileAppender(new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN), "ftp-data/logs/drftpd.log"));
+		} catch (IOException e1) {
+			throw new FatalException(e1);
+		}
 		System.out.println(VERSION + " master server starting.");
 		System.out.println("http://drftpd.sourceforge.net");
 

@@ -34,7 +34,6 @@ import org.apache.log4j.Logger;
  * 
  * @author Morgan Christiansson <mog@linux.nu>
  */
-//TODO make lightweight LinkedRemoteFile for the slave without RemoteSlave & ConnectionManager
 
 public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	private static Logger logger =
@@ -252,7 +251,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 					try {
 						slave = rslave.getSlave();
 					} catch (NoAvailableSlaveException ex) {
-						//TODO queued deletion
 						logger.info("slave not available for deletion");
 						continue;
 					}
@@ -285,12 +283,10 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 						ex);
 				}
 			} else {
-				//TODO queued deletion
 				logger.log(
 					Level.INFO,
-					"TODO: "
-						+ this.getPath()
-						+ " should be queued for deletion, remaining slaves:"
+						getPath()
+						+ " queued for deletion, remaining slaves:"
 						+ slaves);
 			}
 		}
@@ -721,7 +717,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		throw new FileNotFoundException("no sfv file in directory");
 
 	}
-	//TODO: remerge, delete files not in the merging slaves tree
+
 	/**
 	 * Merges two RemoteFile directories.
 	 * If duplicates exist, the slaves are added to this object and the file-attributes of the oldest file (lastModified) are kept.

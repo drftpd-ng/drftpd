@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -120,7 +121,7 @@ public class JSXUserManager extends UserManager {
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.master.usermanager.UserManager#getAllUserNames()
 	 */
-	public Collection getAllUsers() throws IOException {
+	public List getAllUsers() throws IOException {
 		ArrayList users = new ArrayList();
 
 		String userpaths[] = userpathFile.list();

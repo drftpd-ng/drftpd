@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -81,39 +82,6 @@ public class FtpConnection extends BaseFtpConnection {
 	private static Logger logger =
 		Logger.getLogger(FtpConnection.class.getName());
 
-	/**
-	 * Used by doSITE_DUPE()
-	 * 
-	 * static except for getConfig() and _user
-	 */
-	public void findFile(
-		FtpResponse response,
-		LinkedRemoteFile dir,
-		Collection searchstrings,
-		boolean files,
-		boolean dirs) {
-		if (!getConfig().checkDirLog(_user, dir))
-			return;
-		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			if (file.isDirectory()) {
-				findFile(response, file, searchstrings, files, dirs);
-			}
-			if (dirs && file.isDirectory() || files && file.isFile()) {
-				for (Iterator iterator = searchstrings.iterator();
-					iterator.hasNext();
-					) {
-					String searchstring = (String) iterator.next();
-					if (file.getName().toLowerCase().indexOf(searchstring)
-						!= -1) {
-						response.addComment(file.getPath());
-						break;
-					}
-				}
-			}
-		}
-	}
-
 	private static void nukeRemoveCredits(
 		LinkedRemoteFile nukeDir,
 		Hashtable nukees) {
@@ -156,7 +124,7 @@ public class FtpConnection extends BaseFtpConnection {
 		NukeLog nukelog,
 		Writer debugLog) {
 
-		super(connManager, sock, debugLog);
+		super(connManager, sock);
 		this.userManager = userManager;
 		this.slaveManager = slaveManager;
 
@@ -344,6 +312,11 @@ public class FtpConnection extends BaseFtpConnection {
 		out.print(response);
 	}
 
+	public void doCLNT(FtpRequest request, PrintWriter out) {
+		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
+		return;
+	}
+
 	/**
 	 * <code>CWD  &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
 	 *
@@ -443,30 +416,30 @@ public class FtpConnection extends BaseFtpConnection {
 				new FtpResponse(550, "File not found: " + ex.getMessage()));
 			return;
 		}
-		
+
 		// check permission
-		if(requestedFile.getUsername().equals(_user.getUsername())) {
-			if(!getConfig().checkDeleteOwn(_user, requestedFile)) {
+		if (requestedFile.getUsername().equals(_user.getUsername())) {
+			if (!getConfig().checkDeleteOwn(_user, requestedFile)) {
 				out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 				return;
 			}
-		} else if(!getConfig().checkDelete(_user, requestedFile)) {
+		} else if (!getConfig().checkDelete(_user, requestedFile)) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
-//		if (!_user.getUsername().equals(requestedFile.getUsername())
-//			&& !_user.isAdmin()) {
-//			out.print(
-//				new FtpResponse(
-//					550,
-//					"Permission denied. You are neither the owner or an admin."));
-//			return;
-//		}
-//
-//		if (!getConfig().checkDelete(_user, requestedFile)) {
-//			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
-//			return;
-//		}
+		//		if (!_user.getUsername().equals(requestedFile.getUsername())
+		//			&& !_user.isAdmin()) {
+		//			out.print(
+		//				new FtpResponse(
+		//					550,
+		//					"Permission denied. You are neither the owner or an admin."));
+		//			return;
+		//		}
+		//
+		//		if (!getConfig().checkDelete(_user, requestedFile)) {
+		//			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+		//			return;
+		//		}
 
 		FtpResponse response =
 			(FtpResponse) FtpResponse.RESPONSE_250_ACTION_OKAY.clone();
@@ -499,9 +472,11 @@ public class FtpConnection extends BaseFtpConnection {
 	public void doFEAT(FtpRequest request, PrintWriter out) {
 		out.print(
 			"211-Extensions supported:\r\n"
-				+ " PRET\r\n"
+				+ "CLNT\r\n"
 				+ " MDTM\r\n"
+				+ " PRET\r\n"
 				+ " SIZE\r\n"
+				+ "XCRC\r\n"
 				+ "211 End\r\n");
 		return;
 	}
@@ -622,15 +597,25 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		Socket dataSocket = null;
+		//SocketChannel dataChannel;
 		Writer os;
+		//SocketChannel out2;
 		if (request.getCommand().equals("STAT")) {
 			os = out;
+			//dataChannel = controlSocket.getChannel();
+			//out2 = controlSocket.getChannel();
 			out.println("213- Status of " + request.getArgument() + ":");
 		} else {
 			out.print(FtpResponse.RESPONSE_150_OK);
+			out.flush();
 			try {
 				dataSocket = getDataSocket();
-				os = new OutputStreamWriter(dataSocket.getOutputStream());
+				//dataChannel = getDataChannel();
+				//OutputStreamWriter uses sun.nio.cs.StreamEncoder which has a 8192 byte ByteBuffer
+				os =
+					new PrintWriter(
+						new OutputStreamWriter(dataSocket.getOutputStream()));
+				//out2 = dataSocket.getChannel();
 			} catch (IOException ex) {
 				logger.warn("from master", ex);
 				out.print(new FtpResponse(425, ex.getMessage()));
@@ -677,8 +662,11 @@ public class FtpConnection extends BaseFtpConnection {
 			if (request.getCommand().equals("LIST")
 				|| request.getCommand().equals("STAT")) {
 				VirtualDirectory.printList(listFiles, os);
+				//VirtualDirectory.printList(listFiles, dataChannel);
+				//dataChannel.close();
 			} else if (request.getCommand().equals("NLST")) {
 				VirtualDirectory.printNList(listFiles, detailOption, os);
+				//VirtualDirectory.printNList(listFiles, detailOption, dataChannel);
 			}
 			os.flush();
 		} catch (IOException ex) {
@@ -691,7 +679,7 @@ public class FtpConnection extends BaseFtpConnection {
 					os.flush();
 					dataSocket.shutdownOutput();
 					os.close();
-					//dataSocket.close();
+					dataSocket.close();
 					response.addComment(status());
 					out.print(response);
 				} else {
@@ -703,6 +691,7 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 		reset();
 	}
+
 	/**
 	 * <code>MDTM &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
 	 * 
@@ -1407,7 +1396,14 @@ public class FtpConnection extends BaseFtpConnection {
 				response.addComment(
 					"WARNING: checksum from transfer didn't match cached checksum");
 				logger.info(
-					"checksum from transfer didn't match cached checksum",
+					"checksum from transfer "
+						+ Checksum.formatChecksum(checksum)
+						+ "didn't match cached checksum"
+						+ Checksum.formatChecksum(cachedChecksum)
+						+ " for "
+						+ _transferFile.toString()
+						+ " from slave "
+						+ _rslave.getName(),
 					new Throwable());
 			}
 
@@ -1596,7 +1592,9 @@ public class FtpConnection extends BaseFtpConnection {
 
 		if (_renameFrom.hasOfflineSlaves()) {
 			out.print(
-				new FtpResponse(450, "Cannot rename, source has offline slaves"));
+				new FtpResponse(
+					450,
+					"Cannot rename, source has offline slaves"));
 			resetState();
 			return;
 		}
@@ -1808,6 +1806,101 @@ public class FtpConnection extends BaseFtpConnection {
 		out.print(response);
 	}
 
+	public void doSITE_ALDN(final FtpRequest request, PrintWriter out) {
+		doSITE_ALUP(request, out);
+	}
+
+	public void doSITE_ALUP(final FtpRequest request, PrintWriter out) {
+		List users;
+		try {
+			users = getUserManager().getAllUsers();
+		} catch (IOException e) {
+			logger.warn("", e);
+			out.print(new FtpResponse(200, "IO error: " + e.getMessage()));
+			return;
+		}
+		if(request.hasArgument()) {
+			Permission perm = null;
+			perm = new Permission(FtpConfig.makeUsers(new StringTokenizer(request.getArgument())));
+			for (Iterator iter = users.iterator(); iter.hasNext();) {
+				User user = (User) iter.next();
+				if(!perm.check(user)) iter.remove();
+			}
+		}
+		final String command = request.getCommand();
+		Collections.sort(users, new Comparator() {
+			public int compare(Object o1, Object o2) {
+				User u1 = (User) o1;
+				User u2 = (User) o2;
+
+				long thisVal = getStats(command, u1);
+				long anotherVal = getStats(command, u2);
+				return (
+					thisVal < anotherVal
+						? -1
+						: (thisVal == anotherVal ? 0 : 1));
+			}
+
+			//			public boolean equals(Object obj) {
+			//				if(obj instanceof this.getClass()) return true;
+			//			}
+		});
+		FtpResponse response = new FtpResponse(200);
+		for (Iterator iter = users.iterator(); iter.hasNext();) {
+			User user = (User) iter.next();
+			// AL MONTH WK DAY
+			String period =
+				command.substring("SITE ".length(), command.length() - 2);
+			// UP DN
+			String updn = command.substring(command.length() - 2);
+			if (updn.equals("UP")) {
+				if (period.equals("AL"))
+					response.addComment(
+						user.getUsername()
+							+ " "
+							+ Bytes.formatBytes(user.getUploadedBytes()));
+				if (period.equals("DAY"))
+					response.addComment(
+						user.getUsername()
+							+ " "
+							+ Bytes.formatBytes(user.getUploadedBytesDay()));
+				if (period.equals("WK"))
+					response.addComment(
+						user.getUsername()
+							+ " "
+							+ Bytes.formatBytes(user.getUploadedBytesWeek()));
+				if (period.equals("MONTH"))
+					response.addComment(
+						user.getUsername()
+							+ " "
+							+ Bytes.formatBytes(user.getUploadedBytesMonth()));
+			} else if (updn.equals("DN")) {
+				if (period.equals("AL"))
+					response.addComment(
+						user.getUsername()
+							+ " "
+							+ Bytes.formatBytes(user.getDownloadedBytes()));
+				if (period.equals("DAY"))
+					response.addComment(
+						user.getUsername()
+							+ " "
+							+ Bytes.formatBytes(user.getDownloadedBytesDay()));
+				if (period.equals("WK"))
+					response.addComment(
+						user.getUsername()
+							+ " "
+							+ Bytes.formatBytes(user.getDownloadedBytesWeek()));
+				if (period.equals("MONTH"))
+					response.addComment(
+						user.getUsername()
+							+ " "
+							+ Bytes.formatBytes(user.getDownloadedBytesMonth()));
+			}
+		}
+		out.print(response);
+		return;
+	}
+
 	/**
 	 * USAGE: site change <user> <field> <value> - change a field for a user
 	   site change =<group> <field> <value> - change a field for each member of group <group>
@@ -1985,23 +2078,34 @@ public class FtpConnection extends BaseFtpConnection {
 					return;
 				}
 				float ratio = Float.parseFloat(commandArgument);
-				if(ratio == 0F) {
+				if (ratio == 0F) {
 					int usedleechslots = 0;
 					try {
-						for (Iterator iter = getUserManager().getAllUsersByGroup(_user.getGroupName()).iterator();
+						for (Iterator iter =
+							getUserManager()
+								.getAllUsersByGroup(_user.getGroupName())
+								.iterator();
 							iter.hasNext();
 							) {
-							if(((User)iter.next()).getRatio() == 0F) usedleechslots++;
+							if (((User) iter.next()).getRatio() == 0F)
+								usedleechslots++;
 						}
 					} catch (IOException e1) {
-						out.print(new FtpResponse(200, "IO error reading userfiles: "+e1.getMessage()));
+						out.print(
+							new FtpResponse(
+								200,
+								"IO error reading userfiles: "
+									+ e1.getMessage()));
 						return;
 					}
-					if(usedleechslots >= _user.getGroupLeechSlots()+1) {
-						out.print(new FtpResponse(200, "You have already used all your leech slots"));
+					if (usedleechslots >= _user.getGroupLeechSlots() + 1) {
+						out.print(
+							new FtpResponse(
+								200,
+								"You have already used all your leech slots"));
 						return;
 					}
-				} else if(ratio != 0F) {
+				} else if (ratio != 0F) {
 					out.print(new FtpResponse(200, "ratio can only be 0 or 3"));
 					return;
 				}
@@ -2191,6 +2295,12 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 	}
+	public void doSITE_DAYDN(FtpRequest request, PrintWriter out) {
+		doSITE_ALUP(request, out);
+	}
+	public void doSITE_DAYUP(FtpRequest request, PrintWriter out) {
+		doSITE_ALUP(request, out);
+	}
 
 	/**
 	 * USAGE: site delip <user> <ident@ip> ...
@@ -2325,52 +2435,46 @@ public class FtpConnection extends BaseFtpConnection {
 	public void doSITE_GINFO(FtpRequest request, PrintWriter out) {
 		resetState();
 		//security
-		if(!_user.isAdmin() && !_user.isGroupAdmin()) {
+		if (!_user.isAdmin() && !_user.isGroupAdmin()) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
-		
+
 		//syntax
-		if(!request.hasArgument()) {
+		if (!request.hasArgument()) {
 			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
 		}
-		
+
 		//gadmin
 		String group = request.getArgument();
-		if(_user.isGroupAdmin() && !_user.getGroupName().equals(group)) {
+		if (_user.isGroupAdmin() && !_user.getGroupName().equals(group)) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
-		
+
 		Collection users;
 		try {
 			users = getUserManager().getAllUsersByGroup(group);
 		} catch (IOException e) {
-			out.print(new FtpResponse(200, "IO error: "+e.getMessage()));
+			out.print(new FtpResponse(200, "IO error: " + e.getMessage()));
 			return;
 		}
-		
+
 		FtpResponse response = new FtpResponse(200);
 		for (Iterator iter = users.iterator(); iter.hasNext();) {
 			User user = (User) iter.next();
 			char status = ' ';
-			if(user.isGroupAdmin()) {
-				status='+';
-			} else if(user.isAdmin()) {
+			if (user.isGroupAdmin()) {
+				status = '+';
+			} else if (user.isAdmin()) {
 				status = '*';
 			}
-			response.addComment(status+user.getUsername());
+			response.addComment(status + user.getUsername());
 		}
 		response.addComment(" * = siteop   + = gadmin");
 		out.print(response);
 		return;
-	}
-	/**
-	 * 
-	 */
-	public UserManager getUserManager() {
-		return userManager;
 	}
 
 	public void doSITE_GIVE(FtpRequest request, PrintWriter out) {
@@ -2520,6 +2624,12 @@ public class FtpConnection extends BaseFtpConnection {
 			response.addComment(file.toString());
 		}
 		out.print(response);
+	}
+	public void doSITE_MONTHDN(FtpRequest request, PrintWriter out) {
+		doSITE_ALUP(request, out);
+	}
+	public void doSITE_MONTHUP(FtpRequest request, PrintWriter out) {
+		doSITE_ALUP(request, out);
 	}
 
 	/**
@@ -2902,9 +3012,9 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		try {
-			_cm.getConfig().reloadConfig();
-			slaveManager.reloadRSlaves();
-			slaveManager.saveFilesXML();
+			getConnectionManager().getConfig().reloadConfig();
+			getSlaveManager().reloadRSlaves();
+			//slaveManager.saveFilesXML();
 		} catch (IOException e) {
 			out.print(new FtpResponse(200, e.getMessage()));
 			logger.log(Level.FATAL, "Error reloading config", e);
@@ -3018,18 +3128,19 @@ public class FtpConnection extends BaseFtpConnection {
 	//	}
 	public void doSITE_REQUEST(FtpRequest request, PrintWriter out) {
 		resetState();
-		
-		if(!getConfig().checkRequest(_user, currentDirectory)) {
+
+		if (!getConfig().checkRequest(_user, currentDirectory)) {
 			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
 			return;
 		}
-		
-		if(!request.hasArgument()) {
+
+		if (!request.hasArgument()) {
 			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
 		}
 
-		String createdDirName = "REQUEST-by."+_user.getUsername()+"-"+request.getArgument();
+		String createdDirName =
+			"REQUEST-by." + _user.getUsername() + "-" + request.getArgument();
 		try {
 			LinkedRemoteFile createdDir =
 				currentDirectory.createDirectory(
@@ -3050,7 +3161,7 @@ public class FtpConnection extends BaseFtpConnection {
 			out.println("550 directory " + createdDirName + " already exists");
 			return;
 		}
-		
+
 	}
 	public void doSITE_RESCAN(FtpRequest request, PrintWriter out) {
 		resetState();
@@ -3112,7 +3223,7 @@ public class FtpConnection extends BaseFtpConnection {
 						+ ex.getMessage());
 				continue;
 			}
-			
+
 			if (fileCheckSum == 0L) {
 				status = "FAILED - failed to checksum file";
 			} else if (checkSum.longValue() == fileCheckSum) {
@@ -3239,10 +3350,10 @@ public class FtpConnection extends BaseFtpConnection {
 	    for the files user.stats and GAMESuser.stats in the /ftp-data/text dir.
 	 */
 	public void doSITE_STATS(FtpRequest request, PrintWriter out) {
-		if(!_user.isAdmin() && !_user.isGroupAdmin()) {
-			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
-			return;
-		}
+//		if (!_user.isAdmin() && !_user.isGroupAdmin()) {
+//			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+//			return;
+//		}
 
 		if (!request.hasArgument()) {
 			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
@@ -3260,12 +3371,13 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(new FtpResponse(200, e.getMessage()));
 			return;
 		}
-		
-		if(_user.isGroupAdmin() && !_user.getGroupName().equals(user.getGroupName())) {
-			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
-			return;
-		}
-		
+
+//		if (_user.isGroupAdmin()
+//			&& !_user.getGroupName().equals(user.getGroupName())) {
+//			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+//			return;
+//		}
+
 		FtpResponse response = new FtpResponse(200);
 		response.addComment("bytes up, files up, bytes down, files down");
 		response.addComment(
@@ -3540,7 +3652,8 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
-		if(_user.isGroupAdmin() && !_user.getGroupName().equals(myUser.getGroupName())) {
+		if (_user.isGroupAdmin()
+			&& !_user.getGroupName().equals(myUser.getGroupName())) {
 			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return;
 		}
@@ -3633,10 +3746,6 @@ public class FtpConnection extends BaseFtpConnection {
 	public void doSITE_WHO(FtpRequest request, PrintWriter out) {
 		resetState();
 
-		if (!_user.isAdmin()) {
-			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
-			return;
-		}
 		FtpResponse response =
 			(FtpResponse) FtpResponse.RESPONSE_200_COMMAND_OK.clone();
 
@@ -3803,6 +3912,13 @@ public class FtpConnection extends BaseFtpConnection {
 		wipeFile.delete();
 		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
 		return;
+	}
+
+	public void doSITE_WKDN(FtpRequest request, PrintWriter out) {
+		doSITE_ALUP(request, out);
+	}
+	public void doSITE_WKUP(FtpRequest request, PrintWriter out) {
+		doSITE_ALUP(request, out);
 	}
 
 	public void doSITE_XDUPE(FtpRequest request, PrintWriter out) {
@@ -4054,11 +4170,15 @@ public class FtpConnection extends BaseFtpConnection {
 				try {
 					checksum = _transferFile.getCheckSumFromSlave();
 				} catch (NoAvailableSlaveException e) {
-					response.addComment("No available slaves when getting checksum from slave: "+e.getMessage());
+					response.addComment(
+						"No available slaves when getting checksum from slave: "
+							+ e.getMessage());
 					logger.warn("", e);
 					checksum = 0;
 				} catch (IOException e) {
-					response.addComment("IO error getting checksum from slave: "+e.getMessage());
+					response.addComment(
+						"IO error getting checksum from slave: "
+							+ e.getMessage());
 					logger.warn("", e);
 					checksum = 0;
 				}
@@ -4388,6 +4508,73 @@ public class FtpConnection extends BaseFtpConnection {
 				"Password required for " + _user.getUsername())
 				.toString());
 	}
+	public void doXCRC(FtpRequest request, PrintWriter out) {
+		if (!request.hasArgument()) {
+			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			return;
+		}
+		StringTokenizer st = new StringTokenizer(request.getArgument());
+		LinkedRemoteFile myFile;
+		try {
+			myFile = getCurrentDirectory().lookupFile(st.nextToken());
+		} catch (FileNotFoundException e) {
+			out.print(FtpResponse.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN);
+			return;
+		}
+
+		if (st.hasMoreTokens()) {
+			if (!st.nextToken().equals("0")
+				|| !st.nextToken().equals(Long.toString(myFile.length()))) {
+				out.print(
+					FtpResponse.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM);
+				return;
+			}
+		}
+		try {
+			out.print(
+				new FtpResponse(
+					250,
+					"XCRC Successful. "
+						+ Checksum.formatChecksum(myFile.getCheckSum())));
+		} catch (IOException e1) {
+			logger.warn("", e1);
+			out.print(new FtpResponse(550, "IO error: " + e1.getMessage()));
+		}
+
+	}
+
+	/**
+	 * Used by doSITE_DUPE()
+	 * 
+	 * static except for getConfig() and _user
+	 */
+	public void findFile(
+		FtpResponse response,
+		LinkedRemoteFile dir,
+		Collection searchstrings,
+		boolean files,
+		boolean dirs) {
+		if (!getConfig().checkDirLog(_user, dir))
+			return;
+		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			if (file.isDirectory()) {
+				findFile(response, file, searchstrings, files, dirs);
+			}
+			if (dirs && file.isDirectory() || files && file.isFile()) {
+				for (Iterator iterator = searchstrings.iterator();
+					iterator.hasNext();
+					) {
+					String searchstring = (String) iterator.next();
+					if (file.getName().toLowerCase().indexOf(searchstring)
+						!= -1) {
+						response.addComment(file.getPath());
+						break;
+					}
+				}
+			}
+		}
+	}
 
 	public FtpConfig getConfig() {
 		return _cm.getConfig();
@@ -4411,11 +4598,52 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 		return os;
 	}
+
+	/**
+	 * 
+	 */
+	private SlaveManagerImpl getSlaveManager() {
+		return slaveManager;
+	}
+
+	public long getStats(String command, User user) {
+		// AL MONTH WK DAY
+		String period =
+			command.substring("SITE ".length(), command.length() - 2);
+		// UP DN
+		String updn = command.substring(command.length() - 2);
+		if (updn.equals("UP")) {
+			if (period.equals("AL"))
+				return user.getUploadedBytes();
+			if (period.equals("DAY"))
+				return user.getUploadedBytesDay();
+			if (period.equals("WK"))
+				return user.getUploadedBytesWeek();
+			if (period.equals("MONTH"))
+				return user.getUploadedBytesMonth();
+		} else if (updn.equals("DN")) {
+			if (period.equals("AL"))
+				return user.getDownloadedBytes();
+			if (period.equals("DAY"))
+				return user.getDownloadedBytesDay();
+			if (period.equals("WK"))
+				return user.getDownloadedBytesWeek();
+			if (period.equals("MONTH"))
+				return user.getDownloadedBytesMonth();
+		}
+		throw new RuntimeException("Don't know what to do with " + command);
+	}
 	/**
 	 * Get the user data type.
 	 */
 	public char getType() {
 		return type;
+	}
+	/**
+	 * 
+	 */
+	public UserManager getUserManager() {
+		return userManager;
 	}
 
 	/**

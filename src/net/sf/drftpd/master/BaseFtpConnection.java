@@ -7,16 +7,18 @@ import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.channels.SocketChannel;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import net.sf.drftpd.FatalException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -24,8 +26,10 @@ import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.Transfer;
 
+import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 
 /**
  * This is a generic ftp connection handler. It delegates 
@@ -35,6 +39,16 @@ import org.apache.log4j.Logger;
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
 public class BaseFtpConnection implements Runnable {
+
+	private static Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName()+".service");
+	static {
+		try {
+			debuglogger.addAppender(new FileAppender(new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN), "ftp-data/logs/debug.log"));
+			debuglogger.setAdditivity(false);
+		} catch (IOException e) {
+			throw new FatalException(e);
+		}
+	}
 
 	private static Logger logger =
 		Logger.getLogger(BaseFtpConnection.class);
@@ -57,7 +71,6 @@ public class BaseFtpConnection implements Runnable {
 
 	protected LinkedRemoteFile currentDirectory;
 
-	private Writer debugLog;
 	/**
 	 * Is the client running a command?
 	 */
@@ -102,11 +115,9 @@ public class BaseFtpConnection implements Runnable {
 	protected Thread thread;
 	public BaseFtpConnection(
 		ConnectionManager connManager,
-		Socket soc,
-		Writer debugLog) {
+		Socket soc) {
 		this.controlSocket = soc;
 		this._cm = connManager;
-		this.debugLog = debugLog;
 	}
 
 	/**
@@ -169,8 +180,6 @@ public class BaseFtpConnection implements Runnable {
 		if (mbPort) {
 			try {
 				_dataSocket = new Socket(mAddress, miPort);
-				_dataSocket.setSoTimeout(30000); // 30 seconds timeout
-				_dataSocket.setSendBufferSize(65536);
 			} catch (IOException ex) {
 				//mConfig.getLogger().warn(ex);
 				logger.log(Level.WARN, "Error opening data socket", ex);
@@ -181,7 +190,19 @@ public class BaseFtpConnection implements Runnable {
 			if (_dataSocket == null)
 				acceptPasvConnection();
 		}
+		_dataSocket.setSoTimeout(30000); // 30 seconds timeout
+		//_dataSocket.setSendBufferSize(8192);
 		return _dataSocket;
+	}
+	/**
+	 * @return
+	 */
+	public SocketChannel getDataChannel() throws IOException {
+		if(mbPort) {
+			return SocketChannel.open(new InetSocketAddress(mAddress, miPort));
+		} else {
+			throw new NoSuchMethodError("PASV not implemented =)");
+		}
 	}
 
 	/**
@@ -347,6 +368,10 @@ public class BaseFtpConnection implements Runnable {
 				out.print(response);
 			}
 			while (!stopRequest) {
+				thread.setName(
+					"FtpConn from "
+						+ clientAddress.getHostAddress());
+
 				out.flush();
 				//notifyObserver();
 				String commandLine;
@@ -366,8 +391,8 @@ public class BaseFtpConnection implements Runnable {
 					continue;
 
 				request = new FtpRequest(commandLine);
-				//TODO write to this.debugLog
-				logger.debug(
+				
+				debuglogger.debug(
 					"<< "
 						+ request.getCommandLine()
 						+ " [user="

@@ -1,29 +1,49 @@
 # do not remove any entries, it can result
 # in NullPointerException's
 
-master.host=localhost
-master.bindname=slavemanager
+######################
+### Slave settings ###
+######################
 
+#What you set <name> to in slaves.xml
+slave.name=test
+
+#root to serve contents from, is automatically created
 slave.root.1=site
-slave.root.1.minfreespace=0
-slave.root.1.prio=0
+#you can use several roots for striping files across
+#several harddrives without using RAID or similair.
+#slave.root.2=d:/
 
-slave.name=moogle
+####################################
+### Shared master/slave settings ###
+####################################
 
+#This is the IP of the master to register to.
+master.host=you_didnt_edit_drftpd.conf
+master.bindname=slavemanager
 master.bindport=1099
 
-# below is the configuration for the master
+#######################
+### Master settings ###
+#######################
+
+#Port to accept FTP connections on
 master.port=2121
+
+#Run a slave in the same process as the master?
 master.localslave=false
+
+#User manager to use, just leave it for now.
 master.usermanager=net.sf.drftpd.master.usermanager.jsx.JSXUserManager
 
-# mimum amount of available diskspace in bytes to have on a slave when
+# Mimum amount of available diskspace in bytes to have on a slave when
 # sending to it. If all available slaves have less than this amount the
 # slave with most available disk space will get all transfers.
 #100 MiB, 100,000,000
-freespace.min=100000000
+freespace.min=100MB
 
-#enable sitebot?
+
+#sitebot settings
 irc.enabled=false
 irc.server=irc.hemmet.chalmers.se
 irc.port=6667

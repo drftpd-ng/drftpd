@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import net.sf.drftpd.Bytes;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.FtpResponse;
 import net.sf.drftpd.master.SlaveManagerImpl;
@@ -238,7 +239,7 @@ public class FtpConfig {
 			throw (IOException) new IOException().initCause(e);
 		}
 		this.connManager = connManager;
-		this.freespaceMin = Long.parseLong(cfg.getProperty("freespace.min"));
+		this.freespaceMin = Bytes.parseBytes(cfg.getProperty("freespace.min"));
 	}
 	private void loadConfig2() throws IOException {
 		ArrayList creditcheck = new ArrayList();

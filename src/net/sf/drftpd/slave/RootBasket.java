@@ -25,7 +25,7 @@ import se.mog.io.File;
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
-//TODO SECURITY: check so that we never get outside of a rootbasket
+//TODO SECURITY: verify so that we never get outside of a rootbasket root
 public class RootBasket {
 	private static Logger logger = Logger.getLogger(RootBasket.class);
 	private Collection roots;

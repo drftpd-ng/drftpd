@@ -322,9 +322,8 @@ public class SlaveManagerImpl
 				break;
 			}
 		}
-		if (rslave == null) {
-			throw new IllegalArgumentException("rejected");
-		}
+		if (rslave == null) throw new IllegalArgumentException("Slave not found in slaves.xml");
+
 		if (rslave.isAvailablePing()) {
 			throw new IllegalArgumentException(
 				rslave.getName() + " is already online");
