@@ -44,7 +44,15 @@ public class SSLGetContext {
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
 
         KeyStore ks = KeyStore.getInstance("JKS");
-        ks.load(new FileInputStream("drftpd.key"), "drftpd".toCharArray());
+        FileInputStream fis = null;
+        try {
+        fis = new FileInputStream("drftpd.key");
+        ks.load(fis, "drftpd".toCharArray());
+        } finally {
+        	if (fis != null) {
+        		fis.close();
+        	}
+        }
 
         kmf.init(ks, "drftpd".toCharArray());
 
