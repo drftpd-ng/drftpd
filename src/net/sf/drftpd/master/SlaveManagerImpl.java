@@ -65,7 +65,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.83 2004/04/29 13:18:29 zombiewoof64 Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.84 2004/05/10 02:53:59 mog Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -269,7 +269,7 @@ public class SlaveManagerImpl
 		try {
                     InetAddress addr = null;
                     if (slave instanceof SocketSlaveImpl) {
-                        addr = slave.getPeerAddress();
+                        addr = ((SocketSlaveImpl)slave).getPeerAddress();
                     }
                     if (addr == null) {
                         addr = InetAddress.getByName(RemoteServer.getClientHost());

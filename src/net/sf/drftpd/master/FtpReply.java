@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: FtpReply.java,v 1.10 2004/02/10 00:03:06 mog Exp $
+ * @version $Id: FtpReply.java,v 1.11 2004/05/10 02:53:59 mog Exp $
  */
 public class FtpReply implements Cloneable {
 	private static final Logger logger =
@@ -182,7 +182,6 @@ public class FtpReply implements Cloneable {
 		_code = code;
 	}
 	public void setMessage(String response) {
-		assert response != null;
 		int pos = response.indexOf('\n');
 		if (pos != -1) {
 			addComment(response.substring(pos+1));

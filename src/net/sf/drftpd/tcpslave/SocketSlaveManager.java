@@ -6,20 +6,14 @@
 
 package net.sf.drftpd.tcpslave;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.Vector;
-import java.util.Hashtable;
-
-import java.rmi.RemoteException;
 
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.tcpslave.SocketSlaveImpl;
-import net.sf.drftpd.tcpslave.SocketSlaveListener;
 /**
  *
  * @author  jbarrett

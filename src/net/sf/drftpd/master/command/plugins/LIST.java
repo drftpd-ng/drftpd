@@ -33,8 +33,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.net.ssl.SSLSocket;
-
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
@@ -51,7 +49,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * @version $Id: LIST.java,v 1.16 2004/04/27 19:57:19 mog Exp $
+ * @version $Id: LIST.java,v 1.17 2004/05/10 02:53:59 mog Exp $
  */
 public class LIST implements CommandHandler {
 

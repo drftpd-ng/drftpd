@@ -34,13 +34,11 @@ import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.Transfer;
 
 import org.apache.log4j.Logger;
-
 import org.jdom.Element;
-import java.util.Hashtable;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.34 2004/04/28 13:00:55 zombiewoof64 Exp $
+ * @version $Id: RemoteSlave.java,v 1.35 2004/05/10 02:53:59 mog Exp $
  */
 public class RemoteSlave implements Comparable {
     
@@ -73,12 +71,7 @@ public class RemoteSlave implements Comparable {
     }
     
     public RemoteSlave(String name, Collection masks, Element config) {
-        if (name.equalsIgnoreCase("all"))
-            throw new IllegalArgumentException(
-            name
-            + " is a reserved keyword, it can't be used as a slave name");
-        _name = name;
-        _masks = masks;
+    	this(name, masks);
         for (Iterator i = config.getChildren().iterator(); i.hasNext();) {
             Element e = (Element)i.next();
             try {
@@ -87,6 +80,15 @@ public class RemoteSlave implements Comparable {
         }
     }
     
+    public RemoteSlave(String name, Collection masks) {
+		if (name.equalsIgnoreCase("all"))
+			throw new IllegalArgumentException(
+			name
+			+ " is a reserved keyword, it can't be used as a slave name");
+		_name = name;
+		_masks = masks;
+    }
+
     public int compareTo(Object o) {
         if (!(o instanceof RemoteSlave))
             throw new IllegalArgumentException();
@@ -234,7 +236,9 @@ public class RemoteSlave implements Comparable {
     }
     
     public void setOffline(String reason) {
-        assert _manager != null;
+        if( _manager == null) {
+        	throw new RuntimeException("_manager == null");
+        }
         if (_slave != null) {
             _manager.getConnectionManager().dispatchFtpEvent(
             new SlaveEvent("DELSLAVE", reason, this));

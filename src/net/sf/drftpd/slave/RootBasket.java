@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.sf.drftpd.FatalException;
+import net.sf.drftpd.PermissionDeniedException;
 
 import org.apache.log4j.Logger;
 
@@ -36,7 +37,7 @@ import se.mog.io.File;
 //TODO SECURITY: verify so that we never get outside of a rootbasket root
 /**
  * @author mog
- * @version $Id: RootBasket.java,v 1.24 2004/04/07 13:05:53 zubov Exp $
+ * @version $Id: RootBasket.java,v 1.25 2004/05/10 02:54:00 mog Exp $
  */
 public class RootBasket {
 	private static final Logger logger = Logger.getLogger(RootBasket.class);
@@ -68,7 +69,7 @@ public class RootBasket {
 	 * Get a directory specified by dir under an approperiate root for storing storing files in.
 	 * @param directory to store file in
 	 */
-	public File getARootFileDir(String dir) {
+	public File getARootFileDir(String dir) throws PermissionDeniedException {
 		Iterator iter = _roots.iterator();
 		Root bestRoot = (Root) iter.next();
 		while (iter.hasNext()) {
@@ -84,7 +85,9 @@ public class RootBasket {
 		}
 		bestRoot.touch();
 		File file = bestRoot.getFile(dir);
-		file.mkdirs();
+		if(!file.mkdirs()) {
+			throw new PermissionDeniedException("mkdirs failed on "+file.getPath());
+		}
 		return file;
 	}
 	//Get root which has most of the tree structure that we have.

@@ -24,7 +24,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.rmi.ConnectIOException;
 import java.rmi.Naming;
@@ -63,7 +62,7 @@ import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.89 2004/05/05 04:43:15 zombiewoof64 Exp $
+ * @version $Id: SlaveImpl.java,v 1.90 2004/05/10 02:54:00 mog Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject

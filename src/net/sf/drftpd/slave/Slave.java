@@ -18,7 +18,6 @@
 package net.sf.drftpd.slave;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -29,7 +28,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 /**
  * Slave interface, this interface is used to initate transfers to and from remote slaves.
  * @author Morgan Christiansson <mog@linux.nu>
- * @version $Id: Slave.java,v 1.30 2004/05/05 04:43:15 zombiewoof64 Exp $
+ * @version $Id: Slave.java,v 1.31 2004/05/10 02:54:00 mog Exp $
  */
 public interface Slave extends Remote {
 	public long checkSum(

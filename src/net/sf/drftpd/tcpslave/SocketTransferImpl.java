@@ -17,28 +17,19 @@
  */
 package net.sf.drftpd.tcpslave;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.*;
+import java.util.Hashtable;
 
-import net.sf.drftpd.util.AddAsciiOutputStream;
-
-import net.sf.drftpd.slave.*;
+import net.sf.drftpd.slave.Transfer;
+import net.sf.drftpd.slave.TransferStatus;
 
 import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: SocketTransferImpl.java,v 1.1 2004/04/27 22:05:45 zombiewoof64 Exp $
+ * @version $Id: SocketTransferImpl.java,v 1.2 2004/05/10 02:54:00 mog Exp $
  */
 public class SocketTransferImpl implements Transfer {
 

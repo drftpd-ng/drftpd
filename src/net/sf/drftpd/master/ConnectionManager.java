@@ -19,7 +19,6 @@ package net.sf.drftpd.master;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -52,18 +51,15 @@ import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.MLSTSerialize;
 import net.sf.drftpd.slave.SlaveImpl;
-import net.sf.drftpd.util.SafeFileWriter;
-
-import net.sf.drftpd.tcpslave.SocketSlaveImpl;
 import net.sf.drftpd.tcpslave.SocketSlaveManager;
+import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.100 2004/04/29 03:57:53 zombiewoof64 Exp $
+ * @version $Id: ConnectionManager.java,v 1.101 2004/05/10 02:53:58 mog Exp $
  */
 public class ConnectionManager {
 

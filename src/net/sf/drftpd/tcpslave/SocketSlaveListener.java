@@ -6,32 +6,23 @@
 
 package net.sf.drftpd.tcpslave;
 
-import java.io.*;
-import java.net.*;
-import java.util.List;
-import java.util.ArrayList;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Properties;
-import java.util.Vector;
 
 import net.sf.drftpd.FatalException;
-
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
-import net.sf.drftpd.tcpslave.SocketSlaveImpl;
 
-import java.net.ServerSocket;
-
+import org.apache.log4j.Logger;
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Matcher;
 
 import socks.server.Ident;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 
 /**
  *
