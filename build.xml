@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- $Id: build.xml,v 1.35 2004/02/23 01:14:26 mog Exp $ -->
+<!-- $Id: build.xml,v 1.36 2004/04/20 04:11:36 mog Exp $ -->
 <project name="drftpd" basedir="." default="compile">
 
   <target name="all" depends="compile"/>
@@ -10,7 +10,7 @@
 
     <path id="classpath">
 	  <fileset dir=".">
-	    <include name="lib/*"/>
+	    <include name="lib/*.jar"/>
 	  </fileset>
     </path>
   </target>

@@ -44,7 +44,7 @@ import javax.net.ssl.SSLContext;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
-import net.sf.drftpd.ObjectExistsException;
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.SlaveManager;
@@ -62,7 +62,7 @@ import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.86 2004/03/21 04:31:32 zubov Exp $
+ * @version $Id: SlaveImpl.java,v 1.87 2004/04/20 04:11:51 mog Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
@@ -192,7 +192,7 @@ public class SlaveImpl
 		}
 		_uploadChecksums = cfg.getProperty("enableuploadchecksums", "true").equals("true");
 		_downloadChecksums = cfg.getProperty("enabledownloadchecksums", "true").equals("true");
-		_bufferSize = Integer.parseInt(cfg.getProperty("bufferSize","65536"));
+		_bufferSize = Integer.parseInt(cfg.getProperty("bufferSize","0"));
 
 		String slavemanagerurl;
 		slavemanagerurl =
@@ -214,7 +214,7 @@ public class SlaveImpl
 				Level.INFO,
 				"Registering with master and sending filelist");
 
-			manager.addSlave(_name, this);
+			manager.addSlave(_name, this, getSlaveStatus());
 
 			logger.log(
 				Level.INFO,
@@ -404,7 +404,7 @@ public class SlaveImpl
 			//!win32 && equalsignore == true on win32 
 			if (tofile.exists()
 				&& !(isWin32 && fromfile.getName().equalsIgnoreCase(toName))) {
-				throw new ObjectExistsException(
+				throw new FileExistsException(
 					"cannot rename from "
 						+ fromfile
 						+ " to "

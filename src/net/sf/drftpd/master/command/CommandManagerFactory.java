@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import net.sf.drftpd.FatalException;
-import net.sf.drftpd.ObjectExistsException;
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.ConnectionManager;
@@ -34,7 +34,7 @@ import net.sf.drftpd.master.ConnectionManager;
  * @author mog
  *
  * Istantiates the CommandManager instances that holds per-connection CommandHandlers.
- * @version $Id: CommandManagerFactory.java,v 1.6 2004/02/10 00:03:07 mog Exp $
+ * @version $Id: CommandManagerFactory.java,v 1.7 2004/04/20 04:11:48 mog Exp $
  */
 public class CommandManagerFactory {
 
@@ -97,7 +97,7 @@ public class CommandManagerFactory {
 				}
 				String cmd = (String) entry.getKey();
 				if (cmds.containsKey(cmd))
-					throw new ObjectExistsException(cmd + " is already mapped");
+					throw new FileExistsException(cmd + " is already mapped");
 				cmds.put(cmd, hndclass);
 			} catch (Exception e) {
 				throw new FatalException("", e);

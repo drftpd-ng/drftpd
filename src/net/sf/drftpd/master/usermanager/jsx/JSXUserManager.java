@@ -32,17 +32,18 @@ import org.apache.log4j.Logger;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FatalException;
-import net.sf.drftpd.ObjectExistsException;
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.master.usermanager.UserExistsException;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.master.usermanager.UserManager;
 import JSX.ObjIn;
 
 /**
  * @author mog
- * @version $Id: JSXUserManager.java,v 1.29 2004/03/26 00:16:34 mog Exp $
+ * @version $Id: JSXUserManager.java,v 1.30 2004/04/20 04:11:49 mog Exp $
  */
 public class JSXUserManager implements UserManager {
 	private ConnectionManager _connManager;
@@ -90,7 +91,7 @@ public class JSXUserManager implements UserManager {
 		try {
 			getUserByName(username);
 			//bad
-			throw new ObjectExistsException("User already exists");
+			throw new FileExistsException("User already exists");
 		} catch (IOException e) {
 			//bad
 			throw new UserFileException(e);
@@ -204,9 +205,9 @@ public class JSXUserManager implements UserManager {
 	}
 
 	void rename(JSXUser oldUser, String newUsername)
-		throws ObjectExistsException {
+		throws UserExistsException {
 		if (users.contains(newUsername))
-			throw new ObjectExistsException("user " + newUsername + " exists");
+			throw new UserExistsException("user " + newUsername + " exists");
 		users.remove(oldUser.getUsername());
 		users.put(newUsername, oldUser);
 	}

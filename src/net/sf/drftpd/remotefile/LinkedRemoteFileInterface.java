@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.ObjectExistsException;
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -51,12 +51,12 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 	public abstract int compareTo(Object o);
 	public abstract LinkedRemoteFile createDirectories(String path);
 	public abstract LinkedRemoteFile createDirectory(String fileName)
-		throws ObjectExistsException;
+		throws FileExistsException;
 	public abstract LinkedRemoteFile createDirectory(
 		String owner,
 		String group,
 		String fileName)
-		throws ObjectExistsException;
+		throws FileExistsException;
 	/**
 	 * Deletes a file or directory, if slaves are offline, the file cannot be deleted.
 	 * To work around this, the file gets a deleted flag set and when the offline slave is remerge()'d, it is deleted from the slave and delete() is called again.

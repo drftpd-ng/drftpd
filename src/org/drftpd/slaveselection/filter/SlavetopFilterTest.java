@@ -30,7 +30,7 @@ import org.drftpd.sections.SectionManagerInterface;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.ObjectExistsException;
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
@@ -42,7 +42,7 @@ import net.sf.drftpd.slave.Transfer;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilterTest.java,v 1.3 2004/03/26 00:16:55 mog Exp $
+ * @version $Id: SlavetopFilterTest.java,v 1.4 2004/04/20 04:11:53 mog Exp $
  */
 public class SlavetopFilterTest extends TestCase {
 
@@ -123,7 +123,7 @@ public class SlavetopFilterTest extends TestCase {
 	public void testSimple()
 		throws
 			NoAvailableSlaveException,
-			ObjectExistsException,
+			FileExistsException,
 			ObjectNotFoundException {
 		Properties p = new Properties();
 		p.put("1.topslaves", "2");

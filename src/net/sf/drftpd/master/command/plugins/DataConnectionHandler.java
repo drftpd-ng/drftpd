@@ -40,6 +40,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.Checksum;
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SFVFile;
@@ -54,7 +55,6 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
 import net.sf.drftpd.master.usermanager.UserFileException;
-//import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
@@ -70,7 +70,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.50 2004/04/17 02:24:37 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.51 2004/04/20 04:11:48 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
@@ -1236,14 +1236,16 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 					logger.error("RemoteException during transfer");
 					return new FtpReply(426, "RemoteException during transfer");
 				} 
-			//} catch (ObjectExistsException ex) {
-				// slave already has the file, treat as a regular IOException
+			} catch (FileExistsException ex) {
+				// slave is unsync'd
+				logger.warn("Slave is unsynchronized", ex);
+				return new FtpReply(426, "FileExistsException, slave is unsynchronized: "+ex.getMessage());
 			} catch (IOException ex) {
 				FtpReply reply = null;
 				if (isStor) {
 					_transferFile.removeSlave(_rslave);
 					_transferFile.delete();
-					logger.error("IOException during transfer, deleting file"); 
+					logger.error("IOException during transfer, deleting file", ex); 
 					reply =  new FtpReply(426, "IOException, deleting file");
 				}
 				else {

@@ -15,18 +15,22 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package net.sf.drftpd.master;
+package net.sf.drftpd;
 
-
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-
-import net.sf.drftpd.slave.Slave;
-import net.sf.drftpd.slave.SlaveStatus;
+import java.io.IOException;
 
 /**
- * @version $Id: SlaveManager.java,v 1.14 2004/04/20 04:11:47 mog Exp $
+ * @author mog
+ * @version $Id: FileExistsException.java,v 1.4 2004/04/20 04:11:37 mog Exp $
  */
-public interface SlaveManager extends Remote {
-    public void addSlave(String slavename, Slave slave, SlaveStatus status) throws RemoteException;
+public class FileExistsException extends IOException {
+
+	public FileExistsException() {
+		super();
+	}
+
+	public FileExistsException(String arg0) {
+		super(arg0);
+	}
+
 }

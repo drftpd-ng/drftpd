@@ -33,7 +33,7 @@ import java.util.StringTokenizer;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.ObjectExistsException;
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
@@ -53,7 +53,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.134 2004/04/17 02:24:38 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.135 2004/04/20 04:11:50 mog Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -376,7 +376,7 @@ public class LinkedRemoteFile
 		while (st.hasMoreTokens()) {
 			try {
 				dir.createDirectory(st.nextToken());
-			} catch (ObjectExistsException e) {
+			} catch (FileExistsException e) {
 				throw new RuntimeException(e);
 			}
 		}
@@ -384,7 +384,7 @@ public class LinkedRemoteFile
 	}
 
 	public LinkedRemoteFile createDirectory(String fileName)
-		throws ObjectExistsException {
+		throws FileExistsException {
 		return createDirectory(null, null, fileName);
 	}
 
@@ -392,7 +392,7 @@ public class LinkedRemoteFile
 		String owner,
 		String group,
 		String fileName)
-		throws ObjectExistsException {
+		throws FileExistsException {
 		//		LinkedRemoteFile existingfile = (LinkedRemoteFile)
 		// _files.get(fileName);
 		//		//throws NullPointerException on non-existing directories
@@ -400,7 +400,7 @@ public class LinkedRemoteFile
 		//			existingfile.delete();
 		//		existingfile = (LinkedRemoteFile) _files.get(fileName);
 		if (hasFile(fileName)) {
-			throw new ObjectExistsException(
+			throw new FileExistsException(
 				fileName + " already exists in this directory");
 		}
 
@@ -741,17 +741,16 @@ public class LinkedRemoteFile
 
 	public LinkedRemoteFileInterface getOldestFile()
 		throws ObjectNotFoundException {
-		long oldestTime = Long.MAX_VALUE;
-		LinkedRemoteFile oldestFile = null;
-		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+		Iterator iter = getFiles().iterator();
+		if (!iter.hasNext())
+			throw new ObjectNotFoundException();
+		LinkedRemoteFile oldestFile = (LinkedRemoteFile) iter.next();
+		for (; iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			if (oldestTime < file.lastModified()) {
+			if (oldestFile.lastModified() > file.lastModified()) {
 				oldestFile = file;
-				oldestTime = oldestFile.lastModified();
 			}
 		}
-		if (oldestFile == null)
-			throw new ObjectNotFoundException();
 		return oldestFile;
 	}
 
@@ -997,6 +996,10 @@ public class LinkedRemoteFile
 	public NonExistingFile lookupNonExistingFile(String path) {
 		return lookupNonExistingFile(path, false);
 	}
+
+	/**
+	 * @param includeDeleted Whether to look up deleted files aswell.
+	 */
 	public NonExistingFile lookupNonExistingFile(
 		String path,
 		boolean includeDeleted) {
@@ -1030,8 +1033,12 @@ public class LinkedRemoteFile
 			}
 			LinkedRemoteFile nextFile;
 			try {
+				if(includeDeleted) {
 				nextFile =
 					(LinkedRemoteFile) currFile.getFileDeleted(currFileName);
+				} else {
+					nextFile = (LinkedRemoteFile)currFile.getFileDeleted(currFileName);
+				}
 			} catch (FileNotFoundException ex) {
 				StringBuffer remaining = new StringBuffer(currFileName);
 				if (st.hasMoreElements()) {
@@ -1577,8 +1584,15 @@ public class LinkedRemoteFile
 	public void setCheckSum(long checkSum) {
 		_checkSum = checkSum;
 	}
+
+	/**
+	 * Used for resurrecting deleted directories.
+	 */
+	public void setDeleted(boolean b) {
+		_isDeleted = b;
+	}
 	public void setGroup(String group) {
-		_group = group.intern();
+		_group = group != null ? group.intern() : null;
 	}
 
 	public void setLastModified(long lastModified) {
@@ -1590,7 +1604,7 @@ public class LinkedRemoteFile
 		_length = length;
 	}
 	public void setOwner(String owner) {
-		_owner = owner.intern();
+		_owner = owner != null ? owner.intern() : null;
 	}
 
 	public void setXfertime(long xfertime) {

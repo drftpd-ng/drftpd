@@ -91,7 +91,7 @@ import f00f.net.irc.martyr.commands.NickCommand;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.6 2004/04/19 22:08:12 zubov Exp $
+ * @version $Id: SiteBot.java,v 1.7 2004/04/20 04:11:51 mog Exp $
  */
 public class SiteBot implements FtpListener, Observer {
 
@@ -616,7 +616,6 @@ public class SiteBot implements FtpListener, Observer {
 			//								+ "]");
 			//					}
 		}
-
 	}
 
 	private void actionPerformedInvite(InviteEvent event) {
@@ -727,9 +726,10 @@ public class SiteBot implements FtpListener, Observer {
 			try {
 				status = sevent.getRSlave().getStatus();
 			} catch (SlaveUnavailableException e) {
+				logger.warn("in ADDSLAVE event handler", e);
 				return;
 			}
-			fillEnvSpace(env, status);
+			fillEnvSlaveStatus(env, status);
 
 			sayGlobal(ReplacerUtils.jprintf("addslave", env, SiteBot.class));
 		} else if (event.getCommand().equals("DELSLAVE")) {
@@ -836,29 +836,30 @@ public class SiteBot implements FtpListener, Observer {
 
 		long starttime;
 		try {
-			starttime = dir.getOldestFile().lastModified() / 1000;
+			starttime = dir.getOldestFile().lastModified();
 		} catch (ObjectNotFoundException e) {
-			starttime = dir.lastModified() / 1000;
+			starttime = dir.lastModified();
 		}
-		starttime = System.currentTimeMillis() - starttime;
-		env.add("elapsed", "" + starttime);
+		//starttime = System.currentTimeMillis() - starttime;
+		//env.add("elapsed", "" + starttime);
 
 		env.add("size", Bytes.formatBytes(file.length()));
+		env.add(
+				"path",
+				strippath(dir.getPath().substring(section.getPath().length())));
+			env.add("file", file.getName());
 		if (file.isFile()) {
 			env.add("speed", Bytes.formatBytes(file.getXferspeed()) + "/s");
-		} else if (file.isDirectory()) {
+			file = file.getParentFileNull(); // files always have parent dirs.
+		}
 
-			//			long starttime = Long.MAX_VALUE;
-			//			for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
-			//				LinkedRemoteFile subfile = (LinkedRemoteFile) iter.next();
-			//				if (subfile.lastModified() < starttime)
-			//					starttime = subfile.lastModified();
-			//			}
-			long elapsed = direvent.getTime() - starttime;
+			long elapsed = (direvent.getTime() - starttime);
+			
 			env.add("secondstocomplete", Time.formatTime(elapsed));
+			long elapsedSeconds = elapsed/1000;
 			env.add(
 				"averagespeed",
-				Bytes.formatBytes(dir.length() / (elapsed / 1000)) + "/s");
+				elapsedSeconds == 0 ? "n/a" : Bytes.formatBytes(dir.length() / elapsedSeconds) + "/s");
 
 			//			ArrayList dirs = new ArrayList();
 			//			LinkedRemoteFileUtils.getAllDirectories(file, dirs);
@@ -882,16 +883,9 @@ public class SiteBot implements FtpListener, Observer {
 				//env.add("size", Bytes.formatBytes(file.length()));
 				env.add("totalfiles", "" + file.getFiles().size());
 			}
-		} else {
-			throw new Error("Not a file or directory, what weird shit are we then?");
-		}
-
-		env.add(
-			"path",
-			strippath(dir.getPath().substring(section.getPath().length())));
-		env.add("file", file.getName());
 	}
-	public void fillEnvSpace(ReplacerEnvironment env, SlaveStatus status) {
+
+	public void fillEnvSlaveStatus(ReplacerEnvironment env, SlaveStatus status) {
 		env.add("xfers", Integer.toString(status.getTransfers()));
 		env.add("throughput", Bytes.formatBytes(status.getThroughput()));
 

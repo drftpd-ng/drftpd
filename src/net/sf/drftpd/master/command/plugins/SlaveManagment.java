@@ -30,11 +30,12 @@ import net.sf.drftpd.master.command.CommandHandler;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.UnhandledCommandException;
+import net.sf.drftpd.slave.SlaveStatus;
 
 /**
  * @author mog
  *
- * @version $Id: SlaveManagment.java,v 1.6 2004/04/17 02:24:37 mog Exp $
+ * @version $Id: SlaveManagment.java,v 1.7 2004/04/20 04:11:48 mog Exp $
  */
 public class SlaveManagment implements CommandHandler {
 	public void unload() {}
@@ -88,6 +89,14 @@ public class SlaveManagment implements CommandHandler {
 			) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
 			response.addComment(rslave.toString());
+			try {
+				SlaveStatus status = rslave.getStatus();
+				
+			} catch (SlaveUnavailableException e) {
+				//slave is offline
+			}
+			
+			
 		}
 		return response;
 	}

@@ -45,7 +45,7 @@ import org.drftpd.sections.SectionInterface;
 /**
  * @author mog
  *
- * @version $Id: Pre.java,v 1.12 2004/03/26 00:16:33 mog Exp $
+ * @version $Id: Pre.java,v 1.13 2004/04/20 04:11:48 mog Exp $
  */
 public class Pre implements CommandHandler {
 
@@ -68,17 +68,13 @@ public class Pre implements CommandHandler {
 		if (args.length != 2) {
 			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
 		}
-//		LinkedRemoteFileInterface section;
-//		try {
-//			section = conn.getCurrentDirectory().getRoot().lookupFile(args[1]);
-//		} catch (FileNotFoundException ex) {
-//			return new FtpReply(
-//				200,
-//				"Release dir not found: " + ex.getMessage());
-//		}
+
 		SectionInterface section = conn.getConnectionManager().getSectionManager().getSection(args[1]);
 		
-		
+		if(section.getName().equals("")) {
+			return new FtpReply(200, "Invalid section, see SITE SECTIONS for a list of available sections");
+		}
+
 		LinkedRemoteFileInterface preDir;
 		try {
 			preDir = conn.getCurrentDirectory().lookupFile(args[0]);

@@ -20,11 +20,10 @@ package net.sf.drftpd.master.usermanager;
 import java.util.List;
 
 import net.sf.drftpd.DuplicateElementException;
-import net.sf.drftpd.ObjectExistsException;
 
 /**
  * @author mog
- * @version $Id: User.java,v 1.35 2004/03/14 13:11:16 mog Exp $
+ * @version $Id: User.java,v 1.36 2004/04/20 04:11:49 mog Exp $
  */
 public interface User {
 
@@ -235,7 +234,7 @@ public interface User {
 	public void removeGroup(String group) throws NoSuchFieldException;
 	public void removeIpMask(String mask) throws NoSuchFieldException;
 	public void rename(String username)
-		throws ObjectExistsException, UserFileException;
+		throws UserExistsException, UserFileException;
 
 	public void setComment(String comment);
 	public void setCreated(long created);

@@ -18,6 +18,8 @@
 package net.sf.drftpd.master.command.plugins;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -39,11 +41,76 @@ import org.apache.log4j.Logger;
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.19 2004/04/17 02:24:37 mog Exp $
+ * @version $Id: Login.java,v 1.20 2004/04/20 04:11:48 mog Exp $
  */
 public class Login implements CommandHandler, Cloneable {
 
 	private static final Logger logger = Logger.getLogger(CommandHandler.class);
+	private InetAddress _idntAddress;
+	private String _idntIdent;
+
+	/**
+	 * Syntax: IDNT ident@ip:dns ???
+	 * @param conn
+	 * @return
+	 */
+	private FtpReply doIDNT(BaseFtpConnection conn) {
+		if(_idntAddress != null) return FtpReply.RESPONSE_530_ACCESS_DENIED;
+		if(conn.getClientAddress().equals(conn.getConnectionManager().getConfig().getBouncerIp())) {
+			String arg = conn.getRequest().getArgument();
+			int pos1 = arg.indexOf('@');
+			if(pos1 == -1) return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+			int pos2 = arg.indexOf(':', pos1+1);
+			if(pos2 == -1) return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+
+			try {
+				_idntAddress = InetAddress.getByName(arg.substring(pos1+1, pos2));
+				_idntIdent = arg.substring(0, pos1).toString();
+			} catch (UnknownHostException e) {
+				return new FtpReply(501, e.getMessage());
+			}
+		}
+		return FtpReply.RESPONSE_200_COMMAND_OK;
+	}
+
+	/**
+	 * <code>PASS &lt;SP&gt; <password> &lt;CRLF&gt;</code><br>
+	 *
+	 * The argument field is a Telnet string specifying the user's
+	 * password.  This command must be immediately preceded by the
+	 * user name command.
+	 */
+	private FtpReply doPASS(BaseFtpConnection conn) {
+		if (conn.getUserNull() == null) {
+			return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
+		}
+
+		FtpRequest request = conn.getRequest();
+
+		// set user password and login
+		String pass = request.hasArgument() ? request.getArgument() : "";
+
+		// login failure - close connection
+		if (conn.getUserNull().checkPassword(pass)) {
+			conn.getUserNull().login();
+			conn.setAuthenticated(true);
+			conn.getConnectionManager().dispatchFtpEvent(
+				new UserEvent(conn.getUserNull(), "LOGIN"));
+
+			FtpReply response =
+				new FtpReply(
+					230,
+					conn.jprintf(Login.class.getName(), "pass.success"));
+			try {
+				Textoutput.addTextToResponse(response, "welcome");
+			} catch (IOException e) {
+				logger.warn("Error reading welcome", e);
+			}
+			return response;
+		} else {
+			return new FtpReply(530, conn.jprintf(Login.class.getName(), "pass.fail"));
+		}
+	}
 
 	/**
 	 * <code>QUIT &lt;CRLF&gt;</code><br>
@@ -93,7 +160,7 @@ public class Login implements CommandHandler, Cloneable {
 		//		if(connManager.isShutdown() && !conn.getUser().isAdmin()) {
 		//			out.print(new FtpResponse(421, ))
 		//		}
-		
+
 		if (newUser.isDeleted()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
@@ -116,14 +183,15 @@ public class Login implements CommandHandler, Cloneable {
 					ident = "";
 				}
 			}
-			if(mask.matches((ident == null ? "" : ident), conn.getClientAddress())) {
+			if((_idntAddress != null && mask.matches(_idntIdent, _idntAddress)) ||
+				mask.matches((ident == null ? "" : ident), conn.getClientAddress())) {
 				//success
 				// max_users and num_logins restriction
-				conn.setUser(newUser);
-				FtpReply response = conn.getConnectionManager().canLogin(conn);
+				FtpReply response = conn.getConnectionManager().canLogin(conn, newUser);
 				if (response != null) {
 					return response;
 				}
+				conn.setUser(newUser);
 				return new FtpReply(
 					331,
 					conn.jprintf(Login.class.getName(), "user.success"));
@@ -131,60 +199,6 @@ public class Login implements CommandHandler, Cloneable {
 		}
 		//fail
 		return FtpReply.RESPONSE_530_ACCESS_DENIED;
-	}
-
-	/**
-	 * <code>PASS &lt;SP&gt; <password> &lt;CRLF&gt;</code><br>
-	*
-	* The argument field is a Telnet string specifying the user's
-	* password.  This command must be immediately preceded by the
-	* user name command.
-	*/
-	private FtpReply doPASS(BaseFtpConnection conn) {
-		if (conn.getUserNull() == null) {
-			return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
-		}
-
-		FtpRequest request = conn.getRequest();
-		
-
-		// set user password and login
-		String pass = request.hasArgument() ? request.getArgument() : "";
-
-		// login failure - close connection
-		if (conn.getUserNull().checkPassword(pass)) {
-			conn.getUserNull().login();
-			conn.setAuthenticated(true);
-			conn.getConnectionManager().dispatchFtpEvent(
-				new UserEvent(conn.getUserNull(), "LOGIN"));
-
-			FtpReply response =
-				new FtpReply(
-					230,
-					conn.jprintf(Login.class.getName(), "pass.success"));
-			try {
-				Textoutput.addTextToResponse(response, "welcome");
-			} catch (IOException e) {
-				logger.warn("Error reading welcome", e);
-			}
-			return response;
-		} else {
-			return new FtpReply(530, conn.jprintf(Login.class.getName(), "pass.fail"));
-		}
-	}
-
-	public CommandHandler initialize(
-		BaseFtpConnection conn,
-		CommandManager initializer) {
-		return this;
-		//		Login login;
-		//		try {
-		//			login = (Login) clone();
-		//		} catch (CloneNotSupportedException e) {
-		//			throw new RuntimeException(e);
-		//		}
-		//		login.conn = conn;
-		//		return login;
 	}
 
 	public FtpReply execute(BaseFtpConnection conn)
@@ -196,6 +210,7 @@ public class Login implements CommandHandler, Cloneable {
 			return doPASS(conn);
 		if ("QUIT".equals(cmd))
 			return doQUIT(conn);
+		if("IDNT".equals(cmd)) return doIDNT(conn);
 		throw UnhandledCommandException.create(Login.class, conn.getRequest());
 	}
 
@@ -203,9 +218,18 @@ public class Login implements CommandHandler, Cloneable {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.drftpd.master.command.CommandHandler#load(net.sf.drftpd.master.command.CommandManagerFactory)
-	 */
+	public CommandHandler initialize(
+		BaseFtpConnection conn,
+		CommandManager initializer) {
+				Login login;
+				try {
+					login = (Login) clone();
+				} catch (CloneNotSupportedException e) {
+					throw new RuntimeException(e);
+				}
+				return login;
+	}
+
 	public void load(CommandManagerFactory initializer) {
 	}
 

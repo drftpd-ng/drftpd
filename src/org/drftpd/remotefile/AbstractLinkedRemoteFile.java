@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.ObjectExistsException;
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -67,7 +67,7 @@ public abstract class AbstractLinkedRemoteFile
 	}
 
 	public LinkedRemoteFile createDirectory(String fileName)
-		throws ObjectExistsException {
+		throws FileExistsException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -75,7 +75,7 @@ public abstract class AbstractLinkedRemoteFile
 		String owner,
 		String group,
 		String fileName)
-		throws ObjectExistsException {
+		throws FileExistsException {
 		throw new UnsupportedOperationException();
 	}
 

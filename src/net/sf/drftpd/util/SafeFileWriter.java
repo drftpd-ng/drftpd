@@ -18,19 +18,21 @@
 package net.sf.drftpd.util;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: SafeFileWriter.java,v 1.5 2004/02/10 00:03:32 mog Exp $
+ * @version $Id: SafeFileWriter.java,v 1.6 2004/04/20 04:11:51 mog Exp $
  */
 public class SafeFileWriter extends Writer {
 	private File _actualFile;
-	private FileWriter _out;
+	private OutputStreamWriter _out;
 	private File _tempFile;
 	private boolean failed = false;
 
@@ -49,7 +51,7 @@ public class SafeFileWriter extends Writer {
 				_actualFile.getName(),
 				null,
 				dir);
-		_out = new FileWriter(_tempFile);
+		_out = new OutputStreamWriter(new FileOutputStream(_tempFile), "UTF-8");
 	}
 
 	/**

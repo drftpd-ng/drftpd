@@ -22,10 +22,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 
-import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.master.usermanager.AbstractUser;
 import net.sf.drftpd.master.usermanager.PlainTextPasswordUser;
 import net.sf.drftpd.master.usermanager.UnixPassword;
+import net.sf.drftpd.master.usermanager.UserExistsException;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.util.Crypt;
 import net.sf.drftpd.util.SafeFileWriter;
@@ -36,7 +36,7 @@ import JSX.ObjOut;
 
 /**
  * @author mog
- * @version $Id: JSXUser.java,v 1.12 2004/03/26 00:16:34 mog Exp $
+ * @version $Id: JSXUser.java,v 1.13 2004/04/20 04:11:49 mog Exp $
  */
 public class JSXUser
 	extends AbstractUser
@@ -80,7 +80,7 @@ public class JSXUser
 	}
 
 	public void rename(String username)
-		throws ObjectExistsException, UserFileException {
+		throws UserExistsException, UserFileException {
 		usermanager.rename(this, username); // throws ObjectExistsException
 		usermanager.getUserFile(this.getUsername()).delete();
 		this.username = username;

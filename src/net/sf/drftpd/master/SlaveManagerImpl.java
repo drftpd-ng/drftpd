@@ -63,11 +63,11 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.79 2004/04/07 13:48:00 zubov Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.80 2004/04/20 04:11:47 mog Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
-	implements SlaveManager, Runnable {
+	implements SlaveManager {
 	private static final Logger logger =
 		Logger.getLogger(SlaveManagerImpl.class.getName());
 
@@ -132,13 +132,6 @@ public class SlaveManagerImpl
 		}
 		Collections.sort(rslaves);
 		return rslaves;
-	}
-
-	public static void printRSlaves(Collection rslaves) {
-		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
-			RemoteSlave rslave = (RemoteSlave) iter.next();
-			System.out.println("rslave: " + rslave);
-		}
 	}
 
 	public static Collection rslavesToMasks(Collection rslaves) {
@@ -231,7 +224,8 @@ public class SlaveManagerImpl
 			throw new FatalException(e);
 		}
 		logger.debug("starting slavestatus updater thread");
-		new Thread(this, "SlaveStatusUpdater").start();
+		//new Thread(this, "SlaveStatusUpdater").start();
+		new SlaveStatusUpdater().start();
 	}
 
 	protected void addShutdownHook() {
@@ -249,7 +243,7 @@ public class SlaveManagerImpl
 		});
 	}
 
-	public void addSlave(String slaveName, Slave slave)
+	public void addSlave(String slaveName, Slave slave, SlaveStatus status)
 		throws RemoteException {
 
 		slave.ping();
@@ -273,7 +267,7 @@ public class SlaveManagerImpl
 		try {
 			rslave.setSlave(
 				slave,
-				InetAddress.getByName(RemoteServer.getClientHost()));
+				InetAddress.getByName(RemoteServer.getClientHost()), status);
 		} catch (Throwable e1) {
 			throw new FatalException(e1);
 		}
@@ -288,17 +282,9 @@ public class SlaveManagerImpl
 			return;
 		}
 
-		System.out.println("SlaveManager.addSlave(): " + rslave.getName());
-
-		try {
-			System.out.println(
-				"SlaveStatus: " + rslave.getSlave().getSlaveStatus());
-			// throws RemoteException
-		} catch (SlaveUnavailableException e) {
-			logger.fatal("", e);
-		} catch (RemoteException e) {
-			logger.fatal("RemoteException from getSlaveStatus()", e);
-		}
+		logger.info("Slave added: '" + rslave.getName()+"'");
+		logger.info("SlaveStatus: " + status);
+		
 		getConnectionManager().dispatchFtpEvent(
 			new SlaveEvent("ADDSLAVE", rslave));
 	}
@@ -525,11 +511,15 @@ public class SlaveManagerImpl
 		}
 	}
 
-	public void run() {
-		logger.debug("started slavestatus updater thread");
-		long low = Integer.MAX_VALUE;
-		long high = 0;
-		while (true) {
+	public class SlaveStatusUpdater extends Thread {
+		public SlaveStatusUpdater() {
+			super("SlaveStatusUpdater");
+		}
+		public void run() {
+			logger.debug("started slavestatus updater thread");
+			long low = Integer.MAX_VALUE;
+			long high = 0;
+			while (true) {
 			try {
 				for (Iterator iter = getAvailableSlaves().iterator();
 					iter.hasNext();
@@ -564,6 +554,7 @@ public class SlaveManagerImpl
 			} catch (InterruptedException e1) {
 			}
 		}
+	}
 	}
 
 	public void saveFilelist() {

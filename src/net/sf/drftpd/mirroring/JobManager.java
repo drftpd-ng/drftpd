@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Properties;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.ObjectExistsException;
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
@@ -36,7 +36,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.43 2004/04/18 21:02:28 zubov Exp $
+ * @version $Id: JobManager.java,v 1.44 2004/04/20 04:11:49 mog Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -252,7 +252,7 @@ public class JobManager implements Runnable {
 					+ " to "
 					+ destSlave.getName(),
 				e);
-			if (!(e instanceof ObjectExistsException)) {
+			if (!(e instanceof FileExistsException)) {
 				try {
 					destSlave.getSlave().delete(job.getFile().getPath());
 				} catch (SlaveUnavailableException e3) {

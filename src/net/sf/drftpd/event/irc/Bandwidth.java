@@ -41,7 +41,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author flowman
- * @version $Id: Bandwidth.java,v 1.5 2004/04/17 02:24:36 mog Exp $
+ * @version $Id: Bandwidth.java,v 1.6 2004/04/20 04:11:45 mog Exp $
  */
 
 public class Bandwidth
@@ -58,8 +58,9 @@ public class Bandwidth
 	}
 
 	private void fillEnvSpace(ReplacerEnvironment env, SlaveStatus status) {
-		_listener.fillEnvSpace(env, status);
+		_listener.fillEnvSlaveStatus(env, status);
 	}
+
 	public String getCommands() {
 		return "!bw !speed";
 	}

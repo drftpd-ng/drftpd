@@ -31,14 +31,14 @@ import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 
-import net.sf.drftpd.ObjectExistsException;
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.util.AddAsciiOutputStream;
 
 import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.44 2004/03/21 04:31:32 zubov Exp $
+ * @version $Id: TransferImpl.java,v 1.45 2004/04/20 04:11:51 mog Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private static final Logger logger = Logger.getLogger(TransferImpl.class);
@@ -187,11 +187,12 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		_started = System.currentTimeMillis();
 		_sock = _conn.connect();
 		_conn = null;
+		int bufsize = _slave.getBufferSize();
 		if (_in == null) {
-			_sock.setReceiveBufferSize(_slave.getBufferSize());
+			if(bufsize > 0) _sock.setReceiveBufferSize(bufsize);
 			_in = _sock.getInputStream();
 		} else if (_out == null) {
-			_sock.setSendBufferSize(_slave.getBufferSize());
+			if(bufsize > 0) _sock.setSendBufferSize(bufsize);
 			_out = _sock.getOutputStream();
 		} else {
 			throw new IllegalStateException("neither in or out was null");
@@ -234,7 +235,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		_direction = TRANSFER_RECEIVING_UPLOAD;
 		try {
 			_slave.getRoots().getFile(dirname + File.separator + filename);
-			throw new ObjectExistsException("File exists");
+			throw new FileExistsException("File exists");
 		} catch (FileNotFoundException ex) {
 		}
 

@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: RemoteSlave.java,v 1.31 2004/03/29 14:26:12 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.32 2004/04/20 04:11:47 mog Exp $
  */
 public class RemoteSlave implements Comparable {
 
@@ -123,18 +123,18 @@ public class RemoteSlave implements Comparable {
 			throw new SlaveUnavailableException("slave is offline");
 		return _slave;
 	}
-
+	
 	/**
 	 * Returns the RemoteSlave's stored SlaveStatus
 	 */
 	public SlaveStatus getStatus()
-		throws SlaveUnavailableException {
-			if (_status == null ) {
-				throw new SlaveUnavailableException();
-			}
-			return _status;
+	throws SlaveUnavailableException {
+		if (_status == null) {
+			throw new SlaveUnavailableException();
+		}
+		return _status;
 	}
-	
+
 	public synchronized void updateStatus() throws SlaveUnavailableException {
 		try {
 			_status = getSlave().getSlaveStatus();
@@ -221,11 +221,12 @@ public class RemoteSlave implements Comparable {
 		_inetAddress = null;
 	}
 
-	public void setSlave(Slave slave, InetAddress inetAddress) {
+	public void setSlave(Slave slave, InetAddress inetAddress, SlaveStatus status) {
 		if (slave == null)
 			throw new IllegalArgumentException();
 		_slave = slave;
 		_inetAddress = inetAddress;
+		_status = status;
 	}
 
 	public String toString() {

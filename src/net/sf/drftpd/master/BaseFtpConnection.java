@@ -59,7 +59,7 @@ import org.tanesha.replacer.ReplacerFormat;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.79 2004/04/17 02:24:37 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.80 2004/04/20 04:11:47 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -530,6 +530,7 @@ public class BaseFtpConnection implements Runnable {
 			throw new RuntimeException(e);
 		}
 	}
+
 	public ServerSocketFactory getServerSocketFactory() {
 		return ServerSocketFactory.getDefault();
 	}

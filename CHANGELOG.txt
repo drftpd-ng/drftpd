@@ -1,0 +1,17 @@
+2004/04/19 Morgan Christiansson <drftpd@mog.se>
+* Changed default send/receive-buffersize behaviour, if buffersize is 0,
+  no setXxxBufferSize() call is made and the O/S can do it's own automatic tuning.
+* Added IDNT support as well as bouncer_ip setting in drftpd.conf, untested as of yet.
+* MKD now resurrects queued for deletion folders if a folder already exists
+  but is queued for deletion.
+* Made SafeFileWriter use UTF-8 charset instead of default charset, this should solve
+  едц being replaced with ??? in files.mlst etc.
+* PRE now gives error if destination section has empty name (default section)
+* Fixed HALFWAY/COMPLETE average speed and elapsed time messages.
+
+
+2004/04/18 Morgan Christiansson <drftpd@mog.se>
+* Created CHANGELOG.txt
+* Improved default logging configuration,
+  now logging to slave.log, filelist.log, sysop.log.
+* Changed build.xml classpath to *.jar instead of *.

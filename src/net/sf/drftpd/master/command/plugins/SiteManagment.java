@@ -43,7 +43,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagment.java,v 1.15 2004/04/17 02:24:37 mog Exp $
+ * @version $Id: SiteManagment.java,v 1.16 2004/04/20 04:11:48 mog Exp $
  */
 public class SiteManagment implements CommandHandler {
 
@@ -113,6 +113,7 @@ public class SiteManagment implements CommandHandler {
 		}
 
 		try {
+			conn.getConnectionManager().reload();
 			conn.getConnectionManager().getConfig().reloadConfig();
 			conn.getSlaveManager().reload();
 			try {

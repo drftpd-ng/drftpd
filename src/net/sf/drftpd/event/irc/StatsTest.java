@@ -21,15 +21,14 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-import net.sf.drftpd.ObjectExistsException;
-import net.sf.drftpd.master.usermanager.AbstractUser;
-import net.sf.drftpd.master.usermanager.UserFileException;
-
 import junit.framework.TestCase;
+import net.sf.drftpd.master.usermanager.AbstractUser;
+import net.sf.drftpd.master.usermanager.UserExistsException;
+import net.sf.drftpd.master.usermanager.UserFileException;
 
 /**
  * @author zubov
- * @version $Id: StatsTest.java,v 1.3 2004/03/26 00:16:32 mog Exp $
+ * @version $Id: StatsTest.java,v 1.4 2004/04/20 04:11:47 mog Exp $
  */
 public class StatsTest extends TestCase {
 
@@ -60,16 +59,16 @@ public class StatsTest extends TestCase {
 		}
 
 		public void purge() {
-
+			throw new UnsupportedOperationException();
 		}
 
 		public void rename(String username)
-			throws ObjectExistsException, UserFileException {
-
+			throws UserExistsException, UserFileException {
+			throw new UnsupportedOperationException();
 		}
 
 		public void setPassword(String password) {
-
+			throw new UnsupportedOperationException();
 		}
 
 }

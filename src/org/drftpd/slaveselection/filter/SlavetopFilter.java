@@ -40,7 +40,7 @@ import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilter.java,v 1.3 2004/03/01 00:21:10 mog Exp $
+ * @version $Id: SlavetopFilter.java,v 1.4 2004/04/20 04:11:53 mog Exp $
  */
 public class SlavetopFilter extends Filter {
 
@@ -95,13 +95,6 @@ public class SlavetopFilter extends Filter {
 			RemoteSlave rslave = ((ScoreChart.SlaveScore) iter.next()).getRSlave();
 			slavesmap.put(rslave, new ScoreChart.SlaveScore(rslave));
 		}
-
-		//		for (Iterator iter = scorechart.getSlaveScores().iterator();
-		//			iter.hasNext();
-		//			) {
-		//			ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
-		//			slavesmap.put(score.getRSlave(), score);
-		//		}
 
 		Collection files = LinkedRemoteFileUtils.getAllFiles(rls);
 		for (Iterator iter = files.iterator(); iter.hasNext();) {

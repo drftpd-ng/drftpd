@@ -29,7 +29,7 @@ import java.util.StringTokenizer;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.Nukee;
-import net.sf.drftpd.ObjectExistsException;
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -56,7 +56,7 @@ import org.jdom.input.SAXBuilder;
  * amount -> amount before multiplier
  * 
  * @author mog
- * @version $Id: Nuke.java,v 1.13 2004/04/17 02:24:37 mog Exp $
+ * @version $Id: Nuke.java,v 1.14 2004/04/20 04:11:48 mog Exp $
  */
 public class Nuke implements CommandHandler {
 
@@ -396,7 +396,7 @@ public class Nuke implements CommandHandler {
 		}
 		try {
 			nukeDir.renameTo(toDir, toName);
-		} catch (ObjectExistsException e1) {
+		} catch (FileExistsException e1) {
 			response.addComment(
 				"Error renaming nuke, target dir already exists");
 		} catch (IOException e1) {

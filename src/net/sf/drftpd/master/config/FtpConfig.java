@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -42,7 +43,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.46 2004/04/07 13:48:00 zubov Exp $
+ * @version $Id: FtpConfig.java,v 1.47 2004/04/20 04:11:48 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -77,6 +78,7 @@ public class FtpConfig {
 		}
 		return users;
 	}
+	private InetAddress _bouncerIp;
 	private boolean _capFirstDir;
 	private boolean _capFirstFile;
 
@@ -224,6 +226,12 @@ public class FtpConfig {
 			}
 		}
 	}
+	/**
+	 * @return Returns the bouncerIp.
+	 */
+	public InetAddress getBouncerIp() {
+		return _bouncerIp;
+	}
 	public float getCreditCheckRatio(
 		LinkedRemoteFileInterface path,
 		User fromUser) {
@@ -312,6 +320,9 @@ public class FtpConfig {
 		_useIdent = cfg.getProperty("use.ident", "true").equals("true");
 		_slaveStatusUpdateTime =
 			Long.parseLong(cfg.getProperty("slaveStatusUpdateTime", "3000"));
+
+		String bouncerHost = cfg.getProperty("bouncer_ip");
+		_bouncerIp = bouncerHost != null ? InetAddress.getByName(bouncerHost) : null;
 	}
 
 	private void loadConfig2() throws IOException {

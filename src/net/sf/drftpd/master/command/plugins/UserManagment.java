@@ -30,7 +30,6 @@ import java.util.StringTokenizer;
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMask;
-import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.FtpRequest;
@@ -42,6 +41,7 @@ import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.config.Permission;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.master.usermanager.UserExistsException;
 import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.util.ReplacerUtils;
@@ -56,7 +56,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.34 2004/04/17 02:24:37 mog Exp $
+ * @version $Id: UserManagment.java,v 1.35 2004/04/20 04:11:48 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -1146,7 +1146,7 @@ public class UserManagment implements CommandHandler {
 			logger.info("'"+conn.getUserNull().getUsername()+"' renamed '"+oldUsername+"' to '"+myUser.getUsername()+"'");
 		} catch (NoSuchUserException e) {
 			return new FtpReply(200, "No such user: " + e.getMessage());
-		} catch (ObjectExistsException e) {
+		} catch (UserExistsException e) {
 			return new FtpReply(200, "Target username is already taken");
 		} catch (UserFileException e) {
 			return new FtpReply(200, e.getMessage());

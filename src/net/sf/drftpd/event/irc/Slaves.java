@@ -39,7 +39,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Slaves.java,v 1.6 2004/04/09 19:05:04 mog Exp $
+ * @version $Id: Slaves.java,v 1.7 2004/04/20 04:11:47 mog Exp $
  */
 public class Slaves extends GenericAutoService implements IRCPluginInterface {
 
@@ -95,29 +95,11 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 							Slaves.class));
 					continue;
 				}
-
-				env.add("xfers", Integer.toString(status.getTransfers()));
-				env.add(
-					"throughput",
-					Bytes.formatBytes(status.getThroughput()) + "/s");
-
-				env.add(
-					"xfersup",
-					Integer.toString(status.getTransfersReceiving()));
-				env.add(
-					"throughputup",
-					Bytes.formatBytes(status.getThroughputReceiving()) + "/s");
-
-				env.add(
-					"xfersdown",
-					Integer.toString(status.getTransfersSending()));
-				env.add(
-					"throughputdown",
-					Bytes.formatBytes(status.getThroughputSending()));
+				fillEnv(env, status);
 				ReplacerEnvironment env1 = env;
 				SlaveStatus status1 = status;
 
-				_listener.fillEnvSpace(env1, status1);
+				_listener.fillEnvSlaveStatus(env1, status1);
 
 				statusString =
 					ReplacerUtils.jprintf("slaves", env, Slaves.class);
@@ -136,6 +118,27 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 			_listener.sayChannel(chan1, string);
 		}
 
+	}
+
+	public static void fillEnv(ReplacerEnvironment env, SlaveStatus status) {
+		env.add("xfers", Integer.toString(status.getTransfers()));
+		env.add(
+			"throughput",
+			Bytes.formatBytes(status.getThroughput()) + "/s");
+
+		env.add(
+			"xfersup",
+			Integer.toString(status.getTransfersReceiving()));
+		env.add(
+			"throughputup",
+			Bytes.formatBytes(status.getThroughputReceiving()) + "/s");
+
+		env.add(
+			"xfersdown",
+			Integer.toString(status.getTransfersSending()));
+		env.add(
+			"throughputdown",
+			Bytes.formatBytes(status.getThroughputSending()));
 	}
 
 	protected void updateState(State state) {

@@ -19,6 +19,7 @@ package net.sf.drftpd.remotefile;
 
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
@@ -40,7 +41,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: MLSTSerialize.java,v 1.25 2004/02/23 01:14:40 mog Exp $
+ * @version $Id: MLSTSerialize.java,v 1.26 2004/04/20 04:11:50 mog Exp $
  */
 public class MLSTSerialize {
 	private static final Logger logger = Logger.getLogger(MLSTSerialize.class);

@@ -20,7 +20,7 @@ package net.sf.drftpd.master.command.plugins;
 import java.io.IOException;
 import java.util.Iterator;
 
-import net.sf.drftpd.ObjectExistsException;
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -36,7 +36,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Request.java,v 1.13 2004/04/17 02:24:37 mog Exp $
+ * @version $Id: Request.java,v 1.14 2004/04/20 04:11:48 mog Exp $
  */
 public class Request implements CommandHandler {
 	private static final String FILLEDPREFIX = "FILLED-for.";
@@ -133,7 +133,7 @@ public class Request implements CommandHandler {
 			return new FtpReply(
 				257,
 				"\"" + createdDir.getPath() + "\" created.");
-		} catch (ObjectExistsException ex) {
+		} catch (FileExistsException ex) {
 			return new FtpReply(
 				550,
 				"directory " + createdDirName + " already exists");

@@ -55,11 +55,10 @@ import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.94 2004/04/07 13:47:51 zubov Exp $
+ * @version $Id: ConnectionManager.java,v 1.95 2004/04/20 04:11:47 mog Exp $
  */
 public class ConnectionManager {
 
@@ -99,8 +98,6 @@ public class ConnectionManager {
 			/** load master config **/
 			Properties cfg = new Properties();
 			cfg.load(new FileInputStream(cfgFileName));
-
-			PropertyConfigurator.configure(cfg);
 
 			/** load slave config **/
 			Properties slaveCfg; //used as a flag for if localslave=true
@@ -290,8 +287,15 @@ public class ConnectionManager {
 		_ftpListeners.add(listener);
 	}
 
-	public FtpReply canLogin(BaseFtpConnection baseconn) {
-		User user = baseconn.getUserNull();
+	public void reload() {
+//		String url = System.getProperty(LogManager.DEFAULT_CONFIGURATION_KEY);
+//		if(url != null) {
+//			LogManager.resetConfiguration();
+//			OptionConverter.selectAndConfigure(url, null, LogManager.getLoggerRepository());
+//		}
+	}
+
+	public FtpReply canLogin(BaseFtpConnection baseconn, User user) {
 		int count = getConfig().getMaxUsersTotal();
 		//Math.max if the integer wraps
 		if (user.isExempt())

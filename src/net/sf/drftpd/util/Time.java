@@ -19,7 +19,7 @@ package net.sf.drftpd.util;
 
 /**
  * @author Flowman
- * @version $Id: Time.java,v 1.4 2004/02/27 01:02:20 mog Exp $
+ * @version $Id: Time.java,v 1.5 2004/04/20 04:11:51 mog Exp $
  */
 public class Time {
 	/**
@@ -46,7 +46,7 @@ public class Time {
 		if ( days != 0 ) time = days + "days ";
 		if ( hours != 0 ) time = hours + "h ";
 		if ( mins != 0 ) time += mins + "m ";
-		if ( secs > 0 ) time += secs + "s";
+		time += secs + "s";
 		
 		return time;
 	}

@@ -32,7 +32,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author zubov
- * @version $Id: Diskfree.java,v 1.3 2004/04/09 19:05:03 mog Exp $
+ * @version $Id: Diskfree.java,v 1.4 2004/04/20 04:11:47 mog Exp $
  */
 
 public class Diskfree
@@ -70,7 +70,7 @@ public class Diskfree
 				new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			ReplacerEnvironment env1 = env;
 
-			_listener.fillEnvSpace(env1, status);
+			_listener.fillEnvSlaveStatus(env1, status);
 			_listener.sayChannel(msgc.getDest(), ReplacerUtils.jprintf("diskfree", env, SiteBot.class));
 		}
 	}

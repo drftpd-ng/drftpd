@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Properties;
 
-import net.sf.drftpd.ObjectExistsException;
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -32,7 +32,7 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author mog
- * @version $Id: DatedSection.java,v 1.3 2004/03/01 00:21:09 mog Exp $
+ * @version $Id: DatedSection.java,v 1.4 2004/04/20 04:11:52 mog Exp $
  */
 public class DatedSection implements SectionInterface {
 
@@ -69,7 +69,7 @@ public class DatedSection implements SectionInterface {
 		} catch (FileNotFoundException e) {
 			try {
 				return getBaseFile().createDirectory(dateDir);
-			} catch (ObjectExistsException e1) {
+			} catch (FileExistsException e1) {
 				throw new RuntimeException(
 					"ObjectExistsException when creating a directory which gave FileNotFoundException",
 					e1);
