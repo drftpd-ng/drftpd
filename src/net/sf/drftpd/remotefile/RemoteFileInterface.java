@@ -22,7 +22,7 @@ import java.util.Collection;
 
 /**
  * @author mog
- * @version $Id: RemoteFileInterface.java,v 1.9 2004/02/23 01:14:40 mog Exp $
+ * @version $Id: RemoteFileInterface.java,v 1.10 2004/03/26 11:22:21 mog Exp $
  */
 public interface RemoteFileInterface {
 	/**
@@ -106,10 +106,4 @@ public interface RemoteFileInterface {
 	 * @see java.io.File#length()
 	 */
 	public long length();
-	
-	/**
-	 * @see java.io.File#listFiles()
-	 */
-	public RemoteFileInterface[] listFiles();
-
 }

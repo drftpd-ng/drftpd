@@ -53,7 +53,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.127 2004/03/26 00:16:35 mog Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.128 2004/03/26 11:22:21 mog Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -977,13 +977,6 @@ public class LinkedRemoteFile
 		if (_length < 0)
 			return 0;
 		return _length;
-	}
-
-	public RemoteFileInterface[] listFiles() {
-		if (!isDirectory())
-			throw new RuntimeException(getPath() + " is not a directory");
-		return (LinkedRemoteFileInterface[]) getFilesMap().values().toArray(
-			new LinkedRemoteFile[0]);
 	}
 
 	public LinkedRemoteFile lookupFile(String path)

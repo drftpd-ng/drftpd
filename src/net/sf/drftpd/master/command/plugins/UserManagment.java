@@ -54,7 +54,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.30 2004/03/14 13:11:14 mog Exp $
+ * @version $Id: UserManagment.java,v 1.31 2004/03/26 11:22:20 mog Exp $
  */
 public class UserManagment implements CommandHandler {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -630,6 +630,8 @@ public class UserManagment implements CommandHandler {
 					UserManagment.class,
 					"changecreated.success",
 					env));
+		} else if("wkly_allotment".equals(command)) {
+			myUser.setWeeklyAllotment(Bytes.parseBytes(commandArgument));
 		} else {
 			FtpReply response2 =
 				(FtpReply) FtpReply.RESPONSE_501_SYNTAX_ERROR.clone();
