@@ -238,35 +238,33 @@ public class SiteBot extends FtpListener implements Observer {
     }
 
     public synchronized void actionPerformed(Event event) {
-    	if (event.getCommand().equals("RELOAD")) {
-			try {
-				reload();
-			} catch (IOException e) {
-				logger.log(Level.WARN, "", e);
+    	try {
+			if (event.getCommand().equals("RELOAD")) {
+				try {
+					reload();
+				} catch (IOException e) {
+					logger.log(Level.WARN, "", e);
+				}
+			} else if (event.getCommand().equals("SHUTDOWN")) {
+				MessageEvent mevent = (MessageEvent) event;
+				ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
+				env.add("message", mevent.getMessage());
+
+				sayGlobal(ReplacerUtils.jprintf("shutdown", env, SiteBot.class));
+			} else if (event instanceof InviteEvent) {
+				actionPerformedInvite((InviteEvent) event);
+			} else if (_enableAnnounce) {
+				if (event instanceof DirectoryFtpEvent) {
+					actionPerformedDirectory((DirectoryFtpEvent) event);
+				} else if (event instanceof NukeEvent) {
+					actionPerformedNuke((NukeEvent) event);
+				} else if (event instanceof SlaveEvent) {
+					actionPerformedSlave((SlaveEvent) event);
+				}
 			}
-		} else if (event.getCommand().equals("SHUTDOWN")) {
-			MessageEvent mevent = (MessageEvent) event;
-			ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
-			env.add("message", mevent.getMessage());
-
-			sayGlobal(ReplacerUtils.jprintf("shutdown", env, SiteBot.class));
+		} catch (FormatterException ex) {
+			logger.warn("", ex);
 		}
-
-        if (_enableAnnounce) {
-            try {
-                if (event instanceof DirectoryFtpEvent) {
-                    actionPerformedDirectory((DirectoryFtpEvent) event);
-                } else if (event instanceof NukeEvent) {
-                    actionPerformedNuke((NukeEvent) event);
-                } else if (event instanceof SlaveEvent) {
-                    actionPerformedSlave((SlaveEvent) event);
-                } else if (event instanceof InviteEvent) {
-                    actionPerformedInvite((InviteEvent) event);
-                }
-            } catch (FormatterException ex) {
-                logger.warn("", ex);
-            }
-        }
     }
 
     private void actionPerformedDirectory(DirectoryFtpEvent direvent)
@@ -660,7 +658,7 @@ public class SiteBot extends FtpListener implements Observer {
             				logger.warn("User does not have enough permissions to invite into " + chan.getName());
             			}
             		} else {
-            			logger.error("Could not find ChannelConfig for " + chan.getName());
+            			logger.error("Could not find ChannelConfig for " + chan.getName() + " this is a bug, please report it!", new Throwable());
             		}
             	}
             }
@@ -1246,9 +1244,17 @@ public class SiteBot extends FtpListener implements Observer {
         	if (_channelMap.containsKey(currentChannel)) { // still in channel
         		ChannelConfig newCC = _channelMap.get(currentChannel);
         		ChannelConfig oldCC = oldChannelMap.get(currentChannel);
+        		if (newCC == null || oldCC == null) {
+        			logger.debug("This is a bug! report me! -- channel=" + currentChannel + " newCC=" + newCC + " oldCC=" + oldCC, new Throwable());
+        			continue;
+        		}
         		newCC.setAutoJoin(oldCC.getAutoJoin());
         	} else { // removed from channel
         		ChannelConfig oldCC = oldChannelMap.get(currentChannel);
+        		if (oldCC == null) {
+        			logger.debug("This is a bug! report me! -- channel=" + currentChannel + " oldCC=" + oldCC, new Throwable());
+        			continue;
+        		}
         		oldCC.getAutoJoin().disable();
 				_conn.sendCommand(new PartCommand(currentChannel));
         		_conn.getClientState().removeChannel(currentChannel);
@@ -1257,6 +1263,10 @@ public class SiteBot extends FtpListener implements Observer {
         }
 		for (String channelName : _channelMap.keySet()) {
         	ChannelConfig cc = _channelMap.get(channelName);
+    		if (cc == null) {
+    			logger.debug("This is a bug! report me! -- channel=" + channelName + " cc=" + cc, new Throwable());
+    			continue;
+    		}
         	if (cc.getAutoJoin() == null) { // new channel!
         		cc.setAutoJoin(new AutoJoin(_conn, channelName, cc._chanKey));
         	}
