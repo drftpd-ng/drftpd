@@ -89,7 +89,6 @@ public class FtpConfig extends Observable implements ConfigInterface {
     private String newConf = "conf/perms.conf";
     protected PortRange _portRange;
 	private Permission _shutdown;
-	protected Properties _zsCfg;
 	protected GlobalContext _gctx;
 
     protected FtpConfig() {
@@ -282,11 +281,6 @@ public class FtpConfig extends Observable implements ConfigInterface {
     	return _pasv_addr;
 	}
 
-	public Properties getZsConfig() {
-		assert _zsCfg != null;
-		return _zsCfg;
-	}
-
 	public void loadConfig(Properties cfg, GlobalContext gctx)
         throws IOException {
         loadConfig2(new FileReader(newConf));
@@ -296,8 +290,6 @@ public class FtpConfig extends Observable implements ConfigInterface {
         }
         _gctx = gctx;
         loadConfig1(cfg);
-        _zsCfg = new Properties();
-        _zsCfg.load(new FileInputStream("conf/zipscript.conf"));
     }
 
     protected void loadConfig1(Properties cfg) throws UnknownHostException {

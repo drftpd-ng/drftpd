@@ -62,8 +62,6 @@ public interface ConfigInterface {
 
 	public abstract int getMaxUsersTotal();
 
-	public abstract Properties getZsConfig();
-
 	public abstract void loadConfig(Properties cfg, GlobalContext gctx)
 			throws IOException;
 
