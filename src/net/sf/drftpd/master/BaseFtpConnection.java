@@ -16,7 +16,6 @@ import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 
 import net.sf.drftpd.Bytes;
-import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.UserEvent;
@@ -30,10 +29,8 @@ import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.Transfer;
 
-import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
@@ -44,23 +41,11 @@ import org.tanesha.replacer.SimplePrintf;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.65 2004/01/03 23:50:53 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.66 2004/01/04 01:23:37 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
 		Logger.getLogger(BaseFtpConnection.class.getName() + ".service");
-
-	static {
-		try {
-			debuglogger.addAppender(
-				new FileAppender(
-					new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN),
-					"ftp-data/logs/debug.log"));
-			debuglogger.setAdditivity(false);
-		} catch (IOException e) {
-			throw new FatalException(e);
-		}
-	}
 
 	private static final Logger logger =
 		Logger.getLogger(BaseFtpConnection.class);

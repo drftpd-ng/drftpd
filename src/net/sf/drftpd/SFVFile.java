@@ -13,36 +13,64 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author mog
- * @version $Id: SFVFile.java,v 1.22 2003/12/23 13:38:18 mog Exp $
+ * @version $Id: SFVFile.java,v 1.23 2004/01/04 01:23:37 mog Exp $
  */
 public class SFVFile implements Serializable {
 
 	public class SFVStatus {
-		private int _missing;
+		private int _present;
 		private int _offline;
+		private int _total;
 
-		public SFVStatus(int offline, int missing) {
+		public SFVStatus(int total, int offline, int present) {
+			_total = total;
 			_offline = offline;
-			_missing = missing;
+			_present = present;
 		}
 
+		/**
+		 * Returns the number of files that don't exist or are 0byte.
+		 * @return the number of files that don't exist or are 0byte.
+		 */
 		public int getMissing() {
-			return _missing;
+			return _total - _present;
 		}
 
+		/**
+		 * Returns the number of files that exist and are not 0 byte.
+		 * @return the number of files that exist and are not 0 byte.
+		 */
+		public int getPresent() {
+			return _present;
+		}
+		
+		/**
+		 * Returns the number of files that are available (online).
+		 * 
+		 * If a file is online, it is of course is also present (exists).
+		 * @return the number of files that are available (present & online)
+		 */
+		public int getAvailable() {
+			return _present - _offline;
+		}
+		
+		/**
+		 * Returns the number of files that are offline.
+		 * @return the number of files that are offline.
+		 */
 		public int getOffline() {
 			return _offline;
 		}
 
 		public boolean isFinished() {
-			return _missing == 0;
+			return getMissing() == 0;
 		}
 	}
 
 	static final long serialVersionUID = 5381510163578487722L;
 
 	private transient LinkedRemoteFile _companion;
-	
+
 	/**
 	 * String fileName as key.
 	 * Long checkSum as value.
@@ -97,16 +125,19 @@ public class SFVFile implements Serializable {
 	}
 
 	public SFVStatus getStatus() {
-		int good = 0;
 		int offline = 0;
+		int present = 0;
+
 		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			if (file.length() != 0)
-				good++;
-			if (!file.isAvailable())
-				offline++;
+			if (file.length() != 0) {
+				present++;
+				if (!file.isAvailable()) {
+					offline++;
+				}
+			}
 		}
-		return new SFVStatus(offline, size()-good);
+		return new SFVStatus(size(), offline, present);
 	}
 
 	public long getChecksum(String fileName) throws ObjectNotFoundException {

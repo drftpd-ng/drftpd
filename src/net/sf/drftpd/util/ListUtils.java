@@ -3,7 +3,6 @@ package net.sf.drftpd.util;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -19,7 +18,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.7 2004/01/03 23:50:54 mog Exp $
+ * @version $Id: ListUtils.java,v 1.8 2004/01/04 01:23:38 mog Exp $
  */
 public class ListUtils {
 
@@ -65,16 +64,16 @@ public class ListUtils {
 						+ " = "
 						+ (good * 100) / sfvfile.size()
 						+ "% complete | "
-						+ sfvstatus.getOffline()
+						+ (sfvfile.size() - sfvstatus.getOffline())
 						+ "/"
 						+ sfvfile.size()
 						+ " = "
-						+ (sfvstatus.getOffline() * 100) / sfvfile.size()
-						+ "% offline ]";
+						+ ((sfvfile.size() - sfvstatus.getOffline()) * 100) / sfvfile.size()
+						+ "% online ]";
 
 				listFiles.add(
 					new StaticRemoteFile(
-						Collections.EMPTY_LIST,
+						null,
 						statusDirName,
 						"drftpd",
 						"drftpd",

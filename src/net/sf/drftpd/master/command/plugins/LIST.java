@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * @version $Id: LIST.java,v 1.9 2003/12/23 13:38:19 mog Exp $
+ * @version $Id: LIST.java,v 1.10 2004/01/04 01:23:38 mog Exp $
  */
 public class LIST implements CommandHandler {
 	private Logger logger = Logger.getLogger(LIST.class);
@@ -179,7 +179,7 @@ public class LIST implements CommandHandler {
 
 		////////////////
 		List listFiles = ListUtils.list(directoryFile, conn);
-		//		//////////////
+		////////////////
 
 		try {
 			if (request.getCommand().equals("LIST")
@@ -187,7 +187,6 @@ public class LIST implements CommandHandler {
 				printList(listFiles, os, fulldate);
 			} else if (request.getCommand().equals("NLST")) {
 				printNList(listFiles, detailOption, os);
-				//VirtualDirectory.printNList(listFiles, detailOption, dataChannel);
 			}
 
 			FtpReply response =
@@ -216,8 +215,8 @@ public class LIST implements CommandHandler {
 		
 		//redo connection handling
 		//conn.reset();
-
 	}
+
 	/**
 	 * <code>STAT [&lt;SP&gt; &lt;pathname&gt;] &lt;CRLF&gt;</code><br>
 	 *

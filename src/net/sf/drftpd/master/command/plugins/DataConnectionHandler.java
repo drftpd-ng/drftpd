@@ -49,7 +49,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.27 2003/12/29 19:14:35 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.28 2004/01/04 01:23:38 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -74,9 +74,9 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private Transfer _transfer;
 	private LinkedRemoteFile _transferFile;
 	private SSLContext _ctx;
-	private boolean mbPasv = false;
+	private boolean isPasv = false;
 
-	private boolean mbPort = false;
+	private boolean isPort = false;
 	private char type = 'A';
 	private short xdupe = 0;
 	public DataConnectionHandler() {
@@ -87,7 +87,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			throw new FatalException(e);
 		}
 	}
-	//TODO error handling for AUTH cmd
+
 	private FtpReply doAUTH(BaseFtpConnection conn) {
 		Socket s = conn.getControlSocket();
 
@@ -261,7 +261,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 				//					new InetSocketAddress(
 				//						_serverSocket.getInetAddress(),
 				//						_serverSocket.getLocalPort());
-				mbPasv = true;
+				isPasv = true;
 			} catch (Exception ex) {
 				logger.log(Level.WARN, "", ex);
 				return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
@@ -273,7 +273,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 					new InetSocketAddress(
 						_preTransferRSlave.getInetAddress(),
 						_transfer.getLocalPort());
-				mbPasv = true;
+				isPasv = true;
 			} catch (RemoteException e) {
 				_preTransferRSlave.handleRemoteException(e);
 				return new FtpReply(450, "Remote error: " + e.getMessage());
@@ -387,7 +387,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			//out.write(ftpStatus.getResponse(552, request, user, null));
 		}
 
-		mbPort = true;
+		isPort = true;
 		_portAddress = new InetSocketAddress(clientAddr, clientPort);
 
 		if (portHostAddress.startsWith("127.")) {
@@ -836,10 +836,10 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 * Guarantes pre transfer is set up correctly.
 	 */
 	public boolean isPasv() {
-		return mbPasv;
+		return isPasv;
 	}
 	public boolean isPort() {
-		return mbPort;
+		return isPort;
 	}
 	public boolean isPreTransfer() {
 		return _preTransfer || isPasv();
@@ -857,12 +857,12 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		_preTransfer = false;
 		_preTransferRSlave = null;
 
-		mbPasv = false;
+		isPasv = false;
 		if (isPasv()) {
 			_portRange.releasePort(_serverSocket.getLocalPort());
 		}
 		_serverSocket = null;
-		mbPort = false;
+		isPort = false;
 		_resumePosition = 0;
 	}
 

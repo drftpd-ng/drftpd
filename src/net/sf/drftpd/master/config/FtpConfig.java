@@ -29,7 +29,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.27 2004/01/03 23:50:54 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.28 2004/01/04 01:23:38 mog Exp $
  */
 public class FtpConfig {
 	private static Logger logger = Logger.getLogger(FtpConfig.class);
@@ -42,11 +42,16 @@ public class FtpConfig {
 				makeUsers(st)));
 		return arr;
 	}
-	
-	private static ArrayList makeRatioPermission(ArrayList arr, StringTokenizer st)
+
+	private static ArrayList makeRatioPermission(
+		ArrayList arr,
+		StringTokenizer st)
 		throws MalformedPatternException {
 		arr.add(
-			new RatioPathPermission(new GlobCompiler().compile(st.nextToken()),Float.parseFloat(st.nextToken()),makeUsers(st)));
+			new RatioPathPermission(
+				new GlobCompiler().compile(st.nextToken()),
+				Float.parseFloat(st.nextToken()),
+				makeUsers(st)));
 		return arr;
 	}
 
@@ -57,13 +62,14 @@ public class FtpConfig {
 		}
 		return users;
 	}
-	
+	private ConnectionManager _connManager;
 	private ArrayList _creditcheck;
 	private ArrayList _creditloss;
 	private ArrayList _delete;
 	private ArrayList _deleteown;
 	private ArrayList _dirlog;
 	private ArrayList _download;
+	private long _freespaceMin;
 	private ArrayList _hideinwho;
 	private ArrayList _makedir;
 	private int _maxUsersExempt;
@@ -76,11 +82,10 @@ public class FtpConfig {
 	private ArrayList _request;
 	private ArrayList _upload;
 
+	private boolean _useIdent;
+
 	String cfgFileName;
-	private ConnectionManager connManager;
-	private long freespaceMin;
-	private String loginPrompt =
-		SlaveImpl.VERSION+" http://drftpd.mog.se";
+	private String loginPrompt = SlaveImpl.VERSION + " http://drftpd.mog.se";
 	private String newConf = "perms.conf";
 	private Map replacerFormats;
 
@@ -229,7 +234,8 @@ public class FtpConfig {
 			if (perm.checkPath(path)) {
 				System.out.println("path matched, path = " + path.getPath());
 				if (perm.check(fromUser)) {
-					System.out.println("user matched, user = " + fromUser.toString());
+					System.out.println(
+						"user matched, user = " + fromUser.toString());
 					return perm.getRatio();
 				} //else {
 				//					return fromUser.getRatio() == 0 ? 0 : 1;
@@ -243,7 +249,7 @@ public class FtpConfig {
 		return fromUser.getRatio() == 0 ? 0 : 1;
 	}
 	public long getFreespaceMin() {
-		return freespaceMin;
+		return _freespaceMin;
 	}
 	public String getLoginPrompt() {
 		return loginPrompt;
@@ -264,7 +270,7 @@ public class FtpConfig {
 	}
 
 	public SlaveManagerImpl getSlaveManager() {
-		return this.connManager.getSlaveManager();
+		return this._connManager.getSlaveManager();
 	}
 
 	public void loadConfig(Properties cfg, ConnectionManager connManager)
@@ -276,8 +282,11 @@ public class FtpConfig {
 		} catch (FormatterException e) {
 			throw (IOException) new IOException().initCause(e);
 		}
-		this.connManager = connManager;
-		this.freespaceMin = Bytes.parseBytes(cfg.getProperty("freespace.min"));
+		_connManager = connManager;
+		_freespaceMin = Bytes.parseBytes(cfg.getProperty("freespace.min"));
+
+		_useIdent = cfg.getProperty("use.ident", "true").equals("true");
+
 	}
 	private void loadConfig2() throws IOException {
 		ArrayList creditcheck = new ArrayList();
@@ -334,11 +343,11 @@ public class FtpConfig {
 				}
 				//creditloss <path> <multiplier> [<-user|=group|flag> ...]
 				else if (command.equals("creditloss")) {
-					makeRatioPermission(creditloss,st);
+					makeRatioPermission(creditloss, st);
 				}
 				//creditcheck <path> <ratio> [<-user|=group|flag> ...]
 				else if (command.equals("creditcheck")) {
-					makeRatioPermission(creditcheck,st);
+					makeRatioPermission(creditcheck, st);
 				} else if (command.equals("dirlog")) {
 					makePermission(dirlog, st);
 				} else if (command.equals("hideinwho")) {
@@ -444,7 +453,11 @@ public class FtpConfig {
 	public void reloadConfig() throws FileNotFoundException, IOException {
 		Properties cfg = new Properties();
 		cfg.load(new FileInputStream(cfgFileName));
-		loadConfig(cfg, connManager);
+		loadConfig(cfg, _connManager);
+	}
+
+	public boolean useIdent() {
+		return _useIdent;
 	}
 
 }

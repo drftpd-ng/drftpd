@@ -10,7 +10,7 @@ import java.util.List;
  * linked directory structure to the remote VM.
  * 
  * @author mog
- * @version $Id: StaticRemoteFile.java,v 1.21 2003/12/23 13:38:21 mog Exp $
+ * @version $Id: StaticRemoteFile.java,v 1.22 2004/01/04 01:23:38 mog Exp $
  */
 public class StaticRemoteFile extends RemoteFile {
 	private boolean _isDeleted;
@@ -33,6 +33,10 @@ public class StaticRemoteFile extends RemoteFile {
 	//		//slaves = file.getSlaves();
 	//	}
 
+	/**
+	 * 
+	 * @param rslaves null indicates that this is a directory.
+	 */
 	public StaticRemoteFile(
 		List rslaves,
 		String name,
