@@ -34,8 +34,13 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
  * <n>.remove=10000
  * <n>.minfreespace=1GB
  * </pre>
+ * 
+ * Works like this:
+ * if(diskfree > minfreespace) {
+ *   addScore(minfreespace - diskfree * multiplier)
+ * }
  * @author mog
- * @version $Id: MinfreespaceFilter.java,v 1.4 2004/03/04 01:41:27 zubov Exp $
+ * @version $Id: MinfreespaceFilter.java,v 1.5 2004/03/11 22:51:11 mog Exp $
  */
 public class MinfreespaceFilter extends Filter {
 	private long _minfreespace;

@@ -43,7 +43,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
  * </pre>
  * 
  * @author mog
- * @version $Id: MatchdirFilter.java,v 1.2 2004/02/27 01:02:21 mog Exp $
+ * @version $Id: MatchdirFilter.java,v 1.3 2004/03/11 22:51:11 mog Exp $
  */
 public class MatchdirFilter extends Filter {
 	private ArrayList _assigns;
@@ -118,7 +118,11 @@ public class MatchdirFilter extends Filter {
 					) {
 					ScoreChart.SlaveScore score =
 						(ScoreChart.SlaveScore) iterator.next();
-					score.addScore(assign.getScore());
+					if (assign.getScore() == 0) {
+						iterator.remove();
+					} else {
+						score.addScore(assign.getScore());
+					}
 				}
 			}
 			try {

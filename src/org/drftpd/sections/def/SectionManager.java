@@ -17,10 +17,12 @@
  */
 package org.drftpd.sections.def;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -30,7 +32,7 @@ import org.drftpd.sections.SectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SectionManager.java,v 1.2 2004/03/01 00:21:09 mog Exp $
+ * @version $Id: SectionManager.java,v 1.3 2004/03/11 22:51:10 mog Exp $
  */
 public class SectionManager implements SectionManagerInterface {
 
@@ -45,8 +47,12 @@ public class SectionManager implements SectionManagerInterface {
 	}
 
 	public SectionInterface lookup(String string) {
-		//TODO lookup() in default section manager
-		throw new UnsupportedOperationException();
+		StringTokenizer st = new StringTokenizer(string, "/");
+		try {
+			return new Section(_cm.getSlaveManager().getRoot().getFile(st.nextToken()));
+		} catch (FileNotFoundException e) {
+			return new Section(_cm.getSlaveManager().getRoot());
+		}
 	}
 
 	public Collection getSections() {
