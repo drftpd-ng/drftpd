@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -29,17 +28,33 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.25 2003/12/23 13:38:20 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.26 2003/12/29 19:14:35 zubov Exp $
  */
 public class FtpConfig {
-	private int _maxUsersExempt;
-	private int _maxUsersTotal = Integer.MAX_VALUE;
-	private String loginPrompt =
-		"This program is free software; you can redistribute it and/or"
-			+ " modify it under the terms of the GNU General Public License.  "
-			+ "Distributed FTP Daemon http://drftpd.mog.se"
-			+ " : Service ready for new user.";
 	private static Logger logger = Logger.getLogger(FtpConfig.class);
+
+	static private ArrayList makePermission(ArrayList arr, StringTokenizer st)
+		throws MalformedPatternException {
+		arr.add(
+			new PatternPathPermission(
+				new GlobCompiler().compile(st.nextToken()),
+				makeUsers(st)));
+		return arr;
+	}
+	static private ArrayList makeRatioPermission(ArrayList arr, StringTokenizer st)
+		throws MalformedPatternException {
+		arr.add(
+			new RatioPathPermission(new GlobCompiler().compile(st.nextToken()),Float.parseFloat(st.nextToken()),makeUsers(st)));
+		return arr;
+	}
+
+	public static ArrayList makeUsers(StringTokenizer st) {
+		ArrayList users = new ArrayList();
+		while (st.hasMoreTokens()) {
+			users.add(st.nextToken());
+		}
+		return users;
+	}
 	private ArrayList _creditcheck;
 
 	private ArrayList _creditloss;
@@ -50,6 +65,8 @@ public class FtpConfig {
 	//	private ArrayList _eventplugin;
 	private ArrayList _hideinwho;
 	private ArrayList _makedir;
+	private int _maxUsersExempt;
+	private int _maxUsersTotal = Integer.MAX_VALUE;
 	private ArrayList _msgpath;
 	private ArrayList _pre;
 	private ArrayList _privpath;
@@ -61,6 +78,11 @@ public class FtpConfig {
 	String cfgFileName;
 	private ConnectionManager connManager;
 	private long freespaceMin;
+	private String loginPrompt =
+		"This program is free software; you can redistribute it and/or"
+			+ " modify it under the terms of the GNU General Public License.  "
+			+ "Distributed FTP Daemon http://drftpd.mog.se"
+			+ " : Service ready for new user.";
 	private String newConf = "perms.conf";
 	private Map replacerFormats;
 
@@ -121,16 +143,6 @@ public class FtpConfig {
 		//			}
 		//		}
 		//		return true;
-	}
-
-	public int getMaxUsersTotal() {
-		return _maxUsersTotal;
-	}
-	public int getMaxUsersExempt() {
-		return _maxUsersExempt;
-	}
-	public String getLoginPrompt() {
-		return loginPrompt;
 	}
 	private boolean checkPathPermssion(
 		User fromUser,
@@ -198,23 +210,52 @@ public class FtpConfig {
 			}
 		}
 	}
-
-	public float getCreditLossRatio(LinkedRemoteFile path, User fromUser) {
-		for (Iterator iter = _creditloss.iterator(); iter.hasNext();) {
+	public float getCreditCheckRatio(LinkedRemoteFile path, User fromUser) {
+		for (Iterator iter = _creditcheck.iterator(); iter.hasNext();) {
 			RatioPathPermission perm = (RatioPathPermission) iter.next();
 			if (perm.checkPath(path)) {
 				if (perm.check(fromUser)) {
 					return perm.getRatio();
 				} else {
-					return fromUser.getRatio() == 0 ? 0 : 1;
+					return fromUser.getRatio();
 				}
 			}
 		}
+		return fromUser.getRatio();
+	}
+
+	public float getCreditLossRatio(LinkedRemoteFile path, User fromUser) {
+		for (Iterator iter = _creditloss.iterator(); iter.hasNext();) {
+			RatioPathPermission perm = (RatioPathPermission) iter.next();
+
+			if (perm.checkPath(path)) {
+				System.out.println("path matched, path = " + path.getPath());
+				if (perm.check(fromUser)) {
+					System.out.println("user matched, user = " + fromUser.toString());
+					return perm.getRatio();
+				} //else {
+				//					return fromUser.getRatio() == 0 ? 0 : 1;
+				//				}
+				// if that was true, you couldn't have different settings for
+				// different users in the same directory
+			}
+		}
 		//default credit loss ratio is 1
+		System.out.println("path did not match anything, path = " + path);
 		return fromUser.getRatio() == 0 ? 0 : 1;
 	}
 	public long getFreespaceMin() {
 		return freespaceMin;
+	}
+	public String getLoginPrompt() {
+		return loginPrompt;
+	}
+	public int getMaxUsersExempt() {
+		return _maxUsersExempt;
+	}
+
+	public int getMaxUsersTotal() {
+		return _maxUsersTotal;
 	}
 
 	public ReplacerFormat getReplacerFormat(String key) {
@@ -293,22 +334,13 @@ public class FtpConfig {
 							messageFile,
 							makeUsers(st)));
 				}
-				//creditloss <multiplier> <path> <permissions>
+				//creditloss <path> <multiplier> [<-user|=group|flag> ...]
 				else if (command.equals("creditloss")) {
-					float multiplier = Float.parseFloat(st.nextToken());
-
-					String path = st.nextToken();
-					Collection users = makeUsers(st);
-					creditloss.add(
-						new RatioPathPermission(multiplier, path, users));
+					makeRatioPermission(creditloss,st);
 				}
 				//creditcheck <path> <ratio> [<-user|=group|flag> ...]
 				else if (command.equals("creditcheck")) {
-					float multiplier = Float.parseFloat(st.nextToken());
-					String path = st.nextToken();
-					Collection users = makeUsers(st);
-					creditloss.add(
-						new RatioPathPermission(multiplier, path, users));
+					makeRatioPermission(creditcheck,st);
 				} else if (command.equals("dirlog")) {
 					makePermission(dirlog, st);
 				} else if (command.equals("hideinwho")) {
@@ -427,22 +459,6 @@ public class FtpConfig {
 				ReplacerFormat.createFormat((String) entry.getValue()));
 		}
 		return replacerFormats;
-	}
-
-	private void makePermission(ArrayList arr, StringTokenizer st)
-		throws MalformedPatternException {
-		arr.add(
-			new PatternPathPermission(
-				new GlobCompiler().compile(st.nextToken()),
-				makeUsers(st)));
-	}
-
-	public static ArrayList makeUsers(StringTokenizer st) {
-		ArrayList users = new ArrayList();
-		while (st.hasMoreTokens()) {
-			users.add(st.nextToken());
-		}
-		return users;
 	}
 
 	/**

@@ -49,7 +49,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.26 2003/12/26 18:14:58 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.27 2003/12/29 19:14:35 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -742,7 +742,8 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 * 
 	 * Used by LIST and NLST and MLST.
 	 */
-	public Socket getDataSocket(SocketFactory socketFactory) throws IOException {
+	public Socket getDataSocket(SocketFactory socketFactory)
+		throws IOException {
 		Socket dataSocket;
 		// get socket depending on the selection
 		if (isPort()) {
@@ -1106,9 +1107,9 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 
 			//setup _rslave
 			if (isPasv()) {
-//				isPasv() means we're setup correctly
-//				if (!_preTransfer || _preTransferRSlave == null)
-//					return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
+				//				isPasv() means we're setup correctly
+				//				if (!_preTransfer || _preTransferRSlave == null)
+				//					return FtpReply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 
 				//check pretransfer
 				if (isRetr
@@ -1390,20 +1391,23 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 			//transferstatistics
 			long transferedBytes = status.getTransfered();
 
-			float ratio =
-				conn.getConfig().getCreditLossRatio(
-					_transferFile,
-					conn.getUserNull());
 			if (isRetr) {
+				float ratio =
+					conn.getConfig().getCreditLossRatio(
+						_transferFile,
+						conn.getUserNull());
 				if (ratio != 0) {
 					conn.getUserNull().updateCredits(
-						(long) (-transferedBytes * conn.getUserNull().getRatio()));
+						(long) (-transferedBytes * ratio));
 				}
 				conn.getUserNull().updateDownloadedBytes(transferedBytes);
 				conn.getUserNull().updateDownloadedFiles(1);
 			} else {
 				conn.getUserNull().updateCredits(
-					(long) (transferedBytes * conn.getUserNull().getRatio()));
+					(long) (transferedBytes
+						* conn.getConfig().getCreditCheckRatio(
+							_transferFile,
+							conn.getUserNull())));
 				conn.getUserNull().updateUploadedBytes(transferedBytes);
 				conn.getUserNull().updateUploadedFiles(1);
 			}
