@@ -51,11 +51,12 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.37 2004/02/02 14:36:40 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.38 2004/02/04 00:19:27 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static final Logger logger =
 		Logger.getLogger(DataConnectionHandler.class);
+	private SSLContext _ctx;
 
 	private boolean _encryptedDataChannel;
 	/**
@@ -75,7 +76,6 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private ServerSocket _serverSocket;
 	private Transfer _transfer;
 	private LinkedRemoteFile _transferFile;
-	private SSLContext _ctx;
 	protected boolean isPasv = false;
 
 	protected boolean isPort = false;
