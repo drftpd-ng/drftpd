@@ -36,7 +36,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: FilterChain.java,v 1.3 2004/03/01 04:21:04 zubov Exp $
+ * @version $Id: FilterChain.java,v 1.4 2004/05/18 20:28:18 zubov Exp $
  */
 public class FilterChain {
 	private String _cfgfileName;
@@ -71,6 +71,7 @@ public class FilterChain {
 		}
 		RemoteSlave rslave = sc.getBestSlave();
 		rslave.setLastDirection(direction, System.currentTimeMillis());
+		if (rslave == null) throw new NoAvailableSlaveException("This is not supposed to be thrown");
 		return rslave;
 	}
 

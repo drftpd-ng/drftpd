@@ -29,7 +29,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java,v 1.17 2004/05/18 18:16:17 zubov Exp $
+ * @version $Id: Job.java,v 1.18 2004/05/18 20:28:18 zubov Exp $
  */
 public class Job {
 	protected List _destSlaves;
@@ -144,7 +144,7 @@ public class Job {
 			}
 			if (!iter.hasNext())
 				return toReturn + name;
-			toReturn = toReturn + name + ", ";
+			toReturn = toReturn + name + ",";
 		}
 		return toReturn;
 	}
