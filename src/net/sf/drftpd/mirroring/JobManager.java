@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.21 2004/02/07 18:16:20 zubov Exp $
+ * @version $Id: JobManager.java,v 1.22 2004/02/07 23:56:35 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -42,6 +42,10 @@ public class JobManager implements FtpListener {
 	}
 
 	public void actionPerformed(Event event) {
+                if (event.getCommand().equals("RELOAD")) {
+                        reload();
+			return;
+		}
 		if (!(event instanceof SlaveEvent))
 			return;
 		SlaveEvent slaveEvent = (SlaveEvent) event;
