@@ -70,7 +70,7 @@ public class Kick extends IRCCommand {
             if (usersPerLine == null) {
                 throw new RuntimeException("Unspecified value 'kick.usersperline' in " + confFile);        
             }
-            _idleTimeout = Integer.parseInt(idleTimeout);
+            _idleTimeout = Integer.parseInt(idleTimeout) * 1000;
             _usersPerLine = Integer.parseInt(usersPerLine);
         } catch (Exception e) {
             logger.error("Error reading " + confFile,e);
