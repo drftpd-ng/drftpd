@@ -239,19 +239,19 @@ public class IRCListener implements FtpListener, Observer {
 								+ statusString);
 					}
 				} else if (message.startsWith("!speed")) {
-					String username = message.substring("!speed ".length());
-					{
-						//ReplacerEnvironment env = new ReplacerEnvironment();
-						//env.add("username", username);
-					}
+					String username;
+					try {
+						username = message.substring("!speed ".length());
+					} catch (ArrayIndexOutOfBoundsException e) { return; }
 
-					String status = "";
+					String status = "[who] "+username;
 					ReplacerFormat formatup =
-						ReplacerFormat.createFormat("[ up : ${speed,0} ]");
+						ReplacerFormat.createFormat(" [ up : ${file,0} ${speed,0} ]");
 					ReplacerFormat formatdown =
-						ReplacerFormat.createFormat("[ dn : ${speed,0} ]");
+						ReplacerFormat.createFormat(" [ dn : ${file,0} ${speed,0} ]");
 					ReplacerFormat formatidle =
-						ReplacerFormat.createFormat("[ idle : ${user,0} ]");
+						ReplacerFormat.createFormat(" [ idle : ${user,0} ]");
+						
 					for (Iterator iter = _cm.getConnections().iterator();
 						iter.hasNext();
 						) {
@@ -263,8 +263,9 @@ public class IRCListener implements FtpListener, Observer {
 							env.add(
 								"speed",
 								new Integer(
-									conn.getTransfer().getTransferSpeed()));
+									Bytes.formatBytes(conn.getTransfer().getTransferSpeed())+"/s"));
 							env.add("file", conn.getTransferFile());
+							env.add("idle", System.currentTimeMillis()-conn.getLastActive()/1000+"s");
 
 							if (!conn.isExecuting()) {
 								status =
@@ -286,8 +287,8 @@ public class IRCListener implements FtpListener, Observer {
 										+ SimplePrintf.jprintf(formatdown, env);
 							}
 						}
-						say(status);
 					}
+					say(status);
 				}
 			}
 		} catch (Throwable t) {

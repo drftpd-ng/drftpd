@@ -522,6 +522,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	}
 
 	public boolean isAvailable() {
+		if(isDirectory()) return true;
 		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
 			if(((RemoteSlave) iter.next()).isAvailable()) return true;
 		}
