@@ -854,15 +854,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		// remove all slaves not in mergedir.getFiles()
 		for (Iterator i = getFiles().iterator(); i.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) i.next();
-			LinkedRemoteFile mergefile;
-			try {
-				mergefile = mergedir.getFile(file.getName());
-			} catch (FileNotFoundException e) {
-				logger.warn(file.getPath()+" deleted(1) from "+rslave.getName());
-				continue;
-			}
-			if (mergefile.getSlaves().contains(rslave)) {
-				logger.warn(file.getPath()+" deleted(2) from "+rslave.getName());
+
+			if(!mergedir.hasFile(file.getName())) {
 				file.unmerge(rslave);
 			}
 		}
@@ -1081,8 +1074,9 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				if (file.isDeleted() && file.getFilesMap().size() == 0)
 					i.remove();
 			} else {
+				logger.warn(getPath()+" deleted from "+rslave.getName());
 				file.removeSlave(rslave);
-				//should be safe to remove it as it has no slaves.
+				//it's safe to remove it as it has no slaves.
 				if (file.getSlaves().size() == 0)
 					i.remove();
 			}
