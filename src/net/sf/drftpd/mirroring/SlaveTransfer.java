@@ -118,17 +118,15 @@ public class SlaveTransfer {
                 }
             } catch (TransferFailedException e7) {
                 try {
-                    _destTransfer.abort();
+                    _destTransfer.abort("srcSlave had an error");
                 } catch (SlaveUnavailableException e8) {
-                } catch (IOException e8) {
                 }
 
                 throw new SourceSlaveException(e7);
             } catch (SlaveUnavailableException e7) {
                 try {
-                    _destTransfer.abort();
+                    _destTransfer.abort("srcSlave had an error");
                 } catch (SlaveUnavailableException e8) {
-                } catch (IOException e8) {
                 }
 
                 throw new SourceSlaveException(e7);
@@ -140,17 +138,15 @@ public class SlaveTransfer {
                 }
             } catch (TransferFailedException e6) {
                 try {
-                    _srcTransfer.abort();
+                    _srcTransfer.abort("destSlave had an error");
                 } catch (SlaveUnavailableException e8) {
-                } catch (IOException e8) {
                 }
 
                 throw new DestinationSlaveException(e6);
             } catch (SlaveUnavailableException e6) {
                 try {
-                    _srcTransfer.abort();
+                    _srcTransfer.abort("destSlave had an error");
                 } catch (SlaveUnavailableException e8) {
-                } catch (IOException e8) {
                 }
 
                 throw new DestinationSlaveException(e6);

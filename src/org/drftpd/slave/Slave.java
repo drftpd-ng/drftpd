@@ -411,16 +411,16 @@ public class Slave {
             new Exception(ac.getName() + " - Operation Not Supported"));
     }
 
-    private void handleAbort(AsyncCommandArgument argument) {
-        TransferIndex ti = new TransferIndex(Integer.parseInt(
-                    argument.getArgs()));
+    private void handleAbort(AsyncCommandArgument aca) {
+    	String[] args = aca.getArgs().split(",");
+        TransferIndex ti = new TransferIndex(Integer.parseInt(args[0]));
 
         if (!_transfers.containsKey(ti)) {
             return;
         }
 
         Transfer t = (Transfer) _transfers.get(ti);
-        t.abort();
+        t.abort(args[1]);
     }
 
     private AsyncResponse handleConnect(AsyncCommandArgument ac) {
@@ -578,10 +578,7 @@ public class Slave {
         Transfer t = getTransfer(transferIndex);
         sendResponse(new AsyncResponse(ac.getIndex())); // return
 
-        // calling
-        // thread
-        // on
-        // master
+        // calling thread on master
         try {
             return new AsyncResponseTransferStatus(t.sendFile(path, type,
                     position));

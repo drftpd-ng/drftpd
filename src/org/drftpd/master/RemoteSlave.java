@@ -998,10 +998,13 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		}
 	}
 
-	public void issueAbortToSlave(TransferIndex transferIndex)
+	public void issueAbortToSlave(TransferIndex transferIndex, String reason)
 			throws SlaveUnavailableException {
+		if (reason == null) {
+			reason = "null";
+		}
 		sendCommand(new AsyncCommandArgument("abort", "abort", transferIndex
-				.toString()));
+				.toString() + "," + reason));
 	}
 
 	public ConnectInfo fetchTransferResponseFromIndex(String index)
@@ -1090,8 +1093,17 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		synchronized (_transfers) {
 			RemoteTransfer ret = _transfers.get(transferIndex);
 			if (ret == null)
-				throw new FatalException("there is a bug somewhere in code");
+				throw new FatalException("there is a bug somewhere in code, tried to fetch an index that doesn't exist");
 			return ret;
+		}
+	}
+	
+	public synchronized Collection<RemoteTransfer> getTransfers() throws SlaveUnavailableException {
+		if (!isOnline()) {
+			throw new SlaveUnavailableException("Slave is not online");
+		}
+		synchronized (_transfers) {
+			return Collections.unmodifiableCollection(_transfers.values());
 		}
 	}
 

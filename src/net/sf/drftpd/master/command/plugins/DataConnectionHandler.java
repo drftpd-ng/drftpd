@@ -1247,6 +1247,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                     throw new RuntimeException();
                 }
             } catch (IOException ex) {
+            	logger.debug("", ex);
                 if (ex instanceof TransferFailedException) {
                     status = ((TransferFailedException) ex).getStatus();
                     conn.getGlobalContext()
@@ -1271,10 +1272,11 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                     reply = new Reply(426, ex.getMessage());
                 }
                 
-                reply.addComment(ex.getLocalizedMessage());
+                reply.addComment(ex.getMessage());
                 reset();
                 return reply;
             } catch (SlaveUnavailableException e) {
+            	logger.debug("", e);
                 Reply reply = null;
 
                 if (isStor) {

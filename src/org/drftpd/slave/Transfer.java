@@ -45,7 +45,7 @@ import se.mog.io.File;
  */
 public class Transfer {
     private static final Logger logger = Logger.getLogger(Transfer.class);
-    private boolean _abort = false;
+	private String _abortReason = null;
     private CRC32 _checksum = null;
     private Connection _conn;
     private char _direction;
@@ -91,8 +91,8 @@ public class Transfer {
         return _transferIndex.hashCode();
     }
 
-    public void abort() {
-        _abort = true;
+    public void abort(String reason) {
+    	_abortReason = reason;
         _transferIsFinished = true;
 
         if (_conn != null) {
@@ -291,7 +291,7 @@ public class Transfer {
             long currentTime = System.currentTimeMillis();
 
             try {
-                while (((count = _in.read(buff)) != -1) && !_abort) {
+                while (((count = _in.read(buff)) != -1) && (_abortReason == null)) {
                     if ((System.currentTimeMillis() - currentTime) >= 1000) {
                         _slave.sendResponse(new AsyncResponseTransferStatus(
                                 getTransferStatus()));
@@ -320,8 +320,8 @@ public class Transfer {
             //_sock = null;
         }
 
-        if (_abort) {
-            throw new TransferFailedException("Transfer was aborted",
+        if (_abortReason != null) {
+            throw new TransferFailedException("Transfer was aborted - " + _abortReason,
                 getTransferStatus());
         }
 

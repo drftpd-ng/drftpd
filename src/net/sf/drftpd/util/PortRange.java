@@ -55,7 +55,7 @@ public class PortRange {
     }
 
     public ServerSocket getPort(ServerSocketFactory ssf) {
-        if ((_minPort == 0) || (_maxPort == 0)) {
+        if ((_minPort <= 0) || (_maxPort <= 0)) {
             try {
                 return ssf.createServerSocket(0, 1);
             } catch (IOException e) {

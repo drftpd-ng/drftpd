@@ -20,6 +20,7 @@ package org.drftpd.commands;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.Nukee;
 import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
@@ -32,6 +33,8 @@ import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.dynamicdata.Key;
 
+import org.drftpd.master.RemoteSlave;
+import org.drftpd.master.RemoteTransfer;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -138,7 +141,7 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
                 " ");
 
         if (!st.hasMoreTokens()) {
-            return Reply.RESPONSE_501_SYNTAX_ERROR;
+            throw new ImproperUsageException();
         }
 
         int multiplier;
@@ -164,7 +167,7 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
         String nukeDirPath = nukeDir.getPath();
 
         if (!st.hasMoreTokens()) {
-            return Reply.RESPONSE_501_SYNTAX_ERROR;
+            throw new ImproperUsageException();
         }
 
         try {
@@ -174,6 +177,7 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
 
             return new Reply(501, "Invalid multiplier: " + ex.getMessage());
         }
+        conn.getGlobalContext().getSlaveManager().cancelTransfersInDirectory(nukeDir);
 
         String reason;
 
@@ -368,6 +372,8 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
             return new Reply(200,
                 nukeName + " doesn't exist: " + e2.getMessage());
         }
+        
+        conn.getGlobalContext().getSlaveManager().cancelTransfersInDirectory(nukeDir);
 
         Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
         NukeEvent nuke;

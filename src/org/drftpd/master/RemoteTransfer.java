@@ -130,6 +130,10 @@ public class RemoteTransfer {
             return 0;
         }
     }
+    
+    public String getPathNull() {
+    	return _path;
+    }
 
     public TransferIndex getTransferIndex() {
         return _transferIndex;
@@ -139,8 +143,8 @@ public class RemoteTransfer {
         return _address;
     }
 
-    public void abort() throws SlaveUnavailableException, IOException {
-        _rslave.issueAbortToSlave(getTransferIndex());
+    public void abort(String reason) throws SlaveUnavailableException {
+        _rslave.issueAbortToSlave(getTransferIndex(),reason);
     }
 
     public void receiveFile(String path, char type, long position)

@@ -536,6 +536,28 @@ public class SlaveManager implements Runnable {
 			_remergeThread.start();
 		}
 	}
+
+	/**
+	 * Cancels all transfers in directory
+	 */
+	public void cancelTransfersInDirectory(LinkedRemoteFileInterface dir) {
+		if (!dir.isDirectory()) {
+			throw new IllegalArgumentException(dir + " is not a directory");
+		}
+        for (RemoteSlave rs : getSlaves()) {
+        	try {
+        		for (RemoteTransfer rt : rs.getTransfers()) {
+        			String path = rt.getPathNull();
+        			if (path != null) {
+        				if (path.startsWith(dir.getPath())) {
+        					rt.abort("Directory is nuked");
+        				}
+        			}
+        		}
+        	} catch (SlaveUnavailableException ignore) {
+        	}
+        }
+	}
 }
 
 class RemergeThread extends Thread {
