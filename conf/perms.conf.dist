@@ -33,7 +33,7 @@ request         /request/       =request
 
 hideinwho /pre/*	*
 
-#Update credits, files and bytes on transfers
+#Don't update credits, files and bytes on transfers
 #nostatsup 	/pre/*	*
 #nostatsdn	/pre/*	*
 
