@@ -32,13 +32,18 @@ public class QueuedOperation implements Serializable {
 	private String _destination;
 	
 	public boolean equals(Object arg0) {
-		return ((QueuedOperation) arg0)._source.equals(_source);
+		if (arg0 == null) return false;
+		QueuedOperation arg = (QueuedOperation) arg0;
+		return arg.getSource().equals(getSource());
 	}
 	
 	public int hashCode() {
 		return _source.hashCode();
 	}
 	public QueuedOperation(String src, String dest) {
+		if (src == null) {
+			throw new IllegalStateException("Source cannot be null");
+		}
 		this._source = src;
 		this._destination = dest;
 	}
