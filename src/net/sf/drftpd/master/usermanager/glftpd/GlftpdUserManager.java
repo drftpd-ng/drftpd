@@ -16,6 +16,16 @@
  */
 package net.sf.drftpd.master.usermanager.glftpd;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
 import net.sf.drftpd.master.usermanager.User;
@@ -24,23 +34,11 @@ import net.sf.drftpd.master.usermanager.UserManager;
 
 import org.apache.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
 
 /**
  * @author mog
  * @author zubov
- * @version $Id: GlftpdUserManager.java,v 1.19 2004/10/03 16:13:53 mog Exp $
+ * @version $Id: GlftpdUserManager.java,v 1.20 2004/11/03 05:43:22 zubov Exp $
  */
 public class GlftpdUserManager extends UserManager {
     private static final Logger logger = Logger.getLogger(GlftpdUserManager.class.getName());

@@ -17,8 +17,6 @@
  */
 package net.sf.drftpd.util;
 
-import org.apache.log4j.Logger;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -27,7 +25,7 @@ import java.io.InputStream;
  * Not thread-safe (is any-In/OutputStream thread-safe?).
  *
  * @author mog
- * @version $Id: StripAsciiInputStream.java,v 1.4 2004/10/05 02:11:25 mog Exp $
+ * @version $Id: StripAsciiInputStream.java,v 1.5 2004/11/03 05:43:23 zubov Exp $
  */
 public class StripAsciiInputStream extends InputStream {
     private InputStream _in;

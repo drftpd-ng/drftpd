@@ -1,8 +1,12 @@
 <net.sf.drftpd.master.RemoteSlave>
-  <ipMasks class="list">
-    <string>*@127.0.0.1</string>
-    <string>*@192.168.1.7</string>
-  </ipMasks>
-  <keysAndValues/>
-  <renameQueue class="map"/>
+  <_ipMasks class="net.sf.drftpd.HostMaskCollection">
+    <_masks class="list">
+      <net.sf.drftpd.HostMask>
+        <_hostMask>127.0.0.1</_hostMask>
+        <_identMask>*</_identMask>
+      </net.sf.drftpd.HostMask>
+    </_masks>
+  </_ipMasks>
+  <_keysAndValues/>
+  <_renameQueue class="map"/>
 </net.sf.drftpd.master.RemoteSlave>

@@ -17,10 +17,19 @@
  */
 package org.drftpd.tests;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.Collections;
+
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
+
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.command.CommandManager;
@@ -30,22 +39,10 @@ import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.StaticRemoteFile;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
-import java.net.InetAddress;
-import java.net.Socket;
-
-import java.util.Collections;
-
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
-
 
 /**
  * @author mog
- * @version $Id: DummyBaseFtpConnection.java,v 1.11 2004/11/02 07:33:13 zubov Exp $
+ * @version $Id: DummyBaseFtpConnection.java,v 1.12 2004/11/03 05:43:25 zubov Exp $
  */
 public class DummyBaseFtpConnection extends BaseFtpConnection {
     private InetAddress _clientAddress;

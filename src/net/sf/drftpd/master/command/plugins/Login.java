@@ -41,7 +41,7 @@ import org.drftpd.commands.UnhandledCommandException;
 
 /**
  * @author mog
- * @version $Id: Login.java,v 1.36 2004/11/02 07:32:41 zubov Exp $
+ * @version $Id: Login.java,v 1.37 2004/11/03 05:43:21 zubov Exp $
  */
 public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
     private static final Logger logger = Logger.getLogger(Login.class);
@@ -184,17 +184,15 @@ public class Login implements CommandHandlerFactory, CommandHandler, Cloneable {
             return new FtpReply(530, ex.getMessage());
         }
 
-        if (newUser.isDeleted()) {
+        if (newUser.isDeleted() || conn.getGlobalContext().getConfig().isSiteShutdown(newUser)) {
             return FtpReply.RESPONSE_530_ACCESS_DENIED;
         }
-
-        HostMaskCollection masks2 = new HostMaskCollection(newUser.getIpMasks());
-
+        
         try {
             if (((_idntAddress != null) &&
-                    masks2.check(_idntIdent, _idntAddress, null)) ||
+                    newUser.getHostMaskCollection().check(_idntIdent, _idntAddress, null)) ||
                     ((_idntAddress == null) &&
-                    (masks2.check(null, conn.getClientAddress(),
+                    (newUser.getHostMaskCollection().check(null, conn.getClientAddress(),
                         conn.getControlSocket())))) {
                 //success
                 // max_users and num_logins restriction

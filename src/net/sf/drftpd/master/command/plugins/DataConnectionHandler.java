@@ -34,7 +34,6 @@ import java.util.StringTokenizer;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.Checksum;
@@ -71,7 +70,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @author mog
  * @author zubov
- * @version $Id: DataConnectionHandler.java,v 1.65 2004/11/02 07:32:40 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.66 2004/11/03 05:43:13 zubov Exp $
  */
 public class DataConnectionHandler implements CommandHandlerFactory,
     CommandHandler, Cloneable {

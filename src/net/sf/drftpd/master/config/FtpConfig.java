@@ -48,7 +48,7 @@ import org.drftpd.slave.Slave;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.62 2004/11/02 07:32:42 zubov Exp $
+ * @version $Id: FtpConfig.java,v 1.63 2004/11/03 05:43:21 zubov Exp $
  */
 public class FtpConfig {
     private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -473,7 +473,8 @@ public class FtpConfig {
                             "userrejectinsecure".equals(cmd) ||
                             "denydiruncrypted".equals(cmd) ||
                             "denydatauncrypted".equals(cmd) ||
-                            "give".equals(cmd) || "take".equals(cmd)) {
+                            "give".equals(cmd) || "take".equals(cmd) || 
+                            "shutdown".equals(cmd)) {
                         if (permissions.containsKey(cmd)) {
                             throw new RuntimeException(
                                 "Duplicate key in perms.conf: " + cmd +
@@ -580,5 +581,9 @@ public class FtpConfig {
 
             replaceChars(sb, oldChar, newChar);
         }
+    }
+
+    public boolean isSiteShutdown(User user) {
+        return !checkPermission("shutdown", user);
     }
 }

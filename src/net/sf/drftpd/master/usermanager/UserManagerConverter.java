@@ -32,7 +32,7 @@ import java.util.Iterator;
  * Usage: java net.sf.drftpd.master.usermanager.UserManagerConverter net.sf.drftpd.master.usermanager.glftpd.GlftpdUserManager net.sf.drftpd.master.usermanager.JSXUserManager
  *
  * @author mog
- * @version $Id: UserManagerConverter.java,v 1.11 2004/08/03 20:13:59 zubov Exp $
+ * @version $Id: UserManagerConverter.java,v 1.12 2004/11/03 05:43:22 zubov Exp $
  */
 public class UserManagerConverter {
     private static final Logger logger = Logger.getLogger(UserManagerConverter.class);
@@ -70,16 +70,8 @@ public class UserManagerConverter {
             }
         }
 
-        for (Iterator iter = from.getIpMasks().iterator(); iter.hasNext();) {
-            String ipmask = (String) iter.next();
-
-            try {
-                to.addIPMask(ipmask);
-            } catch (DuplicateElementException e) {
-                logger.warn("", e);
-            }
-        }
-
+        to.addAllMasks(from.getHostMaskCollection());
+        
         to.setComment(from.getComment());
 
         to.setCredits(from.getCredits());

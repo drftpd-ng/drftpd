@@ -33,13 +33,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-
 /**
  * @author mog
- * @version $Id: HostMaskCollection.java,v 1.2 2004/11/02 07:32:37 zubov Exp $
+ * @version $Id: HostMaskCollection.java,v 1.3 2004/11/03 05:43:07 zubov Exp $
  */
 public class HostMaskCollection implements Serializable {
-    private static final Logger logger = Logger.getLogger(HostMaskCollection.class);
+    private static final Logger logger = Logger
+            .getLogger(HostMaskCollection.class);
+
     ArrayList _masks;
 
     public HostMaskCollection() {
@@ -49,7 +50,7 @@ public class HostMaskCollection implements Serializable {
     /**
      * Converts an existing Collection of String-based masks to a
      * HostMaskCollection
-     *
+     * 
      * @param masks
      */
     public HostMaskCollection(Collection masks) {
@@ -61,12 +62,34 @@ public class HostMaskCollection implements Serializable {
         }
     }
 
+    public void addAllMasks(HostMaskCollection hostMaskCollection) {
+        for (Iterator i = hostMaskCollection._masks.iterator(); i.hasNext();) {
+            HostMask mask = (HostMask) i.next();
+            if (!_masks.contains(mask)) {
+                _masks.add(mask);
+            }
+
+        }
+    }
+
+    public void addMask(String mask) {
+        HostMask newMask = new HostMask(mask);
+        for (Iterator i = _masks.iterator(); i.hasNext();) {
+            HostMask hostMask = (HostMask) i.next();
+            if (hostMask.equals(newMask)) {
+                // mask already added
+                return;
+            }
+        }
+        _masks.add(new HostMask(mask));
+    }
+
     public boolean check(Socket s) throws MalformedPatternException {
         return check(null, s.getInetAddress(), s);
     }
 
     public boolean check(String ident, InetAddress a, Socket s)
-        throws MalformedPatternException {
+            throws MalformedPatternException {
         if (a == null) {
             throw new NullPointerException();
         }
@@ -97,8 +120,8 @@ public class HostMaskCollection implements Serializable {
         return false;
     }
 
-    public void addMask(String mask) {
-        _masks.add(new HostMask(mask));
+    public boolean isEmpty() {
+        return _masks.isEmpty();
     }
 
     /**
@@ -125,9 +148,5 @@ public class HostMaskCollection implements Serializable {
         }
 
         return masks.substring(0, masks.length() - 2);
-    }
-
-    public boolean isEmpty() {
-        return _masks.isEmpty();
     }
 }

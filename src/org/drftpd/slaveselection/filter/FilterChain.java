@@ -32,13 +32,11 @@ import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.GlobalContext;
-import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 
 /**
  * @author mog
- * @version $Id: FilterChain.java,v 1.9 2004/11/02 07:33:12 zubov Exp $
+ * @version $Id: FilterChain.java,v 1.10 2004/11/03 05:43:25 zubov Exp $
  */
 public class FilterChain {
     private SlaveSelectionManager _ssm;

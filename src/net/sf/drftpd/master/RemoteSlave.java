@@ -27,12 +27,10 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -74,7 +72,7 @@ import com.thoughtworks.xstream.io.xml.XppDriver;
 /**
  * @author mog
  * @author zubov
- * @version $Id: RemoteSlave.java,v 1.58 2004/11/02 07:32:40 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.59 2004/11/03 05:43:09 zubov Exp $
  */
 public class RemoteSlave implements Runnable, Comparable, Serializable {
     private static final long serialVersionUID = -6973935289361817125L;
@@ -106,12 +104,6 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
     private Properties _keysAndValues;
 
     private HashMap _renameQueue;
-
-    //	private void readObject(java.io.ObjectInputStream in)
-    //    throws IOException, ClassNotFoundException {
-    //		in.defaultReadObject();
-    //		_xst = new XStream();
-    //	}
 
     private Stack _indexPool;
 

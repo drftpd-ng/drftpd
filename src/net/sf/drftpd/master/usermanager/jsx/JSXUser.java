@@ -36,7 +36,7 @@ import java.util.ArrayList;
 
 /**
  * @author mog
- * @version $Id: JSXUser.java,v 1.19 2004/11/02 07:32:43 zubov Exp $
+ * @version $Id: JSXUser.java,v 1.20 2004/11/03 05:43:23 zubov Exp $
  */
 public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
     UnixPassword {
@@ -116,23 +116,6 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
 
         File userfile = ((JSXUserManager) _usermanager).getUserFile(this.getUsername());
         userfile.delete();
-    }
-
-    private void readObject(ObjectInputStream stream)
-        throws IOException, ClassNotFoundException {
-        stream.defaultReadObject();
-
-        if (groups == null) {
-            groups = new ArrayList();
-        }
-
-        if (ipMasks == null) {
-            ipMasks = new ArrayList();
-        }
-
-        if (tagline == null) {
-            tagline = "";
-        }
     }
 
     public void setPassword(String password) {

@@ -19,6 +19,7 @@ package net.sf.drftpd.master.usermanager;
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMask;
+import net.sf.drftpd.HostMaskCollection;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.event.listeners.Trial;
 import net.sf.drftpd.master.ConnectionManager;
@@ -43,15 +44,26 @@ import java.util.List;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya </a>
  * @author mog
- * @version $Id: AbstractUser.java,v 1.51 2004/11/02 07:32:43 zubov Exp $
+ * @version $Id: AbstractUser.java,v 1.52 2004/11/03 05:43:21 zubov Exp $
  */
 public abstract class AbstractUser implements User {
+
+    public HostMaskCollection getHostMaskCollection() {
+        return hostMasks;
+    }
     private static final Logger logger = Logger.getLogger(AbstractUser.class);
     protected long _downloadedMilliseconds;
     protected long _downloadedMillisecondsDay;
     protected long _downloadedMillisecondsMonth;
     protected long _downloadedMillisecondsWeek;
 
+    /**
+     *
+     */
+
+    public void addAllMasks(HostMaskCollection hostMaskCollection) {
+        getHostMaskCollection().addAllMasks(hostMaskCollection);
+    }
     private String group = "nogroup";
     protected transient boolean _purged;
     protected long _uploadedMilliseconds;
@@ -74,7 +86,7 @@ public abstract class AbstractUser implements User {
     protected ArrayList groups = new ArrayList();
     protected short groupSlots;
     protected int idleTime = 0; // no limit
-    protected ArrayList ipMasks = new ArrayList();
+    protected HostMaskCollection hostMasks = new HostMaskCollection();
     protected long lastAccessTime = 0;
     protected long lastNuked;
     protected long lastReset;
@@ -114,11 +126,7 @@ public abstract class AbstractUser implements User {
     }
 
     public void addIPMask(String mask) throws DuplicateElementException {
-        if (ipMasks.contains(mask)) {
-            throw new DuplicateElementException("IP mask already added");
-        }
-
-        ipMasks.add(mask);
+        hostMasks.addMask(mask);
     }
 
     public void addRacesLost() {
@@ -152,7 +160,7 @@ public abstract class AbstractUser implements User {
         groups.add(group);
     }
 
-    public boolean checkIP(String[] masks, boolean useIdent) {
+/*    public boolean checkIP(String[] masks, boolean useIdent) {
         Perl5Matcher m = new Perl5Matcher();
 
         for (Iterator e2 = ipMasks.iterator(); e2.hasNext();) {
@@ -185,7 +193,7 @@ public abstract class AbstractUser implements User {
 
         return false;
     }
-
+*/
     public boolean equals(Object obj) {
         return (obj instanceof User)
         ? ((User) obj).getUsername().equals(getUsername()) : false;
@@ -327,21 +335,6 @@ public abstract class AbstractUser implements User {
 
     public int getIdleTime() {
         return idleTime;
-    }
-
-    public List getIpMasks() {
-        return ipMasks;
-    }
-
-    public List getIpMasks2() {
-        //return ipMasks;
-        ArrayList ret = new ArrayList();
-
-        for (Iterator iter = ipMasks.iterator(); iter.hasNext();) {
-            ret.add(new HostMask((String) iter.next()));
-        }
-
-        return ret;
     }
 
     public long getLastAccessTime() {
@@ -572,7 +565,7 @@ public abstract class AbstractUser implements User {
     }
 
     public void removeIpMask(String mask) throws NoSuchFieldException {
-        if (!ipMasks.remove(mask)) {
+        if (!hostMasks.removeMask(mask)) {
             throw new NoSuchFieldException("User has no such ip mask");
         }
     }

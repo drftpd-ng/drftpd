@@ -17,9 +17,11 @@
  */
 package net.sf.drftpd.event.irc;
 
-import f00f.net.irc.martyr.GenericCommandAutoService;
-import f00f.net.irc.martyr.InCommand;
-import f00f.net.irc.martyr.commands.MessageCommand;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.event.listeners.Trial;
@@ -33,22 +35,18 @@ import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.UserComparator;
 
 import org.drftpd.plugins.SiteBot;
-
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
+import f00f.net.irc.martyr.GenericCommandAutoService;
+import f00f.net.irc.martyr.InCommand;
+import f00f.net.irc.martyr.commands.MessageCommand;
 
 
 /**
  * @author zubov
-  * @version $Id: Stats.java,v 1.10 2004/10/05 02:11:20 mog Exp $
+  * @version $Id: Stats.java,v 1.11 2004/11/03 05:43:08 zubov Exp $
  */
 public class Stats extends GenericCommandAutoService
     implements IRCPluginInterface {

@@ -17,6 +17,7 @@
 package net.sf.drftpd.master.usermanager;
 
 import net.sf.drftpd.DuplicateElementException;
+import net.sf.drftpd.HostMaskCollection;
 import net.sf.drftpd.master.ConnectionManager;
 
 import java.util.List;
@@ -24,9 +25,11 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: User.java,v 1.38 2004/08/03 20:13:59 zubov Exp $
+ * @version $Id: User.java,v 1.39 2004/11/03 05:43:22 zubov Exp $
  */
 public interface User {
+
+    public void addAllMasks(HostMaskCollection hostMaskCollection);
     public void addIPMask(String mask) throws DuplicateElementException;
 
     public void addRacesLost();
@@ -41,8 +44,6 @@ public interface User {
 
     public void addSecondaryGroup(String group)
         throws DuplicateElementException;
-
-    public boolean checkIP(String[] masks, boolean useIdent);
 
     public boolean checkPassword(String password);
 
@@ -103,16 +104,14 @@ public interface User {
 
     public short getGroupSlots();
 
+    public HostMaskCollection getHostMaskCollection();
+
     /**
      * Returns the idleTime.
      *
      * @return long
      */
     public int getIdleTime();
-
-    public List getIpMasks();
-
-    public List getIpMasks2();
 
     /**
      * Get last access time
@@ -535,4 +534,5 @@ public interface User {
     public void updateUploadedFiles(int i);
 
     public void updateUploadedMilliseconds(long millis);
+
 }

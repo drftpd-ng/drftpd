@@ -17,6 +17,9 @@
  */
 package org.drftpd.slaveselection;
 
+import java.io.IOException;
+import java.util.Collection;
+
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.RemoteSlave;
@@ -26,15 +29,10 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.drftpd.GlobalContext;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.util.Collection;
-
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManagerInterface.java,v 1.7 2004/11/02 07:32:53 zubov Exp $
+ * @version $Id: SlaveSelectionManagerInterface.java,v 1.8 2004/11/03 05:43:24 zubov Exp $
  */
 public interface SlaveSelectionManagerInterface {
     public abstract void reload() throws IOException;

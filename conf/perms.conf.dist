@@ -49,3 +49,8 @@ dirlog		*	*
 
 give =give =siteop
 take =take =siteop
+
+#will allow only users of group siteop to login
+#shutdown =siteop
+shutdown *
+

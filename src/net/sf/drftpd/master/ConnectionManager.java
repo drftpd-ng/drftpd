@@ -51,7 +51,7 @@ import org.drftpd.slave.Slave;
 
 
 /**
- * @version $Id: ConnectionManager.java,v 1.119 2004/11/02 07:32:39 zubov Exp $
+ * @version $Id: ConnectionManager.java,v 1.120 2004/11/03 05:43:09 zubov Exp $
  */
 public class ConnectionManager {
     public static final int idleTimeout = 300;
@@ -191,7 +191,7 @@ public class ConnectionManager {
                 user.getMaxLoginsPerIP() + ") has been reached.");
         }
 
-        if ((user.getMaxLogins() > 0) && (userCount > user.getMaxLogins())) {
+        if ((user.getMaxLogins() > 0) && (userCount >= user.getMaxLogins())) {
             return new FtpReply(530,
                 "Sorry, your account is restricted to " + user.getMaxLogins() +
                 " simultaneous logins.");

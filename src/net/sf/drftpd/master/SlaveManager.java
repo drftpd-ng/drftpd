@@ -51,7 +51,6 @@ import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
-import org.drftpd.slaveselection.filter.SlaveSelectionManager;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
@@ -59,7 +58,7 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
 
 /**
  * @author mog
- * @version $Id: SlaveManager.java,v 1.18 2004/11/02 07:32:40 zubov Exp $
+ * @version $Id: SlaveManager.java,v 1.19 2004/11/03 05:43:12 zubov Exp $
  */
 public class SlaveManager implements Runnable {
     private static final Logger logger = Logger.getLogger(SlaveManager.class.getName());

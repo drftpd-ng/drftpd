@@ -61,7 +61,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  * @author zubov
- * @version $Id: UserManagment.java,v 1.49 2004/11/02 07:32:41 zubov Exp $
+ * @version $Id: UserManagment.java,v 1.50 2004/11/03 05:43:21 zubov Exp $
  */
 public class UserManagment implements CommandHandler, CommandHandlerFactory {
     private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -1469,7 +1469,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
         env.add("nukedbytes", Bytes.formatBytes(myUser.getNukedBytes()));
         env.add("primarygroup", myUser.getGroupName());
         env.add("extragroups", myUser.getGroups());
-        env.add("ipmasks", myUser.getIpMasks());
+        env.add("ipmasks", myUser.getHostMaskCollection());
         env.add("wkly_allotment", Bytes.formatBytes(myUser.getWeeklyAllotment()));
 
         response.addComment(conn.jprintf(UserManagment.class, "user", env));

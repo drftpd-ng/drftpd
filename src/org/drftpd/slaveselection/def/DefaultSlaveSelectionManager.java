@@ -36,13 +36,12 @@ import net.sf.drftpd.slave.SlaveStatus;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.slave.RemoteTransfer;
-import org.drftpd.slave.Transfer;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 
 /**
  * @author mog
- * @version $Id: DefaultSlaveSelectionManager.java,v 1.2 2004/11/02 07:32:54 zubov Exp $
+ * @version $Id: DefaultSlaveSelectionManager.java,v 1.3 2004/11/03 05:43:24 zubov Exp $
  */
 public class DefaultSlaveSelectionManager
     implements SlaveSelectionManagerInterface {
