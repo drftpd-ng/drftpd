@@ -1,9 +1,3 @@
-/*
- * Created on 2003-okt-16
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd.master.command.plugins;
 
 import java.io.FileInputStream;
@@ -58,7 +52,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.20 2003/12/07 22:31:45 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.21 2003/12/08 22:36:43 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private boolean _encryptedDataChannel;
@@ -221,7 +215,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	 */
 	private FtpReply doPASV(BaseFtpConnection conn) {
 		conn.resetState();
-		reset();
+		//reset();
 		if (!_preTransfer) {
 			return new FtpReply(
 				500,
@@ -371,7 +365,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		FtpRequest request = conn.getRequest();
 		FtpRequest ghostRequest = new FtpRequest(request.getArgument());
 		String cmd = ghostRequest.getCommand();
-		if (cmd.equals("LIST") || cmd.equals("NLST")) {
+		if (cmd.equals("LIST") || cmd.equals("NLST") || cmd.equals("MLSD")) {
 			_preTransferRSlave = null;
 			_preTransfer = true;
 			return new FtpReply(
