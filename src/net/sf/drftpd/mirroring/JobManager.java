@@ -256,10 +256,14 @@ public class JobManager implements Runnable {
 
 					return;
 				} catch (NoAvailableSlaveException e1) {
+					logger.debug("NoAvailableSlaveException from ", e1);
 					return;
 				} catch (SlaveUnavailableException e2) {
+					logger.debug("SlaveUnavailableException from ", e2);
 					return;
-				} catch (RemoteIOException e1) {
+				} catch (RemoteIOException e3) {
+					logger.debug("RemoteIOException from ", e3);
+					
 					return;
 				}
 			} else if (e.getCause() instanceof SocketException) {

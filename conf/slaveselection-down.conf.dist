@@ -22,7 +22,7 @@
 
 #MatchDir (Sets appropriate settings from "assign" on transfers inside "path")
 #.filter=matchdir
-#.path=/section/*
+#.match=/section/*
 #.assign=slave1+500 slave2-500 slave3+remove
 
 # more to come
