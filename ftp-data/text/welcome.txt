@@ -1,0 +1,7 @@
+         drftpd  drftpd
+  drftpd         drftpd
+drftpd     drftpd
+     drftpd
+                drftpd drftpd drftpd
+Welcome to the next generation of FXP:ing
+                   DistRibuted FTP Daemon

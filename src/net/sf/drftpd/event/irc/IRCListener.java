@@ -20,6 +20,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -111,9 +112,8 @@ public class IRCListener implements FtpListener {
 						_ircConnection.sendCommand(
 							new MessageCommand(
 								_channelName,
-								"Available commands: !bw !df"));
+								"Available commands: !bw !slaves"));
 					} else if (message.equals("!bw")) {
-						//[bw] i [ total: 6 of 20 / 885kb/s ] - [ up: 2 / 485kb/s | dn: 2 / 400kb/s | idle: 2 ]
 						SlaveStatus status =
 							_cm.getSlavemanager().getAllStatus();
 
@@ -139,20 +139,20 @@ public class IRCListener implements FtpListener {
 									+ "] [xfers total: "
 									+ status.getTransfers()
 									+ " "
-									+ status.getThroughput()
-									+ "b/s] [xfers up "
+									+ Bytes.formatBytes(status.getThroughput())
+									+ "/s] [xfers up "
 									+ status.getTransfersReceiving()
 									+ " "
-									+ status.getThroughputReceiving()
-									+ "b/s] [xfers down "
+									+ Bytes.formatBytes(status.getThroughputReceiving())
+									+ "/s] [xfers down "
 									+ status.getTransfersSending()
 									+ " "
-									+ status.getThroughputSending()
-									+ "b/s]  [space "
-									+ status.getDiskSpaceAvailable()
+									+ Bytes.formatBytes(status.getThroughputSending())
+									+ "/s]  [space "
+									+ Bytes.formatBytes(status.getDiskSpaceAvailable())
 									+ "/"
-									+ status.getDiskSpaceCapacity()
-									+ "b]"));
+									+ Bytes.formatBytes(status.getDiskSpaceCapacity())
+									+ "]"));
 					} else if (message.equals("!slaves")) {
 						for (Iterator iter =
 							_cm.getSlavemanager().getSlaves().iterator();
@@ -167,20 +167,20 @@ public class IRCListener implements FtpListener {
 									"[xfers total: "
 										+ status.getTransfers()
 										+ " "
-										+ status.getThroughput()
-										+ "b/s] [xfers up "
+										+ Bytes.formatBytes(status.getThroughput())
+										+ "/s] [xfers up "
 										+ status.getTransfersReceiving()
 										+ " "
-										+ status.getThroughputReceiving()
-										+ "b/s] [xfers down "
+										+ Bytes.formatBytes(status.getThroughputReceiving())
+										+ "/s] [xfers down "
 										+ status.getTransfersSending()
 										+ " "
-										+ status.getThroughputSending()
-										+ "b/s] [space "
-										+ status.getDiskSpaceAvailable()
-										+ "/"
-										+ status.getDiskSpaceCapacity()
-										+ "b]";
+										+ Bytes.formatBytes(status.getThroughputSending())
+										+ "/s] [space"
+										+ Bytes.formatBytes(status.getDiskSpaceAvailable())
+										+ " "
+										+ Bytes.formatBytes(status.getDiskSpaceCapacity())
+										+ "]";
 							} catch (RemoteException e) {
 								rslave.handleRemoteException(e);
 								statusString = "offline";
@@ -238,13 +238,11 @@ public class IRCListener implements FtpListener {
 				"[addslave] "
 					+ sevent.getRSlave().getName()
 					+ " just came online with "
-					+ status.getDiskSpaceAvailable()
-					+ "b of free space and brought "
-					+ status.getDiskSpaceUsed()
-					+ "b of content!");
+					+ Bytes.formatBytes(status.getDiskSpaceCapacity())
+					+ " of disk space");
 		} else if (event.getCommand().equals("DELSLAVE")) {
 			SlaveEvent sevent = (SlaveEvent)event;
-			say("lslave] "+sevent.getRSlave().getName()+" just went offline");
+			say("[slave] "+sevent.getRSlave().getName()+" just went offline");
 		}
 	}
 
@@ -282,7 +280,6 @@ public class IRCListener implements FtpListener {
 
 			//TODO ceil halfway
 			int halfway = sfvfile.size() / 2;
-			System.out.println("halfway = " + halfway + "/" + sfvfile.size());
 
 			if (finishedFiles == sfvfile.size()) {
 				say(
@@ -318,8 +315,8 @@ public class IRCListener implements FtpListener {
 								+ " ["
 								+ stat.getFiles()
 								+ "f/"
-								+ stat.getBytes()
-								+ "b]");
+								+ Bytes.formatBytes(stat.getBytes())
+								+ "]");
 					}
 				}
 			}

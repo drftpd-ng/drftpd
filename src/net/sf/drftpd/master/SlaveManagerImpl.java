@@ -14,6 +14,7 @@ import java.rmi.server.RMISocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -54,6 +55,15 @@ public class SlaveManagerImpl
 			rslave.setManager(manager);
 		}
 	}
+	public static RemoteSlave loadRSlave(Element slaveElement) {
+		List masks = new ArrayList();
+		List maskElements = slaveElement.getChildren("mask");
+		for (Iterator i2 = maskElements.iterator(); i2.hasNext();) {
+			masks.add(((Element) i2.next()).getText());
+		}
+		return new RemoteSlave(slaveElement.getChildText("name"), masks);
+
+	}
 	public static List loadRSlaves() {
 		ArrayList rslaves;
 		try {
@@ -61,14 +71,8 @@ public class SlaveManagerImpl
 			List children = doc.getRootElement().getChildren("slave");
 			rslaves = new ArrayList(children.size());
 			for (Iterator i = children.iterator(); i.hasNext();) {
-				List masks = new ArrayList();
 				Element slaveElement = (Element) i.next();
-				List maskElements = slaveElement.getChildren("mask");
-				for (Iterator i2 = maskElements.iterator(); i2.hasNext();) {
-					masks.add(((Element) i2.next()).getText());
-				}
-				RemoteSlave rslave =
-					new RemoteSlave(slaveElement.getChildText("name"), masks);
+				RemoteSlave rslave = loadRSlave(slaveElement);
 				rslaves.add(rslave);
 			}
 			rslaves.trimToSize();
@@ -121,20 +125,43 @@ public class SlaveManagerImpl
 		return masks;
 	}
 
-	public void reloadRSlaves()
-		throws FileNotFoundException, JDOMException, IOException {
+	public void reloadRSlaves() throws FileNotFoundException, IOException {
 		Document doc;
-		doc = new SAXBuilder().build(new FileReader("slaves.xml"));
+		try {
+			doc = new SAXBuilder().build(new FileReader("slaves.xml"));
+		} catch (JDOMException e) {
+			throw (IOException) new IOException().initCause(e);
+		}
 
 		List slaveElements = doc.getRootElement().getChildren("slave");
-
-		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
+		
+		// first, unmerge non-existing slaves
+		nextslave:
+		for (Iterator iter = this.rslaves.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
-
+			
 			for (Iterator iterator = slaveElements.iterator();
 				iterator.hasNext();
 				) {
 				Element slaveElement = (Element) iterator.next();
+				if(rslave.getName().equals(slaveElement.getChildText("name"))) {
+					continue nextslave;
+				}
+			}
+			logger.log(Level.WARNING, rslave.getName()+" no longer in slaves.xml, unmerging");
+			root.unmerge(rslave);
+			rslaves.remove(rslave);
+		}
+
+		nextelement:
+		for (Iterator iterator = slaveElements.iterator();
+			iterator.hasNext();
+			) {
+			Element slaveElement = (Element) iterator.next();
+
+			for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
+				RemoteSlave rslave = (RemoteSlave) iter.next();
+
 				if (slaveElement
 					.getChildText("name")
 					.equals(rslave.getName())) {
@@ -146,15 +173,14 @@ public class SlaveManagerImpl
 						masks.add(((Element) i2.next()).getText());
 					}
 					rslave.setMasks(masks);
+					continue nextelement;
 				}
-				if (!iterator.hasNext()) {
-					logger.log(
-						Level.INFO,
-						rslave + " no longer in slaves.xml, unmerging");
-					root.unmerge(rslave);
-				}
-			}
+			} // rslaves.iterator()
+			RemoteSlave rslave = loadRSlave(slaveElement);
+			this.rslaves.add(rslave);
+			logger.log(Level.INFO, "Added "+rslave.getName()+" to slaves");
 		}
+		Collections.sort(this.rslaves);
 	}
 
 	public static LinkedRemoteFile loadXmlFileDatabase(
@@ -226,8 +252,8 @@ public class SlaveManagerImpl
 			RemoteSlave rslave2 = (RemoteSlave) iter.next();
 			if (rslave2.getName().equals(slaveName)) {
 				rslave = rslave2;
+				break;
 			}
-			System.out.println("slavename: "+slaveName);
 		}
 		if (rslave == null) {
 			throw new IllegalArgumentException("rejected");
@@ -241,25 +267,20 @@ public class SlaveManagerImpl
 
 		System.out.println(
 			"SlaveManager.addSlave(): "
-				+ slaveName
-				+ "/"
 				+ rslave.getName()
 				+ " remoteroot: "
 				+ slaveroot);
 
-		long millis = System.currentTimeMillis();
-		//root.unmerge(rslave);
 		root.remerge(slaveroot, rslave);
-		System.out.println(
-			"unmerge()+merge() took "
-				+ (System.currentTimeMillis() - millis)
-				+ "ms");
+		
 		try {
 			System.out.println(
 				"SlaveStatus: " + rslave.getSlave().getSlaveStatus());
 			// throws RemoteException
 		} catch (NoAvailableSlaveException e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, "", e);
+		} catch (RemoteException e) {
+			logger.log(Level.SEVERE, "RemoteException from getSlaveStatus()", e);
 		}
 		getConnectionManager().dispatchFtpEvent(
 			new SlaveEvent("ADDSLAVE", rslave));
@@ -358,8 +379,9 @@ public class SlaveManagerImpl
 					beststatus = status;
 					continue;
 				}
-				
-				if(status.getDiskSpaceAvailable() < config.getFreespaceMin()) {
+
+				if (status.getDiskSpaceAvailable()
+					< config.getFreespaceMin()) {
 					// current slave has less space available than "freespace.min"
 					// above check made sure bestslave has more space than us
 					continue;

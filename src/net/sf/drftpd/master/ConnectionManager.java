@@ -1,5 +1,6 @@
 package net.sf.drftpd.master;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -63,8 +64,8 @@ public class ConnectionManager {
 		}
 	}
 
-	public ConnectionManager(Properties cfg) {
-		this.config = new FtpConfig(cfg);
+	public ConnectionManager(Properties cfg, String cfgFileName) {
+		this.config = new FtpConfig(cfg, cfgFileName);
 		
 		/** END: load XML file database **/
 		
@@ -98,7 +99,7 @@ public class ConnectionManager {
 				nukelog.add(new NukeEvent(user, command, directory, time, multiplier, reason, nukees));
 			}
 		} catch(FileNotFoundException ex) {
-			logger.log(Level.FINE, "Couldn't open nukelog.xml - will create it later", ex);
+			logger.log(Level.FINE, "nukelog.xml not found, will create it after first nuke.");
 		} catch (Exception ex) {
 			logger.log(
 				Level.INFO,
@@ -257,6 +258,7 @@ public class ConnectionManager {
 	public static void main(String args[]) {
 		System.out.println(VERSION+" starting.");
 		System.out.println("http://drftpd.sourceforge.net");
+		
 		try {
 			Handler handlers[] = Logger.getLogger("").getHandlers();
 			if (handlers.length == 1) {
@@ -266,6 +268,15 @@ public class ConnectionManager {
 					"handlers.length != 1, can't setLevel() on root element");
 			}
 
+			String cfgFileName;
+			if(args.length >= 1) {
+				cfgFileName = args[0];
+			} else {
+				cfgFileName = "drftpd.conf";
+			}
+			if(new File(cfgFileName).exists()) {
+				System.out.println(cfgFileName+" does not exist.");
+			}
 			/** load config **/
 			logger.info("loading drftpd.conf");
 			Properties cfg = new Properties();
@@ -277,7 +288,7 @@ public class ConnectionManager {
 			}
 
 			logger.info("Starting ConnectionManager");
-			ConnectionManager mgr = new ConnectionManager(cfg);
+			ConnectionManager mgr = new ConnectionManager(cfg, cfgFileName);
 			System.setProperty("line.separator", "\r\n");
 			/** listen for connections **/
 			try {
@@ -300,9 +311,6 @@ public class ConnectionManager {
 		}
 	}
 	
-	public void reload() {
-		
-	}
 	/**
 	 * @return
 	 */

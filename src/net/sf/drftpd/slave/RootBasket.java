@@ -38,7 +38,6 @@ public class RootBasket {
 	}
 
 	private void validateRoots(Collection roots) throws FileNotFoundException {
-		System.out.println("roots: " + roots);
 		for (Iterator iter = roots.iterator(); iter.hasNext();) {
 			Object o = iter.next();
 			if(!(o instanceof File)) throw new ClassCastException(o.getClass().getName()+" is not java.io.File");

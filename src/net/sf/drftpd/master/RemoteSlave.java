@@ -20,7 +20,7 @@ import net.sf.drftpd.slave.SlaveStatus;
  * 
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  */
-public class RemoteSlave implements Serializable {
+public class RemoteSlave implements Serializable, Comparable {
 
 	private static Logger logger =
 		Logger.getLogger(RemoteSlave.class.getName());
@@ -201,5 +201,13 @@ public class RemoteSlave implements Serializable {
 	
 	public long getLastTransfer() {
 		return Math.max(getLastDownloadSending(), getLastUploadReceiving());
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	public int compareTo(Object o) {
+		if(!(o instanceof RemoteSlave)) throw new IllegalArgumentException();
+		return getName().compareTo(((RemoteSlave)o).getName());
 	}
 }

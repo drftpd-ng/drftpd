@@ -102,12 +102,10 @@ public class GlobServerSocket extends ServerSocket {
 
 				// ip
 				if (m.matches(ipmask, p)) {
-					System.out.println("Accepted connection from "+hostmask+".");
 					return sock;
 				}
 				// host
 				if (m.matches(hostmask, p)) {
-					System.out.println("Accepted connection from "+hostmask+".");
 					return sock;
 				}
 			} //for

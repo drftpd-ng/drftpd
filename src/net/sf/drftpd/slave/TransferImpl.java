@@ -79,22 +79,8 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		this.started = System.currentTimeMillis();
 		this.sock = conn.connect();
 		if (in == null) {
-			System.out.println(
-				"Receiving "
-					+ mode
-					+ " stream from "
-					+ sock.getInetAddress()
-					+ ":"
-					+ sock.getPort());
 			this.in = sock.getInputStream();
 		} else if (out == null) {
-			System.out.println(
-				"Sending "
-					+ mode
-					+ " stream to "
-					+ sock.getInetAddress()
-					+ ":"
-					+ sock.getPort());
 			if (this.mode == 'A') {
 				out = new AsciiOutputStream(sock.getOutputStream());
 			} else {
@@ -172,7 +158,6 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	 * @return long
 	 */
 	public long getTransfered() {
-		System.out.println("ret transfered: "+this.transfered);
 		return this.transfered;
 	}
 }

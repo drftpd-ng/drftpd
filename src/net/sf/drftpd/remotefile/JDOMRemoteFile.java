@@ -72,7 +72,7 @@ public class JDOMRemoteFile extends RemoteFile {
 			iter.hasNext();
 			) {
 			Element slaveElement = (Element) iter.next();
-			String slaveName = slaveElement.getName();
+			String slaveName = slaveElement.getChildText("name");
 			RemoteSlave rslave = (RemoteSlave) this.allSlaves.get(slaveName);
 			if (rslave == null) {
 				logger.log(

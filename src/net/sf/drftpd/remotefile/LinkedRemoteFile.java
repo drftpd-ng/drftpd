@@ -687,11 +687,9 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		this.lastModified = lastModified;
 	}
 
-	public long size() {
-		if (isDirectory()) {
-			return files.size();
-		}
-		return length();
+	public long dirSize() {
+		if(files == null) throw new IllegalStateException("Cannot be called on a non-directory");
+		return files.size(); 
 	}
 
 	/**
@@ -721,16 +719,12 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		}
 		if (isDirectory())
 			ret.append("[directory(" + files.size() + ")]");
-		ret.append("size:" + this.size());
-		//ret.append(getName());
-		//ret.append("[owner:" + getOwner() + "]");
-		//ret.append("[group:" + getGroup() + "]");
 		ret.append("]");
 		return ret.toString();
 	}
 
-	public void unmerge(RemoteSlave slave) { //LinkedRemoteFile files[] = listFiles();
-		removeSlave(slave);
+	public void unmerge(RemoteSlave rslave) { //LinkedRemoteFile files[] = listFiles();
+		removeSlave(rslave);
 		if (files == null)
 			return;
 		for (Iterator i = files.entrySet().iterator(); i.hasNext();) {
@@ -738,11 +732,11 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 			LinkedRemoteFile file = (LinkedRemoteFile) entry.getValue();
 			String filename = (String) entry.getKey();
 			if (file.isDirectory()) {
-				file.unmerge(slave);
-				if (file.getFilesMap().size() == 0)
+				file.unmerge(rslave);
+				if (file.isDeleted() && file.getFilesMap().size() == 0)
 					i.remove();
 			} else {
-				file.removeSlave(slave);
+				file.removeSlave(rslave);
 			}
 		}
 		if (isFile() && getSlaves().size() == 0) {

@@ -169,7 +169,11 @@ public class JSXUserManager extends UserManager {
 
 	public void saveAll() throws UserFileException {
 		for (Iterator iter = users.keySet().iterator(); iter.hasNext();) {
-			JSXUser user = (JSXUser) iter.next();
+			Object obj = iter.next();
+			if(!(obj instanceof JSXUser)) {
+				logger.log(Level.SEVERE, "upcominClassCastException:"+obj+" not instanceof JSUser, class: "+obj.getClass()+" "+obj.getClass().getName());
+			}
+			JSXUser user = (JSXUser)obj;
 				user.commit();
 		}
 	}

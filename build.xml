@@ -64,7 +64,10 @@
     <zip destfile="slave.zip" basedir=".">
       <include name="slave.jar"/>
       <include name="drftpd.conf.dist"/>
-      <include name="libFileSystem.so"/>
+      <include name="slave.sh" />
+      <include name="slave.bat" />
+      <zipfileset dir="." includes="src/se/mog/io/libFileSystem.so" fullpath="libFileSystem.so" />
+      <zipfileset dir="." includes="src/se/mog/io/FileSystem.dll" fullpath="FileSystem.dll" />
     </zip>
   </target>
 </project>

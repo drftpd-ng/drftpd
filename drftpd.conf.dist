@@ -11,6 +11,12 @@ master.port=2121
 master.localslave=false
 master.usermanager=net.sf.drftpd.master.usermanager.jsx.JSXUserManager
 
+# mimum amount of available diskspace in bytes to have on a slave when
+# sending to it. If all available slaves have less than this amount the
+# slave with most available disk space will get all transfers.
+#100 MiB, 100,000,000
+freespace.min=100000000
+
 irc.server=irc.hemmet.chalmers.se
 irc.port=6667
 irc.channel=#drftpd

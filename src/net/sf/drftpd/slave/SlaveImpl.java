@@ -70,19 +70,20 @@ public class SlaveImpl
 	public void register() {
 		while (true) {
 			try {
+				logger.log(Level.INFO, "Getting master reference");
 				SlaveManager manager;
 				manager = (SlaveManager) Naming.lookup(slavemanagerurl);
+				
+				logger.log(Level.INFO, "Registering with master");
 
 				LinkedRemoteFile slaveroot =
 					SlaveImpl.getDefaultRoot(this.roots);
 
 				manager.addSlave(this.name, this, slaveroot);
+				logger.log(Level.INFO, "Registered with master.");
 				return;
 			} catch (Throwable t) {
-				
-				t.printStackTrace();
-				System.out.println(
-					"Failed to register slave, will retry in 30 seconds");
+				logger.log(Level.SEVERE, "Failed to register slave, will retry in 30 seconds", t);
 				try {
 					Thread.sleep(30000);
 				} catch (InterruptedException e) {
@@ -92,11 +93,17 @@ public class SlaveImpl
 		}
 	}
 	public static void main(String args[]) {
+		String drftpdconf;
+		if(args.length >= 1) {
+			drftpdconf = args[0];
+		} else {
+			drftpdconf = "drftpd.conf";
+		}
 		try {
 
 			Properties cfg = new Properties();
 			try {
-				cfg.load(new FileInputStream("drftpd.conf"));
+				cfg.load(new FileInputStream(drftpdconf));
 			} catch (Throwable ex) {
 				ex.printStackTrace();
 				System.err.println("Could not open drftpd.conf, exiting.");
@@ -245,7 +252,6 @@ public class SlaveImpl
 		File file =
 			new File(
 				root + File.separator + dirname + File.separator + filename);
-		System.out.println("Will write " + file);
 		FileOutputStream out = new FileOutputStream(file);
 
 		//		Socket sock = conn.connect();
@@ -315,7 +321,6 @@ public class SlaveImpl
 	 */
 	public void rename(String from, String to)
 		throws FileNotFoundException, ObjectExistsException {
-		System.out.println("rename from " + from + " to " + to);
 		File fromfile = roots.getFile(from);
 		// throws FileNotFoundException
 		if (!fromfile.exists())
@@ -348,6 +353,7 @@ public class SlaveImpl
 	 * @see java.rmi.server.Unreferenced#unreferenced()
 	 */
 	public void unreferenced() {
+		logger.log(Level.WARNING, "Lost master, trying to re-register with master.");
 		register();
 		System.gc();
 	}
