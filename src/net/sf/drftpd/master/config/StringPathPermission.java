@@ -23,8 +23,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- *
- * @version $Id: StringPathPermission.java,v 1.7 2004/05/31 02:47:17 mog Exp $
+ * @version $Id: StringPathPermission.java,v 1.8 2004/05/31 12:14:37 mog Exp $
  */
 public class StringPathPermission extends PathPermission {
 	private String path;

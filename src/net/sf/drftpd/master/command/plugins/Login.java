@@ -41,7 +41,7 @@ import org.apache.log4j.Logger;
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.25 2004/05/31 02:47:16 mog Exp $
+ * @version $Id: Login.java,v 1.26 2004/05/31 12:14:36 mog Exp $
  */
 public class Login implements CommandHandler, Cloneable {
 
@@ -172,10 +172,6 @@ public class Login implements CommandHandler, Cloneable {
 			return new FtpReply(530, ex.getMessage());
 		}
 
-		//		if(connManager.isShutdown() && !conn.getUser().isAdmin()) {
-		//			out.print(new FtpResponse(421, ))
-		//		}
-
 		if (newUser.isDeleted()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
 		}
@@ -206,8 +202,7 @@ public class Login implements CommandHandler, Cloneable {
 			if ((_idntAddress != null
 				&& mask.matches(_idntIdent, _idntAddress))
 				|| (_idntAddress == null
-					&& (ident == null
-						|| mask.matches(ident, conn.getClientAddress())))) {
+					&& (mask.matches(ident, conn.getClientAddress())))) {
 				//success
 				// max_users and num_logins restriction
 				FtpReply response =

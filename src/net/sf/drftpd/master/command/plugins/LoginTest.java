@@ -44,9 +44,11 @@ import org.drftpd.tests.DummyUserManager;
 
 /**
  * @author mog
- * @version $Id: LoginTest.java,v 1.2 2004/05/31 02:47:16 mog Exp $
+ * @version $Id: LoginTest.java,v 1.3 2004/05/31 12:14:36 mog Exp $
  */
 public class LoginTest extends TestCase {
+	private DummyUser _user;
+
 	private DummyUserManager _userManager;
 
 	private DummyBaseFtpConnection _conn;
@@ -72,28 +74,55 @@ public class LoginTest extends TestCase {
 				return null;
 			}
 			public FtpConfig getConfig() {
-				try {
-					return new FtpConfig(new Properties(), null, this) {
-						public List getBouncerIps() {
-							try {
-								return Collections.singletonList(InetAddress.getByName("10.0.0.1"));
-							} catch (UnknownHostException e) {
-								throw new RuntimeException(e);
-							}
+				return new FtpConfig() {
+					public List getBouncerIps() {
+						try {
+							return Collections.singletonList(
+								InetAddress.getByName("10.0.0.1"));
+						} catch (UnknownHostException e) {
+							throw new RuntimeException(e);
 						}
-					};
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
+					}
+				};
 			}
 			public UserManager getUserManager() {
 				return _userManager;
 			}
 		});
 		_userManager = new DummyUserManager();
+		_user = new DummyUser("myuser");
+		_userManager.setUser(_user);
+		_conn.setUserManager(_userManager);
 	}
 
-	public void testIDNT() throws UnhandledCommandException, DuplicateElementException, UnknownHostException {
+	public void testUSER()
+		throws
+			UnknownHostException,
+			UnhandledCommandException,
+			DuplicateElementException {
+		_conn.setClientAddress(InetAddress.getByName("127.0.0.1"));
+
+		FtpReply reply;
+		_conn.setRequest(new FtpRequest("USER myuser"));
+		reply = _login.execute(_conn);
+		assertEquals(530, reply.getCode());
+		assertNull(_conn.getUserNull());
+
+		_user.addIPMask("*@1.2.3.4");
+		reply = _login.execute(_conn);
+		assertEquals(530, reply.getCode());
+		assertNull(_conn.getUserNull());
+		
+		_user.addIPMask("*@127.0.0.1");
+		reply = _login.execute(_conn);
+		assertEquals(331, reply.getCode());
+		assertNotNull(_conn.getUserNull());
+	}
+	public void testIDNT()
+		throws
+			UnhandledCommandException,
+			DuplicateElementException,
+			UnknownHostException {
 		_conn.setClientAddress(InetAddress.getByName("10.0.0.2"));
 		_conn.setRequest(new FtpRequest("IDNT user@127.0.0.1:localhost"));
 		FtpReply reply;
@@ -103,24 +132,22 @@ public class LoginTest extends TestCase {
 		assertNull(_login._idntAddress);
 
 		_conn.setClientAddress(InetAddress.getByName("10.0.0.1"));
+		//execute same command again
 		reply = _login.execute(_conn);
 		assertNull(String.valueOf(reply), reply);
 
-		DummyUser user = new DummyUser("myuser");
-		_userManager.setUser(user);
-		_conn.setUserManager(_userManager);
 		_conn.setRequest(new FtpRequest("USER myuser"));
 
-		user.addIPMask("*@127.0.0.0");
+		_user.addIPMask("*@127.0.0.0"); //invalid
 		reply = _login.execute(_conn);
 		assertEquals(530, reply.getCode());
 		assertNull(_conn.getUserNull());
 		logger.debug(reply.toString());
 
-		user.addIPMask("*@localhost");
+		_user.addIPMask("*@127.0.0.1"); //what was given in IDNT cmd
 		reply = _login.execute(_conn);
 		assertEquals(331, reply.getCode());
-		assertEquals(user, _conn.getUserNull());
+		assertEquals(_user, _conn.getUserNull());
 		logger.debug(reply.toString());
 	}
 }

@@ -44,7 +44,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.52 2004/05/17 11:27:24 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.53 2004/05/31 12:14:37 mog Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -112,6 +112,9 @@ public class FtpConfig {
 		throws IOException {
 		_cfgFileName = cfgFileName;
 		loadConfig(cfg, connManager);
+	}
+
+	protected FtpConfig() {
 	}
 
 	public boolean checkDelete(User fromUser, LinkedRemoteFileInterface path) {

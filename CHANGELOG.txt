@@ -1,3 +1,8 @@
+2004/05/31 Morgan Christiansson <drftpd@mog.se>
+* Users hostmask wasn't checked when user wasn't running an
+  ident server and wasn't connecting through an ftp-bnc.
+  This behaviour was introcued when IDNT support was added.
+
 2004/05/22 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Implemented MoveReleaseOffSlavesToMostFreeSlaves
 * Fixed MoveReleaseToMostFreeSlaves returning the most full slaves, 
@@ -70,7 +75,7 @@
 * MKD now resurrects queued for deletion folders if a folder already exists
   but is queued for deletion.
 * Made SafeFileWriter use UTF-8 charset instead of default charset, this should solve
-  едц being replaced with ??? in files.mlst etc.
+  ??? being replaced with ??? in files.mlst etc.
 * PRE now gives error if destination section has empty name (default section)
 * Fixed HALFWAY/COMPLETE average speed and elapsed time messages.
 
