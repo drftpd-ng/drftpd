@@ -48,7 +48,7 @@ import java.util.Map;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveManagement.java,v 1.8 2004/11/08 04:46:17 zubov Exp $
+ * @version $Id: SlaveManagement.java,v 1.9 2004/11/08 05:25:13 zubov Exp $
  */
 public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
     public void unload() {
@@ -81,7 +81,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
             return new FtpReply(200, "No such slave");
         }
 
-        if (!rslave.isAvailable()) {
+        if (!rslave.isOnline()) {
             return new FtpReply(200, "Slave is already offline");
         }
 
@@ -152,7 +152,7 @@ public class SlaveManagement implements CommandHandlerFactory, CommandHandler {
         }
 
         if (!rslave.isAvailable()) {
-            return new FtpReply(200, "Slave is offline");
+            return new FtpReply(200, "Slave is still merging from initial connect");
         }
 
         try {

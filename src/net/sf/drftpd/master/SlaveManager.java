@@ -62,7 +62,7 @@ import java.util.Set;
 
 /**
  * @author mog
- * @version $Id: SlaveManager.java,v 1.22 2004/11/05 20:51:06 zubov Exp $
+ * @version $Id: SlaveManager.java,v 1.23 2004/11/08 05:25:12 zubov Exp $
  */
 public class SlaveManager implements Runnable {
     private static final Logger logger = Logger.getLogger(SlaveManager.class
@@ -452,8 +452,15 @@ public class SlaveManager implements Runnable {
 
                 in = new ObjectInputStream(socket.getInputStream());
                 out = new ObjectOutputStream(socket.getOutputStream());
-                rslave = getRemoteSlave(RemoteSlave
-                        .getSlaveNameFromObjectInput(in));
+                String slavename = RemoteSlave
+                .getSlaveNameFromObjectInput(in);
+                try {
+                rslave = getRemoteSlave(slavename);
+                } catch (ObjectNotFoundException e) {
+                    out.writeObject(new AsyncCommandArgument("", "error", slavename + " does not exist, use \"site addslave\""));
+                    logger.info("Slave " + slavename + " does not exist, use \"site addslave\"");
+                    return;
+                }
 
                 if (rslave.isOnlinePing()) {
                     out.writeObject(new AsyncCommandArgument("", "error",
@@ -476,7 +483,7 @@ public class SlaveManager implements Runnable {
             try {
                 if (!rslave.checkConnect(socket)) {
                     out.writeObject(new AsyncCommandArgument("", "error",
-                            socket.getInetAddress() + " is not a valid ip for "
+                            socket.getInetAddress() + " is not a valid mask for "
                                     + rslave.getName()));
                     logger.error(socket.getInetAddress()
                             + " is not a valid ip for " + rslave.getName());
