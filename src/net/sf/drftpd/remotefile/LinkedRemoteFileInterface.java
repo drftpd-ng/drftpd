@@ -68,14 +68,12 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 	public abstract long dirSize();
 	public abstract RemoteSlave getASlave(char direction, BaseFtpConnection conn)
 		throws NoAvailableSlaveException;
-//	public RemoteSlave getASlaveForDownload(BaseFtpConnection conn)
-//		throws NoAvailableSlaveException;
 	public abstract Collection getAvailableSlaves()
 		throws NoAvailableSlaveException;
 	/**
 	 * Uses cached checksum if the cached checksum is not 0
 	 */
-	public abstract long getCheckSum() throws IOException;
+	public abstract long getCheckSum() throws NoAvailableSlaveException;
 	/**
 	 * Returns 0 if the checksum cannot be read.
 	 */

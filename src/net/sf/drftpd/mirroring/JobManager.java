@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Properties;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.RemoteSlave;
@@ -35,7 +36,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.36 2004/03/03 04:48:08 zubov Exp $
+ * @version $Id: JobManager.java,v 1.37 2004/03/06 00:39:46 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -193,7 +194,14 @@ public class JobManager implements Runnable {
 			for (Iterator iter2 = availableSlaves.iterator();
 				iter2.hasNext();
 				) {
-				if (!busySlaves.contains((RemoteSlave) iter2.next())) {
+				RemoteSlave slave = (RemoteSlave) iter2.next();
+				if (availableSlaves.contains(slave)) {
+					if(tempJob.removeDestinationSlave(slave) && tempJob.isDone()) {
+						iter.remove();
+						break;
+					}
+				}
+				if (!busySlaves.contains(slave)) {
 					return tempJob;
 				}
 			}
@@ -220,7 +228,6 @@ public class JobManager implements Runnable {
 	 * Returns true if the file was sent okay
 	 */
 	public boolean processJob() {
-		ArrayList busySlavesDown = new ArrayList();
 		Job job = null;
 		RemoteSlave sourceSlave = null;
 		RemoteSlave destSlave = null;
@@ -234,6 +241,7 @@ public class JobManager implements Runnable {
 				return false;
 				// can't transfer with no slaves
 			}
+			ArrayList busySlavesDown = new ArrayList();
 			while (!busySlavesDown.containsAll(availableSlaves)) {
 				job = getNextJob(busySlavesDown);
 				if (job == null) {
@@ -243,7 +251,7 @@ public class JobManager implements Runnable {
 					return false;
 				}
 				try {
-					sourceSlave = _cm.getSlaveManager().getSlaveSelectionManager().getASlaveForJobDownload(job.getFile());
+					sourceSlave = _cm.getSlaveManager().getSlaveSelectionManager().getASlaveForJobDownload(job);
 					break; // we have a download slave!
 				} catch (NoAvailableSlaveException e) {
 					busySlavesDown.addAll(job.getFile().getSlaves());
@@ -255,7 +263,7 @@ public class JobManager implements Runnable {
 				return false;
 			}
 			try {
-				destSlave = _cm.getSlaveManager().getSlaveSelectionManager().getASlaveForJobUpload(job.getFile());
+				destSlave = _cm.getSlaveManager().getSlaveSelectionManager().getASlaveForJobUpload(job);
 			} catch (NoAvailableSlaveException e) {
 				return false;
 			}
@@ -275,9 +283,9 @@ public class JobManager implements Runnable {
 		SlaveTransfer slaveTransfer =
 			new SlaveTransfer(job.getFile(), sourceSlave, destSlave);
 		try {
-			logger.debug("Before transfer for " + job.getFile());
+			logger.debug("Before transfer for " + job);
 			if (!slaveTransfer.transfer(useCRC())) { // crc failed
-				logger.debug("After transfer for " + job.getFile());
+				logger.debug("After transfer for " + job);
 				try {
 					destSlave.getSlave().delete(job.getFile().getPath());
 				} catch (IOException e) {
@@ -293,7 +301,7 @@ public class JobManager implements Runnable {
 				addJob(job);
 				return false;
 			}
-			logger.debug("After transfer for " + job.getFile());
+			logger.debug("After transfer for " + job);
 		} catch (IOException e) {
 			logger.debug(
 				"Caught IOException in sending "
@@ -303,7 +311,7 @@ public class JobManager implements Runnable {
 					+ " to "
 					+ destSlave.getName(),
 				e);
-			if (!e.getMessage().equals("File exists")) {
+			if (!(e instanceof ObjectExistsException )) {
 				try {
 					destSlave.getSlave().delete(job.getFile().getPath());
 				} catch (SlaveUnavailableException e3) {
@@ -332,14 +340,16 @@ public class JobManager implements Runnable {
 					} catch (IOException e1) {
 						//couldn't delete it, just carry on
 					}
+					addJob(job);
+					return false;
 				}
 			} catch (RemoteException e1) {
 				destSlave.handleRemoteException(e1);
 				addJob(job);
 				return false;
-				//				} catch (NoAvailableSlaveException e1) { // extends IOException
-				//					addJob(job);
-				//					return false;
+			} catch (NoAvailableSlaveException e1) {
+				addJob(job);
+				return false;
 			} catch (SlaveUnavailableException e2) {
 				addJob(job);
 				return false;
@@ -380,8 +390,8 @@ public class JobManager implements Runnable {
 			"Was unable to remove "
 				+ destSlave.getName()
 				+ " from the destination list for file "
-				+ job.getFile());
-		// job was naturally removed from the list
+				+ job);
+		addJob(job);
 		return false;
 	}
 	public void reload() {

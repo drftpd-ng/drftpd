@@ -20,7 +20,9 @@ package org.drftpd.slaveselection.filter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -28,6 +30,7 @@ import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;
+import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.Transfer;
 
@@ -36,7 +39,7 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.6 2004/03/01 04:21:04 zubov Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.7 2004/03/06 00:39:47 zubov Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 	private FilterChain _ssmiDown;
@@ -152,29 +155,44 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 		return _sm;
 	}
 
-	public RemoteSlave getASlaveForJobDownload(LinkedRemoteFileInterface file)
+	public RemoteSlave getASlaveForJobDownload(Job job)
 		throws NoAvailableSlaveException {
+			ArrayList slaves = new ArrayList(job.getFile().getAvailableSlaves());
+			logger.debug("calling getASlaveForJobDownload");
+			for (Iterator iter = job.getDestinationSlaves().iterator(); iter.hasNext();) {
+				RemoteSlave slave = (RemoteSlave) iter.next();
+				if (slave != null) {
+					logger.debug("removed slave " + slave.getName());
+					slaves.remove(slave);
+				}
+			}
 			return process(
 				"jobdown",
-				new ScoreChart(file.getAvailableSlaves()),
+				new ScoreChart(slaves),
 				null,
 				null,
 				Transfer.TRANSFER_SENDING_DOWNLOAD,
-				file);
+				job.getFile());
 	}
 
-	public RemoteSlave getASlaveForJobUpload(LinkedRemoteFileInterface file)
+	public RemoteSlave getASlaveForJobUpload(Job job)
 		throws NoAvailableSlaveException {
-			Collection slaves = _sm.getAvailableSlaves();
-			slaves.removeAll(file.getAvailableSlaves());
+			ArrayList slaves = new ArrayList(_sm.getAvailableSlaves());
+			slaves.removeAll(job.getFile().getAvailableSlaves());
+			for (Iterator iter = job.getDestinationSlaves().iterator(); iter.hasNext();) {
+				RemoteSlave slave = (RemoteSlave) iter.next();
+				if (slave != null) {
+					logger.debug("added slave " + slave.getName());
+					slaves.add(slave);
+				}
+			}
 		return process(
 			"jobup",
 			new ScoreChart(slaves),
 			null,
 			null,
 			Transfer.TRANSFER_SENDING_DOWNLOAD,
-			file);
-
+			job.getFile());
 	}
 
 }

@@ -53,7 +53,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.124 2004/03/01 04:21:04 zubov Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.125 2004/03/06 00:39:46 zubov Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -585,12 +585,10 @@ public class LinkedRemoteFile
 	/**
 	 * Uses cached checksum if the cached checksum is not 0
 	 */
-	public long getCheckSum() throws IOException {
+	public long getCheckSum() throws NoAvailableSlaveException {
 		if (_checkSum == 0 && _length != 0) {
-			try {
 				_checkSum = getCheckSumFromSlave();
-			} catch (NoAvailableSlaveException ex) {
-			} // checkSum will still be 0L, return that...
+				if (_checkSum == 0) throw new NoAvailableSlaveException("Could not find a slave to check crc of " + getPath());
 		}
 		return _checkSum;
 	}
@@ -608,23 +606,25 @@ public class LinkedRemoteFile
 	/**
 	 * Returns 0 if the checksum cannot be read.
 	 */
-	public long getCheckSumFromSlave()
-		throws NoAvailableSlaveException, IOException {
-		RemoteSlave slave;
-		while (true) {
-			slave = getASlaveForDownload(null); // throws NoAvailableSlaveException
-			try {
-				_checkSum = slave.getSlave().checkSum(getPath());
-				// throws IOException
+	public long getCheckSumFromSlave() {
+		try {
+			for (Iterator iter = getAvailableSlaves().iterator(); iter.hasNext();) {
+				RemoteSlave slave = (RemoteSlave) iter.next();
+				try {
+					_checkSum = slave.getSlave().checkSum(getPath());
+				} catch (RemoteException e) {
+					continue;
+				} catch (IOException e) {
+					continue;
+				} catch (SlaveUnavailableException e) {
+					continue;
+				}
 				return _checkSum;
-			} catch (RemoteException ex) {
-				slave.handleRemoteException(ex);
-				continue;
-			} catch (SlaveUnavailableException e) {
-				continue;
 			}
+		} catch (NoAvailableSlaveException e) {
+			return 0;
 		}
-
+		return 0;
 	}
 
 	public Collection getDirectories() {

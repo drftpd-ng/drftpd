@@ -27,6 +27,7 @@ import java.util.StringTokenizer;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.Checksum;
+import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.irc.IRCListener;
@@ -55,7 +56,7 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.21 2004/03/05 18:32:23 flowman Exp $
+ * @version $Id: Dir.java,v 1.22 2004/03/06 00:39:46 zubov Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
 	private final static SimpleDateFormat DATE_FMT =
@@ -714,9 +715,9 @@ public class Dir implements CommandHandler, Cloneable {
 				250,
 				"XCRC Successful. "
 					+ Checksum.formatChecksum(myFile.getCheckSum()));
-		} catch (IOException e1) {
+		} catch (NoAvailableSlaveException e1) {
 			logger.warn("", e1);
-			return new FtpReply(550, "IO error: " + e1.getMessage());
+			return new FtpReply(550, "NoAvailableSlaveException: " + e1.getMessage());
 		}
 
 	}

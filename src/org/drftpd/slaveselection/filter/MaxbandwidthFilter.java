@@ -66,9 +66,11 @@ public class MaxbandwidthFilter extends Filter {
 						(RemoteException) e);
 				}
 				iter.remove();
+				logger.debug("removed " + slavescore.getRSlave().getName() + " because of exception", e);
 				continue;
 			}
 			if (status.getThroughputDirection(direction) > _maxBandwidth) {
+				logger.debug("removed " + slavescore.getRSlave().getName());
 				iter.remove();
 			}
 		}

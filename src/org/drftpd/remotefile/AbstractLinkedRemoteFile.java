@@ -105,7 +105,7 @@ public abstract class AbstractLinkedRemoteFile
 		throw new UnsupportedOperationException();
 	}
 
-	public long getCheckSum() throws IOException {
+	public long getCheckSum() throws NoAvailableSlaveException {
 		throw new UnsupportedOperationException();
 	}
 

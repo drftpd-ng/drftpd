@@ -40,7 +40,7 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.7 2004/03/04 01:41:27 zubov Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.8 2004/03/06 00:39:47 zubov Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 
@@ -92,7 +92,7 @@ return getASlaveInternal(file.getAvailableSlaves(), Transfer.TRANSFER_SENDING_DO
 		return _sm;
 	}
 
-	public RemoteSlave getASlaveForJobDownload(Job job, RemoteSlave destslave)
+	public RemoteSlave getASlaveForJobDownload(Job job)
 		throws NoAvailableSlaveException {
 			return getASlaveInternal(job.getFile().getAvailableSlaves(), Transfer.TRANSFER_SENDING_DOWNLOAD);
 	}
@@ -194,15 +194,11 @@ return getASlaveInternal(file.getAvailableSlaves(), Transfer.TRANSFER_SENDING_DO
 		return bestslave;
 	}
 
-	public RemoteSlave getASlaveForJobDownload(LinkedRemoteFileInterface file)
-		throws NoAvailableSlaveException {
-			return getASlaveForJob(file.getAvailableSlaves(),Transfer.TRANSFER_SENDING_DOWNLOAD);
-	}
 
-	public RemoteSlave getASlaveForJobUpload(LinkedRemoteFileInterface file)
+	public RemoteSlave getASlaveForJobUpload(Job job)
 		throws NoAvailableSlaveException {
 			Collection slaves = _sm.getAvailableSlaves();
-			slaves.removeAll(file.getAvailableSlaves());
+			slaves.removeAll(job.getFile().getAvailableSlaves());
 			return getASlaveForJob(slaves,Transfer.TRANSFER_RECEIVING_UPLOAD);
 	}
 

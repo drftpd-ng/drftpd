@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 
+import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -29,7 +30,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveTransfer.java,v 1.10 2004/03/01 00:21:09 mog Exp $
+ * @version $Id: SlaveTransfer.java,v 1.11 2004/03/06 00:39:46 zubov Exp $
  */
 public class SlaveTransfer {
 	class DstXfer extends Thread {
@@ -151,13 +152,17 @@ public class SlaveTransfer {
 			// crc passes if we're not using it
 			return true;
 		}
-		if (dstxfer.getChecksum() == 0
-			|| _file.getCheckSumCached() == dstxfer.getChecksum()
-			|| _file.getCheckSumCached()
-				== _destSlave.getSlave().checkSum(_file.getPath())) {
-			_file.addSlave(_destSlave);
-			return true;
-		}
+		long dstxferCheckSum = dstxfer.getChecksum();
+			try {
+				if (dstxferCheckSum == 0
+					|| _file.getCheckSumCached() == dstxferCheckSum
+					|| _file.getCheckSumFromSlave() == dstxferCheckSum) {
+					_file.addSlave(_destSlave);
+					return true;
+				}
+			} catch (NoAvailableSlaveException e) {
+				return false;
+			}
 		return false;
 	}
 }

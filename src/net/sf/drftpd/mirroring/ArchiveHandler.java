@@ -32,7 +32,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.16 2004/02/23 01:14:39 mog Exp $
+ * @version $Id: ArchiveHandler.java,v 1.17 2004/03/06 00:39:46 zubov Exp $
  */
 public class ArchiveHandler extends Thread {
 	private static final Logger logger = Logger.getLogger(ArchiveHandler.class);
@@ -145,27 +145,26 @@ public class ArchiveHandler extends Thread {
 			return null;
 		}
 		if (_parent.getArchivingList().contains(lrf.getPath())) {
-			logger.info(lrf.getPath()
+			logger.debug(lrf.getPath()
 					+ " is already being handled by another ArchiveHandler");
 			return null;
 		}
 		if (lrf.getDirectories().size() == 0) {
 			if (System.currentTimeMillis() - lrf.lastModified() < _parent
 					.getArchiveAfter()) {
-				//logger.debug(lrf.getPath() + " is too young to archive");
 				return null;
 			}
 			Collection files = lrf.getFiles();
 			if (files.size() == 0) {
 				logger
-						.info(lrf.getPath()
+						.debug(lrf.getPath()
 								+ " does not have any files in it, it is already archived");
 				return null;
 			}
 			try {
 				if (lrf.lookupSFVFile().getStatus().getOffline() > 0) {
 					logger
-							.info(lrf.getPath()
+							.debug(lrf.getPath()
 									+ " does not have all files online, will not archive it");
 					return null;
 				}
@@ -237,7 +236,6 @@ public class ArchiveHandler extends Thread {
 		}
 		logger.debug("The oldest Directory is " + oldDir.getPath());
 		RemoteSlave slave = findDestinationSlave(oldDir);
-		logger.debug("findDestinationSlave() returned " + slave.getName());
 		logger.debug("The slave to archive to is " + slave.getName());
 		ArrayList jobQueue = new ArrayList();
 		for (Iterator iter = oldDir.getFiles().iterator(); iter.hasNext();) {

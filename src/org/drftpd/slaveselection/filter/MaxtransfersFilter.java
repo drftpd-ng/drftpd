@@ -75,12 +75,6 @@ public class MaxtransfersFilter extends Filter {
 			else throw new IllegalArgumentException("Direction was not one of download or upload");
 			if (transfers > _maxTransfers) {
 				iter.remove();
-				logger.debug(
-					"removed "
-						+ slavescore.getRSlave().getName()
-						+ " because it was using too many transfers ("
-						+ transfers
-						+ ")");
 			}
 		}
 	}
