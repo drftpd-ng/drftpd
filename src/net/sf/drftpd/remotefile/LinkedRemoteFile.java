@@ -54,7 +54,7 @@ import org.apache.log4j.Logger;
  * Represents the file attributes of a remote file.
  * 
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.142 2004/05/19 19:09:36 zombiewoof64 Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.143 2004/05/21 18:36:52 zubov Exp $
  */
 public class LinkedRemoteFile
 	implements Serializable, Comparable, LinkedRemoteFileInterface {
@@ -550,25 +550,6 @@ public class LinkedRemoteFile
 			return true;
 		}
 		return false;
-	}
-
-	/**
-	 * Checksums call us with null BaseFtpConnection.
-	 */
-	public RemoteSlave getASlave(char direction, BaseFtpConnection conn)
-		throws NoAvailableSlaveException {
-                return _ftpConfig.getSlaveManager().getASlave(
-			direction,
-			conn,
-			this);
-	}
-
-	/**
-	 * @deprecated inline me
-	 */
-	public RemoteSlave getASlaveForDownload(BaseFtpConnection conn)
-		throws NoAvailableSlaveException {
-		return getASlave(Transfer.TRANSFER_SENDING_DOWNLOAD, conn);
 	}
 
 	public Collection getAvailableSlaves() throws NoAvailableSlaveException {

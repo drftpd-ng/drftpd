@@ -17,12 +17,15 @@
  */
 package org.drftpd.tests;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Collections;
+import java.util.Properties;
 
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
@@ -44,7 +47,7 @@ import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 /**
  * @author mog
- * @version $Id: DummyBaseFtpConnection.java,v 1.2 2004/05/17 11:27:26 mog Exp $
+ * @version $Id: DummyBaseFtpConnection.java,v 1.3 2004/05/21 18:36:52 zubov Exp $
  */
 public class DummyBaseFtpConnection extends BaseFtpConnection {
 
@@ -53,6 +56,7 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 	private DummyServerSocketFactory _serverSocketFactory;
 	private DummySocketFactory _socketFactory;
 	private StringWriter _out;
+	private FtpConfig config;
 
 	private DataConnectionHandler _dch;
 
@@ -89,7 +93,22 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 	}
 
 	public FtpConfig getConfig() {
-		return null;
+		if ( config == null ) {
+			Properties p = new Properties();
+			try {
+				p.load(new FileInputStream("drftpd.conf"));
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+			}
+			try {
+				config = new FtpConfig(p,"drftpd.conf", null);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+			}
+		}
+		return config;
 	}
 
 	public ConnectionManager getConnectionManager() {

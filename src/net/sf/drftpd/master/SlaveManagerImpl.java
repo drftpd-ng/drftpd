@@ -53,6 +53,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.MLSTSerialize;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
+import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Level;
@@ -67,7 +68,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.91 2004/05/21 03:51:32 zubov Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.92 2004/05/21 18:36:50 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -446,23 +447,9 @@ public class SlaveManagerImpl
 	//		return (RemoteSlave) retSlaves.get(num);
 	//	}
 
-	public RemoteSlave getASlave(
-		char direction,
-		BaseFtpConnection conn,
-		LinkedRemoteFileInterface file)
-		throws NoAvailableSlaveException {
-		return _slaveSelectionManager.getASlave(
-			getSlaves(),
-			direction,
-			conn,
-			file);
-	}
-
-	public Collection getAvailableSlaves() throws NoAvailableSlaveException 
-               {
-               
-                ArrayList availableSlaves = new ArrayList();
-		for (Iterator iter = _rslaves.iterator(); iter.hasNext();) {
+	public Collection getAvailableSlaves() throws NoAvailableSlaveException {
+		ArrayList availableSlaves = new ArrayList();
+		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
 			RemoteSlave rslave = (RemoteSlave) iter.next();
 			if (!rslave.isAvailable())
 				continue;
@@ -472,7 +459,6 @@ public class SlaveManagerImpl
 			throw new NoAvailableSlaveException("No slaves online");
 		}
 		return availableSlaves;
-		//return getAvailableSlaves(getSlaves());
 	}
 	
         public ConnectionManager getConnectionManager() {

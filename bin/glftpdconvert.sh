@@ -3,5 +3,5 @@ export CLASSPATH="classes:lib/jdom.jar:lib/martyr.jar:lib/oro.jar:lib/JSX1.0.7.4
 export VMARGS="
 	-Dglftpd.users=/ftp-data/users \
 	-Dglftpd.root=/glftpd \
-	-Dglftpd.passwd=/etc/users"
+	-Dglftpd.passwd=/etc/passwd"
 exec java ${VMARGS} $@ net.sf.drftpd.master.usermanager.UserManagerConverter net.sf.drftpd.master.usermanager.glftpd.GlftpdUserManager net.sf.drftpd.master.usermanager.jsx.JSXUserManager

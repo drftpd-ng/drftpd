@@ -71,8 +71,6 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 	 */
 	public abstract void deleteOthers(Set destSlaves);
 	public abstract long dirSize();
-	public abstract RemoteSlave getASlave(char direction, BaseFtpConnection conn)
-		throws NoAvailableSlaveException;
 	public abstract Collection getAvailableSlaves()
 		throws NoAvailableSlaveException;
 	/**
