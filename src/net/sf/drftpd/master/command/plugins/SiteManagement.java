@@ -17,6 +17,16 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+
 import net.sf.drftpd.event.ConnectionEvent;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -26,22 +36,10 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.lang.reflect.Field;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ResourceBundle;
 
 
 /**
@@ -71,8 +69,13 @@ public class SiteManagement implements CommandHandlerFactory, CommandHandler {
                 return new Reply(200, e.getMessage());
             }
         }
-
-        ArrayList files = new ArrayList(dir.getMap().values());
+    
+        List files;
+        if(dir.isFile()) {
+        	files = Collections.singletonList(dir);
+        } else {
+        	files = new ArrayList(dir.getMap().values());
+        }
         Collections.sort(files);
 
         for (Iterator iter = files.iterator(); iter.hasNext();) {

@@ -207,6 +207,8 @@ public class Job {
             if (_slaveTransfer != null) {
                 throw new IllegalStateException("Job is already transferring");
             }
+            if(getFile().getSlaves().contains(_destSlave))
+            	throw new IllegalStateException("File already exists on target slave");
 
             _sourceSlave = sourceSlave;
             _destSlave = destSlave;
