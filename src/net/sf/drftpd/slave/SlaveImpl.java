@@ -63,7 +63,7 @@ import se.mog.io.File;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.88 2004/04/28 16:05:56 zombiewoof64 Exp $
+ * @version $Id: SlaveImpl.java,v 1.89 2004/05/05 04:43:15 zombiewoof64 Exp $
  */
 public class SlaveImpl
 	extends UnicastRemoteObject
@@ -237,15 +237,6 @@ public class SlaveImpl
 		System.gc();
 	}
         
-        public InetAddress getPeerAddress()
-        {
-            try {
-                return InetAddress.getLocalHost();
-            } catch (Exception e) {
-                return null;
-            }
-        }
-
 	public void addTransfer(TransferImpl transfer) {
 		synchronized (_transfers) {
 			_transfers.add(transfer);

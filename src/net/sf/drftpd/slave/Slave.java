@@ -29,14 +29,12 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 /**
  * Slave interface, this interface is used to initate transfers to and from remote slaves.
  * @author Morgan Christiansson <mog@linux.nu>
- * @version $Id: Slave.java,v 1.29 2004/04/28 16:05:56 zombiewoof64 Exp $
+ * @version $Id: Slave.java,v 1.30 2004/05/05 04:43:15 zombiewoof64 Exp $
  */
 public interface Slave extends Remote {
 	public long checkSum(
 		String path)
 		throws RemoteException, IOException;
-        
-        public InetAddress getPeerAddress() throws RemoteException;
         
 	public Transfer listen(boolean encrypted) throws RemoteException, IOException;
 	public Transfer connect(InetSocketAddress addr, boolean encrypted) throws RemoteException;

@@ -69,7 +69,7 @@ import java.security.MessageDigest;
 
 /**
  * @author mog
- * @version $Id: SocketSlaveImpl.java,v 1.7 2004/05/02 19:34:51 zombiewoof64 Exp $
+ * @version $Id: SocketSlaveImpl.java,v 1.8 2004/05/05 04:43:15 zombiewoof64 Exp $
  */
 public class SocketSlaveImpl
 extends Thread
@@ -241,10 +241,6 @@ implements Slave, Unreferenced {
     //*********************************
 
     public InetAddress getAddress() {
-        return _sock.getInetAddress();
-    }
-    
-    public InetAddress getPeerAddress() {
         return _sock.getInetAddress();
     }
     
