@@ -10,8 +10,10 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.rmi.server.RMISocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.server.Unreferenced;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
@@ -26,6 +28,7 @@ import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.SlaveManager;
+import net.sf.drftpd.permission.InetAddrRMIServerSocketFactory;
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import se.mog.io.File;
@@ -49,13 +52,39 @@ public class SlaveImpl
 	private String slavemanagerurl;
 	private String name;
 
-	public SlaveImpl(Properties cfg) throws RemoteException {
-		super();
-		this.slavemanagerurl = cfg.getProperty("slavemanager.url");
+	public SlaveImpl(Properties cfg, InetAddress inetAddress) throws RemoteException {
+		super(0, RMISocketFactory.getDefaultSocketFactory(), new InetAddrRMIServerSocketFactory(inetAddress));
+		this.slavemanagerurl = "//"+cfg.getProperty("master.host")+"/"+cfg.getProperty("master.bindname");
 		this.name = cfg.getProperty("slave.name");
 
+		// START: RootBasket
+		ArrayList rootStrings = new ArrayList();
+		for (int i = 0; ; i++) {
+			String rootString = System.getProperty("slave.root."+i);
+			if(rootString == null) break;
+			
+			long minSpaceFree;
+			try {
+				minSpaceFree = Long.parseLong(cfg.getProperty("slave.root."+i+".minspacefree"));
+			} catch(NumberFormatException ex) {
+				minSpaceFree = 0;
+			}
+
+			int priority;
+			try {
+				priority = Integer.parseInt(cfg.getProperty("slave.root."+i+".priority"));
+			} catch(NumberFormatException ex) {
+				priority = 0;
+			}
+
+			System.out.println("root."+i+": "+rootString);
+			rootStrings.add(new Root(rootString, minSpaceFree, priority));
+		}
+		// END: RootBasket
+		
+		
 		try {
-			roots = new RootBasket(cfg.getProperty("slave.roots"));
+			roots = new RootBasket(rootStrings);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			System.exit(0);
@@ -110,9 +139,10 @@ public class SlaveImpl
 				return;
 			}
 
+			InetAddress masterAddr = InetAddress.getByName(cfg.getProperty("slavemanager.host"));
 			Slave slave;
 			try {
-				slave = new SlaveImpl(cfg);
+				slave = new SlaveImpl(cfg, masterAddr);
 			} catch (Throwable ex) {
 				ex.printStackTrace();
 				System.exit(0);

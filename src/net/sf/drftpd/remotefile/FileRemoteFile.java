@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import net.sf.drftpd.InvalidDirectoryException;
+import net.sf.drftpd.slave.Root;
 import net.sf.drftpd.slave.RootBasket;
 
 /**
@@ -171,8 +172,8 @@ public class FileRemoteFile extends RemoteFile {
 		}
 		Vector filefiles = new Vector();
 		for (Iterator iter = rootBasket.iterator(); iter.hasNext();) {
-			File root = (File) iter.next();
-			File file = new File(root+"/"+path);
+			Root root = (Root)iter.next();
+			File file = new File(root.getPath()+"/"+path);
 			if(!file.exists()) continue;
 			String tmpFiles[] = file.list(); //returns null if not a dir, blah!
 

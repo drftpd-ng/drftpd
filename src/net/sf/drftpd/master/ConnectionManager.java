@@ -6,8 +6,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.BindException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -116,12 +118,19 @@ public class ConnectionManager {
 		} catch (Throwable e) {
 			throw new FatalException(e);
 		}
+		
+		InetAddress inetAddress;
+		try {
+			inetAddress = InetAddress.getByName(cfg.getProperty("master.host"));
+		} catch (UnknownHostException e) {
+			throw new FatalException(e);
+		}
 
 		String localslave = cfg.getProperty("master.localslave", "false");
 		if (localslave.equalsIgnoreCase("true")) {
 			Slave slave;
 			try {
-				slave = new SlaveImpl(cfg);
+				slave = new SlaveImpl(cfg, inetAddress);
 			} catch (RemoteException ex) {
 				ex.printStackTrace();
 				System.exit(0);

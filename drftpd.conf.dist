@@ -2,8 +2,14 @@
 # in NullPointerException's
 
 slavemanager.url=//localhost/slavemanager
+master.host=localhost
+master.bindname=slavemanager
 
 slave.roots=site
+slave.root.1=site
+slave.root.1.minfreespace=0
+slave.root.1.prio=0
+
 slave.name=moogle
 
 # below is the configuration for the master
