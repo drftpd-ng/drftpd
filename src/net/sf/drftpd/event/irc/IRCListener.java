@@ -96,7 +96,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.94 2004/03/21 04:31:32 zubov Exp $
+ * @version $Id: IRCListener.java,v 1.95 2004/03/21 06:20:54 zubov Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -117,6 +117,8 @@ public class IRCListener implements FtpListener, Observer {
 			return _section;
 		}
 	}
+
+	private String _commands;
 
 	public static final ReplacerEnvironment GLOBAL_ENV =
 		new ReplacerEnvironment();
@@ -708,7 +710,7 @@ public class IRCListener implements FtpListener, Observer {
 		_autoJoin = new AutoJoin(_conn, _channelName, _key);
 		new AutoResponder(_conn);
 		_conn.addCommandObserver(this);
-
+		_commands = "";
 		for (int i = 1;; i++) {
 			String classname = ircCfg.getProperty("irc.plugins." + i);
 			if (classname == null)
@@ -722,6 +724,10 @@ public class IRCListener implements FtpListener, Observer {
 						.getConstructor(new Class[] { IRCListener.class })
 						.newInstance(new Object[] { this });
 				_conn.addCommandObserver(obs);
+				IRCPluginInterface plugin = (IRCPluginInterface) obs;
+				if (plugin.getCommands() != null) {
+					_commands = _commands + plugin.getCommands() + " ";
+				}
 			} catch (Exception e) {
 				logger.warn("", e);
 				throw new RuntimeException(
@@ -996,15 +1002,9 @@ public class IRCListener implements FtpListener, Observer {
 				//only accept messages from _channelName
 				if (!msgc.getDest().equalsIgnoreCase(_channelName))
 					return;
-
+				logger.debug("_commands = " + _commands);
 				if (msg.equals("!help")) {
-					say("Available commands: !bw !slaves !speed !who");
-				} else if (msg.equals("!df")) {
-					try {
-						updateDF(observer, msgc);
-					} catch (FormatterException e) {
-						say("[df] FormatterException: " + e.getMessage());
-					}
+					say("Available commands: " + _commands);
 				}
 			}
 			// Don't bother martyr with our exceptions.
@@ -1012,16 +1012,6 @@ public class IRCListener implements FtpListener, Observer {
 		} catch (RuntimeException t) {
 			logger.log(Level.WARN, "Exception in IRC message handler", t);
 		}
-	}
-
-	private void updateDF(Observable observer, MessageCommand msgc)
-		throws FormatterException {
-		SlaveStatus status = getSlaveManager().getAllStatus();
-		ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
-
-		fillEnvSpace(env, status);
-
-		say(ReplacerUtils.jprintf("diskfree", env, IRCListener.class));
 	}
 
 }

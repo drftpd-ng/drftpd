@@ -38,13 +38,17 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Slaves.java,v 1.3 2004/03/01 00:21:08 mog Exp $
+ * @version $Id: Slaves.java,v 1.4 2004/03/21 06:20:54 zubov Exp $
  */
-public class Slaves extends GenericAutoService {
+public class Slaves extends GenericAutoService implements IRCPluginInterface {
 
 	private static final Logger logger = Logger.getLogger(Slaves.class);
 
 	private IRCListener _listener;
+	
+	public String getCommands() {
+		return "!slaves";
+	}
 
 	public Slaves(IRCListener listener) {
 		super(listener.getIRCConnection());

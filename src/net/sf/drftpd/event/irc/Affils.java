@@ -28,7 +28,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 /**
  * @author zubov
  */
-public class Affils extends GenericCommandAutoService {
+public class Affils extends GenericCommandAutoService implements IRCPluginInterface {
 
 	private ConnectionManager _cm;
 	private static final Logger logger = Logger.getLogger(Affils.class);
@@ -56,4 +56,9 @@ public class Affils extends GenericCommandAutoService {
 			}
 		}
 	}
+
+	public String getCommands() {
+		return "!affils";
+	}
+
 }

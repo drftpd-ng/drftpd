@@ -45,7 +45,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
  * @author zubov
   * @version $Id
  */
-public class Stats extends GenericCommandAutoService {
+public class Stats extends GenericCommandAutoService implements IRCPluginInterface {
 
 	private ConnectionManager _cm;
 	private static final Logger logger = Logger.getLogger(Bnc.class);
@@ -53,6 +53,10 @@ public class Stats extends GenericCommandAutoService {
 	public Stats(IRCListener ircListener) {
 		super(ircListener.getIRCConnection());
 		_cm = ircListener.getConnectionManager();
+	}
+
+	public String getCommands() {
+		return "!{al,wk,month,day}{up,dn}";
 	}
 
 	protected void updateCommand(InCommand command) {

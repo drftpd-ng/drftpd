@@ -41,10 +41,10 @@ import f00f.net.irc.martyr.commands.MessageCommand;
  
 /**
  * @author flowman
- * @version $Id: Bandwidth.java,v 1.1 2004/03/05 18:31:13 flowman Exp $
+ * @version $Id: Bandwidth.java,v 1.2 2004/03/21 06:20:54 zubov Exp $
  */
 
-public class Bandwidth extends GenericCommandAutoService {
+public class Bandwidth extends GenericCommandAutoService implements IRCPluginInterface {
 	
 	private IRCListener _listener;
 	
@@ -195,5 +195,8 @@ public class Bandwidth extends GenericCommandAutoService {
 		}catch (Exception e) {
 			logger.debug("",e);
 		}
+	}
+	public String getCommands() {
+		return "!bw !speed";
 	}
 }

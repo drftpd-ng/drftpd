@@ -43,9 +43,9 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Who.java,v 1.4 2004/02/23 01:14:35 mog Exp $
+ * @version $Id: Who.java,v 1.5 2004/03/21 06:20:54 zubov Exp $
  */
-public class Who extends GenericAutoService {
+public class Who extends GenericAutoService implements IRCPluginInterface {
 	private static final Logger logger = Logger.getLogger(Who.class);
 
 	private IRCListener _listener;
@@ -53,6 +53,10 @@ public class Who extends GenericAutoService {
 	public Who(IRCListener listener) {
 		super(listener.getIRCConnection());
 		_listener = listener;
+	}
+
+	public String getCommands() {
+		return "!who";
 	}
 
 	private FtpConfig getConfig() {

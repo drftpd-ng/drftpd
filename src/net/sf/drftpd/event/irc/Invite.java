@@ -33,11 +33,15 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 /**
  * @author mog
  *
- * @version $Id: Invite.java,v 1.7 2004/02/10 00:03:05 mog Exp $
+ * @version $Id: Invite.java,v 1.8 2004/03/21 06:20:54 zubov Exp $
  */
-public class Invite extends GenericCommandAutoService {
+public class Invite extends GenericCommandAutoService implements IRCPluginInterface {
 	private static final Logger logger = Logger.getLogger(Invite.class);
 
+	public String getCommands() {
+		return "!invite(msg)";
+	}
+	
 	private ConnectionManager _cm;
 
 	public Invite(IRCListener ircListener) {

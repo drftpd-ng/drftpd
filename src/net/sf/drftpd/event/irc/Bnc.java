@@ -28,7 +28,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 /**
  * @author zubov
  */
-public class Bnc extends GenericCommandAutoService {
+public class Bnc extends GenericCommandAutoService implements IRCPluginInterface {
 
 	private ConnectionManager _cm;
 	private static final Logger logger = Logger.getLogger(Bnc.class);
@@ -63,5 +63,8 @@ public class Bnc extends GenericCommandAutoService {
 	}catch (Exception e) {
 		logger.debug("",e);
 	}
+	}
+	public String getCommands() {
+		return "!bnc";
 	}
 }
