@@ -287,8 +287,9 @@ public class Slave {
         String absPath = _roots.getFile(path).getAbsolutePath();
         logger.warn("Extracting ID3Tag info from: " + absPath);
 
+        MP3File mp3 = null;
         try {
-            MP3File mp3 = new MP3File(absPath, "r");
+            mp3 = new MP3File(absPath, "r");
 
             if (!mp3.hasID3v1Tag) {
                 mp3.close();
@@ -303,6 +304,8 @@ public class Slave {
             logger.warn("FileNotFoundException: ", e);
         } catch (IOException e) {
             logger.warn("IOException: ", e);
+        } finally {
+            if (mp3 != null) mp3.close();
         }
 
         return null;

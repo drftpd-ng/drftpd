@@ -1,33 +1,35 @@
-// Just a drfptd package
 package net.sf.drftpd.util;
 
+//Just a drfptd package
+
+
 /**
- * Blowfish.java version 1.00.00
- * 
- * Code Written by k2r (k2r.contact@gmail.com)
- * 
- * Tks to Mouser for his precious help.
- * Tks to Murx for correct Padding and Long key.
- * 
- * Use this code is very simple :
- * 
- * Use "Encrypt" with the text to encrypt
- * 		-> The function will encrypt and return the text with +OK at the biginning"
- * 
- * Use "Decrypt" with the text to decrypt
- * 		--> The text must include the +OK or mcps at the front"
- * 
- * There are a good exemple in "Main" function
- * 
- * To Use Key > 16 char, you must update two jar files in your jre or jdk.
- * 		Java Cryptography Extension (JCE)
- * 		Unlimited Strength Jurisdiction Policy Files 1.4.2
- * 		http://java.sun.com/j2se/1.4.2/download.html#docs
- * Update the two files in jre\lib\security
- * 		-> local_policy.jar
- * 		-> US_export_policy.jar
- * 
- */
+* Blowfish.java version 1.00.00
+* 
+* Code Written by k2r (k2r.contact@gmail.com)
+* 
+* Tks to Mouser for his precious help.
+* Tks to Murx for correct Padding and Long key.
+* 
+* Use this code is very simple :
+* 
+* Use "Encrypt" with the text to encrypt
+* 		-> The function will encrypt and return the text with +OK at the biginning"
+* 
+* Use "Decrypt" with the text to decrypt
+* 		--> The text must include the +OK or mcps at the front"
+* 
+* There are a good exemple in "Main" function
+* 
+* To Use Key > 16 char, you must update two jar files in your jre or jdk.
+* 		Java Cryptography Extension (JCE)
+* 		Unlimited Strength Jurisdiction Policy Files 1.4.2
+* 		http://java.sun.com/j2se/1.4.2/download.html#docs
+* Update the two files in jre\lib\security
+* 		-> local_policy.jar
+* 		-> US_export_policy.jar
+* 
+*/
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
@@ -41,6 +43,7 @@ public class Blowfish {
 	/* Constructor of Blowfish class
 	 * Key param
 	 * */
+
 	public Blowfish(String key) {
 
 		byte[]	gkey = (key).getBytes();
@@ -90,25 +93,14 @@ public class Blowfish {
 		
 		// B64 DECRYPTION (mircryption needed)
 		byte[] Again = B64tobyte(encrypt); 
-		// Make string % 8
-		int Taille = Again.length;
-		int Limit = 8 - (Again.length % 8);
-		byte[] buff = new byte[Taille + Limit];
 		
-		if(Again.length % 8 != 0 || Again.length == 8) {
-			for (int i = 0; i < Taille; i++)
-				buff[i] = Again[i];
-
-			for (int i = Taille; i < Taille + Limit; i++)
-				buff[i] = 0x00;
-		} else { buff = Again;}
-		
-		byte[] decrypted = new byte[2048];	
+		byte[] decrypted = null;
 		
 		try {
 			// Mode cypher in Decrypt mode
 			ecipher.init(Cipher.DECRYPT_MODE, skeySpec);
-			decrypted = ecipher.doFinal(buff);
+			decrypted = ecipher.doFinal(Again);
+		
 			// Recup exact length
 			int leng = 0;
 			while(decrypted[leng] != 0x0) {leng++;}
@@ -121,7 +113,12 @@ public class Blowfish {
 			}			
 			//Force again the encoding result string
 			return new String(Final,"8859_1");
-		} catch (Exception e) {return e.getMessage();}
+		} catch (Exception e) {
+			//return e.getMessage();
+			// Exception, not necessary padding, return directly
+			// The decypted string
+			return new String(decrypted,"8859_1");
+		}
 	}
 
 	public static byte[] B64tobyte(String ec) {
@@ -225,4 +222,3 @@ public class Blowfish {
 	private Cipher ecipher;
 	private SecretKeySpec skeySpec;
 }
-
