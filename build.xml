@@ -143,12 +143,20 @@
       <include name="**/*.java"/>
       <patternset refid="excludes"/>
   	  <patternset refid="slaveclasses"/>
+      <classpath>
+        <pathelement path="${classpath}"/>
+        <pathelement location="classes"/>
+      </classpath>
   	</javac>
 	<echo>Compiling 1.5 archive files</echo>
   	<javac srcdir="${sourceDir}-archive" destdir="${outputDir}" debug="true" source="1.5">
       <include name="**/*.java"/>
       <patternset refid="excludes"/>
   	  <patternset refid="slaveclasses"/>
+  	  <classpath>
+	    <pathelement path="${classpath}"/>
+        <pathelement location="classes"/>
+      </classpath>
   	</javac>
     <copy todir="${outputDir}">
       <fileset dir="${sourceDir}">
