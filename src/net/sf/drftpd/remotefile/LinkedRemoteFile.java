@@ -851,11 +851,18 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 			} // file != null
 		}
 
-		//TODO remove all slaves not in mergedir.getFiles()
+		// remove all slaves not in mergedir.getFiles()
 		for (Iterator i = getFiles().iterator(); i.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) i.next();
-			if (!mergedir.hasFile(file.getName())) {
-				logger.info(file.getPath()+" deleted from "+rslave.getName());
+			LinkedRemoteFile mergefile;
+			try {
+				mergefile = mergedir.getFile(file.getName());
+			} catch (FileNotFoundException e) {
+				logger.warn(file.getPath()+" deleted(1) from "+rslave.getName());
+				continue;
+			}
+			if (mergefile.getSlaves().contains(rslave)) {
+				logger.warn(file.getPath()+" deleted(2) from "+rslave.getName());
 				file.unmerge(rslave);
 			}
 		}

@@ -79,7 +79,7 @@ public class VirtualDirectory {
 	private static String padToLength(String value, int length) {
 		if(value.length() >= length) return value;
 		String padding = "          ";
-		assert value.length() > length : "padding must be longer than length";
+		assert padding.length() > length : "padding must be longer than length";
 		return padding.substring(0, length-value.length())+value;
 	}
 	/**
