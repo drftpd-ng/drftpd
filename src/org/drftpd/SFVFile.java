@@ -18,6 +18,7 @@
 package org.drftpd;
 
 import net.sf.drftpd.FatalException;
+import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.NoSFVEntryException;
 
 import java.io.BufferedReader;
@@ -75,11 +76,22 @@ public class SFVFile extends AbstractSFVFile {
     public SFVStatus getStatus() {
         int offline = 0;
         int present = 0;
+        long sfvChecksum, fileChecksum;
 
         for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
-
-            if (file.length() != 0) {
+            
+            try {
+                sfvChecksum = getChecksum(file.getName());
+            } catch (NoSFVEntryException e) {
+                continue;
+            }
+            try {
+                fileChecksum = file.getCheckSum();
+            } catch (NoAvailableSlaveException e1) {
+                continue;
+            }
+            if (fileChecksum == sfvChecksum) {
                 present++;
 
                 if (!file.isAvailable()) {

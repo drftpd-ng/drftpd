@@ -1,5 +1,6 @@
-2005/02/21 Jamal James <teflon114@gmail.com>
+2005/02/23 Jamal James <teflon114@gmail.com>
 * Fixed OnConnect
+* Possible fix for multiple HALFWAY and COMPLETE SiteBot announcements.
 
 2005/02/21 Jamal James <teflon114@gmail.com>
 * Added code to deny MKD of a dir thats already nuked
