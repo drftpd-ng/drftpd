@@ -1,3 +1,8 @@
+2005/02/13 Matt Zimmerman <zubov@users.sourceforge.net>
+* Updated perms.conf.dist to reflect login_prompt and secure(SSL/TLS)
+* Login statistics now work properly
+* RC2 released
+
 2005/02/12 Jamal James <teflon114@gmail.com>
 * Fixed SiteBot bug where it would not respond to any commands after site reload
 * Created permissions for irc commands to irc.conf
