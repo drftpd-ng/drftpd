@@ -77,7 +77,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  * @author zubov
- * @version $Id: RemoteSlave.java,v 1.63 2004/11/06 06:36:30 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.64 2004/11/06 06:51:15 zubov Exp $
  */
 public class RemoteSlave implements Runnable, Comparable, Serializable {
     private static final long serialVersionUID = -6973935289361817125L;
@@ -435,6 +435,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
             logger.error("IOException deleting file, check logs for specific error",
                 e);
         } catch (SlaveUnavailableException e) {
+            setOffline(e);
             addQueueDelete(path);
         }
     }
@@ -447,9 +448,10 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
             String index = issueRenameToSlave(from, toDirPath, toName);
             fetchResponse(index);
         } catch (IOException e) {
-            setOffline(e.getMessage());
+            setOffline(e);
             addQueueRename(from, toDirPath + "/" + toName);
         } catch (SlaveUnavailableException e) {
+            setOffline(e);
             addQueueRename(from, toDirPath + "/" + toName);
         }
     }
@@ -543,7 +545,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
 
                     return index;
                 } catch (EmptyStackException e) {
-                    logger.debug(
+                    logger.error(
                         "Too many commands sent, need to wait for the slave to process commands");
                 }
 
@@ -553,7 +555,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
                 }
             }
         }
-
+        logger.error("Went offline fetching an index");
         throw new SlaveUnavailableException("Went offline fetching an index");
     }
 
@@ -889,7 +891,8 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
             _sout.writeObject(rac);
             _sout.flush();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            logger.error("error in sendCommand()",e);
+            setOffline(e);
         }
     }
 
