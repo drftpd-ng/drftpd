@@ -100,14 +100,37 @@ public class Find implements CommandHandlerFactory, CommandHandler {
 			return null;
 		}
 	}
+	
+	private static FtpReply getHelpMsg() {
+		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+		response.addComment("SITE FIND <options> -action <action>");
+		response.addComment("Options: -user <user> -group <group> -nogroup -nouser"); 
+		response.addComment("Options: -mtime [-]n -type [f|d] -slave <slave> -size [-]size");
+		response.addComment("Options: -name <name>(* for wildcard) -incomplete"); 
+		response.addComment("Actions: print, wipe, delete");
+		response.addComment("Multipe options and actions");
+		response.addComment("are allowed. If multiple options are given a file must match all");
+		response.addComment("options for action to be taken."); 		
+		return response;
+	}
+	
+	private static FtpReply getShortHelpMsg() {
+		FtpReply response = (FtpReply) FtpReply.RESPONSE_200_COMMAND_OK.clone();
+		response.addComment("Usage: SITE FIND <options> -action <action>");
+		response.addComment("SITE FIND -help for more info.");
+		return response;
+	}
+	
 	public FtpReply execute(BaseFtpConnection conn) {
 		FtpRequest request = conn.getRequest();
 		if (!request.hasArgument()) {
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+			//return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+			return getShortHelpMsg();
 		}
 		String args[] = request.getArgument().split(" ");
 		if (args.length == 0) {
-			return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+			//return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+			return getShortHelpMsg();
 		}
 		Collection c = Arrays.asList(args);
 		ArrayList options = new ArrayList();
@@ -179,6 +202,8 @@ public class Find implements CommandHandlerFactory, CommandHandler {
 					files = false;
 				else
 					return FtpReply.RESPONSE_501_SYNTAX_ERROR;
+			} else if (arg.toLowerCase().equals("-help")) {
+				return getHelpMsg();
 			} else if (arg.toLowerCase().equals("-nouser")) {
 				options.add(new OptionUser("nobody"));
 			} else if (arg.toLowerCase().equals("-incomplete")) {
