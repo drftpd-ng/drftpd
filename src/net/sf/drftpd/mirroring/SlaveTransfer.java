@@ -43,8 +43,8 @@ public class SlaveTransfer {
     private RemoteSlave _destSlave;
     private LinkedRemoteFileInterface _file;
     private RemoteSlave _srcSlave;
-    private RemoteTransfer destTransfer = null;
-    private RemoteTransfer srcTransfer = null;
+    private RemoteTransfer _destTransfer = null;
+    private RemoteTransfer _srcTransfer = null;
 
     /**
      * Slave to Slave Transfers
@@ -57,11 +57,11 @@ public class SlaveTransfer {
     }
 
     long getTransfered() {
-        return (srcTransfer.getTransfered() + destTransfer.getTransfered()) / 2;
+        return (_srcTransfer.getTransfered() + _destTransfer.getTransfered()) / 2;
     }
 
     int getXferSpeed() {
-        return (srcTransfer.getXferSpeed() + destTransfer.getXferSpeed()) / 2;
+        return (_srcTransfer.getXferSpeed() + _destTransfer.getXferSpeed()) / 2;
     }
 
     /**
@@ -71,7 +71,7 @@ public class SlaveTransfer {
         try {
             String destIndex = _destSlave.issueListenToSlave(false);
             ConnectInfo ci = _destSlave.fetchTransferResponseFromIndex(destIndex);
-            destTransfer = _destSlave.getTransfer(ci.getTransferIndex());
+            _destTransfer = _destSlave.getTransfer(ci.getTransferIndex());
         } catch (SlaveUnavailableException e) {
             throw new SourceSlaveException(e);
         } catch (RemoteIOException e) {
@@ -80,10 +80,10 @@ public class SlaveTransfer {
 
         try {
             String srcIndex = _srcSlave.issueConnectToSlave(new InetSocketAddress(
-                        destTransfer.getAddress().getAddress(),
-                        destTransfer.getLocalPort()), false);
+                        _destSlave.getInetAddress(),
+                        _destTransfer.getLocalPort()), false);
             ConnectInfo ci = _srcSlave.fetchTransferResponseFromIndex(srcIndex);
-            srcTransfer = _srcSlave.getTransfer(ci.getTransferIndex());
+            _srcTransfer = _srcSlave.getTransfer(ci.getTransferIndex());
         } catch (SlaveUnavailableException e) {
             throw new DestinationSlaveException(e);
         } catch (RemoteIOException e) {
@@ -91,7 +91,7 @@ public class SlaveTransfer {
         }
 
         try {
-            destTransfer.receiveFile(_file.getPath(), 'I', 0);
+            _destTransfer.receiveFile(_file.getPath(), 'I', 0);
         } catch (IOException e1) {
             throw new DestinationSlaveException(e1);
         } catch (SlaveUnavailableException e1) {
@@ -99,7 +99,7 @@ public class SlaveTransfer {
         }
 
         try {
-            srcTransfer.sendFile(_file.getPath(), 'I', 0);
+            _srcTransfer.sendFile(_file.getPath(), 'I', 0);
         } catch (IOException e2) {
             throw new SourceSlaveException(e2);
         } catch (SlaveUnavailableException e2) {
@@ -111,12 +111,12 @@ public class SlaveTransfer {
 
         while (!(srcIsDone && destIsDone)) {
             try {
-                if (srcTransfer.getTransferStatus().isFinished()) {
+                if (_srcTransfer.getTransferStatus().isFinished()) {
                     srcIsDone = true;
                 }
             } catch (TransferFailedException e7) {
                 try {
-                    destTransfer.abort();
+                    _destTransfer.abort();
                 } catch (SlaveUnavailableException e8) {
                 } catch (IOException e8) {
                 }
@@ -124,7 +124,7 @@ public class SlaveTransfer {
                 throw new SourceSlaveException(e7);
             } catch (SlaveUnavailableException e7) {
                 try {
-                    destTransfer.abort();
+                    _destTransfer.abort();
                 } catch (SlaveUnavailableException e8) {
                 } catch (IOException e8) {
                 }
@@ -133,12 +133,12 @@ public class SlaveTransfer {
             }
 
             try {
-                if (destTransfer.getTransferStatus().isFinished()) {
+                if (_destTransfer.getTransferStatus().isFinished()) {
                     destIsDone = true;
                 }
             } catch (TransferFailedException e6) {
                 try {
-                    srcTransfer.abort();
+                    _srcTransfer.abort();
                 } catch (SlaveUnavailableException e8) {
                 } catch (IOException e8) {
                 }
@@ -146,7 +146,7 @@ public class SlaveTransfer {
                 throw new DestinationSlaveException(e6);
             } catch (SlaveUnavailableException e6) {
                 try {
-                    srcTransfer.abort();
+                    _srcTransfer.abort();
                 } catch (SlaveUnavailableException e8) {
                 } catch (IOException e8) {
                 }
@@ -167,7 +167,7 @@ public class SlaveTransfer {
             return true;
         }
 
-        long dstxferCheckSum = destTransfer.getChecksum();
+        long dstxferCheckSum = _destTransfer.getChecksum();
 
         try {
             if ((dstxferCheckSum == 0) ||

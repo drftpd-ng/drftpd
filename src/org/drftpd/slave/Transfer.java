@@ -40,7 +40,7 @@ import se.mog.io.File;
 
 /**
  * @author zubov
- * @version $Id: Transfer.java,v 1.5 2004/11/09 21:49:59 zubov Exp $
+ * @version $Id$
  */
 public class Transfer {
     private static final Logger logger = Logger.getLogger(Transfer.class);
@@ -190,7 +190,7 @@ public class Transfer {
             _out = new CheckedOutputStream(_out, _checksum);
         }
 
-        System.out.println("UL:" + dirname + File.separator + filename);
+        System.out.println("UL:" + root + "/" +dirname + "/" + filename);
 
         try {
             TransferStatus status = transfer();

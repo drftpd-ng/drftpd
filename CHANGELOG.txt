@@ -3,6 +3,7 @@
 * Added site find -incomplete [min % incomplete] and fixed
   site find -action wipe with multiple entries to wipe.
 * Fixed FinishReleaseOnSlaves ArchiveType
+* Fixed slave2slave transfers.
 
 2004/11/14 Morgan Christiansson <drftpd@mog.se>
 * Changed DELE to update stats aswell as credits.

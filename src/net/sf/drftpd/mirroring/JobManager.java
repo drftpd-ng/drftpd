@@ -279,8 +279,7 @@ public class JobManager implements Runnable {
             } else {
                 //sourceSlave.setOffline(
                 //    "Error on slave during slave2slave transfer, check logs");
-                logger.error("Error on slave during slave2slave transfer - " +
-                    e);
+                logger.error("Error on slave during slave2slave transfer", e);
             }
 
             return;
