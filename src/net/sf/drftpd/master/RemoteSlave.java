@@ -77,7 +77,7 @@ import java.util.StringTokenizer;
 /**
  * @author mog
  * @author zubov
- * @version $Id: RemoteSlave.java,v 1.61 2004/11/05 19:16:16 zubov Exp $
+ * @version $Id: RemoteSlave.java,v 1.62 2004/11/06 06:04:02 zubov Exp $
  */
 public class RemoteSlave implements Runnable, Comparable, Serializable {
     private static final long serialVersionUID = -6973935289361817125L;
@@ -558,17 +558,21 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
         return ((AsyncResponseMaxPath) fetchResponse(maxPathIndex)).getMaxPath();
     }
 
+    
+    public AsyncResponse fetchResponse(String index) throws IOException, SlaveUnavailableException {
+        return fetchResponse(index,10000);
+    }
     /**
      * returns an AsyncResponse for that index and throws any exceptions
      */
-    public AsyncResponse fetchResponse(String index)
+    public AsyncResponse fetchResponse(String index, int wait)
         throws IOException, SlaveUnavailableException {
         AsyncResponse rar = null;
         long total = System.currentTimeMillis();
 
         synchronized (_indexWithCommands) {
             while (isOnline()) {
-                if ((System.currentTimeMillis() - total) >= 10000) {
+                if (wait != 0 && (System.currentTimeMillis() - total) >= wait) {
                     returnIndex(index);
                     throw new SlaveUnavailableException(
                         "Slave has taken too long while processing command");
@@ -913,7 +917,7 @@ public class RemoteSlave implements Runnable, Comparable, Serializable {
 
     public void fetchRemergeResponseFromIndex(String index)
         throws IOException, SlaveUnavailableException {
-        fetchResponse(index);
+        fetchResponse(index,0);
     }
 
     public boolean isOnlinePing() {
