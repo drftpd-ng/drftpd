@@ -38,7 +38,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.45 2004/04/20 04:11:51 mog Exp $
+ * @version $Id: TransferImpl.java,v 1.46 2004/04/21 03:35:53 mog Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private static final Logger logger = Logger.getLogger(TransferImpl.class);
@@ -203,7 +203,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 
 		_slave.addTransfer(this);
 		try {
-			byte[] buff = new byte[_slave.getBufferSize()];
+			byte[] buff = new byte[Math.max(_slave.getBufferSize(), 65535)];
 			int count;
 			while ((count = _in.read(buff)) != -1 && !_abort) {
 				_transfered += count;

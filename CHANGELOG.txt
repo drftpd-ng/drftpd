@@ -1,3 +1,8 @@
+2004/04/20 Morgan Christiansson <drftpd@mog.se>
+* Fixed byte[] buffer so that it will always be at least 65535.
+  Thanks to hgr_ for the report.
+* Updated OnConnect.
+
 2004/04/19 Morgan Christiansson <drftpd@mog.se>
 * Changed default send/receive-buffersize behaviour, if buffersize is 0,
   no setXxxBufferSize() call is made and the O/S can do it's own automatic tuning.
