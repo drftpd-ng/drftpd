@@ -207,4 +207,9 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 	public abstract Collection<LinkedRemoteFileInterface> getFiles2();
 
 	public abstract List<LinkedRemoteFileInterface> getAllParentFiles();
+
+	/**
+	 * @return
+	 */
+	public abstract boolean isValid();
 }

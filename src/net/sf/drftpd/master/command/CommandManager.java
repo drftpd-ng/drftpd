@@ -78,7 +78,7 @@ public class CommandManager {
                 command);
         }
         
-        if (conn.getCurrentDirectory().isDeleted()) {
+        if (!conn.getCurrentDirectory().isValid()) {
         	conn.setCurrentDirectory(conn.getCurrentDirectory().getRoot());
         }
         

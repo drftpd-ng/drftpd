@@ -1,3 +1,6 @@
+2005/01/31 Morgan Christiansson <drftpd@mog.se>
+* Fixed free credits problem with deleted directories, thanks to VST.
+
 2005/01/25 Jamal James <teflon114@gmail.com>
 * Added Blowfish support to SiteBot. w00t
   Much thanks to the fine folks over at http://mircryption.sourceforge.net/

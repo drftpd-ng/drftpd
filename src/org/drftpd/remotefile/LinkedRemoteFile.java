@@ -927,6 +927,18 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		return _link != null;
 	}
 
+	public boolean isValid() {
+		if (_parent == null)
+			return true;
+		try {
+			if (_parent.getFile(getName()) == this && _parent.isValid())
+				return true;
+			return false;
+		} catch (FileNotFoundException e) {
+			return false;
+		}
+	}
+
 	public long lastModified() {
 		return _lastModified;
 	}
