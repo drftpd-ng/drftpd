@@ -57,7 +57,7 @@ public class SlaveManagerImpl
 		char direction,
 		FtpConfig config)
 		throws NoAvailableSlaveException {
-		RemoteSlave bestslave;
+		RemoteSlave bestslave = null;
 		SlaveStatus beststatus;
 		{
 			Iterator i = slaves.iterator();
@@ -326,6 +326,9 @@ public class SlaveManagerImpl
 		} catch (Exception t) {
 			throw new FatalException(t);
 		}
+	}
+	public List getSlaveList(){
+		return rslaves;
 	}
 
 	public void addSlave(

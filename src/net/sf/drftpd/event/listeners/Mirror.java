@@ -62,19 +62,18 @@ public class Mirror implements FtpListener {
 			return;
 		if ( _numberOfMirrors < 2 ) return;
 		LinkedRemoteFile dir;
-		System.out.println("Command = " + transevent.getCommand());
 		dir = transevent.getDirectory();
 		RemoteSlave destrslave = null;
 		for (int x = 1; x<_numberOfMirrors; x++){ // already have one copy sent
 			try {
 				destrslave = _cm.getSlaveManager().getASlave(Transfer.TRANSFER_RECEIVING_UPLOAD);
 			} catch (NoAvailableSlaveException e1) {
-				System.out.println("Failed on getting destination slave");
+				logger.error("Failed on getting a slave to mirror " + dir.getPath());
 				// what should i do if there's no slave to transfer to?
 				e1.printStackTrace();
 				return;
 			}
-			System.out.println("Sending file " + dir.getPath() + " to " + destrslave.getName());
+			logger.info("Sending file " + dir.getPath() + " to " + destrslave.getName());
 			new CooperativeSlaveTransfer(dir,destrslave,_numberOfTries).start();
 		}
 	}

@@ -34,7 +34,7 @@ public class TransferThread {
 		}
 		public void run() {
 			try {
-				srcxfer.sendFile(file.getPath(), 'I', 0L, false);
+				srcxfer.sendFile(file.getPath(), 'I', 0L, true);
 			} catch (Throwable e) {
 				this.e = e;
 			}
