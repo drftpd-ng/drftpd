@@ -55,10 +55,6 @@
     <delete dir="${outputDir}-slaveselection" />
   </target>
 
-  <target name="prepare">
-    <mkdir dir="${outputDir}" />
-  </target>
-
   <target name="compile-jfreechart" depends="compile">
     <javac srcdir="${sourceDir}" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.3">
       <include name="org/drftpd/friendly/**"/>
@@ -93,7 +89,7 @@
 
   <target name="undodelegate">
     <move todir="${outputDir}" overwrite="false">
-      <fileset dir="classes-archive">
+      <fileset dir="${outputDir}-archive">
         <patternset refid="archive"/>
       </fileset>
     </move>
@@ -131,7 +127,8 @@
     <exclude name="net/sf/drftpd/master/usermanager/xstream/**"/>
   </patternset>
 
-  <target name="compile" depends="prepare">
+  <target name="compile">
+    <mkdir dir="${outputDir}"/>
   	<javac sourcepath="" srcdir="${sourceDir}" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.4">
   		<patternset refid="excludes"/>
   		<patternset refid="slaveclasses"/>
@@ -139,7 +136,18 @@
   	<javac srcdir="${sourceDir}" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.5">
   		<patternset refid="excludes"/>
     </javac>
-  	<javac srcdir="${sourceDir}-slaveselection" destdir="${outputDir}-slaveselection" classpathref="classpath" debug="true" source="1.5"/>
+  	<javac srcdir="${sourceDir}-slaveselection" destdir="${outputDir}" debug="true" source="1.5">
+      <classpath>
+        <pathelement path="${classpath}"/>
+        <pathelement location="classes"/>
+      </classpath>
+  	</javac>
+  	<javac srcdir="${sourceDir}-archive" destdir="${outputDir}" debug="true" source="1.5">
+      <classpath>
+        <pathelement path="${classpath}"/>
+        <pathelement location="classes"/>
+      </classpath>
+  	</javac>
     <copy todir="${outputDir}">
       <fileset dir="${sourceDir}">
         <include name="**/*.properties"/>
@@ -148,7 +156,8 @@
     <echo>Additional important compile targets are: compile-jsx</echo>
   </target>
 
-  <target name="compile-junit" depends="prepare">
+  <target name="compile-junit">
+   	<mkdir dir="${outputDir}"/>
     <javac srcdir="${sourceDir}" destdir="${outputDir}" debug="true" source="1.5">
       <classpath refid="classpath"/>
       <include name="**/*Test.java"/>
