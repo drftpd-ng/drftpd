@@ -60,7 +60,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.17 2003/12/05 18:24:23 zubov Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.18 2003/12/05 23:03:28 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -646,7 +646,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 		//setup _rslave
 		if (mbPasv) {
 			assert _preTransfer == true;
-			if (_transferFile != null) {
+			if (isRetr) {
 				// if _transferFile == null, there's no
 				//way that it can exist on _preTransferRSlave
 				if (!_transferFile.getSlaves().contains(_preTransferRSlave)) {

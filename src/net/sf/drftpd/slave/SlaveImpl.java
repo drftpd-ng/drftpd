@@ -160,9 +160,9 @@ public class SlaveImpl
 				+ cfg.getProperty("master.bindport", "1099")
 				+ "/"
 				+ cfg.getProperty("master.bindname");
-		this._name = cfg.getProperty("slave.name");
+		_name = cfg.getProperty("slave.name");
 
-		this._roots = getDefaultRootBasket(cfg);
+		_roots = getDefaultRootBasket(cfg);
 		try {
 			SlaveManager manager;
 			logger.log(Level.INFO, "Getting master reference");
@@ -172,8 +172,8 @@ public class SlaveImpl
 				Level.INFO,
 				"Registering with master and sending filelist");
 
-			LinkedRemoteFile slaveroot = SlaveImpl.getDefaultRoot(this._roots);
-			manager.addSlave(this._name, this, slaveroot);
+			LinkedRemoteFile slaveroot = SlaveImpl.getDefaultRoot(_roots);
+			manager.addSlave(_name, this, slaveroot);
 
 			logger.log(
 				Level.INFO,
@@ -232,6 +232,7 @@ public class SlaveImpl
 				file.delete();
 				logger.debug(dir.getPath()+" - "+dir.getParent());
 				java.io.File tmpFile = dir.getParentFile();
+				if(tmpFile == null) break;
 				logger.debug(tmpFile.getPath()+".length() <= "+root.getPath()+".length()");
 				if(tmpFile.getPath().length() <= root.getPath().length()) {
 					break;

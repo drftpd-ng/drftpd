@@ -36,7 +36,7 @@ import org.apache.log4j.PatternLayout;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.58 2003/11/25 20:43:04 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.59 2003/12/05 23:03:27 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -412,7 +412,7 @@ public class BaseFtpConnection implements Runnable {
 		} catch (UnhandledCommandException e) {
 			reply = new FtpReply(500, e.getMessage());
 			logger.warn("", e);
-		} catch (RuntimeException e) {
+		} catch (Throwable e) {
 			reply = new FtpReply(500, e.toString());
 			logger.warn("", e);
 		}

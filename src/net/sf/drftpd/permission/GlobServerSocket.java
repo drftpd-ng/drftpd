@@ -10,6 +10,7 @@ import java.util.List;
 
 import net.sf.drftpd.master.SlaveManagerImpl;
 
+import org.apache.log4j.Logger;
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.apache.oro.text.regex.Pattern;
@@ -17,79 +18,57 @@ import org.apache.oro.text.regex.Perl5Matcher;
 import socks.server.Ident;
 
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
+ * @author mog
+ * @version $Id: GlobServerSocket.java,v 1.7 2003/12/05 23:03:29 mog Exp $
  */
 public class GlobServerSocket extends ServerSocket {
 
-	/**
-	 * Constructor for ServerSocket2.
-	 * @throws IOException
-	 */
 	public GlobServerSocket(Collection rslaves) throws IOException {
 		super();
 		this.rslaves = rslaves;
 	}
 
-	/**
-	 * Constructor for ServerSocket2.
-	 * @param arg0
-	 * @throws IOException
-	 */
 	public GlobServerSocket(int port, Collection rslaves) throws IOException {
 		super(port);
 		this.rslaves = rslaves;
 	}
 
-	/**
-	 * Constructor for ServerSocket2.
-	 * @param arg0
-	 * @param arg1
-	 * @throws IOException
-	 */
 	public GlobServerSocket(int arg0, int arg1, List rslaves)
 		throws IOException {
 		super(arg0, arg1);
 		this.rslaves = rslaves;
 	}
 
-	/**
-	 * Constructor for ServerSocket2.
-	 * @param arg0
-	 * @param arg1
-	 * @param arg2
-	 * @throws IOException
-	 */
 	public GlobServerSocket(int arg0, int arg1, InetAddress arg2)
 		throws IOException {
 		super(arg0, arg1, arg2);
 	}
 
-	
+	private static final Logger logger =
+		Logger.getLogger(GlobServerSocket.class);
+
 	private Collection rslaves;
-	/**
-	 * @see java.net.ServerSocket#accept()
-	 */
+
 	public Socket accept() throws IOException {
 		Perl5Matcher m = new Perl5Matcher();
 		// Try until a valid peer tries to connect.
-		while(true) {
+		while (true) {
 			Socket sock = super.accept();
 			Ident identObj = new Ident(sock);
 			String ident;
-			if(identObj.successful) {
+			if (identObj.successful) {
 				ident = identObj.userName;
 			} else {
 				ident = "";
 			}
-			
-			String ipmask = ident + "@" + sock.getInetAddress().getHostAddress();
+
+			String ipmask =
+				ident + "@" + sock.getInetAddress().getHostAddress();
 			String hostmask = ident + "@" + sock.getInetAddress().getHostName();
-			for (Iterator i = SlaveManagerImpl.rslavesToMasks(this.rslaves).iterator(); i.hasNext();) {
+			for (Iterator i =
+				SlaveManagerImpl.rslavesToMasks(this.rslaves).iterator();
+				i.hasNext();
+				) {
 				String mask = (String) i.next();
 				Pattern p;
 				try {
@@ -109,7 +88,8 @@ public class GlobServerSocket extends ServerSocket {
 					return sock;
 				}
 			} //for
-			System.out.println("Rejecting RMI connection: "+hostmask+"/"+ipmask+".");
+			logger.warn(
+				"Rejecting RMI connection: " + hostmask + "/" + ipmask + ".");
 			sock.close();
 		}
 	}
