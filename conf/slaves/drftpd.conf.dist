@@ -1,0 +1,3 @@
+# default local slave -- RMI implementation
+name=drftpd
+masks=*@127.0.0.1,*@zwlaptop*@67.166.230.28

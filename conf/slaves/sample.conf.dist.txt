@@ -1,0 +1,24 @@
+# name of the slave -- filename should always be <name>.conf
+name=drftpd
+
+# comma delimited list of acceptable host masks
+masks=*@127.0.0.1
+
+# TCP/Async Socket Slave Address
+# address of remote slave for master initiated connections
+# set to "Dynamic" for slave initiated connections
+# Dynamic connections honor the "masks" setting
+addr=Dynamic
+
+# TCP/Async Socket Slave Port
+# connection port for non-dynamic slaves
+port=9999
+
+# TCP/Async Socket Slave -- Slave passkey
+# slave secret key for initialization handshake
+slavepass=slavepass
+
+# TCP/Async Socket Slave -- Master passkey
+# master secret key for initialization handshake
+masterpass=masterpass
+
