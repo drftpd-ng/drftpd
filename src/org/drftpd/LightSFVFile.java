@@ -22,9 +22,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import org.drftpd.remotefile.CaseInsensitiveHashtable;
+
 /**
  * @author mog
- * @version $Id: LightSFVFile.java,v 1.3 2004/11/15 01:12:13 mog Exp $
+ * @version $Id$
  */
 public class LightSFVFile extends AbstractSFVFile implements Serializable {
     /**
@@ -32,7 +34,7 @@ public class LightSFVFile extends AbstractSFVFile implements Serializable {
      */
     public LightSFVFile(BufferedReader in) throws IOException {
         String line;
-        _entries = new HashMap();
+        _entries = new CaseInsensitiveHashtable();
         try {
             while ((line = in.readLine()) != null) {
                 if (line.length() == 0) {

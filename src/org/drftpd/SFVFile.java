@@ -28,6 +28,7 @@ import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.NoSFVEntryException;
 
+import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 
@@ -43,7 +44,7 @@ public class SFVFile extends AbstractSFVFile {
 	 * @param file
 	 */
 	public SFVFile(LightSFVFile file) {
-		_entries = new HashMap(file.getEntries());
+		_entries = new CaseInsensitiveHashtable(file.getEntries());
 	}
 
 	/**

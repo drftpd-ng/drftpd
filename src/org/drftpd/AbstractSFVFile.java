@@ -22,16 +22,18 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.drftpd.remotefile.CaseInsensitiveHashtable;
+
 /**
  * @author mog
- * @version $Id: AbstractSFVFile.java,v 1.2 2004/11/15 01:12:13 mog Exp $
+ * @version $Id$
  */
 public class AbstractSFVFile implements Serializable {
     /**
      * String fileName as key.
      * Long checkSum as value.
      */
-    protected HashMap _entries;
+    protected CaseInsensitiveHashtable _entries;
 
     /**
      * Returns a map having <code>String filename</code> as key and <code>Long checksum</code> as value.
