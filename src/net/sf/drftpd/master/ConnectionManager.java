@@ -156,7 +156,7 @@ public class ConnectionManager {
 
 		TimerTask timerSave = new TimerTask() {
 			public void run() {
-				getSlaveManager().saveFilesXML();
+				getSlaveManager().saveFilelist();
 				try {
 					getUserManager().saveAll();
 				} catch (UserFileException e) {
@@ -224,7 +224,7 @@ public class ConnectionManager {
 			throw new RuntimeException("connections.remove() returned false.");
 		}
 		if (isShutdown() && _conns.isEmpty()) {
-			_slaveManager.saveFilesXML();
+			_slaveManager.saveFilelist();
 			try {
 				getUserManager().saveAll();
 			} catch (UserFileException e) {

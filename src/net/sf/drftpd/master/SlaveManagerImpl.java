@@ -3,9 +3,11 @@ package net.sf.drftpd.master;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -529,8 +531,17 @@ public class SlaveManagerImpl
 		Collections.sort(this.rslaves);
 	}
 
-	public void saveFilesXML() {
-		saveFilesXML(JDOMSerialize.serialize(this.getRoot()));
+	public void saveFilelist() {
+		//saveFilesXML(JDOMSerialize.serialize(this.getRoot()));
+		
+		File bak = new File("files.mlst.bak");
+		bak.delete();
+		new File("files.mlst").renameTo(bak);
+		try {
+			MLSTSerialize.serialize(getRoot(), new PrintStream(new FileOutputStream("files.mlst")));
+		} catch (FileNotFoundException e) {
+			logger.warn("Error saving files.mlst", e);
+		}
 	}
 
 	/** ping's all slaves, returns number of slaves removed */
