@@ -39,7 +39,7 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.9 2004/04/07 13:48:02 zubov Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.10 2004/04/18 21:02:29 zubov Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 	private static final Logger logger =
@@ -87,13 +87,11 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 	public RemoteSlave getASlaveForJobDownload(Job job)
 		throws NoAvailableSlaveException {
 		ArrayList slaves = new ArrayList(job.getFile().getAvailableSlaves());
-		logger.debug("calling getASlaveForJobDownload");
 		for (Iterator iter = job.getDestinationSlaves().iterator();
 			iter.hasNext();
 			) {
 			RemoteSlave slave = (RemoteSlave) iter.next();
 			if (slave != null) {
-				logger.debug("removed slave " + slave.getName());
 				slaves.remove(slave);
 			}
 		}

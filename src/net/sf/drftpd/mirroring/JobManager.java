@@ -36,7 +36,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.apache.log4j.Logger;
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.42 2004/04/07 13:05:52 zubov Exp $
+ * @version $Id: JobManager.java,v 1.43 2004/04/18 21:02:28 zubov Exp $
  */
 public class JobManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -190,7 +190,6 @@ public class JobManager implements Runnable {
 						"JobManager was unable to find a suitable job for transfer");
 					return false;
 				}
-				logger.debug("source slave = " + sourceSlave.getName());
 				try {
 					destSlave =
 						_cm

@@ -19,4 +19,4 @@ archiveAfter=10080
 
 # If section.archiveType is not defined for each section
 # the default will be used
-default.archiveType=MoveReleaseToMostFreeSlave
+default.archiveType=FinishReleaseOnSlave

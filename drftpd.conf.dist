@@ -36,4 +36,6 @@ sectionmanager=org.drftpd.sections.def.SectionManager
 
 # the interval at which the slave's status are recached on the master
 # value is in milliseconds
-slaveStatusUpdateTime=10000
+# the lower it is, the more accurate it will be
+# 300 milliseconds works well for LAN conditions
+slaveStatusUpdateTime=3000

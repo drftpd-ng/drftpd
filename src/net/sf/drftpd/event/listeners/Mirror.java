@@ -36,7 +36,7 @@ import org.drftpd.sections.SectionInterface;
 /**
  * @author zubov
  *
- * @version $Id: Mirror.java,v 1.19 2004/04/18 08:46:28 zubov Exp $
+ * @version $Id: Mirror.java,v 1.20 2004/04/18 21:02:27 zubov Exp $
  */
 public class Mirror implements FtpListener {
 
@@ -62,7 +62,6 @@ public class Mirror implements FtpListener {
 			return;
 		LinkedRemoteFileInterface dir = transevent.getDirectory();
 		if (checkExclude(_cm.getSectionManager().lookup(dir.getPath()))) {
-			logger.debug(dir.getPath() + " is exempt");
 			return;
 		}
 		ArrayList slaveToMirror = new ArrayList();
@@ -74,11 +73,10 @@ public class Mirror implements FtpListener {
 			slaveToMirror.add(null);
 		}
 		if (slaveToMirror.isEmpty()) {
-			logger.debug("slaveToMirror was empty, returning");
 			return;
 		}
 		_cm.getJobManager().addJob(new Job(dir, slaveToMirror, this, null, 5));
-		logger.debug("Done adding " + dir.getPath() + " to the JobList");
+		logger.info("Done adding " + dir.getPath() + " to the JobList");
 	}
 	/**
 	 * @param lrf
