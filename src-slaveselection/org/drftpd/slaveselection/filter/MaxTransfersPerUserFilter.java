@@ -57,7 +57,7 @@ public class MaxTransfersPerUserFilter extends Filter {
 		for (BaseFtpConnection conn : _gctx.getConnectionManager()
 				.getConnections()) {
 
-			if (!conn.isTransfering())
+			if (!conn.getDataConnectionHandler().isTransfering())
 				continue;
 			try {
 				if (!conn.getUser().equals(user))

@@ -1691,36 +1691,35 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                         Time.formatTime(System.currentTimeMillis() -
                             conn2.getLastActive()));
                     env.add("targetuser", user.getName());
+                    synchronized (conn2.getDataConnectionHandler()) {
+						if (!conn2.isExecuting()) {
+							response.addComment(SimplePrintf.jprintf(
+									formatidle, env));
+						} else if (conn2.getDataConnectionHandler()
+								.isTransfering()) {
+							speed = conn2.getDataConnectionHandler()
+									.getTransfer().getXferSpeed();
+							env.add("speed", Bytes.formatBytes(speed) + "/s");
+							env.add("file", conn2.getDataConnectionHandler()
+									.getTransferFile().getName());
+							env.add("slave", conn2.getDataConnectionHandler()
+									.getTranferSlave().getName());
 
-                    if (!conn2.isExecuting()) {
-                        response.addComment(SimplePrintf.jprintf(formatidle, env));
-                    } else if (conn2.getDataConnectionHandler().isTransfering()) {
-                        if (conn2.getDataConnectionHandler().isTransfering()) {
-                            speed = conn2.getDataConnectionHandler()
-                                         .getTransfer().getXferSpeed();
-                            env.add("speed", Bytes.formatBytes(speed) + "/s");
-                            env.add("file",
-                                conn2.getDataConnectionHandler()
-                                     .getTransferFile().getName());
-                            env.add("slave",
-                                conn2.getDataConnectionHandler()
-                                     .getTranferSlave().getName());
-                        }
-
-                        if (conn2.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-                            response.addComment(SimplePrintf.jprintf(formatup,
-                                    env));
-                            speedup += speed;
-                        } else if (conn2.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-                            response.addComment(SimplePrintf.jprintf(
-                                    formatdown, env));
-                            speeddn += speed;
-                        }
-                    } else {
-                        env.add("command", conn2.getRequest().getCommand());
-                        response.addComment(SimplePrintf.jprintf(
-                                formatcommand, env));
-                    }
+							if (conn2.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+								response.addComment(SimplePrintf.jprintf(
+										formatup, env));
+								speedup += speed;
+							} else if (conn2.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+								response.addComment(SimplePrintf.jprintf(
+										formatdown, env));
+								speeddn += speed;
+							}
+						} else {
+							env.add("command", conn2.getRequest().getCommand());
+							response.addComment(SimplePrintf.jprintf(
+									formatcommand, env));
+						}
+					}
                 }
             }
 

@@ -554,8 +554,4 @@ public class BaseFtpConnection implements Runnable {
     public OutputStream getOutputStream() throws IOException {
         return _controlSocket.getOutputStream();
     }
-
-    public boolean isTransfering() {
-        return getDataConnectionHandler().isTransfering();
-    }
 }

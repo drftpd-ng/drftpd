@@ -92,29 +92,31 @@ public class Bandwidth extends IRCCommand {
                     if (getGlobalContext().getConfig().checkPathPermission("hideinwho", connUser, conn.getCurrentDirectory())) {
                         continue;
                     }
+                    synchronized (conn.getDataConnectionHandler()) {
+						if (!conn.isExecuting()) {
+							out.add(ReplacerUtils.jprintf("speed.idle", env,
+									Bandwidth.class));
+						} else if (conn.getDataConnectionHandler()
+								.isTransfering()) {
+							env.add("speed", Bytes.formatBytes(conn
+									.getDataConnectionHandler().getTransfer()
+									.getXferSpeed())
+									+ "/s");
 
-                    if (!conn.isExecuting()) {
-                        out.add(ReplacerUtils.jprintf("speed.idle", env, Bandwidth.class));
-                    } else if (conn.getDataConnectionHandler()
-                                       .isTransfering()) {
-                        env.add("speed",
-                            Bytes.formatBytes(conn.getDataConnectionHandler()
-                                                  .getTransfer()
-                                                  .getXferSpeed()) + "/s");
+							env.add("file", conn.getDataConnectionHandler()
+									.getTransferFile().getName());
+							env.add("slave", conn.getDataConnectionHandler()
+									.getTranferSlave().getName());
 
-                        env.add("file",
-                            conn.getDataConnectionHandler().getTransferFile()
-                                .getName());
-                        env.add("slave",
-                            conn.getDataConnectionHandler().getTranferSlave()
-                                .getName());
-
-                        if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-                            out.add(ReplacerUtils.jprintf("speed.up", env, Bandwidth.class));
-                        } else if (conn.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-                            out.add(ReplacerUtils.jprintf("speed.down", env, Bandwidth.class));
-                        }
-                    }
+							if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+								out.add(ReplacerUtils.jprintf("speed.up", env,
+										Bandwidth.class));
+							} else if (conn.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+								out.add(ReplacerUtils.jprintf("speed.down",
+										env, Bandwidth.class));
+							}
+						}
+					}
                 }
             } catch (NoSuchUserException e) {
                 //just continue.. we aren't interested in connections without logged-in users
