@@ -1,5 +1,7 @@
 package org.drftpd.slave.async;
 
+import java.io.File;
+
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
 
 
@@ -15,7 +17,10 @@ public class AsyncResponseRemerge extends AsyncResponse {
         CaseInsensitiveHashtable files) {
         super("Remerge");
         _files = files;
-        if (directory.indexOf("\\") != -1) {
+       	if (File.separatorChar == '\\') { // stupid win32 hack
+       		directory = directory.replace('\\', '/');
+       	}
+        if (directory.indexOf('\\') != -1) {
         	throw new RuntimeException("\\ is not an acceptable character in a directory path");
         }
         _directory = directory;

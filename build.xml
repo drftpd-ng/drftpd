@@ -234,7 +234,6 @@
     	<include name="src-archive/**"/>
     	<include name="src-slaveselection/**"/>
     	<include name="text/**"/>
-    	<include name="bin/*"/>
     	<include name="docs/*"/>
     	<exclude name="*/org/drftpd/friendly/**"/>
     </patternset>
