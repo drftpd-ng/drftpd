@@ -551,7 +551,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 				RemoteSlave rslave = (RemoteSlave) iter.next();
 				assert rslave != null;
 				if (!rslave.isAvailable())
-					return false;
+					return true;
 			}
 		} else if (isDirectory()) {
 			for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
@@ -722,18 +722,6 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		}
 		throw new FileNotFoundException("no sfv file in directory");
 
-	}
-
-	private void setRSlaveAndConfig(LinkedRemoteFile dir, FtpConfig cfg, RemoteSlave rslave) {
-		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			file.ftpConfig = cfg;
-			if(file.isDirectory()) {
-				setRSlaveAndConfig(file, cfg, rslave);
-			} else {
-				file.addSlave(rslave);
-			}			
-		}
 	}
 	//TODO: remerge, delete files not in the merging slaves tree
 	/**
@@ -915,7 +903,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	 * @throws IllegalFileNameException, FileExistsException, FileNotFoundException
 	 */
 	public void renameTo(String toDirPath, String toName)
-		throws ObjectExistsException, IllegalTargetException, FileNotFoundException {
+		throws IOException, IllegalTargetException, FileNotFoundException {
 		if (toDirPath.charAt(0) != '/')
 			throw new IllegalArgumentException("renameTo() must be given an absolute path as argument");
 
@@ -932,7 +920,7 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 		String fromName = getName();
 		assert ftpConfig != null;
 		if (isDirectory()) {
-			if(hasOfflineSlaves()) throw new FatalException("queued renames not yet supported");
+			if(hasOfflineSlaves()) throw new IOException("queued renames not yet supported");
 			for (Iterator iter =
 				ftpConfig.getSlaveManager().getSlaves().iterator();
 				iter.hasNext();
@@ -1046,6 +1034,18 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 
 	public void setLength(long length) {
 		this.length = length;
+	}
+
+	private void setRSlaveAndConfig(LinkedRemoteFile dir, FtpConfig cfg, RemoteSlave rslave) {
+		for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			file.ftpConfig = cfg;
+			if(file.isDirectory()) {
+				setRSlaveAndConfig(file, cfg, rslave);
+			} else {
+				file.addSlave(rslave);
+			}			
+		}
 	}
 
 	/**

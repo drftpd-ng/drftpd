@@ -47,7 +47,7 @@ import org.jdom.input.SAXBuilder;
 
 public class ConnectionManager {
 	public static final int idleTimeout = 300;
-	private Vector connections = new Vector();
+	private Vector _conns = new Vector();
 	private UserManager usermanager;
 	private NukeLog nukelog;
 	//allow package classes for inner classes without use of synthetic methods
@@ -217,9 +217,8 @@ public class ConnectionManager {
 
 	public void timerLogoutIdle() {
 		long currTime = System.currentTimeMillis();
-		synchronized (connections) {
-			//for(Iterator i = ((Vector)connections.clone()).iterator(); i.hasNext(); ) {
-			for (Iterator i = connections.iterator(); i.hasNext();) {
+		synchronized (_conns) {
+			for (Iterator i = _conns.iterator(); i.hasNext();) {
 				FtpConnection conn = (FtpConnection) i.next();
 
 				int idle = (int) ((currTime - conn.getLastActive()) / 1000);
@@ -253,13 +252,16 @@ public class ConnectionManager {
 				this.nukelog,
 				this.commandDebug);
 		conn.ftpListeners = this.ftpListeners;
-		connections.add(conn);
+		_conns.add(conn);
 		conn.start();
 	}
 	public void shutdown(String message) {
 		this.shutdownMessage = message;
-		for (Iterator iter = getConnections().iterator(); iter.hasNext();) {
-			((FtpConnection) iter.next()).stop(message);
+		Collection conns = getConnections();
+		synchronized (conns) {
+			for (Iterator iter = getConnections().iterator(); iter.hasNext();) {
+				((FtpConnection) iter.next()).stop(message);
+			}
 		}
 		dispatchFtpEvent(new MessageEvent("SHUTDOWN", message));
 	}
@@ -270,10 +272,10 @@ public class ConnectionManager {
 	}
 
 	public void remove(BaseFtpConnection conn) {
-		if (!connections.remove(conn)) {
+		if (!_conns.remove(conn)) {
 			throw new RuntimeException("connections.remove() returned false.");
 		}
-		if (isShutdown() && connections.isEmpty()) {
+		if (isShutdown() && _conns.isEmpty()) {
 			slaveManager.saveFilesXML();
 			try {
 				getUsermanager().saveAll();
@@ -288,7 +290,7 @@ public class ConnectionManager {
 	 * returns a <code>Collection</code> of current connections
 	 */
 	public Collection getConnections() {
-		return this.connections;
+		return this._conns;
 	}
 	public boolean isShutdown() {
 		return this.shutdownMessage != null;

@@ -29,7 +29,6 @@ import net.sf.drftpd.AsciiOutputStream;
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.Checksum;
 import net.sf.drftpd.DuplicateElementException;
-import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -384,10 +383,7 @@ public class FtpConnection extends BaseFtpConnection {
 			new FtpResponse(
 				200,
 				"Directory changed to " + currentDirectory.getPath());
-		_cm.getConfig().directoryMessage(
-			response,
-			_user,
-			currentDirectory);
+		_cm.getConfig().directoryMessage(response, _user, currentDirectory);
 
 		Collection uploaders =
 			IRCListener.topFileUploaders(currentDirectory.getFiles());
@@ -1479,7 +1475,8 @@ public class FtpConnection extends BaseFtpConnection {
 			_transfer.downloadFile(
 				_transferFile.getPath(),
 				getType(),
-				resumePosition, true);
+				resumePosition,
+				true);
 		} catch (RemoteException ex) {
 			_rslave.handleRemoteException(ex);
 			out.print(new FtpResponse(426, "Remote error: " + ex.getMessage()));
@@ -1498,38 +1495,47 @@ public class FtpConnection extends BaseFtpConnection {
 		//		}
 		//		System.err.println("Finished");
 
-
 		FtpResponse response =
 			(FtpResponse) FtpResponse
 				.RESPONSE_226_CLOSING_DATA_CONNECTION
 				.clone();
 
-
 		try {
 			long checksum = _transfer.getChecksum();
-			response.addComment("Checksum: "+Checksum.formatChecksum(checksum));
-			if(_transferFile.getCheckSum(false) == 0) {
+			response.addComment(
+				"Checksum: " + Checksum.formatChecksum(checksum));
+			if (_transferFile.getCheckSum(false) == 0) {
 				_transferFile.setCheckSum(_transfer.getChecksum());
-			} else if(_transferFile.getCheckSum(false) != checksum) {
-				response.addComment("WARNING: checksum from transfer didn't match cached checksum");
-				logger.info("checksum from transfer didn't match cached checksum", new Throwable());
+			} else if (_transferFile.getCheckSum(false) != checksum) {
+				response.addComment(
+					"WARNING: checksum from transfer didn't match cached checksum");
+				logger.info(
+					"checksum from transfer didn't match cached checksum",
+					new Throwable());
 			}
-			
+
 			try {
-				if(_transferFile.getParentFileNull().lookupSFVFile().getChecksum(_transferFile.getName()) == checksum) {
-					response.addComment("checksum from transfer matched checksum in .sfv");
+				if (_transferFile
+					.getParentFileNull()
+					.lookupSFVFile()
+					.getChecksum(_transferFile.getName())
+					== checksum) {
+					response.addComment(
+						"checksum from transfer matched checksum in .sfv");
 				} else {
-					response.addComment("WARNING: checksum from transfer didn't match checksum in .sfv");
+					response.addComment(
+						"WARNING: checksum from transfer didn't match checksum in .sfv");
 				}
 			} catch (NoAvailableSlaveException e1) {
-				response.addComment("slave with .sfv offline, checksum not verified");
+				response.addComment(
+					"slave with .sfv offline, checksum not verified");
 			} catch (FileNotFoundException e1) {
 				//continue without verification
 			} catch (ObjectNotFoundException e1) {
 				//file not found in .sfv, continue
 			} catch (IOException e1) {
 				logger.info(e1);
-				out.print("IO exception reading .sfv file: "+e1.getMessage());
+				out.print("IO exception reading .sfv file: " + e1.getMessage());
 			}
 
 			long transferedBytes = _transfer.getTransfered();
@@ -2440,21 +2446,22 @@ public class FtpConnection extends BaseFtpConnection {
 		FtpResponse response =
 			(FtpResponse) FtpResponse.RESPONSE_200_COMMAND_OK.clone();
 
-		for (Iterator iter = _cm.getConnections().iterator();
-			iter.hasNext();
-			) {
-			BaseFtpConnection conn = (BaseFtpConnection) iter.next();
-			try {
-				if (conn.getUser().getUsername().equals(username)) {
-					conn.stop(message);
+		Collection conns = getConnectionManager().getConnections();
+		synchronized (conns) {
+			for (Iterator iter = conns.iterator(); iter.hasNext();) {
+				BaseFtpConnection conn = (BaseFtpConnection) iter.next();
+				try {
+					if (conn.getUser().getUsername().equals(username)) {
+						conn.stop(message);
+					}
+				} catch (NoSuchUserException e) {
 				}
-			} catch (NoSuchUserException e) {
 			}
 		}
 		out.print(response);
 		return;
 	}
-	
+
 	public void doSITE_KICKSLAVE(FtpRequest request, PrintWriter out) {
 		reset();
 		if (!_user.isAdmin()) {
@@ -2467,8 +2474,7 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 		RemoteSlave rslave;
 		try {
-			rslave =
-				_cm.getSlaveManager().getSlave(request.getArgument());
+			rslave = _cm.getSlaveManager().getSlave(request.getArgument());
 		} catch (ObjectNotFoundException e) {
 			out.print(new FtpResponse(200, "No such slave"));
 			return;
@@ -2579,7 +2585,6 @@ public class FtpConnection extends BaseFtpConnection {
 
 		FtpResponse response = new FtpResponse(200, "NUKE suceeded");
 
-
 		//get nukees User with user as key
 		HashMap nukees2 = new HashMap(nukees.size());
 		for (Iterator iter = nukees.keySet().iterator(); iter.hasNext();) {
@@ -2688,7 +2693,8 @@ public class FtpConnection extends BaseFtpConnection {
 				nukeDirSize,
 				nukedAmount,
 				multiplier,
-				reason, nukees);
+				reason,
+				nukees);
 		assert this._nukelog != null : "nukelog";
 		this._nukelog.add(nuke);
 		_cm.dispatchFtpEvent(nuke);
@@ -2787,8 +2793,7 @@ public class FtpConnection extends BaseFtpConnection {
 
 		//ANNOUNCE
 		logger.debug("preDir after rename: " + preDir);
-		_cm.dispatchFtpEvent(
-			new DirectoryFtpEvent(_user, "PRE", preDir));
+		_cm.dispatchFtpEvent(new DirectoryFtpEvent(_user, "PRE", preDir));
 
 		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
 		return;
@@ -3519,48 +3524,51 @@ public class FtpConnection extends BaseFtpConnection {
 		//FtpResponse response = new FtpResponse(200);
 		FtpResponse response =
 			(FtpResponse) FtpResponse.RESPONSE_200_COMMAND_OK.clone();
-//		for (Iterator i = _cm.getConnections().iterator();
-//			i.hasNext();
-//			) {
-//			FtpConnection conn = (FtpConnection) i.next();
-//			if (!conn.isAuthenticated()) {
-//				response.addComment("Not yet authenticated");
-//				continue;
-//			}
-//			User user;
-//			try {
-//				user = conn.getUser();
-//			} catch (NoSuchUserException e) {
-//				throw new FatalException(e);
-//			}
-//			String command = conn.getRequest().getCommand();
-//			String username = user.getUsername();
-//
-//			if (getConfig().checkHideInWho(user, conn.getCurrentDirectory())) {
-//				continue;
-//			}
-//			if (conn.isExecuting()) {
-//				if (conn.getRequest().getCommand().equals("RETR")) {
-//					response.addComment(username + "    DL");
-//				} else if (command.equals("STOR")) {
-//					response.addComment(username + "    UL");
-//				} else {
-//					response.addComment(
-//						username + "    " + conn.getRequest().getCommand());
-//				}
-//
-//			} else {
-//				response.addComment(username + "    IDLE");
-//			}
-//		}
+		//		for (Iterator i = _cm.getConnections().iterator();
+		//			i.hasNext();
+		//			) {
+		//			FtpConnection conn = (FtpConnection) i.next();
+		//			if (!conn.isAuthenticated()) {
+		//				response.addComment("Not yet authenticated");
+		//				continue;
+		//			}
+		//			User user;
+		//			try {
+		//				user = conn.getUser();
+		//			} catch (NoSuchUserException e) {
+		//				throw new FatalException(e);
+		//			}
+		//			String command = conn.getRequest().getCommand();
+		//			String username = user.getUsername();
+		//
+		//			if (getConfig().checkHideInWho(user, conn.getCurrentDirectory())) {
+		//				continue;
+		//			}
+		//			if (conn.isExecuting()) {
+		//				if (conn.getRequest().getCommand().equals("RETR")) {
+		//					response.addComment(username + "    DL");
+		//				} else if (command.equals("STOR")) {
+		//					response.addComment(username + "    UL");
+		//				} else {
+		//					response.addComment(
+		//						username + "    " + conn.getRequest().getCommand());
+		//				}
+		//
+		//			} else {
+		//				response.addComment(username + "    IDLE");
+		//			}
+		//		}
 
 		try {
 			ReplacerFormat formatup = getConfig().getReplacerFormat("who.up");
-			ReplacerFormat formatdown = getConfig().getReplacerFormat("who.down");
-			ReplacerFormat formatidle = getConfig().getReplacerFormat("who.idle");
+			ReplacerFormat formatdown =
+				getConfig().getReplacerFormat("who.down");
+			ReplacerFormat formatidle =
+				getConfig().getReplacerFormat("who.idle");
 
 			ReplacerEnvironment env = new ReplacerEnvironment();
 
+			//TODO synchronized access to connections ??
 			for (Iterator iter =
 				getConnectionManager().getConnections().iterator();
 				iter.hasNext();

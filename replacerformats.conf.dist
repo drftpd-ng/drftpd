@@ -1,0 +1,3 @@
+who.up=${user,11} -> UP ${file} @ ${speed,9} to   ${slave}
+who.down=${user,11} -> DN ${file} @ ${speed,9} from ${slave}
+who.idle=${user,11} -> Idle for ${idle}
