@@ -184,11 +184,8 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 			throw new IllegalStateException("Cannot addSlave() on a directory");
 		if (slave == null)
 			throw new IllegalArgumentException("slave can't be null");
+		// we get lots of duplicate adds when merging and the slave is already in the file database
 		if (slaves.contains(slave)) {
-			logger.log(
-				Level.WARN,
-				this +" already contains " + slave,
-				new Throwable());
 			return;
 		}
 		slaves.add(slave);

@@ -95,6 +95,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		FileOutputStream out = new FileOutputStream(root + File.separator + filename);
 
 		this.out = new CheckedOutputStream(out, this.checksum);
+		System.out.println("UL:"+dirname+File.separator+filename);
 		transfer();
 	}
 	
@@ -103,7 +104,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		
 		this.in = new FileInputStream(roots.getFile(path));
 		this.in.skip(resumePosition);
-
+		System.out.println("DL:"+path);
 		transfer();
 	}
 	/**
@@ -113,7 +114,6 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	public void transfer() throws IOException {
 		this.started = System.currentTimeMillis();
 		this.sock = conn.connect();
-		this.sock.setSoTimeout(600);
 		if (in == null) {
 			this.in = sock.getInputStream();
 		} else if (out == null) {
@@ -128,15 +128,13 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 
 		_transfers.add(this);
 		try {
-			byte[] buff = new byte[1024];
+			byte[] buff = new byte[4096];
 			int count;
 			while ((count = in.read(buff)) != -1) {
 				this.transfered += count;
 				out.write(buff, 0, count);
 			}
 			out.close();
-		} catch (Exception ex) {
-			ex.printStackTrace();
 		} finally {
 			finished = System.currentTimeMillis();
 			_transfers.remove(this);
@@ -175,10 +173,17 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	}
 
 	public int getTransferSpeed() {
-		long elapsed = System.currentTimeMillis() - started;
+		long elapsed;
+		if(finished == 0) {
+			elapsed = System.currentTimeMillis() - started;
+		} else {
+			elapsed = finished - started;
+		}
+
 		if (this.transfered == 0) {
 			return 0;
 		}
+
 		if (elapsed == 0) {
 			return 0;
 		}

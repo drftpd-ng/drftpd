@@ -49,7 +49,7 @@ public class SlaveImpl
 		Properties cfg,
 		InetAddress inetAddress)
 		throws RemoteException {
-		super(0);
+		super(0); // starts RMI accept thread which will keep us from dying
 
 		this.slavemanagerurl =
 			"//"
@@ -305,11 +305,13 @@ public class SlaveImpl
 	 * @see java.rmi.server.Unreferenced#unreferenced()
 	 */
 	public void unreferenced() {
-		logger.log(
-			Level.WARN,
-			"Lost master, trying to re-register with master.");
-		register();
-		System.gc();
+		logger.info("unreferenced");
+		System.exit(0);
+//		logger.log(
+//			Level.WARN,
+//			"Lost master, trying to re-register with master.");
+//		register();
+//		System.gc();
 	}
 
 	/* (non-Javadoc)
