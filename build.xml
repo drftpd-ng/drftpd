@@ -20,7 +20,7 @@
     <include name="org/drftpd/remotefile/CaseInsensitiveHashtable*" />
     <include name="org/drftpd/remotefile/*LightRemoteFile*" />
     <include name="org/drftpd/remotefile/AbstractRemoteFile*" />
-    <include name="org/drftpd/remotefile/RemoteFileInterface*" />
+<!--    <include name="org/drftpd/remotefile/RemoteFileInterface*" />-->
     <include name="se/mog/io/*"/>
   </patternset>
   <target name="all" depends="compile"/>
