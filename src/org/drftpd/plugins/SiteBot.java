@@ -26,12 +26,15 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -78,7 +81,7 @@ import org.drftpd.remotefile.FileUtils;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
-import org.drftpd.sitebot.IRCPluginInterface;
+import org.drftpd.sitebot.IRCCommand;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -122,18 +125,14 @@ public class SiteBot extends FtpListener implements Observer {
     //private AutoJoin _autoJoin;
     private AutoReconnect _autoReconnect;
     private AutoRegister _autoRegister;
-	private ArrayList<Observer> _commandObservers;
+    // Object<Method, IRCCommand, IRCPermission>[3]
+	private HashMap<String,Object[]> _methodMap;
 	private String _blowfishKey;
 	private Blowfish _fish;
-	private CommandRegister _commandRegister;
     private String _channelName;
-    private String _commands;
-    private String _commandsHelp;
-    private String _chanprefix;
     private String _msgprefix;
     protected IRCConnection _conn;
     private boolean _enableAnnounce;
-    private IrcConfig _ircCfg;
     private int _maxUserAnnounce;
     private int _maxGroupAnnounce;
 
@@ -866,14 +865,9 @@ public class SiteBot extends FtpListener implements Observer {
         //_autoJoin = new AutoJoin(_conn, _channelName, _key);
         new AutoResponder(_conn);
         _conn.addCommandObserver(this);
-        _commands = "";
-        _commandsHelp = "";
-        _chanprefix = ircCfg.getProperty("irc.chanprefix") != null ? ircCfg.getProperty("irc.chanprefix") : "!";
-        _msgprefix = ircCfg.getProperty("irc.msgprefix") != null ? ircCfg.getProperty("irc.msgprefix") : "!";
 
-        _commandObservers = new ArrayList<Observer>();
         for (int i = 1;; i++) {
-            String classname = ircCfg.getProperty("irc.plugins." + i);
+            String classname = ircCfg.getProperty("martyr.plugins." + i);
 
             if (classname == null) {
                 break;
@@ -886,22 +880,9 @@ public class SiteBot extends FtpListener implements Observer {
                 obs = (Observer) Class.forName(classname)
                                       .getConstructor(new Class[] { SiteBot.class })
                                       .newInstance(new Object[] { this });
-
-                //_conn.addCommandObserver(obs);
-                IRCPluginInterface plugin = (IRCPluginInterface) obs;
-
-                if (plugin.getCommands() != null) {
-                    _commands = _commands + plugin.getCommands() + " ";
-                }
-                
-                //add plugin to our list and remove from the IRCConnection so we can 
-                //decrypt any messages if needed
-                _commandObservers.add(obs);
-                _conn.removeCommandObserver(obs);
-                
             } catch (Exception e) {
                 logger.warn("", e);
-                throw new RuntimeException("Error loading IRC plugin :" +
+                throw new RuntimeException("Error loading Martyr plugin :" +
                     classname, e);
             }
         }
@@ -1027,14 +1008,6 @@ public class SiteBot extends FtpListener implements Observer {
         }
     }
 
-    public String getCommandPrefix() {
-        return _chanprefix;
-    }
-    
-    public String getMessageCommandPrefix() {
-        return _msgprefix;
-    }
-
     public Blowfish getBlowfish() {
         return _fish;
     }
@@ -1045,10 +1018,6 @@ public class SiteBot extends FtpListener implements Observer {
 
     public IRCConnection getIRCConnection() {
         return _conn;
-    }
-
-    public IrcConfig getIRCConfig() {
-        return _ircCfg;
     }
 
     public Ret getPropertyFileSuffix(String prefix,
@@ -1088,16 +1057,63 @@ public class SiteBot extends FtpListener implements Observer {
     }
 
     protected void reload() throws FileNotFoundException, IOException {
-        if (_ircCfg == null) 
-            _ircCfg = new IrcConfig();
-        else
-            _ircCfg.reload();
         Properties ircCfg = new Properties();
         ircCfg.load(new FileInputStream("conf/irc.conf"));
         reload(ircCfg);
+        reloadIRCCommands();
     }
 
-    protected void reload(Properties ircCfg) throws IOException {
+	private void reloadIRCCommands() throws IOException {
+		_methodMap = new HashMap<String, Object[]>();
+		HashMap<String, IRCCommand> ircCommands = new HashMap<String, IRCCommand>();
+		LineNumberReader lineReader = new LineNumberReader(new FileReader(
+				"conf/irccommands.conf"));
+		String line = null;
+		while ((line = lineReader.readLine()) != null) {
+			if (line.startsWith("#")) {
+				continue;
+			}
+			logger.debug("reading line - " + line);
+			StringTokenizer st = new StringTokenizer(line);
+			if (st.countTokens() < 4) {
+				logger.debug("Line is invalid -- not enough parameters");
+				continue;
+			}
+			String trigger = st.nextToken();
+			logger.debug("trigger = " + trigger);
+			String methodString = st.nextToken();
+			String scopeList = st.nextToken();
+			String permissions = st.toString();
+
+			int index = methodString.lastIndexOf(".");
+			String className = methodString.substring(0, index);
+			methodString = methodString.substring(index + 1);
+			logger.debug("methodString = " + methodString);
+			Method m = null;
+			try {
+				IRCCommand ircCommand = ircCommands.get(className);
+				if (ircCommand == null) {
+					ircCommand = (IRCCommand) Class
+							.forName(className)
+							.getConstructor(new Class[] { GlobalContext.class })
+							.newInstance(new Object[] { getGlobalContext() });
+					ircCommands.put(className, ircCommand);
+				}
+				m = ircCommand.getClass().getMethod(methodString,
+						new Class[] { String.class });
+				_methodMap.put(trigger, new Object[] { m, ircCommand,
+						new IrcPermission(scopeList, permissions) });
+			} catch (Exception e) {
+				logger.error(
+						"Invalid class/method listed in irccommands.conf - "
+								+ line, e);
+				throw new RuntimeException(e);
+			}
+		}
+		logger.debug("_methodMap = " + _methodMap);
+	}
+
+	protected void reload(Properties ircCfg) throws IOException {
         _server = PropertyHelper.getProperty(ircCfg, "irc.server");
         _port = Integer.parseInt(PropertyHelper.getProperty(ircCfg, "irc.port"));
 
@@ -1128,8 +1144,6 @@ public class SiteBot extends FtpListener implements Observer {
         }
 
         _sections = sections;
-
-		_commandRegister = new CommandRegister();
 
         if ((_conn == null) ||
                 !_conn.getClientState().getServer().equals(_server) ||
@@ -1196,7 +1210,7 @@ public class SiteBot extends FtpListener implements Observer {
     }
 
     public void sayChannel(String chan, String message) {
-        if (message.equals("")) {
+        if (message == null || message.equals("")) {
             throw new IllegalArgumentException(
                 "Cowardly refusing to send empty message");
         }
@@ -1211,7 +1225,7 @@ public class SiteBot extends FtpListener implements Observer {
 
     //never encrypt private messages
     public void sayPrivMessage(String nick, String message) {
-        if (message.equals("")) {
+    	if (message == null || message.equals("")) {
             throw new IllegalArgumentException(
                 "Cowardly refusing to send empty message");
         }
@@ -1240,7 +1254,8 @@ public class SiteBot extends FtpListener implements Observer {
         }
     }
 
-    public String strippath(String path) {
+    // why the hell is this here? don't we already have 10 methods that do this?
+    private String strippath(String path) {
         if (!path.startsWith("/")) {
             return path;
         }
@@ -1252,158 +1267,129 @@ public class SiteBot extends FtpListener implements Observer {
     }
 
     public void update(Observable observer, Object updated) {
-    	//add ident for those who use site invite
-    	if (updated instanceof WhoisUserReply) {
-    		WhoisUserReply whor = (WhoisUserReply) updated;
-    		String reply[] = whor.getParameter(whor.getSourceString(),0).split(" ");
-    		String nick = reply[3];
-    		String fullIdent = reply[3] + "!" + reply[4] + "@" + reply[5];
- 
+    	// add ident for those who use site invite
+		if (updated instanceof WhoisUserReply) {
+			WhoisUserReply whor = (WhoisUserReply) updated;
+			String reply[] = whor.getParameter(whor.getSourceString(), 0)
+					.split(" ");
+			String nick = reply[3];
+			String fullIdent = reply[3] + "!" + reply[4] + "@" + reply[5];
+
 			for (Iterator i = _identWhoisQueue.keySet().iterator(); i.hasNext();) {
 				String n = (String) i.next();
 				if (n.toLowerCase().equals(nick.toLowerCase())) {
-	    			User user = (User) _identWhoisQueue.get(n);
-	    			user.getKeyedMap().setObject(UserManagement.IRCIDENT,fullIdent);
-	    			try {
+					User user = (User) _identWhoisQueue.get(n);
+					user.getKeyedMap().setObject(UserManagement.IRCIDENT,
+							fullIdent);
+					try {
 						user.commit();
 						_identWhoisQueue.remove(nick);
-	    				logger.info("Set IRCIdent to '"+fullIdent+"' for '"+user.getName()+"'");
+						logger.info("Set IRCIdent to '" + fullIdent + "' for '"
+								+ user.getName() + "'");
 					} catch (UserFileException e) {
-						logger.info("Could not set IRCIdent to '"+fullIdent+"' for '"+user.getName()+"'",e);
+						logger.info("Could not set IRCIdent to '" + fullIdent
+								+ "' for '" + user.getName() + "'", e);
 					}
 				}
-			}		
-			//clear the queue to avoid excessive memory usage
+			}
+			// clear the queue to avoid excessive memory usage
 			_identWhoisQueue.clear();
-    	}
-    	
-    	MessageCommand msgc;
-        if ((updated instanceof MessageCommand)) {
-            msgc = (MessageCommand) updated;
+		}
 
-            //recreate the MessageCommand with the encrypted text
-            if (_fish != null && !msgc.isPrivateToUs(getIRCConnection().getClientState())) {
-                try {
-                    MessageCommand decmsgc = new MessageCommand(msgc.getSource(), msgc.getDest(),
-                            						  	_fish.Decrypt(msgc.getMessage()));
-                    msgc = decmsgc;
-                } catch (UnsupportedEncodingException e) {
-                    logger.warn("Unable to decrypt '"+msgc.getSourceString()+"'", e);
-                }
-            }
-            
-            //dispatch the decrypted MessageCommand to our plugins
-        	for (Observer plugin : _commandObservers) {
-        	    plugin.update(observer, msgc);
-        	}
-        } else {
-            //dispatch the unmodified InCommand to our plugins
-        	for (Observer plugin : _commandObservers) {
-        	    plugin.update(observer, updated);
-        	}            
-        	return;
-        }
-        
+		if ((updated instanceof MessageCommand)) {
+			MessageCommand msgc = (MessageCommand) updated;
 
-        if (msgc.isPrivateToUs(getIRCConnection().getClientState())) {
-            return;
-        }
-
-        //if (!msgc.getDest().equalsIgnoreCase(_channelName)) {
-        //    return;
-        //}
-
-		String msg = msgc.getMessage();
-        if (msg.equals(_chanprefix +"help")) {
-    		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-    		env.add("botnick",getIRCConnection().getClientState().getNick().getNick());
-    		env.add("ircnick",msgc.getSource().getNick());
-            //Get the ftp user account based on irc ident
-    		User ftpuser;
-    		try {
-                ftpuser = getIRCConfig().lookupUser(msgc.getSource());
-            } catch (NoSuchUserException e) {
-    			sayChannel(msgc.getDest(), 
-    					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-    			return;
-            }
-    		if (!getIRCConfig().checkIrcPermission(getCommandPrefix() + "help",ftpuser)) {
-    			sayChannel(msgc.getDest(), 
-    					ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
-    			return;				
-    		}
-
-            sayPrivMessage(msgc.getSource().getNick(), "Available commands: \n");
-            for (Observer obs : _commandObservers) {
-                IRCPluginInterface plugin = (IRCPluginInterface) obs;
-                String help = plugin.getCommandsHelp(ftpuser);
-                if (!"".equals(help))
-                    sayPrivMessage(msgc.getSource().getNick(), help);
-            }
-        }
+			// recreate the MessageCommand with the encrypted text
+			if (_fish != null) {
+				try {
+					MessageCommand decmsgc = new MessageCommand(msgc
+							.getSource(), msgc.getDest(), _fish.Decrypt(msgc
+							.getMessage()));
+					msgc = decmsgc;
+				} catch (UnsupportedEncodingException e) {
+					logger.warn("Unable to decrypt '" + msgc.getSourceString()
+							+ "'", e);
+				}
+			}
+			logger.debug("received - " + msgc.getMessage());
+			int index = msgc.getMessage().indexOf(" ");
+			String args = null;
+			String trigger = null;
+			if (index == -1) {
+				trigger = msgc.getMessage().toLowerCase();
+			} else {
+				trigger = msgc.getMessage().substring(0, index);
+				args = msgc.getMessage().substring(index+1);
+			}
+			logger.debug("trigger = " + trigger);
+			if (_methodMap.containsKey(trigger)) { // is a recognized command
+				logger.debug(trigger + " matched!");
+				Object[] objects = _methodMap.get(trigger);
+				IrcPermission perm = (IrcPermission) objects[2];
+				String scope = msgc.isPrivateToUs(_conn.getClientState()) ? "private"
+						: msgc.getSource().getNick();
+				logger.debug("here1");
+				if (perm.checkScope(scope)) { // not a recognized command on this channel or through privmsg
+					return;
+				}
+				logger.debug("here2");
+				if (perm.checkPermission(msgc.getSource())) {
+					logger.warn("Not enough permissions for user to execute " + trigger + " to " + msgc.getDest());
+					return;
+				}
+				logger.debug("here3");
+				try {
+					ArrayList<String> list = (ArrayList) ((Method) objects[0]).invoke(objects[1],args);
+					for (String output : list) {
+						sayChannel(msgc.getDest(), output);
+					}
+					
+				} catch (Exception e) {
+					logger.error("Error in method invocation on IRCCommand " + trigger);
+					sayChannel(msgc.getDest(), e.getMessage());
+				}
+				logger.debug("here4");
+			}
+		}
     }
-
-    public class IrcConfig {
-        private String cfgFile = "conf/irc.conf";
-        private Hashtable<String, Permission> _permissions;
-        
-        
-        public IrcConfig() throws IOException  {
-            reload();
+     
+    public class IrcPermission {
+    	
+    	ArrayList<String> _scope = new ArrayList<String>();
+    	String _permissions = null;
+        public IrcPermission(String scope, String permissions) {
+        	for (String s : scope.split(",")) {
+        		_scope.add(s);
+        	}
+        	_permissions = permissions;
         }
         
-        public void reload() throws IOException {
-            _permissions = new Hashtable<String,Permission>();
-                LineNumberReader in = new LineNumberReader(new FileReader(cfgFile));
-                try {
-                    String line;
-                    while ((line = in.readLine()) != null) {
-                        StringTokenizer st = new StringTokenizer(line);
-                        if (!st.hasMoreTokens()) {
-                            continue;
-                        }
-                        if (!st.nextToken().equalsIgnoreCase("perm")) {
-                            continue;
-                        }
-                        if (st.hasMoreTokens()) {
-                            String ircCmd = st.nextToken();
-                            _permissions.put(ircCmd,new Permission(FtpConfig.makeUsers(st)));                  
-                        }
-                    }
-                } catch (Exception e) {
-                    logger.warn("Exception when reading " + cfgFile + " line " + in.getLineNumber(), e);
-                } finally {
-                    in.close();
-                }
+        
+        /**
+         * Accepts channel names, "public", or "private"
+         */
+        public boolean checkScope(String scope) {
+        	if (_scope.contains(scope)) {
+        		return true;
+        	}
+        	return scope.startsWith("#") && _scope.contains("public");
         }
         
-        public boolean checkIrcPermission(String command, FullNick fn)
-        	throws NoSuchUserException {
-            return checkIrcPermission(command, fn, true);
-        }
-
-        public boolean checkIrcPermission(String command, FullNick fn, boolean defaults)
-        	throws NoSuchUserException {
-            Permission perm = _permissions.get(command);
-            User user = lookupUser(fn);
-            return (perm == null) ? defaults : perm.check(user);            
-        }
-
-        public boolean checkIrcPermission(String command, User user) {
-            return checkIrcPermission(command, user, true);
-        }
-
-        public boolean checkIrcPermission(String command, User user, boolean defaults) {
-            Permission perm = _permissions.get(command);
-            return (perm == null) ? defaults : perm.check(user);            
+        public boolean checkPermission(FullNick fn) {
+        	if (_permissions.equals("*")) {
+        		return true;
+        	}
+        	try {
+        	return new Permission(FtpConfig.makeUsers(new StringTokenizer(_permissions))).check(lookupUser(fn));
+        	} catch (NoSuchUserException e) {
+        		return false;
+        	}
         }
 
         public User lookupUser(FullNick fn) throws NoSuchUserException {
          	String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
-         	User ftpuser;
          	try {
-         	    ftpuser = getGlobalContext().getUserManager().getUserByIdent(ident);
-         	    return ftpuser;
+         	    return getGlobalContext().getUserManager().getUserByIdent(ident);
          	} catch (NoSuchUserException e3) {
          	    logger.warn("Could not identify " + ident);
          	} catch (UserFileException e3) {
@@ -1411,7 +1397,6 @@ public class SiteBot extends FtpListener implements Observer {
          	}
     	    throw new NoSuchUserException("No user found");
     	}
-    	
     }
     
     public static class Ret {

@@ -45,76 +45,16 @@ import f00f.net.irc.martyr.commands.MessageCommand;
  * @author mog
  * @version $Id$
  */
-public class Who extends GenericAutoService implements IRCPluginInterface {
+public class Who extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Who.class);
-    private SiteBot _listener;
-    private String _trigger;
 
-    public Who(SiteBot listener) {
-        super(listener.getIRCConnection());
-        _listener = listener;
-        _trigger = _listener.getCommandPrefix();
+    public Who(GlobalContext gctx) {
+    	super(gctx);
     }
-
-    public String getCommands() {
-        return _trigger + "who";
-    }
-
-    public String getCommandsHelp(User user) {
-        String help = "";
-        if (_listener.getIRCConfig().checkIrcPermission(_listener.getCommandPrefix() + "who", user))
-            help += _listener.getCommandPrefix() + "who : Show who is currently connected to the ftp server.\n";
-        return help;
-    }
-
-    private GlobalContext getGlobalContext() {
-        return _listener.getGlobalContext();
-    }
-
-    protected void updateCommand(InCommand inCommand) {
-        if (!(inCommand instanceof MessageCommand)) {
-            return;
-        }
-
-        MessageCommand msgc = (MessageCommand) inCommand;
-
-        if (msgc.isPrivateToUs(_listener.getIRCConnection().getClientState())) {
-            return;
-        }
-
-        String cmd = msgc.getMessage();
-
-        boolean up;
-        boolean dn;
-        boolean idle;
-
-        if (cmd.equals(_trigger + "who")) {
-            up = dn = idle = true;
-        } else if (cmd.equals(_trigger + "leechers") || cmd.equals(_trigger + "uploaders") ||
-                cmd.equals(_trigger + "idlers")) {
-            dn = cmd.equals(_trigger + "leechers");
-            up = cmd.equals(_trigger + "uploaders");
-            idle = cmd.equals(_trigger + "idlers");
-        } else {
-            return;
-        }
-
+    
+    private ArrayList<String> getData(boolean idle, boolean up, boolean down) {
+    	ArrayList<String> out = new ArrayList<String>();
         ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-		env.add("botnick",_listener.getIRCConnection().getClientState().getNick().getNick());
-		env.add("ircnick",msgc.getSource().getNick());	
-		try {
-            if (!_listener.getIRCConfig().checkIrcPermission(
-                    cmd,msgc.getSource())) {
-            	_listener.sayChannel(msgc.getDest(), 
-            			ReplacerUtils.jprintf("ident.denymsg", env, SiteBot.class));
-            	return;				
-            }
-        } catch (NoSuchUserException e) {
-			_listener.sayChannel(msgc.getDest(), 
-					ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-			return;
-        }
-
         try {
             ReplacerFormat formatup = ReplacerUtils.finalFormat(Who.class,
                     "who.up");
@@ -147,11 +87,8 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
                     "s");
                 env.add("targetuser", user.getName());
 
-                if (!conn.getDataConnectionHandler().isTransfering()) {
-                    if (idle) {
-                        _listener.sayChannel(msgc.getDest(),
-                            SimplePrintf.jprintf(formatidle, env));
-                    }
+                if (!conn.getDataConnectionHandler().isTransfering() && idle) {
+                	out.add(SimplePrintf.jprintf(formatidle, env));
                 } else {
                     env.add("speed",
                         Bytes.formatBytes(conn.getDataConnectionHandler()
@@ -165,26 +102,33 @@ public class Who extends GenericAutoService implements IRCPluginInterface {
                         conn.getDataConnectionHandler().getTranferSlave()
                             .getName());
 
-                    if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-                        if (up) {
-                            _listener.sayChannel(msgc.getDest(),
-                                SimplePrintf.jprintf(formatup, env));
-                            i++;
-                        }
-                    } else if (conn.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-                        if (dn) {
-                            _listener.sayChannel(msgc.getDest(),
-                                SimplePrintf.jprintf(formatdown, env));
-                            i++;
-                        }
+                    if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD && up) {
+                        out.add(SimplePrintf.jprintf(formatup, env));
+                    } else if (conn.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD && down) {
+                            out.add(SimplePrintf.jprintf(formatdown, env));
                     }
                 }
+                
             }
         } catch (FormatterException e) {
             logger.warn("", e);
         }
+        return out;
     }
 
-    protected void updateState(State state) {
+    public ArrayList<String> doWho(String cmd) {
+    	return getData(true,true,true);
+    }
+    
+    public ArrayList<String> doIdlers(String cmd) {
+    	return getData(true, false, false);
+    }
+    
+    public ArrayList<String> doLeechers(String cmd) {
+    	return getData(false, false, true);
+    }
+    
+    public ArrayList<String> doUploaders(String cmd) {
+    	return getData(false, true, false);
     }
 }

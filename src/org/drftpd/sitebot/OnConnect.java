@@ -38,7 +38,7 @@ import f00f.net.irc.martyr.errors.ChannelWrongKeyError;
  * @author mog
  * @version $Id$
  */
-public class OnConnect extends GenericAutoService implements IRCPluginInterface {
+public class OnConnect extends GenericAutoService {
     private State _state;
 
     public OnConnect(SiteBot sitebot) {

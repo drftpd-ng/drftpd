@@ -1,0 +1,8 @@
+# triggers have to be unique but can map to a method as many times as they want!
+# they are not one-to-one for you math majors
+# trigger Method private/public/#channel(seperated by commas) permissions
+
+!who org.drftpd.sitebot.Who.doWho public,private *
+!leechers org.drftpd.sitebot.Who.doLeechers #drftpd *
+!idlers org.drftpd.sitebot.Who.doIdlers private *
+!uploaders org.drftpd.sitebot.Who.doUploaders public =siteop

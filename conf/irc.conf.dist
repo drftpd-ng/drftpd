@@ -49,28 +49,5 @@ irc.sendDelay=300
 #irc.section.2.channel=#drftpd-test2
 
 # Plugins ...
-irc.plugins.1=org.drftpd.sitebot.Invite
-irc.plugins.2=org.drftpd.sitebot.Who
-irc.plugins.3=org.drftpd.sitebot.Slaves
-irc.plugins.4=org.drftpd.sitebot.GenericTextOutput
-irc.plugins.5=org.drftpd.sitebot.Stats
-irc.plugins.6=org.drftpd.sitebot.Bandwidth
-irc.plugins.7=org.drftpd.sitebot.Diskfree
-irc.plugins.8=org.drftpd.sitebot.OnConnect
-irc.plugins.9=org.drftpd.sitebot.Ident
-irc.plugins.10=net.drmods.plugins.irc.Kick
-irc.plugins.11=net.drmods.plugins.irc.Approve
-irc.plugins.12=net.drmods.plugins.irc.imdb.IRCListener
-irc.plugins.13=net.drmods.plugins.irc.IRCNuke
-irc.plugins.14=net.drmods.plugins.irc.Credits
-irc.plugins.15=net.drmods.plugins.irc.Rank
-irc.plugins.16=net.drmods.plugins.irc.Request
-
-# Plugin command permissions ... defaults to allow for all commands not listed
-perm 	!approve 	=siteop
-perm 	!kick		=siteop
-perm 	!nuke		=nuke
-perm 	!unnuke	=nuke
-perm 	!nukes	=nuke
-
+martyr.plugins.1=org.drftpd.sitebot.OnConnect
 
