@@ -1021,7 +1021,6 @@ public class SiteBot extends FtpListener implements Observer {
     }
 
     public IrcConfig getIRCConfig() {
-        logger.info("fetching ircCfg ...");
         return _ircCfg;
     }
 
@@ -1321,12 +1320,10 @@ public class SiteBot extends FtpListener implements Observer {
                             String ircCmd = st.nextToken();
                             _permissions.put(ircCmd,new Permission(FtpConfig.makeUsers(st)));                  
                         }
-                        logger.info(in.getLineNumber() + ". " + line);
                     }
                 } catch (Exception e) {
                     logger.warn("Exception when reading " + cfgFile + " line " + in.getLineNumber(), e);
                 } finally {
-                    logger.warn("Closing file ...");
                     in.close();
                     fr.close();
                 }
