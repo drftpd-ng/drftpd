@@ -9,7 +9,7 @@ import net.sf.drftpd.LinkedRemoteFile;
 
 public interface SlaveManager extends Remote {
 
-    public void addSlave(String key, Slave slave, LinkedRemoteFile root) throws RemoteException;
+    public void addSlave(RemoteSlave slave, LinkedRemoteFile root) throws RemoteException;
     //public void addSlave(String key, Slave slave) throws RemoteException;
 	//public RemoteSlave getSlave(String key) throws RemoteException;
 

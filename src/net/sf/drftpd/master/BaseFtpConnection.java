@@ -16,6 +16,8 @@ import java.lang.reflect.InvocationTargetException;
 
 import java.util.Properties;
 
+import net.sf.drftpd.master.usermanager.*;
+
 //import ranab.util.Message;
 /*import ranab.io.StreamConnectorObserver;*/
 
@@ -90,12 +92,12 @@ public class BaseFtpConnection implements Runnable {
 	 * Server one FTP connection.
 	 */
 	public void run() {
-		InetAddress clientAddress = mControlSocket.getInetAddress();
+		clientAddress = mControlSocket.getInetAddress();
 		//mConfig.getLogger().info("Handling new request from " + clientAddress.getHostAddress());
 		System.out.println(
 			"Handling new request from " + clientAddress.getHostAddress());
 		//mDataConnection = new FtpDataConnection(mConfig);
-		setClientAddress(clientAddress);
+		//setClientAddress(clientAddress);
 		//mConfig.getConnectionService().newConnection(this);
 
 		BufferedReader in = null;
@@ -358,9 +360,9 @@ public class BaseFtpConnection implements Runnable {
 		return mFtpStatus;
 	}
 	/***** DATA CONNECTION *****/
-	protected Socket mDataSoc = null;
-	protected ServerSocket mServSoc = null;
-	protected InetAddress mAddress = null;
+	protected Socket mDataSoc;
+	protected ServerSocket mServSoc;
+	protected InetAddress mAddress;
 	protected int miPort = 0;
 
 	protected boolean mbPort = false;

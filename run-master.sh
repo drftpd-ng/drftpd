@@ -1,2 +1,3 @@
 #!/bin/sh
-exec java -classpath classes net.sf.drftpd.master.Main
+export CLASSPATH=classes:lib/jakarta-oro-2.0.6.jar
+exec java net.sf.drftpd.master.Main

@@ -37,7 +37,7 @@
    </target>
 
    <target name="compile" depends="init, prepare">
-     <javac destdir="${outputDir}" debug="yes" optimize="no">
+     <javac destdir="${outputDir}" debug="yes">
        <src path="${sourceDir}"/>
        <exclude name="**/UnixDirectoryHelper.java"/>
        <exclude name="**/ListRemoteFiles.java"/>

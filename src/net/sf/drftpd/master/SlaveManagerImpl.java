@@ -36,11 +36,11 @@ public class SlaveManagerImpl
 		}
 	}
 
-	public void addSlave(String key, Slave slave, LinkedRemoteFile remoteroot)
+	public void addSlave(RemoteSlave slave, LinkedRemoteFile remoteroot)
 		throws RemoteException {
 		System.out.println("SlaveManager.addSlave(): " + slave);
 		RemoteSlave rslave;
-		slaves.add(new RemoteSlave(slave));
+		slaves.add(slave);
 /*
  		rslave = (RemoteSlave) slaves.get(key);
 		if (rslave != null) {

@@ -6,6 +6,8 @@ import java.io.BufferedReader;
 import java.io.StringReader;
 import java.util.Properties;
 
+import net.sf.drftpd.master.usermanager.*;
+
 /**
  * Ftp status line parser class. This class loads <code>FtpStatus.properties</code>
  * file from the classpath. It generates the descriptive ftp status for

@@ -3,7 +3,15 @@ package net.sf.drftpd;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Collection;
+import java.util.Vector;
 import java.util.Hashtable;
+import java.util.Random;
+import java.util.Enumeration;
+
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
+import net.sf.drftpd.RemoteSlave;
 
 /**
  * @author mog
@@ -14,43 +22,140 @@ import java.util.Hashtable;
  * Window>Preferences>Java>Code Generation.
  */
 public abstract class RemoteFile {
-	/**
-	 * @see net.sf.drftpd.RemoteFile#addSlave(RemoteSlave)
-	 */
-	public abstract void addSlave(RemoteSlave slave);
-	/**
-	 * @see net.sf.drftpd.RemoteFile#addSlaves(Collection)
-	 */
-	public abstract void addSlaves(Collection addslaves);
-	/**
-	 * @see net.sf.drftpd.RemoteFile#canRead()
-	 */
-	public abstract boolean canRead();
-	/**
-	 * @see net.sf.drftpd.RemoteFile#canWrite()
-	 */
-	public abstract boolean canWrite();
 
+	public RemoteFile() {
+		
+	}
+	
+	protected Vector slaves;
+	public void addSlave(RemoteSlave slave) {
+		slaves.add(slave);
+	}
+	public void addSlaves(Collection addslaves) {
+		if (addslaves == null)
+			throw new IllegalArgumentException("addslaves cannot be null");
+		System.out.println("Adding " + addslaves + " to " + slaves);
+		slaves.addAll(addslaves);
+		System.out.println("slaves.size() is now " + slaves.size());
+	}
+	public Collection getSlaves() {
+		return slaves;
+	}
+	private Random rand = new Random();
+	public RemoteSlave getAnySlave() {
+		int num = rand.nextInt(slaves.size());
+		System.out.println(
+			"Returning slave "
+				+ num
+				+ " out of "
+				+ slaves.size()
+				+ " possible slaves");
+		return (RemoteSlave) slaves.get(num);
+	}
+
+	public void removeSlave(RemoteSlave slave) {
+		slaves.remove(slave);
+	}
+
+	protected String user;
+	public String getUser() {
+		if (user == null)
+			return "drftpd";
+		return user;
+	}
+
+	protected String group;
+	public String getGroup() {
+		if (group == null)
+			return "drftpd";
+		return group;
+	}
+
+	//boolean isHidden;
+	public boolean isHidden() {
+		if (getPath().startsWith("."))
+			return true;
+		return false;
+	}
+
+	protected boolean canRead;
+	public boolean canRead() {
+		return canRead;
+	}
+
+	protected boolean canWrite;
+	public boolean canWrite() {
+		return canWrite;
+	}
+
+	protected long lastModified;
+	public long lastModified() {
+		return lastModified;
+	}
+
+	protected long length;
+	public long length() {
+		return length;
+	}
+
+	protected boolean isDirectory;
+	public boolean isDirectory() {
+		return isDirectory;
+	}
+
+	protected boolean isFile;
+	public boolean isFile() {
+		return isFile;
+	}
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		StringBuffer ret = new StringBuffer();
+		ret.append("[net.sf.drftpd.RemoteFile[");
+		//ret.append(slaves);
+		Enumeration e = slaves.elements();
+		ret.append("slaves:[");
+		while (e.hasMoreElements()) {
+			//[endpoint:[213.114.146.44:2012](remote),objID:[2b6651:ef0b3c7162:-8000, 0]]]]]
+			Pattern p = Pattern.compile("endpoint:\\[(.*?):.*?\\]");
+			Matcher m = p.matcher(e.nextElement().toString());
+			m.find();
+			ret.append(m.group(1));
+			//ret.append(e.nextElement());
+			if (e.hasMoreElements())
+				ret.append(",");
+		}
+		ret.append("]");
+		//ret.append("isDirectory(): " + isDirectory() + " ");
+		if (isDirectory())
+			ret.append("[directory: true]");
+		//ret.append("isFile(): " + isFile() + " ");
+		ret.append(getPath());
+		ret.append("]]");
+		return ret.toString();
+	}
+
+	/**
+	 * separatorChar is always "/" as "/" is always used in FTP.
+	 */
+	public static final char separatorChar = '/';
+
+	/**
+	 * A remote file never exists locally, therefore we return false.
+	 * If the current RemoteSlave has the file this call could return true
+	 * but as we don't know the root directory it's not possible right now.
+	 */
+	public boolean exists() {
+		return false;
+	}
+
+	/////////////////////// abstract ////////////////////////////
 	/**
 	 * @see java.lang.Object#equals(Object)
 	 */
 	public abstract boolean equals(Object arg0);
-	/**
-	 * @see net.sf.drftpd.RemoteFile#exists()
-	 */
-	public abstract boolean exists();
-	/**
-	 * @see net.sf.drftpd.RemoteFile#getAnySlave()
-	 */
-	public abstract RemoteSlave getAnySlave();
-	/**
-	 * @see net.sf.drftpd.RemoteFile#getGroup()
-	 */
-	public abstract String getGroup();
-	/**
-	 * @see net.sf.drftpd.RemoteFile#getHashtable()
-	 */
-	public abstract Hashtable getHashtable();
 	/**
 	 * @see net.sf.drftpd.RemoteFile#getName()
 	 */
@@ -59,58 +164,9 @@ public abstract class RemoteFile {
 	 * @see net.sf.drftpd.RemoteFile#getParent()
 	 */
 	public abstract String getParent();
-
-	/**
-	 * @see net.sf.drftpd.RemoteFile#getParentFile()
-	 */
-	public abstract LinkedRemoteFile getParentFile();
 	/**
 	 * @see net.sf.drftpd.RemoteFile#getPath()
 	 */
 	public abstract String getPath();
-	/**
-	 * @see net.sf.drftpd.RemoteFile#getSlaves()
-	 */
-	public abstract Collection getSlaves();
-	/**
-	 * @see net.sf.drftpd.RemoteFile#getUser()
-	 */
-	public abstract String getUser();
-	/**
-	 * @see net.sf.drftpd.RemoteFile#isDirectory()
-	 */
-	public abstract boolean isDirectory();
-	/**
-	 * @see net.sf.drftpd.RemoteFile#isFile()
-	 */
-	public abstract boolean isFile();
-	/**
-	 * @see net.sf.drftpd.RemoteFile#isHidden()
-	 */
-	public abstract boolean isHidden();
-	/**
-	 * @see net.sf.drftpd.RemoteFile#lastModified()
-	 */
-	public abstract long lastModified();
-	/**
-	 * @see net.sf.drftpd.RemoteFile#length()
-	 */
-	public abstract long length();
-	/**
-	 * @see net.sf.drftpd.RemoteFile#listFiles()
-	 */
-	public abstract LinkedRemoteFile[] listFiles();
-	/**
-	 * @see net.sf.drftpd.RemoteFile#lookupFile(String)
-	 */
-	public abstract LinkedRemoteFile lookupFile(String path) throws FileNotFoundException;
-	/**
-	 * @see net.sf.drftpd.RemoteFile#merge(RemoteFile)
-	 */
-	public abstract void merge(LinkedRemoteFile dir);
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	public abstract String toString();
 
 }
