@@ -43,7 +43,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagment.java,v 1.13 2004/02/23 01:14:37 mog Exp $
+ * @version $Id: SiteManagment.java,v 1.14 2004/03/01 04:21:03 zubov Exp $
  */
 public class SiteManagment implements CommandHandler {
 
@@ -117,6 +117,11 @@ public class SiteManagment implements CommandHandler {
 		try {
 			conn.getConnectionManager().getConfig().reloadConfig();
 			conn.getSlaveManager().reload();
+			try {
+				conn.getConnectionManager().getJobManager().reload();
+			} catch (IllegalStateException e1) {
+				// not loaded, don't reload
+			}
 			conn.getConnectionManager().getCommandManagerFactory().reload();
 			//slaveManager.saveFilesXML();
 		} catch (IOException e) {

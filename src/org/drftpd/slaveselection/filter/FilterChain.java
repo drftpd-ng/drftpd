@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
+
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.RemoteSlave;
@@ -34,22 +36,22 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: FilterChain.java,v 1.2 2004/03/01 00:21:10 mog Exp $
+ * @version $Id: FilterChain.java,v 1.3 2004/03/01 04:21:04 zubov Exp $
  */
 public class FilterChain {
 	private String _cfgfileName;
 	private ArrayList _filters;
-	private SlaveSelectionManager _sm;
+	private SlaveSelectionManagerInterface _sm;
 
 	protected FilterChain() {
 	}
-
-	public FilterChain(SlaveSelectionManager manager, Properties p) {
-		_sm = manager;
+	
+	public FilterChain(SlaveSelectionManagerInterface sm, Properties p) {
+		_sm = sm;
 		reload(p);
 	}
 
-	public FilterChain(SlaveSelectionManager sm, String cfgFileName)
+	public FilterChain(SlaveSelectionManagerInterface sm, String cfgFileName)
 		throws FileNotFoundException, IOException {
 		_sm = sm;
 		_cfgfileName = cfgFileName;

@@ -22,16 +22,12 @@ master.usermanager=net.sf.drftpd.master.usermanager.jsx.JSXUserManager
 #use ident on user lookups
 use.ident=true
 
-#plugin settings
-#JobManager is required for Mirror and/or Archive
-
 #loaded plugins must use in sequential numbering
 #plugins.1=net.sf.drftpd.event.irc.IRCListener
 #plugins.2=net.sf.drftpd.event.listeners.Trial
 #plugins.3=net.sf.drftpd.event.listeners.PreTime
-#plugins.4=net.sf.drftpd.mirroring.JobManager
-#plugins.5=net.sf.drftpd.event.listeners.Mirror
-#plugins.6=net.sf.drftpd.event.listeners.Archive
+#plugins.4=net.sf.drftpd.event.listeners.Mirror
+#plugins.5=net.sf.drftpd.event.listeners.Archive
 
 slaveselection=org.drftpd.slaveselection.def.SlaveSelectionManager
 sectionmanager=org.drftpd.sections.def.SectionManager

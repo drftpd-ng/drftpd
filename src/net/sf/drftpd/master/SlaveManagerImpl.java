@@ -51,7 +51,6 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.remotefile.MLSTSerialize;
 import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
-import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.util.SafeFileWriter;
 
 import org.apache.log4j.Level;
@@ -65,7 +64,7 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * @author mog
- * @version $Id: SlaveManagerImpl.java,v 1.71 2004/03/01 00:21:08 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.72 2004/03/01 04:21:03 zubov Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -85,16 +84,16 @@ public class SlaveManagerImpl
 		BaseFtpConnection conn,
 		LinkedRemoteFileInterface file)
 		throws NoAvailableSlaveException {
-		String dir;
-		if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-			dir = "up";
-		} else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-			dir = "down";
-		} else {
-			throw new IllegalArgumentException();
-		}
+//		String dir;
+//		if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+//			dir = "up";
+//		} else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+//			dir = "down";
+//		} else {
+//			throw new IllegalArgumentException();
+//		}
 		return config.getSlaveManager().getSlaveSelectionManager(
-			dir).getASlave(
+			).getASlave(
 			slaves,
 			direction,
 			conn,
@@ -200,17 +199,8 @@ public class SlaveManagerImpl
 		//		return bestslave;
 	}
 
-	public SlaveSelectionManagerInterface getSlaveSelectionManager(String dir) {
+	public SlaveSelectionManagerInterface getSlaveSelectionManager() {
 		return _slaveSelectionManager;
-		//		if(dir.equals("up")) {
-		//			return _slaveSelectionManagerUp;
-		//		} else if(dir.equals("down")) {
-		//			return _slaveSelectionManagerDown;
-		//		} else if(dir.equals("master")) {
-		//			return _slaveSelectionManagerMaster;
-		//		} else {
-		//			throw new IllegalArgumentException(dir);
-		//		}
 	}
 
 	public static Collection getAvailableSlaves(Collection slaves)

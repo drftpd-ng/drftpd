@@ -26,12 +26,11 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManagerInterface.java,v 1.2 2004/02/27 01:02:20 mog Exp $
+ * @version $Id: SlaveSelectionManagerInterface.java,v 1.3 2004/03/01 04:21:04 zubov Exp $
  */
 public interface SlaveSelectionManagerInterface {
 	public abstract void reload() throws FileNotFoundException, IOException;
@@ -50,6 +49,9 @@ public interface SlaveSelectionManagerInterface {
 	public abstract RemoteSlave getASlaveForMaster(LinkedRemoteFileInterface file, FtpConfig cfg)
 		throws NoAvailableSlaveException;
 	public abstract SlaveManagerImpl getSlaveManager();
-	public abstract RemoteSlave getASlaveForJobDownload(Job temp, RemoteSlave destslave)
+	public abstract RemoteSlave getASlaveForJobDownload(LinkedRemoteFileInterface file)
 		throws NoAvailableSlaveException;
+	public abstract RemoteSlave getASlaveForJobUpload(LinkedRemoteFileInterface file)
+		throws NoAvailableSlaveException;
+
 }

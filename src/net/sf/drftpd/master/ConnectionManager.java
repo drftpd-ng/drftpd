@@ -37,6 +37,7 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.MessageEvent;
+import net.sf.drftpd.event.listeners.RaceStatistics;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.NoSuchUserException;
@@ -54,7 +55,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.90 2004/03/01 00:21:08 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.91 2004/03/01 04:21:03 zubov Exp $
  */
 public class ConnectionManager {
 	private SectionManagerInterface _sections;
@@ -154,7 +155,7 @@ public class ConnectionManager {
 		List rslaves = SlaveManagerImpl.loadRSlaves();
 		GlobRMIServerSocketFactory ssf =
 			new GlobRMIServerSocketFactory(rslaves);
-
+			
 		/** register slavemanager **/
 		try {
 			_slaveManager = new SlaveManagerImpl(cfg, rslaves, ssf, this);
@@ -182,6 +183,20 @@ public class ConnectionManager {
 				"Cannot create instance of usermanager, check master.usermanager in "+cfgFileName,
 				e);
 		}
+		
+		_commandManagerFactory = new CommandManagerFactory(this);
+
+		//		if (cfg.getProperty("irc.enabled", "false").equals("true")) {
+		//			try {
+		//				addFtpListener(
+		//					new IRCListener(this, getConfig(), new String[0]));
+		//			} catch (Exception e2) {
+		//				throw new FatalException(e2);
+		//			}
+		//		}
+
+		addFtpListener(new RaceStatistics());
+		
 		try {
 			Class cl =
 				Class.forName(
@@ -203,25 +218,17 @@ public class ConnectionManager {
 				FtpListener ftpListener =
 					(FtpListener) Class.forName(classname).newInstance();
 				addFtpListener(ftpListener);
-				if (ftpListener instanceof JobManager)
-					_jm = (JobManager) ftpListener;
 			} catch (Exception e) {
 				throw new FatalException("Error loading plugins", e);
 			}
 		}
-		_commandManagerFactory = new CommandManagerFactory(this);
-
-		//		if (cfg.getProperty("irc.enabled", "false").equals("true")) {
-		//			try {
-		//				addFtpListener(
-		//					new IRCListener(this, getConfig(), new String[0]));
-		//			} catch (Exception e2) {
-		//				throw new FatalException(e2);
-		//			}
-		//		}
-
-		//addFtpListener(new RaceStatistics());
-
+		
+		try {
+			getSlaveManager().getSlaveSelectionManager().reload();
+		} catch (IOException e1) {
+			throw new FatalException(e1);
+		}
+		
 		_timer = new Timer();
 		TimerTask timerLogoutIdle = new TimerTask() {
 			public void run() {
@@ -244,6 +251,16 @@ public class ConnectionManager {
 		//run every hour 
 		_timer.schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
 		getSlaveManager().addShutdownHook();
+	}
+	
+	public void loadJobManager() {
+		if ( _jm != null ) return; // already loaded
+		try {
+			_jm = new JobManager(this);
+			_jm.startJobs();
+		} catch (IOException e) {
+			throw new FatalException("Error loading JobManager", e);
+		}
 	}
 
 	public Timer getTimer() {

@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import net.sf.drftpd.Bytes;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.SlaveManagerImpl;
@@ -43,7 +42,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.42 2004/02/23 01:14:38 mog Exp $
+ * @version $Id: FtpConfig.java,v 1.43 2004/03/01 04:21:04 zubov Exp $
  */
 public class FtpConfig {
 	private static final Logger logger = Logger.getLogger(FtpConfig.class);
@@ -85,7 +84,6 @@ public class FtpConfig {
 	private ConnectionManager _connManager;
 	private ArrayList _creditcheck;
 	private ArrayList _creditloss;
-	private long _freespaceMin;
 	private boolean _isLowerDir;
 	private boolean _isLowerFile;
 	private String _loginPrompt = SlaveImpl.VERSION + " http://drftpd.org";
@@ -273,9 +271,7 @@ public class FtpConfig {
 					+ temp.substring(1, temp.length());
 		return replaceName(temp, _replaceFile);
 	}
-	public long getFreespaceMin() {
-		return _freespaceMin;
-	}
+
 	public String getLoginPrompt() {
 		return _loginPrompt;
 	}
@@ -295,9 +291,6 @@ public class FtpConfig {
 		throws IOException {
 		loadConfig2();
 		_connManager = connManager;
-		_freespaceMin =
-			Bytes.parseBytes(FtpConfig.getProperty(cfg, "freespace.min"));
-
 		_useIdent = cfg.getProperty("use.ident", "true").equals("true");
 	}
 

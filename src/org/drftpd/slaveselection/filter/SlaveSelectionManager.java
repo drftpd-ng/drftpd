@@ -28,7 +28,6 @@ import net.sf.drftpd.master.RemoteSlave;
 import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.master.usermanager.User;
-import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.Transfer;
 
@@ -37,12 +36,14 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.5 2004/03/01 00:21:10 mog Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.6 2004/03/01 04:21:04 zubov Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 	private FilterChain _ssmiDown;
 	private FilterChain _ssmiUp;
 	private FilterChain _ssmiMaster;
+	private FilterChain _ssmiJobUp;
+	private FilterChain _ssmiJobDown;
 	private static final Logger logger =
 		Logger.getLogger(SlaveSelectionManager.class);
 	private SlaveManagerImpl _sm;
@@ -66,6 +67,17 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 			new FilterChain(
 				this,
 				"conf/slaveselection-up.conf");
+				
+			try {
+				if (_sm.getConnectionManager().getJobManager() != null) {
+				logger.debug("loading jobManagerSlaveSelection configs");
+					_ssmiJobUp =
+						new FilterChain(this,"conf/slaveselection-jobup.conf");
+					_ssmiJobDown =
+						new FilterChain(this,"conf/slaveselection-jobdown.conf");		
+				}
+			} catch (IllegalStateException e) {
+			}
 	}
 
 	/**
@@ -126,6 +138,10 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 			ssmi = _ssmiUp;
 		} else if (filterchain.equals("master")) {
 			ssmi = _ssmiMaster;
+		} else if (filterchain.equals("jobup")) {
+			ssmi = _ssmiJobUp;
+		} else if (filterchain.equals("jobdown")) {
+			ssmi = _ssmiJobDown;
 		} else {
 			throw new IllegalArgumentException();
 		}
@@ -136,14 +152,29 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 		return _sm;
 	}
 
-	public RemoteSlave getASlaveForJobDownload(Job temp, RemoteSlave destslave)
+	public RemoteSlave getASlaveForJobDownload(LinkedRemoteFileInterface file)
 		throws NoAvailableSlaveException {
-		return process(
-			"down",
-			new ScoreChart(getSlaveManager().getAvailableSlaves()),
-			null,
-			destslave.getInetAddress(),
-			Transfer.TRANSFER_SENDING_DOWNLOAD,
-			temp.getFile());
+			return process(
+				"jobdown",
+				new ScoreChart(file.getAvailableSlaves()),
+				null,
+				null,
+				Transfer.TRANSFER_SENDING_DOWNLOAD,
+				file);
 	}
+
+	public RemoteSlave getASlaveForJobUpload(LinkedRemoteFileInterface file)
+		throws NoAvailableSlaveException {
+			Collection slaves = _sm.getAvailableSlaves();
+			slaves.removeAll(file.getAvailableSlaves());
+		return process(
+			"jobup",
+			new ScoreChart(slaves),
+			null,
+			null,
+			Transfer.TRANSFER_SENDING_DOWNLOAD,
+			file);
+
+	}
+
 }

@@ -38,7 +38,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.17 2004/02/23 01:14:36 mog Exp $
+ * @version $Id: Archive.java,v 1.18 2004/03/01 04:21:03 zubov Exp $
  */
 
 public class Archive implements FtpListener {
@@ -130,6 +130,7 @@ public class Archive implements FtpListener {
 
 	public void init(ConnectionManager connectionManager) {
 		_cm = connectionManager;
+		_cm.loadJobManager();
 	}
 
 	/**

@@ -1,0 +1,8 @@
+1.filter=maxtransfers
+1.maxtransfers=2
+
+2.filter=maxbandwidth
+2.maxbandwidth=1000kb
+
+3.filter=bandwidth
+3.multiplier=1

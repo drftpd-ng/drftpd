@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
@@ -38,7 +37,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
  * CommandHandler plugin for viewing and manipulating the JobManager queue.
  * 
  * @author mog
- * @version $Id: JobManagerCommandHandler.java,v 1.9 2004/02/25 14:26:39 zubov Exp $
+ * @version $Id: JobManagerCommandHandler.java,v 1.10 2004/03/01 04:21:04 zubov Exp $
  */
 public class JobManagerCommandHandler implements CommandHandler {
 
@@ -116,21 +115,17 @@ public class JobManagerCommandHandler implements CommandHandler {
 	private FtpReply doSTARTJOBS(BaseFtpConnection conn) {
 		if (!conn.getUserNull().isAdmin())
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
-		try {
-			conn.getConnectionManager().getJobManager().startAllSlaves();
-		} catch (NoAvailableSlaveException e) {
-			return new FtpReply(500, "There were no slaves online to start");
-		}
-		return new FtpReply(200, "All slaves have been started");
+		conn.getConnectionManager().getJobManager().startJobs();
+		return new FtpReply(200, "JobTransfers will now start");
 	}
 
 	private FtpReply doSTOPJOBS(BaseFtpConnection conn) {
 		if (!conn.getUserNull().isAdmin())
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
-		conn.getConnectionManager().getJobManager().stopAllSlaves();
+		conn.getConnectionManager().getJobManager().stopJobs();
 		return new FtpReply(
 			200,
-			"All slaves will stop after their current transfer");
+			"All JobTransfers will stop after their current transfer");
 	}
 
 	public FtpReply execute(BaseFtpConnection conn)
