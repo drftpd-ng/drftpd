@@ -20,9 +20,9 @@ package net.sf.drftpd.slave;
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.ID3Tag;
 import net.sf.drftpd.MP3File;
+import net.sf.drftpd.PermissionDeniedException;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.config.FtpConfig;
@@ -68,7 +68,7 @@ import javax.net.ssl.SSLContext;
 
 /**
  * @author mog
- * @version $Id: SlaveImpl.java,v 1.103 2004/08/24 21:58:57 teflon114 Exp $
+ * @version $Id: SlaveImpl.java,v 1.104 2004/09/13 15:04:59 zubov Exp $
  */
 public class SlaveImpl extends UnicastRemoteObject implements Slave,
     Unreferenced {
@@ -339,23 +339,28 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave,
     }
 
     public ID3Tag getID3v1Tag(String path) throws IOException {
-		String absPath = _roots.getFile(path).getAbsolutePath();
-		logger.warn("Extracting ID3Tag info from: " + absPath);
-		try {
-			MP3File mp3 = new MP3File(absPath,"r");
-			if (!mp3.hasID3v1Tag) {
-				mp3.close();
-				throw new IOException("No id3tag found for " + absPath);
-			}
-			ID3Tag id3tag = mp3.readID3v1Tag();
-			mp3.close();
-			return id3tag;
-		} catch (FileNotFoundException e){
-			logger.warn("FileNotFoundException: ", e);
-		} catch (IOException e) {
-			logger.warn("IOException: ", e);
-		}
-		return null;
+        String absPath = _roots.getFile(path).getAbsolutePath();
+        logger.warn("Extracting ID3Tag info from: " + absPath);
+
+        try {
+            MP3File mp3 = new MP3File(absPath, "r");
+
+            if (!mp3.hasID3v1Tag) {
+                mp3.close();
+                throw new IOException("No id3tag found for " + absPath);
+            }
+
+            ID3Tag id3tag = mp3.readID3v1Tag();
+            mp3.close();
+
+            return id3tag;
+        } catch (FileNotFoundException e) {
+            logger.warn("FileNotFoundException: ", e);
+        } catch (IOException e) {
+            logger.warn("IOException: ", e);
+        }
+
+        return null;
     }
 
     public SlaveStatus getSlaveStatus() {

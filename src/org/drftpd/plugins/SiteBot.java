@@ -17,7 +17,6 @@
  */
 package org.drftpd.plugins;
 
-
 import f00f.net.irc.martyr.Debug;
 import f00f.net.irc.martyr.IRCConnection;
 import f00f.net.irc.martyr.clientstate.Channel;
@@ -31,10 +30,10 @@ import f00f.net.irc.martyr.services.AutoResponder;
 
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.FatalException;
+import net.sf.drftpd.ID3Tag;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.Nukee;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.ID3Tag;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.SFVFile.SFVStatus;
 import net.sf.drftpd.SlaveUnavailableException;
@@ -98,7 +97,7 @@ import java.util.ResourceBundle;
 
 /**
  * @author mog
- * @version $Id: SiteBot.java,v 1.19 2004/08/03 23:39:43 teflon114 Exp $
+ * @version $Id: SiteBot.java,v 1.20 2004/09/13 15:05:01 zubov Exp $
  */
 public class SiteBot implements FtpListener, Observer {
     public static final ReplacerEnvironment GLOBAL_ENV = new ReplacerEnvironment();
@@ -285,7 +284,7 @@ public class SiteBot implements FtpListener, Observer {
             throw new FatalException(e);
         }
 
-		ID3Tag id3tag;
+        ID3Tag id3tag;
 
         try {
             id3tag = dir.lookupFile(dir.lookupMP3File()).getID3v1Tag();

@@ -16,9 +16,10 @@
  */
 package net.sf.drftpd.mirroring;
 
+
 /**
  * @author zubov
- * @version $Id: SlaveException.java,v 1.2 2004/08/03 20:14:01 zubov Exp $
+ * @version $Id: SlaveException.java,v 1.3 2004/09/13 15:04:58 zubov Exp $
  */
 public class SlaveException extends Exception {
     public SlaveException() {

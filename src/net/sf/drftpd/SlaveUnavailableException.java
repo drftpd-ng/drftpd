@@ -16,6 +16,7 @@
  */
 package net.sf.drftpd;
 
+
 /**
  * @author mog
  * @version $Id: SlaveUnavailableException.java,v 1.1 2004/03/01 00:21:07 mog

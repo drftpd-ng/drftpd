@@ -19,9 +19,9 @@ package net.sf.drftpd.remotefile;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.FileExistsException;
+import net.sf.drftpd.ID3Tag;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.ID3Tag;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.RemoteSlave;
@@ -55,7 +55,7 @@ import java.util.StringTokenizer;
  * Represents the file attributes of a remote file.
  *
  * @author mog
- * @version $Id: LinkedRemoteFile.java,v 1.165 2004/08/24 21:58:57 teflon114 Exp $
+ * @version $Id: LinkedRemoteFile.java,v 1.166 2004/09/13 15:04:58 zubov Exp $
  */
 public class LinkedRemoteFile implements Serializable, Comparable,
     LinkedRemoteFileInterface {
@@ -151,10 +151,10 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
         if (file.isFile()) {
             _length = file.length();
-			_xfertime = file.getXfertime();
+            _xfertime = file.getXfertime();
             _slaves = Collections.synchronizedList(new ArrayList(
                         file.getSlaves()));
-			
+
             try {
                 getParentFile().addSize(length());
             } catch (FileNotFoundException ok) {
@@ -790,6 +790,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
                 try {
                     mp3tag = rslave.getSlave().getID3v1Tag(getPath());
+
                     break;
                 } catch (RemoteException ex) {
                     rslave.handleRemoteException(ex);
@@ -800,10 +801,12 @@ public class LinkedRemoteFile implements Serializable, Comparable,
         } else {
             logger.info("getID3v1Tag() : (cached) " + getPath());
         }
-        if (mp3tag == null)
-			throw new IOException("No id3tag found for " + getPath());
-		
-		return mp3tag;
+
+        if (mp3tag == null) {
+            throw new IOException("No id3tag found for " + getPath());
+        }
+
+        return mp3tag;
     }
 
     /**
@@ -826,7 +829,9 @@ public class LinkedRemoteFile implements Serializable, Comparable,
     }
 
     public long getXferspeed() {
-		logger.warn("getXferspeed = " + length() + " \\ " + getXfertime() + " = " + length() / getXfertime());
+        logger.warn("getXferspeed = " + length() + " \\ " + getXfertime() +
+            " = " + (length() / getXfertime()));
+
         if (getXfertime() == 0) {
             return 0;
         }

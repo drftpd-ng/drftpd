@@ -18,6 +18,7 @@
 package org.drftpd.commands;
 
 import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.event.listeners.Archive;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.RemoteSlave;
@@ -29,6 +30,7 @@ import org.apache.log4j.Logger;
 
 import org.drftpd.mirroring.ArchiveHandler;
 import org.drftpd.mirroring.ArchiveType;
+import org.drftpd.mirroring.DuplicateArchiveException;
 
 import org.drftpd.sections.SectionInterface;
 
@@ -46,7 +48,7 @@ import java.util.StringTokenizer;
 
 /*
  * @author zubov
- * @version $Id
+ * @version $Id: ArchiveCommandHandler.java,v 1.7 2004/09/13 15:05:00 zubov Exp $
  */
 public class ArchiveCommandHandler implements CommandHandlerFactory,
     CommandHandler {
@@ -135,10 +137,11 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
                         "org.drftpd.mirroring.archivetypes." + archiveTypeName)
                                    .getConstructor(classParams);
             } catch (Exception e1) {
-                logger.debug("Unable to load ArchiveType for section " +
-                    section.getName(), e1);
+                logger.debug("Serious error, your ArchiveType for section " +
+                    section.getName() +
+                    " is incompatible with this version of DrFTPD", e1);
                 reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-                        "archive.badarchivetype", env));
+                        "archive.incompatible", env));
 
                 return reply;
             }
@@ -156,6 +159,7 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
             } catch (Exception e2) {
                 logger.debug("Unable to load ArchiveType for section " +
                     section.getName(), e2);
+                env.add("exception", e2.getMessage());
                 reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
                         "archive.badarchivetype", env));
 
@@ -173,50 +177,37 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
 
         HashSet slaveSet = new HashSet();
 
-        synchronized (archiveType) {
-            if (archiveType.isBusy()) {
-                env.add("section", section.getName());
+        while (st.hasMoreTokens()) {
+            String slavename = st.nextToken();
+
+            try {
+                RemoteSlave rslave = conn.getConnectionManager()
+                                         .getGlobalContext().getSlaveManager()
+                                         .getSlave(slavename);
+                slaveSet.add(rslave);
+            } catch (ObjectNotFoundException e2) {
+                env.add("slavename", slavename);
                 reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-                        "archive.wait1", env));
-                reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-                        "archive.wait2", env));
-
-                return reply;
+                        "archive.badslave", env));
             }
+        }
 
-            while (st.hasMoreTokens()) {
-                String slavename = st.nextToken();
+        archiveType.setDirectory(lrf);
 
-                try {
-                    RemoteSlave rslave = conn.getConnectionManager()
-                                             .getGlobalContext()
-                                             .getSlaveManager().getSlave(slavename);
-                    slaveSet.add(rslave);
-                } catch (ObjectNotFoundException e2) {
-                    env.add("slavename", slavename);
-                    reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-                            "archive.badslave", env));
-                }
-            }
-
-            archiveType.setDirectory(lrf);
+        try {
+            archive.checkPathForArchiveStatus(lrf.getPath());
+        } catch (DuplicateArchiveException e) {
+            env.add("exception", e.getMessage());
+            reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
+                    "archive.fail", env));
         }
 
         if (!slaveSet.isEmpty()) {
             archiveType.setRSlaves(slaveSet);
         }
 
-        ArchiveType usedArchiveType = ArchiveHandler.getArchiveTypeForDirectory(archiveType.getDirectory());
-
-        if (usedArchiveType != null) {
-            env.add("archivetype", usedArchiveType);
-            reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-                    "archive.fail", env));
-
-            return reply;
-        }
-
         ArchiveHandler archiveHandler = new ArchiveHandler(archiveType);
+
         archiveHandler.start();
         env.add("dirname", lrf.getPath());
         env.add("archivetypename", archiveTypeName);
@@ -251,8 +242,19 @@ public class ArchiveCommandHandler implements CommandHandlerFactory,
     private FtpReply doLISTARCHIVETYPES(BaseFtpConnection conn) {
         FtpReply reply = new FtpReply(200);
         int x = 0;
+        ReplacerEnvironment env = new ReplacerEnvironment();
+        Archive archive;
 
-        for (Iterator iter = ArchiveHandler.getArchiveHandlers().iterator();
+        try {
+            archive = (Archive) conn.getConnectionManager().getFtpListener(Archive.class);
+        } catch (ObjectNotFoundException e) {
+            reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
+                    "archive.loadarchive", env));
+
+            return reply;
+        }
+
+        for (Iterator iter = archive.getArchiveHandlers().iterator();
                 iter.hasNext(); x++) {
             ArchiveHandler archiveHandler = (ArchiveHandler) iter.next();
             reply.addComment(x + ". " + archiveHandler.getArchiveType());

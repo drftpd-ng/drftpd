@@ -22,6 +22,7 @@ import de.hampelratte.id3.ID3v1Tag;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import net.sf.drftpd.ID3Tag;
 import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.slave.Slave;
@@ -46,7 +47,7 @@ import java.util.List;
 
 /**
  * @author mog
- * @version $Id: RemoteSlaveTest.java,v 1.8 2004/08/03 20:13:56 zubov Exp $
+ * @version $Id: RemoteSlaveTest.java,v 1.9 2004/09/13 15:04:55 zubov Exp $
  */
 public class RemoteSlaveTest extends TestCase {
     public RemoteSlaveTest(String fName) {
@@ -164,7 +165,7 @@ public class RemoteSlaveTest extends TestCase {
             throw new NoSuchMethodError();
         }
 
-        public ID3v1Tag getID3v1Tag(String path)
+        public ID3Tag getID3v1Tag(String path)
             throws RemoteException, IOException {
             throw new NoSuchMethodError();
         }

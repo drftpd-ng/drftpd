@@ -33,31 +33,16 @@ import java.util.Set;
 
 /*
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.8 2004/08/03 20:14:05 zubov Exp $
+ * @version $Id: ArchiveHandler.java,v 1.9 2004/09/13 15:05:01 zubov Exp $
  */
 public class ArchiveHandler extends Thread {
     protected static Logger logger = Archive.getLogger();
-    private static ArrayList _archiveHandlers = new ArrayList();
     private ArchiveType _archiveType;
 
     public ArchiveHandler(ArchiveType archiveType) {
         _archiveType = archiveType;
         setName(_archiveType.getClass().getName() + " archiving " +
             _archiveType.getSection().getName());
-    }
-
-    public static ArchiveType getArchiveTypeForDirectory(
-        LinkedRemoteFileInterface lrf) {
-        for (Iterator iter = _archiveHandlers.iterator(); iter.hasNext();) {
-            ArchiveHandler archiveHandler = (ArchiveHandler) iter.next();
-            ArchiveType archiveType = archiveHandler.getArchiveType();
-
-            if (lrf == archiveType.getDirectory()) {
-                return archiveType;
-            }
-        }
-
-        return null;
     }
 
     public ArchiveType getArchiveType() {
@@ -70,14 +55,16 @@ public class ArchiveHandler extends Thread {
 
     public void run() {
         try {
-            synchronized (_archiveType) {
+            synchronized (_archiveType._parent) {
                 if (_archiveType.getDirectory() == null) {
                     _archiveType.setDirectory(_archiveType.getOldestNonArchivedDir());
                 }
-            }
 
-            if (_archiveType.getDirectory() == null) {
-                return; // all done
+                if (_archiveType.getDirectory() == null) {
+                    return; // all done
+                }
+
+                _archiveType._parent.addArchiveHandler(this);
             }
 
             if (_archiveType.getRSlaves() == null) {
@@ -92,49 +79,20 @@ public class ArchiveHandler extends Thread {
                 _archiveType.setRSlaves(Collections.unmodifiableSet(destSlaves));
             }
 
-            ArchiveType dupeArchiveType;
-
-            synchronized (_archiveHandlers) {
-                dupeArchiveType = getArchiveTypeForDirectory(_archiveType.getDirectory());
-
-                if (dupeArchiveType == null) {
-                    addArchiveHandler(this);
-                }
-            }
-
-            if (dupeArchiveType != null) {
-                logger.info(_archiveType.getDirectory() +
-                    " is already being archived by " + dupeArchiveType);
-
-                return;
-            }
-
             ArrayList jobs = _archiveType.send();
             _archiveType.waitForSendOfFiles(new ArrayList(jobs));
             _archiveType.cleanup(jobs);
             logger.info("Done archiving " +
                 getArchiveType().getDirectory().getPath());
-            _archiveType.setDirectory(null);
-            _archiveType.setRSlaves(null);
         } catch (Exception e) {
             logger.debug("", e);
         }
 
-        if (!removeArchiveHandler(this)) {
+        Archive archive = _archiveType._parent;
+
+        if (!archive.removeArchiveHandler(this)) {
             logger.debug(
                 "This is a serious bug, unable to remove the ArchiveHandler!");
         }
-    }
-
-    private static void addArchiveHandler(ArchiveHandler handler) {
-        _archiveHandlers.add(handler);
-    }
-
-    private static boolean removeArchiveHandler(ArchiveHandler handler) {
-        return _archiveHandlers.remove(handler);
-    }
-
-    public static Collection getArchiveHandlers() {
-        return Collections.unmodifiableCollection(_archiveHandlers);
     }
 }

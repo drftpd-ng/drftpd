@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 
 import org.drftpd.mirroring.ArchiveHandler;
 import org.drftpd.mirroring.ArchiveType;
+import org.drftpd.mirroring.DuplicateArchiveException;
 
 import org.drftpd.sections.SectionInterface;
 
@@ -35,14 +36,14 @@ import java.lang.reflect.Constructor;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
 
 
 /**
  * @author zubov
- * @version $Id: Archive.java,v 1.31 2004/08/03 20:13:55 zubov Exp $
+ * @version $Id: Archive.java,v 1.32 2004/09/13 15:04:55 zubov Exp $
  */
 public class Archive implements FtpListener, Runnable {
     private static final Logger logger = Logger.getLogger(Archive.class);
@@ -161,14 +162,6 @@ public class Archive implements FtpListener, Runnable {
                 return;
             }
 
-            for (Iterator iter = _archiveHandlers.iterator(); iter.hasNext();) {
-                ArchiveHandler archiveHandler = (ArchiveHandler) iter.next();
-
-                if (!archiveHandler.isAlive()) {
-                    iter.remove();
-                }
-            }
-
             Collection sectionsToCheck = getConnectionManager()
                                              .getGlobalContext()
                                              .getSectionManager().getSections();
@@ -177,9 +170,8 @@ public class Archive implements FtpListener, Runnable {
                 SectionInterface section = (SectionInterface) iter.next();
                 ArchiveType archiveType = getArchiveType(section);
 
-                if ((archiveType == null) || archiveType.isBusy()) { // archiveType was not done with it's or is not loaded
-
-                    continue; // current send, cannot process another
+                if (archiveType == null) {
+                    continue;
                 }
 
                 ArchiveHandler archiveHandler = new ArchiveHandler(archiveType);
@@ -214,5 +206,52 @@ public class Archive implements FtpListener, Runnable {
 
     public void unload() {
         stopArchive();
+    }
+
+    public synchronized boolean removeArchiveHandler(ArchiveHandler handler) {
+        for (Iterator iter = _archiveHandlers.iterator(); iter.hasNext();) {
+            ArchiveHandler ah = (ArchiveHandler) iter.next();
+
+            if (ah == handler) {
+                iter.remove();
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public Collection getArchiveHandlers() {
+        return Collections.unmodifiableCollection(_archiveHandlers);
+    }
+
+    public synchronized void addArchiveHandler(ArchiveHandler handler)
+        throws DuplicateArchiveException {
+        checkPathForArchiveStatus(handler.getArchiveType().getDirectory()
+                                         .getPath());
+        _archiveHandlers.add(handler);
+    }
+
+    public void checkPathForArchiveStatus(String handlerPath)
+        throws DuplicateArchiveException {
+        for (Iterator iter = _archiveHandlers.iterator(); iter.hasNext();) {
+            ArchiveHandler ah = (ArchiveHandler) iter.next();
+            String ahPath = ah.getArchiveType().getDirectory().getPath();
+            logger.debug("ahPath = " + ahPath);
+            logger.debug("handlerPath = " + handlerPath);
+
+            if (ahPath.length() > handlerPath.length()) {
+                if (ahPath.startsWith(handlerPath)) {
+                    throw new DuplicateArchiveException(ahPath +
+                        " is already being archived");
+                }
+            } else {
+                if (handlerPath.startsWith(ahPath)) {
+                    throw new DuplicateArchiveException(handlerPath +
+                        " is already being archived");
+                }
+            }
+        }
     }
 }

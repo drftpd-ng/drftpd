@@ -45,7 +45,7 @@ import java.util.Set;
 
 /**
  * @author zubov
- * @version $Id: ArchiveType.java,v 1.15 2004/08/03 20:14:05 zubov Exp $
+ * @version $Id: ArchiveType.java,v 1.16 2004/09/13 15:05:01 zubov Exp $
  */
 public abstract class ArchiveType {
     private static final Logger logger = Logger.getLogger(ArchiveType.class);
@@ -83,6 +83,12 @@ public abstract class ArchiveType {
         for (Iterator iter = getSection().getFile().getFiles().iterator();
                 iter.hasNext();) {
             LinkedRemoteFileInterface lrf = (LinkedRemoteFileInterface) iter.next();
+
+            try {
+                _parent.checkPathForArchiveStatus(lrf.getPath());
+            } catch (DuplicateArchiveException e1) {
+                continue;
+            }
 
             try {
                 if (!isArchivedDir(lrf)) {
