@@ -24,7 +24,7 @@ import net.sf.drftpd.master.ConnectionManager;
 
 /**
  * @author mog
- * @version $Id: SectionManagerInterface.java,v 1.3 2004/03/26 00:16:54 mog Exp $
+ * @version $Id: SectionManagerInterface.java,v 1.4 2004/04/25 17:46:19 mog Exp $
  */
 public interface SectionManagerInterface {
 	public ConnectionManager getConnectionManager();
@@ -39,5 +39,7 @@ public interface SectionManagerInterface {
 	/**
 	 * getSectionByName()
 	 */
-	public SectionInterface getSection(String string); 
+	public SectionInterface getSection(String string);
+
+	public void reload();
 }

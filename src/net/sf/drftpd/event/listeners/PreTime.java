@@ -40,7 +40,8 @@ import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
- * @version $Id: PreTime.java,v 1.16 2004/03/26 00:16:33 mog Exp $
+ * @author zubov
+ * @version $Id: PreTime.java,v 1.17 2004/04/25 17:46:15 mog Exp $
  */
 public class PreTime implements FtpListener {
 

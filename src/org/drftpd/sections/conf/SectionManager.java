@@ -33,7 +33,7 @@ import org.drftpd.sections.SectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SectionManager.java,v 1.3 2004/03/26 00:16:55 mog Exp $
+ * @version $Id: SectionManager.java,v 1.4 2004/04/25 17:46:19 mog Exp $
  */
 public class SectionManager implements SectionManagerInterface {
 	private static final Class[] CONSTRUCTOR_SIG =
@@ -76,14 +76,14 @@ public class SectionManager implements SectionManagerInterface {
 		return match;
 	}
 
-	private void reload() {
+	public void reload() {
 		Properties p = new Properties();
 		try {
 			p.load(new FileInputStream("conf/sections.conf"));
 		} catch (IOException e) {
 			throw new FatalException(e);
 		}
-
+		Hashtable sections = new Hashtable();
 		for (int i = 1;; i++) {
 			String name = p.getProperty(i + ".name");
 			if (name == null)
@@ -100,12 +100,13 @@ public class SectionManager implements SectionManagerInterface {
 					(SectionInterface) clazz.getDeclaredConstructor(
 						CONSTRUCTOR_SIG).newInstance(
 						new Object[] { this, new Integer(i), p });
-				_sections.put(name, section);
+				sections.put(name, section);
 			} catch (Exception e1) {
 				throw new FatalException(
 					"Unknown section type: " + i + ".type = " + type,
 					e1);
 			}
 		}
+		_sections = sections;
 	}
 }

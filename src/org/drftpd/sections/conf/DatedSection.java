@@ -27,18 +27,19 @@ import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.drftpd.remotefile.FileUtils;
 import org.drftpd.sections.SectionInterface;
 
 /**
  * @author mog
- * @version $Id: DatedSection.java,v 1.6 2004/04/23 00:47:26 mog Exp $
+ * @version $Id: DatedSection.java,v 1.7 2004/04/25 17:46:19 mog Exp $
  */
 public class DatedSection implements SectionInterface {
+	private String _basePath;
+	private SimpleDateFormat _dateFormat;
 
 	private SectionManager _mgr;
-	private SimpleDateFormat _dateFormat;
 	private String _name;
-	private String _basePath;
 
 	public DatedSection(SectionManager mgr, int i, Properties p) {
 		_mgr = mgr;
@@ -48,10 +49,6 @@ public class DatedSection implements SectionInterface {
 		_dateFormat =
 			new SimpleDateFormat(FtpConfig.getProperty(p, i + ".dated"));
 		getBaseFile();
-	}
-
-	public String getName() {
-		return _name;
 	}
 
 	public LinkedRemoteFile getBaseFile() {
@@ -73,6 +70,18 @@ public class DatedSection implements SectionInterface {
 
 	public Collection getFiles() {
 		return getBaseFile().getDirectories();
+	}
+
+	public LinkedRemoteFileInterface getFirstDirInSection(LinkedRemoteFileInterface dir) {
+		try {
+			return FileUtils.getSubdirOfDirectory(getFile(), dir);
+		} catch (FileNotFoundException e) {
+			return dir;
+		}
+	}
+
+	public String getName() {
+		return _name;
 	}
 
 	public String getPath() {

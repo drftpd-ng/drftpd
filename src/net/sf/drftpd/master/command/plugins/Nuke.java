@@ -56,7 +56,7 @@ import org.jdom.input.SAXBuilder;
  * amount -> amount before multiplier
  * 
  * @author mog
- * @version $Id: Nuke.java,v 1.14 2004/04/20 04:11:48 mog Exp $
+ * @version $Id: Nuke.java,v 1.15 2004/04/25 17:46:17 mog Exp $
  */
 public class Nuke implements CommandHandler {
 
@@ -90,6 +90,7 @@ public class Nuke implements CommandHandler {
 	private NukeLog _nukelog;
 	public Nuke() {
 	}
+
 	/**
 	 * USAGE: site nuke <directory> <multiplier> <message>
 	 * Nuke a directory
@@ -116,6 +117,9 @@ public class Nuke implements CommandHandler {
 	private FtpReply doSITE_NUKE(BaseFtpConnection conn) {
 		if (!conn.getUserNull().isNuker()) {
 			return FtpReply.RESPONSE_530_ACCESS_DENIED;
+		}
+		if(!conn.getRequest().hasArgument()) {
+			return new FtpReply(501, conn.jprintf(Nuke.class, "nuke.usage"));
 		}
 
 		StringTokenizer st =

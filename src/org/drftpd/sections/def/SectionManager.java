@@ -27,12 +27,13 @@ import java.util.StringTokenizer;
 import net.sf.drftpd.master.ConnectionManager;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.drftpd.remotefile.FileUtils;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SectionManager.java,v 1.5 2004/03/30 14:16:36 mog Exp $
+ * @version $Id: SectionManager.java,v 1.6 2004/04/25 17:46:19 mog Exp $
  */
 public class SectionManager implements SectionManagerInterface {
 
@@ -49,6 +50,14 @@ public class SectionManager implements SectionManagerInterface {
 
 		public Collection getFiles() {
 			return Collections.singletonList(_lrf);
+		}
+
+		public LinkedRemoteFileInterface getFirstDirInSection(LinkedRemoteFileInterface dir) {
+			try {
+				return FileUtils.getSubdirOfDirectory(getFile(), dir);
+			} catch (FileNotFoundException e) {
+				return dir;
+			}
 		}
 
 		public String getName() {
@@ -98,5 +107,8 @@ public class SectionManager implements SectionManagerInterface {
 		} catch (FileNotFoundException e) {
 			return new Section(_cm.getRoot());
 		}
+	}
+
+	public void reload() {
 	}
 }

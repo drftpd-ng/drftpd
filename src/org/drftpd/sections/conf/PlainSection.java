@@ -25,16 +25,17 @@ import java.util.Properties;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
+import org.drftpd.remotefile.FileUtils;
 import org.drftpd.sections.SectionInterface;
 
 /**
  * @author mog
- * @version $Id: PlainSection.java,v 1.5 2004/04/23 00:47:26 mog Exp $
+ * @version $Id: PlainSection.java,v 1.6 2004/04/25 17:46:19 mog Exp $
  */
 public class PlainSection implements SectionInterface {
+	private String _dir;
 
 	private SectionManager _mgr;
-	private String _dir;
 	private String _name;
 
 	public PlainSection(SectionManager mgr, int i, Properties p) {
@@ -59,6 +60,14 @@ public class PlainSection implements SectionInterface {
 
 	public Collection getFiles() {
 		return Collections.singletonList(getFile());
+	}
+
+	public LinkedRemoteFileInterface getFirstDirInSection(LinkedRemoteFileInterface dir) {
+		try {
+			return FileUtils.getSubdirOfDirectory(getFile(), dir);
+		} catch (FileNotFoundException e) {
+			return dir;
+		}
 	}
 
 	public String getName() {

@@ -45,7 +45,7 @@ import org.drftpd.plugins.SiteBot;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.22 2004/03/26 00:16:33 mog Exp $
+ * @version $Id: Trial.java,v 1.23 2004/04/25 17:46:16 mog Exp $
  */
 public class Trial implements FtpListener {
 	public static class Limit {
@@ -526,6 +526,7 @@ public class Trial implements FtpListener {
 			}
 		}
 	}
+
 	private void reload(Properties props) {
 		ArrayList limits = new ArrayList();
 		for (int i = 1;; i++) {
@@ -571,7 +572,8 @@ public class Trial implements FtpListener {
 	}
 
 	public void unload() {
-		_siteBot.disable();
+		if(_siteBot != null) {
+			_siteBot.disable();
+		} 
 	}
-
 }

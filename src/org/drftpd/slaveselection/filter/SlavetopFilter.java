@@ -17,7 +17,6 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,7 +39,7 @@ import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilter.java,v 1.5 2004/04/21 02:21:34 zubov Exp $
+ * @version $Id: SlavetopFilter.java,v 1.6 2004/04/25 17:46:20 mog Exp $
  */
 public class SlavetopFilter extends Filter {
 
@@ -68,6 +67,8 @@ public class SlavetopFilter extends Filter {
 		throws NoAvailableSlaveException {
 
 		String path = dir.getPath();
+
+		//// find the section part of the path name
 		SectionInterface section =
 			_fc
 				.getSlaveManager()
@@ -75,18 +76,22 @@ public class SlavetopFilter extends Filter {
 				.getSectionManager()
 				.lookup(
 				path);
-		if (section.getPath().endsWith("/")) // section is not the root dir - /
-			path = path.substring(section.getPath().length());
-		else path = path.substring(section.getPath().length()+1);
-		int pos = path.indexOf('/');
-		if (pos != -1)
-			path = path.substring(0, pos);
-		LinkedRemoteFileInterface rls;
-		try {
-			rls = section.getFile().getFile(path);
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException(e);
-		}
+		
+		LinkedRemoteFileInterface rls = section.getFirstDirInSection(dir);
+//			// string stuff
+//		if (section.getPath().endsWith("/")) // section is not the root dir - /
+//			path = path.substring(section.getPath().length());
+//		else path = path.substring(section.getPath().length()+1);
+//		int pos = path.indexOf('/');
+//		if (pos != -1)
+//			path = path.substring(0, pos);
+//		LinkedRemoteFileInterface rls;
+//		try {
+//			rls = section.getFile().getFile(path);
+//		} catch (FileNotFoundException e) {
+//			throw new RuntimeException(e);
+//		}
+
 
 		Hashtable slavesmap = new Hashtable();
 		for (Iterator iter =

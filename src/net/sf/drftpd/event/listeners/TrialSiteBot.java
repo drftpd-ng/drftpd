@@ -35,7 +35,7 @@ import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
-class TrialSiteBot extends GenericCommandAutoService {
+public class TrialSiteBot extends GenericCommandAutoService {
 	private static final Logger logger = Logger.getLogger(TrialSiteBot.class);
 	private final Trial _trial;
 

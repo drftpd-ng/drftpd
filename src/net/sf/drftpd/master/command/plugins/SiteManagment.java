@@ -43,7 +43,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SiteManagment.java,v 1.16 2004/04/20 04:11:48 mog Exp $
+ * @version $Id: SiteManagment.java,v 1.17 2004/04/25 17:46:18 mog Exp $
  */
 public class SiteManagment implements CommandHandler {
 
@@ -179,7 +179,11 @@ public class SiteManagment implements CommandHandler {
 						+ conn.getRequest().getArgument())
 				|| ftpListener.getClass().getName().equals(
 					conn.getRequest().getArgument())) {
-				ftpListener.unload();
+				try {
+					ftpListener.unload();
+				} catch (RuntimeException e) {
+					return new FtpReply(200, "Exception unloading plugin, plugin removed");
+				}
 				iter.remove();
 				return new FtpReply(200, "Successfully unloaded your plugin");
 			}

@@ -1,3 +1,8 @@
+2004/04/25 Morgan Christiansson <drftpd@mog.se>
+* Fixed getPlugin() so that it uses instanceof, was giving problems
+  TrialSitebot and SiteBotSSL
+  Thanks to mutiger for the report.
+
 2004/04/23 Morgan Christiansson <drftpd@mog.se>
 * When parsing files.mlst, non-existing slaves are now ignored.
 

@@ -17,6 +17,7 @@
  */
 package org.drftpd.slaveselection.filter;
 
+import java.io.FileNotFoundException;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,6 +25,7 @@ import java.util.Collections;
 import java.util.Properties;
 
 import org.apache.log4j.BasicConfigurator;
+import org.drftpd.remotefile.FileUtils;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
 
@@ -42,7 +44,7 @@ import net.sf.drftpd.slave.Transfer;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilterTest.java,v 1.4 2004/04/20 04:11:53 mog Exp $
+ * @version $Id: SlavetopFilterTest.java,v 1.5 2004/04/25 17:46:21 mog Exp $
  */
 public class SlavetopFilterTest extends TestCase {
 
@@ -60,7 +62,7 @@ public class SlavetopFilterTest extends TestCase {
 					return new SectionInterface() {
 
 						public LinkedRemoteFileInterface getFile() {
-							return root;
+							return dir1;
 						}
 
 						public Collection getFiles() {
@@ -75,10 +77,32 @@ public class SlavetopFilterTest extends TestCase {
 							return getFile().getPath();
 						}
 
+						public LinkedRemoteFileInterface getFirstDirInSection(LinkedRemoteFileInterface dir) {
+							//							LinkedRemoteFileInterface dir1 = dir, dir2 = dir;
+							//							while(dir1 != getFile()) {
+							//								dir2 = dir1;
+							//								try {
+							//									dir1 = dir1.getParentFile();
+							//								} catch (FileNotFoundException e) {
+							//									return getFile();
+							//								}
+							//							}
+							//							return dir2;
+							try {
+								return FileUtils.getSubdirOfDirectory(
+									getFile(),
+									dir);
+							} catch (FileNotFoundException e) {
+								return dir;
+							}
+						}
+
 					};
 				}
 				public SectionInterface getSection(String string) {
 					throw new UnsupportedOperationException();
+				}
+				public void reload() {
 				}
 			};
 		}
@@ -110,6 +134,8 @@ public class SlavetopFilterTest extends TestCase {
 	public static TestSuite suite() {
 		return new TestSuite(SlavetopFilterTest.class);
 	}
+	private LinkedRemoteFile dir1;
+
 	private LinkedRemoteFile root;
 
 	public SlavetopFilterTest(String name) {
@@ -138,31 +164,48 @@ public class SlavetopFilterTest extends TestCase {
 		ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
 		root = new LinkedRemoteFile(null);
-		LinkedRemoteFile dir1 = root.createDirectory("dir1");
+		dir1 = root.createDirectory("dir1");
+		LinkedRemoteFile dir2 = dir1.createDirectory("dir2");
 
-		dir1.addFile(
+		dir2.addFile(
 			new StaticRemoteFile(
 				"file1",
 				Collections.singletonList(rslaves[0])));
-		dir1.addFile(
+		dir2.addFile(
 			new StaticRemoteFile(
 				"file2",
 				Collections.singletonList(rslaves[2])));
-		dir1.addFile(
+		dir2.addFile(
 			new StaticRemoteFile(
 				"file3",
 				Collections.singletonList(rslaves[0])));
-		dir1.addFile(
+		dir2.addFile(
 			new StaticRemoteFile(
 				"file4",
 				Collections.singletonList(rslaves[1])));
-		dir1.addFile(
+		dir2.addFile(
 			new StaticRemoteFile(
 				"file5",
 				Collections.singletonList(rslaves[2])));
 
+		// these 3 shouldn't get included by SlavetopFilter, as they are directly in the section.
+		dir1.addFile(
+			new StaticRemoteFile(
+				"file6",
+				Collections.singletonList(rslaves[1])));
+
+		dir1.addFile(
+			new StaticRemoteFile(
+				"file7",
+				Collections.singletonList(rslaves[1])));
+
+		dir1.addFile(
+			new StaticRemoteFile(
+				"file8",
+				Collections.singletonList(rslaves[1])));
+
 		Filter f = new SlavetopFilter(new FC(), 1, p);
-		f.process(sc, null, null, Transfer.TRANSFER_UNKNOWN, dir1);
+		f.process(sc, null, null, Transfer.TRANSFER_UNKNOWN, dir2);
 		assertEquals(100, sc.getSlaveScore(rslaves[0]).getScore());
 		assertEquals(0, sc.getSlaveScore(rslaves[1]).getScore());
 		assertEquals(100, sc.getSlaveScore(rslaves[2]).getScore());

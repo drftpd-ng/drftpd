@@ -38,7 +38,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Slaves.java,v 1.9 2004/04/23 12:18:30 mog Exp $
+ * @version $Id: Slaves.java,v 1.10 2004/04/25 17:46:15 mog Exp $
  */
 public class Slaves extends GenericAutoService implements IRCPluginInterface {
 
@@ -93,6 +93,7 @@ public class Slaves extends GenericAutoService implements IRCPluginInterface {
 							Slaves.class));
 					continue;
 				}
+				env.add("slave", rslave.getName());
 				SiteBot.fillEnvSlaveStatus(env, status, _listener.getSlaveManager());
 
 				statusString =

@@ -23,9 +23,25 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 
 /**
  * @author mog
- * @version $Id: SectionInterface.java,v 1.2 2004/03/01 00:21:09 mog Exp $
+ * @version $Id: SectionInterface.java,v 1.3 2004/04/25 17:46:19 mog Exp $
  */
 public interface SectionInterface {
+
+	/**
+	 * @return the (current) directory for this section
+	 */
+	public LinkedRemoteFileInterface getFile();
+	/**
+	 * @return all directories for this section. For example if this is a dated-dir section, it would return all dated dirs, including current dir.
+	 */
+	public Collection getFiles();
+
+	/**
+	 * @param The file/directory to return the first subdir in this section for.
+	 * @return Returns the first subdirectory of the path represented that isn't the section itself.
+	 * 	Although the returned dir can be the section itself depending on the SectionInterface implementation. 
+	 */
+	public LinkedRemoteFileInterface getFirstDirInSection(LinkedRemoteFileInterface dir);
 
 	/**
 	 * @return The name of this section
@@ -33,16 +49,7 @@ public interface SectionInterface {
 	public String getName();
 
 	/**
-	 * @return the (current) directory for this section
-	 */
-	public LinkedRemoteFileInterface getFile();
-
-	/**
 	 * @return getFile().getPath()
 	 */
 	public String getPath();
-	/**
-	 * @return all directories for this section. For example if this is a dated-dir section, it would return all dated dirs, including current dir.
-	 */
-	public Collection getFiles();
 }

@@ -58,7 +58,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.sections.SectionManagerInterface;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.95 2004/04/20 04:11:47 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.96 2004/04/25 17:46:16 mog Exp $
  */
 public class ConnectionManager {
 
@@ -293,6 +293,7 @@ public class ConnectionManager {
 //			LogManager.resetConfiguration();
 //			OptionConverter.selectAndConfigure(url, null, LogManager.getLoggerRepository());
 //		}
+		getSectionManager().reload();
 	}
 
 	public FtpReply canLogin(BaseFtpConnection baseconn, User user) {
@@ -370,7 +371,7 @@ public class ConnectionManager {
 		throws ObjectNotFoundException {
 		for (Iterator iter = getFtpListeners().iterator(); iter.hasNext();) {
 			FtpListener listener = (FtpListener) iter.next();
-			if (listener.getClass().equals(clazz))
+			if (clazz.isInstance(listener))
 				return listener;
 		}
 		throw new ObjectNotFoundException();

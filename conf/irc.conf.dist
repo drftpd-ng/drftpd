@@ -1,4 +1,4 @@
-irc.server=localhost
+irc.server=irc.csbnet.se
 irc.port=6667
 # use SSL for irc.server
 # [ true | false ]
