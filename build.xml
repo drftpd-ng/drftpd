@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!-- $Id$ -->
-<project name="drftpd" basedir="." default="compile">
+<project name="drftpd" basedir="." default="slavejar">
 
   <patternset id="slaveclasses">
     <include name="com/Ostermiller/util/StringTokenizer.*"/>
