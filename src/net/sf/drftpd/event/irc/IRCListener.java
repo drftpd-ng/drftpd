@@ -180,7 +180,8 @@ public class IRCListener implements FtpListener, Observer {
 								new Integer(status.getTransfers()));
 							env.add(
 								"totalthroughput",
-								Bytes.formatBytes(status.getThroughput())+"/s");
+								Bytes.formatBytes(status.getThroughput())
+									+ "/s");
 
 							env.add(
 								"upxfers",
@@ -188,7 +189,8 @@ public class IRCListener implements FtpListener, Observer {
 							env.add(
 								"upthroughput",
 								Bytes.formatBytes(
-									status.getThroughputReceiving())+"/s");
+									status.getThroughputReceiving())
+									+ "/s");
 
 							env.add(
 								"downxfers",
@@ -242,49 +244,68 @@ public class IRCListener implements FtpListener, Observer {
 					String username;
 					try {
 						username = message.substring("!speed ".length());
-					} catch (ArrayIndexOutOfBoundsException e) { return; }
+					} catch (ArrayIndexOutOfBoundsException e) {
+						return;
+					}
 
-					String status = "[who] "+username;
+					String status = "[who] " + username;
 					ReplacerFormat formatup =
-						ReplacerFormat.createFormat(" [ up : ${file,0} ${speed,0} ]");
+						ReplacerFormat.createFormat(
+							" [ up : ${file,0} ${speed,0} ]");
 					ReplacerFormat formatdown =
-						ReplacerFormat.createFormat(" [ dn : ${file,0} ${speed,0} ]");
+						ReplacerFormat.createFormat(
+							" [ dn : ${file,0} ${speed,0} ]");
 					ReplacerFormat formatidle =
 						ReplacerFormat.createFormat(" [ idle : ${user,0} ]");
-						
+
 					for (Iterator iter = _cm.getConnections().iterator();
 						iter.hasNext();
 						) {
 						BaseFtpConnection conn =
 							(BaseFtpConnection) iter.next();
-						if (conn.isAuthenticated() && conn.getUser().getUsername().equals(username)) {
+						if (conn.isAuthenticated()
+							&& conn.getUser().getUsername().equals(username)) {
 							ReplacerEnvironment env = new ReplacerEnvironment();
 							env.add("username", conn.getUser().getUsername());
 							env.add(
-								"speed",
-								new Integer(
-									Bytes.formatBytes(conn.getTransfer().getTransferSpeed())+"/s"));
-							env.add("file", conn.getTransferFile());
-							env.add("idle", System.currentTimeMillis()-conn.getLastActive()/1000+"s");
+								"idle",
+								System.currentTimeMillis()
+									- conn.getLastActive() / 1000
+									+ "s");
 
 							if (!conn.isExecuting()) {
 								status =
 									status
 										+ SimplePrintf.jprintf(formatidle, env);
 
-							} else if (
-								conn.getTransferDirection()
-									== Transfer.TRANSFER_RECEIVING_UPLOAD) {
-								status =
-									status
-										+ SimplePrintf.jprintf(formatup, env);
+							} else if (conn.isTransfering()) {
+								if (conn.isTransfering()) {
+									env.add(
+										"speed",
+										new Integer(
+											Bytes.formatBytes(
+												conn
+													.getTransfer()
+													.getTransferSpeed())
+												+ "/s"));
+									env.add("file", conn.getTransferFile());
+								}
 
-							} else if (
-								conn.getTransferDirection()
-									== Transfer.TRANSFER_SENDING_DOWNLOAD) {
-								status =
-									status
-										+ SimplePrintf.jprintf(formatdown, env);
+								if (conn.getTransferDirection()
+									== Transfer.TRANSFER_RECEIVING_UPLOAD) {
+									status =
+										status
+											+ SimplePrintf.jprintf(formatup, env);
+
+								} else if (
+									conn.getTransferDirection()
+										== Transfer.TRANSFER_SENDING_DOWNLOAD) {
+									status =
+										status
+											+ SimplePrintf.jprintf(
+												formatdown,
+												env);
+								}
 							}
 						}
 					}
