@@ -159,13 +159,13 @@ public class ConnectionManager {
                     count + getGlobalContext().getConfig().getMaxUsersExempt());
         }
 
-        int userCount = 0;
-        int ipCount = 0;
-
         // not >= because baseconn is already included
         if (_conns.size() > count) {
             return new Reply(550, "The site is full, try again later.");
         }
+        
+        int userCount = 0;
+        int ipCount = 0;
 
         synchronized (_conns) {
             for (Iterator iter = _conns.iterator(); iter.hasNext();) {
@@ -187,18 +187,23 @@ public class ConnectionManager {
             }
         }
 
-        if ((user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINS) > 0) && 
-                (ipCount >= user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINSIP))) {
-            return new Reply(530,
-                "Sorry, your maximum number of connections from this IP (" +
-                user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINSIP) + ") has been reached.");
-        }
-
-        if ((user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINS) > 0) && (userCount >= user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINS))) {
-            return new Reply(530,
-                "Sorry, your account is restricted to " + user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINSIP) +
-                " simultaneous logins.");
-        }
+        if (user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINS) > 0) {
+			if (user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINS) <= userCount) {
+				return new Reply(530, "Sorry, your account is restricted to "
+						+ user.getKeyedMap().getObjectInt(
+								UserManagement.MAXLOGINS)
+						+ " simultaneous logins.");
+			}
+		}
+		if (user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINSIP) > 0) {
+			if (user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINSIP) <= ipCount) {
+				return new Reply(530,
+						"Sorry, your maximum number of connections from this IP ("
+								+ user.getKeyedMap().getObjectInt(
+										UserManagement.MAXLOGINSIP)
+								+ ") has been reached.");
+			}
+		}
 
         if (!baseconn.isSecure() &&
                 getGlobalContext().getConfig().checkPermission("userrejectinsecure", user)) {

@@ -209,9 +209,7 @@ public class Login implements CommandHandler, CommandHandlerFactory, Cloneable {
                         newUser);
 
                 if (response != null) {
-                    logger.debug("response != null");
-
-                    return response;
+					return response;
                 }
 
                 conn.setUser(newUser);
