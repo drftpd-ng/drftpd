@@ -23,3 +23,4 @@ irc.plugins.4=net.sf.drftpd.event.irc.Affils
 irc.plugins.5=net.sf.drftpd.event.irc.Bnc
 irc.plugins.6=net.sf.drftpd.event.irc.Stats
 irc.plugins.7=net.sf.drftpd.event.irc.Bandwidth
+irc.plugins.8=net.sf.drftpd.event.irc.Diskfree
