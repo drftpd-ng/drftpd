@@ -108,7 +108,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 				try {
 					for (Iterator iter2 = file.getAvailableSlaves().iterator(); iter2
 							.hasNext();) {
-						RemoteSlave rslave = (RemoteSlave) iter.next();
+						RemoteSlave rslave = (RemoteSlave) iter2.next();
 						if (_offOfSlaves.contains(rslave))
 							return false;
 					}
