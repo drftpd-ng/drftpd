@@ -2,7 +2,7 @@ Up to date documentation is available here:
 http://drftpd.org/
 http://drftpd.mog.se/ (mirror)
 
-INSTALL FOR DRFTPD 1.0
+INSTALL FOR DRFTPD 1.1
 (installing over old versions or even newer [cvs] will cause numerous glitches)
 
 1 Download and install JAVA Runtime Environment (JRE) on all master and all salves -- http://java.sun.com/j2se/downloads.html
@@ -48,14 +48,6 @@ Known error: -Dglftpd.passwd=/etc/users should read: /etc/passwd
 
 COMMON INSTALLATION ERRORS:
 
-java.lang.NoClassDefFoundError: org/tanukisoftware/wrapper/WrapperSimpleApp
-java.io.FileNotFoundException: conf\log4j-default.properties (The system cannot find the file specified)
-log4j:WARN No appenders could be found for logger (net.sf.drftpd.master.ConnectionManager).
-Reason: Missing files or incorrect paths, please see http://drftpd.org/wiki/wiki.phtml?title=Errata_1.0
-
-log4j:ERROR Either File or DatePattern options are not set for appender [A1].
-Reason: No log directory. Fix: mkdir logs/
-
 Slaves running as service will not reconnect to master after crashes and restarts.
 Reason: Impatience. Default Timeout is 5 minutes
 
@@ -70,5 +62,3 @@ Reason: master.bindport or master.port is already in use/taken
 
 Loopback IP address used to connect instead of useable IP.
 Solution: wrapper.java.additional.5=-Djava.rmi.server.hostname=192.168.1.1 in wrapper-*.conf (example IP address)
-
-
