@@ -21,10 +21,12 @@ import f00f.net.irc.martyr.GenericCommandAutoService;
 import f00f.net.irc.martyr.InCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 
+import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.UserComparator;
 
+import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.TransferStatistics;
@@ -53,21 +55,20 @@ import java.util.StringTokenizer;
  */
 public class Stats extends GenericCommandAutoService
     implements IRCPluginInterface {
+	private static final Logger logger = Logger.getLogger(Stats.class);
     private SiteBot _listener;
-    private String _trigger;
     
     public Stats(SiteBot ircListener) {
         super(ircListener.getIRCConnection());
         _listener = ircListener;
-        _trigger = _listener.getCommandPrefix();
     }
 
     public String getCommands() {
-        return _trigger + "{al,wk,month,day}{up,dn}";
+        return _listener.getCommandPrefix() + "{al,wk,month,day}{up,dn}";
     }
 
     public String getCommandsHelp() {
-        return _trigger + "{al,wk,month,day}{up,dn} [num] : Show top [num] users for the given period and direction. Default num = 10.";
+        return _listener.getCommandPrefix() + "{al,wk,month,day}{up,dn} [num] : Show top [num] users for the given period and direction. Default num = 10.";
     }
 
     protected void updateCommand(InCommand command) {
@@ -85,21 +86,21 @@ public class Stats extends GenericCommandAutoService
         String msg = st.nextToken();
         String type = null;
 
-        if (msg.startsWith(_trigger+"alup")) {
+        if (msg.startsWith(_listener.getCommandPrefix()+"alup")) {
             type = "ALUP";
-        } else if (msg.startsWith(_trigger+"aldn")) {
+        } else if (msg.startsWith(_listener.getCommandPrefix()+"aldn")) {
             type = "ALDN";
-        } else if (msg.startsWith(_trigger+"wkup")) {
+        } else if (msg.startsWith(_listener.getCommandPrefix()+"wkup")) {
             type = "WKUP";
-        } else if (msg.startsWith(_trigger+"wkdn")) {
+        } else if (msg.startsWith(_listener.getCommandPrefix()+"wkdn")) {
             type = "WKDN";
-        } else if (msg.startsWith(_trigger+"daydn")) {
+        } else if (msg.startsWith(_listener.getCommandPrefix()+"daydn")) {
             type = "DAYDN";
-        } else if (msg.startsWith(_trigger+"dayup")) {
+        } else if (msg.startsWith(_listener.getCommandPrefix()+"dayup")) {
             type = "DAYUP";
-        } else if (msg.startsWith(_trigger+"monthdn")) {
+        } else if (msg.startsWith(_listener.getCommandPrefix()+"monthdn")) {
             type = "MONTHDN";
-        } else if (msg.startsWith(_trigger+"monthup")) {
+        } else if (msg.startsWith(_listener.getCommandPrefix()+"monthup")) {
             type = "MONTHUP";
         }
 
@@ -122,6 +123,7 @@ public class Stats extends GenericCommandAutoService
         } catch (UserFileException e) {
             getConnection().sendCommand(new MessageCommand(destination,
                     "Error processing userfiles"));
+            logger.error("Error processing userfiles", e);
 
             return;
         }
