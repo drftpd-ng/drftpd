@@ -10,5 +10,34 @@
       You can have multiple <mask> blocks for a single <slave>
     -->
     <mask>*@127.0.0.1</mask>
+
+    <!--
+      addr = SocketSlave remote address
+      Values:
+        FQDN or IP Address      Master will initiate connection
+        or "Dynamic"            Master will accept connections
+
+      For "Dynamic", there must be one or more masks set
+    -->
+    <!-- <addr>127.0.0.1</addr> -->
+
+    <!--
+      port = SocketSlave remote port
+      Required for all dynamic SocketSlaves
+      Ignored for Dynamic SocketSlaves
+    -->
+    <!-- <port>9999</port> -->
+
+    <!--
+      slavepass = secret key used to generate md5 authentication key
+      Required for all SocketSlaves
+    -->
+    <!-- <slavepass>slavesecret</slavepass> -->
+
+    <!--
+      masterpass = secret key used to generate md5 authentication key
+      Required for all SocketSlaves
+    -->
+    <!-- <slavepass>slavesecret</slavepass> -->
   </slave>
 </slaves>
