@@ -21,7 +21,7 @@ import net.sf.drftpd.remotefile.LinkedRemoteFile;
 
 /**
  * @author zubov
- * @version $Id: ArchiveHandler.java,v 1.9 2004/01/14 02:35:36 mog Exp $
+ * @version $Id: ArchiveHandler.java,v 1.10 2004/01/14 04:09:15 zubov Exp $
  */
 public class ArchiveHandler extends Thread {
 
@@ -203,10 +203,7 @@ public class ArchiveHandler extends Thread {
 					return null;
 				}
 			} catch (Exception e) {
-				logger.info(
-					lrf.getPath() + " exception in lookupSFVFile() ",
-					e);
-				return null;
+				//assuming complete
 			}
 			ArrayList slaveList = new ArrayList();
 			for (Iterator iter = files.iterator(); iter.hasNext();) {
