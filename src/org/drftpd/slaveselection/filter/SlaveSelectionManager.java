@@ -37,11 +37,11 @@ import net.sf.drftpd.remotefile.LinkedRemoteFileInterface;
 import net.sf.drftpd.slave.Transfer;
 
 import org.apache.log4j.Logger;
-import org.drftpd.slaveselection.*;
+import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java,v 1.2 2004/02/26 20:36:57 mog Exp $
+ * @version $Id: SlaveSelectionManager.java,v 1.3 2004/02/26 22:43:44 mog Exp $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 	private static final Logger logger =

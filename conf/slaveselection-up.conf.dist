@@ -1,16 +1,10 @@
-# sample file for the not-yet-implemented slave selection
+1.filter=bandwidth
+1.multiplier=1
 
-1.filter=matchdir
-1.expr=/TV-WANTED
-1.assign=NAT+100
-
-2.filter=bandwidth
+2.filter=minfreespace
 2.multiplier=1
+2.minfreespace=1GB
 
-3.filter=ip
-3.peer=*.com
-3.assign=US1+100 US2+100 SE1-100 SE2-100
-
-4.filter=slavedirs
-4.topslaves=4
-4.assign=100
+3.filter=minfreespace
+3.minfreespace=100MB
+3.multiplier=remove
