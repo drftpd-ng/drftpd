@@ -16,11 +16,14 @@ import java.util.zip.CheckedOutputStream;
 
 import net.sf.drftpd.util.AddAsciiOutputStream;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.37 2004/01/22 21:50:21 mog Exp $
+ * @version $Id: TransferImpl.java,v 1.38 2004/02/03 20:28:46 mog Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
+	private static final Logger logger = Logger.getLogger(TransferImpl.class);
 	private boolean _abort = false;
 	private CRC32 _checksum = null;
 	private Connection _conn;
@@ -49,6 +52,13 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 
 	public void abort() throws RemoteException {
 		_abort = true;
+		if (_conn != null)
+			_conn.abort();
+		try {
+			_sock.close();
+		} catch (IOException e) {
+			logger.warn("abort() failed to close() the socket", e);
+		}
 	}
 
 	public TransferStatus sendFile(
@@ -132,6 +142,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private void transfer() throws IOException {
 		_started = System.currentTimeMillis();
 		_sock = _conn.connect();
+		_conn = null;
 		if (_in == null) {
 			_in = _sock.getInputStream();
 		} else if (_out == null) {
@@ -162,7 +173,6 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 
 			_in = null;
 			_out = null;
-			_conn = null;
 		}
 		if (_abort)
 			throw new IOException("Transfer was aborted");

@@ -5,7 +5,7 @@ import java.net.Socket;
 
 /**
  * @author mog
- * @version $Id: Connection.java,v 1.9 2004/01/13 20:30:55 mog Exp $
+ * @version $Id: Connection.java,v 1.10 2004/02/03 20:28:46 mog Exp $
  */
 public abstract class Connection {
 	public static final int TIMEOUT = 10000;
@@ -21,4 +21,5 @@ public abstract class Connection {
 		sock.setTrafficClass(0x08);
 		sock.setSoTimeout(TIMEOUT);
 	}
+	public abstract void abort();
 }
