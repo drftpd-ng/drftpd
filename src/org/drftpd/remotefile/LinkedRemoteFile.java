@@ -721,6 +721,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		}
 
 		if (sfvFile.size() == 0) {
+			sfvFile = null; // no need to keep a worthless sfv file
 			throw new FileNotFoundException(
 					"sfv file contains no checksum entries");
 		}
