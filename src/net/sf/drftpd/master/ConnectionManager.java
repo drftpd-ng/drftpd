@@ -42,7 +42,7 @@ public class ConnectionManager {
 		Logger.getLogger(ConnectionManager.class.getName());
 
 	public static void main(String args[]) {
-		if (args[0].equals("-nolog")) {
+		if (args.length >= 1 && args[0].equals("-nolog")) {
 			BasicConfigurator.configure();
 		} else {
 			Logger root = Logger.getRootLogger();
