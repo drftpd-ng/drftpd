@@ -146,6 +146,7 @@ public class BaseFtpConnection implements Runnable {
             env.add("averagespeed",
                 Bytes.formatBytes(user.getUploadedTime() +
                     (user.getDownloadedTime() / 2)));
+            env.add("ipmasks",user.getHostMaskCollection().toString());
 //        } else {
 //            env.add("user", "<unknown>");
         }
