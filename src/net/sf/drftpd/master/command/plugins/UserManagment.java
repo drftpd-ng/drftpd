@@ -57,7 +57,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author mog
- * @version $Id: UserManagment.java,v 1.40 2004/06/09 22:49:16 mog Exp $
+ * @version $Id: UserManagment.java,v 1.41 2004/06/23 20:46:02 zubov Exp $
  */
 public class UserManagment implements CommandHandler, CommandHandlerFactory {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -1131,6 +1131,9 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		long credits = Bytes.parseBytes(st.nextToken());
 		if (0 > credits) {
 			return new FtpReply(200, credits + " is not a positive number.");
+		}
+		if (credits > conn.getUserNull().getCredits()) {
+			return new FtpReply(200, "You cannot give more credits than you have.");
 		}
 		logger.info(
 			"'"
