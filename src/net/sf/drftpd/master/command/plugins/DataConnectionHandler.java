@@ -42,13 +42,14 @@ import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.slave.TransferStatus;
 import net.sf.drftpd.util.ListUtils;
 import net.sf.drftpd.util.PortRange;
+import net.sf.drftpd.util.SSLGetContext;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: DataConnectionHandler.java,v 1.24 2003/12/22 18:09:42 mog Exp $
+ * @version $Id: DataConnectionHandler.java,v 1.25 2003/12/23 00:36:01 mog Exp $
  */
 public class DataConnectionHandler implements CommandHandler, Cloneable {
 	private static Logger logger =
@@ -81,7 +82,7 @@ public class DataConnectionHandler implements CommandHandler, Cloneable {
 	public DataConnectionHandler() {
 		super();
 		try {
-			//_ctx = SSLGetContext.getSSLContext();
+			_ctx = SSLGetContext.getSSLContext();
 		} catch (Exception e) {
 			throw new FatalException(e);
 		}

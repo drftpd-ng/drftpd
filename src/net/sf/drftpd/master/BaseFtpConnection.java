@@ -10,7 +10,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.rmi.RemoteException;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import javax.net.ServerSocketFactory;
@@ -45,7 +44,7 @@ import org.tanesha.replacer.SimplePrintf;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.63 2003/12/23 00:09:48 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.64 2003/12/23 00:36:01 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
