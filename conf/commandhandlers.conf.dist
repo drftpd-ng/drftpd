@@ -52,6 +52,7 @@ SITE\ GADDUSER=net.sf.drftpd.master.command.plugins.UserManagment
 SITE\ GINFO=net.sf.drftpd.master.command.plugins.UserManagment
 SITE\ GIVE=net.sf.drftpd.master.command.plugins.UserManagment
 SITE\ GROUPS=net.sf.drftpd.master.command.plugins.UserManagment
+SITE\ GRPREN=net.sf.drftpd.master.command.plugins.UserManagment
 SITE\ KICK=net.sf.drftpd.master.command.plugins.UserManagment
 SITE\ PASSWD=net.sf.drftpd.master.command.plugins.UserManagment
 SITE\ PURGE=net.sf.drftpd.master.command.plugins.UserManagment

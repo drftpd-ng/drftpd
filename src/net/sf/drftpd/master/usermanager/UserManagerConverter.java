@@ -30,7 +30,7 @@ import net.sf.drftpd.event.listeners.Trial;
  * Usage: java net.sf.drftpd.master.usermanager.UserManagerConverter net.sf.drftpd.master.usermanager.glftpd.GlftpdUserManager net.sf.drftpd.master.usermanager.JSXUserManager
  * 
  * @author mog
- * @version $Id: UserManagerConverter.java,v 1.9 2004/02/10 00:03:09 mog Exp $
+ * @version $Id: UserManagerConverter.java,v 1.10 2004/07/01 16:07:49 zubov Exp $
  */
 public class UserManagerConverter {
 	private static final Logger logger =
@@ -62,7 +62,7 @@ public class UserManagerConverter {
 		logger.debug("Converting " + from.getUsername());
 		for (Iterator iter = from.getGroups().iterator(); iter.hasNext();) {
 			try {
-				to.addGroup((String) iter.next());
+				to.addSecondaryGroup((String) iter.next());
 			} catch (DuplicateElementException e) {
 				logger.warn("", e);
 			}

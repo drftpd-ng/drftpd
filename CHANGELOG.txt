@@ -1,3 +1,9 @@
+2004/7/1 Matthew Zimmerman <zubov@users.sourceforge.net>
+* Implemented SITE GRPREN <oldgroup> <newgroup>
+* Heavily refactored UserManager(s), UserManager is now an abstract class
+* Refactoring on User and AbstractUser also
+
+
 2004/6/28 Matthew Zimmerman <zubov@users.sourceforge.net>
 * Fixed a minor bug in ArchiveType's where directories without files 
   could cause a NullPointerException, Thanks to akrog for the report

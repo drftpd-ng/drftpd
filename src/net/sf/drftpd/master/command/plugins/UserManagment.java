@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
-
 import net.sf.drftpd.Bytes;
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.HostMask;
@@ -42,7 +41,6 @@ import net.sf.drftpd.master.usermanager.UserFileException;
 import net.sf.drftpd.slave.Transfer;
 import net.sf.drftpd.util.ReplacerUtils;
 import net.sf.drftpd.util.Time;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.commands.CommandHandler;
@@ -55,7 +53,7 @@ import org.tanesha.replacer.SimplePrintf;
 /**
  * @author mog
  * @author zubov
- * @version $Id: UserManagment.java,v 1.42 2004/06/29 03:32:31 zubov Exp $
+ * @version $Id: UserManagment.java,v 1.43 2004/07/01 16:07:48 zubov Exp $
  */
 public class UserManagment implements CommandHandler, CommandHandlerFactory {
 	private static final Logger logger = Logger.getLogger(UserManagment.class);
@@ -648,7 +646,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		for (int i = 1; i < args.length; i++) {
 			String string = args[i];
 			try {
-				myUser.removeGroup(string);
+				myUser.removeSecondaryGroup(string);
 				logger.info("'" + conn.getUserNull().getUsername()
 						+ "' removed '" + myUser.getUsername()
 						+ "' from group '" + string + "'");
@@ -656,7 +654,7 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 						+ " removed from group " + string);
 			} catch (NoSuchFieldException e1) {
 				try {
-					myUser.addGroup(string);
+					myUser.addSecondaryGroup(string);
 					logger.info("'" + conn.getUserNull().getUsername()
 							+ "' added '" + myUser.getUsername()
 							+ "' to group '" + string + "'");
@@ -885,6 +883,63 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 		for (Iterator iter = groups.iterator(); iter.hasNext();) {
 			String element = (String) iter.next();
 			response.addComment(element);
+		}
+		return response;
+	}
+	private FtpReply doSITE_GRPREN(BaseFtpConnection conn) {
+		FtpRequest request = conn.getRequest();
+		if (!conn.getUserNull().isAdmin()) {
+			return FtpReply.RESPONSE_530_ACCESS_DENIED;
+		}
+		if (!request.hasArgument()) {
+			return new FtpReply(501, conn.jprintf(
+					UserManagment.class.getName(), "grpren.usage"));
+		}
+		StringTokenizer st = new StringTokenizer(request.getArgument());
+		if (!st.hasMoreTokens()) {
+			return new FtpReply(501, conn.jprintf(
+					UserManagment.class.getName(), "grpren.usage"));
+		}
+		String oldGroup = st.nextToken();
+		if (!st.hasMoreTokens()) {
+			return new FtpReply(501, conn.jprintf(
+					UserManagment.class.getName(), "grpren.usage"));
+		}
+		String newGroup = st.nextToken();
+		Collection users = null;
+		try {
+			if (!conn.getConnectionManager().getUserManager()
+					.getAllUsersByGroup(newGroup).isEmpty()) {
+				return new FtpReply(500, newGroup + " already exists");
+			}
+			users = conn.getConnectionManager().getUserManager()
+					.getAllUsersByGroup(oldGroup);
+		} catch (UserFileException e) {
+			logger.log(Level.FATAL, "IO error from getAllUsersByGroup("
+					+ oldGroup + ")", e);
+			return new FtpReply(200, "IO error: " + e.getMessage());
+		}
+		FtpReply response = new FtpReply(200);
+		response.addComment("Renaming group " + oldGroup + " to " + newGroup);
+		for (Iterator iter = users.iterator(); iter.hasNext();) {
+			User userToChange = (User) iter.next();
+			if (userToChange.getGroupName().equals(oldGroup)) {
+				userToChange.setGroup(newGroup);
+			} else {
+				try {
+					userToChange.removeSecondaryGroup(oldGroup);
+				} catch (NoSuchFieldException e1) {
+					throw new RuntimeException(
+							"User was not in group returned by getAllUsersByGroup");
+				}
+				try {
+					userToChange.addSecondaryGroup(newGroup);
+				} catch (DuplicateElementException e2) {
+					throw new RuntimeException("group " + newGroup
+							+ " already exists");
+				}
+			}
+			response.addComment("Changed user " + userToChange.getUsername());
 		}
 		return response;
 	}
@@ -1334,6 +1389,8 @@ public class UserManagment implements CommandHandler, CommandHandlerFactory {
 			return doSITE_GIVE(conn);
 		if ("SITE GROUPS".equals(cmd))
 			return doSITE_GROUPS(conn);
+		if ("SITE GRPREN".equals(cmd))
+			return doSITE_GRPREN(conn);
 		if ("SITE KICK".equals(cmd))
 			return doSITE_KICK(conn);
 		if ("SITE PASSWD".equals(cmd))
