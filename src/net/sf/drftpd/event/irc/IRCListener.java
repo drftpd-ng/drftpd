@@ -814,12 +814,12 @@ public class IRCListener implements FtpListener, Observer {
 		LinkedRemoteFile file) {
 		env.add("user", direvent.getUser().getUsername());
 		env.add("group", direvent.getUser().getGroup());
-		env.add("section", section.getPath());
+		env.add("section", strippath(section.getPath()));
 		if (file.isFile() && file.getXfertime() != 0)
 			env.add(
 				"speed",
 				Bytes.formatBytes(file.length() / file.getXfertime()) + "/s");
-		env.add("path", file.getPath().substring(section.getPath().length()));
+		env.add("path", strippath(file.getPath().substring(section.getPath().length())));
 	}
 
 	public static Collection topFileUploaders2(Collection files) {
