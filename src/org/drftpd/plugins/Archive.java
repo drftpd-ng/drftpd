@@ -67,7 +67,6 @@ public class Archive implements FtpListener, Runnable {
     public void actionPerformed(Event event) {
         if (event.getCommand().equals("RELOAD")) {
             reload();
-
             return;
         }
     }
@@ -82,6 +81,7 @@ public class Archive implements FtpListener, Runnable {
         ArchiveType archiveType = null;
         String name = null;
 
+        
         try {
             name = PropertyHelper.getProperty(_props,
                     section.getName() + ".archiveType");

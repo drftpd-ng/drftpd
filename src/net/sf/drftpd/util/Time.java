@@ -20,16 +20,13 @@ package net.sf.drftpd.util;
 
 /**
  * @author zubov
- * @version $Id: Time.java,v 1.8 2004/10/05 02:11:25 mog Exp $
+ * @version $Id$
  */
 public class Time {
     /**
      * @return human readable string for time.
      */
     public static String formatTime(long time) {
-        //long now = System.currentTimeMillis();
-        //long now = 0;
-        //long now = time;
         if (time == 0) {
             return "0m 0s";
         }
@@ -55,30 +52,6 @@ public class Time {
         long h = (time - (d * 24 * 60 * 60000)) / (60 * 60000);
 
         return d + "d " + ((h > 9) ? ("" + h) : (" " + h)) + "h";
-
-        //		long days = 0, hours = 0, mins = 0, secs = 0;
-        //		String time = "";
-        // 
-        //		secs = millis / 1000;
-        // 
-        //		while ( secs >=  86400) { 
-        //			days++;
-        //			secs -= 86400; 
-        //		} 
-        //		while ( secs >= 3600 ) { 
-        //			hours++;
-        //			secs -= 3600; 
-        //		}
-        //		while ( secs >= 60 ) {
-        //			mins++;
-        //			secs -= 60; 
-        //		}
-        //		if ( days != 0 ) time = days + "days ";
-        //		if ( hours != 0 ) time = hours + "h ";
-        //		if ( mins != 0 ) time += mins + "m ";
-        //		time += secs + "s";
-        //		
-        //		return time;
     }
 
     public static long parseTime(String s) {

@@ -98,12 +98,11 @@ public class CommandManager {
         if (ret == null) {
             throw new ObjectNotFoundException();
         }
-
         return ret;
     }
 
-    public List getHandledCommands(Class class1) {
-        ArrayList list = new ArrayList();
+    public List<String> getHandledCommands(Class class1) {
+        ArrayList<String> list = new ArrayList<String>();
 
         for (Iterator iter = commands.entrySet().iterator(); iter.hasNext();) {
             Map.Entry element = (Map.Entry) iter.next();

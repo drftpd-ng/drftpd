@@ -545,18 +545,17 @@ public class SiteBot implements FtpListener, Observer {
                 "%");
             env.add("filesleft", Integer.toString(sfvstatus.getMissing()));
 
-            User leaduser;
-
+            User leaduser = null;
             try {
                 leaduser = _cm.getGlobalContext().getUserManager()
                               .getUserByName(stat.getUsername());
-                env.add("leaduser", leaduser.getName());
-                env.add("leadgroup", leaduser.getGroup());
             } catch (NoSuchUserException e3) {
                 logger.log(Level.WARN, "", e3);
             } catch (UserFileException e3) {
                 logger.log(Level.WARN, "", e3);
             }
+            env.add("leaduser", leaduser != null ? leaduser.getName() : stat.getUsername());
+            env.add("leadgroup", leaduser != null ? leaduser.getGroup() : "");
 
             Ret ret = getPropertyFileSuffix("store.halfway", dir);
             fillEnvSection(env, direvent, ret.getSection());

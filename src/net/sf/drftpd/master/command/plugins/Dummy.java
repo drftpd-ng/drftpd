@@ -62,6 +62,9 @@ public class Dummy implements CommandHandlerFactory {
 
         public Reply execute(BaseFtpConnection conn)
             throws UnhandledCommandException {
+        	if(conn.getRequest().getCommand().equals("SITE FOO"))
+        		return new Reply(200, "BAR!");
+
             return Reply.RESPONSE_200_COMMAND_OK;
         }
 

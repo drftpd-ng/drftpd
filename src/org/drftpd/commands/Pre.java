@@ -42,7 +42,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
-
 /**
  * @author mog
  *
@@ -51,13 +50,15 @@ import java.util.Map;
 public class Pre implements CommandHandlerFactory, CommandHandler {
     private static final Logger logger = Logger.getLogger(Pre.class);
 
-    private static void recursiveRemoveOwnership(LinkedRemoteFileInterface dir) {
+    private static void recursiveRemoveOwnership(LinkedRemoteFileInterface dir, long lastModified) {
+        dir.setOwner("drftpd");
+        dir.setLastModified(lastModified);
         for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
             file.setOwner("drftpd");
-
+            file.setLastModified(lastModified);
             if (file.isDirectory()) {
-                recursiveRemoveOwnership(file);
+                recursiveRemoveOwnership(file, lastModified);
             }
         }
     }
@@ -127,7 +128,7 @@ public class Pre implements CommandHandlerFactory, CommandHandler {
         }
 
         //RENAME
-        recursiveRemoveOwnership(preDir);
+        recursiveRemoveOwnership(preDir, System.currentTimeMillis());
 
         LinkedRemoteFile toDir;
 

@@ -84,6 +84,7 @@ SITE\ WELCOME=net.sf.drftpd.master.command.plugins.Textoutput
 
 CLNT=net.sf.drftpd.master.command.plugins.Dummy
 NOOP=net.sf.drftpd.master.command.plugins.Dummy
+SITE\ FOO=net.sf.drftpd.master.command.plugins.Dummy
 
 ABOR=net.sf.drftpd.master.command.plugins.Misc
 FEAT=net.sf.drftpd.master.command.plugins.Misc
@@ -110,7 +111,7 @@ SITE\ DAYUP=org.drftpd.commands.TransferStatistics
 SITE\ DAYDN=org.drftpd.commands.TransferStatistics
 SITE\ STATS=org.drftpd.commands.TransferStatistics
 
-SITE\ PRE=net.sf.drftpd.master.command.plugins.Pre
+SITE\ PRE=org.drftpd.commands.Pre
 
 SITE\ SLAVES=net.sf.drftpd.master.command.plugins.SlaveManagement
 SITE\ REMERGE=net.sf.drftpd.master.command.plugins.SlaveManagement
