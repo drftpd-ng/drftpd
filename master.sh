@@ -1,7 +1,7 @@
 export VMARGS="
 	-server
 	-Djava.library.path=lib \
-	-Djava.rmi.dgc.leaseValue=300000
+	-Djava.rmi.dgc.leaseValue=300000 \
 	-Djava.rmi.server.randomIDs=true \
 	-Djava.rmi.server.disableHttp=true \
 	-Djava.rmi.server.hostname=wfa.mine.nu"

@@ -2443,6 +2443,25 @@ public class FtpConnection extends BaseFtpConnection {
 			return;
 		}
 
+		FtpResponse response = new FtpResponse(200);
+		
+		if(preDir.hasOfflineSlaves()) {
+			response.setMessage("Sorry, release has offline files. You don't want to PRE an incomplete release, do you? :(");
+			response.setCode(550);
+			out.print(response);
+			return;
+		}
+		//TODO AWARD CREDITS
+		Hashtable awards = new Hashtable();
+		preAwardCredits(preDir, awards);
+		for (Iterator iter = awards.entrySet().iterator(); iter.hasNext();) {
+			Map.Entry entry = (Map.Entry) iter.next();
+			User owner = (User) entry.getKey();
+			Long award = (Long) entry.getValue();
+			response.addComment("Awarded "+Bytes.formatBytes(award.longValue())+" to "+owner.getUsername());
+			owner.updateCredits(award.longValue());
+		}
+
 		//RENAME
 		try {
 			preDir.renameTo(section.getPath() + preDir.getName());
@@ -2458,15 +2477,39 @@ public class FtpConnection extends BaseFtpConnection {
 			logger.log(Level.WARNING, "illegal arguments", ex);
 		}
 
-		//TODO AWARD CREDITS
+		
 
 		//ANNOUNCE
 		connManager.dispatchFtpEvent(
 			new DirectoryFtpEvent(_user, "PRE", preDir));
 
-		//TODO implement SITE PRE
-		out.print(FtpResponse.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
+		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
 		return;
+	}
+
+	/**
+	 * @param preDir
+	 */
+	private void preAwardCredits(LinkedRemoteFile preDir, Hashtable awards) {
+		for (Iterator iter = preDir.getFiles().iterator(); iter.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			String username = file.getUsername();
+			User owner;
+			try {
+				owner = userManager.getUserByName(file.getUsername());
+			} catch (NoSuchUserException e) {
+				logger.log(Level.FINE, "PRE: Cannot award credits to non-existing user", e);
+				continue;
+			} catch (IOException e) {
+				logger.log(Level.WARNING, "", e);
+				continue;
+			}
+			Long total = (Long) awards.get(owner);
+			if (total == null)
+				total = new Long(0);
+			total = new Long(total.longValue() + (long)(file.length() * owner.getRatio()));
+			awards.put(owner, total);
+		}
 	}
 
 	public void doSITE_PURGE(FtpRequest request, PrintWriter out) {
@@ -3526,6 +3569,8 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(new FtpResponse(426, ex.getMessage()));
 			return;
 		}
+		
+		
 
 		long transferedBytes;
 		try {
@@ -3536,6 +3581,7 @@ public class FtpConnection extends BaseFtpConnection {
 			}
 			_transferFile.setLastModified(System.currentTimeMillis());
 			_transferFile.setLength(transferedBytes);
+			_transferFile.setXfertime(_transferFile.getXfertime());
 		} catch (RemoteException ex) {
 			_rslave.handleRemoteException(ex);
 			out.print(

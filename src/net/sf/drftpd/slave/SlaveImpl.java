@@ -38,6 +38,35 @@ import se.mog.io.File;
 public class SlaveImpl
 	extends UnicastRemoteObject
 	implements Slave, Unreferenced {
+	private SlaveManager _manager;
+	/**
+	 * @param cfg
+	 * @param inetAddress
+	 * @param b
+	 */
+	public SlaveImpl(
+		Properties cfg,
+		InetAddress inetAddress,
+		SlaveManager slavemanager)
+		throws RemoteException {
+		super(0);
+		_manager = slavemanager;
+		System.out.println("SlaveImpl() called with "+slavemanager);
+
+		this.slavemanagerurl =
+			"//"
+				+ cfg.getProperty("master.host")
+				+ ":"
+				+ cfg.getProperty("master.bindport", "1099")
+				+ "/"
+				+ cfg.getProperty("master.bindname");
+		this.name = cfg.getProperty("slave.name");
+
+		this.roots = getDefaultRootBasket(cfg);
+		register();
+		System.gc();
+	}
+
 	private Vector transfers = new Vector();
 	private InetAddress _address;
 	private static Logger logger = Logger.getLogger(SlaveImpl.class.getName());
@@ -52,35 +81,47 @@ public class SlaveImpl
 	private String slavemanagerurl;
 	private String name;
 
-	public SlaveImpl(Properties cfg, InetAddress inetAddress) throws RemoteException {
-		
-		super(0);
-		this.slavemanagerurl = "//"+cfg.getProperty("master.host")+":"+cfg.getProperty("master.bindport","1099")+"/"+cfg.getProperty("master.bindname");
-		this.name = cfg.getProperty("slave.name");
-
-		this.roots = getDefaultRootBasket(cfg);
-		register();
-		System.gc();
+	public SlaveImpl(Properties cfg, InetAddress inetAddress)
+		throws RemoteException {
+		this(cfg, inetAddress, null);
 	}
 
 	public void register() {
+		System.out.println("register() _manager is "+_manager);
 		while (true) {
 			try {
-				logger.log(Level.INFO, "Getting master reference");
 				SlaveManager manager;
+				if(_manager == null) {
+				logger.log(Level.INFO, "Getting master reference");
 				manager = (SlaveManager) Naming.lookup(slavemanagerurl);
+				} else {
+					manager = _manager;
+				}
 
-				logger.log(Level.INFO, "Registering with master and sending filelist");
+				logger.log(
+					Level.INFO,
+					"Registering with master and sending filelist");
 
 				LinkedRemoteFile slaveroot =
 					SlaveImpl.getDefaultRoot(this.roots);
 				manager.addSlave(this.name, this, slaveroot);
-				
-				logger.log(Level.INFO, "Finished registered with master, awaiting commands.");
+
+				logger.log(
+					Level.INFO,
+					"Finished registered with master, awaiting commands.");
 				break;
 			} catch (Throwable t) {
-				long retry = Long.parseLong(System.getProperty("java.rmi.dgc.leaseValue", "600000"));
-				logger.log(Level.SEVERE, "Failed to register slave, will retry in "+retry/1000+" seconds", t);
+				long retry =
+					Long.parseLong(
+						System.getProperty(
+							"java.rmi.dgc.leaseValue",
+							"600000"));
+				logger.log(
+					Level.SEVERE,
+					"Failed to register slave, will retry in "
+						+ retry / 1000
+						+ " seconds",
+					t);
 				try {
 					Thread.sleep(retry);
 				} catch (InterruptedException e) {
@@ -92,9 +133,10 @@ public class SlaveImpl
 		return;
 	}
 	public static void main(String args[]) {
-		System.out.println(ConnectionManager.VERSION+" slave server starting");
+		System.out.println(
+			ConnectionManager.VERSION + " slave server starting");
 		String drftpdconf;
-		if(args.length >= 1) {
+		if (args.length >= 1) {
 			drftpdconf = args[0];
 		} else {
 			drftpdconf = "drftpd-0.7.conf";
@@ -111,7 +153,8 @@ public class SlaveImpl
 				return;
 			}
 
-			InetAddress masterAddr = InetAddress.getByName(cfg.getProperty("slavemanager.host"));
+			InetAddress masterAddr =
+				InetAddress.getByName(cfg.getProperty("slavemanager.host"));
 			//Slave slave;
 			//slave = 
 			new SlaveImpl(cfg, masterAddr);
@@ -134,33 +177,38 @@ public class SlaveImpl
 		return getDefaultRoot(new RootBasket(rootString));
 		//RootBasket  throws FileNotFoundException
 	}
-	
+
 	public static RootBasket getDefaultRootBasket(Properties cfg) {
 		RootBasket roots;
 		// START: RootBasket
 		ArrayList rootStrings = new ArrayList();
 		for (int i = 1; true; i++) {
-			String rootString = cfg.getProperty("slave.root."+i);
-			System.out.println("slave.root."+i+": "+rootString);
-			if(rootString == null) break;
-			
+			String rootString = cfg.getProperty("slave.root." + i);
+			System.out.println("slave.root." + i + ": " + rootString);
+			if (rootString == null)
+				break;
+
 			long minSpaceFree;
 			try {
-				minSpaceFree = Long.parseLong(cfg.getProperty("slave.root."+i+".minspacefree"));
-			} catch(NumberFormatException ex) {
+				minSpaceFree =
+					Long.parseLong(
+						cfg.getProperty("slave.root." + i + ".minspacefree"));
+			} catch (NumberFormatException ex) {
 				minSpaceFree = 0;
 			}
 
 			int priority;
 			try {
-				priority = Integer.parseInt(cfg.getProperty("slave.root."+i+".priority"));
-			} catch(NumberFormatException ex) {
+				priority =
+					Integer.parseInt(
+						cfg.getProperty("slave.root." + i + ".priority"));
+			} catch (NumberFormatException ex) {
 				priority = 0;
 			}
 
 			rootStrings.add(new Root(rootString, minSpaceFree, priority));
 		}
-		
+
 		try {
 			roots = new RootBasket(rootStrings);
 		} catch (FileNotFoundException e) {
@@ -237,16 +285,17 @@ public class SlaveImpl
 
 		File file = roots.getFile(path); // throws FileNotFoundException
 
-		FileInputStream in = new FileInputStream(file); // throws FileNotFoundException
+		FileInputStream in = new FileInputStream(file);
+		// throws FileNotFoundException
 		in.skip(offset);
 
 		TransferImpl transfer = new TransferImpl(transfers, in, conn, type);
 		return transfer;
 	}
-	
-//	private Transfer doListen() {
-//		return new PassiveConnection();
-//	}
+
+	//	private Transfer doListen() {
+	//		return new PassiveConnection();
+	//	}
 
 	//RECEIVE
 	/**
@@ -324,9 +373,10 @@ public class SlaveImpl
 		// throws FileNotFoundException
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
 			File file = (File) iter.next();
-			if(!file.exists()) continue;
+			if (!file.exists())
+				continue;
 			if (!file.delete())
-				throw new PermissionDeniedException("delete failed on "+ path);
+				throw new PermissionDeniedException("delete failed on " + path);
 		}
 	}
 
@@ -334,7 +384,9 @@ public class SlaveImpl
 	 * @see java.rmi.server.Unreferenced#unreferenced()
 	 */
 	public void unreferenced() {
-		logger.log(Level.WARNING, "Lost master, trying to re-register with master.");
+		logger.log(
+			Level.WARNING,
+			"Lost master, trying to re-register with master.");
 		register();
 		System.gc();
 	}
@@ -343,14 +395,21 @@ public class SlaveImpl
 	 * @see net.sf.drftpd.slave.Slave#listen()
 	 */
 	public Transfer listen() throws RemoteException, IOException {
-		
-		return new TransferImpl(this.transfers, new PassiveConnection(null), this.roots);
+
+		return new TransferImpl(
+			this.transfers,
+			new PassiveConnection(null),
+			this.roots);
 	}
 
 	/* (non-Javadoc)
 	 * @see net.sf.drftpd.slave.Slave#connect(java.net.InetAddress, int)
 	 */
-	public Transfer connect(InetAddress addr, int port) throws RemoteException {
-		return new TransferImpl(this.transfers, new ActiveConnection(addr, port), this.roots);
+	public Transfer connect(InetAddress addr, int port)
+		throws RemoteException {
+		return new TransferImpl(
+			this.transfers,
+			new ActiveConnection(addr, port),
+			this.roots);
 	}
 }

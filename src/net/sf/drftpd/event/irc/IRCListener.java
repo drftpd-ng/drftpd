@@ -147,47 +147,67 @@ public class IRCListener implements FtpListener, Observer {
 							idlers++;
 					}
 					//[ total: 1 of 32 / 297kb/sec ] - [ up: 1 / 297kb/sec | dn: 0 / 0kb/sec | idle: 0 ]
-					ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
-					
+					ReplacerEnvironment env =
+						new ReplacerEnvironment(globalEnv);
+
 					env.add("xfers", Integer.toString(status.getTransfers()));
-					env.add("throughput", Bytes.formatBytes(status.getThroughput()));
-					
-					env.add("xfersup", Integer.toString(status.getTransfersReceiving()));
-					env.add("throughputup", Bytes.formatBytes(status.getThroughputReceiving()));
-					
-					env.add("xfersdn", Integer.toString(status.getTransfersSending()));
-					env.add("throughputdn", Bytes.formatBytes(status.getThroughputSending()));
-					
-					env.add("spacetotal", Long.toString(status.getDiskSpaceCapacity()));
-					env.add("spacefree", Long.toString(status.getDiskSpaceAvailable()));
-					env.add("spaceused", Long.toString(status.getDiskSpaceUsed()));
-					
+					env.add(
+						"throughput",
+						Bytes.formatBytes(status.getThroughput()));
+
+					env.add(
+						"xfersup",
+						Integer.toString(status.getTransfersReceiving()));
+					env.add(
+						"throughputup",
+						Bytes.formatBytes(status.getThroughputReceiving()));
+
+					env.add(
+						"xfersdn",
+						Integer.toString(status.getTransfersSending()));
+					env.add(
+						"throughputdn",
+						Bytes.formatBytes(status.getThroughputSending()));
+
+					env.add(
+						"spacetotal",
+						Long.toString(status.getDiskSpaceCapacity()));
+					env.add(
+						"spacefree",
+						Long.toString(status.getDiskSpaceAvailable()));
+					env.add(
+						"spaceused",
+						Long.toString(status.getDiskSpaceUsed()));
+
 					try {
-					say(SimplePrintf.jprintf(_ircCfg.getProperty("bw"), env));
-					} catch(FormatterException e) {
+						say(
+							SimplePrintf.jprintf(
+								_ircCfg.getProperty("bw"),
+								env));
+					} catch (FormatterException e) {
 						logger.log(Level.WARNING, "", e);
 					}
-					
-//					say(
-//						"[ total: "
-//							+ status.getTransfers()
-//							+ " / "
-//							+ Bytes.formatBytes(status.getThroughput())
-//							+ "/s ] [ up "
-//							+ status.getTransfersReceiving()
-//							+ " / "
-//							+ Bytes.formatBytes(status.getThroughputReceiving())
-//							+ "/s | dn "
-//							+ status.getTransfersSending()
-//							+ " / "
-//							+ Bytes.formatBytes(status.getThroughputSending())
-//							+ "/s idle: "
-//							+ idlers
-//							+ " ]  [ space "
-//							+ Bytes.formatBytes(status.getDiskSpaceAvailable())
-//							+ " / "
-//							+ Bytes.formatBytes(status.getDiskSpaceCapacity())
-//							+ " ]");
+
+					//					say(
+					//						"[ total: "
+					//							+ status.getTransfers()
+					//							+ " / "
+					//							+ Bytes.formatBytes(status.getThroughput())
+					//							+ "/s ] [ up "
+					//							+ status.getTransfersReceiving()
+					//							+ " / "
+					//							+ Bytes.formatBytes(status.getThroughputReceiving())
+					//							+ "/s | dn "
+					//							+ status.getTransfersSending()
+					//							+ " / "
+					//							+ Bytes.formatBytes(status.getThroughputSending())
+					//							+ "/s idle: "
+					//							+ idlers
+					//							+ " ]  [ space "
+					//							+ Bytes.formatBytes(status.getDiskSpaceAvailable())
+					//							+ " / "
+					//							+ Bytes.formatBytes(status.getDiskSpaceCapacity())
+					//							+ " ]");
 				} else if (message.equals("!slaves")) {
 					for (Iterator iter =
 						_cm.getSlavemanager().getSlaves().iterator();
@@ -279,26 +299,27 @@ public class IRCListener implements FtpListener, Observer {
 					String status = "[who] " + username;
 					ReplacerFormat formatup =
 						ReplacerFormat.createFormat(
-							" [ up : ${file} ${speed} ]");
+							" [ up : ${file} ${speed} to ${slave}]");
 					ReplacerFormat formatdown =
 						ReplacerFormat.createFormat(
-							" [ dn : ${file} ${speed} ]");
+							" [ dn : ${file} ${speed} from ${slave}]");
 					ReplacerFormat formatidle =
-						ReplacerFormat.createFormat(" [ idle : ${user} ]");
+						ReplacerFormat.createFormat(" [ idle : ${idle} ]");
 
 					for (Iterator iter = _cm.getConnections().iterator();
 						iter.hasNext();
 						) {
 						BaseFtpConnection conn =
 							(BaseFtpConnection) iter.next();
+						if(_cm.getConfig().checkHideInWho(conn.getCurrentDirectory())) continue;
 						if (conn.isAuthenticated()
 							&& conn.getUser().getUsername().equals(username)) {
 							ReplacerEnvironment env = new ReplacerEnvironment();
 							env.add("username", conn.getUser().getUsername());
 							env.add(
 								"idle",
-								System.currentTimeMillis()
-									- conn.getLastActive() / 1000
+								(System.currentTimeMillis() 
+									- conn.getLastActive()) / 1000
 									+ "s");
 
 							if (!conn.isExecuting()) {
@@ -318,6 +339,7 @@ public class IRCListener implements FtpListener, Observer {
 									env.add(
 										"file",
 										conn.getTransferFile().getName());
+									env.add("slave", conn.getTranferSlave().getName());
 								}
 
 								if (conn.getTransferDirection()
@@ -452,6 +474,8 @@ public class IRCListener implements FtpListener, Observer {
 	}
 
 	public void actionPerformed(DirectoryFtpEvent direvent) {
+		if(_cm.getConfig().checkHideInWho(direvent.getDirectory())) return;
+		
 		if (direvent.getCommand().equals("MKD")) {
 
 			Object obj[] =
@@ -519,13 +543,14 @@ public class IRCListener implements FtpListener, Observer {
 
 						ReplacerEnvironment env =
 							new ReplacerEnvironment(globalEnv);
-						env.add("user", direvent.getUser().getUsername());
-						env.add("group", direvent.getUser().getGroup());
-						env.add("section", section.getPath());
-						env.add(
-							"path",
-							dir.getPath().substring(
-								section.getPath().length()));
+//						env.add("user", direvent.getUser().getUsername());
+//						env.add("group", direvent.getUser().getGroup());
+//						env.add("section", section.getPath());
+//						env.add(
+//							"path",
+//							dir.getPath().substring(
+//								section.getPath().length()));
+						fillEnvSection(env, direvent, section);
 						env.add(
 							"filesleft",
 							Integer.toString(
@@ -549,7 +574,15 @@ public class IRCListener implements FtpListener, Observer {
 
 				ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
 
-				fillEnvSection(env, direvent, section);
+				try {
+					fillEnvSection(
+						env,
+						direvent,
+						section,
+						direvent.getDirectory().getParentFile());
+				} catch (FileNotFoundException e6) {
+					logger.log(Level.SEVERE, "", e6);
+				}
 				env.add("racers", Integer.toString(racers.size()));
 				env.add("files", Integer.toString(sfvfile.size()));
 				env.add("size", Bytes.formatBytes(sfvfile.getTotalBytes()));
@@ -584,7 +617,7 @@ public class IRCListener implements FtpListener, Observer {
 				int i = 0;
 				for (Iterator iter = racers.iterator(); iter.hasNext();) {
 					UploaderPosition stat = (UploaderPosition) iter.next();
-					i++;
+					
 					User raceuser;
 					try {
 						raceuser =
@@ -601,7 +634,7 @@ public class IRCListener implements FtpListener, Observer {
 					raceenv.add("user", raceuser.getUsername());
 					raceenv.add("group", raceuser.getGroup());
 
-					raceenv.add("position", new Integer(i));
+					raceenv.add("position", new Integer(i++));
 					raceenv.add("size", Bytes.formatBytes(stat.getBytes()));
 					raceenv.add("files", Integer.toString(stat.getFiles()));
 					raceenv.add(
@@ -645,6 +678,7 @@ public class IRCListener implements FtpListener, Observer {
 					"leadpercent",
 					Integer.toString(stat.getFiles() * 100 / sfvfile.size())
 						+ "%");
+				env.add("filesleft", Integer.toString(sfvfile.filesLeft()));
 
 				Object obj[] = getPropertyFileSuffix("store.halfway", dir);
 				String format = (String) obj[0];
@@ -690,24 +724,25 @@ public class IRCListener implements FtpListener, Observer {
 			}
 
 		} else if (direvent.getCommand().equals("RMD")) {
-			Object obj[] = getPropertyFileSuffix("rmdir", direvent.getDirectory());
+			Object obj[] =
+				getPropertyFileSuffix("rmdir", direvent.getDirectory());
 			String format = (String) obj[0];
 			LinkedRemoteFile dir = (LinkedRemoteFile) obj[1];
-			
+
 			ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
 			fillEnvSection(env, direvent, dir);
-			
+
 			try {
 				say(SimplePrintf.jprintf(format, env));
 			} catch (FormatterException e) {
 				logger.log(Level.WARNING, "", e);
 			}
-			
-//			say(
-//				"[deldir] "
-//					+ direvent.getDirectory().getPath()
-//					+ " was deleted by "
-//					+ formatUser(direvent.getUser()));
+
+			//			say(
+			//				"[deldir] "
+			//					+ direvent.getDirectory().getPath()
+			//					+ " was deleted by "
+			//					+ formatUser(direvent.getUser()));
 		} else if (direvent.getCommand().equals("WIPE")) {
 			if (direvent.getDirectory().isDirectory()) {
 				say(
@@ -719,29 +754,32 @@ public class IRCListener implements FtpListener, Observer {
 		}
 
 	}
+
 	public String strippath(String path) {
-		if(path.startsWith("/")) path = path.substring(1);
-		if(path.endsWith("/")) path = path.substring(0, path.length()-1);
+		if (path.startsWith("/"))
+			path = path.substring(1);
+		if (path.endsWith("/"))
+			path = path.substring(0, path.length() - 1);
 		return path;
 	}
-	/**
-	 * fills in user, group, section, path 
-	 * @param env
-	 * @param direvent
-	 * @param section
-	 * @param dir
-	 */
+
 	private void fillEnvSection(
 		ReplacerEnvironment env,
 		DirectoryFtpEvent direvent,
 		LinkedRemoteFile section) {
+		fillEnvSection(env, direvent, section, direvent.getDirectory());
+	}
+
+	private void fillEnvSection(
+		ReplacerEnvironment env,
+		DirectoryFtpEvent direvent,
+		LinkedRemoteFile section,
+		LinkedRemoteFile file) {
 		env.add("user", direvent.getUser().getUsername());
 		env.add("group", direvent.getUser().getGroup());
 		env.add("section", section.getPath());
-		env.add(
-			"path",
-			direvent.getDirectory().getPath().substring(
-				section.getPath().length()));
+		if(file.isFile()) env.add("speed", Bytes.formatBytes(file.length()/file.getXfertime())+"/s");
+		env.add("path", file.getPath().substring(section.getPath().length()));
 	}
 
 	public static Collection topFileUploaders2(Collection files) {

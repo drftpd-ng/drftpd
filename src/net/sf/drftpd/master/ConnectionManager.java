@@ -166,7 +166,7 @@ public class ConnectionManager {
 			.getProperty("master.localslave", "false")
 			.equalsIgnoreCase("true")) {
 			try {
-				//TODO stop auto-register and register local reference
+				//TODO stop auto-register and register local reference, note that RemoteServer.getRef() becomes unavailable then.
 				new SlaveImpl(cfg, inetAddress);
 			} catch (RemoteException ex) {
 				ex.printStackTrace();

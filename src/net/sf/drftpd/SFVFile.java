@@ -148,4 +148,11 @@ public class SFVFile implements Serializable {
 		return totalXfertime;
 	}
 
+	/**
+	 * 
+	 */
+	public int filesLeft() {
+		return size()-finishedFiles();
+	}
+
 }

@@ -114,6 +114,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		this.transfers.add(this);
 		this.started = System.currentTimeMillis();
 		this.sock = conn.connect();
+		this.sock.setSoTimeout(600);
 		if (in == null) {
 			this.in = sock.getInputStream();
 		} else if (out == null) {
