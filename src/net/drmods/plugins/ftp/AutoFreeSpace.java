@@ -59,7 +59,7 @@ public class AutoFreeSpace extends FtpListener {
     private long _minFreeSpace;
     private ArrayList<String> _excludeSections;
     private long _cycleTime;
-    private long _archiveAfter;
+    private long _wipeAfter;
     private Timer timer;
     private SiteBot _irc;
 
@@ -108,7 +108,7 @@ public class AutoFreeSpace extends FtpListener {
         _minFreeSpace = Bytes.parseBytes(p
                 .getProperty("keepFree"));
         _cycleTime = Long.parseLong(p.getProperty("cycleTime")) * 60000;
-        _archiveAfter = Long.parseLong(p.getProperty("archiveAfter")) * 60000;
+        _wipeAfter = Long.parseLong(p.getProperty("wipeAfter")) * 60000;
         for (int i = 1;; i++) {
             String sec = p.getProperty("excluded.section." + i);
             if (sec == null)
@@ -116,7 +116,7 @@ public class AutoFreeSpace extends FtpListener {
             _excludeSections.add(sec);
         }
         _excludeSections.trimToSize();
-        timer.schedule(new MrCleanit(_cm, _excludeSections, _archiveAfter, _minFreeSpace), _cycleTime, _cycleTime);
+        timer.schedule(new MrCleanit(_cm, _excludeSections, _wipeAfter, _minFreeSpace), _cycleTime, _cycleTime);
     }
 
     public class MrCleanit extends TimerTask {
