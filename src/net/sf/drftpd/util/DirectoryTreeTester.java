@@ -10,7 +10,7 @@ package net.sf.drftpd.util;
  */
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.RemoteFileTree;
+import net.sf.drftpd.remotefile.RemoteFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,9 +19,9 @@ public class DirectoryTreeTester {
 
 	public static void main(String[] args) {
 		try {
-			RemoteFileTree root = new LinkedRemoteFile(null, new FileRemoteFile(args[0], new File(args[0])));
+			RemoteFile root = new LinkedRemoteFile(null, new FileRemoteFile(args[0], new File(args[0])));
 		
-		RemoteFileTree files[] = root.listFiles();
+		RemoteFile files[] = root.listFiles();
 		for(int i=0; i<files.length; i++) {
 			System.out.println(files[i]);
 		}

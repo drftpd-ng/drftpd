@@ -31,7 +31,7 @@ import net.sf.drftpd.slave.RemoteSlave;
  * 
  * @author Morgan Christiansson <mog@linux.nu>
  */
-public class LinkedRemoteFile extends RemoteFileTree {
+public class LinkedRemoteFile extends RemoteFile {
 
 	/**
 	 * @author mog
@@ -41,23 +41,23 @@ public class LinkedRemoteFile extends RemoteFileTree {
 	 * To enable and disable the creation of type comments go to
 	 * Window>Preferences>Java>Code Generation.
 	 */
-	public class DirectoryRemoteFile extends RemoteFileTree {
+	public class DirectoryRemoteFile extends RemoteFile {
 
 		public DirectoryRemoteFile(User owner, String name) {
 			this.name = name;
 			isDirectory = true;
 			isFile = false;
 			lastModified = System.currentTimeMillis();
-			canWrite = true;
-			canRead = true;
+//			canWrite = true;
+//			canRead = true;
 			user = owner.getUsername();
 			group = owner.getGroup();
 		}
 		/**
 		 * @see net.sf.drftpd.remotefile.RemoteFileTree#listFiles()
 		 */
-		public RemoteFileTree[] listFiles() {
-			return new RemoteFileTree[0];
+		public RemoteFile[] listFiles() {
+			return new RemoteFile[0];
 		}
 
 		protected String name;
@@ -89,8 +89,8 @@ public class LinkedRemoteFile extends RemoteFileTree {
 	 * <link>{merge()}</link> can be called on.
 	 */
 	public LinkedRemoteFile() {
-		canRead = true;
-		canWrite = false;
+//		canRead = true;
+//		canWrite = false;
 		lastModified = System.currentTimeMillis();
 		length = 0;
 		isDirectory = true;
@@ -98,19 +98,19 @@ public class LinkedRemoteFile extends RemoteFileTree {
 		parent = null;
 		name = "";
 		files = new Hashtable();
-		slaves = new Vector(1);
+		slaves = new Vector();
 		// there _should_ always be at least 1 RemoteSlave.
 	}
 
 	/**
 	 * The slave argument may be null, if it is null, no slaves will be added.
 	 */
-	public LinkedRemoteFile(RemoteSlave slave, RemoteFileTree file)
+	public LinkedRemoteFile(RemoteSlave slave, RemoteFile file)
 		throws IOException {
 		this(slave, null, file);
 	}
 
-	public LinkedRemoteFile(RemoteFileTree file) throws IOException {
+	public LinkedRemoteFile(RemoteFile file) throws IOException {
 		this(null, null, file);
 	}
 
@@ -121,15 +121,9 @@ public class LinkedRemoteFile extends RemoteFileTree {
 	public LinkedRemoteFile(
 		RemoteSlave slave,
 		LinkedRemoteFile parent,
-		RemoteFileTree file)
+		RemoteFile file)
 		throws InvalidDirectoryException {
-
-		RemoteFileTree treefile = null;
-//		if (file instanceof RemoteFileTree)
-			treefile = (RemoteFileTree) file;
-
-		canRead = file.canRead();
-		canWrite = file.canWrite();
+		
 		lastModified = file.lastModified();
 		length = file.length();
 		//isHidden = file.isHidden();
@@ -143,100 +137,34 @@ public class LinkedRemoteFile extends RemoteFileTree {
 		//path = file.getPath();
 		/* serialize directory*/
 		this.parent = parent;
-
-		slaves = new Vector(1);
+		
+		slaves = new Vector();
 		if (slave != null) {
 			slaves.add(slave);
 		}
-		//file.isDirectory cached
+		
 		if (isDirectory()) {
-			//			if (!(file instanceof RemoteFileTree)) {
-			if (treefile == null) {
-				throw new InvalidDirectoryException("Directories must implement LinkedRemoteFile to be added to the LinkedRemoteFile tree");
-			}
-			//			RemoteFileTree treefile = (RemoteFileTree)file;
-			/* get existing file entries */
-			/*
-						File cache = new File(file.getPath() + "/.drftpd");
-						Hashtable oldtable = null;
-						try {
-							ObjectInputStream is =
-								new ObjectInputStream(new FileInputStream(cache));
-							oldtable = (Hashtable) is.readObject();
-						} catch (FileNotFoundException ex) {
-							//it's ok if it doesn't exist
-						} catch (IOException ex) {
-							ex.printStackTrace();
-						} catch (ClassNotFoundException ex) {
-							// this class must exist
-							ex.printStackTrace();
-							System.exit(-1);
-						}
-			*/
-			/* END get existing file entries*/
-
-			//			File dir[] = treefile.listFiles(new DrftpdFileFilter());
-			RemoteFileTree dir[] = treefile.listFiles();
+			RemoteFile dir[] = file.listFiles();
 			files = new Hashtable(dir.length);
 			Stack dirstack = new Stack();
 			for (int i = 0; i < dir.length; i++) {
-				RemoteFileTree file2 = dir[i];
-				//				System.out.println("III " + file2);
+				RemoteFile file2 = dir[i];
 				if (file2.isDirectory()) {
 					dirstack.push(file2);
 					continue;
 				}
-				/*
-				LinkedRemoteFile oldfile = null;
-				if (oldtable != null)
-					oldfile = (LinkedRemoteFile) oldtable.get(file.getName());
-				if (oldfile != null) {
-					files.put(file2.getName(), oldfile);
-				} else {
-				*/
 				files.put(
 					file2.getName(),
 					new LinkedRemoteFile(slave, this, file2));
-				/*}*/
 			}
-
-			/*
-					//don't need to serialize/cache old files... we won't save any additional data about them anyway..
-						try {
-							new ObjectOutputStream(
-								new FileOutputStream(cache)).writeObject(
-								files);
-						} catch (FileNotFoundException ex) {
-							System.out.println("Could not open file: " + ex.getMessage());
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-			*/
-			// OK, now the Object is saved, continue with serializing the dir's
+			
 			Iterator i = dirstack.iterator();
 			while (i.hasNext()) {
-				RemoteFileTree file2 = (RemoteFileTree) i.next();
+				RemoteFile file2 = (RemoteFile) i.next();
 				String filename = file2.getName();
-				//				System.out.println(">>> " + file2.getName());
-				/*
-				if (oldtable != null) {
-					LinkedRemoteFile oldfile =
-						(LinkedRemoteFile) oldtable.get(filename);
-					if (oldfile != null) {
-						files.put(filename, oldfile);
-					} else {
-						files.put(
-							filename,
-							new LinkedRemoteFile(slave, this, file2));
-					}
-				} else {
-					*/
 				files.put(filename, new LinkedRemoteFile(slave, this, file2));
-				/*
-				}
-				*/
 			}
-		} /* serialize directory */
+		}
 	}
 
 	public void mkdir(User owner, String fileName) throws IOException {
@@ -264,7 +192,7 @@ public class LinkedRemoteFile extends RemoteFileTree {
 		System.out.println("Created directory " + file.getPath());
 	}
 
-	public void addFile(RemoteFileTree file) throws InvalidDirectoryException {
+	public void addFile(RemoteFile file) throws InvalidDirectoryException {
 		LinkedRemoteFile linkedfile = new LinkedRemoteFile(null, this, file);
 		files.put(linkedfile.getName(), linkedfile);
 	}
@@ -272,8 +200,8 @@ public class LinkedRemoteFile extends RemoteFileTree {
 	public Map getFiles() {
 		return files;
 	}
-	
-	public RemoteFileTree[] listFiles() {
+
+	public RemoteFile[] listFiles() {
 		if (files == null) {
 			System.out.println(
 				"Warning: attempt to listFiles() on a null files map:");
@@ -479,7 +407,9 @@ public class LinkedRemoteFile extends RemoteFileTree {
 	}
 	private Random rand = new Random();
 	public RemoteSlave getASlave() throws NoAvailableSlaveException {
-		if(slaves.size() == 0) throw new NoAvailableSlaveException(getPath()+" has no slaves available");
+		if (slaves.size() == 0)
+			throw new NoAvailableSlaveException(
+				getPath() + " has no slaves available");
 		RemoteSlave myslaves[] =
 			(RemoteSlave[]) slaves.toArray(new RemoteSlave[0]);
 		int num = rand.nextInt(myslaves.length);
@@ -520,7 +450,7 @@ public class LinkedRemoteFile extends RemoteFileTree {
 			ret.append("]");
 		}
 		if (isDirectory())
-			ret.append("[directory: true]");
+			ret.append("[directory: "+files.size()+"]");
 		//ret.append("isFile(): " + isFile() + " ");
 		ret.append(getName());
 		ret.append("]]");
@@ -547,22 +477,23 @@ public class LinkedRemoteFile extends RemoteFileTree {
 	 * @see net.sf.drftpd.remotefile.RemoteFile#getCheckSum()
 	 */
 	public long getCheckSum() throws IOException {
-		if(checkSum != 0) return super.getCheckSum();
-		
+		if (checkSum != 0)
+			return super.getCheckSum();
+
 		RemoteSlave slave;
-		while(true) {
-			
+		while (true) {
+
 			slave = getASlave();
 			try {
 				checkSum = slave.getSlave().checkSum(getPath());
-			} catch(RemoteException ex) {
+			} catch (RemoteException ex) {
 				slave.getManager().handleRemoteException(ex, slave);
 				continue;
 			}
 			return checkSum;
 		}
 	}
-	
+
 	public void renameTo(String to) {
 		throw new NoSuchMethodError("renameTo() not implemented");
 	}

@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.io.Serializable;
 
+import net.sf.drftpd.master.*;
 import net.sf.drftpd.master.SlaveManager;
 
 /**

@@ -1,32 +1,25 @@
 package net.sf.drftpd.remotefile;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Vector;
-import java.util.Hashtable;
-import java.util.Random;
-import java.util.Enumeration;
 
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-
-import net.sf.drftpd.slave.*;
+import net.sf.drftpd.SFVFile;
 
 
 /**
- * @author mog
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
+ * @author <a href="mailto:mog@linux.nu">Morgan Christiansson</a>
  */
-public abstract class RemoteFile implements Serializable {
-
+public abstract class RemoteFile {
+	
+	protected SFVFile sfvFile;
+	
+	public SFVFile getSFVFile() throws IOException {
+		return sfvFile;
+	}
+	
+	public abstract RemoteFile[] listFiles();
+	
+	
+	
 	protected String user;
 	public String getUser() {
 		if (user == null)
@@ -43,19 +36,7 @@ public abstract class RemoteFile implements Serializable {
 
 	//boolean isHidden;
 	public boolean isHidden() {
-		if (getPath().startsWith("."))
-			return true;
-		return false;
-	}
-
-	protected boolean canRead;
-	public boolean canRead() {
-		return canRead;
-	}
-
-	protected boolean canWrite;
-	public boolean canWrite() {
-		return canWrite;
+		return getPath().startsWith(".");
 	}
 
 	protected long lastModified;
@@ -86,7 +67,9 @@ public abstract class RemoteFile implements Serializable {
 		ret.append("[net.sf.drftpd.RemoteFile[");
 		//ret.append(slaves);
 		if (isDirectory())
-			ret.append("[directory: true]");
+			ret.append("[directory: "+listFiles().length+"]");
+		if(isFile())
+			ret.append("[file: true]");
 		//ret.append("isFile(): " + isFile() + " ");
 		ret.append(getPath());
 		ret.append("]]");

@@ -20,7 +20,7 @@ import net.sf.drftpd.master.usermanager.GlftpdUserManager;
 import net.sf.drftpd.master.usermanager.UserManager;
 import net.sf.drftpd.remotefile.*;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.RemoteFileTree;
+import net.sf.drftpd.remotefile.RemoteFile;
 import net.sf.drftpd.slave.*;
 import net.sf.drftpd.slave.RemoteSlave;
 import net.sf.drftpd.slave.SlaveImpl;
@@ -32,19 +32,20 @@ public class ConnectionManager {
 	private Timer timer;
 
 	public ConnectionManager(Properties cfg) {
-
+		LinkedRemoteFile root = null;
+		
 		/** register slavemanager **/
 		try {
-		Document doc = new SAXBuilder().build(new FileReader("files.xml"));
-		
-		LinkedRemoteFile root = new LinkedRemoteFile(new JDOMRemoteFileTree("", doc.getRootElement()));
+			Document doc = new SAXBuilder().build(new FileReader("files.xml"));
+			//                                                             slaves=null, parent=null, entry=JDOMRemotefile
+			root = new LinkedRemoteFile(null, null, new JDOMRemoteFile("", doc.getRootElement()));
 		} catch(Exception ex) {
 			System.err.println("Error loading \"files.xml\"");
 			ex.printStackTrace();
 		}
 		try {
 			slavemanager =
-				new SlaveManagerImpl(cfg.getProperty("slavemanager.url"));
+				new SlaveManagerImpl(cfg.getProperty("slavemanager.url"), root);
 		} catch (RemoteException ex) {
 			ex.printStackTrace();
 			return;

@@ -1,18 +1,25 @@
 package net.sf.drftpd.master;
 
 import java.rmi.server.UnicastRemoteObject;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Vector;
 import java.util.Iterator;
 import java.util.Random;
 
+import org.jdom.Document;
+import org.jdom.output.XMLOutputter;
+
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.remotefile.XMLSerialize;
 import net.sf.drftpd.slave.RemoteSlave;
-import net.sf.drftpd.slave.Slave;
 import net.sf.drftpd.slave.SlaveStatus;
 import net.sf.drftpd.slave.TransferImpl;
 
@@ -21,16 +28,22 @@ public class SlaveManagerImpl
 	implements SlaveManager {
 
 	//	protected Hashtable slaves = new Hashtable();
-	protected LinkedRemoteFile root = new LinkedRemoteFile();
+	protected LinkedRemoteFile root;
 	//	protected Vector slaves = new Vector();
-	protected Vector slaves = (Vector) root.getSlaves();
+	protected List slaves;
 
 	public LinkedRemoteFile getRoot() {
 		return root;
 	}
 
 	public SlaveManagerImpl(String url) throws RemoteException {
+		this(url,  new LinkedRemoteFile());
+	}
+	
+	public SlaveManagerImpl(String url, LinkedRemoteFile root) throws RemoteException {
 		super();
+		this.root = root;
+		slaves = root.getSlaves();
 		try {
 			Naming.rebind(url, this);
 			
@@ -72,6 +85,13 @@ public class SlaveManagerImpl
 			"merge() took " + (System.currentTimeMillis() - millis) + "ms");
 		System.out.println("SlaveStatus: " + slave.getSlave().getSlaveStatus());
 		//TODO: write XML representation of "LinkedRemoteFile root"
+		Document doc = new Document(XMLSerialize.serialize(root));
+		try {
+			new XMLOutputter("    ", true).output(doc, new FileWriter("files.xml"));
+		} catch(IOException ex) {
+			System.err.println("Warning, error saving database to \"files.xml\"");
+			ex.printStackTrace();
+		}
 	}
 
 	private Random rand = new Random();

@@ -10,7 +10,7 @@ import java.util.StringTokenizer;
 
 import net.sf.drftpd.InvalidDirectoryException;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.RemoteFileTree;
+import net.sf.drftpd.remotefile.RemoteFile;
 
 /**
  * This class is responsible to handle all virtual directory activities.
@@ -292,15 +292,15 @@ public class VirtualDirectory {
 		}
 
 		// get file list
-		RemoteFileTree flLst[];
+		RemoteFile flLst[];
 		//if ( (pattern == null) || pattern.equals("*") || pattern.equals("") ) {
 		//    flLst = lstDirObj.listFiles();
 		//} else {
 		if(directory) {
 			flLst = new LinkedRemoteFile[] {directoryFile};
 		} else {
-			if(!(directoryFile instanceof RemoteFileTree)) throw new InvalidDirectoryException("lstDirObj is not an instance of RemoteFileTree");
-			RemoteFileTree directoryFileTree = (RemoteFileTree) directoryFile;
+			if(!(directoryFile instanceof RemoteFile)) throw new InvalidDirectoryException("lstDirObj is not an instance of RemoteFileTree");
+			RemoteFile directoryFileTree = (RemoteFile) directoryFile;
 			flLst = directoryFileTree.listFiles(); //new FileRegularFilter(pattern));
 		}
 		//}
@@ -370,7 +370,7 @@ public class VirtualDirectory {
 		}
 
 		// get file list
-		RemoteFileTree flLst[];
+		RemoteFile flLst[];
 		if ((pattern == null) || pattern.equals("*") || pattern.equals("")) {
 			flLst = lstDirObj.listFiles();
 		} else {
@@ -396,21 +396,21 @@ public class VirtualDirectory {
 	/**
 	 * Get file owner.
 	 */
-	private static String getOwner(RemoteFileTree fl) {
+	private static String getOwner(RemoteFile fl) {
 		return fl.getUser();
 	}
 
 	/**
 	 * Get group name
 	 */
-	private static String getGroup(RemoteFileTree fl) {
+	private static String getGroup(RemoteFile fl) {
 		return fl.getGroup();
 	}
 
 	/**
 	 * Get link count
 	 */
-	private static String getLinkCount(RemoteFileTree fl) {
+	private static String getLinkCount(RemoteFile fl) {
 		if (fl.isDirectory()) {
 			return String.valueOf(3);
 		} else {
@@ -421,7 +421,7 @@ public class VirtualDirectory {
 	/**
 	 * Get size
 	 */
-	private static String getLength(RemoteFileTree fl) {
+	private static String getLength(RemoteFile fl) {
 		String initStr = "            ";
 		long sz = 0;
 		if (fl.isFile()) {
@@ -437,7 +437,7 @@ public class VirtualDirectory {
 	/**
 	 * Get last modified date string.
 	 */
-	private static String getLastModified(RemoteFileTree fl) {
+	private static String getLastModified(RemoteFile fl) {
 		long modTime = fl.lastModified();
 		Date date = new Date(modTime);
 		return DateUtils.getUnixDate(date);
@@ -446,7 +446,7 @@ public class VirtualDirectory {
 	/**
 	 * Get file name.
 	 */
-	private static String getName(RemoteFileTree fl) {
+	private static String getName(RemoteFile fl) {
 		String flName = fl.getName();
 		flName = normalizeSeparateChar(flName);
 
@@ -464,7 +464,7 @@ public class VirtualDirectory {
 	/**
 	 * Get permission string.
 	 */
-	private static String getPermission(RemoteFileTree fl) {
+	private static String getPermission(RemoteFile fl) {
 
 		StringBuffer sb = new StringBuffer(13);
 		if (fl.isDirectory()) {
@@ -472,18 +472,19 @@ public class VirtualDirectory {
 		} else {
 			sb.append('-');
 		}
-
-		if (fl.canRead()) {
-			sb.append('r');
-		} else {
-			sb.append('-');
-		}
-
-		if (fl.canWrite()) {
-			sb.append('w');
-		} else {
-			sb.append('-');
-		}
+		
+//		if (fl.canRead()) {
+		sb.append('r');
+//		} else {
+//			sb.append('-');
+//		}
+		
+//		if (fl.canWrite()) {
+		sb.append('w');
+//		} else {
+//			sb.append('-');
+//		}
+		
 		if (fl.isDirectory()) {
 			sb.append("x");
 		} else {
@@ -568,7 +569,7 @@ public class VirtualDirectory {
 	/**
 	 * Get each directory line.
 	 */
-	public void printLine(RemoteFileTree fl, Writer out) throws IOException {
+	public void printLine(RemoteFile fl, Writer out) throws IOException {
 		out.write(getPermission(fl));
 		out.write(DELIM);
 		out.write(DELIM);

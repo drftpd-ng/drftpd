@@ -2,8 +2,18 @@
 <directory name="">
     <user>drftpd</user>
     <group>drftpd</group>
-    <lastModified>1029630887000</lastModified>
+    <lastModified>1030124614000</lastModified>
     <contents>
+        <file name="Llynyrd Skynyrd - Sweet Home Alabama.mp3">
+            <user>drftpd</user>
+            <group>drftpd</group>
+            <size>0</size>
+            <lastModified>1030124380000</lastModified>
+            <checksum>c87a3d4a</checksum>
+            <slaves>
+                <slave name="mog" />
+            </slaves>
+        </file>
         <directory name="bilder">
             <user>drftpd</user>
             <group>drftpd</group>
@@ -574,6 +584,16 @@
                 <slave name="mog" />
             </slaves>
         </directory>
+        <file name="CLASSIC ROCK-Lynard Skynard - Sweet Home Alabama.mp3">
+            <user>drftpd</user>
+            <group>drftpd</group>
+            <size>0</size>
+            <lastModified>1030124426000</lastModified>
+            <checksum>c87a3d4a</checksum>
+            <slaves>
+                <slave name="mog" />
+            </slaves>
+        </file>
         <file name="Michael Jackson - Billie Jean - 01.MP3">
             <user>drftpd</user>
             <group>drftpd</group>
@@ -634,6 +654,16 @@
                 <slave name="mog" />
             </slaves>
         </file>
+        <file name="budapest.mpg">
+            <user>drftpd</user>
+            <group>drftpd</group>
+            <size>0</size>
+            <lastModified>1016643388000</lastModified>
+            <checksum>15298a66</checksum>
+            <slaves>
+                <slave name="mog" />
+            </slaves>
+        </file>
         <file name="test.txt">
             <user>drftpd</user>
             <group>drftpd</group>
@@ -644,12 +674,12 @@
                 <slave name="mog" />
             </slaves>
         </file>
-        <file name="budapest.mpg">
+        <file name="01 - Dia Psalma - Luft.mp3">
             <user>drftpd</user>
             <group>drftpd</group>
             <size>0</size>
-            <lastModified>1016643388000</lastModified>
-            <checksum>15298a66</checksum>
+            <lastModified>1030118392000</lastModified>
+            <checksum>5681a18c</checksum>
             <slaves>
                 <slave name="mog" />
             </slaves>
@@ -1014,12 +1044,42 @@
                 <slave name="mog" />
             </slaves>
         </file>
+        <file name="Lynyrd skynyrd-Sweet home Alabama.mp3">
+            <user>drftpd</user>
+            <group>drftpd</group>
+            <size>0</size>
+            <lastModified>1030124438000</lastModified>
+            <checksum>c87a3d4a</checksum>
+            <slaves>
+                <slave name="mog" />
+            </slaves>
+        </file>
+        <file name="Ken - Eld och Djupa Vatten.mp3">
+            <user>drftpd</user>
+            <group>drftpd</group>
+            <size>0</size>
+            <lastModified>1030120704000</lastModified>
+            <checksum>1ad6f6d8</checksum>
+            <slaves>
+                <slave name="mog" />
+            </slaves>
+        </file>
         <file name="05 - Bilder fren Cypern.mp3">
             <user>drftpd</user>
             <group>drftpd</group>
             <size>0</size>
             <lastModified>1016715777000</lastModified>
             <checksum>2c6e4c76</checksum>
+            <slaves>
+                <slave name="mog" />
+            </slaves>
+        </file>
+        <file name="test.sfv">
+            <user>drftpd</user>
+            <group>drftpd</group>
+            <size>0</size>
+            <lastModified>1030020401000</lastModified>
+            <checksum>502bd226</checksum>
             <slaves>
                 <slave name="mog" />
             </slaves>
@@ -1114,6 +1174,26 @@
                 <slave name="mog" />
             </slaves>
         </directory>
+        <file name="Dia Psalma - 07 - Emelie.mp3">
+            <user>drftpd</user>
+            <group>drftpd</group>
+            <size>0</size>
+            <lastModified>1030121195000</lastModified>
+            <checksum>97615b2f</checksum>
+            <slaves>
+                <slave name="mog" />
+            </slaves>
+        </file>
+        <file name="Lynyrd Skynyrd - Sweet Home Alabama.mp3">
+            <user>drftpd</user>
+            <group>drftpd</group>
+            <size>0</size>
+            <lastModified>1030124466000</lastModified>
+            <checksum>1d3f3914</checksum>
+            <slaves>
+                <slave name="mog" />
+            </slaves>
+        </file>
         <file name="Pink - Get The Party Started.mpeg">
             <user>drftpd</user>
             <group>drftpd</group>
@@ -1150,6 +1230,16 @@
             <size>0</size>
             <lastModified>1028809516000</lastModified>
             <checksum>898755a</checksum>
+            <slaves>
+                <slave name="mog" />
+            </slaves>
+        </file>
+        <file name="Lynard Skynyrd - Sweet Home Alabama.mp3">
+            <user>drftpd</user>
+            <group>drftpd</group>
+            <size>0</size>
+            <lastModified>1030124470000</lastModified>
+            <checksum>80ed806b</checksum>
             <slaves>
                 <slave name="mog" />
             </slaves>

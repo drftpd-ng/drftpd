@@ -15,6 +15,7 @@
         <property name="outputDir" value="classes/"/>
 
 	<path id="classpath">
+		<pathelement path="${user.home}/jdom-b8/build/jdom.jar"/>
 	    <fileset dir=".">
 	        <include name="lib/*"/>
 	    </fileset>

@@ -26,7 +26,7 @@ import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.RemoteFileTree;
+import net.sf.drftpd.remotefile.RemoteFile;
 
 import com.jconfig.DiskFile;
 import com.jconfig.DiskObject;
@@ -188,7 +188,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	/**
 	 * Starts sending 'remotefile' starting at 'offset' bytes to a outputstream from the already connected socket 'sock'.
 	 */
-	private Transfer doSend(RemoteFileTree remotefile, char mode, long offset, Connection conn) throws IOException {
+	private Transfer doSend(RemoteFile remotefile, char mode, long offset, Connection conn) throws IOException {
 		File file = new File(root + remotefile.getPath());
 		if (!file.exists())
 			throw new FileNotFoundException(
@@ -205,7 +205,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	 * @see net.sf.drftpd.slave.Slave#doConnectSend(REmoteFile, long, InetADdress, int)
 	 */
 	public Transfer doConnectSend(
-		RemoteFileTree rfile,
+		RemoteFile rfile,
 		char mode,
 		long offset,
 		InetAddress addr,
@@ -218,7 +218,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	/**
 	 * @see net.sf.drftpd.slave.Slave#doListenSend(RemoteFile, long, int)
 	 */
-	public Transfer doListenSend(RemoteFileTree remotefile, char mode, long offset)
+	public Transfer doListenSend(RemoteFile remotefile, char mode, long offset)
 		throws IOException {
 		
 //		ServerSocket server = new ServerSocket(0, 1);
@@ -232,7 +232,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	/**
 	 * Generic receive method.
 	 */
-	private Transfer doReceive(RemoteFileTree dir, String filename, User user, long offset, Connection conn) throws IOException {
+	private Transfer doReceive(RemoteFile dir, String filename, User user, long offset, Connection conn) throws IOException {
 		
 		File file = new File(root + dir.getPath() +"/" + filename);
 		System.out.println("Will write "+file);
@@ -252,7 +252,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	 * @see net.sf.drftpd.slave.Slave#doConnectReceive(RemoteFile, long, InetAddress, int)
 	 */
 	public Transfer doConnectReceive(
-		RemoteFileTree dir,
+		RemoteFile dir,
 		String filename,
 		User user,
 		long offset,
@@ -269,7 +269,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	 * @see net.sf.drftpd.slave.Slave#doListenReceive(RemoteFile, long, int)
 	 */
 	public Transfer doListenReceive(
-		RemoteFileTree dir,
+		RemoteFile dir,
 		String filename, User user, long offset)
 		throws IOException {
 //		ServerSocket server = new ServerSocket(0, 1);

@@ -8,7 +8,7 @@ import net.sf.drftpd.InvalidDirectoryException;
 /**
  * @author <a href="mailto:mog@linux.nu">Morgan Christiansson</a>
  */
-public class FileRemoteFile extends RemoteFileTree {
+public class FileRemoteFile extends RemoteFile {
 	private File file;
 	private String root;
 
@@ -98,12 +98,12 @@ public class FileRemoteFile extends RemoteFileTree {
 	/**
 	 * @see net.sf.drftpd.RemoteFileTree#listFiles()
 	 */
-	public RemoteFileTree[] listFiles() {
+	public RemoteFile[] listFiles() {
 		if(!isDirectory()) {
 			throw new IllegalArgumentException("listFiles() called on !isDirectory()");
 		}
 		File filefiles[] = file.listFiles();
-		RemoteFileTree files[] = new RemoteFileTree[filefiles.length];
+		RemoteFile files[] = new RemoteFile[filefiles.length];
 		for (int i=0; i<filefiles.length; i++) {
 			try {
 				files[i] = new FileRemoteFile(root, filefiles[i]);
