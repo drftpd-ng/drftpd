@@ -338,7 +338,7 @@ public class FtpConnection extends BaseFtpConnection {
 		}
 
 		// check permission
-		if (!getUser().getUsername().equals(requestedFile.getOwner())
+		if (!getUser().getUsername().equals(requestedFile.getOwnerUsername())
 			&& !getUser().isAdmin()) {
 			out.print(
 				new FtpResponse(
@@ -352,7 +352,7 @@ public class FtpConnection extends BaseFtpConnection {
 
 		User uploader;
 		try {
-			uploader = this.userManager.getUserByName(requestedFile.getOwner());
+			uploader = this.userManager.getUserByName(requestedFile.getOwnerUsername());
 			uploader.updateCredits(
 				(long) - (requestedFile.length() * uploader.getRatio()));
 		} catch (IOException e) {
@@ -893,9 +893,7 @@ public class FtpConnection extends BaseFtpConnection {
 			FtpResponse response =
 				(FtpResponse) FtpResponse.RESPONSE_230_USER_LOGGED_IN.clone();
 			try {
-				response.addComment(
-					new BufferedReader(
-						new FileReader("ftp-data/text/welcome.txt")));
+				connManager.getConfig().welcomeMessage(response);
 			} catch (IOException e) {
 				logger.log(
 					Level.WARNING,
@@ -2193,7 +2191,7 @@ public class FtpConnection extends BaseFtpConnection {
 		Hashtable nukees) {
 		for (Iterator iter = nukeDir.getFiles().iterator(); iter.hasNext();) {
 			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
-			String owner = file.getOwner();
+			String owner = file.getOwnerUsername();
 			Long total = (Long) nukees.get(owner);
 			if (total == null)
 				total = new Long(0);
@@ -2864,11 +2862,13 @@ public class FtpConnection extends BaseFtpConnection {
 		FtpResponse response = new FtpResponse(200);
 
 		try {
-			response.addComment(
-				new BufferedReader(
-					new FileReader("ftp-data/text/welcome.txt")));
+//			response.addComment(
+//				new BufferedReader(
+//					new FileReader("ftp-data/text/welcome.txt")));
+			connManager.getConfig().welcomeMessage(response);
 		} catch (IOException e) {
 			out.print(new FtpResponse(200, "IO error: " + e.getMessage()));
+			return;
 		}
 		out.print(response);
 		return;

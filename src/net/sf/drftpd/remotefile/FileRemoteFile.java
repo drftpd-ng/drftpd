@@ -126,7 +126,7 @@ public class FileRemoteFile extends RemoteFile {
 	/**
 	 * @see net.sf.drftpd.RemoteFile#getUser()
 	 */
-	public String getOwner() {
+	public String getOwnerUsername() {
 		return "drftpd";
 	}
 

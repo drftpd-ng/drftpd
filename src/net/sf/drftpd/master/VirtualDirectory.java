@@ -161,7 +161,7 @@ public class VirtualDirectory {
 	 * Get file owner.
 	 */
 	private static String getOwner(RemoteFile fl) {
-		return fl.getOwner();
+		return fl.getOwnerUsername();
 	}
 
 	/**

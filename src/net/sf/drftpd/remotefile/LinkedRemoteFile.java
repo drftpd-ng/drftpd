@@ -110,7 +110,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		this.isDirectory = file.isDirectory();
 		this.isFile = file.isFile();
 
-		this.owner = file.getOwner();
+		this.owner = file.getOwnerUsername();
 		this.group = file.getGroup();
 		this.checkSum = file.getCheckSum();
 		if (file.isFile()) {

@@ -13,7 +13,7 @@ public class XMLSerialize {
 
 		element.setAttribute("name", file.getName());
 
-		element.addContent(new Element("user").setText(file.getOwner()));
+		element.addContent(new Element("user").setText(file.getOwnerUsername()));
 		element.addContent(new Element("group").setText(file.getGroup()));
 
 

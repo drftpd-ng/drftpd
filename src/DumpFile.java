@@ -35,7 +35,7 @@ public class DumpFile {
 		System.out.println("getName(): \""+file.getName()+"\"");
 //		System.out.println("getParent(): \""+file.getParent()+"\"");
 		System.out.println("getPath(): \""+file.getPath()+"\"");
-		System.out.println("getOwner(): \""+file.getOwner()+"\"");
+		System.out.println("getOwner(): \""+file.getOwnerUsername()+"\"");
 		System.out.println("getGroup(): \""+file.getGroup()+"\"");
 		//System.out.println("isAbsolute(): \""+file.isAbsolute()+"\"");
 		System.out.println("isDirectory(): \""+file.isDirectory()+"\"");

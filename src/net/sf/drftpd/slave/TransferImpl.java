@@ -102,17 +102,18 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 			out.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
+		} finally {
+			finished = System.currentTimeMillis();
+			transfers.remove(this);
+
+			out.close();
+			in.close();
+			sock.close();
+
+			in = null;
+			out = null;
+			conn = null;
 		}
-		finished = System.currentTimeMillis();
-		transfers.remove(this);
-
-		out.close();
-		in.close();
-		sock.close();
-
-		in = null;
-		out = null;
-		conn = null;
 	}
 
 	public boolean isSendingUploading() {
@@ -122,29 +123,28 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	public char getDirection() {
 		return direction;
 	}
-	
+
 	public InetAddress getEndpoint() {
 		return sock.getInetAddress();
 	}
-	
+
 	public long getChecksum() {
 		return this.checksum.getValue();
 	}
-	
+
 	public boolean isReceivingUploading() {
 		return direction == TRANSFER_RECEIVING_UPLOAD;
 	}
 
 	public int getTransferSpeed() {
 		long elapsed = System.currentTimeMillis() - started;
-		if(this.transfered == 0) {
+		if (this.transfered == 0) {
 			return 0;
 		}
-		if(elapsed == 0) {
+		if (elapsed == 0) {
 			return 0;
 		}
-		return (int)
-		(this.transfered / ((float)elapsed / (float)1000));
+		return (int) (this.transfered / ((float) elapsed / (float) 1000));
 	}
 
 	/**
