@@ -13,7 +13,7 @@ import net.sf.drftpd.event.listeners.Trial;
  * Usage: java net.sf.drftpd.master.usermanager.UserManagerConverter net.sf.drftpd.master.usermanager.glftpd.GlftpdUserManager net.sf.drftpd.master.usermanager.JSXUserManager
  * 
  * @author mog
- * @version $Id: UserManagerConverter.java,v 1.6 2004/01/14 00:11:18 mog Exp $
+ * @version $Id: UserManagerConverter.java,v 1.7 2004/01/14 00:28:00 mog Exp $
  */
 public class UserManagerConverter {
 	private static final Logger logger =
@@ -119,19 +119,19 @@ public class UserManagerConverter {
 			int period = periods[i];
 			to.setUploadedMillisecondsForPeriod(
 				period,
-				from.getUploadedMillisecondsForPeriod(i));
+				from.getUploadedMillisecondsForPeriod(period));
 
 			to.setDownloadedMillisecondsForPeriod(
 				period,
-				from.getDownloadedMillisecondsForPeriod(i));
+				from.getDownloadedMillisecondsForPeriod(period));
 
 			to.setUploadedBytesForPeriod(
 				period,
-				from.getUploadedBytesForPeriod(i));
+				from.getUploadedBytesForPeriod(period));
 
 			to.setDownloadedBytesForPeriod(
 				period,
-				from.getDownloadedBytesForPeriod(i));
+				from.getDownloadedBytesForPeriod(period));
 
 			to.setUploadedFilesForPeriod(
 				period,
