@@ -1,9 +1,3 @@
-/*
- * Created on Dec 11, 2003
- *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
- */
 package net.sf.drftpd.mirroring;
 
 import org.apache.log4j.Logger;
@@ -12,7 +6,7 @@ import net.sf.drftpd.master.RemoteSlave;
 
 /**
  * @author zubov
- * @version $Id: JobManagerThread.java,v 1.7 2004/01/08 15:56:50 zubov Exp $
+ * @version $Id: JobManagerThread.java,v 1.8 2004/02/06 01:39:18 zubov Exp $
  */
 public class JobManagerThread extends Thread {
 	private static final Logger logger =

@@ -1,5 +1,6 @@
 package net.sf.drftpd.mirroring;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,7 +19,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java,v 1.19 2004/01/31 02:32:07 zubov Exp $
+ * @version $Id: JobManager.java,v 1.20 2004/02/06 01:39:18 zubov Exp $
  */
 public class JobManager implements FtpListener {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
@@ -53,8 +54,6 @@ public class JobManager implements FtpListener {
 			}
 		}
 		_jobList.add(job);
-		//		logger.debug(
-		//			"Added job " + job.getFile().getPath() + " to the jobQueue");
 		Collections.sort(_jobList, new JobComparator());
 	}
 
@@ -119,15 +118,16 @@ public class JobManager implements FtpListener {
 							.getFile()
 							.getAvailableSlaves()
 							.contains(slave)) {
-							//							logger.debug(
-							//								"jobToReturn is assigned - " + slave.getName());
 							jobToReturn = tempJob;
 						}
 					}
 				} catch (NoAvailableSlaveException e) {
 					if (tempJob.getFile().isDeleted()) {
 						iter.remove();
-						logger.debug("Job " + tempJob + " was removed from the list because it is deleted");
+						logger.debug(
+							"Job "
+								+ tempJob
+								+ " was removed from the list because it is deleted");
 						continue;
 					}
 					logger.debug(
@@ -147,9 +147,6 @@ public class JobManager implements FtpListener {
 		}
 		if (jobToReturn != null) {
 			removeJob(jobToReturn);
-			//			logger.info(
-			//				"jobToReturn is returning a mirror job for - "
-			//					+ slave.getName());
 		}
 		return jobToReturn;
 	}
@@ -175,28 +172,20 @@ public class JobManager implements FtpListener {
 	 */
 	public boolean processJob(RemoteSlave slave) {
 		Job temp;
-		while(true) {
+		while (true) {
 			temp = getNextJob(slave);
-			
+
 			if (temp == null) { // nothing to process for this slave
-				//			logger.debug("Nothing to process for slave " + slave.getName());
 				return false;
 			}
 			if (!temp.getFile().isDeleted()) {
 				// file is not deleted, process it now
 				break;
 			}
-			// job is already out of the list and isDeleted()
+			// job is already out of the list and isDeleted(), just continue
 		}
 		if (temp.getFile().getSlaves().contains(slave)) {
 			if (temp.removeDestinationSlave(slave)) {
-				//				logger.debug(
-				//					"Removed "
-				//						+ slave.getName()
-				//						+ " from the destination list ("
-				//						+ temp.getDestinationSlaves().size()
-				//						+ " left) of the job "
-				//						+ temp);
 				// if it's already there, remove it from the destinationList
 				if (temp.getDestinationSlaves().size() > 0) {
 					addJob(temp);
@@ -206,13 +195,6 @@ public class JobManager implements FtpListener {
 				return true;
 			}
 			if (temp.removeDestinationSlave(null)) {
-				//				logger.debug(
-				//					"Removed "
-				//						+ slave.getName()
-				//						+ " from the destination list ("
-				//						+ temp.getDestinationSlaves().size()
-				//						+ " left) of the job "
-				//						+ temp);
 				if (temp.getDestinationSlaves().size() > 0) {
 					addJob(temp);
 				} else {
@@ -253,6 +235,22 @@ public class JobManager implements FtpListener {
 				Thread.sleep(20000);
 			}
 			new SlaveTransfer(temp.getFile(), sourceSlave, slave).transfer();
+		} catch (IOException e) {
+			_slaveSendingList.remove(sourceSlave);
+			if (!e.getMessage().equals("File exists")) {
+				logger.debug(
+					"Uncaught IOException in sending "
+						+ temp.getFile().getName()
+						+ " from "
+						+ sourceSlave.getName()
+						+ " to "
+						+ slave.getName(),
+					e);
+			} else
+				logger.debug(
+					"File "
+						+ temp.getFile()
+						+ " was sent okay because it was already on the destination slave");
 		} catch (Exception e) {
 			_slaveSendingList.remove(sourceSlave);
 			logger.debug(
@@ -276,16 +274,6 @@ public class JobManager implements FtpListener {
 				+ " from "
 				+ sourceSlave.getName());
 		temp.addTimeSpent(difference);
-		//		logger.info(
-		//			"Done Sending "
-		//				+ temp.getFile().getName()
-		//				+ " from "
-		//				+ sourceSlave.getName()
-		//				+ " to "
-		//				+ slave.getName()
-		//				+ " in "
-		//				+ difference / 1000
-		//				+ " seconds");
 		if (!temp.removeDestinationSlave(slave)) {
 			if (!temp.removeDestinationSlave(null))
 				logger.debug(
