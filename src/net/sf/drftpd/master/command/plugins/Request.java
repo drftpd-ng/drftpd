@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 /**
  * @author mog
  *
- * @version $Id: Request.java,v 1.5 2003/12/23 13:38:20 mog Exp $
+ * @version $Id: Request.java,v 1.6 2004/01/03 23:50:53 mog Exp $
  */
 public class Request implements CommandHandler {
 	public void unload() {}
@@ -28,7 +28,7 @@ public class Request implements CommandHandler {
 	private static Logger logger = Logger.getLogger(Request.class);
 	
 	private static final String REQPREFIX = "REQUEST-by.";
-	private static final String FILLEDPREFIX = "FILLED-by.";
+	private static final String FILLEDPREFIX = "FILLED-for.";
 	private FtpReply doSITE_REQUEST(BaseFtpConnection conn) {
 		conn.resetState();
 

@@ -6,12 +6,14 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: PortRange.java,v 1.3 2003/12/22 17:43:10 mog Exp $
+ * @version $Id: PortRange.java,v 1.4 2004/01/03 23:50:54 mog Exp $
  */
 public class PortRange {
+	private static final Logger logger = Logger.getLogger(PortRange.class);
 	private int _minPort;
 	private boolean _ports[];
-	private static final Logger logger = Logger.getLogger(PortRange.class);
+	
+	Random rand = new Random();
 
 	/**
 	 * Creates a default port range for port 49152 to 65535.
@@ -30,11 +32,10 @@ public class PortRange {
 		System.out.println("portrange finalize()'d");
 		for (int i = 0; i < _ports.length; i++) {
 			if (!_ports[i]) {
-				System.out.println(_minPort + i + " not released");
+				logger.debug(_minPort + i + " not released");
 			}
 		}
 	}
-	Random rand = new Random();
 	public int getPort() {
 		synchronized (_ports) {
 			int initPos = rand.nextInt(_ports.length);
@@ -43,7 +44,7 @@ public class PortRange {
 			while (true) {
 				if (_ports[pos] == false) {
 					_ports[pos] = true;
-					logger.debug("returning "+_minPort+pos);
+					logger.debug("returning " + _minPort + pos);
 					return _minPort + pos;
 				} else {
 					pos++;
@@ -58,7 +59,7 @@ public class PortRange {
 
 	public void releasePort(int port) {
 		synchronized (_ports) {
-			assert _ports[port-_minPort]
+			assert _ports[port - _minPort]
 				== true : "releasePort() on unused port";
 			_ports[port - _minPort] = false;
 		}

@@ -17,7 +17,7 @@ import org.apache.log4j.Logger;
 /**
  * @author zubov
  *
- * @version $Id: Mirror.java,v 1.6 2003/12/23 13:38:19 mog Exp $
+ * @version $Id: Mirror.java,v 1.7 2004/01/03 23:50:53 mog Exp $
  */
 public class Mirror implements FtpListener {
 
@@ -33,6 +33,8 @@ public class Mirror implements FtpListener {
 	}
 
 	public void actionPerformed(Event event) {
+		if (event.getCommand().equals("RELOAD"))
+			reload();
 		if (!(event instanceof TransferEvent))
 			return;
 		TransferEvent transevent = (TransferEvent) event;
@@ -43,20 +45,19 @@ public class Mirror implements FtpListener {
 		LinkedRemoteFile dir;
 		dir = transevent.getDirectory();
 		ArrayList slaveToMirror = new ArrayList();
-		for (int x = 1;
-			x < _numberOfMirrors;
-			x++) { // already have one copy
+		for (int x = 1; x < _numberOfMirrors; x++) { // already have one copy
 			slaveToMirror.add(null);
-//			logger.info(
-//				"Sending file "
-//					+ dir.getPath()
-//					+ " to "
-//					+ destrslave.getName());
+			//			logger.info(
+			//				"Sending file "
+			//					+ dir.getPath()
+			//					+ " to "
+			//					+ destrslave.getName());
 		}
 		//logger.info("Adding " + dir.getPath() + " to the JobList");
-		_cm.getJobManager().addJob(new AbstractJob(dir,slaveToMirror,this,null,5));
+		_cm.getJobManager().addJob(
+			new AbstractJob(dir, slaveToMirror, this, null, 5));
 		//logger.info("Done adding " + dir.getPath() + " to the JobList");
-		
+
 	}
 
 	/* (non-Javadoc)

@@ -3,6 +3,8 @@ package net.sf.drftpd.master.usermanager.jsx;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.ArrayList;
 
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.master.usermanager.AbstractUser;
@@ -14,7 +16,7 @@ import JSX.ObjOut;
 
 /**
  * @author mog
- * @version $Id: JSXUser.java,v 1.8 2003/11/13 22:55:06 mog Exp $
+ * @version $Id: JSXUser.java,v 1.9 2004/01/03 23:50:54 mog Exp $
  */
 public class JSXUser
 	extends AbstractUser
@@ -34,8 +36,12 @@ public class JSXUser
 		if (this.password == null) {
 			if (this.unixPassword == null)
 				throw new IllegalStateException("no password set");
-			if (this.unixPassword
-				.equals(Crypt.crypt(this.unixPassword.substring(0, 2), password))) {
+			if (this
+				.unixPassword
+				.equals(
+					Crypt.crypt(
+						this.unixPassword.substring(0, 2),
+						password))) {
 				setPassword(password);
 				return true;
 			}
@@ -103,4 +109,11 @@ public class JSXUser
 		this.password = null;
 		this.unixPassword = password;
 	}
+	private void readObject(ObjectInputStream stream)
+		throws IOException, ClassNotFoundException {
+		stream.defaultReadObject();
+		if(groups == null) groups = new ArrayList();
+		if(ipMasks == null) ipMasks = new ArrayList();
+	}
+
 }

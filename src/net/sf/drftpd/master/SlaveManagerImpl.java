@@ -46,7 +46,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 /**
- * @version $Id: SlaveManagerImpl.java,v 1.53 2003/12/23 13:38:19 mog Exp $
+ * @version $Id: SlaveManagerImpl.java,v 1.54 2004/01/03 23:50:53 mog Exp $
  */
 public class SlaveManagerImpl
 	extends UnicastRemoteObject
@@ -370,7 +370,7 @@ public class SlaveManagerImpl
 			root.remerge(slaveroot, rslave);
 		} catch (RuntimeException t) {
 			logger.log(Level.FATAL, "", t);
-			rslave.setSlave(null, null);
+			rslave.setOffline(t.getMessage());
 			throw t;
 		}
 
@@ -561,10 +561,12 @@ public class SlaveManagerImpl
 		bak.delete();
 		new File("files.mlst").renameTo(bak);
 		try {
+			FileOutputStream out = new FileOutputStream("files.mlst");
 			MLSTSerialize.serialize(
 				getRoot(),
-				new PrintStream(new FileOutputStream("files.mlst")));
-		} catch (FileNotFoundException e) {
+				new PrintStream(out));
+			out.close();
+		} catch (IOException e) {
 			logger.warn("Error saving files.mlst", e);
 		}
 	}

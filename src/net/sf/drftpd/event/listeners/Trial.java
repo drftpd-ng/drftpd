@@ -34,7 +34,7 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
- * @version $Id: Trial.java,v 1.8 2003/12/22 21:31:23 mog Exp $
+ * @version $Id: Trial.java,v 1.9 2004/01/03 23:50:53 mog Exp $
  */
 public class Trial implements FtpListener {
 	class SiteBot extends GenericCommandAutoService {
@@ -64,11 +64,13 @@ public class Trial implements FtpListener {
 								.getUserManager()
 								.getUserByName(
 								username);
+						int i = 0;
 						for (Iterator iter = _parent.getLimits().iterator();
 							iter.hasNext();
 							) {
 							Limit limit = (Limit) iter.next();
 							if (limit.getPerm().check(user)) {
+								i++;
 								long bytesleft =
 									limit.getBytes()
 										- Trial.getUploadedBytesForPeriod(
@@ -104,6 +106,12 @@ public class Trial implements FtpListener {
 											+ " is still in unique period/bonus period");
 								}
 							}
+						}
+						if (i == 0) {
+							_irc.say(
+								"[passed] "
+									+ user.getUsername()
+									+ " is not on trial/quota");
 						}
 						//_irc.say()
 					} catch (NoSuchUserException e) {
@@ -351,12 +359,13 @@ public class Trial implements FtpListener {
 						PERIOD_DAILY);
 				//logger.debug("end of first day period: " + cal.getTime());
 				//is day unique period
-				if (uevent.getUser().getLastReset() <= cal.getTimeInMillis() && uevent.getTime() >= cal.getTimeInMillis()) {
+				if (uevent.getUser().getLastReset() <= cal.getTimeInMillis()
+					&& uevent.getTime() >= cal.getTimeInMillis()) {
 					checkPassed(
 						uevent.getUser(),
 						uevent.getUser().getUploadedBytes(),
 						PERIOD_DAILY);
-						//after day unique period
+					//after day unique period
 				} else if (uevent.getTime() > cal.getTimeInMillis()) {
 					checkPassed(
 						uevent.getUser(),
@@ -428,7 +437,6 @@ public class Trial implements FtpListener {
 	public void init(ConnectionManager mgr) {
 		_cm = mgr;
 		reload();
-		//TODO schedule reset of users statistics at end of each day
 	}
 
 	private void reload() {
@@ -446,8 +454,10 @@ public class Trial implements FtpListener {
 			if (props.getProperty(i + ".quota") == null)
 				break;
 			Limit limit = new Limit();
-			limit.setActionPassed(props.getProperty(i + ".actionpassed"));
-			limit.setActionFailed(props.getProperty(i + ".actionfail"));
+			limit.setActionPassed(
+				props.getProperty(i + ".actionpassed", "").toLowerCase());
+			limit.setActionFailed(
+				props.getProperty(i + ".actionfail", "").toLowerCase());
 			limit.setName(props.getProperty(i + ".name"));
 			String period = props.getProperty(i + ".period").toLowerCase();
 			if ("monthly".equals(period)) {

@@ -71,7 +71,7 @@ import f00f.net.irc.martyr.commands.PartCommand;
 
 /**
  * @author mog
- * @version $Id: IRCListener.java,v 1.68 2003/12/05 04:02:24 zubov Exp $
+ * @version $Id: IRCListener.java,v 1.69 2004/01/03 23:50:53 mog Exp $
  */
 public class IRCListener implements FtpListener, Observer {
 
@@ -477,7 +477,7 @@ public class IRCListener implements FtpListener, Observer {
 
 				raceenv.add("position", "" + position++);
 				raceenv.add("size", Bytes.formatBytes(stat.getAmount()));
-
+				raceenv.add("nukedamount", Bytes.formatBytes(stat.getAmount()));
 				say(SimplePrintf.jprintf(raceformat, raceenv));
 
 			}

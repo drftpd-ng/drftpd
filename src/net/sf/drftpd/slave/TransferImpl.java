@@ -18,7 +18,7 @@ import net.sf.drftpd.util.AddAsciiOutputStream;
 
 /**
  * @author mog
- * @version $Id: TransferImpl.java,v 1.33 2003/12/01 04:43:44 mog Exp $
+ * @version $Id: TransferImpl.java,v 1.34 2004/01/03 23:50:54 mog Exp $
  */
 public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private boolean _abort = false;
@@ -184,7 +184,6 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 			throw new IOException("Transfer was aborted");
 	}
 
-	//TODO char mode for uploads?
 	public TransferStatus receiveFile(
 		String dirname,
 		char mode,

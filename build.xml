@@ -66,6 +66,9 @@
       <include name="net/sf/drftpd/master/RemoteSlave.class" />
       <include name="net/sf/drftpd/master/SlaveManager.class" />
       <include name="net/sf/drftpd/master/SlaveManagerImpl_Stub.class" />
+      <include name="net/sf/drftpd/util/SSLGetContext.class" />
+      <include name="net/sf/drftpd/util/PortRange.class" />
+      <include name="net/sf/drftpd/util/AddAsciiOutputStream.class" />
       <!-- until we have lightweight LinkedRemoteFile -->
       <include name="net/sf/drftpd/master/*" />
       <include name="net/sf/drftpd/master/config/FtpConfig.class" />

@@ -44,7 +44,7 @@ import org.tanesha.replacer.SimplePrintf;
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
- * @version $Id: BaseFtpConnection.java,v 1.64 2003/12/23 00:36:01 mog Exp $
+ * @version $Id: BaseFtpConnection.java,v 1.65 2004/01/03 23:50:53 mog Exp $
  */
 public class BaseFtpConnection implements Runnable {
 	private static final Logger debuglogger =
@@ -114,8 +114,9 @@ public class BaseFtpConnection implements Runnable {
 		lastActive = System.currentTimeMillis();
 		setCurrentDirectory(connManager.getSlaveManager().getRoot());
 	}
-	protected BaseFtpConnection() {}
-	
+	protected BaseFtpConnection() {
+	}
+
 	/**
 	 * @deprecated use getConnectionManager().dispatchFtpEvent()
 	 */
@@ -262,15 +263,28 @@ public class BaseFtpConnection implements Runnable {
 	}
 
 	public String jprintf(String baseName, String key) {
+		return jprintf(baseName, key, null);
+	}
+
+	/**
+	 * @param env null for an empty parent replacerenvironment.
+	 */
+	public String jprintf(
+		String baseName,
+		String key,
+		ReplacerEnvironment env) {
 		ResourceBundle bundle = ResourceBundle.getBundle(baseName);
-		
-		ReplacerEnvironment env = new ReplacerEnvironment();
+
+		env = new ReplacerEnvironment(env);
+
 		try {
 			env.add("user", getUser().getUsername());
+			env.add("credits", Bytes.formatBytes(getUserNull().getCredits()));
+			env.add("ratio", ""+getUserNull().getRatio());
+			env.add("tagline", getUserNull().getTagline());
 		} catch (NoSuchUserException e) {
-			env.add("user", "<"+e.getMessage()+">");
+			env.add("user", "<" + e.getMessage() + ">");
 		}
-
 		try {
 			String str = bundle.getString(key);
 			try {
@@ -278,12 +292,12 @@ public class BaseFtpConnection implements Runnable {
 			} catch (FormatterException e1) {
 				logger.warn("", e1);
 				return str;
-			} 
+			}
 		} catch (Throwable e) {
 			logger.warn("", e);
 			return key;
 		}
-		
+
 	}
 
 	/**
@@ -487,11 +501,12 @@ public class BaseFtpConnection implements Runnable {
 	 *  returns a one-line status
 	 */
 	public String status() {
-		return " [Credits: "
-			+ Bytes.formatBytes(_user.getCredits())
-			+ "] [Ratio: 1:"
-			+ _user.getRatio()
-			+ "]";
+		return jprintf(BaseFtpConnection.class.getName(), "statusline");
+//		return " [Credits: "
+//			+ Bytes.formatBytes(_user.getCredits())
+//			+ "] [Ratio: 1:"
+//			+ _user.getRatio()
+//			+ "]";
 	}
 
 	/**
@@ -541,9 +556,15 @@ public class BaseFtpConnection implements Runnable {
 			_controlSocket = socket;
 			in =
 				new BufferedReader(
-					new InputStreamReader(_controlSocket.getInputStream(), "ISO-8859-1"));
+					new InputStreamReader(
+						_controlSocket.getInputStream(),
+						"ISO-8859-1"));
 
-			out = new PrintWriter(new OutputStreamWriter(_controlSocket.getOutputStream(), "ISO-8859-1"));
+			out =
+				new PrintWriter(
+					new OutputStreamWriter(
+						_controlSocket.getOutputStream(),
+						"ISO-8859-1"));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

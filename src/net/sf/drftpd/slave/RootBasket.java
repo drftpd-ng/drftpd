@@ -16,12 +16,10 @@ import org.apache.log4j.Logger;
 
 import se.mog.io.File;
 
-/**
- * @author mog
- */
 //TODO SECURITY: verify so that we never get outside of a rootbasket root
 /**
- * @version $Id: RootBasket.java,v 1.19 2003/12/23 13:38:21 mog Exp $
+ * @author mog
+ * @version $Id: RootBasket.java,v 1.20 2004/01/03 23:50:54 mog Exp $
  */
 public class RootBasket {
 	private static Logger logger = Logger.getLogger(RootBasket.class);
@@ -110,8 +108,7 @@ public class RootBasket {
 				return root;
 		}
 		throw new FileNotFoundException(
-			path + " not found in any root in the RootBasket");
-
+			path + " wasn't found in any root");
 	}
 
 	public long getTotalDiskSpaceAvailable() {

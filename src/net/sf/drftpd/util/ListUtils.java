@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java,v 1.6 2003/12/22 18:09:43 mog Exp $
+ * @version $Id: ListUtils.java,v 1.7 2004/01/03 23:50:54 mog Exp $
  */
 public class ListUtils {
 
@@ -70,7 +70,7 @@ public class ListUtils {
 						+ sfvfile.size()
 						+ " = "
 						+ (sfvstatus.getOffline() * 100) / sfvfile.size()
-						+ " ]";
+						+ "% offline ]";
 
 				listFiles.add(
 					new StaticRemoteFile(

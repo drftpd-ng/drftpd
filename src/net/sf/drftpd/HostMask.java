@@ -10,7 +10,7 @@ import org.apache.oro.text.regex.Perl5Matcher;
 
 /**
  * @author mog
- * @version $Id: HostMask.java,v 1.4 2003/12/11 23:12:51 zubov Exp $
+ * @version $Id: HostMask.java,v 1.5 2004/01/03 23:50:53 mog Exp $
  */
 public class HostMask {
 	private static final Logger logger = Logger.getLogger(HostMask.class);
@@ -19,6 +19,10 @@ public class HostMask {
 
 	public HostMask(String string) {
 		int pos = string.indexOf('@');
+		if(pos == -1) {
+			_identMask = null;
+			_hostMask = string;
+		}
 		_identMask = string.substring(0, pos);
 		_hostMask = string.substring(pos + 1);
 	}

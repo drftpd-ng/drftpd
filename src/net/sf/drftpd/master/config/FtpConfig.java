@@ -19,6 +19,7 @@ import net.sf.drftpd.master.FtpReply;
 import net.sf.drftpd.master.SlaveManagerImpl;
 import net.sf.drftpd.master.usermanager.User;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
+import net.sf.drftpd.slave.SlaveImpl;
 
 import org.apache.log4j.Logger;
 import org.apache.oro.text.GlobCompiler;
@@ -28,12 +29,12 @@ import org.tanesha.replacer.ReplacerFormat;
 
 /**
  * @author mog
- * @version $Id: FtpConfig.java,v 1.26 2003/12/29 19:14:35 zubov Exp $
+ * @version $Id: FtpConfig.java,v 1.27 2004/01/03 23:50:54 mog Exp $
  */
 public class FtpConfig {
 	private static Logger logger = Logger.getLogger(FtpConfig.class);
 
-	static private ArrayList makePermission(ArrayList arr, StringTokenizer st)
+	private static ArrayList makePermission(ArrayList arr, StringTokenizer st)
 		throws MalformedPatternException {
 		arr.add(
 			new PatternPathPermission(
@@ -41,7 +42,8 @@ public class FtpConfig {
 				makeUsers(st)));
 		return arr;
 	}
-	static private ArrayList makeRatioPermission(ArrayList arr, StringTokenizer st)
+	
+	private static ArrayList makeRatioPermission(ArrayList arr, StringTokenizer st)
 		throws MalformedPatternException {
 		arr.add(
 			new RatioPathPermission(new GlobCompiler().compile(st.nextToken()),Float.parseFloat(st.nextToken()),makeUsers(st)));
@@ -55,14 +57,13 @@ public class FtpConfig {
 		}
 		return users;
 	}
+	
 	private ArrayList _creditcheck;
-
 	private ArrayList _creditloss;
 	private ArrayList _delete;
 	private ArrayList _deleteown;
 	private ArrayList _dirlog;
 	private ArrayList _download;
-	//	private ArrayList _eventplugin;
 	private ArrayList _hideinwho;
 	private ArrayList _makedir;
 	private int _maxUsersExempt;
@@ -79,10 +80,7 @@ public class FtpConfig {
 	private ConnectionManager connManager;
 	private long freespaceMin;
 	private String loginPrompt =
-		"This program is free software; you can redistribute it and/or"
-			+ " modify it under the terms of the GNU General Public License.  "
-			+ "Distributed FTP Daemon http://drftpd.mog.se"
-			+ " : Service ready for new user.";
+		SlaveImpl.VERSION+" http://drftpd.mog.se";
 	private String newConf = "perms.conf";
 	private Map replacerFormats;
 
@@ -363,29 +361,6 @@ public class FtpConfig {
 					makePermission(renameown, st);
 				} else if (command.equals("request")) {
 					makePermission(request, st);
-					//				} else if (command.equals("plugin")) {
-					//					String clazz = st.nextToken();
-					//					ArrayList argsCollection = new ArrayList();
-					//					while (st.hasMoreTokens()) {
-					//						argsCollection.add(st.nextToken());
-					//					}
-					//					String args[] =
-					//						(String[]) argsCollection.toArray(new String[0]);
-					//					try {
-					//						Class SIG[] =
-					//							{
-					//								FtpConfig.class,
-					//								ConnectionManager.class,
-					//								String[].class };
-					//						Constructor met =
-					//							Class.forName(clazz).getConstructor(SIG);
-					//						Object obj =
-					//							met.newInstance(
-					//								new Object[] { this, connManager, args });
-					//						eventplugin.add(obj);
-					//					} catch (Throwable e) {
-					//						logger.log(Level.FATAL, "Error loading " + clazz, e);
-					//					}
 				}
 			} catch (Exception e) {
 				logger.warn(

@@ -64,6 +64,9 @@ SITE\ WHO=net.sf.drftpd.master.command.plugins.UserManagment
 SITE\ RELOAD=net.sf.drftpd.master.command.plugins.SiteManagment
 SITE\ SHUTDOWN=net.sf.drftpd.master.command.plugins.SiteManagment
 SITE\ LIST=net.sf.drftpd.master.command.plugins.SiteManagment
+SITE\ LOADPLUGIN=net.sf.drftpd.master.command.plugins.SiteManagment
+SITE\ UNLOADPLUGIN=net.sf.drftpd.master.command.plugins.SiteManagment
+SITE\ PLUGINS=net.sf.drftpd.master.command.plugins.SiteManagment
 
 XCRC=net.sf.drftpd.master.command.plugins.Dir
 DELE=net.sf.drftpd.master.command.plugins.Dir

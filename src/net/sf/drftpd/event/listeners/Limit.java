@@ -8,7 +8,7 @@ import net.sf.drftpd.master.usermanager.User;
 
 /**
  * @author mog
- * @version $Id: Limit.java,v 1.1 2003/12/22 18:18:35 mog Exp $
+ * @version $Id: Limit.java,v 1.2 2004/01/03 23:50:53 mog Exp $
  */
 class Limit {
 	public Limit() {
@@ -49,12 +49,12 @@ class Limit {
 	}
 
 	public void setActionFailed(String action) {
-		validatePassed(action);
+		validateAction(action);
 		_actionFailed = action;
 	}
 
 	public void setActionPassed(String action) {
-		validatePassed(action);
+		validateAction(action);
 		_actionPassed = action;
 	}
 
@@ -84,13 +84,14 @@ class Limit {
 			+ "]";
 	}
 
-	private void validatePassed(String action) {
+	private void validateAction(String action) {
 		if (action == null)
 			return;
+		//action = action.toLowerCase();
 		StringTokenizer st = new StringTokenizer(action);
 		if (!st.hasMoreTokens())
 			return;
-		String cmd = st.nextToken().toLowerCase();
+		String cmd = st.nextToken();
 		if (!("deluser".equals(action)
 			|| "purge".equals(action)
 			|| "chgrp".equals(cmd))) {

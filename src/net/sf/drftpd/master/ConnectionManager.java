@@ -1,6 +1,5 @@
 package net.sf.drftpd.master;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -30,14 +29,12 @@ import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.permission.GlobRMIServerSocketFactory;
 import net.sf.drftpd.slave.SlaveImpl;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.DailyRollingFileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
+import org.apache.log4j.PropertyConfigurator;
 
 /**
- * @version $Id: ConnectionManager.java,v 1.80 2003/12/23 13:38:19 mog Exp $
+ * @version $Id: ConnectionManager.java,v 1.81 2004/01/03 23:50:53 mog Exp $
  */
 public class ConnectionManager {
 	public static final int idleTimeout = 300;
@@ -46,27 +43,28 @@ public class ConnectionManager {
 		Logger.getLogger(ConnectionManager.class.getName());
 
 	public static void main(String args[]) {
-		if (args.length >= 1 && args[0].equals("-nolog")) {
-			args = scrubArgs(args);
-			BasicConfigurator.configure();
-		} else {
-			Logger root = Logger.getRootLogger();
-			new File("ftp-data/logs").mkdirs();
-			try {
-				root.addAppender(
-					new DailyRollingFileAppender(
-						new PatternLayout(
-							PatternLayout.TTCC_CONVERSION_PATTERN),
-						"ftp-data/logs/drftpd.log",
-						"'.'yyyy-MM-dd"));
-			} catch (IOException e1) {
-				throw new FatalException(e1);
-			}
-		}
+//		PropertyConfigurator.configure("")
+//		if (args.length >= 1 && args[0].equals("-nolog")) {
+//			args = scrubArgs(args);
+//			BasicConfigurator.configure();
+//		} else {
+//			Logger root = Logger.getRootLogger();
+//			new File("ftp-data/logs").mkdirs();
+//			try {
+//				root.addAppender(
+//					new DailyRollingFileAppender(
+//						new PatternLayout(
+//							PatternLayout.TTCC_CONVERSION_PATTERN),
+//						"ftp-data/logs/drftpd.log",
+//						"'.'yyyy-MM-dd"));
+//			} catch (IOException e1) {
+//				throw new FatalException(e1);
+//			}
+//		}
 		System.out.println(SlaveImpl.VERSION + " master server starting.");
 		System.out.println("http://drftpd.sourceforge.net");
 
-		System.setProperty("line.separator", "\r\n");
+//		System.setProperty("line.separator", "\r\n");
 		try {
 			String cfgFileName;
 			if (args.length >= 1) {
@@ -84,6 +82,8 @@ public class ConnectionManager {
 			/** load master config **/
 			Properties cfg = new Properties();
 			cfg.load(new FileInputStream(cfgFileName));
+
+			PropertyConfigurator.configure(cfg);
 
 			/** load slave config **/
 			Properties slaveCfg; //used as a flag for if localslave=true
@@ -126,7 +126,6 @@ public class ConnectionManager {
 	}
 	private FtpConfig _config;
 	private JobManager _jm;
-	private Properties _cfg;
 	private List _conns = Collections.synchronizedList(new ArrayList());
 
 	private ArrayList _ftpListeners = new ArrayList();
@@ -162,9 +161,6 @@ public class ConnectionManager {
 				new SlaveImpl(slaveCfg);
 			} catch (RemoteException ex) {
 				throw new FatalException(ex);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 
@@ -229,8 +225,8 @@ public class ConnectionManager {
 		};
 		//run every hour 
 		_timer.schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
-		_cfg = cfg;
 	}
+	
 	public Timer getTimer() {
 		return _timer;
 	}
@@ -266,10 +262,6 @@ public class ConnectionManager {
 
 	public FtpConfig getConfig() {
 		return _config;
-	}
-
-	public boolean useIdent() {
-		return _cfg.getProperty("use.ident").equals("true");
 	}
 
 	/**

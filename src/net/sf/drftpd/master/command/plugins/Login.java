@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
 import socks.server.Ident;
 
 /**
- * @version $Id: Login.java,v 1.14 2003/12/23 13:38:19 mog Exp $
+ * @version $Id: Login.java,v 1.15 2004/01/03 23:50:53 mog Exp $
  */
 public class Login implements CommandHandler, Cloneable {
 
@@ -92,7 +92,7 @@ public class Login implements CommandHandler, Cloneable {
 			HostMask mask = (HostMask) iter.next();
 			if (ident == null
 				&& mask.isIdentMaskSignificant()
-				&& conn.getConnectionManager().useIdent()) {
+				&& conn.getConfig().useIdent()) {
 				Ident id = new Ident(conn.getControlSocket());
 				if (id.successful) {
 					ident = id.userName;

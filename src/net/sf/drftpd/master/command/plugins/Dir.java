@@ -38,7 +38,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author mog
- * @version $Id: Dir.java,v 1.9 2003/11/19 00:20:52 mog Exp $
+ * @version $Id: Dir.java,v 1.10 2004/01/03 23:50:53 mog Exp $
  */
 public class Dir implements CommandHandler, Cloneable {
 	protected LinkedRemoteFile _renameFrom = null;
@@ -707,7 +707,7 @@ public class Dir implements CommandHandler, Cloneable {
 		if (wipeFile.isDirectory() && wipeFile.dirSize() != 0 && !recursive) {
 			return new FtpReply(200, "Can't wipe, directory not empty");
 		}
-		if (!conn.getConfig().checkHideInWho(conn.getUserNull(), wipeFile)) {
+		if (conn.getConfig().checkDirLog(conn.getUserNull(), wipeFile)) {
 			conn.getConnectionManager().dispatchFtpEvent(
 				new DirectoryFtpEvent(conn.getUserNull(), "WIPE", wipeFile));
 		}
