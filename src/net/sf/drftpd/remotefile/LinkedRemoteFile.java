@@ -222,13 +222,16 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 	}
 
 	public void delete() {
+		isDeleted = true;
 		if (isDirectory()) {
 			for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
 				LinkedRemoteFile myFile = (LinkedRemoteFile) iter.next();
 				myFile.delete();
 			}
 			try {
-				getParentFile().getMap().remove(getName());
+				if (!hasOfflineSlaves()) {
+					assert getParentFile().getMap().remove(getName()) != null;
+				}
 			} catch (FileNotFoundException ex) {
 				logger.log(
 					Level.SEVERE,
@@ -236,56 +239,56 @@ public class LinkedRemoteFile implements RemoteFileInterface, Serializable {
 					ex);
 			}
 			return;
-		}
+		} else {
 
-		synchronized (slaves) {
-			for (Iterator iter = slaves.iterator(); iter.hasNext();) {
-				RemoteSlave rslave = (RemoteSlave) iter.next();
-				Slave slave;
-				try {
-					slave = rslave.getSlave();
-				} catch (NoAvailableSlaveException ex) {
-					//TODO queued deletion
-					logger.info("slave not available for deletion");
-					continue;
+			synchronized (slaves) {
+				for (Iterator iter = slaves.iterator(); iter.hasNext();) {
+					RemoteSlave rslave = (RemoteSlave) iter.next();
+					Slave slave;
+					try {
+						slave = rslave.getSlave();
+					} catch (NoAvailableSlaveException ex) {
+						//TODO queued deletion
+						logger.info("slave not available for deletion");
+						continue;
+					}
+					try {
+						slave.delete(getPath());
+						// throws RemoteException, IOException
+						System.out.print(
+							"DELETE: " + rslave.getName() + ": " + getPath());
+						iter.remove();
+					} catch (RemoteException ex) {
+						rslave.handleRemoteException(ex);
+						continue;
+					} catch (IOException ex) {
+						logger.log(
+							Level.SEVERE,
+							"IOException deleting file on slave " + rslave,
+							ex);
+						continue;
+					}
 				}
+			}
+
+			if (slaves.size() == 0) {
 				try {
-					slave.delete(getPath());
-					System.out.print(
-						"DELETE: " + rslave.getName() + " " + getPath());
-					// throws RemoteException, IOException
-					iter.remove();
-				} catch (RemoteException ex) {
-					rslave.handleRemoteException(ex);
-					continue;
-				} catch (IOException ex) {
+					getParentFile().getMap().remove(getName());
+				} catch (FileNotFoundException ex) {
 					logger.log(
 						Level.SEVERE,
-						"IOException deleting file on slave " + rslave,
+						"FileNotFoundException on getParentFile()",
 						ex);
-					continue;
 				}
-			}
-		}
-
-		isDeleted = true;
-		if (slaves.size() == 0) {
-			try {
-				getParentFile().getMap().remove(getName());
-			} catch (FileNotFoundException ex) {
+			} else {
+				//TODO queued deletion
 				logger.log(
-					Level.SEVERE,
-					"FileNotFoundException on getParentFile()",
-					ex);
+					Level.INFO,
+					"TODO: "
+						+ this.getPath()
+						+ " should be queued for deletion, remaining slaves:"
+						+ slaves);
 			}
-		} else {
-			//TODO queued deletion
-			logger.log(
-				Level.INFO,
-				"TODO: "
-					+ this.getPath()
-					+ " should be queued for deletion, slaves:"
-					+ slaves);
 		}
 	}
 

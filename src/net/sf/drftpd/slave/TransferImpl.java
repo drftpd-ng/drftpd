@@ -36,7 +36,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	private Connection conn;
 	private Socket sock;
 	private char mode = 'I';
-	private Collection transfers;
+	private Collection _transfers;
 	private CRC32 checksum;
 
 	/**
@@ -54,7 +54,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		this.in = in;
 		this.conn = conn;
 		this.mode = mode;
-		this.transfers = transfers;
+		this._transfers = transfers;
 	}
 
 	/**
@@ -71,7 +71,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		this.checksum = new CRC32();
 		this.conn = conn;
 		this.out = new CheckedOutputStream(out, this.checksum);
-		this.transfers = transfers;
+		this._transfers = transfers;
 	}
 	private RootBasket roots;
 	/**
@@ -81,7 +81,7 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 		super();
 		this.direction = Transfer.TRANSFER_UNKNOWN;
 		this.conn = conn;
-		this.transfers = transfers;
+		this._transfers = transfers;
 		this.roots = roots;
 	}
 	
@@ -111,7 +111,6 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 	 * @deprecated
 	 */
 	public void transfer() throws IOException {
-		this.transfers.add(this);
 		this.started = System.currentTimeMillis();
 		this.sock = conn.connect();
 		this.sock.setSoTimeout(600);
@@ -124,10 +123,10 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 				out = sock.getOutputStream();
 			}
 		} else {
-			transfers.remove(this);
 			throw new RuntimeException("neither in or out was null");
 		}
 
+		_transfers.add(this);
 		try {
 			byte[] buff = new byte[1024];
 			int count;
@@ -140,10 +139,10 @@ public class TransferImpl extends UnicastRemoteObject implements Transfer {
 			ex.printStackTrace();
 		} finally {
 			finished = System.currentTimeMillis();
-			transfers.remove(this);
+			_transfers.remove(this);
 
-			out.close();
 			in.close();
+			out.close();
 			sock.close();
 
 			in = null;

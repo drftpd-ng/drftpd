@@ -57,6 +57,7 @@ import f00f.net.irc.martyr.IRCConnection;
 import f00f.net.irc.martyr.clientstate.Channel;
 import f00f.net.irc.martyr.clientstate.ClientState;
 import f00f.net.irc.martyr.commands.MessageCommand;
+import f00f.net.irc.martyr.commands.RawCommand;
 
 /**
  * @author mog
@@ -311,15 +312,19 @@ public class IRCListener implements FtpListener, Observer {
 						) {
 						BaseFtpConnection conn =
 							(BaseFtpConnection) iter.next();
-						if(_cm.getConfig().checkHideInWho(conn.getCurrentDirectory())) continue;
+						if (_cm
+							.getConfig()
+							.checkHideInWho(conn.getCurrentDirectory()))
+							continue;
 						if (conn.isAuthenticated()
 							&& conn.getUser().getUsername().equals(username)) {
 							ReplacerEnvironment env = new ReplacerEnvironment();
 							env.add("username", conn.getUser().getUsername());
 							env.add(
 								"idle",
-								(System.currentTimeMillis() 
-									- conn.getLastActive()) / 1000
+								(System.currentTimeMillis()
+									- conn.getLastActive())
+									/ 1000
 									+ "s");
 
 							if (!conn.isExecuting()) {
@@ -339,7 +344,9 @@ public class IRCListener implements FtpListener, Observer {
 									env.add(
 										"file",
 										conn.getTransferFile().getName());
-									env.add("slave", conn.getTranferSlave().getName());
+									env.add(
+										"slave",
+										conn.getTranferSlave().getName());
 								}
 
 								if (conn.getTransferDirection()
@@ -361,6 +368,24 @@ public class IRCListener implements FtpListener, Observer {
 						}
 					}
 					say(status);
+				} else if (
+					message.startsWith("!invite ")
+						&& msgc.isPrivateToUs(_clientState)) {
+					String args[] = message.split(" ");
+					User user = _cm.getUsermanager().getUserByName(args[1]);
+					if (user.checkPassword(args[2])) {
+						_ircConnection.sendCommand(
+							new RawCommand(
+								"INVITE "
+									+ msgc.getSource().getNick()
+									+ " "
+									+ _channelName));
+					} else {
+						logger.log(
+							Level.WARNING,
+							"!invite with wrong password: " + msgc);
+					}
+
 				}
 			}
 		} catch (Throwable t) {
@@ -470,12 +495,22 @@ public class IRCListener implements FtpListener, Observer {
 			}
 		} catch (FileNotFoundException e) {
 		}
-		return new Object[] { _ircCfg.getProperty(prefix), dir };
+
+		LinkedRemoteFile tmp = dir, tmp2 = dir;
+		try {
+			while (true) {
+				tmp = dir.getParentFile();
+				tmp2 = tmp;
+			}
+		} catch (FileNotFoundException e1) {
+			return new Object[] { _ircCfg.getProperty(prefix), tmp2 };
+		}
 	}
 
 	public void actionPerformed(DirectoryFtpEvent direvent) {
-		if(_cm.getConfig().checkHideInWho(direvent.getDirectory())) return;
-		
+		if (_cm.getConfig().checkHideInWho(direvent.getDirectory()))
+			return;
+
 		if (direvent.getCommand().equals("MKD")) {
 
 			Object obj[] =
@@ -543,13 +578,13 @@ public class IRCListener implements FtpListener, Observer {
 
 						ReplacerEnvironment env =
 							new ReplacerEnvironment(globalEnv);
-//						env.add("user", direvent.getUser().getUsername());
-//						env.add("group", direvent.getUser().getGroup());
-//						env.add("section", section.getPath());
-//						env.add(
-//							"path",
-//							dir.getPath().substring(
-//								section.getPath().length()));
+						//						env.add("user", direvent.getUser().getUsername());
+						//						env.add("group", direvent.getUser().getGroup());
+						//						env.add("section", section.getPath());
+						//						env.add(
+						//							"path",
+						//							dir.getPath().substring(
+						//								section.getPath().length()));
 						fillEnvSection(env, direvent, section);
 						env.add(
 							"filesleft",
@@ -614,10 +649,10 @@ public class IRCListener implements FtpListener, Observer {
 					return;
 				}
 
-				int i = 0;
+				int position = 1;
 				for (Iterator iter = racers.iterator(); iter.hasNext();) {
 					UploaderPosition stat = (UploaderPosition) iter.next();
-					
+
 					User raceuser;
 					try {
 						raceuser =
@@ -634,7 +669,7 @@ public class IRCListener implements FtpListener, Observer {
 					raceenv.add("user", raceuser.getUsername());
 					raceenv.add("group", raceuser.getGroup());
 
-					raceenv.add("position", new Integer(i++));
+					raceenv.add("position", new Integer(position++));
 					raceenv.add("size", Bytes.formatBytes(stat.getBytes()));
 					raceenv.add("files", Integer.toString(stat.getFiles()));
 					raceenv.add(
@@ -778,7 +813,10 @@ public class IRCListener implements FtpListener, Observer {
 		env.add("user", direvent.getUser().getUsername());
 		env.add("group", direvent.getUser().getGroup());
 		env.add("section", section.getPath());
-		if(file.isFile()) env.add("speed", Bytes.formatBytes(file.length()/file.getXfertime())+"/s");
+		if (file.isFile() && file.getXfertime() != 0)
+			env.add(
+				"speed",
+				Bytes.formatBytes(file.length() / file.getXfertime()) + "/s");
 		env.add("path", file.getPath().substring(section.getPath().length()));
 	}
 
