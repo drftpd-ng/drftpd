@@ -1,33 +1,34 @@
-#! /bin/bash
+#! /bin/sh
 
 #
-# Skeleton bash script suitable for starting and stopping 
-# wrapped Java apps on the Linux platform.
+# Skeleton sh script suitable for starting and stopping 
+# wrapped Java apps on the Solaris platform. 
+#
+# Make sure that PIDFILE points to the correct location,
+# if you have changed the default location set in the 
+# wrapper configuration file.
 #
 
 #-----------------------------------------------------------------------------
 # These settings can be modified to fit the needs of your application
 
 # Application
-APP_NAME="DrFTPD Slave"
-APP_LONG_NAME="Distributed FTP Daemon Slave"
+APP_NAME="slave"
+APP_LONG_NAME="DrFTPD Slave"
 
 # Wrapper
 WRAPPER_CMD="bin/wrapper"
-WRAPPER_CONF="conf/wrapper.conf"
+WRAPPER_CONF="conf/wrapper-slave.conf"
 
 # Priority at which to run the wrapper.  See "man nice" for valid priorities.
 #  nice is only used if a priority is specified.
 PRIORITY=
 
+# Location of the pid file.
+PIDDIR="./"
+
 # Do not modify anything beyond this point
 #-----------------------------------------------------------------------------
-
-echo "--------------------------------------------------------------------"
-echo "The Java Service Wrapper bash script has been deprecated and will be"
-echo "removed in a future version.  Please migrate to using the sh script."
-echo "--------------------------------------------------------------------"
-echo ""
 
 # Get the fully qualified path to the script
 case $0 in
@@ -63,15 +64,19 @@ REALPATH=`echo $REALPATH | sed -e 's;:; ;g'`
 # Change the current directory to the location of the script
 cd "`dirname "$REALPATH"`"
 
-# Find pidof.
-PIDOF="/bin/pidof"
-if [ ! -x $PIDOF ]
+# Process ID
+PIDFILE="$PIDDIR/$APP_NAME.pid"
+pid=""
+
+# Resolve the location of the 'ps' command
+PSEXE="/usr/bin/ps"
+if [ ! -x $PSEXE ]
 then
-    PIDOF="/sbin/pidof"
-    if [ ! -x $PIDOF ]
+    PSEXE="/bin/ps"
+    if [ ! -x $PSEXE ]
     then
-        echo "Cannot find 'pidof' in /bin or /sbin."
-        echo "This script requires 'pidof' to run."
+        echo "Unable to locate 'ps'."
+        echo "Please report this with the location on your system."
         exit 1
     fi
 fi
@@ -84,38 +89,71 @@ else
     CMDNICE="nice -$PRIORITY"
 fi
 
+getpid() {
+    if [ -f $PIDFILE ]
+    then
+        if [ -r $PIDFILE ]
+        then
+            pid=`cat $PIDFILE`
+            if [ "X$pid" != "X" ]
+            then
+                # Verify that a process with this pid is still running.
+                pid=`$PSEXE -p $pid | grep $pid | grep -v grep | awk '{print $1}' | tail -1`
+                if [ "X$pid" = "X" ]
+                then
+                    # This is a stale pid file.
+                    rm -f $PIDFILE
+                    echo "Removed stale pid file: $PIDFILE"
+                fi
+            fi
+        else
+            echo "Cannot read $PIDFILE."
+            exit 1
+        fi
+    fi
+}
+
+testpid() {
+    pid=`$PSEXE -p $pid | grep $pid | grep -v grep | awk '{print $1}' | tail -1`
+    if [ "X$pid" = "X" ]
+    then
+        # Process is gone so remove the pid file.
+        rm -f $PIDFILE
+    fi
+}
+
 console() {
     echo "Running $APP_LONG_NAME..."
-    pid=`$PIDOF $APP_NAME`
-    if [ -z $pid ]
+    getpid
+    if [ "X$pid" = "X" ]
     then
-        exec -a $APP_NAME $CMDNICE $WRAPPER_CMD $WRAPPER_CONF
+        exec $CMDNICE $WRAPPER_CMD $WRAPPER_CONF wrapper.pidfile=$PIDFILE
     else
         echo "$APP_LONG_NAME is already running."
         exit 1
     fi
 }
-
+ 
 start() {
     echo "Starting $APP_LONG_NAME..."
-    pid=`$PIDOF $APP_NAME`
-    if [ -z $pid ]
+    getpid
+    if [ "X$pid" = "X" ]
     then
-        exec -a $APP_NAME $CMDNICE $WRAPPER_CMD $WRAPPER_CONF wrapper.daemonize=TRUE
+        exec $CMDNICE $WRAPPER_CMD $WRAPPER_CONF wrapper.pidfile=$PIDFILE wrapper.daemonize=TRUE
     else
         echo "$APP_LONG_NAME is already running."
         exit 1
     fi
 }
-
+ 
 stopit() {
     echo "Stopping $APP_LONG_NAME..."
-    pid=`$PIDOF $APP_NAME`
-    if [ -z $pid ]
+    getpid
+    if [ "X$pid" = "X" ]
     then
         echo "$APP_LONG_NAME was not running."
     else
-        # Running so try to stop it.
+         # Running so try to stop it.
         kill $pid
         if [ $? -ne 0 ]
         then
@@ -127,9 +165,10 @@ stopit() {
         # We can not predict how long it will take for the wrapper to
         #  actually stop as it depends on settings in wrapper.conf.
         #  Loop until it does.
+        savepid=$pid
         CNT=0
         TOTCNT=0
-        while [ ! -z $pid ]
+        while [ "X$pid" != "X" ]
         do
             # Loop for up to 5 minutes
             if [ "$TOTCNT" -lt "300" ]
@@ -145,22 +184,24 @@ stopit() {
 
                 sleep 1
 
-                pid=`$PIDOF $APP_NAME`
+                testpid
             else
                 pid=
             fi
         done
 
-        pid=`$PIDOF $APP_NAME`
-        if [ ! -z $pid ]
+        pid=$savepid
+        testpid
+        if [ "X$pid" != "X" ]
         then
             echo "Timed out waiting for $APP_LONG_NAME to exit."
             echo "  Attempting a forced exit..."
             kill -9 $pid
         fi
 
-        pid=`$PIDOF $APP_NAME`
-        if [ ! -z $pid ]
+        pid=$savepid
+        testpid
+        if [ "X$pid" != "X" ]
         then
             echo "Failed to stop $APP_LONG_NAME."
             exit 1
@@ -172,16 +213,18 @@ stopit() {
 
 dump() {
     echo "Dumping $APP_LONG_NAME..."
-    pid=`$PIDOF $APP_NAME`
-    if [ -z $pid ]
+    getpid
+    if [ "X$pid" = "X" ]
     then
         echo "$APP_LONG_NAME was not running."
+
     else
         kill -3 $pid
 
         if [ $? -ne 0 ]
         then
             echo "Failed to dump $APP_LONG_NAME."
+            exit 1
         else
             echo "Dumped $APP_LONG_NAME."
         fi
