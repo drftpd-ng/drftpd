@@ -1,3 +1,11 @@
+* ABOR and telnet command support.
+
+* NIO / async IO
+
+* File replication
+	Build API for replicating+streaming files across slaves
+	Replicate .sfv files over all slaves
+
 * XML BASED CONFIGURATION
 
 * More fine grained file-permissions?
@@ -5,32 +13,7 @@
 		- Can delete if is file owner or isAdmin().
 		- Can always create anywhere.
 
-* SITE NUKE
-	Issue:
-		What if a slave is disconnected when nuke:ing?
-	Possible Solution:
-		Keep a backlog of all renames and make sure that
-		returning slaves go through the backlog?
-	Solution:
-		Queued deletes.
-
-* SITE UNNUKE
-	Issue:
-		Needs to get multiplier.
-	Possible solution:
-		nukelog:
-		keep the value in LinkedRemoteFile and save to files.xml
-
-* sitebot
-	Issue:
-		Needs to communicate with drftpd
-	Possible solution:
-		java based irc bot.
-		eggdrop communicating over tcp.
-
 * PASV - passive transfer mode
-
-* Native user storage, not some glftpd hack...
 
 * recheck content on slaves to automatically add new files/remove
   deleted files.
@@ -56,3 +39,5 @@
 	needed fields:
 		deletes:	path
 		renames:	from, to
+	Solution:
+		deletes:	LinkedRemoteFile has a field called isDeleted

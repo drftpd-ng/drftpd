@@ -30,6 +30,7 @@ public class JDOMRemoteFile extends RemoteFile {
 	protected List files = null;
 	protected Collection slaves;
 	Hashtable allSlaves;
+	private long xfertime;
 
 	private static Hashtable rslavesToHashtable(Collection rslaves) {
 		Hashtable map = new Hashtable(rslaves.size());
@@ -57,8 +58,13 @@ public class JDOMRemoteFile extends RemoteFile {
 		if (element.getName().equals("file")) {
 			this.isDirectory = false;
 			this.isFile = true;
+			try {
+			this.xfertime = Long.parseLong(element.getChildText("xfertime"));
+			} catch(NumberFormatException ex) {
+				this.xfertime = 0L;
+			}
 			this.checkSum =
-				Long.parseLong(element.getChild("checksum").getText(), 16);
+				Long.parseLong(element.getChildText("checksum"), 16);
 		}
 		this.length = Long.parseLong(element.getChild("size").getText());
 		this.owner = element.getChild("user").getText();
@@ -72,7 +78,8 @@ public class JDOMRemoteFile extends RemoteFile {
 			iter.hasNext();
 			) {
 			Element slaveElement = (Element) iter.next();
-			String slaveName = slaveElement.getChildText("name");
+			String slaveName = slaveElement.getText();
+			if(slaveName == null) throw new NullPointerException(slaveElement+" : slaveElement.getText() returned null");
 			RemoteSlave rslave = (RemoteSlave) this.allSlaves.get(slaveName);
 			if (rslave == null) {
 				logger.log(
@@ -82,7 +89,8 @@ public class JDOMRemoteFile extends RemoteFile {
 						+ getName());
 				continue;
 			}
-			this.slaves.add(rslave);
+			// don't add duplicate slaves. shouldn't happen.
+			if(!this.slaves.contains(rslave)) this.slaves.add(rslave);
 		}
 	}
 
@@ -180,4 +188,12 @@ public class JDOMRemoteFile extends RemoteFile {
 		}
 		return false;
 	}
+	/* (non-Javadoc)
+	 * @see net.sf.drftpd.remotefile.RemoteFile#getXfertime()
+	 */
+	public long getXfertime() {
+		// TODO Auto-generated method stub
+		return xfertime;
+	}
+
 }

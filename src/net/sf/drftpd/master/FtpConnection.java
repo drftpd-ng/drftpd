@@ -125,15 +125,13 @@ public class FtpConnection extends BaseFtpConnection {
 	 * transfers are not multi-threaded. 
 	 */
 	//TODO implement ABOR
-	/*
 	 public void doABOR(FtpRequest request, PrintWriter out) {
-	     
 	     // reset state variables
 	     resetState();
-	     mDataConnection.reset();
-	     out.write(ftpStatus.getResponse(226, request, user, null));
+	     //mDataConnection.reset();
+	     out.print(FtpResponse.RESPONSE_226_CLOSING_DATA_CONNECTION);
+	     return;
 	 }
-	 */
 
 	/**
 	 * <code>APPE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
@@ -533,7 +531,7 @@ public class FtpConnection extends BaseFtpConnection {
 					"drftpd",
 					statusDirName));
 		} catch (NoAvailableSlaveException e) {
-			logger.log(Level.WARNING, "No available slaves for SFV file", e);
+			logger.log(Level.WARNING, "No available slaves for SFV file");
 		} catch (IOException e) {
 			logger.log(Level.WARNING, "IO error loading SFV file", e);
 		} catch (ObjectNotFoundException e) {
@@ -1167,7 +1165,7 @@ public class FtpConnection extends BaseFtpConnection {
 			try {
 				transfer =
 					rslave.getSlave().doConnectSend(
-						new StaticRemoteFile(remoteFile),
+						remoteFile.getPath(),
 						getType(),
 						resumePosition,
 						mAddress,
@@ -1201,16 +1199,29 @@ public class FtpConnection extends BaseFtpConnection {
 			out.print(FtpResponse.RESPONSE_502_COMMAND_NOT_IMPLEMENTED);
 			return;
 		}
-		out.print(FtpResponse.RESPONSE_150_OK);
+		out.print(new FtpResponse(150, "File status okay; about to open data connection from "+rslave.getName()+"."));
 		out.flush();
 
 		try {
 			transfer.transfer();
 		} catch (RemoteException ex) {
+			rslave.handleRemoteException(ex);
+			out.print(FtpResponse.RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED);
 			ex.printStackTrace();
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
+
+//		TransferThread transferThread = new TransferThread(rslave, transfer);
+//		System.err.println("Calling interruptibleSleepUntilFinished");
+//		try {
+//			transferThread.interruptibleSleepUntilFinished();
+//		} catch (Throwable e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+//		System.err.println("Finished");
+		
 		FtpResponse response =
 			(FtpResponse) FtpResponse
 				.RESPONSE_226_CLOSING_DATA_CONNECTION
@@ -1229,7 +1240,6 @@ public class FtpConnection extends BaseFtpConnection {
 		} catch (UserFileException e) {
 
 		}
-		response.addComment(response);
 		out.print(response);
 		reset();
 	}
@@ -1813,7 +1823,7 @@ public class FtpConnection extends BaseFtpConnection {
 			try {
 				myUser.removeGroup(string);
 				response.addComment(
-					myUser.getUsername() + " removed from " + string);
+					myUser.getUsername()+" removed from group "+string);
 			} catch (NoSuchFieldException e1) {
 				try {
 					myUser.addGroup(string);
@@ -1824,7 +1834,7 @@ public class FtpConnection extends BaseFtpConnection {
 						e2);
 				}
 				response.addComment(
-					myUser.getUsername() + " added to " + string);
+					myUser.getUsername() + " added to group" + string);
 			}
 		}
 		out.print(response);
@@ -2242,6 +2252,7 @@ public class FtpConnection extends BaseFtpConnection {
 		try {
 			connManager.getConfig().loadConfig();
 			slaveManager.reloadRSlaves();
+			slaveManager.saveFilesXML();
 		} catch (IOException e) {
 			out.print(new FtpResponse(200, e.getMessage()));
 			logger.log(Level.SEVERE, "Error reloading config", e);
@@ -2317,6 +2328,74 @@ public class FtpConnection extends BaseFtpConnection {
 		out.print(FtpResponse.RESPONSE_200_COMMAND_OK);
 		return;
 	}
+	
+	/**
+	 * site replic <destslave> <path...>
+	 * @param request
+	 * @param out
+	 */
+// won't work due to the non-interactivitiy of ftp, and due to timeouts
+//	public void doSITE_REPLIC(FtpRequest request, PrintWriter out) {
+//		resetState();
+//		if(!getUser().isAdmin()) {
+//			out.print(FtpResponse.RESPONSE_530_ACCESS_DENIED);
+//			return;
+//		}
+//		FtpResponse usage = new FtpResponse(501, "usage: SITE REPLIC <destsave> <path...>");
+//		if(!request.hasArgument()) {
+//			out.print(usage);
+//			return;
+//		}
+//		String args[] = request.getArgument().split(" ");
+//		
+//		if(args.length < 2) {
+//			out.print(usage);
+//			return;
+//		}
+//		
+//		RemoteSlave destRSlave;
+//		try {
+//			destRSlave = slaveManager.getSlave(args[0]);
+//		} catch (ObjectNotFoundException e) {
+//			out.print(new FtpResponse(200, e.getMessage()));
+//			return;
+//		}
+//		//Slave destSlave = destRSlave.getSlave();
+//		
+//		for (int i = 1; i < args.length; i++) {
+//			try {
+//				String arg = args[i];
+//				LinkedRemoteFile file = currentDirectory.lookupFile(arg);
+//				String path = file.getPath();
+//				RemoteSlave srcRSlave =
+//					file.getASlave(Transfer.TRANSFER_SENDING_DOWNLOAD);
+//
+//				Transfer destTransfer =
+//					destRSlave.getSlave().doListenReceive(
+//						file.getParentFile().getPath(),
+//						file.getName(),
+//						0L);
+//				Transfer srcTransfer =
+//					srcRSlave.getSlave().doConnectSend(
+//						file.getPath(),
+//						'I',
+//						0L,
+//						destRSlave.getInetAddress(),
+//						destTransfer.getLocalPort());
+//				//TODO: these will block
+//				TransferThread srcTransferThread = new TransferThread(srcRSlave, srcTransfer);
+//				TransferThread destTransferThread = new TransferThread(destRSlave, destTransfer);
+////				srcTransferThread.interruptibleSleepUntilFinished();
+////				destTransferThread.interruptibleSleepUntilFinished();
+//				while(true) {
+//					out.print("200- "+srcTransfer.getTransfered()+" : "+destTransfer.getTransfered());
+//				}
+//			} catch (Exception e) {
+//				// TODO: handle exception
+//			}
+//		}
+//		
+//	}
 
 	public void doSITE_RESCAN(FtpRequest request, PrintWriter out) {
 		resetState();

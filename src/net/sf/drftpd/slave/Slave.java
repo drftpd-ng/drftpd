@@ -8,7 +8,6 @@ import java.rmi.RemoteException;
 
 import net.sf.drftpd.ObjectExistsException;
 import net.sf.drftpd.SFVFile;
-import net.sf.drftpd.remotefile.StaticRemoteFile;
 
 /**
  * Slave interface, this interface is used to initate transfers to and from remote slaves.
@@ -21,7 +20,7 @@ public interface Slave extends Remote {
 	 * Argument should be a StaticStaticRemoteFile so that the whole directory structure doesn't get serialized and sent.
 	 */
 	public Transfer doConnectSend(
-		StaticRemoteFile file,
+		String path,
 		char mode,
 		long offset,
 		InetAddress addr,
@@ -31,13 +30,8 @@ public interface Slave extends Remote {
 	/**
 	 * Listen on any port and send 'file' when connection is receieved.
 	 */
-	public Transfer doListenSend(StaticRemoteFile file, char mode, long offset)
+	public Transfer doListenSend(String path, char mode, long offset)
 		throws RemoteException, IOException;
-
-	/**
-	 * Connect to 'addr':'port' and save stream to 'path'.
-	 */
-//	public Transfer doConnectReceive(String path, InetAddress addr, int port) throws RemoteException, IOException;
 
 	/**
 	 * Connect to 'addr':'port' and receive file.
@@ -67,11 +61,6 @@ public interface Slave extends Remote {
 	 * Get statistics for this slave, usefull when deciding which slave to use when transferring files.
 	 */
 	public SlaveStatus getSlaveStatus() throws RemoteException;
-//	/**
-//	 * Attempt to create the directory 'path'.
-//	 */
-//	public void mkdir(User user, String path)
-//		throws RemoteException, IOException;
 
 	/**
 	 * Check to see if slave is still up.

@@ -14,7 +14,8 @@
 	    <pathelement path="/usr/share/jdom/lib/jdom.jar"/>
 	    <pathelement path="/usr/share/log4j/lib/log4j-1.2.7.jar"/>
 	    <pathelement path="/usr/share/oro/lib/oro.jar"/>
-
+		<pathelement path="martyr-0.3.0/martyr.jar" />
+		<pathelement path="JSX1.0.7.4.jar" />
 	    <fileset dir=".">
 	        <include name="lib/*"/>
 	    </fileset>

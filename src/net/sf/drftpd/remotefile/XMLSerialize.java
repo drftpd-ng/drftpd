@@ -33,11 +33,14 @@ public class XMLSerialize {
 				contents.addContent(serialize((LinkedRemoteFile) i.next()));
 			}
 			element.addContent(contents);
-		} else {
+		}
+		if(file.isFile()) {
 			String checksum = "";
 			checksum = Long.toHexString(file.getCheckSum(false));
 
 			element.addContent(new Element("checksum").setText(checksum));
+			
+			element.addContent(new Element("xfertime").setText(Long.toString(file.getXfertime())));
 		}
 
 		Element slaves = new Element("slaves");

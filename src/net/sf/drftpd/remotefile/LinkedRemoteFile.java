@@ -46,6 +46,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	private String name;
 
 	private LinkedRemoteFile parent;
+	private long xfertime;
 	//private Random rand = new Random();
 
 	//private String path;
@@ -55,8 +56,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	private long lastModified;
 	/////////////////////// SLAVES
 	protected Collection slaves;
-	private ConnectionManager connectionmanager;
-	
+	private transient ConnectionManager connectionmanager;
+
 	/**
 	 * Creates an empty RemoteFile directory, usually used as an empty root directory that
 	 * <link>{merge()}</link> can be called on.
@@ -67,7 +68,7 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		//		canRead = true;
 		//		canWrite = false;
 		this.connectionmanager = cm;
-		
+
 		this.lastModified = System.currentTimeMillis();
 		this.length = 0;
 		this.isDirectory = true;
@@ -83,7 +84,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 * 
 	 * Also called with null ConnectionManager from slave
 	 */
-	public LinkedRemoteFile(RemoteFile file, ConnectionManager cm) throws IOException {
+	public LinkedRemoteFile(RemoteFile file, ConnectionManager cm)
+		throws IOException {
 		this(null, file, cm);
 	}
 	/**
@@ -95,7 +97,10 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	 * @param parent the parent of this file
 	 * @param file file that this RemoteFile object should represent.
 	 */
-	private LinkedRemoteFile(LinkedRemoteFile parent, RemoteFile file, ConnectionManager cm) {
+	private LinkedRemoteFile(
+		LinkedRemoteFile parent,
+		RemoteFile file,
+		ConnectionManager cm) {
 		this.connectionmanager = cm;
 		this.lastModified = file.lastModified();
 		this.length = file.length();
@@ -137,32 +142,39 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 					dirstack.push(file2);
 					continue;
 				}
-				files.put(file2.getName(), new LinkedRemoteFile(this, file2, this.connectionmanager));
+				files.put(
+					file2.getName(),
+					new LinkedRemoteFile(this, file2, this.connectionmanager));
 			}
 
 			Iterator i = dirstack.iterator();
 			while (i.hasNext()) {
 				RemoteFile file2 = (RemoteFile) i.next();
 				String filename = file2.getName();
-				files.put(filename, new LinkedRemoteFile(this, file2, this.connectionmanager));
+				files.put(
+					filename,
+					new LinkedRemoteFile(this, file2, this.connectionmanager));
 			}
 		}
 	}
 
 	public LinkedRemoteFile addFile(RemoteFile file) {
-		LinkedRemoteFile linkedfile = new LinkedRemoteFile(this, file, this.connectionmanager);
+		LinkedRemoteFile linkedfile =
+			new LinkedRemoteFile(this, file, this.connectionmanager);
 		files.put(linkedfile.getName(), linkedfile);
 		return linkedfile;
 	}
 	public void addSlave(RemoteSlave slave) {
-		slaves.add(slave);
+		if (!slaves.contains(slave))
+			slaves.add(slave);
 	}
 	private void addSlaves(Collection addslaves) {
 		if (addslaves == null)
 			throw new IllegalArgumentException("addslaves cannot be null");
-		//System.out.println("Adding " + addslaves + " to " + slaves);
-		slaves.addAll(addslaves);
-		//System.out.println("slaves.size() is now " + slaves.size());
+		for (Iterator iter = addslaves.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
+			addSlave(rslave);
+		}
 	}
 
 	public LinkedRemoteFile createDirectory(
@@ -186,7 +198,8 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		LinkedRemoteFile file =
 			new LinkedRemoteFile(
 				this,
-				new DirectoryRemoteFile(this, owner, group, fileName), connectionmanager);
+				new DirectoryRemoteFile(this, owner, group, fileName),
+				connectionmanager);
 		//file.addSlaves(getSlaves());
 		files.put(file.getName(), file);
 		logger.fine("Created directory " + file);
@@ -260,7 +273,10 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 
 	public RemoteSlave getASlave(char direction)
 		throws NoAvailableSlaveException {
-		return SlaveManagerImpl.getASlave(getAvailableSlaves(), direction, connectionmanager.getConfig());
+		return SlaveManagerImpl.getASlave(
+			getAvailableSlaves(),
+			direction,
+			connectionmanager.getConfig());
 	}
 
 	public RemoteSlave getASlave() throws NoAvailableSlaveException {
@@ -397,11 +413,11 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		}
 		return root;
 	}
-	
+
 	public boolean hasFile(String filename) {
 		return files.containsKey(filename);
 	}
-	
+
 	protected SFVFile sfvFile;
 	public SFVFile lookupSFVFile()
 		throws IOException, ObjectNotFoundException, NoAvailableSlaveException {
@@ -563,28 +579,33 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 		Map map = getMap();
 		//Collection mergefiles = mergedir.getFiles();
 		if (mergedir.getFiles() == null) {
-			throw new FatalException("dir.getFiles() returned null: "+this+", "+mergedir);
+			throw new FatalException(
+				"dir.getFiles() returned null: " + this +", " + mergedir);
 		}
 
-
 		// add all files from mergedir
-		for(Iterator i = mergedir.getFiles().iterator(); i.hasNext(); ) {
+		for (Iterator i = mergedir.getFiles().iterator(); i.hasNext();) {
 			LinkedRemoteFile mergefile = (LinkedRemoteFile) i.next();
 
-			LinkedRemoteFile file = (LinkedRemoteFile) files.get(mergefile.getName());
+			LinkedRemoteFile file =
+				(LinkedRemoteFile) files.get(mergefile.getName());
 			// two scenarios:, local file [does not] exists
 			if (file == null) {
 				// local file does not exist, just put it in the hashtable
 				map.put(mergefile.getName(), mergefile);
 			} else {
-				if(file.isDeleted()) {
+				if (file.isDeleted()) {
 					mergefile.delete();
 					continue;
 				}
 				if (mergefile.isFile()
 					&& file.length() != mergefile.length()) {
 					throw new RuntimeException(
-						"file sizes differ: " + file + " and " + mergefile+ "don't know what to do! :(");
+						"file sizes differ: "
+							+ file
+							+ " and "
+							+ mergefile
+							+ "don't know what to do! :(");
 				}
 
 				// 4 scenarios: new/existing file/directory
@@ -600,11 +621,11 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 				}
 			}
 		}
-		
+
 		//TODO remove all slaves not in mergedir.getFiles()
-		for(Iterator i = getFiles().iterator(); i.hasNext(); ) {
-			LinkedRemoteFile file = (LinkedRemoteFile)i.next();
-			if(!mergedir.hasFile(file.getName())) {
+		for (Iterator i = getFiles().iterator(); i.hasNext();) {
+			LinkedRemoteFile file = (LinkedRemoteFile) i.next();
+			if (!mergedir.hasFile(file.getName())) {
 				file.unmerge(rslave);
 			}
 		}
@@ -688,8 +709,9 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	}
 
 	public long dirSize() {
-		if(files == null) throw new IllegalStateException("Cannot be called on a non-directory");
-		return files.size(); 
+		if (files == null)
+			throw new IllegalStateException("Cannot be called on a non-directory");
+		return files.size();
 	}
 
 	/**
@@ -774,4 +796,18 @@ public class LinkedRemoteFile extends RemoteFile implements Serializable {
 	public long lastModified() {
 		return this.lastModified;
 	}
+	/**
+	 * @return
+	 */
+	public long getXfertime() {
+		return xfertime;
+	}
+
+	/**
+	 * @param l
+	 */
+	public void setXfertime(long l) {
+		xfertime = l;
+	}
+
 }

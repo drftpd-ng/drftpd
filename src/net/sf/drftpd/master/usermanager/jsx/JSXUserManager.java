@@ -168,7 +168,8 @@ public class JSXUserManager extends UserManager {
 	}
 
 	public void saveAll() throws UserFileException {
-		for (Iterator iter = users.keySet().iterator(); iter.hasNext();) {
+		logger.log(Level.INFO, "Saving userfiles: "+users);
+		for (Iterator iter = users.values().iterator(); iter.hasNext();) {
 			Object obj = iter.next();
 			if(!(obj instanceof JSXUser)) {
 				logger.log(Level.SEVERE, "upcominClassCastException:"+obj+" not instanceof JSUser, class: "+obj.getClass()+" "+obj.getClass().getName());

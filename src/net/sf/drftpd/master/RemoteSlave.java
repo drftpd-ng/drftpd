@@ -1,6 +1,7 @@
 package net.sf.drftpd.master;
 
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.util.Collection;
@@ -109,7 +110,7 @@ public class RemoteSlave implements Serializable, Comparable {
 		System.out.println(". Fatal exception, removing");
 		manager.getConnectionManager().dispatchFtpEvent(new UserEvent(null, "DELSLAVE"));
 		//manager.getRoot().unmerge(this);
-		setSlave(null);
+		setSlave(null, null);
 		return true;
 	}
 
@@ -120,6 +121,7 @@ public class RemoteSlave implements Serializable, Comparable {
 	public static boolean isFatalRemoteException(RemoteException ex) {
 		return (ex instanceof ConnectException);
 	}
+	private InetAddress inetAddress;
 	
 	public void setManager(SlaveManagerImpl manager) {
 		if(this.manager != null) throw new IllegalStateException("Can't overwrite manager");
@@ -170,11 +172,12 @@ public class RemoteSlave implements Serializable, Comparable {
 	/**
 	 * @param slave
 	 */
-	public void setSlave(Slave slave) {
+	public void setSlave(Slave slave, InetAddress inetAddress) {
 		if(slave == null) {
 			manager.getConnectionManager().dispatchFtpEvent(new SlaveEvent("DELSLAVE", this));
 		}
 		this.slave = slave;
+		this.inetAddress = inetAddress;
 	}
 
 	/**
@@ -210,4 +213,11 @@ public class RemoteSlave implements Serializable, Comparable {
 		if(!(o instanceof RemoteSlave)) throw new IllegalArgumentException();
 		return getName().compareTo(((RemoteSlave)o).getName());
 	}
+	/**
+	 * @return
+	 */
+	public InetAddress getInetAddress() {
+		return inetAddress;
+	}
+
 }

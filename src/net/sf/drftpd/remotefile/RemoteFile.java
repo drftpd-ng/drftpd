@@ -71,6 +71,10 @@ public abstract class RemoteFile {
 	public abstract String getPath();
 
 	public abstract Collection getSlaves();
+	
+	public long getXfertime() {
+		throw new NoSuchMethodError();
+	}
 	/**
 	 * @see java.lang.Object#hashCode()
 	 */

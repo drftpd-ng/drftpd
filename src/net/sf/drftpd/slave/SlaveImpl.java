@@ -28,8 +28,6 @@ import net.sf.drftpd.SFVFile;
 import net.sf.drftpd.master.SlaveManager;
 import net.sf.drftpd.remotefile.FileRemoteFile;
 import net.sf.drftpd.remotefile.LinkedRemoteFile;
-import net.sf.drftpd.remotefile.StaticRemoteFile;
-
 import se.mog.io.File;
 
 /**
@@ -83,9 +81,10 @@ public class SlaveImpl
 				logger.log(Level.INFO, "Registered with master.");
 				return;
 			} catch (Throwable t) {
-				logger.log(Level.SEVERE, "Failed to register slave, will retry in 30 seconds", t);
+				long retry = Long.parseLong(System.getProperty("java.rmi.dgc.leaseValue", "600000"));
+				logger.log(Level.SEVERE, "Failed to register slave, will retry in "+retry/1000+" seconds", t);
 				try {
-					Thread.sleep(30000);
+					Thread.sleep(retry);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -191,19 +190,15 @@ public class SlaveImpl
 	 * Starts sending 'remotefile' starting at 'offset' bytes to a outputstream from the already connected socket 'sock'.
 	 */
 	private Transfer doSend(
-		StaticRemoteFile remotefile,
+		String path,
 		char mode,
 		long offset,
 		Connection conn)
 		throws IOException {
-		//File file = new File(root + remotefile.getPath());
-		File file = roots.getFile(remotefile.getPath());
-		//throws FileNotFoundException
-		//		if (!file.exists())
-		//			throw new FileNotFoundException(
-		//				"File " + file + " not found, Remotefile: " + remotefile);
 
-		FileInputStream in = new FileInputStream(file);
+		File file = roots.getFile(path); // throws FileNotFoundException
+
+		FileInputStream in = new FileInputStream(file); // throws FileNotFoundException
 		in.skip(offset);
 
 		TransferImpl transfer = new TransferImpl(transfers, in, conn, mode);
@@ -214,26 +209,26 @@ public class SlaveImpl
 	 * @see net.sf.drftpd.slave.Slave#doConnectSend(REmoteFile, long, InetADdress, int)
 	 */
 	public Transfer doConnectSend(
-		StaticRemoteFile rfile,
+		String path,
 		char mode,
 		long offset,
 		InetAddress addr,
 		int port)
 		throws IOException {
 
-		return doSend(rfile, mode, offset, new ActiveConnection(addr, port));
+		return doSend(path, mode, offset, new ActiveConnection(addr, port));
 	}
 
 	/**
 	 * @see net.sf.drftpd.slave.Slave#doListenSend(RemoteFile, long, int)
 	 */
 	public Transfer doListenSend(
-		StaticRemoteFile remotefile,
+		String path,
 		char mode,
 		long offset)
 		throws IOException {
 
-		return doSend(remotefile, mode, offset, new PassiveConnection());
+		return doSend(path, mode, offset, new PassiveConnection());
 	}
 
 	//RECEIVE

@@ -59,7 +59,6 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	protected boolean executing;
 
-	protected FtpStatus ftpStatus;
 	protected User user;
 	/**
 	 * Is the current password authenticated?
@@ -114,7 +113,6 @@ public class BaseFtpConnection implements Runnable {
 		//mConfig = ftpConfig;
 		//this.cfg = cfg;
 		//mFtpStatus = mConfig.getStatus();
-		ftpStatus = new FtpStatus();
 		controlSocket = soc;
 		this.connManager = connManager;
 		//mUser = new FtpUser();

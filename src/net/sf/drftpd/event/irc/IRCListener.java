@@ -138,15 +138,15 @@ public class IRCListener implements FtpListener {
 									+ idlers
 									+ "] [xfers total: "
 									+ status.getTransfers()
-									+ " "
+									+ ", "
 									+ Bytes.formatBytes(status.getThroughput())
 									+ "/s] [xfers up "
 									+ status.getTransfersReceiving()
-									+ " "
+									+ ", "
 									+ Bytes.formatBytes(status.getThroughputReceiving())
 									+ "/s] [xfers down "
 									+ status.getTransfersSending()
-									+ " "
+									+ ", "
 									+ Bytes.formatBytes(status.getThroughputSending())
 									+ "/s]  [space "
 									+ Bytes.formatBytes(status.getDiskSpaceAvailable())
@@ -170,15 +170,15 @@ public class IRCListener implements FtpListener {
 										+ Bytes.formatBytes(status.getThroughput())
 										+ "/s] [xfers up "
 										+ status.getTransfersReceiving()
-										+ " "
+										+ ", "
 										+ Bytes.formatBytes(status.getThroughputReceiving())
 										+ "/s] [xfers down "
 										+ status.getTransfersSending()
-										+ " "
+										+ ", "
 										+ Bytes.formatBytes(status.getThroughputSending())
-										+ "/s] [space"
+										+ "/s] [space free: "
 										+ Bytes.formatBytes(status.getDiskSpaceAvailable())
-										+ " "
+										+ "/"
 										+ Bytes.formatBytes(status.getDiskSpaceCapacity())
 										+ "]";
 							} catch (RemoteException e) {
