@@ -109,7 +109,7 @@ public class SlaveManager implements Runnable {
 	private void loadSlaves() throws SlaveFileException {
 		if (!slavePathFile.exists() && !slavePathFile.mkdirs()) {
 			throw new SlaveFileException(new IOException(
-					"Error creating folders: " + slavePathFile));
+					"Error creating directories: " + slavePathFile));
 		}
 
 		String[] slavepaths = slavePathFile.list();

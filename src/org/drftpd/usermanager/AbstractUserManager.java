@@ -61,7 +61,7 @@ public abstract class AbstractUserManager implements UserManager {
     protected void init(boolean createIfNoUser) throws UserFileException {
         if (!getUserpathFile().exists() && !getUserpathFile().mkdirs()) {
             throw new UserFileException(new IOException(
-                    "Error creating folders: " + getUserpathFile()));
+                    "Error creating directories: " + getUserpathFile()));
         }
         if (createIfNoUser) {
             String[] userfilenames = getUserpathFile().list();
