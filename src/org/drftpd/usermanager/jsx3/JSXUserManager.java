@@ -49,7 +49,8 @@ public class JSXUserManager extends AbstractUserManager {
     }
 
     public JSXUserManager(boolean createIfNoUser) throws UserFileException {
-    	super(createIfNoUser);
+    	super();
+    	init(createIfNoUser);
     }
 
     public User createUser(String username) {
