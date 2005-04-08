@@ -30,3 +30,8 @@ enabledownloadchecksums=true
 
 #bufferSize set at 0 lets the kernel handle the buffer sizes
 bufferSize=0
+
+# for those of you that have issues with slaves thinking they
+# are still connected, but aren't, in milliseconds
+# 300000 = 5 minutes
+slave.timeout=300000

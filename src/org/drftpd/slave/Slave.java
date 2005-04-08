@@ -29,6 +29,7 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -119,6 +120,13 @@ public class Slave {
 
         _s = new Socket();
         _s.connect(addr);
+        int timeout = 0;
+        try {
+        	timeout = Integer.parseInt(PropertyHelper.getProperty(p, "slave.timeout"));
+        } catch (NullPointerException e) {
+        	timeout = 300000; // 5 minute default
+        }
+        _s.setSoTimeout(timeout);
 
         _sout = new ObjectOutputStream(_s.getOutputStream());
         _sin = new ObjectInputStream(_s.getInputStream());
@@ -747,18 +755,25 @@ public class Slave {
         while (true) {
             AsyncCommand ac = null;
 
-            try {
-                ac = (AsyncCommand) _sin.readObject();
+			try {
+				ac = (AsyncCommand) _sin.readObject();
 
-                if (ac == null) {
-                    continue;
-                }
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            } catch (EOFException e) {
-            	logger.debug("Lost connection to the master, may have been kicked offline");
-            	return;
-            }
+				if (ac == null) {
+					continue;
+				}
+			} catch (ClassNotFoundException e) {
+				throw new RuntimeException(e);
+			} catch (EOFException e) {
+				logger
+						.debug("Lost connection to the master, may have been kicked offline");
+				return;
+			} catch (SocketTimeoutException e) {
+				// if no communication for slave.timeout time, send a diskstatus
+				// this will uncover whatever underlying communication error
+				// exists
+				sendResponse(new AsyncResponseDiskStatus(getDiskStatus()));
+				continue;
+			}
 
             logger.debug("Slave fetched " + ac);
             class AsyncCommandHandler implements Runnable {
