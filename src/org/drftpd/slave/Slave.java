@@ -100,7 +100,6 @@ public class Slave {
     private boolean _uploadChecksums;
     private PortRange _portRange;
     private Set _renameQueue = null;
-    private InetAddress _externalAddress = null;
     
     protected Slave() {
     	
@@ -116,14 +115,6 @@ public class Slave {
         
         if (isWin32) {
         	_renameQueue = new HashSet();
-        }
-
-        try {
-            _externalAddress = InetAddress.getByName(PropertyHelper.getProperty(p,
-                        "slave.interface"));
-        } catch (NullPointerException e) {
-            //value is already null
-            //_externalAddress = null;
         }
 
         _s = new Socket();
@@ -559,7 +550,7 @@ public class Slave {
         addTransfer(t);
 
         return new AsyncResponseTransfer(ac.getIndex(),
-            new ConnectInfo(address, port, t.getTransferIndex(),
+            new ConnectInfo(port, t.getTransferIndex(),
                 t.getTransferStatus()));
     }
 
@@ -606,7 +597,7 @@ public class Slave {
         addTransfer(t);
 
         return new AsyncResponseTransfer(ac.getIndex(),
-            new ConnectInfo(_externalAddress, c.getLocalPort(),
+            new ConnectInfo(c.getLocalPort(),
                 t.getTransferIndex(), t.getTransferStatus()));
     }
 

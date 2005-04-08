@@ -32,7 +32,7 @@ public class ConnectInfo implements Serializable {
     private TransferIndex _transferIndex;
     private TransferStatus _transferStatus;
 
-    public ConnectInfo(InetAddress address, int port,
+    public ConnectInfo(int port,
         TransferIndex transferIndex, TransferStatus ts) {
         _port = port;
         _transferIndex = transferIndex;
