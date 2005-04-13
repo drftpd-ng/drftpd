@@ -28,6 +28,7 @@ import java.util.StringTokenizer;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
@@ -35,6 +36,7 @@ import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
+import net.sf.drftpd.master.queues.NukeLog;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -43,6 +45,7 @@ import org.drftpd.Checksum;
 import org.drftpd.SFVFile;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
+import org.drftpd.commands.Nuke;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.id3.ID3Tag;
@@ -481,6 +484,8 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         }
 
         //check for NUKED dir
+        /*
+         * save Teflon's for a few weeks?
         logger.info(conn.getCurrentDirectory().getName());
         logger.info(request.getArgument());
         logger.info("[NUKED]-" + ret.getPath());
@@ -490,7 +495,37 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
                     " is nuked!");
             
         }
-        
+        */
+        // *************************************
+		// begin nuke log check
+		String toPath;
+		if (request.getArgument().substring(0, 1).equals("/")) {
+			toPath = request.getArgument();
+		} else {
+			StringBuffer toPath2 = new StringBuffer(conn.getCurrentDirectory()
+					.getPath());
+			if (toPath2.length() != 1)
+				toPath2.append("/"); // isn't /
+			toPath2.append(request.getArgument());
+			toPath = toPath2.toString();
+		}
+		// Try Nuke, then if that doesn't work, try TDPSiteNuke.
+		NukeLog _nukelog = Nuke.getNukeLog();
+		if (_nukelog != null && _nukelog.find_fullpath(toPath)) {
+			try {
+				String reason = _nukelog.get(toPath).getReason();
+				return new Reply(530,
+						"Access denied - Directory already nuked for '"
+								+ reason + "'");
+			} catch (ObjectNotFoundException e) {
+				return new Reply(530,
+						"Access denied - Directory already nuked, reason unavailable - "
+								+ e.getMessage());
+			}
+		}
+		// end nuke log check
+		// *************************************
+
         String createdDirName = conn.getGlobalContext().getConfig().getDirName(ret.getPath());
 
         if (!ListUtils.isLegalFileName(createdDirName)) {

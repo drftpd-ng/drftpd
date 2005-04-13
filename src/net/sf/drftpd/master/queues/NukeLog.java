@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Vector; 
+import java.util.Arrays;
 
 
 /**
@@ -121,4 +123,12 @@ public class NukeLog {
 
         return element;
     }
+    public boolean find_fullpath(String path) {
+		for (Iterator iter = nukes.iterator(); iter.hasNext();) {
+			NukeEvent nuke = (NukeEvent) iter.next();
+			if (nuke.getPath().equals(path))
+				return true;
+		}
+		return false;
+	}
 }

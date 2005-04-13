@@ -71,7 +71,7 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
     private static final Logger logger = Logger.getLogger(Nuke.class);
     public static final Key LASTNUKED = new Key(Nuke.class, "lastNuked",
             Long.class);
-    private NukeLog _nukelog;
+    private static NukeLog _nukelog;
 
     public Nuke() {
     }
@@ -489,7 +489,7 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
         return null;
     }
 
-    public NukeLog getNukeLog() {
+    public static NukeLog getNukeLog() {
         return _nukelog;
     }
 
