@@ -111,7 +111,12 @@ public class FileRemoteFile extends AbstractLightRemoteFile {
 
                             try {
                                 synchronized (cs) {
-                                    cs.wait();
+                                    cs.wait(10000); // wait a max of 10 seconds
+													// race condition could
+													// occur between above
+													// isAlive() statement and
+													// when the Checksummer
+													// finishes
                                 }
                             } catch (InterruptedException e) {
                             }
