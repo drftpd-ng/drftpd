@@ -206,8 +206,6 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 			throw new IllegalStateException(
 					"Slave is online, you cannot queue an operation");
 		}
-
-		logger.debug("addQueueRename:" + fileName + ":" + destName, new Throwable());
 		_renameQueue.add(new QueuedOperation(fileName, destName));
 		commit();
 	}
