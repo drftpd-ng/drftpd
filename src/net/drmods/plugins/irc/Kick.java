@@ -18,6 +18,7 @@
 package net.drmods.plugins.irc;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
@@ -55,17 +56,16 @@ public class Kick extends IRCCommand {
 		loadConf("conf/drmods.conf");
 	}
 
-	public void loadConf(String confFile) {
+	private void loadConf(String confFile) {
         Properties cfg = new Properties();
-        FileInputStream file;
+        FileInputStream file = null;
         try {
             file = new FileInputStream(confFile);
             cfg.load(file);
             String idleTimeout = cfg.getProperty("kick.idlelimit");
             String usersPerLine = cfg.getProperty("kick.usersperline");
-            file.close();
             if (idleTimeout == null) {
-                throw new RuntimeException("Unspecified value 'kick.idlelimit' in " + confFile);        
+                throw new RuntimeException("Unspecified value 'kick.idlelimit' in " + confFile);
             }
             if (usersPerLine == null) {
                 throw new RuntimeException("Unspecified value 'kick.usersperline' in " + confFile);        
@@ -75,6 +75,13 @@ public class Kick extends IRCCommand {
         } catch (Exception e) {
             logger.error("Error reading " + confFile,e);
             throw new RuntimeException(e.getMessage());
+        } finally {
+        	if (file != null) {
+        		try {
+        			file.close();
+        		} catch (IOException e) {
+        		}
+        	}
         }
 	}
 

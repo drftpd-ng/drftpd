@@ -67,14 +67,13 @@ public class IRCNuke extends IRCCommand {
 		loadConf("conf/drmods.conf");
 	}
 
-	public void loadConf(String confFile) {
+	private void loadConf(String confFile) {
         Properties cfg = new Properties();
-        FileInputStream file;
+        FileInputStream file = null;
         try {
             file = new FileInputStream(confFile);
             cfg.load(file);
             String maxNukes = cfg.getProperty("nukes.max");
-            file.close();
             if (maxNukes == null) {
                 throw new RuntimeException("Unspecified value 'nukes.max' in " + confFile);        
             }
@@ -82,6 +81,13 @@ public class IRCNuke extends IRCCommand {
         } catch (Exception e) {
             logger.error("Error reading " + confFile,e);
             throw new RuntimeException(e.getMessage());
+        } finally {
+        	try {
+        		if (file != null) {
+        			file.close();
+        		}
+        	} catch (IOException e) {
+        	}
         }
 	}
 
