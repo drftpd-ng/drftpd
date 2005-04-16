@@ -258,6 +258,9 @@ public class Find implements CommandHandler, CommandHandlerFactory {
 
 		public String exec(BaseFtpConnection conn,
 				LinkedRemoteFileInterface file) {
+			if (!file.isFile()) {
+				return file.getName() + " is not a file, cannot send it";
+			}
 			conn.getGlobalContext().getJobManager().addJobToQueue(
 					new Job(file, _destSlaves, _priority, _transferNum));
 			return file.getName() + " added to jobqueue";
@@ -709,7 +712,7 @@ public class Find implements CommandHandler, CommandHandlerFactory {
 					// -action sendtoslaves
 					// <numtransfers[:slave[,slave,..][:priority]]>
 					List<String> actionArgs = Arrays.asList(iter.next().split(
-							","));
+							":"));
 					int numOfSlaves = Integer.parseInt(actionArgs.get(0));
 					int priority = 0;
 					if (actionArgs.size() >= 3) {
