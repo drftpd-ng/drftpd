@@ -58,12 +58,11 @@ public class Rank extends IRCCommand {
 
 	public void loadConf(String confFile) {
         Properties cfg = new Properties();
-        FileInputStream file;
+        FileInputStream file = null;
         try {
             file = new FileInputStream(confFile);
             cfg.load(file);
             _exemptGroups = cfg.getProperty("rank.exempt");
-            file.close();
             if (_exemptGroups == null) {
                 throw new RuntimeException("Unspecified value 'rank.exempt' in " + confFile);        
             }      
@@ -73,6 +72,13 @@ public class Rank extends IRCCommand {
         } catch (IOException e) {
             logger.error("Error reading " + confFile,e);
             throw new RuntimeException(e.getMessage());
+        } finally {
+        	if (file != null) {
+        		try {
+        			file.close();
+        		} catch (IOException e) {
+        		}
+        	}
         }
 	}
 	

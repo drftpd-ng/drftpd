@@ -56,12 +56,11 @@ public class Approve extends IRCCommand {
 
 	public void loadConf(String confFile) {
         Properties cfg = new Properties();
-        FileInputStream file;
+        FileInputStream file = null;
         try {
             file = new FileInputStream(confFile);
             cfg.load(file);
             _dirName = cfg.getProperty("approve.dirname");
-            file.close();
             if (_dirName == null) {
                 throw new RuntimeException("Unspecified value 'approve.dirname' in " + confFile);        
             }      
@@ -71,6 +70,13 @@ public class Approve extends IRCCommand {
         } catch (IOException e) {
             logger.error("Error reading " + confFile,e);
             throw new RuntimeException(e.getMessage());
+        } finally {
+        	if (file != null) {
+        		try {
+        			file.close();
+        		} catch (IOException e) {
+        		}
+        	}
         }
 	}
 	

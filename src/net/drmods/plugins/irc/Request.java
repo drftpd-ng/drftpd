@@ -58,12 +58,11 @@ public class Request extends IRCCommand {
 
 	public void loadConf(String confFile) {
         Properties cfg = new Properties();
-        FileInputStream file;
+        FileInputStream file = null;
         try {
             file = new FileInputStream(confFile);
             cfg.load(file);
             _requestPath = cfg.getProperty("request.dirpath");
-            file.close();
             if (_requestPath == null) {
                 throw new RuntimeException("Unspecified value 'request.dirpath' in " + confFile);        
             }      
@@ -73,6 +72,13 @@ public class Request extends IRCCommand {
         } catch (IOException e) {
             logger.error("Error reading " + confFile,e);
             throw new RuntimeException(e.getMessage());
+        } finally {
+        	if (file != null) {
+        		try {
+        			file.close();
+        		} catch (IOException e) {
+        		}
+        	}
         }
 	}
 
