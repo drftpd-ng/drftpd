@@ -58,6 +58,8 @@ public class LinkedRemoteFileUtils {
                 getAllFilesInternal(file, files);
             } else if (file.isFile()) {
                 files.add(file);
+            } else if (file.isLink()) {
+            	// is a symlink, should we do anything?
             } else {
                 throw new IllegalArgumentException();
             }
