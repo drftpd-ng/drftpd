@@ -236,8 +236,14 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		return putFile(file);
 	}
 
-	protected synchronized void addSize(long size) {
-		_length += size;
+	protected void addSize(long size) {
+		if (isDirectory()) {
+			synchronized (_files) {
+				_length += size;
+			}
+		} else {
+			_length += size;
+		}
 
 		// logger.debug(
 		// this +" got " + size + " added, now " + _length,
