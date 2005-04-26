@@ -866,6 +866,9 @@ public class SiteBot extends FtpListener implements Observer {
     	
     	public String getBlowfishKey(User user) throws ObjectNotFoundException {
     		if (checkPerms(user)) {
+    			if (_blowKey == null) {
+    				throw new ObjectNotFoundException("Blowfish not enabled");
+    			}
     			return _blowKey;
     		}
     		throw new ObjectNotFoundException("No Permissions");
@@ -1609,7 +1612,10 @@ public class SiteBot extends FtpListener implements Observer {
 		}
 		throw new ObjectNotFoundException();
 	}
-
+	/**
+	 * 
+	 * Returns the blowfish key for the primary channel
+	 */
 	public String getBlowfishKey(User user) throws ObjectNotFoundException {
 		return getBlowfishKey(_primaryChannelName, user);
 	}

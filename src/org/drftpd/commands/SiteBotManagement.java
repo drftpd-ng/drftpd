@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.plugins.SiteBot;
 
 import org.drftpd.usermanager.NoSuchUserException;
+import org.tanesha.replacer.ReplacerEnvironment;
 
 
 /**
@@ -108,8 +109,8 @@ public class SiteBotManagement implements CommandHandler, CommandHandlerFactory 
 
     private Reply doSITE_BLOWFISH(BaseFtpConnection conn, SiteBot sitebot) {
     	if (!conn.isSecure()) {
-    		return new Reply(200,
-    		"Will not transfer an encrypted key over a non-encrypted socket.");
+            return new Reply(200,
+                    conn.jprintf(SiteBotManagement.class, "blowfish.reject"));
     	}
     	try {
     		String _key = null;
@@ -118,9 +119,11 @@ public class SiteBotManagement implements CommandHandler, CommandHandlerFactory 
     		} else {
     			_key = sitebot.getBlowfishKey(conn.getUserNull());
     		}
-    		return new Reply(200, "Blowfish key is: " + _key);
+    		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+    		env.add("key", _key);
+    		return new Reply(200, conn.jprintf(SiteBotManagement.class, "blowfish.accept", env));
     	} catch (ObjectNotFoundException e) {
-    		return new Reply(200, "Blowfish is not enabled.");
+    		return new Reply(200, conn.jprintf(SiteBotManagement.class, "blowfish.notenabled"));
     	}
     }
 
