@@ -239,34 +239,38 @@ public class ConnectionManager {
         return _gctx;
     }
 
-    public Timer getTimer() {
-        return getGlobalContext().getTimer();
-    }
-
     private void loadTimer() {
         TimerTask timerLogoutIdle = new TimerTask() {
                 public void run() {
-                    timerLogoutIdle();
+                	try {
+                		timerLogoutIdle();
+                	} catch (Throwable t) {
+                		logger.error("Error in timerLogoutIdle TimerTask", t);
+                	}
                 }
             };
 
         //run every 10 seconds
-        getTimer().schedule(timerLogoutIdle, 10 * 1000, 10 * 1000);
+        getGlobalContext().getTimer().schedule(timerLogoutIdle, 10 * 1000, 10 * 1000);
 
         TimerTask timerSave = new TimerTask() {
                 public void run() {
-                    getGlobalContext().getSlaveManager().saveFilelist();
-
-                    try {
-                        getGlobalContext().getUserManager().saveAll();
-                    } catch (UserFileException e) {
-                        logger.log(Level.FATAL, "Error saving all users", e);
-                    }
+                	try {
+                		getGlobalContext().getSlaveManager().saveFilelist();
+                		
+                		try {
+                			getGlobalContext().getUserManager().saveAll();
+                		} catch (UserFileException e) {
+                			logger.log(Level.FATAL, "Error saving all users", e);
+                		}
+                	} catch (Throwable t) {
+                		logger.error("Error in timerSave TimerTask", t);
+                	}
                 }
             };
 
         //run every hour 
-        getTimer().schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
+        getGlobalContext().getTimer().schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
     }
 
     public void remove(BaseFtpConnection conn) {

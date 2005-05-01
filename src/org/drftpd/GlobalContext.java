@@ -66,7 +66,7 @@ public class GlobalContext {
     private String _shutdownMessage = null;
     protected SlaveManager _slaveManager;
     protected AbstractUserManager _usermanager;
-    private Timer _timer = new Timer();
+    private Timer _timer = new Timer("GlobalContextTimer");
     protected SlaveSelectionManagerInterface _slaveSelectionManager;
 	private String _cfgFileName;
 

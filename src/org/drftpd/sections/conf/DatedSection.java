@@ -84,9 +84,13 @@ public class DatedSection implements SectionInterface {
 
         //end rollingcalendar...
         logger.debug("Rolling at " + rc.getNextCheckDate(new Date()));
-        getGlobalContext().getConnectionManager().getTimer().schedule(new TimerTask() {
+        getGlobalContext().getTimer().schedule(new TimerTask() {
                 public void run() {
-                    getFile();
+                	try {
+                		getFile();
+                	} catch (Throwable t) {
+                		logger.error("Catching Throwable in DatedSection TimerTask", t);
+                	}
                 }
             }, rc.getNextCheckDate(new Date()));
         getFile();
