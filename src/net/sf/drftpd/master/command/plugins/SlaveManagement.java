@@ -371,8 +371,7 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
         	throw new ImproperUsageException();
         }
 
-        String argument = ftpRequest.getArgument();
-        StringTokenizer arguments = new StringTokenizer(argument);
+        StringTokenizer arguments = new StringTokenizer(ftpRequest.getArgument());
 
         if (!arguments.hasMoreTokens()) {
         	throw new ImproperUsageException();
@@ -380,6 +379,11 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
 
         String slavename = arguments.nextToken();
         env.add("slavename", slavename);
+        
+        if (arguments.hasMoreTokens()) {
+        	throw new ImproperUsageException();
+        	// only one argument
+        }
 
         try {
             conn.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
