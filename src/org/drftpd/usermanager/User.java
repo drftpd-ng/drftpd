@@ -86,7 +86,7 @@ public abstract class User implements Entity {
     /**
      * Returns the idleTime.
      *
-     * @return long
+     * @return int
      */
     public abstract int getIdleTime();
 

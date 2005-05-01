@@ -56,7 +56,6 @@ import org.drftpd.usermanager.UserFileException;
  * @version $Id$
  */
 public class ConnectionManager {
-    public static final int idleTimeout = 300;
     private static final Logger logger = Logger.getLogger(ConnectionManager.class.getName());
     private CommandManagerFactory _commandManagerFactory;
     private List<BaseFtpConnection> _conns = Collections.synchronizedList(new ArrayList<BaseFtpConnection>());
@@ -240,7 +239,7 @@ public class ConnectionManager {
     }
 
     private void loadTimer() {
-        TimerTask timerLogoutIdle = new TimerTask() {
+/*        TimerTask timerLogoutIdle = new TimerTask() {
                 public void run() {
                 	try {
                 		timerLogoutIdle();
@@ -251,7 +250,7 @@ public class ConnectionManager {
             };
 
         //run every 10 seconds
-        getGlobalContext().getTimer().schedule(timerLogoutIdle, 10 * 1000, 10 * 1000);
+        getGlobalContext().getTimer().schedule(timerLogoutIdle, 10 * 1000, 10 * 1000);*/
 
         TimerTask timerSave = new TimerTask() {
                 public void run() {
@@ -310,7 +309,7 @@ public class ConnectionManager {
         conn.start();
     }
 
-    public void timerLogoutIdle() {
+/*    public void timerLogoutIdle() {
         long currTime = System.currentTimeMillis();
         ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(_conns);
 
@@ -335,7 +334,7 @@ public class ConnectionManager {
                 conn.stop("Idle time expired: " + maxIdleTime + "s");
             }
         }
-    }
+    }*/
 
     public void setGlobalContext(GlobalContext gctx) {
         _gctx = gctx;

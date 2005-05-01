@@ -363,11 +363,29 @@ public class BaseFtpConnection implements Runnable {
 
                 try {
                     commandLine = _in.readLine();
+                    // will block for a maximum of _controlSocket.getSoTimeout() milliseconds
                 } catch (InterruptedIOException ex) {
-                	if (_controlSocket != null && _controlSocket.isConnected()) {
-                		continue;
+                	if (_controlSocket == null) {
+                		stop("Control socket is null");
+                		break;
                 	}
-                	stop();
+                	if (!_controlSocket.isConnected()) {
+                		stop("Socket unexpectedly closed");
+                		break;
+                	}
+                	int idleTime;
+                	try {
+                		idleTime = getUser().getIdleTime();
+                	} catch (NoSuchUserException e) {
+                		idleTime = 60;
+                		// user not logged in yet
+                	}
+                	if (idleTime > 0
+							&& ((System.currentTimeMillis() - _lastActive) / 1000 >= idleTime)) {
+						stop("IdleTimeout");
+						break;
+					}
+                	continue;
                 }
 
                 if (_stopRequest) {
