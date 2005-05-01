@@ -57,7 +57,7 @@ public class NukeLog {
         throw new ObjectNotFoundException("No nukelog for: " + path);
     }
 
-    public void remove(String path) throws ObjectNotFoundException {
+    public synchronized void remove(String path) throws ObjectNotFoundException {
         for (Iterator iter = nukes.iterator(); iter.hasNext();) {
             NukeEvent nuke = (NukeEvent) iter.next();
 
@@ -68,7 +68,7 @@ public class NukeLog {
                 XMLOutputter outputter = new XMLOutputter("    ", true);
 
                 try {
-                    outputter.output(this.fromXML(), new FileOutputStream("nukelog.xml"));
+                    outputter.output(toXML(), new FileOutputStream("nukelog.xml"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -80,7 +80,7 @@ public class NukeLog {
         throw new ObjectNotFoundException("No nukelog for: " + path);
     }
 
-    public void add(NukeEvent nuke) {
+    public synchronized void add(NukeEvent nuke) {
         nukes.add(nuke);
 
         //		try {
@@ -92,7 +92,7 @@ public class NukeLog {
         XMLOutputter outputter = new XMLOutputter("    ", true);
 
         try {
-            outputter.output(this.toXML(), new FileOutputStream("nukelog.xml"));
+            outputter.output(toXML(), new FileOutputStream("nukelog.xml"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -102,7 +102,7 @@ public class NukeLog {
         return nukes;
     }
 
-    public Element toXML() {
+    public synchronized Element toXML() {
         Element element = new Element("nukes");
 
         for (Iterator iter = getAll().iterator(); iter.hasNext();) {
@@ -113,16 +113,6 @@ public class NukeLog {
         return element;
     }
     
-    public Element fromXML() {
-        Element element = new Element("nukes");
-
-        for (Iterator iter = getAll().iterator(); iter.hasNext();) {
-            NukeEvent nuke = (NukeEvent) iter.next();
-            element.removeContent(nuke.toJDOM());
-        }
-
-        return element;
-    }
     public boolean find_fullpath(String path) {
 		for (Iterator iter = nukes.iterator(); iter.hasNext();) {
 			NukeEvent nuke = (NukeEvent) iter.next();
