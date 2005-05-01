@@ -359,12 +359,15 @@ public class BaseFtpConnection implements Runnable {
                 _out.flush();
 
                 //notifyObserver();
-                String commandLine;
+                String commandLine = null;
 
                 try {
                     commandLine = _in.readLine();
                 } catch (InterruptedIOException ex) {
-                    continue;
+                	if (_controlSocket != null && _controlSocket.isConnected()) {
+                		continue;
+                	}
+                	stop();
                 }
 
                 if (_stopRequest) {
@@ -511,11 +514,6 @@ public class BaseFtpConnection implements Runnable {
      * User logout and stop this thread.
      */
     public void stop() {
-        _stopRequest = true;
-    }
-
-    public void stop(String message) {
-        _stopRequestMessage = message;
         synchronized (getDataConnectionHandler()) {
 			if (getDataConnectionHandler().isTransfering()) {
 				try {
@@ -529,7 +527,11 @@ public class BaseFtpConnection implements Runnable {
 				}
 			}
 		}
+        _stopRequest = true;
+    }
 
+    public void stop(String message) {
+        _stopRequestMessage = message;
         stop();
     }
 
