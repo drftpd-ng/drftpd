@@ -414,6 +414,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			throw new IllegalArgumentException("Cannot delete file from "
 					+ rslave.getName() + " as it's not on it");
 		rslave.simpleDelete(getPath());
+		removeSlave(rslave);
 	}
 
 	/**
