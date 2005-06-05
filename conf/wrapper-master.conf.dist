@@ -26,6 +26,7 @@ wrapper.java.library.path.1=lib
 
 # Java Additional Parameters
 wrapper.java.additional.1=-Dlog4j.configuration=file:conf/log4j-default.properties
+wrapper.java.additional.2=-Xrunhprof:heap=sites,cpu=samples,file=hprof.txt,depth=20,thread=n,doe=y
 
 # Initial Java Heap Size (in MB)
 wrapper.java.initmemory=3
