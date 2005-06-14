@@ -64,6 +64,7 @@ public class BeanUserManager extends AbstractUserManager {
 
 	public User getUserByNameUnchecked(String username)
 			throws NoSuchUserException, UserFileException {
+		XMLDecoder xd = null;
 		try {
 			BeanUser user = (BeanUser) _users.get(username);
 
@@ -71,9 +72,9 @@ public class BeanUserManager extends AbstractUserManager {
 				return user;
 			}
 
-			XMLDecoder xe = new XMLDecoder(new FileInputStream(
+			xd = new XMLDecoder(new FileInputStream(
 					getUserFile(username)));
-			user = (BeanUser) xe.readObject();
+			user = (BeanUser) xd.readObject();
 
 			user.setUserManager(this);
 			_users.put(user.getName(), user);
@@ -86,6 +87,10 @@ public class BeanUserManager extends AbstractUserManager {
 				throw (NoSuchUserException) ex;
 			}
 			throw new UserFileException("Error loading " + username, ex);
+		} finally {
+			if (xd != null) {
+				xd.close();
+			}
 		}
 	}
     public User getUserByIdent(String ident)
