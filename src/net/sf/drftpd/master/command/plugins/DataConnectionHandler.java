@@ -763,14 +763,14 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         } else {
             throw new IllegalStateException("Neither PASV nor PORT");
         }
+		
+        dataSocket.setSoTimeout(15000); // 15 seconds timeout
 
         if (dataSocket instanceof SSLSocket) {
             SSLSocket ssldatasocket = (SSLSocket) dataSocket;
             ssldatasocket.setUseClientMode(false);
             ssldatasocket.startHandshake();
         }
-
-        dataSocket.setSoTimeout(15000); // 15 seconds timeout
 
         return dataSocket;
     }
