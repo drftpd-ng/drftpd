@@ -22,7 +22,7 @@ package net.sf.drftpd;
  * @author mog
  * @version $Id$
  */
-public class Nukee implements Comparable {
+public class Nukee implements Comparable<Nukee> {
     private String _username;
     private long _amount;
 
@@ -33,10 +33,6 @@ public class Nukee implements Comparable {
 
     public long getBytes() {
         return _amount;
-    }
-
-    public int compareTo(Object o) {
-        return compareTo((Nukee) o);
     }
 
     public int compareTo(Nukee o) {

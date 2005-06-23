@@ -20,9 +20,9 @@ package net.sf.drftpd.master;
 
 /**
  * @author mog
- * @version $Id: GroupPosition.java,v 1.4 2004/11/02 07:32:40 zubov Exp $
+ * @version $Id$
  */
-public class GroupPosition implements Comparable {
+public class GroupPosition implements Comparable<GroupPosition> {
     long bytes;
     int files;
     String groupname;
@@ -33,10 +33,6 @@ public class GroupPosition implements Comparable {
         this.bytes = bytes;
         this.files = files;
         this.xfertime = xfertime;
-    }
-
-    public int compareTo(Object o) {
-        return compareTo((GroupPosition) o);
     }
 
     /** Sorts in reverse order so that the biggest shows up first.
