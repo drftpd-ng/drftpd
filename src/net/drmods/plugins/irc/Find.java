@@ -86,7 +86,6 @@ public class Find extends IRCCommand {
     
     private void findFile(LinkedRemoteFileInterface dir, ArrayList<String> results,
             Collection searchstrings, User user, boolean files, boolean dirs) {
-            
         if (!getGlobalContext().getConfig().checkPathPermission("ircfind", user, dir, true))
             return;
         
@@ -135,7 +134,10 @@ public class Find extends IRCCommand {
      	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
      	    return out;
      	}
-     	
+		if (args.equals("")) {
+	         out.add(ReplacerUtils.jprintf("find.syntax",env,Find.class));
+	         return out;
+	    }
         
         Collection searchStrings = Arrays.asList(args.split(" "));
         ArrayList<String> results = new ArrayList<String>();
