@@ -85,7 +85,7 @@ import org.drftpd.usermanager.HostMaskCollection;
  * @author zubov
  * @version $Id$
  */
-public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
+public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializable, Entity {
 	private static final long serialVersionUID = -6973935289361817125L;
 
 	private static final Logger logger = Logger.getLogger(RemoteSlave.class);
@@ -260,12 +260,8 @@ public class RemoteSlave implements Runnable, Comparable, Serializable, Entity {
 		}
 	}
 
-	public final int compareTo(Object o) {
-		if (!(o instanceof RemoteSlave)) {
-			throw new IllegalArgumentException();
-		}
-
-		return getName().compareTo(((RemoteSlave) o).getName());
+	public final int compareTo(RemoteSlave o) {
+		return getName().compareTo(o.getName());
 	}
 
 	public final boolean equals(Object obj) {
