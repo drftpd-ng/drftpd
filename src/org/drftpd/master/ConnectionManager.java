@@ -38,6 +38,7 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commands.Reply;
@@ -267,9 +268,24 @@ public class ConnectionManager {
                 	}
                 }
             };
+	        TimerTask timerGarbageCollect = new TimerTask() {
+			public void run() {
+				logger.debug("Memory free before GC :"
+						+ Bytes.formatBytes(Runtime.getRuntime().freeMemory())
+						+ "/"
+						+ Bytes.formatBytes(Runtime.getRuntime().maxMemory()));
+				System.gc();
+				logger.debug("Memory free after GC :"
+						+ Bytes.formatBytes(Runtime.getRuntime().freeMemory())
+						+ "/"
+						+ Bytes.formatBytes(Runtime.getRuntime().maxMemory()));
+			}
+		};
 
-        //run every hour 
-        getGlobalContext().getTimer().schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
+		// run every hour
+		getGlobalContext().getTimer().schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
+		// run every minute
+		getGlobalContext().getTimer().schedule(timerGarbageCollect, 60 * 1000, 60 * 1000);
     }
 
     public void remove(BaseFtpConnection conn) {
