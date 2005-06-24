@@ -420,7 +420,9 @@ public class Slave {
 			logger.error("Error extracting .diz from zipfile",t);
 		} finally {
 			try {
-				zipInput.close();
+				if (zipInput != null) {
+					zipInput.close();
+				}
 			} catch (IOException e) {
 			}
 		}
