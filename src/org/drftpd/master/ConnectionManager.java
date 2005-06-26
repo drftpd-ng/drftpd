@@ -268,17 +268,17 @@ public class ConnectionManager {
                 	}
                 }
             };
-	        TimerTask timerGarbageCollect = new TimerTask() {
+        TimerTask timerGarbageCollect = new TimerTask() {
 			public void run() {
 				logger.debug("Memory free before GC :"
 						+ Bytes.formatBytes(Runtime.getRuntime().freeMemory())
 						+ "/"
-						+ Bytes.formatBytes(Runtime.getRuntime().maxMemory()));
+						+ Bytes.formatBytes(Runtime.getRuntime().totalMemory()));
 				System.gc();
 				logger.debug("Memory free after GC :"
 						+ Bytes.formatBytes(Runtime.getRuntime().freeMemory())
 						+ "/"
-						+ Bytes.formatBytes(Runtime.getRuntime().maxMemory()));
+						+ Bytes.formatBytes(Runtime.getRuntime().totalMemory()));
 			}
 		};
 
