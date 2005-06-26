@@ -79,7 +79,9 @@ public class PassiveConnection extends Connection {
 
     public void abort() {
         try {
-            _serverSocket.close();
+			if (_serverSocket != null) {
+				_serverSocket.close();
+			}
         } catch (IOException e) {
             logger.warn("failed to close() server socket", e);
         }
