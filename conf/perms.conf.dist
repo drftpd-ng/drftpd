@@ -84,3 +84,4 @@ link * =siteop
 nuke * =siteop =nuke
 unnuke * =siteop =nuke
 nukes * *
+chown * =siteop
