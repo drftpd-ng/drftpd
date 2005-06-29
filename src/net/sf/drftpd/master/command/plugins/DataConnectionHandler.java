@@ -778,32 +778,6 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         return dataSocket;
     }
 
-    public SocketFactory getSocketFactory(boolean dataChannel) {
-        if (dataChannel) {
-            if (_ctx == null) {
-                throw new IllegalStateException(
-                    "cannot request a secure socket without being in secure mode");
-            }
-
-            return _ctx.getSocketFactory();
-        }
-
-        return SocketFactory.getDefault();
-    }
-
-    public ServerSocketFactory getServerSocketFactory(boolean dataChannel) {
-        if (dataChannel) {
-            if (_ctx == null) {
-                throw new IllegalStateException(
-                    "cannot request a SecureSocketFactory without being in secure mode");
-            }
-
-            return _ctx.getServerSocketFactory();
-        }
-
-        return ServerSocketFactory.getDefault();
-    }
-
     public String[] getFeatReplies() {
         if (_ctx != null) {
             return new String[] { "PRET", "AUTH SSL", "PBSZ" };
