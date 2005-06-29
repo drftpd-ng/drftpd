@@ -67,7 +67,10 @@ import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.remotefile.ListUtils;
 import org.drftpd.remotefile.StaticRemoteFile;
+import org.drftpd.slave.ActiveConnection;
 import org.drftpd.slave.ConnectInfo;
+import org.drftpd.slave.Connection;
+import org.drftpd.slave.PassiveConnection;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slave.TransferFailedException;
@@ -101,7 +104,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
     /**
      * ServerSocket for PASV mode.
      */
-    private ServerSocket _serverSocket;
+    private PassiveConnection _passiveConnection;
     private RemoteTransfer _transfer;
     private LinkedRemoteFileInterface _transferFile;
     private char _type = 'A';
@@ -213,21 +216,20 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             throw new RuntimeException();
         }
 
-        InetSocketAddress address;
+        InetSocketAddress address = null;
 
         if (_preTransferRSlave == null) {
             try {
-                _serverSocket = conn.getGlobalContext().getPortRange().getPort(getServerSocketFactory(
-                            _encryptedDataChannel));
+				_passiveConnection = new PassiveConnection(_encryptedDataChannel ? _ctx : null, conn.getGlobalContext().getPortRange());
                 try {
 					address = new InetSocketAddress(conn.getGlobalContext()
-							.getConfig().getPasvAddress(), _serverSocket
+							.getConfig().getPasvAddress(), _passiveConnection
 							.getLocalPort());
 				} catch (NullPointerException e) {
 					address = new InetSocketAddress(conn.getControlSocket()
-							.getLocalAddress(), _serverSocket.getLocalPort());
+							.getLocalAddress(), _passiveConnection.getLocalPort());
 				}
-                _isPasv = true;
+            _isPasv = true;
             } catch (Exception ex) {
                 logger.warn("", ex);
 
@@ -745,9 +747,8 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         // get socket depending on the selection
         if (isPort()) {
             try {
-                dataSocket = getSocketFactory(_encryptedDataChannel)
-                                 .createSocket();
-                dataSocket.connect(_portAddress);
+				ActiveConnection ac = new ActiveConnection(_encryptedDataChannel ? _ctx : null, _portAddress);
+                dataSocket = ac.connect();
             } catch (IOException ex) {
                 logger.warn("Error opening data socket", ex);
                 dataSocket = null;
@@ -755,22 +756,24 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             }
         } else if (isPasv()) {
             try {
-                dataSocket = _serverSocket.accept();
+                dataSocket = _passiveConnection.connect();
             } finally {
-                _serverSocket.close();
-                _serverSocket = null;
+				if (_passiveConnection != null) {
+					_passiveConnection.abort();
+	                _passiveConnection = null;
+				}
             }
         } else {
             throw new IllegalStateException("Neither PASV nor PORT");
         }
-		
-        dataSocket.setSoTimeout(15000); // 15 seconds timeout
+		// Already done since we are using ActiveConnection and PasvConnection
+/*        dataSocket.setSoTimeout(Connection.TIMEOUT); // 15 seconds timeout
 
         if (dataSocket instanceof SSLSocket) {
             SSLSocket ssldatasocket = (SSLSocket) dataSocket;
             ssldatasocket.setUseClientMode(false);
             ssldatasocket.startHandshake();
-        }
+        }*/
 
         return dataSocket;
     }
@@ -895,16 +898,12 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         _preTransfer = false;
         _preTransferRSlave = null;
 
-        if (_serverSocket != null) { //isPasv() && _preTransferRSlave == null
-
-            try {
-                _serverSocket.close();
-            } catch (IOException e) {
-            }
+        if (_passiveConnection != null) { //isPasv() && _preTransferRSlave == null
+            _passiveConnection.abort();
         }
 
         _isPasv = false;
-        _serverSocket = null;
+        _passiveConnection = null;
         _isPort = false;
         _resumePosition = 0;
     }
