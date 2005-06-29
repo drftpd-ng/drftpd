@@ -84,7 +84,9 @@ public class MLST implements CommandHandler, CommandHandlerFactory {
             } catch (ObjectNotFoundException e) {
                 return new Reply(500, e.getMessage());
             }
-
+            if (!dataConnHnd.isPasv() && !dataConnHnd.isPort()) {
+                return Reply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
+            }
             out.print(Reply.RESPONSE_150_OK);
             out.flush();
 
