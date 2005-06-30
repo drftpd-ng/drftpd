@@ -265,8 +265,15 @@ public class MLSTSerialize {
 
     public static LinkedRemoteFile loadMLSTFileDatabase(List rslaves,
         ConnectionManager cm) throws IOException {
-        return MLSTSerialize.unserialize((cm != null)
-            ? cm.getGlobalContext().getConfig() : null,
-            new FileReader("files.mlst"), rslaves);
+		FileReader fr = null;
+		try {
+			fr = new FileReader("files.mlst");
+			return MLSTSerialize.unserialize((cm != null) ? cm
+					.getGlobalContext().getConfig() : null, fr, rslaves);
+		} finally {
+			if (fr != null) {
+				fr.close();
+			}
+		}
     }
 }
