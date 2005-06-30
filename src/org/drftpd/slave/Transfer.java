@@ -34,6 +34,7 @@ import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
 
 import org.apache.log4j.Logger;
+import org.drftpd.PassiveConnection;
 import org.drftpd.io.AddAsciiOutputStream;
 import org.drftpd.slave.async.AsyncResponseDiskStatus;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;

@@ -9,6 +9,8 @@
     <include name="org/drftpd/io/AddAsciiOutputStream*" />
     <include name="net/sf/drftpd/FileExistsException*" />
     <include name="org/drftpd/bootstrap/*" />
+    <include name="org/drftpd/PassiveConnection*" />
+    <include name="org/drftpd/ActiveConnection*" />
     <include name="org/drftpd/id3/*" />
     <include name="org/drftpd/slave/*" />
     <include name="org/drftpd/slave/async/*" />

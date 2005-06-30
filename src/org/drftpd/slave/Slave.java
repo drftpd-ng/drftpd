@@ -51,7 +51,9 @@ import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+import org.drftpd.ActiveConnection;
 import org.drftpd.LightSFVFile;
+import org.drftpd.PassiveConnection;
 import org.drftpd.PropertyHelper;
 import org.drftpd.SSLGetContext;
 import org.drftpd.id3.ID3Tag;
