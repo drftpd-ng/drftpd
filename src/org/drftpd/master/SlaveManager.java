@@ -17,43 +17,16 @@
  */
 package org.drftpd.master;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
-
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.master.SlaveFileException;
-import net.sf.drftpd.master.config.FtpConfig;
-
-import org.apache.log4j.Logger;
-
-import org.drftpd.GlobalContext;
-import org.drftpd.PropertyHelper;
-
-import org.drftpd.io.SafeFileWriter;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.remotefile.MLSTSerialize;
-import org.drftpd.slave.SlaveStatus;
-import org.drftpd.slave.async.AsyncCommandArgument;
-
-import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
-
-import org.drftpd.usermanager.UserFileException;
-
 import java.beans.XMLDecoder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,6 +39,22 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import net.sf.drftpd.FatalException;
+import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.SlaveUnavailableException;
+import net.sf.drftpd.master.SlaveFileException;
+
+import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
+import org.drftpd.PropertyHelper;
+import org.drftpd.io.SafeFileOutputStream;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.remotefile.MLSTSerialize;
+import org.drftpd.slave.SlaveStatus;
+import org.drftpd.slave.async.AsyncCommandArgument;
+import org.drftpd.usermanager.UserFileException;
 
 /**
  * @author mog
@@ -410,7 +399,7 @@ public class SlaveManager implements Runnable {
 
 	public void saveFilelist() {
 		try {
-			SafeFileWriter out = new SafeFileWriter("files.mlst");
+			PrintWriter out = new PrintWriter(new SafeFileOutputStream("files.mlst"));
 
 			try {
 				MLSTSerialize.serialize(getGlobalContext()
@@ -418,6 +407,7 @@ public class SlaveManager implements Runnable {
 						out);
 			} finally {
 				out.close();
+				logger.info("Done saving filelist");
 			}
 		} catch (IOException e) {
 			logger.warn("Error saving files.mlst", e);

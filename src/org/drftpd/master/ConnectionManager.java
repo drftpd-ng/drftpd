@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Timer;
 import java.util.TimerTask;
 
 import net.sf.drftpd.FatalException;
@@ -43,10 +42,8 @@ import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.UserManagement;
-import org.drftpd.io.SafeFileWriter;
 import org.drftpd.plugins.RaceStatistics;
 import org.drftpd.plugins.Statistics;
-import org.drftpd.remotefile.MLSTSerialize;
 import org.drftpd.slave.Slave;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;

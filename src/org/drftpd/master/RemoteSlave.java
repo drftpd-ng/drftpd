@@ -948,7 +948,7 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 	}
 
 	public void setOffline(String reason) {
-		logger.info("setOffline() " + reason, new Throwable());
+		logger.debug("setOffline() " + reason);
 		setOfflineReal(reason);
 	}
 

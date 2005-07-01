@@ -17,26 +17,19 @@
  */
 package net.sf.drftpd.master.usermanager.xstream;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.ArrayList;
 
 import net.sf.drftpd.master.usermanager.AbstractUser;
 import net.sf.drftpd.util.Crypt;
 
-import org.apache.log4j.Logger;
-
-import org.drftpd.io.SafeFileWriter;
 import org.drftpd.usermanager.PlainTextPasswordUser;
 import org.drftpd.usermanager.UnixPassword;
 import org.drftpd.usermanager.UserExistsException;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.usermanager.UserManager;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-
-import java.util.ArrayList;
 
 
 /**

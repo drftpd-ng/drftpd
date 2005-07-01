@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
 import org.apache.log4j.Logger;
+import org.drftpd.usermanager.javabeans.BeanUser;
 
 /**
  * @author mog
@@ -33,6 +34,7 @@ public class SafeFileOutputStream extends OutputStream {
     private File _actualFile;
     private OutputStreamWriter _out;
     private File _tempFile;
+	private static final Logger logger = Logger.getLogger(SafeFileOutputStream.class);
 	// failed until it works
     private boolean failed = true;
 
@@ -58,14 +60,14 @@ public class SafeFileOutputStream extends OutputStream {
     }
 
     public void close() throws IOException {
-		if (_out != null) {
-			_out.flush();
-        	_out.close();
-			_out = null;
+		if (_out == null) {
+			return;
 		}
-
+		_out.flush();
+    	_out.close();
+		_out = null;
         if (!failed) {
-            Logger.getLogger(SafeFileWriter.class).debug("Renaming " +
+            Logger.getLogger(SafeFileOutputStream.class).debug("Renaming " +
                 _tempFile + " (" + _tempFile.length() + ") to " + _actualFile);
 
             if (_actualFile.exists() && !_actualFile.delete()) {
@@ -92,9 +94,4 @@ public class SafeFileOutputStream extends OutputStream {
 		// ensures the file gets written to
 		failed = false;
     }
-
-	protected void finalize() throws Throwable {
-		close();
-		super.finalize();
-	}
 }

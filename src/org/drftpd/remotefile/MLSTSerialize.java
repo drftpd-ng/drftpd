@@ -27,6 +27,7 @@ import org.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
@@ -50,10 +51,6 @@ public class MLSTSerialize {
     private static final Logger logger = Logger.getLogger(MLSTSerialize.class);
     public static final SimpleDateFormat timeval = new SimpleDateFormat(
             "yyyyMMddHHmmss.SSS");
-
-    public static void serialize(LinkedRemoteFileInterface dir, Writer out) {
-        serialize(dir, new PrintWriter(out));
-    }
 
     public static void serialize(LinkedRemoteFileInterface dir, PrintWriter out) {
         out.println(dir.getPath() + ":");
@@ -143,7 +140,7 @@ public class MLSTSerialize {
 
             if (pos == -1) {
                 throw new CorruptFileListException("\"" + line +
-                    "\" is in valid");
+                    "\" is invalid");
             }
 
             String filename = line.substring(pos + 1);
