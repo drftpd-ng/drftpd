@@ -33,7 +33,8 @@ public class SafeFileOutputStream extends OutputStream {
     private File _actualFile;
     private OutputStreamWriter _out;
     private File _tempFile;
-    private boolean failed = false;
+	// failed until it works
+    private boolean failed = true;
 
     public SafeFileOutputStream(File file) throws IOException {
         _actualFile = file;
@@ -57,8 +58,11 @@ public class SafeFileOutputStream extends OutputStream {
     }
 
     public void close() throws IOException {
-        _out.flush();
-        _out.close();
+		if (_out != null) {
+			_out.flush();
+        	_out.close();
+			_out = null;
+		}
 
         if (!failed) {
             Logger.getLogger(SafeFileWriter.class).debug("Renaming " +
@@ -80,15 +84,17 @@ public class SafeFileOutputStream extends OutputStream {
     }
 
     public void flush() throws IOException {
-        _out.flush();
+		_out.flush();
     }
 
 	public void write(int b) throws IOException {
-        try {
-            _out.write(b);
-        } catch (IOException e) {
-            failed = true;
-            throw e;
-        }
+        _out.write(b);
+		// ensures the file gets written to
+		failed = false;
     }
+
+	protected void finalize() throws Throwable {
+		close();
+		super.finalize();
+	}
 }
