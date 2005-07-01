@@ -42,8 +42,10 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.SFVFile;
 import org.drftpd.id3.ID3Tag;
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.RemoteIOException;
+import org.drftpd.usermanager.User;
 
 import se.mog.io.File;
 
@@ -1601,6 +1603,53 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 					+ getPath() + "]";
 		}
 	}
+	public static LinkedRemoteFile findLatestDir(
+			ConnectionManager conn,
+			LinkedRemoteFileInterface dir,
+			User user,
+			String searchstring) throws ObjectNotFoundException {
+		ArrayList<LinkedRemoteFile> dirs = findDirs(conn, dir, user, searchstring);
+		if (dirs.size() == 0) {
+			throw new ObjectNotFoundException("dirs has size 0");
+		}
+		Collections.sort(dirs, new TimeComparator());
+		return dirs.get(0);
+	}
+	
+	private static ArrayList<LinkedRemoteFile> findDirs(ConnectionManager conn,
+			LinkedRemoteFileInterface dir, User user, String searchstring) {
+		ArrayList<LinkedRemoteFile> matchingDirs = new ArrayList<LinkedRemoteFile>();
+
+		if (!conn.getGlobalContext().getConfig().checkPathPermission(
+				"privpath", user, dir, true)) {
+			logger.debug("privpath: " + dir.getPath());
+			return matchingDirs;
+		}
+
+		for (Iterator<LinkedRemoteFileInterface> iter = dir.getDirectories()
+				.iterator(); iter.hasNext();) {
+			LinkedRemoteFileInterface file = iter.next();
+			if (file.isDirectory()) {
+				if (file.getName().toLowerCase().equals(
+						searchstring.toLowerCase())) {
+					logger.info("Found " + file.getPath());
+					// The below cast is a hack, LinkedRemoteFileInterface needs
+					// to be Comparable
+					try {
+						matchingDirs.add((LinkedRemoteFile) file);
+					} catch (ClassCastException e) {
+						// must be testing since LinkedRemoteFile is the only
+						// non-testing class that implements
+						// LinkedRemoteFileInterface
+						continue;
+					}
+				}
+				matchingDirs.addAll(findDirs(conn, file, user, searchstring));
+			}
+		}
+		return matchingDirs;
+	}
+
 
 	public List<LinkedRemoteFileInterface> getAllParentFiles() {
 		List<LinkedRemoteFileInterface> parents = new ArrayList<LinkedRemoteFileInterface>();

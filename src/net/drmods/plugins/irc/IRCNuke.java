@@ -44,6 +44,7 @@ import org.drftpd.commands.Nuke;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
+import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sitebot.IRCCommand;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -92,27 +93,27 @@ public class IRCNuke extends IRCCommand {
 	}
 
 	public ArrayList<String> doNuke(String args, MessageCommand msgc) {
-	    ArrayList<String> out = new ArrayList<String>();
+		ArrayList<String> out = new ArrayList<String>();
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		env.add("ircnick", msgc.getSource().getNick());
-		
-        User ftpuser = getUser(msgc.getSource());
-        if (ftpuser == null) {
-     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-     	    return out;
-        }
-        env.add("ftpuser",ftpuser.getName());
 
-        StringTokenizer st = new StringTokenizer(args);
-		//check number of arguments
+		User ftpuser = getUser(msgc.getSource());
+		if (ftpuser == null) {
+			out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+			return out;
+		}
+		env.add("ftpuser", ftpuser.getName());
+
+		StringTokenizer st = new StringTokenizer(args);
+		// check number of arguments
 		if (st.countTokens() < 3) {
 			out.add(ReplacerUtils.jprintf("nuke.usage", env, IRCNuke.class));
 			return out;
 		}
-		
-		//read parameters passed
+
+		// read parameters passed
 		String searchstr = st.nextToken();
-		env.add("searchstr",searchstr);
+		env.add("searchstr", searchstr);
 		int nukemult;
 		try {
 			nukemult = Integer.parseInt(st.nextToken());
@@ -121,131 +122,112 @@ public class IRCNuke extends IRCCommand {
 			return out;
 		}
 		String nukemsg = st.nextToken("").trim();
-		
-		LinkedRemoteFileInterface nukeDir = 
-			findDir(getGlobalContext().getConnectionManager(), getGlobalContext().getRoot(), ftpuser, searchstr);
 
-		if (nukeDir == null){
+		LinkedRemoteFileInterface nukeDir;
+		try {
+			nukeDir = LinkedRemoteFile.findLatestDir(getGlobalContext()
+					.getConnectionManager(), getGlobalContext().getRoot(),
+					ftpuser, searchstr);
+		} catch (ObjectNotFoundException e) {
 			out.add(ReplacerUtils.jprintf("nuke.error", env, IRCNuke.class));
 			return out;
-		} else {
-			String nukeDirPath = nukeDir.getPath();
-			env.add("nukedir",nukeDirPath);
-			//get nukees with string as key
-			Hashtable<String,Long> nukees = new Hashtable<String,Long>();
-			Nuke.nukeRemoveCredits(nukeDir, nukees);
-
-			//// convert key from String to User ////
-			HashMap<User,Long> nukees2 = new HashMap<User,Long>(nukees.size());
-			for (String username : nukees.keySet()) {
-
-				//String username = (String) iter.next();
-				User user;
-				try {
-					user =
-						getGlobalContext().getUserManager().getUserByName(username);
-				} catch (NoSuchUserException e1) {
-				    out.add("Cannot remove credits from " 
-						+ username + ": " + e1.getMessage());
-					logger.warn("", e1);
-					user = null;
-				} catch (UserFileException e1) {
-				    out.add("Cannot read user data for " 
-						+ username + ": " + e1.getMessage());
-					logger.warn("", e1);
-					return out;
-				}
-				// nukees contains credits as value
-				if (user == null) {
-					Long add = (Long) nukees2.get(null);
-					if (add == null) {
-						add = new Long(0);
-					}
-					nukees2.put(
-						user,
-						new Long(
-							add.longValue()
-								+ ((Long) nukees.get(username)).longValue()));
-				} else {
-					nukees2.put(user, (Long)nukees.get(username));
-				}
-			}
-
-			//rename
-			String toDirPath;
-			String toName = "[NUKED]-" + nukeDir.getName();
-			try {
-				toDirPath = nukeDir.getParentFile().getPath();
-			} catch (FileNotFoundException ex) {
-				logger.fatal("", ex);
-				out.add("FileNotFoundException");
-				return out;
-			}
-			try {
-				nukeDir.renameTo(toDirPath, toName);
-				nukeDir.createDirectory(
-					ftpuser.getName(),
-					ftpuser.getGroup(),
-					"REASON-" + nukemsg);
-			} catch (IOException ex) {
-				logger.warn("", ex);
-				out.add(
-					" cannot rename to \""
-						+ toDirPath
-						+ "/"
-						+ toName
-						+ "\": "
-						+ ex.getMessage());
-				return out;
-			}
-
-			long nukeDirSize = 0;
-			long nukedAmount = 0;
-
-			//update credits, nukedbytes, timesNuked, lastNuked
-//			for (Iterator iter = nukees2.keySet().iterator(); iter.hasNext();) {
-			for (User nukee : nukees2.keySet()) {
-			    //User nukee = (User) iter.next();
-				if (nukee == null)
-					continue;
-				long size = ((Long) nukees2.get(nukee)).longValue();
-
-				long debt =
-					Nuke.calculateNukedAmount(size, 
-					        nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO), nukemult);
-
-				nukedAmount += debt;
-				nukeDirSize += size;
-				nukee.updateCredits(-debt);
-				nukee.updateUploadedBytes(-size);
-	            nukee.getKeyedMap().incrementObjectLong(Nuke.NUKEDBYTES, debt);
-	            nukee.getKeyedMap().incrementObjectLong(Nuke.NUKED);
-	            nukee.getKeyedMap().setObject(Nuke.LASTNUKED, new Long(System.currentTimeMillis()));
-				try {
-					nukee.commit();
-				} catch (UserFileException e1) {
-					out.add("Error writing userfile: " + e1.getMessage());
-					logger.warn("Error writing userfile", e1);
-				}
-			}
-			NukeEvent nuke =
-				new NukeEvent(
-					ftpuser,
-					"NUKE",
-					nukeDirPath,
-					nukeDirSize,
-					nukedAmount,
-					nukemult,
-					nukemsg,
-					nukees);
-
-			Nuke dpsn = (Nuke) 
-				getGlobalContext().getConnectionManager().getCommandManagerFactory()
-					.getHandlersMap()
-					.get(Nuke.class);
-			dpsn.getNukeLog().add(nuke);
-			getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);
 		}
+		String nukeDirPath = nukeDir.getPath();
+		env.add("nukedir", nukeDirPath);
+		// get nukees with string as key
+		Hashtable<String, Long> nukees = new Hashtable<String, Long>();
+		Nuke.nukeRemoveCredits(nukeDir, nukees);
+
+		// // convert key from String to User ////
+		HashMap<User, Long> nukees2 = new HashMap<User, Long>(nukees.size());
+		for (String username : nukees.keySet()) {
+
+			// String username = (String) iter.next();
+			User user;
+			try {
+				user = getGlobalContext().getUserManager().getUserByName(
+						username);
+			} catch (NoSuchUserException e1) {
+				out.add("Cannot remove credits from " + username + ": "
+						+ e1.getMessage());
+				logger.warn("", e1);
+				user = null;
+			} catch (UserFileException e1) {
+				out.add("Cannot read user data for " + username + ": "
+						+ e1.getMessage());
+				logger.warn("", e1);
+				return out;
+			}
+			// nukees contains credits as value
+			if (user == null) {
+				Long add = (Long) nukees2.get(null);
+				if (add == null) {
+					add = new Long(0);
+				}
+				nukees2.put(user, new Long(add.longValue()
+						+ ((Long) nukees.get(username)).longValue()));
+			} else {
+				nukees2.put(user, (Long) nukees.get(username));
+			}
+		}
+
+		// rename
+		String toDirPath;
+		String toName = "[NUKED]-" + nukeDir.getName();
+		try {
+			toDirPath = nukeDir.getParentFile().getPath();
+		} catch (FileNotFoundException ex) {
+			logger.fatal("", ex);
+			out.add("FileNotFoundException");
+			return out;
+		}
+		try {
+			nukeDir.renameTo(toDirPath, toName);
+			nukeDir.createDirectory(ftpuser.getName(), ftpuser.getGroup(),
+					"REASON-" + nukemsg);
+		} catch (IOException ex) {
+			logger.warn("", ex);
+			out.add(" cannot rename to \"" + toDirPath + "/" + toName + "\": "
+					+ ex.getMessage());
+			return out;
+		}
+
+		long nukeDirSize = 0;
+		long nukedAmount = 0;
+
+		// update credits, nukedbytes, timesNuked, lastNuked
+		// for (Iterator iter = nukees2.keySet().iterator(); iter.hasNext();) {
+		for (User nukee : nukees2.keySet()) {
+			// User nukee = (User) iter.next();
+			if (nukee == null)
+				continue;
+			long size = ((Long) nukees2.get(nukee)).longValue();
+
+			long debt = Nuke.calculateNukedAmount(size, nukee.getKeyedMap()
+					.getObjectFloat(UserManagement.RATIO), nukemult);
+
+			nukedAmount += debt;
+			nukeDirSize += size;
+			nukee.updateCredits(-debt);
+			nukee.updateUploadedBytes(-size);
+			nukee.getKeyedMap().incrementObjectLong(Nuke.NUKEDBYTES, debt);
+			nukee.getKeyedMap().incrementObjectLong(Nuke.NUKED);
+			nukee.getKeyedMap().setObject(Nuke.LASTNUKED,
+					new Long(System.currentTimeMillis()));
+			try {
+				nukee.commit();
+			} catch (UserFileException e1) {
+				out.add("Error writing userfile: " + e1.getMessage());
+				logger.warn("Error writing userfile", e1);
+			}
+		}
+		NukeEvent nuke = new NukeEvent(ftpuser, "NUKE", nukeDirPath,
+				nukeDirSize, nukedAmount, nukemult, nukemsg, nukees);
+
+		Nuke dpsn = (Nuke) getGlobalContext().getConnectionManager()
+				.getCommandManagerFactory().getHandlersMap().get(Nuke.class);
+		dpsn.getNukeLog().add(nuke);
+		getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);
 		return out;
 	}
 
@@ -275,13 +257,13 @@ public class IRCNuke extends IRCCommand {
 
 		env.add("searchstr",nukeName);
 		
-		LinkedRemoteFileInterface nukeDir = 
-			findDir(getGlobalContext().getConnectionManager(), getGlobalContext().getRoot(), ftpuser, nukeName);
-			
-		if (nukeDir == null){
+		LinkedRemoteFileInterface nukeDir;
+		try {
+			nukeDir = LinkedRemoteFile.findLatestDir(getGlobalContext().getConnectionManager(), getGlobalContext().getRoot(), ftpuser, nukeName);
+		} catch (ObjectNotFoundException e2) {
 			out.add(ReplacerUtils.jprintf("nuke.error", env, IRCNuke.class));
 			return out;
-		} 
+		}
 		
 		String toPath = nukeDir.getParentFileNull().getPath() + "/" + toName;
 		String toDir = nukeDir.getParentFileNull().getPath();
@@ -413,33 +395,6 @@ public class IRCNuke extends IRCCommand {
 			}
 		}
 		return out;
-	}
-
-	private static LinkedRemoteFileInterface findDir(
-		ConnectionManager conn,
-		LinkedRemoteFileInterface dir,
-		User user,
-		String searchstring) {
-
-		if (!conn.getGlobalContext().getConfig().checkPathPermission("privpath",user, dir, true)) {
-			logger.debug("privpath: "+dir.getPath());
-			return null;
-		}
-
-		for (Iterator iter = dir.getDirectories().iterator(); iter.hasNext();) {
-			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
-			if (file.isDirectory()) {
-				if (file.getName().toLowerCase().equals(searchstring.toLowerCase())) {
-					logger.info("Found " + file.getPath());
-					return file;
-				} 
-				LinkedRemoteFileInterface dir2 = findDir(conn, file, user, searchstring);
-				if (dir2 != null) {
-					return dir2;
-				}		
-			}
-		}
-		return null;
 	}
 
 	private User getUser(FullNick fn) {
