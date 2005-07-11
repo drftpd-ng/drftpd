@@ -91,7 +91,7 @@ public class Slave {
                                                 .startsWith("Windows");
     private static final Logger logger = Logger.getLogger(Slave.class);
     private static final int TIMEOUT = 10000;
-    public static final String VERSION = "DrFTPD 2.0-SVN";
+    public static final String VERSION = "DrFTPD 2.0-rc5";
     private int _bufferSize;
     private SSLContext _ctx;
     private boolean _downloadChecksums;
