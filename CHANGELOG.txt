@@ -1,3 +1,9 @@
+2005/07/10 Matt Zimmerman <zubov@users.sourceforge.net>
+* 2.0RC5 released
+* Nothing major to report on since RC4
+- "ghost" connections should not be possible
+- closed a couple leaky file descriptors
+
 2005/04/18 Matt Zimmerman <zubov@users.sourceforge.net>
 * 2.0RC4 released
 
