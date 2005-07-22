@@ -152,8 +152,6 @@ public class SiteBot extends FtpListener implements Observer {
         new File("logs").mkdirs();
         Debug.setOutputStream(new PrintStream(
                 new FileOutputStream("logs/sitebot.log", true)));
-
-        Debug.setDebugLevel(Debug.VERBOSE);
     }
 
     public static ArrayList<Nukee> map2nukees(Map nukees) {
@@ -1194,6 +1192,8 @@ public class SiteBot extends FtpListener implements Observer {
 
 		_enableAnnounce = ircCfg.getProperty("irc.enable.announce", "false")
 				.equals("true");
+		Debug.setDebugLevel(Integer.parseInt(ircCfg.getProperty(
+				"irc.debuglevel", "15")));
 		CaseInsensitiveHashMap<String, ChannelConfig> oldChannelMap = new CaseInsensitiveHashMap<String, ChannelConfig>();
 		if (_channelMap != null) { // reload config
 			oldChannelMap.putAll(_channelMap);

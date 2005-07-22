@@ -48,3 +48,13 @@ irc.sendDelay=300
 # Plugins ...
 martyr.plugins.1=org.drftpd.sitebot.OnConnect
 
+# How much to log on the SiteBot?
+# (Needs to be separate from log4j configs because martyr(the irc 
+# module) does not use log4j
+#FAULT = 0
+#CRITICAL = 5
+#BAD = 6
+#NORMAL = 10
+#VERBOSE = 15
+#EXCESSIVE = 20
+irc.debuglevel=15
