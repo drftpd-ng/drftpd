@@ -291,7 +291,7 @@ public class ListUtils {
                     	iter.hasNext();) {
                     	String filename = (String) iter.next();
 
-                    	if (!dir.hasFile(filename)) {
+                    	if (!dir.hasFile(filename) || dir.getXfertime() == -1) {
                     		//listFiles.remove()
                     		env.add("mfilename",filename);
                     		listFiles.add(new StaticRemoteFile(
