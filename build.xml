@@ -183,12 +183,14 @@
   </target>
 
   <target name="slavejar" depends="compile">
+    <echo>Creating slave.jar</echo>
     <jar destfile="lib/slave.jar" basedir="classes">
       <manifest>
         <attribute name="Main-Class" value="org.drftpd.slave.Slave" />
       </manifest>
 	  <patternset refid="slaveclasses"/>
     </jar>
+    <echo>Creating slave.zip</echo>
     
     <zip destfile="slave.zip" basedir=".">
       <include name="slave.conf.dist"/>
@@ -212,6 +214,8 @@
       <include name="conf/log4j-debug.properties" />
       <include name="conf/log4j-default.properties" />
     </zip>
+
+    <echo>Done!</echo>
   </target>
 
   <target name="classjar">
