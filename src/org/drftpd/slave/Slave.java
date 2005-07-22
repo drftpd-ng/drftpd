@@ -90,7 +90,6 @@ public class Slave {
     public static final boolean isWin32 = System.getProperty("os.name")
                                                 .startsWith("Windows");
     private static final Logger logger = Logger.getLogger(Slave.class);
-    private static final int TIMEOUT = 10000;
     public static final String VERSION = "DrFTPD 2.0-rc5";
     private int _bufferSize;
     private SSLContext _ctx;
@@ -215,7 +214,11 @@ public class Slave {
         if (isWin32) {
         	s.startFileLockThread();
         }
+        try {
         s.sendResponse(new AsyncResponseDiskStatus(s.getDiskStatus()));
+        } catch (Throwable t) {
+        	logger.fatal("Error, check config on master for this slave");
+        }
         s.listenForCommands();
     }
     
@@ -309,42 +312,51 @@ public class Slave {
     }
 
     public void delete(String path) throws IOException {
-        Collection files = _roots.getMultipleRootsForFile(path);
+		// now deletes files as well as directories, recursive!
+    	Collection files = null;
+    	try {
+    		files = _roots.getMultipleRootsForFile(path);
+    	} catch (FileNotFoundException e) {
+    		// all is good, it's already gone
+    		return;
+    	}
 
-        for (Iterator iter = files.iterator(); iter.hasNext();) {
-            Root root = (Root) iter.next();
-            File file = root.getFile(path);
+		for (Iterator iter = files.iterator(); iter.hasNext();) {
+			Root root = (Root) iter.next();
+			File file = root.getFile(path);
 
-            if (!file.exists()) {
-                throw new FileNotFoundException(file.getAbsolutePath() +
-                    " does not exist.");
-            }
+			if (!file.exists()) {
+				iter.remove();
+				continue;
+				// should never occur
+			}
+			if (file.isDirectory()) {
+				if (!file.deleteRecursive()) {
+					throw new PermissionDeniedException("delete failed on "
+							+ path);
+				}
+				logger.debug("DELETEDIR: " + path);
+			} else if (file.isFile()) {
+				File dir = new File(file.getParentFile());
+				logger.debug("DELETE: " + path);
+				while (dir.list().length == 0) {
+					if (dir.getPath().length() <= root.getPath().length()) {
+						break;
+					}
 
-            if (!file.delete()) {
-            	throw new PermissionDeniedException("delete failed on " + path);
-            }
+					java.io.File tmpFile = dir.getParentFile();
 
-            File dir = new File(file.getParentFile());
+					dir.delete();
+					logger.debug("rmdir: " + dir.getPath());
 
-            logger.debug("DELETE: " + path);
-
-            while (dir.list().length == 0) {
-                if (dir.getPath().length() <= root.getPath().length()) {
-                    break;
-                }
-
-                java.io.File tmpFile = dir.getParentFile();
-                
-                dir.delete();
-                logger.debug("rmdir: " + dir.getPath());
-
-                if (tmpFile == null) {
-                    break;
-                }
-                dir = new File(tmpFile);
-            }
-        }
-    }
+					if (tmpFile == null) {
+						break;
+					}
+					dir = new File(tmpFile);
+				}
+			}
+		}
+	}
 
     public int getBufferSize() {
         return _bufferSize;
@@ -524,7 +536,8 @@ public class Slave {
         }
 
         if (ac.getIndex().equals("error")) {
-            throw new RuntimeException("error - " + ac);
+        	System.err.println("error - " + ac);
+            System.exit(0);
         }
 
         return new AsyncResponseException(ac.getIndex(),

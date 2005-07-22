@@ -356,25 +356,27 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		if (isDirectory()) {
 			// need to use a copy of getFiles() for recursive delete to avoid
 			// ConcurrentModificationErrors
-			for (Iterator iter = new ArrayList<LinkedRemoteFileInterface>(
+			_files.clear();
+			_length = 0;
+			_ftpConfig.getGlobalContext().getSlaveManager()
+					.deleteOnAllSlaves(this);
+/*			for (Iterator iter = new ArrayList<LinkedRemoteFileInterface>(
 					getFiles2()).iterator(); iter.hasNext();) {
 				LinkedRemoteFileInterface myFile = (LinkedRemoteFileInterface) iter
 						.next();
 				myFile.delete();
+				
 			}
-
+*/
 			try {
-				if (dirSize() == 0) { // remove empty dir
+				Object ret = getParentFile().getMap().remove(getName());
 
-					Object ret = getParentFile().getMap().remove(getName());
+				// size SHOULD be 0, but if it isn't, this will even out
+				// the unsynched dirsize
+				getParentFile().addSize(-length());
 
-					// size SHOULD be 0, but if it isn't, this will even out
-					// the unsynched dirsize
-					getParentFile().addSize(-length());
-
-					if (ret == null) {
-						throw new NullPointerException();
-					}
+				if (ret == null) {
+					throw new NullPointerException();
 				}
 			} catch (FileNotFoundException ex) {
 				logger.log(Level.FATAL,
@@ -1343,12 +1345,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		_parent._files.remove(getName());
 		_parent.addSize(-length());
 		if (isDirectory()) {
-			for (Iterator iter = _ftpConfig.getGlobalContext()
-					.getSlaveManager().getSlaves().iterator(); iter.hasNext();) {
-				RemoteSlave rslave = (RemoteSlave) iter.next();
-
-				rslave.simpleRename(getPath(), toDirPath, toName);
-			}
+			_ftpConfig.getGlobalContext().getSlaveManager().renameOnAllSlaves(getPath(), toDirPath, toName);
 		} else { // isFile()
 			for (Iterator iter = new ArrayList<RemoteSlave>(getSlaves())
 					.iterator(); iter.hasNext();) {

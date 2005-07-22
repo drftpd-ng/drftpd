@@ -50,6 +50,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.io.SafeFileOutputStream;
+import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.remotefile.MLSTSerialize;
 import org.drftpd.slave.SlaveStatus;
@@ -463,12 +464,13 @@ public class SlaveManager implements Runnable {
 				} catch (ObjectNotFoundException e) {
 					out
 							.writeObject(new AsyncCommandArgument(
-									"",
+									"error",
 									"error",
 									slavename
 											+ " does not exist, use \"site addslave\""));
 					logger.info("Slave " + slavename
 							+ " does not exist, use \"site addslave\"");
+					socket.close();
 					continue;
 				}
 
@@ -552,6 +554,22 @@ public class SlaveManager implements Runnable {
         	} catch (SlaveUnavailableException ignore) {
         	}
         }
+	}
+
+	public void deleteOnAllSlaves(LinkedRemoteFile file) {
+		synchronized (this) {
+			for (RemoteSlave rslave : _rslaves) {
+				rslave.simpleDelete(file.getPath());
+			}
+		}
+	}
+	
+	public void renameOnAllSlaves(String fromPath, String toDirPath, String toName) {
+		synchronized (this) {
+			for (RemoteSlave rslave : _rslaves) {
+				rslave.simpleRename(fromPath, toDirPath, toName);
+			}
+		}
 	}
 }
 
