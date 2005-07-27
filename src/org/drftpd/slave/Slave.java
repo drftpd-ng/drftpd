@@ -335,10 +335,11 @@ public class Slave {
 					throw new PermissionDeniedException("delete failed on "
 							+ path);
 				}
-				logger.debug("DELETEDIR: " + path);
+				logger.info("DELETEDIR: " + path);
 			} else if (file.isFile()) {
 				File dir = new File(file.getParentFile());
-				logger.debug("DELETE: " + path);
+				logger.info("DELETE: " + path);
+				file.delete();
 				while (dir.list().length == 0) {
 					if (dir.getPath().length() <= root.getPath().length()) {
 						break;
@@ -347,7 +348,7 @@ public class Slave {
 					java.io.File tmpFile = dir.getParentFile();
 
 					dir.delete();
-					logger.debug("rmdir: " + dir.getPath());
+					logger.info("rmdir: " + dir.getPath());
 
 					if (tmpFile == null) {
 						break;
