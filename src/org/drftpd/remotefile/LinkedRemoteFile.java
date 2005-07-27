@@ -1105,7 +1105,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			LinkedRemoteFileInterface myFile = (LinkedRemoteFileInterface) iter
 					.next();
 
-			if (myFile.getName().toLowerCase().endsWith(".sfv")) {
+			if (myFile.getName().toLowerCase().endsWith(".sfv") && myFile.isFile()) {
 				return myFile.getSFVFile();
 			}
 		}
@@ -1124,7 +1124,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			LinkedRemoteFileInterface myFile = (LinkedRemoteFileInterface) iter
 					.next();
 
-			if (myFile.getName().toLowerCase().endsWith(".mp3")) {
+			if (myFile.getName().toLowerCase().endsWith(".mp3") && myFile.isFile()) {
 				return myFile.getPath();
 			}
 		}

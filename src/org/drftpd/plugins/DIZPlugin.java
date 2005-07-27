@@ -124,7 +124,7 @@ public class DIZPlugin extends FtpListener {
 	}
 
 	public static boolean isZipFile(LinkedRemoteFileInterface file) {
-		return file.getName().toLowerCase().endsWith(".zip");
+		return file.getName().toLowerCase().endsWith(".zip") && file.isFile();
 	}
 
 	public static long zipDirSize(LinkedRemoteFileInterface dir) {
