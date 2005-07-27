@@ -356,6 +356,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		if (isDirectory()) {
 			// need to use a copy of getFiles() for recursive delete to avoid
 			// ConcurrentModificationErrors
+			long tempLength = length();
 			_files.clear();
 			_length = 0;
 			_ftpConfig.getGlobalContext().getSlaveManager()
@@ -371,9 +372,8 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			try {
 				Object ret = getParentFile().getMap().remove(getName());
 
-				// size SHOULD be 0, but if it isn't, this will even out
-				// the unsynched dirsize
-				getParentFile().addSize(-length());
+				// now need to remove size of directory from it's parent
+				getParentFile().addSize(-tempLength);
 
 				if (ret == null) {
 					throw new NullPointerException();
