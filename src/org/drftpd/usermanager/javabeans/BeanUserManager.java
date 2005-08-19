@@ -98,9 +98,6 @@ public class BeanUserManager extends AbstractUserManager {
         return super.getUserByIdent(ident);
     }
 
-	public void saveAll() throws UserFileException {
-	}
-
 	public static void main(String args[]) throws UserFileException {
 		BeanUserManager bu = new BeanUserManager();
 		User u = bu.createUser("drftpd");
