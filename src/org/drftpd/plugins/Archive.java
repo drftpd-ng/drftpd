@@ -40,6 +40,8 @@ import org.drftpd.sections.SectionInterface;
 /**
  * @author zubov
  * @version $Id$
+ * This addon needs a little reworking, consider it and its
+ * related packages unstable
  */
 public class Archive extends FtpListener implements Runnable {
     private static final Logger logger = Logger.getLogger(Archive.class);
