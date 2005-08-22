@@ -111,6 +111,9 @@ public class Slave {
         InetSocketAddress addr = new InetSocketAddress(PropertyHelper.getProperty(
                     p, "master.host"),
                 Integer.parseInt(PropertyHelper.getProperty(p, "master.bindport")));
+        // Whatever interface the slave uses to connect to the master, is the 
+        // interface that the master will report to clients requesting PASV transfers 
+        // from this slave, unless pasv_addr is set on the master for this slave
         logger.info("Connecting to master at " + addr);
 
         String slavename = PropertyHelper.getProperty(p, "slave.name");
