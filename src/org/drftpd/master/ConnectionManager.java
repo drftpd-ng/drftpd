@@ -20,6 +20,7 @@ package org.drftpd.master;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -125,10 +126,30 @@ public class ConnectionManager {
                     cfgFileName);
 
             /** listen for connections **/
-            ServerSocket server = new ServerSocket(Integer.parseInt(
-                        PropertyHelper.getProperty(cfg, "master.port")));
-            logger.info("Listening on port " + server.getLocalPort());
-
+            String bindip = null;
+            ServerSocket server = null;
+            boolean useIP;
+            
+            try {
+            	bindip = PropertyHelper.getProperty(cfg, "master.ip");
+                if (bindip.equals(""))
+                	useIP = false;
+                else
+                	useIP = true;
+            } catch (NullPointerException e) {
+            	useIP = false;
+            }
+            
+        	if (useIP) {
+        		server = new ServerSocket();
+        		server.bind(new InetSocketAddress(bindip, Integer.parseInt(PropertyHelper.getProperty(cfg, "master.port"))));
+            	logger.info("Listening on " + server.getInetAddress() + ":" + server.getLocalPort());
+        	} else {
+            	server = new ServerSocket(Integer.parseInt(
+                    PropertyHelper.getProperty(cfg, "master.port")));
+            	logger.info("Listening on port " + server.getLocalPort());	
+            } 
+            
             while (true) {
                 mgr.start(server.accept());
             }
