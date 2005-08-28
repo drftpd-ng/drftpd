@@ -46,7 +46,6 @@ import java.util.zip.ZipInputStream;
 import javax.net.ssl.SSLContext;
 
 import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.BasicConfigurator;
@@ -65,8 +64,8 @@ import org.drftpd.slave.async.AsyncCommand;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.slave.async.AsyncResponseChecksum;
-import org.drftpd.slave.async.AsyncResponseDiskStatus;
 import org.drftpd.slave.async.AsyncResponseDIZFile;
+import org.drftpd.slave.async.AsyncResponseDiskStatus;
 import org.drftpd.slave.async.AsyncResponseException;
 import org.drftpd.slave.async.AsyncResponseID3Tag;
 import org.drftpd.slave.async.AsyncResponseMaxPath;
@@ -333,6 +332,7 @@ public class Slave {
 				continue;
 				// should never occur
 			}
+
 			if (file.isDirectory()) {
 				if (!file.deleteRecursive()) {
 					throw new PermissionDeniedException("delete failed on "
@@ -613,11 +613,13 @@ public class Slave {
     }
 
     private AsyncResponse handleListen(AsyncCommandArgument ac) {
-        boolean encrypted = ac.getArgs().equals("true");
+    	String[] data = ac.getArgs().split(":");
+    	boolean encrypted = data[0].equals("true");
+    	boolean useSSLClientMode = data[1].equals("true");
         PassiveConnection c = null;
 
         try {
-            c = new PassiveConnection(encrypted ? _ctx : null, _portRange);
+            c = new PassiveConnection(encrypted ? _ctx : null, _portRange, useSSLClientMode);
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);
         }

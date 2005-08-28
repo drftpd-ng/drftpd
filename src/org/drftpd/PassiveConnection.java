@@ -22,14 +22,19 @@ import net.sf.drftpd.util.PortRange;
 import org.apache.log4j.Logger;
 import org.drftpd.slave.Connection;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.KeyStore;
 
 import javax.net.ServerSocketFactory;
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
+import java.security.*;
+import java.security.cert.*;
 
 
 /**
@@ -39,17 +44,28 @@ import javax.net.ssl.SSLSocket;
 public class PassiveConnection extends Connection {
     private static final Logger logger = Logger.getLogger(PassiveConnection.class);
     private ServerSocket _serverSocket;
-
-    public PassiveConnection(SSLContext ctx, PortRange portRange)
-        throws IOException {
-        if (ctx != null) {
-            _serverSocket = portRange.getPort(ctx.getServerSocketFactory());
-        } else {
-            _serverSocket = portRange.getPort(ServerSocketFactory.getDefault());
-        }
-        _serverSocket.setSoTimeout(TIMEOUT);
+    // Default is to initiate the handshake
+    private boolean _useSSLClientMode = false;
+    
+    /**
+     * @param ctx
+     * @param portRange
+     * @throws IOException
+     * Creates a PassiveConnection
+     * - If ctx==null, the Connection will not use SSL
+     */
+    public PassiveConnection(SSLContext ctx, PortRange portRange,boolean useSSLClientMode)
+    	throws IOException {
+    	_useSSLClientMode = useSSLClientMode;
+    	if (ctx != null) {
+			_serverSocket = portRange.getPort(ctx.getServerSocketFactory());
+    	} else {
+    		_serverSocket = portRange.getPort(ServerSocketFactory.getDefault());
+    	}
+    	_serverSocket.setSoTimeout(TIMEOUT);
     }
-
+    
+ 
 	public Socket connect() throws IOException {
 		Socket sock = null;
 		try {
@@ -60,11 +76,11 @@ public class PassiveConnection extends Connection {
 		}
 
         setSockOpts(sock);
-
+        
         if (sock instanceof SSLSocket) {
-            SSLSocket sslsock = (SSLSocket) sock;
-            sslsock.setUseClientMode(false);
-            sslsock.startHandshake();
+        	SSLSocket sslsock = (SSLSocket) sock;
+        	sslsock.setUseClientMode(_useSSLClientMode);
+           	sslsock.startHandshake();
         }
 
         return sock;

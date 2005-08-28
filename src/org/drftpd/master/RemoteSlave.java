@@ -779,12 +779,17 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 
 		return index;
 	}
-
-	public String issueListenToSlave(boolean encryptedDataChannel)
+	
+	public String issueListenToSlave(boolean isSecureTransfer)
+			throws SlaveUnavailableException {
+		return issueListenToSlave(isSecureTransfer, false);
+	}
+	
+	public String issueListenToSlave(boolean isSecureTransfer,boolean useSSLClientMode)
 			throws SlaveUnavailableException {
 		String index = fetchIndex();
 		sendCommand(new AsyncCommandArgument(index, "listen", ""
-				+ encryptedDataChannel));
+				+ isSecureTransfer + ":" +useSSLClientMode));
 
 		return index;
 	}

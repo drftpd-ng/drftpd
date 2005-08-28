@@ -77,7 +77,7 @@ import org.drftpd.slave.TransferFailedException;
 import org.drftpd.slave.TransferStatus;
 import org.drftpd.usermanager.UserFileException;
 import org.tanesha.replacer.ReplacerEnvironment;
-
+import org.drftpd.SFVFile.SFVStatus;
 
 /**
  * @author mog
@@ -89,6 +89,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
     private static final Logger logger = Logger.getLogger(DataConnectionHandler.class);
     private SSLContext _ctx;
     private boolean _encryptedDataChannel;
+    private boolean _SSLHandshakeClientMode = false;
     protected boolean _isPasv = false;
     protected boolean _isPort = false;
 
@@ -203,7 +204,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
      * initiate one upon receipt of a transfer command. The response to this
      * command includes the host and port address this server is listening on.
      */
-    private Reply doPASV(BaseFtpConnection conn) {
+    private Reply doPASVandCPSV(BaseFtpConnection conn) {
         if (!_preTransfer) {
             return new Reply(500,
                 "You need to use a client supporting PRET (PRE Transfer) to use PASV");
@@ -215,12 +216,16 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         if (isPort() == true) {
             throw new RuntimeException();
         }
+        
+        if (conn.getRequest().getCommand().equals("CPSV")) {
+        	_SSLHandshakeClientMode=true;
+        }
 
         InetSocketAddress address = null;
 
         if (_preTransferRSlave == null) {
             try {
-				_passiveConnection = new PassiveConnection(_encryptedDataChannel ? _ctx : null, conn.getGlobalContext().getPortRange());
+				_passiveConnection = new PassiveConnection(_encryptedDataChannel ? _ctx : null, conn.getGlobalContext().getPortRange(), false);
                 try {
 					address = new InetSocketAddress(conn.getGlobalContext()
 							.getConfig().getPasvAddress(), _passiveConnection
@@ -237,7 +242,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             }
         } else {
             try {
-                String index = _preTransferRSlave.issueListenToSlave(_encryptedDataChannel);
+                String index = _preTransferRSlave.issueListenToSlave(_encryptedDataChannel, _SSLHandshakeClientMode);
                 ConnectInfo ci = _preTransferRSlave.fetchTransferResponseFromIndex(index);
                 _transfer = _preTransferRSlave.getTransfer(ci.getTransferIndex());
                 address = new InetSocketAddress(_preTransferRSlave.getIP(),_transfer.getAddress().getPort());
@@ -254,6 +259,11 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                 return new Reply(500,
                     "Slave could not listen for a connection");
             }
+        }
+        
+        if (conn.getRequest().getCommand().equals("CPSV")) {
+        	// can only reset it if the transfer was setup with CPSV
+        	_SSLHandshakeClientMode = false;
         }
 
         String addrStr = address.getAddress().getHostAddress().replace('.', ',') +
@@ -431,11 +441,40 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
         }
     }
+    
+    private Reply doSSCN(BaseFtpConnection conn) {
+        if (_ctx == null) {
+            return new Reply(500, "TLS not configured");
+        }
+        
+        if (!(conn.getControlSocket() instanceof SSLSocket)) {
+        	return new Reply(500, "You are not on a secure channel");
+        }
+        
+        if (!_encryptedDataChannel) {
+        	return new Reply(500, "SSCN only works for encrypted transfers");
+        }
+        
+		if (conn.getRequest().hasArgument()) {
+			if (conn.getRequest().getArgument().equalsIgnoreCase("ON")) {
+				_SSLHandshakeClientMode = false;
+			}
+			if (conn.getRequest().getArgument().equalsIgnoreCase("OFF")) {
+				_SSLHandshakeClientMode = true;
+			}
+		}
+		return new Reply(220, "SSCN:"
+				+ (_SSLHandshakeClientMode ? "CLIENT" : "SERVER") + " METHOD");
+	}
 
     private Reply doPROT(BaseFtpConnection conn)
         throws UnhandledCommandException {
         if (_ctx == null) {
             return new Reply(500, "TLS not configured");
+        }
+        
+        if (!(conn.getControlSocket() instanceof SSLSocket)) {
+        	return new Reply(500, "You are not on a secure channel");
         }
 
         FtpRequest req = conn.getRequest();
@@ -675,13 +714,14 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
     public Reply execute(BaseFtpConnection conn)
         throws ReplyException {
         String cmd = conn.getRequest().getCommand();
-
+        logger.info(cmd);
+             
         if ("MODE".equals(cmd)) {
             return doMODE(conn);
         }
 
-        if ("PASV".equals(cmd)) {
-            return doPASV(conn);
+        if ("PASV".equals(cmd) || "CPSV".equals(cmd)) {
+            return doPASVandCPSV(conn);
         }
 
         if ("PORT".equals(cmd)) {
@@ -731,6 +771,11 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         if ("PBSZ".equals(cmd)) {
             return doPBSZ(conn);
         }
+        
+        if ("SSCN".equals(cmd)) {
+        	return doSSCN(conn);
+        }
+
 
         throw UnhandledCommandException.create(DataConnectionHandler.class,
             conn.getRequest());
@@ -780,7 +825,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 
     public String[] getFeatReplies() {
         if (_ctx != null) {
-            return new String[] { "PRET", "AUTH SSL", "PBSZ" };
+            return new String[] { "PRET", "AUTH SSL", "PBSZ", "CPSV" , "SSCN"};
         }
 
         return new String[] { "PRET" };
@@ -1151,6 +1196,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             }
 
             //setup _rslave
+            //if (isCpsv)
             if (isPasv()) {
                 //				isPasv() means we're setup correctly
                 //				if (!_preTransfer || _preTransferRSlave == null)
@@ -1210,6 +1256,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             }
 
             // setup _transfer
+
             if (isPort()) {
                 try {
                     String index = _rslave.issueConnectToSlave(_portAddress

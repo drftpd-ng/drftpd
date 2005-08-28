@@ -25,6 +25,8 @@ import java.security.KeyStore;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 
 /**
@@ -35,7 +37,20 @@ public class SSLGetContext {
 	static SSLContext ctx = null;
     public static SSLContext getSSLContext()
         throws GeneralSecurityException, IOException {
-    	
+//    	 Create a trust manager that does not validate certificate chains
+        TrustManager[] trustAllCerts = new TrustManager[]{
+            new X509TrustManager() {
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+                public void checkClientTrusted(
+                    java.security.cert.X509Certificate[] certs, String authType) {
+                }
+                public void checkServerTrusted(
+                    java.security.cert.X509Certificate[] certs, String authType) {
+                }
+            }
+        };
     	if (ctx != null)
     		return ctx; // reuse previous SSLContext
     	
@@ -56,7 +71,7 @@ public class SSLGetContext {
 
         kmf.init(ks, "drftpd".toCharArray());
 
-        ctx.init(kmf.getKeyManagers(), null, null);
+        ctx.init(kmf.getKeyManagers(), trustAllCerts, null);
 
         return ctx;
     }

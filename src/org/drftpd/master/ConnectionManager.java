@@ -29,6 +29,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.TimerTask;
+import javax.net.ssl.*;
+import org.drftpd.SSLGetContext;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.event.Event;
@@ -334,11 +336,22 @@ public class ConnectionManager {
             new PrintWriter(sock.getOutputStream()).println("421 " +
                 getGlobalContext().getShutdownMessage());
             sock.close();
-
             return;
         }
 
+/*      
+ * 		Reserved for Implicit SSL, TODO
+ * 		if(sock instanceof SSLSocket)
+        {
+        	SSLSocket sslsock = (SSLSocket) sock;
+        	sslsock.setUseClientMode(false);
+        	sslsock.startHandshake();
+        	sock = sslsock;
+        }*/
+
         BaseFtpConnection conn = new BaseFtpConnection(getGlobalContext(), sock);
+        
+        
         _conns.add(conn);
         conn.start();
     }
