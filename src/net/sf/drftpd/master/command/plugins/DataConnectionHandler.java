@@ -457,10 +457,10 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         
 		if (conn.getRequest().hasArgument()) {
 			if (conn.getRequest().getArgument().equalsIgnoreCase("ON")) {
-				_SSLHandshakeClientMode = false;
+				_SSLHandshakeClientMode = true;
 			}
 			if (conn.getRequest().getArgument().equalsIgnoreCase("OFF")) {
-				_SSLHandshakeClientMode = true;
+				_SSLHandshakeClientMode = false;
 			}
 		}
 		return new Reply(220, "SSCN:"
