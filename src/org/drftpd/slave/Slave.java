@@ -564,7 +564,7 @@ public class Slave {
         String[] data = ac.getArgs().split(",");
         String[] data2 = data[0].split(":");
         boolean encrypted = data[1].equals("true");
-        boolean useSSLClientHandshake = data[2].equals(true);
+        boolean useSSLClientHandshake = data[2].equals("true");
         InetAddress address;
 
         try {
