@@ -1,4 +1,6 @@
-I am going to change this back, and I hate e-mail lists at the moment :)
+2005/08/28 Matt Zimmerman <zubov@users.sourceforge.net>
+* Added SSCN and CPSV support for secure fxp, thanks Michel!
+* Added support listen on certain interfaces for control connections
 
 2005/07/10 Matt Zimmerman <zubov@users.sourceforge.net>
 * 2.0RC5 released
