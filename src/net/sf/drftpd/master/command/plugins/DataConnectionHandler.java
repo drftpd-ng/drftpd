@@ -792,7 +792,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         // get socket depending on the selection
         if (isPort()) {
             try {
-				ActiveConnection ac = new ActiveConnection(_encryptedDataChannel ? _ctx : null, _portAddress);
+				ActiveConnection ac = new ActiveConnection(_encryptedDataChannel ? _ctx : null, _portAddress, false);
                 dataSocket = ac.connect();
             } catch (IOException ex) {
                 logger.warn("Error opening data socket", ex);
@@ -1261,7 +1261,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                 try {
                     String index = _rslave.issueConnectToSlave(_portAddress
 							.getAddress().getHostAddress(), _portAddress
-							.getPort(), _encryptedDataChannel);
+							.getPort(), _encryptedDataChannel, _SSLHandshakeClientMode);
                     ConnectInfo ci = _rslave.fetchTransferResponseFromIndex(index);
                     synchronized (this) {
                     	_transfer = _rslave.getTransfer(ci.getTransferIndex());

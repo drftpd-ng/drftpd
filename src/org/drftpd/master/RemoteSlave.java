@@ -753,10 +753,10 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 	}
 
 	public String issueConnectToSlave(String ip, int port, 
-			boolean encryptedDataChannel) throws SlaveUnavailableException {
+			boolean encryptedDataChannel, boolean useSSLClientHandshake) throws SlaveUnavailableException {
 		String index = fetchIndex();
-		sendCommand(new AsyncCommandArgument(index, "connect", ip
-				+ ":" + port + "," + encryptedDataChannel));
+		sendCommand(new AsyncCommandArgument(index, "connect", ip + ":" + port
+				+ "," + encryptedDataChannel + "," + useSSLClientHandshake));
 
 		return index;
 	}
@@ -778,11 +778,6 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 		sendCommand(new AsyncCommandArgument(index, "id3tag", path));
 
 		return index;
-	}
-	
-	public String issueListenToSlave(boolean isSecureTransfer)
-			throws SlaveUnavailableException {
-		return issueListenToSlave(isSecureTransfer, false);
 	}
 	
 	public String issueListenToSlave(boolean isSecureTransfer,boolean useSSLClientMode)

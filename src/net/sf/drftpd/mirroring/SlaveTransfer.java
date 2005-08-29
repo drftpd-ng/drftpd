@@ -70,8 +70,12 @@ public class SlaveTransfer {
      * Returns true if the crc passed, false otherwise
      */
     protected boolean transfer(boolean checkCRC) throws SlaveException {
+    	// can do encrypted slave2slave transfers by modifying the
+    	// first argument in issueListenToSlave() and the third option
+    	// in issueConnectToSlave(), maybe do an option later, is this wanted?
+    	
         try {
-            String destIndex = _destSlave.issueListenToSlave(false);
+            String destIndex = _destSlave.issueListenToSlave(false, false);
             ConnectInfo ci = _destSlave.fetchTransferResponseFromIndex(destIndex);
             _destTransfer = _destSlave.getTransfer(ci.getTransferIndex());
         } catch (SlaveUnavailableException e) {
@@ -83,7 +87,7 @@ public class SlaveTransfer {
         try {
             String srcIndex = _srcSlave.issueConnectToSlave(_destTransfer
 					.getAddress().getAddress().getHostAddress(), _destTransfer
-					.getLocalPort(), false);
+					.getLocalPort(), false, true);
             ConnectInfo ci = _srcSlave.fetchTransferResponseFromIndex(srcIndex);
             _srcTransfer = _srcSlave.getTransfer(ci.getTransferIndex());
         } catch (SlaveUnavailableException e) {

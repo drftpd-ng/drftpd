@@ -39,11 +39,14 @@ public class ActiveConnection extends Connection {
     private SSLContext _ctx;
     private InetSocketAddress _addr;
     private Socket _sock;
-
-    public ActiveConnection(SSLContext ctx, InetSocketAddress addr) {
+    private boolean _useSSLClientHandshake;
+    
+    public ActiveConnection(SSLContext ctx, InetSocketAddress addr,
+			boolean useSSLClientHandshake) {
         _addr = addr;
         _ctx = ctx;
-    }
+        _useSSLClientHandshake = useSSLClientHandshake;
+	}
 
     public Socket connect() throws IOException {
         logger.debug("Connecting to " + _addr.getHostName() + ":" +
@@ -53,7 +56,7 @@ public class ActiveConnection extends Connection {
             SSLSocket sslsock;
             sslsock = (SSLSocket) _ctx.getSocketFactory().createSocket();
             sslsock.connect(_addr, TIMEOUT);
-            sslsock.setUseClientMode(false);
+            sslsock.setUseClientMode(_useSSLClientHandshake);
             sslsock.startHandshake();
             _sock = sslsock;
         } else {

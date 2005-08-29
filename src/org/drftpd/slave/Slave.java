@@ -563,6 +563,8 @@ public class Slave {
     private AsyncResponse handleConnect(AsyncCommandArgument ac) {
         String[] data = ac.getArgs().split(",");
         String[] data2 = data[0].split(":");
+        boolean encrypted = data[1].equals("true");
+        boolean useSSLClientHandshake = data[2].equals(true);
         InetAddress address;
 
         try {
@@ -572,9 +574,8 @@ public class Slave {
         }
 
         int port = Integer.parseInt(data2[1]);
-        boolean encrypted = data[1].equals("true");
         Transfer t = new Transfer(new ActiveConnection(encrypted ? _ctx : null,
-                    new InetSocketAddress(address, port)), this,
+                    new InetSocketAddress(address, port), useSSLClientHandshake), this,
                 new TransferIndex());
         addTransfer(t);
 
