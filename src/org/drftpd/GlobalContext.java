@@ -128,12 +128,13 @@ public class GlobalContext {
     /**
     * Calls init(this) on the argument
     */
-    public void addFtpListener(FtpListener listener) {
+    public synchronized void addFtpListener(FtpListener listener) {
         listener.init(this);
         _ftpListeners.add(listener);
     }
 
-    public void dispatchFtpEvent(Event event) {
+    public synchronized void dispatchFtpEvent(Event event) {
+    	// synchronized because we iterate over getFtpListeners()
         logger.debug("Dispatching " + event + " to " + getFtpListeners());
 
         for(FtpListener handler : getFtpListeners()) {
@@ -327,7 +328,7 @@ public class GlobalContext {
         return getConfig().getPortRange();
     }
 
-	public FtpListener getFtpListener(Class clazz) throws ObjectNotFoundException {
+	public synchronized FtpListener getFtpListener(Class clazz) throws ObjectNotFoundException {
         for (Iterator iter = getFtpListeners().iterator(); iter.hasNext();) {
             FtpListener listener = (FtpListener) iter.next();
 

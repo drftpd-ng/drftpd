@@ -1194,9 +1194,11 @@ public class SiteBot extends FtpListener implements Observer {
 				.equals("true");
 		Debug.setDebugLevel(Integer.parseInt(ircCfg.getProperty(
 				"irc.debuglevel", "15")));
-		CaseInsensitiveHashMap<String, ChannelConfig> oldChannelMap = new CaseInsensitiveHashMap<String, ChannelConfig>();
+		CaseInsensitiveHashMap<String, ChannelConfig> oldChannelMap = null;
 		if (_channelMap != null) { // reload config
-			oldChannelMap.putAll(_channelMap);
+			oldChannelMap = _channelMap;
+		} else {
+			oldChannelMap = new CaseInsensitiveHashMap<String, ChannelConfig>();
 		}
 		synchronized (this) {
 			_channelMap = new CaseInsensitiveHashMap<String, ChannelConfig>();
@@ -1218,10 +1220,6 @@ public class SiteBot extends FtpListener implements Observer {
 
 				_channelMap.put(channelName, new ChannelConfig(blowKey,
 						chanKey, permissions));
-			}
-			if (_channelMap.size() < 1) {
-				throw new IllegalStateException(
-						"SiteBot loaded with no channels, check your config");
 			}
 
 			_sections = new Hashtable<String, SectionSettings>();
@@ -1335,17 +1333,21 @@ public class SiteBot extends FtpListener implements Observer {
         }
         boolean isChan = dest.startsWith("#");
         String[] lines = message.split("\n");
-        for (String line : lines) {
-			// don't encrypt private messages, at least not yet :)
-			if (isChan) {
-				ChannelConfig cc = _channelMap.get(dest);
-				if (cc == null) {
-	    			logger.debug("This is a bug! report me! -- channel=" + dest + " cc=" + cc, new Throwable());
-	    			continue;
-				}
-				line = cc.encrypt(line);
+		if (isChan) {
+			ChannelConfig cc = _channelMap.get(dest);
+			if (cc == null) {
+    			logger.debug("This is a bug! report me! -- channel=" + dest + " ccMap=" + _channelMap, new Throwable());
+    			return;
 			}
-			_conn.sendCommand(new MessageCommand(dest, line));
+			for (String line : lines) {
+			// don't encrypt private messages, at least not yet :)
+				line = cc.encrypt(line);
+				_conn.sendCommand(new MessageCommand(dest, line));
+			}
+		} else {
+			for (String line : lines) {
+				_conn.sendCommand(new MessageCommand(dest, line));
+			}
 		}
     }
     
@@ -1442,7 +1444,7 @@ public class SiteBot extends FtpListener implements Observer {
 					try {
 						ChannelConfig cc = _channelMap.get(msgc.getDest());
 						if (cc == null) {
-				    		logger.debug("This is a bug! report me! -- channel=" + msgc.getDest() + " cc=" + cc, new Throwable());
+				    		logger.debug("This is a bug! report me! -- channel=" + msgc.getDest() + " ccMap=" + _channelMap, new Throwable());
 				    		return;
 						}
 						msgc = cc.decrypt(msgc);

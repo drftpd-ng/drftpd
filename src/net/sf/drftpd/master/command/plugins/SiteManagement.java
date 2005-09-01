@@ -126,12 +126,12 @@ public class SiteManagement implements CommandHandler, CommandHandlerFactory {
 
 		Reply ftpReply = new Reply(200, "Command ok");
 		ftpReply.addComment("Plugins loaded:");
-
+		synchronized (conn.getGlobalContext()) {
 		for (Iterator iter = conn.getGlobalContext().getFtpListeners()
-				.iterator(); iter.hasNext();) {
-			ftpReply.addComment(iter.next().getClass().getName());
+					.iterator(); iter.hasNext();) {
+				ftpReply.addComment(iter.next().getClass().getName());
+			}
 		}
-
 		return ftpReply;
 	}
 
@@ -216,26 +216,28 @@ public class SiteManagement implements CommandHandler, CommandHandlerFactory {
 		if (!conn.getRequest().hasArgument()) {
 			return new Reply(500, "Usage: site unload className");
 		}
+		synchronized (conn.getGlobalContext().getFtpListeners()) {
+			for (Iterator iter = conn.getGlobalContext().getFtpListeners()
+					.iterator(); iter.hasNext();) {
+				FtpListener ftpListener = (FtpListener) iter.next();
 
-		for (Iterator iter = conn.getGlobalContext().getFtpListeners()
-				.iterator(); iter.hasNext();) {
-			FtpListener ftpListener = (FtpListener) iter.next();
+				if (ftpListener.getClass().getName()
+						.equals(
+								"org.drftpd.plugins."
+										+ conn.getRequest().getArgument())
+						|| ftpListener.getClass().getName().equals(
+								conn.getRequest().getArgument())) {
+					try {
+						ftpListener.unload();
+					} catch (RuntimeException e) {
+						return new Reply(200,
+								"Exception unloading plugin, plugin removed");
+					}
 
-			if (ftpListener.getClass().getName().equals(
-					"org.drftpd.plugins."
-							+ conn.getRequest().getArgument())
-					|| ftpListener.getClass().getName().equals(
-							conn.getRequest().getArgument())) {
-				try {
-					ftpListener.unload();
-				} catch (RuntimeException e) {
-					return new Reply(200,
-							"Exception unloading plugin, plugin removed");
+					iter.remove();
+
+					return new Reply(200, "Successfully unloaded your plugin");
 				}
-
-				iter.remove();
-
-				return new Reply(200, "Successfully unloaded your plugin");
 			}
 		}
 
