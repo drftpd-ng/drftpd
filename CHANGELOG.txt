@@ -1,3 +1,8 @@
+2005/09/01 Matt Zimmerman <zubov@users.sourceforge.net>
+* Added "site group" support, thanks fr0w
+ - allows you to set certain settings for an entire group all at once
+* Added support for max_sim_dn and max_sim_up, thanks fr0w
+
 2005/08/28 Matt Zimmerman <zubov@users.sourceforge.net>
 * Added SSCN and CPSV support for secure fxp, thanks Michel!
 * Added support listen on certain interfaces for control connections
