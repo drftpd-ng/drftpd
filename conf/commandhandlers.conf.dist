@@ -55,6 +55,7 @@ SITE\ DELUSER=org.drftpd.commands.UserManagement
 SITE\ GADDUSER=org.drftpd.commands.UserManagement
 SITE\ GINFO=org.drftpd.commands.UserManagement
 SITE\ GIVE=org.drftpd.commands.UserManagement
+SITE\ GROUP=org.drftpd.commands.UserManagement
 SITE\ GROUPS=org.drftpd.commands.UserManagement
 SITE\ GRPREN=org.drftpd.commands.UserManagement
 SITE\ KICK=org.drftpd.commands.UserManagement

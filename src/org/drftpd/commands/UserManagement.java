@@ -617,6 +617,38 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             //	myUser.setMaxDownloadRate(Integer.parseInt(commandArgument));
             //} else if ("max_ulspeed".equals(command)) {
             //	myUser.setMaxUploadRate(Integer.parseInt(commandArgument));
+        } else if ("max_sim".equals(command)) {
+        // [# DN] [# UP]
+            
+        	try { 
+        		int maxup;
+        	    int maxdn;
+        	    
+        	    if (commandArguments.length != 2) {
+                    return Reply.RESPONSE_501_SYNTAX_ERROR;
+                }
+        	    
+        	    maxdn = Integer.parseInt(commandArguments[0]);
+        	    maxup = Integer.parseInt(commandArguments[1]);
+        	    
+        	    logger.info("'" + conn.getUserNull().getName() +
+                        "' changed max simultaneous download/upload slots for '" + userToChange.getName() +
+                        "' from '" + userToChange.getMaxSimDown() + "' '" + userToChange.getMaxSimUp() + 
+                        "' to '" + maxdn +  "' '" + maxup + "'");
+        	    
+        	    userToChange.getKeyedMap().setObject(UserManagement.MAXSIMDN, maxdn);
+        	    userToChange.getKeyedMap().setObject(UserManagement.MAXSIMUP, maxup);
+        	    userToChange.setMaxSimUp(maxup);
+        	    userToChange.setMaxSimDown(maxdn);
+                env.add("maxdn", "" + maxdn);
+				env.add("maxup", "" + maxup);
+                response.addComment(conn.jprintf(UserManagement.class,
+                        "changemaxsim.success", env));
+                System.out.println(""+ userToChange.getMaxSimUp() + " " + userToChange.getMaxSimDown());
+                
+        	} catch (NumberFormatException ex) {
+        		return Reply.RESPONSE_501_SYNTAX_ERROR;
+        	} 
         } else if ("group".equals(command)) {
             if (commandArguments.length != 1) {
             	throw new ImproperUsageException();
@@ -1144,7 +1176,90 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             "OK, gave " + Bytes.formatBytes(credits) + " of your credits to " +
             myUser.getName());
     }
+    private Reply doSITE_GROUP(BaseFtpConnection conn) throws ImproperUsageException {
+    	FtpRequest request = conn.getRequest();
+    	
+    	boolean ip = false;
+    	float ratio = 0; 
+    	Integer numLogin = 0, numLoginIP = 0, maxUp = 0, maxDn = 0;
+    	String opt, group;
+    	
+    	if (!conn.getUserNull().isAdmin()) {
+            return Reply.RESPONSE_530_ACCESS_DENIED;
+        }
 
+        if (!request.hasArgument()) {
+        	throw new ImproperUsageException();
+        }
+
+        StringTokenizer st = new StringTokenizer(request.getArgument());
+        
+        if (!st.hasMoreTokens()) { return Reply.RESPONSE_501_SYNTAX_ERROR; }
+        group = st.nextToken();
+        
+        if (!st.hasMoreTokens()) { return Reply.RESPONSE_501_SYNTAX_ERROR; }
+        opt = st.nextToken();
+
+        if (!st.hasMoreTokens()) { return Reply.RESPONSE_501_SYNTAX_ERROR; }
+        
+        if (opt.equals("num_logins")) { 
+        	numLogin = Integer.parseInt(st.nextToken());
+        	if (st.hasMoreTokens()) { 
+        		ip = true;
+        		numLoginIP = Integer.parseInt(st.nextToken());
+        	}
+        } else if (opt.equals("ratio")) {
+        	ratio = Float.parseFloat(st.nextToken());
+        } else if (opt.equals("max_sim")) {
+        	maxUp = Integer.parseInt(st.nextToken());
+        	if (!st.hasMoreTokens()) {
+        		throw new ImproperUsageException();
+        	}
+        	maxDn = Integer.parseInt(st.nextToken());
+        } else {        
+        	return Reply.RESPONSE_501_SYNTAX_ERROR;
+        }
+
+        // getting data
+        
+        Reply response = new Reply(200);
+        
+        Collection users = null;
+        
+        try {
+        	users = conn.getGlobalContext().getUserManager().getAllUsersByGroup(group);
+        } catch (UserFileException ex) {
+            logger.log(Level.FATAL,
+                    "IO error from getAllUsersByGroup(" + group + ")", ex);
+
+                return new Reply(200, "IO error: " + ex.getMessage());
+        }
+        response.addComment("Changing '" + group + "' members " + opt);
+        
+        for (Iterator iter = users.iterator(); iter.hasNext();) {
+            User userToChange = (User) iter.next();
+            
+            if (userToChange.getGroup().equals(group)) {
+            	if (opt.equals("num_logins")) { 
+            		userToChange.getKeyedMap().setObject(UserManagement.MAXLOGINS, numLogin);
+            		if (ip) { userToChange.getKeyedMap().setObject(UserManagement.MAXLOGINSIP, numLoginIP); }
+            	}
+            	if (opt.equals("max_sim")) {
+            		userToChange.setMaxSimDown(maxDn);
+            		userToChange.setMaxSimUp(maxUp);
+            	}
+            	if (opt.equals("ratio")) {
+            		userToChange.getKeyedMap().setObject(UserManagement.RATIO, ratio);
+            	}
+            	response.addComment("Changed " + userToChange.getName() + "!");
+            }
+        }
+        
+        response.addComment("Done!");
+        
+    	return response;
+    }
+    
     private Reply doSITE_GROUPS(BaseFtpConnection conn) {
         Collection groups;
 
@@ -1899,6 +2014,10 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if ("SITE GIVE".equals(cmd)) {
             return doSITE_GIVE(conn);
+        }
+        
+        if ("SITE GROUP".equals(cmd)) {
+            return doSITE_GROUP(conn);
         }
 
         if ("SITE GROUPS".equals(cmd)) {

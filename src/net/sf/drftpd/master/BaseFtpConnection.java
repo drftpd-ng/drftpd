@@ -29,6 +29,8 @@ import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.net.ssl.SSLSocket;
@@ -579,4 +581,28 @@ public class BaseFtpConnection implements Runnable {
     public OutputStream getOutputStream() throws IOException {
         return _controlSocket.getOutputStream();
     }
+    
+    public int transferCounter(char transferDirection) {
+		ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(
+				getGlobalContext().getConnectionManager().getConnections());
+		int count = 0;
+		for (Iterator<BaseFtpConnection> iter = conns.iterator(); iter
+				.hasNext();) {
+			BaseFtpConnection conn2 = iter.next();
+
+			synchronized (conn2.getDataConnectionHandler()) {
+
+				if (conn2.getUserNull() == getUserNull()) {
+					if (!conn2.isExecuting()) {
+						continue;
+					}
+					if ((conn2.getTransferDirection() == transferDirection)
+							&& conn2.getDataConnectionHandler().isTransfering()) {
+						count++;
+					}
+				}
+			}
+		}
+		return count;
+	}
 }

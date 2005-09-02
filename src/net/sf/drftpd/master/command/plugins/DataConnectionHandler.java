@@ -1046,7 +1046,21 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             	// reset(); already done in finally block
                 return Reply.RESPONSE_501_SYNTAX_ERROR;
             }
-
+            
+//          Checks maxsim up/down
+            // _simup OR _simdown = 0, exempt
+            int count = conn.transferCounter(direction);
+            int comparison = (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) ? conn.getUserNull().getMaxSimUp() : conn.getUserNull().getMaxSimDown();
+            if (count != 0 && count > comparison) {
+            	if (isStor) {
+            		logger.debug(conn.getUserNull() + " reached the max simultaneous uploads slots. Cancelling transfer.");
+            		return new Reply(550, "You dont have more uploads slots");
+            	} else if (isRetr) {
+            		logger.debug(conn.getUserNull() + " reached the max simultaneous downloads slots. Cancelling transfer.");
+            		return new Reply(550, "You dont have more download slots");
+            	}
+            }
+            
             // get filenames
             LinkedRemoteFileInterface targetDir;
             String targetFileName;

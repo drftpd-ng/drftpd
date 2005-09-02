@@ -969,4 +969,20 @@ public abstract class AbstractUser extends User {
         _uploadedMilliSeconds[P_MONTH] += millis;
     }
 
+	public int getMaxSimUp() {
+		return getKeyedMap().getObjectInt(UserManagement.MAXSIMUP);	
+	}
+
+	public void setMaxSimUp(int maxSimUp) {
+		getKeyedMap().setObject(UserManagement.MAXSIMUP, maxSimUp);
+	}
+
+	public int getMaxSimDown() {
+		return getKeyedMap().getObjectInt(UserManagement.MAXSIMDN);	
+	}
+
+	public void setMaxSimDown(int maxSimDown) {
+		getKeyedMap().setObject(UserManagement.MAXSIMDN, maxSimDown);
+	}
+
 }

@@ -350,4 +350,12 @@ public abstract class User implements Entity {
 	public abstract void setLastReset(long lastReset);
 
 	public abstract long getLastReset();
+
+	public abstract void setMaxSimUp(int maxup);
+	
+	public abstract void setMaxSimDown(int maxdown);
+
+	public abstract int getMaxSimDown();
+
+	public abstract int getMaxSimUp();
 }
