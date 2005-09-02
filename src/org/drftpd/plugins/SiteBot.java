@@ -336,9 +336,6 @@ public class SiteBot extends FtpListener implements Observer {
 
     private void actionPerformedDirectorySTOR(TransferEvent direvent)
         throws FormatterException {
-        if (!direvent.isComplete()) {
-            return;
-        }
 
         ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
         LinkedRemoteFile dir;
@@ -382,7 +379,9 @@ public class SiteBot extends FtpListener implements Observer {
         }
 
         int halfway = (int) Math.floor((double) sfvfile.size() / 2);
-
+        
+        // we don't need to have an sfv in order to announce the mp3 info
+        // TODO
         if (sfvfile.getStatus().getPresent() == 1) {
             actionPerformedDirectoryID3(direvent);
         }

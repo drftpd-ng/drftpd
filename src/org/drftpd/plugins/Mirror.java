@@ -71,9 +71,6 @@ public class Mirror extends FtpListener {
     }
 
     public void actionPerformedSTOR(TransferEvent transevent) {
-        if (!transevent.isComplete()) {
-            return;
-        }
 
         LinkedRemoteFileInterface file = transevent.getDirectory();
 

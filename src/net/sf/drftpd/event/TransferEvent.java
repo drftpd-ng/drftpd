@@ -30,7 +30,6 @@ import java.net.InetAddress;
  * @version $Id$
  */
 public class TransferEvent extends DirectoryFtpEvent {
-    private boolean _complete;
     private InetAddress _peer;
     private char _type;
     private InetAddress _clientHost;
@@ -43,14 +42,14 @@ public class TransferEvent extends DirectoryFtpEvent {
      */
     public TransferEvent(BaseFtpConnection conn, String command,
         LinkedRemoteFileInterface directory, InetAddress clientHost,
-        RemoteSlave rslave, InetAddress peer, char type, boolean complete) {
+        RemoteSlave rslave, InetAddress peer, char type) {
         this(conn, command, directory, clientHost, rslave, peer, type,
-            complete, System.currentTimeMillis());
+            System.currentTimeMillis());
     }
 
     private TransferEvent(BaseFtpConnection conn, String command,
         LinkedRemoteFileInterface directory, InetAddress clientHost,
-        RemoteSlave rslave, InetAddress peer, char type, boolean complete,
+        RemoteSlave rslave, InetAddress peer, char type,
         long time) {
         super(conn.getUserNull(), command, directory, time);
         _clientHost = clientHost;
@@ -60,7 +59,6 @@ public class TransferEvent extends DirectoryFtpEvent {
         }
 
         _peer = peer;
-        _complete = complete;
         _type = type;
         _conn = conn;
     }
@@ -75,13 +73,6 @@ public class TransferEvent extends DirectoryFtpEvent {
 
     public InetAddress getXferHost() {
         return _peer;
-    }
-
-    /**
-     * @return Whether this transfer finished successfully.
-     */
-    public boolean isComplete() {
-        return _complete;
     }
 
     public InetAddress getPeer() {

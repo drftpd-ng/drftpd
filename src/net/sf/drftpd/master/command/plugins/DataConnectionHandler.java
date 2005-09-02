@@ -1264,9 +1264,10 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                         conn.getUserNull().getGroup(), 0L,
                         System.currentTimeMillis(), 0L);
                 synchronized (this) {
-                	_transferFile = targetDir.addFile(uploadFile);
                 	_transferFile.setXfertime(-1); // used for new files to be
-                }								   // uploaded, see getXfertime()
+                								   // uploaded, see getXfertime()
+                	_transferFile = targetDir.addFile(uploadFile);
+                }
             }
 
             // setup _transfer
@@ -1344,12 +1345,13 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             } catch (IOException ex) {
             	logger.debug("", ex);
                 if (ex instanceof TransferFailedException) {
-                    status = ((TransferFailedException) ex).getStatus();
+                	// the below chunk makes no sense, we don't process it anywhere
+/*                    status = ((TransferFailedException) ex).getStatus();
                     conn.getGlobalContext()
                         .dispatchFtpEvent(new TransferEvent(conn, eventType,
                             _transferFile, conn.getClientAddress(), _rslave,
                             _transfer.getAddress().getAddress(), _type, false));
-
+*/
                     if (isRetr) {
                         conn.getUserNull().updateCredits(-status.getTransfered());
                     }
@@ -1495,8 +1497,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 				conn.getGlobalContext().dispatchFtpEvent(
 						new TransferEvent(conn, eventType, _transferFile, conn
 								.getClientAddress(), _rslave, _transfer
-								.getAddress().getAddress(), getType(),
-								zipscript));
+								.getAddress().getAddress(), getType()));
 				return response;
 			}
         } finally {

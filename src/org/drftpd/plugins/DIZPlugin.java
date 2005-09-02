@@ -54,11 +54,6 @@ public class DIZPlugin extends FtpListener {
 	}
 
 	public synchronized void actionPerformedSTOR(TransferEvent xferEvent) {
-		// Was this file received successfully?
-		if (!xferEvent.isComplete()) {
-			return;
-		}
-
 		// Is this a zip file?
 		if (!isZipFile(xferEvent.getDirectory())) {
 			return;

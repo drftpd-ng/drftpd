@@ -100,7 +100,9 @@ public class XferLog extends FtpListener {
             throw new FatalException("Invalid transfer type");
         }
 
-        char completed = event.isComplete() ? 'c' : 'i';
+        //char completed = event.isComplete() ? 'c' : 'i';
+        // all transfers are noted as complete
+        char completed = 'c';
         _out.println(DATE_FMT.format(new Date(event.getTime())) + " " +
             (event.getDirectory().getXfertime() / 1000) + " " +
             event.getPeer().getHostName() + " " +

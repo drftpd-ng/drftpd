@@ -128,9 +128,6 @@ public class GlftpdLog extends FtpListener {
 
     private void actionPerformedDirectorySTOR(TransferEvent direvent)
         throws FormatterException {
-        if (!direvent.isComplete()) {
-            return;
-        }
 
         LinkedRemoteFileInterface dir;
 
