@@ -108,11 +108,14 @@ public class LinkedRemoteFileTest extends TestCase {
         root.getFile("DirTest").remerge(slaveroot, slave2);
     }
 
-    private void internalSetUp() {
+    private void internalSetUp() throws SlaveFileException {
         _slave1 = new DummyRemoteSlave("slave1", null);
         _slave2 = new DummyRemoteSlave("slave2", null);
 
         DummyFtpConfig cfg = new DummyFtpConfig();
+        DummyGlobalContext dgctx = new DummyGlobalContext();
+        dgctx.setSlaveManager(new DummySlaveManager());
+        cfg.setGlobalContext(dgctx);
         _root = new LinkedRemoteFile(cfg);
     }
 
@@ -120,7 +123,7 @@ public class LinkedRemoteFileTest extends TestCase {
         BasicConfigurator.configure();
     }
 
-    public void testAddSlave() throws IOException {
+    public void testAddSlave() throws IOException, SlaveFileException {
         internalSetUp();
 
         List bothSlaves = Arrays.asList(new RemoteSlave[] { _slave1, _slave2 });
@@ -203,7 +206,7 @@ public class LinkedRemoteFileTest extends TestCase {
         assertNotSame(_root, _root.lookupFile("dir"));
     }
     
-    public void testConflict() throws IOException {
+    public void testConflict() throws IOException, SlaveFileException {
     	internalSetUp();
     	_root.addFile(new StaticRemoteFile(Collections.singletonList(_slave1),"ConflictFile","drftpd","drftpd",1000));
     	CaseInsensitiveHashtable files = new CaseInsensitiveHashtable();
@@ -214,7 +217,7 @@ public class LinkedRemoteFileTest extends TestCase {
     	assertEquals(1001,file.length());
     }
 
-    public void testRemerge() throws IOException {
+    public void testRemerge() throws IOException, SlaveFileException {
         System.out.println("testRemerge()");
         internalSetUp();
 
