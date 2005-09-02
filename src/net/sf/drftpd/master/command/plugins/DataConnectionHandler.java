@@ -1051,7 +1051,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             // _simup OR _simdown = 0, exempt
             int count = conn.transferCounter(direction);
             int comparison = (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) ? conn.getUserNull().getMaxSimUp() : conn.getUserNull().getMaxSimDown();
-            if (count != 0 && count > comparison) {
+            if (comparison != 0 && count > comparison) {
             	if (isStor) {
             		logger.debug(conn.getUserNull() + " reached the max simultaneous uploads slots. Cancelling transfer.");
             		return new Reply(550, "You dont have more uploads slots");
@@ -1264,7 +1264,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                         conn.getUserNull().getGroup(), 0L,
                         System.currentTimeMillis(), 0L);
                 synchronized (this) {
-                	_transferFile.setXfertime(-1); // used for new files to be
+                	uploadFile.setXfertime(-1); // used for new files to be
                 								   // uploaded, see getXfertime()
                 	_transferFile = targetDir.addFile(uploadFile);
                 }
