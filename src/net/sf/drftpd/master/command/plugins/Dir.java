@@ -284,7 +284,7 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
                     ReplacerEnvironment raceenv = new ReplacerEnvironment();
 
                     raceenv.add("group", stat.getGroupname());
-                    raceenv.add("position", new Integer(position++));
+                    raceenv.add("position", String.valueOf(position));
                     raceenv.add("bytes", Bytes.formatBytes(stat.getBytes()));
                     raceenv.add("files", Integer.toString(stat.getFiles()));
                     raceenv.add("percent",
