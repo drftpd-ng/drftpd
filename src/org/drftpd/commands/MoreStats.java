@@ -393,7 +393,7 @@ public class MoreStats implements CommandHandler, CommandHandlerFactory {
         try {
             Textoutput.addTextToResponse(response, "traffic_header");
         } catch (IOException ioe) {
-            logger.warn("Error reading " + "traffic_header", ioe);
+            logger.warn("Error reading traffic_header - " + ioe.getMessage());
         }
 
         AddTrafficComment("Total Uploads", TotalUpAvrage, TotalUp,
@@ -416,7 +416,7 @@ public class MoreStats implements CommandHandler, CommandHandlerFactory {
         try {
             Textoutput.addTextToResponse(response, "traffic_footer");
         } catch (IOException ioe) {
-            logger.warn("Error reading " + "traffic_footer", ioe);
+            logger.warn("Error reading traffic_footer - " + ioe.getMessage());
         }
 
         return response;
