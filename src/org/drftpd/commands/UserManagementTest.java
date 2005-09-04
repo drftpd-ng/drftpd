@@ -51,7 +51,7 @@ public class UserManagementTest extends TestCase {
         DummyGlobalContext gctx = new DummyGlobalContext();
         gctx.setUserManager(um);
         conn.setGlobalConext(gctx);
-        conn.setUser(u);
+        conn.setUser(u.getName());
         u.getKeyedMap().setObject(UserManagement.GROUPSLOTS, ((short) 1));
         u.setGroup("group");
 

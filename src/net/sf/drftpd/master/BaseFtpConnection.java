@@ -56,6 +56,7 @@ import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
@@ -105,7 +106,7 @@ public class BaseFtpConnection implements Runnable {
     protected String _stopRequestMessage;
     protected Thread _thread;
     protected GlobalContext _gctx;
-    protected User _user;
+    protected String _user;
 
     protected BaseFtpConnection() {
     }
@@ -266,13 +267,25 @@ public class BaseFtpConnection implements Runnable {
         if ((_user == null) || !isAuthenticated()) {
             throw new NoSuchUserException("no user logged in for connection");
         }
-
-        return _user;
+    	try {
+			return getGlobalContext().getUserManager().getUserByNameUnchecked(_user);
+		} catch (UserFileException e) {
+			throw new NoSuchUserException(e);
+		}
     }
 
     public User getUserNull() {
-        return _user;
-    }
+    	if (_user == null) {
+    		return null;
+    	}
+    	try {
+			return getGlobalContext().getUserManager().getUserByNameUnchecked(_user);
+		} catch (NoSuchUserException e) {
+				return null;
+		} catch (UserFileException e) {
+			return null;
+		}
+	}
 
     protected boolean hasPermission(FtpRequest request) {
         if (isAuthenticated()) {
@@ -433,7 +446,7 @@ public class BaseFtpConnection implements Runnable {
         } catch (SocketException ex) {
             logger.log(Level.INFO,
                 ex.getMessage() + ", closing for user " +
-                ((_user == null) ? "<not logged in>" : _user.getName()), ex);
+                ((_user == null) ? "<not logged in>" : _user), ex);
         } catch (Exception ex) {
             logger.log(Level.INFO, "Exception, closing", ex);
         } finally {
@@ -445,7 +458,11 @@ public class BaseFtpConnection implements Runnable {
             }
 
             if (isAuthenticated()) {
-                _user.updateLastAccessTime();
+                try {
+					getUser().updateLastAccessTime();
+				} catch (NoSuchUserException e) {
+					logger.error("User does not exist, yet user is authenticated, this is a bug");
+				}
                 getGlobalContext().dispatchFtpEvent(new ConnectionEvent(getUserNull(), "LOGOUT"));
             }
 
@@ -487,9 +504,13 @@ public class BaseFtpConnection implements Runnable {
         if (isAuthenticated() &&
                 !getGlobalContext().getConnectionManager().getGlobalContext()
                          .getConfig().getHideIps()) {
-            _thread.setName("FtpConn from " +
-                getClientAddress().getHostAddress() + " " +
-                _user.getName() + "/" + _user.getGroup());
+            try {
+				_thread.setName("FtpConn from " +
+				    getClientAddress().getHostAddress() + " " +
+				    _user + "/" + getUser().getGroup());
+			} catch (NoSuchUserException e) {
+				logger.error("User does not exist, yet user is authenticated, this is a bug");
+			}
         }
     }
 
@@ -512,7 +533,7 @@ public class BaseFtpConnection implements Runnable {
         _currentDirectory = file;
     }
 
-    public void setUser(User user) {
+    public void setUser(String user) {
         _user = user;
     }
 

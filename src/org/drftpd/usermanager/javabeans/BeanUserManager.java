@@ -69,6 +69,7 @@ public class BeanUserManager extends AbstractUserManager {
 			BeanUser user = (BeanUser) _users.get(username);
 
 			if (user != null) {
+				user.reset(getGlobalContext());
 				return user;
 			}
 
@@ -93,10 +94,6 @@ public class BeanUserManager extends AbstractUserManager {
 			}
 		}
 	}
-    public User getUserByIdent(String ident)
-		throws NoSuchUserException, UserFileException {
-        return super.getUserByIdent(ident);
-    }
 
 	public static void main(String args[]) throws UserFileException {
 		BeanUserManager bu = new BeanUserManager();

@@ -202,7 +202,7 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
         _request = request;
     }
 
-    public void setUser(User user) {
+    public void setUser(String user) {
         super.setUser(user);
     }
 

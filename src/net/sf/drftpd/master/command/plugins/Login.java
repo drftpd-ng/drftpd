@@ -206,8 +206,7 @@ public class Login implements CommandHandler, CommandHandlerFactory, Cloneable {
                 if (response != null) {
 					return response;
                 }
-
-                conn.setUser(newUser);
+                conn.setUser(newUser.getName());
 
                 return new Reply(331,
                     conn.jprintf(Login.class, "user.success"));
