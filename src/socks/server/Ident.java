@@ -74,6 +74,7 @@ public class Ident {
 
         try {
             sock = new Socket();
+            sock.bind(s.isBound() ? new InetSocketAddress(s.getLocalAddress(), 0) : null);
             sock.setSoTimeout(connectionTimeout);
             sock.connect(new InetSocketAddress(s.getInetAddress(), 113),
                 connectionTimeout);
