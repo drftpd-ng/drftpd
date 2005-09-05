@@ -1181,7 +1181,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
     	
     	boolean ip = false;
     	float ratio = 0; 
-    	Integer numLogin = 0, numLoginIP = 0, maxUp = 0, maxDn = 0;
+    	int numLogin = 0, numLoginIP = 0, maxUp = 0, maxDn = 0;
     	String opt, group;
     	
     	if (!conn.getUserNull().isAdmin()) {
@@ -1249,7 +1249,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             		userToChange.setMaxSimUp(maxUp);
             	}
             	if (opt.equals("ratio")) {
-            		userToChange.getKeyedMap().setObject(UserManagement.RATIO, ratio);
+            		userToChange.getKeyedMap().setObject(UserManagement.RATIO, new Float(ratio));
             	}
             	response.addComment("Changed " + userToChange.getName() + "!");
             }

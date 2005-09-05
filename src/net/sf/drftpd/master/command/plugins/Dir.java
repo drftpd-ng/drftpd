@@ -391,11 +391,11 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         try {
 			uploader = conn.getGlobalContext().getUserManager().getUserByName(
                     requestedFile.getUsername());
+            uploader.updateCredits((long) -(requestedFile.length() * conn
+                    .getGlobalContext().getConfig().getCreditCheckRatio(
+                            requestedFile, uploader)));
             if (!conn.getGlobalContext().getConfig().checkPathPermission(
                     "nostatsup", uploader, conn.getCurrentDirectory())) {
-                uploader.updateCredits((long) -(requestedFile.length() * conn
-                        .getGlobalContext().getConfig().getCreditCheckRatio(
-                                requestedFile, uploader)));
                 uploader.updateUploadedBytes(-requestedFile.length());
             }
 		} catch (UserFileException e) {

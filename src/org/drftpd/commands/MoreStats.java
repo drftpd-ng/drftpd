@@ -168,10 +168,16 @@ public class MoreStats implements CommandHandler, CommandHandlerFactory {
         //if (!conn.getConfig().checkPermission("groupstats",conn.getUserNull())) {
         FtpRequest request = conn.getRequest();
         Reply response = new Reply(200, "OK");
-        final String command = request.getCommand();
-        String type = command.substring("SITE G".length()).toUpperCase();
-
-        ArrayList grpList = new ArrayList();
+        String type = request.getCommand().substring("SITE G".length());
+        int count = 10;
+        if (request.hasArgument()) {
+            try {
+                count = Integer.parseInt(request.getArgument());
+            } catch (NumberFormatException e) {
+                //ignore input and use 10 as default
+            }
+        }
+        ArrayList<MyGroupPosition> grpList = new ArrayList<MyGroupPosition>();
         Collection users;
 
         try {
@@ -216,7 +222,6 @@ public class MoreStats implements CommandHandler, CommandHandlerFactory {
         Collections.sort(grpList);
 
         ReplacerEnvironment env = new ReplacerEnvironment();
-        int count = 10;
 
         //morestats.grpstats=| ${grp,-15} |${grpname,7} |${files,8} | ${megs,9} | ${members,9} |
         try {
