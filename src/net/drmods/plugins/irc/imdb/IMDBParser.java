@@ -133,7 +133,9 @@ public class IMDBParser {
            _votes = parseData(data, "<b class=\"ch\">User Rating:</b>", "<br><br>");
            _votes = _votes.indexOf("(") < 0 || _votes.indexOf("votes") < 0 ? "N/A" 
                        : _votes.substring(_votes.indexOf("(")+1, _votes.indexOf("votes")).trim();
-           _year = parseData(data, "<a href=\"/Sections/Years/", "</a>").substring(6);
+           _year = parseData(data, "<a href=\"/Sections/Years/", "</a>");
+           if (_year.length() >= 6)
+        	   _year.substring(6);
                
         } catch (MalformedURLException e) {
             e.printStackTrace();
