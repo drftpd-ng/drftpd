@@ -33,13 +33,15 @@ request         /request/       =request
 
 hideinwho /pre/*	*
 
-#Don't update credits, files and bytes on transfers
+#Don't update files and bytes on transfers
 #nostatsup 	/pre/*	*
 #nostatsdn	/pre/*	*
 
+#Control credit ratio on uploads (0 = no credits)
 #creditcheck <path> <ratio> <flag/=group/-user>
-#creditloss <path> <ratio> <flag/=group/-user>
 
+#Control credit ratio on downloads (0 = no credits)
+#creditloss <path> <ratio> <flag/=group/-user>
 
 #msgpath <path> <filename> <flag/=group/-user>
 #msgpath /incoming/ ftp-data/incoming.txt
