@@ -1020,6 +1020,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
     //TODO add APPE support
     private Reply transfer(BaseFtpConnection conn)
         throws ReplyException {
+        ReplacerEnvironment env = new ReplacerEnvironment();
         if (!_encryptedDataChannel &&
                 conn.getGlobalContext().getConfig().checkPermission("denydatauncrypted", conn.getUserNull())) {
         	reset();
@@ -1049,17 +1050,20 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             
 //          Checks maxsim up/down
             // _simup OR _simdown = 0, exempt
+            int comparison = 0;
             int count = conn.transferCounter(direction);
-            int comparison = (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) ? conn.getUserNull().getMaxSimUp() : conn.getUserNull().getMaxSimDown();
-            if (comparison != 0 && count > comparison) {
-            	if (isStor) {
-            		logger.debug(conn.getUserNull() + " reached the max simultaneous uploads slots. Cancelling transfer.");
-            		return new Reply(550, "You dont have more uploads slots");
-            	} else if (isRetr) {
-            		logger.debug(conn.getUserNull() + " reached the max simultaneous downloads slots. Cancelling transfer.");
-            		return new Reply(550, "You dont have more download slots");
-            	}
+            env.add("maxsim", count);
+
+            if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+            	comparison =  conn.getUserNull().getMaxSimUp();
+                env.add("direction", "upload");
+            } else {
+            	comparison =  conn.getUserNull().getMaxSimDown();
+                env.add("direction", "download");
             }
+
+            if (comparison != 0 && count > comparison)
+            	return new Reply(550, conn.jprintf(DataConnectionHandler.class, "transfer.err.maxsim", env));
             
             // get filenames
             LinkedRemoteFileInterface targetDir;
@@ -1402,7 +1406,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             //			e1.printStackTrace();
             //		}
             //		System.err.println("Finished");
-            ReplacerEnvironment env = new ReplacerEnvironment();
+            env = new ReplacerEnvironment();
             env.add("bytes", Bytes.formatBytes(status.getTransfered()));
             env.add("speed", Bytes.formatBytes(status.getXferSpeed()) + "/s");
             env.add("seconds", "" + ((float)status.getElapsed() / 1000F));

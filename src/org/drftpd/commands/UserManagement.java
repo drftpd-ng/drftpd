@@ -644,7 +644,6 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 				env.add("maxup", "" + maxup);
                 response.addComment(conn.jprintf(UserManagement.class,
                         "changemaxsim.success", env));
-                System.out.println(""+ userToChange.getMaxSimUp() + " " + userToChange.getMaxSimDown());
                 
         	} catch (NumberFormatException ex) {
         		return Reply.RESPONSE_501_SYNTAX_ERROR;
