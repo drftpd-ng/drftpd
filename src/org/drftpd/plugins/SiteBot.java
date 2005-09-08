@@ -920,9 +920,9 @@ public class SiteBot extends FtpListener implements Observer {
 
         _conn = new IRCConnection();
         
-        String _psybncPass = null;
+        String initialCommand = null;
         try {
-        	_psybncPass = PropertyHelper.getProperty(ircCfg, "irc.psybnc.pass");
+        	initialCommand = PropertyHelper.getProperty(ircCfg, "irc.psybnc.pass");
         } catch (NullPointerException e) {
         	// null is handled below
         }
@@ -962,8 +962,8 @@ public class SiteBot extends FtpListener implements Observer {
 
         connect();
         
-        if (_psybncPass != null) {
-        	_conn.sendCommand(new RawCommand("PASS "+_psybncPass));
+        if (initialCommand != null) {
+        	_conn.sendCommand(new RawCommand(initialCommand));
         }
 	
     }
