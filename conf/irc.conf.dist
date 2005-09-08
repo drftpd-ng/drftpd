@@ -4,6 +4,10 @@ irc.port=6667
 # [ true | false ]
 irc.ssl=false
 
+# Use if SiteBot needs to send PASS before MOTD
+# Keep commented if not in use
+#irc.psybnc.pass=drftpd
+
 # channels to autojoin on successful connection
 # to irc.server
 irc.channel.1=#drftpd-test
