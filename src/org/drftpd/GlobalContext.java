@@ -132,19 +132,22 @@ public class GlobalContext {
         listener.init(this);
         _ftpListeners.add(listener);
     }
-
-    public synchronized void dispatchFtpEvent(Event event) {
-    	// synchronized because we iterate over getFtpListeners()
-        logger.debug("Dispatching " + event + " to " + getFtpListeners());
-
-        for(FtpListener handler : getFtpListeners()) {
-            try {
-                handler.actionPerformed(event);
-            } catch (RuntimeException e) {
-                logger.warn("RuntimeException dispatching event", e);
-            }
-        }
+    
+    public synchronized void delFtpListener(FtpListener listener) {
+    	_ftpListeners.remove(listener);
     }
+
+    public void dispatchFtpEvent(Event event) {
+		logger.debug("Dispatching " + event + " to " + getFtpListeners());
+
+		for (FtpListener handler : new ArrayList<FtpListener>(getFtpListeners())) {
+			try {
+				handler.actionPerformed(event);
+			} catch (RuntimeException e) {
+				logger.warn("RuntimeException dispatching event", e);
+			}
+		}
+	}
 
     public ConfigInterface getConfig() {
         assert _config != null;
@@ -162,8 +165,8 @@ public class GlobalContext {
     }
 
     public List<FtpListener> getFtpListeners() {
-        return _ftpListeners;
-    }
+		return new ArrayList<FtpListener>(_ftpListeners);
+	}
 
     public JobManager getJobManager() {
         if (_jm == null) {
@@ -328,9 +331,8 @@ public class GlobalContext {
         return getConfig().getPortRange();
     }
 
-	public synchronized FtpListener getFtpListener(Class clazz) throws ObjectNotFoundException {
-        for (Iterator iter = getFtpListeners().iterator(); iter.hasNext();) {
-            FtpListener listener = (FtpListener) iter.next();
+	public FtpListener getFtpListener(Class clazz) throws ObjectNotFoundException {
+        for (FtpListener listener : new ArrayList<FtpListener>(getFtpListeners())) {
 
             if (clazz.isInstance(listener)) {
                 return listener;
