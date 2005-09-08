@@ -472,8 +472,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			throws NoAvailableSlaveException {
 		ArrayList<RemoteSlave> availableSlaves = new ArrayList<RemoteSlave>();
 
-		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
-			RemoteSlave rslave = (RemoteSlave) iter.next();
+		for (RemoteSlave rslave : getSlaves()) {
 
 			if (!rslave.isAvailable()) {
 				continue;
@@ -719,28 +718,19 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
 	public synchronized SFVFile getSFVFile() throws IOException,
 			FileNotFoundException, NoAvailableSlaveException {
+		
 		/*
 		 *Due to race conditions this method can be called before the file is fully uploaded. 
 		 */
 		if (_sfvFile == null) {
-			while (true) {
-				RemoteSlave rslave = null;
-				if (isAvailable()) {
-					try {
-						rslave = getSlaves().get(0);
-					} catch (IndexOutOfBoundsException e) {
-						throw new NoAvailableSlaveException();
-					}
-				}
-				if (rslave == null) {
-					throw new NoAvailableSlaveException();
-				}
+			Collection<RemoteSlave> availSlaves = new ArrayList<RemoteSlave>(getAvailableSlaves());
+			for (RemoteSlave rslave : availSlaves) {
 				try {
 					String index = rslave.issueSFVFileToSlave(getPath());
 					_sfvFile = new SFVFile(rslave.fetchSFVFileFromIndex(index));
 					_sfvFile.setCompanion(this);
 
-					break;
+					return _sfvFile;
 				} catch (RemoteIOException e) {
 					if (e.getCause() instanceof FileNotFoundException) {
 						removeSlave(rslave);
@@ -752,8 +742,9 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 					continue;
 				}
 			}
+			throw new NoAvailableSlaveException();
 		}
-
+		
 		if (_sfvFile.size() == 0) {
 			//TODO remove invalidation step, use file locking.
 			_sfvFile = null; // no need to keep a worthless sfv file
