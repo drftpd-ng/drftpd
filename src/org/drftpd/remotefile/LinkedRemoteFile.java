@@ -44,6 +44,7 @@ import org.drftpd.SFVFile;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.usermanager.User;
 
@@ -387,8 +388,20 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		}
 
 		synchronized (_slaves) {
-			for (Iterator iter = _slaves.iterator(); iter.hasNext();) {
-				RemoteSlave rslave = (RemoteSlave) iter.next();
+			for (Iterator<RemoteSlave> iter = _slaves.iterator(); iter
+					.hasNext();) {
+				RemoteSlave rslave = iter.next();
+				try {
+					for (RemoteTransfer rtransfer : new ArrayList<RemoteTransfer>(
+							rslave.getTransfers())) {
+						if (getPath().equalsIgnoreCase(rtransfer.getPathNull())) {
+							rtransfer
+									.abort("File has been deleted on the master");
+						}
+					}
+				} catch (SlaveUnavailableException e) {
+					// nothing to do here, still want to delete it though
+				}
 				logger.info("DELETE: " + rslave.getName() + ": " + getPath());
 				rslave.simpleDelete(getPath());
 				iter.remove();
