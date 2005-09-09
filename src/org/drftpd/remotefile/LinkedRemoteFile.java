@@ -358,6 +358,14 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			// need to use a copy of getFiles() for recursive delete to avoid
 			// ConcurrentModificationErrors
 			long tempLength = length();
+			for (RemoteFileInterface victim : new ArrayList<RemoteFileInterface>(getFiles())) {
+				if (victim instanceof LinkedRemoteFile) {
+					LinkedRemoteFile lrf = (LinkedRemoteFile) victim;
+
+					// remove Strong references
+					lrf._parent = null;
+				}
+			}
 			_files.clear();
 			_length = 0;
 			_ftpConfig.getGlobalContext().getSlaveManager()
@@ -372,12 +380,15 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 */
 			try {
 				Object ret = getParentFile().getMap().remove(getName());
-
+				
 				// now need to remove size of directory from it's parent
 				getParentFile().addSize(-tempLength);
-
+				
+				// remove Strong references
+				_parent = null;
+				
 				if (ret == null) {
-					throw new NullPointerException();
+					throw new NullPointerException("File could not be removed from filelist");
 				}
 			} catch (FileNotFoundException ex) {
 				logger.log(Level.FATAL,
