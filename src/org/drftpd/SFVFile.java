@@ -26,7 +26,9 @@ import java.util.Map;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoSFVEntryException;
+import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 
+import org.apache.log4j.Logger;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -37,7 +39,9 @@ import org.drftpd.remotefile.LinkedRemoteFileInterface;
  * @version $Id$
  */
 public class SFVFile extends AbstractSFVFile {
-    private transient LinkedRemoteFileInterface _companion;
+	private static final Logger logger = Logger.getLogger(SFVFile.class);
+
+	private transient LinkedRemoteFileInterface _companion;
 
     /**
 	 * @param file
@@ -72,7 +76,9 @@ public class SFVFile extends AbstractSFVFile {
     public SFVStatus getStatus() {
         int offline = 0;
         int present = 0;
+    	logger.debug("getStatus() on " + _companion.getPath());
         for (LinkedRemoteFileInterface file : getFiles()) {
+        	logger.debug("present:" + present + "," + file);
             if (file.length() != 0 && file.getXfertime() != -1) {
             	present++;
                 if (!file.isAvailable()) {
