@@ -617,8 +617,8 @@ public class BaseFtpConnection implements Runnable {
 					if (!conn2.isExecuting()) {
 						continue;
 					}
-					if ((conn2.getDirection() == transferDirection)
-							&& conn2.getDataConnectionHandler().isTransfering()) {
+					if (conn2.getDataConnectionHandler().isTransfering()
+							&& (conn2.getTransferDirection() == transferDirection)) {
 						count++;
 					}
 				}
