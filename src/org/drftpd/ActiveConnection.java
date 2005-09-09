@@ -56,15 +56,15 @@ public class ActiveConnection extends Connection {
             SSLSocket sslsock;
             sslsock = (SSLSocket) _ctx.getSocketFactory().createSocket();
             sslsock.connect(_addr, TIMEOUT);
+            setSockOpts(sslsock);
             sslsock.setUseClientMode(_useSSLClientHandshake);
             sslsock.startHandshake();
             _sock = sslsock;
         } else {
             _sock = SocketFactory.getDefault().createSocket();
             _sock.connect(_addr, TIMEOUT);
+            setSockOpts(_sock);
         }
-
-        setSockOpts(_sock);
 
         Socket sock = _sock;
         _sock = null;
