@@ -792,7 +792,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         // get socket depending on the selection
         if (isPort()) {
             try {
-				ActiveConnection ac = new ActiveConnection(_encryptedDataChannel ? _ctx : null, _portAddress, false);
+				ActiveConnection ac = new ActiveConnection(_encryptedDataChannel ? _ctx : null, _portAddress, _SSLHandshakeClientMode);
                 dataSocket = ac.connect();
             } catch (IOException ex) {
                 logger.warn("Error opening data socket", ex);
