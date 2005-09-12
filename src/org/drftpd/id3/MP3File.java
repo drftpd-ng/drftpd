@@ -108,6 +108,8 @@ public class MP3File extends RandomAccessFile {
                 id3tag.setGenre(genre);
             } catch (IOException e) {
                 System.out.println(e);
+            } catch (StringIndexOutOfBoundsException e) {
+                System.out.println(e);
             }
         }
 
