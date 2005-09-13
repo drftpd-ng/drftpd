@@ -73,6 +73,8 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
     public static final Key LEECHSLOTS = new Key(UserManagement.class, "leechslots", Integer.class);
     public static final Key MAXLOGINS = new Key(UserManagement.class, "maxlogins", Integer.class);
     public static final Key MAXLOGINSIP = new Key(UserManagement.class, "maxloginsip", Integer.class);
+    public static final Key MINRATIO = new Key(UserManagement.class, "minratio", Float.class);
+    public static final Key MAXRATIO = new Key(UserManagement.class, "maxratio", Float.class);
     public static final Key MAXSIMUP = new Key(UserManagement.class, "maxsimup", Integer.class);
     public static final Key MAXSIMDN = new Key(UserManagement.class, "maxsimdn", Integer.class);
     public static final Key LASTSEEN = new Key(UserManagement.class, "lastseen", Date.class);
@@ -249,6 +251,8 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             newUser.getKeyedMap().setObject(UserManagement.LEECHSLOTS,0);
             newUser.getKeyedMap().setObject(UserManagement.MAXLOGINS,0);
             newUser.getKeyedMap().setObject(UserManagement.MAXLOGINSIP,0);
+            newUser.getKeyedMap().setObject(UserManagement.MINRATIO,3F);
+            newUser.getKeyedMap().setObject(UserManagement.MAXRATIO,3F);
             newUser.getKeyedMap().setObject(UserManagement.MAXSIMUP,0);
             newUser.getKeyedMap().setObject(UserManagement.MAXSIMDN,0);
             newUser.getKeyedMap().setObject(Statistics.LOGINS,0);
@@ -511,10 +515,13 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                             conn.jprintf(UserManagement.class,
                                 "changeratio.nomoreslots"));
                     }
-                } else if (ratio < 3) {
+                } else if (ratio < conn.getUserNull().getMinRatio()
+                		|| ratio > conn.getUserNull().getMaxRatio()) {
+                	env.add("minratio", conn.getUserNull().getMinRatio());
+                	env.add("maxratio", conn.getUserNull().getMaxRatio());
                     return new Reply(452,
                         conn.jprintf(UserManagement.class,
-                            "changeratio.invalidratio"));
+                            "changeratio.invalidratio", env));
                 }
 
                 logger.info("'" + conn.getUserNull().getName() +
@@ -617,6 +624,36 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             //	myUser.setMaxDownloadRate(Integer.parseInt(commandArgument));
             //} else if ("max_ulspeed".equals(command)) {
             //	myUser.setMaxUploadRate(Integer.parseInt(commandArgument));
+        } else if ("group_ratio".equals(command)) {
+        	// [# min] [# max]
+        	if (commandArguments.length != 2) {
+        		return Reply.RESPONSE_501_SYNTAX_ERROR;
+        	}
+        	
+        	try { 
+        		float minRatio = Float.parseFloat(commandArguments[0]);
+        		float maxRatio = Float.parseFloat(commandArguments[1]);
+        		
+                env.add("minratio", "" + minRatio);
+				env.add("maxratio", "" + maxRatio);
+
+				logger.info("'" + conn.getUserNull().getName() +
+                        "' changed gadmin min/max ratio for user '" + userToChange.getName() +
+                        "' group '" + userToChange.getGroup() + "' from '" + userToChange.getMinRatio() + "/" + userToChange.getMaxRatio() + 
+                        "' to '" + minRatio +  "/" + maxRatio + "'");
+        	    
+        	    if ( minRatio < 1 || maxRatio < minRatio)
+        	    	return Reply.RESPONSE_501_SYNTAX_ERROR;
+
+        	    userToChange.setMinRatio(minRatio);
+        	    userToChange.setMaxRatio(maxRatio);
+        	    
+                response.addComment(conn.jprintf(UserManagement.class,
+                        "changegadminratio.success", env));
+                
+        	} catch (NumberFormatException ex) {
+        		return Reply.RESPONSE_501_SYNTAX_ERROR;
+        	}
         } else if ("max_sim".equals(command)) {
         // [# DN] [# UP]
             

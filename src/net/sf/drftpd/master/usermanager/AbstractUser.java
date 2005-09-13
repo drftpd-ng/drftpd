@@ -1039,6 +1039,24 @@ public abstract class AbstractUser extends User {
 		_uploadedMillisecondsMonth += millis;
 	}
 
+	public float getMinRatio() {
+		return getKeyedMap().containsKey(UserManagement.MINRATIO) ?
+				getKeyedMap().getObjectFloat(UserManagement.MINRATIO) : 3F;
+	}
+
+	public void setMinRatio(float minRatio) {
+		getKeyedMap().setObject(UserManagement.MINRATIO, minRatio);
+	}
+
+	public float getMaxRatio() {
+		return getKeyedMap().containsKey(UserManagement.MAXRATIO) ?
+				getKeyedMap().getObjectFloat(UserManagement.MAXRATIO) : 3F;
+	}
+
+	public void setMaxRatio(float maxRatio) {
+		getKeyedMap().setObject(UserManagement.MAXRATIO, maxRatio);
+	}
+
 	public int getMaxSimUp() {
 		return getKeyedMap().getObjectInt(UserManagement.MAXSIMUP);	
 	}

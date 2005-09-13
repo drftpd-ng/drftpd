@@ -1,3 +1,8 @@
+2005/09/12 Anonymous Coward <tdsoul@gmail.com>
+* Improved security in SITE CHANGE.
+ - added a new property group_ratio, to define a range
+   in which gadmins can set ratio.  set it using "site change"
+
 2005/09/01 Matt Zimmerman <zubov@users.sourceforge.net>
 * Added "site group" support, thanks fr0w
  - allows you to set certain settings for an entire group all at once
