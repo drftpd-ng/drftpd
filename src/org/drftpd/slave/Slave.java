@@ -122,7 +122,6 @@ public class Slave {
         }
 
         _s = new Socket();
-        _s.connect(addr);
         int timeout = 0;
         try {
         	timeout = Integer.parseInt(PropertyHelper.getProperty(p, "slave.timeout"));
@@ -130,6 +129,7 @@ public class Slave {
         	timeout = 300000; // 5 minute default
         }
         _s.setSoTimeout(timeout);
+        _s.connect(addr);
 
         _sout = new ObjectOutputStream(_s.getOutputStream());
         _sin = new ObjectInputStream(_s.getInputStream());
@@ -217,10 +217,10 @@ public class Slave {
         	s.startFileLockThread();
         }
         try {
-        s.sendResponse(new AsyncResponseDiskStatus(s.getDiskStatus()));
-        } catch (Throwable t) {
-        	logger.fatal("Error, check config on master for this slave");
-        }
+			s.sendResponse(new AsyncResponseDiskStatus(s.getDiskStatus()));
+		} catch (Throwable t) {
+			logger.fatal("Error, check config on master for this slave");
+		}
         s.listenForCommands();
     }
     

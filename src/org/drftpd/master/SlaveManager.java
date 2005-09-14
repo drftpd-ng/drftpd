@@ -53,6 +53,7 @@ import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.remotefile.MLSTSerialize;
+import org.drftpd.slave.Connection;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.usermanager.UserFileException;
@@ -450,7 +451,7 @@ public class SlaveManager implements Runnable {
 
 			try {
 				socket = _serverSocket.accept();
-				socket.setSoTimeout(0);
+				socket.setSoTimeout(Connection.TIMEOUT);
 				logger.debug("Slave connected from "
 						+ socket.getRemoteSocketAddress());
 
@@ -474,7 +475,7 @@ public class SlaveManager implements Runnable {
 					continue;
 				}
 
-				if (rslave.isOnlinePing()) {
+				if (rslave.isOnline()) {
 					out.writeObject(new AsyncCommandArgument("", "error",
 							"Already online"));
 					out.flush();
@@ -504,7 +505,10 @@ public class SlaveManager implements Runnable {
 
 					continue;
 				}
-
+				
+				socket.setSoTimeout(Integer.parseInt(rslave.getProperty("timeout","300000")));
+				// lengthen the timeout since slaves can sit idle
+				
 				rslave.connect(socket, in, out);
 			} catch (Exception e) {
 				rslave.setOffline(e);

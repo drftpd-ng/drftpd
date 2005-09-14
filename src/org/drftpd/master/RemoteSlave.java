@@ -731,8 +731,8 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 		return ((AsyncResponseSFVFile) fetchResponse(index)).getSFV();
 	}
 
-	public synchronized String getIP() throws SlaveUnavailableException {
-		if(_socket == null) throw new SlaveUnavailableException();
+	public synchronized String getPASVIP() throws SlaveUnavailableException {
+		if(!isOnline()) throw new SlaveUnavailableException();
         return getProperty("pasv_addr", _socket.getInetAddress().getHostAddress());
 	}
 
@@ -852,7 +852,7 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 
 	public String moreInfo() {
 		try {
-			return getName() + ":address=[" + getIP() + "]port=["
+			return getName() + ":address=[" + getPASVIP() + "]port=["
 					+ Integer.toString(getPort()) + "]";
 		} catch (SlaveUnavailableException e) {
 			return getName()+":offline";
@@ -1070,10 +1070,6 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 		} catch (RemoteIOException e) {
 			throw (IOException) e.getCause();
 		}
-	}
-
-	public boolean isOnlinePing() {
-		return isOnline();
 	}
 
 	public boolean checkConnect(Socket socket) throws MalformedPatternException {
