@@ -403,6 +403,10 @@ public class SiteBot extends FtpListener implements Observer {
             for (Iterator iter = sfvfile.getFiles().iterator(); iter.hasNext();) {
                 LinkedRemoteFile sfvFileEntry = (LinkedRemoteFile) iter.next();
 
+                // If file just uploaded was deleted (by ZipScript?), move on and do nothing.
+                if (direvent.getDirectory().isDeleted())
+                	break;
+                
                 if (sfvFileEntry == direvent.getDirectory())
                 	continue;
                 
