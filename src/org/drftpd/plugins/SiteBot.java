@@ -403,11 +403,14 @@ public class SiteBot extends FtpListener implements Observer {
             for (Iterator iter = sfvfile.getFiles().iterator(); iter.hasNext();) {
                 LinkedRemoteFile sfvFileEntry = (LinkedRemoteFile) iter.next();
 
-                if (sfvFileEntry == direvent.getDirectory()) {
-                    continue;
-                }
+                if (direvent.getDirectory().isDeleted())
+                	break;
 
-                if (sfvFileEntry.getUsername().equals(username)) {
+                if (sfvFileEntry == direvent.getDirectory())
+                	continue;
+                
+                if (sfvFileEntry.getUsername().equals(username)
+                		&& sfvFileEntry.getXfertime() >= 0) {
                     break;
                 }
 
