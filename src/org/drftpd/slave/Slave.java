@@ -89,7 +89,7 @@ public class Slave {
     public static final boolean isWin32 = System.getProperty("os.name")
                                                 .startsWith("Windows");
     private static final Logger logger = Logger.getLogger(Slave.class);
-    public static final String VERSION = "DrFTPD 2.0-rc5";
+    public static final String VERSION = "DrFTPD 2.0";
     private int _bufferSize;
     private SSLContext _ctx;
     private boolean _downloadChecksums;
