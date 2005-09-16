@@ -53,8 +53,7 @@ public class New extends IRCCommand {
     private String _dateFormat;
     private ArrayList<String>  _excludeSections;
     
-    public New(GlobalContext gctx) {
-        super(gctx);
+    public New() {
 		loadConf("conf/drmods.conf");
 	}
 
@@ -123,10 +122,10 @@ public class New extends IRCCommand {
         
         Collection<SectionInterface> sections;
         if (secname.equals("*")) {
-            sections = getGlobalContext().getSectionManager().getSections();
+            sections = GlobalContext.getGlobalContext().getSectionManager().getSections();
         } else {
             sections = new ArrayList<SectionInterface>();
-            SectionInterface si = getGlobalContext().getSectionManager().getSection(secname);
+            SectionInterface si = GlobalContext.getGlobalContext().getSectionManager().getSection(secname);
             if (si.getName().equals("")) {
                 env.add("input", secname);
                 out.add(ReplacerUtils.jprintf("badsection", env, New.class));
@@ -157,7 +156,7 @@ public class New extends IRCCommand {
             env.add("date", dateFormat.format(new Date(dir.lastModified())));
             env.add("owner", dir.getUsername());
             env.add("group", dir.getGroupname());
-            env.add("section", getGlobalContext().getSectionManager().lookup(dir.getPath()).getName());
+            env.add("section", GlobalContext.getGlobalContext().getSectionManager().lookup(dir.getPath()).getName());
             env.add("size", Bytes.formatBytes(dir.length()));
             env.add("pos", ""+(index+1));
             env.add("files",""+dir.getFiles().size());

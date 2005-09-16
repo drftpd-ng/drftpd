@@ -22,6 +22,7 @@ import net.sf.drftpd.mirroring.Job;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.ArchiveType;
@@ -61,7 +62,7 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
             }
 
             try {
-                _offOfSlaves.add(_parent.getGlobalContext().getSlaveManager()
+                _offOfSlaves.add(GlobalContext.getGlobalContext().getSlaveManager()
 						.getRemoteSlave(slavename));
             } catch (ObjectNotFoundException e) {
                 logger.debug("Unable to get slave " + slavename +
@@ -92,7 +93,7 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
     }
 
     public HashSet<RemoteSlave> findDestinationSlaves() {
-        HashSet<RemoteSlave> set = _parent.getGlobalContext().getSlaveManager()
+        HashSet<RemoteSlave> set = GlobalContext.getGlobalContext().getSlaveManager()
 				.findSlavesBySpace(_numOfSlaves, _offOfSlaves, false);
 
         if (set.isEmpty()) {

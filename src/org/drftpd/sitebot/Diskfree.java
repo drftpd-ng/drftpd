@@ -35,8 +35,8 @@ import f00f.net.irc.martyr.commands.MessageCommand;
  */
 public class Diskfree extends IRCCommand {
 
-    public Diskfree(GlobalContext gctx) {
-		super(gctx);
+    public Diskfree() {
+		super();
     }
     
 	public ArrayList<String> doDiskfree(String args, MessageCommand msgc) {

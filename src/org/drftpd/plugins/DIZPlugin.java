@@ -29,6 +29,7 @@ import net.sf.drftpd.event.TransferEvent;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
+import org.drftpd.GlobalContext;
 import org.drftpd.Time;
 import org.drftpd.plugins.SiteBot.Ret;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -60,7 +61,7 @@ public class DIZPlugin extends FtpListener {
 		}
 
 		// Are we logging this directory for this user?
-		if (!getGlobalContext().getConfig().checkPathPermission("dirlog",
+		if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission("dirlog",
 				xferEvent.getUser(), xferEvent.getDirectory())) {
 			return;
 		}
@@ -115,7 +116,7 @@ public class DIZPlugin extends FtpListener {
 	}
 
 	public SiteBot getSiteBot() throws ObjectNotFoundException {
-		return (SiteBot) getGlobalContext().getFtpListener(SiteBot.class);
+		return (SiteBot) GlobalContext.getGlobalContext().getFtpListener(SiteBot.class);
 	}
 
 	public static boolean isZipFile(LinkedRemoteFileInterface file) {

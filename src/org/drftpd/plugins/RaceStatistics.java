@@ -29,6 +29,7 @@ import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.UploaderPosition;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.SFVFile;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -106,7 +107,7 @@ public class RaceStatistics extends FtpListener {
             User user;
 
             try {
-                user = getGlobalContext().getUserManager().getUserByName(
+                user = GlobalContext.getGlobalContext().getUserManager().getUserByName(
 						racer.getUsername());
             } catch (NoSuchUserException ex) {
                 // this should not happen, but if it does, it means the user was

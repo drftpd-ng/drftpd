@@ -25,6 +25,7 @@ import net.sf.drftpd.mirroring.JobManager;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.ArchiveType;
@@ -83,7 +84,7 @@ public class ConstantMirroringAndArchive extends ArchiveType {
             }
 
             try {
-                _fastHosts.add(_parent.getGlobalContext().getSlaveManager()
+                _fastHosts.add(GlobalContext.getGlobalContext().getSlaveManager()
 						.getRemoteSlave(slavename));
             } catch (ObjectNotFoundException e) {
                 logger.error("Unable to get slave " + slavename +
@@ -151,8 +152,7 @@ public class ConstantMirroringAndArchive extends ArchiveType {
     }
 
     public HashSet<RemoteSlave> findDestinationSlaves() {
-        HashSet<RemoteSlave> allHosts = new HashSet<RemoteSlave>(_parent
-				.getGlobalContext().getSlaveManager().getSlaves());
+        HashSet<RemoteSlave> allHosts = new HashSet<RemoteSlave>(GlobalContext.getGlobalContext().getSlaveManager().getSlaves());
 
         HashSet returnMe = new HashSet();
 
@@ -269,7 +269,7 @@ public class ConstantMirroringAndArchive extends ArchiveType {
 
     private ArrayList recursiveSend(LinkedRemoteFileInterface lrf) {
         ArrayList jobQueue = new ArrayList();
-        JobManager jm = _parent.getGlobalContext().getJobManager();
+        JobManager jm = GlobalContext.getGlobalContext().getJobManager();
 
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();

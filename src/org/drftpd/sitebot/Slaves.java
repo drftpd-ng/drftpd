@@ -41,8 +41,8 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 public class Slaves extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Slaves.class);
 
-    public Slaves(GlobalContext gctx) {
-        super(gctx);
+    public Slaves() {
+        super();
     }
 
     public ArrayList<String> doSlave(String args, MessageCommand msgc) {

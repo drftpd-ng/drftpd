@@ -112,9 +112,8 @@ public class Archive extends FtpListener implements Runnable {
         return _cycleTime;
     }
 
-    public void init(GlobalContext gctx) {
-    	super.init(gctx);
-        getGlobalContext().loadJobManager();
+    public void init() {
+    	GlobalContext.getGlobalContext().loadJobManager();
         reload();
         startArchive();
     }
@@ -143,7 +142,7 @@ public class Archive extends FtpListener implements Runnable {
                 return;
             }
 
-            Collection sectionsToCheck = getGlobalContext().getSectionManager()
+            Collection sectionsToCheck = GlobalContext.getGlobalContext().getSectionManager()
 					.getSections();
 
             for (Iterator iter = sectionsToCheck.iterator(); iter.hasNext();) {

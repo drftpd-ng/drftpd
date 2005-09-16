@@ -48,6 +48,7 @@ import net.sf.drftpd.master.UploaderPosition;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.SFVFile;
 import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.Nuke;
@@ -220,9 +221,9 @@ public class GlftpdLog extends FtpListener {
             User slowuser;
 
             try {
-                fastuser = getGlobalContext().getUserManager()
+                fastuser = GlobalContext.getGlobalContext().getUserManager()
                               .getUserByName(fastestuser.getUsername());
-                slowuser = getGlobalContext().getUserManager()
+                slowuser = GlobalContext.getGlobalContext().getUserManager()
                               .getUserByName(slowestuser.getUsername());
             } catch (NoSuchUserException e2) {
                 return;
@@ -257,7 +258,7 @@ public class GlftpdLog extends FtpListener {
                 User raceuser;
 
                 try {
-                    raceuser = getGlobalContext().getUserManager()
+                    raceuser = GlobalContext.getGlobalContext().getUserManager()
                                   .getUserByName(stat.getUsername());
                 } catch (NoSuchUserException e2) {
                     continue;
@@ -306,7 +307,7 @@ public class GlftpdLog extends FtpListener {
             User leaduser;
 
             try {
-                leaduser = getGlobalContext().getUserManager()
+                leaduser = GlobalContext.getGlobalContext().getUserManager()
                               .getUserByName(stat.getUsername());
             } catch (NoSuchUserException e3) {
                 return;
@@ -371,7 +372,7 @@ public class GlftpdLog extends FtpListener {
                 User raceuser;
 
                 try {
-                    raceuser = getGlobalContext().getUserManager()
+                    raceuser = GlobalContext.getGlobalContext().getUserManager()
                                   .getUserByName(stat.getUsername());
                 } catch (NoSuchUserException e2) {
                     nobodyAmount += stat.getAmount();

@@ -88,7 +88,6 @@ public class FtpConfig extends Observable implements ConfigInterface {
     private String newConf = "conf/perms.conf";
     protected PortRange _portRange;
 	private Permission _shutdown;
-	protected GlobalContext _gctx;
 
     protected FtpConfig() {
     }
@@ -96,15 +95,14 @@ public class FtpConfig extends Observable implements ConfigInterface {
     /**
      * Constructor that allows reusing of cfg object
      */
-    public FtpConfig(Properties cfg, String cfgFileName,
-        GlobalContext gctx) throws IOException {
-        loadConfig(cfg, gctx);
+    public FtpConfig(Properties cfg, String cfgFileName) throws IOException {
+        loadConfig(cfg);
     }
     
-    public FtpConfig(String cfgFileName, GlobalContext gctx) throws IOException {
+    public FtpConfig(String cfgFileName) throws IOException {
         Properties cfg = new Properties();
         cfg.load(new FileInputStream(cfgFileName));
-        loadConfig(cfg, gctx);
+        loadConfig(cfg);
     }
 
     private static ArrayList makeRatioPermission(ArrayList<RatioPathPermission> arr,
@@ -253,11 +251,6 @@ public class FtpConfig extends Observable implements ConfigInterface {
         return replaceName(temp, _replaceFile);
     }
 
-    public GlobalContext getGlobalContext() {
-    	assert _gctx != null;
-        return _gctx;
-    }
-
     public boolean getHideIps() {
         return _hideIps;
     }
@@ -279,14 +272,13 @@ public class FtpConfig extends Observable implements ConfigInterface {
     	return _pasv_addr;
 	}
 
-	public void loadConfig(Properties cfg, GlobalContext gctx)
+	public void loadConfig(Properties cfg)
         throws IOException {
         loadConfig2(new FileReader(newConf));
         if (_portRange == null) {
             //default portrange if none specified
             _portRange = new PortRange();
         }
-        _gctx = gctx;
         loadConfig1(cfg);
     }
 
@@ -485,4 +477,8 @@ public class FtpConfig extends Observable implements ConfigInterface {
     public PortRange getPortRange() {
         return _portRange;
     }
+
+	public GlobalContext getGlobalContext() {
+		return GlobalContext.getGlobalContext();
+	}
 }

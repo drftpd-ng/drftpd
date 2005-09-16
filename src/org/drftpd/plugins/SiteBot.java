@@ -291,7 +291,11 @@ public class SiteBot extends FtpListener implements Observer {
         }
     }
 
-    private void actionPerformedDirectoryID3(TransferEvent direvent)
+    private GlobalContext getGlobalContext() {
+		return GlobalContext.getGlobalContext();
+	}
+
+	private void actionPerformedDirectoryID3(TransferEvent direvent)
         throws FormatterException {
         ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
         LinkedRemoteFile dir;
@@ -1128,8 +1132,7 @@ public class SiteBot extends FtpListener implements Observer {
         return getGlobalContext().getSlaveManager();
     }
 
-    public void init(GlobalContext gctx) {
-    	super.init(gctx);
+    public void init() {
         try {
             reload();
         } catch (Exception e) {

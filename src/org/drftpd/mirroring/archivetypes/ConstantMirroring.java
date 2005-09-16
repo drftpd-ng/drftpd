@@ -24,6 +24,7 @@ import net.sf.drftpd.mirroring.JobManager;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.ArchiveType;
@@ -115,7 +116,7 @@ public class ConstantMirroring extends ArchiveType {
     }
 
     public HashSet<RemoteSlave> findDestinationSlaves() {
-        return new HashSet<RemoteSlave>(_parent.getGlobalContext()
+        return new HashSet<RemoteSlave>(GlobalContext.getGlobalContext()
                                   .getSlaveManager().getSlaves());
     }
 
@@ -157,7 +158,7 @@ public class ConstantMirroring extends ArchiveType {
 
     private ArrayList recursiveSend(LinkedRemoteFileInterface lrf) {
         ArrayList jobQueue = new ArrayList();
-        JobManager jm = _parent.getGlobalContext().getJobManager();
+        JobManager jm = GlobalContext.getGlobalContext().getJobManager();
 
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();

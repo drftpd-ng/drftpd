@@ -60,9 +60,8 @@ public class AffilManagement extends FtpListener {
 
 	public ArrayList<String> groups;
 
-	public void init(GlobalContext gctx) {
-		super.init(gctx);
-		getGlobalContext().getConfig().addObserver(
+	public void init() {
+		GlobalContext.getGlobalContext().getConfig().addObserver(
 				new Observer() {
 					public void update(Observable o, Object arg) {
 						FtpConfig cfg = (FtpConfig) o;

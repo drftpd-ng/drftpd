@@ -41,8 +41,8 @@ public class GenericTextOutput extends IRCCommand {
 	private static final Logger logger = Logger.getLogger(GenericTextOutput.class);
     private HashMap<String,String> _commands;
 
-    public GenericTextOutput(GlobalContext gctx) {
-		super(gctx);
+    public GenericTextOutput() {
+		super();
         reload();
     }
     

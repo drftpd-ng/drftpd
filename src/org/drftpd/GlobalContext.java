@@ -56,6 +56,7 @@ import org.drftpd.usermanager.UserManager;
  */
 public class GlobalContext {
     private static final Logger logger = Logger.getLogger(GlobalContext.class);
+    private static GlobalContext _gctx = null;
     protected ConnectionManager _cm;
     protected ConfigInterface _config;
     protected ZipscriptConfig _zsConfig;
@@ -70,15 +71,31 @@ public class GlobalContext {
     protected SlaveSelectionManagerInterface _slaveSelectionManager;
 	private String _cfgFileName;
 
-    protected GlobalContext() {
-    }
-
     public void reloadFtpConfig() throws IOException {
-    	_config = new FtpConfig(_cfgFileName, this);
+    	_config = new FtpConfig(_cfgFileName);
     	_zsConfig = new ZipscriptConfig(this);
     }
+    
+    public static GlobalContext getGlobalContext() {
+		if (_gctx == null) {
+    		throw new RuntimeException("GlobalContext was not initialized");
+    	}
+    	return _gctx;
+    }
+    
+    public static void initGlobalContext(Properties cfg, String cfgFileName, ConnectionManager cm) throws SlaveFileException {
+    	if (_gctx != null) {
+    		throw new RuntimeException("GlobalContext is already initialized");
+    	}
+    	_gctx = new GlobalContext(cfg, cfgFileName, cm);
+    }
+    /**
+     * Only used for junit tests
+     */
+    public GlobalContext() {
+    }
 
-    public GlobalContext(Properties cfg, String cfgFileName,
+    private GlobalContext(Properties cfg, String cfgFileName,
         ConnectionManager cm) throws SlaveFileException {
     	_cfgFileName = cfgFileName;
         _cm = cm;
@@ -86,7 +103,7 @@ public class GlobalContext {
         loadUserManager(cfg, cfgFileName);
 
         try {
-            _config = new FtpConfig(cfg, cfgFileName, this);
+            _config = new FtpConfig(cfg, cfgFileName);
         } catch (Throwable ex) {
             throw new FatalException(ex);
         }
@@ -129,7 +146,6 @@ public class GlobalContext {
     * Calls init(this) on the argument
     */
     public synchronized void addFtpListener(FtpListener listener) {
-        listener.init(this);
         _ftpListeners.add(listener);
     }
     

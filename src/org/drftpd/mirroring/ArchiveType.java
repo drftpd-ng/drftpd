@@ -32,6 +32,7 @@ import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.mirroring.JobManager;
 
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.archivetypes.IncompleteDirectoryException;
@@ -146,7 +147,7 @@ public abstract class ArchiveType {
      */
     public ArrayList<Job> send() {
         ArrayList<Job> jobs = recursiveSend(getDirectory());
-        JobManager jm = _parent.getGlobalContext().getJobManager();
+        JobManager jm = GlobalContext.getGlobalContext().getJobManager();
         jm.addJobsToQueue(jobs);
         return jobs;
     }

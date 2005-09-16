@@ -46,8 +46,8 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 public class Who extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Who.class);
 
-    public Who(GlobalContext gctx) {
-    	super(gctx);
+    public Who() {
+    	super();
     }
     
     private ArrayList<String> getData(boolean idle, boolean up, boolean down) {

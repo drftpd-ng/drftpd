@@ -50,8 +50,8 @@ import f00f.net.irc.martyr.util.FullNick;
 public class Find extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Find.class);
     
-    public Find(GlobalContext gctx) {
-		super(gctx);
+    public Find() {
+		super();
 		loadConf("conf/drmods.conf");
 	}
 
@@ -68,7 +68,7 @@ public class Find extends IRCCommand {
                     break;
                 StringTokenizer st = new StringTokenizer(perm);
                 
-                getGlobalContext().getConfig().addPathPermission("ircfind", 
+                GlobalContext.getGlobalContext().getConfig().addPathPermission("ircfind", 
                        new GlobPathPermission(new GlobCompiler().compile(st.nextToken()), 
                                FtpConfig.makeUsers(st)));
                 
@@ -86,10 +86,10 @@ public class Find extends IRCCommand {
     
     private void findFile(LinkedRemoteFileInterface dir, ArrayList<String> results,
             Collection searchstrings, User user, boolean files, boolean dirs) {
-        if (!getGlobalContext().getConfig().checkPathPermission("ircfind", user, dir, true))
+        if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission("ircfind", user, dir, true))
             return;
         
-        if (!getGlobalContext().getConfig().checkPathPermission("privpath", user, dir, true))
+        if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission("privpath", user, dir, true))
             return;
 
         for (Iterator iter = dir.getFiles().iterator(); iter.hasNext();) {
@@ -127,7 +127,7 @@ public class Find extends IRCCommand {
 		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
 		User user;
      	try {
-     	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
+     	    user = GlobalContext.getGlobalContext().getUserManager().getUserByIdent(ident);
             env.add("ftpuser",user.getName());
      	} catch (Exception e) {
      	    logger.warn("Could not identify " + ident);
@@ -142,14 +142,14 @@ public class Find extends IRCCommand {
         Collection searchStrings = Arrays.asList(args.split(" "));
         ArrayList<String> results = new ArrayList<String>();
  
-        findFile(getGlobalContext().getRoot(), results, searchStrings, user, false, true);
+        findFile(GlobalContext.getGlobalContext().getRoot(), results, searchStrings, user, false, true);
 
         if (!results.isEmpty()) {
             for (String res : results)
                 out.add(res);
         } else {
             out.add(ReplacerUtils.jprintf("find.nodirs", env, Find.class)); 
-            findFile(getGlobalContext().getRoot(), results, searchStrings, user, true, false);   
+            findFile(GlobalContext.getGlobalContext().getRoot(), results, searchStrings, user, true, false);   
             if (results.isEmpty())
                 out.add(ReplacerUtils.jprintf("find.noresult", env, Find.class));
             else

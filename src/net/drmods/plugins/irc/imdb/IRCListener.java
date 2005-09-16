@@ -40,8 +40,7 @@ public class IRCListener extends IRCCommand {
     private static final Logger logger = Logger.getLogger(IRCListener.class);
     private String _filters;
     
-    public IRCListener(GlobalContext gctx) {
-        super(gctx); 
+    public IRCListener() {
 		loadConf("conf/drmods.conf");
 	}
 

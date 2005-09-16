@@ -22,6 +22,7 @@ import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 
 import org.drftpd.Checksum;
+import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.master.ConnectionManager;
 
@@ -78,7 +79,7 @@ public class Exec extends FtpListener {
                 "HOST=@" + uevent.getConn().getClientAddress(),
                 
                 "SECTION=" +
-                getGlobalContext().getSectionManager().lookup(uevent.getDirectory()
+                GlobalContext.getGlobalContext().getSectionManager().lookup(uevent.getDirectory()
                                                                         .getPath())
             };
         String[] cmd;

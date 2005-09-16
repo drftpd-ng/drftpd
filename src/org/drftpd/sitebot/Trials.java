@@ -41,8 +41,8 @@ import f00f.net.irc.martyr.util.FullNick;
 public class Trials extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Trials.class);
 
-    public Trials(GlobalContext gctx) {
-		super(gctx);
+    public Trials() {
+		super();
     }
 
     protected String jprintf(String key, User user, Limit limit, long bytesleft, boolean unique) {

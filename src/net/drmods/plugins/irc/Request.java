@@ -51,8 +51,8 @@ public class Request extends IRCCommand {
 
     private String _requestPath;
     
-	public Request(GlobalContext gctx) {
-		super(gctx);
+	public Request() {
+		super();
 		loadConf("conf/drmods.conf");
 	}
 
@@ -96,7 +96,7 @@ public class Request extends IRCCommand {
         env.add("reqfilled",new StringTokenizer(msgc.getMessage()).nextToken());
         
         try {
-            LinkedRemoteFileInterface rdir = getGlobalContext().getRoot().lookupFile(_requestPath);
+            LinkedRemoteFileInterface rdir = GlobalContext.getGlobalContext().getRoot().lookupFile(_requestPath);
             out.add(ReplacerUtils.jprintf("requests.header", env, Request.class));
             int i=1;
             for (Iterator iter = rdir.getDirectories().iterator(); iter.hasNext();) {
@@ -165,7 +165,7 @@ public class Request extends IRCCommand {
         boolean fdir = false;
         
         try {
-            LinkedRemoteFileInterface dir = getGlobalContext().getRoot().lookupFile(_requestPath);
+            LinkedRemoteFileInterface dir = GlobalContext.getGlobalContext().getRoot().lookupFile(_requestPath);
             for (Iterator iter = dir.getDirectories().iterator(); iter.hasNext();) {
                 LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
                 if (file.isDirectory()) {
@@ -222,7 +222,7 @@ public class Request extends IRCCommand {
         
         
         try {
-            LinkedRemoteFileInterface dir = getGlobalContext().getRoot().lookupFile(_requestPath);
+            LinkedRemoteFileInterface dir = GlobalContext.getGlobalContext().getRoot().lookupFile(_requestPath);
             dir.createDirectory("REQUEST-by." + requser + "-" + dirName);
             LinkedRemoteFileInterface reqdir = dir.getFile("REQUEST-by." + requser + "-" + dirName);
             reqdir.setOwner(requser);
@@ -262,7 +262,7 @@ public class Request extends IRCCommand {
         boolean nodir = false;
         boolean deldir = false;
         try {
-            LinkedRemoteFileInterface dir = getGlobalContext().getRoot().lookupFile(_requestPath);
+            LinkedRemoteFileInterface dir = GlobalContext.getGlobalContext().getRoot().lookupFile(_requestPath);
             for (Iterator iter = dir.getDirectories().iterator(); iter.hasNext();) {
                 LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
                 if (file.isDirectory()) {
@@ -322,7 +322,7 @@ public class Request extends IRCCommand {
 		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
 		User user = null;
      	try {
-     	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
+     	    user = GlobalContext.getGlobalContext().getUserManager().getUserByIdent(ident);
      	} catch (Exception e) {
      	    logger.warn("Could not identify " + ident);
      	}

@@ -63,8 +63,8 @@ public class IRCNuke extends IRCCommand {
 	private static final Logger logger = Logger.getLogger(IRCNuke.class);
 	private int _maxNukes;
 	
-	public IRCNuke(GlobalContext gctx) {
-		super(gctx);
+	public IRCNuke() {
+		super();
 		loadConf("conf/drmods.conf");
 	}
 
@@ -125,8 +125,8 @@ public class IRCNuke extends IRCCommand {
 
 		LinkedRemoteFileInterface nukeDir;
 		try {
-			nukeDir = LinkedRemoteFile.findLatestDir(getGlobalContext()
-					.getConnectionManager(), getGlobalContext().getRoot(),
+			nukeDir = LinkedRemoteFile.findLatestDir(GlobalContext.getGlobalContext()
+					.getConnectionManager(), GlobalContext.getGlobalContext().getRoot(),
 					ftpuser, searchstr);
 		} catch (ObjectNotFoundException e) {
 			out.add(ReplacerUtils.jprintf("nuke.error", env, IRCNuke.class));
@@ -145,7 +145,7 @@ public class IRCNuke extends IRCCommand {
 			// String username = (String) iter.next();
 			User user;
 			try {
-				user = getGlobalContext().getUserManager().getUserByName(
+				user = GlobalContext.getGlobalContext().getUserManager().getUserByName(
 						username);
 			} catch (NoSuchUserException e1) {
 				out.add("Cannot remove credits from " + username + ": "
@@ -224,10 +224,10 @@ public class IRCNuke extends IRCCommand {
 		NukeEvent nuke = new NukeEvent(ftpuser, "NUKE", nukeDirPath,
 				nukeDirSize, nukedAmount, nukemult, nukemsg, nukees);
 
-		Nuke dpsn = (Nuke) getGlobalContext().getConnectionManager()
+		Nuke dpsn = (Nuke) GlobalContext.getGlobalContext().getConnectionManager()
 				.getCommandManagerFactory().getHandlersMap().get(Nuke.class);
 		dpsn.getNukeLog().add(nuke);
-		getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);
+		GlobalContext.getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);
 		return out;
 	}
 
@@ -259,7 +259,7 @@ public class IRCNuke extends IRCCommand {
 		
 		LinkedRemoteFileInterface nukeDir;
 		try {
-			nukeDir = LinkedRemoteFile.findLatestDir(getGlobalContext().getConnectionManager(), getGlobalContext().getRoot(), ftpuser, nukeName);
+			nukeDir = LinkedRemoteFile.findLatestDir(GlobalContext.getGlobalContext().getConnectionManager(), GlobalContext.getGlobalContext().getRoot(), ftpuser, nukeName);
 		} catch (ObjectNotFoundException e2) {
 			out.add(ReplacerUtils.jprintf("nuke.error", env, IRCNuke.class));
 			return out;
@@ -270,7 +270,7 @@ public class IRCNuke extends IRCCommand {
 		NukeEvent nuke;
 		Nuke dpsn;
 		try {
-			 dpsn = (Nuke) getGlobalContext().getConnectionManager()
+			 dpsn = (Nuke) GlobalContext.getGlobalContext().getConnectionManager()
 					.getCommandManagerFactory()
 					.getHandlersMap()
 					.get(Nuke.class);
@@ -286,7 +286,7 @@ public class IRCNuke extends IRCCommand {
 			String nukeeName = nukeeObj.getUsername();
 			User nukee;
 			try {
-				nukee = getGlobalContext().getUserManager().getUserByName(nukeeName);
+				nukee = GlobalContext.getGlobalContext().getUserManager().getUserByName(nukeeName);
 			} catch (NoSuchUserException e) {
 			    out.add(nukeeName + ": no such user");
 				continue;
@@ -343,7 +343,7 @@ public class IRCNuke extends IRCCommand {
 		nuke.setCommand("UNNUKE");
 		nuke.setReason(reason);
 		nuke.setUser(ftpuser);
-		getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);	
+		GlobalContext.getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);	
 		return out;
 	}
 
@@ -367,7 +367,7 @@ public class IRCNuke extends IRCCommand {
 			nukeCount = _maxNukes;
 
 		Nuke dpsn;
-		dpsn = (Nuke) getGlobalContext().getConnectionManager()
+		dpsn = (Nuke) GlobalContext.getGlobalContext().getConnectionManager()
 					.getCommandManagerFactory()
 					.getHandlersMap()
 					.get(Nuke.class);
@@ -401,7 +401,7 @@ public class IRCNuke extends IRCCommand {
 		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
 		User user = null;
      	try {
-     	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
+     	    user = GlobalContext.getGlobalContext().getUserManager().getUserByIdent(ident);
      	} catch (Exception e) {
      	    logger.warn("Could not identify " + ident);
      	}

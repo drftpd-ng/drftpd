@@ -37,8 +37,8 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 public class Ident extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Ident.class);
 
-	public Ident(GlobalContext gctx) {
-		super(gctx);
+	public Ident() {
+		super();
 	}
 
 	public ArrayList<String> doIdent(String args, MessageCommand msgc) {

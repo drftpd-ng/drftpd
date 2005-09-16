@@ -55,6 +55,6 @@ public class DummyFtpConfig extends FtpConfig {
     }
 
     public void setGlobalContext(GlobalContext gctx) {
-        _gctx = gctx;
+        // nothing for now
     }
 }

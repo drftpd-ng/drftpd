@@ -52,8 +52,6 @@ public interface ConfigInterface {
 
 	public abstract String getFileName(String name);
 
-	public abstract GlobalContext getGlobalContext();
-
 	public abstract boolean getHideIps();
 
 	public abstract String getLoginPrompt();
@@ -62,7 +60,7 @@ public interface ConfigInterface {
 
 	public abstract int getMaxUsersTotal();
 
-	public abstract void loadConfig(Properties cfg, GlobalContext gctx)
+	public abstract void loadConfig(Properties cfg)
 			throws IOException;
 
 	public abstract void addPathPermission(String key, PathPermission permission);
@@ -77,4 +75,6 @@ public interface ConfigInterface {
 	public abstract void addObserver(Observer observer);
 
 	public abstract String getPasvAddress() throws NullPointerException;
+
+	public abstract GlobalContext getGlobalContext();
 }

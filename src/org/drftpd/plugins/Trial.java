@@ -60,6 +60,7 @@ public class Trial extends FtpListener {
 
     public Trial() throws FileNotFoundException, IOException {
         super();
+        reload();
     }
 
     public static void doAction(String action, User user) {
@@ -389,11 +390,6 @@ public class Trial extends FtpListener {
 
     public ArrayList getLimits() {
         return _limits;
-    }
-
-    public void init(GlobalContext gctx) {
-        super.init(gctx);
-        reload();
     }
 
     private void reload() {

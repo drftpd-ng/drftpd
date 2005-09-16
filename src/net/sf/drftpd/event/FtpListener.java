@@ -25,17 +25,7 @@ import org.drftpd.GlobalContext;
  * @version $Id$
  */
 public abstract class FtpListener {
-    protected GlobalContext _gctx;
 	public abstract void actionPerformed(Event event);
 
     public void unload() {}
-
-    public void init(GlobalContext gctx) {
-    	_gctx = gctx;
-    }
-
-    public final GlobalContext getGlobalContext() {
-    	assert _gctx != null;
-    	return _gctx;
-    }
 }

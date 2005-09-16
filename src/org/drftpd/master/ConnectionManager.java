@@ -67,7 +67,8 @@ public class ConnectionManager {
 
     public ConnectionManager(Properties cfg, Properties slaveCfg,
         String cfgFileName) throws SlaveFileException {
-        _gctx = new GlobalContext(cfg, cfgFileName, this);
+        GlobalContext.initGlobalContext(cfg, cfgFileName, this);
+        _gctx = GlobalContext.getGlobalContext();
 
         if (slaveCfg != null) {
             try {

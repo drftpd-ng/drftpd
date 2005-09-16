@@ -51,8 +51,8 @@ public class Kick extends IRCCommand {
     private int _idleTimeout;
     private int _usersPerLine;
     
-    public Kick(GlobalContext gctx) {
-		super(gctx);
+    public Kick() {
+		super();
 		loadConf("conf/drmods.conf");
 	}
 
@@ -105,7 +105,7 @@ public class Kick extends IRCCommand {
             
 			env.add("idlelimit",Long.toString(_idleTimeout));
 
-            ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(getGlobalContext()
+            ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(GlobalContext.getGlobalContext()
                     									.getConnectionManager().getConnections());
             int count = 0;
             String msg = "";

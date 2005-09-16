@@ -49,8 +49,8 @@ public class Approve extends IRCCommand {
 	private static final Logger logger = Logger.getLogger(Approve.class);
 	private String _dirName;
 	
-	public Approve(GlobalContext gctx) {
-		super(gctx);
+	public Approve() {
+		super();
 		loadConf("conf/drmods.conf");
 	}
 
@@ -95,7 +95,7 @@ public class Approve extends IRCCommand {
 		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
 		User user;
      	try {
-     	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
+     	    user = GlobalContext.getGlobalContext().getUserManager().getUserByIdent(ident);
             env.add("ftpuser",user.getName());
      	} catch (Exception e) {
      	    logger.warn("Could not identify " + ident);
@@ -103,8 +103,7 @@ public class Approve extends IRCCommand {
      	    return out;
      	}
      	
-        LinkedRemoteFileInterface dir = findDir(getGlobalContext(),
-												 getGlobalContext().getRoot(), user, args);
+        LinkedRemoteFileInterface dir = findDir(GlobalContext.getGlobalContext().getRoot(), user, args);
         
 		if (dir!= null){
 			env.add("sdirpath",dir.getPath());
@@ -132,12 +131,11 @@ public class Approve extends IRCCommand {
 	}
 	
 	private static LinkedRemoteFileInterface findDir(
-		GlobalContext gctx,
 		LinkedRemoteFileInterface dir,
 		User user,
 		String searchstring) {
 
-		if (!gctx.getConfig().checkPathPermission("privpath", user, dir, true)) {
+		if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission("privpath", user, dir, true)) {
 			Logger.getLogger(Approve.class).debug("privpath: "+dir.getPath());
 			return null;
 		}
@@ -149,7 +147,7 @@ public class Approve extends IRCCommand {
 					logger.info("Found " + file.getPath());
 					return file;
 				} 
-				LinkedRemoteFileInterface dir2 = findDir(gctx, file, user, searchstring);
+				LinkedRemoteFileInterface dir2 = findDir(file, user, searchstring);
 				if (dir2 != null) {
 					return dir2;
 				}		

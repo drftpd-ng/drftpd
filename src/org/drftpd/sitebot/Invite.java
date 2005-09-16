@@ -41,8 +41,8 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 public class Invite extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Invite.class);
 
-    public Invite(GlobalContext gctx) {
-		super(gctx);
+    public Invite() {
+		super();
     }
 
 	public ArrayList<String> doInvite(String args, MessageCommand msgc) {

@@ -27,6 +27,7 @@ import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.mirroring.JobManager;
 
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.ArchiveType;
@@ -60,7 +61,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
             }
 
             try {
-                _offOfSlaves.add(_parent.getGlobalContext().getSlaveManager()
+                _offOfSlaves.add(GlobalContext.getGlobalContext().getSlaveManager()
 						.getRemoteSlave(slavename));
             } catch (ObjectNotFoundException e) {
                 logger.debug("Unable to get slave " + slavename +
@@ -95,7 +96,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
             }
 
             try {
-                RemoteSlave rslave = _parent.getGlobalContext()
+                RemoteSlave rslave = GlobalContext.getGlobalContext()
 						.getSlaveManager().getRemoteSlave(slavename);
 
                 if (!_offOfSlaves.contains(rslave)) {
@@ -129,8 +130,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
             return _destSlaves;
         }
 
-        HashSet<RemoteSlave> availableSlaves = new HashSet<RemoteSlave>(_parent
-				.getGlobalContext().getSlaveManager().getSlaves());
+        HashSet<RemoteSlave> availableSlaves = new HashSet<RemoteSlave>(GlobalContext.getGlobalContext().getSlaveManager().getSlaves());
         availableSlaves.removeAll(_offOfSlaves);
 
         if (availableSlaves.isEmpty()) {
@@ -175,7 +175,7 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
 
     private ArrayList<Job> recursiveSend(LinkedRemoteFileInterface lrf) {
         ArrayList<Job> jobQueue = new ArrayList<Job>();
-        JobManager jm = _parent.getGlobalContext().getJobManager();
+        JobManager jm = GlobalContext.getGlobalContext().getJobManager();
 
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();

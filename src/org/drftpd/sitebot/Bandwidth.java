@@ -46,8 +46,8 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 public class Bandwidth extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Bandwidth.class);
 
-    public Bandwidth(GlobalContext gctx) {
-		super(gctx);
+    public Bandwidth() {
+		super();
     }
 
 	public ArrayList<String> doBandwidth(String args, MessageCommand msgc) {

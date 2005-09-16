@@ -29,6 +29,7 @@ import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.sections.SectionInterface;
@@ -83,13 +84,13 @@ public class EventListener extends FtpListener {
         if (!(event instanceof DirectoryFtpEvent))
             return;
         DirectoryFtpEvent devent = (DirectoryFtpEvent) event;
-        if (!getGlobalContext().getConfig().checkPathPermission("dirlog",devent.getUser(), devent.getDirectory()))
+        if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission("dirlog",devent.getUser(), devent.getDirectory()))
             return;
 
         if ("MKD".equals(devent.getCommand()) ||
             "PRE".equals(devent.getCommand())) {
             String dirName = devent.getDirectory().getName();
-            SectionInterface sec = getGlobalContext().getSectionManager().lookup(devent.getDirectory().getPath());
+            SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(devent.getDirectory().getPath());
        		String[] checkSections = _sections.split(";");
        		String[] excludeDirs = _excludeDirs.split(";");
        		
@@ -108,7 +109,7 @@ public class EventListener extends FtpListener {
        		
             SiteBot irc;
     		try {
-    			irc = (SiteBot) getGlobalContext().getFtpListener(SiteBot.class);
+    			irc = (SiteBot) GlobalContext.getGlobalContext().getFtpListener(SiteBot.class);
     		} catch (ObjectNotFoundException e) {
     			logger.warn("Error loading IMDB sitebot component", e);
     			return;
