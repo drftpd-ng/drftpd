@@ -17,6 +17,16 @@
  */
 package org.drftpd.tests;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.Collections;
+
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
+
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
@@ -28,18 +38,6 @@ import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.StaticRemoteFile;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
-import java.net.InetAddress;
-import java.net.Socket;
-
-import java.util.Collections;
-
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
 
 
 /**

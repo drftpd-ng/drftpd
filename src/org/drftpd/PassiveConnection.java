@@ -17,24 +17,18 @@
  */
 package org.drftpd;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+
 import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.Logger;
 import org.drftpd.slave.Connection;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.security.KeyStore;
-
-import javax.net.ServerSocketFactory;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import java.security.*;
-import java.security.cert.*;
 
 
 /**

@@ -17,7 +17,14 @@
  */
 package net.sf.drftpd.master.usermanager.jsx;
 
-import JSX.ObjIn;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Hashtable;
+import java.util.Iterator;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FatalException;
@@ -25,27 +32,16 @@ import net.sf.drftpd.FileExistsException;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
-
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserExistsException;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.usermanager.UserManager;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Iterator;
+import JSX.ObjIn;
 
 
 /**

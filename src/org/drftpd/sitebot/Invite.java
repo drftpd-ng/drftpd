@@ -24,7 +24,6 @@ import net.sf.drftpd.event.InviteEvent;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.usermanager.NoSuchUserException;

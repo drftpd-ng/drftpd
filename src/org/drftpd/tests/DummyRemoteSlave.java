@@ -1,11 +1,15 @@
 package org.drftpd.tests;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+
 import net.sf.drftpd.SlaveUnavailableException;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.LightSFVFile;
-import org.drftpd.SFVFile;
-
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
@@ -14,14 +18,6 @@ import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.TransferIndex;
 import org.drftpd.slave.async.AsyncResponse;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 
 
 /**

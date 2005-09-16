@@ -18,7 +18,6 @@
 package org.drftpd.tests;
 
 import java.io.IOException;
-
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -28,7 +27,7 @@ import javax.net.ServerSocketFactory;
 
 /**
  * @author mog
- * @version $Id: DummyServerSocketFactory.java,v 1.3 2004/11/05 04:06:36 zubov Exp $
+ * @version $Id$
  */
 public class DummyServerSocketFactory extends ServerSocketFactory {
     private DummySocketFactory _dssf;

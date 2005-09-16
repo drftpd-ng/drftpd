@@ -21,7 +21,6 @@ import java.util.ArrayList;
 
 import net.sf.drftpd.util.ReplacerUtils;
 
-import org.drftpd.GlobalContext;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.slave.SlaveStatus;
 import org.tanesha.replacer.ReplacerEnvironment;

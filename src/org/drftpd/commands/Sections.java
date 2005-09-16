@@ -17,16 +17,15 @@
  */
 package org.drftpd.commands;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.drftpd.sections.SectionInterface;
-
 import org.tanesha.replacer.ReplacerEnvironment;
-
-import java.util.Collection;
-import java.util.Iterator;
 
 
 /**

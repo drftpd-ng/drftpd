@@ -18,14 +18,13 @@
 package se.mog.io;
 
 import java.io.IOException;
-
 import java.net.URI;
 
 
 
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- * @version $Id: File.java,v 1.11 2004/11/09 19:00:01 mog Exp $
+ * @version $Id$
  */
 public class File extends java.io.File {
     private static FileSystem fs = FileSystem.getFileSystem();

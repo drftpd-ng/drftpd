@@ -17,12 +17,12 @@
  */
 package net.sf.drftpd.event;
 
+import java.net.InetAddress;
+
 import net.sf.drftpd.master.BaseFtpConnection;
 
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
-
-import java.net.InetAddress;
 
 
 /**

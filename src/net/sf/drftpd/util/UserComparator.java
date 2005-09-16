@@ -17,11 +17,10 @@
  */
 package net.sf.drftpd.util;
 
-import org.drftpd.commands.TransferStatistics;
-
-import org.drftpd.usermanager.User;
-
 import java.util.Comparator;
+
+import org.drftpd.commands.TransferStatistics;
+import org.drftpd.usermanager.User;
 
 
 /**

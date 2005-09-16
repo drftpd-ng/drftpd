@@ -18,20 +18,18 @@
 package org.drftpd.sections.def;
 
 
-import org.drftpd.master.ConnectionManager;
-import org.drftpd.remotefile.FileUtils;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.sections.SectionManagerInterface;
-
 import java.io.FileNotFoundException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+
+import org.drftpd.master.ConnectionManager;
+import org.drftpd.remotefile.FileUtils;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.sections.SectionInterface;
+import org.drftpd.sections.SectionManagerInterface;
 
 
 /**

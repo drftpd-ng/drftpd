@@ -26,7 +26,6 @@ import net.sf.drftpd.util.PortRange;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
-
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
 

@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
 
 import f00f.net.irc.martyr.commands.MessageCommand;
 

@@ -17,31 +17,24 @@
  */
 package org.drftpd.master;
 
+import java.io.IOException;
+import java.net.SocketException;
+import java.util.HashSet;
+import java.util.Set;
+
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.master.SlaveFileException;
 
 import org.drftpd.GlobalContext;
-
 import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
-
 import org.drftpd.slave.async.AsyncResponse;
-
 import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.tests.DummySlaveManager;
-
-import java.io.IOException;
-
-import java.net.SocketException;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 
 /**

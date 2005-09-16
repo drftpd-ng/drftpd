@@ -290,33 +290,6 @@ public class Request extends IRCCommand {
         }
         return out;
     }
-
-	private static LinkedRemoteFileInterface findDir(
-		GlobalContext gctx,
-		LinkedRemoteFileInterface dir,
-		User user,
-		String searchstring) {
-
-	    if (!gctx.getConfig().checkPathPermission("privpath", user, dir, true)) {
-	        Logger.getLogger(Approve.class).debug("privpath: "+dir.getPath());
-	        return null;
-	    }
-	    
-	    for (Iterator iter = dir.getDirectories().iterator(); iter.hasNext();) {
-	        LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
-	        if (file.isDirectory()) {
-	            if (file.getName().toLowerCase().equals(searchstring.toLowerCase())) {
-	                logger.info("Found " + file.getPath());
-	                return file;
-	            } 
-	            LinkedRemoteFileInterface dir2 = findDir(gctx, file, user, searchstring);
-	            if (dir2 != null) {
-	                return dir2;
-	            }		
-	        }
-	    }
-	    return null;
-	}
 	
 	private User getUser(FullNick fn) {
 		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();

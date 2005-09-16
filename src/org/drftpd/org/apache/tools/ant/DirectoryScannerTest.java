@@ -18,22 +18,19 @@
 package org.drftpd.org.apache.tools.ant;
 
 //import org.apache.tools.ant.taskdefs.condition.Os;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.TreeSet;
+
+import junit.framework.TestCase;
 import net.sf.drftpd.FileExistsException;
 
 import org.apache.log4j.BasicConfigurator;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.StaticRemoteFile;
-//import org.apache.tools.ant.util.JavaEnvUtils;
-
-import junit.framework.TestCase;
-import junit.framework.AssertionFailedError;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.TreeSet;
-import java.util.Iterator;
 
 /**
  * JUnit 3 testcases for org.apache.tools.ant.DirectoryScanner

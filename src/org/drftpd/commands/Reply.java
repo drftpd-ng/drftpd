@@ -17,14 +17,13 @@
  */
 package org.drftpd.commands;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
 import java.io.BufferedReader;
 import java.io.IOException;
-
 import java.util.Iterator;
 import java.util.Vector;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 
 /**

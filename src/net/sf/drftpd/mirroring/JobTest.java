@@ -17,13 +17,12 @@
  */
 package net.sf.drftpd.mirroring;
 
-import junit.framework.TestCase;
+import java.util.HashSet;
 
+import junit.framework.TestCase;
 
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.tests.DummyRemoteSlave;
-
-import java.util.HashSet;
 
 
 /**

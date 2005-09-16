@@ -17,7 +17,6 @@
  */
 package net.sf.drftpd.event;
 
-import org.drftpd.GlobalContext;
 
 
 /**

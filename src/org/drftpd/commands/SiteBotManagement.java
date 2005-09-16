@@ -17,8 +17,6 @@
  */
 package org.drftpd.commands;
 
-import f00f.net.irc.martyr.commands.RawCommand;
-
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
@@ -26,11 +24,11 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Logger;
-
 import org.drftpd.plugins.SiteBot;
-
 import org.drftpd.usermanager.NoSuchUserException;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import f00f.net.irc.martyr.commands.RawCommand;
 
 
 /**

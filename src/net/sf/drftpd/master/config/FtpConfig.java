@@ -17,39 +17,13 @@
  */
 package net.sf.drftpd.master.config;
 
-import net.sf.drftpd.util.PortRange;
-
-import org.apache.log4j.Logger;
-
-import org.apache.oro.text.GlobCompiler;
-import org.apache.oro.text.regex.MalformedPatternException;
-
-import org.drftpd.GlobalContext;
-import org.drftpd.commands.Reply;
-import org.drftpd.commands.UserManagement;
-
-import org.drftpd.permissions.GlobPathPermission;
-import org.drftpd.permissions.MessagePathPermission;
-import org.drftpd.permissions.PathPermission;
-import org.drftpd.permissions.PatternPathPermission;
-import org.drftpd.permissions.Permission;
-import org.drftpd.permissions.RatioPathPermission;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.slave.Slave;
-
-import org.drftpd.usermanager.User;
-
-import com.Ostermiller.util.StringTokenizer;
-
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Reader;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -58,6 +32,26 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 import java.util.Properties;
+
+import net.sf.drftpd.util.PortRange;
+
+import org.apache.log4j.Logger;
+import org.apache.oro.text.GlobCompiler;
+import org.apache.oro.text.regex.MalformedPatternException;
+import org.drftpd.GlobalContext;
+import org.drftpd.commands.Reply;
+import org.drftpd.commands.UserManagement;
+import org.drftpd.permissions.GlobPathPermission;
+import org.drftpd.permissions.MessagePathPermission;
+import org.drftpd.permissions.PathPermission;
+import org.drftpd.permissions.PatternPathPermission;
+import org.drftpd.permissions.Permission;
+import org.drftpd.permissions.RatioPathPermission;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.slave.Slave;
+import org.drftpd.usermanager.User;
+
+import com.Ostermiller.util.StringTokenizer;
 
 
 /**

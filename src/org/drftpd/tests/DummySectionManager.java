@@ -18,16 +18,14 @@
 package org.drftpd.tests;
 
 
+import java.io.FileNotFoundException;
+import java.util.Collection;
+
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.remotefile.FileUtils;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
-
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
-
-import java.io.FileNotFoundException;
-
-import java.util.Collection;
 
 
 public class DummySectionManager implements SectionManagerInterface {

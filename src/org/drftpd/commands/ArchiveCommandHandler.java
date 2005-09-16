@@ -17,32 +17,27 @@
  */
 package org.drftpd.commands;
 
+import java.io.FileNotFoundException;
+import java.lang.reflect.Constructor;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Logger;
-
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.ArchiveHandler;
 import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.mirroring.DuplicateArchiveException;
 import org.drftpd.plugins.Archive;
-
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
-
 import org.tanesha.replacer.ReplacerEnvironment;
-
-import java.io.FileNotFoundException;
-
-import java.lang.reflect.Constructor;
-
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.StringTokenizer;
 
 
 /*

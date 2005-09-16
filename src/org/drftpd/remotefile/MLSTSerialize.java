@@ -17,30 +17,27 @@
  */
 package org.drftpd.remotefile;
 
-import net.sf.drftpd.master.config.ConfigInterface;
-import org.apache.log4j.Logger;
-import org.drftpd.Checksum;
-import org.drftpd.master.ConnectionManager;
-import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
-
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.Writer;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+
+import net.sf.drftpd.master.config.ConfigInterface;
+
+import org.apache.log4j.Logger;
+import org.drftpd.Checksum;
+import org.drftpd.master.ConnectionManager;
+import org.drftpd.master.RemoteSlave;
+import org.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 
 
 /**

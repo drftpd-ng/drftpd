@@ -17,21 +17,19 @@
  */
 package org.drftpd.plugins;
 
+import java.util.Calendar;
+import java.util.Locale;
+import java.util.Properties;
+
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-
 import org.drftpd.Bytes;
 import org.drftpd.tests.DummyUser;
-
-import java.util.Calendar;
-import java.util.Locale;
-import java.util.Properties;
 
 
 /**

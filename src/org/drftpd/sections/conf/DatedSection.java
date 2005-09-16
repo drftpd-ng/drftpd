@@ -28,7 +28,6 @@ import java.util.Properties;
 import java.util.TimeZone;
 import java.util.TimerTask;
 
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;

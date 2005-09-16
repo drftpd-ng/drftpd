@@ -17,31 +17,24 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.config.ConfigInterface;
-import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.mirroring.Job;
-
-import org.drftpd.GlobalContext;
-
-import org.drftpd.master.RemoteSlave;
-import org.drftpd.master.SlaveManager;
-
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.slave.Transfer;
-import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
-
-import org.drftpd.usermanager.User;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
 import java.net.InetAddress;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+
+import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.master.BaseFtpConnection;
+import net.sf.drftpd.mirroring.Job;
+
+import org.drftpd.GlobalContext;
+import org.drftpd.master.RemoteSlave;
+import org.drftpd.master.SlaveManager;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.slave.Transfer;
+import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
+import org.drftpd.usermanager.User;
 
 
 /**

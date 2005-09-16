@@ -6,12 +6,10 @@
  */
 package org.drftpd.remotefile;
 
-import junit.framework.TestCase;
-
-
 import java.io.FileNotFoundException;
-
 import java.util.Stack;
+
+import junit.framework.TestCase;
 
 
 /**

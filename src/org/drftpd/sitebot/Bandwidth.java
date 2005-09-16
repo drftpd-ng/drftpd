@@ -25,7 +25,6 @@ import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
-import org.drftpd.GlobalContext;
 import org.drftpd.Time;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.plugins.SiteBot;

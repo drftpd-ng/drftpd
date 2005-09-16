@@ -18,7 +18,6 @@
 package org.drftpd.tests;
 
 import java.io.IOException;
-
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -28,7 +27,7 @@ import javax.net.SocketFactory;
 
 /**
  * @author mog
- * @version $Id: DummySocketFactory.java,v 1.2 2004/08/03 20:14:10 zubov Exp $
+ * @version $Id$
  */
 public class DummySocketFactory extends SocketFactory {
     private DummySocket _socket = new DummySocket();

@@ -17,20 +17,17 @@
  */
 package org.drftpd.commands;
 
-import junit.framework.TestCase;
+import java.util.ArrayList;
 
+import junit.framework.TestCase;
 import net.sf.drftpd.master.FtpRequest;
 
 import org.apache.log4j.BasicConfigurator;
-
-
 import org.drftpd.tests.DummyBaseFtpConnection;
 import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyUser;
 import org.drftpd.tests.DummyUserManager;
 import org.drftpd.usermanager.User;
-
-import java.util.ArrayList;
 
 
 /**

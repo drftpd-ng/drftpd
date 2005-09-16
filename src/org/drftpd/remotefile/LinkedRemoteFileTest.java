@@ -17,28 +17,23 @@
  */
 package org.drftpd.remotefile;
 
-import junit.framework.AssertionFailedError;
-import junit.framework.TestCase;
-
-
-import net.sf.drftpd.master.SlaveFileException;
-
-import org.apache.log4j.BasicConfigurator;
-
-import org.drftpd.master.RemoteSlave;
-
-import org.drftpd.tests.DummyFtpConfig;
-import org.drftpd.tests.DummyGlobalContext;
-import org.drftpd.tests.DummyRemoteSlave;
-import org.drftpd.tests.DummySlaveManager;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import junit.framework.AssertionFailedError;
+import junit.framework.TestCase;
+import net.sf.drftpd.master.SlaveFileException;
+
+import org.apache.log4j.BasicConfigurator;
+import org.drftpd.master.RemoteSlave;
+import org.drftpd.tests.DummyFtpConfig;
+import org.drftpd.tests.DummyGlobalContext;
+import org.drftpd.tests.DummyRemoteSlave;
+import org.drftpd.tests.DummySlaveManager;
 
 
 /**

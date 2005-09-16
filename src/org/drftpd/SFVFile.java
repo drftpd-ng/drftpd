@@ -20,13 +20,11 @@ package org.drftpd;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoSFVEntryException;
-import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 
 import org.apache.log4j.Logger;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;

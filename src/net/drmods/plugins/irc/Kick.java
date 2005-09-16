@@ -89,7 +89,6 @@ public class Kick extends IRCCommand {
 	    ArrayList<String> out = new ArrayList<String>();
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 
-        String cmd = msgc.getMessage();
         String cmduser = msgc.getSource().getNick();
         String cmdchan = msgc.getDest();
 

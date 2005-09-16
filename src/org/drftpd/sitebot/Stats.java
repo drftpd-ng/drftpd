@@ -29,7 +29,6 @@ import net.sf.drftpd.util.UserComparator;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
-import org.drftpd.GlobalContext;
 import org.drftpd.commands.TransferStatistics;
 import org.drftpd.permissions.Permission;
 import org.drftpd.plugins.SiteBot;

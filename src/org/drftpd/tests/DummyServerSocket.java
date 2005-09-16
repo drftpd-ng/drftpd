@@ -18,14 +18,13 @@
 package org.drftpd.tests;
 
 import java.io.IOException;
-
 import java.net.InetAddress;
 import java.net.ServerSocket;
 
 
 /**
  * @author zubov
- * @version $Id: DummyServerSocket.java,v 1.2 2004/11/08 18:39:31 mog Exp $
+ * @version $Id$
  */
 public class DummyServerSocket extends ServerSocket {
     public DummyServerSocket() throws IOException {

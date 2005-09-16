@@ -29,8 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.TimerTask;
-import javax.net.ssl.*;
-import org.drftpd.SSLGetContext;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.event.Event;

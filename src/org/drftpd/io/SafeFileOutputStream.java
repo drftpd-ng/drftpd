@@ -24,7 +24,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
 import org.apache.log4j.Logger;
-import org.drftpd.usermanager.javabeans.BeanUser;
 
 /**
  * @author mog

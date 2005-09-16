@@ -17,21 +17,19 @@
  */
 package org.drftpd.usermanager;
 
-import net.sf.drftpd.DuplicateElementException;
-
-import org.apache.log4j.Logger;
-
-import org.apache.oro.text.regex.MalformedPatternException;
-
-import socks.server.Ident;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+
+import net.sf.drftpd.DuplicateElementException;
+
+import org.apache.log4j.Logger;
+import org.apache.oro.text.regex.MalformedPatternException;
+
+import socks.server.Ident;
 
 
 /**

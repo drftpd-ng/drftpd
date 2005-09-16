@@ -17,17 +17,20 @@
  */
 package org.drftpd.commands;
 
-import junit.framework.TestCase;
+import java.io.FileNotFoundException;
+import java.rmi.RemoteException;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
+import junit.framework.TestCase;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.SlaveFileException;
 
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.remotefile.MLSTSerialize;
 import org.drftpd.remotefile.StaticRemoteFile;
 import org.drftpd.sections.def.SectionManager;
-
 import org.drftpd.tests.DummyBaseFtpConnection;
 import org.drftpd.tests.DummyConnectionManager;
 import org.drftpd.tests.DummyFtpConfig;
@@ -36,15 +39,6 @@ import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.tests.DummySlaveManager;
 import org.drftpd.tests.DummyUser;
 import org.drftpd.tests.DummyUserManager;
-
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-
-import java.rmi.RemoteException;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 
 
 /**

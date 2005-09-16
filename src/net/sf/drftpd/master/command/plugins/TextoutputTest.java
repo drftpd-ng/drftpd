@@ -17,23 +17,20 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import f00f.net.irc.martyr.IRCConnection;
-import f00f.net.irc.martyr.OutCommand;
-import f00f.net.irc.martyr.commands.MessageCommand;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import junit.framework.TestCase;
-
 import net.sf.drftpd.event.Event;
 
 import org.drftpd.plugins.SiteBot;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
-
-import java.net.UnknownHostException;
-
-import java.util.ArrayList;
+import f00f.net.irc.martyr.IRCConnection;
+import f00f.net.irc.martyr.OutCommand;
+import f00f.net.irc.martyr.commands.MessageCommand;
 
 
 /**

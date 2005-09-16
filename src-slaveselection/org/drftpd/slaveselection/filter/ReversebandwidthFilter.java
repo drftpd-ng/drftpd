@@ -18,19 +18,16 @@
 package org.drftpd.slaveselection.filter;
 
 
-import org.drftpd.master.RemoteSlave;
-import org.drftpd.master.RemoteTransfer;
+import java.net.InetAddress;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Properties;
 
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.User;
-
-import java.net.InetAddress;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Properties;
 
 
 /*

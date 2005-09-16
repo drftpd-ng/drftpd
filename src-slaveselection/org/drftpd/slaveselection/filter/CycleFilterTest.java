@@ -17,18 +17,15 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import junit.framework.TestCase;
+import java.util.Arrays;
 
+import junit.framework.TestCase;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.master.RemoteTransfer;
-
 import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyRemoteSlave;
-
-import java.util.Arrays;
 
 
 /**
