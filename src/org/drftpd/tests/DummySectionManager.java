@@ -35,7 +35,7 @@ public class DummySectionManager implements SectionManagerInterface {
                 return _sectionDir;
             }
 
-            public Collection getFiles() {
+            public Collection getDirectories() {
                 throw new UnsupportedOperationException();
             }
 

@@ -25,7 +25,6 @@ import net.sf.drftpd.mirroring.Job;
 
 import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.plugins.Archive;
 import org.drftpd.sections.SectionInterface;
 
 

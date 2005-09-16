@@ -17,27 +17,14 @@
  */
 package org.drftpd.remotefile;
 
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.LineNumberReader;
 import java.io.PrintWriter;
-import java.io.Reader;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
-
-import net.sf.drftpd.master.config.ConfigInterface;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Checksum;
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 
 
 /**
@@ -118,7 +105,7 @@ public class MLSTSerialize {
         return ret.toString();
     }
 
-    private static void unserialize(LineNumberReader in,
+/*    private static void unserialize(LineNumberReader in,
         LinkedRemoteFileInterface dir, Hashtable allRslaves, String path)
         throws IOException {
         for (String line = in.readLine();; line = in.readLine()) {
@@ -227,9 +214,9 @@ public class MLSTSerialize {
                 logger.warn("", e);
             }
         }
-    }
+    }*/
 
-    public static LinkedRemoteFile unserialize(ConfigInterface conf, Reader in,
+/*    public static LinkedRemoteFile unserialize(ConfigInterface conf, Reader in,
         List rslaves) throws IOException, CorruptFileListException {
         LinkedRemoteFile root = new LinkedRemoteFile(conf);
 
@@ -255,9 +242,9 @@ public class MLSTSerialize {
         }
 
         return root;
-    }
+    }*/
 
-    public static LinkedRemoteFile loadMLSTFileDatabase(List rslaves,
+/*    public static LinkedRemoteFile loadMLSTFileDatabase(List rslaves,
         ConnectionManager cm) throws IOException {
 		FileReader fr = null;
 		try {
@@ -269,5 +256,5 @@ public class MLSTSerialize {
 				fr.close();
 			}
 		}
-    }
+    }*/
 }

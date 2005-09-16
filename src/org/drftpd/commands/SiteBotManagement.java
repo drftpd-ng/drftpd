@@ -24,7 +24,6 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Logger;
-import org.drftpd.plugins.SiteBot;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.tanesha.replacer.ReplacerEnvironment;
 

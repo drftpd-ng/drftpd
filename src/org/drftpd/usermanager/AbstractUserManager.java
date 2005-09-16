@@ -32,7 +32,6 @@ import org.drftpd.GlobalContext;
 import org.drftpd.commands.Nuke;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.plugins.Statistics;
 
 import se.mog.io.PermissionDeniedException;
 

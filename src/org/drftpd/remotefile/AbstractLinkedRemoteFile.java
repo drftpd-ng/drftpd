@@ -38,6 +38,7 @@ import org.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
  * Can be used for testing.
  * @author mog
  * @version $Id$
+ * @deprecated
  */
 public abstract class AbstractLinkedRemoteFile
     implements LinkedRemoteFileInterface {

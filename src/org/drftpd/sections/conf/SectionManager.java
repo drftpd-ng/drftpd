@@ -76,7 +76,7 @@ public class SectionManager implements SectionManagerInterface {
         for (Iterator iter = _sections.values().iterator(); iter.hasNext();) {
             SectionInterface section = (SectionInterface) iter.next();
 
-            if (string.startsWith(section.getBasePath()) &&
+            if (string.startsWith(section.getBaseFile().getPath()) &&
                     (matchlen < section.getPath().length())) {
                 match = section;
                 matchlen = section.getPath().length();

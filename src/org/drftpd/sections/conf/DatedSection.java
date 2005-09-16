@@ -31,9 +31,11 @@ import java.util.TimerTask;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
+import org.drftpd.remotefile.FileManager;
 import org.drftpd.remotefile.FileUtils;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.remotefile.PathReference;
 import org.drftpd.remotefile.StaticRemoteFile;
 import org.drftpd.sections.SectionInterface;
 
@@ -56,7 +58,7 @@ public class DatedSection implements SectionInterface {
     // The gmtTimeZone is used only in computeCheckPeriod() method.
     static final TimeZone gmtTimeZone = TimeZone.getTimeZone("GMT");
     private static final Logger logger = Logger.getLogger(DatedSection.class);
-    private String _basePath;
+    private PathReference _basePath;
     private SimpleDateFormat _dateFormat;
     private SectionManager _mgr;
     private String _name;
@@ -66,12 +68,12 @@ public class DatedSection implements SectionInterface {
     public DatedSection(SectionManager mgr, int i, Properties p) {
         _mgr = mgr;
         _name = PropertyHelper.getProperty(p, i + ".name");
-        _basePath = PropertyHelper.getProperty(p, i + ".path");
-        _now = PropertyHelper.getProperty(p, i + ".now");
-
-        if (!_basePath.endsWith("/")) {
-            _basePath += "/";
+        String tempPath = PropertyHelper.getProperty(p, i + ".path");
+        if (!tempPath.endsWith("/")) {
+            tempPath += FileManager.separator;
         }
+        _basePath = new PathReference(tempPath);
+        _now = PropertyHelper.getProperty(p, i + ".now");
 
         _dateFormat = new SimpleDateFormat(PropertyHelper.getProperty(p, i +
                     ".dated"), Locale.getDefault());
@@ -97,16 +99,6 @@ public class DatedSection implements SectionInterface {
 
     private GlobalContext getGlobalContext() {
         return _mgr.getGlobalContext();
-    }
-
-    public LinkedRemoteFileInterface getBaseFile() {
-        try {
-            return _mgr.getConnectionManager().getGlobalContext().getRoot()
-                       .lookupFile(_basePath);
-        } catch (FileNotFoundException e) {
-            return _mgr.getConnectionManager().getGlobalContext().getRoot()
-                       .createDirectories(_basePath);
-        }
     }
 
     public LinkedRemoteFileInterface getFile() {
@@ -143,7 +135,7 @@ public class DatedSection implements SectionInterface {
         }
     }
 
-    public Collection getFiles() {
+    public Collection getDirectories() {
         return getBaseFile().getDirectories();
     }
 
@@ -158,10 +150,6 @@ public class DatedSection implements SectionInterface {
 
     public String getName() {
         return _name;
-    }
-
-    public String getPath() {
-        return getFile().getPath();
     }
 
     // This method computes the roll over period by looping over the
@@ -243,8 +231,19 @@ public class DatedSection implements SectionInterface {
         }
     }
 
+	public LinkedRemoteFileInterface getBaseFile() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	public String getBasePath() {
-		return _basePath;
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String getPath() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
 

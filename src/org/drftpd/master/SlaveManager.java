@@ -575,6 +575,11 @@ public class SlaveManager implements Runnable {
 			}
 		}
 	}
+
+	public Collection<RemoteSlave> getOnlineSlavesFromList(ArrayList<String> _slaves) throws NoAvailableSlaveException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
 
 class RemergeThread extends Thread {

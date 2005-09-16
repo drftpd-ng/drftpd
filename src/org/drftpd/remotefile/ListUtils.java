@@ -33,8 +33,6 @@ import org.drftpd.SFVFile;
 import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.Reply;
 import org.drftpd.id3.ID3Tag;
-import org.drftpd.plugins.DIZFile;
-import org.drftpd.plugins.DIZPlugin;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 

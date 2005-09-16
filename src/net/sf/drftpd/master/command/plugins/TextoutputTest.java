@@ -25,9 +25,6 @@ import java.util.ArrayList;
 
 import junit.framework.TestCase;
 import net.sf.drftpd.event.Event;
-
-import org.drftpd.plugins.SiteBot;
-
 import f00f.net.irc.martyr.IRCConnection;
 import f00f.net.irc.martyr.OutCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;

@@ -35,7 +35,7 @@ import org.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 /**
  * @author mog
  * @version $Id$
- *
+ * @deprecated
  */
 public interface LinkedRemoteFileInterface extends RemoteFileInterface {
     /**

@@ -64,7 +64,7 @@ public class PlainSection implements SectionInterface {
         }
     }
 
-    public Collection getFiles() {
+    public Collection getDirectories() {
         return Collections.singletonList(getFile());
     }
 

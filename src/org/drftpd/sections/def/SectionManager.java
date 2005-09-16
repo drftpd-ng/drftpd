@@ -99,7 +99,7 @@ public class SectionManager implements SectionManagerInterface {
             return _lrf;
         }
 
-        public Collection getFiles() {
+        public Collection getDirectories() {
             return Collections.singletonList(_lrf);
         }
 

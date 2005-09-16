@@ -26,6 +26,7 @@ import org.drftpd.master.RemoteSlave;
 /**
  * @author mog
  * @version $Id$
+ * @deprecated
  */
 public interface RemoteFileInterface extends LightRemoteFileInterface {
 

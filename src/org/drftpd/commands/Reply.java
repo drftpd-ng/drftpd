@@ -112,6 +112,10 @@ public class Reply implements Cloneable {
     /** 530 Access denied */
     public static final Reply RESPONSE_530_ACCESS_DENIED = new Reply(530,
             "Access denied");
+	
+	/** 530 Access denied */
+    public static final Reply RESPONSE_530_PATH_NOT_VALID = new Reply(530,
+            "Path not valid");
 
     /** 530 Not logged in. */
     public static final Reply RESPONSE_530_NOT_LOGGED_IN = new Reply(530,

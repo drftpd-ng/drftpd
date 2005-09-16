@@ -36,7 +36,6 @@ import net.sf.drftpd.util.ReplacerUtils;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.plugins.RaceStatistics;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;

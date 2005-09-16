@@ -39,6 +39,7 @@ import org.drftpd.remotefile.LightRemoteFileInterface;
  *
  * @author mog
  * @version $Id$
+ * @deprecated
  */
 public class FileRemoteFile extends AbstractLightRemoteFile {
     private static final Logger logger = Logger.getLogger(FileRemoteFile.class);

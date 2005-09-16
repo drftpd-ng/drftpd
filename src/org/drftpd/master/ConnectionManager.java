@@ -43,8 +43,6 @@ import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.UserManagement;
-import org.drftpd.plugins.RaceStatistics;
-import org.drftpd.plugins.Statistics;
 import org.drftpd.slave.Slave;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;

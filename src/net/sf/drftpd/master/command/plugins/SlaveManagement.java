@@ -37,7 +37,6 @@ import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyPermissionDeniedException;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.plugins.SiteBot;
 import org.drftpd.slave.SlaveStatus;
 import org.tanesha.replacer.ReplacerEnvironment;
 

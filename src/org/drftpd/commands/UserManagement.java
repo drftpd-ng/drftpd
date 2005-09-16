@@ -42,7 +42,6 @@ import org.drftpd.Bytes;
 import org.drftpd.Time;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.permissions.Permission;
-import org.drftpd.plugins.Statistics;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.HostMask;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -1858,7 +1857,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 							}
 							env.add("speed", Bytes.formatBytes(speed) + "/s");
 							env.add("file", conn2.getDataConnectionHandler()
-									.getTransferFile().getName());
+									.getTransferPath().getName());
 							env.add("slave", conn2.getDataConnectionHandler()
 									.getTranferSlave().getName());
 

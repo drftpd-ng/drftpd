@@ -42,6 +42,7 @@ import org.drftpd.remotefile.RemoteFileInterface;
 /**
  * @author mog
  * @version $Id$
+ * @deprecated
  */
 public class MLST implements CommandHandler, CommandHandlerFactory {
     private static final Logger logger = Logger.getLogger(MLST.class);

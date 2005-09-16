@@ -55,6 +55,7 @@ import se.mog.io.File;
  * 
  * @author mog
  * @version $Id$
+ * @deprecated
  */
 
 public class LinkedRemoteFile implements Serializable, Comparable,

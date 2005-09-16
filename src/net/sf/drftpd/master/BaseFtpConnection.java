@@ -52,7 +52,8 @@ import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.io.AddAsciiOutputStream;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.remotefile.FileManager;
+import org.drftpd.remotefile.PathReference;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -84,7 +85,7 @@ public class BaseFtpConnection implements Runnable {
     //protected ConnectionManager _cm;
     private CommandManager _commandManager;
     protected Socket _controlSocket;
-    protected LinkedRemoteFileInterface _currentDirectory;
+    protected PathReference _currentDirectory;
 
     /**
      * Is the client running a command?
@@ -118,7 +119,7 @@ public class BaseFtpConnection implements Runnable {
                               .getCommandManagerFactory().initialize(this);
         setControlSocket(soc);
         _lastActive = System.currentTimeMillis();
-        setCurrentDirectory(getGlobalContext().getRoot());
+        setCurrentDirectory(FileManager.getRoot());
     }
 
     public static ReplacerEnvironment getReplacerEnvironment(
@@ -201,7 +202,7 @@ public class BaseFtpConnection implements Runnable {
         return _out;
     }
 
-    public LinkedRemoteFileInterface getCurrentDirectory() {
+    public PathReference getCurrentDirectory() {
         return _currentDirectory;
     }
 
@@ -529,8 +530,8 @@ public class BaseFtpConnection implements Runnable {
         }
     }
 
-    public void setCurrentDirectory(LinkedRemoteFileInterface file) {
-        _currentDirectory = file;
+    public void setCurrentDirectory(PathReference path) {
+        _currentDirectory = path;
     }
 
     public void setUser(String user) {

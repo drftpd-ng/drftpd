@@ -17,7 +17,6 @@
  */
 package org.drftpd;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -40,9 +39,8 @@ import net.sf.drftpd.util.PortRange;
 import org.apache.log4j.Logger;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
-import org.drftpd.remotefile.LinkedRemoteFile;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.remotefile.MLSTSerialize;
+import org.drftpd.remotefile.FileManager;
+import org.drftpd.remotefile.PathReference;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.AbstractUserManager;
@@ -61,7 +59,6 @@ public class GlobalContext {
     protected ZipscriptConfig _zsConfig;
     private ArrayList<FtpListener> _ftpListeners = new ArrayList<FtpListener>();
     protected JobManager _jm;
-    protected LinkedRemoteFileInterface _root;
     protected SectionManagerInterface _sections;
     private String _shutdownMessage = null;
     protected SlaveManager _slaveManager;
@@ -191,14 +188,6 @@ public class GlobalContext {
         return _jm;
     }
 
-    public LinkedRemoteFileInterface getRoot() {
-        if (_root == null) {
-            throw new NullPointerException();
-        }
-
-        return _root;
-    }
-
     public SectionManagerInterface getSectionManager() {
         if (_sections == null) {
             throw new NullPointerException();
@@ -272,16 +261,9 @@ public class GlobalContext {
      *
      */
     private void loadRSlavesAndRoot() {
-        try {
             List rslaves = _slaveManager.getSlaves();
-            logger.info("Loading files.mlst");
-            _root = MLSTSerialize.loadMLSTFileDatabase(rslaves, _cm);
-        } catch (FileNotFoundException e) {
-            logger.info("files.mlst not found, creating a new filelist");
-            _root = new LinkedRemoteFile(getConfig());
-        } catch (IOException e) {
-            throw new FatalException(e);
-        }
+			FileManager.getFileManager();
+            logger.info("Loaded the FileManager");
     }
 
     // depends on having getRoot() working
@@ -355,5 +337,9 @@ public class GlobalContext {
         }
 
         throw new ObjectNotFoundException();
+	}
+
+	public PathReference getRoot() {
+		return FileManager.getRoot();
 	}
 }
