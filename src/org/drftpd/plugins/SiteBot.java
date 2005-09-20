@@ -391,7 +391,8 @@ public class SiteBot extends FtpListener implements Observer {
         SFVStatus sfvstatus = sfvfile.getStatus();
         // ANNOUNCE FIRST FILE RCVD 
         //   and EXPECTING xxxMB in xxx Files on same line.
-        if( sfvstatus.getAvailable() == 1) {
+        if( sfvstatus.getAvailable() == 1
+        		&& !direvent.getDirectory().isDeleted()) {
             Ret ret = getPropertyFileSuffix("store.first", dir);
             fillEnvSection( env, direvent, ret.getSection(), direvent.getDirectory());
             env.add("files", Integer.toString(sfvfile.size()));
