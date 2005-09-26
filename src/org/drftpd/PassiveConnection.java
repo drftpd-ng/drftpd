@@ -71,7 +71,8 @@ public class PassiveConnection extends Connection {
 		try {
 			sock = _serverSocket.accept();
 		} finally {
-			_serverSocket.close();
+			if (_serverSocket != null)
+				_serverSocket.close();
 			_serverSocket = null;
 		}
 
