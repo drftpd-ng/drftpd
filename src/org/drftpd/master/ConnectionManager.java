@@ -288,7 +288,7 @@ public class ConnectionManager {
                 	}
                 }
             };
-        TimerTask timerGarbageCollect = new TimerTask() {
+/*        TimerTask timerGarbageCollect = new TimerTask() {
 			public void run() {
 				logger.debug("Memory free before GC :"
 						+ Bytes.formatBytes(Runtime.getRuntime().freeMemory())
@@ -300,12 +300,12 @@ public class ConnectionManager {
 						+ "/"
 						+ Bytes.formatBytes(Runtime.getRuntime().totalMemory()));
 			}
-		};
+		};*/
 
 		// run every hour
 		getGlobalContext().getTimer().schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
 		// run every minute
-		getGlobalContext().getTimer().schedule(timerGarbageCollect, 60 * 1000, 60 * 1000);
+//		getGlobalContext().getTimer().schedule(timerGarbageCollect, 60 * 1000, 60 * 1000);
     }
 
     public void remove(BaseFtpConnection conn) {
