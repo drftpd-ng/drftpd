@@ -56,12 +56,6 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
     public void load(CommandManagerFactory initializer) {
     }
 
-    private Reply doSITE_CHECKSLAVES(BaseFtpConnection conn) {
-        return new Reply(200,
-            "Ok, " + conn.getGlobalContext().getSlaveManager().verifySlaves() +
-            " stale slaves removed");
-    }
-
     private Reply doSITE_KICKSLAVE(BaseFtpConnection conn) {
         if (!conn.getUserNull().isAdmin()) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
@@ -286,10 +280,6 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
     public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException, ReplyPermissionDeniedException, ImproperUsageException {
         String cmd = conn.getRequest().getCommand();
-
-        if ("SITE CHECKSLAVES".equals(cmd)) {
-            return doSITE_CHECKSLAVES(conn);
-        }
 
         if ("SITE KICKSLAVE".equals(cmd)) {
             return doSITE_KICKSLAVE(conn);

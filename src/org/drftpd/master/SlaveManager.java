@@ -69,6 +69,10 @@ public class SlaveManager implements Runnable {
 	private static final String slavePath = "slaves/";
 
 	private static final File slavePathFile = new File(slavePath);
+	
+	private static final int socketTimeout = 10000; // 10 seconds, for Socket
+	
+	protected static final int actualTimeout = 60000; // one minute, evaluated on a SocketTimeout
 
 	protected GlobalContext _gctx;
 
@@ -416,23 +420,6 @@ public class SlaveManager implements Runnable {
 		}
 	}
 
-	/** ping's all slaves, returns number of slaves removed */
-	public int verifySlaves() {
-		int removed = 0;
-
-		synchronized (_rslaves) {
-			for (Iterator i = _rslaves.iterator(); i.hasNext();) {
-				RemoteSlave slave = (RemoteSlave) i.next();
-
-				if (!slave.isAvailablePing()) {
-					removed++;
-				}
-			}
-		}
-
-		return removed;
-	}
-
 	public void run() {
 		try {
 			_serverSocket = new ServerSocket(_port);
@@ -451,7 +438,7 @@ public class SlaveManager implements Runnable {
 
 			try {
 				socket = _serverSocket.accept();
-				socket.setSoTimeout(Connection.TIMEOUT);
+				socket.setSoTimeout(socketTimeout);
 				logger.debug("Slave connected from "
 						+ socket.getRemoteSocketAddress());
 
@@ -505,10 +492,7 @@ public class SlaveManager implements Runnable {
 
 					continue;
 				}
-				
-				socket.setSoTimeout(Integer.parseInt(rslave.getProperty("timeout","300000")));
-				// lengthen the timeout since slaves can sit idle
-				
+					
 				rslave.connect(socket, in, out);
 			} catch (Exception e) {
 				rslave.setOffline(e);

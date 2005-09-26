@@ -89,6 +89,8 @@ public class Slave {
     public static final boolean isWin32 = System.getProperty("os.name")
                                                 .startsWith("Windows");
     private static final Logger logger = Logger.getLogger(Slave.class);
+	private static final int socketTimeout = 10000; // 10 seconds, for Socket
+	protected static final int actualTimeout = 60000; // one minute, evaluated on a SocketTimeout
     public static final String VERSION = "DrFTPD 2.0";
     private int _bufferSize;
     private SSLContext _ctx;
@@ -101,6 +103,7 @@ public class Slave {
     private boolean _uploadChecksums;
     private PortRange _portRange;
     private Set _renameQueue = null;
+	private int _timeout;
     
     protected Slave() {
     	
@@ -122,13 +125,12 @@ public class Slave {
         }
 
         _s = new Socket();
-        int timeout = 0;
         try {
-        	timeout = Integer.parseInt(PropertyHelper.getProperty(p, "slave.timeout"));
+        	_timeout = Integer.parseInt(PropertyHelper.getProperty(p, "slave.timeout"));
         } catch (NullPointerException e) {
-        	timeout = 300000; // 5 minute default
+        	_timeout = actualTimeout;
         }
-        _s.setSoTimeout(timeout);
+        _s.setSoTimeout(socketTimeout);
         _s.connect(addr);
 
         _sout = new ObjectOutputStream(_s.getOutputStream());
@@ -776,6 +778,7 @@ public class Slave {
     }
 
     private void listenForCommands() throws IOException {
+    	long lastCommandReceived = System.currentTimeMillis();
         while (true) {
             AsyncCommand ac = null;
 
@@ -785,6 +788,7 @@ public class Slave {
 				if (ac == null) {
 					continue;
 				}
+				lastCommandReceived = System.currentTimeMillis();
 			} catch (ClassNotFoundException e) {
 				throw new RuntimeException(e);
 			} catch (EOFException e) {
@@ -792,10 +796,16 @@ public class Slave {
 						.debug("Lost connection to the master, may have been kicked offline");
 				return;
 			} catch (SocketTimeoutException e) {
-				// if no communication for slave.timeout time, send a diskstatus
-				// this will uncover whatever underlying communication error
-				// exists
-				sendResponse(new AsyncResponseDiskStatus(getDiskStatus()));
+				// if no communication for slave.timeout (_timeout) time, than
+				// connection to the master is dead or there is a configuration
+				// error
+				if (_timeout < (System.currentTimeMillis() - lastCommandReceived)) {
+					logger
+							.error("Slave is going offline as it hasn't received any communication from the master in "
+									+ (System.currentTimeMillis() - lastCommandReceived)
+									+ " milliseconds");
+					throw new RuntimeException(e);
+				}
 				continue;
 			}
 
