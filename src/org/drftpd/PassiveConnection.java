@@ -17,24 +17,19 @@
  */
 package org.drftpd;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+
+import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+
 import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.Logger;
 import org.drftpd.slave.Connection;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.security.KeyStore;
-
-import javax.net.ServerSocketFactory;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import java.security.*;
-import java.security.cert.*;
 
 
 /**
@@ -71,8 +66,9 @@ public class PassiveConnection extends Connection {
 		try {
 			sock = _serverSocket.accept();
 		} finally {
-			if (_serverSocket != null)
+			if (_serverSocket != null) {
 				_serverSocket.close();
+			}
 			_serverSocket = null;
 		}
 
@@ -82,6 +78,10 @@ public class PassiveConnection extends Connection {
         	SSLSocket sslsock = (SSLSocket) sock;
         	sslsock.setUseClientMode(_useSSLClientMode);
            	sslsock.startHandshake();
+        }
+        if (sock == null) {
+        	// can happen if abort() is called while serverSocket.accept() is waiting
+        	throw new SocketException("abort() was called while waiting for a connection");
         }
 
         return sock;
