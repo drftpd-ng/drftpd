@@ -276,18 +276,18 @@ public class Trial extends FtpListener {
     }
 
     public void actionPerformed(Event event) {
-        if (!(event instanceof UserEvent)) {
-            return;
-        }
-
-        UserEvent uevent = (UserEvent) event;
-        String cmd = event.getCommand();
-
+    	String cmd = event.getCommand();
         if ("RELOAD".equals(cmd)) {
             reload();
 
             return;
         }
+        
+        if (!(event instanceof UserEvent)) {
+            return;
+        }
+
+        UserEvent uevent = (UserEvent) event;
 
         //logger.debug("event.getTime(): " + new Date(event.getTime()));
         //logger.debug(
