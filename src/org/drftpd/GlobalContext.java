@@ -140,7 +140,7 @@ public class GlobalContext {
     public void dispatchFtpEvent(Event event) {
 		logger.debug("Dispatching " + event + " to " + getFtpListeners());
 
-		for (FtpListener handler : new ArrayList<FtpListener>(getFtpListeners())) {
+		for (FtpListener handler : getFtpListeners()) {
 			try {
 				handler.actionPerformed(event);
 			} catch (RuntimeException e) {
