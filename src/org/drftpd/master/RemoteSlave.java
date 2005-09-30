@@ -881,14 +881,14 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 						setOffline("Slave seems to have gone offline, have not received a response in " + (System.currentTimeMillis() - _lastResponseReceived) + " milliseconds");
 						throw new SlaveUnavailableException();
 					}
+					if (pingIndex == null && getActualTimeout()/2 < System.currentTimeMillis() - _lastCommandSent) {
+						pingIndex = issuePingToSlave();
+					}
 					continue;
 				}
 
 				if (ar == null) {
 					continue;
-				}
-				if (pingIndex == null && getActualTimeout()/2 < System.currentTimeMillis() - _lastCommandSent) {
-					pingIndex = issuePingToSlave();
 				}
 
 				synchronized (this) {
