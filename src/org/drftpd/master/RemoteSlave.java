@@ -952,6 +952,7 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 	private synchronized void removeTransfer(TransferIndex transferIndex) {
 		synchronized (_transfers) {
 			RemoteTransfer transfer = _transfers.remove(transferIndex);
+			logger.debug("Removed transfer - " + transferIndex, new Throwable());
 			if (transfer == null) {
 				throw new IllegalStateException("there is a bug in code");
 			}
@@ -1127,7 +1128,7 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 		synchronized (_transfers) {
 			RemoteTransfer ret = _transfers.get(transferIndex);
 			if (ret == null)
-				throw new FatalException("there is a bug somewhere in code, tried to fetch an index that doesn't exist");
+				throw new FatalException("there is a bug somewhere in code, tried to fetch a transfer index that doesn't exist - " + transferIndex);
 			return ret;
 		}
 	}
