@@ -29,6 +29,7 @@ import java.util.StringTokenizer;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
@@ -44,6 +45,7 @@ import org.drftpd.dynamicdata.Key;
 import org.drftpd.permissions.Permission;
 import org.drftpd.plugins.Statistics;
 import org.drftpd.slave.Transfer;
+import org.drftpd.slave.TransferFailedException;
 import org.drftpd.usermanager.HostMask;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -1855,6 +1857,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 							} catch (ObjectNotFoundException e) {
 								logger.debug("This is a bug, please report it",
 										e);
+								speed = 0;
 							}
 							env.add("speed", Bytes.formatBytes(speed) + "/s");
 							env.add("file", conn2.getDataConnectionHandler()
