@@ -61,7 +61,7 @@ public class SlaveTransfer {
         return (_srcTransfer.getTransfered() + _destTransfer.getTransfered()) / 2;
     }
 
-    int getXferSpeed() {
+    long getXferSpeed() {
     	if(_srcTransfer == null || _destTransfer == null) return 0;
         return (_srcTransfer.getXferSpeed() + _destTransfer.getXferSpeed()) / 2;
     }
@@ -121,18 +121,7 @@ public class SlaveTransfer {
                     srcIsDone = true;
                 }
             } catch (TransferFailedException e7) {
-                try {
-                    _destTransfer.abort("srcSlave had an error");
-                } catch (SlaveUnavailableException e8) {
-                }
-
-                throw new SourceSlaveException(e7);
-            } catch (SlaveUnavailableException e7) {
-                try {
-                    _destTransfer.abort("srcSlave had an error");
-                } catch (SlaveUnavailableException e8) {
-                }
-
+                _destTransfer.abort("srcSlave had an error");
                 throw new SourceSlaveException(e7);
             }
 
@@ -141,18 +130,7 @@ public class SlaveTransfer {
                     destIsDone = true;
                 }
             } catch (TransferFailedException e6) {
-                try {
-                    _srcTransfer.abort("destSlave had an error");
-                } catch (SlaveUnavailableException e8) {
-                }
-
-                throw new DestinationSlaveException(e6);
-            } catch (SlaveUnavailableException e6) {
-                try {
-                    _srcTransfer.abort("destSlave had an error");
-                } catch (SlaveUnavailableException e8) {
-                }
-
+                _srcTransfer.abort("destSlave had an error");
                 throw new DestinationSlaveException(e6);
             }
 

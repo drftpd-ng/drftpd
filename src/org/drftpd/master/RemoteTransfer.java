@@ -53,7 +53,7 @@ public class RemoteTransfer {
         _status = ci.getTransferStatus();
     }
 
-    public void updateTransferStatus(TransferStatus ts) {
+    public synchronized void updateTransferStatus(TransferStatus ts) {
         _status = ts;
     }
 
@@ -62,26 +62,14 @@ public class RemoteTransfer {
     }
 
     public long getChecksum() {
-        try {
-            return getTransferStatus().getChecksum();
-        } catch (IOException e) {
-            return 0;
-        } catch (SlaveUnavailableException e) {
-            return 0;
-        }
+        return _status.getChecksum();
     }
 
     /**
      * Returns how long this transfer has been running in milliseconds.
      */
     public long getElapsed() {
-        try {
-            return getTransferStatus().getElapsed();
-        } catch (IOException e) {
-            return 0;
-        } catch (SlaveUnavailableException e) {
-            return 0;
-        }
+    	return _status.getElapsed();
     }
 
     /**
@@ -92,9 +80,9 @@ public class RemoteTransfer {
     }
 
     public TransferStatus getTransferStatus()
-        throws TransferFailedException, SlaveUnavailableException {
+        throws TransferFailedException {
         if (!_rslave.isOnline()) {
-            throw new SlaveUnavailableException("Slave is offline");
+            throw new TransferFailedException("Slave is offline", _status);
         }
 
         if (_status.threwException()) {
@@ -106,29 +94,17 @@ public class RemoteTransfer {
     }
 
     /**
-     * Returns the number of bytes transfered.
+     * Returns the number of bytes transfered. 
      */
     public long getTransfered() {
-        try {
-            return getTransferStatus().getTransfered();
-        } catch (TransferFailedException e) {
-            return 0;
-        } catch (SlaveUnavailableException e) {
-            return 0;
-        }
+       	return _status.getTransfered();
     }
-
+    
     /**
      * Returns how fast the transfer is going in bytes per second.
      */
-    public int getXferSpeed() {
-        try {
-            return getTransferStatus().getXferSpeed();
-        } catch (TransferFailedException e) {
-            return 0;
-        } catch (SlaveUnavailableException e) {
-            return 0;
-        }
+    public long getXferSpeed() {
+       	return _status.getXferSpeed();
     }
     
     public String getPathNull() {
@@ -143,8 +119,16 @@ public class RemoteTransfer {
         return _address;
     }
 
-    public void abort(String reason) throws SlaveUnavailableException {
-        _rslave.issueAbortToSlave(getTransferIndex(),reason);
+    public synchronized void abort(String reason) {
+    	if (_status.isFinished()) {
+    		// no need to abort a transfer that isn't transferring
+    		return;
+    	}
+        try {
+			_rslave.issueAbortToSlave(getTransferIndex(),reason);
+		} catch (SlaveUnavailableException e) {
+			_status = new TransferStatus(getTransferIndex(), e);
+		}
     }
 
     public void receiveFile(String path, char type, long position)
@@ -176,8 +160,6 @@ public class RemoteTransfer {
 			try {
 				return getClass().getName()+"[file="+_path+",status="+getTransferStatus()+"]";
 			} catch (TransferFailedException e) {
-				return getClass().getName()+"[file="+_path+",status=failed]";
-			} catch (SlaveUnavailableException e) {
 				return getClass().getName()+"[file="+_path+",status=failed]";
 			}
 

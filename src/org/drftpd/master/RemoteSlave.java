@@ -57,6 +57,7 @@ import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
+import org.drftpd.slave.TransferFailedException;
 import org.drftpd.slave.TransferIndex;
 import org.drftpd.slave.TransferStatus;
 import org.drftpd.slave.async.AsyncCommand;
@@ -337,20 +338,17 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 
 			for (Iterator i = _transfers.values().iterator(); i.hasNext();) {
 				RemoteTransfer transfer = (RemoteTransfer) i.next();
-
 				switch (transfer.getState()) {
 				case Transfer.TRANSFER_RECEIVING_UPLOAD:
 					throughputUp += transfer.getXferSpeed();
-					transfersUp += 1;
 					bytesReceived += transfer.getTransfered();
-
+					transfersUp += 1;
 					break;
 
 				case Transfer.TRANSFER_SENDING_DOWNLOAD:
 					throughputDown += transfer.getXferSpeed();
 					transfersDown += 1;
 					bytesSent += transfer.getTransfered();
-
 					break;
 
 				case Transfer.TRANSFER_UNKNOWN:
@@ -875,16 +873,12 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 					// not online
 					return;
 				} catch (SocketTimeoutException e) {
-					if (pingIndex == null && (getActualTimeout()/2 < (System.currentTimeMillis() - _lastResponseReceived))) {
+					if (pingIndex == null && ((getActualTimeout()/2 < (System.currentTimeMillis() - _lastResponseReceived)) || (getActualTimeout()/2 < (System.currentTimeMillis() - _lastCommandSent)))) {
 						pingIndex = issuePingToSlave();
 					} else if (getActualTimeout() < (System.currentTimeMillis() - _lastResponseReceived)) {
 						setOffline("Slave seems to have gone offline, have not received a response in " + (System.currentTimeMillis() - _lastResponseReceived) + " milliseconds");
 						throw new SlaveUnavailableException();
 					}
-					if (pingIndex == null && getActualTimeout()/2 < System.currentTimeMillis() - _lastCommandSent) {
-						pingIndex = issuePingToSlave();
-					}
-					continue;
 				}
 
 				if (ar == null) {
@@ -931,7 +925,9 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 					} else {
 						_indexWithCommands.put(ar.getIndex(), ar);
 						if (pingIndex != null && pingIndex.equals(ar.getIndex())) {
+							logger.debug("fetching the ping response");
 							fetchResponse(pingIndex);
+							logger.debug("done fetching the ping response");
 							pingIndex = null;
 						} else {
 							notifyAll();

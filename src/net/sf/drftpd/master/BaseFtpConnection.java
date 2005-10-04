@@ -560,9 +560,6 @@ public class BaseFtpConnection implements Runnable {
 				try {
 					getDataConnectionHandler().getTransfer().abort(
 							"Control connection dropped");
-				} catch (SlaveUnavailableException e) {
-					logger.warn(
-							"Unable to stop transfer, slave is unavailable", e);
 				} catch (ObjectNotFoundException e) {
 					logger.debug("This is a bug, please report it", e);
 				}
