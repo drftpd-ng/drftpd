@@ -57,7 +57,6 @@ import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
-import org.drftpd.slave.TransferFailedException;
 import org.drftpd.slave.TransferIndex;
 import org.drftpd.slave.TransferStatus;
 import org.drftpd.slave.async.AsyncCommand;
@@ -873,14 +872,21 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 					// not online
 					return;
 				} catch (SocketTimeoutException e) {
-					if (pingIndex == null && ((getActualTimeout()/2 < (System.currentTimeMillis() - _lastResponseReceived)) || (getActualTimeout()/2 < (System.currentTimeMillis() - _lastCommandSent)))) {
-						pingIndex = issuePingToSlave();
-					} else if (getActualTimeout() < (System.currentTimeMillis() - _lastResponseReceived)) {
-						setOffline("Slave seems to have gone offline, have not received a response in " + (System.currentTimeMillis() - _lastResponseReceived) + " milliseconds");
-						throw new SlaveUnavailableException();
-					}
+					// handled below
 				}
-
+				
+				if (pingIndex == null
+						&& ((getActualTimeout() / 2 < (System
+								.currentTimeMillis() - _lastResponseReceived)) || (getActualTimeout() / 2 < (System
+								.currentTimeMillis() - _lastCommandSent)))) {
+					pingIndex = issuePingToSlave();
+				} else if (getActualTimeout() < (System.currentTimeMillis() - _lastResponseReceived)) {
+					setOffline("Slave seems to have gone offline, have not received a response in "
+							+ (System.currentTimeMillis() - _lastResponseReceived)
+							+ " milliseconds");
+					throw new SlaveUnavailableException();
+				}
+				
 				if (ar == null) {
 					continue;
 				}
