@@ -714,7 +714,6 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
     public Reply execute(BaseFtpConnection conn)
         throws ReplyException {
         String cmd = conn.getRequest().getCommand();
-        logger.info(cmd);
              
         if ("MODE".equals(cmd)) {
             return doMODE(conn);
