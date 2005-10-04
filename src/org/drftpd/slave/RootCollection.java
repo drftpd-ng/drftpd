@@ -270,10 +270,12 @@ public class RootCollection {
                     continue;
                 }
 
-                if (root2.getPath().startsWith(root.getPath())) {
-                    throw new RuntimeException("Overlapping roots: " +
-                        root.getPath() + " and " + root2.getPath());
-                }
+                if ((root2.getPath() + File.pathSeparator).startsWith(root
+						.getPath()
+						+ File.pathSeparator)) {
+					throw new RuntimeException("Overlapping roots: "
+							+ root.getPath() + " and " + root2.getPath());
+				}
             }
         }
     }
