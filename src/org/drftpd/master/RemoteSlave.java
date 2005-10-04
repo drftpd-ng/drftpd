@@ -931,9 +931,7 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 					} else {
 						_indexWithCommands.put(ar.getIndex(), ar);
 						if (pingIndex != null && pingIndex.equals(ar.getIndex())) {
-							logger.debug("fetching the ping response");
 							fetchResponse(pingIndex);
-							logger.debug("done fetching the ping response");
 							pingIndex = null;
 						} else {
 							notifyAll();
