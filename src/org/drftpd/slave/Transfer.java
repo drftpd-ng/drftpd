@@ -61,7 +61,6 @@ public class Transfer {
     private long _started = 0;
     private long _transfered = 0;
     private TransferIndex _transferIndex;
-    private boolean _transferIsFinished = false;
 	public static final char TRANSFER_RECEIVING_UPLOAD = 'R';
 	public static final char TRANSFER_SENDING_DOWNLOAD = 'S';
 	public static final char TRANSFER_THROUGHPUT = 'A';
@@ -100,7 +99,6 @@ public class Transfer {
     public void abort(String reason) {
     	try {
     	_abortReason = reason;
-        _transferIsFinished = true;
 
     	} finally {
             if (_conn != null) {
@@ -162,12 +160,16 @@ public class Transfer {
 
     public TransferStatus getTransferStatus() {
         return new TransferStatus(getElapsed(), getTransfered(), getChecksum(),
-            _transferIsFinished, getTransferIndex());
+            isFinished(), getTransferIndex());
     }
 
-    public long getTransfered() {
-        return _transfered;
-    }
+    public boolean isFinished() {
+    	return (_finished != 0 || _abortReason != null);
+	}
+
+	public long getTransfered() {
+		return _transfered;
+	}
 
     public TransferIndex getTransferIndex() {
         return _transferIndex;
@@ -399,7 +401,6 @@ public class Transfer {
 		} finally {
 			_finished = System.currentTimeMillis();
 			_slave.removeTransfer(this); // transfers are added in setting up the transfer, issueListenToSlave()/issueConnectToSlave()
-			_transferIsFinished = true;
 		}
 	}
 }
