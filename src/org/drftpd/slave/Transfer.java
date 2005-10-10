@@ -96,7 +96,7 @@ public class Transfer {
         return _transferIndex.hashCode();
     }
 
-    public void abort(String reason) {
+    public synchronized void abort(String reason) {
     	try {
     	_abortReason = reason;
 
@@ -365,33 +365,37 @@ public class Transfer {
 
 			try {
 				while (true) {
-					if (_abortReason != null) {
-						throw new TransferFailedException(
-								"Transfer was aborted - " + _abortReason,
-								getTransferStatus());
-					}
-					count = _in.read(buff);
-					if (count == -1) {
-						if (associatedUpload == null) {
-							break; // done transferring
+					synchronized (this) {
+						if (_abortReason != null) {
+							throw new TransferFailedException(
+									"Transfer was aborted - " + _abortReason,
+									getTransferStatus());
 						}
-						if (associatedUpload.getTransferStatus().isFinished()) {
-							break; // done transferring
+						count = _in.read(buff);
+						if (count == -1) {
+							if (associatedUpload == null) {
+								break; // done transferring
+							}
+							if (associatedUpload.getTransferStatus()
+									.isFinished()) {
+								break; // done transferring
+							}
+							try {
+								Thread.sleep(500);
+							} catch (InterruptedException e) {
+							}
+							continue; // waiting for upload to catch up
 						}
-						try {
-							Thread.sleep(500);
-						} catch (InterruptedException e) {
+						// count != -1
+						if ((System.currentTimeMillis() - currentTime) >= 1000) {
+							_slave
+									.sendResponse(new AsyncResponseTransferStatus(
+											getTransferStatus()));
+							currentTime = System.currentTimeMillis();
 						}
-						continue; // waiting for upload to catch up
+						_transfered += count;
+						_out.write(buff, 0, count);
 					}
-					if ((System.currentTimeMillis() - currentTime) >= 1000) {
-						_slave.sendResponse(new AsyncResponseTransferStatus(
-								getTransferStatus()));
-						currentTime = System.currentTimeMillis();
-					}
-
-					_transfered += count;
-					_out.write(buff, 0, count);
 				}
 
 				_out.flush();
