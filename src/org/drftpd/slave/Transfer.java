@@ -365,37 +365,40 @@ public class Transfer {
 
 			try {
 				while (true) {
-					synchronized (this) {
-						if (_abortReason != null) {
+					if (_abortReason != null) {
+						throw new TransferFailedException(
+								"Transfer was aborted - " + _abortReason,
+								getTransferStatus());
+					}
+					count = _in.read(buff);
+					if (count == -1) {
+						if (associatedUpload == null) {
+							break; // done transferring
+						}
+						if (associatedUpload.getTransferStatus().isFinished()) {
+							break; // done transferring
+						}
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e) {
+						}
+						continue; // waiting for upload to catch up
+					}
+					// count != -1
+					if ((System.currentTimeMillis() - currentTime) >= 1000) {
+						TransferStatus ts = getTransferStatus();
+						if (ts.isFinished()) {
 							throw new TransferFailedException(
 									"Transfer was aborted - " + _abortReason,
-									getTransferStatus());
+									ts);
 						}
-						count = _in.read(buff);
-						if (count == -1) {
-							if (associatedUpload == null) {
-								break; // done transferring
-							}
-							if (associatedUpload.getTransferStatus()
-									.isFinished()) {
-								break; // done transferring
-							}
-							try {
-								Thread.sleep(500);
-							} catch (InterruptedException e) {
-							}
-							continue; // waiting for upload to catch up
-						}
-						// count != -1
-						if ((System.currentTimeMillis() - currentTime) >= 1000) {
-							_slave
-									.sendResponse(new AsyncResponseTransferStatus(
-											getTransferStatus()));
-							currentTime = System.currentTimeMillis();
-						}
-						_transfered += count;
-						_out.write(buff, 0, count);
+						_slave
+								.sendResponse(new AsyncResponseTransferStatus(
+										ts));
+						currentTime = System.currentTimeMillis();
 					}
+					_transfered += count;
+					_out.write(buff, 0, count);
 				}
 
 				_out.flush();
