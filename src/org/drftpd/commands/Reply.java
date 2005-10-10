@@ -131,7 +131,14 @@ public class Reply implements Cloneable {
      * File name not allowed.
      */
     public static final Reply RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN = new Reply(553,
-            "Requested action not taken.");
+            "Requested action not taken.  File name not allowed");
+    
+    /** 550 Requested action not taken.
+     * File exists.
+     */    
+    public static final Reply RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS = new Reply(
+			550, "Requested action not taken. File exists.");
+    
     protected int _code;
     protected Vector<String> _lines = new Vector<String>();
     protected String _message;

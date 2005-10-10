@@ -416,11 +416,11 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                                                        .lookupNonExistingFile(ghostRequest.getArgument());
 
             if (nef.exists()) {
-                return Reply.RESPONSE_530_ACCESS_DENIED;
+                return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS;
             }
 
             if (!ListUtils.isLegalFileName(nef.getPath())) {
-                return Reply.RESPONSE_530_ACCESS_DENIED;
+                return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
             }
 
             try {
@@ -1095,8 +1095,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                     // target exists, this could be overwrite or resume
                     //TODO overwrite & resume files.
                 	// reset(); already done in finally block
-                    return new Reply(550,
-                        "Requested action not taken. File exists.");
+                    return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS;
 
                     //_transferFile = targetDir;
                     //targetDir = _transferFile.getParent();
