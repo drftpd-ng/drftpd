@@ -91,7 +91,9 @@ public class New extends IRCCommand {
             throw new RuntimeException(e.getMessage());
         } finally {
         	try {
-        		file.close();
+        		if (file != null) {
+        			file.close();
+        		}
         	} catch (IOException e) {
         	}
         }

@@ -87,7 +87,9 @@ public class IMDBParser {
 					data += line + "\n";
 				}
 			} finally {
-				in.close();
+				if (in != null) {
+					in.close();
+				}
 			}
             
             
