@@ -952,7 +952,6 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 	private synchronized void removeTransfer(TransferIndex transferIndex) {
 		synchronized (_transfers) {
 			RemoteTransfer transfer = _transfers.remove(transferIndex);
-			logger.debug("Removed transfer - " + transferIndex, new Throwable());
 			if (transfer == null) {
 				throw new IllegalStateException("there is a bug in code");
 			}
