@@ -76,7 +76,7 @@ public class MLSTSerialize {
         StringBuffer ret = new StringBuffer();
 
         if (file.isLink()) {
-            ret.append("type=unix.slink:" + file.getLinkPath() + ";");
+            ret.append("type=OS.unix=slink:" + file.getLinkPath() + ";");
         } else if (file.isFile()) {
             ret.append("type=file;");
         } else if (file.isDirectory()) {
@@ -161,10 +161,14 @@ public class MLSTSerialize {
 
                 if ("type".equals(k)) {
                     //assert v.equals("file") || v.equals("dir") : v;
-                    if (v.startsWith("unix.slink:")) {
-                        file.setLink(v.substring("unix.slink:".length()));
-                        isDir = true;
-                    } else {
+                	if (v.startsWith("unix.slink:")) {
+						// kept here for conversion of old files.mlst
+						file.setLink(v.substring("unix.slink:".length()));
+						isDir = true;
+					} else if (v.startsWith("OS.unix=slink:")) {
+						file.setLink(v.substring("OS.unix=slink:".length()));
+						isDir = true;
+					} else {
                         isFile = "file".equals(v);
                         isDir = "dir".equals(v);
 
