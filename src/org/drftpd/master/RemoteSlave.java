@@ -449,7 +449,7 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 
 			if (destFile == null) { // delete
 				try {
-					fetchResponse(issueDeleteToSlave(sourceFile));
+					fetchResponse(issueDeleteToSlave(sourceFile), 300000);
 				} catch (RemoteIOException e) {
 					if (!(e.getCause() instanceof FileNotFoundException)) {
 						throw (IOException) e.getCause();
@@ -525,7 +525,7 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 	 */
 	public void simpleDelete(String path) {
 		try {
-			fetchResponse(issueDeleteToSlave(path));
+			fetchResponse(issueDeleteToSlave(path), 300000);
 		} catch (RemoteIOException e) {
 			if (e.getCause() instanceof FileNotFoundException) {
 				return;
