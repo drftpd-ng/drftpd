@@ -26,11 +26,17 @@ wrapper.java.library.path.1=lib
 
 # Java Additional Parameters
 wrapper.java.additional.1=-Dlog4j.configuration=file:conf/log4j-default.properties
+
+# ---------------------------------------
 # Enable below if you wish to monitor the memory that drftpd uses, the 
-# resulting hprof.txt file should be sent to zubov
-# It will cause a severe performance hit to drftpd
-# You can hold off on this for the moment since HAT (the tool I was going to use) is broken for jvm 1.5
+# resulting hprof.txt file should be sent to zubov (i'm everywhere)
+# It will cause a severe performance hit to drftpd, but will give
+# valuable information that can decrease memory usage
+# If you have a jvm greater or equal to 1.5.0.03 HAT (the tool I was
+# going to use) will work with it.  If your JVM is old, upgrade or
+# don't bother
 #wrapper.java.additional.2=-Xrunhprof:heap=dump,file=hprof.txt,format=b
+# ---------------------------------------
 
 # Initial Java Heap Size (in MB)
 wrapper.java.initmemory=3
