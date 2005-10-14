@@ -43,6 +43,7 @@ import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.SlaveEvent;
+import net.sf.drftpd.mirroring.JobTransferThread;
 
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
@@ -741,6 +742,12 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 		return ((_socket != null) && _socket.isConnected());
 	}
 
+	/**
+	 * 
+	 * @param string
+	 * @return
+	 * @throws SlaveUnavailableException
+	 */
 	public String issueChecksumToSlave(String string)
 			throws SlaveUnavailableException {
 		String index = fetchIndex();
@@ -966,7 +973,6 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 
 			}
 		}
-
 	}
 
 	public void setOffline(String reason) {

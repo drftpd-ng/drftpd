@@ -54,6 +54,10 @@ import org.drftpd.usermanager.UserManager;
  * @author mog
  * @version $Id$
  */
+/**
+ * @author zubov
+ *
+ */
 public class GlobalContext {
     private static final Logger logger = Logger.getLogger(GlobalContext.class);
     protected ConnectionManager _cm;
@@ -100,12 +104,18 @@ public class GlobalContext {
         loadSlaveManager(cfg);
         loadRSlavesAndRoot();
         listenForSlaves();
+        loadJobManager();
+        getJobManager().startJobs();
         loadSlaveSelectionManager(cfg);
         loadSectionManager(cfg);
         loadPlugins(cfg);
     }
 
-    /**
+    private void loadJobManager() {
+		_jm = new JobManager(this);
+	}
+
+	/**
          *
          */
     private void loadSlaveSelectionManager(Properties cfg) {
@@ -168,11 +178,11 @@ public class GlobalContext {
 		return new ArrayList<FtpListener>(_ftpListeners);
 	}
 
+    /**
+     * JobManager is now loaded as an integral part of the daemon
+     * If no Jobs are sent, it utilizes very little resources
+     */    
     public JobManager getJobManager() {
-        if (_jm == null) {
-            throw new IllegalStateException("JobManager not loaded");
-        }
-
         return _jm;
     }
 
@@ -218,20 +228,6 @@ public class GlobalContext {
 
     public boolean isShutdown() {
         return _shutdownMessage != null;
-    }
-
-    public void loadJobManager() {
-        if (_jm != null) {
-            return; // already loaded
-        }
-
-        try {
-            _jm = new JobManager(this);
-            getSlaveSelectionManager().reload();
-            _jm.startJobs();
-        } catch (IOException e) {
-            throw new FatalException("Error loading JobManager", e);
-        }
     }
 
     protected void loadPlugins(Properties cfg) {

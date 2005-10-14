@@ -86,7 +86,6 @@ public class JobManagerTest extends TestCase {
 
         DummySlaveSelectionManager dssm = new DummySlaveSelectionManager();
         dgc.setSlaveSelectionManager(dssm);
-        _cm.getGlobalContext().loadJobManager();
         _jm = _cm.getGlobalContext().getJobManager();
         file = new LinkedRemoteFilePath("/path/file1.txt");
         file.addSlave(rslave1);

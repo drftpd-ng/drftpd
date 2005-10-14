@@ -114,7 +114,6 @@ public class Archive extends FtpListener implements Runnable {
 
     public void init(GlobalContext gctx) {
     	super.init(gctx);
-        getGlobalContext().loadJobManager();
         reload();
         startArchive();
     }

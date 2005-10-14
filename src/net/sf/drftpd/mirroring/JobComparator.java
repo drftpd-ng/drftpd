@@ -22,10 +22,10 @@ import java.util.Comparator;
 
 /**
  * @author zubov
- * @version $Id: JobComparator.java,v 1.5 2004/08/03 20:14:01 zubov Exp $
+ * @version $Id$
  *
  */
-public class JobComparator implements Comparator {
+public class JobComparator implements Comparator<Job> {
     /**
      * Compares Jobs
      */
@@ -35,10 +35,7 @@ public class JobComparator implements Comparator {
     /* (non-Javadoc)
      * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
      */
-    public int compare(Object arg0, Object arg1) {
-        Job job1 = (Job) arg0;
-        Job job2 = (Job) arg1;
-
+    public int compare(Job job1, Job job2) {
         if (job1.getPriority() > job2.getPriority()) {
             return -1;
         }

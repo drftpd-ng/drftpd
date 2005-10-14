@@ -78,7 +78,16 @@ public class FilterChain {
 
     public void reload() throws FileNotFoundException, IOException {
         Properties p = new Properties();
-        p.load(new FileInputStream(_cfgfileName));
+        FileInputStream fis = null;
+        try {
+        	fis = new FileInputStream(_cfgfileName); 
+        	p.load(fis);
+        } finally {
+        	if (fis != null) {
+        		fis.close();
+        		fis = null;
+        	}
+        }
         reload(p);
     }
 

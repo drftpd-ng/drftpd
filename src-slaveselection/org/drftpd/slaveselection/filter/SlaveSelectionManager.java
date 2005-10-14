@@ -140,16 +140,9 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     public void reload() throws FileNotFoundException, IOException {
         _ssmiDown = new FilterChain(this, "conf/slaveselection-down.conf");
         _ssmiUp = new FilterChain(this, "conf/slaveselection-up.conf");
-
-        if (getGlobalContext().getConnectionManager().getGlobalContext()
-                    .isJobManagerLoaded()) {
-            _ssmiJobUp = new FilterChain(this, "conf/slaveselection-jobup.conf");
-            _ssmiJobDown = new FilterChain(this,
+        _ssmiJobUp = new FilterChain(this, "conf/slaveselection-jobup.conf");
+        _ssmiJobDown = new FilterChain(this,
                     "conf/slaveselection-jobdown.conf");
-        } else {
-            _ssmiJobUp = null;
-            _ssmiJobDown = null;
-        }
     }
 
     public GlobalContext getGlobalContext() {

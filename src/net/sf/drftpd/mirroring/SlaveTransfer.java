@@ -142,32 +142,29 @@ public class SlaveTransfer {
 
         if (!checkCRC) {
             // crc passes if we're not using it
-            _file.addSlave(_destSlave);
-
             return true;
         }
 
         long dstxferCheckSum = _destTransfer.getChecksum();
-
-        try {
-            if ((dstxferCheckSum == 0) ||
-                    (_file.getCheckSumCached() == dstxferCheckSum) ||
-                    (_file.getCheckSumFromSlave() == dstxferCheckSum)) {
-                _file.addSlave(_destSlave);
-
-                return true;
-            }
-        } catch (NoAvailableSlaveException e) {
-            logger.info("NoAvailableSlaveException caught getting checksum from slave",
-                e);
-
-            return false;
-        } catch (IOException e) {
-            logger.info("Exception caught getting checksum from slave", e);
-
-            return false;
-        }
-
-        return false;
+        
+        if ((dstxferCheckSum == 0)
+				|| (_file.getCheckSumCached() == dstxferCheckSum)) {
+			return true;
+		}
+		return false;
     }
+
+	/**
+	 * @return Returns the _destSlave.
+	 */
+	public RemoteSlave getDestinationSlave() {
+		return _destSlave;
+	}
+
+	/**
+	 * @return Returns the _srcSlave.
+	 */
+	public RemoteSlave getSourceSlave() {
+		return _srcSlave;
+	}
 }

@@ -17,8 +17,9 @@
  */
 package net.sf.drftpd.mirroring;
 
-import org.apache.log4j.Logger;
+import java.util.Random;
 
+import org.apache.log4j.Logger;
 
 /**
  * @author zubov
@@ -27,17 +28,17 @@ import org.apache.log4j.Logger;
 public class JobTransferThread extends Thread {
     private static final Logger logger = Logger.getLogger(JobTransferThread.class);
     private JobManager _jm;
+    private static int count = 1;
 
     /**
      * This class sends a JobTransfer if it is available
      */
-    JobTransferThread(JobManager jm) {
-    	super("JobTransferThread");
+    public JobTransferThread(JobManager jm) {
+    	super("JobTransferThread - " + count++);
         _jm = jm;
     }
 
     public void run() {
-
         try {
             _jm.processJob();
         } catch (Exception e) {

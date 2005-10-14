@@ -99,7 +99,6 @@ public class Mirror extends FtpListener {
 
     public void init(GlobalContext gctx) {
         super.init(gctx);
-        getGlobalContext().loadJobManager();
     }
 
     private void reload() {

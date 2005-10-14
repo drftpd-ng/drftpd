@@ -66,9 +66,6 @@ public class JobManagerCommandHandler
      * @throws ImproperUsageException
      */
     private Reply doADDJOB(BaseFtpConnection conn) throws ImproperUsageException {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
 
         if (!conn.getRequest().hasArgument()) {
         	throw new ImproperUsageException();
@@ -135,9 +132,6 @@ public class JobManagerCommandHandler
     }
 
     private Reply doLISTJOBS(BaseFtpConnection conn) {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
 
         Reply reply = new Reply(200);
         int count = 0;
@@ -157,8 +151,8 @@ public class JobManagerCommandHandler
                 env.add("speed", Bytes.formatBytes(job.getSpeed()));
                 env.add("progress", Bytes.formatBytes(job.getProgress()));
                 env.add("total", Bytes.formatBytes(job.getFile().length()));
-                env.add("srcslave", job.getSrcSlaveName());
-                env.add("destslave", job.getDestSlaveName());
+                env.add("srcslave", job.getSourceSlave().getName());
+                env.add("destslave", job.getDestinationSlave().getName());
                 reply.addComment(conn.jprintf(JobManagerCommandHandler.class,
                         "listjobrunning", env));
             } else {
@@ -170,9 +164,6 @@ public class JobManagerCommandHandler
     }
 
     private Reply doREMOVEJOB(BaseFtpConnection conn) throws ReplyException, ImproperUsageException {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
 
         if (!conn.getRequest().hasArgument()) {
         	throw new ImproperUsageException();
@@ -210,9 +201,6 @@ public class JobManagerCommandHandler
     }
 
     private Reply doSTARTJOBS(BaseFtpConnection conn) {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
 
         conn.getGlobalContext().getJobManager()
             .startJobs();
@@ -221,9 +209,6 @@ public class JobManagerCommandHandler
     }
 
     private Reply doSTOPJOBS(BaseFtpConnection conn) {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
 
         conn.getGlobalContext().getJobManager().stopJobs();
 

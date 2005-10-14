@@ -58,19 +58,22 @@ public class DefaultSlaveSelectionManager
 
     public void reload() throws FileNotFoundException, IOException {
         Properties p = new Properties();
-        p.load(new FileInputStream("conf/slaveselection-old.conf"));
+        FileInputStream fis = null;
+        try {
+        fis = new FileInputStream("conf/slaveselection-old.conf");
+        p.load(fis);
+        } finally {
+        	if (fis != null) {
+        		fis.close();
+        		fis = null;
+        	}
+        }
         _minfreespace = Bytes.parseBytes(PropertyHelper.getProperty(p, "minfreespace"));
 
-        try {
-            if (getGlobalContext().getJobManager() != null) {
-                _maxTransfers = Integer.parseInt(PropertyHelper.getProperty(p,
+        _maxTransfers = Integer.parseInt(PropertyHelper.getProperty(p,
                             "maxTransfers"));
-                _maxBandwidth = Bytes.parseBytes(PropertyHelper.getProperty(p,
+        _maxBandwidth = Bytes.parseBytes(PropertyHelper.getProperty(p,
                             "maxBandwidth"));
-            }
-        } catch (IllegalStateException e) {
-            // jobmanager isn't loaded, don't load it's settings
-        }
     }
 
     public RemoteSlave getASlave(Collection rslaves, char direction,
