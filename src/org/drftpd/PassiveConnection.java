@@ -101,14 +101,16 @@ public class PassiveConnection extends Connection {
 				_serverSocket.close();
 			}
         } catch (IOException e) {
-            logger.warn("failed to close() server socket", e);
+            logger.error("failed to close() server socket", e);
         }
         _serverSocket = null;
     }
 
 	protected void finalize() throws Throwable {
 		if (_serverSocket != null) {
-			logger.debug("Closing extraneous ServerSocket, accept() never called?");
+			logger.debug("Closing extraneous ServerSocket - "
+					+ _serverSocket.getLocalPort()
+					+ ", accept() was never called on the ServerSocket");
 			_serverSocket.close();
 			_serverSocket = null;	
 		}

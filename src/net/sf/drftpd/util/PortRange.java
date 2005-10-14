@@ -46,8 +46,8 @@ public class PortRange {
     }
 
     public PortRange(int minPort, int maxPort) {
-        if (minPort > maxPort) {
-            throw new RuntimeException("maxPort must be > minPort");
+        if (0 >= minPort || minPort > maxPort || maxPort > 65535) {
+            throw new RuntimeException("0 < minPort <= maxPort <= 65535");
         }
 
         _maxPort = maxPort;
@@ -55,35 +55,35 @@ public class PortRange {
     }
 
     public ServerSocket getPort(ServerSocketFactory ssf) {
-        if ((_minPort <= 0) || (_maxPort <= 0)) {
-            try {
-                return ssf.createServerSocket(0, 1);
-            } catch (IOException e) {
-                logger.error("Unable to bind anonymous port", e);
-                throw new RuntimeException(e);
-            }
-        }
+		if (_minPort == 0) {
+			try {
+				return ssf.createServerSocket(0, 1);
+			} catch (IOException e) {
+				logger.error("Unable to bind anonymous port", e);
+				throw new RuntimeException(e);
+			}
+		}
 
-        int initPos = rand.nextInt(_maxPort - _minPort + 1) + _minPort;
-        try {
-            return ssf.createServerSocket(initPos, 1);
-        } catch (IOException e) {
-        }
-        int pos = initPos;
-        while (true) {
-        	pos++;
-            if (pos > _maxPort) {
-                pos = _minPort;
-            }
-        	if (pos == initPos) {
-        		break;
-        	}
-            try {
-                return ssf.createServerSocket(pos, 1);
-            } catch (IOException e) {
-            }
-        }
-
-        throw new RuntimeException("PortRange exhausted");
-    }
+		int pos = rand.nextInt(_maxPort - _minPort + 1) + _minPort;
+		int initPos = pos;
+		boolean retry = true;
+		while (true) {
+			try {
+				return ssf.createServerSocket(pos, 1);
+			} catch (IOException e) {
+				logger.debug("Could not create socket at pos - " + pos);
+			}
+			pos++;
+			if (pos > _maxPort) {
+				pos = _minPort;
+			}
+			if (pos == initPos) {
+				if (retry == false) {
+					throw new RuntimeException("PortRange exhausted");
+				}
+				System.runFinalization();
+				retry = false;
+			}
+		}
+	}
 }
