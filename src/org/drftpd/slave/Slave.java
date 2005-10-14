@@ -154,13 +154,12 @@ public class Slave {
         _roots = getDefaultRootBasket(p);
         _transfers = new HashMap();
 
-        int minport = Integer.parseInt(p.getProperty("slave.portfrom", "0"));
-        int maxport = Integer.parseInt(p.getProperty("slave.portto", "0"));
-
-        if ((minport == 0) || (maxport == 0)) {
-            _portRange = new PortRange();
-        } else {
-            _portRange = new PortRange(minport, maxport);
+        try {
+        	int minport = Integer.parseInt(p.getProperty("slave.portfrom"));
+        	int maxport = Integer.parseInt(p.getProperty("slave.portto"));
+        	_portRange = new PortRange(minport, maxport);
+        } catch (NumberFormatException e) {
+        	_portRange = new PortRange();
         }
     }
 
