@@ -60,6 +60,15 @@ public class SlaveTransfer {
     	if(_srcTransfer == null || _destTransfer == null) return 0;
         return (_srcTransfer.getTransfered() + _destTransfer.getTransfered()) / 2;
     }
+    
+    public void abort(String reason) {
+    	if (_srcTransfer != null) {
+    		_srcTransfer.abort(reason);
+    	}
+    	if (_destTransfer != null) {
+    		_destTransfer.abort(reason);
+    	}
+    }
 
     long getXferSpeed() {
     	if(_srcTransfer == null || _destTransfer == null) return 0;
@@ -79,9 +88,9 @@ public class SlaveTransfer {
             ConnectInfo ci = _destSlave.fetchTransferResponseFromIndex(destIndex);
             _destTransfer = _destSlave.getTransfer(ci.getTransferIndex());
         } catch (SlaveUnavailableException e) {
-            throw new SourceSlaveException(e);
+            throw new DestinationSlaveException(e);
         } catch (RemoteIOException e) {
-            throw new SourceSlaveException(e);
+            throw new DestinationSlaveException(e);
         }
 
         try {
@@ -91,9 +100,9 @@ public class SlaveTransfer {
             ConnectInfo ci = _srcSlave.fetchTransferResponseFromIndex(srcIndex);
             _srcTransfer = _srcSlave.getTransfer(ci.getTransferIndex());
         } catch (SlaveUnavailableException e) {
-            throw new DestinationSlaveException(e);
+            throw new SourceSlaveException(e);
         } catch (RemoteIOException e) {
-            throw new DestinationSlaveException(e);
+            throw new SourceSlaveException(e);
         }
 
         try {
@@ -122,7 +131,7 @@ public class SlaveTransfer {
                 }
             } catch (TransferFailedException e7) {
                 _destTransfer.abort("srcSlave had an error");
-                throw new SourceSlaveException(e7);
+                throw new SourceSlaveException(e7.getCause());
             }
 
             try {
@@ -131,7 +140,7 @@ public class SlaveTransfer {
                 }
             } catch (TransferFailedException e6) {
                 _srcTransfer.abort("destSlave had an error");
-                throw new DestinationSlaveException(e6);
+                throw new DestinationSlaveException(e6.getCause());
             }
 
             try {

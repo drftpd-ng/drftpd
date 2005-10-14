@@ -41,6 +41,7 @@ import org.drftpd.slave.RemoteIOException;
  * @version $Id$
  */
 public class Job {
+	private static long jobIndexCount = 0;
 	private static final Logger logger = Logger.getLogger(Job.class);
     private Set<RemoteSlave> _destSlaves;
     private LinkedRemoteFileInterface _file;
@@ -49,9 +50,11 @@ public class Job {
     private long _timeCreated;
     private long _timeSpent;
     private int _transferNum;
+    private long _index;
 
     public Job(LinkedRemoteFileInterface file, Collection destSlaves,
         int priority, int transferNum) {
+    	_index = jobIndexCount++;
         _destSlaves = new HashSet<RemoteSlave>(destSlaves);
         _file = file;
         _priority = priority;
@@ -163,7 +166,10 @@ public class Job {
     }
 
     private synchronized void reset() {
-        _slaveTransfer = null;
+    	if (_slaveTransfer != null) {
+    		_slaveTransfer.abort("Resetting slave2slave Transfer");
+            _slaveTransfer = null;
+    	}
     }
 
     public synchronized void sentToSlave(RemoteSlave slave) {
@@ -185,18 +191,19 @@ public class Job {
     }
 
     public String toString() {
-        return "Job[file=" + getFile().getName() + ",dest=[" +
-            outputDestinationSlaves() + "],transferNum=" + _transferNum +
-			",priority="+getPriority()+"]";
-    }
+		return "Job[index=" + _index + "][file=" + getFile().getPath()
+				+ ",dest=[" + outputDestinationSlaves() + "],transferNum="
+				+ _transferNum + ",priority=" + getPriority() + "]";
+	}
 
     /**
-     * Returns true if transfer was completed successfully
-     * @param checkCRC
-     * @param sourceSlave
-     * @param destSlave
-     * @return
-     */
+	 * Returns true if transfer was completed successfully
+	 * 
+	 * @param checkCRC
+	 * @param sourceSlave
+	 * @param destSlave
+	 * @return
+	 */
     
     public void transfer(boolean checkCRC, RemoteSlave sourceSlave,
 			RemoteSlave destSlave) {
@@ -265,8 +272,11 @@ public class Job {
 					logger.debug("Accepting file because the crc's match");
 					// successful transfer
 					logSuccess();
-					return;
+				} else {
+					logger.debug("Checksum did not match, removing offending file");
+					destSlave.simpleDelete(getFile().getPath());
 				}
+				return;
 			} else {
 				logger.error("Error on slave during slave2slave transfer", e);
 			}
@@ -313,5 +323,9 @@ public class Job {
 			return _file == ((Job) arg0)._file;
 		}
 		return super.equals(arg0);
+	}
+
+	public long getIndex() {
+		return _index;
 	}
 }
