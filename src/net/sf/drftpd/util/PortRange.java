@@ -72,7 +72,6 @@ public class PortRange {
 			try {
 				return ssf.createServerSocket(pos, 1);
 			} catch (IOException e) {
-				logger.debug("Could not create socket at pos - " + pos);
 			}
 			pos++;
 			if (pos > _maxPort) {
