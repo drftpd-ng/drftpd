@@ -1526,7 +1526,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 						lrf.setLength(light.length());
 						lrf.setCheckSum(0);
 					} else {
-						rslave.simpleRename(lrf.getName(), lrf.getParentFile()
+						rslave.simpleRename(lrf.getPath(), lrf.getParentFile()
 								.getPath(), lrf.getName() + "."
 								+ rslave.getName() + ".conflict");
 						try {
