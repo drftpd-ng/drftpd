@@ -52,7 +52,7 @@ public class JobManager {
 
 	private GlobalContext _gctx;
 	
-	private TimerTask runJob = null;
+	private TimerTask _runJob = null;
 
 	/**
 	 * Keeps track of all jobs and controls them
@@ -60,7 +60,7 @@ public class JobManager {
 	public JobManager(GlobalContext gctx) {
 		_gctx = gctx;
 		_queuedJobSet = new TreeSet<Job>(new JobComparator());
-		reload(null);
+		reload();
 	}
 
 	public synchronized void addJobsToQueue(Collection<Job> jobs) {
@@ -213,40 +213,37 @@ public class JobManager {
 	}
 
 	public void reload() {
-		reload(null);
-	}
+		Properties p = new Properties();
+		FileInputStream fis = null;
 
-	public void reload(Properties p) {
-		if (p == null) {
-			p = new Properties();
-			FileInputStream fis = null;
-
-			try {
-				fis = new FileInputStream("conf/jobmanager.conf");
-				p.load(fis);
-			} catch (IOException e) {
-				logger.warn("conf/jobmanager.conf missing, using default values");
-				// defaults
-				_useCRC = true;
-				return;
-			} finally {
-				if (fis != null) {
-					try {
-						fis.close();
-					} catch (IOException e) {
-						logger.error("Could not close the FileInputStream of conf/jobmanager.conf", e);
-					}
-					fis = null;
+		try {
+			fis = new FileInputStream("conf/jobmanager.conf");
+			p.load(fis);
+		} catch (IOException e) {
+			logger.warn("conf/jobmanager.conf missing, using default values");
+			// defaults
+			_useCRC = true;
+			_sleepSeconds = 10000; // 10 seconds
+			return;
+		} finally {
+			if (fis != null) {
+				try {
+					fis.close();
+				} catch (IOException e) {
+					logger
+							.error(
+									"Could not close the FileInputStream of conf/jobmanager.conf",
+									e);
 				}
+				fis = null;
 			}
 		}
 		_useCRC = p.getProperty("useCRC", "true").equals("true");
 		_sleepSeconds = 1000 * Integer.parseInt(PropertyHelper.getProperty(p,"sleepSeconds"));
-		// run every hour
-		if (runJob != null) {
-			runJob.cancel();
+		if (_runJob != null) {
+			_runJob.cancel();
 		}
-		runJob = new TimerTask() {
+		_runJob = new TimerTask() {
 			public void run() {
 				if (_isStopped) {
 					return;
@@ -254,7 +251,7 @@ public class JobManager {
 				new JobTransferThread(getJobManager()).start();
 			}
 		};
-		getGlobalContext().getTimer().schedule(runJob, 0, _sleepSeconds);
+		getGlobalContext().getTimer().schedule(_runJob, 0, _sleepSeconds);
 	}
 
 	public synchronized void removeJobFromQueue(Job job) {

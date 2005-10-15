@@ -48,7 +48,7 @@ import org.drftpd.sections.SectionInterface;
 public abstract class ArchiveType {
     private static final Logger logger = Logger.getLogger(ArchiveType.class);
     private long _archiveAfter;
-    private LinkedRemoteFileInterface _lrf;
+    private LinkedRemoteFileInterface _directory;
     protected Archive _parent;
     protected SectionInterface _section;
     private Set<RemoteSlave> _slaveList;
@@ -68,7 +68,7 @@ public abstract class ArchiveType {
     public abstract HashSet<RemoteSlave> findDestinationSlaves();
 
     public final LinkedRemoteFileInterface getDirectory() {
-        return _lrf;
+        return _directory;
     }
 
     /**
@@ -256,7 +256,7 @@ public abstract class ArchiveType {
     }
 
     public final void setDirectory(LinkedRemoteFileInterface lrf) {
-        _lrf = lrf;
+        _directory = lrf;
     }
 
     public final void setRSlaves(Set<RemoteSlave> slaveList) {
