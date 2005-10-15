@@ -53,7 +53,7 @@ import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.remotefile.MLSTSerialize;
-import org.drftpd.slave.Connection;
+import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.usermanager.UserFileException;
@@ -543,11 +543,46 @@ public class SlaveManager implements Runnable {
         	}
         }
 	}
-
+/**
+ * Accepts files and directories and does the physical deletes asynchronously
+ * Waits for a response and handles errors on each slave
+ * Use RemoteSlave.simpleDelete(path) if you want to just delete one file
+ * @param file
+ */
 	public void deleteOnAllSlaves(LinkedRemoteFile file) {
-		synchronized (this) {
-			for (RemoteSlave rslave : _rslaves) {
-				rslave.simpleDelete(file.getPath());
+		HashMap<RemoteSlave,String> slaveMap = new HashMap<RemoteSlave,String>();
+		List<RemoteSlave> slaves = null;
+		if (file.isFile()) {
+			slaves = file.getSlaves();
+		} else {
+			slaves = new ArrayList<RemoteSlave>(_rslaves);
+		}
+		for (RemoteSlave rslave : slaves) {
+			String index = null;
+			try {
+				index = rslave.issueDeleteToSlave(file.getPath());
+				slaveMap.put(rslave, index);
+			} catch (SlaveUnavailableException e) {
+				rslave.addQueueDelete(file.getPath());
+			}
+		}
+		for (RemoteSlave rslave : slaveMap.keySet()) {
+			String index = slaveMap.get(rslave);
+			try {
+				rslave.fetchResponse(index, 300000);
+			} catch (SlaveUnavailableException e) {
+				rslave.addQueueDelete(file.getPath());
+			} catch (RemoteIOException e) {
+				if (e.getCause() instanceof FileNotFoundException) {
+					continue;
+				}
+				rslave.setOffline("IOException deleting file, check logs for specific error");
+				rslave.addQueueDelete(file.getPath());
+				logger
+						.error(
+								"IOException deleting file, file will be deleted when slave comes online",
+								e);
+				rslave.addQueueDelete(file.getPath());
 			}
 		}
 	}

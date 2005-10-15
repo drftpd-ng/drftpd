@@ -523,6 +523,7 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 
 	/**
 	 * Deletes files/directories and waits for the response
+	 * Meant to be used if you don't want to utilize asynchronization
 	 */
 	public void simpleDelete(String path) {
 		try {
@@ -534,12 +535,12 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 
 			setOffline("IOException deleting file, check logs for specific error");
 			addQueueDelete(path);
-			logger.error(
-					"IOException deleting file, check logs for specific error",
-					e);
+			logger
+					.error(
+							"IOException deleting file, file will be deleted when slave comes online",
+							e);
 		} catch (SlaveUnavailableException e) {
-			logger.debug("Failed to delete: " + path, e);
-			setOffline(e);
+			// Already offline and we ARE successful in deleting the file
 			addQueueDelete(path);
 		}
 	}

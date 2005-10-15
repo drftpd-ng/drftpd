@@ -397,32 +397,22 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
 			return;
 		}
-
-		synchronized (_slaves) {
-			for (Iterator<RemoteSlave> iter = _slaves.iterator(); iter
-					.hasNext();) {
-				RemoteSlave rslave = iter.next();
-				try {
-					for (RemoteTransfer rtransfer : new ArrayList<RemoteTransfer>(
-							rslave.getTransfers())) {
-						if (getPath().equalsIgnoreCase(rtransfer.getPathNull())) {
-							rtransfer
-									.abort("File has been deleted on the master");
-						}
+		// this.isFile() = true
+		for (RemoteSlave rslave : new ArrayList<RemoteSlave>(_slaves)) {
+			try {
+				for (RemoteTransfer rtransfer : new ArrayList<RemoteTransfer>(
+						rslave.getTransfers())) {
+					if (getPath().equalsIgnoreCase(rtransfer.getPathNull())) {
+						rtransfer
+								.abort("File has been deleted on the master");
 					}
-				} catch (SlaveUnavailableException e) {
-					// nothing to do here, still want to delete it though
 				}
-				logger.info("DELETE: " + rslave.getName() + ": " + getPath());
-				rslave.simpleDelete(getPath());
-				iter.remove();
+			} catch (SlaveUnavailableException e) {
+				// nothing to do here, still want to delete it though
 			}
 		}
-
-		if (!_slaves.isEmpty()) {
-			throw new RuntimeException(
-					"not all slaves were removed on delete()");
-		}
+		_ftpConfig.getGlobalContext().getSlaveManager().deleteOnAllSlaves(this);
+		_slaves.clear();
 
 		try {
 			if (getParentFile().getMap().remove(getName()) == null) {
