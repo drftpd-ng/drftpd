@@ -163,9 +163,9 @@ public class ConstantMirroring extends ArchiveType {
             LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
 
             if (src.isFile()) {
-                logger.info("Adding " + src.getPath() + " to the job queue");
 
-                Job job = new Job(src, getRSlaves(), 3, _numOfSlaves);
+                Job job = new Job(src, getRSlaves(), 3, _numOfSlaves, true);
+                logger.info("Adding " + job + " to the job queue");
                 jm.addJobToQueue(job);
                 jobQueue.add(job);
             } else {

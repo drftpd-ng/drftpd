@@ -161,9 +161,9 @@ public abstract class ArchiveType {
             if (src.isFile()) {
                 destSlaves.removeAll(src.getSlaves());
                 if(destSlaves.isEmpty()) continue;
-                logger.info("Adding " + src.getPath() + " to the job queue");
 
                 Job job = new Job(src, destSlaves, 3, destSlaves.size());
+                logger.info("Adding " + job + " to the job queue");
                 //jm.addJobToQueue(job);
                 jobQueue.add(job);
             } else {

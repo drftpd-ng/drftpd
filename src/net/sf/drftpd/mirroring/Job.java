@@ -51,9 +51,15 @@ public class Job {
     private long _timeSpent;
     private int _transferNum;
     private long _index;
+    private boolean _onlyCountOnlineSlaves;
+    
+    public Job(LinkedRemoteFileInterface file, Collection<RemoteSlave> destSlaves,
+            int priority, int transferNum) {
+    	this(file, destSlaves, priority, transferNum, false);
+    }
 
-    public Job(LinkedRemoteFileInterface file, Collection destSlaves,
-        int priority, int transferNum) {
+    public Job(LinkedRemoteFileInterface file, Collection<RemoteSlave> destSlaves,
+        int priority, int transferNum, boolean onlyCountOnlineSlaves) {
     	_index = jobIndexCount++;
         _destSlaves = new HashSet<RemoteSlave>(destSlaves);
         _file = file;
@@ -62,7 +68,7 @@ public class Job {
         _timeSpent = 0;
         _transferNum = transferNum;
         _slaveTransfer = null;
-
+        _onlyCountOnlineSlaves = onlyCountOnlineSlaves;
         if (_transferNum > destSlaves.size()) {
             throw new IllegalArgumentException(
                 "transferNum cannot be greater than destSlaves.size()");
@@ -83,6 +89,15 @@ public class Job {
      * {@see net.sf.drftpd.master.SlaveManagerImpl#getASlave(Collection, char, FtpConfig)}
      */
     public Set<RemoteSlave> getDestinationSlaves() {
+    	if (_onlyCountOnlineSlaves) {
+    		HashSet<RemoteSlave> onlineDestinationSlaves = new HashSet<RemoteSlave>();
+    		for (RemoteSlave rslave : new HashSet<RemoteSlave>(_destSlaves)) {
+    			if (rslave.isAvailable()) {
+    				onlineDestinationSlaves.add(rslave);
+    			}
+    		}
+    		return onlineDestinationSlaves;
+    	}
         return Collections.unmodifiableSet(_destSlaves);
     }
 
@@ -152,17 +167,10 @@ public class Job {
     private String outputDestinationSlaves() {
         String toReturn = "";
 
-        for (Iterator iter = getDestinationSlaves().iterator(); iter.hasNext();) {
-            RemoteSlave rslave = (RemoteSlave) iter.next();
-
-            if (!iter.hasNext()) {
-                return toReturn + rslave.getName();
-            }
-
+        for (RemoteSlave rslave : new HashSet<RemoteSlave>(_destSlaves)) {
             toReturn = toReturn + rslave.getName() + ",";
         }
-
-        return toReturn;
+        return toReturn.substring(0,toReturn.length()-1);
     }
 
     private synchronized void reset() {
