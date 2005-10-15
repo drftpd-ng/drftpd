@@ -151,7 +151,7 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
             try {
                 archiveType = (ArchiveType) constructor.newInstance(objectParams);
             } catch (Exception e2) {
-                logger.debug("Unable to load ArchiveType for section " +
+                logger.warn("Unable to load ArchiveType for section " +
                     section.getName(), e2);
                 env.add("exception", e2.getMessage());
                 reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
@@ -169,7 +169,7 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
             archiveTypeName = archiveType.getClass().getName();
         }
 
-        HashSet slaveSet = new HashSet();
+        HashSet<RemoteSlave> slaveSet = new HashSet<RemoteSlave>();
 
         while (st.hasMoreTokens()) {
             String slavename = st.nextToken();

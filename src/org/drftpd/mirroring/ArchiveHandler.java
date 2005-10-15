@@ -41,12 +41,6 @@ public class ArchiveHandler extends Thread {
         super(archiveType.getClass().getName() + " archiving " +
                 archiveType.getSection().getName());
         _archiveType = archiveType;
-        
-        for(ArchiveHandler h : _archiveType._parent.getArchiveHandlers()) {
-        	if(archiveType.getSection().equals(h.getSection()))
-        		throw new RuntimeException(
-        				"Attempt to add start an already running archivehandler");
-        }
     }
 
     public ArchiveType getArchiveType() {
@@ -67,8 +61,13 @@ public class ArchiveHandler extends Thread {
                 if (_archiveType.getDirectory() == null) {
                     return; // all done
                 }
-
-                _archiveType._parent.addArchiveHandler(this);
+                try {
+					_archiveType._parent.addArchiveHandler(this);
+				} catch (DuplicateArchiveException e) {
+					logger.warn("Directory -- " + _archiveType.getDirectory()
+							+ " -- is already being archived ");
+					return;
+				}
             }
 
             if (_archiveType.getRSlaves() == null) {
@@ -94,7 +93,7 @@ public class ArchiveHandler extends Thread {
         Archive archive = _archiveType._parent;
 
         if (!archive.removeArchiveHandler(this)) {
-            logger.debug(
+            logger.error(
                 "This is a serious bug, unable to remove the ArchiveHandler!");
         }
     }
