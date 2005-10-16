@@ -291,7 +291,7 @@ public class Request extends IRCCommand {
         return out;
     }
 
-	private static LinkedRemoteFileInterface findDir(
+/*	private static LinkedRemoteFileInterface findDir(
 		GlobalContext gctx,
 		LinkedRemoteFileInterface dir,
 		User user,
@@ -316,7 +316,7 @@ public class Request extends IRCCommand {
 	        }
 	    }
 	    return null;
-	}
+	}*/
 	
 	private User getUser(FullNick fn) {
 		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();

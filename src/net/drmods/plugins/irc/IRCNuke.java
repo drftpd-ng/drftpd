@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
+import java.util.Map.Entry;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.Nukee;
@@ -42,7 +43,6 @@ import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.Nuke;
 import org.drftpd.commands.UserManagement;
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -159,14 +159,8 @@ public class IRCNuke extends IRCCommand {
 				return out;
 			}
 			// nukees contains credits as value
-			if (user == null) {
-				Long add = (Long) nukees2.get(null);
-				if (add == null) {
-					add = new Long(0);
-				}
-				nukees2.put(user, new Long(add.longValue()
-						+ ((Long) nukees.get(username)).longValue()));
-			} else {
+			//if (user == null) we don't do anything below anyway
+			if (user != null) {
 				nukees2.put(user, (Long) nukees.get(username));
 			}
 		}
@@ -197,11 +191,10 @@ public class IRCNuke extends IRCCommand {
 
 		// update credits, nukedbytes, timesNuked, lastNuked
 		// for (Iterator iter = nukees2.keySet().iterator(); iter.hasNext();) {
-		for (User nukee : nukees2.keySet()) {
+		for (Entry<User, Long> nukeeEntry : nukees2.entrySet()) {
 			// User nukee = (User) iter.next();
-			if (nukee == null)
-				continue;
-			long size = ((Long) nukees2.get(nukee)).longValue();
+			User nukee = nukeeEntry.getKey();
+			long size = nukeeEntry.getValue().longValue();
 
 			long debt = Nuke.calculateNukedAmount(size, nukee.getKeyedMap()
 					.getObjectFloat(UserManagement.RATIO), nukemult);
@@ -224,9 +217,7 @@ public class IRCNuke extends IRCCommand {
 		NukeEvent nuke = new NukeEvent(ftpuser, "NUKE", nukeDirPath,
 				nukeDirSize, nukedAmount, nukemult, nukemsg, nukees);
 
-		Nuke dpsn = (Nuke) getGlobalContext().getConnectionManager()
-				.getCommandManagerFactory().getHandlersMap().get(Nuke.class);
-		dpsn.getNukeLog().add(nuke);
+		Nuke.getNukeLog().add(nuke);
 		getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);
 		return out;
 	}
@@ -268,13 +259,8 @@ public class IRCNuke extends IRCCommand {
 		String toPath = nukeDir.getParentFileNull().getPath() + "/" + toName;
 		String toDir = nukeDir.getParentFileNull().getPath();
 		NukeEvent nuke;
-		Nuke dpsn;
 		try {
-			 dpsn = (Nuke) getGlobalContext().getConnectionManager()
-					.getCommandManagerFactory()
-					.getHandlersMap()
-					.get(Nuke.class);
-			nuke = dpsn.getNukeLog().get(toPath);
+			nuke = Nuke.getNukeLog().get(toPath);
 		} catch (ObjectNotFoundException ex) {
 			out.add(ex.getMessage());
 			logger.warn(ex);
@@ -314,7 +300,7 @@ public class IRCNuke extends IRCCommand {
 		}//for
 			
 		try {
-			dpsn.getNukeLog().remove(toPath);
+			Nuke.getNukeLog().remove(toPath);
 		} catch (ObjectNotFoundException e) {
 			logger.warn("Error removing nukelog entry", e);
 		}

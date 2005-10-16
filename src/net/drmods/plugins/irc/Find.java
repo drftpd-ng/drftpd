@@ -36,7 +36,9 @@ import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sitebot.IRCCommand;
+import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import f00f.net.irc.martyr.commands.MessageCommand;
@@ -131,9 +133,14 @@ public class Find extends IRCCommand {
      	try {
      	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
             env.add("ftpuser",user.getName());
-     	} catch (Exception e) {
+     	} catch (NoSuchUserException e) {
      	    logger.warn("Could not identify " + ident);
      	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+     	    return out;
+     	} catch (UserFileException e) {
+     	    logger.error("Could not identify " + ident
+					+ " as there was a UserFileException", e);
+     	    out.add(ReplacerUtils.jprintf("ident.failed", env, SiteBot.class));
      	    return out;
      	}
 		if (args.equals("")) {
