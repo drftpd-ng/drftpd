@@ -58,6 +58,7 @@ import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
+import org.drftpd.slave.TransferFailedException;
 import org.drftpd.slave.TransferIndex;
 import org.drftpd.slave.TransferStatus;
 import org.drftpd.slave.async.AsyncCommand;
@@ -958,8 +959,9 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 	}
 
 	private synchronized void removeTransfer(TransferIndex transferIndex) {
+		RemoteTransfer transfer = null;
 		synchronized (_transfers) {
-			RemoteTransfer transfer = _transfers.remove(transferIndex);
+			transfer = _transfers.remove(transferIndex);
 			if (transfer == null) {
 				throw new IllegalStateException("there is a bug in code");
 			}
@@ -974,6 +976,23 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 
 			}
 		}
+		if (transfer.getState() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+			addReceivedBytes(transfer.getTransfered());
+		} else if (transfer.getState() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+			addSentBytes(transfer.getTransfered());
+		} // else, we don't care
+	}
+
+	private void addSentBytes(long transfered) {
+		addBytes("bytesSent", transfered);
+	}
+
+	private void addBytes(String field, long transfered) {
+		setProperty(field, Long.toString(Long.parseLong(getProperty(field,"0"))+transfered));
+	}
+
+	private void addReceivedBytes(long transfered) {
+		addBytes("bytesReceived", transfered);
 	}
 
 	public void setOffline(String reason) {
