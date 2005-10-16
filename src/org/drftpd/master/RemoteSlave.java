@@ -128,10 +128,6 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 
 	private transient HashMap<TransferIndex, RemoteTransfer> _transfers;
 
-	private long _sentBytes;
-
-	private long _receivedBytes;
-
 	public RemoteSlave(String name) {
 		_name = name;
 		_keysAndValues = new Properties();
@@ -367,12 +363,12 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 				transfersUp, throughputDown, transfersDown);
 	}
 
-	private synchronized long getSentBytes() {
-		return _sentBytes;
+	public long getSentBytes() {
+		return Long.parseLong(getProperty("bytesSent", "0"));
 	}
 
-	private synchronized long getReceivedBytes() {
-		return _receivedBytes;
+	public long getReceivedBytes() {
+		return Long.parseLong(getProperty("bytesReceived", "0"));
 	}
 
 	/**
@@ -599,8 +595,6 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 		_indexWithCommands = new HashMap<String, AsyncResponse>();
 		_transfers = new HashMap<TransferIndex, RemoteTransfer>();
 		_errors = 0;
-		_sentBytes = 0;
-		_receivedBytes = 0;
 		_lastNetworkError = System.currentTimeMillis();
 		start();
 		class RemergeThread implements Runnable {
@@ -962,19 +956,9 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 		RemoteTransfer transfer = null;
 		synchronized (_transfers) {
 			transfer = _transfers.remove(transferIndex);
-			if (transfer == null) {
-				throw new IllegalStateException("there is a bug in code");
-			}
-			switch (transfer.getState()) {
-			case Transfer.TRANSFER_RECEIVING_UPLOAD:
-				_receivedBytes += transfer.getTransfered();
-
-				break;
-
-			case Transfer.TRANSFER_SENDING_DOWNLOAD:
-				_sentBytes += transfer.getTransfered();
-
-			}
+		}
+		if (transfer == null) {
+			throw new IllegalStateException("there is a bug in code");
 		}
 		if (transfer.getState() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
 			addReceivedBytes(transfer.getTransfered());
@@ -1016,8 +1000,6 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 		_transfers = null;
 		_maxPath = 0;
 		_status = null;
-		_sentBytes = 0;
-		_receivedBytes = 0;
 
 		if (_isAvailable) {
 			getGlobalContext().dispatchFtpEvent(
