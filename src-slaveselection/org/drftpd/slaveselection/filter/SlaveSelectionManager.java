@@ -98,6 +98,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException {
         ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(job.getDestinationSlaves());
+        slaves.removeAll(job.getFile().getAvailableSlaves());
 
         for (Iterator iter = slaves.iterator(); iter.hasNext();) {
             if (!((RemoteSlave) iter.next()).isAvailable()) {
