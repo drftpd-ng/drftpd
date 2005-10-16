@@ -81,7 +81,9 @@ public abstract class ArchiveType {
         for (Iterator iter = getSection().getFile().getFiles().iterator();
                 iter.hasNext();) {
             LinkedRemoteFileInterface lrf = (LinkedRemoteFileInterface) iter.next();
-
+            if (!lrf.isDirectory()) {
+            	continue;
+            }
             try {
                 _parent.checkPathForArchiveStatus(lrf.getPath());
             } catch (DuplicateArchiveException e1) {
