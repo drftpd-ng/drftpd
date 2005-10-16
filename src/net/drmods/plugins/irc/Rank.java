@@ -103,7 +103,7 @@ public class Rank extends IRCCommand {
 	        try {
                 user = getGlobalContext().getUserManager().getUserByName(args);
             } catch (Exception e) {
-                logger.error(args + " is not a vlid username", e);
+                logger.error(args + " is not a valid username", e);
                 env.add("user", args);
                 out.add(ReplacerUtils.jprintf("rank.error", env, Rank.class));
                 return out;
