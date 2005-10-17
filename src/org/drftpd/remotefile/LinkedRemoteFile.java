@@ -343,6 +343,22 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		return file;
 	}
 
+	private void setDeleted() {
+		if (isFile()) {
+			_parent = null;
+			_slaves.clear();
+		} else if (isDirectory()) {
+			for (RemoteFileInterface victim : new ArrayList<RemoteFileInterface>(getFiles())) {
+				if (victim instanceof LinkedRemoteFile) {
+					LinkedRemoteFile lrf = (LinkedRemoteFile) victim;
+					lrf.setDeleted();
+				}
+			}
+			_parent = null;
+			_files.clear();
+		}
+	}
+	
 	/**
 	 * Deletes a file or directory, RemoteSlave handles issues with slaves being
 	 * offline and queued deletes
@@ -358,14 +374,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			// need to use a copy of getFiles() for recursive delete to avoid
 			// ConcurrentModificationErrors
 			long tempLength = length();
-			for (RemoteFileInterface victim : new ArrayList<RemoteFileInterface>(getFiles())) {
-				if (victim instanceof LinkedRemoteFile) {
-					LinkedRemoteFile lrf = (LinkedRemoteFile) victim;
-
-					// remove Strong references
-					lrf._parent = null;
-				}
-			}
+			setDeleted();
 			_files.clear();
 			_length = 0;
 			_ftpConfig.getGlobalContext().getSlaveManager()
@@ -950,9 +959,6 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		return (_files == null) && (_slaves != null) && !isLink();
 	}
 
-	/**
-	 * isLink() && isDeleted() means queued rename, target is getLink().
-	 */
 	public boolean isLink() {
 		return _link != null;
 	}
@@ -1482,7 +1488,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
 	public boolean isDeleted() {
 		if (isDirectory()) {
-			return false;
+			return (_parent == null && _name.equals(""));
 		}
 
 		return _slaves.isEmpty();
