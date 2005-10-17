@@ -41,7 +41,7 @@ import org.drftpd.slave.RemoteIOException;
  * @version $Id$
  */
 public class Job {
-	private static long jobIndexCount = 0;
+	private static long jobIndexCount = 1;
 	private static final Logger logger = Logger.getLogger(Job.class);
     private Set<RemoteSlave> _destSlaves;
     private LinkedRemoteFileInterface _file;
