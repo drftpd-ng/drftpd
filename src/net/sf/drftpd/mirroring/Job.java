@@ -170,7 +170,10 @@ public class Job {
         for (RemoteSlave rslave : new HashSet<RemoteSlave>(_destSlaves)) {
             toReturn = toReturn + rslave.getName() + ",";
         }
-        return toReturn.substring(0,toReturn.length()-1);
+        if (!toReturn.equals("")) {
+        	return toReturn.substring(0,toReturn.length()-1);
+        }
+        return null;
     }
 
     private synchronized void reset() {
