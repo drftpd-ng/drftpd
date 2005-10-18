@@ -267,12 +267,15 @@ public abstract class ArchiveType {
 
     public final void waitForSendOfFiles(ArrayList jobQueue) {
         while (true) {
+        	if (_directory.isDeleted()) {
+        		// all files will be deleted too, no need to removejobs, JobManager will do that
+        		return;
+        	}
             for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
                 Job job = (Job) iter.next();
 
                 if (job.isDone()) {
-                    logger.debug("File " + job.getFile().getPath() +
-                        " is done being sent");
+                    logger.debug("Job " + job + " is done being sent");
                     iter.remove();
                 }
             }
