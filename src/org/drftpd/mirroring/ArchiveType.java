@@ -265,7 +265,7 @@ public abstract class ArchiveType {
         _slaveList = slaveList;
     }
 
-    public final void waitForSendOfFiles(ArrayList jobQueue) {
+    public final void waitForSendOfFiles(ArrayList<Job> jobQueue) {
         while (true) {
         	if (_directory.isDeleted()) {
         		// all files will be deleted too, no need to removejobs, JobManager will do that
@@ -288,7 +288,15 @@ public abstract class ArchiveType {
             if (jobQueue.isEmpty()) {
                 break;
             }
+            logger.debug("Waiting on jobs in queue:");
+            printJobsInQueue(jobQueue);
         }
+    }
+    
+    private void printJobsInQueue(ArrayList<Job> jobList) {
+    	for (Job j : jobList) {
+    		logger.debug(j);
+    	}
     }
 
     public abstract String toString();
