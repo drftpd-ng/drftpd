@@ -95,10 +95,7 @@ public class ArchiveHandler extends Thread {
         } catch (Exception e) {
             logger.warn("", e);
         } finally {
-			if (!_archiveType._parent.removeArchiveHandler(this)) {
-				logger
-						.error("This is a serious bug, unable to remove the ArchiveHandler!");
-			}
+			_archiveType._parent.removeArchiveHandler(this);
         }
     }
 }
