@@ -148,12 +148,6 @@ public class ConstantMirroring extends ArchiveType {
         return true;
     }
 
-    /**
-     * Adds relevant Jobs to the JobManager and returns an ArrayList of those Job's
-     */
-    public ArrayList send() {
-        return recursiveSend(getDirectory());
-    }
 
     private ArrayList recursiveSend(LinkedRemoteFileInterface lrf) {
         ArrayList jobQueue = new ArrayList();
@@ -166,7 +160,6 @@ public class ConstantMirroring extends ArchiveType {
 
                 Job job = new Job(src, getRSlaves(), 3, _numOfSlaves, true);
                 logger.info("Adding " + job + " to the job queue");
-                jm.addJobToQueue(job);
                 jobQueue.add(job);
             } else {
                 jobQueue.addAll(recursiveSend(src));

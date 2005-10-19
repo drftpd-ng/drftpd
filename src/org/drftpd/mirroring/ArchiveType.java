@@ -288,8 +288,6 @@ public abstract class ArchiveType {
             if (jobQueue.isEmpty()) {
                 break;
             }
-            logger.debug("Waiting on jobs in queue:");
-            printJobsInQueue(jobQueue);
         }
     }
     

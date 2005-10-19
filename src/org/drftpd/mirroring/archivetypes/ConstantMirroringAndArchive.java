@@ -278,7 +278,6 @@ public class ConstantMirroringAndArchive extends ArchiveType {
                 logger.info("Adding " + src.getPath() + " to the job queue");
 
                 Job job = new Job(src, getRSlaves(), 3, _numOfSlaves);
-                jm.addJobToQueue(job);
                 jobQueue.add(job);
             } else {
                 jobQueue.addAll(recursiveSend(src));

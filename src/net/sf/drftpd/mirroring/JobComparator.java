@@ -44,17 +44,11 @@ public class JobComparator implements Comparator<Job> {
             return 1;
         }
 
-        if (job1.getTimeCreated() < job2.getTimeCreated()) { //older
-
+        if (job1.getIndex() < job2.getIndex()) { //older
             return -1;
         }
 
-        if (job1.getTimeCreated() > job2.getTimeCreated()) { //younger
-
-            return 1;
-        }
-
-        // same priority, and same time
-        return 0;
+        //if (job1.getIndex() > job2.getIndex()) { //younger
+        return 1;
     }
 }

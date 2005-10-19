@@ -187,7 +187,6 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
                     " to the job queue with numOfSlaves = " + _numOfSlaves);
 
                 Job job = new Job(file, getRSlaves(), 3, _numOfSlaves);
-                jm.addJobToQueue(job);
                 jobQueue.add(job);
             }
         }

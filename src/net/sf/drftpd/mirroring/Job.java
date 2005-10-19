@@ -157,7 +157,7 @@ public class Job {
      * returns true if this job has nothing more to send
      */
     public boolean isDone() {
-        return ((_transferNum < 1) || (_destSlaves.isEmpty()));
+        return _transferNum < 1;
     }
 
     public boolean isTransferring() {
