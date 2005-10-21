@@ -44,6 +44,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.util.PortRange;
@@ -104,6 +105,7 @@ public class Slave {
     private PortRange _portRange;
     private Set _renameQueue = null;
 	private int _timeout;
+	private boolean _sslMaster;
     
     protected Slave() {
     	
@@ -113,6 +115,8 @@ public class Slave {
         InetSocketAddress addr = new InetSocketAddress(PropertyHelper.getProperty(
                     p, "master.host"),
                 Integer.parseInt(PropertyHelper.getProperty(p, "master.bindport")));
+        _sslMaster = p.getProperty("slave.masterSSL", "false").equalsIgnoreCase("true");
+
         // Whatever interface the slave uses to connect to the master, is the 
         // interface that the master will report to clients requesting PASV transfers 
         // from this slave, unless pasv_addr is set on the master for this slave
@@ -123,8 +127,19 @@ public class Slave {
         if (isWin32) {
         	_renameQueue = new HashSet();
         }
+        
+        try {
+            _ctx = SSLGetContext.getSSLContext();
+        } catch (Exception e) {
+            logger.warn("Error loading SSLContext", e);
+        }
 
-        _s = new Socket();
+        if (_sslMaster) {
+        	_s = _ctx.getSocketFactory().createSocket();
+        } else {
+        	_s = new Socket();
+        }
+
         try {
         	_timeout = Integer.parseInt(PropertyHelper.getProperty(p, "slave.timeout"));
         } catch (NullPointerException e) {
@@ -132,19 +147,16 @@ public class Slave {
         }
         _s.setSoTimeout(socketTimeout);
         _s.connect(addr);
-
+		if (_s instanceof SSLSocket) {
+			((SSLSocket) _s).setUseClientMode(true);
+			((SSLSocket) _s).startHandshake();
+		}
         _sout = new ObjectOutputStream(_s.getOutputStream());
         _sin = new ObjectInputStream(_s.getInputStream());
 
         //TODO sendReply()
         _sout.writeObject(slavename);
         _sout.flush();
-
-        try {
-            _ctx = SSLGetContext.getSSLContext();
-        } catch (Exception e) {
-            logger.warn("Error loading SSLContext", e);
-        }
 
         _uploadChecksums = p.getProperty("enableuploadchecksums", "true")
                             .equals("true");

@@ -40,6 +40,8 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import javax.net.ssl.SSLSocket;
+
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -49,6 +51,7 @@ import net.sf.drftpd.master.SlaveFileException;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
+import org.drftpd.SSLGetContext;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -86,12 +89,15 @@ public class SlaveManager implements Runnable {
 
 	private RemergeThread _remergeThread;
 
+	private boolean _sslSlaves;
+
 	public SlaveManager(Properties p, GlobalContext gctx)
 			throws SlaveFileException {
 		this();
 		_gctx = gctx;
 		_port = Integer.parseInt(PropertyHelper.getProperty(p,
 				"master.bindport"));
+		_sslSlaves = p.getProperty("master.slaveSSL", "false").equalsIgnoreCase("true");
 		loadSlaves();
 	}
 
@@ -422,7 +428,12 @@ public class SlaveManager implements Runnable {
 
 	public void run() {
 		try {
-			_serverSocket = new ServerSocket(_port);
+			if (_sslSlaves) {
+				_serverSocket = SSLGetContext.getSSLContext()
+						.getServerSocketFactory().createServerSocket(_port);
+			} else {
+				_serverSocket = new ServerSocket(_port);
+			}
 			//_serverSocket.setReuseAddress(true);
 			logger.info("Listening for slaves on port " + _port);
 		} catch (Exception e) {
@@ -439,6 +450,10 @@ public class SlaveManager implements Runnable {
 			try {
 				socket = _serverSocket.accept();
 				socket.setSoTimeout(socketTimeout);
+				if (socket instanceof SSLSocket) {
+					((SSLSocket) socket).setUseClientMode(false);
+					((SSLSocket) socket).startHandshake();
+				}
 				logger.debug("Slave connected from "
 						+ socket.getRemoteSocketAddress());
 

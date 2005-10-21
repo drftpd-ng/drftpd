@@ -9,6 +9,8 @@ master.bindport=1099
 #Leave master.ip commented to listen on all interfaces)
 #master.ip=xxx.xxx.xxx.xxx
 master.port=2121
+#Set the slaves to use SSL for the master connection as well
+master.slaveSSL=false
 
 #User manager to use, leave it for now
 master.usermanager=org.drftpd.usermanager.javabeans.BeanUserManager
