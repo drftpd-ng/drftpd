@@ -1,4 +1,5 @@
 # times are represented in minutes
+# 1440  = 1 day
 # 10080 = 1 week
 # 43200 = 1 month
 
@@ -28,6 +29,7 @@ cycleTime=30
 #fifthsectionname.offOfSlave.2=slave2
 #sixthsectionname.archiveType=ConstantMirroring
 #sixthsectionname.numOfSlaves=2
+#sixthsectionname.slaveDeadAfter=1440
 
 #This will first to drftpd1-3, after one week (slowAfter) will mirror to two slaves not in fastHost list.
 #seventhsectionname.archiveType=ConstantMirroringAndArchive

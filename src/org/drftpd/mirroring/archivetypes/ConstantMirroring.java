@@ -45,12 +45,15 @@ import java.util.Properties;
 public class ConstantMirroring extends ArchiveType {
     private static final Logger logger = Logger.getLogger(ConstantMirroring.class);
     private int _numOfSlaves;
+    private long _slaveDeadAfter;
 
     public ConstantMirroring(Archive archive, SectionInterface section,
         Properties p) {
         super(archive, section, p);
         _numOfSlaves = Integer.parseInt(PropertyHelper.getProperty(p,
                     section.getName() + ".numOfSlaves"));
+        _slaveDeadAfter = 1000 * 60 * Integer.parseInt(p.getProperty(
+                section.getName() + ".slaveDeadAfter", "0"));
 
         if (_numOfSlaves < 2) {
             throw new IllegalArgumentException(
@@ -129,15 +132,21 @@ public class ConstantMirroring extends ArchiveType {
             }
 
             if (src.isFile()) {
-                Collection onlineSlaves;
+                Collection<RemoteSlave> slaves;
 
-                try {
-                    onlineSlaves = src.getAvailableSlaves();
-                } catch (NoAvailableSlaveException e) {
-                    continue; // can't archive this file but maybe others have a chance
+                slaves = src.getSlaves();
+                for (Iterator<RemoteSlave> slaveIter = slaves.iterator(); iter.hasNext();) {
+                	RemoteSlave rslave = slaveIter.next();
+                	if (!rslave.isAvailable()) {
+                		long offlineTime = System.currentTimeMillis() - rslave.getLastTimeOnline();
+                		if (offlineTime > _slaveDeadAfter) {
+                			// slave is considered dead
+                			iter.remove();
+                		}
+                	}
                 }
 
-                if (onlineSlaves.size() != _numOfSlaves) {
+                if (slaves.size() != _numOfSlaves) {
                     return false;
                 }
             } else if (src.isDirectory()) {

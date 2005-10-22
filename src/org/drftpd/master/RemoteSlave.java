@@ -987,6 +987,7 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 	public final synchronized void setOfflineReal(String reason) {
 
 		if (_socket != null) {
+			setProperty("lastOnline", Long.toString(System.currentTimeMillis()));
 			try {
 				_socket.close();
 			} catch (IOException e) {
@@ -1179,5 +1180,14 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 			setOfflineReal("shutdown gracefully");
 		} catch (SlaveUnavailableException e) {
 		}
+	}
+
+	public long getLastTimeOnline() {
+		if (isOnline()) {
+			return System.currentTimeMillis();
+		}
+		String value = getProperty("lastOnline");
+		// if (value == null) Slave has never been online
+		return Long.parseLong(value == null ? "0" : value);
 	}
 }
