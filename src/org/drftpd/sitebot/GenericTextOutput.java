@@ -79,7 +79,9 @@ public class GenericTextOutput extends IRCCommand {
             throw new RuntimeException(e1);
         } finally {
             try {
-                in.close();
+            	if (in != null) {
+            		in.close();
+            	}
             } catch (IOException e2) {
             }
         }

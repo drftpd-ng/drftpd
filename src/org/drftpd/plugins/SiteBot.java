@@ -1145,7 +1145,15 @@ public class SiteBot extends FtpListener implements Observer {
     protected void reload() throws FileNotFoundException, IOException {
     	Properties ircCfg = new Properties();
     	synchronized(this) {
-    		ircCfg.load(new FileInputStream("conf/irc.conf"));
+    		FileInputStream fis = null;
+    		try {
+    			fis = new FileInputStream("conf/irc.conf");
+        		ircCfg.load(fis);
+    		} finally {
+    			if (fis != null) {
+    				fis.close();
+    			}
+    		}
     		reloadIRCCommands();
     	}
         reload(ircCfg);
