@@ -135,13 +135,13 @@ public class ConstantMirroring extends ArchiveType {
                 Collection<RemoteSlave> slaves;
 
                 slaves = src.getSlaves();
-                for (Iterator<RemoteSlave> slaveIter = slaves.iterator(); iter.hasNext();) {
+                for (Iterator<RemoteSlave> slaveIter = slaves.iterator(); slaveIter.hasNext();) {
                 	RemoteSlave rslave = slaveIter.next();
                 	if (!rslave.isAvailable()) {
                 		long offlineTime = System.currentTimeMillis() - rslave.getLastTimeOnline();
                 		if (offlineTime > _slaveDeadAfter) {
                 			// slave is considered dead
-                			iter.remove();
+                			slaveIter.remove();
                 		}
                 	}
                 }
