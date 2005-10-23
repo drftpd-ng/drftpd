@@ -76,9 +76,10 @@ public class SlaveTransfer {
     }
 
     /**
-     * Returns true if the crc passed, false otherwise
+     * Returns the crc checksum of the destination transfer
+     * If CRC is disabled on the destination slave, checksum = 0
      */
-    protected boolean transfer(boolean checkCRC) throws SlaveException {
+    protected boolean transfer() throws SlaveException {
     	// can do encrypted slave2slave transfers by modifying the
     	// first argument in issueListenToSlave() and the third option
     	// in issueConnectToSlave(), maybe do an option later, is this wanted?
@@ -148,19 +149,18 @@ public class SlaveTransfer {
             } catch (InterruptedException e5) {
             }
         }
-
-        if (!checkCRC) {
-            // crc passes if we're not using it
-            return true;
+        long srcChecksum = _srcTransfer.getChecksum();
+        long destChecksum = _destTransfer.getChecksum();
+        // may as well set the checksum, we know this one is right
+        if (_srcTransfer.getChecksum() != 0) {
+        	_file.setCheckSum(_srcTransfer.getChecksum());
         }
-
-        long dstxferCheckSum = _destTransfer.getChecksum();
         
-        if ((dstxferCheckSum == 0)
-				|| (_file.getCheckSumCached() == dstxferCheckSum)) {
-			return true;
-		}
-		return false;
+        if (_srcTransfer.getChecksum() == _destTransfer.getChecksum() || _destTransfer.getChecksum() == 0 || _srcTransfer.getChecksum() == 0 ) {
+        	return true;
+        } else {
+        	return false;
+        }
     }
 
 	/**

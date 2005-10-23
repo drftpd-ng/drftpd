@@ -230,20 +230,18 @@ public class Job {
 					destSlave);
 		}
 
-		boolean result = false;
 		logger.info("Sending " + getFile().getName() + " from "
 				+ sourceSlave.getName() + " to " + destSlave.getName());
 		long startTime = System.currentTimeMillis();
 		try {
-			result = _slaveTransfer.transfer(checkCRC);
-			// No Exceptions, but the transfer just wasn't right
-			if (!result) { // crc failed -- unsuccessful transfer
+			boolean crcMatch = _slaveTransfer.transfer();
+			if (crcMatch || !checkCRC) {
+				logSuccess();
+			} else {
 				destSlave.simpleDelete(getFile().getPath());
 				logger.debug("CRC did not match for " + getFile()
 						+ " when sending from " + sourceSlave.getName()
-						+ " to " + destSlave.getName());
-			} else { // successful transfer
-				logSuccess();
+						+ " to " + destSlave.getName());				
 			}
 		} catch (DestinationSlaveException e) {
 			if (e.getCause() instanceof FileExistsException) {
