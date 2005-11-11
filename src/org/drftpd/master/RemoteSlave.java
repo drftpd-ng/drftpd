@@ -984,7 +984,7 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 		setOfflineReal(reason);
 	}
 
-	public final synchronized void setOfflineReal(String reason) {
+	private final synchronized void setOfflineReal(String reason) {
 
 		if (_socket != null) {
 			setProperty("lastOnline", Long.toString(System.currentTimeMillis()));
@@ -1028,17 +1028,24 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 	 * @throws SocketTimeoutException 
 	 */
 	private AsyncResponse readAsyncResponse() throws SlaveUnavailableException, SocketTimeoutException {
+		Object obj = null;
 		try {
-			return (AsyncResponse) _sin.readObject();
+			obj = _sin.readObject();
+			return (AsyncResponse) obj;
+		} catch (ClassCastException e) {
+			setOffline("Received an unexpected class - " + obj.getClass().getName() + " - " + obj);
+			throw new SlaveUnavailableException("Slave is unavailable - " + obj.getClass().getName());
 		} catch (ClassNotFoundException e) {
-			throw new FatalException(e);
+			logger.error("ClassNotFound reading AsyncResponse", e);
+			setOffline("ClassNotFound reading AsyncResponse");
+			throw new SlaveUnavailableException("Slave is unavailable - Class Not Found");
 		} catch (SocketTimeoutException e) {
 			// don't want this to be caught by IOException below
 			throw e;
 		} catch (IOException e) {
 			logger.error("IOException reading AsyncResponse", e);
 			setOffline("IOException reading AsyncResponse");
-			throw new SlaveUnavailableException("Slave is unavailable");
+			throw new SlaveUnavailableException("Slave is unavailable - IOException");
 		}
 	}
 
