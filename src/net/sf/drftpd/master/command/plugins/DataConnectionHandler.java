@@ -851,7 +851,6 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
     }
 
     public LinkedRemoteFileInterface getTransferFile() {
-    	if(_transferFile == null) throw new NullPointerException();
         return _transferFile;
     }
 
