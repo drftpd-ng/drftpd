@@ -157,6 +157,7 @@ public class Slave {
         //TODO sendReply()
         _sout.writeObject(slavename);
         _sout.flush();
+        _sout.reset();
 
         _uploadChecksums = p.getProperty("enableuploadchecksums", "true")
                             .equals("true");
@@ -911,6 +912,7 @@ public class Slave {
         try {
             _sout.writeObject(response);
             _sout.flush();
+            _sout.reset();
             if(!(response instanceof AsyncResponseTransferStatus)) {
             	logger.debug("Slave wrote response - " + response);
             }

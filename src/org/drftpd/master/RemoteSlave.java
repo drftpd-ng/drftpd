@@ -1088,6 +1088,7 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 		try {
 			_sout.writeObject(rac);
 			_sout.flush();
+			_sout.reset();
 		} catch (IOException e) {
 			logger.error("error in sendCommand()", e);
 			throw new SlaveUnavailableException(
