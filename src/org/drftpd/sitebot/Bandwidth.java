@@ -108,8 +108,14 @@ public class Bandwidth extends IRCCommand {
 								logger.debug("This is a bug, please report it",
 										e);
 							}
-							env.add("file", conn.getDataConnectionHandler()
-									.getTransferFile().getName());
+							if (conn.getDataConnectionHandler()
+									.getTransferFile() == null) {
+								env.add("file", "PORT");
+							} else {
+								env.add("file", conn
+										.getDataConnectionHandler()
+										.getTransferFile().getName());
+							}
 							env.add("slave", conn.getDataConnectionHandler()
 									.getTranferSlave().getName());
 
