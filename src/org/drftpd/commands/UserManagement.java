@@ -1868,8 +1868,12 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 										.getDataConnectionHandler()
 										.getTransferFile().getName());
 							}
-							env.add("slave", conn2.getDataConnectionHandler()
+							if (conn2.getDataConnectionHandler().getTranferSlave() == null) {
+								env.add("slave", "PORT");
+							} else {
+								env.add("slave", conn2.getDataConnectionHandler()
 									.getTranferSlave().getName());
+							}
 
 							if (conn2.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
 								response.addComment(SimplePrintf.jprintf(

@@ -107,8 +107,12 @@ public class Who extends IRCCommand {
 									.getDataConnectionHandler()
 									.getTransferFile().getName());
 						}
-						env.add("slave", conn.getDataConnectionHandler()
+						if (conn.getDataConnectionHandler().getTranferSlave() == null) {
+							env.add("slave", "PORT");
+						} else {
+							env.add("slave", conn.getDataConnectionHandler()
 								.getTranferSlave().getName());
+						}
 
 						if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD
 								&& up) {
