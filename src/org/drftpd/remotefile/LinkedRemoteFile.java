@@ -770,11 +770,11 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			while (true) {
 				RemoteSlave rslave = null;
 				if (isAvailable()) {
-					try {
-						rslave = getSlaves().get(0);
-					} catch (IndexOutOfBoundsException e) {
+					Iterator<RemoteSlave> iter = getAvailableSlaves().iterator();
+					if (!iter.hasNext()) {
 						throw new NoAvailableSlaveException();
 					}
+					rslave = getAvailableSlaves().iterator().next();
 				}
 
 				if (rslave == null) {
