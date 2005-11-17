@@ -108,21 +108,10 @@ public class Bandwidth extends IRCCommand {
 								logger.debug("This is a bug, please report it",
 										e);
 							}
-							if (conn.getDataConnectionHandler()
-									.getTransferFile() == null) {
-								env.add("file", "PORT");
-							} else {
-								env.add("file", conn
-										.getDataConnectionHandler()
-										.getTransferFile().getName());
-							}
-							if (conn.getDataConnectionHandler().getTranferSlave() == null) {
-								env.add("slave", "PORT");
-							} else {
-								env.add("slave", conn.getDataConnectionHandler()
+							env.add("file", conn.getDataConnectionHandler()
+									.getTransferFile().getName());
+							env.add("slave", conn.getDataConnectionHandler()
 									.getTranferSlave().getName());
-							}
-
 							if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
 								out.add(ReplacerUtils.jprintf("speed.up", env,
 										Bandwidth.class));

@@ -890,8 +890,8 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
     }
 
     public synchronized boolean isTransfering() {
-        return _transfer != null;
-    }
+		return _transfer != null && _rslave != null && _transferFile != null;
+	}
 
     public void load(CommandManagerFactory initializer) {
     }

@@ -1860,20 +1860,10 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 								speed = 0;
 							}
 							env.add("speed", Bytes.formatBytes(speed) + "/s");
-							if (conn2.getDataConnectionHandler()
-									.getTransferFile() == null) {
-								env.add("file", "PORT");
-							} else {
-								env.add("file", conn2
-										.getDataConnectionHandler()
-										.getTransferFile().getName());
-							}
-							if (conn2.getDataConnectionHandler().getTranferSlave() == null) {
-								env.add("slave", "PORT");
-							} else {
-								env.add("slave", conn2.getDataConnectionHandler()
+							env.add("file", conn2.getDataConnectionHandler()
+									.getTransferFile().getName());
+							env.add("slave", conn2.getDataConnectionHandler()
 									.getTranferSlave().getName());
-							}
 
 							if (conn2.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
 								response.addComment(SimplePrintf.jprintf(
