@@ -19,6 +19,9 @@ package org.drftpd.master;
 
 import java.beans.DefaultPersistenceDelegate;
 import java.beans.ExceptionListener;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.beans.XMLEncoder;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -28,6 +31,7 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EmptyStackException;
@@ -43,7 +47,6 @@ import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.SlaveEvent;
-import net.sf.drftpd.mirroring.JobTransferThread;
 
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
@@ -58,7 +61,6 @@ import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
-import org.drftpd.slave.TransferFailedException;
 import org.drftpd.slave.TransferIndex;
 import org.drftpd.slave.TransferStatus;
 import org.drftpd.slave.async.AsyncCommand;
@@ -85,6 +87,9 @@ import org.drftpd.usermanager.HostMaskCollection;
  */
 public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializable, Entity {
 	private static final long serialVersionUID = -6973935289361817125L;
+	
+	private final String[] transientFields = { "available", "lastDownloadSending",
+	"lastUploadReceiving" };
 
 	private static final Logger logger = Logger.getLogger(RemoteSlave.class);
 
@@ -245,6 +250,22 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 					new DefaultPersistenceDelegate(new String[] { "name" }));
 			out.setPersistenceDelegate(QueuedOperation.class,
 					new DefaultPersistenceDelegate(new String[] { "source", "destination" }));
+			try {
+				PropertyDescriptor[] pdArr = Introspector.getBeanInfo(
+						RemoteSlave.class).getPropertyDescriptors();
+				ArrayList<String> transientList = new ArrayList<String>();
+				for (int x = 0; x < transientFields.length; x++) {
+					transientList.add(transientFields[x]);
+				}
+				for (int x = 0; x < pdArr.length; x++) {
+					if (transientList.contains(pdArr[x].getName())) {
+						pdArr[x].setValue("transient", Boolean.TRUE);
+					}
+				}
+			} catch (IntrospectionException e1) {
+				logger.error("I don't know what to do here", e1);
+				throw new RuntimeException(e1);
+			}
 			try {
 				out.writeObject(this);
 			} finally {
