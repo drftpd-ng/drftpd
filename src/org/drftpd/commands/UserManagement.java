@@ -1870,7 +1870,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 								response.addComment(SimplePrintf.jprintf(
 										formatup, env));
 								speedup += speed;
-							} else if (conn.getDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+							} else if (conn2.getDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
 								response.addComment(SimplePrintf.jprintf(
 										formatdown, env));
 								speeddn += speed;
