@@ -112,10 +112,10 @@ public class Bandwidth extends IRCCommand {
 									.getTransferFile().getName());
 							env.add("slave", conn.getDataConnectionHandler()
 									.getTranferSlave().getName());
-							if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+							if (conn.getDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
 								out.add(ReplacerUtils.jprintf("speed.up", env,
 										Bandwidth.class));
-							} else if (conn.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+							} else if (conn.getDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
 								out.add(ReplacerUtils.jprintf("speed.down",
 										env, Bandwidth.class));
 							}

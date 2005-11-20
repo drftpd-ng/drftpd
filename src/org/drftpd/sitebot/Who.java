@@ -103,12 +103,17 @@ public class Who extends IRCCommand {
 								.getTransferFile().getName());
 						env.add("slave", conn.getDataConnectionHandler()
 								.getTranferSlave().getName());
-						if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD
-								&& up) {
+						switch (conn.getDirection()) {
+						case Transfer.TRANSFER_RECEIVING_UPLOAD:
 							out.add(SimplePrintf.jprintf(formatup, env));
-						} else if (conn.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD
-								&& down) {
+							break;
+						case Transfer.TRANSFER_SENDING_DOWNLOAD:
 							out.add(SimplePrintf.jprintf(formatdown, env));
+							break;
+						default:
+							if (idle) {
+								out.add(SimplePrintf.jprintf(formatidle, env));
+							}
 						}
 					}
 				}
