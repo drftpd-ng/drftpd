@@ -1,4 +1,8 @@
 2005/10/14 Matt Zimmerman <zubov@users.sourceforge.net>
+* 2.0.2 released
+ - Check notes describing the changes on sourceforge
+
+2005/10/14 Matt Zimmerman <zubov@users.sourceforge.net>
 * 2.0.1 released
  - The master now pings the slaves to make sure they're alive
  - Fixed the "there is a bug somewhere in code, tried to fetch
