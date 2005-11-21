@@ -92,7 +92,7 @@ public class Slave {
     private static final Logger logger = Logger.getLogger(Slave.class);
 	private static final int socketTimeout = 10000; // 10 seconds, for Socket
 	protected static final int actualTimeout = 60000; // one minute, evaluated on a SocketTimeout
-    public static final String VERSION = "DrFTPD 2.0.1";
+    public static final String VERSION = "DrFTPD 2.0.2";
     private int _bufferSize;
     private SSLContext _ctx;
     private boolean _downloadChecksums;
