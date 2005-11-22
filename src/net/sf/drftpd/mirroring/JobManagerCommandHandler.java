@@ -18,20 +18,18 @@ package net.sf.drftpd.mirroring;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
-import org.apache.oro.text.GlobCompiler;
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.Perl5Matcher;
 import org.drftpd.Bytes;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
@@ -66,9 +64,6 @@ public class JobManagerCommandHandler
      * @throws ImproperUsageException
      */
     private Reply doADDJOB(BaseFtpConnection conn) throws ImproperUsageException {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
 
         if (!conn.getRequest().hasArgument()) {
         	throw new ImproperUsageException();
@@ -135,84 +130,86 @@ public class JobManagerCommandHandler
     }
 
     private Reply doLISTJOBS(BaseFtpConnection conn) {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
 
         Reply reply = new Reply(200);
-        int count = 0;
         ReplacerEnvironment env = new ReplacerEnvironment();
-
-        for (Iterator<Job> iter = new ArrayList<Job>(conn.getGlobalContext()
-                                               .getJobManager()
-                                               .getAllJobsFromQueue()).iterator();
-                iter.hasNext();) {
-            count++;
-
-            Job job = iter.next();
+        TreeSet<Job> treeSet = new TreeSet<Job>(new JobIndexComparator());
+        treeSet.addAll(conn.getGlobalContext().getJobManager().getAllJobsFromQueue());
+        	
+        for (Job job : treeSet) {
             env.add("job", job);
-            env.add("count", new Integer(count));
-
-            if (job.isTransferring()) {
-                env.add("speed", Bytes.formatBytes(job.getSpeed()));
-                env.add("progress", Bytes.formatBytes(job.getProgress()));
-                env.add("total", Bytes.formatBytes(job.getFile().length()));
-                env.add("srcslave", job.getSrcSlaveName());
-                env.add("destslave", job.getDestSlaveName());
-                reply.addComment(conn.jprintf(JobManagerCommandHandler.class,
-                        "listjobrunning", env));
-            } else {
-                reply.addComment(conn.jprintf(JobManagerCommandHandler.class,
-                        "listjobwaiting", env));
-            }
+            env.add("count", job.getIndex());
+            synchronized (job) {
+				if (job.isTransferring()) {
+					env.add("speed", Bytes.formatBytes(job.getSpeed()));
+					env.add("progress", Bytes.formatBytes(job.getProgress()));
+					env.add("total", Bytes.formatBytes(job.getFile().length()));
+					env.add("srcslave", job.getSourceSlave().getName());
+					env.add("destslave", job.getDestinationSlave().getName());
+					reply.addComment(conn.jprintf(
+							JobManagerCommandHandler.class, "listjobrunning",
+							env));
+				} else {
+					reply.addComment(conn.jprintf(
+							JobManagerCommandHandler.class, "listjobwaiting",
+							env));
+				}
+			}
         }
         return reply;
     }
 
     private Reply doREMOVEJOB(BaseFtpConnection conn) throws ReplyException, ImproperUsageException {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
 
         if (!conn.getRequest().hasArgument()) {
         	throw new ImproperUsageException();
         }
-
-        String filename = conn.getRequest().getArgument();
-        Pattern p;
-        try {
-        	p= new GlobCompiler().compile(filename);
-        } catch (MalformedPatternException e) {
-			throw new ReplyException(e);
-		}
-        Perl5Matcher m = new Perl5Matcher();
-
-        Job job = null;
-        List jobs = new ArrayList<Job>(conn.getGlobalContext().getJobManager()
-				.getAllJobsFromQueue());
+        class Range {
+        	long _low, _high;
+        	Range(long low, long high) {
+        		if (0 >= low || low > high) {
+        			throw new IllegalArgumentException("0 < low <= high");
+        		}
+        		_low = low;
+        		_high = high;
+        	}
+        	public boolean contains(long val) {
+        		return _low <= val && val <= _high;
+        	}
+        }
+        
+        ArrayList<Range> rangeList = new ArrayList<Range>();
+        String rangeString = conn.getRequest().getArgument();
+        String[] ranges = rangeString.split(" ");
+        for (String range : ranges) {
+        	if (range.indexOf("-") == -1) {
+        		long val = Long.parseLong(range);
+        		rangeList.add(new Range(val,val));
+        	} else {
+        		String[] vals = range.split("-");
+        		rangeList.add(new Range(Long.parseLong(vals[0]), Long.parseLong(vals[1])));
+        	}
+        }
+        TreeSet<Job> treeSet = new TreeSet<Job>(new JobIndexComparator());
+        treeSet.addAll(conn.getGlobalContext().getJobManager().getAllJobsFromQueue());
         ReplacerEnvironment env = new ReplacerEnvironment();
-        env.add("filename", filename);
 
         Reply r = new Reply(200);
-                 
-        for (Iterator iter = jobs.iterator(); iter.hasNext();) {
-            job = (Job) iter.next();
-
-            if (m.matches(job.getFile().getPath(), p)) {
+        for (Job job : treeSet) {
+        	for (Range range : rangeList) {
+        		if (range.contains(job.getIndex())) {
                 env.add("job", job);
                 conn.getGlobalContext().getJobManager()
                     .stopJob(job);
                 r.addComment(conn.jprintf(JobManagerCommandHandler.class,
                         "removejob.success", env));
+        		}
             }
         }
         return r;
     }
 
     private Reply doSTARTJOBS(BaseFtpConnection conn) {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
 
         conn.getGlobalContext().getJobManager()
             .startJobs();
@@ -221,9 +218,6 @@ public class JobManagerCommandHandler
     }
 
     private Reply doSTOPJOBS(BaseFtpConnection conn) {
-        if (!conn.getUserNull().isAdmin()) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
 
         conn.getGlobalContext().getJobManager().stopJobs();
 

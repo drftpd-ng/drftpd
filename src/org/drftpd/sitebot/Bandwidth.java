@@ -25,6 +25,7 @@ import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
+import org.drftpd.GlobalContext;
 import org.drftpd.Time;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.plugins.SiteBot;
@@ -45,8 +46,8 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 public class Bandwidth extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Bandwidth.class);
 
-    public Bandwidth() {
-		super();
+    public Bandwidth(GlobalContext gctx) {
+		super(gctx);
     }
 
 	public ArrayList<String> doBandwidth(String args, MessageCommand msgc) {
@@ -111,11 +112,10 @@ public class Bandwidth extends IRCCommand {
 									.getTransferFile().getName());
 							env.add("slave", conn.getDataConnectionHandler()
 									.getTranferSlave().getName());
-
-							if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+							if (conn.getDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
 								out.add(ReplacerUtils.jprintf("speed.up", env,
 										Bandwidth.class));
-							} else if (conn.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+							} else if (conn.getDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
 								out.add(ReplacerUtils.jprintf("speed.down",
 										env, Bandwidth.class));
 							}

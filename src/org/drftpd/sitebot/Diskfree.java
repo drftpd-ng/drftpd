@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 import net.sf.drftpd.util.ReplacerUtils;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.slave.SlaveStatus;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -34,8 +35,8 @@ import f00f.net.irc.martyr.commands.MessageCommand;
  */
 public class Diskfree extends IRCCommand {
 
-    public Diskfree() {
-		super();
+    public Diskfree(GlobalContext gctx) {
+		super(gctx);
     }
     
 	public ArrayList<String> doDiskfree(String args, MessageCommand msgc) {

@@ -17,21 +17,24 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Properties;
-
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 
 import org.drftpd.GlobalContext;
+
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.User;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import java.net.InetAddress;
+
+import java.util.ArrayList;
+import java.util.Properties;
 
 
 /**
@@ -75,7 +78,16 @@ public class FilterChain {
 
     public void reload() throws FileNotFoundException, IOException {
         Properties p = new Properties();
-        p.load(new FileInputStream(_cfgfileName));
+        FileInputStream fis = null;
+        try {
+        	fis = new FileInputStream(_cfgfileName); 
+        	p.load(fis);
+        } finally {
+        	if (fis != null) {
+        		fis.close();
+        		fis = null;
+        	}
+        }
         reload(p);
     }
 

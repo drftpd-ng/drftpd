@@ -69,6 +69,7 @@ SITE\ TAKE=org.drftpd.commands.UserManagement
 SITE\ USER=org.drftpd.commands.UserManagement
 SITE\ USERS=org.drftpd.commands.UserManagement
 SITE\ WHO=org.drftpd.commands.UserManagement
+SITE\ SWHO=org.drftpd.commands.UserManagement
 SITE\ BAN=org.drftpd.commands.UserManagement
 SITE\ UNBAN=org.drftpd.commands.UserManagement
 SITE\ BANS=org.drftpd.commands.UserManagement
@@ -121,7 +122,6 @@ SITE\ PRE=org.drftpd.commands.Pre
 
 SITE\ SLAVES=net.sf.drftpd.master.command.plugins.SlaveManagement
 SITE\ REMERGE=net.sf.drftpd.master.command.plugins.SlaveManagement
-SITE\ CHECKSLAVES=net.sf.drftpd.master.command.plugins.SlaveManagement
 SITE\ KICKSLAVE=net.sf.drftpd.master.command.plugins.SlaveManagement
 SITE\ SLAVE=net.sf.drftpd.master.command.plugins.SlaveManagement
 SITE\ ADDSLAVE=net.sf.drftpd.master.command.plugins.SlaveManagement

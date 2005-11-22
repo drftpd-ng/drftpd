@@ -20,11 +20,13 @@ package org.drftpd;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoSFVEntryException;
+import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 
 import org.apache.log4j.Logger;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
@@ -74,9 +76,7 @@ public class SFVFile extends AbstractSFVFile {
     public SFVStatus getStatus() {
         int offline = 0;
         int present = 0;
-    	logger.debug("getStatus() on " + _companion.getPath());
         for (LinkedRemoteFileInterface file : getFiles()) {
-        	logger.debug("present:" + present + "," + file);
             if (file.length() != 0 && file.getXfertime() != -1) {
             	present++;
                 if (!file.isAvailable()) {

@@ -41,6 +41,7 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
     private String unixPassword;
     private String password;
     private transient JSXUserManager _usermanager;
+    private transient boolean purged;
 
     public JSXUser(JSXUserManager usermanager, String username) {
         super(username);
@@ -89,6 +90,7 @@ public class JSXUser extends AbstractUser implements PlainTextPasswordUser,
     }
 
     public void purge() {
+        this.purged = true;
         _usermanager.remove(this);
 
         File userfile = _usermanager.getUserFile(this.getName());

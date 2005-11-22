@@ -27,6 +27,7 @@ import java.net.URLConnection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.drftpd.plugins.SiteBot;
 import org.tanesha.replacer.ReplacerEnvironment;
 
@@ -34,6 +35,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author Teflon
  */
 public class IMDBParser {
+    private static final Logger logger = Logger.getLogger(IMDBParser.class); 
     private String[] _seperators = {".","-","_"};
     private String[] _filters;
     
@@ -74,6 +76,7 @@ public class IMDBParser {
             if (!(urlConn.getContent() instanceof InputStream))
                 return false;
             
+            boolean redirect = false;
             String data = "";
             BufferedReader in = null;
             String line;
@@ -84,7 +87,9 @@ public class IMDBParser {
 					data += line + "\n";
 				}
 			} finally {
-				in.close();
+				if (in != null) {
+					in.close();
+				}
 			}
             
             

@@ -32,6 +32,7 @@ import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
+import org.drftpd.plugins.Trial;
 
 
 /**

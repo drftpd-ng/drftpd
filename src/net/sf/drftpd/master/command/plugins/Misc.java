@@ -32,6 +32,7 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
+import org.apache.log4j.Logger;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
@@ -44,7 +45,8 @@ import org.drftpd.slave.Slave;
  * @version $Id$
  */
 public class Misc implements CommandHandlerFactory, CommandHandler {
-  
+    private static Logger logger = Logger.getLogger(Misc.class);
+    
     /**
      * <code>ABOR &lt;CRLF&gt;</code><br>
      *

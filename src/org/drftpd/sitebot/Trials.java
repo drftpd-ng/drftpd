@@ -27,6 +27,7 @@ import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
+import org.drftpd.GlobalContext;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.plugins.Trial;
 import org.drftpd.plugins.Trial.Limit;
@@ -40,8 +41,8 @@ import f00f.net.irc.martyr.util.FullNick;
 public class Trials extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Trials.class);
 
-    public Trials() {
-		super();
+    public Trials(GlobalContext gctx) {
+		super(gctx);
     }
 
     protected String jprintf(String key, User user, Limit limit, long bytesleft, boolean unique) {

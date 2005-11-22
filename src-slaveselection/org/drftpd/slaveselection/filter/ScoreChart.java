@@ -17,15 +17,15 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 
 /**

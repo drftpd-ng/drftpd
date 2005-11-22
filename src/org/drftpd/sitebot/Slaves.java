@@ -25,6 +25,7 @@ import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.slave.SlaveStatus;
@@ -40,8 +41,8 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 public class Slaves extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Slaves.class);
 
-    public Slaves() {
-        super();
+    public Slaves(GlobalContext gctx) {
+        super(gctx);
     }
 
     public ArrayList<String> doSlave(String args, MessageCommand msgc) {

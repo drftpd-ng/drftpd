@@ -29,10 +29,12 @@ import java.util.StringTokenizer;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
+import org.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.ReplacerUtils;
 
@@ -42,7 +44,9 @@ import org.drftpd.Bytes;
 import org.drftpd.Time;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.permissions.Permission;
+import org.drftpd.plugins.Statistics;
 import org.drftpd.slave.Transfer;
+import org.drftpd.slave.TransferFailedException;
 import org.drftpd.usermanager.HostMask;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -1854,18 +1858,19 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 							} catch (ObjectNotFoundException e) {
 								logger.debug("This is a bug, please report it",
 										e);
+								speed = 0;
 							}
 							env.add("speed", Bytes.formatBytes(speed) + "/s");
 							env.add("file", conn2.getDataConnectionHandler()
-									.getTransferPath().getName());
+									.getTransferFile().getName());
 							env.add("slave", conn2.getDataConnectionHandler()
 									.getTranferSlave().getName());
 
-							if (conn2.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+							if (conn2.getDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
 								response.addComment(SimplePrintf.jprintf(
 										formatup, env));
 								speedup += speed;
-							} else if (conn2.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+							} else if (conn2.getDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
 								response.addComment(SimplePrintf.jprintf(
 										formatdown, env));
 								speeddn += speed;
@@ -1896,6 +1901,107 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
         }
     }
 
+    private Reply doSITE_SWHO(BaseFtpConnection conn) {
+        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
+        long users = 0;
+        long speedup = 0;
+        long speeddn = 0;
+        long speed = 0;
+
+        try {
+            ReplacerFormat formatup = ReplacerUtils.finalFormat(UserManagement.class,
+                    "swho.up");
+            ReplacerFormat formatdown = ReplacerUtils.finalFormat(UserManagement.class,
+                    "swho.down");
+            ReplacerFormat formatidle = ReplacerUtils.finalFormat(UserManagement.class,
+                    "swho.idle");
+            ReplacerFormat formatcommand = ReplacerUtils.finalFormat(UserManagement.class,
+                    "swho.command");
+            ReplacerEnvironment env = new ReplacerEnvironment();
+            ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(conn.getGlobalContext()
+                                                .getConnectionManager()
+                                                .getConnections());
+
+            for (Iterator iter = conns.iterator(); iter.hasNext();) {
+                BaseFtpConnection conn2 = (BaseFtpConnection) iter.next();
+
+                if (conn2.isAuthenticated()) {
+                    users++;
+
+                    User user;
+
+                    try {
+                        user = conn2.getUser();
+                    } catch (NoSuchUserException e) {
+                        continue;
+                    }
+
+                    //if (conn.getGlobalContext().getConfig().checkPathPermission("hideinwho", user, conn2.getCurrentDirectory())) {
+                    //    continue;
+                    //}
+
+                    //StringBuffer status = new StringBuffer();
+                    env.add("idle",
+                        Time.formatTime(System.currentTimeMillis() -
+                            conn2.getLastActive()));
+                    env.add("targetuser", user.getName());
+                    env.add("ip", conn2.getClientAddress().getHostAddress());
+                    
+                    
+                    synchronized (conn2.getDataConnectionHandler()) {
+						if (!conn2.isExecuting()) {
+							response.addComment(SimplePrintf.jprintf(
+									formatidle, env));
+						} else if (conn2.getDataConnectionHandler()
+								.isTransfering()) {
+							try {
+								speed = conn2.getDataConnectionHandler()
+										.getTransfer().getXferSpeed();
+							} catch (ObjectNotFoundException e) {
+								logger.debug("This is a bug, please report it",
+										e);
+							}
+							env.add("speed", Bytes.formatBytes(speed) + "/s");
+							env.add("file", conn2.getDataConnectionHandler()
+									.getTransferFile().getName());
+							env.add("slave", conn2.getDataConnectionHandler()
+									.getTranferSlave().getName());
+							
+							if (conn2.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+								response.addComment(SimplePrintf.jprintf(
+										formatup, env));
+								speedup += speed;
+							} else if (conn2.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+								response.addComment(SimplePrintf.jprintf(
+										formatdown, env));
+								speeddn += speed;
+							}
+						} else {
+							env.add("command", conn2.getRequest().getCommand());
+							response.addComment(SimplePrintf.jprintf(
+									formatcommand, env));
+						}
+					}
+                }
+            }
+
+            env.add("currentusers", "" + users);
+            env.add("maxusers", ""
+					+ conn.getGlobalContext().getConfig().getMaxUsersTotal());
+            env.add("totalupspeed", Bytes.formatBytes(speedup) + "/s");
+            env.add("totaldnspeed", Bytes.formatBytes(speeddn) + "/s");
+            response.addComment("");
+            response.addComment(conn.jprintf(UserManagement.class,
+                    "swho.statusspeed", env));
+            response.addComment(conn.jprintf(UserManagement.class,
+                    "swho.statususers", env));
+
+            return response;
+        } catch (FormatterException e) {
+            return new Reply(452, e.getMessage());
+        }
+    }    
+    
     private Reply doSITE_BAN(BaseFtpConnection conn) throws ImproperUsageException {
         FtpRequest request = conn.getRequest();
 
@@ -2105,6 +2211,10 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
         if ("SITE WHO".equals(cmd)) {
             return doSITE_WHO(conn);
+        }
+ 
+        if ("SITE SWHO".equals(cmd)) {
+            return doSITE_SWHO(conn);
         }
 
         if ("SITE BAN".equals(cmd)) {

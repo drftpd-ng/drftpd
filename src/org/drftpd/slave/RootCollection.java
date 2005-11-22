@@ -17,8 +17,15 @@
  */
 package org.drftpd.slave;
 
+import org.apache.log4j.Logger;
+
+
+import se.mog.io.File;
+import se.mog.io.PermissionDeniedException;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,11 +33,6 @@ import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-
-import org.apache.log4j.Logger;
-
-import se.mog.io.File;
-import se.mog.io.PermissionDeniedException;
 
 
 //TODO SECURITY: verify so that we never get outside of a rootbasket root
@@ -268,10 +270,12 @@ public class RootCollection {
                     continue;
                 }
 
-                if (root2.getPath().startsWith(root.getPath())) {
-                    throw new RuntimeException("Overlapping roots: " +
-                        root.getPath() + " and " + root2.getPath());
-                }
+                if ((root2.getPath() + File.pathSeparator).startsWith(root
+						.getPath()
+						+ File.pathSeparator)) {
+					throw new RuntimeException("Overlapping roots: "
+							+ root.getPath() + " and " + root2.getPath());
+				}
             }
         }
     }

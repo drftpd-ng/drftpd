@@ -32,11 +32,11 @@ import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.mirroring.JobManager;
 
 import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.archivetypes.IncompleteDirectoryException;
 import org.drftpd.mirroring.archivetypes.OfflineSlaveException;
+import org.drftpd.plugins.Archive;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
 
@@ -48,7 +48,7 @@ import org.drftpd.sections.SectionInterface;
 public abstract class ArchiveType {
     private static final Logger logger = Logger.getLogger(ArchiveType.class);
     private long _archiveAfter;
-    private LinkedRemoteFileInterface _lrf;
+    private LinkedRemoteFileInterface _directory;
     protected Archive _parent;
     protected SectionInterface _section;
     private Set<RemoteSlave> _slaveList;
@@ -68,7 +68,7 @@ public abstract class ArchiveType {
     public abstract HashSet<RemoteSlave> findDestinationSlaves();
 
     public final LinkedRemoteFileInterface getDirectory() {
-        return _lrf;
+        return _directory;
     }
 
     /**
@@ -78,10 +78,12 @@ public abstract class ArchiveType {
     public final LinkedRemoteFileInterface getOldestNonArchivedDir() {
         ArrayList<LinkedRemoteFileInterface> oldDirs = new ArrayList<LinkedRemoteFileInterface>();
 
-        for (Iterator iter = getSection().getFile().getDirectories().iterator();
+        for (Iterator iter = getSection().getFile().getFiles().iterator();
                 iter.hasNext();) {
             LinkedRemoteFileInterface lrf = (LinkedRemoteFileInterface) iter.next();
-
+            if (!lrf.isDirectory()) {
+            	continue;
+            }
             try {
                 _parent.checkPathForArchiveStatus(lrf.getPath());
             } catch (DuplicateArchiveException e1) {
@@ -146,7 +148,7 @@ public abstract class ArchiveType {
      */
     public ArrayList<Job> send() {
         ArrayList<Job> jobs = recursiveSend(getDirectory());
-        JobManager jm = GlobalContext.getGlobalContext().getJobManager();
+        JobManager jm = _parent.getGlobalContext().getJobManager();
         jm.addJobsToQueue(jobs);
         return jobs;
     }
@@ -161,9 +163,9 @@ public abstract class ArchiveType {
             if (src.isFile()) {
                 destSlaves.removeAll(src.getSlaves());
                 if(destSlaves.isEmpty()) continue;
-                logger.info("Adding " + src.getPath() + " to the job queue");
 
                 Job job = new Job(src, destSlaves, 3, destSlaves.size());
+                logger.info("Adding " + job + " to the job queue");
                 //jm.addJobToQueue(job);
                 jobQueue.add(job);
             } else {
@@ -256,21 +258,24 @@ public abstract class ArchiveType {
     }
 
     public final void setDirectory(LinkedRemoteFileInterface lrf) {
-        _lrf = lrf;
+        _directory = lrf;
     }
 
     public final void setRSlaves(Set<RemoteSlave> slaveList) {
         _slaveList = slaveList;
     }
 
-    public final void waitForSendOfFiles(ArrayList jobQueue) {
+    public final void waitForSendOfFiles(ArrayList<Job> jobQueue) {
         while (true) {
+        	if (_directory.isDeleted()) {
+        		// all files will be deleted too, no need to removejobs, JobManager will do that
+        		return;
+        	}
             for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
                 Job job = (Job) iter.next();
 
                 if (job.isDone()) {
-                    logger.debug("File " + job.getFile().getPath() +
-                        " is done being sent");
+                    logger.debug("Job " + job + " is done being sent");
                     iter.remove();
                 }
             }
@@ -284,6 +289,12 @@ public abstract class ArchiveType {
                 break;
             }
         }
+    }
+    
+    private void printJobsInQueue(ArrayList<Job> jobList) {
+    	for (Job j : jobList) {
+    		logger.debug(j);
+    	}
     }
 
     public abstract String toString();

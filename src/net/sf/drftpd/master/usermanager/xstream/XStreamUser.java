@@ -41,6 +41,7 @@ public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
     private String unixPassword;
     private String password;
     transient XStreamUserManager _usermanager;
+    private transient boolean purged;
 
     public XStreamUser(XStreamUserManager usermanager, String username) {
         super(username);
@@ -89,6 +90,7 @@ public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
     }
 
     public void purge() {
+        this.purged = true;
         _usermanager.remove(this);
 
         File userfile = _usermanager.getUserFile(this.getName());

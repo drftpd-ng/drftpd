@@ -19,11 +19,12 @@ package org.drftpd.plugins;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.TimerTask;
 
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
@@ -42,13 +43,13 @@ import org.drftpd.sections.SectionInterface;
  * This addon needs a little reworking, consider it and its
  * related packages unstable
  */
-public class Archive extends FtpListener implements Runnable {
+public class Archive extends FtpListener {
     private static final Logger logger = Logger.getLogger(Archive.class);
     private Properties _props;
     private long _cycleTime;
     private boolean _isStopped = false;
-    private Thread thread = null;
-    private ArrayList<ArchiveHandler> _archiveHandlers = new ArrayList<ArchiveHandler>();
+    private HashSet<ArchiveHandler> _archiveHandlers = new HashSet<ArchiveHandler>();
+    private TimerTask _runHandler = null;
     public Archive() {
         logger.info("Archive plugin loaded successfully");
     }
@@ -68,9 +69,6 @@ public class Archive extends FtpListener implements Runnable {
      * @return the correct ArchiveType for the @section - it will return null if that section does not have an archiveType loaded for it
      */
     public ArchiveType getArchiveType(SectionInterface section) {
-        Class[] classParams = {
-                Archive.class, SectionInterface.class, Properties.class
-            };
         ArchiveType archiveType = null;
         String name = null;
 
@@ -82,23 +80,17 @@ public class Archive extends FtpListener implements Runnable {
         }
 
         Constructor constructor = null;
-
+        Class[] classParams = {
+                Archive.class, SectionInterface.class, Properties.class
+            };
+        Object[] objectParams = { this, section, _props };
         try {
             constructor = Class.forName("org.drftpd.mirroring.archivetypes." +
                     name).getConstructor(classParams);
-        } catch (Exception e1) {
-            throw new RuntimeException(
-                "Unable to load ArchiveType for section " + section.getName(),
-                e1);
-        }
-
-        Object[] objectParams = { this, section, _props };
-        try {
             archiveType = (ArchiveType) constructor.newInstance(objectParams);
         } catch (Exception e2) {
-            throw new RuntimeException(
-                "Unable to load ArchiveType for section " + section.getName(),
-                e2);
+            logger.error("Unable to load ArchiveType for section "
+					+ section.getName(), e2);
         }
 
         return archiveType;
@@ -111,78 +103,61 @@ public class Archive extends FtpListener implements Runnable {
         return _cycleTime;
     }
 
-    public void init() {
-    	GlobalContext.getGlobalContext().loadJobManager();
+    public void init(GlobalContext gctx) {
+    	super.init(gctx);
         reload();
-        startArchive();
     }
+    
+	public void reload() {
+		_props = new Properties();
+		FileInputStream fis = null;
 
-    private boolean isStopped() {
-        return _isStopped;
-    }
+		try {
+			fis = new FileInputStream("conf/archive.conf");
+			_props.load(fis);
+		} catch (IOException e) {
+			throw new RuntimeException(
+					"conf/archive.conf is missing, cannot continue", e);
+		} finally {
+			if (fis != null) {
+				try {
+					fis.close();
+				} catch (IOException e) {
+					logger
+							.error(
+									"Could not close the FileInputStream of conf/archive.conf",
+									e);
+				}
+				fis = null;
+			}
+		}
+		_cycleTime = 60000 * Long.parseLong(PropertyHelper.getProperty(_props,
+				"cycleTime"));
+		if (_runHandler != null) {
+			_runHandler.cancel();
+		}
+		_runHandler = new TimerTask() {
+			public void run() {
+				Collection<SectionInterface> sectionsToCheck = getGlobalContext()
+						.getSectionManager().getSections();
+				for (SectionInterface section : sectionsToCheck) {
+					ArchiveType archiveType = getArchiveType(section);
 
-    private void reload() {
-        _props = new Properties();
+					if (archiveType == null) {
+						continue;
+					}
 
-        try {
-            _props.load(new FileInputStream("conf/archive.conf"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        _cycleTime = 60000 * Long.parseLong(PropertyHelper.getProperty(_props,
-                    "cycleTime"));
-    }
-
-    public void run() {
-        while (true) {
-            if (isStopped()) {
-                logger.debug("Stopping ArchiveStarter thread");
-                return;
-            }
-
-            Collection sectionsToCheck = GlobalContext.getGlobalContext().getSectionManager()
-					.getSections();
-
-            for (Iterator iter = sectionsToCheck.iterator(); iter.hasNext();) {
-                SectionInterface section = (SectionInterface) iter.next();
-                ArchiveType archiveType = getArchiveType(section);
-
-                if (archiveType == null) {
-                    continue;
-                }
-
-                new ArchiveHandler(archiveType).start();
-            }
-
-            try {
-                Thread.sleep(_cycleTime);
-            } catch (InterruptedException e) {
-            }
-        }
-    }
-
-    public void startArchive() {
-        if (thread != null) {
-            stopArchive();
-            thread.interrupt();
-
-            while (thread.isAlive()) {
-                Thread.yield();
-            }
-        }
-
-        _isStopped = false;
-        thread = new Thread(this, "ArchiveStarter");
-        thread.start();
-    }
-
-    public void stopArchive() {
-        _isStopped = true;
-    }
+					new ArchiveHandler(archiveType).start();
+				}
+			}
+		};
+		getGlobalContext().getTimer().schedule(_runHandler, 0, _cycleTime);
+	}
 
     public void unload() {
-        stopArchive();
+        if (_runHandler != null) {
+        	_runHandler.cancel();
+        }
     }
 
     public synchronized boolean removeArchiveHandler(ArchiveHandler handler) {
@@ -215,8 +190,6 @@ public class Archive extends FtpListener implements Runnable {
         for (Iterator iter = _archiveHandlers.iterator(); iter.hasNext();) {
             ArchiveHandler ah = (ArchiveHandler) iter.next();
             String ahPath = ah.getArchiveType().getDirectory().getPath();
-            logger.debug("ahPath = " + ahPath);
-            logger.debug("handlerPath = " + handlerPath);
 
             if (ahPath.length() > handlerPath.length()) {
                 if (ahPath.startsWith(handlerPath)) {

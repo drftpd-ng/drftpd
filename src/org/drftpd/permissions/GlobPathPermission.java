@@ -17,11 +17,11 @@
  */
 package org.drftpd.permissions;
 
-import java.util.Collection;
-
 import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Matcher;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
+
+import java.util.Collection;
 
 
 /**

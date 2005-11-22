@@ -17,18 +17,19 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.net.InetAddress;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
+
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.FileManager;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.User;
+
+import java.net.InetAddress;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Properties;
 
 
 /**
@@ -70,7 +71,7 @@ public class BandwidthFilter extends Filter {
             if (c == '*') {
                 isMultiplier = true;
                 string = string.substring(1);
-            } else if (c == FileManager.separatorChar) {
+            } else if (c == '/') {
                 isMultiplier = false;
                 string = string.substring(1);
             } else {

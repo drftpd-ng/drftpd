@@ -35,7 +35,7 @@ import org.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 /**
  * @author mog
  * @version $Id$
- * @deprecated
+ *
  */
 public interface LinkedRemoteFileInterface extends RemoteFileInterface {
     /**
@@ -146,7 +146,6 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
 
     /**
      * Is file removed from all slaves?
-     * @return Always false for directories
      */
     public abstract boolean isDeleted();
 

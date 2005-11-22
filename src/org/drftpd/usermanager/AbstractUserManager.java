@@ -20,9 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Date;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FileExistsException;
@@ -32,6 +32,7 @@ import org.drftpd.GlobalContext;
 import org.drftpd.commands.Nuke;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
+import org.drftpd.plugins.Statistics;
 
 import se.mog.io.PermissionDeniedException;
 

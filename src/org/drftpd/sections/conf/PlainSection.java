@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
 
+
 import org.drftpd.PropertyHelper;
 import org.drftpd.remotefile.FileUtils;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -64,7 +65,7 @@ public class PlainSection implements SectionInterface {
         }
     }
 
-    public Collection getDirectories() {
+    public Collection getFiles() {
         return Collections.singletonList(getFile());
     }
 

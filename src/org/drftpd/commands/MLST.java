@@ -17,15 +17,6 @@
  */
 package org.drftpd.commands;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.net.Socket;
-import java.util.Iterator;
-import java.util.List;
-
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
@@ -38,11 +29,21 @@ import org.drftpd.remotefile.ListUtils;
 import org.drftpd.remotefile.MLSTSerialize;
 import org.drftpd.remotefile.RemoteFileInterface;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
+
+import java.net.Socket;
+
+import java.util.Iterator;
+import java.util.List;
+
 
 /**
  * @author mog
  * @version $Id$
- * @deprecated
  */
 public class MLST implements CommandHandler, CommandHandlerFactory {
     private static final Logger logger = Logger.getLogger(MLST.class);

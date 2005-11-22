@@ -17,14 +17,16 @@
  */
 package org.drftpd.sitebot;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.drftpd.tests.DummyUser;
+
+import java.io.IOException;
+
+import java.net.UnknownHostException;
+
+import java.util.ArrayList;
 
 
 /**

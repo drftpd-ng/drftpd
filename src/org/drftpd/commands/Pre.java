@@ -17,12 +17,6 @@
  */
 package org.drftpd.commands;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
@@ -31,12 +25,22 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+
 import org.drftpd.Bytes;
+import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
+
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author mog
@@ -125,6 +129,8 @@ public class Pre implements CommandHandler, CommandHandlerFactory {
 
         //RENAME
         recursiveRemoveOwnership(preDir, System.currentTimeMillis());
+
+        LinkedRemoteFile toDir;
 
         try {
             preDir.renameTo(section.getPath(), preDir.getName());

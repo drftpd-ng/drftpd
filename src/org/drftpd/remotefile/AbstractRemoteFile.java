@@ -22,7 +22,6 @@ package org.drftpd.remotefile;
 /**
  * @author mog
  * @version $Id$
- * @deprecated
  */
 public abstract class AbstractRemoteFile extends AbstractLightRemoteFile implements RemoteFileInterface {
     public String getGroupname() {

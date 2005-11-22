@@ -52,8 +52,7 @@ import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.io.AddAsciiOutputStream;
-import org.drftpd.remotefile.FileManager;
-import org.drftpd.remotefile.PathReference;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -85,7 +84,7 @@ public class BaseFtpConnection implements Runnable {
     //protected ConnectionManager _cm;
     private CommandManager _commandManager;
     protected Socket _controlSocket;
-    protected PathReference _currentDirectory;
+    protected LinkedRemoteFileInterface _currentDirectory;
 
     /**
      * Is the client running a command?
@@ -119,7 +118,7 @@ public class BaseFtpConnection implements Runnable {
                               .getCommandManagerFactory().initialize(this);
         setControlSocket(soc);
         _lastActive = System.currentTimeMillis();
-        setCurrentDirectory(FileManager.getRoot());
+        setCurrentDirectory(getGlobalContext().getRoot());
     }
 
     public static ReplacerEnvironment getReplacerEnvironment(
@@ -202,7 +201,7 @@ public class BaseFtpConnection implements Runnable {
         return _out;
     }
 
-    public PathReference getCurrentDirectory() {
+    public LinkedRemoteFileInterface getCurrentDirectory() {
         return _currentDirectory;
     }
 
@@ -530,8 +529,8 @@ public class BaseFtpConnection implements Runnable {
         }
     }
 
-    public void setCurrentDirectory(PathReference path) {
-        _currentDirectory = path;
+    public void setCurrentDirectory(LinkedRemoteFileInterface file) {
+        _currentDirectory = file;
     }
 
     public void setUser(String user) {
@@ -561,9 +560,6 @@ public class BaseFtpConnection implements Runnable {
 				try {
 					getDataConnectionHandler().getTransfer().abort(
 							"Control connection dropped");
-				} catch (SlaveUnavailableException e) {
-					logger.warn(
-							"Unable to stop transfer, slave is unavailable", e);
 				} catch (ObjectNotFoundException e) {
 					logger.debug("This is a bug, please report it", e);
 				}

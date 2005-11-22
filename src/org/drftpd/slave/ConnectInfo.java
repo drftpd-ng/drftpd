@@ -20,6 +20,8 @@ package org.drftpd.slave;
 
 import java.io.Serializable;
 
+import java.net.InetAddress;
+
 
 /**
  * @author zubov

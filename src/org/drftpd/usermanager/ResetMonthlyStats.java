@@ -18,17 +18,21 @@
 package org.drftpd.usermanager;
 
 
+import org.apache.log4j.BasicConfigurator;
+
+import org.drftpd.master.ConnectionManager;
+import org.drftpd.slave.Slave;
+
+import org.drftpd.tests.DummyGlobalContext;
+
 import java.io.FileInputStream;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
-
-import org.apache.log4j.BasicConfigurator;
-import org.drftpd.master.ConnectionManager;
-import org.drftpd.slave.Slave;
-import org.drftpd.tests.DummyGlobalContext;
 
 
 /**

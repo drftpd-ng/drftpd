@@ -25,6 +25,7 @@ import net.sf.drftpd.mirroring.Job;
 
 import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.plugins.Archive;
 import org.drftpd.sections.SectionInterface;
 
 
@@ -40,12 +41,6 @@ public class ArchiveHandler extends Thread {
         super(archiveType.getClass().getName() + " archiving " +
                 archiveType.getSection().getName());
         _archiveType = archiveType;
-        
-        for(ArchiveHandler h : _archiveType._parent.getArchiveHandlers()) {
-        	if(archiveType.getSection().equals(h.getSection()))
-        		throw new RuntimeException(
-        				"Attempt to add start an already running archivehandler");
-        }
     }
 
     public ArchiveType getArchiveType() {
@@ -66,8 +61,13 @@ public class ArchiveHandler extends Thread {
                 if (_archiveType.getDirectory() == null) {
                     return; // all done
                 }
-
-                _archiveType._parent.addArchiveHandler(this);
+                try {
+					_archiveType._parent.addArchiveHandler(this);
+				} catch (DuplicateArchiveException e) {
+					logger.warn("Directory -- " + _archiveType.getDirectory()
+							+ " -- is already being archived ");
+					return;
+				}
             }
 
             if (_archiveType.getRSlaves() == null) {
@@ -83,18 +83,19 @@ public class ArchiveHandler extends Thread {
 
             ArrayList<Job> jobs = _archiveType.send();
             _archiveType.waitForSendOfFiles(new ArrayList<Job>(jobs));
+        	if (_archiveType.getDirectory().isDeleted()) {
+        		// all files will be deleted too, no need to removejobs, JobManager will do that
+                logger.info("Done archiving " +
+                        getArchiveType().getDirectory().getPath() + ", it was deleted during archival");        		
+        		return;
+        	}
             _archiveType.cleanup(jobs);
             logger.info("Done archiving " +
                 getArchiveType().getDirectory().getPath());
         } catch (Exception e) {
             logger.warn("", e);
-        }
-
-        Archive archive = _archiveType._parent;
-
-        if (!archive.removeArchiveHandler(this)) {
-            logger.debug(
-                "This is a serious bug, unable to remove the ArchiveHandler!");
+        } finally {
+			_archiveType._parent.removeArchiveHandler(this);
         }
     }
 }

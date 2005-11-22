@@ -15,6 +15,8 @@ slave.root.1=site
 master.host=localhost
 #port to connect to the master
 master.bindport=1099
+#Set the master to use SSL for slave connections as well
+slave.masterSSL=false
 
 #pasv port range
 #slave.portfrom=30000
@@ -31,7 +33,8 @@ enabledownloadchecksums=true
 #bufferSize set at 0 lets the kernel handle the buffer sizes
 bufferSize=0
 
-# for those of you that have issues with slaves thinking they
-# are still connected, but aren't, in milliseconds
-# 300000 = 5 minutes
-slave.timeout=300000
+# This is the maximum the slave will wait for the master
+# timeout on the slave (on the master side) should be equal
+# "site slave <slavename> set timeout <value>
+# 60000 = one minute
+slave.timeout=60000

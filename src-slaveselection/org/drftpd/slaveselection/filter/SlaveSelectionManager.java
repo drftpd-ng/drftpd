@@ -17,24 +17,31 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
+import net.sf.drftpd.master.config.ConfigInterface;
+import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.mirroring.Job;
 
 import org.drftpd.GlobalContext;
+
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
+
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
+
 import org.drftpd.usermanager.User;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import java.net.InetAddress;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 
 /**
@@ -91,6 +98,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException {
         ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(job.getDestinationSlaves());
+        slaves.removeAll(job.getFile().getAvailableSlaves());
 
         for (Iterator iter = slaves.iterator(); iter.hasNext();) {
             if (!((RemoteSlave) iter.next()).isAvailable()) {
@@ -133,16 +141,9 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     public void reload() throws FileNotFoundException, IOException {
         _ssmiDown = new FilterChain(this, "conf/slaveselection-down.conf");
         _ssmiUp = new FilterChain(this, "conf/slaveselection-up.conf");
-
-        if (getGlobalContext().getConnectionManager().getGlobalContext()
-                    .isJobManagerLoaded()) {
-            _ssmiJobUp = new FilterChain(this, "conf/slaveselection-jobup.conf");
-            _ssmiJobDown = new FilterChain(this,
+        _ssmiJobUp = new FilterChain(this, "conf/slaveselection-jobup.conf");
+        _ssmiJobDown = new FilterChain(this,
                     "conf/slaveselection-jobdown.conf");
-        } else {
-            _ssmiJobUp = null;
-            _ssmiJobDown = null;
-        }
     }
 
     public GlobalContext getGlobalContext() {

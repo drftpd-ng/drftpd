@@ -20,7 +20,6 @@ package org.drftpd.remotefile;
 /**
  * @author mog
  * @version $Id$
-  * @deprecated
  */
 public abstract class AbstractLightRemoteFile implements LightRemoteFileInterface {
 

@@ -17,14 +17,8 @@
  */
 package net.sf.drftpd.master.usermanager.xstream;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Iterator;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FatalException;
@@ -32,6 +26,7 @@ import net.sf.drftpd.ObjectExistsException;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
@@ -42,8 +37,15 @@ import org.drftpd.usermanager.UserExistsException;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.usermanager.UserManager;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Hashtable;
+import java.util.Iterator;
 
 
 /**

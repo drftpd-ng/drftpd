@@ -17,30 +17,17 @@
  */
 package net.sf.drftpd.master.config;
 
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.LineNumberReader;
-import java.io.Reader;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Observable;
-import java.util.Properties;
-
 import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.Logger;
+
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.UserManagement;
+
 import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.permissions.MessagePathPermission;
 import org.drftpd.permissions.PathPermission;
@@ -49,9 +36,28 @@ import org.drftpd.permissions.Permission;
 import org.drftpd.permissions.RatioPathPermission;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.Slave;
+
 import org.drftpd.usermanager.User;
 
 import com.Ostermiller.util.StringTokenizer;
+
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.Reader;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Observable;
+import java.util.Properties;
 
 
 /**
@@ -82,6 +88,7 @@ public class FtpConfig extends Observable implements ConfigInterface {
     private String newConf = "conf/perms.conf";
     protected PortRange _portRange;
 	private Permission _shutdown;
+	protected GlobalContext _gctx;
 
     protected FtpConfig() {
     }
@@ -89,14 +96,15 @@ public class FtpConfig extends Observable implements ConfigInterface {
     /**
      * Constructor that allows reusing of cfg object
      */
-    public FtpConfig(Properties cfg, String cfgFileName) throws IOException {
-        loadConfig(cfg);
+    public FtpConfig(Properties cfg, String cfgFileName,
+        GlobalContext gctx) throws IOException {
+        loadConfig(cfg, gctx);
     }
     
-    public FtpConfig(String cfgFileName) throws IOException {
+    public FtpConfig(String cfgFileName, GlobalContext gctx) throws IOException {
         Properties cfg = new Properties();
         cfg.load(new FileInputStream(cfgFileName));
-        loadConfig(cfg);
+        loadConfig(cfg, gctx);
     }
 
     private static ArrayList makeRatioPermission(ArrayList<RatioPathPermission> arr,
@@ -245,6 +253,11 @@ public class FtpConfig extends Observable implements ConfigInterface {
         return replaceName(temp, _replaceFile);
     }
 
+    public GlobalContext getGlobalContext() {
+    	assert _gctx != null;
+        return _gctx;
+    }
+
     public boolean getHideIps() {
         return _hideIps;
     }
@@ -266,13 +279,14 @@ public class FtpConfig extends Observable implements ConfigInterface {
     	return _pasv_addr;
 	}
 
-	public void loadConfig(Properties cfg)
+	public void loadConfig(Properties cfg, GlobalContext gctx)
         throws IOException {
         loadConfig2(new FileReader(newConf));
         if (_portRange == null) {
             //default portrange if none specified
             _portRange = new PortRange();
         }
+        _gctx = gctx;
         loadConfig1(cfg);
     }
 
@@ -471,8 +485,4 @@ public class FtpConfig extends Observable implements ConfigInterface {
     public PortRange getPortRange() {
         return _portRange;
     }
-
-	public GlobalContext getGlobalContext() {
-		return GlobalContext.getGlobalContext();
-	}
 }

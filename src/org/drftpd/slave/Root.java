@@ -17,14 +17,14 @@
  */
 package org.drftpd.slave;
 
-import java.io.IOException;
-
 import se.mog.io.File;
+
+import java.io.IOException;
 
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: Root.java,v 1.1 2004/11/09 18:59:58 mog Exp $
  */
 public class Root {
     private File _rootFile;

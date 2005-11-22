@@ -17,22 +17,25 @@
  */
 package org.drftpd.plugins;
 
+import net.sf.drftpd.FatalException;
+
+import org.apache.log4j.Logger;
+
+import org.drftpd.BlindTrustManager;
+
 import java.io.IOException;
+
 import java.security.GeneralSecurityException;
+
 import java.util.Properties;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
-import net.sf.drftpd.FatalException;
-
-import org.apache.log4j.Logger;
-import org.drftpd.BlindTrustManager;
-
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: SiteBotSSL.java,v 1.7 2004/11/03 16:46:45 mog Exp $
  */
 public class SiteBotSSL extends SiteBot {
     private static final Logger logger = Logger.getLogger(SiteBot.class);

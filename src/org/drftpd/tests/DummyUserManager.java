@@ -17,15 +17,15 @@
 package org.drftpd.tests;
 
 
-import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
-
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
+
+import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
 
 
 /**

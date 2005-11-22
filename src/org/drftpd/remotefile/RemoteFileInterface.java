@@ -19,6 +19,7 @@ package org.drftpd.remotefile;
 
 import java.io.FileNotFoundException;
 import java.util.Collection;
+import java.util.List;
 
 import org.drftpd.master.RemoteSlave;
 
@@ -26,7 +27,6 @@ import org.drftpd.master.RemoteSlave;
 /**
  * @author mog
  * @version $Id$
- * @deprecated
  */
 public interface RemoteFileInterface extends LightRemoteFileInterface {
 

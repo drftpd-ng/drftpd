@@ -44,6 +44,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.util.PortRange;
@@ -89,7 +90,9 @@ public class Slave {
     public static final boolean isWin32 = System.getProperty("os.name")
                                                 .startsWith("Windows");
     private static final Logger logger = Logger.getLogger(Slave.class);
-    public static final String VERSION = "DrFTPD 2.0";
+	private static final int socketTimeout = 10000; // 10 seconds, for Socket
+	protected static final int actualTimeout = 60000; // one minute, evaluated on a SocketTimeout
+    public static final String VERSION = "DrFTPD 2.0.2";
     private int _bufferSize;
     private SSLContext _ctx;
     private boolean _downloadChecksums;
@@ -101,6 +104,8 @@ public class Slave {
     private boolean _uploadChecksums;
     private PortRange _portRange;
     private Set _renameQueue = null;
+	private int _timeout;
+	private boolean _sslMaster;
     
     protected Slave() {
     	
@@ -110,6 +115,8 @@ public class Slave {
         InetSocketAddress addr = new InetSocketAddress(PropertyHelper.getProperty(
                     p, "master.host"),
                 Integer.parseInt(PropertyHelper.getProperty(p, "master.bindport")));
+        _sslMaster = p.getProperty("slave.masterSSL", "false").equalsIgnoreCase("true");
+
         // Whatever interface the slave uses to connect to the master, is the 
         // interface that the master will report to clients requesting PASV transfers 
         // from this slave, unless pasv_addr is set on the master for this slave
@@ -120,29 +127,37 @@ public class Slave {
         if (isWin32) {
         	_renameQueue = new HashSet();
         }
-
-        _s = new Socket();
-        int timeout = 0;
+        
         try {
-        	timeout = Integer.parseInt(PropertyHelper.getProperty(p, "slave.timeout"));
-        } catch (NullPointerException e) {
-        	timeout = 300000; // 5 minute default
+            _ctx = SSLGetContext.getSSLContext();
+        } catch (Exception e) {
+            logger.warn("Error loading SSLContext", e);
         }
-        _s.setSoTimeout(timeout);
-        _s.connect(addr);
 
+        if (_sslMaster) {
+        	_s = _ctx.getSocketFactory().createSocket();
+        } else {
+        	_s = new Socket();
+        }
+
+        try {
+        	_timeout = Integer.parseInt(PropertyHelper.getProperty(p, "slave.timeout"));
+        } catch (NullPointerException e) {
+        	_timeout = actualTimeout;
+        }
+        _s.setSoTimeout(socketTimeout);
+        _s.connect(addr);
+		if (_s instanceof SSLSocket) {
+			((SSLSocket) _s).setUseClientMode(true);
+			((SSLSocket) _s).startHandshake();
+		}
         _sout = new ObjectOutputStream(_s.getOutputStream());
         _sin = new ObjectInputStream(_s.getInputStream());
 
         //TODO sendReply()
         _sout.writeObject(slavename);
         _sout.flush();
-
-        try {
-            _ctx = SSLGetContext.getSSLContext();
-        } catch (Exception e) {
-            logger.warn("Error loading SSLContext", e);
-        }
+        _sout.reset();
 
         _uploadChecksums = p.getProperty("enableuploadchecksums", "true")
                             .equals("true");
@@ -152,13 +167,12 @@ public class Slave {
         _roots = getDefaultRootBasket(p);
         _transfers = new HashMap();
 
-        int minport = Integer.parseInt(p.getProperty("slave.portfrom", "0"));
-        int maxport = Integer.parseInt(p.getProperty("slave.portto", "0"));
-
-        if ((minport == 0) || (maxport == 0)) {
-            _portRange = new PortRange();
-        } else {
-            _portRange = new PortRange(minport, maxport);
+        try {
+        	int minport = Integer.parseInt(p.getProperty("slave.portfrom"));
+        	int maxport = Integer.parseInt(p.getProperty("slave.portto"));
+        	_portRange = new PortRange(minport, maxport);
+        } catch (NumberFormatException e) {
+        	_portRange = new PortRange();
         }
     }
 
@@ -776,6 +790,7 @@ public class Slave {
     }
 
     private void listenForCommands() throws IOException {
+    	long lastCommandReceived = System.currentTimeMillis();
         while (true) {
             AsyncCommand ac = null;
 
@@ -785,6 +800,7 @@ public class Slave {
 				if (ac == null) {
 					continue;
 				}
+				lastCommandReceived = System.currentTimeMillis();
 			} catch (ClassNotFoundException e) {
 				throw new RuntimeException(e);
 			} catch (EOFException e) {
@@ -792,10 +808,16 @@ public class Slave {
 						.debug("Lost connection to the master, may have been kicked offline");
 				return;
 			} catch (SocketTimeoutException e) {
-				// if no communication for slave.timeout time, send a diskstatus
-				// this will uncover whatever underlying communication error
-				// exists
-				sendResponse(new AsyncResponseDiskStatus(getDiskStatus()));
+				// if no communication for slave.timeout (_timeout) time, than
+				// connection to the master is dead or there is a configuration
+				// error
+				if (_timeout < (System.currentTimeMillis() - lastCommandReceived)) {
+					logger
+							.error("Slave is going offline as it hasn't received any communication from the master in "
+									+ (System.currentTimeMillis() - lastCommandReceived)
+									+ " milliseconds");
+					throw new RuntimeException(e);
+				}
 				continue;
 			}
 
@@ -890,6 +912,7 @@ public class Slave {
         try {
             _sout.writeObject(response);
             _sout.flush();
+            _sout.reset();
             if(!(response instanceof AsyncResponseTransferStatus)) {
             	logger.debug("Slave wrote response - " + response);
             }

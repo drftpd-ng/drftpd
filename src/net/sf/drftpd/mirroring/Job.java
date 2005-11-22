@@ -17,14 +17,22 @@
 package net.sf.drftpd.mirroring;
 
 
+import java.io.FileNotFoundException;
+import java.net.SocketException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import net.sf.drftpd.FileExistsException;
+import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.SlaveUnavailableException;
+
+import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.slave.RemoteIOException;
 
 
 /**
@@ -33,18 +41,26 @@ import org.drftpd.remotefile.LinkedRemoteFileInterface;
  * @version $Id$
  */
 public class Job {
-    private RemoteSlave _destSlave;
+	private static long jobIndexCount = 1;
+	private static final Logger logger = Logger.getLogger(Job.class);
     private Set<RemoteSlave> _destSlaves;
     private LinkedRemoteFileInterface _file;
     private int _priority;
     private SlaveTransfer _slaveTransfer;
-    private RemoteSlave _sourceSlave;
     private long _timeCreated;
     private long _timeSpent;
     private int _transferNum;
+    private long _index;
+    private boolean _onlyCountOnlineSlaves;
+    
+    public Job(LinkedRemoteFileInterface file, Collection<RemoteSlave> destSlaves,
+            int priority, int transferNum) {
+    	this(file, destSlaves, priority, transferNum, false);
+    }
 
-    public Job(LinkedRemoteFileInterface file, Collection destSlaves,
-        int priority, int transferNum) {
+    public Job(LinkedRemoteFileInterface file, Collection<RemoteSlave> destSlaves,
+        int priority, int transferNum, boolean onlyCountOnlineSlaves) {
+    	_index = jobIndexCount++;
         _destSlaves = new HashSet<RemoteSlave>(destSlaves);
         _file = file;
         _priority = priority;
@@ -52,7 +68,7 @@ public class Job {
         _timeSpent = 0;
         _transferNum = transferNum;
         _slaveTransfer = null;
-
+        _onlyCountOnlineSlaves = onlyCountOnlineSlaves;
         if (_transferNum > destSlaves.size()) {
             throw new IllegalArgumentException(
                 "transferNum cannot be greater than destSlaves.size()");
@@ -73,22 +89,22 @@ public class Job {
      * {@see net.sf.drftpd.master.SlaveManagerImpl#getASlave(Collection, char, FtpConfig)}
      */
     public Set<RemoteSlave> getDestinationSlaves() {
+    	if (_onlyCountOnlineSlaves) {
+    		HashSet<RemoteSlave> onlineDestinationSlaves = new HashSet<RemoteSlave>();
+    		for (RemoteSlave rslave : new HashSet<RemoteSlave>(_destSlaves)) {
+    			if (rslave.isAvailable()) {
+    				onlineDestinationSlaves.add(rslave);
+    			}
+    		}
+    		return onlineDestinationSlaves;
+    	}
         return Collections.unmodifiableSet(_destSlaves);
     }
 
-    public synchronized String getDestSlaveName() {
-        if (!isTransferring()) {
-            throw new IllegalStateException(this + " is not transferring");
-        }
-
-        return _destSlave.getName();
-    }
-
     /**
-     * Returns the file (or directory, if directories can be submitted as jobs,)
-     * for this job. This file is used to tell the slaves what file to transfer &
-     * receive.
-     */
+	 * Returns the file for this job. This file is used to tell the slaves what
+	 * file to transfer & receive.
+	 */
     public LinkedRemoteFileInterface getFile() {
         return _file;
     }
@@ -116,20 +132,13 @@ public class Job {
         return _slaveTransfer.getXferSpeed();
     }
 
-    public synchronized String getSrcSlaveName() {
-        if (!isTransferring()) {
-            throw new IllegalStateException(this + " is not transferring");
-        }
-
-        return _sourceSlave.getName();
-    }
-
     public synchronized RemoteSlave getSourceSlave() {
         if (!isTransferring()) {
             throw new IllegalStateException(this + " is not transferring");
         }
-    	return _sourceSlave;
+        return _slaveTransfer.getSourceSlave();
     }
+    
     /**
      * This is the time that the job was created
      */
@@ -148,7 +157,7 @@ public class Job {
      * returns true if this job has nothing more to send
      */
     public boolean isDone() {
-        return ((_transferNum < 1) || (_destSlaves.isEmpty()));
+        return _transferNum < 1;
     }
 
     public boolean isTransferring() {
@@ -158,23 +167,20 @@ public class Job {
     private String outputDestinationSlaves() {
         String toReturn = "";
 
-        for (Iterator iter = getDestinationSlaves().iterator(); iter.hasNext();) {
-            RemoteSlave rslave = (RemoteSlave) iter.next();
-
-            if (!iter.hasNext()) {
-                return toReturn + rslave.getName();
-            }
-
+        for (RemoteSlave rslave : new HashSet<RemoteSlave>(_destSlaves)) {
             toReturn = toReturn + rslave.getName() + ",";
         }
-
-        return toReturn;
+        if (!toReturn.equals("")) {
+        	return toReturn.substring(0,toReturn.length()-1);
+        }
+        return null;
     }
 
     private synchronized void reset() {
-        _slaveTransfer = null;
-        _destSlave = null;
-        _sourceSlave = null;
+    	if (_slaveTransfer != null) {
+    		_slaveTransfer.abort("Resetting slave2slave Transfer");
+            _slaveTransfer = null;
+    	}
     }
 
     public synchronized void sentToSlave(RemoteSlave slave) {
@@ -196,41 +202,139 @@ public class Job {
     }
 
     public String toString() {
-        return "Job[file=" + getFile().getName() + ",dest=[" +
-            outputDestinationSlaves() + "],transferNum=" + _transferNum +
-			",priority="+getPriority()+"]";
-    }
+		return "Job[index=" + _index + "][file=" + getFile().getPath()
+				+ ",dest=[" + outputDestinationSlaves() + "],transferNum="
+				+ _transferNum + ",priority=" + getPriority() + "]";
+	}
 
-    public boolean transfer(boolean checkCRC, RemoteSlave sourceSlave,
-        RemoteSlave destSlave) throws SlaveException {
-        synchronized (this) {
-            if (_slaveTransfer != null) {
-                throw new IllegalStateException("Job is already transferring");
-            }
-            if(getFile().getSlaves().contains(_destSlave))
-            	throw new IllegalStateException("File already exists on target slave");
+    /**
+	 * Returns true if transfer was completed successfully
+	 * 
+	 * @param checkCRC
+	 * @param sourceSlave
+	 * @param destSlave
+	 * @return
+	 */
+    
+    public void transfer(boolean checkCRC, RemoteSlave sourceSlave,
+			RemoteSlave destSlave) {
+		synchronized (this) {
+			if (_slaveTransfer != null) {
+				throw new IllegalStateException("Job is already transferring");
+			}
+			if (getFile().getSlaves().contains(destSlave)) {
+				throw new IllegalStateException(
+						"File already exists on target slave");
+			}
+			_slaveTransfer = new SlaveTransfer(getFile(), sourceSlave,
+					destSlave);
+		}
 
-            _sourceSlave = sourceSlave;
-            _destSlave = destSlave;
-            _slaveTransfer = new SlaveTransfer(getFile(), _sourceSlave,
-                    _destSlave);
-        }
+		logger.info("Sending " + getFile().getName() + " from "
+				+ sourceSlave.getName() + " to " + destSlave.getName());
+		long startTime = System.currentTimeMillis();
+		try {
+			boolean crcMatch = _slaveTransfer.transfer();
+			if (crcMatch || !checkCRC) {
+				logSuccess();
+			} else {
+				destSlave.simpleDelete(getFile().getPath());
+				logger.debug("CRC did not match for " + getFile()
+						+ " when sending from " + sourceSlave.getName()
+						+ " to " + destSlave.getName());				
+			}
+		} catch (DestinationSlaveException e) {
+			if (e.getCause() instanceof FileExistsException) {
+				logger.debug("Caught FileExistsException in sending "
+						+ getFile().getName() + " from "
+						+ sourceSlave.getName() + " to " + destSlave.getName(),
+						e);
+				long remoteChecksum = 0;
+				long localChecksum = 0;
 
-        boolean result = false;
+				try {
+					String index = destSlave.issueChecksumToSlave(getFile()
+							.getPath());
+					remoteChecksum = destSlave.fetchChecksumFromIndex(index);
+				} catch (SlaveUnavailableException e2) {
+					logger.debug("SlaveUnavailableException from ", e2);
+					destSlave.simpleDelete(getFile().getPath());
+					return;
+				} catch (RemoteIOException e3) {
+					logger.debug("RemoteIOException from ", e3);
+					destSlave.simpleDelete(getFile().getPath());
+					return;
+				}
 
-        try {
-            result = _slaveTransfer.transfer(checkCRC);
-        } finally {
-            reset();
-        }
+				try{
+					localChecksum = getFile().getCheckSum();
+				} catch (NoAvailableSlaveException e4) {
+					// File exists locally, but I can't verify it's checksum
+					// Accept the new one since there's no cached checksum
+					logger.debug("Accepting file because there's no local checksum");
+					// successful transfer
+					getFile().setCheckSum(remoteChecksum);
+					logSuccess();
+					return;
+				}
+				if ( remoteChecksum == localChecksum) {
+					logger.debug("Accepting file because the crc's match");
+					// successful transfer
+					logSuccess();
+				} else {
+					logger.debug("Checksum did not match, removing offending file");
+					destSlave.simpleDelete(getFile().getPath());
+				}
+				return;
+			} else {
+				logger.error("Error on slave during slave2slave transfer", e);
+			}
+			destSlave.simpleDelete(getFile().getPath());
+		} catch (SourceSlaveException e) {
+			if (e.getCause() instanceof FileNotFoundException) {
+				logger.warn("Caught FileNotFoundException in sending "
+						+ getFile().getName() + " from "
+						+ sourceSlave.getName() + " to " + destSlave.getName(),
+						e);
+				getFile().removeSlave(sourceSlave);
+				return;
+			} else {
+				logger.error("Error on slave during slave2slave transfer", e);
+			}
+		} catch (SlaveException e) {
+			throw new RuntimeException(
+					"SlaveException was not of type DestinationSlaveException or SourceSlaveException");
+		} finally {
+			addTimeSpent(System.currentTimeMillis() - startTime);
+			reset();
+		}
+	}
 
-        return result;
-    }
+	private void logSuccess() {
+		getFile().addSlave(getDestinationSlave());
+		logger.debug("Sent file " + getFile().getName() + " to "
+				+ getDestinationSlave().getName() + " from " + getSourceSlave().getName());
+		sentToSlave(getDestinationSlave());
+	}
 
 	public synchronized RemoteSlave getDestinationSlave() {
         if (!isTransferring()) {
             throw new IllegalStateException(this + " is not transferring");
         }
-		return _destSlave;
+		return _slaveTransfer.getDestinationSlave();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object arg0) {
+		if (arg0 instanceof Job) {
+			return _file == ((Job) arg0)._file;
+		}
+		return super.equals(arg0);
+	}
+
+	public long getIndex() {
+		return _index;
 	}
 }

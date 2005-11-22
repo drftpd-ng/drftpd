@@ -40,6 +40,8 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import javax.net.ssl.SSLSocket;
+
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -49,11 +51,12 @@ import net.sf.drftpd.master.SlaveFileException;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
+import org.drftpd.SSLGetContext;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.remotefile.MLSTSerialize;
-import org.drftpd.slave.Connection;
+import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.usermanager.UserFileException;
@@ -69,6 +72,10 @@ public class SlaveManager implements Runnable {
 	private static final String slavePath = "slaves/";
 
 	private static final File slavePathFile = new File(slavePath);
+	
+	private static final int socketTimeout = 10000; // 10 seconds, for Socket
+	
+	protected static final int actualTimeout = 60000; // one minute, evaluated on a SocketTimeout
 
 	protected GlobalContext _gctx;
 
@@ -82,12 +89,15 @@ public class SlaveManager implements Runnable {
 
 	private RemergeThread _remergeThread;
 
+	private boolean _sslSlaves;
+
 	public SlaveManager(Properties p, GlobalContext gctx)
 			throws SlaveFileException {
 		this();
 		_gctx = gctx;
 		_port = Integer.parseInt(PropertyHelper.getProperty(p,
 				"master.bindport"));
+		_sslSlaves = p.getProperty("master.slaveSSL", "false").equalsIgnoreCase("true");
 		loadSlaves();
 	}
 
@@ -416,26 +426,14 @@ public class SlaveManager implements Runnable {
 		}
 	}
 
-	/** ping's all slaves, returns number of slaves removed */
-	public int verifySlaves() {
-		int removed = 0;
-
-		synchronized (_rslaves) {
-			for (Iterator i = _rslaves.iterator(); i.hasNext();) {
-				RemoteSlave slave = (RemoteSlave) i.next();
-
-				if (!slave.isAvailablePing()) {
-					removed++;
-				}
-			}
-		}
-
-		return removed;
-	}
-
 	public void run() {
 		try {
-			_serverSocket = new ServerSocket(_port);
+			if (_sslSlaves) {
+				_serverSocket = SSLGetContext.getSSLContext()
+						.getServerSocketFactory().createServerSocket(_port);
+			} else {
+				_serverSocket = new ServerSocket(_port);
+			}
 			//_serverSocket.setReuseAddress(true);
 			logger.info("Listening for slaves on port " + _port);
 		} catch (Exception e) {
@@ -451,7 +449,11 @@ public class SlaveManager implements Runnable {
 
 			try {
 				socket = _serverSocket.accept();
-				socket.setSoTimeout(Connection.TIMEOUT);
+				socket.setSoTimeout(socketTimeout);
+				if (socket instanceof SSLSocket) {
+					((SSLSocket) socket).setUseClientMode(false);
+					((SSLSocket) socket).startHandshake();
+				}
 				logger.debug("Slave connected from "
 						+ socket.getRemoteSocketAddress());
 
@@ -505,10 +507,7 @@ public class SlaveManager implements Runnable {
 
 					continue;
 				}
-				
-				socket.setSoTimeout(Integer.parseInt(rslave.getProperty("timeout","300000")));
-				// lengthen the timeout since slaves can sit idle
-				
+					
 				rslave.connect(socket, in, out);
 			} catch (Exception e) {
 				rslave.setOffline(e);
@@ -559,11 +558,46 @@ public class SlaveManager implements Runnable {
         	}
         }
 	}
-
+/**
+ * Accepts files and directories and does the physical deletes asynchronously
+ * Waits for a response and handles errors on each slave
+ * Use RemoteSlave.simpleDelete(path) if you want to just delete one file
+ * @param file
+ */
 	public void deleteOnAllSlaves(LinkedRemoteFile file) {
-		synchronized (this) {
-			for (RemoteSlave rslave : _rslaves) {
-				rslave.simpleDelete(file.getPath());
+		HashMap<RemoteSlave,String> slaveMap = new HashMap<RemoteSlave,String>();
+		List<RemoteSlave> slaves = null;
+		if (file.isFile()) {
+			slaves = file.getSlaves();
+		} else {
+			slaves = new ArrayList<RemoteSlave>(_rslaves);
+		}
+		for (RemoteSlave rslave : slaves) {
+			String index = null;
+			try {
+				index = rslave.issueDeleteToSlave(file.getPath());
+				slaveMap.put(rslave, index);
+			} catch (SlaveUnavailableException e) {
+				rslave.addQueueDelete(file.getPath());
+			}
+		}
+		for (RemoteSlave rslave : slaveMap.keySet()) {
+			String index = slaveMap.get(rslave);
+			try {
+				rslave.fetchResponse(index, 300000);
+			} catch (SlaveUnavailableException e) {
+				rslave.addQueueDelete(file.getPath());
+			} catch (RemoteIOException e) {
+				if (e.getCause() instanceof FileNotFoundException) {
+					continue;
+				}
+				rslave.setOffline("IOException deleting file, check logs for specific error");
+				rslave.addQueueDelete(file.getPath());
+				logger
+						.error(
+								"IOException deleting file, file will be deleted when slave comes online",
+								e);
+				rslave.addQueueDelete(file.getPath());
 			}
 		}
 	}
@@ -574,11 +608,6 @@ public class SlaveManager implements Runnable {
 				rslave.simpleRename(fromPath, toDirPath, toName);
 			}
 		}
-	}
-
-	public Collection<RemoteSlave> getOnlineSlavesFromList(ArrayList<String> _slaves) throws NoAvailableSlaveException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }
 

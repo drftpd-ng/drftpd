@@ -54,8 +54,8 @@ public class MaxUploadsPerSlaveJob extends Filter {
 			return;
 		JobManager jm = _gctx.getJobManager();
 		for (Job job : jm.getAllJobsFromQueue()) {
-			if (job.isTransferring()) {
-				synchronized (job) {
+			synchronized (job) {
+				if (job.isTransferring()) {
 					if (job.getSourceSlave().equals(sourceSlave))
 						scorechart.removeSlaveScore(job.getDestinationSlave());
 				}

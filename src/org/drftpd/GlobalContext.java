@@ -17,9 +17,11 @@
  */
 package org.drftpd;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
@@ -39,8 +41,9 @@ import net.sf.drftpd.util.PortRange;
 import org.apache.log4j.Logger;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
-import org.drftpd.remotefile.FileManager;
-import org.drftpd.remotefile.PathReference;
+import org.drftpd.remotefile.LinkedRemoteFile;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.remotefile.MLSTSerialize;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.AbstractUserManager;
@@ -51,14 +54,18 @@ import org.drftpd.usermanager.UserManager;
  * @author mog
  * @version $Id$
  */
+/**
+ * @author zubov
+ *
+ */
 public class GlobalContext {
     private static final Logger logger = Logger.getLogger(GlobalContext.class);
-    private static GlobalContext _gctx = null;
     protected ConnectionManager _cm;
     protected ConfigInterface _config;
     protected ZipscriptConfig _zsConfig;
     private ArrayList<FtpListener> _ftpListeners = new ArrayList<FtpListener>();
     protected JobManager _jm;
+    protected LinkedRemoteFileInterface _root;
     protected SectionManagerInterface _sections;
     private String _shutdownMessage = null;
     protected SlaveManager _slaveManager;
@@ -67,31 +74,15 @@ public class GlobalContext {
     protected SlaveSelectionManagerInterface _slaveSelectionManager;
 	private String _cfgFileName;
 
-    public void reloadFtpConfig() throws IOException {
-    	_config = new FtpConfig(_cfgFileName);
-    	_zsConfig = new ZipscriptConfig(this);
-    }
-    
-    public static GlobalContext getGlobalContext() {
-		if (_gctx == null) {
-    		throw new RuntimeException("GlobalContext was not initialized");
-    	}
-    	return _gctx;
-    }
-    
-    public static void initGlobalContext(Properties cfg, String cfgFileName, ConnectionManager cm) throws SlaveFileException {
-    	if (_gctx != null) {
-    		throw new RuntimeException("GlobalContext is already initialized");
-    	}
-    	_gctx = new GlobalContext(cfg, cfgFileName, cm);
-    }
-    /**
-     * Only used for junit tests
-     */
-    public GlobalContext() {
+    protected GlobalContext() {
     }
 
-    private GlobalContext(Properties cfg, String cfgFileName,
+    public void reloadFtpConfig() throws IOException {
+    	_config = new FtpConfig(_cfgFileName, this);
+    	_zsConfig = new ZipscriptConfig(this);
+    }
+
+    public GlobalContext(Properties cfg, String cfgFileName,
         ConnectionManager cm) throws SlaveFileException {
     	_cfgFileName = cfgFileName;
         _cm = cm;
@@ -99,7 +90,7 @@ public class GlobalContext {
         loadUserManager(cfg, cfgFileName);
 
         try {
-            _config = new FtpConfig(cfg, cfgFileName);
+            _config = new FtpConfig(cfg, cfgFileName, this);
         } catch (Throwable ex) {
             throw new FatalException(ex);
         }
@@ -113,12 +104,18 @@ public class GlobalContext {
         loadSlaveManager(cfg);
         loadRSlavesAndRoot();
         listenForSlaves();
+        loadJobManager();
+        getJobManager().startJobs();
         loadSlaveSelectionManager(cfg);
         loadSectionManager(cfg);
         loadPlugins(cfg);
     }
 
-    /**
+    private void loadJobManager() {
+		_jm = new JobManager(this);
+	}
+
+	/**
          *
          */
     private void loadSlaveSelectionManager(Properties cfg) {
@@ -142,6 +139,7 @@ public class GlobalContext {
     * Calls init(this) on the argument
     */
     public synchronized void addFtpListener(FtpListener listener) {
+        listener.init(this);
         _ftpListeners.add(listener);
     }
     
@@ -152,7 +150,7 @@ public class GlobalContext {
     public void dispatchFtpEvent(Event event) {
 		logger.debug("Dispatching " + event + " to " + getFtpListeners());
 
-		for (FtpListener handler : new ArrayList<FtpListener>(getFtpListeners())) {
+		for (FtpListener handler : getFtpListeners()) {
 			try {
 				handler.actionPerformed(event);
 			} catch (RuntimeException e) {
@@ -180,12 +178,20 @@ public class GlobalContext {
 		return new ArrayList<FtpListener>(_ftpListeners);
 	}
 
+    /**
+     * JobManager is now loaded as an integral part of the daemon
+     * If no Jobs are sent, it utilizes very little resources
+     */    
     public JobManager getJobManager() {
-        if (_jm == null) {
-            throw new IllegalStateException("JobManager not loaded");
+        return _jm;
+    }
+
+    public LinkedRemoteFileInterface getRoot() {
+        if (_root == null) {
+            throw new NullPointerException();
         }
 
-        return _jm;
+        return _root;
     }
 
     public SectionManagerInterface getSectionManager() {
@@ -224,20 +230,6 @@ public class GlobalContext {
         return _shutdownMessage != null;
     }
 
-    public void loadJobManager() {
-        if (_jm != null) {
-            return; // already loaded
-        }
-
-        try {
-            _jm = new JobManager(this);
-            getSlaveSelectionManager().reload();
-            _jm.startJobs();
-        } catch (IOException e) {
-            throw new FatalException("Error loading JobManager", e);
-        }
-    }
-
     protected void loadPlugins(Properties cfg) {
         for (int i = 1;; i++) {
             String classname = cfg.getProperty("plugins." + i);
@@ -261,9 +253,16 @@ public class GlobalContext {
      *
      */
     private void loadRSlavesAndRoot() {
+        try {
             List rslaves = _slaveManager.getSlaves();
-			FileManager.getFileManager();
-            logger.info("Loaded the FileManager");
+            logger.info("Loading files.mlst");
+            _root = MLSTSerialize.loadMLSTFileDatabase(rslaves, _cm);
+        } catch (FileNotFoundException e) {
+            logger.info("files.mlst not found, creating a new filelist");
+            _root = new LinkedRemoteFile(getConfig());
+        } catch (IOException e) {
+            throw new FatalException(e);
+        }
     }
 
     // depends on having getRoot() working
@@ -337,9 +336,5 @@ public class GlobalContext {
         }
 
         throw new ObjectNotFoundException();
-	}
-
-	public PathReference getRoot() {
-		return FileManager.getRoot();
 	}
 }

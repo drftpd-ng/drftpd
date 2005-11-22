@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
 
@@ -33,6 +32,8 @@ import org.drftpd.SFVFile;
 import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.Reply;
 import org.drftpd.id3.ID3Tag;
+import org.drftpd.plugins.DIZFile;
+import org.drftpd.plugins.DIZPlugin;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 

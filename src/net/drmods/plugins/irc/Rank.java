@@ -51,7 +51,8 @@ public class Rank extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Rank.class);
     private String _exemptGroups;
 
-    public Rank() {
+    public Rank(GlobalContext gctx) {
+		super(gctx);
 		loadConf("conf/drmods.conf");
 	}
 
@@ -92,7 +93,7 @@ public class Rank extends IRCCommand {
 		User user;	
 	    if (args.equals("")) {
 	     	try {
-	     	    user = GlobalContext.getGlobalContext().getUserManager().getUserByIdent(ident);
+	     	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
 	     	} catch (Exception e) {
 	     	    logger.warn("Could not identify " + ident);
 	     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
@@ -100,9 +101,9 @@ public class Rank extends IRCCommand {
 	     	}
 	    } else {
 	        try {
-                user = GlobalContext.getGlobalContext().getUserManager().getUserByName(args);
+                user = getGlobalContext().getUserManager().getUserByName(args);
             } catch (Exception e) {
-                logger.error(args + " is not a vlid username", e);
+                logger.error(args + " is not a valid username", e);
                 env.add("user", args);
                 out.add(ReplacerUtils.jprintf("rank.error", env, Rank.class));
                 return out;
@@ -121,7 +122,7 @@ public class Rank extends IRCCommand {
 
         Collection<User> users;
         try {
-            users = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
+            users = getGlobalContext().getUserManager().getAllUsers();
         } catch (UserFileException e) {
             out.add("Error processing userfiles");
             return out;
@@ -177,7 +178,7 @@ public class Rank extends IRCCommand {
         
         Collection<User> users;
         try {
-            users = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
+            users = getGlobalContext().getUserManager().getAllUsers();
         } catch (UserFileException e) {
             out.add("Error processing userfiles");
             return out;

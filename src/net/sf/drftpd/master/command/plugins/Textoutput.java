@@ -17,11 +17,8 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import f00f.net.irc.martyr.IRCConnection;
+import f00f.net.irc.martyr.commands.MessageCommand;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
@@ -31,12 +28,16 @@ import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
+
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
 
-import f00f.net.irc.martyr.IRCConnection;
-import f00f.net.irc.martyr.commands.MessageCommand;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 
 /**

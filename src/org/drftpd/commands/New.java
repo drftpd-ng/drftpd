@@ -17,23 +17,26 @@
  */
 package org.drftpd.commands;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.TreeSet;
-
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.master.command.plugins.Textoutput;
 
 import org.apache.log4j.Logger;
+
 import org.drftpd.Bytes;
 import org.drftpd.Time;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
+
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.IOException;
+
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.TreeSet;
 
 
 /**

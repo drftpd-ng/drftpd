@@ -17,14 +17,30 @@
  */
 package org.drftpd.remotefile;
 
-import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Iterator;
-
+import net.sf.drftpd.master.config.ConfigInterface;
 import org.apache.log4j.Logger;
 import org.drftpd.Checksum;
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
+
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.Writer;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.StringTokenizer;
 
 
 /**
@@ -60,7 +76,7 @@ public class MLSTSerialize {
         StringBuffer ret = new StringBuffer();
 
         if (file.isLink()) {
-            ret.append("type=unix.slink:" + file.getLinkPath() + ";");
+            ret.append("type=OS.unix=slink:" + file.getLinkPath() + ";");
         } else if (file.isFile()) {
             ret.append("type=file;");
         } else if (file.isDirectory()) {
@@ -105,7 +121,7 @@ public class MLSTSerialize {
         return ret.toString();
     }
 
-/*    private static void unserialize(LineNumberReader in,
+    private static void unserialize(LineNumberReader in,
         LinkedRemoteFileInterface dir, Hashtable allRslaves, String path)
         throws IOException {
         for (String line = in.readLine();; line = in.readLine()) {
@@ -145,10 +161,14 @@ public class MLSTSerialize {
 
                 if ("type".equals(k)) {
                     //assert v.equals("file") || v.equals("dir") : v;
-                    if (v.startsWith("unix.slink:")) {
-                        file.setLink(v.substring("unix.slink:".length()));
-                        isDir = true;
-                    } else {
+                	if (v.startsWith("unix.slink:")) {
+						// kept here for conversion of old files.mlst
+						file.setLink(v.substring("unix.slink:".length()));
+						isDir = true;
+					} else if (v.startsWith("OS.unix=slink:")) {
+						file.setLink(v.substring("OS.unix=slink:".length()));
+						isDir = true;
+					} else {
                         isFile = "file".equals(v);
                         isDir = "dir".equals(v);
 
@@ -214,9 +234,9 @@ public class MLSTSerialize {
                 logger.warn("", e);
             }
         }
-    }*/
+    }
 
-/*    public static LinkedRemoteFile unserialize(ConfigInterface conf, Reader in,
+    public static LinkedRemoteFile unserialize(ConfigInterface conf, Reader in,
         List rslaves) throws IOException, CorruptFileListException {
         LinkedRemoteFile root = new LinkedRemoteFile(conf);
 
@@ -242,9 +262,9 @@ public class MLSTSerialize {
         }
 
         return root;
-    }*/
+    }
 
-/*    public static LinkedRemoteFile loadMLSTFileDatabase(List rslaves,
+    public static LinkedRemoteFile loadMLSTFileDatabase(List rslaves,
         ConnectionManager cm) throws IOException {
 		FileReader fr = null;
 		try {
@@ -256,5 +276,5 @@ public class MLSTSerialize {
 				fr.close();
 			}
 		}
-    }*/
+    }
 }

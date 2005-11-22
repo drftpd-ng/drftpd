@@ -17,16 +17,16 @@
  */
 package org.drftpd.plugins;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 
 import org.drftpd.Checksum;
-import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.master.ConnectionManager;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 
 /**
@@ -78,7 +78,7 @@ public class Exec extends FtpListener {
                 "HOST=@" + uevent.getConn().getClientAddress(),
                 
                 "SECTION=" +
-                GlobalContext.getGlobalContext().getSectionManager().lookup(uevent.getDirectory()
+                getGlobalContext().getSectionManager().lookup(uevent.getDirectory()
                                                                         .getPath())
             };
         String[] cmd;

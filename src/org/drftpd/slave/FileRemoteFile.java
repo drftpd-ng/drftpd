@@ -18,9 +18,14 @@
 package org.drftpd.slave;
 
 
+import org.apache.log4j.Logger;
+import org.drftpd.remotefile.AbstractLightRemoteFile;
+import org.drftpd.remotefile.LightRemoteFileInterface;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -29,17 +34,12 @@ import java.util.List;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
-import org.apache.log4j.Logger;
-import org.drftpd.remotefile.AbstractLightRemoteFile;
-import org.drftpd.remotefile.LightRemoteFileInterface;
-
 
 /**
  * A wrapper for java.io.File to the net.sf.drftpd.RemoteFile structure.
  *
  * @author mog
  * @version $Id$
- * @deprecated
  */
 public class FileRemoteFile extends AbstractLightRemoteFile {
     private static final Logger logger = Logger.getLogger(FileRemoteFile.class);

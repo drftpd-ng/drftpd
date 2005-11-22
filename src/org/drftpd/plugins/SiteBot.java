@@ -27,6 +27,7 @@ import java.io.LineNumberReader;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -57,6 +58,7 @@ import net.sf.drftpd.event.MessageEvent;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.event.SlaveEvent;
 import net.sf.drftpd.event.TransferEvent;
+import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.config.FtpConfig;
@@ -92,12 +94,14 @@ import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
+import f00f.net.irc.martyr.CommandRegister;
 import f00f.net.irc.martyr.Debug;
 import f00f.net.irc.martyr.IRCConnection;
 import f00f.net.irc.martyr.clientstate.Channel;
 import f00f.net.irc.martyr.commands.InviteCommand;
 import f00f.net.irc.martyr.commands.MessageCommand;
 import f00f.net.irc.martyr.commands.NickCommand;
+import f00f.net.irc.martyr.commands.NoticeCommand;
 import f00f.net.irc.martyr.commands.PartCommand;
 import f00f.net.irc.martyr.commands.RawCommand;
 import f00f.net.irc.martyr.commands.WhoisCommand;
@@ -287,11 +291,7 @@ public class SiteBot extends FtpListener implements Observer {
         }
     }
 
-    private GlobalContext getGlobalContext() {
-		return GlobalContext.getGlobalContext();
-	}
-
-	private void actionPerformedDirectoryID3(TransferEvent direvent)
+    private void actionPerformedDirectoryID3(TransferEvent direvent)
         throws FormatterException {
         ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
         LinkedRemoteFile dir;
@@ -391,7 +391,8 @@ public class SiteBot extends FtpListener implements Observer {
         SFVStatus sfvstatus = sfvfile.getStatus();
         // ANNOUNCE FIRST FILE RCVD 
         //   and EXPECTING xxxMB in xxx Files on same line.
-        if( sfvstatus.getAvailable() == 1) {
+        if( sfvstatus.getAvailable() == 1
+        		&& !direvent.getDirectory().isDeleted()) {
             Ret ret = getPropertyFileSuffix("store.first", dir);
             fillEnvSection( env, direvent, ret.getSection(), direvent.getDirectory());
             env.add("files", Integer.toString(sfvfile.size()));
@@ -1128,7 +1129,8 @@ public class SiteBot extends FtpListener implements Observer {
         return getGlobalContext().getSlaveManager();
     }
 
-    public void init() {
+    public void init(GlobalContext gctx) {
+    	super.init(gctx);
         try {
             reload();
         } catch (Exception e) {
@@ -1143,7 +1145,15 @@ public class SiteBot extends FtpListener implements Observer {
     protected void reload() throws FileNotFoundException, IOException {
     	Properties ircCfg = new Properties();
     	synchronized(this) {
-    		ircCfg.load(new FileInputStream("conf/irc.conf"));
+    		FileInputStream fis = null;
+    		try {
+    			fis = new FileInputStream("conf/irc.conf");
+        		ircCfg.load(fis);
+    		} finally {
+    			if (fis != null) {
+    				fis.close();
+    			}
+    		}
     		reloadIRCCommands();
     	}
         reload(ircCfg);

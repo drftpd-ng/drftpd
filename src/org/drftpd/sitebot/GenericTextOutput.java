@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 
 import f00f.net.irc.martyr.commands.MessageCommand;
 
@@ -40,8 +41,8 @@ public class GenericTextOutput extends IRCCommand {
 	private static final Logger logger = Logger.getLogger(GenericTextOutput.class);
     private HashMap<String,String> _commands;
 
-    public GenericTextOutput() {
-		super();
+    public GenericTextOutput(GlobalContext gctx) {
+		super(gctx);
         reload();
     }
     
@@ -78,7 +79,9 @@ public class GenericTextOutput extends IRCCommand {
             throw new RuntimeException(e1);
         } finally {
             try {
-                in.close();
+            	if (in != null) {
+            		in.close();
+            	}
             } catch (IOException e2) {
             }
         }

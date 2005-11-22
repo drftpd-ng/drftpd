@@ -91,14 +91,14 @@ public class Mirror extends FtpListener {
                              .size() / 2;
         }
 
-        GlobalContext.getGlobalContext().getJobManager().addJobToQueue(new Job(file,
+        getGlobalContext().getJobManager().addJobToQueue(new Job(file,
                 slaves, 0,
                 numToMirror));
         logger.info("Done adding " + file.getPath() + " to the JobList");
     }
 
-    public void init() {
-    	GlobalContext.getGlobalContext().loadJobManager();
+    public void init(GlobalContext gctx) {
+        super.init(gctx);
     }
 
     private void reload() {

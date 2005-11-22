@@ -42,8 +42,8 @@ import f00f.net.irc.martyr.util.FullNick;
 public class Credits extends IRCCommand {
 	private static final Logger logger = Logger.getLogger(Credits.class);
 
-	public Credits() {
-		super();
+	public Credits(GlobalContext gctx) {
+		super(gctx);
 	}
 
 	public ArrayList<String> doCredits(String args, MessageCommand msgc) {
@@ -56,7 +56,7 @@ public class Credits extends IRCCommand {
 		User user;	
 	    if (args.equals("")) {
 	     	try {
-	     	    user = GlobalContext.getGlobalContext().getUserManager().getUserByIdent(ident);
+	     	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
 	     	} catch (Exception e) {
 	     	    logger.warn("Could not identify " + ident);
 	     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
@@ -67,7 +67,7 @@ public class Credits extends IRCCommand {
 	        return out;
 	    } else {
 	        try {
-                user = GlobalContext.getGlobalContext().getUserManager().getUserByName(args);
+                user = getGlobalContext().getUserManager().getUserByName(args);
             } catch (Exception e) {
                 env.add("user", args);
                 out.add(ReplacerUtils.jprintf("credits.error", env, Credits.class));
@@ -84,7 +84,7 @@ public class Credits extends IRCCommand {
 		long totalcredz = 0;
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		try {
-			ArrayList<User> users = new ArrayList<User>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
+			ArrayList<User> users = new ArrayList<User>(getGlobalContext().getUserManager().getAllUsers());
 			for (Iterator iter = users.iterator(); iter.hasNext();) {
 				User user = (User) iter.next();
 				totalcredz += user.getCredits();

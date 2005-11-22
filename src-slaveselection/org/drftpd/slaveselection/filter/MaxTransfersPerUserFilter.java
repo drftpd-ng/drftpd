@@ -17,10 +17,6 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.net.InetAddress;
-import java.util.Iterator;
-import java.util.Properties;
-
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
 
@@ -30,6 +26,11 @@ import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
+
+import java.net.InetAddress;
+
+import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * @author mog

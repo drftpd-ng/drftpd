@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
@@ -36,6 +37,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.permissions.Permission;
+import org.drftpd.plugins.Trial;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;

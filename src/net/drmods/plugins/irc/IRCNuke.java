@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
+import java.util.Map.Entry;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.Nukee;
@@ -62,8 +63,8 @@ public class IRCNuke extends IRCCommand {
 	private static final Logger logger = Logger.getLogger(IRCNuke.class);
 	private int _maxNukes;
 	
-	public IRCNuke() {
-		super();
+	public IRCNuke(GlobalContext gctx) {
+		super(gctx);
 		loadConf("conf/drmods.conf");
 	}
 
@@ -124,8 +125,8 @@ public class IRCNuke extends IRCCommand {
 
 		LinkedRemoteFileInterface nukeDir;
 		try {
-			nukeDir = LinkedRemoteFile.findLatestDir(GlobalContext.getGlobalContext()
-					.getConnectionManager(), GlobalContext.getGlobalContext().getRoot(),
+			nukeDir = LinkedRemoteFile.findLatestDir(getGlobalContext()
+					.getConnectionManager(), getGlobalContext().getRoot(),
 					ftpuser, searchstr);
 		} catch (ObjectNotFoundException e) {
 			out.add(ReplacerUtils.jprintf("nuke.error", env, IRCNuke.class));
@@ -144,7 +145,7 @@ public class IRCNuke extends IRCCommand {
 			// String username = (String) iter.next();
 			User user;
 			try {
-				user = GlobalContext.getGlobalContext().getUserManager().getUserByName(
+				user = getGlobalContext().getUserManager().getUserByName(
 						username);
 			} catch (NoSuchUserException e1) {
 				out.add("Cannot remove credits from " + username + ": "
@@ -158,14 +159,8 @@ public class IRCNuke extends IRCCommand {
 				return out;
 			}
 			// nukees contains credits as value
-			if (user == null) {
-				Long add = (Long) nukees2.get(null);
-				if (add == null) {
-					add = new Long(0);
-				}
-				nukees2.put(user, new Long(add.longValue()
-						+ ((Long) nukees.get(username)).longValue()));
-			} else {
+			//if (user == null) we don't do anything below anyway
+			if (user != null) {
 				nukees2.put(user, (Long) nukees.get(username));
 			}
 		}
@@ -196,11 +191,10 @@ public class IRCNuke extends IRCCommand {
 
 		// update credits, nukedbytes, timesNuked, lastNuked
 		// for (Iterator iter = nukees2.keySet().iterator(); iter.hasNext();) {
-		for (User nukee : nukees2.keySet()) {
+		for (Entry<User, Long> nukeeEntry : nukees2.entrySet()) {
 			// User nukee = (User) iter.next();
-			if (nukee == null)
-				continue;
-			long size = ((Long) nukees2.get(nukee)).longValue();
+			User nukee = nukeeEntry.getKey();
+			long size = nukeeEntry.getValue().longValue();
 
 			long debt = Nuke.calculateNukedAmount(size, nukee.getKeyedMap()
 					.getObjectFloat(UserManagement.RATIO), nukemult);
@@ -223,10 +217,8 @@ public class IRCNuke extends IRCCommand {
 		NukeEvent nuke = new NukeEvent(ftpuser, "NUKE", nukeDirPath,
 				nukeDirSize, nukedAmount, nukemult, nukemsg, nukees);
 
-		Nuke dpsn = (Nuke) GlobalContext.getGlobalContext().getConnectionManager()
-				.getCommandManagerFactory().getHandlersMap().get(Nuke.class);
-		dpsn.getNukeLog().add(nuke);
-		GlobalContext.getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);
+		Nuke.getNukeLog().add(nuke);
+		getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);
 		return out;
 	}
 
@@ -258,7 +250,7 @@ public class IRCNuke extends IRCCommand {
 		
 		LinkedRemoteFileInterface nukeDir;
 		try {
-			nukeDir = LinkedRemoteFile.findLatestDir(GlobalContext.getGlobalContext().getConnectionManager(), GlobalContext.getGlobalContext().getRoot(), ftpuser, nukeName);
+			nukeDir = LinkedRemoteFile.findLatestDir(getGlobalContext().getConnectionManager(), getGlobalContext().getRoot(), ftpuser, nukeName);
 		} catch (ObjectNotFoundException e2) {
 			out.add(ReplacerUtils.jprintf("nuke.error", env, IRCNuke.class));
 			return out;
@@ -267,13 +259,8 @@ public class IRCNuke extends IRCCommand {
 		String toPath = nukeDir.getParentFileNull().getPath() + "/" + toName;
 		String toDir = nukeDir.getParentFileNull().getPath();
 		NukeEvent nuke;
-		Nuke dpsn;
 		try {
-			 dpsn = (Nuke) GlobalContext.getGlobalContext().getConnectionManager()
-					.getCommandManagerFactory()
-					.getHandlersMap()
-					.get(Nuke.class);
-			nuke = dpsn.getNukeLog().get(toPath);
+			nuke = Nuke.getNukeLog().get(toPath);
 		} catch (ObjectNotFoundException ex) {
 			out.add(ex.getMessage());
 			logger.warn(ex);
@@ -285,7 +272,7 @@ public class IRCNuke extends IRCCommand {
 			String nukeeName = nukeeObj.getUsername();
 			User nukee;
 			try {
-				nukee = GlobalContext.getGlobalContext().getUserManager().getUserByName(nukeeName);
+				nukee = getGlobalContext().getUserManager().getUserByName(nukeeName);
 			} catch (NoSuchUserException e) {
 			    out.add(nukeeName + ": no such user");
 				continue;
@@ -313,7 +300,7 @@ public class IRCNuke extends IRCCommand {
 		}//for
 			
 		try {
-			dpsn.getNukeLog().remove(toPath);
+			Nuke.getNukeLog().remove(toPath);
 		} catch (ObjectNotFoundException e) {
 			logger.warn("Error removing nukelog entry", e);
 		}
@@ -342,7 +329,7 @@ public class IRCNuke extends IRCCommand {
 		nuke.setCommand("UNNUKE");
 		nuke.setReason(reason);
 		nuke.setUser(ftpuser);
-		GlobalContext.getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);	
+		getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);	
 		return out;
 	}
 
@@ -366,7 +353,7 @@ public class IRCNuke extends IRCCommand {
 			nukeCount = _maxNukes;
 
 		Nuke dpsn;
-		dpsn = (Nuke) GlobalContext.getGlobalContext().getConnectionManager()
+		dpsn = (Nuke) getGlobalContext().getConnectionManager()
 					.getCommandManagerFactory()
 					.getHandlersMap()
 					.get(Nuke.class);
@@ -400,7 +387,7 @@ public class IRCNuke extends IRCCommand {
 		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
 		User user = null;
      	try {
-     	    user = GlobalContext.getGlobalContext().getUserManager().getUserByIdent(ident);
+     	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
      	} catch (Exception e) {
      	    logger.warn("Could not identify " + ident);
      	}

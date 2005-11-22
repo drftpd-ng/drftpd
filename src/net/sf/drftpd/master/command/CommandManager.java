@@ -86,6 +86,10 @@ public class CommandManager {
                 command);
         }
         
+        if (!conn.getCurrentDirectory().isValid()) {
+        	conn.setCurrentDirectory(conn.getCurrentDirectory().getRoot());
+        }
+        
         try {
 			if (conn.getUser().isDeleted()) {
 				conn.stop("You are deleted");
@@ -99,7 +103,7 @@ public class CommandManager {
             command = command.substring("SITE ".length()).toLowerCase();
 
             if (!conn.getGlobalContext().getConfig().checkPathPermission(command,
-                        conn.getUserNull(), conn.getCurrentDirectory().getPath(), true)) {
+                        conn.getUserNull(), conn.getCurrentDirectory(), true)) {
                 //logger.debug("Blocking access to execute : SITE "+command);
                 return Reply.RESPONSE_530_ACCESS_DENIED;
             }

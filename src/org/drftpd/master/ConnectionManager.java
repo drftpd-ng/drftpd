@@ -29,6 +29,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.TimerTask;
+import javax.net.ssl.*;
+import org.drftpd.SSLGetContext;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.event.Event;
@@ -43,6 +45,8 @@ import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.plugins.RaceStatistics;
+import org.drftpd.plugins.Statistics;
 import org.drftpd.slave.Slave;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -63,8 +67,7 @@ public class ConnectionManager {
 
     public ConnectionManager(Properties cfg, Properties slaveCfg,
         String cfgFileName) throws SlaveFileException {
-        GlobalContext.initGlobalContext(cfg, cfgFileName, this);
-        _gctx = GlobalContext.getGlobalContext();
+        _gctx = new GlobalContext(cfg, cfgFileName, this);
 
         if (slaveCfg != null) {
             try {
@@ -285,7 +288,7 @@ public class ConnectionManager {
                 	}
                 }
             };
-        TimerTask timerGarbageCollect = new TimerTask() {
+/*        TimerTask timerGarbageCollect = new TimerTask() {
 			public void run() {
 				logger.debug("Memory free before GC :"
 						+ Bytes.formatBytes(Runtime.getRuntime().freeMemory())
@@ -297,12 +300,12 @@ public class ConnectionManager {
 						+ "/"
 						+ Bytes.formatBytes(Runtime.getRuntime().totalMemory()));
 			}
-		};
+		};*/
 
 		// run every hour
 		getGlobalContext().getTimer().schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
 		// run every minute
-		getGlobalContext().getTimer().schedule(timerGarbageCollect, 60 * 1000, 60 * 1000);
+//		getGlobalContext().getTimer().schedule(timerGarbageCollect, 60 * 1000, 60 * 1000);
     }
 
     public void remove(BaseFtpConnection conn) {

@@ -16,18 +16,21 @@
  */
 package net.sf.drftpd.mirroring;
 
-import java.io.IOException;
-
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
 
 import org.apache.log4j.Logger;
+
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.TransferFailedException;
+
+import java.io.IOException;
+
+import java.net.InetSocketAddress;
 
 
 /**
@@ -57,16 +60,26 @@ public class SlaveTransfer {
     	if(_srcTransfer == null || _destTransfer == null) return 0;
         return (_srcTransfer.getTransfered() + _destTransfer.getTransfered()) / 2;
     }
+    
+    public void abort(String reason) {
+    	if (_srcTransfer != null) {
+    		_srcTransfer.abort(reason);
+    	}
+    	if (_destTransfer != null) {
+    		_destTransfer.abort(reason);
+    	}
+    }
 
-    int getXferSpeed() {
+    long getXferSpeed() {
     	if(_srcTransfer == null || _destTransfer == null) return 0;
         return (_srcTransfer.getXferSpeed() + _destTransfer.getXferSpeed()) / 2;
     }
 
     /**
-     * Returns true if the crc passed, false otherwise
+     * Returns the crc checksum of the destination transfer
+     * If CRC is disabled on the destination slave, checksum = 0
      */
-    protected boolean transfer(boolean checkCRC) throws SlaveException {
+    protected boolean transfer() throws SlaveException {
     	// can do encrypted slave2slave transfers by modifying the
     	// first argument in issueListenToSlave() and the third option
     	// in issueConnectToSlave(), maybe do an option later, is this wanted?
@@ -76,9 +89,9 @@ public class SlaveTransfer {
             ConnectInfo ci = _destSlave.fetchTransferResponseFromIndex(destIndex);
             _destTransfer = _destSlave.getTransfer(ci.getTransferIndex());
         } catch (SlaveUnavailableException e) {
-            throw new SourceSlaveException(e);
+            throw new DestinationSlaveException(e);
         } catch (RemoteIOException e) {
-            throw new SourceSlaveException(e);
+            throw new DestinationSlaveException(e);
         }
 
         try {
@@ -88,9 +101,9 @@ public class SlaveTransfer {
             ConnectInfo ci = _srcSlave.fetchTransferResponseFromIndex(srcIndex);
             _srcTransfer = _srcSlave.getTransfer(ci.getTransferIndex());
         } catch (SlaveUnavailableException e) {
-            throw new DestinationSlaveException(e);
+            throw new SourceSlaveException(e);
         } catch (RemoteIOException e) {
-            throw new DestinationSlaveException(e);
+            throw new SourceSlaveException(e);
         }
 
         try {
@@ -118,19 +131,8 @@ public class SlaveTransfer {
                     srcIsDone = true;
                 }
             } catch (TransferFailedException e7) {
-                try {
-                    _destTransfer.abort("srcSlave had an error");
-                } catch (SlaveUnavailableException e8) {
-                }
-
-                throw new SourceSlaveException(e7);
-            } catch (SlaveUnavailableException e7) {
-                try {
-                    _destTransfer.abort("srcSlave had an error");
-                } catch (SlaveUnavailableException e8) {
-                }
-
-                throw new SourceSlaveException(e7);
+                _destTransfer.abort("srcSlave had an error");
+                throw new SourceSlaveException(e7.getCause());
             }
 
             try {
@@ -138,19 +140,8 @@ public class SlaveTransfer {
                     destIsDone = true;
                 }
             } catch (TransferFailedException e6) {
-                try {
-                    _srcTransfer.abort("destSlave had an error");
-                } catch (SlaveUnavailableException e8) {
-                }
-
-                throw new DestinationSlaveException(e6);
-            } catch (SlaveUnavailableException e6) {
-                try {
-                    _srcTransfer.abort("destSlave had an error");
-                } catch (SlaveUnavailableException e8) {
-                }
-
-                throw new DestinationSlaveException(e6);
+                _srcTransfer.abort("destSlave had an error");
+                throw new DestinationSlaveException(e6.getCause());
             }
 
             try {
@@ -158,35 +149,31 @@ public class SlaveTransfer {
             } catch (InterruptedException e5) {
             }
         }
-
-        if (!checkCRC) {
-            // crc passes if we're not using it
-            _file.addSlave(_destSlave);
-
-            return true;
+        long srcChecksum = _srcTransfer.getChecksum();
+        long destChecksum = _destTransfer.getChecksum();
+        // may as well set the checksum, we know this one is right
+        if (_srcTransfer.getChecksum() != 0) {
+        	_file.setCheckSum(_srcTransfer.getChecksum());
         }
-
-        long dstxferCheckSum = _destTransfer.getChecksum();
-
-        try {
-            if ((dstxferCheckSum == 0) ||
-                    (_file.getCheckSumCached() == dstxferCheckSum) ||
-                    (_file.getCheckSumFromSlave() == dstxferCheckSum)) {
-                _file.addSlave(_destSlave);
-
-                return true;
-            }
-        } catch (NoAvailableSlaveException e) {
-            logger.info("NoAvailableSlaveException caught getting checksum from slave",
-                e);
-
-            return false;
-        } catch (IOException e) {
-            logger.info("Exception caught getting checksum from slave", e);
-
-            return false;
+        
+        if (_srcTransfer.getChecksum() == _destTransfer.getChecksum() || _destTransfer.getChecksum() == 0 || _srcTransfer.getChecksum() == 0 ) {
+        	return true;
+        } else {
+        	return false;
         }
-
-        return false;
     }
+
+	/**
+	 * @return Returns the _destSlave.
+	 */
+	public RemoteSlave getDestinationSlave() {
+		return _destSlave;
+	}
+
+	/**
+	 * @return Returns the _srcSlave.
+	 */
+	public RemoteSlave getSourceSlave() {
+		return _srcSlave;
+	}
 }

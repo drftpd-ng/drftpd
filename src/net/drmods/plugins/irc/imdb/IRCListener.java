@@ -26,6 +26,7 @@ import java.util.Properties;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.sitebot.IRCCommand;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -39,7 +40,8 @@ public class IRCListener extends IRCCommand {
     private static final Logger logger = Logger.getLogger(IRCListener.class);
     private String _filters;
     
-    public IRCListener() {
+    public IRCListener(GlobalContext gctx) {
+        super(gctx); 
 		loadConf("conf/drmods.conf");
 	}
 

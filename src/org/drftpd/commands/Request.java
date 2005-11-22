@@ -17,9 +17,6 @@
  */
 package org.drftpd.commands;
 
-import java.io.IOException;
-import java.util.Iterator;
-
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -27,10 +24,15 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Logger;
+
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.NoSuchUserException;
+
+import java.io.IOException;
+
+import java.util.Iterator;
 
 
 /**

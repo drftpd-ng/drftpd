@@ -17,14 +17,16 @@
  */
 package net.sf.drftpd.util;
 
+import junit.framework.TestCase;
+
 import java.io.IOException;
+
 import java.net.ServerSocket;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import javax.net.ServerSocketFactory;
-
-import junit.framework.TestCase;
 
 
 /**

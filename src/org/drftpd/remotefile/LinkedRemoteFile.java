@@ -55,7 +55,6 @@ import se.mog.io.File;
  * 
  * @author mog
  * @version $Id$
- * @deprecated
  */
 
 public class LinkedRemoteFile implements Serializable, Comparable,
@@ -344,6 +343,22 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		return file;
 	}
 
+	private void setDeletedRecursive() {
+		if (isFile()) {
+			_parent = null;
+			_slaves.clear();
+		} else if (isDirectory()) {
+			for (RemoteFileInterface victim : new ArrayList<RemoteFileInterface>(getFiles())) {
+				if (victim instanceof LinkedRemoteFile) {
+					LinkedRemoteFile lrf = (LinkedRemoteFile) victim;
+					lrf.setDeletedRecursive();
+				}
+			}
+			_parent = null;
+			_files.clear();
+		}
+	}
+	
 	/**
 	 * Deletes a file or directory, RemoteSlave handles issues with slaves being
 	 * offline and queued deletes
@@ -359,71 +374,38 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			// need to use a copy of getFiles() for recursive delete to avoid
 			// ConcurrentModificationErrors
 			long tempLength = length();
-			for (RemoteFileInterface victim : new ArrayList<RemoteFileInterface>(getFiles())) {
-				if (victim instanceof LinkedRemoteFile) {
-					LinkedRemoteFile lrf = (LinkedRemoteFile) victim;
-
-					// remove Strong references
-					lrf._parent = null;
-				}
-			}
-			_files.clear();
 			_length = 0;
 			_ftpConfig.getGlobalContext().getSlaveManager()
 					.deleteOnAllSlaves(this);
-/*			for (Iterator iter = new ArrayList<LinkedRemoteFileInterface>(
-					getFiles2()).iterator(); iter.hasNext();) {
-				LinkedRemoteFileInterface myFile = (LinkedRemoteFileInterface) iter
-						.next();
-				myFile.delete();
-				
-			}
-*/
 			try {
-				Object ret = getParentFile().getMap().remove(getName());
+				getParentFile().getMap().remove(getName());
 				
 				// now need to remove size of directory from it's parent
 				getParentFile().addSize(-tempLength);
-				
-				// remove Strong references
-				_parent = null;
-				
-				if (ret == null) {
-					throw new NullPointerException("File could not be removed from filelist");
-				}
+
 			} catch (FileNotFoundException ex) {
 				logger.log(Level.FATAL,
 						"FileNotFoundException on getParentFile()", ex);
 			}
-
+			setDeletedRecursive();
 			return;
 		}
-
-		synchronized (_slaves) {
-			for (Iterator<RemoteSlave> iter = _slaves.iterator(); iter
-					.hasNext();) {
-				RemoteSlave rslave = iter.next();
-				try {
-					for (RemoteTransfer rtransfer : new ArrayList<RemoteTransfer>(
-							rslave.getTransfers())) {
-						if (getPath().equalsIgnoreCase(rtransfer.getPathNull())) {
-							rtransfer
-									.abort("File has been deleted on the master");
-						}
+		// this.isFile() = true
+		for (RemoteSlave rslave : new ArrayList<RemoteSlave>(_slaves)) {
+			try {
+				for (RemoteTransfer rtransfer : new ArrayList<RemoteTransfer>(
+						rslave.getTransfers())) {
+					if (getPath().equalsIgnoreCase(rtransfer.getPathNull())) {
+						rtransfer
+								.abort("File has been deleted on the master");
 					}
-				} catch (SlaveUnavailableException e) {
-					// nothing to do here, still want to delete it though
 				}
-				logger.info("DELETE: " + rslave.getName() + ": " + getPath());
-				rslave.simpleDelete(getPath());
-				iter.remove();
+			} catch (SlaveUnavailableException e) {
+				// nothing to do here, still want to delete it though
 			}
 		}
-
-		if (!_slaves.isEmpty()) {
-			throw new RuntimeException(
-					"not all slaves were removed on delete()");
-		}
+		_ftpConfig.getGlobalContext().getSlaveManager().deleteOnAllSlaves(this);
+		_slaves.clear();
 
 		try {
 			if (getParentFile().getMap().remove(getName()) == null) {
@@ -788,11 +770,11 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			while (true) {
 				RemoteSlave rslave = null;
 				if (isAvailable()) {
-					try {
-						rslave = getSlaves().get(0);
-					} catch (IndexOutOfBoundsException e) {
+					Iterator<RemoteSlave> iter = getAvailableSlaves().iterator();
+					if (!iter.hasNext()) {
 						throw new NoAvailableSlaveException();
 					}
+					rslave = getAvailableSlaves().iterator().next();
 				}
 
 				if (rslave == null) {
@@ -961,9 +943,6 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		return (_files == null) && (_slaves != null) && !isLink();
 	}
 
-	/**
-	 * isLink() && isDeleted() means queued rename, target is getLink().
-	 */
 	public boolean isLink() {
 		return _link != null;
 	}
@@ -1493,7 +1472,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 
 	public boolean isDeleted() {
 		if (isDirectory()) {
-			return false;
+			return (_parent == null && _name.equals(""));
 		}
 
 		return _slaves.isEmpty();
@@ -1527,7 +1506,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 						lrf.setLength(light.length());
 						lrf.setCheckSum(0);
 					} else {
-						rslave.simpleRename(lrf.getName(), lrf.getParentFile()
+						rslave.simpleRename(lrf.getPath(), lrf.getParentFile()
 								.getPath(), lrf.getName() + "."
 								+ rslave.getName() + ".conflict");
 						try {

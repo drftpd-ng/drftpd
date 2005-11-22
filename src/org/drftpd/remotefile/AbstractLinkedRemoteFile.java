@@ -17,16 +17,17 @@
  */
 package org.drftpd.remotefile;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import org.drftpd.SFVFile;
 import org.drftpd.master.RemoteSlave;
@@ -38,7 +39,6 @@ import org.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
  * Can be used for testing.
  * @author mog
  * @version $Id$
- * @deprecated
  */
 public abstract class AbstractLinkedRemoteFile
     implements LinkedRemoteFileInterface {

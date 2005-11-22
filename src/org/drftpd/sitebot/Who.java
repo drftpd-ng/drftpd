@@ -26,6 +26,7 @@ import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
+import org.drftpd.GlobalContext;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -45,8 +46,8 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 public class Who extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Who.class);
 
-    public Who() {
-    	super();
+    public Who(GlobalContext gctx) {
+    	super(gctx);
     }
     
     private ArrayList<String> getData(boolean idle, boolean up, boolean down) {
@@ -102,13 +103,17 @@ public class Who extends IRCCommand {
 								.getTransferFile().getName());
 						env.add("slave", conn.getDataConnectionHandler()
 								.getTranferSlave().getName());
-
-						if (conn.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD
-								&& up) {
+						switch (conn.getDirection()) {
+						case Transfer.TRANSFER_RECEIVING_UPLOAD:
 							out.add(SimplePrintf.jprintf(formatup, env));
-						} else if (conn.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD
-								&& down) {
+							break;
+						case Transfer.TRANSFER_SENDING_DOWNLOAD:
 							out.add(SimplePrintf.jprintf(formatdown, env));
+							break;
+						default:
+							if (idle) {
+								out.add(SimplePrintf.jprintf(formatidle, env));
+							}
 						}
 					}
 				}

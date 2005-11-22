@@ -17,9 +17,9 @@
  */
 package org.drftpd.permissions;
 
-import java.util.Collection;
-
 import org.apache.oro.text.regex.Pattern;
+
+import java.util.Collection;
 
 
 /**

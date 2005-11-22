@@ -26,6 +26,7 @@ import net.sf.drftpd.util.PortRange;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
+
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
 
@@ -54,6 +55,6 @@ public class DummyFtpConfig extends FtpConfig {
     }
 
     public void setGlobalContext(GlobalContext gctx) {
-        // nothing for now
+        _gctx = gctx;
     }
 }

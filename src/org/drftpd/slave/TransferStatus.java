@@ -21,7 +21,7 @@ import java.io.Serializable;
 
 /**
  * @author mog
- * @version $Id: TransferStatus.java,v 1.3 2004/11/12 14:22:19 mog Exp $
+ * @version $Id$
  */
 public class TransferStatus implements Serializable {
     private long _checksum;
@@ -66,7 +66,7 @@ public class TransferStatus implements Serializable {
         return _transferIndex;
     }
 
-    public int getXferSpeed() {
+    public long getXferSpeed() {
         if (_transfered == 0) {
             return 0;
         }
@@ -75,7 +75,7 @@ public class TransferStatus implements Serializable {
             return 0;
         }
 
-        return (int) (_transfered / ((float) _elapsed / (float) 1000));
+        return (long) (_transfered / ((float) _elapsed / (float) 1000));
     }
 
     public boolean isFinished() {

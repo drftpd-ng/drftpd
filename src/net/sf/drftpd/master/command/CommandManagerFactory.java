@@ -17,13 +17,6 @@
  */
 package net.sf.drftpd.master.command;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -32,6 +25,14 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.master.ConnectionManager;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
 
 /**

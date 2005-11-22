@@ -51,8 +51,8 @@ public class Kick extends IRCCommand {
     private int _idleTimeout;
     private int _usersPerLine;
     
-    public Kick() {
-		super();
+    public Kick(GlobalContext gctx) {
+		super(gctx);
 		loadConf("conf/drmods.conf");
 	}
 
@@ -89,8 +89,8 @@ public class Kick extends IRCCommand {
 	    ArrayList<String> out = new ArrayList<String>();
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 
-        String cmduser = msgc.getSource().getNick();
-        String cmdchan = msgc.getDest();
+		String cmduser = msgc.getSource().getNick();
+		String cmdchan = msgc.getDest();
 
         try {
             ReplacerFormat kickirc = ReplacerUtils.finalFormat(Kick.class,
@@ -104,7 +104,7 @@ public class Kick extends IRCCommand {
             
 			env.add("idlelimit",Long.toString(_idleTimeout));
 
-            ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(GlobalContext.getGlobalContext()
+            ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(getGlobalContext()
                     									.getConnectionManager().getConnections());
             int count = 0;
             String msg = "";

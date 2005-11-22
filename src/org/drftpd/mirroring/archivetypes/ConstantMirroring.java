@@ -17,23 +17,26 @@
  */
 package org.drftpd.mirroring.archivetypes;
 
+import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.master.config.FtpConfig;
+import net.sf.drftpd.mirroring.Job;
+import net.sf.drftpd.mirroring.JobManager;
+
+import org.apache.log4j.Logger;
+
+import org.drftpd.PropertyHelper;
+import org.drftpd.master.RemoteSlave;
+import org.drftpd.mirroring.ArchiveType;
+import org.drftpd.plugins.Archive;
+
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.sections.SectionInterface;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
-
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.mirroring.Job;
-import net.sf.drftpd.mirroring.JobManager;
-
-import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
-import org.drftpd.PropertyHelper;
-import org.drftpd.master.RemoteSlave;
-import org.drftpd.mirroring.ArchiveType;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.sections.SectionInterface;
 
 
 /**
@@ -42,12 +45,15 @@ import org.drftpd.sections.SectionInterface;
 public class ConstantMirroring extends ArchiveType {
     private static final Logger logger = Logger.getLogger(ConstantMirroring.class);
     private int _numOfSlaves;
+    private long _slaveDeadAfter;
 
     public ConstantMirroring(Archive archive, SectionInterface section,
         Properties p) {
         super(archive, section, p);
         _numOfSlaves = Integer.parseInt(PropertyHelper.getProperty(p,
                     section.getName() + ".numOfSlaves"));
+        _slaveDeadAfter = 1000 * 60 * Integer.parseInt(p.getProperty(
+                section.getName() + ".slaveDeadAfter", "0"));
 
         if (_numOfSlaves < 2) {
             throw new IllegalArgumentException(
@@ -112,7 +118,7 @@ public class ConstantMirroring extends ArchiveType {
     }
 
     public HashSet<RemoteSlave> findDestinationSlaves() {
-        return new HashSet<RemoteSlave>(GlobalContext.getGlobalContext()
+        return new HashSet<RemoteSlave>(_parent.getGlobalContext()
                                   .getSlaveManager().getSlaves());
     }
 
@@ -126,15 +132,21 @@ public class ConstantMirroring extends ArchiveType {
             }
 
             if (src.isFile()) {
-                Collection onlineSlaves;
+                Collection<RemoteSlave> slaves;
 
-                try {
-                    onlineSlaves = src.getAvailableSlaves();
-                } catch (NoAvailableSlaveException e) {
-                    continue; // can't archive this file but maybe others have a chance
+                slaves = src.getSlaves();
+                for (Iterator<RemoteSlave> slaveIter = slaves.iterator(); slaveIter.hasNext();) {
+                	RemoteSlave rslave = slaveIter.next();
+                	if (!rslave.isAvailable()) {
+                		long offlineTime = System.currentTimeMillis() - rslave.getLastTimeOnline();
+                		if (offlineTime > _slaveDeadAfter) {
+                			// slave is considered dead
+                			slaveIter.remove();
+                		}
+                	}
                 }
 
-                if (onlineSlaves.size() != _numOfSlaves) {
+                if (slaves.size() != _numOfSlaves) {
                     return false;
                 }
             } else if (src.isDirectory()) {
@@ -145,25 +157,18 @@ public class ConstantMirroring extends ArchiveType {
         return true;
     }
 
-    /**
-     * Adds relevant Jobs to the JobManager and returns an ArrayList of those Job's
-     */
-    public ArrayList send() {
-        return recursiveSend(getDirectory());
-    }
 
     private ArrayList recursiveSend(LinkedRemoteFileInterface lrf) {
         ArrayList jobQueue = new ArrayList();
-        JobManager jm = GlobalContext.getGlobalContext().getJobManager();
+        JobManager jm = _parent.getGlobalContext().getJobManager();
 
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
 
             if (src.isFile()) {
-                logger.info("Adding " + src.getPath() + " to the job queue");
 
-                Job job = new Job(src, getRSlaves(), 3, _numOfSlaves);
-                jm.addJobToQueue(job);
+                Job job = new Job(src, getRSlaves(), 3, _numOfSlaves, true);
+                logger.info("Adding " + job + " to the job queue");
                 jobQueue.add(job);
             } else {
                 jobQueue.addAll(recursiveSend(src));

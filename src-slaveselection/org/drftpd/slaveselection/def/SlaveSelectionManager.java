@@ -17,10 +17,10 @@
  */
 package org.drftpd.slaveselection.def;
 
+import org.drftpd.GlobalContext;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
-import org.drftpd.GlobalContext;
 
 
 /**

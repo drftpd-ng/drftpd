@@ -26,7 +26,8 @@ import java.io.Serializable;
  * @version $Id$
  * For use in sending the filelist from the slave to the master
  */
-public final class LightRemoteFile implements Serializable, LightRemoteFileInterface {
+public final class LightRemoteFile extends AbstractLightRemoteFile
+    implements Serializable {
     private String _filename;
     private long _lastModified;
     private long _length;

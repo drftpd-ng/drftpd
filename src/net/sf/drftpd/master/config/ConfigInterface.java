@@ -16,39 +16,43 @@ import net.sf.drftpd.util.PortRange;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.Reply;
 import org.drftpd.permissions.PathPermission;
-import org.drftpd.remotefile.PathReference;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
 
 /**
  * @author mog
- * @version $Id$
+ *
+ * TODO To change the template for this generated type comment go to
+ * Window - Preferences - Java - Code Style - Code Templates
  */
 public interface ConfigInterface {
 	public abstract boolean checkPathPermission(String key, User fromUser,
-			PathReference path);
+			LinkedRemoteFileInterface path);
 
 	public abstract boolean checkPathPermission(String key, User fromUser,
-			String path, boolean defaults);
+			LinkedRemoteFileInterface path, boolean defaults);
 
 	public abstract boolean checkPermission(String key, User user);
 
 	public abstract void directoryMessage(Reply response, User user,
-			PathReference dir);
+			LinkedRemoteFileInterface dir);
 
 	/**
 	 * @return Returns the bouncerIp.
 	 */
 	public abstract List getBouncerIps();
 
-	public abstract float getCreditCheckRatio(PathReference path,
+	public abstract float getCreditCheckRatio(LinkedRemoteFileInterface path,
 			User fromUser);
 
-	public abstract float getCreditLossRatio(PathReference path,
+	public abstract float getCreditLossRatio(LinkedRemoteFileInterface path,
 			User fromUser);
 
 	public abstract String getDirName(String name);
 
 	public abstract String getFileName(String name);
+
+	public abstract GlobalContext getGlobalContext();
 
 	public abstract boolean getHideIps();
 
@@ -58,7 +62,7 @@ public interface ConfigInterface {
 
 	public abstract int getMaxUsersTotal();
 
-	public abstract void loadConfig(Properties cfg)
+	public abstract void loadConfig(Properties cfg, GlobalContext gctx)
 			throws IOException;
 
 	public abstract void addPathPermission(String key, PathPermission permission);
@@ -73,6 +77,4 @@ public interface ConfigInterface {
 	public abstract void addObserver(Observer observer);
 
 	public abstract String getPasvAddress() throws NullPointerException;
-
-	public abstract GlobalContext getGlobalContext();
 }

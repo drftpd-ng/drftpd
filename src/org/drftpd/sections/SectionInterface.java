@@ -20,7 +20,7 @@ package org.drftpd.sections;
 
 import java.util.Collection;
 
-import org.drftpd.remotefile.PathReference;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
 
 
 /**
@@ -31,25 +31,27 @@ public interface SectionInterface {
     /**
      * @return the base directory for this section.
      */
-    public PathReference getBaseFile();
+    public LinkedRemoteFileInterface getBaseFile();
 
     /**
      * @return the (current) directory for this section.
      */
-    public PathReference getFile();
+    public LinkedRemoteFileInterface getFile();
+
+    public String getBasePath();
 
     /**
      * @return all directories for this section. For example if this is a dated-dir section, it would return all dated dirs, including current dir.
      */
-    public Collection getDirectories();
+    public Collection getFiles();
 
     /**
      * @param The file/directory to return the first subdir in this section for.
      * @return Returns the first subdirectory of the path represented that isn't the section itself.
      *         Although the returned dir can be the section itself depending on the SectionInterface implementation.
      */
-    public PathReference getFirstDirInSection(
-    		PathReference dir);
+    public LinkedRemoteFileInterface getFirstDirInSection(
+        LinkedRemoteFileInterface dir);
 
     /**
      * @return The name of this section

@@ -17,13 +17,6 @@
  */
 package org.drftpd.commands;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
@@ -34,12 +27,24 @@ import net.sf.drftpd.master.command.plugins.Textoutput;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
+
 import org.drftpd.Bytes;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.plugins.RaceStatistics;
+
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
+
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.IOException;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 
 
 /*

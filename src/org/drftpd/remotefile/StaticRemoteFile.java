@@ -28,7 +28,6 @@ import java.util.List;
  *
  * @author mog
  * @version $Id$
- * @deprecated
  */
 public class StaticRemoteFile extends AbstractRemoteFile {
     private long _checkSum;

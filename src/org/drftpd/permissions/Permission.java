@@ -17,10 +17,9 @@
  */
 package org.drftpd.permissions;
 
+import org.drftpd.usermanager.Entity;
 import java.util.Collection;
 import java.util.Iterator;
-
-import org.drftpd.usermanager.Entity;
 
 
 /**

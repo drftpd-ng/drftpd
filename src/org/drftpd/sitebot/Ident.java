@@ -21,6 +21,7 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -36,8 +37,8 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 public class Ident extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Ident.class);
 
-	public Ident() {
-		super();
+	public Ident(GlobalContext gctx) {
+		super(gctx);
 	}
 
 	public ArrayList<String> doIdent(String args, MessageCommand msgc) {

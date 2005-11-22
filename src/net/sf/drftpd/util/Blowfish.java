@@ -34,8 +34,8 @@ package net.sf.drftpd.util;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.*;
+import javax.crypto.spec.*;
 
 
 public class Blowfish {

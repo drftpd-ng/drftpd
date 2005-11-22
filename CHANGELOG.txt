@@ -1,3 +1,16 @@
+2005/10/14 Matt Zimmerman <zubov@users.sourceforge.net>
+* 2.0.2 released
+ - Check notes describing the changes on sourceforge
+
+2005/10/14 Matt Zimmerman <zubov@users.sourceforge.net>
+* 2.0.1 released
+ - The master now pings the slaves to make sure they're alive
+ - Fixed the "there is a bug somewhere in code, tried to fetch
+   an index that doesn't exist"
+ - You can now reload settings in Trial
+ - Recursive wipes were given more time for the slave to complete
+ - Other minor fixes
+
 2005/09/15 Matt Zimmerman <zubov@users.sourceforge.net>
 * 2.0 Final released
  - Apologies go out to the users for the delayed release

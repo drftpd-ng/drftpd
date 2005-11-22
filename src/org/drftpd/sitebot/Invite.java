@@ -24,6 +24,7 @@ import net.sf.drftpd.event.InviteEvent;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -40,8 +41,8 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 public class Invite extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Invite.class);
 
-    public Invite() {
-		super();
+    public Invite(GlobalContext gctx) {
+		super(gctx);
     }
 
 	public ArrayList<String> doInvite(String args, MessageCommand msgc) {

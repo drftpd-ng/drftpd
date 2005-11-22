@@ -20,6 +20,7 @@ package org.drftpd;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLContext;
@@ -65,7 +66,9 @@ public class PassiveConnection extends Connection {
 		try {
 			sock = _serverSocket.accept();
 		} finally {
-			_serverSocket.close();
+			if (_serverSocket != null) {
+				_serverSocket.close();
+			}
 			_serverSocket = null;
 		}
 
@@ -75,6 +78,10 @@ public class PassiveConnection extends Connection {
         	SSLSocket sslsock = (SSLSocket) sock;
         	sslsock.setUseClientMode(_useSSLClientMode);
            	sslsock.startHandshake();
+        }
+        if (sock == null) {
+        	// can happen if abort() is called while serverSocket.accept() is waiting
+        	throw new SocketException("abort() was called while waiting for a connection");
         }
 
         return sock;
@@ -94,14 +101,16 @@ public class PassiveConnection extends Connection {
 				_serverSocket.close();
 			}
         } catch (IOException e) {
-            logger.warn("failed to close() server socket", e);
+            logger.error("failed to close() server socket", e);
         }
         _serverSocket = null;
     }
 
 	protected void finalize() throws Throwable {
 		if (_serverSocket != null) {
-			logger.debug("Closing extraneous ServerSocket, accept() never called?");
+			logger.debug("Closing extraneous ServerSocket - "
+					+ _serverSocket.getLocalPort()
+					+ ", accept() was never called on the ServerSocket");
 			_serverSocket.close();
 			_serverSocket = null;	
 		}

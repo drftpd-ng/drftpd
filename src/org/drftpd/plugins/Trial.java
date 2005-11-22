@@ -32,8 +32,10 @@ import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.CalendarUtils;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
+import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
@@ -59,7 +61,6 @@ public class Trial extends FtpListener {
 
     public Trial() throws FileNotFoundException, IOException {
         super();
-        reload();
     }
 
     public static void doAction(String action, User user) {
@@ -276,18 +277,19 @@ public class Trial extends FtpListener {
     }
 
     public void actionPerformed(Event event) {
+    	String cmd = event.getCommand();
+    	if (cmd.equals("RELOAD")) {
+			try {
+				reload();
+			} catch (IOException e) {
+				logger.log(Level.WARN, "", e);
+			}
+		}
         if (!(event instanceof UserEvent)) {
             return;
         }
 
         UserEvent uevent = (UserEvent) event;
-        String cmd = event.getCommand();
-
-        if ("RELOAD".equals(cmd)) {
-            reload();
-
-            return;
-        }
 
         //logger.debug("event.getTime(): " + new Date(event.getTime()));
         //logger.debug(
@@ -391,15 +393,26 @@ public class Trial extends FtpListener {
         return _limits;
     }
 
-    private void reload() {
-        Properties props = new Properties();
-
+    public void init(GlobalContext gctx) {
+        super.init(gctx);
         try {
-            props.load(new FileInputStream("conf/trial.conf"));
-        } catch (IOException e) {
+            reload();
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
 
+    private void reload() throws IOException {
+        Properties props = new Properties();
+        FileInputStream fis = null;
+        try {
+        fis = new FileInputStream("conf/trial.conf");
+        props.load(fis);
+        } finally {
+        	if (fis != null) {
+        		fis.close();
+        	}
+        }
         reload(props);
     }
 

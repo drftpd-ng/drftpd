@@ -87,3 +87,10 @@ nuke * =siteop =nuke
 unnuke * =siteop =nuke
 nukes * *
 chown * =siteop
+
+# commands for JobManager don't care about path, extra * is just to conform
+addjob * =siteop
+removejob * =siteop
+listjobs * =siteop
+startjobs * =siteop
+stopjobs * =siteop

@@ -7,6 +7,7 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,6 +16,8 @@ import java.util.Iterator;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+
+import javax.imageio.stream.FileImageInputStream;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.master.BaseFtpConnection;
