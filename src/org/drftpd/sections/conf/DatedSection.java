@@ -59,13 +59,13 @@ public class DatedSection implements SectionInterface {
     private static final Logger logger = Logger.getLogger(DatedSection.class);
     private String _basePath;
     private SimpleDateFormat _dateFormat;
-    private SectionManager _mgr;
+    private SectionManager _sectionManager;
     private String _name;
     private String _now;
     private RollingCalendar rc = new RollingCalendar();
 
     public DatedSection(SectionManager mgr, int i, Properties p) {
-        _mgr = mgr;
+        _sectionManager = mgr;
         _name = PropertyHelper.getProperty(p, i + ".name");
         _basePath = PropertyHelper.getProperty(p, i + ".path");
         _now = PropertyHelper.getProperty(p, i + ".now");
@@ -97,15 +97,15 @@ public class DatedSection implements SectionInterface {
     }
 
     private GlobalContext getGlobalContext() {
-        return _mgr.getGlobalContext();
+        return GlobalContext.getGlobalContext();
     }
 
     public LinkedRemoteFileInterface getBaseFile() {
         try {
-            return _mgr.getConnectionManager().getGlobalContext().getRoot()
+            return _sectionManager.getConnectionManager().getGlobalContext().getRoot()
                        .lookupFile(_basePath);
         } catch (FileNotFoundException e) {
-            return _mgr.getConnectionManager().getGlobalContext().getRoot()
+            return _sectionManager.getConnectionManager().getGlobalContext().getRoot()
                        .createDirectories(_basePath);
         }
     }

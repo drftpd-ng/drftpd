@@ -17,10 +17,19 @@
  */
 package org.drftpd.commands;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.Nukee;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
@@ -29,33 +38,17 @@ import net.sf.drftpd.master.queues.NukeLog;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.Bytes;
+import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
-
-import org.drftpd.master.RemoteSlave;
-import org.drftpd.master.RemoteTransfer;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-
 import org.jdom.Document;
 import org.jdom.Element;
-
 import org.jdom.input.SAXBuilder;
-
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
 
 /**
  * nukedamount -> amount after multiplier
@@ -508,7 +501,7 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
             for (Iterator iter = nukes.iterator(); iter.hasNext();) {
                 Element nukeElement = (Element) iter.next();
 
-                User user = initializer.getConnectionManager().getGlobalContext()
+                User user = GlobalContext.getGlobalContext()
                                        .getUserManager().getUserByName(nukeElement.getChildText(
                             "user"));
                 String directory = nukeElement.getChildText("path");

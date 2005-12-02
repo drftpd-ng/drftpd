@@ -35,11 +35,10 @@ import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.master.config.ConfigInterface;
-import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.SFVFile;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.ConnectionManager;
@@ -69,8 +68,6 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 	// cannot be generic cause CaseInsensitiveHashtable isn't generic
 	// it's used by slave when sending commands.
 	private CaseInsensitiveHashtable _files;
-
-	private transient ConfigInterface _ftpConfig;
 
 	private String _group;
 
@@ -103,9 +100,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 	 * 
 	 * Used if no file database exists to start a tree from scratch.
 	 */
-	public LinkedRemoteFile(ConfigInterface ftpConfig) {
-		_ftpConfig = ftpConfig;
-
+	public LinkedRemoteFile() {
 		_lastModified = System.currentTimeMillis();
 		_length = 0;
 		_parent = null;
@@ -128,13 +123,12 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 	 * @param file
 	 *            file that this RemoteFile object should represent.
 	 */
-	private LinkedRemoteFile(LinkedRemoteFile parent, RemoteFileInterface file,
-			ConfigInterface cfg) {
-		this(parent, file, file.getName(), cfg);
+	private LinkedRemoteFile(LinkedRemoteFile parent, RemoteFileInterface file) {
+		this(parent, file, file.getName());
 	}
 
 	private LinkedRemoteFile(LinkedRemoteFile parent, RemoteFileInterface file,
-			String name, ConfigInterface cfg) {
+			String name) {
 		if (!ListUtils.isLegalFileName(name)) {
 			throw new IllegalArgumentException("Illegal filename - "
 					+ parent.getPath() + "/" + name);
@@ -149,7 +143,6 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			throw new IllegalArgumentException("length() == -1 for " + file);
 		}
 
-		_ftpConfig = cfg;
 		_lastModified = file.lastModified();
 		setOwner(file.getUsername());
 		setGroup(file.getGroupname());
@@ -198,8 +191,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 				}
 
 				// the constructor takes care of addSize()
-				_files.put(file2.getName(), new LinkedRemoteFile(this, file2,
-						_ftpConfig));
+				_files.put(file2.getName(), new LinkedRemoteFile(this, file2));
 			}
 
 			Iterator i = dirstack.iterator();
@@ -209,8 +201,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 				String filename = file2.getName();
 
 				// the constructor takes care of addSize()
-				_files.put(filename, new LinkedRemoteFile(this, file2,
-						_ftpConfig));
+				_files.put(filename, new LinkedRemoteFile(this, file2));
 			}
 		} else {
 			throw new RuntimeException();
@@ -225,9 +216,9 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 	 * 
 	 * Also called with null ConnectionManager from slave
 	 */
-	public LinkedRemoteFile(RemoteFileInterface file, FtpConfig cfg)
+	public LinkedRemoteFile(RemoteFileInterface file)
 			throws IOException {
-		this(null, file, cfg);
+		this(null, file);
 	}
 
 	/**
@@ -375,7 +366,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 			// ConcurrentModificationErrors
 			long tempLength = length();
 			_length = 0;
-			_ftpConfig.getGlobalContext().getSlaveManager()
+			GlobalContext.getGlobalContext().getSlaveManager()
 					.deleteOnAllSlaves(this);
 			try {
 				getParentFile().getMap().remove(getName());
@@ -404,7 +395,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 				// nothing to do here, still want to delete it though
 			}
 		}
-		_ftpConfig.getGlobalContext().getSlaveManager().deleteOnAllSlaves(this);
+		GlobalContext.getGlobalContext().getSlaveManager().deleteOnAllSlaves(this);
 		_slaves.clear();
 
 		try {
@@ -1196,8 +1187,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		}
 
 		// the constructor takes care of addSize()
-		LinkedRemoteFile linkedfile = new LinkedRemoteFile(this, file, toName,
-				_ftpConfig);
+		LinkedRemoteFile linkedfile = new LinkedRemoteFile(this, file, toName);
 		_files.put(linkedfile.getName(), linkedfile);
 
 		return linkedfile;
@@ -1308,10 +1298,6 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 					"Cannot rename to non-existing directory");
 		}
 
-		if (_ftpConfig == null) {
-			throw new RuntimeException("_ftpConfig is null: " + this);
-		}
-
 		LinkedRemoteFile toDir = lookupFile(toDirPath);
 		try {
 			if (toDir.getFile(toName) != null) {
@@ -1340,7 +1326,7 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		_parent._files.remove(getName());
 		_parent.addSize(-length());
 		if (isDirectory()) {
-			_ftpConfig.getGlobalContext().getSlaveManager().renameOnAllSlaves(getPath(), toDirPath, toName);
+			GlobalContext.getGlobalContext().getSlaveManager().renameOnAllSlaves(getPath(), toDirPath, toName);
 		} else { // isFile()
 			for (Iterator iter = new ArrayList<RemoteSlave>(getSlaves())
 					.iterator(); iter.hasNext();) {

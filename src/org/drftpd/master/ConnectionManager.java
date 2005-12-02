@@ -59,31 +59,24 @@ import org.drftpd.usermanager.UserFileException;
 public class ConnectionManager {
     private static final Logger logger = Logger.getLogger(ConnectionManager.class.getName());
     private CommandManagerFactory _commandManagerFactory;
+    private static ConnectionManager _connectionManager = null;
     private List<BaseFtpConnection> _conns = Collections.synchronizedList(new ArrayList<BaseFtpConnection>());
-    protected GlobalContext _gctx;
 
-    protected ConnectionManager() {
-    }
-
-    public ConnectionManager(Properties cfg, Properties slaveCfg,
-        String cfgFileName) throws SlaveFileException {
-        _gctx = new GlobalContext(cfg, cfgFileName, this);
-
-        if (slaveCfg != null) {
-            try {
-                new Slave(slaveCfg);
-            } catch (IOException ex) { // RemoteException extends IOException
-                throw new FatalException(ex);
-            }
-        }
-
-        _commandManagerFactory = new CommandManagerFactory(this);
+    private ConnectionManager() {
+        _commandManagerFactory = new CommandManagerFactory();
 
         getGlobalContext().addFtpListener(new RaceStatistics());
         getGlobalContext().addFtpListener(new Statistics());
 
         loadTimer();
         getGlobalContext().getSlaveManager().addShutdownHook();
+    }
+    
+    public static ConnectionManager getConnectionManager() {
+    	if (_connectionManager == null) {
+    		_connectionManager = new ConnectionManager();
+    	}
+    	return _connectionManager;
     }
 
     public static void main(String[] args) {
@@ -100,32 +93,9 @@ public class ConnectionManager {
                 cfgFileName = "drftpd.conf";
             }
 
-            String slaveCfgFileName;
-
-            if (args.length >= 2) {
-                slaveCfgFileName = args[1];
-            } else {
-                slaveCfgFileName = "slave.conf";
-            }
-
-            /** load master config **/
-            Properties cfg = new Properties();
-            cfg.load(new FileInputStream(cfgFileName));
-
-            /** load slave config **/
-            Properties slaveCfg; //used as a flag for if localslave=true
-
-            if (cfg.getProperty("master.localslave", "false").equalsIgnoreCase("true")) {
-                slaveCfg = new Properties();
-                slaveCfg.load(new FileInputStream(slaveCfgFileName));
-            } else {
-                slaveCfg = null;
-            }
-
             logger.info("Starting ConnectionManager");
 
-            ConnectionManager mgr = new ConnectionManager(cfg, slaveCfg,
-                    cfgFileName);
+            Properties cfg = getGlobalContext().getConfig().getProperties();
 
             /** listen for connections **/
             String bindip = null;
@@ -153,11 +123,12 @@ public class ConnectionManager {
             } 
             
             while (true) {
-                mgr.start(server.accept());
+                getConnectionManager().start(server.accept());
             }
 
             //catches subclasses of Error and Exception
         } catch (Throwable th) {
+        	th.printStackTrace();
             logger.error("", th);
             System.exit(0);
 
@@ -252,11 +223,8 @@ public class ConnectionManager {
         return _conns;
     }
 
-    public GlobalContext getGlobalContext() {
-        if (_gctx == null) {
-            throw new NullPointerException();
-        }
-        return _gctx;
+    public static GlobalContext getGlobalContext() {
+        return GlobalContext.getGlobalContext();
     }
 
     private void loadTimer() {
@@ -354,36 +322,5 @@ public class ConnectionManager {
         
         _conns.add(conn);
         conn.start();
-    }
-
-/*    public void timerLogoutIdle() {
-        long currTime = System.currentTimeMillis();
-        ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(_conns);
-
-        for (Iterator i = conns.iterator(); i.hasNext();) {
-            BaseFtpConnection conn = (BaseFtpConnection) i.next();
-
-            int idle = (int) ((currTime - conn.getLastActive()) / 1000);
-            int maxIdleTime;
-
-            try {
-                maxIdleTime = conn.getUser().getIdleTime();
-
-                if (maxIdleTime == 0) {
-                    maxIdleTime = idleTimeout;
-                }
-            } catch (NoSuchUserException e) {
-                maxIdleTime = idleTimeout;
-            }
-
-            if (!conn.isExecuting() && (idle >= maxIdleTime)) {
-                // idle time expired, logout user.
-                conn.stop("Idle time expired: " + maxIdleTime + "s");
-            }
-        }
-    }*/
-
-    public void setGlobalContext(GlobalContext gctx) {
-        _gctx = gctx;
     }
 }

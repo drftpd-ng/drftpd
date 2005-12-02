@@ -545,8 +545,6 @@ public class Find implements CommandHandler, CommandHandlerFactory {
 		return str.substring(start + 1, end);
 	}
 
-	private GlobalContext _gctx;
-
 	public Reply execute(BaseFtpConnection conn) throws ReplyException, ImproperUsageException {
 		FtpRequest request = conn.getRequest();
 
@@ -821,16 +819,12 @@ public class Find implements CommandHandler, CommandHandlerFactory {
 	}
 
 	private GlobalContext getGlobalContext() {
-		return _gctx;
+		return GlobalContext.getGlobalContext();
 	}
 
 	public CommandHandler initialize(BaseFtpConnection conn,
 			CommandManager initializer) {
 		return this;
-	}
-
-	public void load(CommandManagerFactory initializer) {
-		_gctx = initializer.getConnectionManager().getGlobalContext();
 	}
 
 	public void unload() {

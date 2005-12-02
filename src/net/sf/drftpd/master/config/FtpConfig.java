@@ -85,26 +85,26 @@ public class FtpConfig extends Observable implements ConfigInterface {
     private StringTokenizer _replaceFile = null;
     private boolean _useDirNames = false;
     private boolean _useFileNames = false;
-    private String newConf = "conf/perms.conf";
+    private static final String newConf = "conf/perms.conf";
+    private static final String oldConf = "drftpd.conf";
     protected PortRange _portRange;
 	private Permission _shutdown;
-	protected GlobalContext _gctx;
-
-    protected FtpConfig() {
-    }
-
-    /**
-     * Constructor that allows reusing of cfg object
-     */
-    public FtpConfig(Properties cfg, String cfgFileName,
-        GlobalContext gctx) throws IOException {
-        loadConfig(cfg, gctx);
-    }
-    
-    public FtpConfig(String cfgFileName, GlobalContext gctx) throws IOException {
-        Properties cfg = new Properties();
-        cfg.load(new FileInputStream(cfgFileName));
-        loadConfig(cfg, gctx);
+	private Properties _properties;
+	private static FtpConfig _config;
+	
+	public static FtpConfig getFtpConfig() {
+		if (_config == null) {
+			reload();
+		}
+		return _config;
+	}
+	 
+    private FtpConfig() {
+        try {
+			loadConfig();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
     }
 
     private static ArrayList makeRatioPermission(ArrayList<RatioPathPermission> arr,
@@ -114,6 +114,10 @@ public class FtpConfig extends Observable implements ConfigInterface {
                 makeUsers(st)));
 
         return arr;
+    }
+    
+    public Properties getProperties() {
+    	return _properties;
     }
 
     public static ArrayList<String> makeUsers(Enumeration st) {
@@ -254,8 +258,7 @@ public class FtpConfig extends Observable implements ConfigInterface {
     }
 
     public GlobalContext getGlobalContext() {
-    	assert _gctx != null;
-        return _gctx;
+    	return GlobalContext.getGlobalContext();
     }
 
     public boolean getHideIps() {
@@ -279,22 +282,32 @@ public class FtpConfig extends Observable implements ConfigInterface {
     	return _pasv_addr;
 	}
 
-	public void loadConfig(Properties cfg, GlobalContext gctx)
+	public void loadConfig()
         throws IOException {
-        loadConfig2(new FileReader(newConf));
-        if (_portRange == null) {
-            //default portrange if none specified
-            _portRange = new PortRange();
-        }
-        _gctx = gctx;
-        loadConfig1(cfg);
+		FileInputStream fis = null;
+		FileReader fr = null;
+		_properties = new Properties();
+		try {
+			fis = new FileInputStream(oldConf);
+			_properties.load(fis);
+			loadConfig1();
+			fr = new FileReader(newConf);
+			loadConfig2(fr);
+		} finally {
+			if (fis != null) {
+				fis.close();
+			}
+			if (fr != null) {
+				fr.close();
+			}
+		}
     }
 
-    protected void loadConfig1(Properties cfg) throws UnknownHostException {
+    protected void loadConfig1() throws UnknownHostException {
 
-        _hideIps = cfg.getProperty("hideips", "").equalsIgnoreCase("true");
+        _hideIps = _properties.getProperty("hideips", "").equalsIgnoreCase("true");
 
-        StringTokenizer st = new StringTokenizer(cfg.getProperty("bouncer_ip",
+        StringTokenizer st = new StringTokenizer(_properties.getProperty("bouncer_ip",
                     ""), " ");
 
         ArrayList<InetAddress> bouncerIps = new ArrayList<InetAddress>();
@@ -309,7 +322,6 @@ public class FtpConfig extends Observable implements ConfigInterface {
     protected void loadConfig2(Reader in2) throws IOException {
         LineNumberReader in = new LineNumberReader(in2);
 
-        try {
             String line;
 
             while ((line = in.readLine()) != null) {
@@ -402,9 +414,10 @@ public class FtpConfig extends Observable implements ConfigInterface {
 
             //notify any observers so they can add their own permissions
             notifyObservers();
-        } finally {
-            in.close();
-        }
+            if (_portRange == null) {
+                //default portrange if none specified
+                _portRange = new PortRange();
+            }
     }
 
     private void addGlobPathPermission(String key, StringTokenizer st) throws MalformedPatternException {
@@ -485,4 +498,8 @@ public class FtpConfig extends Observable implements ConfigInterface {
     public PortRange getPortRange() {
         return _portRange;
     }
+
+	public static void reload() {
+		_config = new FtpConfig();
+	}
 }

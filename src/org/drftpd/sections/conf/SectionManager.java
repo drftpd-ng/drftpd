@@ -45,16 +45,14 @@ public class SectionManager implements SectionManagerInterface {
             SectionManager.class, int.class, Properties.class
         };
     private PlainSection _emptySection = new PlainSection(this, "", "/");
-    private ConnectionManager _mgr;
     private Hashtable<String,SectionInterface> _sections;
 
-    public SectionManager(ConnectionManager mgr) {
-        _mgr = mgr;
+    public SectionManager() {
         reload();
     }
 
     public ConnectionManager getConnectionManager() {
-        return _mgr;
+        return ConnectionManager.getConnectionManager();
     }
 
     public SectionInterface getSection(String string) {
@@ -128,7 +126,4 @@ public class SectionManager implements SectionManagerInterface {
         return lookup(file.getPath());
     }
 
-    public GlobalContext getGlobalContext() {
-        return _mgr.getGlobalContext();
-    }
 }

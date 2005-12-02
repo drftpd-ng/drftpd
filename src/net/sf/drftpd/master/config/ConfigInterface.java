@@ -62,7 +62,7 @@ public interface ConfigInterface {
 
 	public abstract int getMaxUsersTotal();
 
-	public abstract void loadConfig(Properties cfg, GlobalContext gctx)
+	public abstract void loadConfig()
 			throws IOException;
 
 	public abstract void addPathPermission(String key, PathPermission permission);
@@ -73,6 +73,8 @@ public interface ConfigInterface {
 	public abstract boolean isLoginAllowed(User user);
 
 	public abstract PortRange getPortRange();
+	
+	public abstract Properties getProperties();
 
 	public abstract void addObserver(Observer observer);
 

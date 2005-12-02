@@ -60,8 +60,7 @@ import org.drftpd.usermanager.UserManager;
  */
 public class GlobalContext {
     private static final Logger logger = Logger.getLogger(GlobalContext.class);
-    protected ConnectionManager _cm;
-    protected ConfigInterface _config;
+	private static GlobalContext _gctx;
     protected ZipscriptConfig _zsConfig;
     private ArrayList<FtpListener> _ftpListeners = new ArrayList<FtpListener>();
     protected JobManager _jm;
@@ -72,46 +71,40 @@ public class GlobalContext {
     protected AbstractUserManager _usermanager;
     private Timer _timer = new Timer("GlobalContextTimer");
     protected SlaveSelectionManagerInterface _slaveSelectionManager;
-	private String _cfgFileName;
-
-    protected GlobalContext() {
-    }
 
     public void reloadFtpConfig() throws IOException {
-    	_config = new FtpConfig(_cfgFileName, this);
     	_zsConfig = new ZipscriptConfig(this);
+    	FtpConfig.reload();
     }
 
-    public GlobalContext(Properties cfg, String cfgFileName,
-        ConnectionManager cm) throws SlaveFileException {
-    	_cfgFileName = cfgFileName;
-        _cm = cm;
-        _cm.setGlobalContext(this);
-        loadUserManager(cfg, cfgFileName);
+    private GlobalContext() {
+        try {
+			reloadFtpConfig();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			logger.debug("",e);
+		}
+        loadUserManager(getConfig().getProperties());
 
         try {
-            _config = new FtpConfig(cfg, cfgFileName, this);
-        } catch (Throwable ex) {
-            throw new FatalException(ex);
-        }
-
-        try {
-            _zsConfig = new ZipscriptConfig(this);
-        } catch (Throwable ex) {
-            throw new FatalException(ex);
-        }
-
-        loadSlaveManager(cfg);
+			loadSlaveManager(getConfig().getProperties());
+		} catch (SlaveFileException e) {
+			throw new RuntimeException(e);
+		}
         loadRSlavesAndRoot();
         listenForSlaves();
         loadJobManager();
         getJobManager().startJobs();
-        loadSlaveSelectionManager(cfg);
-        loadSectionManager(cfg);
-        loadPlugins(cfg);
+        loadSlaveSelectionManager(getConfig().getProperties());
+        loadSectionManager(getConfig().getProperties());
+        loadPlugins(getConfig().getProperties());
     }
 
-    private void loadJobManager() {
+    public ConfigInterface getConfig() {
+    	return FtpConfig.getFtpConfig();
+	}
+
+	private void loadJobManager() {
 		_jm = new JobManager(this);
 	}
 
@@ -159,19 +152,13 @@ public class GlobalContext {
 		}
 	}
 
-    public ConfigInterface getConfig() {
-        assert _config != null;
-        return _config;
-    }
-
     public ZipscriptConfig getZsConfig() {
         assert _zsConfig != null;
         return _zsConfig;
     }
     
     public ConnectionManager getConnectionManager() {
-    	assert _cm != null;
-        return _cm;
+    	return ConnectionManager.getConnectionManager();
     }
 
     public List<FtpListener> getFtpListeners() {
@@ -256,10 +243,10 @@ public class GlobalContext {
         try {
             List rslaves = _slaveManager.getSlaves();
             logger.info("Loading files.mlst");
-            _root = MLSTSerialize.loadMLSTFileDatabase(rslaves, _cm);
+            _root = MLSTSerialize.loadMLSTFileDatabase(rslaves);
         } catch (FileNotFoundException e) {
             logger.info("files.mlst not found, creating a new filelist");
-            _root = new LinkedRemoteFile(getConfig());
+            _root = new LinkedRemoteFile();
         } catch (IOException e) {
             throw new FatalException(e);
         }
@@ -270,10 +257,8 @@ public class GlobalContext {
         try {
             Class cl = Class.forName(cfg.getProperty("sectionmanager",
                         "org.drftpd.sections.def.SectionManager"));
-            Constructor c = cl.getConstructor(new Class[] {
-                        ConnectionManager.class
-                    });
-            _sections = (SectionManagerInterface) c.newInstance(new Object[] { _cm });
+            Constructor c = cl.getConstructor();
+            _sections = (SectionManagerInterface) c.newInstance();
         } catch (Exception e) {
             throw new FatalException(e);
         }
@@ -291,7 +276,7 @@ public class GlobalContext {
     	new Thread(_slaveManager, "Listening for slave connections - " + _slaveManager.toString()).start();
     }
 
-    protected void loadUserManager(Properties cfg, String cfgFileName) {
+    protected void loadUserManager(Properties cfg) {
         try {
             _usermanager = (AbstractUserManager) Class.forName(PropertyHelper.getProperty(
                         cfg, "master.usermanager")).newInstance();
@@ -300,8 +285,7 @@ public class GlobalContext {
             _usermanager.init(this);
         } catch (Exception e) {
             throw new FatalException(
-                "Cannot create instance of usermanager, check master.usermanager in " +
-                cfgFileName, e);
+                "Cannot create instance of usermanager, check master.usermanager in config file", e);
         }
     }
 
@@ -336,5 +320,12 @@ public class GlobalContext {
         }
 
         throw new ObjectNotFoundException();
+	}
+
+	public static GlobalContext getGlobalContext() {
+		if (_gctx == null) {
+			_gctx = new GlobalContext();
+		}
+		return _gctx;
 	}
 }

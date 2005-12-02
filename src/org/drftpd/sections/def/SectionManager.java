@@ -18,20 +18,19 @@
 package org.drftpd.sections.def;
 
 
-import org.drftpd.master.ConnectionManager;
-import org.drftpd.remotefile.FileUtils;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.sections.SectionManagerInterface;
-
 import java.io.FileNotFoundException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+
+import org.drftpd.GlobalContext;
+import org.drftpd.master.ConnectionManager;
+import org.drftpd.remotefile.FileUtils;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.sections.SectionInterface;
+import org.drftpd.sections.SectionManagerInterface;
 
 
 /**
@@ -39,28 +38,30 @@ import java.util.StringTokenizer;
  * @version $Id$
  */
 public class SectionManager implements SectionManagerInterface {
-    private ConnectionManager _cm;
 
-    public SectionManager(ConnectionManager cm) {
-        _cm = cm;
+    public SectionManager() {
     }
 
     public ConnectionManager getConnectionManager() {
-        return _cm;
+        return ConnectionManager.getConnectionManager();
     }
 
     public SectionInterface getSection(String string) {
         try {
-            return new Section(_cm.getGlobalContext().getRoot().getFile(string));
+            return new Section(getGlobalContext().getRoot().getFile(string));
         } catch (FileNotFoundException e) {
-            return new Section(_cm.getGlobalContext().getRoot());
+            return new Section(getGlobalContext().getRoot());
         }
     }
 
-    public Collection getSections() {
+    private GlobalContext getGlobalContext() {
+    	return GlobalContext.getGlobalContext();
+	}
+
+	public Collection getSections() {
         ArrayList sections = new ArrayList();
 
-        for (Iterator iter = _cm.getGlobalContext().getRoot().getDirectories()
+        for (Iterator iter = getGlobalContext().getRoot().getDirectories()
                                 .iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface dir = (LinkedRemoteFileInterface) iter.next();
             sections.add(new Section(dir));
@@ -73,13 +74,13 @@ public class SectionManager implements SectionManagerInterface {
         StringTokenizer st = new StringTokenizer(string, "/");
 
         if (!st.hasMoreTokens()) {
-            return new Section(_cm.getGlobalContext().getRoot());
+            return new Section(getGlobalContext().getRoot());
         }
 
         try {
-            return new Section(_cm.getGlobalContext().getRoot().getFile(st.nextToken()));
+            return new Section(getGlobalContext().getRoot().getFile(st.nextToken()));
         } catch (FileNotFoundException e) {
-            return new Section(_cm.getGlobalContext().getRoot());
+            return new Section(getGlobalContext().getRoot());
         }
     }
 

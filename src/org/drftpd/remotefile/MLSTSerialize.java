@@ -236,9 +236,9 @@ public class MLSTSerialize {
         }
     }
 
-    public static LinkedRemoteFile unserialize(ConfigInterface conf, Reader in,
+    public static LinkedRemoteFile unserialize(Reader in,
         List rslaves) throws IOException, CorruptFileListException {
-        LinkedRemoteFile root = new LinkedRemoteFile(conf);
+        LinkedRemoteFile root = new LinkedRemoteFile();
 
         LineNumberReader in2 = new LineNumberReader(in);
 
@@ -264,13 +264,11 @@ public class MLSTSerialize {
         return root;
     }
 
-    public static LinkedRemoteFile loadMLSTFileDatabase(List rslaves,
-        ConnectionManager cm) throws IOException {
+    public static LinkedRemoteFile loadMLSTFileDatabase(List rslaves) throws IOException {
 		FileReader fr = null;
 		try {
 			fr = new FileReader("files.mlst");
-			return MLSTSerialize.unserialize((cm != null) ? cm
-					.getGlobalContext().getConfig() : null, fr, rslaves);
+			return MLSTSerialize.unserialize(fr, rslaves);
 		} finally {
 			if (fr != null) {
 				fr.close();

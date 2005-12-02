@@ -42,8 +42,6 @@ import java.util.Properties;
  * @version $Id$
  */
 public class CommandManagerFactory {
-    private ConnectionManager _connMgr;
-
     /**
      * Class => CommandHandlerFactory
      */
@@ -54,8 +52,7 @@ public class CommandManagerFactory {
      */
     private Hashtable _cmds;
 
-    public CommandManagerFactory(ConnectionManager connMgr) {
-        _connMgr = connMgr;
+    public CommandManagerFactory() {
 
         //		Login login = new Login();
         //		handlers = new Hashtable();
@@ -128,7 +125,6 @@ public class CommandManagerFactory {
 
                 if (hndinstance == null) {
                     hndinstance = (CommandHandlerFactory) hndclass.newInstance();
-                    hndinstance.load(this);
                     hnds.put(hndclass, hndinstance);
                 }
 
@@ -184,12 +180,5 @@ public class CommandManagerFactory {
         //				return handler;
         //		}
         //		throw new ObjectNotFoundException();
-    }
-
-    /**
-     *
-     */
-    public ConnectionManager getConnectionManager() {
-        return _connMgr;
     }
 }
