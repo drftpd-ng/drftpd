@@ -338,15 +338,15 @@ public class BaseFtpConnection implements Runnable {
      */
     public void run() {
         _lastActive = System.currentTimeMillis();
-        logger.info("Handling new request from " +
-            getClientAddress().getHostAddress());
-
         if (!getGlobalContext().getConnectionManager().getGlobalContext()
                      .getConfig().getHideIps()) {
-            _thread.setName("FtpConn from " +
-                getClientAddress().getHostAddress());
+            logger.info("Handling new request from " +
+                    getClientAddress().getHostAddress());
+            _thread.setName("FtpConn thread " + _thread.getId() + 
+					" from " + getClientAddress().getHostAddress());
         } else {
-        	_thread.setName("FtpConn from <iphidden>");
+            logger.info("Handling new request from <iphidden>");
+        	_thread.setName("FtpConn thread " + _thread.getId() + " from <iphidden>");
         }
 
         try {
@@ -501,13 +501,19 @@ public class BaseFtpConnection implements Runnable {
     public void setAuthenticated(boolean authenticated) {
         _authenticated = authenticated;
 
-        if (isAuthenticated() &&
-                !getGlobalContext().getConnectionManager().getGlobalContext()
-                         .getConfig().getHideIps()) {
+        if (isAuthenticated()) {
             try {
-				_thread.setName("FtpConn from " +
-				    getClientAddress().getHostAddress() + " " +
-				    _user + "/" + getUser().getGroup());
+            	// If hideips is on, hide ip but not user/group
+            	if (getGlobalContext().getConnectionManager().getGlobalContext()
+                        .getConfig().getHideIps()) {
+    				_thread.setName("FtpConn thread " + _thread.getId() + 
+    						" servicing " +
+        				    _user + "/" + getUser().getGroup());
+                } else {
+    				_thread.setName("FtpConn thread " + _thread.getId() + 
+    						" from " + getClientAddress().getHostAddress() + " " +
+        				    _user + "/" + getUser().getGroup());
+                }
 			} catch (NoSuchUserException e) {
 				logger.error("User does not exist, yet user is authenticated, this is a bug");
 			}
