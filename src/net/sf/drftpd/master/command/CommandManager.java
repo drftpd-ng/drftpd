@@ -113,13 +113,19 @@ public class CommandManager {
         try {
 			return handler.execute(conn);
 		} catch (ImproperUsageException e2) {
+			Reply response = (Reply) Reply.RESPONSE_501_SYNTAX_ERROR.clone();
 			try {
-				return new Reply(501, ResourceBundle.getBundle(handler.getClass().getName()).getString(
+				response.addComment(ResourceBundle.getBundle(
+						handler.getClass().getName()).getString(
 						"help." + command + ".specific"));
 			} catch (MissingResourceException e) {
-				return new Reply(501, "Improper usage for the \"SITE " + command + "\" command, bug your siteop to add help");
+				response
+						.addComment("Bug your siteop to add help for the "
+								+ "\"SITE " + command.toUpperCase() + "\" "
+								+ "command");
 			}
-				
+			return (response);
+
 		}
     }
 
