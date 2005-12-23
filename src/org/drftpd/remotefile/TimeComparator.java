@@ -36,7 +36,7 @@ public class TimeComparator implements Comparator<LinkedRemoteFile> {
 		if (arg0 == null || arg1 == null) {
 			throw new IllegalArgumentException("Neither arg0 nor arg1 can be null");
 		}
-		return Long.signum(arg0.lastModified() - arg1.lastModified());
+		return Long.signum(arg1.lastModified() - arg0.lastModified());
 	}
 
 }
