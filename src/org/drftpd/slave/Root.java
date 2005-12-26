@@ -24,12 +24,12 @@ import java.io.IOException;
 
 /**
  * @author mog
- * @version $Id: Root.java,v 1.1 2004/11/09 18:59:58 mog Exp $
+ * @version $Id$
  */
 public class Root {
     private File _rootFile;
     private String _root;
-    private long _minSpaceFree = 50000000; //50,000,000 = 50mb
+    private long _minFreeSpace = 50000000; //50,000,000 = 50mb
     private int _priority = 0;
     private long _lastModified;
 
@@ -55,10 +55,16 @@ public class Root {
         getFile().setLastModified(_lastModified = System.currentTimeMillis());
     }
 
+    /**
+     * @deprecated MinFreeSpacen now depends DiskSelection
+     */
     public long getMinSpaceFree() {
-        return _minSpaceFree;
+        return _minFreeSpace;
     }
 
+    /**
+     * @deprecated Priority now depens on DiskSelection
+     */
     public int getPriority() {
         return _priority;
     }
@@ -80,8 +86,8 @@ public class Root {
     }
 
     /**
-     * Returns true if File.getDiskSpaceAvailable() is less than getMinSpaceFree()
      * @return true if File.getDiskSpaceAvailable() is less than getMinSpaceFree()
+     * @deprecated Check DiskSelection for more details.
      */
     public boolean isFull() {
         return getFile().getDiskSpaceAvailable() < getMinSpaceFree();

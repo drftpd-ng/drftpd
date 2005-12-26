@@ -74,6 +74,7 @@ import org.drftpd.slave.async.AsyncResponseRemerge;
 import org.drftpd.slave.async.AsyncResponseSFVFile;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
+import org.drftpd.slave.diskselection.DiskSelection;
 
 import se.mog.io.File;
 import se.mog.io.PermissionDeniedException;
@@ -106,6 +107,7 @@ public class Slave {
     private Set _renameQueue = null;
 	private int _timeout;
 	private boolean _sslMaster;
+	private DiskSelection _disks;
     
     protected Slave() {
     	
@@ -165,8 +167,12 @@ public class Slave {
                               .equals("true");
         _bufferSize = Integer.parseInt(p.getProperty("bufferSize", "0"));
         _roots = getDefaultRootBasket(p);
+
         _transfers = new HashMap();
 
+        DiskSelection.setRootCollection(_roots);
+        DiskSelection.startDiskSelection();
+        
         try {
         	int minport = Integer.parseInt(p.getProperty("slave.portfrom"));
         	int maxport = Integer.parseInt(p.getProperty("slave.portto"));
