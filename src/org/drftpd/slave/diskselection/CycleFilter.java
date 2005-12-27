@@ -35,8 +35,8 @@ public class CycleFilter extends DiskFilter {
 	public void process(ScoreChart sc, String path) {
 		ArrayList currentList = sc.getScoreList();
 		ArrayList newList = new ArrayList();
-		Long maxScore = 0L;
-		Long lastModified = System.currentTimeMillis();
+		long maxScore = 0;
+		long lastModified = System.currentTimeMillis();
 		ScoreChart.RootScore bestRoot = null;
 		
 		// retrieves the higher score
@@ -63,7 +63,7 @@ public class CycleFilter extends DiskFilter {
 		// pick the less recent used root
 		for (Iterator iter = newList.iterator(); iter.hasNext();) {
 			ScoreChart.RootScore rootScore = (ScoreChart.RootScore) iter.next();
-			Long l = rootScore.getRoot().lastModified();
+			long l = rootScore.getRoot().lastModified();
 			if (l <= lastModified) {
 				lastModified = l;
 				bestRoot = rootScore;
@@ -71,7 +71,7 @@ public class CycleFilter extends DiskFilter {
 		}
 		
 		// finally adds the point
-		bestRoot.addScore(1L);
+		bestRoot.addScore(1);
 	}
 	
 }

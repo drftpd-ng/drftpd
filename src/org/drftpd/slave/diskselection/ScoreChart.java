@@ -44,7 +44,7 @@ public class ScoreChart {
 		_scoreList = new ArrayList();
 		while (iter.hasNext()) {
 			Root o = (Root) iter.next();
-			_scoreList.add(new RootScore(o, 0L));
+			_scoreList.add(new RootScore(o, 0));
 		}
 	}
 	
@@ -52,7 +52,7 @@ public class ScoreChart {
 	 * @param root
 	 * @return <code>root</code> score.
 	 */
-	public Long getRootScore(Root root) {
+	public long getRootScore(Root root) {
 		return getRootScoreObject(root).getScore();
 	}
 	
@@ -68,7 +68,7 @@ public class ScoreChart {
 	 * @param root
 	 * @param score
 	 */
-	public void addScore(Root root, Long score) {
+	public void addScore(Root root, long score) {
 		getRootScoreObject(root).addScore(score);
 	}
 	
@@ -98,22 +98,22 @@ public class ScoreChart {
 	public class RootScore {
 		
 		private Root _root;
-		private Long _score;
+		private long _score;
 		
-		public RootScore(Root root, Long score) {
+		public RootScore(Root root, long score) {
 			_root = root;
 			_score = score;
 		}
 		
-		public RootScore(Object o, Long score) {
+		public RootScore(Object o, long score) {
 			this((Root) o, score);
 		}
 		
-		public void addScore(Long score) {
+		public void addScore(long score) {
 			_score += score;
 		}
 		
-		public Long getScore() {
+		public long getScore() {
 			return _score;
 		}
 		

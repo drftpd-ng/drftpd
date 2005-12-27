@@ -36,8 +36,8 @@ public class AssignRoot {
 		String parse = s.trim().replaceAll(",", "");
 		String[] p = parse.split(" ");
 		ArrayList list = new ArrayList();
-		for (String t : p) {
-			AssignParser a = new AssignParser(t);
+		for (int i = 0; i < p.length; i++) {
+			AssignParser a = new AssignParser(p[i]);
 			list.add(a);
 		}		
 		return list;
@@ -52,7 +52,7 @@ public class AssignRoot {
 	public static boolean isAssignedRoot(Root root, ArrayList list) {
 		for (Iterator iter = list.iterator(); iter.hasNext();) {
 			AssignParser a = (AssignParser) iter.next();
-			Integer i = (Integer) a.getRoot();
+			int i = (int) a.getRoot();
 			Root o = (Root) DiskFilter.getRootList().get(i);
 			if (o.equals(root)) {
 				return true;
@@ -70,7 +70,7 @@ public class AssignRoot {
 	public static void addScoresToChart(ArrayList list, ScoreChart sc) {
 		for (Iterator iter = list.iterator(); iter.hasNext();) {
 			AssignParser a = (AssignParser) iter.next();
-			Integer i = (Integer) a.getRoot();
+			int i = (int) a.getRoot();
 			Root o = (Root) DiskFilter.getRootList().get(i);
 			sc.addScore(o, a.getScore());
 		}

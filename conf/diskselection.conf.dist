@@ -1,0 +1,40 @@
+# This Chain of filters help you to keep your roots organized.
+# WARN: This filters MUST work in a synchronized way with SlaveSelection.
+#		Better explanation in:
+# 		https://opensvn.csie.org/traccgi/drftpd/trac.cgi/ticket/85;
+
+1.filter=minfreespace
+1.minfreespace=5GB
+1.assign=1
+1.multiplier=1
+
+2.filter=minfreespace
+2.minfreespace=5GB
+2.assign=2
+2.multiplier=1
+
+# If there's a tie on the ScoreChart, Cycle adds a point to the most unused root.
+# Should always be last filter on the Chain.
+3.filter=cycle
+
+# Matchdir is used to distribute certain files to certain roots.
+# Always remember that ".match=" is a valid path according to master VFS.
+# So it does not work like, /mnt/site*.
+#  x.filter=matchdir
+#  x.match=/PHOTOS*
+#  x.assign=1+100 2+remove
+#
+#  x.filter=matchdir
+#  x.match=/VIDEOS*
+#  x.assign=1+remove 2+100
+
+# Randomspread filter grabs a random root and adds 1 (one) point
+# to it on the ScoreChart. Usefull to make files spread all over.
+#  x.filter=randomspread
+
+# This filter might look foolish, but it just have the hole
+# of letting you choose which root will be filled first.
+# Using this filter (depeding on the way, of course) you prolly
+# make 'randomspread' and 'cycle' useless.
+#  x.filter=priority
+#  x.assign=1+100 2+200

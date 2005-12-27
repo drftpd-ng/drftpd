@@ -284,6 +284,6 @@ public class RootCollection {
     }
     
     public ArrayList getRootList() {
-    	return (ArrayList<Root>) _roots;
+    	return (ArrayList) _roots;
     }
 }

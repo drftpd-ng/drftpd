@@ -134,7 +134,7 @@ public class DiskSelection {
 		ScoreChart sc = new ScoreChart(getRootCollection());
 		process(sc, path);
 		
-		Long bestScore = 0L;
+		long bestScore = 0L;
 		Root bestRoot = null;
 		
 		for (Iterator iter = getRootCollection().iterator(); iter.hasNext();) {
