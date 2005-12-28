@@ -69,10 +69,10 @@ public class AssignRoot {
 	 */
 	public static void addScoresToChart(ArrayList list, ScoreChart sc) {
 		for (Iterator iter = list.iterator(); iter.hasNext();) {
-			AssignParser a = (AssignParser) iter.next();
-			int i = (int) a.getRoot();
+			AssignParser ap = (AssignParser) iter.next();
+			int i = (int) ap.getRoot();
 			Root o = (Root) DiskFilter.getRootList().get(i);
-			sc.addScore(o, a.getScore());
+			sc.addScore(o, ap.getScore());
 		}
 	}
 }

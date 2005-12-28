@@ -29,8 +29,6 @@ import java.io.IOException;
 public class Root {
     private File _rootFile;
     private String _root;
-    private long _minFreeSpace = 50000000; //50,000,000 = 50mb
-    private int _priority = 0;
     private long _lastModified;
 
     public Root(String root) throws IOException {
@@ -55,20 +53,6 @@ public class Root {
         getFile().setLastModified(_lastModified = System.currentTimeMillis());
     }
 
-    /**
-     * @deprecated MinFreeSpacen now depends DiskSelection
-     */
-    public long getMinSpaceFree() {
-        return _minFreeSpace;
-    }
-
-    /**
-     * @deprecated Priority now depens on DiskSelection
-     */
-    public int getPriority() {
-        return _priority;
-    }
-
     public String toString() {
         return "[root=" + getPath() + "]";
     }
@@ -83,13 +67,5 @@ public class Root {
 
     public File getFile(String path) {
         return new File(_root + File.separator + path);
-    }
-
-    /**
-     * @return true if File.getDiskSpaceAvailable() is less than getMinSpaceFree()
-     * @deprecated Check DiskSelection for more details.
-     */
-    public boolean isFull() {
-        return getFile().getDiskSpaceAvailable() < getMinSpaceFree();
     }
 }

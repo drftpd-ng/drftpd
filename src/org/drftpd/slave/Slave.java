@@ -107,7 +107,6 @@ public class Slave {
     private Set _renameQueue = null;
 	private int _timeout;
 	private boolean _sslMaster;
-	private DiskSelection _disks;
     
     protected Slave() {
     	
@@ -169,9 +168,6 @@ public class Slave {
         _roots = getDefaultRootBasket(p);
 
         _transfers = new HashMap();
-
-        DiskSelection.setRootCollection(_roots);
-        DiskSelection.startDiskSelection();
         
         try {
         	int minport = Integer.parseInt(p.getProperty("slave.portfrom"));

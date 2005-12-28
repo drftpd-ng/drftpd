@@ -29,7 +29,9 @@ import org.drftpd.slave.RootCollection;
  */
 public abstract class DiskFilter {
 
-	public DiskFilter(Properties p, Integer i) {}
+	public DiskFilter(Properties p, Integer i) {
+		
+	}
 	
 	/**
 	 * This method is called to process the ScoreChart of each file.
@@ -39,17 +41,10 @@ public abstract class DiskFilter {
 	public abstract void process(ScoreChart sc, String path);
 	
 	/**
-	 * @return RootCollection
-	 */
-	public static RootCollection getRootCollection() {
-		return DiskSelection.getRootCollection();
-	}
-	
-	/**
 	 * @return ArrayList with 'Root' objects
 	 */
 	public static ArrayList getRootList() {
-		return getRootCollection().getRootList();
+		return DiskSelection.getDiskSelection().getRootCollection().getRootList();
 	}
 	
 	public static float parseMultiplier(String string) {

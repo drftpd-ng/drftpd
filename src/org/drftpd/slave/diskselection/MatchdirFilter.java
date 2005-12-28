@@ -30,7 +30,7 @@ import org.drftpd.PropertyHelper;
  * Sample configuration.
  * <pre>
  * X.filter=matchdir
- * X.assign=<slavename>+100000
+ * X.assign=<rootNumber>+100000
  * X.match=<path glob match>
  * </pre>
  * @author fr0w

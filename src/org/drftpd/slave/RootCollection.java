@@ -43,12 +43,13 @@ import java.util.List;
  */
 public class RootCollection {
     private static final Logger logger = Logger.getLogger(RootCollection.class);
-    private Collection _roots;
+    private Collection _roots = null;
 
     public RootCollection(Collection roots) throws IOException {
         /** sanity checks **/
         validateRoots(roots);
         _roots = new ArrayList(roots);
+        DiskSelection.init(this);
     }
 
     public Root getARoot() {
@@ -78,12 +79,11 @@ public class RootCollection {
      * @throws IOException 
      */
     public File getARootFileDir(String dir) throws IOException {
-    	Root bestRoot = DiskSelection.getBestRoot(dir);
+    	Root bestRoot = DiskSelection.getDiskSelection().getBestRoot(dir);
     	
     	// to avoid this error SlaveSelectionManager MUST work
     	// synchronized with DiskSelection.
     	if (bestRoot == null) {
-    		System.out.println("bestRoot is null!");
     		throw new IOException("No suitable root was found.");
     	}
         bestRoot.touch();
