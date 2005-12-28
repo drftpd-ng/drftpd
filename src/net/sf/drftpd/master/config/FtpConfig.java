@@ -318,6 +318,10 @@ public class FtpConfig extends Observable implements ConfigInterface {
 
         _bouncerIps = bouncerIps;
     }
+    
+    public void loadReaderForTest(Reader in) throws IOException {
+       loadConfig2(in);
+    }
 
     protected void loadConfig2(Reader in2) throws IOException {
         LineNumberReader in = new LineNumberReader(in2);
