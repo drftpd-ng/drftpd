@@ -16,6 +16,9 @@
  */
 package org.drftpd.commands;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,6 +29,7 @@ import java.util.MissingResourceException;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import java.util.Properties;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -239,8 +243,72 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
             String newUsername = st.nextToken();
             env.add("targetuser", newUsername);
-
             String pass = st.nextToken();
+
+            // Changed To Read In From File  :)
+            String confFile = "conf/defaultuser.conf";
+            
+            Properties cfg = new Properties();
+            FileInputStream file = null;
+            
+            String ratio;
+            String max_logins;
+            String max_logins_ip;            
+            String max_uploads;
+            String max_downloads;
+            String wkly_allotment;
+            String credits;
+            String idle_time;
+            String tagline;
+            
+            try {
+            	file = new FileInputStream(confFile);
+                cfg.load(file);
+
+                ratio = cfg.getProperty("ratio");
+                max_logins = cfg.getProperty("max_logins");
+                max_logins_ip = cfg.getProperty("max_logins_ip");
+                max_uploads = cfg.getProperty("max_uploads");
+                max_downloads = cfg.getProperty("max_downloads");
+                wkly_allotment = cfg.getProperty("wkly_allotment");
+                credits = cfg.getProperty("credits");
+                idle_time = cfg.getProperty("idle_time");  
+                tagline = cfg.getProperty("tagline");
+
+                if (ratio == null) { throw new ImproperUsageException("Unspecified value 'ratio' in " + confFile); }                   
+                if (max_logins == null) { throw new ImproperUsageException("Unspecified value 'max_logins' in " + confFile); }
+                if (max_logins_ip == null) { throw new ImproperUsageException("Unspecified value 'max_logins_ip' in " + confFile); }
+                if (max_uploads == null) { throw new ImproperUsageException("Unspecified value 'max_uploads' in " + confFile); }
+                if (max_downloads == null) { throw new ImproperUsageException("Unspecified value 'max_downloads' in " + confFile); }
+                if (wkly_allotment == null) { throw new ImproperUsageException("Unspecified value 'wkly_allotment' in " + confFile); }
+                if (credits == null) { throw new ImproperUsageException("Unspecified value 'credits' in " + confFile); }
+                if (idle_time == null) { throw new ImproperUsageException("Unspecified value 'idle_time' in " + confFile); }
+                if (tagline == null) { throw new ImproperUsageException("Unspecified value 'tagline' in " + confFile); }
+                
+            } catch (FileNotFoundException e) {
+            	logger.error("Error reading " + confFile,e);
+            	throw new RuntimeException(e.getMessage());
+            } catch (IOException e) {
+            	logger.error("Error reading " + confFile,e);
+            	throw new RuntimeException(e.getMessage());
+            } finally {
+            	try {
+            		if (file != null) {
+            			file.close();
+            		}
+            	} catch (IOException e) {
+            	}
+            }
+
+            float ratioVal = Float.parseFloat( ratio );
+            int max_loginsVal = Integer.parseInt( max_logins );
+            int max_logins_ipVal = Integer.parseInt( max_logins_ip );
+            int max_uploadsVal = Integer.parseInt( max_uploads );
+            int max_downloadsVal = Integer.parseInt( max_downloads );
+            int idle_timeVal = Integer.parseInt( idle_time );
+            long creditsVal = Bytes.parseBytes(credits);
+            long wkly_allotmentVal = Bytes.parseBytes(wkly_allotment);
+
 
             //action, no more NoSuchElementException below here
             newUser = conn.getGlobalContext().getUserManager().create(newUsername);
@@ -249,23 +317,28 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             response.addComment(conn.jprintf(UserManagement.class,
                     "adduser.success", env));
             newUser.getKeyedMap().setObject(UserManagement.COMMENT, "Added by " + conn.getUserNull().getName());
-            newUser.getKeyedMap().setObject(UserManagement.RATIO, new Float(3));
             newUser.getKeyedMap().setObject(UserManagement.GROUPSLOTS,0);
             newUser.getKeyedMap().setObject(UserManagement.LEECHSLOTS,0);
-            newUser.getKeyedMap().setObject(UserManagement.MAXLOGINS,0);
-            newUser.getKeyedMap().setObject(UserManagement.MAXLOGINSIP,0);
             newUser.getKeyedMap().setObject(UserManagement.MINRATIO,3F);
             newUser.getKeyedMap().setObject(UserManagement.MAXRATIO,3F);
-            newUser.getKeyedMap().setObject(UserManagement.MAXSIMUP,0);
-            newUser.getKeyedMap().setObject(UserManagement.MAXSIMDN,0);
-            newUser.getKeyedMap().setObject(Statistics.LOGINS,0);
             newUser.getKeyedMap().setObject(UserManagement.CREATED, new Date());
             newUser.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
-            newUser.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT, new Long(0));
             newUser.getKeyedMap().setObject(UserManagement.IRCIDENT, "N/A");
             newUser.getKeyedMap().setObject(UserManagement.BAN_TIME, new Date());
+            newUser.getKeyedMap().setObject(Statistics.LOGINS,0);
             newUser.getKeyedMap().setObject(Nuke.NUKED,0);
             newUser.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
+            newUser.getKeyedMap().setObject(UserManagement.TAGLINE,tagline);
+            newUser.getKeyedMap().setObject(UserManagement.RATIO, ratioVal);
+            newUser.getKeyedMap().setObject(UserManagement.MAXLOGINS,max_loginsVal);
+            newUser.getKeyedMap().setObject(UserManagement.MAXLOGINSIP,max_logins_ipVal);
+            newUser.getKeyedMap().setObject(UserManagement.MAXSIMUP,max_uploadsVal);
+            newUser.getKeyedMap().setObject(UserManagement.MAXSIMDN,max_downloadsVal);
+            newUser.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT, wkly_allotmentVal);
+            
+            newUser.setIdleTime(idle_timeVal);
+            newUser.setCredits(creditsVal);
+            
 
             if (newGroup != null) {
                 newUser.setGroup(newGroup);
@@ -284,6 +357,10 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                 conn.jprintf(UserManagement.class, "adduser.missingpass"));
         } catch (UserFileException ex) {
             return new Reply(452, ex.getMessage());
+        } catch (ImproperUsageException e) {
+        	return new Reply(501, e.getMessage());
+        } catch (NumberFormatException e) {
+        	return new Reply(501,e.getMessage());
         }
 
         try {
