@@ -35,8 +35,7 @@ import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.remotefile.RemoteFileInterface;
-import org.drftpd.remotefile.RemoteFileLastModifiedComparator;
+import org.drftpd.remotefile.TimeComparator;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sitebot.IRCCommand;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -149,9 +148,9 @@ public class New extends IRCCommand {
         
         SimpleDateFormat dateFormat = new SimpleDateFormat(_dateFormat);
         
-        Collections.sort(dirs, new RemoteFileLastModifiedComparator(true));
+        Collections.sort(dirs, new TimeComparator());
         int index = 0;
-        for (RemoteFileInterface dir : dirs) {
+        for (LinkedRemoteFileInterface dir : dirs) {
             if (index >= count)
                 break;
             env.add("dir",dir.getName());

@@ -23,16 +23,16 @@ import java.util.Comparator;
  * @author zubov
  * @version $Id$
  */
-public class TimeComparator implements Comparator<LinkedRemoteFile> {
+public class TimeComparator implements Comparator<LinkedRemoteFileInterface> {
 
 	/**
-	 * Sorts LinkedRemoteFile objects by their date modified
+	 * Sorts LinkedRemoteFileInterface objects by their date modified
 	 */
 	public TimeComparator() {
 		
 	}
 
-	public int compare(LinkedRemoteFile arg0, LinkedRemoteFile arg1) {
+	public int compare(LinkedRemoteFileInterface arg0, LinkedRemoteFileInterface arg1) {
 		if (arg0 == null || arg1 == null) {
 			throw new IllegalArgumentException("Neither arg0 nor arg1 can be null");
 		}
