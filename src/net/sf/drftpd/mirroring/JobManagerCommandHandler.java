@@ -77,6 +77,9 @@ public class JobManagerCommandHandler
         } catch (FileNotFoundException e) {
             return new Reply(500, "File does not exist");
         }
+        if (!lrf.isFile()) {
+        	throw new ImproperUsageException("addjob does not handle directories or links");
+        }
 
         int priority;
 
