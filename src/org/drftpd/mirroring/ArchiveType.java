@@ -28,6 +28,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import net.sf.drftpd.NoAvailableSlaveException;
+import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.mirroring.JobManager;
 
@@ -39,6 +40,7 @@ import org.drftpd.mirroring.archivetypes.OfflineSlaveException;
 import org.drftpd.plugins.Archive;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
+import org.drftpd.sections.def.SectionManager.Section;
 
 
 /**
@@ -51,8 +53,17 @@ public abstract class ArchiveType {
     private LinkedRemoteFileInterface _directory;
     protected Archive _parent;
     protected SectionInterface _section;
-    private Set<RemoteSlave> _slaveList;
+    protected Set<RemoteSlave> _slaveList;
+    protected int _numOfSlaves;
 
+    /**
+     * Sets _slaveList, _numOfSlaves, _section, _parent, and _archiveAfter
+     * Each implementing ArchiveType still needs to check/validate these figures to their specific needs
+     * After the constructor finishes, _slaveList is guaranteed to be non-null, but can still be empty
+     * @param archive
+     * @param section
+     * @param p
+     */
     public ArchiveType(Archive archive, SectionInterface section, Properties p) {
         _parent = archive;
         _section = section;
@@ -64,8 +75,13 @@ public abstract class ArchiveType {
      * This is where files are possibly deleted from slaves
      */
     public abstract void cleanup(ArrayList jobList);
-
-    public abstract HashSet<RemoteSlave> findDestinationSlaves();
+    
+    
+    /**
+     * Used to determine a list of slaves dynamically during runtime, only gets called if _slaveList == null
+     * @return
+     */
+    public abstract Set<RemoteSlave> findDestinationSlaves();
 
     public final LinkedRemoteFileInterface getDirectory() {
         return _directory;
@@ -255,6 +271,32 @@ public abstract class ArchiveType {
         } catch (NullPointerException e) {
             _archiveAfter = 0;
         }
+        _numOfSlaves = Integer.parseInt(properties.getProperty(getSection()
+				.getName()
+				+ ".numOfSlaves", "0"));
+        
+        HashSet<RemoteSlave> destSlaves = new HashSet<RemoteSlave>();
+        
+        for (int i = 1;; i++) {
+            String slavename = null;
+
+            try {
+                slavename = PropertyHelper.getProperty(properties,
+                        getSection().getName() + ".slavename." + i);
+            } catch (NullPointerException e) {
+                break; // done
+            }
+
+            try {
+                RemoteSlave rslave = _parent.getGlobalContext()
+						.getSlaveManager().getRemoteSlave(slavename);
+                	destSlaves.add(rslave);
+            } catch (ObjectNotFoundException e) {
+                logger.error("Unable to get slave " + slavename +
+                    " from the SlaveManager");
+            }
+        }
+        _slaveList = destSlaves;
     }
 
     public final void setDirectory(LinkedRemoteFileInterface lrf) {
@@ -315,4 +357,32 @@ public abstract class ArchiveType {
 
         return "Empty";
     }
+
+	public Set<RemoteSlave> getOffOfSlaves(Properties props) {
+        Set<RemoteSlave> offOfSlaves = new HashSet<RemoteSlave>();
+
+        for (int i = 1;; i++) {
+            String slavename = null;
+
+            try {
+                slavename = PropertyHelper.getProperty(props,
+                        getSection().getName() + ".offOfSlave." + i);
+            } catch (NullPointerException e) {
+                break; // done
+            }
+
+            try {
+            	RemoteSlave rslave = _parent.getGlobalContext()
+				.getSlaveManager().getRemoteSlave(slavename);
+            	if (!_slaveList.contains(rslave)) {
+            		offOfSlaves.add(rslave);
+            	}
+            } catch (ObjectNotFoundException e) {
+                logger.error("Unable to get slave " + slavename +
+                    " from the SlaveManager");
+            }
+        }
+        return offOfSlaves;
+
+	}
 }

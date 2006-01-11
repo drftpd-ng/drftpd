@@ -43,7 +43,6 @@ import java.util.Properties;
 public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
     private static final Logger logger = Logger.getLogger(MoveReleaseOffSlavesToMostFreeSlaves.class);
     private HashSet<RemoteSlave> _offOfSlaves;
-    private int _numOfSlaves;
 
     public MoveReleaseOffSlavesToMostFreeSlaves(Archive archive,
         SectionInterface section, Properties props) {
@@ -74,9 +73,6 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
                 "Cannot continue, 0 slaves found to move off MoveReleaseOffSlavesToMostFreeSlaves for for section " +
                 getSection().getName());
         }
-
-        _numOfSlaves = Integer.parseInt(PropertyHelper.getProperty(props,
-                    getSection().getName() + ".numOfSlaves"));
 
         if (_numOfSlaves < 1) {
             throw new IllegalArgumentException(

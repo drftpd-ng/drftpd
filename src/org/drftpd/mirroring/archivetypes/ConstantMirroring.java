@@ -44,14 +44,11 @@ import java.util.Properties;
  */
 public class ConstantMirroring extends ArchiveType {
     private static final Logger logger = Logger.getLogger(ConstantMirroring.class);
-    private int _numOfSlaves;
     private long _slaveDeadAfter;
 
     public ConstantMirroring(Archive archive, SectionInterface section,
         Properties p) {
         super(archive, section, p);
-        _numOfSlaves = Integer.parseInt(PropertyHelper.getProperty(p,
-                    section.getName() + ".numOfSlaves"));
         _slaveDeadAfter = 1000 * 60 * Integer.parseInt(p.getProperty(
                 section.getName() + ".slaveDeadAfter", "0"));
 

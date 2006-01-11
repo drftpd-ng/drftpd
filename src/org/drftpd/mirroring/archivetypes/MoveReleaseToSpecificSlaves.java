@@ -40,40 +40,18 @@ import org.drftpd.sections.SectionInterface;
  */
 public class MoveReleaseToSpecificSlaves extends ArchiveType {
     private static final Logger logger = Logger.getLogger(MoveReleaseToSpecificSlaves.class);
-    private HashSet<RemoteSlave> _destSlaves;
-    private int _numOfSlaves;
 
     public MoveReleaseToSpecificSlaves(Archive archive,
         SectionInterface section, Properties props) {
         super(archive, section, props);
-        _destSlaves = new HashSet<RemoteSlave>();
 
-        for (int i = 1;; i++) {
-            String slavename = null;
-
-            try {
-                slavename = PropertyHelper.getProperty(props,
-                        getSection().getName() + ".slavename." + i);
-            } catch (NullPointerException e) {
-                break; // done
-            }
-
-            try {
-                _destSlaves.add(_parent.getGlobalContext()
-                                       .getSlaveManager().getRemoteSlave(slavename));
-            } catch (ObjectNotFoundException e) {
-                logger.debug("Unable to get slave " + slavename +
-                    " from the SlaveManager");
-            }
-        }
-
-        if (_destSlaves.isEmpty()) {
+        if (_slaveList.isEmpty()) {
             throw new NullPointerException(
                 "Cannot continue, 0 destination slaves found for MoveReleaseToSpecificSlave for section " +
                 getSection().getName());
         }
 
-        _numOfSlaves = _destSlaves.size();
+        _numOfSlaves = _slaveList.size();
 
         if (_numOfSlaves < 1) {
             throw new IllegalArgumentException(
@@ -82,7 +60,7 @@ public class MoveReleaseToSpecificSlaves extends ArchiveType {
     }
 
     public HashSet findDestinationSlaves() {
-        return _destSlaves;
+        throw new UnsupportedOperationException("_slaveList needs to be set");
     }
 
     public void cleanup(ArrayList jobList) {

@@ -39,13 +39,10 @@ import org.drftpd.sections.SectionInterface;
  */
 public class MoveReleaseToMostFreeSlaves extends ArchiveType {
     private static final Logger logger = Logger.getLogger(MoveReleaseToMostFreeSlaves.class);
-    private int _numOfSlaves;
 
     public MoveReleaseToMostFreeSlaves(Archive archive,
         SectionInterface section, Properties props) {
         super(archive, section, props);
-        _numOfSlaves = Integer.parseInt(PropertyHelper.getProperty(props,
-                    getSection().getName() + ".numOfSlaves"));
 
         if (_numOfSlaves < 1) {
             throw new IllegalArgumentException(

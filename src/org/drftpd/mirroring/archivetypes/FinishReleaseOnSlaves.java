@@ -44,13 +44,10 @@ import org.drftpd.sections.SectionInterface;
  */
 public class FinishReleaseOnSlaves extends ArchiveType {
     private static final Logger logger = Logger.getLogger(FinishReleaseOnSlaves.class);
-    private int _numOfSlaves = 1;
 
     public FinishReleaseOnSlaves(Archive archive, SectionInterface section,
         Properties props) {
         super(archive, section, props);
-        _numOfSlaves = Integer.parseInt(PropertyHelper.getProperty(props,
-                    getSection().getName() + ".numOfSlaves"));
 
         if (_numOfSlaves < 1) {
             throw new IllegalArgumentException(

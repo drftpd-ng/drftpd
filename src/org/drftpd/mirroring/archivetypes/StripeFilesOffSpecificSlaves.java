@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -40,77 +41,28 @@ import org.drftpd.sections.SectionInterface;
  */
 public class StripeFilesOffSpecificSlaves extends ArchiveType {
     private static final Logger logger = Logger.getLogger(StripeFilesOffSpecificSlaves.class);
-    private HashSet<RemoteSlave> _destSlaves;
-    private HashSet<RemoteSlave> _offOfSlaves;
+    private Set<RemoteSlave> _offOfSlaves;
     int _numOfSlaves = 1;
 
     public StripeFilesOffSpecificSlaves(Archive archive,
         SectionInterface section, Properties props) {
         super(archive, section, props);
-        _offOfSlaves = new HashSet<RemoteSlave>();
-
-        for (int i = 1;; i++) {
-            String slavename = null;
-
-            try {
-                slavename = PropertyHelper.getProperty(props,
-                        getSection().getName() + ".offOfSlave." + i);
-            } catch (NullPointerException e) {
-                break; // done
-            }
-
-            try {
-                _offOfSlaves.add(_parent.getGlobalContext().getSlaveManager()
-						.getRemoteSlave(slavename));
-            } catch (ObjectNotFoundException e) {
-                logger.debug("Unable to get slave " + slavename +
-                    " from the SlaveManager");
-            }
-        }
-
+        _offOfSlaves = getOffOfSlaves(props);
         if (_offOfSlaves.isEmpty()) {
             throw new NullPointerException(
                 "Cannot continue, 0 slaves found to move off StripeFilesOffSpecificSlave for for section " +
                 getSection().getName());
         }
 
-        _numOfSlaves = Integer.parseInt(PropertyHelper.getProperty(props,
-                    getSection().getName() + ".numOfSlaves"));
-
         if (_numOfSlaves < 1) {
             throw new IllegalArgumentException(
                 "numOfSlaves has to be > 0 for section " + section.getName());
         }
 
-        _destSlaves = new HashSet<RemoteSlave>();
-
-        for (int i = 1;; i++) {
-            String slavename = null;
-
-            try {
-                slavename = PropertyHelper.getProperty(props,
-                        getSection().getName() + ".slavename." + i);
-            } catch (NullPointerException e) {
-                break; // done
-            }
-
-            try {
-                RemoteSlave rslave = _parent.getGlobalContext()
-						.getSlaveManager().getRemoteSlave(slavename);
-
-                if (!_offOfSlaves.contains(rslave)) {
-                    _destSlaves.add(rslave);
-                }
-            } catch (ObjectNotFoundException e) {
-                logger.debug("Unable to get slave " + slavename +
-                    " from the SlaveManager");
-            }
-        }
-
-        if (_destSlaves.isEmpty()) {
-            _destSlaves = null; // used as a flag for dynamic slaves
+        if (_slaveList.isEmpty()) {
+            _slaveList = null; // used as a flag for dynamic slaves
         } else {
-            if (_destSlaves.size() < _numOfSlaves) {
+            if (_slaveList.size() < _numOfSlaves) {
                 throw new IllegalStateException(
                     "Cannot continue, numOfSlave cannot be less than the # of slaveName's");
             }
@@ -124,9 +76,9 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
         }
     }
 
-    public HashSet<RemoteSlave> findDestinationSlaves() {
-        if (_destSlaves != null) {
-            return _destSlaves;
+    public Set<RemoteSlave> findDestinationSlaves() {
+        if (_slaveList != null) {
+            return _slaveList;
         }
 
         HashSet<RemoteSlave> availableSlaves = new HashSet<RemoteSlave>(_parent

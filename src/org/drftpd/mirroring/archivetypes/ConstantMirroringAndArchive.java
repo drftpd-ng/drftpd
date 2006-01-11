@@ -47,15 +47,12 @@ import java.util.Properties;
  */
 public class ConstantMirroringAndArchive extends ArchiveType {
     private static final Logger logger = Logger.getLogger(ConstantMirroringAndArchive.class);
-    private int _numOfSlaves;
     private long _slowAfter;
     private ArrayList<RemoteSlave> _fastHosts;
 
     public ConstantMirroringAndArchive(Archive archive,
         SectionInterface section, Properties p) {
         super(archive, section, p);
-        _numOfSlaves = Integer.parseInt(PropertyHelper.getProperty(p,
-                    section.getName() + ".numOfSlaves"));
 
         if (_numOfSlaves < 2) {
             throw new IllegalArgumentException(
