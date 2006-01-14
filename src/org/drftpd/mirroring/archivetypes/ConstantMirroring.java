@@ -94,7 +94,9 @@ public class ConstantMirroring extends ArchiveType {
                     return false;
                 }
             } else if (src.isDirectory()) {
-                return isArchivedDir(src);
+            	if (!isArchivedDir(src)) {
+                	return false;
+                }
             }
         }
 
