@@ -50,13 +50,6 @@ public class MoveReleaseToMostFreeSlaves extends ArchiveType {
         }
     }
 
-    public void cleanup(ArrayList jobList) {
-        for (Iterator iter = jobList.iterator(); iter.hasNext();) {
-            Job job = (Job) iter.next();
-            job.getFile().deleteOthers(getRSlaves());
-        }
-    }
-
     public HashSet<RemoteSlave> findDestinationSlaves() {
         HashSet<RemoteSlave> set = _parent.getGlobalContext()
                              .getSlaveManager().findSlavesBySpace(_numOfSlaves,

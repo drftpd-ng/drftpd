@@ -67,11 +67,6 @@ public interface LinkedRemoteFileInterface extends RemoteFileInterface {
      */
     public abstract void delete();
 
-    /**
-     * This method will delete files off of slaves not contained in the destSlaves Set
-     */
-    public abstract void deleteOthers(Set<RemoteSlave> destSlaves);
-
     public abstract long dirSize();
 
     public abstract Collection<RemoteSlave> getAvailableSlaves()

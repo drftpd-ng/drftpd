@@ -63,13 +63,6 @@ public class MoveReleaseToSpecificSlaves extends ArchiveType {
         throw new UnsupportedOperationException("_slaveList needs to be set");
     }
 
-    public void cleanup(ArrayList jobList) {
-        for (Iterator iter = jobList.iterator(); iter.hasNext();) {
-            Job job = (Job) iter.next();
-            job.getFile().deleteOthers(getRSlaves());
-        }
-    }
-
     protected boolean isArchivedDir(LinkedRemoteFileInterface lrf)
         throws IncompleteDirectoryException, OfflineSlaveException {
         return isArchivedToXSlaves(lrf, _numOfSlaves);

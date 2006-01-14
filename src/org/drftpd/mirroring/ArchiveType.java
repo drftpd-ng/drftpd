@@ -42,6 +42,8 @@ import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.def.SectionManager.Section;
 
+import sun.security.krb5.internal.r;
+
 
 /**
  * @author zubov
@@ -74,7 +76,34 @@ public abstract class ArchiveType {
      * Once the Jobs in the jobList have been sent, this method is called
      * This is where files are possibly deleted from slaves
      */
-    public abstract void cleanup(ArrayList jobList);
+    public void cleanup(ArrayList<Job> jobList) {
+    	for (Job job : jobList) {
+    		for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job.getFile().getSlaves())) {
+    			if (!getRSlaves().contains(rslave)) {
+    				rslave.simpleDelete(job.getFile().getPath());
+    				job.getFile().removeSlave(rslave);
+    			}
+    		}
+    		for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job.getFile().getSlaves())) {
+    			if (job.getFile().getSlaves().size() > _numOfSlaves) {
+    				if (!rslave.isAvailable()) {
+        				rslave.simpleDelete(job.getFile().getPath());
+        				job.getFile().removeSlave(rslave);
+    				}
+    			} else {
+    				break;
+    			}
+    		}
+    		for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job.getFile().getSlaves())) {
+    			if (job.getFile().getSlaves().size() > _numOfSlaves) {
+        				rslave.simpleDelete(job.getFile().getPath());
+        				job.getFile().removeSlave(rslave);
+    			} else {
+    				break;
+    			}
+    		}
+    	}
+    }
     
     
     /**
@@ -169,25 +198,22 @@ public abstract class ArchiveType {
         return jobs;
     }
 
-    private final ArrayList<Job> recursiveSend(LinkedRemoteFileInterface lrf) {
+    protected ArrayList<Job> recursiveSend(LinkedRemoteFileInterface lrf) {
         ArrayList<Job> jobQueue = new ArrayList<Job>();
 
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
 
-            HashSet<RemoteSlave> destSlaves = new HashSet<RemoteSlave>(getRSlaves());
             if (src.isFile()) {
-                destSlaves.removeAll(src.getSlaves());
-                if(destSlaves.isEmpty()) continue;
+                logger.info("Adding " + src.getPath() + " to the job queue");
 
-                Job job = new Job(src, destSlaves, 3, destSlaves.size());
-                logger.info("Adding " + job + " to the job queue");
-                //jm.addJobToQueue(job);
+                Job job = new Job(src, getRSlaves(), 3, _numOfSlaves);
                 jobQueue.add(job);
             } else {
                 jobQueue.addAll(recursiveSend(src));
             }
         }
+
         return jobQueue;
     }
 

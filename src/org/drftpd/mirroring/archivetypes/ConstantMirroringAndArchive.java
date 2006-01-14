@@ -95,58 +95,6 @@ public class ConstantMirroringAndArchive extends ArchiveType {
         }
     }
 
-    public void cleanup(ArrayList jobList) {
-        recursiveCleanup(getDirectory());
-    }
-
-    private void recursiveCleanup(LinkedRemoteFileInterface lrf) {
-        for (Iterator iter = new ArrayList(lrf.getFiles()).iterator();
-                iter.hasNext();) {
-            LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
-
-            if (src.isFile()) {
-                Collection slaves = new ArrayList(src.getSlaves());
-
-                if (slaves.isEmpty()) {
-                    // couldn't mirror file, it's deleted
-                    src.delete();
-
-                    continue;
-                }
-
-                Iterator offlineSlaveIter = slaves.iterator();
-
-                while ((src.getSlaves().size() > _numOfSlaves) &&
-                        offlineSlaveIter.hasNext()) { // remove offline slaves until size is okay
-
-                    RemoteSlave slave = (RemoteSlave) offlineSlaveIter.next();
-
-                    if (!slave.isAvailable()) {
-                        src.removeSlave(slave);
-                        slave.simpleDelete(src.getPath());
-                    }
-
-                    offlineSlaveIter.remove();
-                }
-
-                slaves = new ArrayList(src.getSlaves());
-
-                Iterator onlineSlaveIter = slaves.iterator();
-
-                while ((slaves.size() > _numOfSlaves) &&
-                        onlineSlaveIter.hasNext()) { // remove online slaves until size is okay
-
-                    RemoteSlave slave = (RemoteSlave) onlineSlaveIter.next();
-                    slave.simpleDelete(src.getPath());
-                    src.removeSlave(slave);
-                    onlineSlaveIter.remove();
-                }
-            } else { // src.isDirectory()
-                recursiveCleanup(src);
-            }
-        }
-    }
-
     public HashSet<RemoteSlave> findDestinationSlaves() {
         HashSet<RemoteSlave> allHosts = new HashSet<RemoteSlave>(_parent
 				.getGlobalContext().getSlaveManager().getSlaves());
@@ -262,26 +210,6 @@ public class ConstantMirroringAndArchive extends ArchiveType {
      */
     public ArrayList send() {
         return recursiveSend(getDirectory());
-    }
-
-    private ArrayList recursiveSend(LinkedRemoteFileInterface lrf) {
-        ArrayList jobQueue = new ArrayList();
-        JobManager jm = _parent.getGlobalContext().getJobManager();
-
-        for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
-            LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
-
-            if (src.isFile()) {
-                logger.info("Adding " + src.getPath() + " to the job queue");
-
-                Job job = new Job(src, getRSlaves(), 3, _numOfSlaves);
-                jobQueue.add(job);
-            } else {
-                jobQueue.addAll(recursiveSend(src));
-            }
-        }
-
-        return jobQueue;
     }
 
     public String toString() {

@@ -419,34 +419,6 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 		removeSlave(rslave);
 	}
 
-	/**
-	 * This method should only be called by Archive and ArchiveType's as it has
-	 * no usage anywhere else
-	 */
-	public void deleteOthers(Set<RemoteSlave> destSlaves) {
-		if (destSlaves.containsAll(_slaves)) {
-			// Do not want to remove the file completely, just delete extraneous
-			// slaves
-			// this is a safety catch
-			return;
-		}
-
-		synchronized (_slaves) {
-			for (Iterator<RemoteSlave> iter = _slaves.iterator(); iter
-					.hasNext();) {
-				RemoteSlave tempSlave = iter.next();
-
-				if (destSlaves.contains(tempSlave)) {
-					continue; // do not want to delete the archived file
-				}
-
-				// delete files off of slaves not in destSlaves
-				tempSlave.simpleDelete(getPath());
-				iter.remove();
-			}
-		}
-	}
-
 	public long dirSize() {
 		if (_files == null) {
 			throw new IllegalStateException(

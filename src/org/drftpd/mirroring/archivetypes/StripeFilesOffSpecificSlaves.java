@@ -69,13 +69,6 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
         }
     }
 
-    public void cleanup(ArrayList jobList) {
-        for (Iterator iter = jobList.iterator(); iter.hasNext();) {
-            Job job = (Job) iter.next();
-            job.getFile().deleteOthers(getRSlaves());
-        }
-    }
-
     public Set<RemoteSlave> findDestinationSlaves() {
         if (_slaveList != null) {
             return _slaveList;
@@ -125,9 +118,8 @@ public class StripeFilesOffSpecificSlaves extends ArchiveType {
         return recursiveSend(getDirectory());
     }
 
-    private ArrayList<Job> recursiveSend(LinkedRemoteFileInterface lrf) {
+    protected ArrayList<Job> recursiveSend(LinkedRemoteFileInterface lrf) {
         ArrayList<Job> jobQueue = new ArrayList<Job>();
-        JobManager jm = _parent.getGlobalContext().getJobManager();
 
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
             LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
