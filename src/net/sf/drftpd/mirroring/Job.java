@@ -312,8 +312,8 @@ public class Job {
 
 	private void logSuccess() {
 		getFile().addSlave(getDestinationSlave());
-		logger.debug("Sent file " + getFile().getName() + " to "
-				+ getDestinationSlave().getName() + " from " + getSourceSlave().getName());
+		logger.debug("Sent file " + getFile().getName() + " from "
+				+ getSourceSlave().getName() + " to " + getDestinationSlave().getName());
 		sentToSlave(getDestinationSlave());
 	}
 
