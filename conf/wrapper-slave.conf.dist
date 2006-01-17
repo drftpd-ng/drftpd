@@ -15,6 +15,7 @@ wrapper.java.mainclass=org.tanukisoftware.wrapper.WrapperSimpleApp
 wrapper.java.classpath.1=lib/wrapper.jar
 wrapper.java.classpath.2=lib/log4j-1.2.8.jar
 wrapper.java.classpath.3=lib/slave.jar
+wrapper.java.classpath.4=lib/oro.jar
 
 #URLBootStrap (more options further down, need to comment out item 3 above)
 #wrapper.java.classpath.3=classes/
