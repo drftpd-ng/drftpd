@@ -207,6 +207,7 @@
       <include name="lib/libFileSystem.so" />
       <include name="lib/libwrapper.so" />
       <include name="lib/log4j-1.2.8.jar" />
+      <include name="lib/oro.jar" />    	
       <include name="lib/wrapper.dll" />
       <include name="lib/wrapper.jar" />
       <include name="bin/wrapper" />
