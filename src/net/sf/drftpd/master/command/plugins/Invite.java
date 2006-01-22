@@ -17,6 +17,8 @@
  */
 package net.sf.drftpd.master.command.plugins;
 
+import java.util.StringTokenizer;
+
 import net.sf.drftpd.event.InviteEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
@@ -51,7 +53,11 @@ public class Invite implements CommandHandler, CommandHandlerFactory {
         	throw new ImproperUsageException();
         }
 
-        String user = conn.getRequest().getArgument();
+        StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument());
+        if (st.countTokens() != 1 )
+        	return Reply.RESPONSE_501_SYNTAX_ERROR;
+
+        String user = st.nextToken(); 
         
         InviteEvent invite = new InviteEvent(cmd, user, conn.getUserNull());
         conn.getGlobalContext().dispatchFtpEvent(invite);
