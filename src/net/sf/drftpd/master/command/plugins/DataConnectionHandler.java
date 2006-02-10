@@ -266,6 +266,10 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         	_SSLHandshakeClientMode = false;
         }
 
+        if (address.getAddress() == null || address.getAddress().getHostAddress() == null) {
+        	return new Reply(500, "Address for is unresolvable, check pasv_addr setting");
+        }
+        
         String addrStr = address.getAddress().getHostAddress().replace('.', ',') +
             ',' + (address.getPort() >> 8) + ',' + (address.getPort() & 0xFF);
 
