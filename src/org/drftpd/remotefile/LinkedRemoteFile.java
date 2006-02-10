@@ -1509,6 +1509,8 @@ public class LinkedRemoteFile implements Serializable, Comparable,
 				// createDirectory so when remerge is called later with contents
 				// the new directory exists
 				createDirectory(light.getName());
+				// if we set the directory to be old, when files are added, it will update the time correctly
+				getFile(light.getName()).setLastModified(0);
 				logger.debug("adding directory " + light.getName() + " from "
 						+ rslave.getName());
 			} else {
