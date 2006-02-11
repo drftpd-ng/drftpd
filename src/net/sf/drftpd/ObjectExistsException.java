@@ -25,7 +25,12 @@ import java.io.IOException;
  * @version $Id$
  */
 public class ObjectExistsException extends IOException {
-    public ObjectExistsException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 5121347344759544660L;
+
+	public ObjectExistsException() {
         super();
     }
 

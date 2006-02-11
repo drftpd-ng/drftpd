@@ -25,7 +25,12 @@ import java.io.IOException;
  * @version $Id$
  */
 public class IllegalFileNameException extends IOException {
-    public IllegalFileNameException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 6757210098358700968L;
+
+	public IllegalFileNameException() {
         super();
     }
 

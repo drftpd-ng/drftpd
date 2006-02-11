@@ -25,7 +25,12 @@ import org.drftpd.commands.Reply;
  * @version $Id$
  */
 public class NoAvailableSlaveException extends Exception {
-    public NoAvailableSlaveException(String message) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -3761274351911054556L;
+
+	public NoAvailableSlaveException(String message) {
         super(message);
     }
 

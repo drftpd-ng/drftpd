@@ -25,6 +25,11 @@ package net.sf.drftpd;
  */
 public class DuplicateElementException extends Exception {
     /**
+	 * 
+	 */
+	private static final long serialVersionUID = -3420616098497542539L;
+
+	/**
      *
      */
     public DuplicateElementException() {

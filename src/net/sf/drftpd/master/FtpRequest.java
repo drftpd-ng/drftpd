@@ -26,10 +26,14 @@ import java.io.Serializable;
  * single Ftp request.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
- * @version $Id: FtpRequest.java,v 1.9 2004/08/03 20:13:56 zubov Exp $
+ * @version $Id$
  */
 public class FtpRequest implements Serializable {
-    private String line = null;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -8967203000005023929L;
+	private String line = null;
     private String command = null;
     private String argument = null;
 

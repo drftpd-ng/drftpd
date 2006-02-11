@@ -23,7 +23,16 @@ package net.sf.drftpd;
  *          Exp $
  */
 public class SlaveUnavailableException extends Exception {
-    public SlaveUnavailableException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -2578623630000522808L;
+
+	/**
+	 * 
+	 */
+
+	public SlaveUnavailableException() {
         super();
     }
 

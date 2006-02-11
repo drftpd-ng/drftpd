@@ -23,7 +23,12 @@ package net.sf.drftpd;
  * @version $Id$
  */
 public class NoSFVEntryException extends Exception {
-    public NoSFVEntryException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 8633152529110607274L;
+
+	public NoSFVEntryException() {
         super();
     }
 

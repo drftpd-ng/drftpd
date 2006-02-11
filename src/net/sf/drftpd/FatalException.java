@@ -23,7 +23,12 @@ package net.sf.drftpd;
  * @version $Id$
  */
 public class FatalException extends RuntimeException {
-    public FatalException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -8598775338817638160L;
+
+	public FatalException() {
         super();
     }
 

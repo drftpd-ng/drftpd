@@ -27,6 +27,11 @@ import java.io.IOException;
  */
 public class IllegalTargetException extends IOException {
     /**
+	 * 
+	 */
+	private static final long serialVersionUID = 9073839433603984027L;
+
+	/**
      *
      */
     public IllegalTargetException() {

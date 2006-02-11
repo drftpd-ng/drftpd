@@ -25,6 +25,11 @@ package net.sf.drftpd;
  */
 public class ObjectNotFoundException extends Exception {
     /**
+	 * 
+	 */
+	private static final long serialVersionUID = 5368158567799164728L;
+
+	/**
      *
      */
     public ObjectNotFoundException() {
