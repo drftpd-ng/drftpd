@@ -47,16 +47,12 @@ public class ConstantMirroring extends ArchiveType {
         _slaveDeadAfter = 1000 * 60 * Integer.parseInt(p.getProperty(
                 section.getName() + ".slaveDeadAfter", "0"));
 
-        if (_numOfSlaves < 2) {
-			throw new IllegalArgumentException(
-					"numOfSlaves has to be > 1 for section "
-							+ section.getName());
-		}
         if (_slaveList.isEmpty()) {
 			_slaveList = null;
-		} else if (_numOfSlaves > _slaveList.size()) {
+		}
+        if (_numOfSlaves > _slaveList.size() && _numOfSlaves < 1) {
 			throw new IllegalArgumentException(
-					"numOfSlaves has to be <= the size of the destination slave list for section "
+					"numOfSlaves has to be 1 <= numOfSlaves <= the size of the destination slave list for section "
 							+ section.getName());
 		}
     }
