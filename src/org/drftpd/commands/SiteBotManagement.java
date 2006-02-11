@@ -50,7 +50,7 @@ public class SiteBotManagement implements CommandHandler, CommandHandlerFactory 
         SiteBot sitebot;
 
         try {
-            sitebot = (SiteBot) conn.getGlobalContext().getConnectionManager().getGlobalContext().getFtpListener(SiteBot.class);
+            sitebot = (SiteBot) conn.getGlobalContext().getFtpListener(SiteBot.class);
         } catch (ObjectNotFoundException e) {
             return new Reply(500, "SiteBot not loaded");
         }

@@ -35,7 +35,6 @@ import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -49,7 +48,6 @@ import com.Ostermiller.util.StringTokenizer;
  */
 public class Mirror extends FtpListener {
     private static final Logger logger = Logger.getLogger(Mirror.class);
-    private ConnectionManager _cm;
     private ArrayList<GlobPathPermission> _perms;
     private boolean _mirrorAllSFV;
     private int _numberOfMirrors;
@@ -74,7 +72,7 @@ public class Mirror extends FtpListener {
 
         LinkedRemoteFileInterface file = transevent.getDirectory();
 
-        List<RemoteSlave> slaves = _cm.getGlobalContext().getSlaveManager().getSlaves();
+        List<RemoteSlave> slaves = GlobalContext.getGlobalContext().getSlaveManager().getSlaves();
         for(GlobPathPermission perm : _perms) {
         	if(perm.checkPath(file)) {
         		for(Iterator<RemoteSlave> iter = slaves.iterator();iter.hasNext();) {
@@ -87,7 +85,7 @@ public class Mirror extends FtpListener {
         int numToMirror = _numberOfMirrors;
 
         if (_mirrorAllSFV && file.getName().toLowerCase().endsWith(".sfv")) {
-            numToMirror = _cm.getGlobalContext().getSlaveManager().getSlaves()
+            numToMirror = GlobalContext.getGlobalContext().getSlaveManager().getSlaves()
                              .size() / 2;
         }
 

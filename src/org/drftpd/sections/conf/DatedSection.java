@@ -102,10 +102,10 @@ public class DatedSection implements SectionInterface {
 
     public LinkedRemoteFileInterface getBaseFile() {
         try {
-            return _sectionManager.getConnectionManager().getGlobalContext().getRoot()
+            return getGlobalContext().getRoot()
                        .lookupFile(_basePath);
         } catch (FileNotFoundException e) {
-            return _sectionManager.getConnectionManager().getGlobalContext().getRoot()
+            return getGlobalContext().getRoot()
                        .createDirectories(_basePath);
         }
     }

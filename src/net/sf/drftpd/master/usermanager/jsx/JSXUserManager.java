@@ -17,7 +17,14 @@
  */
 package net.sf.drftpd.master.usermanager.jsx;
 
-import JSX.ObjIn;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Hashtable;
+import java.util.Iterator;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FatalException;
@@ -25,27 +32,16 @@ import net.sf.drftpd.FileExistsException;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
-
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserExistsException;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.usermanager.UserManager;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Iterator;
+import JSX.ObjIn;
 
 
 /**
@@ -57,7 +53,7 @@ public class JSXUserManager implements UserManager {
     private GlobalContext _gctx;
     String userpath = "users/jsx/";
     File userpathFile = new File(userpath);
-    Hashtable users = new Hashtable();
+    Hashtable<String, JSXUser> users = new Hashtable<String, JSXUser>();
 
     public JSXUserManager() throws UserFileException {
         if (!userpathFile.exists() && !userpathFile.mkdirs()) {
@@ -122,7 +118,7 @@ public class JSXUserManager implements UserManager {
 
     public Collection getAllGroups() throws UserFileException {
         Collection users = this.getAllUsers();
-        ArrayList ret = new ArrayList();
+        ArrayList<String> ret = new ArrayList<String>();
 
         for (Iterator iter = users.iterator(); iter.hasNext();) {
             User myUser = (User) iter.next();
@@ -140,8 +136,8 @@ public class JSXUserManager implements UserManager {
         return ret;
     }
 
-    public Collection getAllUsers() throws UserFileException {
-        ArrayList users = new ArrayList();
+    public Collection<User> getAllUsers() throws UserFileException {
+        ArrayList<User> users = new ArrayList<User>();
 
         String[] userpaths = userpathFile.list();
 

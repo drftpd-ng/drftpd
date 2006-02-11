@@ -17,18 +17,15 @@
  */
 package org.drftpd.usermanager;
 
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.util.Iterator;
+
 import net.sf.drftpd.DuplicateElementException;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.drftpd.commands.UserManagement;
 import org.drftpd.plugins.Trial;
-
-import java.io.IOException;
-
-import java.lang.reflect.Constructor;
-
-import java.util.Iterator;
 
 
 /**

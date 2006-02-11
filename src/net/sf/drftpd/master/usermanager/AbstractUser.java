@@ -53,7 +53,7 @@ import org.drftpd.usermanager.UserFileException;
 public abstract class AbstractUser extends User {
 	private static final Logger logger = Logger.getLogger(AbstractUser.class);
 
-	private KeyedMap _data;
+	private KeyedMap<Key,Object> _data;
 
 	protected long _downloadedMilliseconds;
 
@@ -101,7 +101,7 @@ public abstract class AbstractUser extends User {
 
 	protected short groupLeechSlots;
 
-	protected ArrayList groups = new ArrayList();
+	protected ArrayList<String> groups = new ArrayList<String>();
 
 	protected short groupSlots;
 

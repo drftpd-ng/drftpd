@@ -17,6 +17,12 @@
  */
 package org.drftpd.commands;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
@@ -25,22 +31,12 @@ import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.Bytes;
-import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
-
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * @author mog
@@ -84,8 +80,7 @@ public class Pre implements CommandHandler, CommandHandlerFactory {
             return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
-        SectionInterface section = conn.getGlobalContext().getConnectionManager()
-                                       .getGlobalContext().getSectionManager()
+        SectionInterface section = conn.getGlobalContext().getSectionManager()
                                        .getSection(args[1]);
 
         if (section.getName().equals("")) {
@@ -101,8 +96,7 @@ public class Pre implements CommandHandler, CommandHandlerFactory {
             return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
         }
 
-        if (!conn.getGlobalContext().getConnectionManager().getGlobalContext()
-                     .getConfig().checkPathPermission("pre",
+        if (!conn.getGlobalContext().getConfig().checkPathPermission("pre",
                     conn.getUserNull(), preDir)) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
@@ -117,8 +111,7 @@ public class Pre implements CommandHandler, CommandHandlerFactory {
             Map.Entry entry = (Map.Entry) iter.next();
             User owner = (User) entry.getKey();
 
-            if (conn.getGlobalContext().getConnectionManager().getGlobalContext()
-                        .getConfig().getCreditCheckRatio(preDir, owner) == 0) {
+            if (conn.getGlobalContext().getConfig().getCreditCheckRatio(preDir, owner) == 0) {
                 Long award = (Long) entry.getValue();
                 owner.updateCredits(award.longValue());
                 response.addComment("Awarded " +
@@ -129,8 +122,6 @@ public class Pre implements CommandHandler, CommandHandlerFactory {
 
         //RENAME
         recursiveRemoveOwnership(preDir, System.currentTimeMillis());
-
-        LinkedRemoteFile toDir;
 
         try {
             preDir.renameTo(section.getPath(), preDir.getName());
@@ -166,8 +157,7 @@ public class Pre implements CommandHandler, CommandHandlerFactory {
             User owner;
 
             try {
-                owner = conn.getGlobalContext().getConnectionManager()
-                            .getGlobalContext().getUserManager().getUserByName(file.getUsername());
+                owner = conn.getGlobalContext().getUserManager().getUserByName(file.getUsername());
             } catch (NoSuchUserException e) {
                 logger.log(Level.INFO,
                     "PRE: Cannot award credits to non-existing user", e);

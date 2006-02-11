@@ -17,23 +17,20 @@
  */
 package org.drftpd.sections.conf;
 
-import net.sf.drftpd.FatalException;
-
-import org.drftpd.GlobalContext;
-
-import org.drftpd.master.ConnectionManager;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.sections.SectionManagerInterface;
-
 import java.io.FileInputStream;
 import java.io.IOException;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Properties;
+
+import net.sf.drftpd.FatalException;
+
+import org.drftpd.master.ConnectionManager;
+import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.sections.SectionInterface;
+import org.drftpd.sections.SectionManagerInterface;
 
 
 /**

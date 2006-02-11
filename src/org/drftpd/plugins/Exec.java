@@ -17,16 +17,15 @@
  */
 package org.drftpd.plugins;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 
 import org.drftpd.Checksum;
 import org.drftpd.commands.UserManagement;
-import org.drftpd.master.ConnectionManager;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 
 /**

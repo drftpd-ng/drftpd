@@ -62,8 +62,7 @@ public class MLST implements CommandHandler, CommandHandlerFactory {
             }
         }
 
-        if (!conn.getGlobalContext().getConnectionManager().getGlobalContext()
-		 .getConfig().checkPathPermission("privpath", conn.getUserNull(), dir, true)) {
+        if (!conn.getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), dir, true)) {
             return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
         }
 

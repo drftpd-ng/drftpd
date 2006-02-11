@@ -52,6 +52,7 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
     private StringWriter _out2;
     private DummyServerSocketFactory _serverSocketFactory;
     private DummySocketFactory _socketFactory;
+	private DummyGlobalContext _gctx;
 
     public DummyBaseFtpConnection(DataConnectionHandler dch) {
         _dch = dch;

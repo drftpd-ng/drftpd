@@ -19,7 +19,6 @@ package org.drftpd.plugins;
 
 import java.io.FileNotFoundException;
 import java.util.Collection;
-import java.util.Iterator;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -37,8 +36,6 @@ import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
 
 public class DIZPlugin extends FtpListener {
-	private static final String _ehdr = "DIZFile exception:";
-
 	private static final Logger logger = Logger.getLogger(DIZPlugin.class);
 
 	public DIZPlugin() {

@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
@@ -256,7 +255,7 @@ public class TransferStatistics implements CommandHandler, CommandHandlerFactory
             return doSITE_STATS(conn);
         }
 
-        Collection users;
+        Collection<User> users;
 
         try {
             users = conn.getGlobalContext().getUserManager().getAllUsers();
@@ -294,7 +293,7 @@ public class TransferStatistics implements CommandHandler, CommandHandlerFactory
         final String command = request.getCommand();
         Reply response = new Reply(200);
         String type = command.substring("SITE ".length()).toLowerCase();
-        ArrayList users2 = new ArrayList(users);
+        ArrayList<User> users2 = new ArrayList<User>(users);
         Collections.sort(users2, new UserComparator(type));
 
         try {

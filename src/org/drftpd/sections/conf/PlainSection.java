@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Properties;
 
 
+import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.remotefile.FileUtils;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -57,10 +58,10 @@ public class PlainSection implements SectionInterface {
 
     public LinkedRemoteFileInterface getFile() {
         try {
-            return _mgr.getConnectionManager().getGlobalContext().getRoot()
+            return GlobalContext.getGlobalContext().getRoot()
                        .lookupFile(_dir);
         } catch (FileNotFoundException e) {
-            return _mgr.getConnectionManager().getGlobalContext().getRoot()
+            return GlobalContext.getGlobalContext().getRoot()
                        .createDirectories(_dir);
         }
     }

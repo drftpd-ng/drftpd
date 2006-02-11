@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,7 +35,6 @@ import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
-import net.sf.drftpd.master.command.CommandManagerFactory;
 import net.sf.drftpd.mirroring.Job;
 
 import org.drftpd.Bytes;
@@ -119,13 +117,11 @@ public class Find implements CommandHandler, CommandHandlerFactory {
 			//}
 			// check permission
 			if (file.getUsername().equals(conn.getUserNull().getName())) {
-				if (!conn.getGlobalContext().getConnectionManager()
-				.getGlobalContext().getConfig().checkPathPermission("deleteown", conn.getUserNull(), file)) {
+				if (!conn.getGlobalContext().getConfig().checkPathPermission("deleteown", conn.getUserNull(), file)) {
 					//return FtpReply.RESPONSE_530_ACCESS_DENIED;
 					return "Access denied for " + file.getPath();
 				}
-			} else if (!conn.getGlobalContext().getConnectionManager()
-			.getGlobalContext().getConfig().checkPathPermission("delete", conn.getUserNull(), file)) {
+			} else if (!conn.getGlobalContext().getConfig().checkPathPermission("delete", conn.getUserNull(), file)) {
 				//return FtpReply.RESPONSE_530_ACCESS_DENIED;
 				return "Access denied for " + file.getPath();
 			}
@@ -136,8 +132,7 @@ public class Find implements CommandHandler, CommandHandlerFactory {
 			User uploader;
 
 			try {
-				uploader = conn.getGlobalContext().getConnectionManager()
-						.getGlobalContext().getUserManager().getUserByName(
+				uploader = conn.getGlobalContext().getUserManager().getUserByName(
 								file.getUsername());
 				uploader.updateCredits((long) -(file.length() * uploader.getKeyedMap().getObjectFloat(UserManagement.RATIO)));
 			} catch (UserFileException e) {
@@ -480,8 +475,7 @@ public class Find implements CommandHandler, CommandHandlerFactory {
 			LinkedRemoteFileInterface dir, Collection<Option> options,
 			ArrayList actions, boolean files, boolean dirs) {
 		//TODO optimize me, checking using regexp for all dirs is possibly slow
-		if (!conn.getGlobalContext().getConnectionManager().getGlobalContext()
-		.getConfig().checkPathPermission("privpath", conn.getUserNull(), dir, true)) {
+		if (!conn.getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), dir, true)) {
 			//Logger.getLogger(Find.class).debug("privpath: " + dir.getPath());
 			return;
 		}

@@ -352,12 +352,7 @@ public class IRCNuke extends IRCCommand {
 		if (nukeCount > _maxNukes || nukeCount <= 0)
 			nukeCount = _maxNukes;
 
-		Nuke dpsn;
-		dpsn = (Nuke) getGlobalContext().getConnectionManager()
-					.getCommandManagerFactory()
-					.getHandlersMap()
-					.get(Nuke.class);
-		List allNukes = dpsn.getNukeLog().getAll();
+		List allNukes = Nuke.getNukeLog().getAll();
 		int count = 0;
 		
 		if (allNukes.size() == 0) {

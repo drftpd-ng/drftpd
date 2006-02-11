@@ -68,7 +68,7 @@ public class PreTime extends FtpListener {
 
         DirectoryFtpEvent dfe = (DirectoryFtpEvent) event;
 
-        if (!getConnectionManager().getGlobalContext().getConfig().checkPathPermission("dirlog", dfe.getUser(), dfe.getDirectory())) {
+        if (!ConnectionManager.getGlobalContext().getConfig().checkPathPermission("dirlog", dfe.getUser(), dfe.getDirectory())) {
             return;
         }
 

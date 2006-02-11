@@ -17,21 +17,17 @@
  */
 package net.sf.drftpd.master.queues;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.NukeEvent;
 
 import org.jdom.Element;
-
 import org.jdom.output.XMLOutputter;
-
-import java.io.FileOutputStream;
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector; 
-import java.util.Arrays;
 
 
 /**
@@ -40,7 +36,7 @@ import java.util.Arrays;
  * @version $Id$
  */
 public class NukeLog {
-    ArrayList nukes = new ArrayList();
+    ArrayList<NukeEvent> nukes = new ArrayList<NukeEvent>();
 
     public NukeLog() {
     }

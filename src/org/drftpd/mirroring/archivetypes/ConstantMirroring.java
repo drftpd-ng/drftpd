@@ -17,16 +17,11 @@
  */
 package org.drftpd.mirroring.archivetypes;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 
-import net.sf.drftpd.mirroring.Job;
-import net.sf.drftpd.mirroring.JobManager;
-
-import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.plugins.Archive;
@@ -38,7 +33,6 @@ import org.drftpd.sections.SectionInterface;
  * @author zubov
  */
 public class ConstantMirroring extends ArchiveType {
-    private static final Logger logger = Logger.getLogger(ConstantMirroring.class);
     private long _slaveDeadAfter;
 
     public ConstantMirroring(Archive archive, SectionInterface section,

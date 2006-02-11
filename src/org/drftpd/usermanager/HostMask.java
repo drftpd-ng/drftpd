@@ -17,14 +17,12 @@
  */
 package org.drftpd.usermanager;
 
-import org.apache.log4j.Logger;
+import java.net.InetAddress;
 
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Matcher;
-
-import java.net.InetAddress;
 
 
 /**
@@ -33,7 +31,6 @@ import java.net.InetAddress;
  */
 public class HostMask {
 
-    private static final Logger logger = Logger.getLogger(HostMask.class);
     private String _hostMask;
     private String _identMask;
 

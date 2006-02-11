@@ -63,7 +63,6 @@ public class Who extends IRCCommand {
 
             ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(getGlobalContext().getConnectionManager()
                                                 .getConnections());
-            int i = 0;
 
             for (Iterator iter = conns.iterator(); iter.hasNext();) {
                 BaseFtpConnection conn = (BaseFtpConnection) iter.next();

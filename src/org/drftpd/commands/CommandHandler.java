@@ -17,9 +17,6 @@
  */
 package org.drftpd.commands;
 
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-
 import net.sf.drftpd.master.BaseFtpConnection;
 
 

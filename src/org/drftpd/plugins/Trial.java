@@ -40,7 +40,6 @@ import org.drftpd.PropertyHelper;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.permissions.Permission;
-import org.drftpd.sitebot.Trials;
 import org.drftpd.usermanager.User;
 
 import com.Ostermiller.util.StringTokenizer;
@@ -57,7 +56,6 @@ public class Trial extends FtpListener {
     public static final short PERIOD_MONTHLY = Calendar.MONTH; // = 2
     public static final short PERIOD_WEEKLY = Calendar.WEEK_OF_YEAR; // = 3
     private ArrayList _limits;
-    private Trials _siteBot;
 
     public Trial() throws FileNotFoundException, IOException {
         super();

@@ -18,7 +18,6 @@ package org.drftpd.dynamicdata;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 

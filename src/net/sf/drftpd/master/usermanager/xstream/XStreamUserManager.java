@@ -17,8 +17,14 @@
  */
 package net.sf.drftpd.master.usermanager.xstream;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Hashtable;
+import java.util.Iterator;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FatalException;
@@ -26,26 +32,17 @@ import net.sf.drftpd.ObjectExistsException;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserExistsException;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.usermanager.UserManager;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Iterator;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 
 
 /**
@@ -54,10 +51,9 @@ import java.util.Iterator;
  */
 public class XStreamUserManager implements UserManager {
     private static final Logger logger = Logger.getLogger(XStreamUserManager.class.getName());
-    private ConnectionManager _connManager;
     String userpath = "users/xstream/";
     File userpathFile = new File(userpath);
-    Hashtable users = new Hashtable();
+    Hashtable<String, XStreamUser> users = new Hashtable<String, XStreamUser>();
 
     public XStreamUserManager() throws UserFileException {
         if (!userpathFile.exists() && !userpathFile.mkdirs()) {
@@ -120,7 +116,7 @@ public class XStreamUserManager implements UserManager {
 
     public Collection getAllGroups() throws UserFileException {
         Collection users = this.getAllUsers();
-        ArrayList ret = new ArrayList();
+        ArrayList<String> ret = new ArrayList<String>();
 
         for (Iterator iter = users.iterator(); iter.hasNext();) {
             User myUser = (User) iter.next();
@@ -138,8 +134,8 @@ public class XStreamUserManager implements UserManager {
         return ret;
     }
 
-    public Collection getAllUsers() throws UserFileException {
-        ArrayList users = new ArrayList();
+    public Collection<User> getAllUsers() throws UserFileException {
+        ArrayList<User> users = new ArrayList<User>();
 
         String[] userpaths = userpathFile.list();
 
@@ -228,7 +224,7 @@ public class XStreamUserManager implements UserManager {
             throw new NoSuchUserException(user.getName() + " is deleted");
         }
 
-        user.reset(_connManager.getGlobalContext());
+        user.reset(GlobalContext.getGlobalContext());
 
         return user;
     }
@@ -267,7 +263,6 @@ public class XStreamUserManager implements UserManager {
     }
 
     public void init(GlobalContext mgr) {
-        _connManager = mgr.getConnectionManager();
     }
 
 	public User getUserByNameIncludeDeleted(String argument) throws NoSuchUserException, UserFileException {

@@ -181,8 +181,7 @@ public class MoreStats implements CommandHandler, CommandHandlerFactory {
         Collection users;
 
         try {
-            users = conn.getGlobalContext().getConnectionManager()
-                        .getGlobalContext().getUserManager().getAllUsers();
+            users = conn.getGlobalContext().getUserManager().getAllUsers();
         } catch (UserFileException e) {
             logger.warn("", e);
 
@@ -323,8 +322,7 @@ public class MoreStats implements CommandHandler, CommandHandlerFactory {
         Collection users;
 
         try {
-            users = conn.getGlobalContext().getConnectionManager()
-                        .getGlobalContext().getUserManager().getAllUsers();
+            users = conn.getGlobalContext().getUserManager().getAllUsers();
         } catch (UserFileException e) {
             logger.warn("", e);
 

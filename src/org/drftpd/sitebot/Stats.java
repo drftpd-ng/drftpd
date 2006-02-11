@@ -49,7 +49,6 @@ import f00f.net.irc.martyr.commands.MessageCommand;
  */
 public class Stats extends IRCCommand {
 	private static final Logger logger = Logger.getLogger(Stats.class);
-    private SiteBot _listener;
     
     public Stats(GlobalContext gctx) {
 		super(gctx);

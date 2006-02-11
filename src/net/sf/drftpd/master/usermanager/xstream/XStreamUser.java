@@ -120,11 +120,11 @@ public class XStreamUser extends AbstractUser implements PlainTextPasswordUser,
         stream.defaultReadObject();
 
         if (groups == null) {
-            groups = new ArrayList();
+            groups = new ArrayList<String>();
         }
 
         if (ipMasks == null) {
-            ipMasks = new ArrayList();
+            ipMasks = new ArrayList<String>();
         }
     }
 

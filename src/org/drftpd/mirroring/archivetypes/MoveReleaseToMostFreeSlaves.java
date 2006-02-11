@@ -17,15 +17,9 @@
  */
 package org.drftpd.mirroring.archivetypes;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Properties;
 
-import net.sf.drftpd.mirroring.Job;
-
-import org.apache.log4j.Logger;
-import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.plugins.Archive;
@@ -38,7 +32,6 @@ import org.drftpd.sections.SectionInterface;
  * @version $Id$
  */
 public class MoveReleaseToMostFreeSlaves extends ArchiveType {
-    private static final Logger logger = Logger.getLogger(MoveReleaseToMostFreeSlaves.class);
 
     public MoveReleaseToMostFreeSlaves(Archive archive,
         SectionInterface section, Properties props) {

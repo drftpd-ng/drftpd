@@ -19,7 +19,6 @@ package org.drftpd.commands;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
-import net.sf.drftpd.master.command.CommandManagerFactory;
 
 
 /**

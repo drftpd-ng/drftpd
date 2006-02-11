@@ -88,8 +88,7 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
             lrf = conn.getCurrentDirectory().getFile(dirname);
         } catch (FileNotFoundException e1) {
             try {
-                lrf = conn.getGlobalContext().getConnectionManager()
-                          .getGlobalContext().getRoot().lookupFile(dirname);
+                lrf = conn.getGlobalContext().getRoot().lookupFile(dirname);
             } catch (FileNotFoundException e2) {
                 reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
                         "help.archive", env));
@@ -176,8 +175,7 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
 
             try {
                 RemoteSlave rslave = conn.getGlobalContext()
-                                         .getConnectionManager()
-                                         .getGlobalContext().getSlaveManager()
+                                         .getSlaveManager()
                                          .getRemoteSlave(slavename);
                 slaveSet.add(rslave);
             } catch (ObjectNotFoundException e2) {
@@ -241,7 +239,7 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
         Archive archive;
 
         try {
-            archive = (Archive) conn.getGlobalContext().getConnectionManager().getGlobalContext().getFtpListener(Archive.class);
+            archive = (Archive) conn.getGlobalContext().getFtpListener(Archive.class);
         } catch (ObjectNotFoundException e) {
             reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
                     "archive.loadarchive", env));

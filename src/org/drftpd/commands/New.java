@@ -53,8 +53,7 @@ public class New implements CommandHandler, CommandHandlerFactory {
     public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException {
         Reply reply = new Reply(200);
-        Collection sections = conn.getGlobalContext().getConnectionManager()
-                                  .getGlobalContext().getSectionManager()
+        Collection sections = conn.getGlobalContext().getSectionManager()
                                   .getSections();
         int count = 20;
 

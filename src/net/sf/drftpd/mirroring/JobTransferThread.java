@@ -17,8 +17,6 @@
  */
 package net.sf.drftpd.mirroring;
 
-import java.util.Random;
-
 import org.apache.log4j.Logger;
 
 /**

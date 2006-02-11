@@ -24,7 +24,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
 import org.apache.log4j.Logger;
-import org.drftpd.usermanager.javabeans.BeanUser;
 
 /**
  * @author mog
@@ -67,7 +66,7 @@ public class SafeFileOutputStream extends OutputStream {
     	_out.close();
 		_out = null;
         if (!failed) {
-            Logger.getLogger(SafeFileOutputStream.class).debug("Renaming " +
+            logger.debug("Renaming " +
                 _tempFile + " (" + _tempFile.length() + ") to " + _actualFile);
 
             if (_actualFile.exists() && !_actualFile.delete()) {

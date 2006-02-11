@@ -21,7 +21,6 @@ import java.beans.XMLEncoder;
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.apache.log4j.Logger;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.usermanager.AbstractUser;
@@ -38,7 +37,6 @@ public class BeanUser extends AbstractUser implements Serializable {
 	private BeanUserManager _um;
 	private String _password = "";
 	private boolean _purged;
-	private static final Logger logger = Logger.getLogger(BeanUser.class);
 
 	public BeanUser(String username) {
 		super(username);

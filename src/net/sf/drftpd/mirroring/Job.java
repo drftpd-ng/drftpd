@@ -18,11 +18,9 @@ package net.sf.drftpd.mirroring;
 
 
 import java.io.FileNotFoundException;
-import java.net.SocketException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import net.sf.drftpd.FileExistsException;

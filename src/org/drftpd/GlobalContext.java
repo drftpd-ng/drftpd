@@ -21,7 +21,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
@@ -269,7 +268,7 @@ public class GlobalContext {
      */
     private void loadSlaveManager(Properties cfg) throws SlaveFileException {
         /** register slavemanager **/
-        _slaveManager = new SlaveManager(cfg, this);
+        _slaveManager = new SlaveManager(cfg);
     }
 
     private void listenForSlaves() {

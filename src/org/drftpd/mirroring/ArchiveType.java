@@ -40,9 +40,6 @@ import org.drftpd.mirroring.archivetypes.OfflineSlaveException;
 import org.drftpd.plugins.Archive;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
-import org.drftpd.sections.def.SectionManager.Section;
-
-import sun.security.krb5.internal.r;
 
 
 /**

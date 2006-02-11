@@ -47,7 +47,6 @@ public class Archive extends FtpListener {
     private static final Logger logger = Logger.getLogger(Archive.class);
     private Properties _props;
     private long _cycleTime;
-    private boolean _isStopped = false;
     private HashSet<ArchiveHandler> _archiveHandlers = new HashSet<ArchiveHandler>();
     private TimerTask _runHandler = null;
     public Archive() {

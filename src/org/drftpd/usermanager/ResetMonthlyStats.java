@@ -91,7 +91,6 @@ public class ResetMonthlyStats {
 
         public CM(Properties cfg, String cfgFileName) {
             _gctx = new DummyGlobalContext();
-            super._gctx = _gctx;
             _gctx.loadUserManager(cfg, cfgFileName);
             _gctx.loadPlugins(cfg);
         }

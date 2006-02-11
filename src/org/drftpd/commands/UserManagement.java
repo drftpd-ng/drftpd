@@ -27,18 +27,16 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.MissingResourceException;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
-import java.util.Properties;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import org.drftpd.master.ConnectionManager;
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.ReplacerUtils;
 
@@ -50,7 +48,6 @@ import org.drftpd.dynamicdata.Key;
 import org.drftpd.permissions.Permission;
 import org.drftpd.plugins.Statistics;
 import org.drftpd.slave.Transfer;
-import org.drftpd.slave.TransferFailedException;
 import org.drftpd.usermanager.HostMask;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;

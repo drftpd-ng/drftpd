@@ -23,11 +23,9 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
-import org.drftpd.plugins.SiteBot;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import f00f.net.irc.martyr.commands.MessageCommand;
 
@@ -44,7 +42,6 @@ public class Ident extends IRCCommand {
 	public ArrayList<String> doIdent(String args, MessageCommand msgc) {
 	    ArrayList<String> out = new ArrayList<String>();
 	    out.add("");
-		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		
 		StringTokenizer st = new StringTokenizer(args);
 		if (st.countTokens() < 2)

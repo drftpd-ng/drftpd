@@ -77,8 +77,6 @@ public class SlaveManager implements Runnable {
 	
 	protected static final int actualTimeout = 60000; // one minute, evaluated on a SocketTimeout
 
-	protected GlobalContext _gctx;
-
 	protected List<RemoteSlave> _rslaves = new ArrayList<RemoteSlave>();
 
 	private int _port;
@@ -91,10 +89,9 @@ public class SlaveManager implements Runnable {
 
 	private boolean _sslSlaves;
 
-	public SlaveManager(Properties p, GlobalContext gctx)
+	public SlaveManager(Properties p)
 			throws SlaveFileException {
 		this();
-		_gctx = gctx;
 		_port = Integer.parseInt(PropertyHelper.getProperty(p,
 				"master.bindport"));
 		_sslSlaves = p.getProperty("master.slaveSSL", "false").equalsIgnoreCase("true");
@@ -190,8 +187,7 @@ public class SlaveManager implements Runnable {
 				saveFilelist();
 
 				try {
-					getGlobalContext().getConnectionManager()
-							.getGlobalContext().getUserManager().saveAll();
+					getGlobalContext().getUserManager().saveAll();
 				} catch (UserFileException e) {
 					logger.warn("", e);
 				}
@@ -237,7 +233,7 @@ public class SlaveManager implements Runnable {
 			map.put(size, rslave);
 		}
 
-		ArrayList sorted = new ArrayList(map.keySet());
+		ArrayList<Long> sorted = new ArrayList<Long>(map.keySet());
 
 		if (ascending) {
 			Collections.sort(sorted);
@@ -261,8 +257,7 @@ public class SlaveManager implements Runnable {
 	}
 
 	public RemoteSlave findSmallestFreeSlave() {
-		Collection slaveList = getGlobalContext().getConnectionManager()
-				.getGlobalContext().getSlaveManager().getSlaves();
+		Collection slaveList = getSlaves();
 		long smallSize = Integer.MAX_VALUE;
 		RemoteSlave smallSlave = null;
 
@@ -306,7 +301,8 @@ public class SlaveManager implements Runnable {
 
 	public HashMap getAllStatusArray() {
 		//SlaveStatus[] ret = new SlaveStatus[getSlaves().size()];
-		HashMap ret = new HashMap(getSlaves().size());
+		HashMap<String, SlaveStatus> ret = 
+			new HashMap<String, SlaveStatus>(getSlaves().size());
 
 		for (Iterator<RemoteSlave> iter = getSlaves().iterator(); iter
 				.hasNext();) {
@@ -315,7 +311,7 @@ public class SlaveManager implements Runnable {
 			try {
 				ret.put(rslave.getName(), rslave.getSlaveStatus());
 			} catch (SlaveUnavailableException e) {
-				ret.put(rslave.getName(), (Object) null);
+				ret.put(rslave.getName(), null);
 			}
 		}
 
@@ -367,11 +363,7 @@ public class SlaveManager implements Runnable {
 	}
 
 	public GlobalContext getGlobalContext() {
-		if (_gctx == null) {
-			throw new NullPointerException();
-		}
-
-		return _gctx;
+		return GlobalContext.getGlobalContext();
 	}
 
 	public RemoteSlave getRemoteSlave(String s) throws ObjectNotFoundException {
@@ -414,8 +406,7 @@ public class SlaveManager implements Runnable {
 			PrintWriter out = new PrintWriter(new SafeFileOutputStream("files.mlst"));
 
 			try {
-				MLSTSerialize.serialize(getGlobalContext()
-						.getConnectionManager().getGlobalContext().getRoot(),
+				MLSTSerialize.serialize(getGlobalContext().getRoot(),
 						out);
 			} finally {
 				out.close();

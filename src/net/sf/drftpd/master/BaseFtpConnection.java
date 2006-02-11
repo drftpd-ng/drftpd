@@ -36,7 +36,6 @@ import java.util.Map;
 import javax.net.ssl.SSLSocket;
 
 import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.ConnectionEvent;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
@@ -105,15 +104,13 @@ public class BaseFtpConnection implements Runnable {
     protected boolean _stopRequest = false;
     protected String _stopRequestMessage;
     protected Thread _thread;
-    protected GlobalContext _gctx;
     protected String _user;
 
     protected BaseFtpConnection() {
     }
 
-    public BaseFtpConnection(GlobalContext gctx, Socket soc)
+    public BaseFtpConnection(Socket soc)
         throws IOException {
-        _gctx = gctx;
         _commandManager = getGlobalContext().getConnectionManager()
                               .getCommandManagerFactory().initialize(this);
         setControlSocket(soc);
@@ -186,7 +183,7 @@ public class BaseFtpConnection implements Runnable {
     }
 
     public GlobalContext getGlobalContext() {
-        return _gctx;
+        return GlobalContext.getGlobalContext();
     }
 
     public BufferedReader getControlReader() {
@@ -338,7 +335,7 @@ public class BaseFtpConnection implements Runnable {
      */
     public void run() {
         _lastActive = System.currentTimeMillis();
-        if (!getGlobalContext().getConnectionManager().getGlobalContext()
+        if (!GlobalContext.getGlobalContext()
                      .getConfig().getHideIps()) {
             logger.info("Handling new request from " +
                     getClientAddress().getHostAddress());
@@ -359,14 +356,13 @@ public class BaseFtpConnection implements Runnable {
             //		new OutputStreamWriter(_controlSocket.getOutputStream())));
             _controlSocket.setSoTimeout(1000);
 
-            if (getGlobalContext().getConnectionManager().getGlobalContext()
+            if (GlobalContext.getGlobalContext()
                         .isShutdown()) {
-                stop(getGlobalContext().getConnectionManager().getGlobalContext()
+                stop(GlobalContext.getGlobalContext()
                          .getShutdownMessage());
             } else {
                 Reply response = new Reply(220,
-                        getGlobalContext().getConnectionManager()
-                            .getGlobalContext().getConfig().getLoginPrompt());
+                		GlobalContext.getGlobalContext().getConfig().getLoginPrompt());
                 _out.print(response);
             }
 
@@ -504,7 +500,7 @@ public class BaseFtpConnection implements Runnable {
         if (isAuthenticated()) {
             try {
             	// If hideips is on, hide ip but not user/group
-            	if (getGlobalContext().getConnectionManager().getGlobalContext()
+            	if (GlobalContext.getGlobalContext()
                         .getConfig().getHideIps()) {
     				_thread.setName("FtpConn thread " + _thread.getId() + 
     						" servicing " +

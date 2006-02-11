@@ -17,21 +17,18 @@
  */
 package org.drftpd.usermanager;
 
-import net.sf.drftpd.DuplicateElementException;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
-import org.apache.log4j.Logger;
+import net.sf.drftpd.DuplicateElementException;
 
 import org.apache.oro.text.regex.MalformedPatternException;
 
 import socks.server.Ident;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 
 
 /**
@@ -39,7 +36,6 @@ import java.util.Iterator;
  * @version $Id$
  */
 public class HostMaskCollection extends ArrayList {
-    private static final Logger logger = Logger.getLogger(HostMaskCollection.class);
 
     public HostMaskCollection() {
     }

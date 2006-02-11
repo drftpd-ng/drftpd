@@ -17,7 +17,6 @@
  */
 package org.drftpd.master;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
@@ -29,18 +28,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.TimerTask;
-import javax.net.ssl.*;
-import org.drftpd.SSLGetContext;
 
-import net.sf.drftpd.FatalException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.SlaveFileException;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commands.Reply;
@@ -85,14 +79,6 @@ public class ConnectionManager {
         System.out.println("Further logging will be done using (mostly) log4j, check logs/");
 
         try {
-            String cfgFileName;
-
-            if (args.length >= 1) {
-                cfgFileName = args[0];
-            } else {
-                cfgFileName = "drftpd.conf";
-            }
-
             logger.info("Starting ConnectionManager");
 
             Properties cfg = getGlobalContext().getConfig().getProperties();
@@ -317,7 +303,7 @@ public class ConnectionManager {
         	sock = sslsock;
         }*/
 
-        BaseFtpConnection conn = new BaseFtpConnection(getGlobalContext(), sock);
+        BaseFtpConnection conn = new BaseFtpConnection(sock);
         
         
         _conns.add(conn);
