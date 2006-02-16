@@ -79,6 +79,9 @@ public class ConstantMirroring extends ArchiveType {
                 		}
                 	}
                 }
+                if (!getRSlaves().containsAll(slaves)) {
+                	return false;
+                }
 
                 if (slaves.size() != _numOfSlaves) {
                     return false;
