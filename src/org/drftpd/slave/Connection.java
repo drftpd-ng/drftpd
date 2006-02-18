@@ -27,7 +27,7 @@ import java.net.Socket;
  * @author mog
  * @version $Id$
  */
-public abstract class Connection implements Serializable {
+public abstract class Connection {
     public static final int TIMEOUT = 10000;
 
     public abstract Socket connect() throws IOException;
