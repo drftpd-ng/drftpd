@@ -156,6 +156,10 @@ public class JobManagerCommandHandler
 				}
 			}
         }
+        env = new ReplacerEnvironment();
+        env.add("total", treeSet.size());
+		reply.addComment(conn.jprintf(JobManagerCommandHandler.class,
+				"sizeofjobs", env));
         return reply;
     }
 
