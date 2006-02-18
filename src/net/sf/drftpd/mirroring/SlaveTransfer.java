@@ -143,8 +143,6 @@ public class SlaveTransfer {
             } catch (InterruptedException e5) {
             }
         }
-        long srcChecksum = _srcTransfer.getChecksum();
-        long destChecksum = _destTransfer.getChecksum();
         // may as well set the checksum, we know this one is right
         if (_srcTransfer.getChecksum() != 0) {
         	_file.setCheckSum(_srcTransfer.getChecksum());
