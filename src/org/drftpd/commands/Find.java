@@ -228,13 +228,6 @@ public class Find implements CommandHandler, CommandHandlerFactory {
 			return temp;
 		}
 
-		private String getValue(String main, String sub) {
-			int index = main.indexOf(sub);
-			int endIndex = main.indexOf(";", index + 1);
-			String retval = main.substring(index + sub.length(), endIndex);
-
-			return retval;
-		}
 	}
 
 	private static class ActionSendToSlaves implements Action {
