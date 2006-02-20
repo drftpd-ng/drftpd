@@ -49,8 +49,11 @@ public class SafeFileOutputStream extends OutputStream {
         if (dir == null) {
             dir = new File(".");
         }
-
-        _tempFile = File.createTempFile(_actualFile.getName(), null, dir);
+        String prefix = _actualFile.getName();
+        while (prefix.length() < 3) {
+        	prefix = "x" + prefix;
+        }
+        _tempFile = File.createTempFile(prefix, null, dir);
         _out = new OutputStreamWriter(new FileOutputStream(_tempFile), "UTF-8");
     }
 
