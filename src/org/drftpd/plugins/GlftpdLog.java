@@ -33,7 +33,6 @@ import java.util.Locale;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.Nukee;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.event.Event;
@@ -50,8 +49,10 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.SFVFile;
 import org.drftpd.SFVFile.SFVStatus;
-import org.drftpd.commands.Nuke;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.nuke.NukeBeans;
+import org.drftpd.nuke.NukeUtils;
+import org.drftpd.nuke.Nukee;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -365,7 +366,7 @@ public class GlftpdLog extends FtpListener {
             int position = 1;
             long nobodyAmount = 0;
 
-            for (Iterator iter = event.getNukees2().iterator(); iter.hasNext();) {
+            for (Iterator iter = NukeBeans.getNukeeList(event.getNukeData()).iterator(); iter.hasNext();) {
                 Nukee stat = (Nukee) iter.next();
 
                 User raceuser;
@@ -383,7 +384,7 @@ public class GlftpdLog extends FtpListener {
                     continue;
                 }
 
-                long nukedamount = Nuke.calculateNukedAmount(stat.getAmount(),
+                long nukedamount = NukeUtils.calculateNukedAmount(stat.getAmount(),
                         raceuser.getKeyedMap().getObjectFloat(UserManagement.RATIO),
                         event.getMultiplier());
 

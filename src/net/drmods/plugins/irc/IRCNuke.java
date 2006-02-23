@@ -23,18 +23,17 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 import java.util.Map.Entry;
 
 import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.Nukee;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.util.ReplacerUtils;
@@ -43,6 +42,10 @@ import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.Nuke;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.nuke.NukeBeans;
+import org.drftpd.nuke.NukeData;
+import org.drftpd.nuke.NukeUtils;
+import org.drftpd.nuke.Nukee;
 import org.drftpd.plugins.SiteBot;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -123,6 +126,7 @@ public class IRCNuke extends IRCCommand {
 		}
 		String nukemsg = st.nextToken("").trim();
 
+		// try to find the dir
 		LinkedRemoteFileInterface nukeDir;
 		try {
 			nukeDir = LinkedRemoteFile.findLatestDir(getGlobalContext()
@@ -132,13 +136,15 @@ public class IRCNuke extends IRCCommand {
 			out.add(ReplacerUtils.jprintf("nuke.error", env, IRCNuke.class));
 			return out;
 		}
+		
 		String nukeDirPath = nukeDir.getPath();
 		env.add("nukedir", nukeDirPath);
+		
 		// get nukees with string as key
 		Hashtable<String, Long> nukees = new Hashtable<String, Long>();
-		Nuke.nukeRemoveCredits(nukeDir, nukees);
+		NukeUtils.nukeRemoveCredits(nukeDir, nukees);
 
-		// // convert key from String to User ////
+		// convert key from String to User
 		HashMap<User, Long> nukees2 = new HashMap<User, Long>(nukees.size());
 		for (String username : nukees.keySet()) {
 
@@ -165,6 +171,39 @@ public class IRCNuke extends IRCCommand {
 			}
 		}
 
+		long nukeDirSize = 0;
+		long nukedAmount = 0;
+
+		// update credits, nukedbytes, timesNuked, lastNuked
+		// for (Iterator iter = nukees2.keySet().iterator(); iter.hasNext();) {
+		for (Entry<User, Long> nukeeEntry : nukees2.entrySet()) {
+			// User nukee = (User) iter.next();
+			User nukee = nukeeEntry.getKey();
+			long size = nukeeEntry.getValue().longValue();
+
+			long debt = NukeUtils.calculateNukedAmount(size, nukee.getKeyedMap()
+					.getObjectFloat(UserManagement.RATIO), nukemult);
+
+			nukedAmount += debt;
+			nukeDirSize += size;
+			nukee.updateCredits(-debt);
+			nukee.updateUploadedBytes(-size);
+			nukee.getKeyedMap().incrementObjectLong(Nuke.NUKEDBYTES, debt);
+			nukee.getKeyedMap().incrementObjectLong(Nuke.NUKED);
+			nukee.getKeyedMap().setObject(Nuke.LASTNUKED,
+					new Long(System.currentTimeMillis()));
+			try {
+				nukee.commit();
+			} catch (UserFileException e1) {
+				out.add("Error writing userfile: " + e1.getMessage());
+				logger.warn("Error writing userfile", e1);
+			}
+		}
+		
+		NukeData nd = 
+			new NukeData(ftpuser.getName(), nukeDirPath, nukemsg, nukees, nukemult, nukedAmount, nukeDirSize);
+		NukeBeans.getNukeBeans().add(nd);		
+
 		// rename
 		String toDirPath;
 		String toName = "[NUKED]-" + nukeDir.getName();
@@ -185,39 +224,8 @@ public class IRCNuke extends IRCCommand {
 					+ ex.getMessage());
 			return out;
 		}
-
-		long nukeDirSize = 0;
-		long nukedAmount = 0;
-
-		// update credits, nukedbytes, timesNuked, lastNuked
-		// for (Iterator iter = nukees2.keySet().iterator(); iter.hasNext();) {
-		for (Entry<User, Long> nukeeEntry : nukees2.entrySet()) {
-			// User nukee = (User) iter.next();
-			User nukee = nukeeEntry.getKey();
-			long size = nukeeEntry.getValue().longValue();
-
-			long debt = Nuke.calculateNukedAmount(size, nukee.getKeyedMap()
-					.getObjectFloat(UserManagement.RATIO), nukemult);
-
-			nukedAmount += debt;
-			nukeDirSize += size;
-			nukee.updateCredits(-debt);
-			nukee.updateUploadedBytes(-size);
-			nukee.getKeyedMap().incrementObjectLong(Nuke.NUKEDBYTES, debt);
-			nukee.getKeyedMap().incrementObjectLong(Nuke.NUKED);
-			nukee.getKeyedMap().setObject(Nuke.LASTNUKED,
-					new Long(System.currentTimeMillis()));
-			try {
-				nukee.commit();
-			} catch (UserFileException e1) {
-				out.add("Error writing userfile: " + e1.getMessage());
-				logger.warn("Error writing userfile", e1);
-			}
-		}
-		NukeEvent nuke = new NukeEvent(ftpuser, "NUKE", nukeDirPath,
-				nukeDirSize, nukedAmount, nukemult, nukemsg, nukees);
-
-		Nuke.getNukeLog().add(nuke);
+				
+		NukeEvent nuke = new NukeEvent(ftpuser, "NUKE", nd);
 		getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);
 		return out;
 	}
@@ -258,16 +266,21 @@ public class IRCNuke extends IRCCommand {
 		
 		String toPath = nukeDir.getParentFileNull().getPath() + "/" + toName;
 		String toDir = nukeDir.getParentFileNull().getPath();
-		NukeEvent nuke;
+		//NukeEvent nuke;
+		NukeData nukeData;
+		NukeBeans nukeBeans = NukeBeans.getNukeBeans();
 		try {
-			nuke = Nuke.getNukeLog().get(toPath);
+			nukeData = nukeBeans.get(toPath);
 		} catch (ObjectNotFoundException ex) {
 			out.add(ex.getMessage());
 			logger.warn(ex);
 			return out;
 		}
-			
-		for (Iterator iter = nuke.getNukees2().iterator(); iter.hasNext();) {
+		
+		// unnuke reason
+		nukeData.setReason(reason);
+		
+		for (Iterator iter = NukeBeans.getNukeeList(nukeData).iterator(); iter.hasNext();) {
 			Nukee nukeeObj = (Nukee) iter.next();
 			String nukeeName = nukeeObj.getUsername();
 			User nukee;
@@ -282,10 +295,10 @@ public class IRCNuke extends IRCCommand {
 				continue;
 			}
 			long nukedAmount =
-				Nuke.calculateNukedAmount(
+				NukeUtils.calculateNukedAmount(
 					nukeeObj.getAmount(),
 					nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO),
-					nuke.getMultiplier());
+					nukeData.getMultiplier());
 
 			nukee.updateCredits(nukedAmount);
 			nukee.updateUploadedBytes(nukeeObj.getAmount());
@@ -300,7 +313,7 @@ public class IRCNuke extends IRCCommand {
 		}//for
 			
 		try {
-			Nuke.getNukeLog().remove(toPath);
+			nukeBeans.remove(toPath);
 		} catch (ObjectNotFoundException e) {
 			logger.warn("Error removing nukelog entry", e);
 		}
@@ -317,19 +330,18 @@ public class IRCNuke extends IRCCommand {
 			
 		try {
 			LinkedRemoteFileInterface reasonDir =
-				nukeDir.getFile("REASON-" + nuke.getReason());
+				nukeDir.getFile("REASON-" + nukeData.getReason());
 			if (reasonDir.isDirectory())
 				reasonDir.delete();
 		} catch (FileNotFoundException e3) {
 			logger.debug(
-				"Failed to delete 'REASON-" + nuke.getReason() + "' dir in UNNUKE",
+				"Failed to delete 'REASON-" + nukeData.getReason() + "' dir in UNNUKE",
 				e3);
 		}
 
-		nuke.setCommand("UNNUKE");
-		nuke.setReason(reason);
-		nuke.setUser(ftpuser);
-		getGlobalContext().getConnectionManager().dispatchFtpEvent(nuke);	
+
+		NukeEvent nukeEvent = new NukeEvent(ftpuser, "UNNUKE", nukeData);
+		getGlobalContext().getConnectionManager().dispatchFtpEvent(nukeEvent);	
 		return out;
 	}
 
@@ -352,21 +364,20 @@ public class IRCNuke extends IRCCommand {
 		if (nukeCount > _maxNukes || nukeCount <= 0)
 			nukeCount = _maxNukes;
 
-		List allNukes = Nuke.getNukeLog().getAll();
+		Collection<NukeData> allNukes = NukeBeans.getNukeBeans().getAll();
 		int count = 0;
 		
 		if (allNukes.size() == 0) {
 			out.add(ReplacerUtils.jprintf("nukes.nonukes", env, IRCNuke.class));
 		} else {
-			for (int i = allNukes.size()-1; i >= 0; i--) {
-			//for (Iterator iter = allNukes.iterator(); iter.hasNext(); ) {
-				if (count >= nukeCount)
+			for (NukeData nuke : allNukes) {
+				if (count < nukeCount)
 					break;
-				NukeEvent nuke = (NukeEvent) allNukes.get(i); //iter.next();
+
 				env.add("nukepath", nuke.getPath());
 				env.add("nukereason", nuke.getReason());
 				env.add("nukemult", Integer.toString(nuke.getMultiplier()));
-				env.add("nuker", nuke.getUser().getName());
+				env.add("nuker", nuke.getUser());
 				SimpleDateFormat dFormat = new SimpleDateFormat("MM/dd/yyyy h:mm a zzz");
 				dFormat.setTimeZone(TimeZone.getDefault());
 				env.add("nuketime", dFormat.format(new Date(nuke.getTime())));

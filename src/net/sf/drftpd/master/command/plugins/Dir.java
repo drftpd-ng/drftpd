@@ -36,7 +36,6 @@ import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.queues.NukeLog;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -45,10 +44,10 @@ import org.drftpd.Checksum;
 import org.drftpd.SFVFile;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
-import org.drftpd.commands.Nuke;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.id3.ID3Tag;
+import org.drftpd.nuke.NukeBeans;
 import org.drftpd.plugins.DIZFile;
 import org.drftpd.plugins.DIZPlugin;
 import org.drftpd.plugins.SiteBot;
@@ -513,10 +512,10 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 			toPath = toPath2.toString();
 		}
 		// Try Nuke, then if that doesn't work, try TDPSiteNuke.
-		NukeLog _nukelog = Nuke.getNukeLog();
-		if (_nukelog != null && _nukelog.find_fullpath(toPath)) {
+		NukeBeans nukeBeans = NukeBeans.getNukeBeans();
+		if (nukeBeans != null && nukeBeans.findPath(toPath)) {
 			try {
-				String reason = _nukelog.get(toPath).getReason();
+				String reason = nukeBeans.get(toPath).getReason();
 				return new Reply(530,
 						"Access denied - Directory already nuked for '"
 								+ reason + "'");

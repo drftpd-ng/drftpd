@@ -18,37 +18,32 @@
 package org.drftpd.commands;
 
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.Nukee;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.queues.NukeLog;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
-import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
+import org.drftpd.nuke.NukeBeans;
+import org.drftpd.nuke.NukeData;
+import org.drftpd.nuke.NukeUtils;
+import org.drftpd.nuke.Nukee;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.input.SAXBuilder;
 
 /**
  * nukedamount -> amount after multiplier
@@ -64,37 +59,8 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
     private static final Logger logger = Logger.getLogger(Nuke.class);
     public static final Key LASTNUKED = new Key(Nuke.class, "lastNuked",
             Long.class);
-    private static NukeLog _nukelog;
 
     public Nuke() {
-    }
-
-    public static long calculateNukedAmount(long size, float ratio,
-        int multiplier) {
-        return (long) ((size * ratio) + (size * (multiplier - 1)));
-    }
-
-    public static void nukeRemoveCredits(LinkedRemoteFileInterface nukeDir,
-        Hashtable<String,Long> nukees) {
-        for (Iterator iter = nukeDir.getFiles().iterator(); iter.hasNext();) {
-            LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
-
-            if (file.isDirectory()) {
-                nukeRemoveCredits(file, nukees);
-            }
-
-            if (file.isFile()) {
-                String owner = file.getUsername();
-                Long total = (Long) nukees.get(owner);
-
-                if (total == null) {
-                    total = new Long(0);
-                }
-
-                total = new Long(total.longValue() + file.length());
-                nukees.put(owner, total);
-            }
-        }
     }
 
     /**
@@ -178,7 +144,7 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
 
         //get nukees with string as key
         Hashtable<String,Long> nukees = new Hashtable<String,Long>();
-        nukeRemoveCredits(nukeDir, nukees);
+        NukeUtils.nukeRemoveCredits(nukeDir, nukees);
 
         Reply response = new Reply(200, "NUKE suceeded");
 
@@ -221,32 +187,6 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
             }
         }
 
-        //rename
-        String toDirPath;
-        String toName = "[NUKED]-" + nukeDir.getName();
-
-        try {
-            toDirPath = nukeDir.getParentFile().getPath();
-        } catch (FileNotFoundException ex) {
-            logger.fatal("", ex);
-
-            return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
-        }
-
-        try {
-            nukeDir.renameTo(toDirPath, toName);
-            nukeDir.createDirectory(conn.getUserNull().getName(),
-                conn.getUserNull().getGroup(), "REASON-" + reason);
-        } catch (IOException ex) {
-            logger.warn("", ex);
-            response.addComment(" cannot rename to \"" + toDirPath + "/" +
-                toName + "\": " + ex.getMessage());
-            response.setCode(500);
-            response.setMessage("NUKE failed");
-
-            return response;
-        }
-
         long nukeDirSize = 0;
         long nukedAmount = 0;
 
@@ -260,7 +200,7 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
 
             long size = ((Long) nukees2.get(nukee)).longValue();
 
-            long debt = calculateNukedAmount(size,
+            long debt = NukeUtils.calculateNukedAmount(size,
                     nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO), multiplier);
 
             nukedAmount += debt;
@@ -283,10 +223,37 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
             response.addComment(nukee.getName() + " " +
                 Bytes.formatBytes(debt));
         }
+        
+        NukeData nd = 
+			new NukeData(conn.getUserNull().getName(), nukeDirPath, reason, nukees, multiplier, nukedAmount, nukeDirSize);
 
-        NukeEvent nuke = new NukeEvent(conn.getUserNull(), "NUKE", nukeDirPath,
-                nukeDirSize, nukedAmount, multiplier, reason, nukees);
-        getNukeLog().add(nuke);
+        NukeEvent nuke = new NukeEvent(conn.getUserNull(), "NUKE", nd);
+        NukeBeans.getNukeBeans().add(nd);
+        
+        //rename
+        String toDirPath;
+        String toName = "[NUKED]-" + nukeDir.getName();
+        try {
+            toDirPath = nukeDir.getParentFile().getPath();
+        } catch (FileNotFoundException ex) {
+            logger.fatal("", ex);
+
+            return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
+        }
+        try {
+            nukeDir.renameTo(toDirPath, toName);
+            nukeDir.createDirectory(conn.getUserNull().getName(),
+                conn.getUserNull().getGroup(), "REASON-" + reason);
+        } catch (IOException ex) {
+            logger.warn("", ex);
+            response.addComment(" cannot rename to \"" + toDirPath + "/" +
+                toName + "\": " + ex.getMessage());
+            response.setCode(500);
+            response.setMessage("NUKE failed");
+
+            return response;
+        }
+        
         conn.getGlobalContext().dispatchFtpEvent(nuke);
 
         return response;
@@ -295,8 +262,8 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
     private Reply doSITE_NUKES(BaseFtpConnection conn) {
         Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
 
-        for (Iterator iter = getNukeLog().getAll().iterator(); iter.hasNext();) {
-            response.addComment(iter.next());
+        for (NukeData nd : NukeBeans.getNukeBeans().getAll()) {
+            response.addComment(nd.toString());
         }
 
         return response;
@@ -361,10 +328,10 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
         conn.getGlobalContext().getSlaveManager().cancelTransfersInDirectory(nukeDir);
 
         Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
-        NukeEvent nuke;
+        NukeData nukeData;
 
         try {
-            nuke = getNukeLog().get(toPath);
+            nukeData = NukeBeans.getNukeBeans().get(toPath);
         } catch (ObjectNotFoundException ex) {
             response.addComment(ex.getMessage());
 
@@ -375,7 +342,7 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
         //		for (Iterator iter = nuke.getNukees().entrySet().iterator();
         //			iter.hasNext();
         //			) {
-        for (Iterator iter = nuke.getNukees2().iterator(); iter.hasNext();) {
+        for (Iterator iter = NukeBeans.getNukeeList(nukeData).iterator(); iter.hasNext();) {
             //Map.Entry entry = (Map.Entry) iter.next();
             Nukee nukeeObj = (Nukee) iter.next();
 
@@ -396,9 +363,9 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
                 continue;
             }
 
-            long nukedAmount = calculateNukedAmount(nukeeObj.getAmount(),
+            long nukedAmount = NukeUtils.calculateNukedAmount(nukeeObj.getAmount(),
                     nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO),
-                    nuke.getMultiplier());
+                    nukeData.getMultiplier());
 
             nukee.updateCredits(nukedAmount);
             nukee.updateUploadedBytes(nukeeObj.getAmount());
@@ -419,7 +386,7 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
         }
 
         try {
-            getNukeLog().remove(toPath);
+            NukeBeans.getNukeBeans().remove(toPath);
         } catch (ObjectNotFoundException e) {
             response.addComment("Error removing nukelog entry");
         }
@@ -437,31 +404,26 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
 
         try {
             LinkedRemoteFileInterface reasonDir = nukeDir.getFile("REASON-" +
-                    nuke.getReason());
+                    nukeData.getReason());
 
             if (reasonDir.isDirectory()) {
                 reasonDir.delete();
             }
         } catch (FileNotFoundException e3) {
-            logger.debug("Failed to delete 'REASON-" + nuke.getReason() +
+            logger.debug("Failed to delete 'REASON-" + nukeData.getReason() +
                 "' dir in UNNUKE", e3);
         }
-
-        nuke.setCommand("UNNUKE");
-        nuke.setReason(reason);
-        nuke.setUser(conn.getUserNull());
-        conn.getGlobalContext().dispatchFtpEvent(nuke);
+        nukeData.setReason(reason);
+        NukeEvent nukeEvent = new NukeEvent(conn.getUserNull(), "UNNUKE", nukeData);
+        conn.getGlobalContext().dispatchFtpEvent(nukeEvent);
 
         return response;
     }
 
     public Reply execute(BaseFtpConnection conn)
         throws UnhandledCommandException, ImproperUsageException {
-        if (_nukelog == null) {
-            return new Reply(500, "You must reconnect to use NUKE");
-        }
 
-        String cmd = conn.getRequest().getCommand();
+    	String cmd = conn.getRequest().getCommand();
 
         if ("SITE NUKE".equals(cmd)) {
             return doSITE_NUKE(conn);
@@ -482,63 +444,15 @@ public class Nuke implements CommandHandler, CommandHandlerFactory {
         return null;
     }
 
-    public static NukeLog getNukeLog() {
-        return _nukelog;
-    }
-
     public CommandHandler initialize(BaseFtpConnection conn,
         CommandManager initializer) {
         return this;
     }
 
     public void load(CommandManagerFactory initializer) {
-        _nukelog = new NukeLog();
-
-        try {
-            Document doc = new SAXBuilder().build(new FileReader("nukelog.xml"));
-            List nukes = doc.getRootElement().getChildren();
-
-            for (Iterator iter = nukes.iterator(); iter.hasNext();) {
-                Element nukeElement = (Element) iter.next();
-
-                User user = GlobalContext.getGlobalContext()
-                                       .getUserManager().getUserByName(nukeElement.getChildText(
-                            "user"));
-                String directory = nukeElement.getChildText("path");
-                long time = Long.parseLong(nukeElement.getChildText("time"));
-                int multiplier = Integer.parseInt(nukeElement.getChildText(
-                            "multiplier"));
-                String reason = nukeElement.getChildText("reason");
-
-                long size = Long.parseLong(nukeElement.getChildText("size"));
-                long nukedAmount = Long.parseLong(nukeElement.getChildText(
-                            "nukedAmount"));
-
-                Map<String,Long> nukees = new Hashtable<String,Long>();
-                List nukeesElement = nukeElement.getChild("nukees").getChildren("nukee");
-
-                for (Iterator iterator = nukeesElement.iterator();
-                        iterator.hasNext();) {
-                    Element nukeeElement = (Element) iterator.next();
-                    String nukeeUsername = nukeeElement.getChildText("username");
-                    Long nukeeAmount = new Long(nukeeElement.getChildText(
-                                "amount"));
-
-                    nukees.put(nukeeUsername, nukeeAmount);
-                }
-
-                _nukelog.add(new NukeEvent(user, "NUKE", directory, time, size,
-                        nukedAmount, multiplier, reason, nukees));
-            }
-        } catch (FileNotFoundException ex) {
-            logger.log(Level.DEBUG,
-                "nukelog.xml not found, will create it after first nuke.");
-        } catch (Exception ex) {
-            logger.log(Level.INFO, "Error loading nukelog from nukelog.xml", ex);
-        }
+    	NukeBeans.newInstance();
     }
 
-    public void unload() {
-        _nukelog = null;
-    }
+	public void unload() {
+	}
 }

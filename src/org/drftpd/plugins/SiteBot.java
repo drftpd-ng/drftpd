@@ -37,7 +37,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
@@ -46,7 +46,6 @@ import java.util.StringTokenizer;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.Nukee;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
@@ -71,12 +70,15 @@ import org.drftpd.PropertyHelper;
 import org.drftpd.SFVFile;
 import org.drftpd.Time;
 import org.drftpd.SFVFile.SFVStatus;
-import org.drftpd.commands.Nuke;
 import org.drftpd.commands.TransferStatistics;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.misc.CaseInsensitiveHashMap;
+import org.drftpd.nuke.NukeBeans;
+import org.drftpd.nuke.NukeData;
+import org.drftpd.nuke.NukeUtils;
+import org.drftpd.nuke.Nukee;
 import org.drftpd.permissions.Permission;
 import org.drftpd.remotefile.FileUtils;
 import org.drftpd.remotefile.LinkedRemoteFile;
@@ -148,20 +150,6 @@ public class SiteBot extends FtpListener implements Observer {
         new File("logs").mkdirs();
         Debug.setOutputStream(new PrintStream(
                 new FileOutputStream("logs/sitebot.log", true)));
-    }
-
-    public static ArrayList<Nukee> map2nukees(Map nukees) {
-        ArrayList<Nukee> ret = new ArrayList<Nukee>();
-
-        for (Iterator iter = nukees.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry element = (Map.Entry) iter.next();
-            ret.add(new Nukee((String) element.getKey(),
-                    ((Long) element.getValue()).longValue()));
-        }
-
-        Collections.sort(ret);
-
-        return ret;
     }
 
     public static Collection<GroupPosition> topFileGroup(Collection files) {
@@ -678,9 +666,11 @@ public class SiteBot extends FtpListener implements Observer {
 
     private void actionPerformedNuke(NukeEvent event) throws FormatterException {
         String cmd = event.getCommand();
+        NukeData nukeData = event.getNukeData();
         SectionInterface section = getGlobalContext().getSectionManager()
                                       .lookup(event.getPath());
         ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
+        
         env.add("size", Bytes.formatBytes(event.getSize()));
         env.add("section", section.getName());
 
@@ -692,7 +682,7 @@ public class SiteBot extends FtpListener implements Observer {
         env.add("user", event.getUser().getName());
         env.add("group", event.getUser().getGroup());
 
-        //env.add("nukees", event.getNukees().keySet());
+        List<Nukee> nukees = NukeBeans.getNukeeList(nukeData);
         if (cmd.equals("NUKE")) {
             say(section, ReplacerUtils.jprintf("nuke", env, SiteBot.class));
 
@@ -702,7 +692,7 @@ public class SiteBot extends FtpListener implements Observer {
             int position = 1;
             long nobodyAmount = 0;
 
-            for (Iterator iter = event.getNukees2().iterator(); iter.hasNext();) {
+            for (Iterator iter = nukees.iterator(); iter.hasNext();) {
                 Nukee stat = (Nukee) iter.next();
 
                 User raceuser;
@@ -728,7 +718,7 @@ public class SiteBot extends FtpListener implements Observer {
                 raceenv.add("position", "" + position++);
                 raceenv.add("size", Bytes.formatBytes(stat.getAmount()));
 
-                long nukedamount = Nuke.calculateNukedAmount(stat.getAmount(),
+                long nukedamount = NukeUtils.calculateNukedAmount(stat.getAmount(),
                         raceuser.getKeyedMap().getObjectFloat(UserManagement.RATIO),
                         event.getMultiplier());
                 raceenv.add("nukedamount", Bytes.formatBytes(nukedamount));
@@ -755,7 +745,7 @@ public class SiteBot extends FtpListener implements Observer {
             int position = 1;
             long nobodyAmount = 0;
 
-            for (Iterator iter = event.getNukees2().iterator(); iter.hasNext();) {
+            for (Iterator iter = nukees.iterator(); iter.hasNext();) {
                 Nukee stat = (Nukee) iter.next();
 
                 User raceuser;
@@ -781,7 +771,7 @@ public class SiteBot extends FtpListener implements Observer {
                 raceenv.add("position", "" + position++);
                 raceenv.add("size", Bytes.formatBytes(stat.getAmount()));
 
-                long nukedamount = Nuke.calculateNukedAmount(stat.getAmount(),
+                long nukedamount = NukeUtils.calculateNukedAmount(stat.getAmount(),
                         raceuser.getKeyedMap().getObjectFloat(UserManagement.RATIO),
                         event.getMultiplier());
                 raceenv.add("nukedamount", Bytes.formatBytes(nukedamount));
