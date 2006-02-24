@@ -50,8 +50,10 @@ public class RemoteTransfer {
         _status = ci.getTransferStatus();
     }
 
-    public synchronized void updateTransferStatus(TransferStatus ts) {
-        _status = ts;
+    public void updateTransferStatus(TransferStatus ts) {
+    	synchronized (_rslave) {
+    		_status = ts;
+    	}
     }
 
     public char getState() {
@@ -116,15 +118,17 @@ public class RemoteTransfer {
         return _address;
     }
 
-    public synchronized void abort(String reason) {
-    	if (_status.isFinished()) {
-    		// no need to abort a transfer that isn't transferring
-    		return;
-    	}
-        try {
-			_rslave.issueAbortToSlave(getTransferIndex(),reason);
-		} catch (SlaveUnavailableException e) {
-			_status = new TransferStatus(getTransferIndex(), e);
+    public void abort(String reason) {
+    	synchronized (_rslave) {
+			if (_status.isFinished()) {
+				// no need to abort a transfer that isn't transferring
+				return;
+			}
+			try {
+				_rslave.issueAbortToSlave(getTransferIndex(), reason);
+			} catch (SlaveUnavailableException e) {
+				_status = new TransferStatus(getTransferIndex(), e);
+			}
 		}
     }
 
