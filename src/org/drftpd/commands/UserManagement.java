@@ -655,12 +655,13 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             }
 
             int idleTime = Integer.parseInt(commandArguments[0]);
+            env.add("oldidletime", ""+userToChange.getIdleTime());
             logger.info("'" + conn.getUserNull().getName() +
                 "' changed idle_time for '" + userToChange.getName() +
                 "' from '" + userToChange.getIdleTime() + " to '" + idleTime +
                 "'");
             userToChange.setIdleTime(idleTime);
-            env.add("idletime", ""+idleTime);
+            env.add("newidletime", ""+idleTime);
             response.addComment(conn.jprintf(UserManagement.class,
                     "changeidletime.success", env));
         } else if ("num_logins".equals(command)) {
