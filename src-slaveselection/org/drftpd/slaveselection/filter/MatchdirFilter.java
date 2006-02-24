@@ -48,13 +48,10 @@ import org.drftpd.usermanager.User;
  */
 public class MatchdirFilter extends Filter {
     private ArrayList<AssignSlave> _assigns;
-    private FilterChain _fc;
     private Pattern _p;
     private Perl5Matcher _m = new Perl5Matcher();
 
     public MatchdirFilter(FilterChain fc, int i, Properties p) {
-        _fc = fc;
-
         try {
             _assigns = parseAssign(PropertyHelper.getProperty(p, i + ".assign"), fc.getGlobalContext().getSlaveManager());
             _p = new GlobCompiler().compile(PropertyHelper.getProperty(p,

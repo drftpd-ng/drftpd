@@ -140,7 +140,7 @@ public abstract class VirtualFileSystemInode {
 	}
 
 	protected void rename(String destination) throws FileExistsException {
-		if (!destination.startsWith(getVFS().pathSeparator)) {
+		if (!destination.startsWith(VirtualFileSystem.pathSeparator)) {
 			throw new IllegalArgumentException("Accepts a full path and name");
 		}
 		try {

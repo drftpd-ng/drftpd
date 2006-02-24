@@ -17,19 +17,16 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import org.apache.log4j.Logger;
+import java.net.InetAddress;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Properties;
 
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.User;
-
-import java.net.InetAddress;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Properties;
 
 
 /**
@@ -38,7 +35,6 @@ import java.util.Properties;
  * @version $Id: BandwidthFilter.java 936 2005-01-31 22:25:52Z mog $
  */
 public class BandwidthFilter extends Filter {
-    private static final Logger logger = Logger.getLogger(BandwidthFilter.class);
     protected float _multiplier;
 
     public BandwidthFilter(FilterChain ssm, int i, Properties p) {

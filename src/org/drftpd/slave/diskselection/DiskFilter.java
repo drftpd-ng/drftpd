@@ -21,8 +21,6 @@ package org.drftpd.slave.diskselection;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.drftpd.slave.RootCollection;
-
 /**
  * Generic interface.
  * @author fr0w

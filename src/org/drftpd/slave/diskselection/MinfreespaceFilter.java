@@ -36,8 +36,8 @@ import org.drftpd.slave.Root;
  * </pre>
  *
  * Works like this:
- * if(diskfree > minfreespace) {
- *   addScore((minfreespace - diskfree) * multiplier)
+ * if(diskfree < minfreespace) {
+ *   addScore(-((minfreespace - diskfree) * multiplier))
  * }
  * @author fr0w
  */

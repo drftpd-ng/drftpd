@@ -179,7 +179,7 @@ public class VirtualFileSystem {
 			}
 		}
 		if (!file.delete()) {
-			logger.error("Could not local entry " + file.getAbsolutePath()
+			logger.error("Could not delete local entry " + file.getAbsolutePath()
 					+ ", check permissions");
 		}
 	}

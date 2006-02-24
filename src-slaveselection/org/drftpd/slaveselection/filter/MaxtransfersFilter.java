@@ -17,22 +17,18 @@
  */
 package org.drftpd.slaveselection.filter;
 
+import java.net.InetAddress;
+import java.util.Iterator;
+import java.util.Properties;
+
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.master.config.FtpConfig;
 
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.master.RemoteTransfer;
-
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.User;
-
-import java.net.InetAddress;
-
-import java.util.Iterator;
-import java.util.Properties;
 
 
 /**

@@ -21,6 +21,7 @@ import net.sf.drftpd.NoAvailableSlaveException;
 
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 import org.drftpd.usermanager.User;
 
 import java.net.InetAddress;
@@ -43,7 +44,7 @@ public class CycleFilter extends Filter {
     public void process(ScoreChart scorechart, User user, InetAddress peer,
         char direction, LinkedRemoteFileInterface dir, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException {
-        ArrayList tempList = new ArrayList(scorechart.getSlaveScores());
+        ArrayList<SlaveScore> tempList = new ArrayList<SlaveScore>(scorechart.getSlaveScores());
 
         while (true) {
             if (tempList.isEmpty()) {
@@ -51,7 +52,7 @@ public class CycleFilter extends Filter {
             }
 
             ScoreChart.SlaveScore first = (ScoreChart.SlaveScore) tempList.get(0);
-            ArrayList equalList = new ArrayList();
+            ArrayList<SlaveScore> equalList = new ArrayList<SlaveScore>();
             equalList.add(first);
             tempList.remove(first);
 
