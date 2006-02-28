@@ -22,35 +22,63 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.beans.XMLEncoder;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.master.RemoteSlave;
 
 public class VirtualFileSystemFile extends VirtualFileSystemInode {
+	
+	protected static final Collection<String> transientListFile = Arrays
+	.asList(new String[] { "lastModified", "name", "parent", "xfertime", "checksum" });
 
-	private long _checksum = 0;
+	public static final Key CRC = new Key(VirtualFileSystemFile.class, "checksum", Long.class);
+	public static final Key MD5 = new Key(VirtualFileSystemFile.class, "md5", Long.class);
+	public static final Key XFERTIME = new Key(VirtualFileSystemFile.class, "xfertime", Long.class);
 
-	protected Set<RemoteSlave> _slaves;
-
-	private long _xfertime = 0;
-
-	public VirtualFileSystemFile(String username, String group, long size) {
-		super(username, group, size);
-		_slaves = new HashSet<RemoteSlave>();
-		_xfertime = 0;
+	protected Set<String> _slaves;
+	
+	public synchronized Set<String> getSlaves() {
+		return new HashSet<String>(_slaves);
+	}
+	
+	@Override
+	public String toString() {
+		StringBuffer ret = new StringBuffer();
+		ret.append("File" + super.toString() + "[slaves=");
+		for (String slave : getSlaves()) {
+			ret.append(slave + ",");
+		}
+		ret.replace(ret.length()-1,ret.length()-1, "]");
+		return ret.toString();
+	}
+	
+	public synchronized void setSlaves(Set<String> slaves) {
+		_slaves = slaves;
 	}
 
-	public synchronized void addSlave(RemoteSlave rslave) {
+	public VirtualFileSystemFile(String username, String group, long size, String initialSlave) {
+		this(username, group, size, new HashSet<String>(Arrays.asList(new String[] { initialSlave })));
+	}
+	
+	public VirtualFileSystemFile(String username, String group, long size, Set<String> slaves) {
+		super(username, group, size);
+		_slaves = slaves;
+	}
+
+	public synchronized void addSlave(String rslave) {
 		_slaves.add(rslave);
 	}
 
 	public long getChecksum() {
-		return _checksum;
+		return getKeyedMap().getObjectLong(CRC);
 	}
 
 	public long getXfertime() {
-		return _xfertime;
+		return getKeyedMap().getObjectLong(XFERTIME);
 	}
 
 	public synchronized void removeSlave(RemoteSlave rslave) {
@@ -61,7 +89,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 	}
 
 	public void setChecksum(long checksum) {
-		_checksum = checksum;
+		getKeyedMap().setObject(CRC, checksum);
 	}
 
 	@Override
@@ -83,11 +111,11 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 		}
 		enc.setPersistenceDelegate(VirtualFileSystemFile.class,
 				new DefaultPersistenceDelegate(new String[] { "username",
-						"group", "size" }));
+						"group", "size" , "slaves" }));
 	}
 
 	public void setXfertime(long xfertime) {
-		_xfertime = xfertime;
+		getKeyedMap().setObject(XFERTIME,xfertime);
 	}
 
 }

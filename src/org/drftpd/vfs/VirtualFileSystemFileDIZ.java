@@ -17,23 +17,40 @@
  */
 package org.drftpd.vfs;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.drftpd.dynamicdata.Key;
+import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.plugins.DIZFile;
 
 public class VirtualFileSystemFileDIZ extends VirtualFileSystemFile {
 
-	private DIZFile _dizFile = null;
+	public static final Key DIZ = new Key(VirtualFileSystemFileDIZ.class,
+			"diz", DIZFile.class);
 
-	public VirtualFileSystemFileDIZ(VirtualFileSystemDirectory parent,
-			String user, String group, long size) {
-		super(user, group, size);
+	public VirtualFileSystemFileDIZ(String username, String group, long size,
+			Set<String> slaves) {
+		super(username, group, size, slaves);
+	}
+
+	public VirtualFileSystemFileDIZ(String username, String group, long size,
+			String initialSlave) {
+		this(username, group, size, new HashSet<String>(Arrays
+				.asList(new String[] { initialSlave })));
 	}
 
 	public DIZFile getDIZFile() {
-		return _dizFile;
+		try {
+			return (DIZFile) getKeyedMap().getObject(DIZ);
+		} catch (KeyNotFoundException e) {
+			return null;
+		}
 	}
 
 	public void setDIZFile(DIZFile dizFile) {
-		_dizFile = dizFile;
+		getKeyedMap().setObject(DIZ, dizFile);
 	}
 
 }

@@ -19,34 +19,29 @@ package org.drftpd.vfs;
 
 import java.beans.XMLEncoder;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
-import java.util.Collection;
 
 import net.sf.drftpd.FileExistsException;
 
 import org.apache.log4j.Logger;
+import org.drftpd.dynamicdata.Key;
+import org.drftpd.dynamicdata.KeyedMap;
+
+import se.mog.io.PermissionDeniedException;
 
 public abstract class VirtualFileSystemInode {
 
 	protected static final Logger logger = Logger
 			.getLogger(VirtualFileSystemInode.class.getName());
 
-	protected static final Collection<String> transientListDirectory = Arrays
-			.asList(new String[] { "lastModified", "name", "parent", "files" });
-
-	protected static final Collection<String> transientListFile = Arrays
-			.asList(new String[] { "lastModified", "name", "parent" });
-
-	protected static final Collection<String> transientListLink = Arrays
-			.asList(new String[] { "lastModified", "name", "parent", "size" });
-
 	public static VirtualFileSystem getVFS() {
 		return VirtualFileSystem.getVirtualFileSystem();
 	}
-
+	
 	public String _group;
-
-	public transient long _lastModified;
+	
+    protected KeyedMap<Key, Object> _keyedMap = new KeyedMap<Key, Object>();
+    
+    public transient long _lastModified;
 
 	public transient String _name;
 
@@ -76,7 +71,7 @@ public abstract class VirtualFileSystemInode {
 	 * slaves being offline and queued deletes
 	 */
 	public void delete() {
-		logger.info("delete(" + getPath() + ")");
+		logger.info("delete(" + this + ")");
 		// GlobalContext.getGlobalContext().getSlaveManager().deleteOnAllSlaves(this);
 		VirtualFileSystem.getVirtualFileSystem().deleteXML(getPath());
 		_parent.removeChild(this);
@@ -89,6 +84,10 @@ public abstract class VirtualFileSystemInode {
 	public String getGroup() {
 		return _group;
 	}
+
+	public KeyedMap<Key, Object> getKeyedMap() {
+    	return _keyedMap;
+    }
 
 	/**
 	 * @return Returns the _lastModified.
@@ -109,6 +108,9 @@ public abstract class VirtualFileSystemInode {
 	 * @return Returns the full path.
 	 */
 	protected String getPath() {
+		if (getParent().getPath().equals(VirtualFileSystem.pathSeparator)) {
+			return VirtualFileSystem.pathSeparator + getName();
+		}
 		return getParent().getPath() + VirtualFileSystem.pathSeparator
 				+ getName();
 	}
@@ -157,11 +159,23 @@ public abstract class VirtualFileSystemInode {
 			throw new RuntimeException(
 					"Error in logic, this should not happen", e);
 		}
+		String fileString = "rename(" + this;
 		_parent.removeChild(this);
-		VirtualFileSystem.getVirtualFileSystem().renameXML(this.getPath(),
-				destinationDir.getPath());
+		try {
+			VirtualFileSystem.getVirtualFileSystem().renameXML(
+					this.getPath(),
+					destinationDir.getPath() + VirtualFileSystem.pathSeparator
+							+ VirtualFileSystem.getLast(destination));
+		} catch (FileNotFoundException e) {
+			// we may be able to handle this
+			throw new RuntimeException("FileSystemError", e);
+		} catch (PermissionDeniedException e) {
+			throw new RuntimeException("FileSystemError", e);
+		}
 		_name = VirtualFileSystem.getLast(destination);
 		destinationDir.addChild(this);
+		fileString = fileString + ",(" + this + ")";
+		logger.info(fileString);
 	}
 
 	/**
@@ -172,6 +186,10 @@ public abstract class VirtualFileSystemInode {
 		_group = group;
 		commit();
 	}
+
+	public void setKeyedMap(KeyedMap<Key, Object> data) {
+    	_keyedMap = data;
+    }
 
 	/**
 	 * @param The
@@ -202,5 +220,18 @@ public abstract class VirtualFileSystemInode {
 	public void setUsername(String user) {
 		_username = user;
 		commit();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuffer ret = new StringBuffer();
+		ret.append("[path=" + getPath() + "]");
+		ret.append("[user,group=" + getUsername() + "," + getGroup() + "]");
+		ret.append("[lastModified=" + getLastModified() + "]");
+		ret.append("[size=" + getSize() + "]");
+		return ret.toString();
 	}
 }

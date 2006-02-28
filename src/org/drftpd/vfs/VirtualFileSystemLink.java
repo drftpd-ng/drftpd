@@ -22,10 +22,15 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.beans.XMLEncoder;
+import java.util.Arrays;
+import java.util.Collection;
 
 public class VirtualFileSystemLink extends VirtualFileSystemInode {
 
 	private String _link;
+	
+	protected static final Collection<String> transientListLink = Arrays
+	.asList(new String[] { "lastModified", "name", "parent", "size" });
 
 	public VirtualFileSystemLink(String user, String group, String link) {
 		super(user, group, link.length());
@@ -36,8 +41,13 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
 		return _link;
 	}
 
-	public void setLink(String link) {
+	public void setLink(String link) {	
 		_link = link;
+	}
+	
+	@Override
+	public String toString() {
+		return "Link" + super.toString() + "[link=" + getLink() + "]";
 	}
 
 	@Override

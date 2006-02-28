@@ -25,12 +25,16 @@ import java.beans.XMLEncoder;
 import java.io.FileNotFoundException;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.TreeMap;
 
 import net.sf.drftpd.FileExistsException;
 
 public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
+
+	protected static final Collection<String> transientListDirectory = Arrays
+			.asList(new String[] { "lastModified", "name", "parent", "files" });
 
 	private transient TreeMap<String, SoftReference<VirtualFileSystemInode>> _files = null;
 
@@ -66,20 +70,22 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		inode.setParent(this);
 		inode.commit();
 		addChild(inode);
-		inode.commit();
+		logger.info("createDirectory(" + inode + ")");
 	}
 
-	public synchronized void createFile(String name, String user, String group)
-			throws FileExistsException {
+	public synchronized void createFile(String name, String user, String group,
+			String initialSlave) throws FileExistsException {
 		if (_files.containsKey(name)) {
 			throw new FileExistsException(name + " already exists");
 		}
-		VirtualFileSystemInode inode = new VirtualFileSystemFile(user, group, 0);
+		VirtualFileSystemInode inode = new VirtualFileSystemFile(user, group,
+				0, initialSlave);
 		inode.setName(name);
 		inode.setParent(this);
 		inode.commit();
 		addChild(inode);
 		commit();
+		logger.info("createFile(" + inode + ")");
 	}
 
 	public synchronized void createLink(String name, String target,
@@ -94,6 +100,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		inode.commit();
 		addChild(inode);
 		commit();
+		logger.info("createLink(" + inode + ")");
 	}
 
 	public Collection<String> getFiles() {
@@ -103,7 +110,8 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	protected synchronized VirtualFileSystemInode getInodeByName(String name)
 			throws FileNotFoundException {
 		if (!_files.containsKey(name)) {
-			throw new FileNotFoundException();
+			throw new FileNotFoundException(name + " does not exist in "
+					+ getPath());
 		}
 		SoftReference<VirtualFileSystemInode> sf = _files.get(name);
 		VirtualFileSystemInode inode = null;
@@ -123,6 +131,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		_files.remove(child.getName());
 		addSize(-child.getSize());
 		setLastModified(System.currentTimeMillis());
+		commit();
 	}
 
 	public synchronized void setFiles(Collection<String> files) {
@@ -151,6 +160,11 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		enc.setPersistenceDelegate(VirtualFileSystemDirectory.class,
 				new DefaultPersistenceDelegate(new String[] { "username",
 						"group" }));
+	}
+
+	@Override
+	public String toString() {
+		return "Directory" + super.toString();
 	}
 
 }

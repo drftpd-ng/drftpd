@@ -25,7 +25,7 @@ public class VirtualFileSystemRoot extends VirtualFileSystemDirectory {
 
 	public VirtualFileSystemRoot(String user, String group) {
 		super(user, group);
-		setName("");
+		setName(VirtualFileSystem.pathSeparator);
 	}
 
 	/*
@@ -56,6 +56,14 @@ public class VirtualFileSystemRoot extends VirtualFileSystemDirectory {
 	@Override
 	protected void addSize(long l) {
 		_size = getSize() + l;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.drftpd.vfs.VirtualFileSystemInode#delete()
+	 */
+	@Override
+	public void delete() {
+		throw new UnsupportedOperationException();
 	}
 
 }

@@ -17,23 +17,36 @@
  */
 package org.drftpd.vfs;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.drftpd.SFVFile;
+import org.drftpd.dynamicdata.Key;
+import org.drftpd.dynamicdata.KeyNotFoundException;
 
 public class VirtualFileSystemFileSFV extends VirtualFileSystemFile {
 
-	private SFVFile _sfvFile = null;
+	public static final Key SFV = new Key(VirtualFileSystemFileSFV.class, "sfv", SFVFile.class);
 
-	public VirtualFileSystemFileSFV(VirtualFileSystemDirectory parent,
-			String user, String group, long size) {
-		super(user, group, size);
+	public VirtualFileSystemFileSFV(String username, String group, long size, Set<String> slaves) {
+		super(username, group, size, slaves);
+	}
+	
+	public VirtualFileSystemFileSFV(String username, String group, long size, String initialSlave) {
+		this(username, group, size, new HashSet<String>(Arrays.asList(new String[] { initialSlave })));
 	}
 
 	public SFVFile getSFVFile() {
-		return _sfvFile;
+		try {
+			return (SFVFile) getKeyedMap().getObject(SFV);
+		} catch (KeyNotFoundException e) {
+			return null;
+		}
 	}
 
 	public void setSFVFile(SFVFile sfvFile) {
-		_sfvFile = sfvFile;
+		getKeyedMap().setObject(SFV, sfvFile);
 	}
 
 }

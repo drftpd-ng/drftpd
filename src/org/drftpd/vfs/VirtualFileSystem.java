@@ -32,6 +32,8 @@ import java.util.Collections;
 import org.apache.log4j.Logger;
 import org.drftpd.io.SafeFileOutputStream;
 
+import se.mog.io.PermissionDeniedException;
+
 public class VirtualFileSystem {
 
 	private static VirtualFileSystem _vfs = null;
@@ -63,7 +65,12 @@ public class VirtualFileSystem {
 	 * Takes /path/dir/name and returns /path/dir
 	 */
 	public static String stripLast(String path) {
-		return path.substring(0, path.lastIndexOf(pathSeparator) - 1);
+		//logger.debug("stripLast(" + path + ")");
+		String toReturn = path.substring(0, path.lastIndexOf(pathSeparator));
+		if (toReturn.equals("")) {
+			return "/";
+		}
+		return toReturn;
 	}
 
 	private VirtualFileSystemRoot _root = null;
@@ -99,9 +106,11 @@ public class VirtualFileSystem {
 	 */
 	protected VirtualFileSystemInode getInodeByPath(String path)
 			throws FileNotFoundException {
-		if (path == "" || path == pathSeparator) {
+		if (path.equals(pathSeparator)) {
 			return _root;
 		}
+		//logger.debug("getInodeByPath(" + path + ")");
+		path = path.substring(1);
 		VirtualFileSystemDirectory walker = _root;
 		VirtualFileSystemInode inode = null;
 		String[] values = path.split(pathSeparator);
@@ -134,7 +143,7 @@ public class VirtualFileSystem {
 	protected VirtualFileSystemInode loadInode(String path)
 			throws FileNotFoundException {
 		String fullPath = fileSystemPath + path;
-		logger.debug("Loading inode - " + fullPath);
+		//logger.debug("Loading inode - " + fullPath);
 		File file = new File(fullPath);
 		File dirFile = null;
 		if (file.isDirectory()) {
@@ -184,9 +193,15 @@ public class VirtualFileSystem {
 		}
 	}
 
-	public void renameXML(String source, String destination) {
+	public void renameXML(String source, String destination) throws FileNotFoundException, PermissionDeniedException {
 		File file = new File(getRealPath(source));
-		file.renameTo(new File(getRealPath(destination)));
+		if (!file.exists()) {
+			throw new FileNotFoundException(source + " cannot be found");
+		}
+		boolean result = file.renameTo(new File(getRealPath(destination)));
+		if (!result) {
+			throw new PermissionDeniedException("Cannot rename " + source + " to " + destination);
+		}
 	}
 
 	protected void writeInode(VirtualFileSystemInode inode) {

@@ -41,7 +41,7 @@ public class VirtualFileSystemTest extends TestCase {
 			if (inode.isDirectory()) {
 				recursiveList((VirtualFileSystemDirectory) inode);
 			}
-			System.out.println(inode.getPath());
+			System.out.println(inode);
 		}
 	}
 
@@ -52,39 +52,23 @@ public class VirtualFileSystemTest extends TestCase {
 		} catch (FileExistsException e) {
 		}
 		try {
-			vfs.getRoot().createFile("testFile", "drftpd", "drftpd");
+			vfs.getRoot().createFile("testFile", "drftpd", "drftpd", "testSlave");
 		} catch (FileExistsException e) {
 		}
 	}
 
 	protected void tearDown() throws Exception {
-	}
-
-	/*
-	 * Test method for 'org.drftpd.vfs.VirtualFileSystem.deleteXML(String)'
-	 */
-	public void testDeleteXML() {
-
-	}
-
-	/*
-	 * Test method for 'org.drftpd.vfs.VirtualFileSystem.getInodeByPath(String)'
-	 */
-	public void testGetInodeByPath() {
-
+		for (String file : vfs.getRoot().getFiles()) {
+			vfs.getRoot().getInodeByName(file).delete();
+		}
 	}
 
 	/*
 	 * Test method for 'org.drftpd.vfs.VirtualFileSystem.getLast(String)'
 	 */
 	public void testGetLast() {
-
-	}
-
-	public void testList() {
-		System.out.println("Starting testList");
-		recursiveList(vfs.getRoot());
-		System.out.println("Ending testList");
+		assertEquals(vfs.getLast("/full/path/to/file"), "file");
+		assertEquals(vfs.getLast("/full/path/to"), "to");
 	}
 
 	/*
@@ -97,7 +81,7 @@ public class VirtualFileSystemTest extends TestCase {
 	public void testMemory() {
 		System.out
 				.println("Stress test, we can scale now with lots of small files");
-		for (int x = 0; x < 10; x++) {
+		for (int x = 0; x < 3; x++) {
 			VirtualFileSystemDirectory walker1 = null;
 			try {
 				vfs.getRoot()
@@ -110,7 +94,7 @@ public class VirtualFileSystemTest extends TestCase {
 			} catch (FileNotFoundException e) {
 				throw new RuntimeException("this can't be good1");
 			}
-			for (int y = 0; y < 10; y++) {
+			for (int y = 0; y < 3; y++) {
 				VirtualFileSystemDirectory walker2 = null;
 				try {
 					walker1
@@ -124,9 +108,9 @@ public class VirtualFileSystemTest extends TestCase {
 				} catch (FileNotFoundException e) {
 					throw new RuntimeException("this can't be good2");
 				}
-				for (int z = 0; z < 10; z++) {
+				for (int z = 0; z < 3; z++) {
 					try {
-						walker2.createFile(String.valueOf(z), "test3", "test3");
+						walker2.createFile(String.valueOf(z), "test3", "test3", "testSlave");
 					} catch (FileExistsException e) {
 					}
 				}
@@ -136,26 +120,24 @@ public class VirtualFileSystemTest extends TestCase {
 	}
 
 	/*
-	 * Test method for 'org.drftpd.vfs.VirtualFileSystem.renameXML(String,
-	 * String)'
+	 * Test method for 'org.drftpd.vfs.VirtualFileSystemInode.rename(String)'
 	 */
-	public void testRenameXML() {
-
+	public void testRename() throws FileNotFoundException, FileExistsException {
+		//vfs.getRoot().createDirectory("Test", "drftpd", "drftpd");
+		VirtualFileSystemInode inode = vfs.getInodeByPath("/Test");
+		((VirtualFileSystemDirectory) inode).createFile("testme", "drftpd", "drftpd", "testSlave");
+		assertEquals("/Test", inode.getPath());
+		inode.rename("/Test2");
+		assertEquals("/Test2", inode.getPath());
+		assertNotNull(((VirtualFileSystemDirectory) inode).getInodeByName("testme"));
 	}
 
 	/*
 	 * Test method for 'org.drftpd.vfs.VirtualFileSystem.stripLast(String)'
 	 */
 	public void testStripLast() {
-
-	}
-
-	/*
-	 * Test method for
-	 * 'org.drftpd.vfs.VirtualFileSystem.writeInode(VirtualFileSystemInode)'
-	 */
-	public void testWriteInode() {
-
+		assertEquals(vfs.stripLast("/full/path/to/file"), "/full/path/to");
+		assertEquals(vfs.stripLast("/full/path/to"), "/full/path");
 	}
 
 }
