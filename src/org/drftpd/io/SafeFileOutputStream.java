@@ -69,8 +69,8 @@ public class SafeFileOutputStream extends OutputStream {
     	_out.close();
 		_out = null;
         if (!failed) {
-            logger.debug("Renaming " +
-                _tempFile + " (" + _tempFile.length() + ") to " + _actualFile);
+            //logger.debug("Renaming " +
+              //  _tempFile + " (" + _tempFile.length() + ") to " + _actualFile);
 
             if (_actualFile.exists() && !_actualFile.delete()) {
                 throw new IOException("delete() failed");
