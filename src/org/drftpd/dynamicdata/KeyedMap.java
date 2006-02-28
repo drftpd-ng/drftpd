@@ -80,7 +80,10 @@ public class KeyedMap<K, V> extends Hashtable {
             return 0;
         }
     }
-
+    
+    /**
+     * If key is not found, returns 0
+     */
     public long getObjectLong(Key key) {
         return ((Long) getObject(key, new Long(0))).longValue();
     }
