@@ -100,15 +100,19 @@ public class SlavetopFilter extends Filter {
 
         ArrayList<ScoreChart.SlaveScore> slavescores = 
         	new ArrayList<ScoreChart.SlaveScore>(slavesmap.values());
-        ArrayList ss = slavescores;
-        Collections.sort(ss, Collections.reverseOrder());
-
+        Collections.sort(slavescores, Collections.reverseOrder());
 
         if(_assign == 0) {
         	for(ScoreChart.SlaveScore score : slavescores.subList(_topslaves, slavescores.size())) {
         		scorechart.removeSlaveScore(score.getRSlave());
         	}
         }
+        
+        if (slavescores.get(0).getScore() == 0) {
+        	// No slaves win, no reason to assign points
+        	return;
+        }
+        
         Iterator iter = slavescores.iterator();
         for (int i = 0; i < _topslaves && iter.hasNext(); i++) {
             ScoreChart.SlaveScore score = (SlaveScore) iter.next();
