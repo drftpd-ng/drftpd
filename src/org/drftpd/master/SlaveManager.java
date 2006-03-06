@@ -70,8 +70,6 @@ public class SlaveManager implements Runnable {
 			.getName());
 
 	private static final String slavePath = "slaves/";
-
-	private static final File slavePathFile = new File(slavePath);
 	
 	private static final int socketTimeout = 10000; // 10 seconds, for Socket
 	
@@ -105,6 +103,7 @@ public class SlaveManager implements Runnable {
 	}
 
 	private void loadSlaves() throws SlaveFileException {
+		File slavePathFile = new File(slavePath);
 		if (!slavePathFile.exists() && !slavePathFile.mkdirs()) {
 			throw new SlaveFileException(new IOException(
 					"Error creating directories: " + slavePathFile));
