@@ -73,16 +73,24 @@ public class ConstantMirroring extends ArchiveType {
                 Collection<RemoteSlave> slaves;
 
                 slaves = src.getSlaves();
-                for (Iterator<RemoteSlave> slaveIter = slaves.iterator(); slaveIter.hasNext();) {
-                	RemoteSlave rslave = slaveIter.next();
-                	if (!rslave.isAvailable()) {
-                		long offlineTime = System.currentTimeMillis() - rslave.getLastTimeOnline();
-                		if (offlineTime > _slaveDeadAfter) {
-                			// slave is considered dead
-                			slaveIter.remove();
-                		}
-                	}
+
+                /* Only check if this slave is dead if slaveDeadAfter is
+                 * configured to a non-zero value
+                 */
+
+                if (_slaveDeadAfter > 0) {
+                    for (Iterator<RemoteSlave> slaveIter = slaves.iterator(); slaveIter.hasNext();) {
+                        RemoteSlave rslave = slaveIter.next();
+                        if (!rslave.isAvailable()) {
+                            long offlineTime = System.currentTimeMillis() - rslave.getLastTimeOnline();
+                            if (offlineTime > _slaveDeadAfter) {
+                                // slave is considered dead
+                                slaveIter.remove();
+                            }
+                        }
+                    }
                 }
+
                 if (!getRSlaves().containsAll(slaves)) {
                 	return false;
                 }
