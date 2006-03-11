@@ -33,7 +33,7 @@ public class RatioPathPermission extends GlobPathPermission {
      * @param path
      * @param users
      */
-    public RatioPathPermission(Pattern pattern, float ratio, Collection users) {
+    public RatioPathPermission(Pattern pattern, float ratio, Collection<String> users) {
         super(pattern, users);
         _ratio = ratio;
     }

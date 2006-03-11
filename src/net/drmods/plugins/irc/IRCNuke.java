@@ -39,14 +39,14 @@ import net.sf.drftpd.event.NukeEvent;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
 import org.drftpd.commands.Nuke;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.irc.SiteBot;
+import org.drftpd.irc.utils.MessageCommand;
 import org.drftpd.nuke.NukeBeans;
 import org.drftpd.nuke.NukeData;
 import org.drftpd.nuke.NukeUtils;
 import org.drftpd.nuke.Nukee;
-import org.drftpd.plugins.SiteBot;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sitebot.IRCCommand;
@@ -54,9 +54,6 @@ import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.tanesha.replacer.ReplacerEnvironment;
-
-import f00f.net.irc.martyr.commands.MessageCommand;
-import f00f.net.irc.martyr.util.FullNick;
 
 /**
  * @author Teflon
@@ -66,8 +63,8 @@ public class IRCNuke extends IRCCommand {
 	private static final Logger logger = Logger.getLogger(IRCNuke.class);
 	private int _maxNukes;
 	
-	public IRCNuke(GlobalContext gctx) {
-		super(gctx);
+	public IRCNuke() {
+		super();
 		loadConf("conf/drmods.conf");
 	}
 
@@ -100,13 +97,10 @@ public class IRCNuke extends IRCCommand {
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		env.add("ircnick", msgc.getSource().getNick());
 
-		User ftpuser = getUser(msgc.getSource());
-		if (ftpuser == null) {
-			out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
+		User ftpuser = SiteBot.getUserByNickname(msgc.getSource(), out, env, logger);
+		if (ftpuser == null)
 			return out;
-		}
-		env.add("ftpuser", ftpuser.getName());
-
+		
 		StringTokenizer st = new StringTokenizer(args);
 		// check number of arguments
 		if (st.countTokens() < 3) {
@@ -235,12 +229,9 @@ public class IRCNuke extends IRCCommand {
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		env.add("ircnick", msgc.getSource().getNick());
 		
-        User ftpuser = getUser(msgc.getSource());
-        if (ftpuser == null) {
-     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-     	    return out;
-        }
-        env.add("ftpuser",ftpuser.getName());
+		User ftpuser = SiteBot.getUserByNickname(msgc.getSource(), out, env, logger);
+		if (ftpuser == null)
+			return out;
 
         StringTokenizer st = new StringTokenizer(args);
 		//check number of arguments
@@ -388,16 +379,4 @@ public class IRCNuke extends IRCCommand {
 		}
 		return out;
 	}
-
-	private User getUser(FullNick fn) {
-		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
-		User user = null;
-     	try {
-     	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
-     	} catch (Exception e) {
-     	    logger.warn("Could not identify " + ident);
-     	}
-     	return user;
-	}
-
 }

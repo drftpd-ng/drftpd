@@ -24,13 +24,11 @@ import net.sf.drftpd.event.InviteEvent;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.irc.utils.MessageCommand;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-
-import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author mog
@@ -39,8 +37,8 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 public class Invite extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Invite.class);
 
-    public Invite(GlobalContext gctx) {
-		super(gctx);
+    public Invite() {
+		super();
     }
 
 	public ArrayList<String> doInvite(String args, MessageCommand msgc) {
@@ -68,7 +66,7 @@ public class Invite extends IRCCommand {
                 new InviteEvent(success ? "INVITE" : "BINVITE", msgc.getSource().getNick(), user));
 
        	String ident = msgc.getSource().getNick() + "!" 
-						+ msgc.getSource().getUser() + "@" 
+						+ msgc.getSource().getUsername() + "@" 
 						+ msgc.getSource().getHost();
        	    		
 		if (success) {
@@ -81,7 +79,7 @@ public class Invite extends IRCCommand {
             }
 		} else {
 		    logger.log(Level.WARN,
-		        msgc.getSourceString() +
+		    	msgc.getSource().getNick() +
 		        " attempted invite with bad password: " + msgc);
 		}
 		

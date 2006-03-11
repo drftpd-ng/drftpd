@@ -27,7 +27,6 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.master.config.FtpConfig;
 
-import org.drftpd.GlobalContext;
 import org.drftpd.permissions.PathPermission;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 
@@ -60,8 +59,7 @@ public class AffilManagement extends FtpListener {
 
 	public ArrayList<String> groups;
 
-	public void init(GlobalContext gctx) {
-		super.init(gctx);
+	public void init() {
 		getGlobalContext().getConfig().addObserver(
 				new Observer() {
 					public void update(Observable o, Object arg) {

@@ -17,9 +17,8 @@ wrapper.java.classpath.2=classes
 wrapper.java.classpath.3=classes-slaveselection
 wrapper.java.classpath.4=lib/log4j-1.2.8.jar
 wrapper.java.classpath.5=lib/oro.jar
-wrapper.java.classpath.6=lib/martyr.jar
-wrapper.java.classpath.7=lib/jdom.jar
-wrapper.java.classpath.8=lib/replacer.jar
+wrapper.java.classpath.6=lib/irclib.jar
+wrapper.java.classpath.7=lib/replacer.jar
 
 # Java Library Path (location of Wrapper.DLL or libwrapper.so)
 wrapper.java.library.path.1=lib

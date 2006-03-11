@@ -15,27 +15,32 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins;
 
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.event.UserEvent;
+package org.drftpd.irc.utils;
 
-import org.drftpd.dynamicdata.Key;
-
+import java.util.ArrayList;
 
 /**
- * @author mog
- * @version $Id$
+ * Each trigger might contain different permissions.
+ * @author fr0w
  */
-public class Statistics extends FtpListener {
-    public static final Key LOGINS = new Key(Statistics.class, "logins",
-            Integer.class);
-
-    public void actionPerformed(Event event) {
-        if (event.getCommand().equals("LOGIN")) {
-            UserEvent uevent = (UserEvent) event;
-            uevent.getUser().getKeyedMap().incrementObjectInt(LOGINS, 1);
-        }
-    }
+public class CommandList {
+	
+	/**
+	 * Objcet[] = Method, IRCCommand, IRCPermission
+	 */ 
+	private ArrayList<Object[]> _list;
+	
+	public CommandList() {
+		_list = new ArrayList<Object[]>();
+	}
+	
+	public ArrayList<Object[]> getCommandList() {
+		return _list;
+	}
+	
+	public void add(Object[] objArray) {
+		_list.add(objArray);
+	}
+	
 }

@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
-import org.apache.log4j.Logger;
-
 /**
  * @author mog
  * @version $Id$
@@ -33,7 +31,6 @@ public class SafeFileOutputStream extends OutputStream {
     private File _actualFile;
     private OutputStreamWriter _out;
     private File _tempFile;
-	private static final Logger logger = Logger.getLogger(SafeFileOutputStream.class);
 	// failed until it works
     private boolean failed = true;
 

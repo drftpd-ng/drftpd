@@ -38,6 +38,7 @@ import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.Logger;
+import org.drftpd.irc.SiteBot;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.remotefile.LinkedRemoteFile;
@@ -131,7 +132,7 @@ public class GlobalContext {
     * Calls init(this) on the argument
     */
     public synchronized void addFtpListener(FtpListener listener) {
-        listener.init(this);
+        listener.init();
         _ftpListeners.add(listener);
     }
     
@@ -326,5 +327,13 @@ public class GlobalContext {
 			_gctx = new GlobalContext();
 		}
 		return _gctx;
+	}
+	
+	/**
+	 * @return the Bot instance
+	 * @throws ObjectNotFoundException if the Bot isnt loaded.
+	 */
+	public SiteBot getIRCBot() throws ObjectNotFoundException {
+		return (SiteBot) getFtpListener(SiteBot.class);
 	}
 }

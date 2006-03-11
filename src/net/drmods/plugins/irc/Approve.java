@@ -30,16 +30,14 @@ import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
-import org.drftpd.plugins.SiteBot;
+import org.drftpd.irc.SiteBot;
+import org.drftpd.irc.utils.MessageCommand;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sitebot.IRCCommand;
 import org.drftpd.usermanager.User;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
-
-import f00f.net.irc.martyr.commands.MessageCommand;
-import f00f.net.irc.martyr.util.FullNick;
 
 /**
  * @author Teflon
@@ -49,8 +47,8 @@ public class Approve extends IRCCommand {
 	private static final Logger logger = Logger.getLogger(Approve.class);
 	private String _dirName;
 	
-	public Approve(GlobalContext gctx) {
-		super(gctx);
+	public Approve() {
+		super();
 		loadConf("conf/drmods.conf");
 	}
 
@@ -91,17 +89,10 @@ public class Approve extends IRCCommand {
 	        return out;
 	    }
 		
-		FullNick fn = msgc.getSource();
-		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
-		User user;
-     	try {
-     	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
-            env.add("ftpuser",user.getName());
-     	} catch (Exception e) {
-     	    logger.warn("Could not identify " + ident);
-     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-     	    return out;
-     	}
+		User user = SiteBot.getUserByNickname(msgc.getSource(), out, env, logger);
+		
+     	if (user == null)
+            return out;
      	
         LinkedRemoteFileInterface dir = findDir(getGlobalContext(),
 												 getGlobalContext().getRoot(), user, args);

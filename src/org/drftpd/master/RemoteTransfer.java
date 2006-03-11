@@ -29,7 +29,6 @@ import org.drftpd.slave.TransferFailedException;
 import org.drftpd.slave.TransferIndex;
 import org.drftpd.slave.TransferStatus;
 
-
 /**
  * @author zubov
  * @author mog

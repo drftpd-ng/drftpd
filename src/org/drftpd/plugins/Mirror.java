@@ -95,10 +95,6 @@ public class Mirror extends FtpListener {
         logger.info("Done adding " + file.getPath() + " to the JobList");
     }
 
-    public void init(GlobalContext gctx) {
-        super.init(gctx);
-    }
-
     private void reload() {
         Properties props = new Properties();
 

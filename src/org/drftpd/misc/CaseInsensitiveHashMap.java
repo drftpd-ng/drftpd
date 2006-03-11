@@ -18,7 +18,6 @@
 package org.drftpd.misc;
 
 import java.util.HashMap;
-import java.util.Set;
 
 /**
  * @author zubov

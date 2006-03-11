@@ -19,15 +19,17 @@ package org.drftpd.sitebot;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+import net.sf.drftpd.util.ReplacerUtils;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.irc.SiteBot;
+import org.drftpd.irc.utils.MessageCommand;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-
-import f00f.net.irc.martyr.commands.MessageCommand;
+import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author Teflon
@@ -35,14 +37,13 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 public class Ident extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Ident.class);
 
-	public Ident(GlobalContext gctx) {
-		super(gctx);
+	public Ident() {
+		super();
 	}
 
 	public ArrayList<String> doIdent(String args, MessageCommand msgc) {
 	    ArrayList<String> out = new ArrayList<String>();
-	    out.add("");
-		
+		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);		
 		StringTokenizer st = new StringTokenizer(args);
 		if (st.countTokens() < 2)
 		    return out;
@@ -63,13 +64,13 @@ public class Ident extends IRCCommand {
 
         if (user.checkPassword(password)) {
          	String ident = msgc.getSource().getNick() + "!" 
-							+ msgc.getSource().getUser() + "@" 
+							+ msgc.getSource().getUsername() + "@" 
 							+ msgc.getSource().getHost();
         	user.getKeyedMap().setObject(UserManagement.IRCIDENT,ident);
         	try {
 				user.commit();
 	           	logger.info("Set IRC ident to '"+ident+"' for "+user.getName());
-            	out.add("Set IRC ident to '"+ident+"' for "+user.getName());
+	           	out.add(ReplacerUtils.jprintf("ident.success", env, SiteBot.class));
 			} catch (UserFileException e1) {
 				logger.warn("Error saving userfile for "+user.getName(),e1);
 				out.add("Error saving userfile for "+user.getName());

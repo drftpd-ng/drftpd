@@ -28,8 +28,10 @@ import net.sf.drftpd.event.TransferEvent;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
+import org.drftpd.RankUtils;
 import org.drftpd.Time;
-import org.drftpd.plugins.SiteBot.Ret;
+import org.drftpd.irc.SiteBot;
+import org.drftpd.irc.SiteBot.Ret;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -79,10 +81,10 @@ public class DIZPlugin extends FtpListener {
 					Ret ret = getSiteBot().getPropertyFileSuffix(
 							"store.complete.diz", diz.getParent());
 
-					Collection racers = SiteBot.userSort(diz.getParent()
+					Collection racers = RankUtils.userSort(diz.getParent()
 							.getFiles(), "bytes", "high");
 
-					Collection groups = SiteBot.topFileGroup(diz.getParent()
+					Collection groups = RankUtils.topFileGroup(diz.getParent()
 							.getFiles());
 
 					env.add("section", "" + ret.getSection().getName());

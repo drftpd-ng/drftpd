@@ -27,22 +27,19 @@ import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
-import org.drftpd.GlobalContext;
-import org.drftpd.plugins.SiteBot;
+import org.drftpd.irc.SiteBot;
+import org.drftpd.irc.utils.MessageCommand;
 import org.drftpd.plugins.Trial;
 import org.drftpd.plugins.Trial.Limit;
 import org.drftpd.usermanager.User;
 import org.tanesha.replacer.ReplacerEnvironment;
 
-import f00f.net.irc.martyr.commands.MessageCommand;
-import f00f.net.irc.martyr.util.FullNick;
-
 
 public class Trials extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Trials.class);
 
-    public Trials(GlobalContext gctx) {
-		super(gctx);
+    public Trials() {
+		super();
     }
 
     protected String jprintf(String key, User user, Limit limit, long bytesleft, boolean unique) {
@@ -89,17 +86,12 @@ public class Trials extends IRCCommand {
 		    return out;
 		}
 		
-		FullNick fn = msgc.getSource();
-		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
 		User user;	
 	    if (args.equals("")) {
-	     	try {
-	     	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
-	     	} catch (Exception e) {
-	     	    logger.warn("Could not identify " + ident);
-	     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-	     	    return out;
-	     	}
+	    	user = SiteBot.getUserByNickname(msgc.getSource(), out, env, logger);
+			
+	     	if (user == null)
+	            return out;
 	    } else {
 	        try {
                 user = getGlobalContext().getUserManager().getUserByName(args);

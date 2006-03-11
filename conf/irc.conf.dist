@@ -1,30 +1,40 @@
-irc.server=irc.csbnet.se
+# ircd to connect
+irc.server=irc.efnet.org
+# can be a port range (ex: 6667-6669)
 irc.port=6667
 # use SSL for irc.server
 # [ true | false ]
 irc.ssl=false
 
-# Use if SiteBot needs to send something without a trigger in OnConnect
-# Keep commented if not in use
-# Can be used for psybnc
-irc.initial.command=PASS drftpd
+# max number of retries if the connection fail
+irc.retry=10
+# delay between timered tasks (auto-reconnection/auto(re)join) (in milliseconds)
+# dont set it to a big value or you might experience some right delays between reconnects.
+irc.delay=30000
+
+# irc.server pass (doesnt work for psyBNCs)
+# keep commented if not in use
+irc.pass=
+
+# if you are trying to connect to a psyBNC
+# load the psyBNC listener and enter the password here.
+irc.psybnc.pass=
 
 # channels to autojoin on successful connection
 # to irc.server
-irc.channel.1=#drftpd-test
-irc.channel.1.blowkey=drftpd
+irc.channel.1=#testing-drftpd
+irc.channel.1.blowkey=
 irc.channel.1.perms=*
 #irc.channel.1.chankey=drftpd
 
-#irc.channel.2=#drftpd-test2
+irc.channel.2=#testing-drftpd2
 #irc.channel.2.blowkey=drftpd2
-#irc.channel.2.perms=!=iND *
+#irc.channel.2.perms=*
 #irc.channel.2.chankey=drftpd
 
 # general format:
 # irc.nick!irc.user@ipaddress.would.be.here irc.name
 # is returned by /who or /whois
-
 # actual nickname on irc.server
 irc.nick=drftpd
 irc.name=drftpd
@@ -40,26 +50,29 @@ irc.max.racers=10
 # maximum number of groups to announce on COMPLETE
 irc.max.groups=10
 
-# Sets the time in milliseconds we wait after each command is sent.
-# The best protection you can set to avoid flood disconnects
-irc.sendDelay=300
-
 ##Send different sections to different channels.
 #irc.section.1=CHAN1
-#irc.section.1.channel=#drftpd-test
+#irc.section.1.channel=#testing-drftpd
 #irc.section.2=CHAN2
-#irc.section.2.channel=#drftpd-test2
+#irc.section.2.channel=#testing-drftpd2
 
-# Plugins ...
-martyr.plugins.1=org.drftpd.sitebot.OnConnect
+# Listeners ...
+# do not remove the Default listener!
+listener.1=org.drftpd.irc.listeners.Default
+# load this if you want irc events to be logged
+listener.2=org.drftpd.irc.listeners.Log
+listener.3=org.drftpd.irc.listeners.psyBNC
 
-# How much to log on the SiteBot?
-# (Needs to be separate from log4j configs because martyr(the irc 
-# module) does not use log4j
-#FAULT = 0
-#CRITICAL = 5
-#BAD = 6
-#NORMAL = 10
-#VERBOSE = 15
-#EXCESSIVE = 20
-irc.debuglevel=15
+# This setting might contain comma separated channels
+# but must be separated by spaces.
+# Leave blank to spam to all channels.
+# Ex1: #drftpd1 #drftpd2
+# Ex2: #drftpd1, #drftpd2
+irc.slaveevent.channel=
+irc.inviteevent.channel=
+irc.shutdownevent.channel=
+
+# Commands that will be sent right after the SiteBot connects to the
+# irc server (side note: it executed before the autojoin).
+# Accepts multiple commands separated by '|' (mIRC Script Style).
+irc.perform=mode drftpd +h | privmsg invitebot :!invite drftpd drftpd

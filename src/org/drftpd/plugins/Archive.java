@@ -30,7 +30,6 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 
 import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.mirroring.ArchiveHandler;
 import org.drftpd.mirroring.ArchiveType;
@@ -102,8 +101,7 @@ public class Archive extends FtpListener {
         return _cycleTime;
     }
 
-    public void init(GlobalContext gctx) {
-    	super.init(gctx);
+    public void init() {
         reload();
     }
     

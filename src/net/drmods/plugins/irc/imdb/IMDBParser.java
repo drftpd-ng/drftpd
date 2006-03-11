@@ -27,7 +27,7 @@ import java.net.URLConnection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.drftpd.plugins.SiteBot;
+import org.drftpd.irc.SiteBot;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**

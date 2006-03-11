@@ -27,9 +27,9 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
 import org.drftpd.Time;
-import org.drftpd.plugins.SiteBot;
+import org.drftpd.irc.SiteBot;
+import org.drftpd.irc.utils.MessageCommand;
 import org.drftpd.sitebot.IRCCommand;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -37,9 +37,6 @@ import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
-
-import f00f.net.irc.martyr.State;
-import f00f.net.irc.martyr.commands.MessageCommand;
 
 
 /**
@@ -51,8 +48,8 @@ public class Kick extends IRCCommand {
     private int _idleTimeout;
     private int _usersPerLine;
     
-    public Kick(GlobalContext gctx) {
-		super(gctx);
+    public Kick() {
+		super();
 		loadConf("conf/drmods.conf");
 	}
 
@@ -148,7 +145,4 @@ public class Kick extends IRCCommand {
 
         return out;
 	}
-
-    protected void updateState(State state) {
-    }
 }

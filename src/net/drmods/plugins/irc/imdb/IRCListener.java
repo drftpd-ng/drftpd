@@ -26,12 +26,10 @@ import java.util.Properties;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
-import org.drftpd.plugins.SiteBot;
+import org.drftpd.irc.SiteBot;
+import org.drftpd.irc.utils.MessageCommand;
 import org.drftpd.sitebot.IRCCommand;
 import org.tanesha.replacer.ReplacerEnvironment;
-
-import f00f.net.irc.martyr.commands.MessageCommand;
 
 /**
  * @author Teflon
@@ -40,8 +38,8 @@ public class IRCListener extends IRCCommand {
     private static final Logger logger = Logger.getLogger(IRCListener.class);
     private String _filters;
     
-    public IRCListener(GlobalContext gctx) {
-        super(gctx); 
+    public IRCListener() {
+        super(); 
 		loadConf("conf/drmods.conf");
 	}
 

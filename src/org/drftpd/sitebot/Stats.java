@@ -29,18 +29,16 @@ import net.sf.drftpd.util.UserComparator;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
-import org.drftpd.GlobalContext;
 import org.drftpd.commands.TransferStatistics;
+import org.drftpd.irc.SiteBot;
+import org.drftpd.irc.utils.MessageCommand;
 import org.drftpd.permissions.Permission;
-import org.drftpd.plugins.SiteBot;
 import org.drftpd.plugins.Trial;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
-
-import f00f.net.irc.martyr.commands.MessageCommand;
 
 
 /**
@@ -50,8 +48,8 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 public class Stats extends IRCCommand {
 	private static final Logger logger = Logger.getLogger(Stats.class);
     
-    public Stats(GlobalContext gctx) {
-		super(gctx);
+    public Stats() {
+		super();
     }
 
     public ArrayList<String> doALUP(String args, MessageCommand msgc) { return doStats(args, "ALUP"); }

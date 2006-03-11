@@ -29,8 +29,8 @@ import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
+import org.drftpd.irc.SiteBot;
 import org.drftpd.master.ConnectionManager;
-import org.drftpd.plugins.SiteBot;
 import org.drftpd.sections.SectionInterface;
 
 /**

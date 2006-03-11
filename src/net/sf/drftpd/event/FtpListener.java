@@ -19,23 +19,18 @@ package net.sf.drftpd.event;
 
 import org.drftpd.GlobalContext;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public abstract class FtpListener {
-    protected GlobalContext _gctx;
 	public abstract void actionPerformed(Event event);
 
     public void unload() {}
 
-    public void init(GlobalContext gctx) {
-    	_gctx = gctx;
-    }
+    public void init() {}
 
-    public final GlobalContext getGlobalContext() {
-    	assert _gctx != null;
-    	return _gctx;
+    public static GlobalContext getGlobalContext() {
+    	return GlobalContext.getGlobalContext();
     }
 }

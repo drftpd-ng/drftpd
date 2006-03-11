@@ -47,6 +47,7 @@ import net.sf.drftpd.master.UploaderPosition;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.RankUtils;
 import org.drftpd.SFVFile;
 import org.drftpd.SFVFile.SFVStatus;
 import org.drftpd.commands.UserManagement;
@@ -204,12 +205,12 @@ public class GlftpdLog extends FtpListener {
 
         //COMPLETE
         if (sfvstatus.isFinished()) {
-            Collection racers = SiteBot.userSort(sfvfile.getFiles(), "bytes",
+            Collection racers = RankUtils.userSort(sfvfile.getFiles(), "bytes",
                     "high");
             Collection groups = topFileGroup(sfvfile.getFiles());
-            Collection fast = SiteBot.userSort(sfvfile.getFiles(), "xferspeed",
+            Collection fast = RankUtils.userSort(sfvfile.getFiles(), "xferspeed",
                     "high");
-            Collection slow = SiteBot.userSort(sfvfile.getFiles(), "xferspeed",
+            Collection slow = RankUtils.userSort(sfvfile.getFiles(), "xferspeed",
                     "low");
 
             UploaderPosition fastestuser = (UploaderPosition) fast.iterator()
@@ -299,7 +300,7 @@ public class GlftpdLog extends FtpListener {
             //HALFWAY
         } else if ((sfvfile.size() >= 4) &&
                 (sfvstatus.getMissing() == halfway)) {
-            Collection uploaders = SiteBot.userSort(sfvfile.getFiles(),
+            Collection uploaders = RankUtils.userSort(sfvfile.getFiles(),
                     "bytes", "high");
             UploaderPosition stat = (UploaderPosition) uploaders.iterator()
                                                                 .next();

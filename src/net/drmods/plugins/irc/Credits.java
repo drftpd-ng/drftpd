@@ -25,15 +25,12 @@ import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
-import org.drftpd.GlobalContext;
-import org.drftpd.plugins.SiteBot;
+import org.drftpd.irc.SiteBot;
+import org.drftpd.irc.utils.MessageCommand;
 import org.drftpd.sitebot.IRCCommand;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.tanesha.replacer.ReplacerEnvironment;
-
-import f00f.net.irc.martyr.commands.MessageCommand;
-import f00f.net.irc.martyr.util.FullNick;
 
 /**
  * @author Teflon
@@ -42,8 +39,8 @@ import f00f.net.irc.martyr.util.FullNick;
 public class Credits extends IRCCommand {
 	private static final Logger logger = Logger.getLogger(Credits.class);
 
-	public Credits(GlobalContext gctx) {
-		super(gctx);
+	public Credits() {
+		super();
 	}
 
 	public ArrayList<String> doCredits(String args, MessageCommand msgc) {
@@ -51,17 +48,10 @@ public class Credits extends IRCCommand {
         ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		env.add("ircnick", msgc.getSource().getNick());
 		
-		FullNick fn = msgc.getSource();
-		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
-		User user;	
+		User user = SiteBot.getUserByNickname(msgc.getSource(), out, env, logger);
 	    if (args.equals("")) {
-	     	try {
-	     	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
-	     	} catch (Exception e) {
-	     	    logger.warn("Could not identify " + ident);
-	     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-	     	    return out;
-	     	}
+	    	if (user == null)
+	    		return out;
 	    } else if (args.equals("*")) {
 	        showAllUserCredits(out);
 	        return out;

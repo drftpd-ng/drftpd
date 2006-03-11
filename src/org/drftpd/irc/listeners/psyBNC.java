@@ -15,27 +15,32 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins;
+package org.drftpd.irc.listeners;
 
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.event.UserEvent;
-
-import org.drftpd.dynamicdata.Key;
-
+import org.apache.log4j.Logger;
+import org.drftpd.irc.SiteBot;
+import org.schwering.irc.lib.IRCEventListener;
+import org.schwering.irc.lib.IRCUser;
 
 /**
- * @author mog
- * @version $Id$
+ * A simple listener to make the sitebot
+ * able to connect to psyBNCs
+ * @author fr0w
  */
-public class Statistics extends FtpListener {
-    public static final Key LOGINS = new Key(Statistics.class, "logins",
-            Integer.class);
+public class psyBNC extends IRCListener implements IRCEventListener{
 
-    public void actionPerformed(Event event) {
-        if (event.getCommand().equals("LOGIN")) {
-            UserEvent uevent = (UserEvent) event;
-            uevent.getUser().getKeyedMap().incrementObjectInt(LOGINS, 1);
-        }
-    }
+	private static final Logger logger = Logger.getLogger(psyBNC.class); 
+	
+	public psyBNC(SiteBot instance) {
+		super(instance);
+	}
+	
+	public void onNotice(String target, IRCUser user, String msg) {
+		if (msg.indexOf("/QUOTE PASS".toLowerCase()) != -1 &&
+				user.getNick().equalsIgnoreCase("-psyBNC")) {
+			getIRCConnection().send("pass" + getSiteBot().getPsyBNC());
+			logger.debug("Sent pass to psyBNC...");
+		}
+	}
+
 }

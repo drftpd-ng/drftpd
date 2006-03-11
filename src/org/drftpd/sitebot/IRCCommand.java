@@ -27,15 +27,17 @@ import org.drftpd.GlobalContext;
  * @version $Id$
  */
 public class IRCCommand {
-    private static final Logger logger = Logger.getLogger(IRCCommand.class); 
-	private GlobalContext _gctx;
-
-	public IRCCommand(GlobalContext gctx) {
+    private static final Logger logger = Logger.getLogger(IRCCommand.class);
+    
+	public static final int IRCPERMISSION = 2;
+	public static final int INSTANCE = 1;
+	public static final int METHOD = 0;
+	
+	public IRCCommand() {
 	    logger.info("Loaded SiteBot plugin: " + getClass().getName());
-		_gctx = gctx;
 	}
 	
-	public GlobalContext getGlobalContext() {
-		return _gctx;
+	public static GlobalContext getGlobalContext() {
+		return GlobalContext.getGlobalContext();
 	}
 }

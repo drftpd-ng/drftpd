@@ -35,7 +35,6 @@ import net.sf.drftpd.util.CalendarUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
-import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
@@ -391,8 +390,7 @@ public class Trial extends FtpListener {
         return _limits;
     }
 
-    public void init(GlobalContext gctx) {
-        super.init(gctx);
+    public void init() {
         try {
             reload();
         } catch (Exception e) {

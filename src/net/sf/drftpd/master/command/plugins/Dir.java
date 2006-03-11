@@ -41,6 +41,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
+import org.drftpd.RankUtils;
 import org.drftpd.SFVFile;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
@@ -50,7 +51,6 @@ import org.drftpd.id3.ID3Tag;
 import org.drftpd.nuke.NukeBeans;
 import org.drftpd.plugins.DIZFile;
 import org.drftpd.plugins.DIZPlugin;
-import org.drftpd.plugins.SiteBot;
 import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.remotefile.ListUtils;
@@ -214,9 +214,9 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         if (conn.getGlobalContext().getZsConfig().raceStatsEnabled()) {
             try {
                 SFVFile sfvfile = newCurrentDirectory.lookupSFVFile();
-                Collection racers = SiteBot.userSort(sfvfile.getFiles(),
+                Collection racers = RankUtils.userSort(sfvfile.getFiles(),
                         "bytes", "high");
-                Collection groups = SiteBot.topFileGroup(sfvfile.getFiles());
+                Collection groups = RankUtils.topFileGroup(sfvfile.getFiles());
 
                 String racerline = bundle.getString("cwd.racers.body");
                 //logger.debug("racerline = " + racerline);

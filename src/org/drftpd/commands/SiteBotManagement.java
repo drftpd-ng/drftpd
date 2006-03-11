@@ -17,8 +17,6 @@
  */
 package org.drftpd.commands;
 
-import f00f.net.irc.martyr.commands.RawCommand;
-
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
@@ -26,10 +24,7 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Logger;
-
-import org.drftpd.plugins.SiteBot;
-
-import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.irc.SiteBot;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 
@@ -65,12 +60,8 @@ public class SiteBotManagement implements CommandHandler, CommandHandlerFactory 
 
         FtpRequest req2 = new FtpRequest(conn.getRequest().getArgument());
 
-        try {
-            if (!conn.getUser().isAdmin()) {
-                return Reply.RESPONSE_530_ACCESS_DENIED;
-            }
-        } catch (NoSuchUserException e1) {
-            throw new RuntimeException(e1);
+        if (!conn.getUserNull().isAdmin()) {
+        	return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         if (req2.getCommand().equals("RECONNECT")) {
@@ -84,22 +75,19 @@ public class SiteBotManagement implements CommandHandler, CommandHandlerFactory 
             return new Reply(200, "Told bot to disconnect");
         } else if (req2.getCommand().equals("CONNECT")) {
             try {
-                sitebot.connect();
-
+            	if (sitebot.isConnected())
+            		return new Reply(500, "SiteBot is already connected.");
+                sitebot.createAndConnect();
                 return new Reply(200, "Sitebot connected");
             } catch (Exception e) {
                 logger.warn("", e);
-
                 return new Reply(500, e.getMessage());
             }
         } else if (req2.getCommand().equals("SAY")) {
             sitebot.sayGlobal(req2.getArgument());
-
             return new Reply(200, "Said: " + req2.getArgument());
         } else if (req2.getCommand().equals("RAW")) {
-            sitebot.getIRCConnection().sendCommand(new RawCommand(
-                    req2.getArgument()));
-
+            sitebot.getIRCConnection().send(req2.getArgument());
             return new Reply(200, "Sent raw: " + req2.getArgument());
         }
 

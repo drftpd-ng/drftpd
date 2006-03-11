@@ -25,7 +25,6 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.FtpListener;
 
 import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
 
 /**
  * @author mog
@@ -42,7 +41,7 @@ public class DelegatingArchive extends FtpListener {
 	public void actionPerformed(Event event) {
 		if(event.getCommand().equals("RELOAD")) {
 			unload();
-			init(getGlobalContext());
+			init();
 			return;
 		}
 		for(FtpListener delegate : _delegates) {
@@ -53,11 +52,10 @@ public class DelegatingArchive extends FtpListener {
 			}
 		}
 	}
-	public void init(GlobalContext gctx) {
-		super.init(gctx);
-		init2(gctx);
+	public void init() {
+		init2();
 	}
-	public void init2(GlobalContext gctx) {
+	public void init2() {
 		_delegates = new ArrayList<FtpListener>();
 		try {
 			_cl = new URLClassLoader(new URL[] {new File("classes-archive").toURL()});
@@ -68,7 +66,7 @@ public class DelegatingArchive extends FtpListener {
 		}
 		for(FtpListener delegate : _delegates) {
 			try {
-			delegate.init(gctx);
+			delegate.init();
 			} catch(Throwable t) {
 				logger.error("Throwable from init", t);
 			}

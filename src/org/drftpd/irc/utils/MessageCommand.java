@@ -15,27 +15,43 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins;
 
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.event.UserEvent;
+package org.drftpd.irc.utils;
 
-import org.drftpd.dynamicdata.Key;
-
+import org.schwering.irc.lib.IRCUser;
 
 /**
- * @author mog
- * @version $Id$
+ * This class exists just for one reason,
+ * make an easy way to convert IRCCommands.
+ * @author fr0w
  */
-public class Statistics extends FtpListener {
-    public static final Key LOGINS = new Key(Statistics.class, "logins",
-            Integer.class);
+public class MessageCommand {
 
-    public void actionPerformed(Event event) {
-        if (event.getCommand().equals("LOGIN")) {
-            UserEvent uevent = (UserEvent) event;
-            uevent.getUser().getKeyedMap().incrementObjectInt(LOGINS, 1);
-        }
-    }
+	IRCUser _user = null;
+	String _dest = "";
+	String _msg = "";
+	
+	/**
+	 * @param user
+	 * @param dest
+	 * @param msg
+	 */
+	public MessageCommand(IRCUser user, String dest, String msg) {
+		_user = user;
+		_dest = dest;
+		_msg = msg;
+	}
+	
+	public String getDest() {
+		return _dest;
+	}
+	
+	public IRCUser getSource() {
+		return _user;
+	}
+	
+	public String getMessage() {
+		return _msg;
+	}
+	
 }

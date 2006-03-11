@@ -29,16 +29,13 @@ import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
-import org.drftpd.plugins.SiteBot;
+import org.drftpd.irc.SiteBot;
+import org.drftpd.irc.utils.MessageCommand;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sitebot.IRCCommand;
 import org.drftpd.usermanager.User;
 import org.tanesha.replacer.ReplacerEnvironment;
-
-import f00f.net.irc.martyr.commands.MessageCommand;
-import f00f.net.irc.martyr.util.FullNick;
 /**
  * @author Kolor & Teflon
  * @version $Id$
@@ -51,8 +48,8 @@ public class Request extends IRCCommand {
 
     private String _requestPath;
     
-	public Request(GlobalContext gctx) {
-		super(gctx);
+	public Request() {
+		super();
 		loadConf("conf/drmods.conf");
 	}
 
@@ -87,12 +84,10 @@ public class Request extends IRCCommand {
         ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
         env.add("ircnick",msgc.getSource().getNick());
         
-        User user = getUser(msgc.getSource());
-        if (user == null) {
-     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-     	    return out;
-        }
-        env.add("ftpuser",user.getName());
+		User user = SiteBot.getUserByNickname(msgc.getSource(), out, env, logger);		
+     	if (user == null)
+            return out;
+     	
         env.add("reqfilled",new StringTokenizer(msgc.getMessage()).nextToken());
         
         try {
@@ -135,12 +130,9 @@ public class Request extends IRCCommand {
         ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
         env.add("ircnick",msgc.getSource().getNick());
         
-        User user = getUser(msgc.getSource());
-        if (user == null) {
-     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-     	    return out;
-        }
-        env.add("ftpuser",user.getName());
+		User user = SiteBot.getUserByNickname(msgc.getSource(), out, env, logger);		
+     	if (user == null)
+            return out;
         
         String dirName;
         try {
@@ -204,12 +196,9 @@ public class Request extends IRCCommand {
         ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
         env.add("ircnick",msgc.getSource().getNick());
         
-        User user = getUser(msgc.getSource());
-        if (user == null) {
-     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-     	    return out;
-        }
-        env.add("ftpuser",user.getName());
+		User user = SiteBot.getUserByNickname(msgc.getSource(), out, env, logger);		
+     	if (user == null)
+            return out;
         
         String dirName = args;
         if (dirName.length()==0) { 
@@ -244,12 +233,9 @@ public class Request extends IRCCommand {
         ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
         env.add("ircnick",msgc.getSource().getNick());
         
-        User user = getUser(msgc.getSource());
-        if (user == null) {
-     	    out.add(ReplacerUtils.jprintf("ident.noident", env, SiteBot.class));
-     	    return out;
-        }
-        env.add("ftpuser",user.getName());
+		User user = SiteBot.getUserByNickname(msgc.getSource(), out, env, logger);		
+     	if (user == null)
+            return out;
         
         String dirName = args;
         if (dirName.length()==0){ 
@@ -317,15 +303,4 @@ public class Request extends IRCCommand {
 	    }
 	    return null;
 	}*/
-	
-	private User getUser(FullNick fn) {
-		String ident = fn.getNick() + "!" + fn.getUser() + "@" + fn.getHost();
-		User user = null;
-     	try {
-     	    user = getGlobalContext().getUserManager().getUserByIdent(ident);
-     	} catch (Exception e) {
-     	    logger.warn("Could not identify " + ident);
-     	}
-     	return user;
-	}
 }

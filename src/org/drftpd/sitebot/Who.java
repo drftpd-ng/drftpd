@@ -26,8 +26,8 @@ import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
-import org.drftpd.GlobalContext;
-import org.drftpd.plugins.SiteBot;
+import org.drftpd.irc.SiteBot;
+import org.drftpd.irc.utils.MessageCommand;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -35,8 +35,6 @@ import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
-
-import f00f.net.irc.martyr.commands.MessageCommand;
 
 
 /**
@@ -46,8 +44,8 @@ import f00f.net.irc.martyr.commands.MessageCommand;
 public class Who extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Who.class);
 
-    public Who(GlobalContext gctx) {
-    	super(gctx);
+    public Who() {
+    	super();
     }
     
     private ArrayList<String> getData(boolean idle, boolean up, boolean down) {

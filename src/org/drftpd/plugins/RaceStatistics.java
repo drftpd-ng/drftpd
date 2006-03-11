@@ -29,6 +29,7 @@ import net.sf.drftpd.event.FtpListener;
 import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.UploaderPosition;
 
+import org.drftpd.RankUtils;
 import org.drftpd.SFVFile;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
@@ -93,7 +94,7 @@ public class RaceStatistics extends FtpListener {
             return;
         }
 
-        Collection racers = SiteBot.userSort(sfvfile.getFiles(), "bytes", "high");
+        Collection racers = RankUtils.userSort(sfvfile.getFiles(), "bytes", "high");
 
         if (racers.size() <= 1) {
             return; // no race

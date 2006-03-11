@@ -1581,14 +1581,30 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         } else if (isStor) {
             if (!targetFileName.toLowerCase().endsWith(".sfv")) {
                 try {
-                    long sfvChecksum = targetDir.lookupSFVFile().getChecksum(targetFileName);
+                	long sfvChecksum = targetDir.lookupSFVFile().getChecksum(targetFileName);
+                    /* If no exceptions are thrown means that the sfv is avaible and has a entry
+                     * for that file.
+                     * With this certain, we can assume that files that have CRC32 = 0 either is a
+                     * 0byte file (bug!) or checksummed transfers are disabled(size is different
+                     * from 0bytes though).                 
+                     */
 
                     if (checksum == sfvChecksum) {
+                    	// Good! transfer checksum matches sfv checksum
                         response.addComment("checksum match: SLAVE/SFV:" +
                             Long.toHexString(checksum));
                     } else if (checksum == 0) {
-                        response.addComment(
-                            "checksum match: SLAVE/SFV: DISABLED");
+                    	// Here we have to conditions:
+                    	if (_transferFile.length() == 0) {
+                    		// The file has checksum = 0 and the size = 0 
+                    		// then it should be deleted.
+                    		response.addComment("0Byte File, Deleting...");
+                    		_transferFile.delete();
+                    		return false;
+                    	} else
+                    		// The file has checksum = 0, although the size is != 0,
+                    		// meaning that we are not using checked transfers.
+                    		response.addComment("checksum match: SLAVE/SFV: DISABLED");
                     } else {
                         response.addComment("checksum mismatch: SLAVE: " +
                             Long.toHexString(checksum) + " SFV: " +
