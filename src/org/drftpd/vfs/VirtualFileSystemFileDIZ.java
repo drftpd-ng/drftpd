@@ -23,12 +23,12 @@ import java.util.Set;
 
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.plugins.DIZFile;
+import org.drftpd.slave.DIZInfo;
 
 public class VirtualFileSystemFileDIZ extends VirtualFileSystemFile {
 
 	public static final Key DIZ = new Key(VirtualFileSystemFileDIZ.class,
-			"diz", DIZFile.class);
+			"diz", DIZInfo.class);
 
 	public VirtualFileSystemFileDIZ(String username, String group, long size,
 			Set<String> slaves) {
@@ -41,15 +41,15 @@ public class VirtualFileSystemFileDIZ extends VirtualFileSystemFile {
 				.asList(new String[] { initialSlave })));
 	}
 
-	public DIZFile getDIZFile() {
+	public DIZInfo getDIZFile() {
 		try {
-			return (DIZFile) getKeyedMap().getObject(DIZ);
+			return (DIZInfo) getKeyedMap().getObject(DIZ);
 		} catch (KeyNotFoundException e) {
 			return null;
 		}
 	}
 
-	public void setDIZFile(DIZFile dizFile) {
+	public void setDIZFile(DIZInfo dizFile) {
 		getKeyedMap().setObject(DIZ, dizFile);
 	}
 

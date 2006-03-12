@@ -35,10 +35,8 @@ import java.util.Map;
 
 import javax.net.ssl.SSLSocket;
 
-import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.ConnectionEvent;
 import net.sf.drftpd.master.command.CommandManager;
-import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 import net.sf.drftpd.util.ReplacerUtils;
 
 import org.apache.log4j.Level;
@@ -51,11 +49,11 @@ import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.io.AddAsciiOutputStream;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
+import org.drftpd.vfs.InodeHandle;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
@@ -83,7 +81,7 @@ public class BaseFtpConnection implements Runnable {
     //protected ConnectionManager _cm;
     private CommandManager _commandManager;
     protected Socket _controlSocket;
-    protected LinkedRemoteFileInterface _currentDirectory;
+    protected InodeHandle _currentDirectory;
 
     /**
      * Is the client running a command?
@@ -198,18 +196,8 @@ public class BaseFtpConnection implements Runnable {
         return _out;
     }
 
-    public LinkedRemoteFileInterface getCurrentDirectory() {
+    public InodeHandle getCurrentDirectory() {
         return _currentDirectory;
-    }
-
-    public DataConnectionHandler getDataConnectionHandler() {
-        try {
-            return (DataConnectionHandler) getCommandManager()
-                                               .getCommandHandler(DataConnectionHandler.class);
-        } catch (ObjectNotFoundException e) {
-            throw new RuntimeException("DataConnectionHandler must be available",
-                e);
-        }
     }
 
     public char getDirection() {
@@ -531,8 +519,8 @@ public class BaseFtpConnection implements Runnable {
         }
     }
 
-    public void setCurrentDirectory(LinkedRemoteFileInterface file) {
-        _currentDirectory = file;
+    public void setCurrentDirectory(InodeHandle path) {
+        _currentDirectory = path;
     }
 
     public void setUser(String user) {
@@ -557,7 +545,7 @@ public class BaseFtpConnection implements Runnable {
      * User logout and stop this thread.
      */
     public void stop() {
-        synchronized (getDataConnectionHandler()) {
+/*        synchronized (getDataConnectionHandler()) {
 			if (getDataConnectionHandler().isTransfering()) {
 				try {
 					getDataConnectionHandler().getTransfer().abort(
@@ -566,7 +554,9 @@ public class BaseFtpConnection implements Runnable {
 					logger.debug("This is a bug, please report it", e);
 				}
 			}
-		}
+		}*/
+    	// This needs to be addressed after session
+    	// information is stored in BaseFtpConnection and not DataConnectionHandler
         _stopRequest = true;
     }
 
@@ -610,7 +600,7 @@ public class BaseFtpConnection implements Runnable {
 				.hasNext();) {
 			BaseFtpConnection conn2 = iter.next();
 
-			synchronized (conn2.getDataConnectionHandler()) {
+/*			synchronized (conn2.getDataConnectionHandler()) {
 
 				if (conn2.getUserNull() == getUserNull()) {
 					if (!conn2.isExecuting()) {
@@ -621,7 +611,9 @@ public class BaseFtpConnection implements Runnable {
 						count++;
 					}
 				}
-			}
+			}*/
+	    	// This needs to be addressed after session
+	    	// information is stored in BaseFtpConnection and not DataConnectionHandler
 		}
 		return count;
 	}

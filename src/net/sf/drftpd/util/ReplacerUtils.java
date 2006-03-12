@@ -17,19 +17,18 @@
  */
 package net.sf.drftpd.util;
 
-import org.apache.log4j.Logger;
+import java.util.ResourceBundle;
 
+import org.apache.log4j.Logger;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
-import java.util.ResourceBundle;
-
 
 /**
  * @author mog
- * @version $Id: ReplacerUtils.java,v 1.6 2004/10/05 02:11:25 mog Exp $
+ * @version $Id$
  */
 public class ReplacerUtils {
     private static final Logger logger = Logger.getLogger(ReplacerUtils.class);

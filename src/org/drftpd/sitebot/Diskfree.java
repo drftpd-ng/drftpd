@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 import net.sf.drftpd.util.ReplacerUtils;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.irc.SiteBot;
 import org.drftpd.irc.utils.MessageCommand;
 import org.drftpd.slave.SlaveStatus;

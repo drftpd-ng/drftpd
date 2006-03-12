@@ -15,9 +15,10 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins;
+package org.drftpd.slave;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,77 +27,42 @@ import net.sf.drftpd.SlaveUnavailableException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.slave.RemoteIOException;
+import org.drftpd.vfs.InodeHandle;
 
-public class DIZFile {
-	private static final Logger logger = Logger.getLogger(DIZFile.class);
-
-	private LinkedRemoteFileInterface _file;
-
-	private LinkedRemoteFileInterface _parent;
-
+public class DIZInfo {
+	private static final Logger logger = Logger.getLogger(DIZInfo.class);
+	
 	private String _diz;
-
-	private String _name;
 
 	private int _total;
 
-	public DIZFile(LinkedRemoteFileInterface file)
-			throws FileNotFoundException, NoAvailableSlaveException {
-		setFile(file);
-		setParent(file);
-		setName(file.getName());
-		setDiz(fetchDiz());
-		setTotal(fetchTotal());
-	}
-
-	private void setFile(LinkedRemoteFileInterface file) {
-		_file = file;
-	}
-
-	private void setParent(LinkedRemoteFileInterface file)
-			throws FileNotFoundException {
-		_parent = file.getParentFile();
-
-	}
-
-	private void setDiz(String diz) {
-		_diz = diz;
-	}
-
-	private void setName(String name) {
-		_name = name;
-	}
-
-	private void setTotal(int total) {
-		_total = total;
-	}
-
-	public LinkedRemoteFileInterface getFile() {
-		return _file;
-	}
-
-	public LinkedRemoteFileInterface getParent() {
-		return _parent;
+	public DIZInfo() {
 	}
 
 	public String getDiz() {
 		return _diz;
 	}
-
-	public String getName() {
-		return _name;
+	
+	public void setDiz(String diz) {
+		_diz = diz;
 	}
 
 	public int getTotal() {
 		return _total;
 	}
+	
+	public void setTotal(int total) {
+		_total = total;
+	}
 
-	public String fetchDiz() throws NoAvailableSlaveException, FileNotFoundException {
-		RemoteSlave aSlave = _file.getAvailableSlaves().iterator().next();
+	public static DIZInfo fetchDiz(InodeHandle file) throws NoAvailableSlaveException, IOException {
+		RemoteSlave aSlave = file.getAvailableSlaves().iterator().next();
 		try {
-			return aSlave.fetchDIZFileFromIndex(aSlave.issueDIZFileToSlave(_file));
+			DIZInfo dizInfo = new DIZInfo();
+			String diz = aSlave.fetchDIZFileFromIndex(aSlave.issueDIZFileToSlave(file));
+			dizInfo.setDiz(diz);
+			dizInfo.setTotal(fetchTotal(diz));
+			return dizInfo;
 		} catch (RemoteIOException e) {
 			if (e.getCause() instanceof FileNotFoundException) {
 				throw (FileNotFoundException) e.getCause();
@@ -108,7 +74,7 @@ public class DIZFile {
 		}
 	}
 
-	public int fetchTotal() {
+	private static int fetchTotal(String diz) throws IOException {
 		Integer total;
 		Matcher m;
 		Pattern p;
@@ -119,19 +85,15 @@ public class DIZFile {
 		p = Pattern.compile(regex);
 
 		// Compare the diz file to the pattern compiled above
-		m = p.matcher(_diz);
+		m = p.matcher(diz);
 
 		// We found the pattern in this diz file!
 		if (m.find()) {
 			total = new Integer(m.group(1).replaceAll("[oOxX]", "0"));
 		} else {
-			logger.warn("Could not retrieve total from dizFile");
-			setTotal(0);
-			return 0;
+			throw new IOException("Could not retrieve total from dizFile");
 		}
 
-		setTotal(total.intValue());
-
-		return getTotal();
+		return total.intValue();
 	}
 }

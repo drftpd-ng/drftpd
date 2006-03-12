@@ -17,39 +17,13 @@
  */
 package net.sf.drftpd.master.config;
 
-import net.sf.drftpd.util.PortRange;
-
-import org.apache.log4j.Logger;
-
-import org.apache.oro.text.GlobCompiler;
-import org.apache.oro.text.regex.MalformedPatternException;
-
-import org.drftpd.GlobalContext;
-import org.drftpd.commands.Reply;
-import org.drftpd.commands.UserManagement;
-
-import org.drftpd.permissions.GlobPathPermission;
-import org.drftpd.permissions.MessagePathPermission;
-import org.drftpd.permissions.PathPermission;
-import org.drftpd.permissions.PatternPathPermission;
-import org.drftpd.permissions.Permission;
-import org.drftpd.permissions.RatioPathPermission;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.slave.Slave;
-
-import org.drftpd.usermanager.User;
-
-import com.Ostermiller.util.StringTokenizer;
-
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Reader;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -58,6 +32,26 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 import java.util.Properties;
+
+import net.sf.drftpd.util.PortRange;
+
+import org.apache.log4j.Logger;
+import org.apache.oro.text.GlobCompiler;
+import org.apache.oro.text.regex.MalformedPatternException;
+import org.drftpd.GlobalContext;
+import org.drftpd.commands.Reply;
+import org.drftpd.commands.UserManagement;
+import org.drftpd.permissions.GlobPathPermission;
+import org.drftpd.permissions.MessagePathPermission;
+import org.drftpd.permissions.PathPermission;
+import org.drftpd.permissions.PatternPathPermission;
+import org.drftpd.permissions.Permission;
+import org.drftpd.permissions.RatioPathPermission;
+import org.drftpd.slave.Slave;
+import org.drftpd.usermanager.User;
+import org.drftpd.vfs.InodeHandle;
+
+import com.Ostermiller.util.StringTokenizer;
 
 
 /**
@@ -131,12 +125,12 @@ public class FtpConfig extends Observable implements ConfigInterface {
     }
 
     public boolean checkPathPermission(String key, User fromUser,
-        LinkedRemoteFileInterface path) {
+    		InodeHandle path) {
         return checkPathPermission(key, fromUser, path, false);
     }
 
     public boolean checkPathPermission(String key, User fromUser,
-        LinkedRemoteFileInterface path, boolean defaults) {
+    		InodeHandle path, boolean defaults) {
         Collection coll = ((Collection) _pathsPerms.get(key));
 
         if (coll == null) {
@@ -163,7 +157,7 @@ public class FtpConfig extends Observable implements ConfigInterface {
     }
 
     public void directoryMessage(Reply response, User user,
-        LinkedRemoteFileInterface dir) {
+    		InodeHandle dir) {
         for (Iterator iter = _msgpath.iterator(); iter.hasNext();) {
             MessagePathPermission perm = (MessagePathPermission) iter.next();
 
@@ -182,7 +176,7 @@ public class FtpConfig extends Observable implements ConfigInterface {
         return _bouncerIps;
     }
 
-    public float getCreditCheckRatio(LinkedRemoteFileInterface path,
+    public float getCreditCheckRatio(InodeHandle path,
         User fromUser) {
         for (Iterator iter = _creditcheck.iterator(); iter.hasNext();) {
             RatioPathPermission perm = (RatioPathPermission) iter.next();
@@ -199,7 +193,7 @@ public class FtpConfig extends Observable implements ConfigInterface {
         return fromUser.getKeyedMap().getObjectFloat(UserManagement.RATIO);
     }
 
-    public float getCreditLossRatio(LinkedRemoteFileInterface path,
+    public float getCreditLossRatio(InodeHandle path,
         User fromUser) {
         for (Iterator iter = _creditloss.iterator(); iter.hasNext();) {
             RatioPathPermission perm = (RatioPathPermission) iter.next();
@@ -364,7 +358,7 @@ public class FtpConfig extends Observable implements ConfigInterface {
                     }
                     //msgpath <path> <filename> <flag/=group/-user>
                     else if (cmd.equals("msgpath")) {
-                        String path = st.nextToken();
+                        InodeHandle path = new InodeHandle(st.nextToken());
                         String messageFile = st.nextToken();
                         _msgpath.add(new MessagePathPermission(path,
                                 messageFile, makeUsers(st)));

@@ -24,7 +24,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -52,14 +51,11 @@ import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.SSLGetContext;
-import org.drftpd.io.SafeFileOutputStream;
-import org.drftpd.remotefile.LinkedRemoteFile;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.remotefile.MLSTSerialize;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.usermanager.UserFileException;
+import org.drftpd.vfs.InodeHandle;
 
 /**
  * @author mog
@@ -183,7 +179,6 @@ public class SlaveManager implements Runnable {
 				for (RemoteSlave rslave : _rslaves) {
 					rslave.shutdown();
 				}
-				saveFilelist();
 
 				try {
 					getGlobalContext().getUserManager().saveAll();
@@ -400,22 +395,6 @@ public class SlaveManager implements Runnable {
 		return false;
 	}
 
-	public void saveFilelist() {
-		try {
-			PrintWriter out = new PrintWriter(new SafeFileOutputStream("files.mlst"));
-
-			try {
-				MLSTSerialize.serialize(getGlobalContext().getRoot(),
-						out);
-			} finally {
-				out.close();
-				logger.info("Done saving filelist");
-			}
-		} catch (IOException e) {
-			logger.warn("Error saving files.mlst", e);
-		}
-	}
-
 	public void run() {
 		try {
 			if (_sslSlaves) {
@@ -522,7 +501,7 @@ public class SlaveManager implements Runnable {
 			throw new RuntimeException(e);
 		}
 		if (_remergeThread == null || !_remergeThread.isAlive()) {
-			_remergeThread = new RemergeThread(getGlobalContext());
+			_remergeThread = new RemergeThread();
 			_remergeThread.start();
 		}
 	}
@@ -530,7 +509,7 @@ public class SlaveManager implements Runnable {
 	/**
 	 * Cancels all transfers in directory
 	 */
-	public void cancelTransfersInDirectory(LinkedRemoteFileInterface dir) {
+	public void cancelTransfersInDirectory(InodeHandle dir) {
 		if (!dir.isDirectory()) {
 			throw new IllegalArgumentException(dir + " is not a directory");
 		}
@@ -554,9 +533,9 @@ public class SlaveManager implements Runnable {
  * Use RemoteSlave.simpleDelete(path) if you want to just delete one file
  * @param file
  */
-	public void deleteOnAllSlaves(LinkedRemoteFile file) {
+	public void deleteOnAllSlaves(InodeHandle file) {
 		HashMap<RemoteSlave,String> slaveMap = new HashMap<RemoteSlave,String>();
-		List<RemoteSlave> slaves = null;
+		Collection<RemoteSlave> slaves = null;
 		if (file.isFile()) {
 			slaves = file.getSlaves();
 		} else {
@@ -604,11 +583,8 @@ public class SlaveManager implements Runnable {
 class RemergeThread extends Thread {
 	private static final Logger logger = Logger.getLogger(RemergeThread.class);
 
-	private GlobalContext _gctx;
-
-	public RemergeThread(GlobalContext gctx) {
+	public RemergeThread() {
 		super("RemergeThread");
-		_gctx = gctx;
 	}
 
 	public void run() {
@@ -626,15 +602,7 @@ class RemergeThread extends Thread {
 				continue;
 			}
 
-			LinkedRemoteFileInterface lrf;
-
-			try {
-				lrf = getGlobalContext().getRoot().lookupFile(
-						msg.getDirectory());
-			} catch (FileNotFoundException e1) {
-				lrf = getGlobalContext().getRoot().createDirectories(
-						msg.getDirectory());
-			}
+			InodeHandle lrf = new InodeHandle(msg.getDirectory());
 
 			try {
 				lrf.remerge(msg.getFiles(), msg.getRslave());
@@ -646,6 +614,6 @@ class RemergeThread extends Thread {
 	}
 
 	private GlobalContext getGlobalContext() {
-		return _gctx;
+		return GlobalContext.getGlobalContext();
 	}
 }

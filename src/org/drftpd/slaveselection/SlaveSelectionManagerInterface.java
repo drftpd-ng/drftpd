@@ -26,7 +26,7 @@ import net.sf.drftpd.mirroring.Job;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -40,7 +40,7 @@ public interface SlaveSelectionManagerInterface {
      * Checksums call us with null BaseFtpConnection.
      */
     public RemoteSlave getASlave(Collection<RemoteSlave> rslaves, char direction,
-        BaseFtpConnection conn, LinkedRemoteFileInterface file)
+        BaseFtpConnection conn, InodeHandle file)
         throws NoAvailableSlaveException;
 
     public GlobalContext getGlobalContext();

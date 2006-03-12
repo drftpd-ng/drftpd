@@ -17,15 +17,8 @@
  */
 package org.drftpd.slave;
 
-import org.apache.log4j.Logger;
-import org.drftpd.slave.diskselection.DiskSelection;
-
-
-import se.mog.io.File;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +26,11 @@ import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+
+import org.apache.log4j.Logger;
+import org.drftpd.slave.diskselection.DiskSelection;
+
+import se.mog.io.File;
 
 
 //TODO SECURITY: verify so that we never get outside of a rootbasket root

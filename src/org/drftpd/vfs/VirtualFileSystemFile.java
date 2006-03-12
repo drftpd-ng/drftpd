@@ -27,6 +27,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.sf.drftpd.ObjectNotFoundException;
+
+import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.master.RemoteSlave;
 
@@ -116,6 +119,23 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 
 	public void setXfertime(long xfertime) {
 		getKeyedMap().setObject(XFERTIME,xfertime);
+	}
+
+	public boolean isUploading() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public synchronized boolean isAvailable() {
+		for (String slave : _slaves) {
+			try {
+				if (GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slave).isAvailable()) {
+					return true;
+				}
+			} catch (ObjectNotFoundException e) {
+			}
+		}
+		return false;
 	}
 
 }

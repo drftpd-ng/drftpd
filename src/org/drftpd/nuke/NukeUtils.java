@@ -3,7 +3,7 @@ package org.drftpd.nuke;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.vfs.InodeHandle;
 
 public class NukeUtils {
 	
@@ -23,10 +23,10 @@ public class NukeUtils {
         return (long) ((size * ratio) + (size * (multiplier - 1)));
     }
 
-    public static void nukeRemoveCredits(LinkedRemoteFileInterface nukeDir,
+    public static void nukeRemoveCredits(InodeHandle nukeDir,
         Hashtable<String,Long> nukees) {
         for (Iterator iter = nukeDir.getFiles().iterator(); iter.hasNext();) {
-            LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
+        	InodeHandle file = (InodeHandle) iter.next();
 
             if (file.isDirectory()) {
                 nukeRemoveCredits(file, nukees);

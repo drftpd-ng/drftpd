@@ -20,19 +20,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Date;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FileExistsException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.Nuke;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.plugins.Statistics;
 
 import se.mog.io.PermissionDeniedException;
 
@@ -96,7 +94,7 @@ public abstract class AbstractUserManager implements UserManager {
         user.getKeyedMap().setObject(UserManagement.MAXLOGINSIP,0);
         user.getKeyedMap().setObject(UserManagement.MAXSIMUP,0);
         user.getKeyedMap().setObject(UserManagement.MAXSIMDN,0);
-        user.getKeyedMap().setObject(Statistics.LOGINS,0);
+//        user.getKeyedMap().setObject(Statistics.LOGINS,0);
         user.getKeyedMap().setObject(UserManagement.CREATED, new Date());
         user.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
         user.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT, new Long(0));
@@ -104,8 +102,8 @@ public abstract class AbstractUserManager implements UserManager {
         user.getKeyedMap().setObject(UserManagement.IRCIDENT, "N/A");
         user.getKeyedMap().setObject(UserManagement.TAGLINE,"drftpd");
         user.getKeyedMap().setObject(UserManagement.BAN_TIME, new Date());
-        user.getKeyedMap().setObject(Nuke.NUKED,0);
-        user.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
+//        user.getKeyedMap().setObject(Nuke.NUKED,0);
+//        user.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
 
         try {
             user.addIPMask("*@127.0.0.1");

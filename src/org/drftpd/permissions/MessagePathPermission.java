@@ -21,12 +21,12 @@ package org.drftpd.permissions;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
 import org.drftpd.commands.Reply;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -37,7 +37,7 @@ import org.drftpd.commands.Reply;
 public class MessagePathPermission extends StringPathPermission {
     private ArrayList<String> _message;
 
-    public MessagePathPermission(String path, String messageFile,
+    public MessagePathPermission(InodeHandle path, String messageFile,
         Collection<String> users) throws IOException {
         super(path, users);
         _message= new ArrayList<String>();
@@ -50,7 +50,9 @@ public class MessagePathPermission extends StringPathPermission {
                 _message.add(line);
             }
         } finally {
-            in.close();
+        	if (in != null) {
+        		in.close();
+        	}
         }
 
         _message.trimToSize();

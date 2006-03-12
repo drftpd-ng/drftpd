@@ -17,11 +17,11 @@
  */
 package org.drftpd.permissions;
 
+import java.util.Collection;
+
 import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Matcher;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-
-import java.util.Collection;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -36,7 +36,7 @@ public class GlobPathPermission extends PathPermission {
         _pat = pat;
     }
 
-    public boolean checkPath(LinkedRemoteFileInterface file) {
+    public boolean checkPath(InodeHandle file) {
         String path = file.getPath();
 
         if (file.isDirectory()) {

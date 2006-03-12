@@ -17,12 +17,12 @@
  */
 package org.drftpd.usermanager;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import junit.framework.TestCase;
 
 import org.apache.oro.text.regex.MalformedPatternException;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 
 /**

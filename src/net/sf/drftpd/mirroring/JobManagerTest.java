@@ -32,12 +32,7 @@ import net.sf.drftpd.master.SlaveFileException;
 
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.AbstractLinkedRemoteFile;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
-import org.drftpd.tests.DummyGlobalContext;
-import org.drftpd.tests.DummyRemoteSlave;
-import org.drftpd.tests.DummySlaveManager;
-import org.drftpd.tests.DummySlaveSelectionManager;
 
 
 /**

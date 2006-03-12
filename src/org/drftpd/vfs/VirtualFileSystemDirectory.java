@@ -103,7 +103,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		logger.info("createLink(" + inode + ")");
 	}
 
-	public Collection<String> getFiles() {
+	public Collection<String> getInodes() {
 		return new ArrayList<String>(_files.keySet());
 	}
 

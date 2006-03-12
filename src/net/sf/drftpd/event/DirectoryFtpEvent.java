@@ -17,8 +17,8 @@
  */
 package net.sf.drftpd.event;
 
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -27,20 +27,20 @@ import org.drftpd.usermanager.User;
  * @version $Id$
  */
 public class DirectoryFtpEvent extends ConnectionEvent {
-    private LinkedRemoteFileInterface directory;
+    private InodeHandle directory;
 
     public DirectoryFtpEvent(User user, String command,
-        LinkedRemoteFileInterface directory) {
+    		InodeHandle directory) {
         this(user, command, directory, System.currentTimeMillis());
     }
 
     public DirectoryFtpEvent(User user, String command,
-        LinkedRemoteFileInterface directory, long time) {
+    		InodeHandle directory, long time) {
         super(user, command, time);
         this.directory = directory;
     }
 
-    public LinkedRemoteFileInterface getDirectory() {
+    public InodeHandle getDirectory() {
         return directory;
     }
 

@@ -27,8 +27,7 @@ import java.util.Iterator;
 import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
 
-import org.drftpd.remotefile.LinkedRemoteFile;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.vfs.InodeHandle;
 
 /**
  * Set of usefull commnads to sort users/groups.
@@ -39,7 +38,7 @@ public class RankUtils {
 		ArrayList<GroupPosition> ret = new ArrayList<GroupPosition>();
 		
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			InodeHandle file = (InodeHandle) iter.next();
 			String groupname = file.getGroupname();
 			
 			GroupPosition stat = null;
@@ -74,7 +73,7 @@ public class RankUtils {
 		ArrayList<UploaderPosition> ret = new ArrayList<UploaderPosition>();
 		
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
+			InodeHandle file = (InodeHandle) iter.next();
 			UploaderPosition stat = null;
 			
 			for (Iterator iter2 = ret.iterator(); iter2.hasNext();) {

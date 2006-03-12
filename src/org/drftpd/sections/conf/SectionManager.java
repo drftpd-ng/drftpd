@@ -28,9 +28,9 @@ import java.util.Properties;
 import net.sf.drftpd.FatalException;
 
 import org.drftpd.master.ConnectionManager;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -41,7 +41,7 @@ public class SectionManager implements SectionManagerInterface {
     private static final Class[] CONSTRUCTOR_SIG = new Class[] {
             SectionManager.class, int.class, Properties.class
         };
-    private PlainSection _emptySection = new PlainSection(this, "", "/");
+    private PlainSection _emptySection = new PlainSection(this, "", new InodeHandle("/"));
     private Hashtable<String,SectionInterface> _sections;
 
     public SectionManager() {
@@ -73,10 +73,10 @@ public class SectionManager implements SectionManagerInterface {
         for (Iterator iter = _sections.values().iterator(); iter.hasNext();) {
             SectionInterface section = (SectionInterface) iter.next();
 
-            if (string.startsWith(section.getBasePath()) &&
-                    (matchlen < section.getPath().length())) {
+            if (string.startsWith(section.getBaseDirectory().getPath()) &&
+                    (matchlen < section.getFile().getPath().length())) {
                 match = section;
-                matchlen = section.getPath().length();
+                matchlen = section.getFile().getPath().length();
             }
         }
 
@@ -119,7 +119,7 @@ public class SectionManager implements SectionManagerInterface {
         _sections = sections;
     }
 
-    public SectionInterface lookup(LinkedRemoteFileInterface file) {
+    public SectionInterface lookup(InodeHandle file) {
         return lookup(file.getPath());
     }
 

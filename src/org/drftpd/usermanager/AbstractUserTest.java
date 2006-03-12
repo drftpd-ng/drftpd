@@ -17,24 +17,19 @@
  */
 package org.drftpd.usermanager;
 
-import junit.framework.TestCase;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
 
+import junit.framework.TestCase;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.UserEvent;
 import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-
-import org.drftpd.tests.DummyGlobalContext;
-import org.drftpd.tests.DummyUser;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
 
 
 /**

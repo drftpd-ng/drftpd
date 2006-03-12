@@ -15,28 +15,16 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.remotefile;
-
-import java.util.Comparator;
+package org.drftpd.slave;
 
 /**
- * @author zubov
+ * @author mog
  * @version $Id$
  */
-public class TimeComparator implements Comparator<LinkedRemoteFileInterface> {
-
-	/**
-	 * Sorts LinkedRemoteFileInterface objects by their date modified
-	 */
-	public TimeComparator() {
-		
-	}
-
-	public int compare(LinkedRemoteFileInterface arg0, LinkedRemoteFileInterface arg1) {
-		if (arg0 == null || arg1 == null) {
-			throw new IllegalArgumentException("Neither arg0 nor arg1 can be null");
-		}
-		return Long.signum(arg1.lastModified() - arg0.lastModified());
-	}
-
+public interface LightRemoteFileInterface {
+	public String getName();
+	public boolean isDirectory();
+	public boolean isFile();
+	public long lastModified();
+	public long length();
 }

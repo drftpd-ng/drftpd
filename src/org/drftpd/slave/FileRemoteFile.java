@@ -18,14 +18,9 @@
 package org.drftpd.slave;
 
 
-import org.apache.log4j.Logger;
-import org.drftpd.remotefile.AbstractLightRemoteFile;
-import org.drftpd.remotefile.LightRemoteFileInterface;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -34,6 +29,8 @@ import java.util.List;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
+import org.apache.log4j.Logger;
+
 
 /**
  * A wrapper for java.io.File to the net.sf.drftpd.RemoteFile structure.
@@ -41,7 +38,7 @@ import java.util.zip.CheckedInputStream;
  * @author mog
  * @version $Id$
  */
-public class FileRemoteFile extends AbstractLightRemoteFile {
+public class FileRemoteFile implements LightRemoteFileInterface {
     private static final Logger logger = Logger.getLogger(FileRemoteFile.class);
     Hashtable _filefiles;
     String _path;
@@ -332,8 +329,9 @@ public class FileRemoteFile extends AbstractLightRemoteFile {
      * Returns an array of FileRemoteFile:s representing the contents of the
      * directory this FileRemoteFile represents.
      */
-    public LightRemoteFileInterface[] listFiles() {
-        return (LightRemoteFileInterface[]) getFiles().toArray(new FileRemoteFile[0]);
+    public FileRemoteFile[] listFiles() {
+    	
+        return (FileRemoteFile[]) getFiles().toArray(new FileRemoteFile[0]);
     }
     public static class InvalidDirectoryException extends IOException {
         /**

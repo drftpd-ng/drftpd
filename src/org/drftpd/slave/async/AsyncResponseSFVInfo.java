@@ -15,45 +15,33 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.remotefile;
+package org.drftpd.slave.async;
 
-import java.io.IOException;
+import org.drftpd.SFVInfo;
 
 
 /**
- * @author mog
- *
- * @version $Id$
+ * @author zubov
+ * @version $Id: AsyncResponseSFVFile.java 790 2004-11-15 01:12:17Z mog $
  */
-public class CorruptFileListException extends IOException {
-    /**
-     *
-     */
-    public CorruptFileListException() {
-        super();
+public class AsyncResponseSFVInfo extends AsyncResponse {
+    private SFVInfo _sfv;
+
+    public AsyncResponseSFVInfo(String index, SFVInfo sfv) {
+        super(index);
+
+        if (sfv == null) {
+            throw new IllegalArgumentException("sfv cannot be null");
+        }
+
+        _sfv = sfv;
     }
 
-    /**
-     * @param message
-     */
-    public CorruptFileListException(String message) {
-        super(message);
+    public SFVInfo getSFV() {
+        return _sfv;
     }
-
-    /**
-     * @param message
-     * @param cause
-     */
-    public CorruptFileListException(String message, Throwable cause) {
-        super(message);
-        initCause(cause);
-    }
-
-    /**
-     * @param cause
-     */
-    public CorruptFileListException(Throwable cause) {
-        super();
-        initCause(cause);
+    
+    public String toString() {
+    	return getClass().getName();
     }
 }

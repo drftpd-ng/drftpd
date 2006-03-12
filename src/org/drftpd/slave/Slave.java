@@ -52,15 +52,13 @@ import net.sf.drftpd.util.PortRange;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.drftpd.ActiveConnection;
-import org.drftpd.LightSFVFile;
 import org.drftpd.PassiveConnection;
 import org.drftpd.PropertyHelper;
+import org.drftpd.SFVInfo;
 import org.drftpd.SSLGetContext;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.id3.MP3File;
 import org.drftpd.master.QueuedOperation;
-import org.drftpd.remotefile.CaseInsensitiveHashtable;
-import org.drftpd.remotefile.LightRemoteFile;
 import org.drftpd.slave.async.AsyncCommand;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
@@ -71,10 +69,9 @@ import org.drftpd.slave.async.AsyncResponseException;
 import org.drftpd.slave.async.AsyncResponseID3Tag;
 import org.drftpd.slave.async.AsyncResponseMaxPath;
 import org.drftpd.slave.async.AsyncResponseRemerge;
-import org.drftpd.slave.async.AsyncResponseSFVFile;
+import org.drftpd.slave.async.AsyncResponseSFVInfo;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
-import org.drftpd.slave.diskselection.DiskSelection;
 
 import se.mog.io.File;
 import se.mog.io.PermissionDeniedException;
@@ -418,10 +415,17 @@ public class Slave {
         return _roots;
     }
 
-    private LightSFVFile getSFVFile(String path) throws IOException {
-        return new LightSFVFile(new BufferedReader(
-                new FileReader(_roots.getFile(path))));
-    }
+    private SFVInfo getSFVFile(String path) throws IOException {
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(_roots.getFile(path)));
+			return SFVInfo.getSFVInfo(reader);
+		} finally {
+			if (reader != null) {
+				reader.close();
+			}
+		}
+	}
 
     private String getDIZFile(String path) throws IOException {
 		ZipEntry zipEntry = null;
@@ -771,7 +775,7 @@ public class Slave {
 
     private AsyncResponse handleSfvFile(AsyncCommandArgument ac) {
         try {
-            return new AsyncResponseSFVFile(ac.getIndex(),
+            return new AsyncResponseSFVInfo(ac.getIndex(),
                 getSFVFile(mapPathToRenameQueue(ac.getArgs())));
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);

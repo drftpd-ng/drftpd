@@ -92,7 +92,7 @@ public class VirtualFileSystem {
 		}
 	}
 
-	public void deleteXML(String path) {
+	protected void deleteXML(String path) {
 		recursiveDelete(new File(getRealPath(path)));
 	}
 
@@ -132,7 +132,7 @@ public class VirtualFileSystem {
 		return fileSystemPath + path;
 	}
 
-	public VirtualFileSystemRoot getRoot() {
+	protected VirtualFileSystemRoot getRoot() {
 		return _root;
 	}
 
@@ -193,7 +193,7 @@ public class VirtualFileSystem {
 		}
 	}
 
-	public void renameXML(String source, String destination) throws FileNotFoundException, PermissionDeniedException {
+	protected void renameXML(String source, String destination) throws FileNotFoundException, PermissionDeniedException {
 		File file = new File(getRealPath(source));
 		if (!file.exists()) {
 			throw new FileNotFoundException(source + " cannot be found");

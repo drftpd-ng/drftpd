@@ -13,11 +13,10 @@ import java.util.Properties;
 
 import net.sf.drftpd.util.PortRange;
 
-import org.drftpd.GlobalContext;
 import org.drftpd.commands.Reply;
 import org.drftpd.permissions.PathPermission;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.InodeHandle;
 
 /**
  * @author mog
@@ -27,32 +26,26 @@ import org.drftpd.usermanager.User;
  */
 public interface ConfigInterface {
 	public abstract boolean checkPathPermission(String key, User fromUser,
-			LinkedRemoteFileInterface path);
+			InodeHandle path);
 
 	public abstract boolean checkPathPermission(String key, User fromUser,
-			LinkedRemoteFileInterface path, boolean defaults);
+			InodeHandle path, boolean defaults);
 
 	public abstract boolean checkPermission(String key, User user);
 
 	public abstract void directoryMessage(Reply response, User user,
-			LinkedRemoteFileInterface dir);
+			InodeHandle dir);
 
 	/**
 	 * @return Returns the bouncerIp.
 	 */
 	public abstract List getBouncerIps();
 
-	public abstract float getCreditCheckRatio(LinkedRemoteFileInterface path,
+	public abstract float getCreditCheckRatio(InodeHandle path,
 			User fromUser);
 
-	public abstract float getCreditLossRatio(LinkedRemoteFileInterface path,
+	public abstract float getCreditLossRatio(InodeHandle path,
 			User fromUser);
-
-	public abstract String getDirName(String name);
-
-	public abstract String getFileName(String name);
-
-	public abstract GlobalContext getGlobalContext();
 
 	public abstract boolean getHideIps();
 

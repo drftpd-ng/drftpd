@@ -39,8 +39,6 @@ import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.UserManagement;
-import org.drftpd.plugins.RaceStatistics;
-import org.drftpd.plugins.Statistics;
 import org.drftpd.slave.Slave;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -59,10 +57,10 @@ public class ConnectionManager {
     private ConnectionManager() {
         _commandManagerFactory = new CommandManagerFactory();
 
-        getGlobalContext().addFtpListener(new RaceStatistics());
-        getGlobalContext().addFtpListener(new Statistics());
+        //getGlobalContext().addFtpListener(new RaceStatistics());
+        //getGlobalContext().addFtpListener(new Statistics());
 
-        loadTimer();
+        //loadTimer();
         getGlobalContext().getSlaveManager().addShutdownHook();
     }
     
@@ -227,7 +225,7 @@ public class ConnectionManager {
         //run every 10 seconds
         getGlobalContext().getTimer().schedule(timerLogoutIdle, 10 * 1000, 10 * 1000);*/
 
-        TimerTask timerSave = new TimerTask() {
+/*        TimerTask timerSave = new TimerTask() {
                 public void run() {
                 	try {
                 		getGlobalContext().getSlaveManager().saveFilelist();
@@ -241,7 +239,7 @@ public class ConnectionManager {
                 		logger.error("Error in timerSave TimerTask", t);
                 	}
                 }
-            };
+            };*/
 /*        TimerTask timerGarbageCollect = new TimerTask() {
 			public void run() {
 				logger.debug("Memory free before GC :"
@@ -257,7 +255,7 @@ public class ConnectionManager {
 		};*/
 
 		// run every hour
-		getGlobalContext().getTimer().schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
+///		getGlobalContext().getTimer().schedule(timerSave, 60 * 60 * 1000, 60 * 60 * 1000);
 		// run every minute
 //		getGlobalContext().getTimer().schedule(timerGarbageCollect, 60 * 1000, 60 * 1000);
     }

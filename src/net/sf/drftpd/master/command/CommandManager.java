@@ -86,10 +86,6 @@ public class CommandManager {
                 command);
         }
         
-        if (!conn.getCurrentDirectory().isValid()) {
-        	conn.setCurrentDirectory(conn.getCurrentDirectory().getRoot());
-        }
-        
         try {
 			if (conn.getUser().isDeleted()) {
 				conn.stop("You are deleted");

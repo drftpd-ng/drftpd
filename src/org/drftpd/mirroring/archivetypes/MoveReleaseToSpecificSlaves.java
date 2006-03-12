@@ -20,9 +20,7 @@ package org.drftpd.mirroring.archivetypes;
 import java.util.HashSet;
 import java.util.Properties;
 
-import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.plugins.Archive;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
 
 

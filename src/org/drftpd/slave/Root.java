@@ -17,9 +17,9 @@
  */
 package org.drftpd.slave;
 
-import se.mog.io.File;
-
 import java.io.IOException;
+
+import se.mog.io.File;
 
 
 /**

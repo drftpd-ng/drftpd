@@ -18,8 +18,6 @@
 package org.drftpd.slave;
 
 import java.io.IOException;
-import java.io.Serializable;
-
 import java.net.Socket;
 
 

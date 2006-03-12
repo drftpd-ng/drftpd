@@ -18,7 +18,7 @@
 package org.drftpd.master;
 
 
-import org.drftpd.remotefile.CaseInsensitiveHashtable;
+import org.drftpd.slave.CaseInsensitiveHashtable;
 import org.drftpd.slave.async.AsyncResponseRemerge;
 
 

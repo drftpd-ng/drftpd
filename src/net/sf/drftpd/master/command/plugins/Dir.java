@@ -42,7 +42,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
 import org.drftpd.RankUtils;
-import org.drftpd.SFVFile;
+import org.drftpd.victim;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;

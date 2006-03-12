@@ -51,7 +51,7 @@ import org.drftpd.ActiveConnection;
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
 import org.drftpd.PassiveConnection;
-import org.drftpd.SFVFile;
+import org.drftpd.victim;
 import org.drftpd.SSLGetContext;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;

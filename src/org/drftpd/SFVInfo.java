@@ -21,19 +21,37 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.drftpd.remotefile.CaseInsensitiveHashtable;
+import org.drftpd.slave.CaseInsensitiveHashtable;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: LightSFVFile.java 1114 2005-03-13 01:26:58Z zubov $
  */
-public class LightSFVFile extends AbstractSFVFile implements Serializable {
+public class SFVInfo implements Serializable {
+	
+	private CaseInsensitiveHashtable _entries = null;
     /**
      * Constructor for SFVFile.
      */
-    public LightSFVFile(BufferedReader in) throws IOException {
+	public SFVInfo() {
+		
+	}
+	
+	public CaseInsensitiveHashtable getEntries() {
+		return _entries;
+	}
+	
+	public void setEntries(CaseInsensitiveHashtable entries) {
+		_entries = entries;
+	}
+	
+	public int getSize() {
+		return _entries.size();
+	}
+	
+    public static SFVInfo getSFVInfo(BufferedReader in) throws IOException {
         String line;
-        _entries = new CaseInsensitiveHashtable();
+        CaseInsensitiveHashtable entries = new CaseInsensitiveHashtable();
         try {
             while ((line = in.readLine()) != null) {
                 if (line.length() == 0) {
@@ -59,11 +77,15 @@ public class LightSFVFile extends AbstractSFVFile implements Serializable {
                 } catch (NumberFormatException e) {
                     continue;
                 }
-                _entries.put(fileName, checkSum);
+                entries.put(fileName, checkSum);
             }
         } finally {
-            in.close();
+        	if (in != null) {
+        		in.close();
+        	}
         }
-        System.out.println("Parsed "+getClass().getName()+"[size="+size()+"]");
+        SFVInfo tmp = new SFVInfo();
+        tmp.setEntries(entries);
+        return tmp;
     }
 }

@@ -2,7 +2,7 @@ package org.drftpd.slave.async;
 
 import java.io.File;
 
-import org.drftpd.remotefile.CaseInsensitiveHashtable;
+import org.drftpd.slave.CaseInsensitiveHashtable;
 
 
 /**

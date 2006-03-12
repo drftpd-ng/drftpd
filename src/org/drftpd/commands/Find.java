@@ -39,8 +39,8 @@ import net.sf.drftpd.mirroring.Job;
 
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.SFVFile;
-import org.drftpd.SFVFile.SFVStatus;
+import org.drftpd.victim;
+import org.drftpd.victim.SFVStatus;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.remotefile.MLSTSerialize;

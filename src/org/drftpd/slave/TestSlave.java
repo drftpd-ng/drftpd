@@ -18,26 +18,18 @@
 package org.drftpd.slave;
 
 import java.io.EOFException;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.Properties;
-
-import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.drftpd.PropertyHelper;
-import org.drftpd.SSLGetContext;
 import org.drftpd.remotefile.CaseInsensitiveHashtable;
-import org.drftpd.remotefile.LightRemoteFile;
 import org.drftpd.slave.async.AsyncCommand;
-import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.slave.async.AsyncResponseDiskStatus;
 import org.drftpd.slave.async.AsyncResponseException;

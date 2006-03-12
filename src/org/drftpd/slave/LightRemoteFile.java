@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.remotefile;
+package org.drftpd.slave;
 
 
 import java.io.Serializable;
@@ -26,13 +26,11 @@ import java.io.Serializable;
  * @version $Id$
  * For use in sending the filelist from the slave to the master
  */
-public final class LightRemoteFile extends AbstractLightRemoteFile
-    implements Serializable {
+public final class LightRemoteFile implements Serializable {
     private String _filename;
     private long _lastModified;
     private long _length;
 
-    private boolean _isFile;
     private boolean _isDirectory;
     
     private void setName(String name) {
@@ -46,7 +44,6 @@ public final class LightRemoteFile extends AbstractLightRemoteFile
         setName(file.getName());
         _lastModified = file.lastModified();
         _length = file.length();
-        _isFile = file.isFile();
         _isDirectory = file.isDirectory();
     }
     

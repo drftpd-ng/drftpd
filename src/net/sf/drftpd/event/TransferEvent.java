@@ -17,12 +17,12 @@
  */
 package net.sf.drftpd.event;
 
+import java.net.InetAddress;
+
 import net.sf.drftpd.master.BaseFtpConnection;
 
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-
-import java.net.InetAddress;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -41,16 +41,15 @@ public class TransferEvent extends DirectoryFtpEvent {
      * @param directory
      */
     public TransferEvent(BaseFtpConnection conn, String command,
-        LinkedRemoteFileInterface directory, InetAddress clientHost,
-        RemoteSlave rslave, InetAddress peer, char type) {
-        this(conn, command, directory, clientHost, rslave, peer, type,
-            System.currentTimeMillis());
-    }
+			InodeHandle directory, InetAddress clientHost, RemoteSlave rslave,
+			InetAddress peer, char type) {
+		this(conn, command, directory, clientHost, rslave, peer, type, System
+				.currentTimeMillis());
+	}
 
     private TransferEvent(BaseFtpConnection conn, String command,
-        LinkedRemoteFileInterface directory, InetAddress clientHost,
-        RemoteSlave rslave, InetAddress peer, char type,
-        long time) {
+			InodeHandle directory, InetAddress clientHost, RemoteSlave rslave,
+			InetAddress peer, char type, long time) {
         super(conn.getUserNull(), command, directory, time);
         _clientHost = clientHost;
 

@@ -17,15 +17,13 @@
  */
 package net.sf.drftpd.util;
 
-import org.apache.log4j.Logger;
-
 import java.io.IOException;
-
 import java.net.ServerSocket;
-
 import java.util.Random;
 
 import javax.net.ServerSocketFactory;
+
+import org.apache.log4j.Logger;
 
 
 /**

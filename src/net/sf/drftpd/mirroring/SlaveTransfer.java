@@ -22,10 +22,10 @@ import net.sf.drftpd.SlaveUnavailableException;
 
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.TransferFailedException;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -35,7 +35,7 @@ import org.drftpd.slave.TransferFailedException;
  */
 public class SlaveTransfer {
     private RemoteSlave _destSlave;
-    private LinkedRemoteFileInterface _file;
+    private InodeHandle _file;
     private RemoteSlave _srcSlave;
     private RemoteTransfer _destTransfer = null;
     private RemoteTransfer _srcTransfer = null;
@@ -43,7 +43,7 @@ public class SlaveTransfer {
     /**
      * Slave to Slave Transfers
      */
-    public SlaveTransfer(LinkedRemoteFileInterface file,
+    public SlaveTransfer(InodeHandle file,
         RemoteSlave sourceSlave, RemoteSlave destSlave) {
         _file = file;
         _srcSlave = sourceSlave;

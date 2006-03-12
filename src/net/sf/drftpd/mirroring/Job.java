@@ -29,8 +29,8 @@ import net.sf.drftpd.SlaveUnavailableException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.RemoteIOException;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -42,7 +42,7 @@ public class Job {
 	private static long jobIndexCount = 1;
 	private static final Logger logger = Logger.getLogger(Job.class);
     private Set<RemoteSlave> _destSlaves;
-    private LinkedRemoteFileInterface _file;
+    private InodeHandle _file;
     private int _priority;
     private SlaveTransfer _slaveTransfer;
     private long _timeCreated;
@@ -51,12 +51,12 @@ public class Job {
     private long _index;
     private boolean _onlyCountOnlineSlaves;
     
-    public Job(LinkedRemoteFileInterface file, Collection<RemoteSlave> destSlaves,
+    public Job(InodeHandle file, Collection<RemoteSlave> destSlaves,
             int priority, int transferNum) {
     	this(file, destSlaves, priority, transferNum, false);
     }
 
-    public Job(LinkedRemoteFileInterface file, Collection<RemoteSlave> destSlaves,
+    public Job(InodeHandle file, Collection<RemoteSlave> destSlaves,
         int priority, int transferNum, boolean onlyCountOnlineSlaves) {
     	_index = jobIndexCount++;
         _destSlaves = new HashSet<RemoteSlave>(destSlaves);
@@ -103,7 +103,7 @@ public class Job {
 	 * Returns the file for this job. This file is used to tell the slaves what
 	 * file to transfer & receive.
 	 */
-    public LinkedRemoteFileInterface getFile() {
+    public InodeHandle getFile() {
         return _file;
     }
 
@@ -200,11 +200,11 @@ public class Job {
     }
 
     public String toString() {
-		return "Job[index=" + _index + "][file=" + getFile().getPath()
+		return "Job[index=" + _index + "][file=" + getFile()
 				+ ",dest=[" + outputDestinationSlaves() + "],transferNum="
 				+ _transferNum + ",priority=" + getPriority() + "]";
 	}
-
+    
     /**
 	 * Returns true if transfer was completed successfully
 	 * 

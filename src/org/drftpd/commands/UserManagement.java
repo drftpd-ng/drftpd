@@ -46,7 +46,6 @@ import org.drftpd.Bytes;
 import org.drftpd.Time;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.permissions.Permission;
-import org.drftpd.plugins.Statistics;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.HostMask;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -322,9 +321,9 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
             newUser.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
             newUser.getKeyedMap().setObject(UserManagement.IRCIDENT, "N/A");
             newUser.getKeyedMap().setObject(UserManagement.BAN_TIME, new Date());
-            newUser.getKeyedMap().setObject(Statistics.LOGINS,0);
-            newUser.getKeyedMap().setObject(Nuke.NUKED,0);
-            newUser.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
+            //newUser.getKeyedMap().setObject(Statistics.LOGINS,0);
+            //newUser.getKeyedMap().setObject(Nuke.NUKED,0);
+            //newUser.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
             newUser.getKeyedMap().setObject(UserManagement.TAGLINE,tagline);
             newUser.getKeyedMap().setObject(UserManagement.RATIO, ratioVal);
             newUser.getKeyedMap().setObject(UserManagement.MAXLOGINS,max_loginsVal);
@@ -1921,7 +1920,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                         Time.formatTime(System.currentTimeMillis() -
                             conn2.getLastActive()));
                     env.add("targetuser", user.getName());
-                    synchronized (conn2.getDataConnectionHandler()) {
+/*                    synchronized (conn2.getDataConnectionHandler()) {
 						if (!conn2.isExecuting()) {
 							response.addComment(SimplePrintf.jprintf(
 									formatidle, env));
@@ -1955,7 +1954,8 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 							response.addComment(SimplePrintf.jprintf(
 									formatcommand, env));
 						}
-					}
+					}*/
+                    // Have to move data from DataConnectionHandler to BaseFtpConnection
                 }
             }
 
@@ -2023,7 +2023,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
                     env.add("ip", conn2.getClientAddress().getHostAddress());
                     
                     
-                    synchronized (conn2.getDataConnectionHandler()) {
+/*                    synchronized (conn2.getDataConnectionHandler()) {
 						if (!conn2.isExecuting()) {
 							response.addComment(SimplePrintf.jprintf(
 									formatidle, env));
@@ -2056,7 +2056,8 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 							response.addComment(SimplePrintf.jprintf(
 									formatcommand, env));
 						}
-					}
+					}*/
+                    // Have to move data from DataConnectionHandler to BaseFtpConnection
                 }
             }
 

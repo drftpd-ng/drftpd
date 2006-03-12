@@ -27,10 +27,9 @@ import java.util.StringTokenizer;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
-import org.drftpd.remotefile.FileUtils;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -58,12 +57,12 @@ public class SectionManager implements SectionManagerInterface {
     	return GlobalContext.getGlobalContext();
 	}
 
-	public Collection getSections() {
-        ArrayList sections = new ArrayList();
+	public Collection<SectionInterface> getSections() {
+        ArrayList<SectionInterface> sections = new ArrayList<SectionInterface>();
 
-        for (Iterator iter = getGlobalContext().getRoot().getDirectories()
+        for (Iterator<InodeHandle> iter = getGlobalContext().getRoot().getDirectories()
                                 .iterator(); iter.hasNext();) {
-            LinkedRemoteFileInterface dir = (LinkedRemoteFileInterface) iter.next();
+        	InodeHandle dir = (InodeHandle) iter.next();
             sections.add(new Section(dir));
         }
 
@@ -87,32 +86,23 @@ public class SectionManager implements SectionManagerInterface {
     public void reload() {
     }
 
-    public SectionInterface lookup(LinkedRemoteFileInterface file) {
+    public SectionInterface lookup(InodeHandle file) {
         return lookup(file.getPath());
     }
 
     public class Section implements SectionInterface {
-        private LinkedRemoteFileInterface _lrf;
+        private InodeHandle _lrf;
 
-        public Section(LinkedRemoteFileInterface lrf) {
+        public Section(InodeHandle lrf) {
             _lrf = lrf;
         }
 
-        public LinkedRemoteFileInterface getFile() {
+        public InodeHandle getFile() {
             return _lrf;
         }
 
         public Collection getFiles() {
             return Collections.singletonList(_lrf);
-        }
-
-        public LinkedRemoteFileInterface getFirstDirInSection(
-            LinkedRemoteFileInterface dir) {
-            try {
-                return FileUtils.getSubdirOfDirectory(getFile(), dir);
-            } catch (FileNotFoundException e) {
-                return dir;
-            }
         }
 
         public String getName() {
@@ -123,7 +113,7 @@ public class SectionManager implements SectionManagerInterface {
             return _lrf.getPath();
         }
 
-        public LinkedRemoteFileInterface getBaseFile() {
+        public InodeHandle getBaseDirectory() {
             return getFile();
         }
 

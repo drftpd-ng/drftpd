@@ -17,36 +17,115 @@
  */
 package org.drftpd.vfs;
 
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
-import org.drftpd.SFVFile;
+import net.sf.drftpd.NoSFVEntryException;
+
+import org.drftpd.SFVInfo;
+import org.drftpd.SFVStatus;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 
 public class VirtualFileSystemFileSFV extends VirtualFileSystemFile {
 
-	public static final Key SFV = new Key(VirtualFileSystemFileSFV.class, "sfv", SFVFile.class);
+	public static final Key SFV = new Key(VirtualFileSystemFileSFV.class,
+			"sfv", SFVInfo.class);
 
-	public VirtualFileSystemFileSFV(String username, String group, long size, Set<String> slaves) {
+	public VirtualFileSystemFileSFV(String username, String group, long size,
+			Set<String> slaves) {
 		super(username, group, size, slaves);
 	}
-	
-	public VirtualFileSystemFileSFV(String username, String group, long size, String initialSlave) {
-		this(username, group, size, new HashSet<String>(Arrays.asList(new String[] { initialSlave })));
+
+	public VirtualFileSystemFileSFV(String username, String group, long size,
+			String initialSlave) {
+		this(username, group, size, new HashSet<String>(Arrays
+				.asList(new String[] { initialSlave })));
 	}
 
-	public SFVFile getSFVFile() {
+	public SFVInfo getSFVInfo() {
 		try {
-			return (SFVFile) getKeyedMap().getObject(SFV);
+			return (SFVInfo) getKeyedMap().getObject(SFV);
 		} catch (KeyNotFoundException e) {
 			return null;
 		}
 	}
 
-	public void setSFVFile(SFVFile sfvFile) {
+	public void setSFVFile(SFVInfo sfvFile) {
 		getKeyedMap().setObject(SFV, sfvFile);
 	}
+
+	public SFVStatus getStatus() {
+		int offline = 0;
+		int present = 0;
+		for (String fileName : getParent().getInodes()) {
+			VirtualFileSystemInode inode;
+			try {
+				inode = getParent().getInodeByName(fileName);
+			} catch (FileNotFoundException e) {
+				// this should not happen, but is not of our concern
+				// throw the exception for bug fixing
+				logger
+						.warn(
+								"Inode reported to exist by the directory that does not exist, stop deleting files outside of drftpd",
+								e);
+				continue;
+			}
+			if (inode.isFile()) {
+				VirtualFileSystemFile file = (VirtualFileSystemFile) inode;
+				if (!file.isUploading()) {
+					present++;
+				}
+				if (!file.isAvailable()) {
+					offline++;
+				}
+			}
+		}
+		return new SFVStatus(getSFVInfo().getEntries().size(), offline, present);
+	}
+
+	public long getChecksum(String fileName) throws NoSFVEntryException {
+		Long checksum = (Long) getSFVInfo().getEntries().get(fileName);
+
+		if (checksum == null) {
+			throw new NoSFVEntryException();
+		}
+
+		return checksum.longValue();
+	}
+
+	
+	// I don't know what these are used for, so I could not write them properly
+/*	public long getTotalBytes() {
+		long totalBytes = 0;
+
+		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+			totalBytes += ((LinkedRemoteFileInterface) iter.next()).length();
+		}
+
+		return totalBytes;
+	}
+
+	public long getTotalXfertime() {
+		long totalXfertime = 0;
+
+		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+			totalXfertime += ((LinkedRemoteFileInterface) iter.next())
+					.getXfertime();
+		}
+
+		return totalXfertime;
+	}
+
+	public long getXferspeed() {
+		if ((getTotalXfertime() / 1000) == 0) {
+			return 0;
+		}
+
+		return getTotalBytes() / (getTotalXfertime() / 1000);
+	}*/
 
 }

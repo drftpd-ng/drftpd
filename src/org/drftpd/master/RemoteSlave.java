@@ -51,11 +51,10 @@ import net.sf.drftpd.event.SlaveEvent;
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
-import org.drftpd.LightSFVFile;
+import org.drftpd.SFVInfo;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.io.SafeFileOutputStream;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.RemoteIOException;
@@ -73,12 +72,13 @@ import org.drftpd.slave.async.AsyncResponseException;
 import org.drftpd.slave.async.AsyncResponseID3Tag;
 import org.drftpd.slave.async.AsyncResponseMaxPath;
 import org.drftpd.slave.async.AsyncResponseRemerge;
-import org.drftpd.slave.async.AsyncResponseSFVFile;
+import org.drftpd.slave.async.AsyncResponseSFVInfo;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
 import org.drftpd.usermanager.Entity;
 import org.drftpd.usermanager.HostMask;
 import org.drftpd.usermanager.HostMaskCollection;
+import org.drftpd.vfs.InodeHandle;
 
 /**
  * @author mog
@@ -741,9 +741,9 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 		return ((AsyncResponseDIZFile) fetchResponse(index)).getDIZ();
 	}
 
-	public LightSFVFile fetchSFVFileFromIndex(String index)
+	public SFVInfo fetchSFVFileFromIndex(String index)
 			throws RemoteIOException, SlaveUnavailableException {
-		return ((AsyncResponseSFVFile) fetchResponse(index)).getSFV();
+		return ((AsyncResponseSFVInfo) fetchResponse(index)).getSFV();
 	}
 
 	public synchronized String getPASVIP() throws SlaveUnavailableException {
@@ -845,7 +845,7 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>, Serializa
 		return index;
 	}
 
-        public String issueDIZFileToSlave(LinkedRemoteFileInterface file)
+        public String issueDIZFileToSlave(InodeHandle file)
 	        throws SlaveUnavailableException {
 	    String index    = fetchIndex();
 	    AsyncCommand ac = new AsyncCommandArgument(index, "dizfile",

@@ -3,8 +3,8 @@ package org.drftpd.tests;
 import net.sf.drftpd.SlaveUnavailableException;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.LightSFVFile;
-import org.drftpd.SFVFile;
+import org.drftpd.SFVInfo;
+import org.drftpd.victim;
 
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.RemoteSlave;

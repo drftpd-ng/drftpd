@@ -18,7 +18,6 @@
 package org.drftpd.bootstrap;
 
 import java.lang.reflect.Method;
-
 import java.net.URL;
 import java.net.URLClassLoader;
 
@@ -28,7 +27,7 @@ import java.net.URLClassLoader;
  * Takes URL as first argument and passes the rest of the arguments to Slave.main()
  *
  * @author mog
- * @version $Id: URLBootStrap.java,v 1.3 2004/11/05 19:16:18 zubov Exp $
+ * @version $Id$
  */
 public class URLBootStrap {
     public static void main(String[] args) throws Throwable {

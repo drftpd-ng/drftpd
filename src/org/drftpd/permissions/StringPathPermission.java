@@ -20,7 +20,7 @@ package org.drftpd.permissions;
 
 import java.util.Collection;
 
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -28,18 +28,18 @@ import org.drftpd.remotefile.LinkedRemoteFileInterface;
  * @version $Id$
  */
 public class StringPathPermission extends PathPermission {
-    private String _path;
+    private InodeHandle _path;
 
-    public StringPathPermission(String path, Collection<String> users) {
+    public StringPathPermission(InodeHandle path, Collection<String> users) {
         super(users);
         _path = path;
     }
 
-    public boolean checkPath(LinkedRemoteFileInterface path) {
+    public boolean checkPath(InodeHandle path) {
         if (!path.isDirectory()) {
             throw new RuntimeException("Should be a directory");
         }
 
-        return (path.getPath() + "/").startsWith(_path);
+        return (path.getPath()).startsWith(_path.getPath());
     }
 }

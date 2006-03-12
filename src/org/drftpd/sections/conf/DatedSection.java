@@ -17,7 +17,6 @@
  */
 package org.drftpd.sections.conf;
 
-import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
@@ -28,15 +27,11 @@ import java.util.Properties;
 import java.util.TimeZone;
 import java.util.TimerTask;
 
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
-import org.drftpd.remotefile.FileUtils;
-import org.drftpd.remotefile.LinkedRemoteFile;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.remotefile.StaticRemoteFile;
 import org.drftpd.sections.SectionInterface;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -57,7 +52,7 @@ public class DatedSection implements SectionInterface {
     // The gmtTimeZone is used only in computeCheckPeriod() method.
     static final TimeZone gmtTimeZone = TimeZone.getTimeZone("GMT");
     private static final Logger logger = Logger.getLogger(DatedSection.class);
-    private String _basePath;
+    private InodeHandle _basePath;
     private SimpleDateFormat _dateFormat;
     private SectionManager _sectionManager;
     private String _name;
@@ -67,12 +62,8 @@ public class DatedSection implements SectionInterface {
     public DatedSection(SectionManager mgr, int i, Properties p) {
         _sectionManager = mgr;
         _name = PropertyHelper.getProperty(p, i + ".name");
-        _basePath = PropertyHelper.getProperty(p, i + ".path");
+        _basePath = new InodeHandle(PropertyHelper.getProperty(p, i + ".path"));
         _now = PropertyHelper.getProperty(p, i + ".now");
-
-        if (!_basePath.endsWith("/")) {
-            _basePath += "/";
-        }
 
         _dateFormat = new SimpleDateFormat(PropertyHelper.getProperty(p, i +
                     ".dated"), Locale.getDefault());
@@ -100,17 +91,11 @@ public class DatedSection implements SectionInterface {
         return GlobalContext.getGlobalContext();
     }
 
-    public LinkedRemoteFileInterface getBaseFile() {
-        try {
-            return getGlobalContext().getRoot()
-                       .lookupFile(_basePath);
-        } catch (FileNotFoundException e) {
-            return getGlobalContext().getRoot()
-                       .createDirectories(_basePath);
-        }
+    public InodeHandle getBaseDirectory() {
+        return _basePath;
     }
 
-    public LinkedRemoteFileInterface getFile() {
+    public InodeHandle getFile() {
         String dateDirPath = _dateFormat.format(new Date());
         //System.out.println(new Date());
         //System.out.println(dateDirPath);
@@ -118,43 +103,19 @@ public class DatedSection implements SectionInterface {
         //System.out.println(_dateFormat.getTimeZone());
         _dateFormat.setTimeZone(TimeZone.getDefault());
         //System.out.println(_dateFormat.getTimeZone());
-
-        try {
-            return getBaseFile().lookupFile(dateDirPath);
-        } catch (FileNotFoundException e) {
-            LinkedRemoteFileInterface base = getBaseFile();
-            LinkedRemoteFile dateDir = base.createDirectories(dateDirPath);
-
-            try {
-                base = base.getParentFile();
-            } catch (FileNotFoundException e1) {
-            }
-
-            try {
-                base.getFile(getName() + _now).delete();
-            } catch (FileNotFoundException e2) {
-            }
-
-            base.addFile(new StaticRemoteFile(getName() + _now, null,
-                    dateDir.getPath()));
-            logger.info("Created " + dateDir.getPath() +
-                " and created symlink");
-
-            return dateDir;
+        
+        InodeHandle newDatedDir = new InodeHandle(dateDirPath);
+        if (newDatedDir.isDirectory()) {
+        	return newDatedDir;
         }
+        newDatedDir.delete();
+        newDatedDir.createDirectory();
+        logger.info("Created dated directory " + newDatedDir.getPath());
+        return newDatedDir;
     }
 
     public Collection getFiles() {
-        return getBaseFile().getDirectories();
-    }
-
-    public LinkedRemoteFileInterface getFirstDirInSection(
-        LinkedRemoteFileInterface dir) {
-        try {
-            return FileUtils.getSubdirOfDirectory(getFile(), dir);
-        } catch (FileNotFoundException e) {
-            return dir;
-        }
+        return getBaseDirectory().getDirectories();
     }
 
     public String getName() {
@@ -243,10 +204,6 @@ public class DatedSection implements SectionInterface {
                 "].");
         }
     }
-
-	public String getBasePath() {
-		return _basePath;
-	}
 }
 
 

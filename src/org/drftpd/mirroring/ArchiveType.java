@@ -38,8 +38,8 @@ import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.archivetypes.IncompleteDirectoryException;
 import org.drftpd.mirroring.archivetypes.OfflineSlaveException;
 import org.drftpd.plugins.Archive;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -49,7 +49,7 @@ import org.drftpd.sections.SectionInterface;
 public abstract class ArchiveType {
     private static final Logger logger = Logger.getLogger(ArchiveType.class);
     private long _archiveAfter;
-    private LinkedRemoteFileInterface _directory;
+    private InodeHandle _directory;
     protected Archive _parent;
     protected SectionInterface _section;
     protected Set<RemoteSlave> _slaveList;
@@ -109,7 +109,7 @@ public abstract class ArchiveType {
      */
     public abstract Set<RemoteSlave> findDestinationSlaves();
 
-    public final LinkedRemoteFileInterface getDirectory() {
+    public final InodeHandle getDirectory() {
         return _directory;
     }
 
@@ -117,12 +117,12 @@ public abstract class ArchiveType {
      * Returns the oldest LinkedRemoteFile(directory) that needs to be archived by this type's definition
      * If no such directory exists, it returns null
      */
-    public final LinkedRemoteFileInterface getOldestNonArchivedDir() {
-        ArrayList<LinkedRemoteFileInterface> oldDirs = new ArrayList<LinkedRemoteFileInterface>();
+    public final InodeHandle getOldestNonArchivedDir() {
+        ArrayList<InodeHandle> oldDirs = new ArrayList<InodeHandle>();
 
         for (Iterator iter = getSection().getFile().getFiles().iterator();
                 iter.hasNext();) {
-            LinkedRemoteFileInterface lrf = (LinkedRemoteFileInterface) iter.next();
+        	InodeHandle lrf = (InodeHandle) iter.next();
             if (!lrf.isDirectory()) {
             	continue;
             }
@@ -145,10 +145,10 @@ public abstract class ArchiveType {
             }
         }
 
-        LinkedRemoteFileInterface oldestDir = null;
+        InodeHandle oldestDir = null;
 
         for (Iterator iter = oldDirs.iterator(); iter.hasNext();) {
-            LinkedRemoteFileInterface temp = (LinkedRemoteFileInterface) iter.next();
+        	InodeHandle temp = (InodeHandle) iter.next();
 
             if (oldestDir == null) {
                 oldestDir = temp;
@@ -175,7 +175,7 @@ public abstract class ArchiveType {
     /**
      * if the directory is archived by this type's definition, this method returns true
      */
-    protected abstract boolean isArchivedDir(LinkedRemoteFileInterface lrf)
+    protected abstract boolean isArchivedDir(InodeHandle lrf)
         throws IncompleteDirectoryException, OfflineSlaveException;
 
     /**
@@ -195,11 +195,11 @@ public abstract class ArchiveType {
         return jobs;
     }
 
-    protected ArrayList<Job> recursiveSend(LinkedRemoteFileInterface lrf) {
+    protected ArrayList<Job> recursiveSend(InodeHandle lrf) {
         ArrayList<Job> jobQueue = new ArrayList<Job>();
 
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
-            LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
+        	InodeHandle src = (InodeHandle) iter.next();
 
             if (src.isFile()) {
                 logger.info("Adding " + src.getPath() + " to the job queue");
@@ -214,7 +214,7 @@ public abstract class ArchiveType {
         return jobQueue;
     }
 
-    protected static final boolean isArchivedToXSlaves(LinkedRemoteFileInterface lrf,
+    protected static final boolean isArchivedToXSlaves(InodeHandle lrf,
         int x) throws IncompleteDirectoryException, OfflineSlaveException {
         HashSet<RemoteSlave> slaveSet = null;
 
@@ -222,8 +222,8 @@ public abstract class ArchiveType {
             return true;
         }
 
-        try {
-            if (!lrf.lookupSFVFile().getStatus().isFinished()) {
+/*        try {
+            if (!lrf.getSFVStatus().isFinished()) {
                 logger.debug(lrf.getPath() + " is not complete");
                 throw new IncompleteDirectoryException(lrf.getPath() +
                     " is not complete");
@@ -232,10 +232,12 @@ public abstract class ArchiveType {
         } catch (IOException e) {
         } catch (NoAvailableSlaveException e) {
         	throw new OfflineSlaveException("SFV is offline", e);
-        }
+        }*/
+        // I don't like this code to begin with, it depends on SFV
+        // this should be configurable at least
 
         for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
-            LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
+        	InodeHandle file = (InodeHandle) iter.next();
 
             if (file.isDirectory()) {
                 if (!isArchivedToXSlaves(file, x)) {
@@ -322,7 +324,7 @@ public abstract class ArchiveType {
         _slaveList = destSlaves;
     }
 
-    public final void setDirectory(LinkedRemoteFileInterface lrf) {
+    public final void setDirectory(InodeHandle lrf) {
         _directory = lrf;
     }
 

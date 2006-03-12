@@ -21,15 +21,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import net.sf.drftpd.master.config.FtpConfig;
-
 import org.apache.log4j.Logger;
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.permissions.GlobPathPermission;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.InodeHandle;
 
 import com.Ostermiller.util.StringTokenizer;
 
@@ -193,7 +191,7 @@ public class ZipscriptConfig {
 		return false;
 	}
 
-	public boolean checkSfvFirstEnforcedPath(LinkedRemoteFileInterface dir,
+	public boolean checkSfvFirstEnforcedPath(InodeHandle dir,
 			User user) {
 		if (_SfvFirstRequired
 				&& _gctx.getConfig().checkPathPermission("sfvfirst.pathcheck",

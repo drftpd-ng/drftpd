@@ -17,17 +17,13 @@
  */
 package org.drftpd.sections.conf;
 
-import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
 
-
-import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
-import org.drftpd.remotefile.FileUtils;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -35,48 +31,28 @@ import org.drftpd.sections.SectionInterface;
  * @version $Id$
  */
 public class PlainSection implements SectionInterface {
-    private String _dir;
+    private InodeHandle _dir;
     private SectionManager _mgr;
     private String _name;
 
     public PlainSection(SectionManager mgr, int i, Properties p) {
         this(mgr, PropertyHelper.getProperty(p, i + ".name"),
-            PropertyHelper.getProperty(p, i + ".path"));
+            new InodeHandle(PropertyHelper.getProperty(p, i + ".path")));
     }
 
-    public PlainSection(SectionManager mgr, String name, String path) {
+    public PlainSection(SectionManager mgr, String name, InodeHandle path) {
         _mgr = mgr;
         _name = name;
         _dir = path;
 
-        if (!_dir.endsWith("/")) {
-            _dir += "/";
-        }
-
-        //getFile();
     }
 
-    public LinkedRemoteFileInterface getFile() {
-        try {
-            return GlobalContext.getGlobalContext().getRoot()
-                       .lookupFile(_dir);
-        } catch (FileNotFoundException e) {
-            return GlobalContext.getGlobalContext().getRoot()
-                       .createDirectories(_dir);
-        }
+    public InodeHandle getFile() {
+    	return _dir;
     }
 
     public Collection getFiles() {
         return Collections.singletonList(getFile());
-    }
-
-    public LinkedRemoteFileInterface getFirstDirInSection(
-        LinkedRemoteFileInterface dir) {
-        try {
-            return FileUtils.getSubdirOfDirectory(getFile(), dir);
-        } catch (FileNotFoundException e) {
-            return dir;
-        }
     }
 
     public String getName() {
@@ -84,14 +60,14 @@ public class PlainSection implements SectionInterface {
     }
 
     public String getPath() {
-        return _dir;
-    }
-
-    public LinkedRemoteFileInterface getBaseFile() {
-        return getFile();
+        return _dir.getPath();
     }
 
 	public String getBasePath() {
 		return getPath();
+	}
+
+	public InodeHandle getBaseDirectory() {
+		return getFile();
 	}
 }

@@ -17,7 +17,6 @@
  */
 package org.drftpd;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -38,16 +37,14 @@ import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.Logger;
-import org.drftpd.irc.SiteBot;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
-import org.drftpd.remotefile.LinkedRemoteFile;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.remotefile.MLSTSerialize;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserManager;
+import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.VirtualFileSystem;
 
 
 /**
@@ -64,13 +61,13 @@ public class GlobalContext {
     protected ZipscriptConfig _zsConfig;
     private ArrayList<FtpListener> _ftpListeners = new ArrayList<FtpListener>();
     protected JobManager _jm;
-    protected LinkedRemoteFileInterface _root;
     protected SectionManagerInterface _sections;
     private String _shutdownMessage = null;
     protected SlaveManager _slaveManager;
     protected AbstractUserManager _usermanager;
     private Timer _timer = new Timer("GlobalContextTimer");
     protected SlaveSelectionManagerInterface _slaveSelectionManager;
+	private static InodeHandle root = new InodeHandle(VirtualFileSystem.pathSeparator);
 
     public void reloadFtpConfig() throws IOException {
     	_zsConfig = new ZipscriptConfig(this);
@@ -91,7 +88,7 @@ public class GlobalContext {
 		} catch (SlaveFileException e) {
 			throw new RuntimeException(e);
 		}
-        loadRSlavesAndRoot();
+        loadRSlaves();
         listenForSlaves();
         loadJobManager();
         getJobManager().startJobs();
@@ -173,14 +170,6 @@ public class GlobalContext {
         return _jm;
     }
 
-    public LinkedRemoteFileInterface getRoot() {
-        if (_root == null) {
-            throw new NullPointerException();
-        }
-
-        return _root;
-    }
-
     public SectionManagerInterface getSectionManager() {
         if (_sections == null) {
             throw new NullPointerException();
@@ -239,17 +228,8 @@ public class GlobalContext {
      * Depends on slavemanager being loaded.
      *
      */
-    private void loadRSlavesAndRoot() {
-        try {
-            List rslaves = _slaveManager.getSlaves();
-            logger.info("Loading files.mlst");
-            _root = MLSTSerialize.loadMLSTFileDatabase(rslaves);
-        } catch (FileNotFoundException e) {
-            logger.info("files.mlst not found, creating a new filelist");
-            _root = new LinkedRemoteFile();
-        } catch (IOException e) {
-            throw new FatalException(e);
-        }
+    private void loadRSlaves() {
+    	List rslaves = _slaveManager.getSlaves();
     }
 
     // depends on having getRoot() working
@@ -328,12 +308,18 @@ public class GlobalContext {
 		}
 		return _gctx;
 	}
+
+	public InodeHandle getRoot() {
+		return root;
+	}
 	
-	/**
+/*	*//**
 	 * @return the Bot instance
 	 * @throws ObjectNotFoundException if the Bot isnt loaded.
-	 */
+	 *//*
 	public SiteBot getIRCBot() throws ObjectNotFoundException {
 		return (SiteBot) getFtpListener(SiteBot.class);
-	}
+	}*/
+	// Can enable functions for major plugins after the VFS is integrated
+
 }

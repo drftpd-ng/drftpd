@@ -30,7 +30,7 @@ import net.sf.drftpd.event.TransferEvent;
 import net.sf.drftpd.master.UploaderPosition;
 
 import org.drftpd.RankUtils;
-import org.drftpd.SFVFile;
+import org.drftpd.victim;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.NoSuchUserException;

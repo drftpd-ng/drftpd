@@ -21,7 +21,7 @@ package org.drftpd.sections;
 import java.util.Collection;
 
 import org.drftpd.master.ConnectionManager;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -46,5 +46,5 @@ public interface SectionManagerInterface {
 
     public void reload();
 
-    public SectionInterface lookup(LinkedRemoteFileInterface file);
+    public SectionInterface lookup(InodeHandle file);
 }
